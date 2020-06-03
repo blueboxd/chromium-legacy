@@ -338,6 +338,7 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5327248766486351172">Nume</translation>
+<translation id="5352285283572729470">Această setare este gestionată</translation>
 <translation id="5388358297987318779">Deschide imaginea</translation>
 <translation id="5407969256130905701">Renunță la modificări</translation>
 <translation id="5409365236829784218">Nicio aplicație instalată nu poate deschide fișierul.</translation>
@@ -375,6 +376,7 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="5869029295770560994">OK, am înțeles</translation>
 <translation id="5871497086027727873">Un element mutat</translation>
 <translation id="5897956970858271241">Accesează linkul copiat</translation>
+<translation id="5899314093904173337">Ca să le permiți accesul persoanelor din apropiere, solicită-le să scaneze acest cod QR folosind aplicația Cameră sau Scaner de coduri QR</translation>
 <translation id="5911030830365207728">Google Traducere</translation>
 <translation id="5913600720976431809">Opțiuni pentru a traduce pagina</translation>
 <translation id="5938160824633642847">Dispozitivul este aproape plin. Eliberează spațiu și încearcă din nou.</translation>
@@ -564,6 +566,7 @@ Deoarece contul tău este gestionat de <ph name="HOSTED_DOMAIN" />, datele Chrom
 <translation id="8174524257672181687">Blochează toate cookie-urile (nu este recomandat)</translation>
 <translation id="8197543752516192074">Tradu pagina</translation>
 <translation id="8205564605687841303">Anulează</translation>
+<translation id="8206354486702514201">Această setare este impusă de administratorul dvs.</translation>
 <translation id="8225985093977202398">Imaginile și fișierele memorate în cache</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8281781826761538115">Prestabilit – <ph name="DEFAULT_LOCALE" /></translation>

@@ -64,6 +64,10 @@ class CONTENT_EXPORT ConversionManagerImpl : public ConversionManager {
         base::RepeatingCallback<void(int64_t)> report_sent_callback) = 0;
   };
 
+  // Configures underlying storage to be setup in memory, rather than on
+  // disk. This speeds up initialization to avoid timeouts in test environments.
+  static void RunInMemoryForTesting();
+
   static std::unique_ptr<ConversionManagerImpl> CreateForTesting(
       std::unique_ptr<ConversionReporter> reporter,
       std::unique_ptr<ConversionPolicy> policy,

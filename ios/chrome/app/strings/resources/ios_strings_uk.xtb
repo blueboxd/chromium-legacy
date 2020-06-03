@@ -338,6 +338,7 @@
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5327248766486351172">Назва</translation>
+<translation id="5352285283572729470">Цим налаштуванням керує адміністратор</translation>
 <translation id="5388358297987318779">Відкрити зображення</translation>
 <translation id="5407969256130905701">Відхилити зміни</translation>
 <translation id="5409365236829784218">Немає встановлених програм, які можуть відкрити цей файл.</translation>
@@ -564,6 +565,7 @@
 <translation id="8174524257672181687">Блокувати всі файли cookie (не рекомендовано)</translation>
 <translation id="8197543752516192074">Перекласти сторінку</translation>
 <translation id="8205564605687841303">Скасувати</translation>
+<translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>
 <translation id="8225985093977202398">Кешовані зображення й файли</translation>
 <translation id="8261506727792406068">Видалити</translation>
 <translation id="8281781826761538115">За умовчанням – <ph name="DEFAULT_LOCALE" /></translation>

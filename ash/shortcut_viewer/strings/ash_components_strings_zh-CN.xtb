@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">关闭当前窗口</translation>
 <translation id="3407560819924487926">启动任务管理器</translation>
 <translation id="3422679037938588196">转到上一个相符的搜索结果</translation>
-<translation id="344577624355799426"><ph name="ALT" /> 键或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">将当前窗口中所有打开的网页保存为书签，并放在新文件夹中</translation>
 <translation id="355103131818127604">在后台新标签页中打开链接</translation>
 <translation id="3622741593887335780">放大（启用停靠的放大镜或全屏放大镜时）</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">聚焦于或突出显示书签栏（若显示）</translation>
 <translation id="7237562915163138771">在地址栏中输入网址，然后按 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">让设备进入睡眠模式（暂停使用）</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> 键或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">切换到下一种可用的输入法</translation>
 <translation id="743754632698445141">取消固定应用</translation>
 <translation id="7439718573248533901">删除下一个字母（前向删除）</translation>

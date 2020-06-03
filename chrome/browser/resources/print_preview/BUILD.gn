@@ -131,6 +131,7 @@ js_library("native_layer") {
     "data:destination_match",
     "data:destination_policies",
     "data:measurement_system",
+    "data:printer_status_cros",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
   ]

@@ -205,6 +205,10 @@
 <translation id="1753706481035618306">Lk</translation>
 <translation id="1763864636252898013">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proovige käitada Windowsi võrgudiagnostika tööriista<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Server, kuhu sisenete (<ph name="ORIGIN" />), on määranud päise,
+    mis nõuab lähtekohareegli rakendamist kõigi sellele saadetud taotluste puhul. Päis on aga valesti moodustatud ja see ei lase brauseril teie
+    saidile <ph name="SITE" /> esitatud taotlust täita. Saidioperaatorid saavad kasutada
+    lähtekohareegleid saidi turbe ja muude atribuutide seadistamiseks.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Värskendage sünkroonimise parooli.</translation>
 <translation id="1787142507584202372">Teie avatud vahelehed kuvatakse siin</translation>
@@ -228,6 +232,7 @@
 <translation id="1898423065542865115">Filtreerimine</translation>
 <translation id="1901443836186977402">{1,plural, =1{See server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat aegus viimase 24 tunni jooksul. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei, seadke süsteemi kell õigeks ja värskendage seda lehte.}other{See server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat aegus # päeva tagasi. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei, seadke süsteemi kell õigeks ja värskendage seda lehte.}}</translation>
 <translation id="1902576642799138955">Kehtivusperiood</translation>
+<translation id="191374271204266022">Kopeeri JSON-failina</translation>
 <translation id="1914326953223720820">Lahtipakkimisteenus</translation>
 <translation id="1915697529809968049">Kas kasutada CVC asemel Touch ID-d?</translation>
 <translation id="1916770123977586577">Laadige leht uuesti, et rakendada värskendatud seaded saidile</translation>
@@ -705,6 +710,8 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
     Kui arvate, et tegemist on veaga, külastage saiti https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Alla 1 MB</translation>
 <translation id="3990250421422698716">Astme nihe</translation>
+<translation id="3996311196211510766">Sait <ph name="ORIGIN" /> nõuab, et lähtekohareeglit
+    kohaldataks kõigi taotluste puhul, kuid reeglit ei saa praegu rakendada.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Läheduses on 1 veebileht}other{Läheduses on # veebilehte}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument sisaldab {COUNT} lehte}other{PDF-dokument sisaldab {COUNT} lehte}}</translation>
 <translation id="4030383055268325496">&amp;Võta lisamine tagasi</translation>
@@ -749,6 +756,11 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="4194250254487269611">Teie kaarti ei saa praegu salvestada</translation>
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollige tulemüüri ja viirusetõrje seadistusi<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Server, kuhu sisenete (<ph name="ORIGIN" />), nõuab, et
+    lähtekohareeglit kohaldataks iga sisenemistaotluse puhul. Reegli saatmine aga ebaõnnestus,
+    mis takistab brauseril täitmast teie sisenemistaotlust
+    saidile <ph name="SITE" />. Saidioperaatorid saavad kasutada
+    lähtekohareegleid saidi turbe ja muude atribuutide seadistamiseks.</translation>
 <translation id="421066178035138955">Kasutada virtuaalreaalsuse seadmeid ja andmeid</translation>
 <translation id="4214357935346142455">sisselogimiskuva profiil</translation>
 <translation id="4215751373031079683">7x9 (ümbrik)</translation>
@@ -1239,6 +1251,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6259156558325130047">&amp;Korrasta uuesti</translation>
 <translation id="6263376278284652872">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="6264485186158353794">Tagasi turvalisusse</translation>
+<translation id="6265794661083428563">Kopeeri reegli <ph name="POLICY_NAME" /> väärtus</translation>
 <translation id="6266934640124581640">Helesinakasroheline</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Siin kuvatakse teie lugemisloendis olevad lehed</translation>

@@ -338,6 +338,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5300589172476337783">Ipakita</translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5327248766486351172">Pangalan</translation>
+<translation id="5352285283572729470">Pinapamahalaan ang setting na ito</translation>
 <translation id="5388358297987318779">Buksan ang Larawan</translation>
 <translation id="5407969256130905701">I-discard ang Mga Pagbabago</translation>
 <translation id="5409365236829784218">Walang naka-install na app na makakapagbukas ng file na ito.</translation>
@@ -375,6 +376,7 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="5869029295770560994">OK, Nakuha Ko</translation>
 <translation id="5871497086027727873">1 item ang inilipat</translation>
 <translation id="5897956970858271241">Bisitahin ang Kinopyang Link</translation>
+<translation id="5899314093904173337">Para magbahagi sa mga taong nasa malapit, ipa-scan sa kanila ang QR code na ito gamit ang kanilang camera o QR scanner app</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">Mga opsyon para Isalin ang page</translation>
 <translation id="5938160824633642847">Malapit nang mapuno ang iyong device. Magbakante ng espasyo at subukang muli.</translation>
@@ -564,6 +566,7 @@ Dahil pinapamahalaan ng <ph name="HOSTED_DOMAIN" /> ang iyong account, made-dele
 <translation id="8174524257672181687">I-block ang Lahat ng Cookies (Hindi inirerekomenda)</translation>
 <translation id="8197543752516192074">Isalin ang Page</translation>
 <translation id="8205564605687841303">Kanselahin</translation>
+<translation id="8206354486702514201">Ipinapatupad ng iyong administrator ang setting na ito.</translation>
 <translation id="8225985093977202398">Mga Naka-cache na Larawan at File</translation>
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8281781826761538115">Default - <ph name="DEFAULT_LOCALE" /></translation>

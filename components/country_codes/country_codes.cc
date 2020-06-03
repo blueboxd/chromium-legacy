@@ -112,15 +112,11 @@ int GeoIDToCountryID(GEOID geo_id) {
 
 const char kCountryIDAtInstall[] = "countryid_at_install";
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
-
 int CountryStringToCountryID(const std::string& country) {
   return (country.length() == 2)
              ? CountryCharsToCountryIDWithUpdate(country[0], country[1])
              : kCountryIDUnknown;
 }
-
-#endif
 
 int GetCountryIDFromPrefs(PrefService* prefs) {
   if (!prefs)

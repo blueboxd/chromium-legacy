@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Sandi kedaluwarsa</translation>
 <translation id="1630768113285622200">Mulai ulang dan lanjutkan</translation>
 <translation id="1630873818549593964">Data anak Anda di Classroom akan dilindungi. <ph name="LINK_BEGIN" />Pelajari lebih lanjut<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Sandi yang disimpan di Akun Google Anda</translation>
 <translation id="1632803087685957583">Memungkinkan Anda menyesuaikan tingkat pengulangan keyboard, prediksi kata, dan lainnya</translation>
 <translation id="1633947793238301227">Nonaktifkan Asisten Google</translation>
 <translation id="1634783886312010422">Apakah Anda telah mengubah sandi ini di <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="296026337010986570">Selesai! Software berbahaya telah dihapus. Untuk mengaktifkan kembali ekstensi, buka &lt;a href="chrome://extensions"&gt;Ekstensi&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (ekstensi tersedia)</translation>
 <translation id="2961695502793809356">Klik untuk maju, tahan untuk melihat histori</translation>
+<translation id="2962131322798295505">Alat Pilih Wallpaper</translation>
 <translation id="2963151496262057773">Plugin berikut tidak merespons: <ph name="PLUGIN_NAME" />Ingin menghentikannya?</translation>
 <translation id="2964193600955408481">Nonaktifkan Wi-Fi</translation>
 <translation id="2966937470348689686">Kelola preferensi Android</translation>
@@ -2539,6 +2541,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4154664944169082762">Sidik jari</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Ini adalah akun untuk anak yang dikelola oleh <ph name="CUSTODIAN_EMAIL" /> dan <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Ungu</translation>
 <translation id="4163560723127662357">Keyboard tidak dikenal</translation>
 <translation id="4168015872538332605">Beberapa setelan milik <ph name="PRIMARY_EMAIL" /> digunakan bersama dengan Anda. Setelan ini akan memengaruhi akun Anda hanya jika memakai fitur masuk banyak akun.</translation>
 <translation id="4170314459383239649">Hapus Saat Keluar</translation>
@@ -2882,6 +2885,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4645676300727003670">&amp;Pertahankan</translation>
 <translation id="4646675363240786305">Port</translation>
 <translation id="4647090755847581616">&amp;Tutup Tab</translation>
+<translation id="4647420311443994946">{0,select, tablet{Mulai aplikasi saat Anda login ke tablet Anda}computer{Mulai aplikasi saat Anda login ke komputer Anda}other{Mulai aplikasi saat Anda login ke perangkat Anda}}</translation>
 <translation id="4647697156028544508">Masukkan PIN untuk "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Izin tidak mencukupi</translation>
 <translation id="4648499713050786492">Buka kunci profil sebelum menambahkan orang.</translation>
@@ -2894,6 +2898,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4660540330091848931">Mengubah ukuran</translation>
 <translation id="4660838440047236328">tata letak ruangan Anda</translation>
 <translation id="4661407454952063730">Data aplikasi dapat berupa data yang telah disimpan oleh aplikasi (berdasarkan setelan developer), termasuk data seperti kontak, pesan, dan foto.</translation>
+<translation id="4662373422909645029">Nama panggilan tidak boleh berisi angka</translation>
 <translation id="4662788913887017617">Bagikan bookmark ini dengan iPhone Anda</translation>
 <translation id="4663373278480897665">Kamera diizinkan</translation>
 <translation id="4664482161435122549">PKCS #12 Kesalahan Ekspor</translation>
@@ -3588,6 +3593,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5585912436068747822">Pemformatan gagal</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Memuat aplikasi...</translation>
+<translation id="558984423786125616">Port sudah ada di setelan</translation>
 <translation id="5592595402373377407">Data yang tersedia belum cukup.</translation>
 <translation id="5593357315997824387">Sinkronkan file saya</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
@@ -3631,6 +3637,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5639549361331209298">Muat ulang halaman ini, tahan untuk melihat opsi lainnya</translation>
 <translation id="5640133431808313291">Kelola kunci keamanan</translation>
 <translation id="5642508497713047">Penandatangan CRL</translation>
+<translation id="5643321261065707929">Jaringan berbayar</translation>
 <translation id="5643620609347735571">Hapus dan lanjutkan</translation>
 <translation id="5644857731242502394">Penyiapan perangkat yang terhubung</translation>
 <translation id="5646376287012673985">Lokasi</translation>
@@ -5540,6 +5547,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
     <ph name="BEGIN_PARAGRAPH5" />Anda dapat menonaktifkan layanan ini di Setelan.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN tidak cocok</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> menggunakan setelan proxy dari ekstensi</translation>
+<translation id="8097959162767603171">Administrator Anda harus menyetujui persyaratan layanan terlebih dulu di daftar perangkat Chrome konsol Admin.</translation>
 <translation id="8101987792947961127">Perlu Powerwash saat mulai ulang berikutnya</translation>
 <translation id="8102159139658438129">Buka <ph name="LINK_BEGIN" />Setelan<ph name="LINK_END" /> guna melihat opsi untuk ponsel yang terhubung</translation>
 <translation id="8104696615244072556">Powerwash perangkat <ph name="IDS_SHORT_PRODUCT_NAME" /> dan kembalikan ke versi sebelumnya.</translation>

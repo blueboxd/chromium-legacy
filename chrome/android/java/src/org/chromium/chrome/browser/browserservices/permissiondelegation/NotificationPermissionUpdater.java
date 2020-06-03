@@ -68,13 +68,18 @@ public class NotificationPermissionUpdater {
     public void onClientAppUninstalled(Origin origin) {
         // See if there is any other app installed that could handle the notifications (and update
         // to that apps notification permission if it exists).
-        boolean couldConnect = mTrustedWebActivityClient.checkNotificationPermission(origin,
-                (app, enabled) -> updatePermission(origin, app, enabled));
+        mTrustedWebActivityClient.checkNotificationPermission(origin,
+                new TrustedWebActivityClient.PermissionCheckCallback() {
+                    @Override
+                    public void onPermissionCheck(ComponentName answeringApp, boolean enabled) {
+                        updatePermission(origin, answeringApp, enabled);
+                    }
 
-        // If not, we return notification state to what it was before installation.
-        if (!couldConnect) {
-            mPermissionManager.unregister(origin);
-        }
+                    @Override
+                    public void onNoTwaFound() {
+                        mPermissionManager.unregister(origin);
+                    }
+                });
     }
 
     @WorkerThread

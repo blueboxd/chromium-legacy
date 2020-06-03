@@ -64,7 +64,7 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
                                             WTF::Passed(std::move(receiver))));
   }
 
-  ~IOSession() override {}
+  ~IOSession() override = default;
 
   void BindInterface(
       mojo::PendingReceiver<mojom::blink::DevToolsSession> receiver) {
@@ -117,20 +117,22 @@ DevToolsSession::DevToolsSession(
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
     bool client_expects_binary_responses,
-    const String& session_id)
+    const String& session_id,
+    scoped_refptr<base::SequencedTaskRunner> mojo_task_runner)
     : agent_(agent),
-      receiver_(this, std::move(main_receiver)),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       client_expects_binary_responses_(client_expects_binary_responses),
       v8_session_state_(kV8StateKey),
       v8_session_state_cbor_(&v8_session_state_, /*default_value=*/{}),
       session_id_(session_id) {
+  receiver_.Bind(std::move(main_receiver), mojo_task_runner);
+
   io_session_ = new IOSession(
       agent_->io_task_runner_, agent_->inspector_task_runner_,
       WrapCrossThreadWeakPersistent(this), std::move(io_receiver));
 
-  host_remote_.Bind(std::move(host_remote));
+  host_remote_.Bind(std::move(host_remote), mojo_task_runner);
   host_remote_.set_disconnect_handler(
       WTF::Bind(&DevToolsSession::Detach, WrapWeakPersistent(this)));
 
@@ -157,7 +159,7 @@ void DevToolsSession::ConnectToV8(v8_inspector::V8Inspector* inspector,
 }
 
 bool DevToolsSession::IsDetached() {
-  return !host_remote_.is_bound();
+  return !io_session_;
 }
 
 void DevToolsSession::Append(InspectorAgent* agent) {
@@ -349,6 +351,8 @@ void DevToolsSession::FlushProtocolNotifications() {
 }
 
 void DevToolsSession::Trace(Visitor* visitor) const {
+  visitor->Trace(receiver_);
+  visitor->Trace(host_remote_);
   visitor->Trace(agent_);
   visitor->Trace(agents_);
 }

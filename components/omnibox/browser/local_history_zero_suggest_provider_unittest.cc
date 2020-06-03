@@ -305,6 +305,43 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, MAYBE_ZeroSuggestVariant) {
   ExpectMatches({});
 #endif
 
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitAndEnableFeature(
+      omnibox::kReactiveZeroSuggestionsOnNTPRealbox);
+  StartProviderAndWaitUntilDone();
+  ExpectMatches({{"hello world", 500}});
+
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitAndEnableFeature(
+      omnibox::kReactiveZeroSuggestionsOnNTPOmnibox);
+  StartProviderAndWaitUntilDone();
+#if defined(OS_ANDROID)  // Enabled by default.
+  ExpectMatches({{"hello world", 500}});
+#else
+  ExpectMatches({});
+#endif
+
+  StartProviderAndWaitUntilDone(
+      /*text=*/"", /*from_omnibox_focus=*/true,
+      /*page_classification=*/
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
+  ExpectMatches({{"hello world", 500}});
+
+  // Make sure disabling omnibox::kNewSearchFeatures disables zero suggest.
+  scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list_->InitWithFeatures(
+      {omnibox::kReactiveZeroSuggestionsOnNTPOmnibox},
+      {omnibox::kNewSearchFeatures});
+  StartProviderAndWaitUntilDone(
+      /*text=*/"", /*from_omnibox_focus=*/true,
+      /*page_classification=*/
+      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS);
+#if defined(OS_ANDROID)  // Enabled by default.
+  ExpectMatches({{"hello world", 500}});
+#else
+  ExpectMatches({});
+#endif
+
   SetZeroSuggestVariant(
       metrics::OmniboxEventProto::NTP_REALBOX,
       LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);

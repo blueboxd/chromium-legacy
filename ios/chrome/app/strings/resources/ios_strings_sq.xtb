@@ -338,6 +338,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5300589172476337783">Shfaq</translation>
 <translation id="5317780077021120954">Ruaj</translation>
 <translation id="5327248766486351172">Emri</translation>
+<translation id="5352285283572729470">Ky cilësim është i menaxhuar</translation>
 <translation id="5388358297987318779">Hape imazhin</translation>
 <translation id="5407969256130905701">Hiq ndryshimet</translation>
 <translation id="5409365236829784218">Nuk ka aplikacione të instaluara që mund të hapin këtë skedar.</translation>
@@ -375,6 +376,7 @@ Handoff duhet gjithashtu të jetë i aktivizuar në seksionin "Të përgjithshme
 <translation id="5869029295770560994">Në rregull, kuptova</translation>
 <translation id="5871497086027727873">1 element u lëviz</translation>
 <translation id="5897956970858271241">Vizito lidhjen e kopjuar</translation>
+<translation id="5899314093904173337">Për të ndarë me personat në afërsi, lejoji të skanojnë këtë kod QR me kamerën e tyre ose aplikacionin e skanerit të kodeve QR</translation>
 <translation id="5911030830365207728">Përkthe me Google</translation>
 <translation id="5913600720976431809">Opsionet për përkthimin e faqes</translation>
 <translation id="5938160824633642847">Pajisja jote është thuajse plot. Liro hapësirë dhe provo përsëri.</translation>
@@ -564,6 +566,7 @@ Duke qenë se llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, të dhë
 <translation id="8174524257672181687">Blloko të gjitha kukit (nuk rekomandohet)</translation>
 <translation id="8197543752516192074">Përkthe faqen</translation>
 <translation id="8205564605687841303">Anulo</translation>
+<translation id="8206354486702514201">Ky cilësim zbatohet nga administratori yt.</translation>
 <translation id="8225985093977202398">Imazhet dhe skedarët në memorien specifike</translation>
 <translation id="8261506727792406068">Fshi</translation>
 <translation id="8281781826761538115">Parazgjedhja - <ph name="DEFAULT_LOCALE" /></translation>

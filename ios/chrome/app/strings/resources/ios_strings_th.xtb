@@ -338,6 +338,7 @@
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
+<translation id="5352285283572729470">การตั้งค่านี้ได้รับการจัดการ</translation>
 <translation id="5388358297987318779">เปิดภาพ</translation>
 <translation id="5407969256130905701">ยกเลิกการเปลี่ยนแปลง</translation>
 <translation id="5409365236829784218">ไม่ได้ติดตั้งแอปพลิเคชันที่สามารถเปิดไฟล์นี้</translation>
@@ -564,6 +565,7 @@
 <translation id="8174524257672181687">บล็อกคุกกี้ทั้งหมด (ไม่แนะนำ)</translation>
 <translation id="8197543752516192074">แปลหน้าเว็บ</translation>
 <translation id="8205564605687841303">ยกเลิก</translation>
+<translation id="8206354486702514201">ผู้ดูแลระบบของคุณกำหนดให้ใช้การตั้งค่านี้</translation>
 <translation id="8225985093977202398">รูปภาพและไฟล์ที่แคชไว้</translation>
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8281781826761538115">ค่าเริ่มต้น - <ph name="DEFAULT_LOCALE" /></translation>

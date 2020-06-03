@@ -206,7 +206,7 @@
 <translation id="3368922792935385530">Đã kết nối</translation>
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
 <translation id="3386978599540877378">tính năng phóng to toàn màn hình</translation>
-<translation id="3400357268283240774">Cài đặt bổ sung</translation>
+<translation id="3400357268283240774">Tùy chọn cài đặt bổ sung</translation>
 <translation id="3413817803639110246">Chưa có thông báo nào để xem</translation>
 <translation id="3428447136709161042">Ngắt kết nối khỏi <ph name="NETWORK_NAME" /></translation>
 <translation id="3430396595145920809">Vuốt từ phải sang để quay lại</translation>
@@ -533,6 +533,7 @@
 <translation id="7569509451529460200">Đã bật chữ nổi Braille và ChromeVox</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7600875258240007829">Xem tất cả thông báo</translation>
+<translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
 <translation id="7642647758716480637">Mở phần cài đặt <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (chủ sở hữu)</translation>
 <translation id="7647488630410863958">Mở khóa thiết bị để xem thông báo của bạn</translation>

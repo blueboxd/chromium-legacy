@@ -150,7 +150,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void SetPageFrozenForTracing(bool frozen);
 
   // Computes the priority of |task_queue| if it is associated to this frame
-  // scheduler. Note that the main's thread policy should be upto date to
+  // scheduler. Note that the main thread's policy should be upto date to
   // compute the correct priority.
   base::sequence_manager::TaskQueue::QueuePriority ComputePriority(
       MainThreadTaskQueue* task_queue) const;

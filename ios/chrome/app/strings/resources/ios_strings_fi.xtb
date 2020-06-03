@@ -338,6 +338,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
+<translation id="5352285283572729470">Tämä on hallinnoitu asetus</translation>
 <translation id="5388358297987318779">Avaa kuva</translation>
 <translation id="5407969256130905701">Hylkää muutokset</translation>
 <translation id="5409365236829784218">Et ole asentanut sovellusta, jolla tämän tiedoston voi avata.</translation>
@@ -375,6 +376,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="5869029295770560994">Selvä</translation>
 <translation id="5871497086027727873">1 kohde siirretty</translation>
 <translation id="5897956970858271241">Avaa kopioitu linkki</translation>
+<translation id="5899314093904173337">Jaa lähellä oleville ihmisille antamalla tämä QR-koodi, jonka he voivat skannata kameralla tai QR-skannaussovelluksella</translation>
 <translation id="5911030830365207728">Google Kääntäjä</translation>
 <translation id="5913600720976431809">Sivun käännösvalinnat</translation>
 <translation id="5938160824633642847">Laite on lähes täynnä. Vapauta tilaa ja yritä uudelleen.</translation>
@@ -564,6 +566,7 @@ Koska <ph name="HOSTED_DOMAIN" /> ylläpitää tiliäsi, Chrome-datasi poistetaa
 <translation id="8174524257672181687">Estä kaikki evästeet (ei suositella)</translation>
 <translation id="8197543752516192074">Käännä sivu</translation>
 <translation id="8205564605687841303">Peruuta</translation>
+<translation id="8206354486702514201">Järjestelmänvalvojasi hallinnoi tätä asetusta.</translation>
 <translation id="8225985093977202398">Välimuistissa olevat kuvat ja tiedostot</translation>
 <translation id="8261506727792406068">Poista</translation>
 <translation id="8281781826761538115">Oletus – <ph name="DEFAULT_LOCALE" /></translation>

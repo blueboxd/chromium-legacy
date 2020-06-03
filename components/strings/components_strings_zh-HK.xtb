@@ -205,6 +205,7 @@
 <translation id="1753706481035618306">頁碼</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置的操作系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網絡診斷<ph name="END_LINK" />。</translation>
+<translation id="1772163372082567643">您的目標伺服器「<ph name="ORIGIN" />」已設定標題要求為收到的所有要求套用來源政策。不過，由於該標題格式錯誤，因此瀏覽器無法完成您向 <ph name="SITE" /> 提出的要求。網站網絡供應商可使用來源政策設定網站的安全性及其他屬性。</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">請更新您的同步複雜密碼。</translation>
 <translation id="1787142507584202372">您最近開啟的分頁會在這裡顯示</translation>
@@ -228,6 +229,7 @@
 <translation id="1898423065542865115">篩選</translation>
 <translation id="1901443836186977402">{1,plural, =1{伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已在昨天到期。這可能是由於設定錯誤，或有攻擊者攔截您的連線。您的電腦時鐘目前設定為 <ph name="CURRENT_DATE" />，請問是否正確？如果設定錯誤，請將系統時鐘調校至正確時間，然後重新整理此網頁。}other{伺服器無法證明屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已在 # 天前到期。這可能是由於設定錯誤，或有攻擊者攔截您的連線。您的電腦時鐘目前設定為 <ph name="CURRENT_DATE" />，請問是否正確？如果設定錯誤，請將系統時鐘調校至正確時間，然後重新整理此網頁。}}</translation>
 <translation id="1902576642799138955">有效期間</translation>
+<translation id="191374271204266022">以 JSON 格式複製</translation>
 <translation id="1914326953223720820">解壓縮服務</translation>
 <translation id="1915697529809968049">要使用 Touch ID 取代 CVC 嗎？</translation>
 <translation id="1916770123977586577">如要將您已更新的設定套到此網站，請重新載入此網頁</translation>
@@ -701,6 +703,7 @@
     如果您認為系統不應顯示此訊息，請前往 https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals。</translation>
 <translation id="3987940399970879459">小於 1 MB</translation>
 <translation id="3990250421422698716">撞頁偏移</translation>
+<translation id="3996311196211510766">網站 <ph name="ORIGIN" /> 指定所有收到的要求都必須套用來源政策，但目前無法套用此政策。</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 個網頁}other{附近有 # 個網頁}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF 文件入面有 {COUNT} 頁}other{PDF 文件入面有 {COUNT} 頁}}</translation>
 <translation id="4030383055268325496">復原新增(&amp;U)</translation>
@@ -745,6 +748,7 @@
 <translation id="4194250254487269611">目前無法儲存您的信用卡</translation>
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />檢查防火牆和防毒軟件設定<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">您的目標伺服器「<ph name="ORIGIN" />」要求為收到的所有要求套用來源政策。不過，由於該伺服器目前並未提供政策，因此瀏覽器無法完成您向 <ph name="SITE" /> 提出的要求。網站網絡供應商可使用來源政策設定網站的安全性及其他屬性。</translation>
 <translation id="421066178035138955">使用虛擬實境裝置和資料</translation>
 <translation id="4214357935346142455">登入畫面個人檔案</translation>
 <translation id="4215751373031079683">7x9 (信封)</translation>
@@ -1235,6 +1239,7 @@
 <translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="6264485186158353794">返回安全連線</translation>
+<translation id="6265794661083428563">複製 <ph name="POLICY_NAME" /> 政策的值</translation>
 <translation id="6266934640124581640">淺藍綠色</translation>
 <translation id="6272383483618007430">Google 更新</translation>
 <translation id="6276112860590028508">您的閱讀清單中的網頁將會在這裡顯示</translation>

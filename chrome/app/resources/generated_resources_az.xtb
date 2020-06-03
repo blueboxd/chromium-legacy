@@ -498,6 +498,7 @@
 <translation id="1629314197035607094">Parolun müddəti bitdi</translation>
 <translation id="1630768113285622200">Yenidən başladın və davam edin</translation>
 <translation id="1630873818549593964">Classroom'da övladınızın datası qorunacaq. <ph name="LINK_BEGIN" />Ətraflı məlumat<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Google hesabınızda saxlanılmış parol</translation>
 <translation id="1632803087685957583">Klaviatura təkrarlanma sayı, söz proqnozu və digərlərini nizamlamağa icazə verir</translation>
 <translation id="1633947793238301227">Google Assistenti deaktiv edin</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" /> saytında artıq bunu dəyişmisiniz?</translation>
@@ -1574,6 +1575,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="296026337010986570">Hazırdır! Zərərli proqram silindi. Artırmaları yenidən aktiv etmək üçün &lt;a href="chrome://extensions"&gt;Artırmalar&lt;/a&gt; ünvanına keçin.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (artırma təmin edildi)</translation>
 <translation id="2961695502793809356">Davam etmək üçün basın, tarixçəni görmək üçün basıb saxlayın</translation>
+<translation id="2962131322798295505">Divar Kağızı Seçicisi</translation>
 <translation id="2963151496262057773">Plaqin cavabsızdır: <ph name="PLUGIN_NAME" />Dayandırılsın?</translation>
 <translation id="2964193600955408481">Wi-Fi aktiv edin</translation>
 <translation id="2966937470348689686">Android tərcihlərini idarə edin</translation>
@@ -2532,6 +2534,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4154664944169082762">Barmaq izi</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Bu, <ph name="CUSTODIAN_EMAIL" /> və <ph name="SECOND_CUSTODIAN_EMAIL" /> tərəfindən idarə olunan uşaq hesabıdır.</translation>
+<translation id="4159784952369912983">Bənövşəyi</translation>
 <translation id="4163560723127662357">Naməlum klaviatura</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> e-poçtuna aid bəzi ayarlar Sizinlə paylaşılıb. Çoxsaylı hesab girişindən istifadə etdikdə bu ayarlar hesabınıza təsir edir.</translation>
 <translation id="4170314459383239649">Çıxarkən silin</translation>
@@ -2875,6 +2878,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4645676300727003670">&amp;Saxlayın</translation>
 <translation id="4646675363240786305">Portlar</translation>
 <translation id="4647090755847581616">&amp;Vərəqəni qapadın</translation>
+<translation id="4647420311443994946">{0,select, tablet{Planşetə daxil olduqda tətbiqi başladın}computer{Kompüterə daxil olduqda tətbiqi başladın}other{Cihaza daxil olduqda tətbiqi başladın}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" üçün PIN daxil etməyiniz xahiş olunur:</translation>
 <translation id="4648491805942548247">Yetərsiz icazələr</translation>
 <translation id="4648499713050786492">Bir şəxsi əlavə etməmişdən əvvəl, profilinizin kilidini açın.</translation>
@@ -2887,6 +2891,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4660540330091848931">Ölçüsü dəyişilir</translation>
 <translation id="4660838440047236328">otağınızın tərtibatı</translation>
 <translation id="4661407454952063730">Tətbiq datası kontaktlar, mesajlar və fotolar daxil olmaqla, tətbiq tərəfindən yadda saxlanılan (developer ayarlarından asılı olaraq) istənilən data ola bilər.</translation>
+<translation id="4662373422909645029">Ləqəbdə rəqəm olmamalıdır</translation>
 <translation id="4662788913887017617">Bu əlfəcini iPhone ilə paylaşın</translation>
 <translation id="4663373278480897665">Kameraya icazə verildi</translation>
 <translation id="4664482161435122549">PKCS #12 Eksport Xətası</translation>
@@ -3581,6 +3586,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5585912436068747822">Formatlama alınmadı</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Tətbiqlər yüklənir...</translation>
+<translation id="558984423786125616">Port hazırda ayarlarda mövcuddur</translation>
 <translation id="5592595402373377407">Kifayət qədər əlçatan məlumat hələ yoxdur.</translation>
 <translation id="5593357315997824387">Fayllarımı sinxronizasiya edin</translation>
 <translation id="5595485650161345191">Ünvana düzəliş edin</translation>
@@ -3624,6 +3630,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5639549361331209298">Bu səhifəni yenidən yükləyin, daha çox seçim üçün basıb saxlayın</translation>
 <translation id="5640133431808313291">Təhlükəsizlik açarlarını idarə edin</translation>
 <translation id="5642508497713047">CRL İmzalayıcısı</translation>
+<translation id="5643321261065707929">Limitli şəbəkə</translation>
 <translation id="5643620609347735571">Silin və davam edin</translation>
 <translation id="5644857731242502394">Qoşulmuş cihazların quraşdırılması</translation>
 <translation id="5646376287012673985">Məkan</translation>
@@ -5530,6 +5537,7 @@ Açar faylınızı güvənli yerdə saxlayın.</translation>
     <ph name="BEGIN_PARAGRAPH5" />Bu xidməti Ayarlardan deaktiv edə bilərsiniz.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PİN uyğun gəlmir</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> artırmanın proksi ayarlarından istifadə edir</translation>
+<translation id="8097959162767603171">Administratorunuz əvvəlcə Admin konsolu Chrome cihaz siyahısında xidmət şərtlərini qəbul etməlidir.</translation>
 <translation id="8101987792947961127">Növbəti yenidən yüklənmə zamanı zavod sıfırlaması tələb olunur</translation>
 <translation id="8102159139658438129">Qoşulmuş telefon haqqında seçimlərə baxmaq üçün <ph name="LINK_BEGIN" />Ayarlar<ph name="LINK_END" /> səhifəsinə keçin</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> cihazını sıfırlayın və öncəki versiyaya qayıdın.</translation>

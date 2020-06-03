@@ -338,6 +338,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
+<translation id="5352285283572729470">Šis nustatymas valdomas</translation>
 <translation id="5388358297987318779">Atidaryti vaizdą</translation>
 <translation id="5407969256130905701">Atmesti pakeitimus</translation>
 <translation id="5409365236829784218">Nėra įdiegtų pr., kurias naudojant galima atidaryti failą.</translation>
@@ -375,6 +376,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="5869029295770560994">Gerai, supratau</translation>
 <translation id="5871497086027727873">Perkelta elementų: 1</translation>
 <translation id="5897956970858271241">Apsilankyti nukopijuotos nuorodos adresu</translation>
+<translation id="5899314093904173337">Norėdami bendrinti su netoliese esančiais žmonėmis, leiskite jiems nuskaityti šį QR kodą savo fotoaparatu ar QR kodų skaitytuvo programa</translation>
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
 <translation id="5913600720976431809">Puslapio vertimo parinktys</translation>
 <translation id="5938160824633642847">Jūsų įrenginys beveik pilnas. Atlaisvinkite vietos ir bandykite dar kartą.</translation>
@@ -564,6 +566,7 @@ Kadangi paskyrą tvarko <ph name="HOSTED_DOMAIN" />, atsijungus „Chrome“ duo
 <translation id="8174524257672181687">Blokuoti visus slapukus (nerekomenduojama)</translation>
 <translation id="8197543752516192074">Versti puslapį</translation>
 <translation id="8205564605687841303">Atšaukti</translation>
+<translation id="8206354486702514201">Šį nustatymą vykdo jūsų administratorius.</translation>
 <translation id="8225985093977202398">Talp. vaiz. ir fail.</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8281781826761538115">Numatytoji – <ph name="DEFAULT_LOCALE" /></translation>

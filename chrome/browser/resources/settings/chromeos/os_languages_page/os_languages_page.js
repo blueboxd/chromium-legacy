@@ -226,7 +226,14 @@ cr.define('settings', function() {
      * @private
      */
     onInputMethodOptionsTap_(e) {
-      this.languageHelper.openInputMethodOptions(e.model.item.id);
+      if (this.imeOptionsInSettings_) {
+        const params = new URLSearchParams;
+        params.append('id', e.model.item.id);
+        settings.Router.getInstance().navigateTo(
+            settings.routes.OS_LANGUAGES_INPUT_METHOD_OPTIONS, params);
+      } else {
+        this.languageHelper.openInputMethodOptions(e.model.item.id);
+      }
     },
 
     /**

@@ -1686,17 +1686,16 @@ class AndroidDownloadInfobarCounter
   int infobar_count_ = 0;
 };
 
-class TestDownloadLocationDialogBridge : public DownloadLocationDialogBridge {
+class TestDownloadDialogBridge : public DownloadDialogBridge {
  public:
-  TestDownloadLocationDialogBridge() {}
+  TestDownloadDialogBridge() {}
 
-  // DownloadLocationDialogBridge implementation.
-  void ShowDialog(
-      gfx::NativeWindow native_window,
-      int64_t total_bytes,
-      DownloadLocationDialogType dialog_type,
-      const base::FilePath& suggested_path,
-      DownloadLocationDialogBridge::LocationCallback callback) override {
+  // DownloadDialogBridge implementation.
+  void ShowDialog(gfx::NativeWindow native_window,
+                  int64_t total_bytes,
+                  DownloadLocationDialogType dialog_type,
+                  const base::FilePath& suggested_path,
+                  DownloadDialogBridge::LocationCallback callback) override {
     dialog_shown_count_++;
     dialog_type_ = dialog_type;
     if (callback) {
@@ -1731,7 +1730,7 @@ class TestDownloadLocationDialogBridge : public DownloadLocationDialogBridge {
   DownloadTargetDeterminerDelegate::ConfirmationCallback
       dialog_complete_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestDownloadLocationDialogBridge);
+  DISALLOW_COPY_AND_ASSIGN(TestDownloadDialogBridge);
 };
 
 }  // namespace
@@ -1909,10 +1908,10 @@ TEST_F(ChromeDownloadManagerDelegateTest,
           &TestChromeDownloadManagerDelegate::RequestConfirmationConcrete));
   base::FilePath fake_path = GetPathInDownloadDir(FILE_PATH_LITERAL("foo.txt"));
   GURL url("http://example.com");
-  TestDownloadLocationDialogBridge* location_dialog_bridge =
-      new TestDownloadLocationDialogBridge();
-  delegate()->SetDownloadLocationDialogBridgeForTesting(
-      static_cast<DownloadLocationDialogBridge*>(location_dialog_bridge));
+  TestDownloadDialogBridge* location_dialog_bridge =
+      new TestDownloadDialogBridge();
+  delegate()->SetDownloadDialogBridgeForTesting(
+      static_cast<DownloadDialogBridge*>(location_dialog_bridge));
 
   for (const auto& test_case : kTestCases) {
     std::unique_ptr<download::MockDownloadItem> download_item =

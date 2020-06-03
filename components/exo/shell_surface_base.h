@@ -181,6 +181,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old_value) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

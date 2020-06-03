@@ -101,6 +101,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "components/metal_util/switches.h"
 #include "content/browser/gpu/ca_transaction_gpu_coordinator.h"
 #endif
 
@@ -255,6 +256,7 @@ static const char* const kSwitchNames[] = {
     service_manager::switches::kEnableSandboxLogging,
     switches::kDisableAVFoundationOverlays,
     switches::kDisableMacOverlays,
+    switches::kDisableMetalTestShaders,
     switches::kDisableRemoteCoreAnimation,
     switches::kShowMacOverlayBorders,
     switches::kUseHighGPUThreadPriorityForPerfTests,
@@ -1018,6 +1020,10 @@ void GpuProcessHost::MaybeShutdownGpuProcess() {
 void GpuProcessHost::DidUpdateOverlayInfo(
     const gpu::OverlayInfo& overlay_info) {
   GpuDataManagerImpl::GetInstance()->UpdateOverlayInfo(overlay_info);
+}
+
+void GpuProcessHost::DidUpdateHDRStatus(bool hdr_enabled) {
+  GpuDataManagerImpl::GetInstance()->UpdateHDRStatus(hdr_enabled);
 }
 #endif
 

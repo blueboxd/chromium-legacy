@@ -322,18 +322,16 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     base::UmaHistogramSparse(
         "GPU.DirectComposition.CreateSwapChainForComposition", hr);
 
-    // TODO (magchen@): Return fail after disabling DC support so we can restart
-    // a new GPU command buffer with DC disabled.
+    // If CreateSwapChainForComposition fails, we cannot draw to the
+    // browser window. Return false after disabling Direct Composition support
+    // and let the Renderer handle it. Either the GPU command buffer or the GPU
+    // process will be restarted.
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
                   << std::hex << hr;
       g_direct_composition_swap_chain_failed = true;
+      return false;
     }
-
-    // If CreateSwapChainForComposition fails, we cannot draw to the
-    // browser window. Failure here is indicative of an unrecoverable driver
-    // bug.
-    CHECK(SUCCEEDED(hr));
 
     Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain;
     if (SUCCEEDED(swap_chain_.As(&swap_chain))) {

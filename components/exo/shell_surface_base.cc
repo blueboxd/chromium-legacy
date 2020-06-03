@@ -58,6 +58,14 @@
 namespace exo {
 namespace {
 
+// Set aura::client::kSkipImeProcessing to all Surface descendants.
+void SetSkipImeProcessingToDescendentSurfaces(aura::Window* window) {
+  if (Surface::AsSurface(window))
+    window->SetProperty(aura::client::kSkipImeProcessing, true);
+  for (aura::Window* child : window->children())
+    SetSkipImeProcessingToDescendentSurfaces(child);
+}
+
 // The accelerator keys used to close ShellSurfaces.
 const struct {
   ui::KeyboardCode keycode;
@@ -831,6 +839,15 @@ void ShellSurfaceBase::OnWindowDestroying(aura::Window* window) {
       widget_->OnSizeConstraintsChanged();
   }
   window->RemoveObserver(this);
+}
+
+void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
+                                               const void* key,
+                                               intptr_t old_value) {
+  if (widget_ && window == widget_->GetNativeWindow() &&
+      key == aura::client::kSkipImeProcessing) {
+    SetSkipImeProcessingToDescendentSurfaces(window);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -338,6 +338,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5300589172476337783">Ko‘rsatish</translation>
 <translation id="5317780077021120954">Saqlash</translation>
 <translation id="5327248766486351172">Nomi</translation>
+<translation id="5352285283572729470">Bu – boshqariladigan sozlama</translation>
 <translation id="5388358297987318779">Tasvirni ochish</translation>
 <translation id="5407969256130905701">Bekor qilish</translation>
 <translation id="5409365236829784218">Bu faylni ocha oladigan hech qanday ilova yo‘q.</translation>
@@ -375,6 +376,7 @@ Handoff funksiyasini faqatgina Chrome sozlamalarida emas, balki qurilma sozlamal
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 ta xatcho‘p ko‘chirildi</translation>
 <translation id="5897956970858271241">Nusxalangan havolani ochish</translation>
+<translation id="5899314093904173337">Yaqin-atrofdagilarga ulashish uchun ular shu QR kodni kamera yoki QR ilovasi yordamida skanerlashi kerak</translation>
 <translation id="5911030830365207728">Google Tarjimon</translation>
 <translation id="5913600720976431809">Sahifalar tarjimasi parametrlari</translation>
 <translation id="5938160824633642847">Qurilmangizda biroz joy bo‘shating va qaytadan urining.</translation>
@@ -564,6 +566,7 @@ Hisobingiz <ph name="HOSTED_DOMAIN" /> domenida boshqariladi, undan chiqsangiz, 
 <translation id="8174524257672181687">Barcha cookie fayllarni taqiqlash (tavsiya etilmaydi)</translation>
 <translation id="8197543752516192074">Sahifani tarjima qilish</translation>
 <translation id="8205564605687841303">Bekor qilish</translation>
+<translation id="8206354486702514201">Bu parametr administrator tomonidan yoqilgan.</translation>
 <translation id="8225985093977202398">Keshdagi tasvir va fayllar</translation>
 <translation id="8261506727792406068">O‘chirish</translation>
 <translation id="8281781826761538115">Standart - <ph name="DEFAULT_LOCALE" /></translation>

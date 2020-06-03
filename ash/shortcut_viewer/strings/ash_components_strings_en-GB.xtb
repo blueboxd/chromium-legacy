@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">Close the current window</translation>
 <translation id="3407560819924487926">Bring up task manager</translation>
 <translation id="3422679037938588196">Go to the previous match for your search</translation>
-<translation id="344577624355799426"><ph name="ALT" /> or <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Save all open pages in your current window as bookmarks in a new folder</translation>
 <translation id="355103131818127604">Open the link in a new tab in the background</translation>
 <translation id="3622741593887335780">Zoom in (when docked OR full-screen magnifiers enabled)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">Focus on or Highlight the bookmarks bar (if shown)</translation>
 <translation id="7237562915163138771">Type a web address in the address bar, then press <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Put device in sleep mode (suspend)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> or <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">Switch to the next available input method</translation>
 <translation id="743754632698445141">Unpin an app</translation>
 <translation id="7439718573248533901">Delete the next letter (forward delete)</translation>

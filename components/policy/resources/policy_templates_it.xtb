@@ -1179,6 +1179,9 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Ogni voce in elenco specifica un identificatore che viene utilizzato internamente per distinguere i vari account del dispositivo.</translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
+<translation id="2787774054174244402">Impostare il criterio su True impedisce agli utenti la scrittura su dispositivi di archiviazione esterni.
+
+      A meno che lo spazio di archiviazione esterno non sia bloccato, impostando ExternalStorageReadOnly su False o non impostandolo gli utenti possono creare e modificare i file dei dispositivi di archiviazione esterni fisicamente scrivibili. (Puoi bloccare lo spazio di archiviazione esterno impostando ExternalStorageDisable su True.)</translation>
 <translation id="2799297758492717491">Consenti la riproduzione automatica dei contenuti multimediali per una whitelist di pattern URL</translation>
 <translation id="2801065672151277034">Impostazioni di gestione dei certificati</translation>
 <translation id="2801155097555584385">Imposta il valore personalizzato espresso in percentuale raggiunto il quale la batteria avvia la ricarica</translation>
@@ -1303,6 +1306,12 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
+<translation id="299519952839316970">Tieni presente che questo criterio è obsoleto e verrà rimosso nella versione 88 di <ph name="PRODUCT_OS_NAME" />. Le sessioni pubbliche non sono più supportate. Utilizza invece <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> per configurare le sessioni Ospite gestite.
+      Se il criterio è impostato su False, le sessioni Ospite gestite si comporteranno come documentato in https://support.google.com/chrome/a/answer/3017014, la "Sessione pubblica" standard.
+
+      Se il criterio è impostato su True o non viene impostato, le sessioni Ospite gestite assumeranno il comportamento "Sessione gestita" che revoca molte delle restrizioni poste nelle "Sessioni pubbliche" normali.
+
+      Se questo criterio viene impostato, l'utente non può modificarlo o ignorarlo.</translation>
 <translation id="3016255526521614822">Autorizza l'uso di app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Consente di controllare i criteri relativi alla supervisione dei genitori che vengono applicati soltanto agli account di minori.</translation>
 <translation id="3020953534071988875">Se configuri questo criterio, l'autenticazione ambientale verrà attivata o disattivata per i profili Ospite e in modalità in incognito in <ph name="PRODUCT_NAME" />.
@@ -1357,6 +1366,17 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       Se questo criterio non è impostato o se il valore ottenuto in seguito alla sostituzione non è un nome host valido, non verrà impostato alcun nome host nella richiesta DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128">Consente a <ph name="PRODUCT_NAME" />il caricamento di criteri sperimentali.
+
+        AVVISO: i criteri sperimentali non sono supportati e sono soggetti a modifiche o a rimozione senza preavvisone nella versione successiva del browser.
+
+        Un criterio sperimentale può non essere terminato o avere ancora problemi noti o sconosciuti. Può essere modificato o anche rimosso senza preavviso. Attivando i criteri sperimentali, potresti perdere i dati di navigazione o compromettere la sicurezza o la privacy.
+
+        Se un criterio non è nell'elenco e non è stato pubblicato ufficialmente, il suo valore sarà ignorato su Chrome beta e Chrome versione stabile.
+
+        Se un criterio è nell'elenco e non è stato pubblicato ufficialmente, il suo valore verrà applicato.
+
+        Il criterio non ha effetto su quelli già pubblicati.</translation>
 <translation id="3066446511111537292">Consenti agli utenti affiliati di questo dispositivo di utilizzare il processo sideload ADB</translation>
 <translation id="3069958900488014740">Consente di disattivare l'ottimizzazione WPAD (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 
@@ -1686,6 +1706,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3583230441447348508">Consente di specificare un elenco di condivisioni di file di rete preconfigurate.
 
       Ogni voce della norma è un oggetto con due componenti: "share_url" e "mode". "share_url" deve essere l'URL della condivisione e "mode" deve essere "drop_down" o "pre_mount". La modalità "drop_down" indica che il valore "share_url" verrà aggiunto al menu a discesa per il rilevamento delle condivisioni. La modalità "pre_mount" indica che il valore "share_url" verrà montato.</translation>
+<translation id="3584194414857209694">Abilita i criteri sperimentali</translation>
 <translation id="3585177699591644295">Consente di attivare la funzione di accessibilità Seleziona per ascoltare.
 
           Se questo criterio viene impostato su true, la funzione Seleziona per ascoltare sarà sempre attiva.
@@ -1896,6 +1917,19 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
           Se questa norma non viene impostata o è impostata su False, gli utenti potranno trasferire file in Google Drive.</translation>
 <translation id="3915395663995367577">URL di un file proxy .pac</translation>
+<translation id="3917288538553140422">L'impostazione del criterio specifica l'azione da eseguire quando la home directory dell'utente è stata creata con la crittografia ecryptfs. A meno che la home directory con crittografia ecryptfs non esegua la migrazione sulla crittografia ext4, l'esecuzione delle app Android potrebbe interrompersi.
+
+      L'impostazione del criterio su:
+
+      * Migrate (o su opzioni non supportate come AskUser o AskForEcryptfsArcUsers) implica la migrazione automatica delle directory su ext4 all'accesso senza il consenso dell'utente.
+
+      * Wipe o MinimalMigrate implicano che, all'accesso, le nuove home directory con crittografia ext4 sostituiscano le vecchie directory con crittografia ecryptfs. Per aiutare l'utente a evitare di effettuare ripetuti accessi, MinimalMigrates tenta di conservare i token di accesso.
+
+      * DisallowArc o lasciarlo non impostato impedisce la migrazione e interrompe l'esecuzione delle app Android dell'utente.
+
+      Il criterio non si applica agli utenti klosk.
+
+      Avviso: Wipe e MinimalMigrate rimuovono i dati locali.</translation>
 <translation id="3925377537407648234">Imposta fattore di scala e risoluzione del display</translation>
 <translation id="3927137827189017535">Consente di attivare la funzione di accessibilità dei tasti permanenti nella schermata di accesso.
 
@@ -2898,6 +2932,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       È prevista la rimozione di questo criterio nella versione 87 di <ph name="PRODUCT_NAME" /> per Mac OS X, in concomitanza con la rimozione del supporto dello strumento di verifica dei certificati precedente da Mac OS X.
       </translation>
+<translation id="5494917047563607689">Impostarlo su valori inferiori a 1 MB o non impostarlo implica che <ph name="PRODUCT_OS_NAME" /> utilizza la dimensione predefinita delle app di memorizzazione nella cache e delle estensioni per l'installazione da parte di utenti multipli di un singolo dispositivo, impedendo di scaricarlo di nuovo per ogni utente.</translation>
 <translation id="5498045818698736356">Consente di specificare un elenco di siti web che vengono installati automaticamente, senza l'interazione dell'utente, e che non possono essere disinstallati o disattivati dall'utente.
 
       Ogni voce dell'elenco del criterio è un oggetto con un componente obbligatorio "url" e due componenti facoltativi: "default_launch_container" e "create_desktop_shortcut". "url" deve essere l'URL dell'applicazione web da installare, "launch_container" deve essere "window" o "tab" per indicare in che modo l'applicazione web verrà aperta una volta installata e "create_desktop_shortcut" deve essere "true" se è necessario creare un collegamento sul desktop su Linux e Windows. Se "default_launch_container" viene omesso, l'applicazione si aprirà in una scheda per impostazione predefinita. A prescindere dal valore di "default_launch_container", gli utenti possono modificare il contenitore in cui si aprirà l'applicazione. Se "create_desktop_shortcuts" viene omesso, non verranno creati collegamenti sul desktop. Vedi il criterio <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> per bloccare app sulla shelf di Chrome OS.</translation>
@@ -2952,6 +2987,15 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se questo criterio è impostato su False o non viene impostato, gli avvisi verranno mostrati su tali computer o sistemi operativi non supportati.</translation>
 <translation id="5565178130821694365">Inserimento della password richiesto ogni due giorni (48 ore)</translation>
+<translation id="556564360355507488">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare su un dispositivo <ph name="PRODUCT_OS_NAME" /> gestito dall'azienda.
+
+      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_OS_NAME" /> senza inviare una nuova versione, attivando o disattivando in modo selettivo le funzionalità già esistenti.
+
+      Se imposti <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o se non imposti il criterio, è possibile applicare tutte le varianti a <ph name="PRODUCT_OS_NAME" />.
+
+      Se imposti <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1), è possibile applicare a <ph name="PRODUCT_OS_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza o la stabilità.
+
+      L'impostazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti nella schermata di accesso. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_OS_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="5566210228171064229">Consenti la stampa con e senza PIN</translation>
 <translation id="557360560705413259">Quando questa impostazione è attiva, <ph name="PRODUCT_NAME" /> usa il nome comune di un certificato server per associare un nome host se il certificato è privo di un'estensione subjectAlternativeName, purché venga convalidato correttamente e collegato a un certificato CA installato in una posizione locale.
 
@@ -3264,6 +3308,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se questo criterio viene impostato su "Blocca caricamenti e download di grandi dimensioni", <ph name="PRODUCT_NAME" /> si comporta secondo le regole descritte nelle impostazioni "Blocca download di grandi dimensioni" e "Blocca caricamenti di grandi dimensioni".
       </translation>
+<translation id="6082161804984853051">Impostare il criterio fa utilizzare a <ph name="PRODUCT_NAME" /> la directory che fornisci per l'archiviazione dei file memorizzati sul disco, che gli utenti abbiano o meno specificato il flag --disk-cache-dir.
+
+      Se non impostata, <ph name="PRODUCT_NAME" /> utilizza la directory della cache predefinita, ma gli utenti possono modificare l'impostazione tramite il flag della riga di comando --disk-cache-dir.
+
+      <ph name="PRODUCT_NAME" /> gestisce i contenuti della directory principale di un volume. Per prevenire la perdita di dati o altri errori, non impostare questo criterio nella directory principale né sulle directory utilizzate per altri scopi. Vedi le variabili che puoi utilizzare (https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables).</translation>
 <translation id="6083631234867522991">Windows (client Windows):</translation>
 <translation id="608788685013546076">Imposta un valore percentuale per il limite di consumo della batteria per la variazione dei picchi energetici</translation>
 <translation id="6089679180657323464">Consente di stabilire le impostazioni del controller DTC (Diagnostics and Telemetry Controller) wilco.</translation>
@@ -3692,6 +3741,15 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6795485990775913659">Consenti la stampa solo senza PIN</translation>
+<translation id="6799657852647827750">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare in <ph name="PRODUCT_NAME" />.
+
+      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser, attivando o disattivando in modo selettivo le funzionalità già esistenti.
+
+      La configurazione di <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o la mancata configurazione del criterio consentono di applicare al browser tutte le varianti.
+
+      La configurazione di <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1) consente di applicare a <ph name="PRODUCT_NAME" /> esclusivamente correzioni della stabilità o varianti considerate critiche per la sicurezza.
+
+      La configurazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="6810445994095397827">Blocca JavaScript in questi siti</translation>
 <translation id="6813263547126514821">Alimentazione e spegnimento</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
@@ -3972,6 +4030,9 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
           Se questa norma viene impostata su true o non viene impostata, i wakelock dello schermo verranno rispettati per la gestione dell'alimentazione, a meno che la norma AllowWakeLocks sia impostata su false.
 
           Se questa norma viene impostata su false, le richieste di wakelock dello schermo verranno retrocesse a richieste di wakelock di sistema.</translation>
+<translation id="7177293255621000064">Impostare il criterio su True rende tutti i tipi di supporti di archiviazione esterni (unità flash USB, dischi rigidi esterni, schede di memoria SD e di altro tipo, memorie ottiche) non disponibili nel browser di file. Impostare il criterio su False o non impostarlo implica che gli utenti possano utilizzare spazi di archiviazione esterni sul loro dispositivo.
+
+      Nota: il criterio non interessa Google Drive e la memoria interna. Gli utenti possono comunque accedere ai file salvati nella cartella Download.</translation>
 <translation id="7177857088692019405">Sblocco rapido</translation>
 <translation id="718126088895133062">Questo criterio consente di specificare l'ID utente della licenza <ph name="PLUGIN_VM_NAME" /> di questo dispositivo.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5138,6 +5199,11 @@ https://www.w3.org/TR/secure-contexts/
           Se questo criterio non viene impostato ed è supportato sul dispositivo, verrà applicata la modalità di ricarica standard della batteria e l'impostazione non potrà essere modificata dall'utente.
 
           Nota: se specificato, <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> sostituisce questo criterio.</translation>
+<translation id="9055835215213290877">Impostare un criterio su Nessuno fa utilizzare a <ph name="PRODUCT_NAME" /> la dimensione predefinita della cache per l'archiviazione dei file memorizzati nella cache sul disco. L'utente non può modificarla.
+
+      Se imposti un criterio, <ph name="PRODUCT_NAME" /> utilizza la dimensione della cache da te fornita, che gli utenti specifichino o meno il flag --disk-cache-size. (I valori inferiori ad alcuni megabyte vengono arrotondati.)
+
+      Se non è impostata, <ph name="PRODUCT_NAME" /> utilizza la dimensione predefinita. Gli utenti possono modificare l'impostazione utilizzando il flag --disk-cache-size.</translation>
 <translation id="9077227880520270584">Timer accesso automatico all'account locale del dispositivo</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>

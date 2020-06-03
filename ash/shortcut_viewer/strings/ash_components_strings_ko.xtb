@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">현재 창 닫기</translation>
 <translation id="3407560819924487926">작업 관리자 호출</translation>
 <translation id="3422679037938588196">검색과 일치하는 이전 항목으로 이동</translation>
-<translation id="344577624355799426"><ph name="ALT" /> 또는 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">현재 창에서 열린 모든 페이지를 북마크로 새 폴더에 저장</translation>
 <translation id="355103131818127604">백그라운드의 새 탭에서 링크 열기</translation>
 <translation id="3622741593887335780">확대(도킹한 상태이거나 전체 화면 돋보기 사용 중일 때)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">북마크바에 초점 또는 강조표시(표시되는 경우)</translation>
 <translation id="7237562915163138771">검색주소창에 웹 주소를 입력하고 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> 키를 누릅니다.</translation>
 <translation id="7254764037241667478">기기를 절전 모드로 설정(정지)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> 또는 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">사용 가능한 다음 입력 방법으로 전환</translation>
 <translation id="743754632698445141">앱 고정 해제</translation>
 <translation id="7439718573248533901">다음 글자를 삭제(앞으로 삭제)</translation>

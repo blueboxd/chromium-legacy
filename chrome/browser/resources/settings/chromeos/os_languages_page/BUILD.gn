@@ -6,12 +6,20 @@ import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":input_method_options_page",
     ":manage_input_methods_page",
     ":os_add_languages_dialog",
     ":os_languages_page",
     ":os_languages_section",
     "../../languages_page:languages",
     "../../languages_page:languages_browser_proxy",
+    "../../languages_page:languages_types",
+  ]
+}
+
+js_library("input_method_options_page") {
+  deps = [
+    "../..:router",
     "../../languages_page:languages_types",
   ]
 }
@@ -26,6 +34,7 @@ js_library("manage_input_methods_page") {
 
 js_library("os_languages_section") {
   deps = [
+    ":input_method_options_page",
     ":manage_input_methods_page",
     ":os_languages_page",
     "..:os_route",
@@ -73,12 +82,21 @@ js_library("os_add_languages_dialog") {
 #js_type_check("closure_compile_module") {
 #  is_polymer3 = true
 #  deps = [
+#    ":input_method_options_page.m",
 #    ":manage_input_methods_page.m",
 #    ":os_add_languages_dialog.m",
 #    ":os_languages_page.m",
 #    ":os_languages_section.m"
 #  ]
 #}
+
+js_library("input_method_options_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/input_method_options_page.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":input_method_options_page_module" ]
+}
 
 js_library("manage_input_methods_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_languages_page/manage_input_methods_page.m.js" ]
@@ -116,6 +134,7 @@ import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
   public_deps = [
+    ":input_method_options_page_module",
     ":manage_input_methods_page_module",
     ":os_add_languages_dialog_module",
     ":os_languages_page_module",
@@ -144,5 +163,11 @@ polymer_modulizer("os_languages_page") {
 polymer_modulizer("os_languages_section") {
   js_file = "os_languages_section.js"
   html_file = "os_languages_section.html"
+  html_type = "dom-module"
+}
+
+polymer_modulizer("input_method_options_page") {
+  js_file = "input_method_options_page.js"
+  html_file = "input_method_options_page.html"
   html_type = "dom-module"
 }

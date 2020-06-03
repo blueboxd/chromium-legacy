@@ -338,6 +338,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
+<translation id="5352285283572729470">Esta configuración está administrada</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
 <translation id="5407969256130905701">Descartar cambios</translation>
 <translation id="5409365236829784218">Ninguna aplicación instalada puede abrir este archivo.</translation>
@@ -564,6 +565,7 @@ Tu cuenta está gestionada por <ph name="HOSTED_DOMAIN" />, por lo que tus datos
 <translation id="8174524257672181687">Bloquear todas las cookies (no recomendado)</translation>
 <translation id="8197543752516192074">Traducir página</translation>
 <translation id="8205564605687841303">Cancelar</translation>
+<translation id="8206354486702514201">El administrador aplica esta opción.</translation>
 <translation id="8225985093977202398">Archivos e imágenes en caché</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8281781826761538115">Predeterminada: <ph name="DEFAULT_LOCALE" /></translation>

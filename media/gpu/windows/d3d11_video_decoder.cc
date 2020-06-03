@@ -908,97 +908,35 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     return {};
   }
 
+  const auto supported_resolutions =
+      GetSupportedD3D11VideoDecoderResolutions(d3d11_device, gpu_workarounds);
+
   std::vector<SupportedVideoDecoderConfig> configs;
-  // VP9 has no default resolutions since it may not even be supported.
-  ResolutionPair max_h264_resolutions(gfx::Size(1920, 1088), gfx::Size());
-  ResolutionPair max_vp8_resolutions;
-  ResolutionPair max_vp9_profile0_resolutions;
-  ResolutionPair max_vp9_profile2_resolutions;
-  const gfx::Size min_resolution(64, 64);
+  for (const auto& kv : supported_resolutions) {
+    const auto profile = kv.first;
+    if (profile == VP9PROFILE_PROFILE2 &&
+        !base::FeatureList::IsEnabled(kD3D11VideoDecoderVP9Profile2)) {
+      continue;
+    }
 
-  GetResolutionsForDecoders(
-      {D3D11_DECODER_PROFILE_H264_VLD_NOFGT}, d3d11_device, gpu_workarounds,
-      &max_h264_resolutions, &max_vp8_resolutions,
-      &max_vp9_profile0_resolutions, &max_vp9_profile2_resolutions);
+    // TODO(liberato): Add VP8 and AV1 support to D3D11VideoDecoder.
+    if (profile == VP8PROFILE_ANY ||
+        (profile >= AV1PROFILE_MIN && profile <= AV1PROFILE_MAX)) {
+      continue;
+    }
 
-  if (max_h264_resolutions.first.width() > 0) {
-    // Push H264 configs, except HIGH10.
-    // landscape
-    configs.push_back(SupportedVideoDecoderConfig(
-        H264PROFILE_MIN,  // profile_min
-        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
-                                       1),  // profile_max
-        min_resolution,                     // coded_size_min
-        max_h264_resolutions.first,         // coded_size_max
-        false,                              // allow_encrypted
-        false));                            // require_encrypted
-    configs.push_back(SupportedVideoDecoderConfig(
-        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
-                                       1),  // profile_min
-        H264PROFILE_MAX,                    // profile_max
-        min_resolution,                     // coded_size_min
-        max_h264_resolutions.first,         // coded_size_max
-        false,                              // allow_encrypted
-        false));                            // require_encrypted
-
-    // portrait
-    configs.push_back(SupportedVideoDecoderConfig(
-        H264PROFILE_MIN,  // profile_min
-        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE -
-                                       1),  // profile_max
-        min_resolution,                     // coded_size_min
-        max_h264_resolutions.second,        // coded_size_max
-        false,                              // allow_encrypted
-        false));                            // require_encrypted
-    configs.push_back(SupportedVideoDecoderConfig(
-        static_cast<VideoCodecProfile>(H264PROFILE_HIGH10PROFILE +
-                                       1),  // profile_min
-        H264PROFILE_MAX,                    // profile_max
-        min_resolution,                     // coded_size_min
-        max_h264_resolutions.second,        // coded_size_max
-        false,                              // allow_encrypted
-        false));                            // require_encrypted
-  }
-
-  // TODO(liberato): Fill this in for VP8.
-
-  if (max_vp9_profile0_resolutions.first.width()) {
-    // landscape
-    configs.push_back(SupportedVideoDecoderConfig(
-        VP9PROFILE_PROFILE0,                 // profile_min
-        VP9PROFILE_PROFILE0,                 // profile_max
-        min_resolution,                      // coded_size_min
-        max_vp9_profile0_resolutions.first,  // coded_size_max
-        false,                               // allow_encrypted
-        false));                             // require_encrypted
-    // portrait
-    configs.push_back(SupportedVideoDecoderConfig(
-        VP9PROFILE_PROFILE0,                  // profile_min
-        VP9PROFILE_PROFILE0,                  // profile_max
-        min_resolution,                       // coded_size_min
-        max_vp9_profile0_resolutions.second,  // coded_size_max
-        false,                                // allow_encrypted
-        false));                              // require_encrypted
-  }
-
-  if (base::FeatureList::IsEnabled(kD3D11VideoDecoderVP9Profile2)) {
-    if (max_vp9_profile2_resolutions.first.width()) {
-      // landscape
-      configs.push_back(SupportedVideoDecoderConfig(
-          VP9PROFILE_PROFILE2,                 // profile_min
-          VP9PROFILE_PROFILE2,                 // profile_max
-          min_resolution,                      // coded_size_min
-          max_vp9_profile2_resolutions.first,  // coded_size_max
-          false,                               // allow_encrypted
-          false));                             // require_encrypted
-      // portrait
-      configs.push_back(SupportedVideoDecoderConfig(
-          VP9PROFILE_PROFILE2,                  // profile_min
-          VP9PROFILE_PROFILE2,                  // profile_max
-          min_resolution,                       // coded_size_min
-          max_vp9_profile2_resolutions.second,  // coded_size_max
-          false,                                // allow_encrypted
-          false));                              // require_encrypted
+    const auto& resolution_range = kv.second;
+    configs.emplace_back(profile, profile, resolution_range.min_resolution,
+                         resolution_range.max_landscape_resolution,
+                         /*allow_encrypted=*/false,
+                         /*require_encrypted=*/false);
+    if (!resolution_range.max_portrait_resolution.IsEmpty() &&
+        resolution_range.max_portrait_resolution !=
+            resolution_range.max_landscape_resolution) {
+      configs.emplace_back(profile, profile, resolution_range.min_resolution,
+                           resolution_range.max_portrait_resolution,
+                           /*allow_encrypted=*/false,
+                           /*require_encrypted=*/false);
     }
   }
 

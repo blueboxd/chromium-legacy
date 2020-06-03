@@ -338,6 +338,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Jméno</translation>
+<translation id="5352285283572729470">Toto nastavení je spravováno</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5407969256130905701">Zahodit změny</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
@@ -375,6 +376,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5869029295770560994">Dobře, rozumím</translation>
 <translation id="5871497086027727873">Přesunuta 1 položka</translation>
 <translation id="5897956970858271241">Navštívit zkopírovaný odkaz</translation>
+<translation id="5899314093904173337">Chcete-li obsah sdílet s lidmi z okolí, nechte je naskenovat tento QR kód (pomocí fotoaparátu nebo aplikace na skenování QR kódů)</translation>
 <translation id="5911030830365207728">Překladač Google</translation>
 <translation id="5913600720976431809">Možnosti překladu stránky</translation>
 <translation id="5938160824633642847">Zařízení je téměř plné. Uvolněte místo a zkuste to znovu.</translation>
@@ -564,6 +566,7 @@ Protože váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, při odhlá�
 <translation id="8174524257672181687">Blokovat všechny soubory cookie (nedoporučujeme)</translation>
 <translation id="8197543752516192074">Přeložit stránku</translation>
 <translation id="8205564605687841303">Zrušit</translation>
+<translation id="8206354486702514201">Toto nastavení je vyžadováno administrátorem.</translation>
 <translation id="8225985093977202398">Obrázky a soubory v mezipaměti</translation>
 <translation id="8261506727792406068">Smazat</translation>
 <translation id="8281781826761538115">Výchozí – <ph name="DEFAULT_LOCALE" /></translation>

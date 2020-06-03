@@ -2130,6 +2130,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3677106374019847299">Lisää oma palveluntarjoaja</translation>
 <translation id="3677657024345889897">Hiljaisin</translation>
 <translation id="3677911431265050325">Pyydä mobiilisivustoa</translation>
+<translation id="3677959414150797585">Sisältää esimerkiksi sovelluksia ja verkkosivuja. Lähettää tilastoja ehdotusten parantamiseksi vain, jos olet sallinut käyttödatan jakamisen.</translation>
 <translation id="3678156199662914018">Laajennus: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Tekstistä puheeksi ‑ääni</translation>
 <translation id="3681311097828166361">Kiitos palautteestasi. Olet nyt offline-tilassa, joten ilmoituksesi lähetetään myöhemmin.</translation>
@@ -2538,6 +2539,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4154664944169082762">Tunnistetiedostot</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Tämä on lapsen tili, jota hallinnoivat <ph name="CUSTODIAN_EMAIL" /> ja <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Violetti</translation>
 <translation id="4163560723127662357">Tuntematon näppäimistö</translation>
 <translation id="4168015872538332605">Jotkin käyttäjälle <ph name="PRIMARY_EMAIL" /> kuuluvat asetukset on jaettu kanssasi. Nämä asetukset koskevat tiliäsi vain silloin, kun useisiin tileihin kirjautuminen on käytössä.</translation>
 <translation id="4170314459383239649">Tyhjennä poistuttaessa</translation>
@@ -3778,6 +3780,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – kamera tai mikrofoni tallentaa sisältöä</translation>
 <translation id="5841270259333717135">Ethernet-asetukset</translation>
 <translation id="5842497610951477805">Bluetoothin käyttöönotto</translation>
+<translation id="5844574845205796324">Ehdota uutta sisältöä tutkittavaksi</translation>
 <translation id="5846200638699387931">Suhteen syntaksivirhe: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Asenna ja päivitä sovelluksia. Jatkamalla hyväksyt, että laite voi automaattisesti ladata ja asentaa Googlen, operaattorisi tai laitevalmistajan päivityksiä ja sovelluksia, mahdollisesti mobiilidatayhteyden välityksellä. Jotkin näistä sovelluksista tarjoavat sovelluksen sisäisiä ostoksia.</translation>
 <translation id="5849212445710944278">Lisätty aiemmin</translation>
@@ -4343,7 +4346,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6561726789132298588">enter</translation>
 <translation id="656293578423618167">Tiedostonimi tai -polku on liian pitkä. Lyhennä nimeä tai tallenna muuhun sijaintiin.</translation>
 <translation id="6563469144985748109">Ylläpitäjä ei ole hyväksynyt sitä vielä.</translation>
-<translation id="6569934958368283244">Muut henkilöt</translation>
+<translation id="6569934958368283244">Muut ihmiset</translation>
 <translation id="657402800789773160">&amp;Päivitä tämä sivu</translation>
 <translation id="6577284282025554716">Lataus peruutettu: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Salaa synkronoidut salasanat Google-käyttäjänimellä ja ‑salasanalla</translation>
@@ -5825,7 +5828,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> tarvitsee suoritusluvan.</translation>
 <translation id="8466417995783206254">Tämä välilehti toistaa videota kuva kuvassa ‑tilassa.</translation>
 <translation id="8467326454809944210">Valitse toinen kieli</translation>
-<translation id="8470214316007448308">Muut henkilöt</translation>
+<translation id="8470214316007448308">Muut ihmiset</translation>
 <translation id="8470513973197838199">Tallennetut salasanat: <ph name="ORIGIN" /></translation>
 <translation id="8472623782143987204">laitteiston tukema</translation>
 <translation id="8473863474539038330">Osoitteet ja muita tietoja</translation>
@@ -5884,7 +5887,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="85486688517848470">Pidä hakunäppäintä pohjassa, jos haluat vaihtaa ylärivin näppäinten toimintaa.</translation>
 <translation id="8551388862522347954">Käyttöoikeudet</translation>
 <translation id="8551588720239073785">Aika- ja päivämääräasetukset</translation>
-<translation id="8553342806078037065">Hallitse muita henkilöitä</translation>
+<translation id="8553342806078037065">Hallitse muita ihmisiä</translation>
 <translation id="8554899698005018844">Ei kieltä</translation>
 <translation id="8557022314818157177">Jatka suojausavaimen koskettamista, kunnes sormenjälki tallennetaan</translation>
 <translation id="855773602626431402">Hiekkalaatikossa toimimatonta laajennusta estettiin käynnistymästä tällä sivulla.</translation>

@@ -129,9 +129,6 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
   dict->SetKey("pdfFormSaveEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kSaveEditedPDFForm)));
-  dict->SetKey("pdfAnnotationsEnabled",
-               base::Value(base::FeatureList::IsEnabled(
-                   chrome_pdf::features::kPDFAnnotations)));
   dict->SetKey("pdfTwoUpViewEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kPDFTwoUpView)));
@@ -140,11 +137,15 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
                    chrome_pdf::features::kPDFViewerUpdate)));
 
   bool enable_printing = true;
+  bool enable_annotations = false;
 #if defined(OS_CHROMEOS)
   // For Chrome OS, enable printing only if we are not at OOBE.
   enable_printing = !chromeos::LoginDisplayHost::default_host();
+  enable_annotations =
+      base::FeatureList::IsEnabled(chrome_pdf::features::kPDFAnnotations);
 #endif  // defined(OS_CHROMEOS)
   dict->SetKey("printingEnabled", base::Value(enable_printing));
+  dict->SetKey("pdfAnnotationsEnabled", base::Value(enable_annotations));
 #endif  // BUILDFLAG(ENABLE_PDF)
 }
 

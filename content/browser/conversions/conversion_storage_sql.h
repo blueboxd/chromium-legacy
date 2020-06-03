@@ -28,7 +28,9 @@ namespace content {
 // destroyed on the same sequence. The sequence must outlive |this|.
 class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
  public:
-  ConversionStorageSql(const base::FilePath& path_to_database_dir,
+  static void RunInMemoryForTesting();
+
+  ConversionStorageSql(const base::FilePath& path_to_database,
                        std::unique_ptr<Delegate> delegate,
                        const base::Clock* clock);
   ConversionStorageSql(const ConversionStorageSql& other) = delete;
@@ -61,6 +63,8 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   bool InitializeSchema();
 
   void DatabaseErrorCallback(int extended_error, sql::Statement* stmt);
+
+  static bool g_run_in_memory_;
 
   const base::FilePath path_to_database_;
   sql::Database db_;

@@ -81,6 +81,18 @@ public class TrustedWebActivityClient {
          * #checkLocationPermission}.
          */
         void onPermissionCheck(ComponentName answeringApp, boolean enabled);
+
+        /**
+         * Called when {@link #checkNotificationPermission} or {@link #checkLocationPermission}
+         * can't find a TWA to connect to.
+         */
+        default void onNoTwaFound() {}
+    }
+
+    private interface ExecutionCallback {
+        void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
+                throws RemoteException;
+        default void onNoTwaFound() {}
     }
 
     /**
@@ -116,14 +128,24 @@ public class TrustedWebActivityClient {
      *         Ensure that the app has been added to the {@link TrustedWebActivityPermissionManager}
      *         before calling this.
      */
-    public boolean checkNotificationPermission(Origin origin, PermissionCheckCallback callback) {
+    public void checkNotificationPermission(Origin origin, PermissionCheckCallback callback) {
         Resources res = ContextUtils.getApplicationContext().getResources();
         String channelDisplayName = res.getString(R.string.notification_category_group_general);
 
-        return connectAndExecute(origin.uri(),
-                (originCopy, service)
-                        -> callback.onPermissionCheck(service.getComponentName(),
-                                service.areNotificationsEnabled(channelDisplayName)));
+        connectAndExecute(origin.uri(),
+                new ExecutionCallback() {
+                    @Override
+                    public void onConnected(Origin originCopy,
+                            TrustedWebActivityServiceConnection service) throws RemoteException {
+                        callback.onPermissionCheck(service.getComponentName(),
+                                service.areNotificationsEnabled(channelDisplayName));
+                    }
+
+                    @Override
+                    public void onNoTwaFound() {
+                        callback.onNoTwaFound();
+                    }
+                });
     }
 
     /**
@@ -133,25 +155,35 @@ public class TrustedWebActivityClient {
      *         Ensure that the app has been added to the {@link TrustedWebActivityPermissionManager}
      *         before calling this.
      */
-    public boolean checkLocationPermission(Origin origin, PermissionCheckCallback callback) {
-        return connectAndExecute(origin.uri(), (originCopy, service) -> {
-            TrustedWebActivityCallback resultCallback = new TrustedWebActivityCallback() {
-                @Override
-                public void onExtraCallback(String callbackName, @Nullable Bundle bundle) {
-                    boolean granted = false;
-                    if (TextUtils.equals(callbackName, CHECK_LOCATION_PERMISSION_COMMAND_NAME)
-                            && bundle != null) {
-                        granted = bundle.getBoolean(EXTRA_COMMAND_EXECUTION_RESULT);
+    public void checkLocationPermission(Origin origin, PermissionCheckCallback callback) {
+        connectAndExecute(origin.uri(), new ExecutionCallback() {
+            @Override
+            public void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
+                    throws RemoteException {
+                TrustedWebActivityCallback resultCallback = new TrustedWebActivityCallback() {
+                    @Override
+                    public void onExtraCallback(String callbackName, @Nullable Bundle bundle) {
+                        boolean granted = false;
+                        if (TextUtils.equals(callbackName, CHECK_LOCATION_PERMISSION_COMMAND_NAME)
+                                && bundle != null) {
+                            granted = bundle.getBoolean(EXTRA_COMMAND_EXECUTION_RESULT);
+                        }
+                        callback.onPermissionCheck(service.getComponentName(), granted);
                     }
-                    callback.onPermissionCheck(service.getComponentName(), granted);
-                }
-            };
+                };
 
-            Bundle executionResult = service.extraCommand(
-                    CHECK_LOCATION_PERMISSION_COMMAND_NAME, Bundle.EMPTY, resultCallback);
-            // Set permission to false if the service does not know how to handle the extraCommand.
-            if (executionResult == null) {
-                callback.onPermissionCheck(service.getComponentName(), false);
+                Bundle executionResult = service.extraCommand(
+                        CHECK_LOCATION_PERMISSION_COMMAND_NAME, Bundle.EMPTY, resultCallback);
+                // Set permission to false if the service does not know how to handle the
+                // extraCommand.
+                if (executionResult == null) {
+                    callback.onPermissionCheck(service.getComponentName(), false);
+                }
+            }
+
+            @Override
+            public void onNoTwaFound() {
+                callback.onNoTwaFound();
             }
         });
     }
@@ -237,30 +269,37 @@ public class TrustedWebActivityClient {
         connectAndExecute(scope, (origin, service) -> service.cancel(platformTag, platformId));
     }
 
-    private interface ExecutionCallback {
-        void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
-                throws RemoteException;
-    }
-
-    private boolean connectAndExecute(Uri scope, ExecutionCallback callback) {
+    private void connectAndExecute(Uri scope, ExecutionCallback callback) {
         Origin origin = Origin.create(scope);
-        if (origin == null) return false;
+        if (origin == null) {
+            callback.onNoTwaFound();
+            return;
+        }
 
         Set<Token> possiblePackages = mDelegatesManager.getAllDelegateApps(origin);
-        if (possiblePackages == null || possiblePackages.isEmpty()) return false;
+        if (possiblePackages == null || possiblePackages.isEmpty()) {
+            callback.onNoTwaFound();
+            return;
+        }
 
         ListenableFuture<TrustedWebActivityServiceConnection> connection =
                 mConnection.connect(scope, possiblePackages, AsyncTask.THREAD_POOL_EXECUTOR);
         connection.addListener(() -> {
             try {
                 callback.onConnected(origin, connection.get());
-            } catch (RemoteException | ExecutionException | InterruptedException
-                    | SecurityException e) {
+            } catch (RemoteException | InterruptedException e) {
+                // These failures could be transient - a RemoteException indicating that the TWA
+                // got killed as it was answering and an InterruptedException to do with threading
+                // on our side. In this case, there's not anything necessarily wrong with the TWA.
                 Log.w(TAG, "Failed to execute TWA command.", e);
+            } catch (ExecutionException | SecurityException e) {
+                // An ExecutionException means that we could not find a TWA to connect to and a
+                // SecurityException means that the TWA doesn't trust this app. In either cases we
+                // consider that there is no TWA for the scope.
+                Log.w(TAG, "Failed to connect to TWA to execute command", e);
+                callback.onNoTwaFound();
             }
         }, UI_THREAD_EXECUTOR);
-
-        return true;
     }
 
     /**

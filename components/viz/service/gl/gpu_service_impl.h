@@ -210,6 +210,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
                       const GURL& active_url) override;
 #if defined(OS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
+  void DidUpdateHDRStatus(bool hdr_enabled) override;
 #endif
   void StoreShaderToDisk(int client_id,
                          const std::string& key,
@@ -342,10 +343,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // process. If |for_context_loss| is true an error message will be logged.
   void MaybeExit(bool for_context_loss);
 
-  // Update overlay info on the GPU process and send the updated info back
-  // to the browser process if there is a change.
+  // Update overlay info and HDR status on the GPU process and send the updated
+  // info back to the browser process if there is a change.
 #if defined(OS_WIN)
-  void UpdateOverlayInfo();
+  void UpdateOverlayAndHDRInfo();
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
@@ -362,6 +363,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   // Information about general chrome feature support for the GPU.
   gpu::GpuFeatureInfo gpu_feature_info_;
+
+  bool hdr_enabled_ = false;
 
   // What we would have gotten if we haven't fallen back to SwiftShader or
   // pure software (in the viz case).

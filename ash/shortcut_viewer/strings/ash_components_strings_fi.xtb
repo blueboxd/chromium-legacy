@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">Sulje nykyinen ikkuna</translation>
 <translation id="3407560819924487926">Aktivoi tehtävänhallinta</translation>
 <translation id="3422679037938588196">Siirry edelliseen hakutulokseen</translation>
-<translation id="344577624355799426"><ph name="ALT" /> tai <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Tallenna nykyisen ikkunan kaikki välilehdet kirjanmerkeiksi uuteen kansioon</translation>
 <translation id="355103131818127604">Avaa linkki taustalle uudella välilehdellä</translation>
 <translation id="3622741593887335780">Lähennä (telakoinnin aikana TAI koko näytön suurennuslasien ollessa käytössä)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">Kohdista kirjanmerkkipalkkiin tai korosta se (jos näkyvissä)</translation>
 <translation id="7237562915163138771">Kirjoita osoitepalkkiin verkko-osoite ja paina <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Siirtää laitteen virransäästötilaan (keskeytys)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> tai <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">Vaihda seuraavaan käytettävissä olevaan syöttötapaan</translation>
 <translation id="743754632698445141">Irrota sovellus</translation>
 <translation id="7439718573248533901">Poista seuraava kirjain (eteenpäin poistaminen)</translation>

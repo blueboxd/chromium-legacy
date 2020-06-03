@@ -264,7 +264,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       const GURL& site_url);
 
   void InterceptNavigationOnChecksComplete(
-      WebContents::Getter web_contents_getter,
+      int frame_tree_node_id,
       std::unique_ptr<network::ResourceRequest> resource_request,
       std::vector<GURL> url_chain,
       net::CertStatus cert_status,

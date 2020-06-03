@@ -9,6 +9,7 @@ import {Cdd, Destination} from './data/destination.js';
 import {PrinterType} from './data/destination_match.js';
 // <if expr="chromeos">
 import {DestinationPolicies} from './data/destination_policies.js';
+import {PrinterStatus} from './data/printer_status_cros.js';
 // </if>
 import {MeasurementSystemUnitType} from './data/measurement_system.js';
 
@@ -270,6 +271,15 @@ export class NativeLayer {
    */
   signIn(addAccount) {}
 
+  // <if expr="chromeos">
+  /**
+   * Sends a request to the printer with id |printerId| for its current status.
+   * @param {string} printerId
+   * @return {!Promise<!PrinterStatus>}
+   */
+  requestPrinterStatusUpdate(printerId) {}
+  // </if>
+
   /**
    * Notifies the metrics handler to record a histogram value.
    * @param {string} histogram The name of the histogram to record
@@ -374,6 +384,13 @@ export class NativeLayerImpl {
   signIn(addAccount) {
     chrome.send('signIn', [addAccount]);
   }
+
+  // <if expr="chromeos">
+  /** @override */
+  requestPrinterStatusUpdate(printerId) {
+    return sendWithPromise('requestPrinterStatus', printerId);
+  }
+  // </if>
 
   /** @override */
   recordInHistogram(histogram, bucket, maxBucket) {

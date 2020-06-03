@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">密碼已過期</translation>
 <translation id="1630768113285622200">重新啟動及繼續</translation>
 <translation id="1630873818549593964">我們將致力保護您子女的 Classroom 資料。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">儲存在 Google 帳戶中的密碼</translation>
 <translation id="1632803087685957583">讓您調整鍵盤的重複頻率和字詞預測等功能</translation>
 <translation id="1633947793238301227">停用「Google 助理」</translation>
 <translation id="1634783886312010422">您是否已在 <ph name="WEBSITE" /> 上變更此密碼？</translation>
@@ -1578,6 +1579,7 @@
 <translation id="296026337010986570">大功告成！有害軟件已移除。如要重新啟用擴充程式，請前往 &lt;a href="chrome://extensions"&gt;擴充程式&lt;/a&gt;。</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (已延長期限)</translation>
 <translation id="2961695502793809356">按一下到下一頁，按住則可查看記錄</translation>
+<translation id="2962131322798295505">桌布點選器</translation>
 <translation id="2963151496262057773">下列外掛程式無回應：<ph name="PLUGIN_NAME" />　您要中止嗎？</translation>
 <translation id="2964193600955408481">停用 WiFi</translation>
 <translation id="2966937470348689686">管理 Android 偏好設定</translation>
@@ -2127,6 +2129,7 @@
 <translation id="3677106374019847299">輸入自訂的供應商</translation>
 <translation id="3677657024345889897">最小聲</translation>
 <translation id="3677911431265050325">切換至流動網站</translation>
+<translation id="3677959414150797585">包括應用程式、網頁，以及更多。只有在您選擇分享使用情況資料下，系統才會傳送統計資料以改善建議內容。</translation>
 <translation id="3678156199662914018">擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">「文字轉語音」語音</translation>
 <translation id="3681311097828166361">多謝您提供的意見反映。您目前處於離線狀態，系統會稍後傳送您的報告。</translation>
@@ -2538,6 +2541,7 @@
 <translation id="4154664944169082762">指紋</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">這是一個兒童帳戶 (由 <ph name="CUSTODIAN_EMAIL" /> 和 <ph name="SECOND_CUSTODIAN_EMAIL" /> 管理)。</translation>
+<translation id="4159784952369912983">紫色</translation>
 <translation id="4163560723127662357">未知的鍵盤</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> 的部分設定已與您共用。不過只有使用多重登入時，這些設定才會影響您的帳戶。</translation>
 <translation id="4170314459383239649">退出時清除</translation>
@@ -2881,6 +2885,7 @@
 <translation id="4645676300727003670">保留(&amp;K)</translation>
 <translation id="4646675363240786305">連接埠</translation>
 <translation id="4647090755847581616">關閉分頁(&amp;C)</translation>
+<translation id="4647420311443994946">{0,select, tablet{在您登入平板電腦時啟動應用程式}computer{在您登入電腦時啟動應用程式}other{在您登入裝置時啟動應用程式}}</translation>
 <translation id="4647697156028544508">請輸入「<ph name="DEVICE_NAME" />」的 PIN：</translation>
 <translation id="4648491805942548247">權限不足</translation>
 <translation id="4648499713050786492">新增任何使用者前，請先取消鎖定您的個人檔案。</translation>
@@ -2893,6 +2898,7 @@
 <translation id="4660540330091848931">正在調整大小</translation>
 <translation id="4660838440047236328">您的房間配置</translation>
 <translation id="4661407454952063730">應用程式資料泛指應用程式根據開發人員設定所儲存的任何資料，可能包括聯絡人、訊息和相片等資料。</translation>
+<translation id="4662373422909645029">暱稱不可包含數字</translation>
 <translation id="4662788913887017617">透過您的 iPhone 分享此書籤</translation>
 <translation id="4663373278480897665">已允許使用相機</translation>
 <translation id="4664482161435122549">PKCS #12 匯出錯誤</translation>
@@ -3587,6 +3593,7 @@
 <translation id="5585912436068747822">無法格式化</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">正在載入應用程式…</translation>
+<translation id="558984423786125616">設定中已有該連接埠</translation>
 <translation id="5592595402373377407">目前還沒有足夠的數據。</translation>
 <translation id="5593357315997824387">同步檔案</translation>
 <translation id="5595485650161345191">編輯地址</translation>
@@ -3630,6 +3637,7 @@
 <translation id="5639549361331209298">重新載入這個網頁 (按住即可查看更多選項)</translation>
 <translation id="5640133431808313291">管理安全密鑰</translation>
 <translation id="5642508497713047">CRL 簽署者</translation>
+<translation id="5643321261065707929">按用量收費的網絡</translation>
 <translation id="5643620609347735571">清除並繼續</translation>
 <translation id="5644857731242502394">設定已連結的裝置</translation>
 <translation id="5646376287012673985">位置</translation>
@@ -3774,6 +3782,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - 相機或麥克風錄製中</translation>
 <translation id="5841270259333717135">設定以太網絡</translation>
 <translation id="5842497610951477805">藍牙開關</translation>
+<translation id="5844574845205796324">建議可探索的新內容</translation>
 <translation id="5846200638699387931">關聯語法錯誤：<ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">安裝更新和應用程式。繼續操作即代表您同意此裝置亦可自動下載及安裝由 Google、您的流動網絡供應商及裝置製造商提供的更新和應用程式 (可能會耗用流動數據)。其中部分應用程式可能會提供應用程式內購買項目。</translation>
 <translation id="5849212445710944278">已加入</translation>
@@ -5539,6 +5548,7 @@
 <ph name="BEGIN_PARAGRAPH5" />您可在「設定」中關閉此服務。<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN 不相符</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> 正在使用擴充程式的 Proxy 設定</translation>
+<translation id="8097959162767603171">您的管理員必須先接受管理控制台 Chrome 裝置清單中的服務條款。</translation>
 <translation id="8101987792947961127">必須在下次重新啟動時執行 Powerwash</translation>
 <translation id="8102159139658438129">前往「<ph name="LINK_BEGIN" />設定<ph name="LINK_END" />」查看已連接手機的選項</translation>
 <translation id="8104696615244072556">為您的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置執行 Powerwash 並重設為上個版本。</translation>

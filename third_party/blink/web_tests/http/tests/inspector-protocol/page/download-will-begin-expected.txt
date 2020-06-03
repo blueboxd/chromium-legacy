@@ -1,6 +1,37 @@
 Tests we properly emit Page.downloadWillBegin.
 Downloading via a navigation: 
+downloadWillBegin from top frame: {
+    method : Page.downloadWillBegin
+    params : {
+        frameId : <string>
+        guid : <string>
+        suggestedFilename : hello.txt
+        url : http://127.0.0.1:8000/devtools/network/resources/resource.php?download=1
+    }
+    sessionId : <string>
+}
 {
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+Downloading via a navigation of subframe: 
+downloadWillBegin from child frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>
@@ -31,7 +62,38 @@ Downloading via a navigation:
     sessionId : <string>
 }
 Downloading by clicking a link: 
+downloadWillBegin from top frame: {
+    method : Page.downloadWillBegin
+    params : {
+        frameId : <string>
+        guid : <string>
+        suggestedFilename : hello.text
+        url : http://127.0.0.1:8000/devtools/network/resources/resource.php
+    }
+    sessionId : <string>
+}
 {
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : inProgress
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+{
+    method : Page.downloadProgress
+    params : {
+        guid : <string>
+        receivedBytes : <number>
+        state : completed
+        totalBytes : 11
+    }
+    sessionId : <string>
+}
+Downloading by clicking a link in subframe: 
+downloadWillBegin from child frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>
@@ -62,7 +124,7 @@ Downloading by clicking a link:
     sessionId : <string>
 }
 Downloading by clicking a link (no HTTP Content-Disposition header, a[download=""]): 
-{
+downloadWillBegin from top frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>
@@ -73,7 +135,7 @@ Downloading by clicking a link (no HTTP Content-Disposition header, a[download="
     sessionId : <string>
 }
 Downloading by clicking a link (HTTP Content-Disposition header with filename=foo.txt, no a[download]): 
-{
+downloadWillBegin from top frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>
@@ -84,7 +146,7 @@ Downloading by clicking a link (HTTP Content-Disposition header with filename=fo
     sessionId : <string>
 }
 Downloading by clicking a link (HTTP Content-Disposition header with filename=override.txt, a[download="foo.txt"]): 
-{
+downloadWillBegin from top frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>
@@ -95,7 +157,7 @@ Downloading by clicking a link (HTTP Content-Disposition header with filename=ov
     sessionId : <string>
 }
 Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download]): 
-{
+downloadWillBegin from top frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>
@@ -106,7 +168,7 @@ Downloading by clicking a link (HTTP Content-Disposition header without filename
     sessionId : <string>
 }
 Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], js): 
-{
+downloadWillBegin from top frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>
@@ -117,7 +179,7 @@ Downloading by clicking a link (HTTP Content-Disposition header without filename
     sessionId : <string>
 }
 Downloading by clicking a link (HTTP Content-Disposition header without filename, no a[download], image): 
-{
+downloadWillBegin from top frame: {
     method : Page.downloadWillBegin
     params : {
         frameId : <string>

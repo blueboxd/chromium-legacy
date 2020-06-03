@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">Fermer la fenêtre actuelle</translation>
 <translation id="3407560819924487926">Activer le gestionnaire de tâches</translation>
 <translation id="3422679037938588196">Aller au résultat précédent de la recherche</translation>
-<translation id="344577624355799426"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Enregistrer toutes les pages ouvertes dans votre fenêtre actuelle comme favoris dans un nouveau dossier</translation>
 <translation id="355103131818127604">Ouvrir le lien dans un nouvel onglet en arrière-plan</translation>
 <translation id="3622741593887335780">Zoom avant (lorsque l'appareil est installé sur la station d'accueil OU lorsque la loupe en mode plein écran est activée)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">Sélectionner ou mettre en évidence la barre de favoris (si elle est visible)</translation>
 <translation id="7237562915163138771">Entrez une adresse Web dans la barre d'adresse, puis appuyez sur <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Mettre l'appareil en mode Veille (suspendre)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">Passer à la prochaine méthode d'entrée disponible</translation>
 <translation id="743754632698445141">Annuler l'épinglage d'une application</translation>
 <translation id="7439718573248533901">Supprimer la lettre suivante (suppression avant)</translation>

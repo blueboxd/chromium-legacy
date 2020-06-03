@@ -9,9 +9,9 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
@@ -182,16 +182,14 @@ public class NotificationPermissionUpdaterTest {
     /** "Installs" a Trusted Web Activity Service for the origin. */
     @SuppressWarnings("unchecked")
     private void installTrustedWebActivityService(Origin origin, String packageName) {
-        when(mTrustedWebActivityClient.checkNotificationPermission(eq(origin), any()))
-                .thenAnswer(invocation -> {
-                    TrustedWebActivityClient.PermissionCheckCallback callback =
-                            ((TrustedWebActivityClient.PermissionCheckCallback)
-                                            invocation.getArgument(1));
-                    callback.onPermissionCheck(
-                            new ComponentName(packageName, "FakeClass"),
-                            mNotificationsEnabled);
-                    return true;
-                });
+        doAnswer(invocation -> {
+            TrustedWebActivityClient.PermissionCheckCallback callback =
+                    invocation.getArgument(1);
+            callback.onPermissionCheck(
+                    new ComponentName(packageName, "FakeClass"),
+                    mNotificationsEnabled);
+            return true;
+        }).when(mTrustedWebActivityClient).checkNotificationPermission(eq(origin), any());
     }
 
     private void setNotificationsEnabledForClient(boolean enabled) {
@@ -199,8 +197,12 @@ public class NotificationPermissionUpdaterTest {
     }
 
     private void uninstallTrustedWebActivityService(Origin origin) {
-        when(mTrustedWebActivityClient.checkNotificationPermission(eq(origin), any()))
-                .thenReturn(false);
+        doAnswer(invocation -> {
+            TrustedWebActivityClient.PermissionCheckCallback callback =
+                    invocation.getArgument(1);
+            callback.onNoTwaFound();
+            return true;
+        }).when(mTrustedWebActivityClient).checkNotificationPermission(eq(origin), any());
     }
 
     private void verifyPermissionNotUpdated() {

@@ -2130,6 +2130,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3677106374019847299">Vnesite ponudnika po meri</translation>
 <translation id="3677657024345889897">Najtišje</translation>
 <translation id="3677911431265050325">Zahtevaj spletno mesto za mobilno napravo</translation>
+<translation id="3677959414150797585">Vključuje aplikacije, spletne strani in drugo. Pošilja statistične podatke zaradi izboljšanja predlogov, samo če ste izbrali deljenje podatkov o uporabi.</translation>
 <translation id="3678156199662914018">Razširitev: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Glas pretvorbe besedila v govor</translation>
 <translation id="3681311097828166361">Hvala za povratne informacije. Trenutno nimate povezave, zato bo poročilo poslano pozneje.</translation>
@@ -2541,6 +2542,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4154664944169082762">Prstni odtisi</translation>
 <translation id="4157869833395312646">Microsoftovo strežniško nadzorovano šifriranje</translation>
 <translation id="4159681666905192102">To je račun za otroke, ki ga upravljata <ph name="CUSTODIAN_EMAIL" /> in <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Vijolična</translation>
 <translation id="4163560723127662357">Neznana tipkovnica.</translation>
 <translation id="4168015872538332605">Nekatere nastavitve, ki se nanašajo na uporabnika <ph name="PRIMARY_EMAIL" />, so deljene z vami. Te nastavitve vplivajo na vaš račun samo pri uporabi prijave z več računi.</translation>
 <translation id="4170314459383239649">Izbriši ob izhodu</translation>
@@ -3783,6 +3785,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – snemanje fotoaparata ali mikrofona</translation>
 <translation id="5841270259333717135">Konfiguriranje etherneta</translation>
 <translation id="5842497610951477805">Omogočanje Bluetootha</translation>
+<translation id="5844574845205796324">Predlagaj nove vsebine za raziskovanje</translation>
 <translation id="5846200638699387931">Napaka v sintaksi razmerja: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Nameščanje posodobitev in aplikacij. Če nadaljujete, se strinjate, da lahko ta naprava tudi samodejno prenese in namesti posodobitve ter aplikacije, ki jih zagotavljajo Google, vaš operater in proizvajalec vaše naprave – morda s prenosom podatkov v mobilnih omrežjih. Nekatere od teh aplikacij morda ponujajo nakupe v aplikaciji.</translation>
 <translation id="5849212445710944278">Je že dodano</translation>

@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">Geçerli pencereyi kapatır</translation>
 <translation id="3407560819924487926">Görev yöneticisini açar</translation>
 <translation id="3422679037938588196">Aramanızdaki önceki eşleşmeye gider</translation>
-<translation id="344577624355799426"><ph name="ALT" /> veya <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Geçerli pencerenizdeki tüm açık sayfaları yeni bir klasörde yer işaretleri olarak kaydeder</translation>
 <translation id="355103131818127604">Bağlantıyı arka planda yeni bir sekmede açar</translation>
 <translation id="3622741593887335780">Yakınlaştır (yuvaya yerleştirildiğinde VEYA tam ekran büyüteçleri etkin olduğunda)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">Yer işaretleri çubuğunu vurgular veya çubuğa odaklanır (görünür durumdaysa)</translation>
 <translation id="7237562915163138771">Adres çubuğuna bir web adresi yazın, ardından <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> tuşlarına basın</translation>
 <translation id="7254764037241667478">Cihazı uyku moduna geçirir (askıya alma)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> veya <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">Sonraki dil giriş yöntemine geçer</translation>
 <translation id="743754632698445141">Uygulamanın sabitlemesini kaldırır</translation>
 <translation id="7439718573248533901">Sonraki harfi siler (ileri doğru silme)</translation>

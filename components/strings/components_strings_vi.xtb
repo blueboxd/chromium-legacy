@@ -205,6 +205,11 @@
 <translation id="1753706481035618306">Số trang</translation>
 <translation id="1763864636252898013">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được hệ điều hành thiết bị của bạn tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán mạng của Windows<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã đặt tiêu đề
+    yêu cầu phải áp dụng một chính sách nguồn gốc cho tất cả yêu cầu gửi tới máy chủ đó. Tuy nhiên,
+    tiêu đề đó không đúng định dạng. Điều này khiến trình duyệt không hoàn thành được
+    yêu cầu của bạn là truy cập vào <ph name="SITE" />. Nhà điều hành trang web có thể
+    dựa vào chính sách nguồn gốc để định cấu hình bảo mật và các thuộc tính khác cho trang web.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Vui lòng cập nhật cụm mật khẩu đồng bộ hóa của bạn.</translation>
 <translation id="1787142507584202372">Tab đang mở của bạn xuất hiện ở đây</translation>
@@ -228,6 +233,7 @@
 <translation id="1898423065542865115">Lọc</translation>
 <translation id="1901443836186977402">{1,plural, =1{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn ngày hôm qua. Nguyên nhân có thể là do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Ngày tháng trong đồng hồ trên máy tính của bạn hiện là <ph name="CURRENT_DATE" />. Thông tin này có chính xác không? Nếu không, bạn cần sửa lại đồng hồ của hệ thống rồi làm mới trang này.}other{Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này đã hết hạn # ngày trước. Nguyên nhân có thể là do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn. Ngày tháng trong đồng hồ trên máy tính của bạn hiện là <ph name="CURRENT_DATE" />. Thông tin này có chính xác không? Nếu không, bạn cần sửa lại đồng hồ của hệ thống rồi làm mới trang này.}}</translation>
 <translation id="1902576642799138955">Thời gian Có hiệu lực</translation>
+<translation id="191374271204266022">Sao chép ở định dạng JSON</translation>
 <translation id="1914326953223720820">Dịch vụ giải nén</translation>
 <translation id="1915697529809968049">Sử dụng Touch ID thay cho CVC?</translation>
 <translation id="1916770123977586577">Để áp dụng các cài đặt đã cập nhật cho trang web này, hãy tải lại trang</translation>
@@ -705,6 +711,8 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
     Nếu bạn cho rằng thông báo này hiển thị do lỗi, vui lòng truy cập vào https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Dưới 1 MB</translation>
 <translation id="3990250421422698716">Bù dịch chuyển</translation>
+<translation id="3996311196211510766">Trang web <ph name="ORIGIN" /> đã yêu cầu phải áp dụng một chính sách nguồn gốc
+    cho tất cả yêu cầu gửi tới trang web đó. Tuy nhiên, chính sách này hiện không áp dụng được.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 trang web lân cận}other{# trang web lân cận}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Tài liệu PDF chứa {COUNT} trang}other{Tài liệu PDF chứa {COUNT} trang}}</translation>
 <translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
@@ -749,6 +757,11 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="4194250254487269611">Hệ thống không thể lưu thẻ của bạn vào lúc này</translation>
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kiểm tra tường lửa và cấu hình diệt vi-rút<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Máy chủ bạn định truy cập vào, <ph name="ORIGIN" />, đã yêu cầu phải
+    áp dụng một chính sách nguồn gốc cho tất cả yêu cầu gửi tới máy chủ đó. Tuy nhiên, máy chủ đó hiện không
+    cung cấp được chính sách. Điều này khiến trình duyệt không hoàn thành được
+    yêu cầu của bạn là truy cập vào <ph name="SITE" />. Nhà điều hành trang web có thể dựa vào chính sách nguồn gốc
+    để định cấu hình bảo mật và các thuộc tính khác cho trang web.</translation>
 <translation id="421066178035138955">Sử dụng dữ liệu và thiết bị thực tế ảo</translation>
 <translation id="4214357935346142455">cấu hình màn hình đăng nhập</translation>
 <translation id="4215751373031079683">7x9 (Phong bì)</translation>
@@ -1239,6 +1252,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6259156558325130047">&amp;Làm lại sắp xếp lại</translation>
 <translation id="6263376278284652872">Dấu trang trên <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Quay lại an toàn</translation>
+<translation id="6265794661083428563">Sao chép giá trị của chính sách <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Xanh mòng két nhạt</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Các trang từ danh sách đọc của bạn sẽ xuất hiện tại đây</translation>

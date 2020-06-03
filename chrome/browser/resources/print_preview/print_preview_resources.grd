@@ -199,6 +199,10 @@
                    file="data/destination_policies.js"
                    compress="false"
                    type="chrome_html" />
+        <structure name="IDR_PRINT_PREVIEW_DATA_PRINTER_STATUS_CROS_JS"
+                   file="data/printer_status_cros.js"
+                   compress="false"
+                   type="chrome_html" />
       </if>
       <structure name="IDR_PRINT_PREVIEW_DATA_DESTINATION_STORE_JS"
                  file="data/destination_store.js"

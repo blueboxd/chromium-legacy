@@ -26,6 +26,7 @@ export class NativeLayerStub extends TestBrowserProxy {
       'getEulaUrl',
       'hidePreview',
       'print',
+      'requestPrinterStatusUpdate',
       'saveAppState',
       'setupPrinter',
       'showSystemDialog',
@@ -92,6 +93,20 @@ export class NativeLayerStub extends TestBrowserProxy {
 
     /** @private {string} license The PPD license of a destination. */
     this.eulaUrl_ = '';
+
+    /**
+     * @private {!Map<string, !Object>}
+     * A map from printerId to PrinterStatus. Defining the value parameter as
+     * Object instead of PrinterStatus because the PrinterStatus type is CrOS
+     * specific, and this class is used by tests on all platforms.
+     */
+    this.printerStatusMap_ = new Map();
+
+    /** @private {?PromiseResolver} */
+    this.multiplePrinterStatusRequestsPromise_ = null;
+
+    /** @private {number} */
+    this.multiplePrinterStatusRequestsCount_ = 0;
   }
 
   /** @param {number} pageCount The number of pages in the document. */
@@ -341,5 +356,43 @@ export class NativeLayerStub extends TestBrowserProxy {
   /** @param {string} eulaUrl The eulaUrl of the PPD. */
   setEulaUrl(eulaUrl) {
     this.eulaUrl_ = eulaUrl;
+  }
+
+  /**
+   * Sends a request to the printer with id |printerId| for its current status.
+   * @param {string} printerId
+   * @return {!Promise} Promise that resolves returns a printer status.
+   * @override
+   */
+  requestPrinterStatusUpdate(printerId) {
+    this.methodCalled('requestPrinterStatusUpdate');
+    if (this.multiplePrinterStatusRequestsPromise_) {
+      this.multiplePrinterStatusRequestsCount_--;
+      if (this.multiplePrinterStatusRequestsCount_ === 0) {
+        this.multiplePrinterStatusRequestsPromise_.resolve();
+        this.multiplePrinterStatusRequestsPromise_ = null;
+      }
+    }
+
+    return Promise.resolve(this.printerStatusMap_.get(printerId));
+  }
+
+  /**
+   * @param {string} printerId
+   * @param {!Object} printerStatus
+   */
+  addPrinterStatusToMap(printerId, printerStatus) {
+    this.printerStatusMap_.set(printerId, printerStatus);
+  }
+
+  /**
+   * @param {number} count The number of printer status requests to wait for.
+   * @return {!Promise} Promise that resolves after |count| requests.
+   */
+  waitForMultiplePrinterStatusRequests(count) {
+    assert(this.multiplePrinterStatusRequestsPromise_ === null);
+    this.multiplePrinterStatusRequestsCount_ = count;
+    this.multiplePrinterStatusRequestsPromise_ = new PromiseResolver();
+    return this.multiplePrinterStatusRequestsPromise_.promise;
   }
 }

@@ -1093,6 +1093,16 @@ Polymer({
   onInputMethodRemoved_(id) {
     this.updateSupportedInputMethods_();
   },
+
+  /**
+   * @param {string} id Input method ID.
+   * @return {string}
+   */
+  getInputMethodDisplayName(id) {
+    const inputMethod = this.supportedInputMethodMap_.get(id);
+    assert(inputMethod);
+    return inputMethod.displayName;
+  },
   // </if>
 });
 })();

@@ -33,17 +33,15 @@ constexpr size_t kTimestampCacheSize = 128;
 
 // Returns the preferred VA_RT_FORMAT for the given |profile|.
 unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
-  switch (profile) {
-    case VP9PROFILE_PROFILE2:
-    case VP9PROFILE_PROFILE3:
-      return VA_RT_FORMAT_YUV420_10BPP;
-    default:
-      return VA_RT_FORMAT_YUV420;
-  }
+  if (profile == VP9PROFILE_PROFILE2 || profile == VP9PROFILE_PROFILE3)
+    return VA_RT_FORMAT_YUV420_10BPP;
+  return VA_RT_FORMAT_YUV420;
 }
 
-gfx::BufferFormat GetBufferFormat() {
+gfx::BufferFormat GetBufferFormat(VideoCodecProfile profile) {
 #if defined(USE_OZONE)
+  if (profile == VP9PROFILE_PROFILE2 || profile == VP9PROFILE_PROFILE3)
+    return gfx::BufferFormat::P010;
   return gfx::BufferFormat::YUV_420_BIPLANAR;
 #else
   return gfx::BufferFormat::RGBX_8888;
@@ -341,7 +339,7 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
 void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
                                      int32_t buffer_id,
                                      const gfx::Rect& visible_rect,
-                                     const VideoColorSpace& /*color_space*/) {
+                                     const VideoColorSpace& color_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK_EQ(state_, State::kDecoding);
   DVLOGF(3);
@@ -360,16 +358,7 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
   // Find the frame associated with the surface. We won't erase it from
   // |output_frames_| yet, as the decoder might still be using it for reference.
   DCHECK_EQ(output_frames_.count(va_surface->id()), 1u);
-  OutputFrameTask(output_frames_[va_surface->id()], visible_rect, timestamp);
-}
-
-void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
-                                        const gfx::Rect& visible_rect,
-                                        base::TimeDelta timestamp) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK_EQ(state_, State::kDecoding);
-  DCHECK(video_frame);
-  DVLOGF(4);
+  scoped_refptr<VideoFrame> video_frame = output_frames_[va_surface->id()];
 
   // Set the timestamp at which the decode operation started on the
   // |video_frame|. If the frame has been outputted before (e.g. because of VP9
@@ -389,6 +378,10 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
     video_frame = std::move(wrapped_frame);
   }
 
+  const auto gfx_color_space = color_space.ToGfxColorSpace();
+  if (gfx_color_space.IsHDR())
+    video_frame->set_color_space(gfx_color_space);
+
   output_cb_.Run(std::move(video_frame));
 }
 
@@ -403,7 +396,8 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
   gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
   pic_size_ = decoder_->GetPicSize();
   const base::Optional<VideoPixelFormat> format =
-      GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
+      GfxBufferFormatToVideoPixelFormat(
+          GetBufferFormat(decoder_->GetProfile()));
   CHECK(format);
   auto format_fourcc = Fourcc::FromVideoPixelFormat(*format);
   CHECK(format_fourcc);

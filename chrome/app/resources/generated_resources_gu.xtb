@@ -498,6 +498,7 @@
 <translation id="1629314197035607094">પાસવર્ડની સમયસીમા સમાપ્ત થઈ</translation>
 <translation id="1630768113285622200">ફરી શરૂ કરો અને ચાલુ રાખો</translation>
 <translation id="1630873818549593964">વર્ગખંડમાં તમારા બાળકનો ડેટા સુરક્ષિત રાખવામાં આવશે. <ph name="LINK_BEGIN" />વધુ જાણો<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">પાસવર્ડને તમારા Google એકાઉન્ટમાં સ્ટોર કર્યો</translation>
 <translation id="1632803087685957583">તમને તમારા કીબોર્ડ પુનરાવર્તન દર, શબ્દ પૂર્વાનુમાન અને વધુને સમાયોજિત કરવાની મંજૂરી આપે છે</translation>
 <translation id="1633947793238301227">Google Assistant બંધ કરો</translation>
 <translation id="1634783886312010422">શું તમે પહેલેથી <ph name="WEBSITE" /> પર પાસવર્ડ બદલી નાખ્યો હતો?</translation>
@@ -1575,6 +1576,7 @@
 <translation id="296026337010986570">થઈ થયું! નુકસાનકારક સૉફ્ટવેર કાઢી નાખ્યું. એક્સ્ટેંશન ફરી ચાલુ કરવા માટે, &lt;a href="chrome://extensions"&gt;એક્સ્ટેંશન&lt;/a&gt;ની મુલાકાત લો.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (એક્સ્ટેન્શન પ્રદાન કર્યું)</translation>
 <translation id="2961695502793809356">આગળ જવા માટે ક્લિક કરો, ઇતિહાસ જોવા માટે હોલ્ડ કરો</translation>
+<translation id="2962131322798295505">વૉલપેપર પિકર</translation>
 <translation id="2963151496262057773">નીચેનાં પ્લગ-ઇન ચાલતાં નથી: <ph name="PLUGIN_NAME" />તમે તેને રોકવા માંગશો?</translation>
 <translation id="2964193600955408481">Wi-Fi ને અક્ષમ કરો</translation>
 <translation id="2966937470348689686">Android પસંદગીઓનું સંચાલન કરો</translation>
@@ -2535,6 +2537,7 @@
 <translation id="4154664944169082762">ફિંગરપ્રીંટ્સ</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">આ બાળકો માટેનું એકાઉન્ટ છે, જે <ph name="CUSTODIAN_EMAIL" /> અને <ph name="SECOND_CUSTODIAN_EMAIL" /> દ્વારા મેનેજ કરાય છે.</translation>
+<translation id="4159784952369912983">જાંબલી</translation>
 <translation id="4163560723127662357">અજાણીતું કીબોર્ડ</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> ની કેટલીક સેટિંગ તમારી સાથે શેર કરવામાં આવી રહી છે. એકથી વધુ સાઇન ઇનનો ઉપયોગ કરવા પર જ આ સેટિંગ તમારા એકાઉન્ટને પ્રભાવિત કરે છે.</translation>
 <translation id="4170314459383239649">બહાર નીકળવા પર સાફ કરો</translation>
@@ -2878,6 +2881,7 @@
 <translation id="4645676300727003670">&amp;રાખો</translation>
 <translation id="4646675363240786305">પોર્ટ</translation>
 <translation id="4647090755847581616">&amp;Close Tab</translation>
+<translation id="4647420311443994946">{0,select, tablet{તમે તમારા ટૅબ્લેટમાં સાઇન ઇન કરો, ત્યારે આ ઍપ શરૂ કરો}computer{તમે તમારા કમ્પ્યુટરમાં સાઇન ઇન કરો, ત્યારે આ ઍપ શરૂ કરો}other{તમે તમારા ડિવાઇસમાં સાઇન ઇન કરો, ત્યારે આ ઍપ શરૂ કરો}}</translation>
 <translation id="4647697156028544508">કૃપા કરીને "<ph name="DEVICE_NAME" />" માટે પિન દાખલ કરો:</translation>
 <translation id="4648491805942548247">અપર્યાપ્ત પરવાનગીઓ</translation>
 <translation id="4648499713050786492">કોઇ વ્યક્તિને ઉમેરતા પહેલાં કૃપા કરીને તમારી પ્રોફાઇલ અનલૉક કરો.</translation>
@@ -2890,6 +2894,7 @@
 <translation id="4660540330091848931">કદ બદલી રહ્યાં છીએ</translation>
 <translation id="4660838440047236328">તમારા રૂમનો લેઆઉટ</translation>
 <translation id="4661407454952063730">ઍપનો ડેટા એ (ડેવલપર સેટિંગના આધારે) ઍપમાં સાચવેલો કોઈપણ ડેટા હોઈ શકે છે, જેમાં સંપર્કો, સંદેશા અને ફોટા જેવો સંભવિત રૂપે સંવેદનશીલ ડેટાનો સમાવેશ થાય છે.</translation>
+<translation id="4662373422909645029">ઉપનામમાં સંખ્યા ન હોઈ શકે</translation>
 <translation id="4662788913887017617">તમારા iPhone સાથે આ બુકમાર્ક શેર કરો</translation>
 <translation id="4663373278480897665">કૅમેરાને મંજૂરી</translation>
 <translation id="4664482161435122549">PKCS #12 નિકાસ ભૂલ</translation>
@@ -3584,6 +3589,7 @@
 <translation id="5585912436068747822">ફોર્મેટિંગ નિષ્ફળ થયું</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">ઍપ્લિકેશનો લોડ કરી રહ્યું છે...</translation>
+<translation id="558984423786125616">સેટિંગમાં પહેલેથી જ પોર્ટ છે</translation>
 <translation id="5592595402373377407">હજુ સુધી પર્યાપ્ત ડેટા ઉપલબ્ધ નથી.</translation>
 <translation id="5593357315997824387">મારી ફાઇલો સિંક કરો</translation>
 <translation id="5595485650161345191">ઍડ્રેસમાં ફેરફાર કરો</translation>
@@ -3628,6 +3634,7 @@
 <translation id="5639549361331209298">આ પૃષ્ઠને ફરીથી લોડ કરો, વધુ વિકલ્પો જોવા માટે હોલ્ડ કરો</translation>
 <translation id="5640133431808313291">સુરક્ષા કોડને મેનેજ કરો</translation>
 <translation id="5642508497713047">CRL હસ્તાક્ષરકર્તા</translation>
+<translation id="5643321261065707929">મીટર્ડ (ડેટા નિયંત્રણ) નેટવર્ક</translation>
 <translation id="5643620609347735571">સાફ કરો અને ચાલુ રાખો</translation>
 <translation id="5644857731242502394">કનેક્ટ થયેલા ડિવાઇસનું સેટઅપ કરવાના સેટિંગ</translation>
 <translation id="5646376287012673985">સ્થાન</translation>
@@ -5532,6 +5539,7 @@ USB ડિવાઇસ</translation>
     <ph name="BEGIN_PARAGRAPH5" />તમે સેટિંગમાં આ સેવા બંધ કરી શકો છો.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN મેળ ખાતાં નથી</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> એક્સ્ટેંશનનાં પ્રૉક્સી સેટિંગનો ઉપયોગ કરી રહ્યું છે</translation>
+<translation id="8097959162767603171">તમારા વ્યવસ્થાપકે એડમિન કન્સોલ Chrome ડિવાઇસની સૂચિમાં પહેલા સેવાની શરતો સ્વીકારવી આવશ્યક છે.</translation>
 <translation id="8101987792947961127">આગલા રીબૂટ પર Powerwash આવશ્યક છે</translation>
 <translation id="8102159139658438129">તમારા કનેક્ટ કરેલા ફોન માટેના વિકલ્પો જોવા માટે <ph name="LINK_BEGIN" />સેટિંગ<ph name="LINK_END" /> પર જાઓ</translation>
 <translation id="8104696615244072556">તમારા <ph name="IDS_SHORT_PRODUCT_NAME" /> ડિવાઇસને Powerwash કરો અને પાછલા વર્ઝન પર પાછા ફરો.</translation>

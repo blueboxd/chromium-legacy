@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Mật khẩu đã hết hạn</translation>
 <translation id="1630768113285622200">Khởi động lại và tiếp tục</translation>
 <translation id="1630873818549593964">Dữ liệu của con bạn trong Lớp học sẽ được bảo vệ. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Mật khẩu đã lưu trữ trong Tài khoản Google của bạn</translation>
 <translation id="1632803087685957583">Cho phép bạn điều chỉnh tốc độ lặp lại, tính năng dự đoán từ và các chức năng khác của bàn phím</translation>
 <translation id="1633947793238301227">Tắt Trợ lý Google</translation>
 <translation id="1634783886312010422">Bạn đã thay đổi mật khẩu này trên trang <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="296026337010986570">Xong! Đã xóa phần mềm độc hại. Để bật lại tiện ích, hãy truy cập vào mục &lt;a href="chrome://extensions"&gt;Tiện ích&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (đã cung cấp tiện ích)</translation>
 <translation id="2961695502793809356">Nhấp vào để tiến, giữ để xem lịch sử</translation>
+<translation id="2962131322798295505">Bộ chọn hình nền</translation>
 <translation id="2963151496262057773">Plugin sau không hồi đáp: <ph name="PLUGIN_NAME" />Bạn có muốn dừng lại không?</translation>
 <translation id="2964193600955408481">Tắt Wi-Fi</translation>
 <translation id="2966937470348689686">Quản lý tùy chọn Android</translation>
@@ -2539,6 +2541,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4154664944169082762">Dấu vân tay</translation>
 <translation id="4157869833395312646">Mã hóa Cổng Máy chủ của Microsoft</translation>
 <translation id="4159681666905192102">Đây là tài khoản cho trẻ em do <ph name="CUSTODIAN_EMAIL" /> và <ph name="SECOND_CUSTODIAN_EMAIL" /> quản lý.</translation>
+<translation id="4159784952369912983">Tím</translation>
 <translation id="4163560723127662357">Bàn phím không xác định</translation>
 <translation id="4168015872538332605">Một số cài đặt thuộc về <ph name="PRIMARY_EMAIL" /> đang được chia sẻ với bạn. Những cài đặt này chỉ ảnh hưởng đến tài khoản của bạn khi sử dụng đăng nhập nhiều tài khoản.</translation>
 <translation id="4170314459383239649">Xóa khi thoát</translation>
@@ -2882,6 +2885,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4645676300727003670">&amp;Giữ</translation>
 <translation id="4646675363240786305">Cổng</translation>
 <translation id="4647090755847581616">&amp;Đóng tab</translation>
+<translation id="4647420311443994946">{0,select, tablet{Khởi động ứng dụng khi bạn đăng nhập vào máy tính bảng}computer{Khởi động ứng dụng khi bạn đăng nhập vào máy tính}other{Khởi động ứng dụng khi bạn đăng nhập vào thiết bị}}</translation>
 <translation id="4647697156028544508">Vui lòng nhập PIN cho "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Không đủ quyền</translation>
 <translation id="4648499713050786492">Vui lòng mở khóa hồ sơ của bạn trước khi thêm một người.</translation>
@@ -2894,6 +2898,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4660540330091848931">Đang thay đổi dung lượng</translation>
 <translation id="4660838440047236328">cách bài trí phòng của bạn</translation>
 <translation id="4661407454952063730">Dữ liệu ứng dụng có thể là bất kỳ dữ liệu nào mà một ứng dụng đã lưu (dựa trên các tùy chọn cài đặt của nhà phát triển), bao gồm các dữ liệu như danh bạ, tin nhắn và ảnh.</translation>
+<translation id="4662373422909645029">Biệt hiệu không được bao gồm số</translation>
 <translation id="4662788913887017617">Chia sẻ dấu trang này với iPhone của bạn</translation>
 <translation id="4663373278480897665">Cho phép máy ảnh</translation>
 <translation id="4664482161435122549">Lỗi xuất PKCS #12</translation>
@@ -3588,6 +3593,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5585912436068747822">Định dạng không thành công</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Đang tải ứng dụng...</translation>
+<translation id="558984423786125616">Cổng đã tồn tại trong phần cài đặt</translation>
 <translation id="5592595402373377407">Chưa có đủ dữ liệu.</translation>
 <translation id="5593357315997824387">Đồng bộ hóa các tệp</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
@@ -3631,6 +3637,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5639549361331209298">Tải lại trang này, giữ để xem các tùy chọn khác</translation>
 <translation id="5640133431808313291">Quản lý khóa bảo mật</translation>
 <translation id="5642508497713047">Trình ký CRL</translation>
+<translation id="5643321261065707929">Mạng có đo lượng dữ liệu</translation>
 <translation id="5643620609347735571">Xóa và tiếp tục</translation>
 <translation id="5644857731242502394">Thiết lập thiết bị đã kết nối</translation>
 <translation id="5646376287012673985">Vị trí</translation>
@@ -5540,6 +5547,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
     <ph name="BEGIN_PARAGRAPH5" />Bạn có thể tắt dịch vụ này trong mục Cài đặt.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Mã PIN không khớp</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> sẽ dùng tùy chọn cài đặt proxy của một tiện ích</translation>
+<translation id="8097959162767603171">Trước tiên, quản trị viên của bạn phải chấp nhận điều khoản dịch vụ trong danh sách thiết bị Chrome trên Bảng điều khiển dành cho quản trị viên.</translation>
 <translation id="8101987792947961127">Yêu cầu Powerwash trong lần khởi động lại tiếp theo</translation>
 <translation id="8102159139658438129">Chuyển tới mục <ph name="LINK_BEGIN" />Cài đặt<ph name="LINK_END" /> để xem các tùy chọn cho điện thoại đã kết nối</translation>
 <translation id="8104696615244072556">Powerwash thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> của bạn và quay lại phiên bản trước.</translation>

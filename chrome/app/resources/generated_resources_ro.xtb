@@ -2130,6 +2130,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3677106374019847299">Introdu un furnizor personalizat</translation>
 <translation id="3677657024345889897">Cel mai încet</translation>
 <translation id="3677911431265050325">Solicită site mobil</translation>
+<translation id="3677959414150797585">Include aplicații, pagini web și altele. Trimite statistici pentru a îmbunătăți sugestiile numai dacă ai ales să permiți accesul la datele de utilizare.</translation>
 <translation id="3678156199662914018">Extensie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Vocea pentru redarea vocală a textului</translation>
 <translation id="3681311097828166361">Îți mulțumim pentru feedback. Acum ești offline, iar raportul va fi trimis mai târziu.</translation>
@@ -2541,6 +2542,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4154664944169082762">Amprente digitale</translation>
 <translation id="4157869833395312646">Criptografie Microsoft bazată pe server</translation>
 <translation id="4159681666905192102">Acesta este un cont pentru copii gestionat de <ph name="CUSTODIAN_EMAIL" /> și de <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Mov</translation>
 <translation id="4163560723127662357">Tastatură necunoscută</translation>
 <translation id="4168015872538332605">Aveți acces la anumite setări care aparțin utilizatorului <ph name="PRIMARY_EMAIL" />. Aceste setări vă afectează contul numai când folosiți conectarea multiplă.</translation>
 <translation id="4170314459383239649">Șterge la ieșire</translation>
@@ -3781,6 +3783,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – camera foto sau microfonul înregistrează</translation>
 <translation id="5841270259333717135">Configurează setările de Ethernet</translation>
 <translation id="5842497610951477805">Activează Bluetooth</translation>
+<translation id="5844574845205796324">Sugerează conținut nou de explorat</translation>
 <translation id="5846200638699387931">Eroare de sintaxă a relației: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instalează actualizări și aplicații. Dacă alegi să continui, accepți ca acest dispozitiv să descarce și să instaleze automat actualizări și aplicații de la Google, de la operatorul tău și de la producătorul dispozitivului, posibil folosind datele mobile. Unele dintre aceste aplicații pot oferi achiziții în aplicație.</translation>
 <translation id="5849212445710944278">Adăugat deja</translation>

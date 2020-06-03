@@ -2126,6 +2126,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3677106374019847299">Wpisz dostawcę niestandardowego</translation>
 <translation id="3677657024345889897">Najciszej</translation>
 <translation id="3677911431265050325">Otwórz stronę mobilną</translation>
+<translation id="3677959414150797585">Obejmuje między innymi aplikacje i strony internetowe. Wysyła statystyki, by ulepszać podpowiedzi, tylko wtedy, gdy zostało wybrane udostępnianie danych o korzystaniu.</translation>
 <translation id="3678156199662914018">Rozszerzenie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Głos zamiany tekstu na mowę</translation>
 <translation id="3681311097828166361">Dziękujemy za opinię. Jesteś teraz offline, więc Twoje zgłoszenie zostanie wysłane później.</translation>
@@ -2537,6 +2538,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4154664944169082762">Odciski cyfrowe</translation>
 <translation id="4157869833395312646">Kryptografia Server Gated Cryptography firmy Microsoft</translation>
 <translation id="4159681666905192102">To jest konto dla dzieci, którym zarządzają <ph name="CUSTODIAN_EMAIL" /> i <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Purpurowy</translation>
 <translation id="4163560723127662357">Nieznana klawiatura</translation>
 <translation id="4168015872538332605">Niektóre ustawienia należące do <ph name="PRIMARY_EMAIL" /> zostały Ci udostępnione. Mają one wpływ na Twoje konto, tylko jeśli korzystasz z wielokrotnego logowania.</translation>
 <translation id="4170314459383239649">Wyczyść przy zamykaniu</translation>
@@ -3777,6 +3779,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – nagrywanie kamerą lub mikrofonem</translation>
 <translation id="5841270259333717135">Konfiguracja sieci Ethernet</translation>
 <translation id="5842497610951477805">Włącz Bluetooth</translation>
+<translation id="5844574845205796324">Sugeruj nowe treści, z którymi warto się zapoznać</translation>
 <translation id="5846200638699387931">Błąd składni relacji: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instaluj aktualizacje i aplikacje. Kontynuując, zgadzasz się, by to urządzenie mogło automatycznie pobierać oraz instalować aktualizacje i aplikacje od Google, operatora sieci komórkowej i producenta urządzenia, oraz by mogło używać w tym celu komórkowej transmisji danych. Niektóre z tych aplikacji mogą pozwalać na robienie w nich zakupów.</translation>
 <translation id="5849212445710944278">Już dodano</translation>

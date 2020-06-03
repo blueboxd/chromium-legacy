@@ -338,6 +338,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5300589172476337783">Göstərin</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5327248766486351172">Ad</translation>
+<translation id="5352285283572729470">Bu ayar idarə edilir</translation>
 <translation id="5388358297987318779">Şəkli Açın</translation>
 <translation id="5407969256130905701">Dəyişiklikləri ləğv edin</translation>
 <translation id="5409365236829784218">Bu faylı aça bilən başqa quraşdırılmış tətbiq yoxdur.</translation>
@@ -564,6 +565,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə,
 <translation id="8174524257672181687">Bütün kukiləri bloklayın (tövsiyə edilmir)</translation>
 <translation id="8197543752516192074">Səhifəni tərcümə edin</translation>
 <translation id="8205564605687841303">Ləğv edin</translation>
+<translation id="8206354486702514201">Bu ayar administratorunuz tərəfindən icra olunur.</translation>
 <translation id="8225985093977202398">Keşlənmiş Şəkillər və Fayllar</translation>
 <translation id="8261506727792406068">Silin</translation>
 <translation id="8281781826761538115">Defolt - <ph name="DEFAULT_LOCALE" /></translation>

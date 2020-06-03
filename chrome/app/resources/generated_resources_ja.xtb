@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">パスワードの有効期限が切れています</translation>
 <translation id="1630768113285622200">再起動して続行</translation>
 <translation id="1630873818549593964">Classroom 内のお子様のデータは保護されます。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">パスワードは Google アカウントに保存されています</translation>
 <translation id="1632803087685957583">キーボードのリピート間隔、後続語予測などを設定できます</translation>
 <translation id="1633947793238301227">Google アシスタントの無効化</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" /> でこのパスワードを変更しましたか？</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">有害なソフトウェアが削除されました。拡張機能をもう一度使用するには、&lt;a href="chrome://extensions"&gt;拡張機能&lt;/a&gt;のページにアクセスしてください。</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（期限延長済み）</translation>
 <translation id="2961695502793809356">クリックすると次に進みます。押したまま待つと履歴が表示されます。</translation>
+<translation id="2962131322798295505">壁紙選択ツール</translation>
 <translation id="2963151496262057773">プラグイン（<ph name="PLUGIN_NAME" />）は応答していません。強制終了しますか？</translation>
 <translation id="2964193600955408481">Wi-Fi を無効にする</translation>
 <translation id="2966937470348689686">Android 設定を管理</translation>
@@ -2539,6 +2541,7 @@
 <translation id="4154664944169082762">指紋</translation>
 <translation id="4157869833395312646">Microsoft SGC（Server Gated Cryptography）</translation>
 <translation id="4159681666905192102">これは <ph name="CUSTODIAN_EMAIL" /> と <ph name="SECOND_CUSTODIAN_EMAIL" /> によって管理されている子供向けのアカウントです。</translation>
+<translation id="4159784952369912983">パープル</translation>
 <translation id="4163560723127662357">不明なキーボード</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> に帰属する設定の一部を共有しています。これらの設定は、マルチログインを使用した場合にのみこのアカウントに適用されます。</translation>
 <translation id="4170314459383239649">終了時に削除</translation>
@@ -2882,6 +2885,7 @@
 <translation id="4645676300727003670">継続(&amp;K)</translation>
 <translation id="4646675363240786305">ポート</translation>
 <translation id="4647090755847581616">タブを閉じる(&amp;C)</translation>
+<translation id="4647420311443994946">{0,select, tablet{タブレットにログインしたらアプリを開始する}computer{パソコンにログインしたらアプリを開始する}other{デバイスにログインしたらアプリを開始する}}</translation>
 <translation id="4647697156028544508">「<ph name="DEVICE_NAME" />」の PIN を入力してください:</translation>
 <translation id="4648491805942548247">十分な権限がありません</translation>
 <translation id="4648499713050786492">ユーザーを追加するにはまずプロフィールのロックを解除してください。</translation>
@@ -2894,6 +2898,7 @@
 <translation id="4660540330091848931">サイズを変更しています</translation>
 <translation id="4660838440047236328">あなたの部屋のレイアウト</translation>
 <translation id="4661407454952063730">アプリのデータとは、（デベロッパーの設定に基づいて）アプリが保存したデータのことで、連絡先、メッセージ、写真などのデータが含まれます。</translation>
+<translation id="4662373422909645029">ニックネームに数字を含めることはできません</translation>
 <translation id="4662788913887017617">このブックマークは iPhone と共有できます</translation>
 <translation id="4663373278480897665">カメラを使用できます</translation>
 <translation id="4664482161435122549">PKCS #12 エクスポート エラー</translation>
@@ -3588,6 +3593,7 @@
 <translation id="5585912436068747822">フォーマット エラー</translation>
 <translation id="5588033542900357244">（<ph name="RATING_COUNT" />）</translation>
 <translation id="558918721941304263">アプリを読み込んでいます...</translation>
+<translation id="558984423786125616">ポートは設定にすでにあります</translation>
 <translation id="5592595402373377407">利用可能なデータがまだ十分にありません。</translation>
 <translation id="5593357315997824387">ファイルを同期</translation>
 <translation id="5595485650161345191">住所の編集</translation>
@@ -3631,6 +3637,7 @@
 <translation id="5639549361331209298">このページを再読み込みするには、詳細オプションが表示されるまで押し続けます</translation>
 <translation id="5640133431808313291">セキュリティ キーの管理</translation>
 <translation id="5642508497713047">CRL の署名者</translation>
+<translation id="5643321261065707929">従量制ネットワーク</translation>
 <translation id="5643620609347735571">削除して続行</translation>
 <translation id="5644857731242502394">接続済みデバイスの設定</translation>
 <translation id="5646376287012673985">保存先</translation>
@@ -5540,6 +5547,7 @@
     <ph name="BEGIN_PARAGRAPH5" />このサービスは [設定] でオフにできます。<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN が一致しません</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> は拡張機能のプロキシ設定を使用しています</translation>
+<translation id="8097959162767603171">まず管理者の方に管理コンソールの Chrome デバイスリストの利用規約に同意していただく必要があります。</translation>
 <translation id="8101987792947961127">次回の再起動時に Powerwash が必要</translation>
 <translation id="8102159139658438129">接続しているスマートフォン用のオプションを表示するには [<ph name="LINK_BEGIN" />設定<ph name="LINK_END" />] に移動してください</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> デバイスで Powerwash を実行し、以前のバージョンに戻します。</translation>

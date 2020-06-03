@@ -733,6 +733,9 @@ class StoragePartitionImplTest : public testing::Test {
   StoragePartitionImplTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
+    // Configures the Conversion API to run in memory to speed up it's
+    // initialization and avoid timeouts. See https://crbug.com/1080764.
+    ConversionManagerImpl::RunInMemoryForTesting();
     feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
   }
 

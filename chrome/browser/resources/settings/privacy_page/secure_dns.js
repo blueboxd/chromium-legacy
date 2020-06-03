@@ -189,7 +189,7 @@ Polymer({
     this.showRadioGroup_ =
         /** @type {boolean} */ (this.secureDnsToggle_.value);
     if (this.secureDnsRadio_ === SecureDnsMode.SECURE &&
-        this.$.secureResolverSelect.value === 'custom') {
+        !this.$.secureResolverSelect.value) {
       this.$.secureDnsInput.focus();
     }
     this.updateDnsPrefs_(
@@ -205,7 +205,7 @@ Polymer({
    */
   onRadioSelectionChanged_: function(event) {
     if (event.detail.value === SecureDnsMode.SECURE &&
-        this.$.secureResolverSelect.value === 'custom') {
+        !this.$.secureResolverSelect.value) {
       this.$.secureDnsInput.focus();
     }
     this.updateDnsPrefs_(event.detail.value);
@@ -230,7 +230,7 @@ Polymer({
         // was not specified, the custom entry may be invalid or may not
         // have passed validation yet, and we should not update either the
         // underlying mode or templates prefs.
-        if (this.$.secureResolverSelect.value === 'custom') {
+        if (!this.$.secureResolverSelect.value) {
           if (!templates) {
             return;
           }
@@ -276,7 +276,7 @@ Polymer({
     }
     this.updatePrivacyPolicyLine_();
 
-    if (this.$.secureResolverSelect.value === 'custom') {
+    if (!this.$.secureResolverSelect.value) {
       this.$.secureDnsInput.focus();
     }
 
@@ -362,8 +362,8 @@ Polymer({
     }
 
     // Otherwise, select the custom option.
-    this.$.secureResolverSelect.value = 'custom';
-    this.lastResolverOption_ = 'custom';
+    this.$.secureResolverSelect.value = '';
+    this.lastResolverOption_ = '';
 
     // Only update the custom input field if the templates are non-empty.
     // Otherwise, we may be clearing a previous value that the user wishes to
@@ -381,7 +381,7 @@ Polymer({
   updatePrivacyPolicyLine_: function() {
     // If the selected item is the custom provider option, hide the privacy
     // policy line.
-    if (this.$.secureResolverSelect.value === 'custom') {
+    if (!this.$.secureResolverSelect.value) {
       this.$.privacyPolicy.style.display = 'none';
       this.$.secureDnsInput.style.display = 'block';
       return;

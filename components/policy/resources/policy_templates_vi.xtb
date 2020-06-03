@@ -1234,6 +1234,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Mỗi mục nhập trong danh sách chỉ định một định danh, được sử dụng nội bộ để cho biết riêng các tài khoản trong thiết bị khác nhau.</translation>
 <translation id="2769952903507981510">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
 <translation id="2787173078141616821">Báo cáo thông tin về trạng thái của Android</translation>
+<translation id="2787774054174244402">Nếu bạn đặt chính sách này thành True, thì người dùng sẽ không ghi được vào thiết bị lưu trữ bên ngoài.
+
+      Nếu bạn không chặn bộ nhớ ngoài và đặt chính sách ExternalStorageReadOnly thành False hoặc không đặt chính sách này, thì người dùng có thể tạo hoặc sửa đổi tệp của thiết bị lưu trữ bên ngoài, có thể ghi được. (Bạn có thể chặn bộ nhớ ngoài bằng cách đặt chính sách ExternalStorageDisable thành True.)</translation>
 <translation id="2799297758492717491">Cho phép tự động phát nội dung nghe nhìn thuộc danh sách các mẫu URL được phép</translation>
 <translation id="2801065672151277034">Các tùy chọn quản lý chứng chỉ</translation>
 <translation id="2801155097555584385">Đặt mức phần trăm bắt đầu sạc pin tùy chỉnh</translation>
@@ -1358,6 +1361,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
+<translation id="299519952839316970">Lưu ý rằng chúng tôi không dùng chính sách này nữa và sẽ xóa khỏi <ph name="PRODUCT_OS_NAME" /> phiên bản 88. Phiên công khai không còn được hỗ trợ. Vui lòng sử dụng <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> để định cấu hình phiên khách được quản lý.
+      Nếu bạn đặt chính sách này thành false, thì phiên khách được quản lý sẽ hoạt động như nêu tại https://support.google.com/chrome/a/answer/3017014 – "Phiên công khai" tiêu chuẩn.
+
+      Nếu bạn đặt chính sách này thành true hoặc không đặt, thì phiên khách được quản lý sẽ hoạt động như "Phiên được quản lý", trong đó nhiều nội dung hạn chế áp dụng cho "Phiên công khai" thông thường sẽ được gỡ bỏ.
+
+      Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách này.</translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
 <translation id="3020064401262077616">Kiểm soát các chính sách về sự giám sát của cha mẹ (chỉ áp dụng cho tài khoản người dùng là trẻ em).</translation>
 <translation id="3020953534071988875">Việc định cấu hình chính sách này sẽ cho phép/không cho phép xác thực môi trường xung quanh đối với các cấu hình chế độ Khách và cấu hình chế độ Ẩn danh trong <ph name="PRODUCT_NAME" />.
@@ -1413,6 +1422,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn không đặt chính sách này hoặc giá trị sau khi thay thế không phải là tên máy chủ hợp lệ, thì tên máy chủ sẽ không được đặt trong yêu cầu DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128">Cho phép <ph name="PRODUCT_NAME" /> tải các chính sách thử nghiệm.
+
+        CẢNH BÁO: Phiên bản sau này của trình duyệt không hỗ trợ các chính sách thử nghiệm. Các chính sách này có thể bị thay đổi hoặc xóa bỏ mà không thông báo trước!
+
+        Một chính sách thử nghiệm có thể chưa hoàn tất hoặc vẫn còn lỗi đã xác định hoặc không xác định. Chính sách này có thể bị thay đổi hoặc thậm chí bị xóa bỏ mà không thông báo trước. Khi bạn bật chính sách thử nghiệm, dữ liệu trên trình duyệt có thể bị mất hoặc tính bảo mật/quyền riêng tư của bạn có thể bị xâm phạm.
+
+        Nếu một chính sách không có trong danh sách hoặc chưa được phát hành chính thức, thì Chrome phiên bản thử nghiệm và Chrome phiên bản ổn định sẽ bỏ qua giá trị của chính sách đó.
+
+        Nếu một chính sách có trong danh sách và chưa được phát hành chính thức, thì giá trị của chính sách đó sẽ được áp dụng.
+
+        Chính sách này không ảnh hưởng đến các chính sách đã phát hành.</translation>
 <translation id="3066446511111537292">Cho phép người dùng đã liên kết của thiết bị này sử dụng tính năng cài đặt không qua cửa hàng của Cầu gỡ lỗi Android (ADB)</translation>
 <translation id="3069958900488014740">Cho phép tắt tối ưu hóa WPAD (Tự động phát hiện proxy web) trong <ph name="PRODUCT_NAME" />.
 
@@ -1748,6 +1768,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="3583230441447348508">Chỉ định một danh sách các mục chia sẻ tệp trong mạng đã định cấu hình sẵn.
 
       Mỗi mục trong danh sách của chính sách này là một đối tượng có hai thành phần: "share_url" và "mode". "share_url" phải là URL của mục chia sẻ và "mode" phải là "drop_down" hoặc "pre_mount". Chế độ "drop_down" cho biết rằng "share_url" sẽ được thêm vào danh sách thả xuống của vị trí chia sẻ. Chế độ "pre_mount" cho biết rằng "share_url" sẽ được kết nối.</translation>
+<translation id="3584194414857209694">Bật chính sách thử nghiệm</translation>
 <translation id="3585177699591644295">Bật tính năng hỗ trợ tiếp cận chọn để nói.
 
           Nếu bạn đặt chính sách này thành true, thì tính năng chọn để nói sẽ luôn bật.
@@ -1961,6 +1982,19 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
           Nếu không được đặt hoặc được đặt thành False thì người dùng có thể chuyển các tệp đến Google Drive.</translation>
 <translation id="3915395663995367577">URL tới một tệp .pac proxy</translation>
+<translation id="3917288538553140422">Việc đặt chính sách này chỉ định hành động cần thực hiện khi thư mục gốc của người dùng được tạo bằng phương thức mã hóa ecryptfs. Nếu các thư mục gốc đã mã hóa ecryptfs không di chuyển sang phương thức mã hóa ext4, thì ứng dụng Android có thể ngừng chạy.
+
+      Nếu bạn đặt chính sách này thành:
+
+      * Migrate (hoặc một tùy chọn không được hỗ trợ như AskUser hoặc AskForEcryptfsArcUsers), thì khi bạn đăng nhập, các thư mục sẽ tự động di chuyển sang phương thức mã hóa ext4 mà không cần xin phép người dùng.
+
+      * Wipe hoặc MinimalMigrate, thì khi bạn đăng nhập, các thư mục gốc mới đã mã hóa ext4 sẽ thay thế các thư mục cũ đã mã hóa ecryptfs. Để giúp người dùng không phải đăng nhập lại, tùy chọn MinimalMigrate sẽ cố bảo toàn mã đăng nhập.
+
+      * DisallowArc hoặc không đặt chính sách này, thì hệ thống sẽ ngăn quá trình di chuyển và các ứng dụng Android của người dùng sẽ ngừng chạy.
+
+      Chính sách này không áp dụng cho người dùng kiosk.
+
+      Cảnh báo: Tùy chọn Wipe và MinimalMigrate sẽ xóa dữ liệu trên máy.</translation>
 <translation id="3925377537407648234">Đặt độ phân giải màn hình và hệ số tỷ lệ</translation>
 <translation id="3927137827189017535">Bật tính năng hỗ trợ tiếp cận về phím cố định trên màn hình đăng nhập.
 
@@ -3007,6 +3041,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_NAME" /> cho Mac OS X phiên bản 87, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trên Mac OS X theo kế hoạch.
       </translation>
+<translation id="5494917047563607689">Nếu bạn đặt giá trị nhỏ hơn 1 MB hoặc không đặt giá trị, thì <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng kích thước mặc định để lưu ứng dụng và tiện ích vào bộ nhớ đệm nhằm giúp nhiều người dùng trên một thiết bị có thể cài đặt. Nhờ đó, người dùng không phải tải xuống lại từng ứng dụng/tiện ích.</translation>
 <translation id="5498045818698736356">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
 
       Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "window" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", thì ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa dùng để mở ứng dụng bất kể giá trị của "default_launch_container". Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo. Xem chính sách <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> về việc ghim ứng dụng vào giá ChromeOS.</translation>
@@ -3061,6 +3096,15 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn không đặt hoặc đặt chính sách này thành false, thì cảnh báo sẽ xuất hiện trên các máy tính hoặc hệ điều hành không được hỗ trợ nêu trên.</translation>
 <translation id="5565178130821694365">Yêu cầu cứ 2 ngày (48 giờ) nhập mật khẩu một lần</translation>
+<translation id="556564360355507488">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trên thiết bị <ph name="PRODUCT_OS_NAME" /> do doanh nghiệp quản lý.
+
+      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_OS_NAME" /> mà không cần gửi phiên bản mới bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
+
+      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả biến thể cho <ph name="PRODUCT_OS_NAME" />.
+
+      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_OS_NAME" />.
+
+      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả biến thể cho trình duyệt trên màn hình đăng nhập. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_OS_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="5566210228171064229">Cho phép in khi có và không có mã PIN</translation>
 <translation id="557360560705413259">Khi cài đặt này được bật, <ph name="PRODUCT_NAME" /> sẽ sử dụng commonName của chứng chỉ máy chủ để khớp với tên máy chủ nếu chứng chỉ thiếu tiện ích subjectAlternativeName miễn là chứng chỉ xác thực thành công và liên kết với chứng chỉ CA được cài đặt cục bộ.
 
@@ -3376,6 +3420,11 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn đặt chính sách này thành 'Chặn tải lên và tải xuống các tệp có kích thước lớn', thì <ph name="PRODUCT_NAME" /> sẽ hoạt động theo các quy tắc nêu trong phần 'Chặn tải tệp có kích thước lớn xuống' và 'Chặn tải tệp có kích thước lớn lên'.
       </translation>
+<translation id="6082161804984853051">Nếu bạn đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục bạn cung cấp để lưu trữ các tệp đã lưu vào bộ nhớ đệm trên ổ đĩa, cho dù người dùng có chỉ định cờ --disk-cache-dir hay không.
+
+      Nếu bạn không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục bộ nhớ đệm mặc định. Tuy nhiên, người dùng có thể thay đổi tùy chọn cài đặt đó bằng cờ dòng lệnh --disk-cache-dir.
+
+      <ph name="PRODUCT_NAME" /> sẽ quản lý nội dung của thư mục gốc trên ổ đĩa. Vì vậy, để tránh mất dữ liệu hoặc các lỗi khác, không đặt chính sách này thành thư mục gốc hoặc bất kỳ thư mục nào được dùng cho các mục đích khác. Hãy xem các biến bạn có thể sử dụng (https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables).</translation>
 <translation id="6083631234867522991">Windows (ứng dụng Windows):</translation>
 <translation id="608788685013546076">Đặt ngưỡng pin cho chế độ chuyển đổi điện năng cao điểm theo phần trăm</translation>
 <translation id="6089679180657323464">Kiểm soát các tùy chọn cài đặt của bộ điều khiển đo từ xa và chẩn đoán wilco.</translation>
@@ -3812,6 +3861,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6786747875388722282">Tiện ích</translation>
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6795485990775913659">Chỉ cho phép in khi không có mã PIN</translation>
+<translation id="6799657852647827750">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trong <ph name="PRODUCT_NAME" />.
+
+      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_NAME" /> mà không cần gửi phiên bản mới của trình duyệt bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
+
+      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả biến thể cho trình duyệt.
+
+      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_NAME" />.
+
+      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả biến thể cho trình duyệt. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="6813263547126514821">Bật và tắt nguồn</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
@@ -4101,6 +4159,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu bạn đặt chính sách này thành true, hoặc không đặt chính sách này, thì tính năng khóa chế độ thức của màn hình sẽ được triển khai để quản lý điện năng, trừ khi chính sách AllowWakeLocks được đặt thành false.
 
           Nếu bạn đặt chính sách này thành false, thì các yêu cầu khóa chế độ thức của màn hình sẽ hạ cấp xuống thành các yêu cầu khóa chế độ thức của hệ thống.</translation>
+<translation id="7177293255621000064">Nếu bạn đặt chính sách này thành True, thì hệ thống sẽ vô hiệu hóa mọi loại phương tiện lưu trữ bên ngoài (ổ USB flash, ổ đĩa cứng bên ngoài, thẻ SD và các loại thẻ nhớ khác, bộ nhớ quang) trong trình duyệt tệp. Nếu bạn đặt chính sách này thành False hoặc không đặt chính sách này, thì người dùng có thể sử dụng bộ nhớ ngoài trên thiết bị.
+
+      Lưu ý: Chính sách này không ảnh hưởng đến Google Drive và bộ nhớ trong. Người dùng vẫn có thể truy cập vào các tệp lưu trong thư mục Tệp đã tải xuống.</translation>
 <translation id="7177857088692019405">Mở khóa nhanh</translation>
 <translation id="718126088895133062">Chính sách này chỉ định mã người dùng cấp phép <ph name="PLUGIN_VM_NAME" /> cho thiết bị này.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5314,6 +5375,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu bạn không đặt chính sách này và chính sách được thiết bị hỗ trợ, thì chế độ sạc pin tiêu chuẩn sẽ được áp dụng và người dùng không thể thay đổi được.
 
           Lưu ý: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
+<translation id="9055835215213290877">Nếu bạn đặt chính sách này thành None, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm mặc định để lưu trữ các tệp đã lưu vào bộ nhớ đệm trên ổ đĩa. Người dùng không thể thay đổi được tùy chọn cài đặt đó.
+
+      Nếu bạn đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm mà bạn cung cấp, cho dù người dùng có chỉ định cờ --disk-cache-size hay không. (Giá trị dưới vài megabyte được làm tròn lên.)
+
+      Nếu bạn không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước mặc định. Người dùng có thể thay đổi tùy chọn cài đặt đó bằng cờ --disk-cache-size.</translation>
 <translation id="9077227880520270584">Hẹn giờ tự động đăng nhập vào tài khoản trên thiết bị</translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>

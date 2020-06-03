@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">關閉目前視窗</translation>
 <translation id="3407560819924487926">啟動工作管理員</translation>
 <translation id="3422679037938588196">前往上一個相符的搜尋結果</translation>
-<translation id="344577624355799426"><ph name="ALT" /> 鍵或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /> 鍵</translation>
 <translation id="353037708190149633">將目前視窗中所有開啟的網頁儲存為書籤，並儲存在新資料夾中</translation>
 <translation id="355103131818127604">在背景新分頁中開啟連結</translation>
 <translation id="3622741593887335780">放大 (如已啟用固定或全螢幕放大鏡)</translation>
@@ -168,7 +167,6 @@
 <translation id="7077383985738259936">將焦點移至書籤列或突顯書籤列 (如有顯示)</translation>
 <translation id="7237562915163138771">在網址列中輸入網址，然後按 <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> 鍵</translation>
 <translation id="7254764037241667478">讓裝置進入休眠模式 (暫停使用)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> 鍵或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /> 鍵</translation>
 <translation id="7422707470576323858">切換至下一個可用的輸入法</translation>
 <translation id="743754632698445141">取消固定應用程式</translation>
 <translation id="7439718573248533901">刪除下一個字母 (向前刪除)</translation>

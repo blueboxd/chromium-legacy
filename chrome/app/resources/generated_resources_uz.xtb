@@ -2128,6 +2128,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3677106374019847299">Boshqa xizmatni kiritish</translation>
 <translation id="3677657024345889897">Eng sokin</translation>
 <translation id="3677911431265050325">Mobil versiya</translation>
+<translation id="3677959414150797585">Ilova, veb sahifa va boshqalardan iborat. Takliflarni yaxshilash maqsadida faqat siz tanlagan statistik axborotlar yuboriladi.</translation>
 <translation id="3678156199662914018">Kengaytma: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Matnni nutqqa aylantirish ovozi</translation>
 <translation id="3681311097828166361">Fikr-mulohaza uchun rahmat! Hozir internet bilan aloqa yo‘qligi sababli xabaringiz keyinroq yuboriladi.</translation>
@@ -2539,6 +2540,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4154664944169082762">Barmoq izlari</translation>
 <translation id="4157869833395312646">Microsoft shifrlash serveri</translation>
 <translation id="4159681666905192102">Bu bolalar hisobi <ph name="CUSTODIAN_EMAIL" /> va <ph name="SECOND_CUSTODIAN_EMAIL" /> hisoblari tomonidan boshqariladi.</translation>
+<translation id="4159784952369912983">Siyohrang</translation>
 <translation id="4163560723127662357">Noma’lum klaviatura</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> foydalanuvchisining ba`zi sozlamalari multi-kirish (bir nechta hisobdan) vaqtida hisobingizga ta`sir qiladi.</translation>
 <translation id="4170314459383239649">Chiqish vaqtida tozalansin</translation>
@@ -3779,6 +3781,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – kamera yoki mikrofon yozib olmoqda</translation>
 <translation id="5841270259333717135">Ethernet tarmoqni sozlash</translation>
 <translation id="5842497610951477805">Bluetooth yoniq</translation>
+<translation id="5844574845205796324">Tanishuv uchun yangi kontent takliflari</translation>
 <translation id="5846200638699387931">Konfiguratsiya bilan bogʻliq imloviy xato: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Yangilanishlar va ilovalarni oʻrnating. Davom etish orqali siz bu qurilma Google, aloqa operatoringiz va qurilma ishlab chiqaruvchisidan dasturiy yangilanish va ilovalarni mobil internet orqali ham avtomatik ravishda yuklab olishi va oʻrnatishiga rozilik bildirgan hisoblanasiz. Ayrim ilovalar ilova ichida xaridlarni taklif etishi mumkin.</translation>
 <translation id="5849212445710944278">Allaqachon qo‘shilgan</translation>

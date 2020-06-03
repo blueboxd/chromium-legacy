@@ -35,6 +35,11 @@ ConversionManager* ConversionManagerProviderImpl::GetManager(
 }
 
 // static
+void ConversionManagerImpl::RunInMemoryForTesting() {
+  ConversionStorageSql::RunInMemoryForTesting();
+}
+
+// static
 std::unique_ptr<ConversionManagerImpl> ConversionManagerImpl::CreateForTesting(
     std::unique_ptr<ConversionReporter> reporter,
     std::unique_ptr<ConversionPolicy> policy,

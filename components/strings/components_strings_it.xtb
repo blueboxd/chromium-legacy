@@ -205,6 +205,11 @@
 <translation id="1753706481035618306">Numero di pagina</translation>
 <translation id="1763864636252898013">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del dispositivo. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prova a eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha impostato un'intestazione
+    che richiede un criterio di partenza da applicare a tutte le richieste. Tuttavia
+    l'intestazione non è valida e impedisce al browser di soddisfare
+    la tua richiesta per <ph name="SITE" />. I criteri di partenza possono essere usati dagli
+    operatori del sito per configurare la sicurezza e altre proprietà del sito.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
 <translation id="1787142507584202372">Le tue schede aperte vengono visualizzate qui</translation>
@@ -228,6 +233,7 @@
 <translation id="1898423065542865115">Filtri</translation>
 <translation id="1901443836186977402">{1,plural, =1{Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza è scaduto nel corso delle ultime 24 ore. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione. L'orologio del computer è attualmente impostato su <ph name="CURRENT_DATE" />. È corretto? Se è sbagliato, devi regolare l'orologio di sistema e aggiornare la pagina.}other{Questo server non è riuscito a verificare che si tratti di <ph name="DOMAIN" />; il relativo certificato di sicurezza è scaduto # giorni fa. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione. L'orologio del computer è attualmente impostato su <ph name="CURRENT_DATE" />. È corretto? Se è sbagliato, devi regolare l'orologio di sistema e aggiornare la pagina.}}</translation>
 <translation id="1902576642799138955">Periodo di validità</translation>
+<translation id="191374271204266022">Copia come JSON</translation>
 <translation id="1914326953223720820">Servizio di decompressione</translation>
 <translation id="1915697529809968049">Usare Touch ID anziché CVC?</translation>
 <translation id="1916770123977586577">Ricarica la pagina per applicare le impostazioni aggiornate a questo sito</translation>
@@ -702,6 +708,8 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
     Se ritieni che questo avviso sia stato mostrato per sbaglio, visita la pagina https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Meno di 1 MB</translation>
 <translation id="3990250421422698716">Offset jog</translation>
+<translation id="3996311196211510766">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di un criterio di partenza
+    a tutte le sue richieste, ma questo criterio al momento non può essere applicato.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Una pagina web nelle vicinanze}other{# pagine web nelle vicinanze}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF contenente {COUNT} pagina}other{Documento PDF contenente {COUNT} pagine}}</translation>
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
@@ -746,6 +754,11 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4194250254487269611">Al momento non è possibile salvare la carta</translation>
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controllare le configurazioni del firewall e antivirus<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha richiesto
+    l'applicazione di un criterio di partenza per tutte le richieste. Ma adesso non
+    è riuscito a pubblicare un criterio e ciò impedisce al browser
+    di soddisfare la tua richiesta per il sito <ph name="SITE" />. I criteri di partenza possono essere usati dagli
+    operatori del sito per configurare la sicurezza e altre proprietà del sito.</translation>
 <translation id="421066178035138955">Usare dati e dispositivi per realtà virtuale</translation>
 <translation id="4214357935346142455">profilo della schermata di accesso</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -1235,6 +1248,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6259156558325130047">&amp;Ripeti ridisposizione</translation>
 <translation id="6263376278284652872">Segnalibri di <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Torna nell'area protetta</translation>
+<translation id="6265794661083428563">Copia il valore del criterio <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Verde acqua</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Le pagine del tuo elenco di lettura vengono visualizzate qui</translation>

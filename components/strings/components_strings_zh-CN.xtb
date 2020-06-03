@@ -205,6 +205,7 @@
 <translation id="1753706481035618306">页码</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />尝试运行 Windows 网络诊断<ph name="END_LINK" />。</translation>
+<translation id="1772163372082567643">您要访问的服务器 <ph name="ORIGIN" /> 已设定标头，其中要求收到的所有请求都应用一项来源政策。但该标头的格式不正确，导致浏览器无法实现您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全属性及其他属性。</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">请更新您的同步密码。</translation>
 <translation id="1787142507584202372">您打开的标签页会显示在此处</translation>
@@ -228,6 +229,7 @@
 <translation id="1898423065542865115">过滤</translation>
 <translation id="1901443836186977402">{1,plural, =1{此服务器无法证明其所在网域是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，请问是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明其所在网域是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误，或是有攻击者拦截您的连接。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，请问是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
 <translation id="1902576642799138955">有效期</translation>
+<translation id="191374271204266022">以 JSON 格式复制</translation>
 <translation id="1914326953223720820">解压缩服务</translation>
 <translation id="1915697529809968049">要改用 Touch ID 来取代银行卡验证码 (CVC) 吗？</translation>
 <translation id="1916770123977586577">要将您更新后的设置应用到此网站，请重新加载此页面</translation>
@@ -699,6 +701,7 @@
     如果您认为系统不该向您显示这条提示，请访问 https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals。</translation>
 <translation id="3987940399970879459">小于 1 MB</translation>
 <translation id="3990250421422698716">撞页偏移</translation>
+<translation id="3996311196211510766">网站 <ph name="ORIGIN" /> 已要求收到的所有请求都应用一项来源政策，但此政策目前无法应用。</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 个网页}other{附近有 # 个网页}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{包含 {COUNT} 页内容的 PDF 文档}other{包含 {COUNT} 页内容的 PDF 文档}}</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
@@ -743,6 +746,7 @@
 <translation id="4194250254487269611">此刻无法保存您的信用卡信息</translation>
 <translation id="4196861286325780578">恢复移动(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />检查防火墙和防病毒配置<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">您要访问的服务器 <ph name="ORIGIN" /> 已要求收到的所有请求都应用一项来源政策。但该服务器目前并未提供任何政策，导致浏览器无法实现您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全属性及其他属性。</translation>
 <translation id="421066178035138955">使用虚拟实境设备和数据</translation>
 <translation id="4214357935346142455">登录屏幕个人资料</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -1232,6 +1236,7 @@
 <translation id="6259156558325130047">恢复顺序调整(&amp;R)</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
+<translation id="6265794661083428563">复制 <ph name="POLICY_NAME" /> 政策的值</translation>
 <translation id="6266934640124581640">浅青色</translation>
 <translation id="6272383483618007430">Google 更新</translation>
 <translation id="6276112860590028508">您的阅读清单中的网页会显示在此处</translation>

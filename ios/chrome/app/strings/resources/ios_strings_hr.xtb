@@ -338,6 +338,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
+<translation id="5352285283572729470">Tom se postavkom upravlja</translation>
 <translation id="5388358297987318779">Otvori sliku</translation>
 <translation id="5407969256130905701">Odbaci promjene</translation>
 <translation id="5409365236829784218">Nema instalirane aplikacije za otvaranje ove datoteke.</translation>
@@ -375,6 +376,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="5869029295770560994">U redu, shvaćam</translation>
 <translation id="5871497086027727873">Premještena je 1 stavka</translation>
 <translation id="5897956970858271241">Otvori kopiranu vezu</translation>
+<translation id="5899314093904173337">Za dijeljenje s osobama u blizini dopustite im da skeniraju ovaj QR kôd pomoću kamere ili aplikacije za skeniranje QR kodova</translation>
 <translation id="5911030830365207728">Google prevoditelj</translation>
 <translation id="5913600720976431809">Opcije prevođenja stranice</translation>
 <translation id="5938160824633642847">Uređaj je gotovo pun. Oslobodite prostor i pokušajte ponovo.</translation>
@@ -564,6 +566,7 @@ Budući da vašim računom upravlja <ph name="HOSTED_DOMAIN" />, vaši podaci iz
 <translation id="8174524257672181687">Blokiranje svih kolačića (ne preporučuje se)</translation>
 <translation id="8197543752516192074">Prevedi stranicu</translation>
 <translation id="8205564605687841303">Odustani</translation>
+<translation id="8206354486702514201">Ovu postavku nametnuo je vaš administrator.</translation>
 <translation id="8225985093977202398">Predmemorirane slike i datoteke</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8281781826761538115">Zadano – <ph name="DEFAULT_LOCALE" /></translation>

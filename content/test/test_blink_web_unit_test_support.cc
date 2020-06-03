@@ -243,7 +243,7 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
     case IDS_FORM_VALIDATION_RANGE_OVERFLOW:
       return blink::WebString::FromASCII("range overflow");
     case IDS_FORM_SELECT_MENU_LIST_TEXT:
-      return blink::WebString::FromASCII("$1 selected");
+      return blink::WebString::FromASCII(value.Ascii() + " selected");
   }
 
   return BlinkPlatformImpl::QueryLocalizedString(resource_id, value);

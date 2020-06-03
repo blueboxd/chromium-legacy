@@ -55,7 +55,7 @@ public class DownloadLocationCustomView
         mDialogType = dialogType;
 
         // Automatically check "don't show again" the first time the user is seeing the dialog.
-        boolean isInitial = DownloadLocationDialogBridge.getPromptForDownloadAndroid()
+        boolean isInitial = DownloadDialogBridge.getPromptForDownloadAndroid()
                 == DownloadPromptStatus.SHOW_INITIAL;
         mDontShowAgain.setChecked(isInitial);
         mDontShowAgain.setOnCheckedChangeListener(this);
@@ -87,12 +87,11 @@ public class DownloadLocationCustomView
     // CompoundButton.OnCheckedChangeListener implementation.
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        DownloadLocationDialogBridge.setPromptForDownloadAndroid(
+        DownloadDialogBridge.setPromptForDownloadAndroid(
                 isChecked ? DownloadPromptStatus.DONT_SHOW : DownloadPromptStatus.SHOW_PREFERENCE);
     }
 
-    // Helper methods available to DownloadLocationDialogBridge.
-
+    // Helper methods available to DownloadDialogBridge.
     /**
      * @return  The text that the user inputted as the name of the file.
      */

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder_builder.h"
 
 #include <memory>
 

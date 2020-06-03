@@ -870,7 +870,7 @@ void DownloadManagerImpl::InterceptNavigation(
   base::OnceCallback<void(bool /* download allowed */)>
       on_download_checks_done = base::BindOnce(
           &DownloadManagerImpl::InterceptNavigationOnChecksComplete,
-          weak_factory_.GetWeakPtr(), web_contents_getter,
+          weak_factory_.GetWeakPtr(), frame_tree_node_id,
           std::move(resource_request), std::move(url_chain), cert_status,
           std::move(response_head), std::move(response_body),
           std::move(url_loader_client_endpoints));
@@ -1209,7 +1209,7 @@ void DownloadManagerImpl::DropDownload() {
 }
 
 void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
-    WebContents::Getter web_contents_getter,
+    int frame_tree_node_id,
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
     net::CertStatus cert_status,
@@ -1226,13 +1226,15 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
   int render_frame_id = -1;
   GURL site_url, tab_url, tab_referrer_url;
   RenderFrameHost* render_frame_host = nullptr;
-  WebContents* web_contents = std::move(web_contents_getter).Run();
-  if (web_contents) {
-    render_frame_host = web_contents->GetMainFrame();
+  auto* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  if (ftn) {
+    render_frame_host = ftn->current_frame_host();
     if (render_frame_host) {
       render_process_id = render_frame_host->GetProcess()->GetID();
       render_frame_id = render_frame_host->GetRoutingID();
     }
+    auto* web_contents = WebContentsImpl::FromFrameTreeNode(ftn);
+    DCHECK(web_contents);
     NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
     if (entry) {
       tab_url = entry->GetURL();

@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Wachtwoord verlopen</translation>
 <translation id="1630768113285622200">Opnieuw opstarten en doorgaan</translation>
 <translation id="1630873818549593964">De gegevens van je kind in Classroom worden beschermd. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Wachtwoord opgeslagen in je Google-account</translation>
 <translation id="1632803087685957583">Hiermee kun je de herhaalsnelheid van het toetsenbord, woordvoorspelling en meer aanpassen</translation>
 <translation id="1633947793238301227">De Google Assistent uitschakelen</translation>
 <translation id="1634783886312010422">Heb je dit wachtwoord al gewijzigd op <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="296026337010986570">Klaar. Schadelijke software is verwijderd. Als je de extensies weer wilt inschakelen, ga je naar &lt;a href="chrome://extensions"&gt;Extensies&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (door extensie geleverd)</translation>
 <translation id="2961695502793809356">Klik om verder te gaan, houd ingedrukt om de geschiedenis weer te geven</translation>
+<translation id="2962131322798295505">Achtergrondkiezer</translation>
 <translation id="2963151496262057773">De volgende plug-in reageert niet meer: <ph name="PLUGIN_NAME" />Wil je deze beëindigen?</translation>
 <translation id="2964193600955408481">Wifi uitschakelen</translation>
 <translation id="2966937470348689686">Android-voorkeuren beheren</translation>
@@ -2539,6 +2541,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4154664944169082762">Vingerafdrukken</translation>
 <translation id="4157869833395312646">Microsoft SGC (Server Gated Cryptography)</translation>
 <translation id="4159681666905192102">Dit is een account voor kinderen dat wordt beheerd door <ph name="CUSTODIAN_EMAIL" /> en <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Paars</translation>
 <translation id="4163560723127662357">Onbekend toetsenbord</translation>
 <translation id="4168015872538332605">Sommige instellingen die bij <ph name="PRIMARY_EMAIL" /> horen, worden met je gedeeld. Deze instellingen beïnvloeden je account alleen wanneer toegang tot meerdere accounts wordt gebruikt.</translation>
 <translation id="4170314459383239649">Wissen bij het verlaten</translation>
@@ -2882,6 +2885,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4645676300727003670">&amp;Behouden</translation>
 <translation id="4646675363240786305">Poorten</translation>
 <translation id="4647090755847581616">&amp;Tabblad sluiten</translation>
+<translation id="4647420311443994946">{0,select, tablet{Start de app als je inlogt op je tablet}computer{Start de app als je inlogt op je computer}other{Start de app als je inlogt op je apparaat}}</translation>
 <translation id="4647697156028544508">Geef de pincode op voor '<ph name="DEVICE_NAME" />':</translation>
 <translation id="4648491805942548247">Onvoldoende rechten</translation>
 <translation id="4648499713050786492">Ontgrendel je profiel voordat je een persoon toevoegt.</translation>
@@ -2894,6 +2898,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4660540330091848931">Grootte aanpassen</translation>
 <translation id="4660838440047236328">de indeling van je kamer</translation>
 <translation id="4661407454952063730">App-gegevens kunnen alle gegevens zijn die een app heeft opgeslagen (op basis van de ontwikkelaarsinstellingen), waaronder gegevens zoals contacten, berichten en foto's.</translation>
+<translation id="4662373422909645029">Cijfers niet toegestaan</translation>
 <translation id="4662788913887017617">Deze bladwijzer delen met je iPhone</translation>
 <translation id="4663373278480897665">Camera toegestaan</translation>
 <translation id="4664482161435122549">Fout bij exporteren van PKCS #12</translation>
@@ -3588,6 +3593,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5585912436068747822">Formatteren mislukt</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Apps laden...</translation>
+<translation id="558984423786125616">Poort bestaat al in de instellingen</translation>
 <translation id="5592595402373377407">Nog niet voldoende gegevens beschikbaar.</translation>
 <translation id="5593357315997824387">Mijn bestanden synchroniseren</translation>
 <translation id="5595485650161345191">Adres bewerken</translation>
@@ -3631,6 +3637,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5639549361331209298">Deze pagina opnieuw laden, vasthouden om meer opties weer te geven</translation>
 <translation id="5640133431808313291">Beveiligingssleutels beheren</translation>
 <translation id="5642508497713047">CRL-ondertekenaar</translation>
+<translation id="5643321261065707929">Netwerk met datalimiet</translation>
 <translation id="5643620609347735571">Wissen en doorgaan</translation>
 <translation id="5644857731242502394">Verbonden apparaten instellen</translation>
 <translation id="5646376287012673985">Locatie</translation>
@@ -5539,6 +5546,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
     <ph name="BEGIN_PARAGRAPH5" />Je kunt deze service uitschakelen via Instellingen.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">De pincodes komen niet overeen</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> gebruikt proxyinstellingen van een extensie</translation>
+<translation id="8097959162767603171">Je beheerder moet eerst de servicevoorwaarden accepteren in de lijst met Chrome-apparaten in de beheerdersconsole.</translation>
 <translation id="8101987792947961127">Powerwash vereist bij volgende keer opnieuw opstarten</translation>
 <translation id="8102159139658438129">Ga naar <ph name="LINK_BEGIN" />Instellingen <ph name="LINK_END" /> om opties voor je gekoppelde telefoon te bekijken</translation>
 <translation id="8104696615244072556">Powerwash je <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat en zet de vorige versie terug.</translation>

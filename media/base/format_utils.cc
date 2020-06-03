@@ -34,6 +34,9 @@ base::Optional<VideoPixelFormat> GfxBufferFormatToVideoPixelFormat(
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return PIXEL_FORMAT_NV12;
 
+    case gfx::BufferFormat::P010:
+      return PIXEL_FORMAT_P016LE;
+
     default:
       DLOG(WARNING) << "Unsupported BufferFormat: "
                     << gfx::BufferFormatToString(format);
@@ -61,6 +64,9 @@ base::Optional<gfx::BufferFormat> VideoPixelFormatToGfxBufferFormat(
 
     case PIXEL_FORMAT_XBGR:
       return gfx::BufferFormat::RGBX_8888;
+
+    case PIXEL_FORMAT_P016LE:
+      return gfx::BufferFormat::P010;
 
     default:
       DLOG(WARNING) << "Unsupported VideoPixelFormat: " << pixel_format;

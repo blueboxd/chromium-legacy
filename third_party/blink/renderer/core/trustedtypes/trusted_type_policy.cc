@@ -45,7 +45,7 @@ TrustedHTML* TrustedTypePolicy::CreateHTML(v8::Isolate* isolate,
                                            const String& input,
                                            const HeapVector<ScriptValue>& args,
                                            ExceptionState& exception_state) {
-  if (!policy_options_->createHTML()) {
+  if (!policy_options_->hasCreateHTML()) {
     exception_state.ThrowTypeError(
         "Policy " + name_ +
         "'s TrustedTypePolicyOptions did not specify a 'createHTML' member.");
@@ -66,7 +66,7 @@ TrustedScript* TrustedTypePolicy::CreateScript(
     const String& input,
     const HeapVector<ScriptValue>& args,
     ExceptionState& exception_state) {
-  if (!policy_options_->createScript()) {
+  if (!policy_options_->hasCreateScript()) {
     exception_state.ThrowTypeError(
         "Policy " + name_ +
         "'s TrustedTypePolicyOptions did not specify a 'createScript' member.");
@@ -89,7 +89,7 @@ TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
     const String& input,
     const HeapVector<ScriptValue>& args,
     ExceptionState& exception_state) {
-  if (!policy_options_->createScriptURL()) {
+  if (!policy_options_->hasCreateScriptURL()) {
     exception_state.ThrowTypeError("Policy " + name_ +
                                    "'s TrustedTypePolicyOptions did not "
                                    "specify a 'createScriptURL' member.");
@@ -108,15 +108,15 @@ TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
 }
 
 bool TrustedTypePolicy::HasCreateHTML() {
-  return policy_options_->createHTML();
+  return policy_options_->hasCreateHTML();
 }
 
 bool TrustedTypePolicy::HasCreateScript() {
-  return policy_options_->createScript();
+  return policy_options_->hasCreateScript();
 }
 
 bool TrustedTypePolicy::HasCreateScriptURL() {
-  return policy_options_->createScriptURL();
+  return policy_options_->hasCreateScriptURL();
 }
 
 String TrustedTypePolicy::name() const {

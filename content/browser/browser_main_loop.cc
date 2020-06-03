@@ -181,7 +181,6 @@
 #include "content/browser/renderer_host/dwrite_font_lookup_table_builder_win.h"
 #include "net/base/winsock_init.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
-#include "ui/display/win/screen_win.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -471,49 +470,6 @@ class GpuDataManagerVisualProxy : public GpuDataManagerObserver {
 };
 
 }  // namespace internal
-#endif
-
-#if defined(OS_WIN)
-namespace {
-
-// Provides a bridge whereby display::win::ScreenWin can ask the GPU process
-// about the HDR status of the system.
-class HDRProxy {
- public:
-  static void Initialize() {
-    display::win::ScreenWin::SetRequestHDRStatusCallback(
-        base::BindRepeating(&HDRProxy::RequestHDRStatus));
-  }
-
-  static void RequestHDRStatus() {
-    // The request must be sent to the GPU process from the IO thread.
-    GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&HDRProxy::RequestOnIOThread));
-  }
-
- private:
-  static void RequestOnIOThread() {
-    auto* gpu_process_host =
-        GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);
-    if (gpu_process_host) {
-      auto* gpu_service = gpu_process_host->gpu_host()->gpu_service();
-      gpu_service->RequestHDRStatus(
-          base::BindOnce(&HDRProxy::GotResultOnIOThread));
-    } else {
-      bool hdr_enabled = false;
-      GotResultOnIOThread(hdr_enabled);
-    }
-  }
-  static void GotResultOnIOThread(bool hdr_enabled) {
-    GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE, base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
-  }
-  static void GotResult(bool hdr_enabled) {
-    display::win::ScreenWin::SetHDREnabled(hdr_enabled);
-  }
-};
-
-}  // namespace
 #endif
 
 // The currently-running BrowserMainLoop.  There can be one or zero.
@@ -1316,7 +1272,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(OS_WIN)
-  HDRProxy::Initialize();
   system_message_window_.reset(new media::SystemMessageWindowWin);
 #elif defined(OS_LINUX) && defined(USE_UDEV)
   device_monitor_linux_ = std::make_unique<media::DeviceMonitorLinux>();

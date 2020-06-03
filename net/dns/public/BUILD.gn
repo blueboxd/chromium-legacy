@@ -19,8 +19,8 @@ source_set("public") {
     "dns_protocol.h",
     "dns_query_type.cc",
     "dns_query_type.h",
-    "doh_provider_list.cc",
-    "doh_provider_list.h",
+    "doh_provider_entry.cc",
+    "doh_provider_entry.h",
     "resolve_error_info.cc",
     "resolve_error_info.h",
     "util.cc",
@@ -35,7 +35,7 @@ source_set("public") {
 source_set("tests") {
   testonly = true
   sources = [
-    "doh_provider_list_unittest.cc",
+    "doh_provider_entry_unittest.cc",
     "util_unittest.cc",
   ]
 

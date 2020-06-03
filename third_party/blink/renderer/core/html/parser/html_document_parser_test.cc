@@ -8,8 +8,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder_builder.h"
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
-#include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 

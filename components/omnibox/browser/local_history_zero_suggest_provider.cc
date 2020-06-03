@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -32,6 +33,8 @@
 #include "components/search_engines/template_url_service.h"
 #include "url/gurl.h"
 
+using metrics::OmniboxEventProto;
+
 namespace {
 
 // Default relevance for the LocalHistoryZeroSuggestProvider query suggestions.
@@ -54,9 +57,30 @@ bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
 #if defined(OS_ANDROID)  // Default-enabled on Android.
   return true;
 #else
+  if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
+    return false;
+
+  const auto current_page_classification = input.current_page_classification();
+  // Reactive Zero-Prefix Suggestions (rZPS) and basically all remote ZPS on the
+  // NTP are expected to be displayed alongside local history zero-prefix
+  // suggestions. Enable local history ZPS if rZPS is enabled.
+  // NTP Omnibox.
+  if ((current_page_classification == OmniboxEventProto::NTP ||
+       current_page_classification ==
+           OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) &&
+      base::FeatureList::IsEnabled(
+          omnibox::kReactiveZeroSuggestionsOnNTPOmnibox)) {
+    return true;
+  }
+  // NTP Realbox.
+  if (current_page_classification == OmniboxEventProto::NTP_REALBOX &&
+      base::FeatureList::IsEnabled(
+          omnibox::kReactiveZeroSuggestionsOnNTPRealbox)) {
+    return true;
+  }
+
   return base::Contains(
-      OmniboxFieldTrial::GetZeroSuggestVariants(
-          input.current_page_classification()),
+      OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification),
       LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
 #endif
 }

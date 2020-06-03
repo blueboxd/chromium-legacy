@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Şifrenin süresi doldu</translation>
 <translation id="1630768113285622200">Yeniden başlat ve devam et</translation>
 <translation id="1630873818549593964">Çocuğunuzun Classroom'daki verileri korunur. <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Şifre Google hesabınızda depolandı</translation>
 <translation id="1632803087685957583">Klavyenizin yineleme hızı, kelime tahmini ve daha birçok özelliği ayarlamanıza olanak tanır</translation>
 <translation id="1633947793238301227">Google Asistan'ı devre dışı bırak</translation>
 <translation id="1634783886312010422">Bu şifreyi, <ph name="WEBSITE" /> sitesinde zaten değiştirdiniz mi?</translation>
@@ -1579,6 +1580,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="296026337010986570">Bitti! Zararlı yazılım kaldırıldı. Uzantıları tekrar açmak için &lt;a href="chrome://extensions"&gt;Uzantılar&lt;/a&gt; sayfasını ziyaret edin.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (süresi uzatıldı)</translation>
 <translation id="2961695502793809356">İlerlemek için tıkla, geçmişi görmek için tıklayıp tut</translation>
+<translation id="2962131322798295505">Duvar Kağıdı Seçici</translation>
 <translation id="2963151496262057773">Aşağıdaki eklenti yanıt vermiyor: <ph name="PLUGIN_NAME" />Durdurmak ister misiniz?</translation>
 <translation id="2964193600955408481">Kablosuz bağlantıyı devre dışı bırak</translation>
 <translation id="2966937470348689686">Android tercihlerini yönet</translation>
@@ -2539,6 +2541,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4154664944169082762">Parmak izleri</translation>
 <translation id="4157869833395312646">Microsoft Sunucu Geçitli Şifreleme</translation>
 <translation id="4159681666905192102">Bu hesap çocuklar içindir ve <ph name="CUSTODIAN_EMAIL" /> ile <ph name="SECOND_CUSTODIAN_EMAIL" /> tarafından yönetilmektedir</translation>
+<translation id="4159784952369912983">Mor</translation>
 <translation id="4163560723127662357">Bilinmeyen klavye</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> kullanıcısına ait bazı ayarlar sizinle paylaşılıyor. Bu ayarlar sadece çoklu oturum açma işlevi kullanılırken hesabınızı etkiler.</translation>
 <translation id="4170314459383239649">Çıkışta Temizle</translation>
@@ -2882,6 +2885,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4645676300727003670">&amp;Sakla</translation>
 <translation id="4646675363240786305">Bağlantı Noktaları</translation>
 <translation id="4647090755847581616">Sekmeyi Ka&amp;pat</translation>
+<translation id="4647420311443994946">{0,select, tablet{Tabletimde oturum açtığımda uygulama başlat}computer{Bilgisayarımda oturum açtığımda uygulamayı başlat}other{Cihazımda oturum açtığımda uygulamayı başlat}}</translation>
 <translation id="4647697156028544508">Lütfen "<ph name="DEVICE_NAME" />" için PIN'i girin:</translation>
 <translation id="4648491805942548247">İzinler yetersiz</translation>
 <translation id="4648499713050786492">Lütfen bir kişiyi eklemeden önce profilinizin kilidini açın.</translation>
@@ -2894,6 +2898,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4660540330091848931">Yeniden boyutlandırılıyor</translation>
 <translation id="4660838440047236328">odanızın düzeni</translation>
 <translation id="4661407454952063730">Uygulama verisi, geliştiricinin ayarlarına bağlı olarak bir uygulamanın kaydettiği her tür veri olabilir. Bunlar arasında kişiler, mesajlar ve fotoğraflar gibi veriler bulunabilir.</translation>
+<translation id="4662373422909645029">Takma ad sayı içeremez</translation>
 <translation id="4662788913887017617">Bu yer işaretini iPhone'unuzla paylaşın</translation>
 <translation id="4663373278480897665">Kameraya izin veriliyor</translation>
 <translation id="4664482161435122549">PKCS #12 Dışa Aktarma Hatası</translation>
@@ -3588,6 +3593,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5585912436068747822">Biçimlendirme başarısız oldu</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Uygulamalar yükleniyor...</translation>
+<translation id="558984423786125616">Bağlantı noktası ayarlarda zaten mevcut</translation>
 <translation id="5592595402373377407">Henüz yeterli veri yok.</translation>
 <translation id="5593357315997824387">Dosyalarımı senkronize et</translation>
 <translation id="5595485650161345191">Adresi düzenle</translation>
@@ -3632,6 +3638,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5639549361331209298">Bu sayfayı yeniden yükleyin, daha fazla seçeneği görmek için tutun</translation>
 <translation id="5640133431808313291">Güvenlik anahtarlarını yönetme</translation>
 <translation id="5642508497713047">CRL İmza Sahibi</translation>
+<translation id="5643321261065707929">Sayaçlı ağ</translation>
 <translation id="5643620609347735571">Temizle ve devam et</translation>
 <translation id="5644857731242502394">Bağlı cihazların kurulumu</translation>
 <translation id="5646376287012673985">Konum</translation>
@@ -5540,6 +5547,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
     <ph name="BEGIN_PARAGRAPH5" />Bu hizmeti Ayarlar'dan kapatabilirsiniz.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN'ler eşleşmiyor</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" />, bir uzantıdan gelen proxy ayarlarını kullanıyor</translation>
+<translation id="8097959162767603171">Yöneticiniz önce Yönetici konsolu Chrome cihaz listesindeki hizmet şartlarını kabul etmelidir.</translation>
 <translation id="8101987792947961127">Gelecek yeniden başlatmada Powerwash gerekli</translation>
 <translation id="8102159139658438129">Bağlı telefonunuzla ilgili seçenekleri görmek için <ph name="LINK_BEGIN" />Ayarlar<ph name="LINK_END" />'a gidin</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> cihazınızda Powerwash işlemi yapabilir ve bir önceki sürüme geri dönebilirsiniz.</translation>

@@ -20,16 +20,13 @@ NGFragmentItems::NGFragmentItems(NGFragmentItemsBuilder* builder)
   for (unsigned i = 0; i < size_; ++i) {
     // Call the move constructor to move without |AddRef|. Items in
     // |NGFragmentItemsBuilder| are not used after |this| was constructed.
-    DCHECK(source_items[i].item);
-    new (&items_[i])
-        scoped_refptr<const NGFragmentItem>(std::move(source_items[i].item));
-    DCHECK(!source_items[i].item);  // Ensure the source was moved.
+    new (&items_[i]) NGFragmentItem(std::move(source_items[i].item));
   }
 }
 
 NGFragmentItems::~NGFragmentItems() {
   for (unsigned i = 0; i < size_; ++i)
-    items_[i]->Release();
+    items_[i].~NGFragmentItem();
 }
 
 bool NGFragmentItems::IsSubSpan(const Span& span) const {
@@ -58,27 +55,27 @@ void NGFragmentItems::FinalizeAfterLayout(
 
     const Span items = current->Items();
     wtf_size_t index = 0;
-    for (const scoped_refptr<const NGFragmentItem>& item : items) {
+    for (const NGFragmentItem& item : items) {
       ++index;
-      if (item->Type() == NGFragmentItem::kLine) {
-        DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
+      if (item.Type() == NGFragmentItem::kLine) {
+        DCHECK_EQ(item.DeltaToNextForSameLayoutObject(), 0u);
         continue;
       }
-      LayoutObject* const layout_object = item->GetMutableLayoutObject();
+      LayoutObject* const layout_object = item.GetMutableLayoutObject();
       if (UNLIKELY(layout_object->IsFloating())) {
-        DCHECK_EQ(item->DeltaToNextForSameLayoutObject(), 0u);
+        DCHECK_EQ(item.DeltaToNextForSameLayoutObject(), 0u);
         continue;
       }
       DCHECK(!layout_object->IsOutOfFlowPositioned());
-      DCHECK(layout_object->IsInLayoutNGInlineFormattingContext()) << *item;
+      DCHECK(layout_object->IsInLayoutNGInlineFormattingContext());
 
-      item->SetDeltaToNextForSameLayoutObject(0);
-      item->SetIsLastForNode(false);
+      item.SetDeltaToNextForSameLayoutObject(0);
+      item.SetIsLastForNode(false);
 
       const auto last_item_result =
-          last_items.insert(layout_object, LastItem{item.get(), 0, index});
+          last_items.insert(layout_object, LastItem{&item, 0, index});
       if (last_item_result.is_new_entry) {
-        item->SetFragmentId(0);
+        item.SetFragmentId(0);
         if (create_index_cache) {
           DCHECK_EQ(layout_object->FirstInlineFragmentItemIndex(), 0u);
           layout_object->SetFirstInlineFragmentItemIndex(index);
@@ -91,13 +88,13 @@ void NGFragmentItems::FinalizeAfterLayout(
       DCHECK_EQ(last_item->DeltaToNextForSameLayoutObject(), 0u);
       if (create_index_cache) {
         const wtf_size_t last_index = last->item_index;
-        DCHECK_GT(last_index, 0u) << *item;
+        DCHECK_GT(last_index, 0u);
         DCHECK_LT(last_index, items.size());
         DCHECK_LT(last_index, index);
         last_item->SetDeltaToNextForSameLayoutObject(index - last_index);
       }
-      item->SetFragmentId(++last->fragment_id);
-      last->item = item.get();
+      item.SetFragmentId(++last->fragment_id);
+      last->item = &item;
       last->item_index = index;
     }
   }
@@ -182,7 +179,7 @@ bool NGFragmentItems::TryDirtyFirstLineFor(
   DCHECK(layout_object.IsInLayoutNGInlineFormattingContext());
   DCHECK(!layout_object.IsFloatingOrOutOfFlowPositioned());
   if (wtf_size_t index = layout_object.FirstInlineFragmentItemIndex()) {
-    const NGFragmentItem& item = *Items()[index - 1];
+    const NGFragmentItem& item = Items()[index - 1];
     DCHECK_EQ(&layout_object, item.GetLayoutObject());
     item.SetDirty();
     return true;
@@ -291,8 +288,8 @@ void NGFragmentItems::LayoutObjectWillBeMoved(
           *container.GetPhysicalFragment(idx);
       DCHECK(fragment.Items());
       for (const auto& item : fragment.Items()->Items()) {
-        if (item->GetLayoutObject() == &layout_object)
-          item->LayoutObjectWillBeMoved();
+        if (item.GetLayoutObject() == &layout_object)
+          item.LayoutObjectWillBeMoved();
       }
     }
     return;
@@ -318,8 +315,8 @@ void NGFragmentItems::LayoutObjectWillBeDestroyed(
           *container.GetPhysicalFragment(idx);
       DCHECK(fragment.Items());
       for (const auto& item : fragment.Items()->Items()) {
-        if (item->GetLayoutObject() == &layout_object)
-          item->LayoutObjectWillBeDestroyed();
+        if (item.GetLayoutObject() == &layout_object)
+          item.LayoutObjectWillBeDestroyed();
       }
     }
     return;

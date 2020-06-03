@@ -533,6 +533,7 @@
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7600875258240007829">모든 알림 보기</translation>
+<translation id="7624117708979618027"><ph name="TEMPERATURE_F" />°F</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> 설정 열기, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>
 <translation id="7647488630410863958">기기를 잠금 해제하여 알림 보기</translation>

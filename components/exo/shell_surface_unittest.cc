@@ -24,6 +24,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -1074,6 +1075,28 @@ TEST_F(ShellSurfaceTest, CaptionWithPopup) {
     ui::Event::DispatcherApi(&event).set_target(target);
     EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
   }
+}
+
+TEST_F(ShellSurfaceTest, SkipImeProcessingPropagateToSurface) {
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  ASSERT_FALSE(window->GetProperty(aura::client::kSkipImeProcessing));
+  ASSERT_FALSE(
+      surface->window()->GetProperty(aura::client::kSkipImeProcessing));
+
+  window->SetProperty(aura::client::kSkipImeProcessing, true);
+  EXPECT_TRUE(window->GetProperty(aura::client::kSkipImeProcessing));
+  EXPECT_TRUE(surface->window()->GetProperty(aura::client::kSkipImeProcessing));
 }
 
 }  // namespace exo

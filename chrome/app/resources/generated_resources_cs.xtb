@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Platnost hesla vypršela</translation>
 <translation id="1630768113285622200">Restartovat a pokračovat</translation>
 <translation id="1630873818549593964">Data vašeho dítěte v Učebně budou chráněna. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Heslo uložené ve vašem účtu Google</translation>
 <translation id="1632803087685957583">Umožňuje upravit rychlost opakování klávesnice, předvídání slov a další nastavení</translation>
 <translation id="1633947793238301227">Deaktivovat Asistenta Google</translation>
 <translation id="1634783886312010422">Už jste toto heslo na webu <ph name="WEBSITE" /> změnili?</translation>
@@ -1578,6 +1579,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="296026337010986570">Hotovo! Škodlivý software byl odstraněn. Budete-li chtít rozšíření znovu zapnout, přejděte na stránku &lt;a href="chrome://extensions"&gt;Rozšíření&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (poskytnuto rozšířením)</translation>
 <translation id="2961695502793809356">Kliknutím přejdete vpřed, přidržením se zobrazí historie</translation>
+<translation id="2962131322798295505">Výběr tapety</translation>
 <translation id="2963151496262057773">Následující plugin nereaguje: <ph name="PLUGIN_NAME" /> Chcete jej zastavit?</translation>
 <translation id="2964193600955408481">Vypnout Wi-Fi</translation>
 <translation id="2966937470348689686">Spravovat nastavení aplikací Android</translation>
@@ -2127,6 +2129,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3677106374019847299">Zadejte vlastního poskytovatele</translation>
 <translation id="3677657024345889897">Nejtišší</translation>
 <translation id="3677911431265050325">Požadovat mobilní web</translation>
+<translation id="3677959414150797585">Zahrnuje aplikace, weby apod. Statistiky za účelem vylepšení návrhů budou odesílány, pouze pokud jste se rozhodli sdílet údaje o využití.</translation>
 <translation id="3678156199662914018">Rozšíření: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Hlas převodu textu na řeč</translation>
 <translation id="3681311097828166361">Děkujeme vám za zpětnou vazbu. Nyní jste offline, zpráva bude odeslána později.</translation>
@@ -2537,6 +2540,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4154664944169082762">Digitální otisky</translation>
 <translation id="4157869833395312646">Technologie Microsoft SGC (Server Gated Cryptography)</translation>
 <translation id="4159681666905192102">Toto je dětský účet spravovaný uživateli <ph name="CUSTODIAN_EMAIL" /> a <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Nachová</translation>
 <translation id="4163560723127662357">Neznámá klávesnice</translation>
 <translation id="4168015872538332605">Uživatel <ph name="PRIMARY_EMAIL" /> s vámi sdílí některá svá nastavení. Tato nastavení váš účet ovlivní pouze během vícenásobného přihlášení.</translation>
 <translation id="4170314459383239649">Smazat při ukončení</translation>
@@ -2880,6 +2884,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4645676300727003670">&amp;Zachovat</translation>
 <translation id="4646675363240786305">Porty</translation>
 <translation id="4647090755847581616">&amp;Zavřít kartu</translation>
+<translation id="4647420311443994946">{0,select, tablet{Spustit aplikaci, když se přihlásíte do tabletu}computer{Spustit aplikaci, když se přihlásíte do počítače}other{Spustit aplikaci, když se přihlásíte do zařízení}}</translation>
 <translation id="4647697156028544508">Zadejte prosím PIN pro zařízení <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Nedostatečná oprávnění</translation>
 <translation id="4648499713050786492">Před přidáním osoby prosím odemkněte svůj profil.</translation>
@@ -2892,6 +2897,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4660540330091848931">Probíhá změna velikosti</translation>
 <translation id="4660838440047236328">rozvržení vaší místnosti.</translation>
 <translation id="4661407454952063730">Data aplikací mohou zahrnovat jakákoliv data, která uložila aplikace (v závislosti na nastavení vývojáře), včetně dat, jako jsou kontakty, zprávy a fotky.</translation>
+<translation id="4662373422909645029">Přezdívka nesmí obsahovat čísla</translation>
 <translation id="4662788913887017617">Sdílejte tuto záložku se svým iPhonem</translation>
 <translation id="4663373278480897665">Kamera je povolena</translation>
 <translation id="4664482161435122549">Chyba exportu souboru PKCS #12</translation>
@@ -3586,6 +3592,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5585912436068747822">Formátování se nezdařilo</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Načítání aplikací...</translation>
+<translation id="558984423786125616">Port už v nastavení existuje</translation>
 <translation id="5592595402373377407">Zatím není k dispozici dostatek dat.</translation>
 <translation id="5593357315997824387">Synchronizovat moje soubory</translation>
 <translation id="5595485650161345191">Upravit adresu</translation>
@@ -3629,6 +3636,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5639549361331209298">Znovu načíst tuto stránku, další možnosti zobrazíte podržením.</translation>
 <translation id="5640133431808313291">Spravovat bezpečnostní klíče</translation>
 <translation id="5642508497713047">Autor podpisu CRL</translation>
+<translation id="5643321261065707929">Měřená síť</translation>
 <translation id="5643620609347735571">Vymazat a pokračovat</translation>
 <translation id="5644857731242502394">Nastavení připojených zařízení</translation>
 <translation id="5646376287012673985">Poloha</translation>
@@ -3773,6 +3781,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – probíhá záznam z fotoaparátu nebo mikrofonu</translation>
 <translation id="5841270259333717135">Nakonfigurovat ethernet</translation>
 <translation id="5842497610951477805">Aktivace Bluetooth</translation>
+<translation id="5844574845205796324">Navrhovat nový obsah k objevování</translation>
 <translation id="5846200638699387931">Chyba syntaxe vztahu: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instalace aktualizací a aplikací. Pokračováním vyjadřujete souhlas s tím, že toto zařízení může také automaticky stahovat a instalovat aktualizace a aplikace od společnosti Google, operátora a výrobce zařízení, a v případě potřeby k tomu smí používat mobilní datové připojení. Některé z těchto aplikací mohou nabízet nákupy v aplikaci.</translation>
 <translation id="5849212445710944278">Již přidáno</translation>
@@ -5538,6 +5547,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
     <ph name="BEGIN_PARAGRAPH5" />Tuto službu můžete vypnout v Nastavení.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Kódy PIN se neshodují</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> používá nastavení proxy serveru z rozšíření</translation>
+<translation id="8097959162767603171">Administrátor nejdřív musí přijmout smluvní podmínky v seznamu zařízení Chrome v administrátorské konzoli.</translation>
 <translation id="8101987792947961127">Je vyžadováno použití funkce Powerwash při dalším restartu</translation>
 <translation id="8102159139658438129">Možnosti připojeného telefonu najdete v sekci <ph name="LINK_BEGIN" />Nastavení<ph name="LINK_END" /></translation>
 <translation id="8104696615244072556">Tato akce resetuje zařízení <ph name="IDS_SHORT_PRODUCT_NAME" /> pomocí funkce Powerwash a obnoví předchozí verzi aplikace.</translation>

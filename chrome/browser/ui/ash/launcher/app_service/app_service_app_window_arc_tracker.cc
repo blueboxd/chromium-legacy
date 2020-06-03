@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_info.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
 
@@ -305,6 +307,10 @@ void AppServiceAppWindowArcTracker::AttachControllerToWindow(
   window->SetProperty(ash::kArcPackageNameKey,
                       new std::string(info->package_name()));
   window->SetProperty(ash::kAppIDKey, new std::string(shelf_id.app_id));
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kArcPreImeKeyEventSupport)) {
+    window->SetProperty(aura::client::kSkipImeProcessing, true);
+  }
 
   if (info->app_shelf_id().app_id() == arc::kPlayStoreAppId)
     HandlePlayStoreLaunch(info);

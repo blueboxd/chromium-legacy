@@ -1204,6 +1204,9 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Jeder Listeneintrag besteht aus einer Kennung, die intern dazu verwendet wird, die verschiedenen lokalen Gerätekonten auseinanderzuhalten.</translation>
 <translation id="2769952903507981510">Erforderlichen Domainnamen für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
+<translation id="2787774054174244402">Wenn die Richtlinie auf "True" festgelegt ist, können Nutzer nicht auf externe Speichergeräte schreiben.
+
+      Sofern der externe Speicher nicht blockiert ist, können, wenn Sie "ExternalStorageReadOnly" auf "False" oder keinen Wert festlegen, Nutzer Dateien auf physisch beschreibbaren externen Speichergeräten erstellen und ändern. Sie können externen Speicher dadurch blockieren, dass Sie "ExternalStorageDisable" auf "True" festlegen.</translation>
 <translation id="2799297758492717491">Autoplay von Medien für eine weiße Liste mit URL-Mustern erlauben</translation>
 <translation id="2801065672151277034">Zertifikatverwaltungseinstellungen</translation>
 <translation id="2801155097555584385">Den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs festlegen</translation>
@@ -1328,6 +1331,12 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
+<translation id="299519952839316970">Diese Richtlinie ist veraltet und wird in Version 88 von <ph name="PRODUCT_OS_NAME" /> entfernt. Öffentliche Sitzungen werden nicht mehr unterstützt. Verwenden Sie stattdessen <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> zum Konfigurieren verwalteter Gastsitzungen.
+      Wenn diese Richtlinie auf "False" festgelegt ist, verhalten sich verwaltete Gastsitzungen wie unter https://support.google.com/chrome/a/answer/3017014 beschrieben. Dieses Verhalten entspricht einer standardmäßigen öffentlichen Sitzung.
+
+      Ist die Richtlinie auf "True" gesetzt oder nicht festgelegt, verhält sich die verwaltete Gastsitzung wie eine verwaltete Sitzung, bei der viele der Einschränkungen aufgehoben sind, die bei regulären öffentlichen Sitzungen gelten.
+
+      Ist diese Richtlinie festgelegt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
 <translation id="3016255526521614822">Auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm zulässige Notizen-Apps auf die weiße Liste setzen</translation>
 <translation id="3020064401262077616">Legt die Richtlinien für die Elternaufsicht fest. Diese werden nur auf Kinderkonten angewendet.</translation>
 <translation id="3020953534071988875">Über diese Richtlinie können Sie festlegen, ob die passive Authentifizierung für Inkognito- und Gastprofile in <ph name="PRODUCT_NAME" /> zulässig ist.
@@ -1382,6 +1391,17 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Wenn diese Richtlinie nicht konfiguriert oder der Wert nach dem Ersetzen kein gültiger Hostname ist, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128">Gestattet <ph name="PRODUCT_NAME" /> das Laden experimenteller Richtlinien.
+
+        WARNUNG: Experimentelle Richtlinien werden nicht unterstützt und können ohne vorherige Ankündigung in künftigen Versionen des Browsers geändert oder entfernt werden!
+
+        Die Entwicklung einer experimentellen Richtlinie ist möglicherweise noch nicht abgeschlossen. Auch kann sie bekannte oder unbekannte Mängel aufweisen. Sie kann unangekündigt geändert oder entfernt werden. Wenn Sie experimentelle Richtlinien aktivieren, besteht die Gefahr, Browserdaten zu verlieren oder Ihre Sicherheit und Privatsphäre zu gefährden.
+
+        Steht eine Richtlinie nicht auf der Liste und wurde sie nicht offiziell veröffentlicht, dann wird ihr Wert in Beta- und stabilen Chrome-Versionen ignoriert.
+
+        Steht eine Richtlinie auf der Liste, dann wird ihr Wert angewendet, auch wenn sie noch nicht offiziell veröffentlicht wurde.
+
+        Diese Richtlinie hat keine Auswirkung auf bereits veröffentlichte Richtlinien.</translation>
 <translation id="3066446511111537292">Nutzern dieses Geräts erlauben, ADB-Sideloading zu verwenden</translation>
 <translation id="3069958900488014740">Erlaubt die Deaktivierung der WPAD-Optimierung (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 
@@ -1710,6 +1730,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3583230441447348508">Gibt eine Liste mit vorkonfigurierten Netzwerkfreigaben an.
 
       Jedes Listenelement der Richtlinie ist ein Objekt mit zwei Teilen: "share_url" und "mode". Bei "share_url" handelt es sich um die URL der Freigabe. "mode" sollte entweder "drop_down" oder "pre_mount" sein. Der "drop_down"-Modus gibt an, dass "share_url" dem Drop-Down der Freigabeerkennung hinzugefügt wird. Der "pre_mount"-Modus gibt an, dass "share_url" verwendet wird.</translation>
+<translation id="3584194414857209694">Aktiviert experimentelle Richtlinien</translation>
 <translation id="3585177699591644295">Damit wird die Bedienungshilfe "Vorlesen" aktiviert.
 
           Wird die Richtlinie auf "true" gesetzt, ist die Funktion "Vorlesen" immer aktiviert.
@@ -1918,6 +1939,19 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien an Google Drive übertragen.</translation>
 <translation id="3915395663995367577">URL einer PAC-Proxy-Datei</translation>
+<translation id="3917288538553140422">Das Festlegen der Richtlinie gibt an, welche Aktion durchgeführt werden soll, wenn das Basisverzeichnis des Nutzers mit eCryptfs-Verschlüsselung erstellt wurde. Sofern eCryptfs-verschlüsselte Basisverzeichnisse nicht auf die ext4-Verschlüsselung umgestellt werden, wird die Ausführung von Android-Apps möglicherweise beendet.
+
+      Bei der Festlegung der Richtlinie auf
+
+      * "Migrate" oder eine nicht unterstützte Optionen wie etwa "AskUser" oder "AskForEcryptfsArcUsers" werden Verzeichnisse bei der Anmeldung automatisch auf ext4 umgestellt, ohne die Zustimmung des Nutzers einzuholen.
+
+      *"Wipe oder "MinimalMigrate" werden alte eCryptfs-verschlüsselte Basisverzeichnisse bei der Anmeldung durch neue ext4-verschlüsselte Basisverzeichnisse ersetzt. Damit der Nutzer sich nicht immer wieder neu anmelden muss, versucht "MinimalMigrate", die Anmeldetoken zu übernehmen.
+
+      * "DisallowArc", oder wenn keine Einstellung festgelegt ist, erfolgt keine Migration und die Android-Apps des Nutzers werden beendet.
+
+      Diese Richtlinie gilt nicht für Kiosknutzer.
+
+      Warnung: Bei den Einstellungen "Wipe" und "MinimalMigrate" werden lokale Daten entfernt.</translation>
 <translation id="3925377537407648234">Bildschirmauflösung und Skalierungsfaktor festlegen</translation>
 <translation id="3927137827189017535">Hiermit wird die Bedienungshilfe für die Einfingerbedienung auf dem Anmeldebildschirm aktiviert.
 
@@ -2925,6 +2959,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Voraussichtlich wird sie auch in Version 87 von <ph name="PRODUCT_NAME" /> für Mac OS X entfernt, wenn die Legacy-Zertifikatsprüfung unter Mac OS X voraussichtlich nicht mehr unterstützt wird.
       </translation>
+<translation id="5494917047563607689">Wenn Sie einen Wert unter 1 MB oder gar keinen Wert festlegen, verwendet <ph name="PRODUCT_OS_NAME" /> beim Installieren durch mehrere Nutzer auf demselben Gerät die Standardgröße zum Speichern von Apps und Erweiterungen im Cache. Hierdurch wird ein erneutes Herunterladen für jeden Nutzer vermieden.</translation>
 <translation id="5498045818698736356">Hierdurch wird eine Liste von Web-Apps festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können.
 
       Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen Komponente "url" und den beiden optionalen Komponenten "default_launch_container" und "create_desktop_shortcut" besteht. Unter "url" wird die URL der Web-App angegeben, die installiert werden soll. "launch_container" sollte entweder "window" oder "tab" sein, um festzulegen, wie die Web-App nach der Installation geöffnet wird. Wenn unter Linux und Windows eine Desktopverknüpfung erstellt werden soll, setzen Sie "create_desktop_shortcut" auf "true". Wenn "default_launch_container" weggelassen wird, wird die App standardmäßig in einem Tab geöffnet. Unabhängig vom Wert von "default_launch_container" können Nutzer ändern, in welchem Container die App geöffnet wird. Wird "create_desktop_shortcut" weggelassen, werden keine Desktopverknüpfungen erstellt. In der Richtlinie "<ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" />" wird beschrieben, wie Sie Apps an die Chrome OS-Ablage pinnen können.</translation>
@@ -2979,6 +3014,15 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Ist sie auf "False" gesetzt oder nicht konfiguriert, erscheinen die Warnungen auch auf nicht unterstützten Computern oder Betriebssystemen.</translation>
 <translation id="5565178130821694365">Passworteingabe alle zwei Tage (48 Stunden) erforderlich</translation>
+<translation id="556564360355507488">Über diese Richtlinie können Sie festlegen, welche Variationen auf einem vom Unternehmen verwalteten <ph name="PRODUCT_OS_NAME" />-Gerät zulässig sind.
+
+      Mit Variationen sind kleine Konfigurationsänderungen an <ph name="PRODUCT_OS_NAME" /> möglich, ohne dass eine neue Version veröffentlicht werden muss. Dazu werden bestehende Funktionen aktiviert oder deaktiviert.
+
+      Wenn Sie "<ph name="VARIATIONS_ENABLED_OPTION_NAME" />" (Wert: 0) festlegen oder die Richtlinie nicht konfigurieren, können alle Variationen für <ph name="PRODUCT_OS_NAME" /> angewendet werden.
+
+      Wenn Sie "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden nur Variationen für <ph name="PRODUCT_OS_NAME" /> angewendet, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
+
+      Wenn Sie "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden auf dem Anmeldebildschirm keine Variationen auf den Browser angewendet. Dieser Modus kann die <ph name="PRODUCT_OS_NAME" />-Entwickler möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er wird daher nicht empfohlen.</translation>
 <translation id="5566210228171064229">Drucken mit und ohne PIN zulassen</translation>
 <translation id="557360560705413259">Wenn diese Einstellung aktiviert ist, verwendet <ph name="PRODUCT_NAME" /> zum Abgleich eines Hostnamens den "commonName"-Eintrag eines Serverzertifikats, falls im Zertifikat eine "subjectAlternativeName"-Erweiterung fehlt. Dies gilt, sofern die Validierung erfolgreich ist und eine Verkettung mit lokal installierten CA-Zertifikaten erfolgt.
 
@@ -3288,6 +3332,11 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 
       Wenn sie auf "Große Dateiuploads und -downloads blockieren" gesetzt ist, werden in <ph name="PRODUCT_NAME" /> die Regeln angewendet, die unter "Große Dateidownloads blockieren" und "Große Dateiuploads blockieren" beschrieben sind.
       </translation>
+<translation id="6082161804984853051">Wird die Richtlinie festgelegt, dann verwendet <ph name="PRODUCT_NAME" /> das von Ihnen angegebenen Verzeichnis zum Speichern von im Cache gespeicherten Dateien auf dem Laufwerk unabhängig davon, ob der Nutzer das Flag "--disk-cache-dir" angegeben hat.
+
+      Wurde die Richtlinie nicht festgelegt, dann verwendet <ph name="PRODUCT_NAME" /> das Cachestandardverzeichnis. Diese Einstellung können Nutzer jedoch mit dem Flag "--disk-cache-dir" auf der Befehlszeile ändern.
+
+      <ph name="PRODUCT_NAME" /> verwaltet die Inhalte des Stammverzeichnisses eines Volumes. Daher dürfen Sie, wenn Sie Datenverlust und sonstige Fehler vermeiden möchten, diese Richtlinie nicht auf das Stammverzeichnis oder ein anderes Verzeichnis festlegen, das für andere Zwecke verwendet wird. Informationen zu den Variablen, die Sie verwenden können, finden Sie unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="6083631234867522991">Windows (Windows-Clients):</translation>
 <translation id="608788685013546076">Schwellenwert des Akkus für das Umschalten bei Leistungsspitzen in Prozent festlegen</translation>
 <translation id="6089679180657323464">Legt die Einstellungen für Wilco Diagnostics and Telemetry Controller fest.</translation>
@@ -3708,6 +3757,15 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6786747875388722282">Erweiterungen</translation>
 <translation id="6786967369487349613">Roaming-Profilverzeichnis festlegen</translation>
 <translation id="6795485990775913659">Drucken nur ohne PIN zulassen</translation>
+<translation id="6799657852647827750">Über diese Richtlinie können Sie festlegen, welche Variationen in <ph name="PRODUCT_NAME" /> zulässig sind.
+
+      Mit Variationen sind kleine Konfigurationsänderungen an <ph name="PRODUCT_NAME" /> möglich, ohne dass eine neue Version veröffentlicht werden muss. Dazu werden bestehende Funktionen aktiviert oder deaktiviert.
+
+      Wenn Sie "<ph name="VARIATIONS_ENABLED_OPTION_NAME" />" (Wert: 0) festlegen oder die Richtlinie nicht konfigurieren, können alle Variationen für den Browser angewendet werden.
+
+      Wenn Sie "<ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />" festlegen (Wert: 1), werden nur Variationen für <ph name="PRODUCT_NAME" /> angewendet, die als wichtige Sicherheits- oder Stabilitätskorrekturen gewertet werden.
+
+      Wenn Sie "<ph name="VARIATIONS_DISABLED_OPTION_NAME" />" festlegen (Wert: 2), werden keine Variationen auf den Browser angewendet. Dieser Modus kann die <ph name="PRODUCT_NAME" />-Entwickler möglicherweise daran hindern, wichtige Sicherheitskorrekturen zeitnah durchzuführen. Er wird daher nicht empfohlen.</translation>
 <translation id="6810445994095397827">JavaScript auf diesen Websites blockieren</translation>
 <translation id="6813263547126514821">Energiesparmodus und Herunterfahren</translation>
 <translation id="681446116407619279">Unterstützte Authentifizierungsschemas</translation>
@@ -3986,6 +4044,9 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung berücksichtigt, es sei denn, "AllowWakeLocks" ist auf "false" gesetzt.
 Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfragen auf den Status von System-Wakelocks zurückgestuft.</translation>
+<translation id="7177293255621000064">Das Festlegen der Richtlinie auf "True" sorgt dafür, dass externe Speichermedien aller Art, wie etwa USB-Flashlaufwerke, externe Festplatten, SD- und sonstige Speicherkarten oder optische Speichergeräte, im Dateibrowser nicht verfügbar sind. Wenn die Richtlinie auf "False" festgelegt oder keine Einstellung gewählt ist, können Nutzer externen Speicher auf ihrem Gerät verwenden.
+
+      Hinweis: Die Richtlinie wirkt sich nicht auf Google Drive und internen Speicher aus. Die Nutzer können weiterhin auf Dateien zugreifen, die im Ordner "Downloads" gespeichert sind.</translation>
 <translation id="7177857088692019405">Schnelles Entsperren</translation>
 <translation id="718126088895133062">Mit dieser Richtlinie wird die Nutzer-ID zur <ph name="PLUGIN_VM_NAME" />-Lizenzierung für dieses Gerät angegeben.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5166,6 +5227,11 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Wird die Richtlinie nicht konfiguriert, obwohl sie auf dem Gerät unterstützt wird, dann wird der Standardmodus für die Akkuaufladung angewendet und kann vom Nutzer nicht geändert werden.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" diese Richtlinie.</translation>
+<translation id="9055835215213290877">Aufgrund der Einstellung "Kein" der Richtlinie verwendet <ph name="PRODUCT_NAME" /> die Cachestandardgröße zum Speichern im Cache gespeicherter Dateien auf dem Laufwerk. Dies kann vom Nutzer nicht geändert werden.
+
+      Wenn Sie die Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> die von Ihnen angegebene Cachegröße unabhängig davon, ob Nutzer das Flag "--disk-cache-size" angeben oder nicht. Werte, die kleiner als einige Megabyte sind, werden aufgerundet.
+
+      Wenn die Richtlinie nicht eingestellt ist, verwendet <ph name="PRODUCT_NAME" /> die Standardgröße. Nutzer können diese Einstellung mit dem Flag "--disk-cache-size" ändern.</translation>
 <translation id="9077227880520270584">Timer für automatische Anmeldung in lokalem Gerätekonto</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="9088433379343318874">Contentanbieter für betreute Nutzer aktivieren</translation>

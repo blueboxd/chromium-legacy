@@ -88,6 +88,14 @@
     background-color: rgba(0, 0, 0, .12);
     outline: none;
   }
+
+  .dot {
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    height: 10px;
+    width: 10px;
+  }
 </style>
 <cr-input id="dropdownInput" on-keydown="onKeyDown_"
     value="[[value.displayName]]" readonly>
@@ -101,8 +109,9 @@
           no-cancel-on-esc-key>
         <div slot="dropdown-content">
           <template is="dom-repeat" items="[[itemList]]">
-            <button class="list-item" on-click="onSelect_" tabindex="-1"
-                value="[[item.key]]">
+            <button id="[[item.key]]" class="list-item" on-click="onSelect_"
+                tabindex="-1" value="[[item.key]]">
+              <span class="dot"></span>
               [[item.displayName]]
             </button>
           </template>

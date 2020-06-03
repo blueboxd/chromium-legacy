@@ -2127,6 +2127,7 @@
 <translation id="3677106374019847299">Унесите прилагођеног добављача</translation>
 <translation id="3677657024345889897">Најтише</translation>
 <translation id="3677911431265050325">Захтевај мобилни сајт</translation>
+<translation id="3677959414150797585">Укључује апликације, веб-странице и друго. Шаље статистику да би се побољшали предлози само ако сте одабрали да делите податке о коришћењу.</translation>
 <translation id="3678156199662914018">Додатак: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Глас за претварање текста у говор</translation>
 <translation id="3681311097828166361">Хвала вам на повратним информацијама. Тренутно сте офлајн и касније ћемо вам послати извештај.</translation>
@@ -2538,6 +2539,7 @@
 <translation id="4154664944169082762">Отисци</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Ово је налог за децу којим управљају <ph name="CUSTODIAN_EMAIL" /> и <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Љубичаста</translation>
 <translation id="4163560723127662357">Непозната тастатура</translation>
 <translation id="4168015872538332605">Нека подешавања чији је власник <ph name="PRIMARY_EMAIL" /> се деле са вама. Та подешавања утичу на налог само када користите вишеструко пријављивање.</translation>
 <translation id="4170314459383239649">Обриши при затварању</translation>
@@ -3779,6 +3781,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – Камера или микрофон снимају</translation>
 <translation id="5841270259333717135">Конфигуришите етернет</translation>
 <translation id="5842497610951477805">Омогући Bluetooth</translation>
+<translation id="5844574845205796324">Предлажи нов садржај за истраживање</translation>
 <translation id="5846200638699387931">Синтаксичка грешка односа вредности: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Инсталирајте ажурирања и апликације. Ако наставите, слажете се да овај уређај може и да аутоматски преузима и инсталира ажурирања и апликације од Google-а, мобилног оператера и произвођача овог уређаја, уз могуће коришћење мобилних података. Неке од ових апликација могу да нуде куповине у апликацији.</translation>
 <translation id="5849212445710944278">Већ је додато</translation>

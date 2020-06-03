@@ -338,6 +338,7 @@
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
+<translation id="5352285283572729470">این تنظیم مدیریت‌شده است</translation>
 <translation id="5388358297987318779">بازکردن تصویر</translation>
 <translation id="5407969256130905701">صرف‌نظر کردن از تغییرات</translation>
 <translation id="5409365236829784218">برنامه‌ای که بتواند این فایل را باز کند در سیستم نصب نشده است.</translation>
@@ -375,6 +376,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5869029295770560994">بله متوجه شدم</translation>
 <translation id="5871497086027727873">۱ مورد منتقل شد</translation>
 <translation id="5897956970858271241">به پیوندی که کپی کرده‌اید بروید</translation>
+<translation id="5899314093904173337">‏برای هم‌رسانی کردن با افراد حاضر در اطراف، به‌آن‌ها اجازه دهید این کد QR را با دوربین خود یا برنامه اسکنر QR اسکن کنند</translation>
 <translation id="5911030830365207728">‏‫مترجم Google‬</translation>
 <translation id="5913600720976431809">گزینه‌های ترجمه صفحه</translation>
 <translation id="5938160824633642847">دستگاهتان تقریباً پر است. فضا آزاد کنید و دوباره امتحان کنید.</translation>
@@ -564,6 +566,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8174524257672181687">مسدود کردن همه کوکی‌ها (توصیه نمی‌شود)</translation>
 <translation id="8197543752516192074">ترجمه صفحه</translation>
 <translation id="8205564605687841303">لغو</translation>
+<translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="8225985093977202398">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8281781826761538115">پیش‌فرض - <ph name="DEFAULT_LOCALE" /></translation>

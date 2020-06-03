@@ -121,6 +121,12 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       buffer_formats[1] = gfx::BufferFormat::RG_88;
       return VideoFrameResourceType::YUV;
 
+    case PIXEL_FORMAT_P016LE:
+      DCHECK_EQ(num_textures, 1);
+      // TODO(mcasas): Support other formats such as e.g. P012.
+      buffer_formats[0] = gfx::BufferFormat::P010;
+      return VideoFrameResourceType::RGB;
+
     case PIXEL_FORMAT_UYVY:
       NOTREACHED();
       FALLTHROUGH;
@@ -143,7 +149,6 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_XBGR:
-    case PIXEL_FORMAT_P016LE:
     case PIXEL_FORMAT_UNKNOWN:
       break;
   }

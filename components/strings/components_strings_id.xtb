@@ -205,6 +205,11 @@
 <translation id="1753706481035618306">Nomor halaman</translation>
 <translation id="1763864636252898013">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh sistem operasi perangkat Anda. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Coba jalankan Diagnostik Jaringan Windows<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Server yang akan Anda akses, <ph name="ORIGIN" />, telah menetapkan header
+    yang mengharuskan kebijakan asal diterapkan ke semua permintaan yang ditujukan kepadanya. Namun,
+    format header tersebut salah, yang membuat browser tidak dapat memenuhi
+    permintaan Anda untuk <ph name="SITE" />. Kebijakan asal dapat digunakan oleh
+    operator situs guna mengonfigurasi keamanan dan properti lainnya untuk sebuah situs.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Perbarui frasa sandi sinkronisasi Anda.</translation>
 <translation id="1787142507584202372">Tab yang terbuka muncul di sini</translation>
@@ -228,6 +233,7 @@
 <translation id="1898423065542865115">Pemfilteran</translation>
 <translation id="1901443836186977402">{1,plural, =1{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah habis beberapa hari yang lalu. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang menginterupsi sambungan Anda. Saat ini jam komputer Anda disetel ke <ph name="CURRENT_DATE" />. Apakah sudah sesuai? Jika belum, sebaiknya perbaiki jam sistem dan muat ulang halaman ini.}other{Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; masa berlaku sertifikat keamanannya telah habis # hari yang lalu. Hal ini mungkin disebabkan oleh kesalahan konfigurasi, atau ada penyerang yang menginterupsi sambungan Anda. Saat ini jam komputer Anda disetel ke <ph name="CURRENT_DATE" />. Apakah sudah benar? Jika belum, sebaiknya perbaiki jam sistem dan muat ulang halaman ini.}}</translation>
 <translation id="1902576642799138955">Periode Validitas</translation>
+<translation id="191374271204266022">Salin sebagai JSON</translation>
 <translation id="1914326953223720820">Layanan Ekstraksi File</translation>
 <translation id="1915697529809968049">Gunakan Touch ID dan bukan CVC?</translation>
 <translation id="1916770123977586577">Untuk menerapkan setelan yang telah diupdate pada situs ini, muat ulang halaman ini</translation>
@@ -704,6 +710,8 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
     Jika Anda yakin bahwa ini keliru, kunjungi https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Kurang dari 1 MB</translation>
 <translation id="3990250421422698716">Jog offset</translation>
+<translation id="3996311196211510766"><ph name="ORIGIN" /> situs telah meminta kebijakan asal
+    agar diterapkan ke semua permintaan yang ditujukan kepadanya, tetapi kebijakan ini tidak dapat diterapkan untuk saat ini.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 halaman web di sekitar}other{# halaman web di sekitar}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokumen PDF berisi {COUNT} halaman}other{Dokumen PDF berisi {COUNT} halaman}}</translation>
 <translation id="4030383055268325496">&amp;Urungkan penambahan</translation>
@@ -748,6 +756,11 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4194250254487269611">Saat ini informasi kartu Anda tidak dapat disimpan</translation>
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Periksa konfigurasi antivirus dan firewall<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
+    agar kebijakan asal diterapkan ke semua permintaan yang ditujukan kepadanya. Namun, server tersebut kini telah
+    gagal menerapkan kebijakan, yang membuat browser tidak dapat memenuhi permintaan Anda
+    untuk <ph name="SITE" />. Kebijakan asal dapat digunakan oleh operator situs
+    guna mengonfigurasi keamanan dan properti lainnya untuk sebuah situs.</translation>
 <translation id="421066178035138955">Gunakan perangkat dan data virtual reality</translation>
 <translation id="4214357935346142455">profil layar login</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
@@ -1238,6 +1251,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6259156558325130047">&amp;Ulangi Pengaturan Ulang</translation>
 <translation id="6263376278284652872">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Kembali agar aman</translation>
+<translation id="6265794661083428563">Salin nilai kebijakan <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Hijau Kebiruan Terang</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Halaman dari daftar bacaan Anda muncul di sini</translation>

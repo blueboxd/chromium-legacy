@@ -27,7 +27,6 @@
 #include "base/win/win_util.h"
 #endif
 
-using net::DohProviderEntry;
 using testing::_;
 using testing::IsEmpty;
 using testing::Return;
@@ -43,47 +42,38 @@ constexpr char kRecordUserDropdownInteraction[] =
     "recordUserDropdownInteraction";
 constexpr char kWebUiFunctionName[] = "webUiCallbackName";
 
-const std::vector<DohProviderEntry>& GetDohProviderListForTesting() {
-  static const base::NoDestructor<std::vector<DohProviderEntry>> test_providers{
-      {
-          DohProviderEntry(
-              "Provider_Global1", net::DohProviderIdForHistogram(-1),
-              {} /*ip_strs */, {} /* dot_hostnames */,
-              "https://global1.provider/dns-query{?dns}",
-              "Global Provider 1" /* ui_name */,
-              "https://global1.provider/privacy_policy/" /* privacy_policy */,
-              true /* display_globally */, {} /* display_countries */),
-          DohProviderEntry(
-              "Provider_NoDisplay", net::DohProviderIdForHistogram(-2),
-              {} /*ip_strs */, {} /* dot_hostnames */,
-              "https://nodisplay.provider/dns-query{?dns}",
-              "No Display Provider" /* ui_name */,
-              "https://nodisplay.provider/privacy_policy/" /* privacy_policy */,
-              false /* display_globally */, {} /* display_countries */),
-          DohProviderEntry(
-              "Provider_EE_FR", net::DohProviderIdForHistogram(-3),
-              {} /*ip_strs */, {} /* dot_hostnames */,
-              "https://ee.fr.provider/dns-query{?dns}",
-              "EE/FR Provider" /* ui_name */,
-              "https://ee.fr.provider/privacy_policy/" /* privacy_policy */,
-              false /* display_globally */,
-              {"EE", "FR"} /* display_countries */),
-          DohProviderEntry(
-              "Provider_FR", net::DohProviderIdForHistogram(-4),
-              {} /*ip_strs */, {} /* dot_hostnames */,
-              "https://fr.provider/dns-query{?dns}",
-              "FR Provider" /* ui_name */,
-              "https://fr.provider/privacy_policy/" /* privacy_policy */,
-              false /* display_globally */, {"FR"} /* display_countries */),
-          DohProviderEntry(
-              "Provider_Global2", net::DohProviderIdForHistogram(-5),
-              {} /*ip_strs */, {} /* dot_hostnames */,
-              "https://global2.provider/dns-query{?dns}",
-              "Global Provider 2" /* ui_name */,
-              "https://global2.provider/privacy_policy/" /* privacy_policy */,
-              true /* display_globally */, {} /* display_countries */),
-      }};
-  return *test_providers;
+net::DohProviderEntry::List GetDohProviderListForTesting() {
+  static const auto global1 = net::DohProviderEntry::ConstructForTesting(
+      "Provider_Global1", net::DohProviderIdForHistogram(-1), {} /*ip_strs */,
+      {} /* dot_hostnames */, "https://global1.provider/dns-query{?dns}",
+      "Global Provider 1" /* ui_name */,
+      "https://global1.provider/privacy_policy/" /* privacy_policy */,
+      true /* display_globally */, {} /* display_countries */);
+  static const auto no_display = net::DohProviderEntry::ConstructForTesting(
+      "Provider_NoDisplay", net::DohProviderIdForHistogram(-2), {} /*ip_strs */,
+      {} /* dot_hostnames */, "https://nodisplay.provider/dns-query{?dns}",
+      "No Display Provider" /* ui_name */,
+      "https://nodisplay.provider/privacy_policy/" /* privacy_policy */,
+      false /* display_globally */, {} /* display_countries */);
+  static const auto ee_fr = net::DohProviderEntry::ConstructForTesting(
+      "Provider_EE_FR", net::DohProviderIdForHistogram(-3), {} /*ip_strs */,
+      {} /* dot_hostnames */, "https://ee.fr.provider/dns-query{?dns}",
+      "EE/FR Provider" /* ui_name */,
+      "https://ee.fr.provider/privacy_policy/" /* privacy_policy */,
+      false /* display_globally */, {"EE", "FR"} /* display_countries */);
+  static const auto fr = net::DohProviderEntry::ConstructForTesting(
+      "Provider_FR", net::DohProviderIdForHistogram(-4), {} /*ip_strs */,
+      {} /* dot_hostnames */, "https://fr.provider/dns-query{?dns}",
+      "FR Provider" /* ui_name */,
+      "https://fr.provider/privacy_policy/" /* privacy_policy */,
+      false /* display_globally */, {"FR"} /* display_countries */);
+  static const auto global2 = net::DohProviderEntry::ConstructForTesting(
+      "Provider_Global2", net::DohProviderIdForHistogram(-5), {} /*ip_strs */,
+      {} /* dot_hostnames */, "https://global2.provider/dns-query{?dns}",
+      "Global Provider 2" /* ui_name */,
+      "https://global2.provider/privacy_policy/" /* privacy_policy */,
+      true /* display_globally */, {} /* display_countries */);
+  return {&global1, &no_display, &ee_fr, &fr, &global2};
 }
 
 bool FindDropdownItem(const base::Value& resolvers,
@@ -315,116 +305,40 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownList) {
   // Check results.
   base::Value::ConstListView resolver_list = call_data.arg3()->GetList();
   ASSERT_GE(resolver_list.size(), 1U);
-  EXPECT_EQ("custom", resolver_list[0].FindKey("value")->GetString());
+  EXPECT_TRUE(resolver_list[0].FindKey("value")->GetString().empty());
 }
 
-IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListForCountry) {
-  // The 'EE' list should start with the custom entry, followed by the two
-  // global providers and the 'EE' provider in some random order.
-  base::Value resolver_list = handler_->GetSecureDnsResolverListForCountry(
-      country_codes::CountryCharsToCountryID('E', 'E'),
-      GetDohProviderListForTesting());
-  EXPECT_EQ(4u, resolver_list.GetList().size());
-  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
-                               "https://global1.provider/dns-query{?dns}",
-                               "https://global1.provider/privacy_policy/"));
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 2",
-                               "https://global2.provider/dns-query{?dns}",
-                               "https://global2.provider/privacy_policy/"));
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "EE/FR Provider",
-                               "https://ee.fr.provider/dns-query{?dns}",
-                               "https://ee.fr.provider/privacy_policy/"));
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListContents) {
+  const auto entries = GetDohProviderListForTesting();
+  handler_->SetProvidersForTesting(entries);
+  const base::Value resolver_list = handler_->GetSecureDnsResolverList();
 
-  // The 'FR' list should start with the custom entry, followed by the two
-  // global providers and the two 'FR' providers in some random order.
-  resolver_list = handler_->GetSecureDnsResolverListForCountry(
-      country_codes::CountryCharsToCountryID('F', 'R'),
-      GetDohProviderListForTesting());
-  EXPECT_EQ(5u, resolver_list.GetList().size());
-  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
-                               "https://global1.provider/dns-query{?dns}",
-                               "https://global1.provider/privacy_policy/"));
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 2",
-                               "https://global2.provider/dns-query{?dns}",
-                               "https://global2.provider/privacy_policy/"));
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "EE/FR Provider",
-                               "https://ee.fr.provider/dns-query{?dns}",
-                               "https://ee.fr.provider/privacy_policy/"));
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "FR Provider",
-                               "https://fr.provider/dns-query{?dns}",
-                               "https://fr.provider/privacy_policy/"));
-
-  // The 'CA' list should start with the custom entry, followed by the two
-  // global providers.
-  resolver_list = handler_->GetSecureDnsResolverListForCountry(
-      country_codes::CountryCharsToCountryID('C', 'A'),
-      GetDohProviderListForTesting());
-  EXPECT_EQ(3u, resolver_list.GetList().size());
-  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
-                               "https://global1.provider/dns-query{?dns}",
-                               "https://global1.provider/privacy_policy/"));
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 2",
-                               "https://global2.provider/dns-query{?dns}",
-                               "https://global2.provider/privacy_policy/"));
+  EXPECT_EQ(entries.size() + 1, resolver_list.GetList().size());
+  EXPECT_TRUE(resolver_list.GetList()[0].FindKey("value")->GetString().empty());
+  for (const auto* entry : entries) {
+    EXPECT_TRUE(FindDropdownItem(resolver_list, entry->ui_name,
+                                 entry->dns_over_https_template,
+                                 entry->privacy_policy));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListChange) {
-  // Populate the map for recording dropdown change metrics.
-  base::Value resolver_list = handler_->GetSecureDnsResolverListForCountry(
-      country_codes::CountryCharsToCountryID('E', 'E'),
-      GetDohProviderListForTesting());
-  EXPECT_EQ(4u, resolver_list.GetList().size());
+  handler_->SetProvidersForTesting(GetDohProviderListForTesting());
 
   base::HistogramTester histograms;
   base::ListValue args;
-  args.AppendString("custom" /* old_provider */);
+  args.AppendString(std::string() /* old_provider */);
   args.AppendString(
       "https://global1.provider/dns-query{?dns}" /* new_provider */);
   web_ui_.HandleReceivedMessage(kRecordUserDropdownInteraction, &args);
 
-  const std::string uma_base("Net.DNS.UI.DropdownSelectionEvent");
-  histograms.ExpectTotalCount(uma_base + ".Ignored", 2u);
-  histograms.ExpectTotalCount(uma_base + ".Selected", 1u);
-  histograms.ExpectTotalCount(uma_base + ".Unselected", 1u);
+  const std::string kUmaBase = "Net.DNS.UI.DropdownSelectionEvent";
+  histograms.ExpectTotalCount(kUmaBase + ".Ignored", 4u);
+  histograms.ExpectTotalCount(kUmaBase + ".Selected", 1u);
+  histograms.ExpectTotalCount(kUmaBase + ".Unselected", 1u);
 }
 
-class SecureDnsHandlerTestWithDisabledProviders : public SecureDnsHandlerTest {
- protected:
-  SecureDnsHandlerTestWithDisabledProviders() {
-    scoped_features_.InitAndEnableFeatureWithParameters(
-        features::kDnsOverHttps,
-        {{"DisabledProviders",
-          "Provider_Global2, , Provider_EE_FR,Unexpected"}});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecureDnsHandlerTestWithDisabledProviders);
-};
-
-IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTestWithDisabledProviders,
-                       DropdownListDisabledProviders) {
-  // The 'FR' list should start with the custom entry, followed by the two
-  // global providers and the two 'FR' providers in some random order.
-  base::Value resolver_list = handler_->GetSecureDnsResolverListForCountry(
-      country_codes::CountryCharsToCountryID('F', 'R'),
-      GetDohProviderListForTesting());
-  EXPECT_EQ(3u, resolver_list.GetList().size());
-  EXPECT_EQ("custom", resolver_list.GetList()[0].FindKey("value")->GetString());
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "Global Provider 1",
-                               "https://global1.provider/dns-query{?dns}",
-                               "https://global1.provider/privacy_policy/"));
-  EXPECT_TRUE(FindDropdownItem(resolver_list, "FR Provider",
-                               "https://fr.provider/dns-query{?dns}",
-                               "https://fr.provider/privacy_policy/"));
-}
-
-IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTestWithDisabledProviders,
-                       SecureDnsTemplates) {
+IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsTemplates) {
   std::string good_post_template = "https://foo.test/";
   std::string good_get_template = "https://bar.test/dns-query{?dns}";
   std::string bad_template = "dns-query{?dns}";
@@ -433,6 +347,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTestWithDisabledProviders,
   std::vector<std::string> secure_dns_templates;
   int management_mode;
   PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kDnsOverHttpsMode,
+                         SecureDnsConfig::kModeAutomatic);
   local_state->SetString(prefs::kDnsOverHttpsTemplates, good_post_template);
   EXPECT_TRUE(GetLastSettingsChangedMessage(
       &secure_dns_mode, &secure_dns_templates, &management_mode));
@@ -458,15 +374,6 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTestWithDisabledProviders,
       &secure_dns_mode, &secure_dns_templates, &management_mode));
   EXPECT_EQ(1u, secure_dns_templates.size());
   EXPECT_EQ(good_post_template, secure_dns_templates[0]);
-
-  // Should still return a provider that was disabled.
-  local_state->SetString(prefs::kDnsOverHttpsTemplates,
-                         "https://global2.provider/dns-query{?dns}");
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(1u, secure_dns_templates.size());
-  EXPECT_EQ("https://global2.provider/dns-query{?dns}",
-            secure_dns_templates[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {

@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">Fjalëkalimi ka skaduar</translation>
 <translation id="1630768113285622200">Rinis dhe vazhdo</translation>
 <translation id="1630873818549593964">Të dhënat e fëmijës tënd te Classroom do të jenë të mbrojtura. <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Fjalëkalimi u ruajt në "Llogarinë tënde të Google"</translation>
 <translation id="1632803087685957583">Të lejon të personalizosh shpejtësinë e përsëritjes të tastierës, parashikimin e fjalëve dhe më shumë</translation>
 <translation id="1633947793238301227">Çaktivizo "Asistentin e Google"</translation>
 <translation id="1634783886312010422">A e ndryshove tashmë këtë fjalëkalim në <ph name="WEBSITE" />?</translation>
@@ -1576,6 +1577,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="296026337010986570">U krye! Softueri keqdashës u hoq. Për të riaktivizuar shtesat, vizito &lt;a href="chrome://extensions"&gt;Shtesat.&lt;/a&gt;</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (shtesa e dhënë)</translation>
 <translation id="2961695502793809356">Kliko për të shkuar përpara, mbaje shtypur për të parë historikun</translation>
+<translation id="2962131322798295505">Zgjedhësi i imazhit të sfondit</translation>
 <translation id="2963151496262057773">Përbërësi shtesë i mëposhtëm nuk përgjigjet: <ph name="PLUGIN_NAME" />Dëshiron ta ndalosh?</translation>
 <translation id="2964193600955408481">Çaktivizo Wi-Fi</translation>
 <translation id="2966937470348689686">Menaxho preferencat e Android</translation>
@@ -2125,6 +2127,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3677106374019847299">Fut ofruesin e personalizuar</translation>
 <translation id="3677657024345889897">Testi i qetësisë</translation>
 <translation id="3677911431265050325">Kërko sajtin për celular</translation>
+<translation id="3677959414150797585">Përfshin aplikacionet, faqet e uebit dhe më shumë. Dërgon statistika për të përmirësuar sugjerimet vetëm nëse ke zgjedhur të ndash të dhënat e përdorimit.</translation>
 <translation id="3678156199662914018">Shtesa: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Zëri për "tekstin në ligjërim"</translation>
 <translation id="3681311097828166361">Faleminderit për komentet! Aktualisht je jashtë linje dhe raportimi do të dërgohet më vonë.</translation>
@@ -2536,6 +2539,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4154664944169082762">Gjurmë gishtash</translation>
 <translation id="4157869833395312646">Kriptografia e rrethuar e serverit të Microsoft</translation>
 <translation id="4159681666905192102">Kjo është një llogari për fëmijë e menaxhuar nga <ph name="CUSTODIAN_EMAIL" /> dhe <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Vjollcë</translation>
 <translation id="4163560723127662357">Tastierë e panjohur</translation>
 <translation id="4168015872538332605">Disa cilësime që i përkasin <ph name="PRIMARY_EMAIL" /> po ndahen me ty. Këto cilësime prekin vetëm llogarinë tënde kur përdor identifikimin e shumëfishtë.</translation>
 <translation id="4170314459383239649">Pastro në dalje</translation>
@@ -2879,6 +2883,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4645676300727003670">&amp;Mbaje</translation>
 <translation id="4646675363240786305">Portat</translation>
 <translation id="4647090755847581616">&amp;Mbylle skedën</translation>
+<translation id="4647420311443994946">{0,select, tablet{Nis aplikacionin kur të identifikohesh në tabletin tënd}computer{Nis aplikacionin kur të identifikohesh në kompjuterin tënd}other{Nis aplikacionin kur të identifikohesh në pajisjen tënde}}</translation>
 <translation id="4647697156028544508">Fut kodin PIN për "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Lejet e pamjaftueshme</translation>
 <translation id="4648499713050786492">Shkyçe profilin tënd para se të shtosh një person.</translation>
@@ -2891,6 +2896,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4660540330091848931">Po ndryshon madhësinë</translation>
 <translation id="4660838440047236328">struktura e dhomës</translation>
 <translation id="4661407454952063730">E dhënë aplikacioni mund të jetë çdo e dhënë që një aplikacion ka ruajtur (bazuar në cilësimet e zhvilluesit), duke përfshirë të dhënat si kontaktet, mesazhet dhe fotografitë.</translation>
+<translation id="4662373422909645029">Pseudonimi nuk mund të përmbajë numra</translation>
 <translation id="4662788913887017617">Ndaje këtë faqeshënues me telefonin tënd iPhone</translation>
 <translation id="4663373278480897665">Kamera lejohet</translation>
 <translation id="4664482161435122549">Gabim në eksport PKCS #12</translation>
@@ -3585,6 +3591,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5585912436068747822">Formatimi dështoi</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Po ngarkon aplikacionet...</translation>
+<translation id="558984423786125616">Porta ekziston tashmë te cilësimet</translation>
 <translation id="5592595402373377407">Nuk ofrohen ende të dhëna të mjaftueshme.</translation>
 <translation id="5593357315997824387">Sinkronizo skedarët e mi</translation>
 <translation id="5595485650161345191">Redakto adresën</translation>
@@ -3628,6 +3635,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5639549361331209298">Ringarkoje këtë faqe, mbaj shtypur për të parë më shumë opsione</translation>
 <translation id="5640133431808313291">Menaxho çelësat e sigurisë</translation>
 <translation id="5642508497713047">Nënshkrues CRL</translation>
+<translation id="5643321261065707929">Rrjet me matje</translation>
 <translation id="5643620609347735571">Pastro dhe vazhdo</translation>
 <translation id="5644857731242502394">Konfigurimi i pajisjeve të lidhura</translation>
 <translation id="5646376287012673985">Vendndodhja</translation>
@@ -3772,6 +3780,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - kamera ose mikrofoni po regjistron</translation>
 <translation id="5841270259333717135">Konfiguro eternetin</translation>
 <translation id="5842497610951477805">Aktivizo Bluetooth-in</translation>
+<translation id="5844574845205796324">Sugjero përmbajtje të re për të eksploruar</translation>
 <translation id="5846200638699387931">Gabim i sintaksës së marrëdhënies: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instalo përditësimet dhe aplikacionet. Duke vazhduar, ti pranon se kjo pajisje mund të shkarkojë dhe instalojë gjithashtu automatikisht përditësime dhe aplikacione nga Google, operatori yt celular, prodhuesi i pajisjes sate, duke përdorur mundësisht të dhënat celulare. Disa prej këtyre aplikacioneve mund të ofrojnë blerje përmes aplikacioneve.</translation>
 <translation id="5849212445710944278">Është shtuar tashmë</translation>
@@ -5535,6 +5544,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
     <ph name="BEGIN_PARAGRAPH5" />Këtë shërbim mund ta çaktivizosh te "Cilësimet".<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Kodet PIN nuk përputhen</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> po përdor cilësimet e përfaqësuesit nga një shtesë</translation>
+<translation id="8097959162767603171">Administratori yt duhet të pranojë fillimisht kushtet e shërbimit në listën e pajisjeve Chrome të "Panelit të administratorit".</translation>
 <translation id="8101987792947961127">Kërkohet Powerwash me rindezjen e ardhshme</translation>
 <translation id="8102159139658438129">Shko te <ph name="LINK_BEGIN" />Cilësimet<ph name="LINK_END" /> për të parë opsione për telefonin e lidhur</translation>
 <translation id="8104696615244072556">Kryej Powerwash të pajisjes tënde <ph name="IDS_SHORT_PRODUCT_NAME" /> dhe kthehu te versioni i mëparshëm.</translation>

@@ -2129,6 +2129,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3677106374019847299">Zadajte vlastného poskytovateľa</translation>
 <translation id="3677657024345889897">Najtichšie</translation>
 <translation id="3677911431265050325">Vyžiadať mobilný web</translation>
+<translation id="3677959414150797585">Zahŕňa aplikácie, webové stránky a ďalší obsah. Odosiela štatistiky na zlepšovanie návrhov iba vtedy, keď ste vybrali zdieľanie údajov o používaní.</translation>
 <translation id="3678156199662914018">Rozšírenie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Hlas prevodu textu na reč</translation>
 <translation id="3681311097828166361">Ďakujeme vám za spätnú väzbu. Teraz ste offline a vaše hlásenie sa odošle neskôr.</translation>
@@ -2540,6 +2541,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4154664944169082762">Odtlačky</translation>
 <translation id="4157869833395312646">Šifrovanie Server Gated Cryptography spoločnosti Microsoft</translation>
 <translation id="4159681666905192102">Toto je detský účet spravovaný používateľmi <ph name="CUSTODIAN_EMAIL" /> a <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Purpurová</translation>
 <translation id="4163560723127662357">Neznáma klávesnica</translation>
 <translation id="4168015872538332605">Používateľ <ph name="PRIMARY_EMAIL" /> s vami zdieľa niektoré svoje nastavenia. Tieto nastavenia váš účet ovplyvnia iba počas používania viacnásobného prihlásenia.</translation>
 <translation id="4170314459383239649">Vymazať po ukončení</translation>
@@ -3153,7 +3155,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5018526990965779848">Odosielanie údajov o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie zlepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom pre Android. Ak aktivujete ďalšiu aktivitu na internete a v aplikáciách, tieto údaje sa uložia vo vašom účte Google.</translation>
 <translation id="5021750053540820849">Zatiaľ neaktualizované</translation>
 <translation id="5026806129670917316">Zapnúť sieť Wi‑Fi</translation>
-<translation id="5026874946691314267">Viac nezobrazovať</translation>
+<translation id="5026874946691314267">Nabudúce nezobrazovať</translation>
 <translation id="5027550639139316293">E-mailový certifikát</translation>
 <translation id="5027562294707732951">Pridať rozšírenie</translation>
 <translation id="5029568752722684782">Vymazať kópiu</translation>
@@ -3780,6 +3782,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – Kamera alebo mikrofón zaznamenáva obsah</translation>
 <translation id="5841270259333717135">Konfigurácia ethernetu</translation>
 <translation id="5842497610951477805">Povolenie rozhrania Bluetooth</translation>
+<translation id="5844574845205796324">Navrhovať nový obsah na prieskum</translation>
 <translation id="5846200638699387931">Chyba syntaxe vzťahu: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Inštalácia aktualizácií a aplikácií. Pokračovaním vyjadrujete súhlas s tým, že toto zariadenie môže tiež automaticky sťahovať a inštalovať aktualizácie a aplikácie od Googlu, operátora a výrobcu zariadenia a v prípade potreby pri tom môže používať mobilné dáta. Niektoré z týchto aplikácií môžu ponúkať nákupy v aplikácii.</translation>
 <translation id="5849212445710944278">Už pridané</translation>

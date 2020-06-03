@@ -2130,6 +2130,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3677106374019847299">Maglagay ng custom na provider</translation>
 <translation id="3677657024345889897">Pinakamahina</translation>
 <translation id="3677911431265050325">Hilingin ang pang-mobile na site</translation>
+<translation id="3677959414150797585">Kabilang ang mga app, webpage, at higit pa. Magpapadala lang ng mga istatistika para mapahusay ang mga suhestyon kung pinili mong ibahagi ang data ng paggamit.</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Boses ng text-to-speech</translation>
 <translation id="3681311097828166361">Salamat sa iyong feedback. Offline ka na ngayon, at ipapadala ang iyong ulat sa ibang pagkakataon.</translation>
@@ -2541,6 +2542,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4154664944169082762">Mga fingerprint</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Isa itong account para sa mga bata na pinamamahalaan nina <ph name="CUSTODIAN_EMAIL" /> at <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Lila</translation>
 <translation id="4163560723127662357">Hindi kilalang keyboard</translation>
 <translation id="4168015872538332605">Ang ilang setting ni <ph name="PRIMARY_EMAIL" /> ay ibinabahagi sa iyo. Naaapektuhan lang ng mga setting na ito ang iyong account kapag gumagamit ng multiple na pag-sign in.</translation>
 <translation id="4170314459383239649">I-clear sa Paglabas</translation>
@@ -3781,6 +3783,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - Nagre-record ang camera o mikropono</translation>
 <translation id="5841270259333717135">I-configure ang Ethernet</translation>
 <translation id="5842497610951477805">I-enable ang Bluetooth</translation>
+<translation id="5844574845205796324">Magmungkahi ng bagong content na ie-explore</translation>
 <translation id="5846200638699387931">Error sa syntax sa kaugnayan: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Mag-install ng mga update at app. Sa pamamagitan ng pagpapatuloy, sumasang-ayon kang ang device na ito ay puwede ring awtomatikong mag-download at mag-install ng mga update at app mula sa Google, iyong carrier, at manufacturer ng device mo, nang posibleng gamit ang cellular data. Posibleng mag-alok ang ilan sa mga app na ito ng mga in-app na pagbili.</translation>
 <translation id="5849212445710944278">Naidagdag na</translation>

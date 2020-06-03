@@ -257,6 +257,9 @@
   <message name="IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE" desc="Name of the settings sub-page which allows enabling and disabling input methods.">
     Manage input methods
   </message>
+  <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHOD_OPTIONS_TITLE" translateable="false" desc="Name of the settings sub-page which allows changing input method options.">
+    Input method options
+  </message>
   <message name="IDS_SETTINGS_LANGUAGES_SHOW_IME_MENU" desc="The label for the toggle button controlling showing the IME menu in the shelf.">
     Show input options in the shelf
   </message>

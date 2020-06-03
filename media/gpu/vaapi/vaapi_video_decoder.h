@@ -102,10 +102,6 @@ class VaapiVideoDecoder : public DecoderInterface,
   // resetting or destroying the decoder, or encountering an error.
   void ClearDecodeTaskQueue(DecodeStatus status);
 
-  // Output a single |video_frame| on the decoder thread.
-  void OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
-                       const gfx::Rect& visible_rect,
-                       base::TimeDelta timestamp);
   // Release the video frame associated with the specified |surface_id| on the
   // decoder thread. This is called when the last reference to the associated
   // VASurface has been released, which happens when the decoder outputted the

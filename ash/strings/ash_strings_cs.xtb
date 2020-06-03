@@ -63,6 +63,7 @@
 <translation id="1654477262762802994">Zahájit hlasový dotaz</translation>
 <translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
 <translation id="1677472565718498478">zbývající čas: <ph name="TIME" /></translation>
+<translation id="1698080062160024910">Časovač na <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1709762881904163296">Nastavení sítě</translation>
 <translation id="1743570585616704562">Nerozpoznáno</translation>
@@ -335,6 +336,7 @@
 <translation id="4924411785043111640">Restartovat a resetovat</translation>
 <translation id="495046168593986294">Posunout nahoru</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
+<translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
 <translation id="5030687792513154421">Čas vypršel</translation>
 <translation id="5035236842988137213">Zařízení <ph name="DEVICE_NAME" /> je připojeno k novému telefonu</translation>
 <translation id="5035389544768382859">Potvrzení konfigurace monitoru</translation>
@@ -533,6 +535,7 @@
 <translation id="7569509451529460200">Jsou zapnuty funkce Braille a ChromeVox</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7600875258240007829">Zobrazit všechna oznámení</translation>
+<translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7642647758716480637">Otevřít nastavení sítě <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>
 <translation id="7647488630410863958">Chcete-li zobrazit oznámení, odemkněte zařízení</translation>
@@ -618,10 +621,12 @@
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8563862697512465947">Nastavení oznámení</translation>
 <translation id="857201607579416096">Nabídka byla přesunuta do pravého dolního rohu obrazovky.</translation>
+<translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8627191004499078455">Připojeno k zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Nastavení usnadnění přístupu</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" />, spravováno administrátorem</translation>
 <translation id="8639760480004882931">Zbývá <ph name="PERCENTAGE" /> %</translation>
+<translation id="8646417893960517480">Časovač na <ph name="TOTAL_TIME" /></translation>
 <translation id="8649101189709089199">Poslech vybraného textu</translation>
 <translation id="8652175077544655965">Zavřít nastavení</translation>
 <translation id="8653151467777939995">Zobrazit nastavení oznámení. Oznámení jsou zapnutá</translation>

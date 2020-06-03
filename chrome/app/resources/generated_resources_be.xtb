@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Тэрмін дзеяння пароля скончыўся</translation>
 <translation id="1630768113285622200">Перазапусціць і працягнуць</translation>
 <translation id="1630873818549593964">Даныя вашага дзіцяці ў Classroom будуць абароненыя. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Пароль, захаваны ва Уліковым запісе Google</translation>
 <translation id="1632803087685957583">Дазваляе наладзіць хуткасць паўтарэння клавіш, прагназаванне слоў і многае іншае</translation>
 <translation id="1633947793238301227">Выключыць Памочніка Google</translation>
 <translation id="1634783886312010422">Вы ўжо змянілі гэты пароль на сайце <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">Гатова! Шкоднае праграмнае забеспячэнне выдалена. Каб зноў уключыць пашырэнні, перайдзіце ў меню &lt;a href="chrome://extensions"&gt;Пашырэнні&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (выдадзены пашырэннем)</translation>
 <translation id="2961695502793809356">Каб перайсці наперад, націсніце кнопкай мышы, каб паглядзець гісторыю – утрымлівайце</translation>
+<translation id="2962131322798295505">Выбар шпалер</translation>
 <translation id="2963151496262057773">Наступная ўбудова не адказвае: <ph name="PLUGIN_NAME" />. Спыніць яе?</translation>
 <translation id="2964193600955408481">Выключыць Wi-Fi</translation>
 <translation id="2966937470348689686">Кіраванне параметрамі Android</translation>
@@ -2128,6 +2130,7 @@
 <translation id="3677106374019847299">Увядзіце назву свайго пастаўшчыка</translation>
 <translation id="3677657024345889897">Самая ціхая</translation>
 <translation id="3677911431265050325">Запытаць мабільную версію сайта</translation>
+<translation id="3677959414150797585">Яно ўключае ў сябе праграмы, вэб-старонкі і іншае. Статыстыка для паляпшэнне прапаноў будзе адпраўляцца, толькі калі вы згадзіліся на абагульванне даных пра выкарыстанне.</translation>
 <translation id="3678156199662914018">Пашырэнне: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Голас для сінтэзу маўлення</translation>
 <translation id="3681311097828166361">Дзякуй за водгук. Вы па-за сеткай, таму справаздача будзе адпраўлена пазней.</translation>
@@ -2539,6 +2542,7 @@
 <translation id="4154664944169082762">Лічбавыя адбіткі</translation>
 <translation id="4157869833395312646">Крыптаграфія праз сервер Microsoft</translation>
 <translation id="4159681666905192102">Гэта ўліковы запіс для дзяцей, якім кіруюць <ph name="CUSTODIAN_EMAIL" /> і <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Фіялетавы</translation>
 <translation id="4163560723127662357">Невядомая клавіятура</translation>
 <translation id="4168015872538332605">Для вас дзейнічаюць некаторыя налады, зададзеныя карыстальнікам <ph name="PRIMARY_EMAIL" />. Гэтыя налады дзейнічаюць у вашым уліковым запісе, толькі калі ажыццёўлены ўваход у некалькі ўліковых запісаў.</translation>
 <translation id="4170314459383239649">Ачысціць пасля выхаду</translation>
@@ -2882,6 +2886,7 @@
 <translation id="4645676300727003670">&amp;Захаваць</translation>
 <translation id="4646675363240786305">Парты</translation>
 <translation id="4647090755847581616">&amp;Закрыць укладку</translation>
+<translation id="4647420311443994946">{0,select, tablet{Запускаць праграму пры ўваходзе ва ўліковы запіс на планшэце}computer{Запускаць праграму пры ўваходзе ва ўліковы запіс на камп'ютары}other{Запускаць праграму пры ўваходзе ва ўліковы запіс на прыладзе}}</translation>
 <translation id="4647697156028544508">Увядзіце PIN-код для прылады "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Недастаткова дазволаў</translation>
 <translation id="4648499713050786492">Перш чым дадаваць карыстальніка, разблакіруйце свой профіль.</translation>
@@ -2894,6 +2899,7 @@
 <translation id="4660540330091848931">Змяненне памеру</translation>
 <translation id="4660838440047236328">планіроўку вашага пакоя</translation>
 <translation id="4661407454952063730">Даныя праграм – гэта любыя даныя, якія захоўваюцца праграмай (у залежнасці ад налад распрацоўшчыка), у тым ліку кантакты, паведамленні і фота.</translation>
+<translation id="4662373422909645029">Псеўданім не можа ўключаць лічбы</translation>
 <translation id="4662788913887017617">Абагульце гэту закладку з вашым iPhone</translation>
 <translation id="4663373278480897665">Камера дазволена</translation>
 <translation id="4664482161435122549">Памылка экспарту PKCS #12</translation>
@@ -3588,6 +3594,7 @@
 <translation id="5585912436068747822">Не ўдалося адфармаціраваць</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Загрузка праграм...</translation>
+<translation id="558984423786125616">Такі порт у наладах ужо ёсць</translation>
 <translation id="5592595402373377407">Пакуль што недастаткова даных.</translation>
 <translation id="5593357315997824387">Сінхранізаваць мае файлы</translation>
 <translation id="5595485650161345191">Рэдагаваць адрас</translation>
@@ -3631,6 +3638,7 @@
 <translation id="5639549361331209298">Перазагрузіць гэту старонку (утрымлівайце, каб убачыць больш варыянтаў)</translation>
 <translation id="5640133431808313291">Кіраванне ключамі бяспекі</translation>
 <translation id="5642508497713047">Сродак подпісу CRL</translation>
+<translation id="5643321261065707929">Сетка з улікам трафіка</translation>
 <translation id="5643620609347735571">Выдаліць і працягнуць</translation>
 <translation id="5644857731242502394">Наладжванне падключаных прылад</translation>
 <translation id="5646376287012673985">Месцазнаходжанне</translation>
@@ -3775,6 +3783,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – ідзе запіс з камеры або мікрафона</translation>
 <translation id="5841270259333717135">Наладзіць Ethernet</translation>
 <translation id="5842497610951477805">Bluetooth уключаны</translation>
+<translation id="5844574845205796324">Прапаноўваць для азнаямлення новае змесціва</translation>
 <translation id="5846200638699387931">Памылка сінтаксісу суаднясення: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Усталяванне абнаўленняў і праграм. Працягваючы, вы дазваляеце гэтай прыладзе аўтаматычна спампоўваць і ўсталёўваць абнаўленні і праграмы ад Google, вашага аператара і вытворцы прылады, у тым ліку праз сотавую перадачу даных. Некаторыя з гэтых праграм могуць прапаноўваць куплі з праграм.</translation>
 <translation id="5849212445710944278">Слова ўжо дададзена</translation>
@@ -5539,6 +5548,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Гэты сэрвіс можна выключыць у Наладах.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-коды не супадаюць</translation>
 <translation id="809792523045608178">У <ph name="IDS_SHORT_PRODUCT_NAME" /> выкарыстоўваюцца налады проксі-сервера, зададзеныя пашырэннем</translation>
+<translation id="8097959162767603171">Спачатку адміністратар павінен прыняць умовы выкарыстання ў спісе прылад Chrome на кансолі адміністратара.</translation>
 <translation id="8101987792947961127">Пры наступнай перазагрузцы патрабуецца Powerwash</translation>
 <translation id="8102159139658438129">Перайдзіце ў <ph name="LINK_BEGIN" />Налады<ph name="LINK_END" />, каб паглядзець параметры падключанага тэлефона</translation>
 <translation id="8104696615244072556">Скінуць налады прылады <ph name="IDS_SHORT_PRODUCT_NAME" /> з дапамогай Powerwash і вярнуцца да папярэдняй версіі.</translation>

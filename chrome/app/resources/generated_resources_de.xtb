@@ -24,7 +24,7 @@
 <translation id="1026655690966755180">Port hinzufügen</translation>
 <translation id="1026822031284433028">Bild laden</translation>
 <translation id="1027411911542968822">Crostini-Einrichtung</translation>
-<translation id="1029317248976101138">Zoom</translation>
+<translation id="1029317248976101138">Zoomen</translation>
 <translation id="1031362278801463162">Vorschau wird geladen...</translation>
 <translation id="1032605640136438169">Bitte lesen Sie sich die neue Fassung durch</translation>
 <translation id="103279545524624934">Geben Sie Speicherplatz frei, um Android-Apps starten zu können.</translation>
@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">Passwort abgelaufen</translation>
 <translation id="1630768113285622200">Neu starten und fortfahren</translation>
 <translation id="1630873818549593964">Die Daten Ihres Kindes in Classroom sind geschützt. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Das in Ihrem Google-Konto gespeicherte Passwort</translation>
 <translation id="1632803087685957583">Ermöglicht die Anpassung der Wiederholungsrate, Wortvervollständigung und mehr für die Tastatur</translation>
 <translation id="1633947793238301227">Google Assistant deaktivieren</translation>
 <translation id="1634783886312010422">Haben Sie dieses Passwort schon auf <ph name="WEBSITE" /> geändert?</translation>
@@ -1192,7 +1193,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="2497229222757901769">Mausgeschwindigkeit</translation>
 <translation id="2497852260688568942">Die Synchronisierung wurde von Ihrem Administrator deaktiviert</translation>
-<translation id="2498539833203011245">Minimieren</translation>
+<translation id="2498539833203011245">Im Dock ablegen</translation>
 <translation id="2498765460639677199">Riesig</translation>
 <translation id="2499747912851752301">Passwörter werden exportiert…</translation>
 <translation id="2500471369733289700">Blockiert, um Ihre Privatsphäre zu schützen</translation>
@@ -1575,6 +1576,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="296026337010986570">Fertig! Die schädliche Software wurde entfernt. Sie können Ihre Erweiterungen jetzt wieder aktivieren. Rufen Sie dazu einfach &lt;a href="chrome://extensions"&gt;Erweiterungen&lt;/a&gt; auf.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (Verlängerung gewährt)</translation>
 <translation id="2961695502793809356">Klicken, um weiterzugehen. Gedrückt halten, um den Verlauf aufzurufen</translation>
+<translation id="2962131322798295505">Hintergrundauswahl</translation>
 <translation id="2963151496262057773">Das folgende Plug-in reagiert nicht: <ph name="PLUGIN_NAME" />. Möchten Sie es anhalten?</translation>
 <translation id="2964193600955408481">WLAN deaktivieren</translation>
 <translation id="2966937470348689686">Android-Einstellungen verwalten</translation>
@@ -2535,6 +2537,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4154664944169082762">Fingerabdrücke</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Dies ist ein Konto für Kinder, das von <ph name="CUSTODIAN_EMAIL" /> und <ph name="SECOND_CUSTODIAN_EMAIL" /> verwaltet wird.</translation>
+<translation id="4159784952369912983">Lila</translation>
 <translation id="4163560723127662357">Unbekannte Tastatur</translation>
 <translation id="4168015872538332605">Einige Einstellungen, die <ph name="PRIMARY_EMAIL" /> gehören, werden mit Ihnen geteilt. Diese Einstellungen wirken sich nur dann auf Ihr Konto aus, wenn die Mehrfachanmeldung verwendet wird.</translation>
 <translation id="4170314459383239649">Beim Beenden löschen</translation>
@@ -2878,6 +2881,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4645676300727003670">&amp;Beibehalten</translation>
 <translation id="4646675363240786305">Ports</translation>
 <translation id="4647090755847581616">&amp;Tab schließen</translation>
+<translation id="4647420311443994946">{0,select, tablet{App beim Anmelden am Tablet starten}computer{App beim Anmelden am Computer starten}other{App beim Anmelden am Gerät starten}}</translation>
 <translation id="4647697156028544508">Bitte geben Sie die PIN für "<ph name="DEVICE_NAME" />" ein:</translation>
 <translation id="4648491805942548247">Unzureichende Berechtigungen</translation>
 <translation id="4648499713050786492">Entsperren Sie Ihr Profil, bevor Sie eine Person hinzufügen.</translation>
@@ -2890,6 +2894,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4660540330091848931">Größenanpassung läuft</translation>
 <translation id="4660838440047236328">der Grundriss Ihres Zimmers</translation>
 <translation id="4661407454952063730">App-Daten können alle Daten sein, die eine App aufgrund der Einstellungen des Entwicklers gespeichert hat, wie z. B. Kontakte, Nachrichten und Fotos.</translation>
+<translation id="4662373422909645029">Keine Zahlen im Alias</translation>
 <translation id="4662788913887017617">Dieses Lesezeichen für mein iPhone freigeben</translation>
 <translation id="4663373278480897665">Kameranutzung zulässig</translation>
 <translation id="4664482161435122549">PKCS #12 - Fehler beim Export</translation>
@@ -3584,6 +3589,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5585912436068747822">Fehler bei der Formatierung</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Apps werden geladen...</translation>
+<translation id="558984423786125616">Der Port ist in den Einstellungen bereits vorhanden</translation>
 <translation id="5592595402373377407">Noch nicht genügend Daten vorhanden</translation>
 <translation id="5593357315997824387">Meine Dateien synchronisieren</translation>
 <translation id="5595485650161345191">Adresse bearbeiten</translation>
@@ -3627,6 +3633,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5639549361331209298">Seite aktualisieren, für weitere Optionen gedrückt halten</translation>
 <translation id="5640133431808313291">Sicherheitsschlüssel verwalten</translation>
 <translation id="5642508497713047">CRL-Signaturgeber</translation>
+<translation id="5643321261065707929">Kostenpflichtiges Netzwerk</translation>
 <translation id="5643620609347735571">Löschen und fortfahren</translation>
 <translation id="5644857731242502394">Einrichtung verbundener Geräte</translation>
 <translation id="5646376287012673985">Speicherort</translation>
@@ -5536,6 +5543,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
     <ph name="BEGIN_PARAGRAPH5" />Sie können diesen Dienst in den Einstellungen deaktivieren.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Die PINs stimmen nicht überein</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> verwendet Proxy-Einstellungen einer Erweiterung</translation>
+<translation id="8097959162767603171">Ihr Administrator muss zuerst die Nutzungsbedingungen in der Chrome-Geräteliste der Admin-Konsole akzeptieren.</translation>
 <translation id="8101987792947961127">Powerwash beim nächsten Neustart erforderlich</translation>
 <translation id="8102159139658438129">Rufen Sie die <ph name="LINK_BEGIN" />Einstellungen<ph name="LINK_END" /> auf, um Optionen für Ihr verbundenes Smartphone zu sehen.</translation>
 <translation id="8104696615244072556">Powerwash für Ihr <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät ausführen und auf die vorherige Version zurücksetzen</translation>

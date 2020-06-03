@@ -23,7 +23,9 @@
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -326,6 +328,77 @@ TEST_F(KeyboardTest, OnKeyboardKey) {
       .Times(0);
   generator.ReleaseKey(ui::VKEY_LEFT, 0);
 
+  keyboard.reset();
+}
+
+TEST_F(KeyboardTest, OnKeyboardKey_NotSendKeyIfConsumedByIme) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  gfx::Size buffer_size(10, 10);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->FocusWindow(nullptr);
+
+  NiceMockKeyboardDelegate delegate;
+  Seat seat;
+  auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
+
+  EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface.get()))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(delegate, OnKeyboardModifiers(0));
+  EXPECT_CALL(delegate,
+              OnKeyboardEnter(surface.get(),
+                              base::flat_map<ui::DomCode, ui::DomCode>()));
+  focus_client->FocusWindow(surface->window());
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  views::Widget* widget =
+      views::Widget::GetTopLevelWidgetForNativeView(surface->window());
+  ui::InputMethod* input_method = widget->GetInputMethod();
+  ui::DummyTextInputClient client{ui::TEXT_INPUT_TYPE_TEXT};
+  input_method->SetFocusedTextInputClient(&client);
+
+  // If a text field is focused, a pressed key event is not sent to a client
+  // because a key event should be consumed by the IME.
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, true))
+      .Times(0);
+  seat.set_physical_code_for_currently_processing_event_for_testing(
+      ui::DomCode::US_A);
+  generator.PressKey(ui::VKEY_A, 0);
+  // TODO(yhanada): The below EXPECT_CALL fails because exo::Keyboard currently
+  // sends a key release event for the keys which exo::Keyboard sent a pressed
+  // event for. It might causes a never-ending key repeat in the client.
+  // EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_A, false));
+  generator.ReleaseKey(ui::VKEY_A, 0);
+
+  // Any key event should be sent to a client if the focused window is marked as
+  // ImeBlocking.
+  WMHelper::GetInstance()->SetImeBlocked(surface->window()->GetToplevelWindow(),
+                                         true);
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_B, true));
+  seat.set_physical_code_for_currently_processing_event_for_testing(
+      ui::DomCode::US_B);
+  generator.PressKey(ui::VKEY_B, 0);
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_B, false));
+  generator.ReleaseKey(ui::VKEY_B, 0);
+  WMHelper::GetInstance()->SetImeBlocked(surface->window()->GetToplevelWindow(),
+                                         false);
+
+  // Any key event should be sent to a client if a key event skips IME.
+  surface->window()->SetProperty(aura::client::kSkipImeProcessing, true);
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_C, true));
+  seat.set_physical_code_for_currently_processing_event_for_testing(
+      ui::DomCode::US_C);
+  generator.PressKey(ui::VKEY_C, 0);
+  EXPECT_CALL(delegate, OnKeyboardKey(testing::_, ui::DomCode::US_C, false));
+  generator.ReleaseKey(ui::VKEY_C, 0);
+
+  input_method->SetFocusedTextInputClient(nullptr);
   keyboard.reset();
 }
 

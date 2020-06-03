@@ -405,6 +405,13 @@ GpuServiceImpl::GpuServiceImpl(
   }
 #endif
 
+#if defined(OS_WIN)
+  auto info_callback = base::BindRepeating(
+      &GpuServiceImpl::UpdateOverlayAndHDRInfo, weak_ptr_factory_.GetWeakPtr());
+  gl::DirectCompositionSurfaceWin::SetOverlayHDRGpuInfoUpdateCallback(
+      info_callback);
+#endif
+
   gpu_memory_buffer_factory_ =
       gpu::GpuMemoryBufferFactory::CreateNativeType(vulkan_context_provider());
 
@@ -768,12 +775,12 @@ void GpuServiceImpl::RequestHDRStatus(RequestHDRStatusCallback callback) {
 void GpuServiceImpl::RequestHDRStatusOnMainThread(
     RequestHDRStatusCallback callback) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  bool hdr_enabled = false;
+
 #if defined(OS_WIN)
-  hdr_enabled = gl::DirectCompositionSurfaceWin::IsHDRSupported();
+  hdr_enabled_ = gl::DirectCompositionSurfaceWin::IsHDRSupported();
 #endif
   io_runner_->PostTask(FROM_HERE,
-                       base::BindOnce(std::move(callback), hdr_enabled));
+                       base::BindOnce(std::move(callback), hdr_enabled_));
 }
 
 void GpuServiceImpl::RegisterDisplayContext(
@@ -836,6 +843,10 @@ void GpuServiceImpl::DidLoseContext(bool offscreen,
 void GpuServiceImpl::DidUpdateOverlayInfo(
     const gpu::OverlayInfo& overlay_info) {
   gpu_host_->DidUpdateOverlayInfo(gpu_info_.overlay_info);
+}
+
+void GpuServiceImpl::DidUpdateHDRStatus(bool hdr_enabled) {
+  gpu_host_->DidUpdateHDRStatus(hdr_enabled);
 }
 #endif
 
@@ -968,12 +979,6 @@ void GpuServiceImpl::DisplayAdded() {
 
   if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyDisplayAdded();
-
-#if defined(OS_WIN)
-  // Update overlay info in the GPU process and send the updated data back to
-  // the GPU host in the Browser process through mojom if the info has changed.
-  UpdateOverlayInfo();
-#endif
 }
 
 void GpuServiceImpl::DisplayRemoved() {
@@ -986,12 +991,6 @@ void GpuServiceImpl::DisplayRemoved() {
 
   if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyDisplayRemoved();
-
-#if defined(OS_WIN)
-  // Update overlay info in the GPU process and send the updated data back to
-  // the GPU host in the Browser process through mojom if the info has changed.
-  UpdateOverlayInfo();
-#endif
 }
 
 void GpuServiceImpl::DestroyAllChannels() {
@@ -1141,12 +1140,20 @@ gpu::Scheduler* GpuServiceImpl::GetGpuScheduler() {
 }
 
 #if defined(OS_WIN)
-void GpuServiceImpl::UpdateOverlayInfo() {
+void GpuServiceImpl::UpdateOverlayAndHDRInfo() {
   gpu::OverlayInfo old_overlay_info = gpu_info_.overlay_info;
   gpu::CollectHardwareOverlayInfo(&gpu_info_.overlay_info);
 
+  // Update overlay info in the GPU process and send the updated data back to
+  // the GPU host in the Browser process through mojom if the info has changed.
   if (old_overlay_info != gpu_info_.overlay_info)
     DidUpdateOverlayInfo(gpu_info_.overlay_info);
+
+  // Update HDR status in the GPU process through the GPU host mojom.
+  bool old_hdr_enabled_status = hdr_enabled_;
+  hdr_enabled_ = gl::DirectCompositionSurfaceWin::IsHDRSupported();
+  if (old_hdr_enabled_status != hdr_enabled_)
+    DidUpdateHDRStatus(hdr_enabled_);
 }
 #endif
 

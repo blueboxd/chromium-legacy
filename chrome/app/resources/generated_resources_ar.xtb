@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">انتهت صلاحية كلمة المرور.</translation>
 <translation id="1630768113285622200">إعادة التشغيل والمواصلة</translation>
 <translation id="1630873818549593964">‏ستتم حماية بيانات طفلك في Classroom. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">‏كلمة المرور المُخزَّنة في حسابك على Google</translation>
 <translation id="1632803087685957583">تسمح لك بضبط معدل تكرار لوحة المفاتيح، وتوقّع الكلمات، والمزيد</translation>
 <translation id="1633947793238301227">‏إيقاف خدمة "مساعد Google"</translation>
 <translation id="1634783886312010422">هل سبق وغيرت كلمة المرور هذه على <ph name="WEBSITE" />؟</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">‏انتهى الإجراء، وتمت إزالة البرامج الضارة. لتفعيل الإضافات مرة أخرى، يُرجى الانتقال إلى &lt;a href="chrome://extensions"&gt;الإضافات&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (الإضافة متوفرة)</translation>
 <translation id="2961695502793809356">انقر للانتقال إلى الأمام واضغط لمشاهدة السجل</translation>
+<translation id="2962131322798295505">Wallpaper Picker</translation>
 <translation id="2963151496262057773">المكوّن الإضافي التالي غير مستجيب: <ph name="PLUGIN_NAME" />‏، هل تريد إيقافه؟</translation>
 <translation id="2964193600955408481">‏إيقاف Wi-Fi</translation>
 <translation id="2966937470348689686">‏إدارة إعدادات Android المفضّلة</translation>
@@ -2536,6 +2538,7 @@
 <translation id="4154664944169082762">بصمات الأصابع</translation>
 <translation id="4157869833395312646">‏ترميز عن طريق بوابة خادم Microsoft</translation>
 <translation id="4159681666905192102">هذا هو حساب للأطفال يتم إدارته من قبل <ph name="CUSTODIAN_EMAIL" /> و<ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">أرجواني</translation>
 <translation id="4163560723127662357">لوحة مفاتيح غير معروفة</translation>
 <translation id="4168015872538332605">تتم مشاركة بعض الإعدادات التي تنتمي إلى <ph name="PRIMARY_EMAIL" /> معك. لن تؤثر هذه الإعدادات في حسابك إلا عند استخدامك الدخول المتعدد.</translation>
 <translation id="4170314459383239649">محو عند الخروج</translation>
@@ -2879,6 +2882,7 @@
 <translation id="4645676300727003670">&amp;احتفاظ</translation>
 <translation id="4646675363240786305">المنافذ</translation>
 <translation id="4647090755847581616">إغلاق &amp;علامة التبويب</translation>
+<translation id="4647420311443994946">{0,select, tablet{تشغيل التطبيق تلقائيًا عند تسجيل الدخول إلى الجهاز اللوحي}computer{تشغيل التطبيق تلقائيًا عند تسجيل الدخول إلى جهاز الكمبيوتر}other{تشغيل التطبيق تلقائيًا عند تسجيل الدخول إلى الجهاز}}</translation>
 <translation id="4647697156028544508">يُرجى إدخال رقم التعريف الشخصي لـ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">أذونات غير كافية</translation>
 <translation id="4648499713050786492">يُرجى فتح قفل ملفك الشخصي قبل إضافة شخص.</translation>
@@ -2891,6 +2895,7 @@
 <translation id="4660540330091848931">جارٍ تغيير الحجم</translation>
 <translation id="4660838440047236328">شكل غرفتك</translation>
 <translation id="4661407454952063730">تشمل بيانات التطبيق أيّ بيانات حفظها هذا التطبيق (بناءً على إعدادات مطوّر البرامج)، بما في ذلك بيانات مثل جهات الاتصال والرسائل والصور.</translation>
+<translation id="4662373422909645029">يجب ألا يضم اللقب أرقامًا</translation>
 <translation id="4662788913887017617">‏مشاركة هذه الإشارة المرجعة مع جهاز iPhone</translation>
 <translation id="4663373278480897665">تم السماح باستخدام الكاميرا</translation>
 <translation id="4664482161435122549">‏خطأ في تصدير PKCS #12</translation>
@@ -3586,6 +3591,7 @@
 <translation id="5585912436068747822">تعذّر إتمام عملية التنسيق</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">جارٍ تحميل التطبيقات...</translation>
+<translation id="558984423786125616">يتوفّر المنفذ في الإعدادات حاليًا.</translation>
 <translation id="5592595402373377407">لم تتوفر بيانات كافية بعد.</translation>
 <translation id="5593357315997824387">مزامنة ملفاتي</translation>
 <translation id="5595485650161345191">تعديل العنوان</translation>
@@ -3629,6 +3635,7 @@
 <translation id="5639549361331209298">إعادة تحميل هذه الصفحة، انتظر لمشاهدة المزيد من الخيارات</translation>
 <translation id="5640133431808313291">إدارة مفاتيح الأمان</translation>
 <translation id="5642508497713047">‏التوقيع على قوائم إبطال الشهادات (CRL)</translation>
+<translation id="5643321261065707929">شبكة تفرض تكلفة استخدام</translation>
 <translation id="5643620609347735571">محو ومتابعة</translation>
 <translation id="5644857731242502394">إعداد الأجهزة المتّصلة</translation>
 <translation id="5646376287012673985">الموقع الجغرافي</translation>
@@ -5539,6 +5546,7 @@
     <ph name="BEGIN_PARAGRAPH5" />يمكنك إيقاف هذه الخدمة في "الإعدادات".<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">أرقام التعريف الشخصية غير متطابقة</translation>
 <translation id="809792523045608178">يستخدم <ph name="IDS_SHORT_PRODUCT_NAME" /> إعدادات الخادم الوكيل من إضافة.</translation>
+<translation id="8097959162767603171">‏يجب على المشرف أولاً قبول بنود الخدمة في قائمة أجهزة Chrome داخل وحدة تحكُّم المشرف.</translation>
 <translation id="8101987792947961127">‏يتطلب إجراء Powerwash بعد عملية إعادة التشغيل التالية</translation>
 <translation id="8102159139658438129">يُرجى الانتقال إلى <ph name="LINK_BEGIN" />الإعدادات<ph name="LINK_END" /> للاطِّلاع على خيارات لهاتفك المتَّصل</translation>
 <translation id="8104696615244072556">‏استخدم وظيفة Powerwash <ph name="IDS_SHORT_PRODUCT_NAME" /> وارجع إلى الإصدار السابق.</translation>

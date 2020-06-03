@@ -59,12 +59,19 @@ public class LocationPermissionUpdater {
      * TrustedWebActivityService is found, and the TWAService supports location permission.
      */
     void checkPermission(Origin origin, long callback) {
-        boolean couldConnect = mTrustedWebActivityClient.checkLocationPermission(
-                origin, (app, enabled) -> updatePermission(origin, callback, app, enabled));
-        if (!couldConnect) {
-            mPermissionManager.resetStoredPermission(origin, TYPE);
-            InstalledWebappBridge.onGetPermissionResult(callback, false);
-        }
+        mTrustedWebActivityClient.checkLocationPermission(
+                origin, new TrustedWebActivityClient.PermissionCheckCallback() {
+                    @Override
+                    public void onPermissionCheck(ComponentName answeringApp, boolean enabled) {
+                        updatePermission(origin, callback, answeringApp, enabled);
+                    }
+
+                    @Override
+                    public void onNoTwaFound() {
+                        mPermissionManager.resetStoredPermission(origin, TYPE);
+                        InstalledWebappBridge.onGetPermissionResult(callback, false);
+                    }
+                });
     }
 
     @WorkerThread

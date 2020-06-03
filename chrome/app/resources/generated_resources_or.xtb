@@ -498,6 +498,7 @@
 <translation id="1629314197035607094">ପାସ୍‍ୱାର୍ଡର ମିଆଦ ସମାପ୍ତ ହୋଇଯାଇଛି</translation>
 <translation id="1630768113285622200">ରିଷ୍ଟାର୍ଟ କରି ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="1630873818549593964">ଆପଣଙ୍କ ପିଲାର Classroomରେ ଥିବା ଡାଟାକୁ ସୁରକ୍ଷିତ ରଖାଯିବ। <ph name="LINK_BEGIN" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ପାସୱାର୍ଡ ଷ୍ଟୋର୍ କରାଯାଇଛି</translation>
 <translation id="1632803087685957583">ଆପଣଙ୍କୁ ଆପଣଙ୍କ କୀ'ବୋର୍ଡର ବାରମ୍ବାରତା ହାର, ଶବ୍ଦ ପୂର୍ବାନୁମାନ ଏବଂ ଅନେକ କିଛି ଆଡ୍‍ଜଷ୍ଟ କରିବା ପାଇଁ ଅନୁମତି ଦେଇଥାଏ</translation>
 <translation id="1633947793238301227">Google Assistant ଅକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" />ରେ ଆପଣ ପୂର୍ବରୁ ଏହି ପାସୱାର୍ଡ ପରିବର୍ତ୍ତନ କରିସାରିଛନ୍ତି?</translation>
@@ -1572,6 +1573,7 @@
 <translation id="296026337010986570">ସମାପ୍ତ ହୋଇଛି! କ୍ଷତିକାରକ ସଫ୍ଟୱେର୍ କଢ଼ାଗଲା। ପୁଣି ଏକ୍ସଟେନ୍‍ସନ୍‍ ଚାଲୁ କରିବାକୁ &lt;a href="chrome://extensions"&gt;Extensions&lt;/a&gt;କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (ଏକ୍ସଟେନ୍‌ସନ୍ ଦିଆଯାଇଛି)</translation>
 <translation id="2961695502793809356">ଆଗକୁ ଯାଆନ୍ତୁ କୁ କ୍ଳିକ୍ କରନ୍ତୁ, ଇତିବୃତ୍ତି ଦେଖିବା ଲାଗି ଧରି ରଖନ୍ତୁ</translation>
+<translation id="2962131322798295505">ୱାଲପେପର୍ ପିକର୍</translation>
 <translation id="2963151496262057773">ନିମ୍ନୋକ୍ତ ପ୍ଲଗ୍ଇନ୍‌ଟି ଅପ୍ରତିକ୍ରିୟାଶୀଳ ଅଟେ: <ph name="PLUGIN_NAME" />ଆପଣ ଏହାକୁ ସ୍ଥଗିତ ରଖିବାକୁ ଚାହିଁବେ କି?</translation>
 <translation id="2964193600955408481">ୱାଇ-ଫାଇ ଅକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="2966937470348689686">Android ଅଗ୍ରାଧିକାରକୁ ପରିଚାଳନା କରନ୍ତୁ</translation>
@@ -2121,6 +2123,7 @@
 <translation id="3677106374019847299">କଷ୍ଟମ୍ ପ୍ରଦାନକାରୀ ନାମ ଲେଖନ୍ତୁ</translation>
 <translation id="3677657024345889897">ସର୍ବାଧିକ ନିଃଶଦ୍ଦତା</translation>
 <translation id="3677911431265050325">ମୋବାଇଲ୍ ସାଇଟ୍ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ</translation>
+<translation id="3677959414150797585">ଆପ୍, ୱେବପୃଷ୍ଠା ଏବଂ ଆହୁରି ଅନେକ କିଛି ଅନ୍ତର୍ଭୁକ୍ତ କରେ। ଯଦି ଆପଣ ବ୍ୟବହାର ଡାଟା ସେୟାର୍ କରିବାକୁ ବାଛିଥାଆନ୍ତି ତେବେ କେବଳ ପରାମର୍ଶକୁ ଉନ୍ନତ କରିବା ପାଇଁ ପରିସଂଖ୍ୟାନଗୁଡ଼ିକ ପଠାଏ।</translation>
 <translation id="3678156199662914018">ପରିବର୍ଦ୍ଧନ: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">ଟେକ୍ସଟ୍-ଟୁ-ସ୍ପିଚ୍ ଭଏସ୍</translation>
 <translation id="3681311097828166361">ଆପଣଙ୍କର ମତାମତ ପାଇଁ ଧନ୍ୟବାଦ। ଆପଣ ବର୍ତ୍ତମାନ ଅଫ୍‌ଲାଇନ୍ ଅଛନ୍ତି, ଏବଂ ଆପଣଙ୍କ ରିପୋର୍ଟ ପରେ ପଠାଯିବ।</translation>
@@ -2531,6 +2534,7 @@
 <translation id="4154664944169082762">ଟିପଚିହ୍ନ</translation>
 <translation id="4157869833395312646">Microsoft ସର୍ଭର୍‌ ଗେଟେଡ୍‌ କ୍ରିପ୍ଟୋଗ୍ରାଫି</translation>
 <translation id="4159681666905192102">ଏହା <ph name="CUSTODIAN_EMAIL" /> ଏବଂ <ph name="SECOND_CUSTODIAN_EMAIL" />.ଦ୍ଵାରା ପରିଚାଳିତ ହେଉଥିବା ଶିଶୁଙ୍କ ପାଇଁ ଉଦ୍ଦିଷ୍ଟ ଏକ ଆକାଉଣ୍ଟ ଅଟେ।</translation>
+<translation id="4159784952369912983">ବାଇଗଣୀ</translation>
 <translation id="4163560723127662357">ଅଜଣା କୀବୋର୍ଡ</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> ସହିତ ସମ୍ବନ୍ଧିତ କିଛି ସେଟିଂସ୍‌କୁ ଆପଣଙ୍କ ସହିତ ସେୟାର୍ କରାଯାଉଛି। ଯେତେବେଳେ ଏକାଧିକ ସାଇନ୍ ଇନ୍ ବ୍ୟବହାର କରାଯାଏ, ସେତେବେଳେ ହିଁ କେବଳ ଏହି ସେଟିଂସ୍ ଆପଣଙ୍କର ଆକାଉଣ୍ଟ ଉପରେ ପ୍ରଭାବ ପକାଇବ।</translation>
 <translation id="4170314459383239649">ପ୍ରସ୍ଥାନରେ ଖାଲି କରନ୍ତୁ</translation>
@@ -2874,6 +2878,7 @@
 <translation id="4645676300727003670">&amp;ରଖନ୍ତୁ</translation>
 <translation id="4646675363240786305">ପୋର୍ଟଗୁଡ଼ିକ</translation>
 <translation id="4647090755847581616">&amp;ଟାବ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
+<translation id="4647420311443994946">{0,select, tablet{ଆପଣ ଆପଣଙ୍କ ଟାବଲେଟରେ ସାଇନ୍ ଇନ୍ କରିବା ବେଳେ ଆପ୍ ଆରମ୍ଭ କରନ୍ତୁ}computer{ଆପଣ ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟରରେ ସାଇନ୍ ଇନ୍ କରିବା ବେଳେ ଆପ୍ ଆରମ୍ଭ କରନ୍ତୁ}other{ଆପଣ ଆପଣଙ୍କ ଡିଭାଇସରେ ସାଇନ୍ ଇନ୍ କରିବା ବେଳେ ଆପ୍ ଆରମ୍ଭ କରନ୍ତୁ}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" ପାଇଁ ଦୟାକରି ପିନ୍‌ ଲେଖନ୍ତୁ:</translation>
 <translation id="4648491805942548247">ପର୍ଯ୍ୟାପ୍ତ ଅନୁମତି ନାହିଁ</translation>
 <translation id="4648499713050786492">ଜଣେ ବ୍ୟକ୍ତିଙ୍କୁ ଯୋଗ କରିବା ପୂର୍ବରୁ ଆପଣଙ୍କର ପ୍ରୋଫାଇଲ୍‌ ଅନ୍‌ଲକ୍‌ କରନ୍ତୁ।</translation>
@@ -2886,6 +2891,7 @@
 <translation id="4660540330091848931">ଆକାର ପରିବର୍ତ୍ତନ କରାଯାଉଛି</translation>
 <translation id="4660838440047236328">ଆପଣଙ୍କର ରୁମ୍‍ର ଲେଆଉଟ୍</translation>
 <translation id="4661407454952063730">ଆପ୍ ଡାଟା, ଯୋଗାଯୋଗ, ମେସେଜ୍ ଓ ଫଟୋଗୁଡ଼ିକ ପରି ଡାଟା ସମେତ ଏକ ଆପ୍ ସେଭ୍ କରିଥିବା (ଡେଭଲପର୍ ସେଟିଂସ୍ ଉପରେ ଆଧାରିତ) ଯେ କୌଣସି ଡାଟା ହୋଇପାରିବ।</translation>
+<translation id="4662373422909645029">ଡାକନାମରେ ନମ୍ବର ରହିପାରିବନି</translation>
 <translation id="4662788913887017617">ଆପଣଙ୍କର iPhone ସହିତ ଏହି ବୁକ୍‌ମାର୍କ ସେୟାର୍‌ କରନ୍ତୁ</translation>
 <translation id="4663373278480897665">କ୍ୟାମେରା ଅନୁମୋଦିତ ଅଟେ</translation>
 <translation id="4664482161435122549">PKCS #12 ଏକ୍ସପୋର୍ଟ ତ୍ରୁଟି</translation>
@@ -3580,6 +3586,7 @@
 <translation id="5585912436068747822">ଫର୍ମାଟ୍ ବିଫଳ ହେଲା</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">ଆପ୍ସ ଲୋଡ୍‌ ହେଉଛି...</translation>
+<translation id="558984423786125616">ସେଟିଂସରେ ପୂର୍ବରୁ ଏଇ ପୋର୍ଟଟି ଅଛି</translation>
 <translation id="5592595402373377407">ଏପର୍ଯ୍ୟନ୍ତ ସୁଦ୍ଧା ପର୍ଯ୍ୟାପ୍ତ ଡାଟା ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="5593357315997824387">ମୋର ଫାଇଲ୍‌ଗୁଡ଼ିକୁ ସିଙ୍କ୍ କରନ୍ତୁ</translation>
 <translation id="5595485650161345191">ଠିକଣା ଏଡିଟ୍ କରନ୍ତୁ</translation>
@@ -3623,6 +3630,7 @@
 <translation id="5639549361331209298">ଏହି ପୃଷ୍ଠାକୁ ପୁନଃଲୋଡ୍ କରି ଅଧିକ ବିକଳ୍ପ ଦେଖିବା ପାଇଁ ଦବାଇ ରଖନ୍ତୁ</translation>
 <translation id="5640133431808313291">ସୁରକ୍ଷା କୀଗୁଡ଼ିକ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="5642508497713047">CRL ସ୍ୱାକ୍ଷରକାରୀ</translation>
+<translation id="5643321261065707929">ମିଟର ହୋଇଥିବା ନେଟୱାର୍କ</translation>
 <translation id="5643620609347735571">ଖାଲି କରନ୍ତୁ ଏବଂ ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="5644857731242502394">ସଂଯୁକ୍ତ ଥିବା ଡିଭାଇସଗୁଡ଼ିକର ସେଟଅପ୍</translation>
 <translation id="5646376287012673985">ଅବସ୍ଥାନ</translation>
@@ -3767,6 +3775,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - କ୍ୟାମେରା କିମ୍ବା ମାଇକ୍ରୋଫୋନ୍ ରେକର୍ଡିଂ</translation>
 <translation id="5841270259333717135">ଇଥରନେଟ୍ କନଫିଗର୍ କରନ୍ତୁ</translation>
 <translation id="5842497610951477805">ବ୍ଲୁଟୁଥ୍‌ ସକ୍ଷମ ଅଛି</translation>
+<translation id="5844574845205796324">ଏକ୍ସପ୍ଲୋର୍ କରିବାକୁ ନୂଆ ବିଷୟବସ୍ତୁର ପ୍ରସ୍ତାବ ଦିଅନ୍ତୁ</translation>
 <translation id="5846200638699387931">ରିଲେସନ୍ ସିଣ୍ଟାକ୍ସର ତ୍ରୁଟି: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">ଅପଡେଟ୍ ଓ ଆପଗୁଡ଼ିକ ଇନଷ୍ଟଲ୍ କରନ୍ତୁ। ଜାରି ରଖି, ଏହି ଡିଭାଇସ୍ Google, ଆପଣଙ୍କ ମୋବାଇଲ୍ କମ୍ପାନୀ ଏବଂ ଆପଣଙ୍କ ଡିଭାଇସର ନିର୍ମାତା ଠାରୁ ସମ୍ଭାବିତ ରୂପେ ସେଲୁଲାର୍ ଡାଟା ବ୍ୟବହାର କରି, ସ୍ୱଚାଳିତ ଭାବେ ଅପଡେଟ୍ ଏବଂ ଆପଗୁଡ଼ିକ ମଧ୍ୟ ଡାଉନଲୋଡ୍ କରି ଇନଷ୍ଟଲ୍ କରିପାରେ ବୋଲି ଆପଣ ଗ୍ରହଣ କରନ୍ତି। ଏହି ଆପଗୁଡ଼ିକ ମଧ୍ୟରୁ କିଛି ଆପ୍ ଇନ୍-ଆପ୍ କ୍ରୟଗୁଡ଼ିକ ଅଫର୍ କରିପାରନ୍ତି।</translation>
 <translation id="5849212445710944278">ପୂର୍ବରୁ ଯୋଗ କରାଯାଇଛି</translation>
@@ -5532,6 +5541,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
     <ph name="BEGIN_PARAGRAPH5" />ସେଟିଂସ୍‌ରେ ଏହି ସେବାକୁ ଆପଣ ବନ୍ଦ କରିପାରିବେ।<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN ମେଳ ଖାଉନାହିଁ</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> ଏକ ଏକ୍ସଟେନ୍‌ସନ୍‍ରୁ ପ୍ରକ୍ସି ସେଟିଂସ୍ ବ୍ୟବହାର କରୁଛି</translation>
+<translation id="8097959162767603171">ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟର୍ ପ୍ରଥମେ ଆଡମିନ୍ କନସୋଲ୍ Chrome ଡିଭାଇସ୍ ତାଲିକାରେ ଥିବା ସେବାର ସର୍ତ୍ତାବଳୀକୁ ଗ୍ରହଣ କରିବା ଆବଶ୍ୟକ।</translation>
 <translation id="8101987792947961127">ପରବର୍ତ୍ତୀ ରିବୁଟ୍‌ରେ ପାୱାର୍‍ୱାସ୍ ଆବଶ୍ୟକ</translation>
 <translation id="8102159139658438129">ସଂଯୁକ୍ତ ଥିବା ଆପଣଙ୍କ ଫୋନ୍ ପାଇଁ ବିକଳ୍ପ ଦେଖିବାକୁ <ph name="LINK_BEGIN" />ସେଟିଂସ୍<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ</translation>
 <translation id="8104696615244072556">ଆପଣଙ୍କର <ph name="IDS_SHORT_PRODUCT_NAME" /> ଡିଭାଇସ୍‌କୁ ପାୱାର୍‍ୱାସ୍ କରନ୍ତୁ ଏବଂ ପୂର୍ବବର୍ତ୍ତୀ ସଂସ୍କରଣକୁ ଫେରନ୍ତୁ।</translation>

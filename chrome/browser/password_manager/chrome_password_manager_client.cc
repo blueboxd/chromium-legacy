@@ -1195,6 +1195,14 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   HideFillingUI();
 }
 
+void ChromePasswordManagerClient::WebContentsDestroyed() {
+  // crbug/1090011
+  // Drop the connection before the WebContentsObserver destructors are invoked.
+  // Other classes may contain callbacks to the Mojo methods. Those callbacks
+  // don't like to be destroyed earlier than the pipe itself.
+  content_credential_manager_.DisconnectBinding();
+}
+
 #if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnPaste() {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();

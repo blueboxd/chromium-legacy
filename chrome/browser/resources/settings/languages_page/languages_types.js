@@ -230,5 +230,11 @@ class LanguageHelper {
 
   /** @param {string} id Input method ID. */
   openInputMethodOptions(id) {}
+
+  /**
+   * @param {string} id Input method ID.
+   * @return {string}
+   */
+  getInputMethodDisplayName(id) {}
   // </if>
 }

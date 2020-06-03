@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/download/android/download_location_dialog_bridge_impl.h"
+#include "chrome/browser/download/android/download_dialog_bridge_impl.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/download/android/download_controller.h"
-#include "chrome/browser/download/android/jni_headers/DownloadLocationDialogBridge_jni.h"
+#include "chrome/browser/download/android/jni_headers/DownloadDialogBridge_jni.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/android/window_android.h"
 
-DownloadLocationDialogBridgeImpl::DownloadLocationDialogBridgeImpl()
+DownloadDialogBridgeImpl::DownloadDialogBridgeImpl()
     : is_dialog_showing_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_obj_.Reset(env, Java_DownloadLocationDialogBridge_create(
+  java_obj_.Reset(env, Java_DownloadDialogBridge_create(
                            env, reinterpret_cast<intptr_t>(this))
                            .obj());
   DCHECK(!java_obj_.is_null());
 }
 
-DownloadLocationDialogBridgeImpl::~DownloadLocationDialogBridgeImpl() {
+DownloadDialogBridgeImpl::~DownloadDialogBridgeImpl() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_DownloadLocationDialogBridge_destroy(env, java_obj_);
+  Java_DownloadDialogBridge_destroy(env, java_obj_);
 }
 
-void DownloadLocationDialogBridgeImpl::ShowDialog(
+void DownloadDialogBridgeImpl::ShowDialog(
     gfx::NativeWindow native_window,
     int64_t total_bytes,
     DownloadLocationDialogType dialog_type,
@@ -59,14 +59,14 @@ void DownloadLocationDialogBridgeImpl::ShowDialog(
   is_dialog_showing_ = true;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_DownloadLocationDialogBridge_showDialog(
+  Java_DownloadDialogBridge_showDialog(
       env, java_obj_, native_window->GetJavaObject(),
       static_cast<long>(total_bytes), static_cast<int>(dialog_type),
       base::android::ConvertUTF8ToJavaString(env,
                                              suggested_path.AsUTF8Unsafe()));
 }
 
-void DownloadLocationDialogBridgeImpl::OnComplete(
+void DownloadDialogBridgeImpl::OnComplete(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& returned_path) {
@@ -78,7 +78,7 @@ void DownloadLocationDialogBridgeImpl::OnComplete(
   is_dialog_showing_ = false;
 }
 
-void DownloadLocationDialogBridgeImpl::OnCanceled(
+void DownloadDialogBridgeImpl::OnCanceled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   if (location_callback_) {
@@ -89,7 +89,7 @@ void DownloadLocationDialogBridgeImpl::OnCanceled(
   is_dialog_showing_ = false;
 }
 
-void DownloadLocationDialogBridgeImpl::CompleteLocationSelection(
+void DownloadDialogBridgeImpl::CompleteLocationSelection(
     DownloadLocationDialogResult result,
     base::FilePath file_path) {
   if (location_callback_) {
@@ -99,7 +99,7 @@ void DownloadLocationDialogBridgeImpl::CompleteLocationSelection(
 }
 
 static base::android::ScopedJavaLocalRef<jstring>
-JNI_DownloadLocationDialogBridge_GetDownloadDefaultDirectory(JNIEnv* env) {
+JNI_DownloadDialogBridge_GetDownloadDefaultDirectory(JNIEnv* env) {
   PrefService* pref_service =
       ProfileManager::GetActiveUserProfile()->GetOriginalProfile()->GetPrefs();
 
@@ -107,8 +107,7 @@ JNI_DownloadLocationDialogBridge_GetDownloadDefaultDirectory(JNIEnv* env) {
       env, pref_service->GetString(prefs::kDownloadDefaultDirectory));
 }
 
-static void
-JNI_DownloadLocationDialogBridge_SetDownloadAndSaveFileDefaultDirectory(
+static void JNI_DownloadDialogBridge_SetDownloadAndSaveFileDefaultDirectory(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& directory) {
   PrefService* pref_service =

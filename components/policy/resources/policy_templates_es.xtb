@@ -1236,6 +1236,9 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configurar el nombre de dominio obligatorio para hosts de acceso remoto</translation>
 <translation id="2787173078141616821">Proporcionar información sobre el estado de Android</translation>
+<translation id="2787774054174244402">Si se le asigna el valor "true" a esta política, se evita que los usuarios deban escribir en dispositivos de almacenamiento externos.
+
+      A menos que el almacenamiento externo esté bloqueado, si se configura "ExternalStorageReadOnly" en "false" o no se le asigna ningún valor, los usuarios podrán crear y modificar archivos de dispositivos de almacenamiento en los que se pueda escribir físicamente. (El almacenamiento externo se bloquea asignándole a "ExternalStorageDisable" el valor "true").</translation>
 <translation id="2799297758492717491">Permitir reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
 <translation id="2801065672151277034">Ajustes de gestión de certificados</translation>
 <translation id="2801155097555584385">Define un porcentaje personalizado de inicio de carga de la batería</translation>
@@ -1360,6 +1363,12 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Para obtener información detallada sobre los patrones de URL válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
+<translation id="299519952839316970">Ten en cuenta que esta política está obsoleta y se eliminará de la versión 88 de <ph name="PRODUCT_OS_NAME" />. Ya no se admiten sesiones públicas. Usa <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> para configurar sesiones de invitado gestionadas.
+      Si se le asigna el valor "false" a esta política, las sesiones de invitado gestionadas funcionarán como se describe en la página https://support.google.com/chrome/a/answer/3017014, es decir, como una "sesión pública" estándar.
+
+      Si se le asigna el valor "true" o no se le asigna ningún valor, la sesión de invitado gestionada funcionará como una "sesión gestionada" y se eliminarán muchas de las restricciones de las "sesiones públicas" normales.
+
+      Si se asigna un valor a esta política, el usuario no podrá cambiarlo ni anularlo.</translation>
 <translation id="3016255526521614822">Aplicaciones para tomar notas incluidas en la lista blanca que están permitidas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Controla las políticas de supervisión parental, que se aplican exclusivamente a las cuentas infantiles.</translation>
 <translation id="3020953534071988875">Al configurar esta política, se habilita o inhabilita la autenticación pasiva para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
@@ -1416,6 +1425,17 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
       Si no se asigna ningún valor a esta política o si el valor que se obtiene de la sustitución no es un nombre de host válido, no se establece ningún nombre de host en la solicitud DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128">Permite a <ph name="PRODUCT_NAME" /> cargar políticas experimentales.
+
+        ADVERTENCIA: No se admiten políticas experimentales, y pueden modificarse o eliminarse sin previo aviso en futuras versiones del navegador.
+
+        Las políticas experimentales pueden no haberse completado o tener defectos conocidos o desconocidos. Pueden también modificarse o eliminarse sin notificación previa. Si habilitas las políticas experimentales, podrías perder datos de navegación o poner en peligro tu seguridad o privacidad.
+
+        Si una política no está en la lista y no se ha publicado oficialmente, su valor se ignorará en Chrome Beta y Chrome Stable.
+
+        Si una política está en la lista, pero no se ha publicado oficialmente, su valor sí se aplicará.
+
+        Esta política no tiene ningún efecto en las políticas ya publicadas.</translation>
 <translation id="3066446511111537292">Permite que los usuarios afiliados de este dispositivo usen la instalación de fuente desconocida adb</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (detección automática de proxy web) en <ph name="PRODUCT_NAME" />.
 
@@ -1750,6 +1770,7 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 <translation id="3583230441447348508">Define una lista de sistemas de archivos compartidos en red preconfigurados.
 
       Cada elemento de la política incluido en la lista es un objeto con dos componentes: "share_url" y "mode". El elemento "share_url" debe ser la URL del sistema compartido y "mode" debe tener asignado el valor "drop_down" o "pre_mount". El modo "drop_down" indica que el elemento "share_url" se añadirá al desplegable de la búsqueda de elementos compartidos. El modo "pre_mount" indica que se activará el elemento "share_url".</translation>
+<translation id="3584194414857209694">Habilita las políticas experimentales</translation>
 <translation id="3585177699591644295">Habilita la función de accesibilidad Enunciar Selección.
 
           Si se asigna el valor "True" a esta política, la función Enunciar Selección siempre estará habilitada.
@@ -1963,6 +1984,19 @@ Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no usará notificac
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive.</translation>
 <translation id="3915395663995367577">URL de un archivo .pac de proxy</translation>
+<translation id="3917288538553140422">Cuando se configura la política, se especifica la acción que debe llevarse a cabo si el directorio principal del usuario se ha creado con el sistema de cifrado eCryptfs. Las aplicaciones de Android pueden dejar de funcionar si los directorios principales cifrados con eCryptfs no migran a ext4-encryption.
+
+      Si a la política se le asigna el valor:
+
+      * "Migrate" (o una opción no compatible, como "AskUser" o "AskForEcryptfsArcUsers"), los directorios se migrarán automáticamente al sistema ext4 al iniciar sesión sin solicitar el consentimiento del usuario.
+
+      * "Wipe" o "MinimalMigrate", nuevos directorios principales con el sistema de cifrado ext4 reemplazarán antiguos directorios con sistema de cifrado eCryptfs al iniciar sesión. Para ayudar al usuario a evitar inicios de sesión repetidos, "MinimalMigrate" intenta preservar los tokens de inicio de sesión.
+
+      * "DisallowArc", o no configurar ningún valor, impiden la migración y, en consecuencia, las aplicaciones de Android del usuario dejan de funcionar.
+
+      Esta política no se aplica a los usuarios de kiosko.
+
+      Advertencia: "Wipe" y "MinimalMigrate" eliminan los datos locales.</translation>
 <translation id="3925377537407648234">Definir la resolución de pantalla y el factor de escala</translation>
 <translation id="3927137827189017535">Habilitar la función de accesibilidad de teclas persistentes en la pantalla de inicio de sesión.
 
@@ -3012,6 +3046,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
       Esta política se eliminará en la versión 87 de <ph name="PRODUCT_NAME" /> para Mac OS X, en la que el verificador de certificados antiguo dejará de ser compatible con Mac OS X.
       </translation>
+<translation id="5494917047563607689">Si se configura en menos de 1 MB o no se le asigna ningún valor, <ph name="PRODUCT_OS_NAME" /> usa el tamaño predeterminado para el almacenamiento en caché de aplicaciones y extensiones de instalación por parte de varios usuarios de un solo dispositivo, lo que evita que cada usuario deba volver a descargar el elemento.</translation>
 <translation id="5498045818698736356">Permite especificar una lista de sitios web que se instalan de forma automática sin la intervención del usuario, que no podrá desinstalarlos ni inhabilitarlos.
 
       Cada elemento de la política incluido en la lista es un objeto con un componente "url" obligatorio y dos opcionales: "default_launch_container" y "create_desktop_shortcut". El valor de "url" es la URL de la aplicación web que se va a instalar, mientras que el valor de "launch_container" debe ser "window" o "tab", e indica cómo se abrirá la aplicación web una vez instalada. Además, si hay que crear un acceso directo en el escritorio con Linux y Windows, el valor de "create_desktop_shortcut" debe ser "True". Si se omite "default_launch_container", la aplicación se abrirá en una pestaña de forma predeterminada. Independientemente del valor de "default_launch_container", los usuarios pueden cambiar el contenedor en el que se abrirá la aplicación. Si se omite "create_desktop_shortcuts", no se crearán accesos directos en el escritorio. Consulta la política <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> para fijar aplicaciones en la estantería de Chrome OS.</translation>
@@ -3066,6 +3101,15 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
       Si no se asigna ningún valor a esta política o se le asigna el valor "false", las advertencias aparecerán en los ordenadores o sistemas operativos no compatibles.</translation>
 <translation id="5565178130821694365">Es necesario introducir la contraseña cada dos días (48 horas)</translation>
+<translation id="556564360355507488">Configura esta política para especificar qué variaciones pueden aplicarse a un dispositivo <ph name="PRODUCT_OS_NAME" /> gestionado por una empresa.
+
+      Con las variaciones puede modificarse <ph name="PRODUCT_OS_NAME" /> sin enviar una nueva versión, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
+
+      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se le asigna ningún valor a la política, se permitirá que se apliquen todas las variaciones a <ph name="PRODUCT_OS_NAME" />.
+
+      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen las variaciones que se consideren correcciones críticas de seguridad o de estabilidad a <ph name="PRODUCT_OS_NAME" />.
+
+      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador en la pantalla de inicio de sesión. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="5566210228171064229">Permitir imprimir con y sin PIN</translation>
 <translation id="557360560705413259">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> usará commonName de un certificado de servidor para buscar concordancias con un nombre de host si el certificado no tiene ninguna extensión subjectAlternativeName, siempre que se valide correctamente y se vincule a certificados de CA instalados localmente.
 
@@ -3378,6 +3422,11 @@ Ten en cuenta que se anunció que esta política se eliminaría en la versión 8
       Si se asigna el valor "Bloquear las subidas de grandes volúmenes de datos" a esta política, los archivos que sean demasiado grandes para poder analizarlos no se podrán seleccionar para subirlos.
 
       Si se le asigna el valor "Bloquear la subida y la descarga de archivos grandes", <ph name="PRODUCT_NAME" /> seguirá las reglas descritas en "Bloquear las descargas de grandes volúmenes de datos" y "Bloquear las subidas de grandes volúmenes de datos".</translation>
+<translation id="6082161804984853051">Si se le asigna un valor a la política, <ph name="PRODUCT_NAME" /> utilizará el directorio proporcionado para guardar archivos almacenados en caché en el disco independientemente de si lo usuarios han especificado la instrucción "--disk-cache-dir" o no.
+
+      Si no se le asigna ningún valor, <ph name="PRODUCT_NAME" /> usa el directorio de caché predeterminado, pero lo usuarios podrán cambiar el ajuste con la instrucción de línea de comandos "--disk-cache-dir".
+
+      <ph name="PRODUCT_NAME" /> gestiona el contenido del directorio raíz de un volumen. Para evitar perder datos u otros errores, a esta política no se le debe asignar el directorio raíz ni ningún otro directorio para otros propósitos. Consulta las variables que puedes usar en esta página: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="6083631234867522991">Windows (clientes de Windows):</translation>
 <translation id="608788685013546076">Establece el umbral de batería de Peak Shift en forma de porcentaje</translation>
 <translation id="6089679180657323464">Controla los ajustes del controlador de diagnóstico y telemetría wilco.</translation>
@@ -3815,6 +3864,15 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Especificar el directorio de perfiles de itinerancia</translation>
 <translation id="6795485990775913659">Permitir imprimir solo sin PIN</translation>
+<translation id="6799657852647827750">Configura esta política para especificar qué variaciones pueden aplicarse a <ph name="PRODUCT_NAME" />.
+
+      Con las variaciones puede modificarse <ph name="PRODUCT_NAME" /> sin enviar una nueva versión del navegador, ya que permiten habilitar o inhabilitar de forma selectiva las funciones existentes.
+
+      Si se establece la opción <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no se define la política, se permitirá que se apliquen todas las variaciones al navegador.
+
+      Si se establece la opción <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá que se apliquen las variaciones que se consideren correcciones críticas de seguridad o de estabilidad a <ph name="PRODUCT_NAME" />.
+
+      Si se establece la opción <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá aplicar ninguna variación al navegador. Ten en cuenta que este modo puede evitar que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones críticas de seguridad a su debido tiempo y, por lo tanto, no se recomienda su uso.</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="6813263547126514821">Encendido y apagado</translation>
 <translation id="681446116407619279">Esquemas de autenticación admitidos</translation>
@@ -4103,6 +4161,9 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           Si se le asigna el valor "True" a esta política o no se le asigna ningún valor, los wake locks de pantalla serán válidos para la gestión de energía, a no ser que se haya asignado el valor "False" a AllowWakeLocks.
 
           Si se le asigna el valor "False" a esta política, se disminuirá el nivel de las solicitudes de wake locks de pantalla y se convertirán en solicitudes de wake locks del sistema.</translation>
+<translation id="7177293255621000064">Si se le asigna el valor "true" a esta política, todos los tipos de medios de almacenamiento externo (unidades flash USB, unidades de disco duro externos, tarjetas SD, otras tarjetas de memoria, otros tipos de almacenamiento óptico, etc.) dejarán de estar disponibles en el explorador de archivos. Si se le asigna el valor "false" o no se le asigna ningún valor, los usuarios podrán usar el almacenamiento externo en su dispositivo.
+
+      Nota: La política no afecta a Google Drive ni al almacenamiento interno. Los usuarios pueden seguir accediendo a los archivos guardados en la carpeta Descargas.</translation>
 <translation id="7177857088692019405">Desbloqueo rápido</translation>
 <translation id="718126088895133062">Esta política especifica el ID de usuario de licencias de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5312,6 +5373,11 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
           Si no se le asigna ningún valor y el dispositivo admite esta política, se aplicará el modo estándar de carga de la batería y el usuario no podrá cambiarlo.
 
           Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la anterior.</translation>
+<translation id="9055835215213290877">Si se le asigna el valor "none" a la política, <ph name="PRODUCT_NAME" /> utilizará el tamaño de caché predeterminado para guardar archivos almacenados en caché en el disco. Los usuarios no pueden cambiar la configuración.
+
+      Si se configura esta política, <ph name="PRODUCT_NAME" /> usa el tamaño de caché indicado aunque el usuario no haya especificado la instrucción "---disk-cache-size". (Los valores inferiores a algunos megabytes se redondean).
+
+      Si no se le asigna ningún valor, <ph name="PRODUCT_NAME" /> usa el tamaño predeterminado. Los usuarios pueden cambiar el ajuste con la instrucción "--disk-cache-size".</translation>
 <translation id="9077227880520270584">Temporizador de inicio automático de la cuenta local del dispositivo</translation>
 <translation id="9084985621503260744">Especificar si la actividad de vídeo afecta a la administración de energía</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de usuarios supervisados</translation>

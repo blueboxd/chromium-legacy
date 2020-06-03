@@ -501,6 +501,7 @@
 <translation id="1629314197035607094">पासवर्ड एक्स्पायर झाला</translation>
 <translation id="1630768113285622200">रीस्टार्ट करा आणि सुरू ठेवा</translation>
 <translation id="1630873818549593964">तुमच्या लहान मुलाचा Classroom मधील डेटा सुरक्षित ठेवला जाईल. <ph name="LINK_BEGIN" />अधिक जाणून घ्या<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">तुमच्या Google खात्यामध्ये स्टोअर केलेले पासवर्ड</translation>
 <translation id="1632803087685957583">आपल्या कीबोर्डचा पुनरावृत्ती दर, शब्दाचे पूर्वानुमान आणि बरेच काही समायोजित करण्याची तुम्हाला अनुमती देते</translation>
 <translation id="1633947793238301227">Google Assistant बंद करा</translation>
 <translation id="1634783886312010422">तुम्ही <ph name="WEBSITE" /> वर हा पासवर्ड आधीच बदलला आहे का?</translation>
@@ -1578,6 +1579,7 @@
 <translation id="296026337010986570">पूर्ण झाले! धोकादायक सॉफ्टवेअर काढून टाकले. एक्स्टेंशन पुन्हा सुरू करण्यासाठी &lt;a href="chrome://extensions"&gt;Extensions&lt;/a&gt; ला भेट द्या.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (एक्स्टेंशन प्रदान केले)</translation>
 <translation id="2961695502793809356">पुढे जाण्यासाठी क्लिक करा, इतिहास पहाण्यासाठी होल्ड करा</translation>
+<translation id="2962131322798295505">वॉलपेपर पिकर</translation>
 <translation id="2963151496262057773">खालील प्लगिन असंवादी आहे: <ph name="PLUGIN_NAME" />तुम्ही हे थांबवू इच्छिता?</translation>
 <translation id="2964193600955408481">वाय-फाय अक्षम करा</translation>
 <translation id="2966937470348689686">Android प्राधान्ये व्यवस्थापित करा</translation>
@@ -2536,6 +2538,7 @@
 <translation id="4154664944169082762">बोटाचा ठसा</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">हे मुलांसाठी असलेले खाते <ph name="CUSTODIAN_EMAIL" /> आणि <ph name="SECOND_CUSTODIAN_EMAIL" /> द्वारे व्‍यवस्‍थापित केले.</translation>
+<translation id="4159784952369912983">जांभळा</translation>
 <translation id="4163560723127662357">अज्ञात कीबोर्ड</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> च्या मालकीच्या काही सेटिंग्जतुमच्याशी शेअर केल्या जात आहेत. एकाधिक साइन इन वापरताना या सेटिंग्ज फक्त तुम्हाला खात्यावर प्रभाव करतात.</translation>
 <translation id="4170314459383239649">बाहेर पडताना साफ करा</translation>
@@ -2879,6 +2882,7 @@
 <translation id="4645676300727003670">&amp;ठेवा</translation>
 <translation id="4646675363240786305">पोर्ट</translation>
 <translation id="4647090755847581616">टॅब &amp;बंद करा</translation>
+<translation id="4647420311443994946">{0,select, tablet{तुम्ही तुमच्या टॅबलेटवर साइन इन कराल तेव्हा ॲप सुरू करा}computer{तुम्ही तुमच्या कॉंप्युटरवर साइन इन कराल तेव्हा ॲप सुरू करा}other{तुम्ही तुमच्या डिव्हाइसवर साइन इन कराल तेव्हा ॲप सुरू करा}}</translation>
 <translation id="4647697156028544508">कृपया "<ph name="DEVICE_NAME" />" साठी पिन प्रविष्‍ट करा:</translation>
 <translation id="4648491805942548247">अपुर्‍या परवानग्या</translation>
 <translation id="4648499713050786492">कृपया एखाद्या व्यक्तीस जोडण्यापूर्वी तुमचे प्रोफाईल अनलॉक करा.</translation>
@@ -2891,6 +2895,7 @@
 <translation id="4660540330091848931">आकार बदलत आहे</translation>
 <translation id="4660838440047236328">तुमच्या रूमचा लेआउट</translation>
 <translation id="4661407454952063730">अ‍ॅप डेटा म्हणजे अ‍ॅपने सेव्ह केलेला (डेव्हलपर सेटिंंग्जवर आधारित) कोणताही डेटा असू शकतो, ज्यामध्ये संपर्क, मेसेज आणि फोटो यांसारखा डेटा असतो.</translation>
+<translation id="4662373422909645029">टोपणनावामध्ये अंकांचा समावेश असू शकत नाही</translation>
 <translation id="4662788913887017617">हा बुकमार्क आपल्या iPhone सह शेअर करा</translation>
 <translation id="4663373278480897665">कॅमेऱ्याला अनुमती आहे</translation>
 <translation id="4664482161435122549">PKCS #12 निर्यात एरर</translation>
@@ -3585,6 +3590,7 @@
 <translation id="5585912436068747822">स्वरुपन अयशस्वी</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">ॲप्स लोड करीत आहे...</translation>
+<translation id="558984423786125616">पोर्ट आधीपासून सेटिंग्जमध्ये अस्तित्वात आहे</translation>
 <translation id="5592595402373377407">अद्याप पुरेसा डेटा उपलब्ध नाही.</translation>
 <translation id="5593357315997824387">माझ्या फाइल सिंक करा</translation>
 <translation id="5595485650161345191">पत्ता संपादित करा</translation>
@@ -3628,6 +3634,7 @@
 <translation id="5639549361331209298">हे पृष्ठ रीलोड करा, अधिक पर्याय पहाण्यासाठी होल्ड करा</translation>
 <translation id="5640133431808313291">सिक्युरिटी की व्यवस्थापित करा</translation>
 <translation id="5642508497713047">CRL स्वाक्षरीकर्ता</translation>
+<translation id="5643321261065707929">मर्यादित नेटवर्क</translation>
 <translation id="5643620609347735571">साफ करा आणि सुरू ठेवा</translation>
 <translation id="5644857731242502394">कनेक्‍ट केलेली डिव्हाइस सेट करा</translation>
 <translation id="5646376287012673985">स्थान</translation>
@@ -5536,6 +5543,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
     <ph name="BEGIN_PARAGRAPH5" />तुम्ही सेटिंग्जमध्ये ही सेवा बंद करू शकता.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">पिन जुळत नाहीत</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> हे एक्स्टेंशनमधून प्रॉक्सी सेटिंग्ज वापरत आहे</translation>
+<translation id="8097959162767603171">तुमच्या अ‍ॅडमिनिस्ट्रेटरने प्रथमतः ॲडमिन कंसोल Chrome डिव्हाइस सूचीमधील सेवा अटी स्वीकारणे आवश्यक आहे.</translation>
 <translation id="8101987792947961127">पुढील रीबूटवर Powerwash आवश्यक</translation>
 <translation id="8102159139658438129">तुमच्या कनेक्ट केलेल्या फोनसाठी पर्याय पाहण्याकरिता <ph name="LINK_BEGIN" />सेटिंग्ज<ph name="LINK_END" /> वर जा</translation>
 <translation id="8104696615244072556">तुमचे <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस Powerwash करा आणि मागील आवृत्तीकडे परत या.</translation>

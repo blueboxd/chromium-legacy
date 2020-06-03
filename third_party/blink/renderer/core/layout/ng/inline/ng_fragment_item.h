@@ -29,7 +29,7 @@ struct NGLogicalLineItem;
 //
 // This class consumes less memory than a full fragment, and can be stored in a
 // flat list (NGFragmentItems) for easier and faster traversal.
-class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem> {
+class CORE_EXPORT NGFragmentItem {
  public:
   // Represents regular text that exists in the DOM.
   struct TextItem {
@@ -65,6 +65,8 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem> {
 
   enum ItemType { kText, kGeneratedText, kLine, kBox };
 
+  // Create appropriate type for |line_item|.
+  NGFragmentItem(NGLogicalLineItem&& line_item, WritingMode writing_mode);
   // Create a text item.
   // TODO(kojii): Should be able to create without once creating fragments.
   explicit NGFragmentItem(const NGPhysicalTextFragment& text);
@@ -72,11 +74,10 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem> {
   NGFragmentItem(const NGPhysicalBoxFragment& box,
                  TextDirection resolved_direction);
   // Create a line item.
-  NGFragmentItem(const NGPhysicalLineBoxFragment& line, wtf_size_t item_count);
+  explicit NGFragmentItem(const NGPhysicalLineBoxFragment& line);
 
-  // Create |NGFragmentItem| for all items in |child_list|.
-  static scoped_refptr<NGFragmentItem> Create(NGLogicalLineItem&& child,
-                                              WritingMode writing_mode);
+  // The move constructor.
+  NGFragmentItem(NGFragmentItem&&);
 
   ~NGFragmentItem();
 
@@ -176,8 +177,15 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem> {
   }
   bool HasChildren() const { return DescendantsCount() > 1; }
   void SetDescendantsCount(wtf_size_t count) {
-    CHECK_EQ(Type(), kBox);
-    box_.descendants_count = count;
+    if (Type() == kBox) {
+      box_.descendants_count = count;
+      return;
+    }
+    if (Type() == kLine) {
+      line_.descendants_count = count;
+      return;
+    }
+    NOTREACHED();
   }
 
   // Returns |NGPhysicalBoxFragment| if one is associated with this item.
@@ -356,6 +364,8 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem> {
 
   // Returns true if this item is reusable.
   bool CanReuse() const;
+
+  const NGFragmentItem* operator->() const { return this; }
 
   // Get a description of |this| for the debug purposes.
   String ToString() const;

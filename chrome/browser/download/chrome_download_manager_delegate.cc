@@ -86,7 +86,7 @@
 #include "base/android/path_utils.h"
 #include "chrome/browser/download/android/chrome_duplicate_download_infobar_delegate.h"
 #include "chrome/browser/download/android/download_controller.h"
-#include "chrome/browser/download/android/download_location_dialog_bridge_impl.h"
+#include "chrome/browser/download/android/download_dialog_bridge_impl.h"
 #include "chrome/browser/download/android/download_manager_service.h"
 #include "chrome/browser/download/android/download_open_source.h"
 #include "chrome/browser/download/android/download_utils.h"
@@ -319,7 +319,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       download_prefs_(new DownloadPrefs(profile)),
       is_file_picker_showing_(false) {
 #if defined(OS_ANDROID)
-  location_dialog_bridge_.reset(new DownloadLocationDialogBridgeImpl);
+  download_dialog_bridge_.reset(new DownloadDialogBridgeImpl);
 #endif
 }
 
@@ -345,15 +345,15 @@ void ChromeDownloadManagerDelegate::ChooseDownloadLocation(
     int64_t total_bytes,
     DownloadLocationDialogType dialog_type,
     const base::FilePath& suggested_path,
-    DownloadLocationDialogBridge::LocationCallback callback) {
-  DCHECK(location_dialog_bridge_);
-  location_dialog_bridge_->ShowDialog(native_window, total_bytes, dialog_type,
+    DownloadDialogBridge::LocationCallback callback) {
+  DCHECK(download_dialog_bridge_);
+  download_dialog_bridge_->ShowDialog(native_window, total_bytes, dialog_type,
                                       suggested_path, std::move(callback));
 }
 
-void ChromeDownloadManagerDelegate::SetDownloadLocationDialogBridgeForTesting(
-    DownloadLocationDialogBridge* bridge) {
-  location_dialog_bridge_.reset(bridge);
+void ChromeDownloadManagerDelegate::SetDownloadDialogBridgeForTesting(
+    DownloadDialogBridge* bridge) {
+  download_dialog_bridge_.reset(bridge);
 }
 #endif  // defined(OS_ANDROID)
 

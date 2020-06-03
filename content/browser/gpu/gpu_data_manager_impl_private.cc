@@ -85,6 +85,7 @@
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
 #include "base/win/windows_version.h"
+#include "ui/display/win/screen_win.h"
 #endif  // OS_WIN
 
 namespace content {
@@ -450,6 +451,45 @@ void CollectExtraDevicePerfInfo(const gpu::GPUInfo& gpu_info,
     device_perf_info->software_rendering = true;
   }
 }
+
+// Provides a bridge whereby display::win::ScreenWin can ask the GPU process
+// about the HDR status of the system.
+class HDRProxy {
+ public:
+  static void Initialize() {
+    display::win::ScreenWin::SetRequestHDRStatusCallback(
+        base::BindRepeating(&HDRProxy::RequestHDRStatus));
+  }
+
+  static void RequestHDRStatus() {
+    // The request must be sent to the GPU process from the IO thread.
+    GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&HDRProxy::RequestOnIOThread));
+  }
+
+  static void GotResultOnIOThread(bool hdr_enabled) {
+    GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&HDRProxy::GotResult, hdr_enabled));
+  }
+
+ private:
+  static void RequestOnIOThread() {
+    auto* gpu_process_host =
+        GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);
+    if (gpu_process_host) {
+      auto* gpu_service = gpu_process_host->gpu_host()->gpu_service();
+      gpu_service->RequestHDRStatus(
+          base::BindOnce(&HDRProxy::GotResultOnIOThread));
+    } else {
+      bool hdr_enabled = false;
+      GotResultOnIOThread(hdr_enabled);
+    }
+  }
+  static void GotResult(bool hdr_enabled) {
+    display::win::ScreenWin::SetHDREnabled(hdr_enabled);
+  }
+};
+
 #endif  // OS_WIN
 }  // anonymous namespace
 
@@ -863,6 +903,12 @@ void GpuDataManagerImplPrivate::UpdateOverlayInfo(
   NotifyGpuInfoUpdate();
 }
 
+void GpuDataManagerImplPrivate::UpdateHDRStatus(bool hdr_enabled) {
+  // This is running on the IO thread;
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  HDRProxy::GotResultOnIOThread(hdr_enabled);
+}
+
 void GpuDataManagerImplPrivate::UpdateDxDiagNodeRequestStatus(
     bool request_continues) {
   gpu_info_dx_diag_request_failed_ = !request_continues;
@@ -896,6 +942,9 @@ void GpuDataManagerImplPrivate::OnBrowserThreadsStarted() {
   // Observer for display change.
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->AddObserver(owner_);
+
+  // Initialization for HDR status update.
+  HDRProxy::Initialize();
 }
 
 void GpuDataManagerImplPrivate::TerminateInfoCollectionGpuProcess() {

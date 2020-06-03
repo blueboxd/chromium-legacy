@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">現在のウィンドウを閉じる</translation>
 <translation id="3407560819924487926">タスク マネージャを表示する</translation>
 <translation id="3422679037938588196">検索に一致する前の文字列に移動する</translation>
-<translation id="344577624355799426"><ph name="ALT" /> または<ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" />キーを押す</translation>
 <translation id="353037708190149633">現在のウィンドウで開いているすべてのページをブックマークとして新しいフォルダに保存する</translation>
 <translation id="355103131818127604">バックグラウンドの新しいタブでリンクを開く</translation>
 <translation id="3622741593887335780">ズームイン（ドッキングまたは全画面の拡大鏡が有効な場合）</translation>
@@ -168,7 +167,6 @@
 <translation id="7077383985738259936">ブックマーク バーにフォーカスするかブックマーク バーをハイライト表示する（ブックマーク バーが表示されている場合）</translation>
 <translation id="7237562915163138771">アドレスバーにウェブアドレスを入力して、<ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> キーを押す</translation>
 <translation id="7254764037241667478">デバイスをスリープモード（停止）にする</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> または<ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" />キーを押す</translation>
 <translation id="7422707470576323858">次の入力方法に切り替える</translation>
 <translation id="743754632698445141">アプリの固定を解除する</translation>
 <translation id="7439718573248533901">次の文字を削除する（カーソルの右側を削除する）</translation>

@@ -1205,6 +1205,9 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
+<translation id="2787774054174244402">Jika kebijakan ditetapkan ke Benar (True), pengguna tidak akan dapat menulis ke perangkat penyimpanan eksternal.
+
+      Jika ExternalStorageReadOnly ditetapkan ke Salah (False) atau tidak ditetapkan, pengguna dapat membuat dan memodifikasi file perangkat penyimpanan eksternal yang dapat ditulis secara fisik, kecuali penyimpanan eksternal diblokir. (Anda dapat memblokir penyimpanan eksternal dengan menetapkan ExternalStorageDisable ke Benar (True).)</translation>
 <translation id="2799297758492717491">Izinkan pemutaran otomatis media pada pola URL yang diizinkan</translation>
 <translation id="2801065672151277034">Setelan pengelolaan sertifikat</translation>
 <translation id="2801155097555584385">Menetapkan nilai awal pengisian daya baterai kustom dalam persen</translation>
@@ -1329,6 +1332,12 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2987155890997901449">Aktifkan ARC</translation>
 <translation id="2987227569419001736">Mengontrol penggunaan API Bluetooth Web</translation>
+<translation id="299519952839316970">Harap diperhatikan, kebijakan ini sudah tidak digunakan lagi dan akan dihapus di <ph name="PRODUCT_OS_NAME" /> versi 88. Sesi publik tidak lagi didukung. Sebagai gantinya, gunakan <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> untuk mengonfigurasi sesi tamu terkelola.
+      Jika kebijakan ini ditetapkan ke salah (false), sesi tamu terkelola akan berperilaku seperti yang didokumentasikan di https://support.google.com/chrome/a/answer/3017014 - "Sesi Publik" standar.
+
+      Jika kebijakan ini ditetapkan ke benar (true) atau tidak ditetapkan, sesi tamu terkelola akan melakukan perilaku "Sesi Terkelola" yang menghilangkan banyak batasan yang berlaku untuk "Sesi Publik" reguler.
+
+      Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.</translation>
 <translation id="3016255526521614822">Beri akses aplikasi pencatat yang diizinkan di layar kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Mengontrol kebijakan pengawasan orang tua, yang diterapkan hanya ke akun anak.</translation>
 <translation id="3020953534071988875">Jika kebijakan ini dikonfigurasi, profil Samaran dan Tamu di <ph name="PRODUCT_NAME" /> akan diizinkan/dilarang untuk melakukan autentikasi standby.
@@ -1383,6 +1392,17 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Jika kebijakan ini tidak ditetapkan, atau nilai setelah substitusi bukan merupakan hostname yang valid, tidak ada hostname yang akan disetel dalam permintaan DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128">Mengizinkan <ph name="PRODUCT_NAME" /> memuat kebijakan eksperimental.
+
+        PERINGATAN: Kebijakan eksperimental tidak didukung dan dapat berubah atau dihapus tanpa pemberitahuan di versi browser mendatang.
+
+        Kebijakan eksperimental mungkin tidak selesai atau masih terdapat kerusakan yang diketahui atau tidak diketahui. Kebijakan dapat berubah atau bahkan dihapus tanpa notifikasi apa pun. Jika mengaktifkan kebijakan eksperimental, Anda dapat kehilangan data penjelajahan atau membahayakan keamanan atau privasi Anda.
+
+        Jika kebijakan tidak tercantum dalam daftar dan tidak dirilis secara resmi, nilainya akan diabaikan di Chrome Beta dan Chrome Stable.
+
+        Jika kebijakan tercantum dalam daftar dan tidak dirilis secara resmi, nilainya akan diterapkan.
+
+        Kebijakan ini tidak memengaruhi kebijakan yang sudah dirilis.</translation>
 <translation id="3066446511111537292">Izinkan pengguna terafiliasi di perangkat ini untuk menggunakan sideload ADB</translation>
 <translation id="3069958900488014740">Memungkinkan penonaktifan pengoptimalan WPAD (Web Proxy Auto-Discovery) di <ph name="PRODUCT_NAME" />.
 
@@ -1712,6 +1732,7 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 <translation id="3583230441447348508">Menentukan daftar berbagi file jaringan yang dikonfigurasi sebelumnya.
 
       Tiap item daftar kebijakan adalah objek yang terdiri dari dua anggota: "share_url" dan "mode". "share_url" harus berupa URL berbagi dan "mode" harus berupa "drop_down" atau "pre_mount". Mode "drop_down" menandakan bahwa "share_url" akan ditambahkan ke drop-down penemuan berbagi. Mode "pre_mount" menandakan bahwa "share_url" akan dipasang.</translation>
+<translation id="3584194414857209694">Mengaktifkan kebijakan eksperimental</translation>
 <translation id="3585177699591644295">Mengaktifkan fitur aksesibilitas klik untuk diucapkan.
 
           Jika kebijakan ini ditetapkan ke true, fitur klik untuk diucapkan akan selalu diaktifkan.
@@ -1926,6 +1947,19 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Jika tidak disetel atau disetel ke False, pengguna akan dapat mentransfer file ke Google Drive.</translation>
 <translation id="3915395663995367577">URL untuk proxy file .pac</translation>
+<translation id="3917288538553140422">Menetapkan kebijakan akan menentukan tindakan yang perlu dilakukan saat direktori rumah pengguna dibuat dengan enkripsi ecryptfs. Aplikasi Android mungkin berhenti berjalan, kecuali direktori rumah yang dienkripsi ecryptf dimigrasikan ke enkripsi ext4.
+
+      Jika kebijakan ditetapkan ke:
+
+      * Migrate (atau opsi yang tidak didukung seperti AskUser atau AskForEcryptfsArcUsers), direktori akan dimigrasikan secara otomatis ke ext4 saat login, tanpa meminta persetujuan pengguna.
+
+      * Wipe atau MinimalMigrate, direktori rumah baru yang dienkripsi ext4 akan menggantikan direktori lama yang dienkripsi ecryptfs. Untuk membantu pengguna agar tidak perlu login berulang-ulang, MinimalMigrate akan mencoba menyimpan token login.
+
+      * DisallowArc atau tidak ditetapkan, migrasi tidak akan dilakukan dan aplikasi Android pengguna akan berhenti berjalan.
+
+      Kebijakan ini tidak berlaku untuk pengguna kiosk.
+
+      Peringatan: Wipe dan MinimalMigrate akan menghapus data lokal.</translation>
 <translation id="3925377537407648234">Setel faktor skala dan resolusi tampilan</translation>
 <translation id="3927137827189017535">Mengaktifkan fitur aksesibilitas tombol lekat di layar login.
 
@@ -2933,6 +2967,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Kebijakan ini akan dihapus dari <ph name="PRODUCT_NAME" /> untuk Mac OS X versi 87 dan saat ini terjadi, dukungan untuk pemverifikasi sertifikat versi lama di Mac OS X akan dihapus.
       </translation>
+<translation id="5494917047563607689">Jika ditetapkan di bawah 1 MB atau tidak ditetapkan, <ph name="PRODUCT_OS_NAME" /> akan menggunakan ukuran default untuk menyimpan cache aplikasi dan ekstensi yang akan diinstal oleh beberapa pengguna di satu perangkat, sehingga setiap pengguna tidak perlu mendownload ulang satu per satu aplikasi dan ekstensi tersebut.</translation>
 <translation id="5498045818698736356">Menetapkan daftar situs yang diinstal otomatis, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna.
 
       Setiap item daftar kebijakan adalah objek dengan satu anggota wajib: "url" dan dua anggota opsional: "default_launch_container" dan "create_desktop_shortcut". "url" harus berupa URL aplikasi web untuk menginstal, "launch_container" harus berupa "window" atau "tab" untuk menunjukkan cara Aplikasi Web dibuka setelah diinstal, dan "create_desktop_shortcut" harus memiliki nilai True jika pintasan desktop harus dibuat di Linux dan Windows. Jika "default_launch_container" dihilangkan, aplikasi akan terbuka di tab secara default. Terlepas dari nilai "default_launch_container", pengguna dapat mengubah penampung tempat aplikasi akan terbuka. Jika "create_desktop_shortcuts" dihilangkan, tidak akan ada pintasan desktop yang dibuat. Lihat kebijakan <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> untuk memasang pin pada aplikasi ke rak ChromeOS.</translation>
@@ -2987,6 +3022,15 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini ditetapkan ke false atau tidak ditetapkan, peringatan akan muncul di komputer atau sistem operasi yang tidak didukung tersebut.</translation>
 <translation id="5565178130821694365">Sandi harus dimasukkan setiap dua hari (48 jam)</translation>
+<translation id="556564360355507488">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan ke perangkat <ph name="PRODUCT_OS_NAME" /> yang dikelola perusahaan.
+
+      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_OS_NAME" /> tanpa mengirimkan versi baru, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
+
+      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan tersebut tidak ditetapkan, semua variasi akan diterapkan ke <ph name="PRODUCT_OS_NAME" />.
+
+      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan diterapkan ke <ph name="PRODUCT_OS_NAME" />.
+
+      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan diterapkan ke browser di layar login. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_OS_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="5566210228171064229">Izinkan pencetakan dengan dan tanpa PIN</translation>
 <translation id="557360560705413259">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan menggunakan commonName dari sertifikat server agar cocok dengan hostname apabila sertifikat tidak menyertakan ekstensi subjectAlternativeName, selama berhasil divalidasi dan diamankan ke sertifikat CA yang terinstal secara lokal.
 
@@ -3304,6 +3348,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini ditetapkan ke 'Blokir upload dan download berukuran besar', <ph name="PRODUCT_NAME" /> akan berperilaku sesuai dengan aturan yang dijelaskan pada 'Blokir download berukuran besar' dan 'Blokir upload berukuran besar'.
       </translation>
+<translation id="6082161804984853051">Jika kebijakan ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang Anda sediakan untuk menyimpan file cache di disk, baik pengguna menentukan tanda --dir-cache-disk maupun tidak.
+
+      Jika tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan direktori cache default, tetapi pengguna dapat mengubah setelan tersebut dengan tanda command line --dir-cache-disk.
+
+      <ph name="PRODUCT_NAME" /> akan mengelola konten direktori utama volume. Agar tidak kehilangan data atau mengalami error lainnya, jangan menetapkan kebijakan ini ke direktori utama atau semua direktori yang digunakan untuk tujuan lainnya. Lihat variabel yang dapat Anda gunakan (https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables).</translation>
 <translation id="6083631234867522991">Windows (klien Windows):</translation>
 <translation id="608788685013546076">Menetapkan ambang batas pergeseran puncak daya baterai dalam persen</translation>
 <translation id="6089679180657323464">Mengontrol setelan pengontrol diagnostik dan telemetri wilco.</translation>
@@ -3715,6 +3764,15 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6786747875388722282">Ekstensi</translation>
 <translation id="6786967369487349613">Menyetel direktori profil roaming</translation>
 <translation id="6795485990775913659">Hanya izinkan pencetakan tanpa PIN</translation>
+<translation id="6799657852647827750">Dengan mengonfigurasi kebijakan ini, Anda dapat menentukan variasi mana yang diizinkan untuk diterapkan ke <ph name="PRODUCT_NAME" />.
+
+      Variasi memberikan cara untuk menawarkan modifikasi pada <ph name="PRODUCT_NAME" /> tanpa mengirimkan versi baru browser, dengan mengaktifkan atau menonaktifkan fitur yang sudah ada secara selektif.
+
+      Jika <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (nilai 0) ditetapkan, atau jika kebijakan tersebut tidak ditetapkan, semua variasi akan diterapkan ke browser.
+
+      Jika <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (nilai 1) ditetapkan, hanya variasi yang dianggap sebagai perbaikan keamanan atau stabilitas penting yang akan diterapkan ke <ph name="PRODUCT_NAME" />.
+
+      Jika <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (nilai 2) ditetapkan, semua variasi tidak akan dapat diterapkan ke browser. Perlu diketahui, mode ini tidak direkomendasikan karena berpotensi menyebabkan developer <ph name="PRODUCT_NAME" /> tidak dapat menyediakan perbaikan keamanan penting secara tepat waktu.</translation>
 <translation id="6810445994095397827">Cekal JavaScript di situs ini</translation>
 <translation id="6813263547126514821">Daya dan penonaktifan</translation>
 <translation id="681446116407619279">Skema autentikasi yang didukung</translation>
@@ -3993,6 +4051,9 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat aktif akan diterima untuk pengelolaan daya, kecuali AllowWakeLocks disetel ke false.
 
 Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan didemosikan ke permintaan penguncian layar saat aktif di sistem.</translation>
+<translation id="7177293255621000064">Jika kebijakan ditetapkan ke Benar (True), semua jenis media penyimpanan eksternal (USB, flash drive, hard drive eksternal, kartu SD dan kartu memori lainnya, penyimpanan optik) akan menjadi tidak tersedia di file browser. Jika kebijakan ditetapkan ke Salah (False) atau tidak ditetapkan, pengguna akan dapat menggunakan penyimpanan eksternal di perangkat mereka.
+
+      Catatan: Kebijakan tidak memengaruhi Google Drive dan penyimpanan internal. Pengguna masih dapat mengakses file yang disimpan di folder Download.</translation>
 <translation id="7177857088692019405">Membuka kunci dengan cepat</translation>
 <translation id="718126088895133062">Kebijakan ini menetapkan ID pengguna lisensi <ph name="PLUGIN_VM_NAME" /> untuk perangkat ini.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5163,6 +5224,11 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
           Jika kebijakan ini tidak ditetapkan dan kebijakan didukung di perangkat, mode pengisian daya baterai standar akan diterapkan dan tidak dapat diubah oleh pengguna.
 
           Catatan: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
+<translation id="9055835215213290877">Jika kebijakan ditetapkan ke Tidak Ada (None), <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache default untuk menyimpan file cache di disk. Pengguna tidak dapat mengubahnya.
+
+      Jika kebijakan ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang Anda sediakan, baik pengguna menentukan tanda --ukuran-cache-disk maupun tidak. (Nilai yang kurang dari beberapa megabyte dibulatkan ke atas.)
+
+      Jika tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran default. Pengguna dapat mengubah setelan tersebut menggunakan tanda --ukuran-cache-disk.</translation>
 <translation id="9077227880520270584">Timer login otomatis akun lokal perangkat</translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>
 <translation id="9088433379343318874">Izinkan penyedia konten pengguna yang dilindungi</translation>

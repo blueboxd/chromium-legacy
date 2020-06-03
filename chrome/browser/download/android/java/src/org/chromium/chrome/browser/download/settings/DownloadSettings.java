@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import org.chromium.chrome.browser.download.DownloadLocationDialogBridge;
+import org.chromium.chrome.browser.download.DownloadDialogBridge;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
@@ -77,8 +77,7 @@ public class DownloadSettings
 
         if (mLocationPromptEnabledPref != null) {
             // Location prompt is marked enabled if the prompt status is not DONT_SHOW.
-            boolean isLocationPromptEnabled =
-                    DownloadLocationDialogBridge.getPromptForDownloadAndroid()
+            boolean isLocationPromptEnabled = DownloadDialogBridge.getPromptForDownloadAndroid()
                     != DownloadPromptStatus.DONT_SHOW;
             mLocationPromptEnabledPref.setChecked(isLocationPromptEnabled);
         }
@@ -108,20 +107,18 @@ public class DownloadSettings
     }
 
     // Preference.OnPreferenceChangeListener implementation.
-
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (PREF_LOCATION_PROMPT_ENABLED.equals(preference.getKey())) {
             if ((boolean) newValue) {
                 // Only update if the interstitial has been shown before.
-                if (DownloadLocationDialogBridge.getPromptForDownloadAndroid()
+                if (DownloadDialogBridge.getPromptForDownloadAndroid()
                         != DownloadPromptStatus.SHOW_INITIAL) {
-                    DownloadLocationDialogBridge.setPromptForDownloadAndroid(
+                    DownloadDialogBridge.setPromptForDownloadAndroid(
                             DownloadPromptStatus.SHOW_PREFERENCE);
                 }
             } else {
-                DownloadLocationDialogBridge.setPromptForDownloadAndroid(
-                        DownloadPromptStatus.DONT_SHOW);
+                DownloadDialogBridge.setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
             }
         } else if (PREF_PREFETCHING_ENABLED.equals(preference.getKey())) {
             PrefetchConfiguration.setPrefetchingEnabledInSettings((boolean) newValue);

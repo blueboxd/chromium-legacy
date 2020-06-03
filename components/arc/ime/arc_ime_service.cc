@@ -289,10 +289,6 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
     DCHECK_EQ(nullptr, focused_arc_window_);
     focused_arc_window_ = gained_focus;
     focused_arc_window_->AddObserver(this);
-    if (base::FeatureList::IsEnabled(
-            chromeos::features::kArcPreImeKeyEventSupport)) {
-      focused_arc_window_->SetProperty(aura::client::kSkipImeProcessing, true);
-    }
     // The focused window and the toplevel window are different in production,
     // but in tests they can be the same, so avoid adding the observer twice.
     if (focused_arc_window_ != focused_arc_window_->GetToplevelWindow())

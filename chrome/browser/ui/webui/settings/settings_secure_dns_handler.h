@@ -9,12 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "net/dns/public/doh_provider_list.h"
+#include "net/dns/public/doh_provider_entry.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -35,12 +36,14 @@ class SecureDnsHandler : public SettingsPageUIHandler {
   // as a dictionary with the following keys: "name" (the text to display in the
   // UI), "value" (the DoH template for this provider), and "policy" (the URL of
   // the provider's privacy policy).
-  base::Value GetSecureDnsResolverListForCountry(
-      int country_id,
-      const std::vector<net::DohProviderEntry>& providers);
+  base::Value GetSecureDnsResolverList();
 
   void SetNetworkContextForTesting(
       network::mojom::NetworkContext* network_context);
+
+  // DohProviderEntry cannot be copied, so the entries referenced in |providers|
+  // must be long-lived.
+  void SetProvidersForTesting(net::DohProviderEntry::List providers);
 
  protected:
   // Retrieves all pre-approved secure resolvers and returns them to WebUI.
@@ -66,10 +69,14 @@ class SecureDnsHandler : public SettingsPageUIHandler {
   network::mojom::NetworkContext* GetNetworkContext();
   void OnProbeComplete();
 
-  std::map<std::string, net::DohProviderIdForHistogram> resolver_histogram_map_;
+  static net::DohProviderEntry::List GetFilteredProviders();
+
+  net::DohProviderEntry::List providers_ = GetFilteredProviders();
   std::unique_ptr<chrome_browser_net::DnsProbeRunner> runner_;
   chrome_browser_net::DnsProbeRunner::NetworkContextGetter
-      network_context_getter_;
+      network_context_getter_ =
+          base::BindRepeating(&SecureDnsHandler::GetNetworkContext,
+                              base::Unretained(this));
   // ID of the Javascript callback for the current pending probe, or "" if
   // there is no probe currently in progress.
   std::string probe_callback_id_;

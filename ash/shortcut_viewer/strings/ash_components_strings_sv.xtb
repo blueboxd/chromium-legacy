@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">Stäng det aktuella fönstret</translation>
 <translation id="3407560819924487926">Öppna aktivitetshanteraren</translation>
 <translation id="3422679037938588196">Hitta föregående träff för sökningen</translation>
-<translation id="344577624355799426"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Spara alla öppna sidor i det aktuella fönstret som bokmärken i en ny mapp</translation>
 <translation id="355103131818127604">Öppna länken på en ny flik i bakgrunden</translation>
 <translation id="3622741593887335780">Zooma in (när dockad skärmförstoring ELLER helskärmsförstoring har aktiverats)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">Fokusera på eller markera bokmärkesfältet (om det visas)</translation>
 <translation id="7237562915163138771">Ange en webbadress i adressfältet och tryck sedan på <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Försätt enheten i viloläge (stäng av)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> eller <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">Byt till nästa tillgängliga inmatningsmetod</translation>
 <translation id="743754632698445141">Lossa en app</translation>
 <translation id="7439718573248533901">Radera nästa bokstav (radera framåt)</translation>

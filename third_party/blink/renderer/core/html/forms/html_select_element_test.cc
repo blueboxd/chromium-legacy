@@ -50,6 +50,11 @@ class HTMLSelectElementTest : public PageTestBase {
     return select->isConnected();
   }
 
+  String MenuListLabel() const {
+    auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
+    return select->InnerElement().textContent();
+  }
+
  private:
   bool original_delegates_flag_;
 };
@@ -568,6 +573,16 @@ TEST_F(HTMLSelectElementTest, SelectMultipleOptionsByPopup) {
         "<option selected>o0</option><option selected>o1</option></select>");
     EXPECT_FALSE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{1}))
         << "Onchange handler should be executed.";
+  }
+
+  // Check if the label is correctly updated.
+  {
+    SetHtmlInnerHTML(
+        "<select multiple>"
+        "<option selected>o0</option><option selected>o1</option></select>");
+    EXPECT_EQ("2 selected", MenuListLabel());
+    EXPECT_TRUE(FirstSelectIsConnectedAfterSelectMultiple(Vector<int>{1}));
+    EXPECT_EQ("o1", MenuListLabel());
   }
 }
 

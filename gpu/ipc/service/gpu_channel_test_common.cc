@@ -48,6 +48,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
   bool IsExiting() const override { return is_exiting_; }
 #if defined(OS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override {}
+  void DidUpdateHDRStatus(bool hdr_enabled) override {}
   void SendCreatedChildWindow(SurfaceHandle parent_window,
                               SurfaceHandle child_window) override {}
 #endif

@@ -205,6 +205,11 @@
 <translation id="1753706481035618306">Número de página</translation>
 <translation id="1763864636252898013">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, el sistema operativo de tu dispositivo no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prueba a ejecutar Diagnósticos de red de Windows<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">El servidor al que te diriges (<ph name="ORIGIN" />) ha establecido un encabezado
+    que requiere aplicar una política de origen a todas las solicitudes que reciba. Sin embargo,
+    el encabezado tiene errores, lo que impide al navegador procesar
+    tu solicitud de ir a <ph name="SITE" />. Los operadores de sitios web
+    pueden usar las políticas de origen para configurar la seguridad y otras propiedades de un sitio web.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
 <translation id="1787142507584202372">Las pestañas abiertas aparecen aquí</translation>
@@ -228,6 +233,7 @@
 <translation id="1898423065542865115">Filtrado</translation>
 <translation id="1901443836186977402">{1,plural, =1{Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad ha caducado en las últimas 24 horas. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. La fecha que consta en el reloj de tu ordenador actualmente es el <ph name="CURRENT_DATE" />. ¿Es correcto? Si no lo es, corrige el reloj del sistema y, a continuación, actualiza esta página.}other{Este servidor no ha podido demostrar que es <ph name="DOMAIN" />; su certificado de seguridad caducó hace # días. Este problema puede deberse a una configuración incorrecta o a que un atacante ha interceptado la conexión. La fecha que consta en el reloj de tu ordenador actualmente es el <ph name="CURRENT_DATE" />. ¿Es correcto? Si no lo es, corrige el reloj del sistema y, a continuación, actualiza esta página.}}</translation>
 <translation id="1902576642799138955">Período de validez</translation>
+<translation id="191374271204266022">Copiar como JSON</translation>
 <translation id="1914326953223720820">Servicio de descompresión</translation>
 <translation id="1915697529809968049">¿Usar Touch ID en lugar de CVC?</translation>
 <translation id="1916770123977586577">Vuelve a cargar esta página para aplicar la configuración actualizada a este sitio web</translation>
@@ -705,6 +711,8 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
     Si crees que puede tratarse de un error, ve a https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="3990250421422698716">Agrupar</translation>
+<translation id="3996311196211510766">El sitio web <ph name="ORIGIN" /> ha solicitado que se aplique una política de origen
+    a todas sus solicitudes, pero esta política no se puede aplicar actualmente.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ 1 página web cercana}other{ # páginas web cercanas}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF que contiene {COUNT} página}other{Documento PDF que contiene {COUNT} páginas}}</translation>
 <translation id="4030383055268325496">&amp;Deshacer acción de añadir</translation>
@@ -749,6 +757,11 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="4194250254487269611">En estos momentos no se puede guardar tu tarjeta</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar la configuración del cortafuegos y del antivirus<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">El servidor al que te diriges, <ph name="ORIGIN" />, ha solicitado que
+    se aplique una política de origen a todas las solicitudes que reciba. Sin embargo, no ha
+    proporcionado ninguna política, lo que impide al navegador procesar tu solicitud
+    de <ph name="SITE" />. Los operadores de sitios web pueden usar las políticas de origen
+    para configurar la seguridad y otras propiedades de un sitio web.</translation>
 <translation id="421066178035138955">Usar dispositivos y datos de realidad virtual</translation>
 <translation id="4214357935346142455">perfil de pantalla de inicio de sesión</translation>
 <translation id="4215751373031079683">7x9 (sobre)</translation>
@@ -1239,6 +1252,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="6259156558325130047">&amp;Rehacer reorganización</translation>
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Volver para estar a salvo</translation>
+<translation id="6265794661083428563">Copia el valor de la política <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Verde azulado claro</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Las páginas de tu lista de lectura aparecen aquí</translation>
@@ -1470,7 +1484,7 @@ Más información:
 <translation id="7304030187361489308">Alto</translation>
 <translation id="7313965965371928911">Advertencias de <ph name="BEGIN_LINK" />Navegación Segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
-<translation id="7320336641823683070">Ayuda de conexión</translation>
+<translation id="7320336641823683070">Ayuda para la conexión</translation>
 <translation id="7323804146520582233">Ocultar la sección "<ph name="SECTION" />"</translation>
 <translation id="733354035281974745">Anulación de la cuenta local del dispositivo</translation>
 <translation id="7333654844024768166">Acabas de introducir tu contraseña en un sitio web engañoso. Chromium te recomienda que accedas a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> y otros sitios web en los que uses esta contraseña y que la cambies ahora.</translation>

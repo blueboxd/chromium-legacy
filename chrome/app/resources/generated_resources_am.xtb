@@ -2129,6 +2129,7 @@
 <translation id="3677106374019847299">ብጁ አቅራቢ ያስገቡ</translation>
 <translation id="3677657024345889897">ከሁሉም ጸጥ ያለው</translation>
 <translation id="3677911431265050325">የሞባይል ጣቢያ ጠይቅ</translation>
+<translation id="3677959414150797585">መተግበሪያዎች፣ የድር ገጾች እና ተጨማሪ ያካትታል። የአጠቃቀም ውሂብን ለማጋራት ከመረጡ ብቻ የአስተያየት ጥቆማዎችን ለማሻሻል ስታትስቲክስን ይልካል።</translation>
 <translation id="3678156199662914018">ቅጥያ፦ <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">የጽሑፍ-ወደ-ንግግር ድምጽ</translation>
 <translation id="3681311097828166361">ለሰጡን ግብረመልስ እናመሰግናለን። አሁን ከመስመር ውጭ ነዎት፣ እና የእርስዎ ሪፖርት በኋላ ላይ ይላካል።</translation>
@@ -2538,6 +2539,7 @@
 <translation id="4154664944169082762">የጣት አሻራዎች</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">ይህ የህጻናት መለያ በ<ph name="CUSTODIAN_EMAIL" /> እና <ph name="SECOND_CUSTODIAN_EMAIL" /> ነው የሚቀናበረው።</translation>
+<translation id="4159784952369912983">ሐምራዊ</translation>
 <translation id="4163560723127662357">ያልታወቀ የቁልፍ ሰሌዳ</translation>
 <translation id="4168015872538332605">አንዳንድ የ<ph name="PRIMARY_EMAIL" /> ቅንብሮች ለእርስዎ እየተጋሩ ነው። እነዚህ ቅንብሮች መለያዎ ላይ ተጽዕኖ የሚኖራቸው ባለብዙ መለያ መግቢያን ሲጠቀሙ ብቻ ነው።</translation>
 <translation id="4170314459383239649">ሲወጣ አጽዳ</translation>
@@ -3778,6 +3780,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - ካሜራ ወይም ማይክራፎን በመቅረጽ ላይ ነው</translation>
 <translation id="5841270259333717135">ኤተርኔት ያዋቅሩ</translation>
 <translation id="5842497610951477805">ብሉቱዝን አንቃ</translation>
+<translation id="5844574845205796324">አዲስ የሚታሰስ ይዘትን ጠቁም</translation>
 <translation id="5846200638699387931">የዝምድና አጻጻፍ ስህተት፦ <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">ዝማኔዎችን እና መተግበሪያዎችን ይጫኑ። በመቀጠልዎ ይህ መሣሪያ በተጨማሪም በራስ-ሰር ዝማኔዎችን እና መተግበሪያዎች ከGoogle፣ ከአገልግሎት አቅራቢዎ እና ከመሣሪያዎ አምራች፣ ምናልባትም ተንቀሳቃሽ ስልክ ውሂብን በመጠቀም፣ ሊያወርድ እና ሊጭን እንደሚችል መስማማትዎን ያረጋግጣሉ። ከእነዚህ መተግበሪያዎች ውስጥ አንዳንዶቹ የውስጠ-መተግበሪያ ግዢዎችን ሊያቀርቡ ይችላሉ።</translation>
 <translation id="5849212445710944278">አስቀድሞ ታክሏል</translation>

@@ -117,6 +117,10 @@ vars = {
   'checkout_traffic_annotation_tools': 'checkout_configuration != "small"',
   'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration != "small"',
 
+  # By default bot checkouts the WPR archive files only when this
+  # flag is set True.
+  'checkout_wpr_archives': False,
+
   # By default, do not check out WebKit for iOS, as it is not needed unless
   # running against ToT WebKit rather than system WebKit. This can be overridden
   # e.g. with custom_vars.
@@ -178,11 +182,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '579c295b6bdbe0b4151b96db3b80be54906bd81a',
+  'skia_revision': 'c1150db5e1cec1de2d6ce4df2e92146730e0ed53',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b952659fe70f060c8b73a6a349b34081687d937c',
+  'v8_revision': '0f116b95c1707c2aa7c80983332d81508ccd72bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,15 +194,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '957a2359f66ba6f61ca52104cc0a1338b16fd994',
+  'angle_revision': '6c1581646c4685c457bdc9381ede430e15253bef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'e817aaa40954e0e2219876f4fb26efc1794fc148',
+  'swiftshader_revision': '3ad285a60d820e94f5a5c31b1e3f0cf15468fae7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '634973155ab5f27f443c38292efca94647bff5f9',
+  'pdfium_revision': 'de8ee4c6b0516d51ec262b6935a1afda0763430e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -213,7 +217,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling googletest
   # and whatever else without interference from each other.
-  'googletest_revision': '859bfe8981d6724c4ea06e73d29accd8588f3230',
+  'googletest_revision': 'cb44c86c1aaf31b26797728e93acc950c01dbd5b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lighttpd
   # and whatever else without interference from each other.
@@ -241,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f2f4d5482a04af7ccecc25269682c45e1a84a128',
+  'catapult_revision': '15d5f65efa22587edf01e9c1b922bb32807c46ed',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -249,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9f2374511ab39e6383d08ef307ea1ed7e1f2bc57',
+  'devtools_frontend_revision': 'b6a8b828fd50207129c51ddd177eb8bc1cebd388',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -301,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '3fb9c1bbfb2354053da778a99c6129bafc8f317e',
+  'dawn_revision': 'adbf9153d909de0ac57141e0812ab88fe0ca5770',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1220,7 +1224,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a40746d976151f60324853ceef0a7fea7a190b4b',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9d83693a5ac5ffb0348b6217e9ac4ec587698c69',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1298,7 +1302,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'YCEHO72fYLX-ZuKWMXbJ0p8ddDkb4Z7psvElQb_9LNQC'
+              'version': 't4ELE6VgcCM5v-3W7_Dv8jFHkyeEu69AW5lwrtqWBOwC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1448,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '955e9039eacd5d21cb8a452a92ef7c0bb343c468',
+    Var('webrtc_git') + '/src.git' + '@' + '43ccfecdb7681f8bfc160b70462f70c532a62269',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1520,7 +1524,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9172a9f050548c382796827f6644d213d22a43b6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@03e4d15d1fa0c370ad06b7d16591b4ac8467ebf5',
     'condition': 'checkout_src_internal',
   },
 
@@ -4570,6 +4574,16 @@ hooks = [
     'condition': 'checkout_android',
     'action': [ 'python',
                 'src/chrome/test/data/android/manage_render_test_goldens.py',
+                'download',
+    ],
+  },
+  # Pull down WPR Archive files
+  {
+    'name': 'Fetch WPR archive files',
+    'pattern': '.',
+    'condition': 'checkout_android and (checkout_wpr_archives or checkout_src_internal)',
+    'action': [ 'python',
+                'src/chrome/test/data/android/manage_wpr_archives.py',
                 'download',
     ],
   },

@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">পাসওয়ার্ডের মেয়াদ শেষ হয়ে গেছে</translation>
 <translation id="1630768113285622200">রিস্টার্ট করুন ও চালিয়ে যান</translation>
 <translation id="1630873818549593964">Classroom-এ আপনার সন্তানের ডেটা সুরক্ষিত থাকবে। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">আপনার Google অ্যাকাউন্টে পাসওয়ার্ড স্টোর করা আছে</translation>
 <translation id="1632803087685957583">আপনাকে আপনার কীবোর্ডের পুনরাবৃত্তি হার, শব্দ পূর্বাভাষ, এবং আরও অনেক কিছুর সমন্বয় করতে অনুমতি দেয়</translation>
 <translation id="1633947793238301227">Google Assistant অ্যাপ বন্ধ করুন</translation>
 <translation id="1634783886312010422">আপনি কি <ph name="WEBSITE" />-এ আগে থেকেই এই পাসওয়ার্ড পরিবর্তন করেছেন?</translation>
@@ -1578,6 +1579,7 @@
 <translation id="296026337010986570">হয়ে গেছে! ক্ষতিকারক সফ্টওয়্যার সরানো হয়েছে। এক্সটেনশন আবার চালু করতে, &lt;a href="chrome://extensions"&gt;এক্সটেনশন&lt;/a&gt; -এ যান।</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (এক্সটেনশন থেকে প্রদান করা)</translation>
 <translation id="2961695502793809356">এগিয়ে যাওয়ার জন্য ক্লিক করুন, ইতিহাস দেখার জন্য ধরে রাখুন</translation>
+<translation id="2962131322798295505">ওয়ালপেপার পিকার</translation>
 <translation id="2963151496262057773">নিম্নোক্ত প্লাগ-ইনটি কাজ করছে না: <ph name="PLUGIN_NAME" /> আপনি কি এটিকে থামাতে চান?</translation>
 <translation id="2964193600955408481">ওয়াই-ফাই অক্ষম করুন</translation>
 <translation id="2966937470348689686">Android ডিভাইসে পছন্দের সেটিংগুলি পরিচালনা করুন</translation>
@@ -2537,6 +2539,7 @@
 <translation id="4154664944169082762">আঙ্গুলের ছাপ</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">এটি <ph name="CUSTODIAN_EMAIL" /> এবং <ph name="SECOND_CUSTODIAN_EMAIL" /> দ্বারা পরিচালিত বাচ্চাদের জন্য একটি অ্যাকাউন্ট৷</translation>
+<translation id="4159784952369912983">বেগুনি</translation>
 <translation id="4163560723127662357">অজানা কীবোর্ড</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" />-এর কিছু সেটিংস আপনার সাথে শেয়ার করা হচ্ছে৷ এই সেটিংস শুধুমাত্র আপনার অ্যাকাউন্টে একাধিক সাইন-ইন ব্যবহারের সময় কাজ করে৷</translation>
 <translation id="4170314459383239649">ছেড়ে গেলে কুকিজ মুছে দিন</translation>
@@ -2880,6 +2883,7 @@
 <translation id="4645676300727003670">&amp;রাখুন</translation>
 <translation id="4646675363240786305">পোর্ট</translation>
 <translation id="4647090755847581616">&amp;Close Tab</translation>
+<translation id="4647420311443994946">{0,select, tablet{আপনার ট্যাবলেটে সাইন-ইন করলেই অ্যাপ চালু হয়ে যাবে}computer{আপনার কম্পিউটারে সাইন-ইন করলেই অ্যাপ চালু হয়ে যাবে}other{আপনার ডিভাইসে সাইন-ইন করলেই অ্যাপ চালু হয়ে যাবে}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />"-এর PIN লিখুন:</translation>
 <translation id="4648491805942548247">অপর্যাপ্ত অনুমতিগুলি</translation>
 <translation id="4648499713050786492">কোনো ব্যক্তি যোগ করার আগে দয়া করে আপনার প্রোফাইলটি আনলক করুন।</translation>
@@ -2892,6 +2896,7 @@
 <translation id="4660540330091848931">রিসাইজ করা হচ্ছে</translation>
 <translation id="4660838440047236328">আপনার রুমের লে-আউট</translation>
 <translation id="4661407454952063730">অ্যাপ ডেটা হল পরিচিতি, মেসেজ এবং ফটোর মতো যেকোনও ডেটা যা কোনও অ্যাপ (ডেভেলপার সেটিংসের উপরে ভিত্তি করে) সেভ করে রাখে।</translation>
+<translation id="4662373422909645029">ডাকনামে সংখ্যা থাকবে না</translation>
 <translation id="4662788913887017617">এই বুকমার্কটি আপনার iPhone এর সাথে শেয়ার করুন</translation>
 <translation id="4663373278480897665">ক্যামেরা ব্যবহারের অনুমতি দেওয়া হয়েছে</translation>
 <translation id="4664482161435122549">PKCS #12 রপ্তানি  ত্রুটি</translation>
@@ -3586,6 +3591,7 @@
 <translation id="5585912436068747822">ফরম্যাটিং ব্যর্থ হয়েছে</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">অ্যাপ্লিকেশানগুলি লোড হচ্ছে...</translation>
+<translation id="558984423786125616">সেটিংসে আগে থেকেই পোর্ট রয়েছে</translation>
 <translation id="5592595402373377407">এখনও যথেষ্ট ডেটা উপলব্ধ নেই৷</translation>
 <translation id="5593357315997824387">আমার ফাইল সিঙ্ক করুন</translation>
 <translation id="5595485650161345191">ঠিকানা সম্পাদনা করুন</translation>
@@ -3630,6 +3636,7 @@
 <translation id="5639549361331209298">এই পৃষ্ঠাটি রিলোড করুন, আরও বিকল্প দেখতে ধরে থাকুন</translation>
 <translation id="5640133431808313291">নিরাপত্তা কী ডিভাইস ম্যানেজ করা</translation>
 <translation id="5642508497713047">CRL স্বাক্ষরকারী</translation>
+<translation id="5643321261065707929">মিটার্ড নেটওয়ার্ক</translation>
 <translation id="5643620609347735571">খালি করুন এবং চালিয়ে যান</translation>
 <translation id="5644857731242502394">কানেক্ট করা ডিভাইস সেট-আপ</translation>
 <translation id="5646376287012673985">লোকেশন</translation>
@@ -5539,6 +5546,7 @@
     <ph name="BEGIN_PARAGRAPH5" />আপনি সেটিংস থেকে এই পরিষেবা বন্ধ করতে পারেন।<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">পিন মিলছে না</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> একটি এক্সটেনশনের প্রক্সি সেটিংস ব্যবহার করছে</translation>
+<translation id="8097959162767603171">আপনার অ্যাডমিনিস্ট্রেটরকে অবশ্যই প্রথমে অ্যাডমিন কনসোলের Chrome ডিভাইসের তালিকাতে দেওয়া পরিষেবার শর্তাবলীর সাথে সম্মত হতে হবে।</translation>
 <translation id="8101987792947961127">পরবর্তী রিবুটে পাওয়ারওয়াশ প্রয়োজন</translation>
 <translation id="8102159139658438129">আপনার কানেক্ট করা ফোনের বিকল্পগুলি দেখতে <ph name="LINK_BEGIN" />সেটিংস<ph name="LINK_END" />-এ যান</translation>
 <translation id="8104696615244072556">আপনার <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইসটি পাওয়ারওয়াশ করুন এবং পূর্ববর্তী ভার্সনে ফিরে যান।</translation>

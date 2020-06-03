@@ -1245,6 +1245,9 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Chaque entrée de la liste indique un identifiant, qui est utilisé de façon interne pour différencier les comptes locaux de l'appareil.</translation>
 <translation id="2769952903507981510">Configurer le nom de domaine requis pour les hôtes d'accès à distance</translation>
 <translation id="2787173078141616821">Transmettre des informations sur l'état d'Android</translation>
+<translation id="2787774054174244402">Si vous définissez cette règle sur "True", les utilisateurs ne peuvent pas modifier les fichiers stockés sur les périphériques de stockage externes.
+
+      À moins que les supports de stockage externes ne soient bloqués, si vous définissez la règle ExternalStorageReadOnly sur "False" ou si elle n'est pas configurée, les utilisateurs peuvent créer et modifier des fichiers sur les périphériques de stockage externes accessibles en écriture. (Vous pouvez bloquer les supports de stockage externes en définissant la règle ExternalStorageDisable sur "True".)</translation>
 <translation id="2799297758492717491">Autoriser la lecture automatique des contenus multimédias pour les formats d'URL sur liste blanche</translation>
 <translation id="2801065672151277034">Paramètres de gestion des certificats</translation>
 <translation id="2801155097555584385">Personnaliser le pourcentage auquel la batterie doit commencer à être rechargée</translation>
@@ -1369,6 +1372,12 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
+<translation id="299519952839316970">Cette règle étant obsolète, elle sera supprimée dans la version 88 de <ph name="PRODUCT_OS_NAME" />. Les sessions publiques ne sont plus acceptées. Veuillez utiliser à la place la règle <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> pour configurer des sessions Invité gérées.
+      Si cette règle est définie sur "False", les sessions Invité gérées se déroulent comme indiqué sur la page https://support.google.com/chrome/a/answer/3017014 ("sessions publiques" standards).
+
+      Si cette règle est définie sur "True" ou si elle n'est pas configurée, les sessions Invitée gérées se déroulent comme des "sessions gérées", ce qui lève bon nombre des restrictions en vigueur pour les "sessions publiques" standards.
+
+      Si cette règle est définie, l'utilisateur ne peut pas la modifier ni l'ignorer.</translation>
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Contrôle les règles de supervision parentale s'appliquant uniquement aux comptes d'utilisateurs mineurs.</translation>
 <translation id="3020953534071988875">La configuration de cette règle autorise/interdit l'authentification ambiante pour les profils Invité et de navigation privée dans <ph name="PRODUCT_NAME" />.
@@ -1425,6 +1434,17 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 
       Si cette règle n'est pas définie ou si la valeur après substitution ne constitue pas un nom d'hôte valide, aucun nom d'hôte ne sera défini dans la requête DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128">Permet à <ph name="PRODUCT_NAME" /> de charger des règles expérimentales.
+
+        AVERTISSEMENT : Les règles expérimentales ne sont pas prises en charge et peuvent être modifiées ou supprimées sans préavis dans la future version du navigateur.
+
+        Une règle expérimentale peut ne pas être terminée ou encore présenter des défauts connus ou inconnus. Elle peut être modifiée ou même supprimée sans aucune notification. En activant des règles expérimentales, vous pouvez perdre des données de navigateur, ou compromettre votre sécurité ou la confidentialité de vos données.
+
+        Si une règle ne figure pas dans la liste et n'est pas officiellement publiée, sa valeur est alors ignorée dans les versions bêta et stable de Chrome.
+
+        Si une règle figure dans la liste et qu'elle n'est pas officiellement publiée, sa valeur est alors appliquée.
+
+        Cette règle n'a aucune incidence sur les règles déjà publiées.</translation>
 <translation id="3066446511111537292">Permet aux utilisateurs affiliés de cet appareil d'utiliser le téléchargement indépendant adb</translation>
 <translation id="3069958900488014740">Permet la désactivation de l'optimisation WPAD (Web Proxy Auto-Discovery) dans <ph name="PRODUCT_NAME" />.
 
@@ -1757,6 +1777,7 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3583230441447348508">Spécifie une liste de partages de fichiers en réseau préconfigurés.
 
       Dans cette règle, chaque élément de la liste est un objet avec deux membres : "share_url" et "mode". "share_url" devrait correspondre à l'URL du partage et "mode" devrait correspondre à "drop_down" ou "pre_mount". Le mode "drop_down" indique que cette "share_url" sera ajoutée à la liste déroulante de découverte des partages. Le mode "pre_mount" indique que cette "share_url" sera installée.</translation>
+<translation id="3584194414857209694">Activer les règles expérimentales</translation>
 <translation id="3585177699591644295">Permet d'activer la fonctionnalité d'accessibilité Sélectionner pour prononcer.
 
           Si cette règle est définie sur "True", la fonctionnalité Sélectionner pour prononcer est toujours activée.
@@ -1970,6 +1991,19 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 
           Si ce paramètre est défini sur "False" ou s'il n'est pas défini, les utilisateurs ont la possibilité de transférer des fichiers vers Google Drive.</translation>
 <translation id="3915395663995367577">URL d'un fichier .pac de proxy</translation>
+<translation id="3917288538553140422">Permet de spécifier l'action à effectuer lorsque le répertoire personnel de l'utilisateur a été créé avec un chiffrement eCryptfs. À moins que les répertoires personnels chiffrés avec eCryptfs ne fassent l'objet d'une migration vers le chiffrement ext4, les applications Android risquent de cesser de fonctionner.
+
+      Notez également les points suivants :
+
+      * Si cette règle est définie sur "Migrate" (ou sur une option non acceptée, comme "AskUser" ou "AskForEcryptfsArcUsers"), les répertoires sont migrés automatiquement vers ext4 à la connexion, sans demander l'autorisation de l'utilisateur.
+
+      * Si cette règle est définie sur "Wipe" ou sur "MinimalMigrate", les nouveaux répertoires personnels avec chiffrement ext4 remplacent les anciens chiffrés avec eCryptfs. Pour éviter à l'utilisateur les connexions répétées, la valeur "MinimalMigrate" essaie de conserver les jetons de connexion.
+
+      * Si cette règle est définie sur "DisallowArc" ou si elle n'est pas configurée, la migration est impossible, et les applications Android de l'utilisateur cessent de fonctionner.
+
+      Cette règle ne s'applique pas aux utilisateurs de kiosque.
+
+      Avertissement : Les valeurs "Wipe" et "MinimalMigrate" entraînent la suppression des données locales.</translation>
 <translation id="3925377537407648234">Régler la résolution d'affichage et le facteur d'adaptation</translation>
 <translation id="3927137827189017535">Permet d'activer la fonctionnalité d'accessibilité de touches persistantes sur l'écran de connexion.
 
@@ -3008,6 +3042,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Il est prévu que cette règle soit supprimée dans la version 87 de <ph name="PRODUCT_NAME" /> pour Mac OS X, car l'ancien outil de vérification des certificats sur Mac OS X le sera également.
       </translation>
+<translation id="5494917047563607689">Si cette règle est définie sur une valeur inférieure à 1 Mo ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> utilise la taille de cache par défaut pour mettre en cache les applications et les extensions installées par plusieurs utilisateurs d'un même appareil, ce qui évite à chacun d'eux de les télécharger de nouveau.</translation>
 <translation id="5498045818698736356">Définit la liste des sites Web qui sont installés silencieusement, sans aucune intervention de l'utilisateur, et que ce dernier ne peut pas désinstaller ni désactiver.
 
       Dans cette règle, chaque élément de la liste est un objet avec un membre obligatoire, "url", et deux membres facultatifs, "default_launch_container" et "create_desktop_shortcut". "url" doit correspondre à l'URL de l'application Web à installer, et "launch_container" doit correspondre à "window" ou "tab" pour préciser dans quel élément d'interface l'application Web sera ouverte après son installation. Enfin, "create_desktop_shortcut" doit être défini sur "True" si un raccourci sur le Bureau doit être créé sous Linux et Windows. Si le membre "default_launch_container" n'est pas défini, l'application s'ouvre par défaut dans un nouvel onglet. Quelle que soit la valeur de "default_launch_container", les utilisateurs peuvent modifier le conteneur dans lequel l'application doit s'ouvrir. Si "create_desktop_shortcut" n'est pas défini, aucun raccourci n'est créé sur le Bureau. Consultez la règle <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> pour épingler des applications à l'étagère Chrome OS.</translation>
@@ -3062,6 +3097,15 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle est définie sur "False" ou si elle n'est pas définie, les avertissements s'affichent sur les ordinateurs ou les systèmes d'exploitation non pris en charge.</translation>
 <translation id="5565178130821694365">Le mot de passe doit obligatoirement être saisi tous les deux jours (48 heures)</translation>
+<translation id="556564360355507488">Permet de définir quelles variantes peuvent être appliquées sur un appareil <ph name="PRODUCT_OS_NAME" /> géré par une entreprise.
+
+      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_OS_NAME" /> sans envoyer de nouvelle version, en activant ou en désactivant des fonctionnalités déjà disponibles.
+
+      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur "0" ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées à <ph name="PRODUCT_OS_NAME" />.
+
+      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur "1", seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_OS_NAME" />.
+
+      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur "2", aucune variante ne peut être appliquée au navigateur sur l'écran de connexion. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_OS_NAME" /> de fournir des correctifs essentiels de sécurité en temps voulu.</translation>
 <translation id="5566210228171064229">Autoriser l'impression avec et sans code</translation>
 <translation id="557360560705413259">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> utilise la valeur "commonName" d'un certificat de serveur pour qu'elle corresponde à un nom d'hôte si le certificat ne comporte pas d'extension subjectAlternativeName, à condition qu'il soit correctement validé et qu'il soit signé par des certificats CA installés localement.
 
@@ -3377,6 +3421,11 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle est définie sur "Bloquer l'importation et le téléchargement de fichiers volumineux", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Bloquer les téléchargements volumineux" et "Bloquer les importations volumineuses".
       </translation>
+<translation id="6082161804984853051">Si cette règle est configurée, <ph name="PRODUCT_NAME" /> utilise le répertoire que vous indiquez pour stocker les fichiers mis en cache sur le disque, que l'utilisateur spécifie ou non l'indicateur "--disk-cache-dir".
+
+      Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise le répertoire de cache par défaut. Toutefois, l'utilisateur peut modifier ce paramètre avec l'indicateur de ligne de commande "--disk-cache-dir".
+
+      <ph name="PRODUCT_NAME" /> gère le contenu du répertoire racine d'un volume. Ainsi, pour éviter de perdre des données ou de générer d'autres erreurs, ne définissez pas cette règle sur le répertoire racine ni sur un autre répertoire utilisé à d'autres fins. Pour savoir quelles variables vous pouvez utiliser, consultez la page https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="6083631234867522991">Windows (clients Windows) :</translation>
 <translation id="608788685013546076">Définir le niveau de batterie minimal autorisé avec l'alimentation alternée en heures pleines</translation>
 <translation id="6089679180657323464">Contrôle les paramètres du dispositif de contrôle de diagnostic et de télémétrie de Wilco.</translation>
@@ -3810,6 +3859,15 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6786967369487349613">Définir le répertoire des profils itinérants</translation>
 <translation id="6795485990775913659">Autoriser l'impression sans code uniquement</translation>
+<translation id="6799657852647827750">Permet de définir quelles variantes peuvent être appliquées dans <ph name="PRODUCT_NAME" />.
+
+      Les variantes offrent un moyen de proposer des modifications concernant <ph name="PRODUCT_NAME" /> sans envoyer de nouvelle version du navigateur, en activant ou en désactivant des fonctionnalités déjà disponibles.
+
+      Si vous définissez <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> sur 0 ou si cette règle n'est pas configurée, toutes les variantes peuvent alors être appliquées au navigateur.
+
+      Si vous définissez <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> sur 1, seules les variantes considérées comme des correctifs essentiels de sécurité ou de stabilité peuvent être appliquées à <ph name="PRODUCT_NAME" />.
+
+      Si vous définissez <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> sur 2, aucune variante ne peut être appliquée au navigateur. Veuillez noter que ce mode n'est pas recommandé, car il est susceptible d'empêcher les développeurs <ph name="PRODUCT_NAME" /> de fournir des correctifs essentiels de sécurité en temps voulu.</translation>
 <translation id="6810445994095397827">Bloquer JavaScript sur ces sites</translation>
 <translation id="6813263547126514821">Démarrage et arrêt</translation>
 <translation id="681446116407619279">Modèles d'authentification compatibles</translation>
@@ -4094,6 +4152,9 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
           Si cette règle est définie sur "True" ou si elle n'est pas définie, les wakelocks seront pris en compte pour la gestion de l'alimentation, sauf si la règle Autoriser les wakelocks est définie sur "False".
 
           Si cette règle est définie sur "False", les demandes de wakelocks forçant l'activation de l'écran seront rétrogradées au rang de demandes de wakelocks système.</translation>
+<translation id="7177293255621000064">Si vous définissez cette règle sur "True", tous les types de supports de stockage externes (clés USB, disques durs externes, cartes SD, autres cartes mémoire, etc.) sont alors indisponibles dans l'explorateur de fichiers. Si cette règle est définie sur "False" ou si elle n'est pas configurée, les utilisateurs peuvent utiliser des supports de stockage externes sur leur appareil.
+
+      Remarque : Cette règle n'a pas d'incidence sur Google Drive ni sur la mémoire de stockage interne. Les utilisateurs peuvent toujours accéder aux fichiers enregistrés dans le dossier "Téléchargements".</translation>
 <translation id="7177857088692019405">Déverrouillage rapide</translation>
 <translation id="718126088895133062">Cette règle définit l'ID utilisateur attribuant des licences <ph name="PLUGIN_VM_NAME" /> pour cet appareil.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5299,6 +5360,11 @@ indique uniquement les imprimantes qui peuvent être choisies.
           Si cette règle n'est pas définie et si elle est compatible avec l'appareil, le mode standard de recharge de la batterie est appliqué et ne peut pas être modifié par l'utilisateur.
 
           Remarque : Si elle est définie, la règle <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> remplace cette règle.</translation>
+<translation id="9055835215213290877">Si cette règle est définie sur "None", <ph name="PRODUCT_NAME" /> utilise la taille de cache par défaut pour stocker les fichiers mis en cache sur le disque. L'utilisateur ne peut pas la modifier.
+
+      Si vous configurez cette règle, <ph name="PRODUCT_NAME" /> utilise la taille de cache que vous indiquez, que l'utilisateur ait spécifié ou non l'indicateur "--disk-cache-size". (Toute valeur inférieure à quelques mégaoctets est arrondie.)
+
+      Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise la taille de cache par défaut. L'utilisateur peut modifier ce paramètre avec l'indicateur "--disk-cache-size".</translation>
 <translation id="9077227880520270584">Minuteur de connexion automatique au compte local de l'appareil</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
 <translation id="9088433379343318874">Activer le fournisseur de contenu de l'utilisateur supervisé</translation>

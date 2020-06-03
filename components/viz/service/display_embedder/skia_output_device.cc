@@ -126,9 +126,8 @@ const gpu::SwapBuffersCompleteParams& SkiaOutputDevice::SwapInfo::Complete(
     gfx::SwapCompletionResult result) {
   params_.swap_response.result = result.swap_result;
   params_.swap_response.timings.swap_end = base::TimeTicks::Now();
-  // TODO(https://crbug.com/894929): Pass CALayerParams from from |result| to
-  // |params_| here.
-
+  if (result.ca_layer_params)
+    params_.ca_layer_params = *result.ca_layer_params;
   return params_;
 }
 

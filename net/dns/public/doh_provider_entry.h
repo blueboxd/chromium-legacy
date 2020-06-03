@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_DNS_PUBLIC_DOH_PROVIDER_LIST_H_
-#define NET_DNS_PUBLIC_DOH_PROVIDER_LIST_H_
+#ifndef NET_DNS_PUBLIC_DOH_PROVIDER_ENTRY_H_
+#define NET_DNS_PUBLIC_DOH_PROVIDER_ENTRY_H_
 
 #include <set>
 #include <string>
@@ -41,37 +41,56 @@ enum class DohProviderIdForHistogram {
 // codes, if any, where the entry is eligible for being displayed in the
 // dropdown menu.
 struct NET_EXPORT DohProviderEntry {
-  DohProviderEntry(
+ public:
+  using List = std::vector<const DohProviderEntry*>;
+
+  std::string provider;
+  // A provider_id_for_histogram is required for entries that are intended to
+  // be visible in the UI.
+  base::Optional<DohProviderIdForHistogram> provider_id_for_histogram;
+  std::set<IPAddress> ip_addresses;
+  std::set<std::string> dns_over_tls_hostnames;
+  std::string dns_over_https_template;
+  std::string ui_name;
+  std::string privacy_policy;
+  bool display_globally;
+  std::set<std::string> display_countries;
+
+  // Returns the full list of DoH providers. A subset of this list may be used
+  // to support upgrade in automatic mode or to populate the dropdown menu for
+  // secure mode.
+  static const List& GetList();
+
+  static DohProviderEntry ConstructForTesting(
       std::string provider,
       base::Optional<DohProviderIdForHistogram> provider_id_for_histogram,
-      std::set<std::string> ip_strs,
+      std::set<base::StringPiece> ip_strs,
       std::set<std::string> dns_over_tls_hostnames,
       std::string dns_over_https_template,
       std::string ui_name,
       std::string privacy_policy,
       bool display_globally,
       std::set<std::string> display_countries);
-  DohProviderEntry(const DohProviderEntry& other);
+
+  // Entries are move-only.  This allows tests to construct a List but ensures
+  // that |const DohProviderEntry*| is a safe type for application code.
+  DohProviderEntry(DohProviderEntry&& other);
+  DohProviderEntry& operator=(DohProviderEntry&& other);
   ~DohProviderEntry();
 
-  const std::string provider;
-  // A provider_id_for_histogram is required for entries that are intended to
-  // be visible in the UI.
-  const base::Optional<DohProviderIdForHistogram> provider_id_for_histogram;
-  std::set<IPAddress> ip_addresses;
-  const std::set<std::string> dns_over_tls_hostnames;
-  const std::string dns_over_https_template;
-  const std::string ui_name;
-  const std::string privacy_policy;
-  bool display_globally;
-  std::set<std::string> display_countries;
+ private:
+  DohProviderEntry(
+      std::string provider,
+      base::Optional<DohProviderIdForHistogram> provider_id_for_histogram,
+      std::set<base::StringPiece> ip_strs,
+      std::set<std::string> dns_over_tls_hostnames,
+      std::string dns_over_https_template,
+      std::string ui_name,
+      std::string privacy_policy,
+      bool display_globally,
+      std::set<std::string> display_countries);
 };
-
-// Returns the full list of DoH providers. A subset of this list may be used
-// to support upgrade in automatic mode or to populate the dropdown menu for
-// secure mode.
-NET_EXPORT const std::vector<DohProviderEntry>& GetDohProviderList();
 
 }  // namespace net
 
-#endif  // NET_DNS_PUBLIC_DOH_PROVIDER_LIST_H_
+#endif  // NET_DNS_PUBLIC_DOH_PROVIDER_ENTRY_H_

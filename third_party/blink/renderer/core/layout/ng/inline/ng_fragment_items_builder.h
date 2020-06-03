@@ -87,15 +87,14 @@ class CORE_EXPORT NGFragmentItemsBuilder {
     DISALLOW_NEW();
 
    public:
-    ItemWithOffset(scoped_refptr<const NGFragmentItem> item,
-                   const LogicalOffset& offset)
-        : item(std::move(item)), offset(offset) {}
-    explicit ItemWithOffset(const LogicalOffset& offset) : offset(offset) {}
+    template <class... Args>
+    explicit ItemWithOffset(const LogicalOffset& offset, Args&&... args)
+        : item(std::forward<Args>(args)...), offset(offset) {}
 
-    const NGFragmentItem& operator*() const { return *item; }
-    const NGFragmentItem* operator->() const { return item.get(); }
+    const NGFragmentItem& operator*() const { return item; }
+    const NGFragmentItem* operator->() const { return &item; }
 
-    scoped_refptr<const NGFragmentItem> item;
+    NGFragmentItem item;
     LogicalOffset offset;
   };
 

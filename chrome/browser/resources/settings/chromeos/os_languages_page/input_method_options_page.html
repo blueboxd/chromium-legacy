@@ -1,0 +1,30 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../settings_shared_css.html">
+
+<dom-module id="settings-input-method-options-page">
+  <template>
+    <style include="settings-shared">
+      h2 {
+        padding-inline-start: var(--cr-section-padding);
+      }
+    </style>
+
+    <div route-path="default">
+      <h2>Physical keyboard (TODO: i18n)</h2>
+      <div class="list-frame vertical-list">
+        <settings-toggle-button class="list-item"
+            label="Auto-capitalization (TODO: i18n)">
+        </settings-toggle-button>
+      </div>
+      <h2>On-screen keyboard (TODO: i18n)</h2>
+      <div class="list-frame vertical-list">
+        <settings-toggle-button class="list-item"
+            label="Auto-capitalization (TODO: i18n)">
+        </settings-toggle-button>
+      </div>
+    </div>
+  </template>
+  <script src="input_method_options_page.js"></script>
+</dom-module>

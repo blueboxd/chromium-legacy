@@ -1203,6 +1203,9 @@
       リストの各エントリは識別子を示します。これらの識別子は、デバイスのローカル アカウントを区別するために内部で使用されます。</translation>
 <translation id="2769952903507981510">リモート アクセス ホストの必須のドメイン名を設定する</translation>
 <translation id="2787173078141616821">Android のステータスに関する情報を報告する</translation>
+<translation id="2787774054174244402">このポリシーを True に設定した場合、ユーザーは外部ストレージ デバイスへの書き込みを行えません。
+
+      ExternalStorageReadOnly を False に設定するか未設定のままにした場合は、外部ストレージをブロックしていない限り、ユーザーは物理的に書き込みが可能な外部ストレージ デバイスに対してファイルの作成や変更ができます（ExternalStorageDisable を True に設定すると外部ストレージをブロックできます）。</translation>
 <translation id="2799297758492717491">メディアの自動再生を許可する URL パターンのホワイトリストを指定する</translation>
 <translation id="2801065672151277034">証明書の管理設定</translation>
 <translation id="2801155097555584385">バッテリー充電のカスタムの充電開始設定（%）を行う</translation>
@@ -1327,6 +1330,12 @@
       有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="2987155890997901449">ARC を有効にする</translation>
 <translation id="2987227569419001736">Web Bluetooth API の使用を管理する</translation>
+<translation id="299519952839316970">このポリシーはサポートが終了しており、<ph name="PRODUCT_OS_NAME" /> バージョン 88 で削除されます。公開セッションのサポートは終了しました。代わりに <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> を使用して管理対象のゲスト セッションを設定してください。
+      このポリシーを false に設定した場合、管理対象のゲスト セッションは、https://support.google.com/chrome/a/answer/3017014 の記事に記載されているとおりに動作します（標準の「公開セッション」）。
+
+      このポリシーを true に設定するか未設定のままにした場合、管理対象のゲスト セッションは、通常の「公開セッション」で設けられている制限の多くが解除された「管理対象のセッション」として動作します。
+
+      このポリシーを設定した場合、ユーザーは設定を変更したりオーバーライドしたりすることはできません。</translation>
 <translation id="3016255526521614822"><ph name="PRODUCT_OS_NAME" /> のロック画面で使用できるメモ作成アプリをホワイトリスト登録する</translation>
 <translation id="3020064401262077616">子どものアカウントのみに適用される、保護者向け管理ツールのポリシーを制御します。</translation>
 <translation id="3020953534071988875">このポリシーを設定すると、<ph name="PRODUCT_NAME" /> のシークレット モードとゲストのプロフィールでアンビエント認証を許可または不許可にできます。
@@ -1380,6 +1389,17 @@
 
       このポリシーを設定しない場合、または変数の解決後の名前が有効なホスト名ではない場合、DHCP リクエストにホスト名は設定されません。 </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128"><ph name="PRODUCT_NAME" /> にテストポリシーの読み込みを許可します。
+
+        警告: テストポリシーは、ブラウザの今後のバージョンではサポートされなくなり、事前の通知なく変更または削除される可能性があります。
+
+        テストポリシーは、完成していないか、既知または未知の不具合がある場合があり、通知なく変更または削除される可能性があります。また、テストポリシーを有効にすると、ブラウザのデータが失われたり、セキュリティやプライバシーが侵害されたりする可能性があります。
+
+        ポリシーがリストになく、正式なリリースでない場合、Chrome のベータ版と Stable（正式リリース）版ではポリシーの値は無視されます。
+
+        ポリシーがリストにある場合は、正式なリリースでなくても、ポリシーの値は適用されます。
+
+        このポリシーは、すでにリリース済みのポリシーには影響しません。</translation>
 <translation id="3066446511111537292">このデバイスの関連ユーザーに ADB サイドローディングの使用を許可します</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> で WPAD（ウェブプロキシ自動検出）の最適化を無効にできます。
 
@@ -1708,6 +1728,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="3583230441447348508">事前設定のネットワーク ファイル共有のリストを指定します。
 
       このポリシーのリストの各項目には、「share_url」と「mode」の 2 つで構成されるオブジェクトを指定します。「share_url」には、共有場所の URL を指定します。「mode」には、「drop_down」または「pre_mount」を指定します。「drop_down」モードの場合は、共有場所の一覧プルダウンに「share_url」が追加されます。「pre_mount」モードの場合は、「share_url」がマウントされます。</translation>
+<translation id="3584194414857209694">テストポリシーを有効にする</translation>
 <translation id="3585177699591644295">ユーザー補助機能の「選択して読み上げ」を有効にします。
 
           このポリシーが true に設定されている場合、「選択して読み上げ」は常に有効になります。
@@ -1921,6 +1942,19 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
           未設定の場合、または False に設定されている場合、ユーザーは Google ドライブにファイルを転送できます。</translation>
 <translation id="3915395663995367577">プロキシ .pac ファイルへの URL</translation>
+<translation id="3917288538553140422">このポリシーを設定すると、ユーザーのホーム ディレクトリが ecryptfs 暗号化で作成された場合に行う操作を指定できます。ecryptfs で暗号化されたホーム ディレクトリを ext4 暗号化に移行しない場合、Android アプリの実行が停止される可能性があります。
+
+      ポリシーは次のいずれかに設定できます。
+
+      * Migrate（移行）（または AskUser や AskForEcryptfsArcUsers などのサポートされていないオプション）: ディレクトリは、ユーザーの同意を求めることなくログイン時に自動的に ext4 に移行されます。
+
+      * Wipe（消去）または MinimalMigrate（最小移行）: ログイン時に、ecryptfs で暗号化された古いディレクトリが ext4 で暗号化された新しいホーム ディレクトリに置き換えられます。MinimalMigrate に設定した場合は、ユーザーが何度もログインしなくて済むように、ログイン トークンの保持を試みます。
+
+      * DisallowArc（許可しない）または未設定: 移行は行われず、ユーザーの Android アプリは実行が停止されます。
+
+      このポリシーはキオスクのユーザーには適用されません。
+
+      警告: Wipe または MinimalMigrate に設定するとローカルデータが削除されます。</translation>
 <translation id="3925377537407648234">ディスプレイの解像度と倍率を設定する</translation>
 <translation id="3927137827189017535">ログイン画面で「固定キー」ユーザー補助機能を有効にします。
 
@@ -2916,6 +2950,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーは Mac OS X 向け <ph name="PRODUCT_NAME" /> バージョン 87 で削除される予定です（Mac OS X での従来の証明書確認機能のサポートがバージョン 87 で削除されるため）。
       </translation>
+<translation id="5494917047563607689">1 MB 未満に設定するか未設定のままにした場合、<ph name="PRODUCT_OS_NAME" /> では、デフォルトのキャッシュ サイズを使用して、1 台のデバイスで複数のユーザーがインストールするアプリと拡張機能をキャッシュに保存します。これにより、ユーザーごとに繰り返しダウンロードする必要がなくなります。</translation>
 <translation id="5498045818698736356">ユーザーに操作を求めずに自動インストールするウェブサイトのリストを指定します。ユーザーはここで指定されたウェブサイトをアンインストールすることも無効化することもできません。
 
       このポリシーで指定するリストの個々の項目は、必須の「url」と 2 つの省略可能な「default_launch_container」、「create_desktop_shortcut」で構成されるオブジェクトとなります。「url」には、インストールするウェブアプリの URL を指定します。「launch_container」には、インストール後にウェブアプリを開く方法として「window」または「tab」を指定します。「create_desktop_shortcut」には、Linux と Windows でデスクトップ ショートカットを作成する場合は「true」を指定します。「default_launch_container」を指定しない場合、アプリはデフォルトでタブで開きます。「default_launch_container」の値に関係なく、ユーザーはアプリを開くコンテナを変更できます。「create_desktop_shortcuts」を指定しない場合、デスクトップ ショートカットは作成されません。 Chrome OS シェルフへのアプリの固定については、<ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> ポリシーをご覧ください。</translation>
@@ -2970,6 +3005,15 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーを false に設定するか、未設定のままにした場合は、サポートされなくなったパソコンまたはオペレーティング システムで警告が表示されます。</translation>
 <translation id="5565178130821694365">2 日（48 時間）ごとにパスワードの入力を求める</translation>
+<translation id="556564360355507488">このポリシーを設定すると、企業で管理する <ph name="PRODUCT_OS_NAME" /> デバイスへの適用を許可するバリエーションを指定できます。
+
+      バリエーションは、新しいバージョンを送信せずに、既存の機能を選択的に有効または無効にして、<ph name="PRODUCT_OS_NAME" /> に修正を加えるという更新方法です。
+
+      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（値 0）に設定するか、このポリシーを未設定のままにした場合は、<ph name="PRODUCT_OS_NAME" /> にすべてのバリエーションを適用できます。
+
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（値 1）に設定した場合は、セキュリティまたは安定性に関する重要な修正とみなされるバリエーションのみ <ph name="PRODUCT_OS_NAME" /> に適用できます。
+
+      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（値 2）に設定した場合は、ログイン画面でどのバリエーションもブラウザに適用できません。このモードは、<ph name="PRODUCT_OS_NAME" /> のデベロッパーがセキュリティに関する重要な修正を適切なタイミングで適用できない場合があるため推奨されません。</translation>
 <translation id="5566210228171064229">PIN ありと PIN なしの印刷を両方許可します</translation>
 <translation id="557360560705413259">この設定が有効な場合は、サーバー証明書に subjectAlternativeName 拡張が指定されていなくても、検証とローカルにインストールされている CA 証明書への関連付けに問題がない限り、<ph name="PRODUCT_NAME" /> では証明書の commonName を使用してホスト名が照合されます。
 
@@ -3286,6 +3330,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーを「大きなファイルのアップロードとダウンロードをブロックする」に設定した場合、<ph name="PRODUCT_NAME" /> は「大きなダウンロードをブロックする」と「大きなアップロードをブロックする」のルールに従って動作します。
       </translation>
+<translation id="6082161804984853051">このポリシーを設定した場合、<ph name="PRODUCT_NAME" /> では、ユーザーが「--disk-cache-dir」フラグを指定しているかどうかにかかわらず、キャッシュされたファイルをディスクに保存する際に、設定したディレクトリが使用されます。
+
+      設定しない場合、<ph name="PRODUCT_NAME" /> ではデフォルトのキャッシュ ディレクトリが使用されますが、ユーザーは「--disk-cache-dir」コマンドライン フラグを使って設定を変更できます。
+
+      <ph name="PRODUCT_NAME" /> では、ボリュームのルート ディレクトリのコンテンツが管理されます。したがって、データの消失やその他のエラーを避けるため、ルート ディレクトリや他の用途で使用されてるディレクトリは指定しないでください。使用できる変数については、https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables をご覧ください。</translation>
 <translation id="6083631234867522991">Windows（Windows クライアント）:</translation>
 <translation id="608788685013546076">電力ピークシフトのバッテリーのしきい値をパーセントで設定する</translation>
 <translation id="6089679180657323464">Wilco の診断およびテレメトリー用コントローラの設定を制御します。</translation>
@@ -3716,6 +3765,15 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="6786747875388722282">拡張機能</translation>
 <translation id="6786967369487349613">ローミング プロフィール ディレクトリの設定</translation>
 <translation id="6795485990775913659">PIN なしの印刷のみを許可します</translation>
+<translation id="6799657852647827750">このポリシーを設定すると、<ph name="PRODUCT_NAME" /> への適用を許可するバリエーションを指定できます。
+
+      バリエーションは、ブラウザの新しいバージョンを送信せずに、既存の機能を選択的に有効または無効にして、<ph name="PRODUCT_NAME" /> に修正を加えるという更新方法です。
+
+      <ph name="VARIATIONS_ENABLED_OPTION_NAME" />（値 0）に設定するか、このポリシーを未設定のままにした場合は、すべてのバリエーションをブラウザに適用できます。
+
+      <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" />（値 1）に設定した場合は、セキュリティまたは安定性に関する重要な修正とみなされるバリエーションのみ <ph name="PRODUCT_NAME" /> に適用できます。
+
+      <ph name="VARIATIONS_DISABLED_OPTION_NAME" />（値 2）に設定した場合は、どのバリエーションもブラウザに適用できません。このモードは、<ph name="PRODUCT_NAME" /> のデベロッパーがセキュリティに関する重要な修正を適切なタイミングで適用できない場合があるため推奨されません。</translation>
 <translation id="6810445994095397827">これらのサイトの JavaScript をブロックする</translation>
 <translation id="6813263547126514821">電源とシャットダウン</translation>
 <translation id="681446116407619279">サポートされる認証スキーム</translation>
@@ -3994,6 +4052,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーが true に設定されているか未設定の場合、AllowWakeLocks が false に設定されていなければ、電源管理で画面の起動ロックが有効となります。
 
           このポリシーが false に設定されている場合、画面の起動ロックのリクエストはシステムの起動ロックのリクエストに引き下げられます。</translation>
+<translation id="7177293255621000064">このポリシーを True に設定した場合、あらゆる種類の外部ストレージ メディア（USB フラッシュ ドライブ、外部ハードドライブ、SD などのメモリカード、光学ストレージ）をファイル ブラウザで利用できなくなります。このポリシーを False に設定するか未設定のままにした場合、ユーザーは自分のデバイスで外部ストレージを使用できます。
+
+      注: このポリシーは Google ドライブと内部ストレージには影響しません。ユーザーはダウンロード フォルダに保存されているファイルにアクセスできます。</translation>
 <translation id="7177857088692019405">ロックのクイック解除</translation>
 <translation id="718126088895133062">このポリシーでは、このデバイスの <ph name="PLUGIN_VM_NAME" /> のライセンス ユーザー ID を指定します。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5181,6 +5242,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーを未設定のままにした場合、デバイスがポリシーに対応していれば、標準のバッテリー充電モードが適用され、ユーザーは変更することができなくなります。
 
           注: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> が指定されている場合はこのポリシーより優先されます。</translation>
+<translation id="9055835215213290877">このポリシーを None（なし）に設定した場合、<ph name="PRODUCT_NAME" /> では、キャッシュされたファイルをディスクに保存する際に、デフォルトのキャッシュ サイズが使用されます。ユーザーはこの設定を変更することはできません。
+
+      このポリシーを設定した場合、<ph name="PRODUCT_NAME" /> では、ユーザーが「--disk-cache-size」フラグを指定しているかどうかにかかわらず、設定したキャッシュ サイズが使用されます（数メガバイト小さいと判断された値は、適正な値に引き上げられて処理されます）。
+
+      設定しない場合、<ph name="PRODUCT_NAME" /> ではデフォルトのサイズが使用されます。ユーザーは「--disk-cache-size」フラグを使ってこの設定を変更できます。</translation>
 <translation id="9077227880520270584">デバイスのローカル アカウントの自動ログイン タイマー</translation>
 <translation id="9084985621503260744">動画操作を電源管理に関連付けるかどうかを指定する</translation>
 <translation id="9088433379343318874">監視対象ユーザーのコンテンツ プロバイダを有効にする</translation>

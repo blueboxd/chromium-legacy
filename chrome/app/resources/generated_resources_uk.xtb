@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Термін дії пароля закінчився</translation>
 <translation id="1630768113285622200">Перезапустити й продовжити</translation>
 <translation id="1630873818549593964">Дані вашої дитини в Класі буде захищено. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Пароль збережено у вашому обліковому записі Google</translation>
 <translation id="1632803087685957583">Дає змогу налаштувати швидкість повтору клавіатури, передбачення слів тощо</translation>
 <translation id="1633947793238301227">Вимкнути Google Асистента</translation>
 <translation id="1634783886312010422">Ви вже змінили пароль на сайті <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">Готово! Шкідливе програмне забезпечення видалено. Щоб знову ввімкнути розширення, перейдіть на сторінку &lt;a href="chrome://extensions"&gt;Розширення&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (розширення встановлено)</translation>
 <translation id="2961695502793809356">Натисніть, щоб перейти далі; утримуйте, щоб переглянути історію</translation>
+<translation id="2962131322798295505">Засіб вибору фонового малюнка</translation>
 <translation id="2963151496262057773">Плагін <ph name="PLUGIN_NAME" /> не відповідає. Зупинити?</translation>
 <translation id="2964193600955408481">Вимкнути Wi-Fi</translation>
 <translation id="2966937470348689686">Змінити налаштування Android</translation>
@@ -2539,6 +2541,7 @@
 <translation id="4154664944169082762">Відбитки</translation>
 <translation id="4157869833395312646">Серверне шифрування Microsoft</translation>
 <translation id="4159681666905192102"><ph name="CUSTODIAN_EMAIL" /> і <ph name="SECOND_CUSTODIAN_EMAIL" /> керують цим обліковим записом для дітей.</translation>
+<translation id="4159784952369912983">Пурпуровий</translation>
 <translation id="4163560723127662357">Невідома клавіатура</translation>
 <translation id="4168015872538332605">Деякі налаштування, які встановив користувач <ph name="PRIMARY_EMAIL" />, доступні для вас. Ці налаштування впливають на ваш обліковий запис, лише коли використовується паралельний вхід.</translation>
 <translation id="4170314459383239649">Очищати під час виходу</translation>
@@ -2882,6 +2885,7 @@
 <translation id="4645676300727003670">&amp;Залишити</translation>
 <translation id="4646675363240786305">Порти</translation>
 <translation id="4647090755847581616">&amp;Закрити вкладку</translation>
+<translation id="4647420311443994946">{0,select, tablet{Запускати додаток, коли ви входите в обліковий запис на планшеті}computer{Запускати додаток, коли ви входите в обліковий запис на комп'ютері}other{Запускати додаток, коли ви входите в обліковий запис на пристрої}}</translation>
 <translation id="4647697156028544508">Введіть PIN-код для пристрою "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Недостатні дозволи</translation>
 <translation id="4648499713050786492">Перш ніж додати особу, розблокуйте свій профіль.</translation>
@@ -2894,6 +2898,7 @@
 <translation id="4660540330091848931">Змінення розміру</translation>
 <translation id="4660838440047236328">вигляд вашої кімнати.</translation>
 <translation id="4661407454952063730">Даними додатків може бути будь-яка інформація, яку вони зберігають (залежно від налаштувань розробника), зокрема такі відомості, як контакти, повідомлення та фотографії.</translation>
+<translation id="4662373422909645029">Не можна додавати цифри</translation>
 <translation id="4662788913887017617">Надішліть цю закладку на iPhone</translation>
 <translation id="4663373278480897665">Дозволено використовувати камеру</translation>
 <translation id="4664482161435122549">Помилка експортування PKCS #12</translation>
@@ -3588,6 +3593,7 @@
 <translation id="5585912436068747822">Помилка форматування</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Завантаження додатків…</translation>
+<translation id="558984423786125616">Порт уже існує в налаштуваннях</translation>
 <translation id="5592595402373377407">Ще недостатньо даних.</translation>
 <translation id="5593357315997824387">Синхронізувати мої файли</translation>
 <translation id="5595485650161345191">Редагувати адресу</translation>
@@ -3631,6 +3637,7 @@
 <translation id="5639549361331209298">Перезавантажити цю сторінку. Утримуйте, щоб побачити інші варіанти</translation>
 <translation id="5640133431808313291">Керуйте ключами безпеки</translation>
 <translation id="5642508497713047">Сторона, що підписала CRL</translation>
+<translation id="5643321261065707929">Мережа з тарифікацією трафіку</translation>
 <translation id="5643620609347735571">Видалити та продовжити</translation>
 <translation id="5644857731242502394">Налаштувати підключені пристрої</translation>
 <translation id="5646376287012673985">Місцезнаходження</translation>
@@ -5540,6 +5547,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Цей сервіс можна вимкнути в налаштуваннях.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-коди не збігаються</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> використовує налаштування проксі-сервера розширення</translation>
+<translation id="8097959162767603171">Адміністратор має прийняти Умови використання в списку пристроїв Chrome на консолі адміністратора.</translation>
 <translation id="8101987792947961127">Під час наступного перезавантаження потрібно виконати Powerwash</translation>
 <translation id="8102159139658438129">Перейдіть у <ph name="LINK_BEGIN" />Налаштування<ph name="LINK_END" />, щоб переглянути параметри для підключеного телефона</translation>
 <translation id="8104696615244072556">Виконати Powerwash на вашому пристрої <ph name="IDS_SHORT_PRODUCT_NAME" /> і повернутися до попередньої версії.</translation>

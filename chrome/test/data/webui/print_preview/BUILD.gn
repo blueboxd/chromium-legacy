@@ -29,7 +29,6 @@ js_type_check("closure_compile") {
     #":destination_list_test",
     #":destination_search_test_chromeos",
     #":destination_search_test",
-    #":destination_select_test_cros",
     #":destination_select_test",
     ":destination_settings_test",
 
@@ -74,7 +73,10 @@ js_type_check("closure_compile") {
   ]
 
   if (is_chromeos) {
-    deps += [ ":destination_dropdown_cros_test" ]
+    deps += [
+      ":destination_dropdown_cros_test",
+      ":destination_select_test_cros",
+    ]
   }
 }
 
@@ -200,6 +202,17 @@ if (is_chromeos) {
     deps = [
       ":print_preview_test_utils",
       "..:chai_assert",
+      "//chrome/browser/resources/print_preview:print_preview",
+      "//ui/webui/resources/js:assert.m",
+    ]
+  }
+
+  js_library("destination_select_test_cros") {
+    deps = [
+      ":native_layer_stub",
+      ":print_preview_test_utils",
+      "..:chai_assert",
+      "..:test_util.m",
       "//chrome/browser/resources/print_preview:print_preview",
       "//ui/webui/resources/js:assert.m",
     ]

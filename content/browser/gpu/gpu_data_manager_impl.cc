@@ -145,6 +145,10 @@ void GpuDataManagerImpl::UpdateOverlayInfo(
   base::AutoLock auto_lock(lock_);
   private_->UpdateOverlayInfo(overlay_info);
 }
+void GpuDataManagerImpl::UpdateHDRStatus(bool hdr_enabled) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateHDRStatus(hdr_enabled);
+}
 
 void GpuDataManagerImpl::UpdateDxDiagNodeRequestStatus(bool request_continues) {
   base::AutoLock auto_lock(lock_);

@@ -2127,6 +2127,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3677106374019847299">Unesite prilagođenog dobavljača</translation>
 <translation id="3677657024345889897">Najtiše</translation>
 <translation id="3677911431265050325">Zahtevaj mobilni sajt</translation>
+<translation id="3677959414150797585">Uključuje aplikacije, veb-stranice i drugo. Šalje statistiku da bi se poboljšali predlozi samo ako ste odabrali da delite podatke o korišćenju.</translation>
 <translation id="3678156199662914018">Dodatak: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Glas za pretvaranje teksta u govor</translation>
 <translation id="3681311097828166361">Hvala vam na povratnim informacijama. Trenutno ste oflajn i kasnije ćemo vam poslati izveštaj.</translation>
@@ -2538,6 +2539,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4154664944169082762">Otisci</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Ovo je nalog za decu kojim upravljaju <ph name="CUSTODIAN_EMAIL" /> i <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Ljubičasta</translation>
 <translation id="4163560723127662357">Nepoznata tastatura</translation>
 <translation id="4168015872538332605">Neka podešavanja čiji je vlasnik <ph name="PRIMARY_EMAIL" /> se dele sa vama. Ta podešavanja utiču na nalog samo kada koristite višestruko prijavljivanje.</translation>
 <translation id="4170314459383239649">Obriši pri zatvaranju</translation>
@@ -3779,6 +3781,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – Kamera ili mikrofon snimaju</translation>
 <translation id="5841270259333717135">Konfigurišite eternet</translation>
 <translation id="5842497610951477805">Omogući Bluetooth</translation>
+<translation id="5844574845205796324">Predlaži nov sadržaj za istraživanje</translation>
 <translation id="5846200638699387931">Sintaksička greška odnosa vrednosti: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instalirajte ažuriranja i aplikacije. Ako nastavite, slažete se da ovaj uređaj može i da automatski preuzima i instalira ažuriranja i aplikacije od Google-a, mobilnog operatera i proizvođača ovog uređaja, uz moguće korišćenje mobilnih podataka. Neke od ovih aplikacija mogu da nude kupovine u aplikaciji.</translation>
 <translation id="5849212445710944278">Već je dodato</translation>

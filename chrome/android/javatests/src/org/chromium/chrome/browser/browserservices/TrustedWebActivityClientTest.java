@@ -201,6 +201,34 @@ public class TrustedWebActivityClientTest {
     }
 
     /**
+     * Tests that the appropriate callback is called when we try to connect to a TWA that doesn't
+     * exist.
+     */
+    @Test
+    @SmallTest
+    public void testNoClientFound() throws TimeoutException {
+        Origin scope = Origin.createOrThrow("https://www.websitewithouttwa.com/");
+
+        CallbackHelper noTwaFound = new CallbackHelper();
+
+        TrustedWebActivityClient.PermissionCheckCallback callback =
+                new TrustedWebActivityClient.PermissionCheckCallback() {
+            @Override
+            public void onPermissionCheck(ComponentName answeringApp, boolean enabled) { }
+
+            @Override
+            public void onNoTwaFound() {
+                noTwaFound.notifyCalled();
+            }
+        };
+
+        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                () -> mClient.checkNotificationPermission(scope, callback));
+
+        noTwaFound.waitForFirst();
+    }
+
+    /**
      * Tests {@link TrustedWebActivityClient#createLaunchIntentForTwa}.
      */
     @Test

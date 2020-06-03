@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_LOCATION_DIALOG_BRIDGE_H_
-#define CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_LOCATION_DIALOG_BRIDGE_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_DIALOG_BRIDGE_H_
+#define CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_DIALOG_BRIDGE_H_
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -15,12 +15,12 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-class DownloadLocationDialogBridge {
+class DownloadDialogBridge {
  public:
   using LocationCallback = base::OnceCallback<void(DownloadLocationDialogResult,
                                                    const base::FilePath&)>;
 
-  virtual ~DownloadLocationDialogBridge() = default;
+  virtual ~DownloadDialogBridge() = default;
 
   // Show a download location picker dialog to determine the download path.
   // The path selected by the user will be returned in |location_callback|.
@@ -39,4 +39,4 @@ class DownloadLocationDialogBridge {
                           const base::android::JavaParamRef<jobject>& obj) = 0;
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_LOCATION_DIALOG_BRIDGE_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_DIALOG_BRIDGE_H_

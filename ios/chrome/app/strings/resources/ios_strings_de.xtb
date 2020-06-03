@@ -338,6 +338,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5352285283572729470">Diese Einstellung wird verwaltet</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
 <translation id="5407969256130905701">Änderungen verwerfen</translation>
 <translation id="5409365236829784218">Es sind keine Apps inst., die diese Datei öffnen können.</translation>
@@ -564,6 +565,7 @@ Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-
 <translation id="8174524257672181687">Alle Cookies blockieren (nicht empfohlen)</translation>
 <translation id="8197543752516192074">Seite übersetzen</translation>
 <translation id="8205564605687841303">Abbrechen</translation>
+<translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="8225985093977202398">Bilder &amp; Dateien im Cache</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8281781826761538115">Standard: <ph name="DEFAULT_LOCALE" /></translation>

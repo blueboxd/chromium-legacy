@@ -272,7 +272,12 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   // When IME ate a key event, we use the event only for tracking key states and
   // ignore for further processing. Otherwise it is handled in two places (IME
   // and client) and causes undesired behavior.
-  bool consumed_by_ime = ConsumedByIme(focus_, event);
+  // If the window should receive a key event before IME, Exo should send any
+  // key events to a client. The client will send back the events to IME if
+  // needed.
+  const bool consumed_by_ime =
+      !focus_->window()->GetProperty(aura::client::kSkipImeProcessing) &&
+      ConsumedByIme(focus_, event);
 
   // Always update modifiers.
   int modifier_flags = event->flags() & kModifierMask;

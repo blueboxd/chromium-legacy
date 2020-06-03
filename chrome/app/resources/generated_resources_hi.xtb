@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">पासवर्ड की समय सीमा खत्म हो गई है</translation>
 <translation id="1630768113285622200">रीस्टार्ट करें और जारी रखें</translation>
 <translation id="1630873818549593964">Classroom में आपके बच्चे का डेटा सुरक्षित रहेगा. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">आपके Google खाते में सेव किया गया पासवर्ड</translation>
 <translation id="1632803087685957583">आपको अपने कीबोर्ड को दोहराने की दर, शब्द पूर्वानुमान वगैरह समायोजित करने देती है</translation>
 <translation id="1633947793238301227">Google Assistant बंद करें</translation>
 <translation id="1634783886312010422">क्या आपने <ph name="WEBSITE" /> पर पहले ही पासवर्ड बदल दिया है?</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">हो गया! नुकसान पहुंचाने वाला सॉफ़्टवेयर हटा दिया गया है. एक्सटेंशन वापस चालू करने के लिए &lt;a href="chrome://extensions"&gt;एक्सटेंशन&lt;/a&gt; पर जाएं.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (एक्सटेंशन दिया गया)</translation>
 <translation id="2961695502793809356">आगे जाने के लिए क्लिक करें, इतिहास देखने के लिए दबाकर रखें</translation>
+<translation id="2962131322798295505">Wallpaper Picker</translation>
 <translation id="2963151496262057773">निम्‍न प्‍लग इन प्रतिसाद नहीं दे रहा है: <ph name="PLUGIN_NAME" />क्‍या उसे रोकना चाहते हैं?</translation>
 <translation id="2964193600955408481">वाई-फ़ाई  अक्षम करें</translation>
 <translation id="2966937470348689686">Android प्राथमिकताएं प्रबंधित करें</translation>
@@ -2538,6 +2540,7 @@
 <translation id="4154664944169082762">फ़िंगरप्रिंट</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">यह बच्‍चों के लिए बनाया गया खाता है जिसे <ph name="CUSTODIAN_EMAIL" /> और <ph name="SECOND_CUSTODIAN_EMAIL" /> द्वारा प्रबंधित किया जाता है.</translation>
+<translation id="4159784952369912983">बैंगनी</translation>
 <translation id="4163560723127662357">अज्ञात कीबोर्ड</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> से संबंधित कुछ सेटिंग आपके साथ शेयर की जा रही हैं. ये सेटिंग आपके खाते को सिर्फ़ तभी प्रभावित करते हैं जब एक से ज़्यादा साइन-इन का इस्तेमाल किया जाता है.</translation>
 <translation id="4170314459383239649">बाहर निकलने पर हटाएं</translation>
@@ -2881,6 +2884,7 @@
 <translation id="4645676300727003670">&amp;रखें</translation>
 <translation id="4646675363240786305">पोर्ट</translation>
 <translation id="4647090755847581616">&amp;टैब बंद करें</translation>
+<translation id="4647420311443994946">{0,select, tablet{जब आप अपने टैबलेट में साइन इन करते हैं, तब वेब ऐप्लिकेशन को चालू करें}computer{जब आप अपने कंप्यूटर में साइन इन करते हैं, तब वेब ऐप्लिकेशन को चालू करें}other{जब आप अपने डिवाइस में साइन इन करते हैं, तब वेब ऐप्लिकेशन को चालू करें}}</translation>
 <translation id="4647697156028544508">कृपया "<ph name="DEVICE_NAME" />" के लिए पिन दर्ज करें:</translation>
 <translation id="4648491805942548247">अपर्याप्त अनुमतियां</translation>
 <translation id="4648499713050786492">कृपया किसी व्यक्ति को जोड़ने से पहले अपनी प्रोफ़ाइल अनलॉक करें.</translation>
@@ -2893,6 +2897,7 @@
 <translation id="4660540330091848931">साइज़ बदला जा रहा है</translation>
 <translation id="4660838440047236328">आपके कमरे का लेआउट</translation>
 <translation id="4661407454952063730">ऐप्लिकेशन से जुड़े डेटा में ऐसा कोई भी डेटा शामिल हो सकता है जिसे किसी ऐप्लिकेशन ने (डेवलपर सेटिंग के आधार पर) सेव किया है. इसमें संपर्क, मैसेज (एसएमएस) और फ़ोटो जैसा डेटा भी शामिल है.</translation>
+<translation id="4662373422909645029">प्रचलित नाम में अंक शामिल नहीं कर सकते</translation>
 <translation id="4662788913887017617">इस बुकमार्क को अपने iPhone से शेयर करें</translation>
 <translation id="4663373278480897665">कैमरे की अनुमति है</translation>
 <translation id="4664482161435122549">PKCS #12 निर्यात गड़बड़ी</translation>
@@ -3587,6 +3592,7 @@
 <translation id="5585912436068747822">फ़ॉर्मेटिंग विफल रही</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">ऐप्लिकेशन लोड हो रहे हैं...</translation>
+<translation id="558984423786125616">सेटिंग में पोर्ट पहले से मौजूद है</translation>
 <translation id="5592595402373377407">अभी काफ़ी डेटा उपलब्ध नहीं है.</translation>
 <translation id="5593357315997824387">मेरी फ़ाइलों को सिंक करें</translation>
 <translation id="5595485650161345191">पते में बदलाव करें</translation>
@@ -3630,6 +3636,7 @@
 <translation id="5639549361331209298">यह पेज फिर लोड करें, ज़्यादा विकल्प देखने के लिए रोककर रखें</translation>
 <translation id="5640133431808313291">सुरक्षा कुंजी प्रबंधित करें</translation>
 <translation id="5642508497713047">CRL हस्ताक्षरकर्ता</translation>
+<translation id="5643321261065707929">सीमित डेटा वाला नेटवर्क</translation>
 <translation id="5643620609347735571">साफ़ करें और जारी रखें</translation>
 <translation id="5644857731242502394">जुड़े हुए डिवाइस सेट अप करना</translation>
 <translation id="5646376287012673985">स्थान</translation>
@@ -5538,6 +5545,7 @@
     <ph name="BEGIN_PARAGRAPH5" />आप सेटिंग में जाकर इस सेवा को बंद कर सकते हैं.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">पिन का मिलान नहीं हो रहा है</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> एक एक्सटेंशन की प्रॉक्सी सेटिंग इस्तेमाल कर रहा है</translation>
+<translation id="8097959162767603171">आपके एडमिन को सबसे पहले, Admin console की Chrome डिवाइस सूची में जाकर, सेवा की शर्तों को स्वीकार करना होगा.</translation>
 <translation id="8101987792947961127">अगली बार रीबूट करने पर पावरवॉश ज़रूरी है</translation>
 <translation id="8102159139658438129">अपने जुड़े हुए फ़ोन के विकल्प देखने के लिए <ph name="LINK_BEGIN" />सेटिंग<ph name="LINK_END" /> पर जाएं</translation>
 <translation id="8104696615244072556">अपने <ph name="IDS_SHORT_PRODUCT_NAME" /> डिवाइस को पावरवॉश करें और पिछले वर्ज़न पर वापस लौटें.</translation>

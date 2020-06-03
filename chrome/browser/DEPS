@@ -77,6 +77,7 @@ include_rules = [
   "+components/contextual_search/content/common",
   "+components/contextual_search/core/browser",
   "+components/cookie_config",
+  "+components/country_codes",
   "+components/crash/content/app",
   "+components/crash/content/browser",
   "+components/crash/core/app",

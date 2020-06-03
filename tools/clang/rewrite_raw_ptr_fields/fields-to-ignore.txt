@@ -74,6 +74,7 @@ blink::PersistentBase::raw_
 extensions::GlobalShortcutListenerX11::x_display_
 gl::GLVisualPickerGLX::display_
 media::(anonymous namespace)::UserInputMonitorLinuxCore::x_record_display_
+remoting::(anonymous namespace)::LocalMouseInputMonitorX11::Core::x_record_display_
 ui::ClipboardX11::X11Details::x_display_
 ui::X11EventSource::display_
 ui::X11MenuRegistrar::xdisplay_
@@ -84,18 +85,19 @@ ui::XVisualManager::display_
 ui::XWindow::xdisplay_
 views::test::(anonymous namespace)::UIControlsDesktopX11::x_display_
 viz::SkiaOutputDeviceX11::display_
+x11::Connection::display_
 
 # Populated manually - static_cast not related by inheritance.
+gtk::GtkKeyBindingsHandler::fake_window_
+gtk::GtkKeyBindingsHandler::handler_
+gtk::SelectFileDialogImplGTK::preview_
 net::(anonymous namespace)::SettingGetterImplGSettings::client_
 net::(anonymous namespace)::SettingGetterImplGSettings::http_client_
 net::(anonymous namespace)::SettingGetterImplGSettings::https_client_
 net::(anonymous namespace)::SettingGetterImplGSettings::ftp_client_
 net::(anonymous namespace)::SettingGetterImplGSettings::socks_client_
 ui::AXPlatformNodeAuraLinux::atk_hyperlink_
-gtk::GtkKeyBindingsHandler::fake_window_
-gtk::GtkKeyBindingsHandler::handler_
 PrintDialogGtk::dialog_
-gtk::SelectFileDialogImplGTK::preview_
 
 # Populated manually, because of in-out-arg usage.
 # (not sure why it wasn't caught by the rewriter when populating the list below).

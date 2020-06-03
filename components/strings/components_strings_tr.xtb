@@ -205,6 +205,8 @@
 <translation id="1753706481035618306">Sayfa numarası</translation>
 <translation id="1763864636252898013">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. cihazınızın işletim sistemi, sunucunun güvenlik sertifikasına güvenmiyor. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows Ağ Teşhislerini çalıştırmayı deneyin<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Ziyaret etmek üzere olduğunuz sunucu (<ph name="ORIGIN" />) kendisine gelen tüm isteklere bir kaynak politikası uygulanmasını gerektiren bir üst bilgi ayarladı. Ancak üst bilgi yanlış biçimlendirildiği için tarayıcı, <ph name="SITE" /> sitesiyle ilgili isteğinizi yerine getiremiyor. Kaynak politikaları
+    site operatörleri tarafından sitenin güvenliğini ve diğer mülklerini yapılandırmak için kullanılabilir.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Lütfen senkronizasyon parolanızı güncelleyin.</translation>
 <translation id="1787142507584202372">Açık sekmeleriniz burada görünür</translation>
@@ -228,6 +230,7 @@
 <translation id="1898423065542865115">Filtreleme</translation>
 <translation id="1901443836186977402">{1,plural, =1{Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi son bir gün içinde sona ermiş. Bu durum, yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati şu anda <ph name="CURRENT_DATE" /> olarak ayarlanmış. Doğru görünüyor mu? Görünmüyorsa sisteminizin saatini düzeltip ardından bu sayfayı yenilemelisiniz.}other{Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikasının süresi # gün önce sona ermiş. Bu durum, yanlış yapılandırmadan veya bağlantınıza müdahale eden bir saldırgandan kaynaklanıyor olabilir. Bilgisayarınızın saati şu anda <ph name="CURRENT_DATE" /> olarak ayarlanmış. Doğru görünüyor mu? Görünmüyorsa sisteminizin saatini düzeltmeli ve sonra bu sayfayı yenilemelisiniz.}}</translation>
 <translation id="1902576642799138955">Geçerlilik Süresi</translation>
+<translation id="191374271204266022">JSON olarak kopyala</translation>
 <translation id="1914326953223720820">Sıkıştırma Açma Hizmeti</translation>
 <translation id="1915697529809968049">CVC yerine Touch ID kullanılsın mı?</translation>
 <translation id="1916770123977586577">Güncellenen ayarlarınızı bu siteye uygulamak için sayfayı yeniden yükleyin</translation>
@@ -703,6 +706,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
     Bu mesajın yanlışlıkla gösterildiğini düşünüyorsanız lütfen https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals adresini ziyaret edin.</translation>
 <translation id="3987940399970879459">1 MB'tan az</translation>
 <translation id="3990250421422698716">Jog ofset</translation>
+<translation id="3996311196211510766"><ph name="ORIGIN" /> sitesi, bir kaynak politikasının kendisine gelen tüm talepler için geçerli olmasını istedi, ancak bu politika şu anda uygulanamıyor.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Yakındaki 1 web sayfası}other{Yakındaki # web sayfası}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} sayfalı PDF dokümanı}other{{COUNT} sayfalı PDF dokümanı}}</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
@@ -747,6 +751,8 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="4194250254487269611">Kartınız şu anda kaydedilemiyor</translation>
 <translation id="4196861286325780578">Taşımayı &amp;yeniden yap</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Güvenlik duvarı ve virüsten korunma yapılandırmalarını kontrol etme<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Ziyaret etmek üzere olduğunuz sunucu (<ph name="ORIGIN" />) kendisine gelen tüm isteklere bir kaynak politikası uygulanmasını talep etti. Ancak şimdi politika sunamadığı için tarayıcı, <ph name="SITE" /> sitesiyle ilgili isteğinizi yerine getiremiyor. Kaynak politikaları
+    site operatörleri tarafından sitenin güvenliğini ve diğer özelliklerini yapılandırmak için kullanılabilir.</translation>
 <translation id="421066178035138955">Sanal gerçeklik cihazlarını ve verilerini kullanmak</translation>
 <translation id="4214357935346142455">oturum açma ekran profili</translation>
 <translation id="4215751373031079683">7x9 (Zarf)</translation>
@@ -1237,6 +1243,7 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="6259156558325130047">Sıralama Değişikliğini &amp;Yeniden Yap</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> yer işaretleri</translation>
 <translation id="6264485186158353794">Güvenliğe geri dön</translation>
+<translation id="6265794661083428563"><ph name="POLICY_NAME" /> politikasının değerini kopyala</translation>
 <translation id="6266934640124581640">Açık Turkuaz</translation>
 <translation id="6272383483618007430">Google Güncelleme</translation>
 <translation id="6276112860590028508">Okuma listenize ait sayfalar burada görünür</translation>

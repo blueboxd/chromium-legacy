@@ -1,8 +1,24 @@
 (async function(testRunner) {
-  var {page, session, dp} = await testRunner.startBlank('Tests we properly emit Page.downloadWillBegin.');
+  const {page, session, dp} = await testRunner.startBlank('Tests we properly emit Page.downloadWillBegin.');
+
+  await dp.Page.enable();
+
+  await session.evaluateAsync(`
+    const frame = document.createElement('iframe');
+    frame.src = location.href;
+    document.body.appendChild(frame);
+    new Promise(resolve => frame.onload = resolve);
+  `);
+
+  const frameTree = (await dp.Page.getFrameTree()).result.frameTree;
+  const frameNames = new Map([
+    [frameTree.frame.id, 'top'],
+    [frameTree.childFrames[0].frame.id, 'child']
+  ]);
 
   dp.Page.onDownloadWillBegin(event => {
-    testRunner.log(event);
+    const frame = frameNames.get(event.params.frameId) || 'unknown';
+    testRunner.log(event, `downloadWillBegin from ${frame} frame: `);
   });
 
   async function waitForDownloadAndDump() {
@@ -23,19 +39,30 @@
     await dp.Page.onceDownloadProgress(event => event.params.state === 'completed');
   }
 
-  await dp.Page.enable();
   testRunner.log('Downloading via a navigation: ');
   session.evaluate('location.href = "/devtools/network/resources/resource.php?download=1"');
   await waitForDownloadAndDump();
-  testRunner.log('Downloading by clicking a link: ');
-  session.evaluate(`
-    const a = document.createElement('a');
+
+  testRunner.log('Downloading via a navigation of subframe: ');
+  session.evaluate(`frames[0].frameElement.src = '/devtools/network/resources/resource.php?download=1'`);
+  await waitForDownloadAndDump();
+
+  function createLinkAndClick(doc) {
+    const a = doc.createElement('a');
     a.href = '/devtools/network/resources/resource.php';
     a.download = 'hello.text';
-    document.body.appendChild(a);
+    doc.body.appendChild(a);
     a.click();
-  `);
+  }
+
+  testRunner.log('Downloading by clicking a link: ');
+  session.evaluate(`(${createLinkAndClick})(document)`);
   await waitForDownloadAndDump();
+
+  testRunner.log('Downloading by clicking a link in subframe: ');
+  session.evaluate(`(${createLinkAndClick})(frames[0].document)`);
+  await waitForDownloadAndDump();
+
   testRunner.log(
       'Downloading by clicking a link (no HTTP Content-Disposition header, a[download=""]): ');
   session.evaluate(`

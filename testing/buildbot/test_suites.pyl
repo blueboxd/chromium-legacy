@@ -540,9 +540,7 @@
       'ipc_tests': {},
       'jingle_unittests': {},
       'latency_unittests': {},
-      'libcups_unittests': {
-        'experiment_percentage': 100,
-      },
+      'libcups_unittests': {},
       'media_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.media_unittests.filter',

@@ -338,6 +338,7 @@
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
+<translation id="5352285283572729470">관리되는 설정입니다.</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5407969256130905701">변경사항 취소</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
@@ -564,6 +565,7 @@
 <translation id="8174524257672181687">모든 쿠키 차단(권장되지 않음)</translation>
 <translation id="8197543752516192074">페이지 번역</translation>
 <translation id="8205564605687841303">취소</translation>
+<translation id="8206354486702514201">이 설정은 관리자가 강제로 설정해 놓았습니다.</translation>
 <translation id="8225985093977202398">캐시된 이미지 및 파일</translation>
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8281781826761538115">기본값 - <ph name="DEFAULT_LOCALE" /></translation>

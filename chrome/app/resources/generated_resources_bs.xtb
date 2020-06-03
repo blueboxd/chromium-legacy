@@ -2130,6 +2130,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3677106374019847299">Unesite prilagođenog pružaoca</translation>
 <translation id="3677657024345889897">Najtiše</translation>
 <translation id="3677911431265050325">Zatraži web lokaciju za mobilni uređaj</translation>
+<translation id="3677959414150797585">Obuhvata aplikacije, web stranice i drugi sadržaj. Statistika će se slati u svrhu poboljšanja prijedloga samo ako ste odabrali da dijelite podatke o korištenju.</translation>
 <translation id="3678156199662914018">Ekstenzija: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Glas pretvaranja teksta u govor</translation>
 <translation id="3681311097828166361">Hvala na povratnim informacijama. Trenutno ste van mreže i vaš će se izvještaj poslati kasnije.</translation>
@@ -2541,6 +2542,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4154664944169082762">Otisci prstiju</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Ovo je račun za djecu kojim upravlja <ph name="CUSTODIAN_EMAIL" /> i <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Ljubičasta</translation>
 <translation id="4163560723127662357">Nepoznata tastatura</translation>
 <translation id="4168015872538332605">Neke postavke koje pripadaju korisniku <ph name="PRIMARY_EMAIL" /> se dijele s vama. Ove postavke se odnose samo na vaš račun dok koristite višestruku prijavu.</translation>
 <translation id="4170314459383239649">Obriši pri zatvaranju</translation>
@@ -3781,6 +3783,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – Snimanje kamerom ili mikrofonom</translation>
 <translation id="5841270259333717135">Konfigurirajte ethernet</translation>
 <translation id="5842497610951477805">Omogućavanje Bluetootha</translation>
+<translation id="5844574845205796324">Predloži novi sadržaj za istraživanje</translation>
 <translation id="5846200638699387931">Sintaksička greška odnosa: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instalirajte ažuriranja i aplikacije. Ako nastavite, pristajete da ovaj uređaj također može automatski preuzimati i instalirati ažuriranja i aplikacije s Googlea, od vašeg mobilnog operatera i proizvođača vašeg uređaja, uz mogući prijenos podataka na mobilnoj mreži. Neke od tih aplikacija mogu nuditi kupovinu unutar aplikacije.</translation>
 <translation id="5849212445710944278">Već dodano</translation>

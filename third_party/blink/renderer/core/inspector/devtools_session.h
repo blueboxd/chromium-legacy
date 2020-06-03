@@ -8,8 +8,6 @@
 #include <memory>
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -18,6 +16,9 @@
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
 #include "third_party/blink/renderer/core/inspector/protocol/Forward.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -45,7 +46,8 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
       bool client_expects_binary_responses,
-      const String& session_id);
+      const String& session_id,
+      scoped_refptr<base::SequencedTaskRunner> mojo_task_runner);
   ~DevToolsSession() override;
 
   void ConnectToV8(v8_inspector::V8Inspector*, int context_group_id);
@@ -102,8 +104,15 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
       std::vector<uint8_t> message) const;
 
   Member<DevToolsAgent> agent_;
-  mojo::AssociatedReceiver<mojom::blink::DevToolsSession> receiver_;
-  mojo::AssociatedRemote<mojom::blink::DevToolsSessionHost> host_remote_;
+  // DevToolsSession is not tied to ExecutionContext
+  HeapMojoAssociatedReceiver<mojom::blink::DevToolsSession,
+                             DevToolsSession,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_{this, nullptr};
+  // DevToolsSession is not tied to ExecutionContext
+  HeapMojoAssociatedRemote<mojom::blink::DevToolsSessionHost,
+                           HeapMojoWrapperMode::kWithoutContextObserver>
+      host_remote_{nullptr};
   IOSession* io_session_;
   std::unique_ptr<v8_inspector::V8InspectorSession> v8_session_;
   std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;

@@ -42,6 +42,7 @@ base::Optional<Fourcc> Fourcc::FromUint32(uint32_t fourcc) {
     case YM16:
     case MT21:
     case MM21:
+    case P010:
       return Fourcc(static_cast<Value>(fourcc));
   }
   DVLOGF(3) << "Unmapped fourcc: " << FourccToString(fourcc);
@@ -74,6 +75,8 @@ base::Optional<Fourcc> Fourcc::FromVideoPixelFormat(
         return Fourcc(NV12);
       case PIXEL_FORMAT_NV21:
         return Fourcc(NV21);
+      case PIXEL_FORMAT_P016LE:
+        return Fourcc(P010);
       case PIXEL_FORMAT_UYVY:
         NOTREACHED();
         FALLTHROUGH;
@@ -92,7 +95,6 @@ base::Optional<Fourcc> Fourcc::FromVideoPixelFormat(
       case PIXEL_FORMAT_YUV422P12:
       case PIXEL_FORMAT_YUV444P12:
       case PIXEL_FORMAT_Y16:
-      case PIXEL_FORMAT_P016LE:
       case PIXEL_FORMAT_XR30:
       case PIXEL_FORMAT_XB30:
       case PIXEL_FORMAT_UNKNOWN:
@@ -186,6 +188,8 @@ VideoPixelFormat Fourcc::ToVideoPixelFormat() const {
     // be mapped to PIXEL_FORMAT_NV12.
     case MM21:
       return PIXEL_FORMAT_NV12;
+    case P010:
+      return PIXEL_FORMAT_P016LE;
   }
   NOTREACHED() << "Unmapped Fourcc: " << ToString();
   return PIXEL_FORMAT_UNKNOWN;
@@ -230,6 +234,8 @@ base::Optional<Fourcc> Fourcc::FromVAFourCC(uint32_t va_fourcc) {
       return Fourcc(XR24);
     case VA_FOURCC_ARGB:
       return Fourcc(RGB4);
+    case VA_FOURCC_P010:
+      return Fourcc(P010);
   }
   DVLOGF(3) << "Unmapped VAFourCC: " << FourccToString(va_fourcc);
   return base::nullopt;
@@ -257,6 +263,8 @@ base::Optional<uint32_t> Fourcc::ToVAFourCC() const {
       return VA_FOURCC_BGRX;
     case RGB4:
       return VA_FOURCC_ARGB;
+    case P010:
+      return VA_FOURCC_P010;
     case YM12:
     case YM21:
     case NM12:
@@ -287,6 +295,7 @@ base::Optional<Fourcc> Fourcc::ToSinglePlanar() const {
     case YUYV:
     case NV12:
     case NV21:
+    case P010:
       return Fourcc(value_);
     case YM12:
       return Fourcc(YU12);
@@ -319,6 +328,7 @@ bool Fourcc::IsMultiPlanar() const {
     case YUYV:
     case NV12:
     case NV21:
+    case P010:
       return false;
     case YM12:
     case YM21:

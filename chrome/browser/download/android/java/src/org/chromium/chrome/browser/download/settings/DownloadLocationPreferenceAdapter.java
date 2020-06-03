@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.download.DirectoryOption;
-import org.chromium.chrome.browser.download.DownloadLocationDialogBridge;
+import org.chromium.chrome.browser.download.DownloadDialogBridge;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.StringUtils;
 
@@ -95,7 +95,7 @@ public class DownloadLocationPreferenceAdapter
         if (option == null) return;
 
         // Update the native pref, which persists the download directory selected by the user.
-        DownloadLocationDialogBridge.setDownloadAndSaveFileDefaultDirectory(option.location);
+        DownloadDialogBridge.setDownloadAndSaveFileDefaultDirectory(option.location);
 
         mSelectedPosition = selectedId;
 

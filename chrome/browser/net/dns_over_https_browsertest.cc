@@ -13,7 +13,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/dns/public/doh_provider_list.h"
+#include "net/dns/public/doh_provider_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -32,10 +32,9 @@ struct DohParameter {
 
 std::vector<DohParameter> GetDohServerTestCases() {
   std::vector<DohParameter> doh_test_cases;
-  const auto& doh_providers = net::GetDohProviderList();
-  for (const auto& doh_provider : doh_providers) {
-    doh_test_cases.emplace_back(doh_provider.provider,
-                                doh_provider.dns_over_https_template, true);
+  for (const auto* entry : net::DohProviderEntry::GetList()) {
+    doh_test_cases.emplace_back(entry->provider, entry->dns_over_https_template,
+                                true);
   }
   // Negative test-case
   doh_test_cases.emplace_back("NegativeTestExampleCom",

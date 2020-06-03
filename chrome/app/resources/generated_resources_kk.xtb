@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">Құпия сөз мерзімі аяқталды.</translation>
 <translation id="1630768113285622200">Қайта қосу және жалғастыру</translation>
 <translation id="1630873818549593964">Classroom қызметіндегі балаңыздың деректері қорғалады. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Құпия сөз Google есептік жазбаңызда сақталған.</translation>
 <translation id="1632803087685957583">Пернетақтаның қайталау жиілігін, сөз болжамдарын, т.б. реттеуге мүмкіндік береді</translation>
 <translation id="1633947793238301227">Google Assistant қолданбасын өшіру</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" /> сайтында құпия сөзіңізді өзгерттіңіз бе?</translation>
@@ -1576,6 +1577,7 @@
 <translation id="296026337010986570">Дайын! Зиянды бағдарламалық құрал өшірілді. Кеңейтімдерді қайта қосу үшін &lt;a href="chrome://extensions"&gt;Кеңейтімдер&lt;/a&gt; бетіне кіріңіз.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (кеңейтім берген)</translation>
 <translation id="2961695502793809356">Алға өту үшін басыңыз, журнал көру үшін басып ұстап тұрыңыз</translation>
+<translation id="2962131322798295505">Wallpaper Picker</translation>
 <translation id="2963151496262057773">Келесі плагин жауап бермейді: <ph name="PLUGIN_NAME" />Оны тоқтатқыңыз келе ме?</translation>
 <translation id="2964193600955408481">Wi-Fi желісін өшіру</translation>
 <translation id="2966937470348689686">Android параметрлерін басқару</translation>
@@ -2536,6 +2538,7 @@
 <translation id="4154664944169082762">Саусақ іздері</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">Бұл <ph name="CUSTODIAN_EMAIL" /> және <ph name="SECOND_CUSTODIAN_EMAIL" /> басқаратын балаларға арналған есептік жазба болып табылады.</translation>
+<translation id="4159784952369912983">Күлгін</translation>
 <translation id="4163560723127662357">Белгісіз пернетақта</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> қатысты кейбір параметрлер сізбен бөлісілуде. Бұл параметрлер бірнеше рет кіру мүмкіндігін пайдалану кезінде ғана есептік жазбаға әсер етеді.</translation>
 <translation id="4170314459383239649">Шыққан кезде тазалау</translation>
@@ -2879,6 +2882,7 @@
 <translation id="4645676300727003670">&amp;Сақтау</translation>
 <translation id="4646675363240786305">Порттар</translation>
 <translation id="4647090755847581616">&amp;Қойындыны жабу</translation>
+<translation id="4647420311443994946">{0,select, tablet{Планшетте есептік жазбаға кірген кезде, қолданба іске Планшетте есептік жазбаға кірген кезде, қолданба іске қосылсын}computer{Компьютерде есептік жазбаға кірген кезде, қолданба іске қосылсын}other{Құрылғыда есептік жазбаға кірген кезде, қолданба іске қосылсын}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" үшін PIN кодын енгізіңіз:</translation>
 <translation id="4648491805942548247">Рұқсаттар жеткіліксіз</translation>
 <translation id="4648499713050786492">Адам суретін қосу үшін профиліңіздің құлпын ашыңыз.</translation>
@@ -2891,6 +2895,7 @@
 <translation id="4660540330091848931">Көлемі өзгертілуде.</translation>
 <translation id="4660838440047236328">бөлменің жобасы</translation>
 <translation id="4661407454952063730">Қолданба деректеріне контактілер, хабарлар және фотосуреттер сияқты қолданба сақтаған (әзірлеуші параметрлеріне байланысты) кез келген дерек жатуы мүмкін.</translation>
+<translation id="4662373422909645029">Лақап атта сан болмауы керек</translation>
 <translation id="4662788913887017617">Осы бетбелгіні iPhone арқылы бөлісіңіз</translation>
 <translation id="4663373278480897665">Камераны пайдалануға рұқсат берілген</translation>
 <translation id="4664482161435122549">PKCS #12 экспорттау қатесі</translation>
@@ -3585,6 +3590,7 @@
 <translation id="5585912436068747822">Пішімдеу сәтсіз аяқталды</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Қолданбаларды жүктеу…</translation>
+<translation id="558984423786125616">Порт параметрлерде бұрыннан бар.</translation>
 <translation id="5592595402373377407">Қол жетімді деректер әлі жеткілікті емес.</translation>
 <translation id="5593357315997824387">Файлдарды синхрондау</translation>
 <translation id="5595485650161345191">Мекенжайды өзгерту</translation>
@@ -3628,6 +3634,7 @@
 <translation id="5639549361331209298">Осы бетті қайта жүктеу, қосымша опцияларды көру үшін ұстап тұрыңыз</translation>
 <translation id="5640133431808313291">Қауіпсіздік кілттерін басқару</translation>
 <translation id="5642508497713047">CRL қол қоюшы</translation>
+<translation id="5643321261065707929">Шектелген желі</translation>
 <translation id="5643620609347735571">Өшіру және жалғастыру</translation>
 <translation id="5644857731242502394">Байланыстырылған құрылғыларды реттеу</translation>
 <translation id="5646376287012673985">Орын</translation>
@@ -5536,6 +5543,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Бұл қызметті "Параметрлер" бөлімінен өшіруге болады.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN кодтары сәйкес келмейді</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> кеңейтімдегі прокси параметрлерді пайдаланып жатыр.</translation>
+<translation id="8097959162767603171">Әкімші алдымен әкімші консоліндегі Chrome құрылғылары тізімінде берілген қызмет көрсету шарттарын қабылдауы керек.</translation>
 <translation id="8101987792947961127">Келесі қайта жүктеу кезінде Powerwash қажет</translation>
 <translation id="8102159139658438129">Жалғанған телефонның опцияларын көру үшін <ph name="LINK_BEGIN" />Параметрлер<ph name="LINK_END" /> бөліміне өтіңіз</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> құрылғыңызда Powerwash операциясын жасап, алдыңғы нұсқаға қайтыңыз.</translation>

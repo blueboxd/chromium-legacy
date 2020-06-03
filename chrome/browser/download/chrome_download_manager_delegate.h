@@ -34,7 +34,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/download/android/download_location_dialog_bridge.h"
+#include "chrome/browser/download/android/download_dialog_bridge.h"
 #endif
 
 class DownloadPrefs;
@@ -64,15 +64,13 @@ class ChromeDownloadManagerDelegate
   void SetDownloadManager(content::DownloadManager* dm);
 
 #if defined(OS_ANDROID)
-  void ChooseDownloadLocation(
-      gfx::NativeWindow native_window,
-      int64_t total_bytes,
-      DownloadLocationDialogType dialog_type,
-      const base::FilePath& suggested_path,
-      DownloadLocationDialogBridge::LocationCallback callback);
+  void ChooseDownloadLocation(gfx::NativeWindow native_window,
+                              int64_t total_bytes,
+                              DownloadLocationDialogType dialog_type,
+                              const base::FilePath& suggested_path,
+                              DownloadDialogBridge::LocationCallback callback);
 
-  void SetDownloadLocationDialogBridgeForTesting(
-      DownloadLocationDialogBridge* bridge);
+  void SetDownloadDialogBridgeForTesting(DownloadDialogBridge* bridge);
 #endif
 
   // Callbacks passed to GetNextId() will not be called until the returned
@@ -280,7 +278,7 @@ class ChromeDownloadManagerDelegate
   Profile* profile_;
 
 #if defined(OS_ANDROID)
-  std::unique_ptr<DownloadLocationDialogBridge> location_dialog_bridge_;
+  std::unique_ptr<DownloadDialogBridge> download_dialog_bridge_;
 #endif
 
   // If history database fails to initialize, this will always be kInvalidId.

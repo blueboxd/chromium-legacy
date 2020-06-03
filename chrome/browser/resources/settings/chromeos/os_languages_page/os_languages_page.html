@@ -218,7 +218,8 @@
             </div>
             <template is="dom-if" if="[[imeOptionsInSettings_]]">
               <div class="internal-wrapper" hidden="[[!item.hasOptionsPage]]">
-                <cr-icon-button class="subpage-arrow"></cr-icon-button>
+                <cr-icon-button class="subpage-arrow"
+                    on-click="onInputMethodOptionsTap_"></cr-icon-button>
               </div>
             </template>
             <template is="dom-if" if="[[!imeOptionsInSettings_]]">

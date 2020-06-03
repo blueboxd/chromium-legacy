@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "net/dns/public/doh_provider_entry.h"
 
 namespace net {
 struct DnsConfigOverrides;
@@ -20,6 +21,22 @@ namespace chrome_browser_net {
 
 namespace secure_dns {
 
+// Returns the subset of |providers| that are marked for use in the specified
+// country.
+net::DohProviderEntry::List ProvidersForCountry(
+    const net::DohProviderEntry::List& providers,
+    int country_id);
+
+// Returns the names of providers that have been remotely disabled, for use with
+// RemoveDisabledProviders().
+std::vector<std::string> GetDisabledProviders();
+
+// Returns the subset of |providers| for which |DohProviderEntry::provider| is
+// not listed in |disabled_providers|.
+net::DohProviderEntry::List RemoveDisabledProviders(
+    const net::DohProviderEntry::List& providers,
+    const std::vector<std::string>& disabled_providers);
+
 // Implements the whitespace-delimited group syntax for DoH templates.
 std::vector<base::StringPiece> SplitGroup(base::StringPiece group);
 
@@ -27,6 +44,16 @@ std::vector<base::StringPiece> SplitGroup(base::StringPiece group);
 // net::dns_util::IsValidDohTemplate().  This should be checked before updating
 // stored preferences.
 bool IsValidGroup(base::StringPiece group);
+
+// When the selected template changes, call this function to update the
+// Selected, Unselected, and Ignored histograms for all the included providers,
+// and also for the custom provider option.  If the old or new selection is the
+// custom provider option, pass an empty string as the template.
+void UpdateDropdownHistograms(const net::DohProviderEntry::List& providers,
+                              base::StringPiece old_template,
+                              base::StringPiece new_template);
+void UpdateValidationHistogram(bool valid);
+void UpdateProbeHistogram(bool success);
 
 // Modifies |overrides| to use the DoH server specified by |server_template|.
 void ApplyTemplate(net::DnsConfigOverrides* overrides,

@@ -100,7 +100,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   // Note: The listener must never be changed while |is_double_tapping| is true.
   void SetDoubleTapListener(DoubleTapListener* double_tap_listener);
 
-  bool has_doubletap_listener() const { return double_tap_listener_ != NULL; }
+  bool has_doubletap_listener() const { return !!double_tap_listener_; }
 
   bool is_double_tapping() const { return is_double_tapping_; }
 

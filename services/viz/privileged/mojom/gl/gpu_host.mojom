@@ -41,6 +41,11 @@ interface GpuHost {
   [EnableIf=is_win]
   DidUpdateOverlayInfo(gpu.mojom.OverlayInfo overlay_info);
 
+  // Tells the GPU host that the HDR status has been updated in the GPU
+  // process.
+  [EnableIf=is_win]
+  DidUpdateHDRStatus(bool hdr_enabled);
+
   // GPU process has decided to disable GPU compositing. Host process keeps
   // track of this decision in case the GPU process crashes.
   DisableGpuCompositing();

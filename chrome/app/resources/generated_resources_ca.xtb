@@ -827,7 +827,7 @@
 En cas contrari, tanca la sessió perquè els canvis d'aquest compte es reflecteixin en aquest dispositiu.
 
 Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family Link al teu dispositiu.  T'hem enviat un correu amb instruccions.</translation>
-<translation id="2040460856718599782">S'ha produït un error quan provàvem d'autenticar-vos. Comproveu les vostres credencials d'inici de sessió i torneu-ho a provar.</translation>
+<translation id="2040460856718599782">S'ha produït un error quan provàvem d'autenticar-te. Comprova les teves credencials d'inici de sessió i torna-ho a provar.</translation>
 <translation id="204497730941176055">Nom de plantilla de certificat de Microsoft</translation>
 <translation id="2045117674524495717">Aplicació d'ajuda de les tecles de drecera</translation>
 <translation id="2045969484888636535">Continua bloquejant les galetes</translation>
@@ -2129,6 +2129,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3677106374019847299">Introdueix un proveïdor personalitzat</translation>
 <translation id="3677657024345889897">Volum mínim</translation>
 <translation id="3677911431265050325">Sol·licita el lloc web per a mòbils</translation>
+<translation id="3677959414150797585">Inclou aplicacions, pàgines web i molt més. Només envia les estadístiques per millorar els suggeriments si has triat compartir les dades d'ús.</translation>
 <translation id="3678156199662914018">Extensió: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Veu de text a parla</translation>
 <translation id="3681311097828166361">Gràcies pels teus suggeriments. Ara mateix no tens connexió, de manera que el teu informe s'enviarà més tard.</translation>
@@ -2539,6 +2540,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4154664944169082762">Empremtes</translation>
 <translation id="4157869833395312646">Xifratge activat per servidor de Microsoft</translation>
 <translation id="4159681666905192102">Aquest és un compte infantil gestionat per <ph name="CUSTODIAN_EMAIL" /> i per <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Porpra</translation>
 <translation id="4163560723127662357">Teclat desconegut</translation>
 <translation id="4168015872538332605">Alguns paràmetres de configuració que pertanyen a <ph name="PRIMARY_EMAIL" /> es comparteixen amb l'usuari. Aquests paràmetres només afecten el vostre compte quan s'utilitza l'inici de sessió múltiple.</translation>
 <translation id="4170314459383239649">Esborra en sortir</translation>
@@ -3781,6 +3783,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" />: la càmera o el micròfon estan enregistrant contingut</translation>
 <translation id="5841270259333717135">Configura Ethernet</translation>
 <translation id="5842497610951477805">Activa el Bluetooth</translation>
+<translation id="5844574845205796324">Suggereix contingut nou per explorar</translation>
 <translation id="5846200638699387931">Error de sintaxi de la relació: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instal·la aplicacions i actualitzacions. En continuar, acceptes que aquest dispositiu també pugui baixar i instal·lar automàticament actualitzacions i aplicacions de Google, de l'operador i del fabricant del dispositiu, i que és possible que ho faci utilitzant dades mòbils. Pot ser que algunes d'aquestes aplicacions ofereixin compres des de l'aplicació.</translation>
 <translation id="5849212445710944278">Ja s'ha afegit</translation>

@@ -225,6 +225,7 @@ void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
       frame->format(), mailbox_holders, std::move(release_mailbox_cb),
       frame->coded_size(), frame->visible_rect(), frame->natural_size(),
       frame->timestamp());
+  mailbox_frame->set_color_space(frame->ColorSpace());
   mailbox_frame->metadata()->MergeMetadataFrom(frame->metadata());
   mailbox_frame->metadata()->SetBoolean(
       VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);

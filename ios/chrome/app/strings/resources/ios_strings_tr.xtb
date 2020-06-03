@@ -338,6 +338,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5327248766486351172">Ad</translation>
+<translation id="5352285283572729470">Bu ayar yönetiliyor</translation>
 <translation id="5388358297987318779">Resmi Aç</translation>
 <translation id="5407969256130905701">Değişiklikleri Sil</translation>
 <translation id="5409365236829784218">Bu dosyayı açabilecek yüklü uygulama yok.</translation>
@@ -564,6 +565,7 @@ Hesabınız <ph name="HOSTED_DOMAIN" /> tarafından yönetildiği için oturumun
 <translation id="8174524257672181687">Tüm Çerezleri Engelle (Önerilmez)</translation>
 <translation id="8197543752516192074">Sayfayı Çevir</translation>
 <translation id="8205564605687841303">İptal</translation>
+<translation id="8206354486702514201">Bu seçenek, yöneticiniz tarafınızdan denetleniyor.</translation>
 <translation id="8225985093977202398">Önbelleğe Alınan Resimler ve Dosyalar</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8281781826761538115">Varsayılan - <ph name="DEFAULT_LOCALE" /></translation>

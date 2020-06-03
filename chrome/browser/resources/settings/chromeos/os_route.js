@@ -216,6 +216,9 @@ cr.define('settings', function() {
         Subpage.kManageInputMethods);
     r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
         r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBPAGE_PATH, Subpage.kSmartInputs);
+    r.OS_LANGUAGES_INPUT_METHOD_OPTIONS = createSubpage(
+        r.OS_LANGUAGES_DETAILS, mojom.INPUT_METHOD_OPTIONS_SUBPAGE_PATH,
+        Subpage.kInputMethodOptions);
 
     // Files section.
     if (!loadTimeData.getBoolean('isGuest')) {

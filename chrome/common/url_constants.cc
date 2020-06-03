@@ -405,8 +405,8 @@ const char kTimeZoneSettingsLearnMoreURL[] =
 const char kSmbSharesLearnMoreURL[] =
     "https://support.google.com/chromebook?p=network_file_shares";
 
-// TODO(crbug/1079169): Replace link after it is provided by the support team.
-const char kSuggestedContentLearnMoreURL[] = "https://support.google.com/";
+const char kSuggestedContentLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=explorecontent";
 
 const char kTabletModeGesturesLearnMoreURL[] =
     "https://support.google.com/chromebook?p=tablet_mode_gestures";

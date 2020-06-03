@@ -205,6 +205,7 @@
 <translation id="1753706481035618306">Číslo stránky</translation>
 <translation id="1763864636252898013">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení nedůvěřuje jeho bezpečnostnímu certifikátu. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku sítě systému Windows<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Server, na který přecházíte (<ph name="ORIGIN" />), nastavil záhlaví, které vyžaduje, aby se na všechny na něj odesílané požadavky vztahovaly zásady ohledně původu. Záhlaví má ale nesprávný tvar. Prohlížeč proto váš požadavek na web <ph name="SITE" /> nemůže splnit. Zásady ohledně původu mohou použít provozovatelé webů ke konfiguraci bezpečnostních a dalších vlastností webu.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="1787142507584202372">Zde se zobrazí otevřené karty</translation>
@@ -228,6 +229,7 @@
 <translation id="1898423065542865115">Filtrování</translation>
 <translation id="1901443836186977402">{1,plural, =1{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu včera vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}few{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}many{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dne. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}other{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}}</translation>
 <translation id="1902576642799138955">Doba platnosti</translation>
+<translation id="191374271204266022">Kopírovat jako JSON</translation>
 <translation id="1914326953223720820">Služba rozbalování souborů ZIP</translation>
 <translation id="1915697529809968049">Použít Touch ID namísto CVC?</translation>
 <translation id="1916770123977586577">Chcete-li pro tento web použít aktualizovaná nastavení, načtěte tuto stránku znovu</translation>
@@ -699,6 +701,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
     Pokud se domníváte, že se tato zpráva zobrazila v důsledku chyby, navštivte web https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Méně než 1 MB</translation>
 <translation id="3990250421422698716">Běžící odsazení</translation>
+<translation id="3996311196211510766">Web <ph name="ORIGIN" /> požádal, aby se na všechny na něj odesílané požadavky vztahovaly zásady ohledně původu, ale tyto zásady momentálně nelze použít.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webová stránka v okolí}few{# webové stránky v okolí}many{# webové stránky v okolí}other{# webových stránek v okolí}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF obsahující {COUNT} stránku}few{Dokument PDF obsahující {COUNT} stránky}many{Dokument PDF obsahující {COUNT} stránky}other{Dokument PDF obsahující {COUNT} stránek}}</translation>
 <translation id="4030383055268325496">&amp;Vrátit přidání zpět</translation>
@@ -743,6 +746,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4194250254487269611">Kartu v tuto chvíli nelze uložit</translation>
 <translation id="4196861286325780578">&amp;Opakovat přesunutí</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Zkontrolovat konfiguraci firewallu a antivirového softwaru<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Server, na který přecházíte (<ph name="ORIGIN" />), požádal, aby se na všechny na něj odesílané požadavky vztahovaly zásady ohledně původu. Nyní však zásady nedodal, a prohlížeč proto váš požadavek na web <ph name="SITE" /> nemůže splnit. Zásady ohledně původu mohou použít provozovatelé webů ke konfiguraci bezpečnostních a dalších vlastností webu.</translation>
 <translation id="421066178035138955">Používat zařízení a data pro virtuální realitu</translation>
 <translation id="4214357935346142455">profil přihlašovací obrazovky</translation>
 <translation id="4215751373031079683">7x9 (obálka)</translation>
@@ -1232,6 +1236,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6259156558325130047">&amp;Opakovat změnu uspořádání</translation>
 <translation id="6263376278284652872">Záložky webu <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Zpět na bezpečnější stránku</translation>
+<translation id="6265794661083428563">Zkopírovat hodnotu zásady <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Světle modrozelená</translation>
 <translation id="6272383483618007430">Aktualizace Google</translation>
 <translation id="6276112860590028508">Zde naleznete stránky ze seznamu četby</translation>

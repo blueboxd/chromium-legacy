@@ -73,6 +73,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void MaybeShutdownGpuProcess() = 0;
 #if defined(OS_WIN)
     virtual void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) = 0;
+    virtual void DidUpdateHDRStatus(bool hdr_enabled) = 0;
 #endif
     virtual void BlockDomainFrom3DAPIs(const GURL& url,
                                        gpu::DomainGuilt guilt) = 0;
@@ -231,6 +232,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   void DisableGpuCompositing() override;
 #if defined(OS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
+  void DidUpdateHDRStatus(bool hdr_enabled) override;
   void SetChildSurface(gpu::SurfaceHandle parent,
                        gpu::SurfaceHandle child) override;
 #endif

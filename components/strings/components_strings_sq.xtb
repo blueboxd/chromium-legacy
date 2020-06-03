@@ -205,6 +205,10 @@
 <translation id="1753706481035618306">Numri i faqes</translation>
 <translation id="1763864636252898013">Ky server nuk mundi të dëshmonte se ky është <ph name="DOMAIN" />; certifikata e tij e sigurisë nuk është e besueshme nga Chromium. Kjo mund të shkaktohet nga keqkonfigurimi ose ndonjë sulmues që po kap lidhjen tënde.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Provo të ekzekutosh diagnostikimin e rrjetit të Windows<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Serveri ku po shkon, <ph name="ORIGIN" />, ka vendosur një titull
+    që kërkon që të aplikohet një politikë origjine për të gjitha kërkesat për të. Por
+    titulli është formuar gabimisht, gjë që e parandalon përmbushjen e
+    kërkesës sate për <ph name="SITE" />. Politikat e origjinës mund të përdoren nga operatorët e sajtit për të konfiguruar karakteristikat e sigurisë dhe karakteristika të tjera për një sajt.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Përditëso frazën e kalimit të sinkronizimit.</translation>
 <translation id="1787142507584202372">Skedat e tua të hapura shfaqen këtu</translation>
@@ -228,6 +232,7 @@
 <translation id="1898423065542865115">Filtrimi</translation>
 <translation id="1901443836186977402">{1,plural, =1{Ky server nuk mund të vërtetonte se është <ph name="DOMAIN" />; certifikata e tij e sigurisë ka skaduar një ditë më parë. Kjo mund të jetë shkaktuar nga një konfigurim i gabuar ose nga ndërhyrja e një sulmuesi në lidhjen tënde. Ora e kompjuterit tënd është caktuar aktualisht në <ph name="CURRENT_DATE" />. A është e saktë kjo? Nëse jo, duhet të korrigjosh orën e sistemit tënd dhe më pas ta rifreskosh këtë faqe.}other{Ky server nuk mund të vërtetonte se është <ph name="DOMAIN" />; certifikata e tij e sigurisë ka skaduar # ditë më parë. Kjo mund të jetë shkaktuar nga një konfigurim i gabuar ose nga ndërhyrja e një sulmuesi në lidhjen tënde. Ora e kompjuterit tënd është caktuar aktualisht në <ph name="CURRENT_DATE" />. A është e saktë kjo? Nëse jo, duhet të korrigjosh orën e sistemit tënd dhe më pas ta rifreskosh këtë faqe.}}</translation>
 <translation id="1902576642799138955">Periudha e vlefshmërisë</translation>
+<translation id="191374271204266022">Kopjo si JSON</translation>
 <translation id="1914326953223720820">Shërbimi i shpaketimit</translation>
 <translation id="1915697529809968049">Të përdoret Touch ID në vend të CVC?</translation>
 <translation id="1916770123977586577">Për të aplikuar cilësimet e përparuara në këtë sajt, ringarkoje këtë faqe</translation>
@@ -703,6 +708,8 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
     Nëse beson se kjo është shfaqur gabimisht, vizito https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Më pak se 1 MB</translation>
 <translation id="3990250421422698716">Zhvendosja e bordurës</translation>
+<translation id="3996311196211510766">Sajti <ph name="ORIGIN" /> ka kërkuar që të zbatohet një politikë e origjinës
+    për të gjitha kërkesat e tij, por kjo politikë nuk mund të zbatohet aktualisht.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 faqe uebi në afërsi}other{# faqe uebi në afërsi}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokumenti PDF me {COUNT} faqe}other{Dokumenti PDF me {COUNT} faqe}}</translation>
 <translation id="4030383055268325496">&amp;Zhbëje shtimin</translation>
@@ -747,6 +754,9 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4194250254487269611">Karta jote nuk mund të ruhet për momentin</translation>
 <translation id="4196861286325780578">&amp;Bëje përsëri zhvendosjen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Të kontrollosh konfigurimet e murit mbrojtës dhe antivirusit<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Serveri ku po shkon, <ph name="ORIGIN" />, ka kërkuar që të zbatohet një politikë e origjinës për të gjitha kërkesat për të. Por tani nuk ka arritur
+    të dorëzojë një politikë, gjë që parandalon që shfletuesi të përmbushë kërkesën tënde për <ph name="SITE" />. Politikat e origjinës mund të përdoren nga operatorët
+    e sajtit për të konfiguruar karakteristikat e sigurisë dhe karakteristika të tjera për një sajt.</translation>
 <translation id="421066178035138955">Përdor pajisjet dhe të dhënat e "Realitetit virtual"</translation>
 <translation id="4214357935346142455">profili i ekranit të identifikimit</translation>
 <translation id="4215751373031079683">7x9 (Zarf)</translation>
@@ -1236,6 +1246,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6259156558325130047">&amp;Ribëj riporosinë</translation>
 <translation id="6263376278284652872">Faqeshënuesit e <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Kthehu aty ku je i sigurt</translation>
+<translation id="6265794661083428563">Kopjo vlerën e politikës së <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Gurkali e çelur</translation>
 <translation id="6272383483618007430">Përditësimi i Google</translation>
 <translation id="6276112860590028508">Faqet nga lista jote e leximit shfaqen këtu</translation>

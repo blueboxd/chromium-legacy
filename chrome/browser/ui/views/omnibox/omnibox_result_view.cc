@@ -440,8 +440,16 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Pass false for |is_tab_switch_button_focused|, because the button will
   // receive its own label in the case that a screen reader is listening to
   // selection events on items rather than announcements or value change events.
-  node_data->SetName(
-      AutocompleteMatchType::ToAccessibilityLabel(match_, match_.contents));
+
+  // TODO(tommycli): We re-fetch the original match from the popup model,
+  // because |match_| already has its contents and description swapped by this
+  // class, and we don't want that for the bubble. We should improve this.
+  if (model_index_ < popup_contents_view_->model()->result().size()) {
+    AutocompleteMatch raw_match =
+        popup_contents_view_->model()->result().match_at(model_index_);
+    node_data->SetName(AutocompleteMatchType::ToAccessibilityLabel(
+        raw_match, raw_match.contents));
+  }
 
   node_data->role = ax::mojom::Role::kListBoxOption;
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,

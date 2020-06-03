@@ -530,7 +530,7 @@ void OutputController::StopCloseAndClearStream() {
     stream_->Close();
     stats_tracker_.reset();
 
-    stream_ = NULL;
+    stream_ = nullptr;
   }
 
   state_ = kEmpty;

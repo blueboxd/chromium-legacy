@@ -45,24 +45,21 @@ using testing::NotNull;
 using testing::StrEq;
 
 MATCHER_P(EqualsJSON, json, "equals JSON") {
-  std::unique_ptr<base::Value> expected =
-      base::JSONReader::ReadDeprecated(json);
+  base::Optional<base::Value> expected = base::JSONReader::Read(json);
   if (!expected) {
     *result_listener << "INTERNAL ERROR: couldn't parse expected JSON";
     return false;
   }
 
-  std::string err_msg;
-  int err_line, err_col;
-  std::unique_ptr<base::Value> actual =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          arg, base::JSON_PARSE_RFC, nullptr, &err_msg, &err_line, &err_col);
-  if (!actual) {
-    *result_listener << "input:" << err_line << ":" << err_col << ": "
-                     << "parse error: " << err_msg;
+  base::JSONReader::ValueWithError actual =
+      base::JSONReader::ReadAndReturnValueWithError(arg);
+  if (!actual.value) {
+    *result_listener << "input:" << actual.error_line << ":"
+                     << actual.error_column << ": "
+                     << "parse error: " << actual.error_message;
     return false;
   }
-  return *expected == *actual;
+  return *expected == *actual.value;
 }
 
 }  // namespace

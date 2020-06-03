@@ -10,6 +10,7 @@ export {ColorMode, createDestinationKey, Destination, DestinationCertificateStat
 export {PrinterType} from './data/destination_match.js';
 // <if expr="chromeos">
 export {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from './data/destination_policies.js';
+export {PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from './data/printer_status_cros.js';
 // </if>
 export {DestinationErrorType, DestinationStore} from './data/destination_store.js';
 export {PageLayoutInfo} from './data/document_info.js';

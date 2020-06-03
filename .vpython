@@ -113,6 +113,13 @@ wheel: <
 >
 
 # Used by:
+#   chrome/test/data/android/upload_download_utils_test.py
+wheel: <
+  name: "infra/python/wheels/pyfakefs-py2_py3"
+  version: "version:3.7.2"
+>
+
+# Used by:
 #   tools/perf/fetch_benchmark_deps.py
 wheel: <
   name: "infra/python/wheels/google_compute_engine-py2_py3"

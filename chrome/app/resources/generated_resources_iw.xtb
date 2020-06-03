@@ -342,7 +342,7 @@
 <translation id="1431188203598586230">עדכון התוכנה האחרון</translation>
 <translation id="1431432486300429272">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google. לך ולהורים יש אפשרות לשנות זאת מתי שתרצו בכתובת myaccount.google.com/activitycontrols/search</translation>
 <translation id="1432581352905426595">נהל מנועי חיפוש</translation>
-<translation id="1433811987160647649">שאל לפני גישה</translation>
+<translation id="1433811987160647649">שאלה לפני גישה</translation>
 <translation id="1434696352799406980">‏פעולה זו תאפס את דף הפתיחה, את דף הכרטיסייה החדשה, את מנוע החיפוש ואת הכרטיסיות המוצמדות שלך. היא גם תשבית את כל התוספים ותמחק נתונים זמניים כגון קובצי Cookie. הסימניות, ההיסטוריה והסיסמאות השמורות לא יימחקו.</translation>
 <translation id="1434886155212424586">דף הבית הוא הדף 'כרטיסייה חדשה'</translation>
 <translation id="1436390408194692385">תקף במשך <ph name="TICKET_TIME_LEFT" /></translation>
@@ -2539,6 +2539,7 @@
 <translation id="4154664944169082762">טביעות אצבע</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">זהו חשבון לילדים המנוהל על-ידי <ph name="CUSTODIAN_EMAIL" /> ועל-ידי <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">סגול</translation>
 <translation id="4163560723127662357">מקלדת לא ידועה</translation>
 <translation id="4168015872538332605">חלק מההגדרות השייכות ל-<ph name="PRIMARY_EMAIL" /> משותפות איתך. ההגדרות האלה משפיעות על החשבון שלך רק בעת שימוש בכניסה עם מספר חשבונות.</translation>
 <translation id="4170314459383239649">מחיקה ביציאה</translation>

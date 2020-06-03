@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">A jelenlegi ablak bezárása</translation>
 <translation id="3407560819924487926">Feladatkezelő megnyitása</translation>
 <translation id="3422679037938588196">Ugrás az előző keresési találatra</translation>
-<translation id="344577624355799426"><ph name="ALT" /> vagy <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Az aktuális ablakban megnyitott összes oldal elmentése könyvjelzőként új mappába</translation>
 <translation id="355103131818127604">Link megnyitása új lapon a háttérben</translation>
 <translation id="3622741593887335780">Nagyítás (dokkolt állapotban VAGY ha engedélyezve van a teljes képernyős nagyító)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">A könyvjelzősáv kiemelése, illetve fókuszálás rá (ha megjelenik)</translation>
 <translation id="7237562915163138771">Gépelje be a címsávba az internetcímet, majd nyomja le az <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> billentyűkombinációt</translation>
 <translation id="7254764037241667478">Eszköz alvó üzemmódba helyezése (felfüggesztés)</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> vagy <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">Váltás a következő rendelkezésre álló beviteli módszerre</translation>
 <translation id="743754632698445141">Az adott alkalmazás rögzítésének megszüntetése</translation>
 <translation id="7439718573248533901">Következő betű törlése (előre törlés)</translation>

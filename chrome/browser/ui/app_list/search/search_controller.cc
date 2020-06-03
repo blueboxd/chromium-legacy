@@ -5,13 +5,11 @@
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 
 #include <algorithm>
-#include <memory>
-#include <utility>
-#include <vector>
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -144,9 +142,17 @@ size_t SearchController::AddGroup(size_t max_results,
 void SearchController::AddProvider(size_t group_id,
                                    std::unique_ptr<SearchProvider> provider) {
   provider->set_result_changed_callback(
-      base::Bind(&SearchController::OnResultsChanged, base::Unretained(this)));
+      base::Bind(&SearchController::OnResultsChangedWithType,
+                 base::Unretained(this), provider->ResultType()));
   mixer_->AddProviderToGroup(group_id, provider.get());
   providers_.emplace_back(std::move(provider));
+}
+
+void SearchController::OnResultsChangedWithType(
+    ash::AppListSearchResultType result_type) {
+  OnResultsChanged();
+  if (results_changed_callback_)
+    results_changed_callback_.Run(result_type);
 }
 
 void SearchController::OnResultsChanged() {

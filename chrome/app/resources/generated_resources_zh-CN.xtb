@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">密码已过期</translation>
 <translation id="1630768113285622200">重启并继续</translation>
 <translation id="1630873818549593964">您孩子的 Google 课堂数据会受到妥善保护。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">您的 Google 帐号中存储的密码</translation>
 <translation id="1632803087685957583">可让您调整键盘重复输入速率、字词预测功能等</translation>
 <translation id="1633947793238301227">停用 Google 助理</translation>
 <translation id="1634783886312010422">您是否已在 <ph name="WEBSITE" /> 上更改了此密码？</translation>
@@ -1575,6 +1576,7 @@
 <translation id="296026337010986570">大功告成！已移除有害软件。要想重新开启扩展程序，请前往&lt;a href="chrome://extensions"&gt;扩展程序&lt;/a&gt;页面。</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" />（已提供扩展功能）</translation>
 <translation id="2961695502793809356">点击可前进，按住可查看历史记录</translation>
+<translation id="2962131322798295505">壁纸选择器</translation>
 <translation id="2963151496262057773">以下插件没有响应：<ph name="PLUGIN_NAME" />。是否要停止使用该插件？</translation>
 <translation id="2964193600955408481">停用 Wi-Fi</translation>
 <translation id="2966937470348689686">管理 Android 偏好设置</translation>
@@ -2534,6 +2536,7 @@
 <translation id="4154664944169082762">指纹</translation>
 <translation id="4157869833395312646">Microsoft 服务器网关加密</translation>
 <translation id="4159681666905192102">此帐号是由 <ph name="CUSTODIAN_EMAIL" /> 和 <ph name="SECOND_CUSTODIAN_EMAIL" /> 管理的未成年人帐号。</translation>
+<translation id="4159784952369912983">紫色</translation>
 <translation id="4163560723127662357">未知键盘</translation>
 <translation id="4168015872538332605">属于<ph name="PRIMARY_EMAIL" />的部分设置现在也会用于您的帐号。仅当您使用多帐号登录时，这些设置才会影响您的帐号。</translation>
 <translation id="4170314459383239649">退出时清除</translation>
@@ -2877,6 +2880,7 @@
 <translation id="4645676300727003670">保留(&amp;K)</translation>
 <translation id="4646675363240786305">端口</translation>
 <translation id="4647090755847581616">关闭标签页(&amp;C)</translation>
+<translation id="4647420311443994946">{0,select, tablet{当您登录平板电脑后启动应用}computer{当您登录计算机后启动应用}other{当您登录设备后启动应用}}</translation>
 <translation id="4647697156028544508">请输入“<ph name="DEVICE_NAME" />”的 PIN：</translation>
 <translation id="4648491805942548247">权限不足</translation>
 <translation id="4648499713050786492">在添加用户前，请先解锁您的个人资料。</translation>
@@ -2889,6 +2893,7 @@
 <translation id="4660540330091848931">正在调整大小</translation>
 <translation id="4660838440047236328">您房间的布局</translation>
 <translation id="4661407454952063730">应用数据可以是应用根据开发者设置而保存的任何数据，包括通讯录、邮件/消息、照片等数据。</translation>
+<translation id="4662373422909645029">昵称不能包含数字</translation>
 <translation id="4662788913887017617">将此书签共享给您的 iPhone</translation>
 <translation id="4663373278480897665">已允许使用摄像头</translation>
 <translation id="4664482161435122549">PKCS #12 导出错误</translation>
@@ -3583,6 +3588,7 @@
 <translation id="5585912436068747822">格式化失败</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">正在加载应用…</translation>
+<translation id="558984423786125616">设置中已有该端口</translation>
 <translation id="5592595402373377407">尚无足够的数据。</translation>
 <translation id="5593357315997824387">同步我的文件</translation>
 <translation id="5595485650161345191">修改地址</translation>
@@ -3626,6 +3632,7 @@
 <translation id="5639549361331209298">重新加载此网页，按下可查看更多选项</translation>
 <translation id="5640133431808313291">管理安全密钥</translation>
 <translation id="5642508497713047">CRL 签名人</translation>
+<translation id="5643321261065707929">按流量计费的网络</translation>
 <translation id="5643620609347735571">清除并继续</translation>
 <translation id="5644857731242502394">配置已连接的设备</translation>
 <translation id="5646376287012673985">位置信息</translation>
@@ -5535,6 +5542,7 @@
     <ph name="BEGIN_PARAGRAPH5" />您可在“设置”部分中关闭此服务。<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">两次输入的 PIN 码不一致</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> 使用的是由某款扩展程序指定的代理设置</translation>
+<translation id="8097959162767603171">您的管理员必须先接受管理控制台 Chrome 设备列表中的服务条款。</translation>
 <translation id="8101987792947961127">必须在下次重启时执行 Powerwash</translation>
 <translation id="8102159139658438129">转到<ph name="LINK_BEGIN" />设置<ph name="LINK_END" />即可查看与所连手机相关的选项</translation>
 <translation id="8104696615244072556">对您的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 设备执行 Powerwash 操作，使其还原到之前的版本。</translation>

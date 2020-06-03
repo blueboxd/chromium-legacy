@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Contraseña caducada</translation>
 <translation id="1630768113285622200">Reiniciar y continuar</translation>
 <translation id="1630873818549593964">Los datos de tu hijo en Classroom estarán protegidos. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">La contraseña está almacenada en tu cuenta de Google</translation>
 <translation id="1632803087685957583">Te permite configurar la frecuencia de repetición del teclado, la predicción de palabras y otros ajustes</translation>
 <translation id="1633947793238301227">Inhabilitar Asistente de Google</translation>
 <translation id="1634783886312010422">¿Has cambiado esta contraseña en <ph name="WEBSITE" />?</translation>
@@ -1579,6 +1580,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="296026337010986570">Se ha eliminado el software dañino. Para volver a activar las extensiones, ve a &lt;a href="chrome://extensions"&gt;Extensiones&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensión proporcionada)</translation>
 <translation id="2961695502793809356">Haz clic para avanzar una página o pulsa unos segundos para ver el historial</translation>
+<translation id="2962131322798295505">Selector de fondo de pantalla</translation>
 <translation id="2963151496262057773">El complemento <ph name="PLUGIN_NAME" /> no responde. ¿Quieres detenerlo?</translation>
 <translation id="2964193600955408481">Inhabilitar Wi-Fi</translation>
 <translation id="2966937470348689686">Gestionar las preferencias de Android</translation>
@@ -2538,6 +2540,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4154664944169082762">Huellas digitales</translation>
 <translation id="4157869833395312646">Criptografía activada por servidor de Microsoft</translation>
 <translation id="4159681666905192102">Esta es una cuenta infantil administrada por <ph name="CUSTODIAN_EMAIL" /> y <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Morado</translation>
 <translation id="4163560723127662357">Teclado desconocido</translation>
 <translation id="4168015872538332605">Algunas opciones que pertenecen a <ph name="PRIMARY_EMAIL" /> se están compartiendo contigo. Estas opciones solo se aplican a tu cuenta cuando utilizas el inicio de sesión múltiple.</translation>
 <translation id="4170314459383239649">Borrar al salir</translation>
@@ -2881,6 +2884,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4645676300727003670">&amp;Guardar</translation>
 <translation id="4646675363240786305">Puertos</translation>
 <translation id="4647090755847581616">&amp;Cerrar pestaña</translation>
+<translation id="4647420311443994946">{0,select, tablet{Abrir aplicación al iniciar sesión en tu tablet}computer{Abrir aplicación al iniciar sesión en tu ordenador}other{Abrir aplicación al iniciar sesión en tu dispositivo}}</translation>
 <translation id="4647697156028544508">Introduce el PIN de "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisos insuficientes</translation>
 <translation id="4648499713050786492">Desbloquea tu perfil antes de añadir a un usuario.</translation>
@@ -2893,6 +2897,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4660540330091848931">Cambiando tamaño</translation>
 <translation id="4660838440047236328">la distribución de tu habitación</translation>
 <translation id="4661407454952063730">Los datos de aplicaciones abarcan cualquier tipo de información que guarden las aplicaciones (en función de la configuración de los desarrolladores), incluidos datos como contactos, mensajes y fotos.</translation>
+<translation id="4662373422909645029">El apodo no puede incluir números</translation>
 <translation id="4662788913887017617">Compartir este marcador con tu iPhone</translation>
 <translation id="4663373278480897665">Cámara permitida</translation>
 <translation id="4664482161435122549">Error de exportación de archivos PKCS #12</translation>
@@ -3587,6 +3592,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5585912436068747822">Error de formato</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Cargando aplicaciones...</translation>
+<translation id="558984423786125616">El puerto ya existe en los ajustes</translation>
 <translation id="5592595402373377407">Todavía no hay suficientes datos disponibles.</translation>
 <translation id="5593357315997824387">Sincronizar mis archivos</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
@@ -3630,6 +3636,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5639549361331209298">Vuelve a cargar esta página y espera para ver más opciones</translation>
 <translation id="5640133431808313291">Gestionar llaves de seguridad</translation>
 <translation id="5642508497713047">Firmante de la lista de revocación de certificados</translation>
+<translation id="5643321261065707929">Red de uso medido</translation>
 <translation id="5643620609347735571">Borrar y continuar</translation>
 <translation id="5644857731242502394">Configuración de dispositivos conectados</translation>
 <translation id="5646376287012673985">Ubicación</translation>
@@ -5539,6 +5546,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
     <ph name="BEGIN_PARAGRAPH5" />Puedes desactivar este servicio en Ajustes.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Los PIN no coinciden</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> está usando los ajustes de proxy de una extensión</translation>
+<translation id="8097959162767603171">Tu administrador primero debe aceptar los términos del servicio en la lista de dispositivos de Chrome en la consola de administración.</translation>
 <translation id="8101987792947961127">Se requiere Powerwash en el siguiente reinicio</translation>
 <translation id="8102159139658438129">Ve a <ph name="LINK_BEGIN" />Configuración<ph name="LINK_END" /> para ver las opciones del teléfono conectado</translation>
 <translation id="8104696615244072556">Haz un Powerwash del dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> y vuelve a la versión anterior.</translation>

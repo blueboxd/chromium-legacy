@@ -120,7 +120,7 @@ const LayoutBlockFlow* NGInlineCursor::GetLayoutBlockFlow() const {
     return layout_object->RootInlineFormattingContext();
   }
   if (IsItemCursor()) {
-    const NGFragmentItem& item = *fragment_items_->Items().front();
+    const NGFragmentItem& item = fragment_items_->front();
     const LayoutObject* layout_object = item.GetLayoutObject();
     if (item.Type() == NGFragmentItem::kLine)
       return To<LayoutBlockFlow>(layout_object);
@@ -916,7 +916,7 @@ NGInlineCursor::ItemsSpan::iterator NGInlineCursor::SlowFirstItemIteratorFor(
     const LayoutObject& layout_object,
     const ItemsSpan& items) {
   for (ItemsSpan::iterator iter = items.begin(); iter != items.end(); ++iter) {
-    if ((*iter)->GetLayoutObject() == &layout_object)
+    if (iter->GetLayoutObject() == &layout_object)
       return iter;
   }
   return items.end();
@@ -995,7 +995,7 @@ bool NGInlineCursor::IsAtFirst() const {
   if (const NGPaintFragment* paint_fragment = Current().PaintFragment())
     return paint_fragment == root_paint_fragment_->FirstChild();
   if (const NGFragmentItem* item = Current().Item())
-    return item == items_.front().get();
+    return item == &items_.front();
   return false;
 }
 
@@ -1025,7 +1025,7 @@ void NGInlineCursor::MoveToFirstLine() {
   if (IsItemCursor()) {
     auto iter = std::find_if(
         items_.begin(), items_.end(),
-        [](const auto& item) { return item->Type() == NGFragmentItem::kLine; });
+        [](const auto& item) { return item.Type() == NGFragmentItem::kLine; });
     if (iter != items_.end()) {
       MoveToItem(iter);
       return;
@@ -1061,7 +1061,7 @@ void NGInlineCursor::MoveToLastLine() {
   DCHECK(IsItemCursor());
   auto iter = std::find_if(
       items_.rbegin(), items_.rend(),
-      [](const auto& item) { return item->Type() == NGFragmentItem::kLine; });
+      [](const auto& item) { return item.Type() == NGFragmentItem::kLine; });
   if (iter != items_.rend())
     MoveToItem(std::next(iter).base());
   else
@@ -1229,7 +1229,7 @@ void NGInlineCursor::MoveToNextItem() {
     return;
   DCHECK(current_.item_iter_ != items_.end());
   if (++current_.item_iter_ != items_.end()) {
-    current_.item_ = current_.item_iter_->get();
+    current_.item_ = &*current_.item_iter_;
     return;
   }
   MakeNull();
@@ -1253,7 +1253,7 @@ void NGInlineCursor::MoveToPreviousItem() {
   if (current_.item_iter_ == items_.begin())
     return MakeNull();
   --current_.item_iter_;
-  current_.item_ = current_.item_iter_->get();
+  current_.item_ = &*current_.item_iter_;
 }
 
 void NGInlineCursor::MoveToParentPaintFragment() {
@@ -1380,7 +1380,7 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   if (UNLIKELY(!fragment_items_->Equals(items_))) {
     const wtf_size_t span_begin_item_index = SpanBeginItemIndex();
     while (UNLIKELY(item_index < span_begin_item_index)) {
-      const NGFragmentItem& item = *fragment_items_->Items()[item_index];
+      const NGFragmentItem& item = fragment_items_->Items()[item_index];
       const wtf_size_t next_delta = item.DeltaToNextForSameLayoutObject();
       if (!next_delta) {
         MakeNull();
@@ -1475,10 +1475,8 @@ NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
          sibling.MoveToNextSkippingChildren())
       sibling_item_iterators_.push_back(sibling.Current().item_iter_);
     current_index_ = sibling_item_iterators_.size();
-    if (current_index_) {
-      current_.item_iter_ = sibling_item_iterators_[--current_index_];
-      current_.item_ = current_.item_iter_->get();
-    }
+    if (current_index_)
+      current_.Set(sibling_item_iterators_[--current_index_]);
     return;
   }
   DCHECK(!cursor);
@@ -1503,8 +1501,7 @@ void NGInlineBackwardCursor::MoveToPreviousSibling() {
       return;
     }
     if (current_.item_) {
-      current_.item_iter_ = sibling_item_iterators_[--current_index_];
-      current_.item_ = current_.item_iter_->get();
+      current_.Set(sibling_item_iterators_[--current_index_]);
       return;
     }
     NOTREACHED();

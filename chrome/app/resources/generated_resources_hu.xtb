@@ -2130,6 +2130,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3677106374019847299">Egyéni szolgáltató megadása</translation>
 <translation id="3677657024345889897">Leghalkabb</translation>
 <translation id="3677911431265050325">Mobilwebhely kérése</translation>
+<translation id="3677959414150797585">Alkalmazásokat, weboldalakat és egyéb tartalmakat is beleértve. Csak akkor küld statisztikákat a javaslatok javítása érdekében, ha a használati adatok megosztása lehetőséget választotta.</translation>
 <translation id="3678156199662914018">Bővítmény: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Szövegfelolvasó hangja</translation>
 <translation id="3681311097828166361">Köszönjük visszajelzését. Most nincs internetkapcsolata, ezért a jelentést később küldi el a böngésző.</translation>
@@ -2540,6 +2541,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4154664944169082762">Ujjlenyomatok</translation>
 <translation id="4157869833395312646">Microsoft - szerver által kezdeményezett erős titkosítás (SGC)</translation>
 <translation id="4159681666905192102">Ez a fiók gyerekeknek készült; <ph name="CUSTODIAN_EMAIL" /> és <ph name="SECOND_CUSTODIAN_EMAIL" /> felügyelete mellett.</translation>
+<translation id="4159784952369912983">Lila</translation>
 <translation id="4163560723127662357">Ismeretlen billentyűzet</translation>
 <translation id="4168015872538332605">A(z) <ph name="PRIMARY_EMAIL" /> fiókhoz tartozó egyes beállítások meg vannak osztva Önnel. E beállítások csak a többfiókos bejelentkezés használata során érintik az Ön fiókját.</translation>
 <translation id="4170314459383239649">Törlés kilépéskor</translation>
@@ -3782,6 +3784,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – A kamera vagy a mikrofon felvételt készít</translation>
 <translation id="5841270259333717135">Ethernet konfigurálása</translation>
 <translation id="5842497610951477805">Bluetooth bekapcsolása</translation>
+<translation id="5844574845205796324">Javasoljon új felfedeznivaló tartalmakat</translation>
 <translation id="5846200638699387931">Relációs szintaktikai hiba: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Alkalmazások és frissítések telepítése. Ha továbblép, azzal elfogadja, hogy az eszköz automatikusan letölthet és telepíthet frissítéseket és alkalmazásokat a Google-tól, az Ön szolgáltatójától és az eszköz gyártójától, akár mobiladat-kapcsolaton keresztül is. Egyes alkalmazások alkalmazáson belüli vásárlásokat kínálhatnak.</translation>
 <translation id="5849212445710944278">Már hozzáadva</translation>
@@ -4471,7 +4474,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6742339027238151589">Szkript számára elérhető</translation>
 <translation id="6745592621698551453">Frissítés most</translation>
 <translation id="6746124502594467657">Mozgatás lefelé</translation>
-<translation id="674632704103926902">Érintéssel húzás engedélyezése</translation>
+<translation id="674632704103926902">Koppintással húzás engedélyezése</translation>
 <translation id="6748217015615267851">Megjelenítő: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Továbbléphet, de csak szinkronizált adatait és beállításait állítjuk helyre. Összes helyi adata elvész.</translation>
 <translation id="6749006854028927059">A webhelyek nem használhatnak cookie-kat az Ön böngészési tevékenységeinek megismeréséhez a különböző webhelyeken például arra, hogy a hirdetéseket személyre szabják. Előfordulhat, hogy bizonyos webhelyek funkciói nem működnek majd megfelelően.</translation>

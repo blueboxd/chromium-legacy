@@ -695,6 +695,7 @@ blink_core_tests("unit_tests") {
     "parser/html_tokenizer_test.cc",
     "parser/html_tree_builder_simulator_test.cc",
     "parser/html_view_source_parser_test.cc",
+    "parser/text_resource_decoder_builder_test.cc",
     "parser/text_resource_decoder_test.cc",
     "portal/html_portal_element_test.cc",
     "shadow/progress_shadow_element_test.cc",

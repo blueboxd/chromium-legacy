@@ -205,6 +205,7 @@
 <translation id="1753706481035618306">페이지 번호</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램을 실행<ph name="END_LINK" />해 보세요.</translation>
+<translation id="1772163372082567643">대상 서버인 <ph name="ORIGIN" />에서 헤더를 설정하여 서버로 전송되는 모든 요청에 출처 정책을 적용하도록 요청했습니다. 하지만 헤더의 형식이 잘못되어 브라우저에서 <ph name="SITE" />에 관한 요청을 처리할 수 없습니다. 사이트 운영자는 출처 정책을 사용해 사이트의 보안 및 기타 속성을 구성할 수 있습니다.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">동기화 암호를 업데이트하세요.</translation>
 <translation id="1787142507584202372">열린 탭이 여기에 표시됩니다.</translation>
@@ -228,6 +229,7 @@
 <translation id="1898423065542865115">필터링</translation>
 <translation id="1901443836186977402">{1,plural, =1{서버의 보안 인증서가 마지막 날 만료되어 서버가 <ph name="DOMAIN" />임을 입증할 수 없습니다. 설정이 잘못되었거나 공격자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시간이 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시간을 수정하고 이 페이지를 새로고침하세요.}other{서버의 보안 인증서가 #일 전에 만료되어 서버가 <ph name="DOMAIN" />임을 입증할 수 없습니다. 설정이 잘못되었거나 공격자가 연결을 가로채고 있기 때문일 수 있습니다. 현재 컴퓨터의 시간이 <ph name="CURRENT_DATE" />로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시간을 수정하고 이 페이지를 새로고침하세요.}}</translation>
 <translation id="1902576642799138955">유효성 기간</translation>
+<translation id="191374271204266022">JSON으로 복사</translation>
 <translation id="1914326953223720820">압축 해제 서비스</translation>
 <translation id="1915697529809968049">CVC 대신 Touch ID를 사용하시겠습니까?</translation>
 <translation id="1916770123977586577">이 사이트에 업데이트된 설정을 적용하려면 이 페이지를 다시 로드하세요.</translation>
@@ -703,6 +705,7 @@
     이 메시지가 실수로 표시되었다고 생각된다면 다음 페이지를 방문해 주시기 바랍니다. https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">1MB 미만</translation>
 <translation id="3990250421422698716">조그 오프셋</translation>
+<translation id="3996311196211510766">사이트 <ph name="ORIGIN" />이(가) 모든 요청에 출처 정책을 적용하도록 요청했으나 이 정책은 현재 적용할 수 없습니다.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{주변 웹페이지 1개}other{주변 웹페이지 #개}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT}페이지로 이루어진 PDF 문서}other{{COUNT}페이지로 이루어진 PDF 문서}}</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>
@@ -747,6 +750,7 @@
 <translation id="4194250254487269611">지금은 카드를 저장할 수 없습니다.</translation>
 <translation id="4196861286325780578">이동 다시 실행(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />방화벽 및 바이러스 백신 소프트웨어 설정 확인<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">대상 서버인 <ph name="ORIGIN" />에서 서버로 전송되는 모든 요청에 출처 정책을 적용하도록 요청했습니다. 하지만 현재 정책을 전달하는 데 실패하여 브라우저에서 <ph name="SITE" />에 관한 요청을 처리할 수 없습니다. 사이트 운영자는 출처 정책을 사용해 사이트의 보안 및 기타 속성을 구성할 수 있습니다.</translation>
 <translation id="421066178035138955">가상 현실 기기 및 데이터 사용</translation>
 <translation id="4214357935346142455">로그인 화면 프로필</translation>
 <translation id="4215751373031079683">7x9(봉투)</translation>
@@ -1237,6 +1241,7 @@
 <translation id="6259156558325130047">재정렬 다시 실행(&amp;R)</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="6264485186158353794">안전한 페이지로 돌아가기</translation>
+<translation id="6265794661083428563"><ph name="POLICY_NAME" /> 정책값 복사하기</translation>
 <translation id="6266934640124581640">연한 청록색</translation>
 <translation id="6272383483618007430">Google 업데이트</translation>
 <translation id="6276112860590028508">읽기 목록의 페이지가 여기에 표시됩니다.</translation>

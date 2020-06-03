@@ -417,9 +417,8 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTest, InstalledAppsAreImplicitDefaults) {
 
 // If the media app is enabled, it will be preferred over a chrome app with a
 // specific extension, unless that app is set default via prefs.
-// Flaky: http://crbug.com/1090432
 IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
-                       DISABLED_MediaAppPreferredOverChromeApps) {
+                       MediaAppPreferredOverChromeApps) {
   Profile* profile = browser()->profile();
   auto extension = InstallTiffHandlerChromeApp(profile);
   TestExpectationsAgainstDefaultTasks({{"tiff", kMediaAppId}});

@@ -338,6 +338,7 @@
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
+<translation id="5352285283572729470">這是受管理的設定</translation>
 <translation id="5388358297987318779">開啟圖片</translation>
 <translation id="5407969256130905701">捨棄變更</translation>
 <translation id="5409365236829784218">未安裝可開啟這個檔案的應用程式。</translation>
@@ -375,6 +376,7 @@
 <translation id="5869029295770560994">好，我知道了</translation>
 <translation id="5871497086027727873">已移動 1 個項目</translation>
 <translation id="5897956970858271241">前往複製的連結</translation>
+<translation id="5899314093904173337">如要與附近的使用者分享，請讓對方以相機或二維條碼掃瞄應用程式掃瞄此二維條碼</translation>
 <translation id="5911030830365207728">Google 翻譯</translation>
 <translation id="5913600720976431809">網頁翻譯選項</translation>
 <translation id="5938160824633642847">您裝置上的儲存空間即將用完。請釋放空間並再試一次。</translation>
@@ -564,6 +566,7 @@
 <translation id="8174524257672181687">封鎖所有 Cookie (不建議)</translation>
 <translation id="8197543752516192074">翻譯網頁</translation>
 <translation id="8205564605687841303">取消</translation>
+<translation id="8206354486702514201">這項設定由管理員執行。</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>

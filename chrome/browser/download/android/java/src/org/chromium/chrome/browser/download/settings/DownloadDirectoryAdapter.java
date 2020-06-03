@@ -17,8 +17,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.download.DirectoryOption;
+import org.chromium.chrome.browser.download.DownloadDialogBridge;
 import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
-import org.chromium.chrome.browser.download.DownloadLocationDialogBridge;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.StringUtils;
 
@@ -169,7 +169,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
 
         int selectedId = NO_SELECTED_ITEM_ID;
 
-        String defaultLocation = DownloadLocationDialogBridge.getDownloadDefaultDirectory();
+        String defaultLocation = DownloadDialogBridge.getDownloadDefaultDirectory();
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
@@ -193,8 +193,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
             if (option.availableSpace > 0) {
-                DownloadLocationDialogBridge.setDownloadAndSaveFileDefaultDirectory(
-                        option.location);
+                DownloadDialogBridge.setDownloadAndSaveFileDefaultDirectory(option.location);
                 mSelectedPosition = i;
                 return i;
             }

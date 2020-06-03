@@ -67,6 +67,9 @@ void SetOverlayCapsValid(bool valid) {
 // Used for workaround limiting overlay size to monitor size.
 gfx::Size g_overlay_monitor_size;
 
+DirectCompositionSurfaceWin::OverlayHDRInfoUpdateCallback
+    g_overlay_hdr_gpu_info_callback;
+
 // Preferred overlay format set when detecting overlay support during
 // initialization.  Set to NV12 by default so that it's used when enabling
 // overlays using command line flags.
@@ -257,6 +260,11 @@ bool SupportsLowLatencyPresentation() {
              features::kDirectCompositionLowLatencyPresentation) &&
          SupportsPresentationFeedback();
 }
+
+void RunOverlayHdrGpuInfoUpdateCallback() {
+  if (g_overlay_hdr_gpu_info_callback)
+    g_overlay_hdr_gpu_info_callback.Run();
+}
 }  // namespace
 
 DirectCompositionSurfaceWin::PendingFrame::PendingFrame(
@@ -384,6 +392,7 @@ bool DirectCompositionSurfaceWin::IsDecodeSwapChainSupported() {
 // static
 void DirectCompositionSurfaceWin::DisableOverlays() {
   SetSupportsOverlays(false);
+  RunOverlayHdrGpuInfoUpdateCallback();
 }
 
 // static
@@ -556,6 +565,12 @@ bool DirectCompositionSurfaceWin::AllowTearing() {
          DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
 }
 
+// static
+void DirectCompositionSurfaceWin::SetOverlayHDRGpuInfoUpdateCallback(
+    OverlayHDRInfoUpdateCallback callback) {
+  g_overlay_hdr_gpu_info_callback = std::move(callback);
+}
+
 bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
   d3d11_device_ = QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device_) {
@@ -719,7 +734,13 @@ bool DirectCompositionSurfaceWin::SupportsProtectedVideo() const {
 }
 
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
-  return root_surface_->SetDrawRectangle(rectangle);
+  bool result = root_surface_->SetDrawRectangle(rectangle);
+  if (!result &&
+      DirectCompositionChildSurfaceWin::IsDirectCompositionSwapChainFailed()) {
+    RunOverlayHdrGpuInfoUpdateCallback();
+  }
+
+  return result;
 }
 
 bool DirectCompositionSurfaceWin::SupportsGpuVSync() const {
@@ -843,11 +864,13 @@ void DirectCompositionSurfaceWin::OnGpuSwitched(
 void DirectCompositionSurfaceWin::OnDisplayAdded() {
   InvalidateOverlayCaps();
   UpdateOverlaySupport();
+  RunOverlayHdrGpuInfoUpdateCallback();
 }
 
 void DirectCompositionSurfaceWin::OnDisplayRemoved() {
   InvalidateOverlayCaps();
   UpdateOverlaySupport();
+  RunOverlayHdrGpuInfoUpdateCallback();
 }
 
 scoped_refptr<base::TaskRunner>

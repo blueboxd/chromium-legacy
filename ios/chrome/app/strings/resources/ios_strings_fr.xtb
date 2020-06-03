@@ -338,6 +338,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="5352285283572729470">Ce paramètre est géré</translation>
 <translation id="5388358297987318779">Ouvrir l'image</translation>
 <translation id="5407969256130905701">Supprimer les modifications</translation>
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
@@ -564,6 +565,7 @@ Votre compte étant géré par <ph name="HOSTED_DOMAIN" />, vos données Chrome 
 <translation id="8174524257672181687">Bloquer tous les cookies (non recommandé)</translation>
 <translation id="8197543752516192074">Traduire la page</translation>
 <translation id="8205564605687841303">Annuler</translation>
+<translation id="8206354486702514201">Ce paramètre est appliqué par votre administrateur.</translation>
 <translation id="8225985093977202398">Img/fich. en cache</translation>
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8281781826761538115">Par défaut : <ph name="DEFAULT_LOCALE" /></translation>

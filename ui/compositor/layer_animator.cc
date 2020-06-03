@@ -31,10 +31,9 @@
     ((running_anim.is_sequence_alive()) \
         ? function(running_anim.sequence()) \
         : false)
-#define SAFE_INVOKE_PTR(function, running_anim) \
-    ((running_anim.is_sequence_alive()) \
-        ? function(running_anim.sequence()) \
-        : NULL)
+#define SAFE_INVOKE_PTR(function, running_anim)                           \
+  ((running_anim.is_sequence_alive()) ? function(running_anim.sequence()) \
+                                      : nullptr)
 
 namespace ui {
 
@@ -66,7 +65,7 @@ LayerAnimator::~LayerAnimator() {
       running_animations_[i].sequence()->OnAnimatorDestroyed();
   }
   ClearAnimationsInternal();
-  delegate_ = NULL;
+  delegate_ = nullptr;
   DCHECK(!animation_->animation_timeline());
 }
 
@@ -660,7 +659,7 @@ LayerAnimator::RunningAnimation* LayerAnimator::GetRunningAnimation(
     if ((*iter).sequence()->properties() & property)
       return &(*iter);
   }
-  return NULL;
+  return nullptr;
 }
 
 void LayerAnimator::AddToQueueIfNotPresent(LayerAnimationSequence* animation) {
@@ -735,7 +734,7 @@ void LayerAnimator::ImmediatelySetNewTarget(LayerAnimationSequence* sequence) {
     return;
 
   LayerAnimationSequence* removed = RemoveAnimation(sequence);
-  DCHECK(removed == NULL || removed == sequence);
+  DCHECK(removed == nullptr || removed == sequence);
   if (!weak_sequence_ptr.get())
     return;
 
@@ -950,7 +949,7 @@ void LayerAnimator::PurgeDeletedAnimations() {
 }
 
 LayerAnimatorCollection* LayerAnimator::GetLayerAnimatorCollection() {
-  return delegate_ ? delegate_->GetLayerAnimatorCollection() : NULL;
+  return delegate_ ? delegate_->GetLayerAnimatorCollection() : nullptr;
 }
 
 void LayerAnimator::NotifyAnimationStarted(base::TimeTicks monotonic_time,

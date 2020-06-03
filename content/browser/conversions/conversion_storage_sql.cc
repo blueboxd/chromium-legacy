@@ -26,9 +26,6 @@ namespace content {
 
 namespace {
 
-const base::FilePath::CharType kDatabaseName[] =
-    FILE_PATH_LITERAL("Conversions");
-
 std::string SerializeOrigin(const url::Origin& origin) {
   // Conversion API is only designed to be used for secure
   // contexts (targets and reporting endpoints). We should have filtered out bad
@@ -50,13 +47,28 @@ base::Time DeserializeTime(int64_t microseconds) {
       base::TimeDelta::FromMicroseconds(microseconds));
 }
 
+const base::FilePath::CharType kInMemoryPath[] = FILE_PATH_LITERAL(":memory");
+
+const base::FilePath::CharType kDatabasePath[] =
+    FILE_PATH_LITERAL("Conversions");
+
 }  // namespace
 
+// static
+void ConversionStorageSql::RunInMemoryForTesting() {
+  g_run_in_memory_ = true;
+}
+
+// static
+bool ConversionStorageSql::g_run_in_memory_ = false;
+
 ConversionStorageSql::ConversionStorageSql(
-    const base::FilePath& path_to_database_dir,
+    const base::FilePath& path_to_database,
     std::unique_ptr<Delegate> delegate,
     const base::Clock* clock)
-    : path_to_database_(path_to_database_dir.Append(kDatabaseName)),
+    : path_to_database_(g_run_in_memory_
+                            ? base::FilePath(kInMemoryPath)
+                            : path_to_database.Append(kDatabasePath)),
       clock_(clock),
       delegate_(std::move(delegate)),
       weak_factory_(this) {
@@ -81,7 +93,13 @@ bool ConversionStorageSql::Initialize() {
   db_.set_page_size(4096);
   db_.set_cache_size(32);
   db_.set_exclusive_locking();
-  return db_.Open(path_to_database_) && InitializeSchema();
+
+  if ((path_to_database_.value() == kInMemoryPath)
+          ? !db_.OpenInMemory()
+          : !db_.Open(path_to_database_)) {
+    return false;
+  }
+  return InitializeSchema();
 }
 
 void ConversionStorageSql::StoreImpression(
@@ -700,8 +718,9 @@ bool ConversionStorageSql::InitializeSchema() {
 void ConversionStorageSql::DatabaseErrorCallback(int extended_error,
                                                  sql::Statement* stmt) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Attempt to recover corrupt databases.
-  if (sql::Recovery::ShouldRecover(extended_error)) {
+  // Attempt to recover a corrupt database, unless it is setup in memory.
+  if (sql::Recovery::ShouldRecover(extended_error) &&
+      (path_to_database_.value() != kInMemoryPath)) {
     // Prevent reentrant calls.
     db_.reset_error_callback();
 

@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">പാസ്‌വേഡ് കാലഹരണപ്പെട്ടു</translation>
 <translation id="1630768113285622200">റീസ്റ്റാർട്ട് ചെയ്‌ത ശേഷം തുടരുക</translation>
 <translation id="1630873818549593964">നിങ്ങളുടെ കുട്ടിയുടെ ക്ലാസ് റൂമിലെ ഡാറ്റ പരിരക്ഷിക്കപ്പെടും. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">പാസ്‍വേഡ് നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംഭരിച്ചിരിക്കുന്നു</translation>
 <translation id="1632803087685957583">കീബോർഡ് ആവർത്തന നിരക്കും പദത്തിന്റെ പ്രവചനവും മറ്റും ക്രമീകരിക്കാൻ നിങ്ങളെ അനുവദിക്കുന്നു</translation>
 <translation id="1633947793238301227">Google Assistant പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="1634783886312010422">നിങ്ങൾ മുമ്പേ തന്നെ ഈ പാസ്‌വേഡ് <ph name="WEBSITE" />-ൽ മാറ്റിയിട്ടുണ്ടോ?</translation>
@@ -1576,6 +1577,7 @@
 <translation id="296026337010986570">പൂര്‍ത്തിയായി! ദോഷകരമായ സോഫ്‌റ്റ്‌വെയര്‍ നീക്കം ചെയ്‌തു. വിപുലീകരണങ്ങള്‍ വീണ്ടും ഓണാക്കാന്‍, &lt;a href="chrome://extensions"&gt;വിപുലീകരണങ്ങള്‍&lt;/a&gt; സന്ദര്‍ശിക്കുക.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (വിപുലീകരണം നൽകി)</translation>
 <translation id="2961695502793809356">മുന്നോട്ട് പോകാൻ ക്ലിക്ക് ചെയ്യുക, ചരിത്രം കാണാന്‍ ഹോള്‍ഡ് ചെയ്യുക</translation>
+<translation id="2962131322798295505">Wallpaper Picker</translation>
 <translation id="2963151496262057773">ഇനിപ്പറയുന്ന പ്ലഗിൻ പ്രതികരിക്കാത്തതാണ്: <ph name="PLUGIN_NAME" />അത് നിർത്തണോ?</translation>
 <translation id="2964193600955408481">Wi-Fi അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="2966937470348689686">Android മുൻഗണനകൾ മാനേജുചെയ്യുക</translation>
@@ -2535,6 +2537,7 @@
 <translation id="4154664944169082762">ഫിംഗര്‍‌പ്രിന്‍റുകള്‍‌</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">ഇത് <ph name="CUSTODIAN_EMAIL" />, <ph name="SECOND_CUSTODIAN_EMAIL" /> എന്നിവർ നിയന്ത്രിക്കുന്ന കുട്ടികൾക്കുള്ള അക്കൗണ്ടാണ്.</translation>
+<translation id="4159784952369912983">പര്‍പ്പിള്‍</translation>
 <translation id="4163560723127662357">അജ്ഞാത കീബോർഡ്</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" />-ന് സ്വന്തമായ ചില ക്രമീകരണങ്ങൾ നിങ്ങളുമായി പങ്കിടുന്നു. ഒന്നിലധികം സൈൻ ഇന്നുകൾ ഉപയോഗിക്കുമ്പോൾ മാത്രം ഈ ക്രമീകരണങ്ങൾ നിങ്ങളുടെ അക്കൗണ്ടിനെ ബാധിക്കുന്നു.</translation>
 <translation id="4170314459383239649">പുറത്തുകടക്കുമ്പോൾ മായ്‌ക്കുക</translation>
@@ -2878,6 +2881,7 @@
 <translation id="4645676300727003670">&amp;സൂക്ഷിക്കുക</translation>
 <translation id="4646675363240786305">പോർട്ടുകൾ</translation>
 <translation id="4647090755847581616">ടാബ് &amp;അടയ്‌ക്കുക</translation>
+<translation id="4647420311443994946">{0,select, tablet{നിങ്ങളുടെ ടാബ്‌ലെറ്റിൽ സൈൻ ഇൻ ചെയ്യുമ്പോൾ ആപ്പ് ആരംഭിക്കുക}computer{നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ സൈൻ ഇൻ ചെയ്യുമ്പോൾ ആപ്പ് ആരംഭിക്കുക}other{നിങ്ങളുടെ ഉപകരണത്തിൽ സൈൻ ഇൻ ചെയ്യുമ്പോൾ ആപ്പ് ആരംഭിക്കുക}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" എന്നതിനായി PIN നൽകുക:</translation>
 <translation id="4648491805942548247">അപര്യാപ്‌തമായ അനുമതികൾ</translation>
 <translation id="4648499713050786492">ഒരാളെ ചേർക്കുന്നതിന് മുമ്പ് നിങ്ങളുടെ പ്രൊഫൈൽ അൺലോക്ക് ചെയ്യുക.</translation>
@@ -2890,6 +2894,7 @@
 <translation id="4660540330091848931">വലുപ്പം മാറ്റുന്നു</translation>
 <translation id="4660838440047236328">നിങ്ങളുടെ റൂമിന്റെ ലേഔട്ട്</translation>
 <translation id="4661407454952063730">ആപ്പ് ഡാറ്റ എന്നത് കോൺടാക്റ്റുകൾ, സന്ദേശങ്ങൾ, ഫോട്ടോകൾ എന്നിവ ഉൾപ്പെടെ ആപ്പ് സംരക്ഷിച്ചിട്ടുള്ള ഏതൊരു ഡാറ്റയും (ഡെവലപ്പർ ക്രമീകരണം അടിസ്ഥാനമാക്കി) ആകാം.</translation>
+<translation id="4662373422909645029">വിളിപ്പേരിൽ അക്കം ചേർക്കാനാവില്ല</translation>
 <translation id="4662788913887017617">നിങ്ങളുടെ iPhone ഉപയോഗിച്ച് ഈ ബുക്ക്‌മാർക്ക് പങ്കിടുക</translation>
 <translation id="4663373278480897665">ക്യാമറ അനുവദനീയം</translation>
 <translation id="4664482161435122549">PKCS #12 കയറ്റുമതി പിശക്</translation>
@@ -3584,6 +3589,7 @@
 <translation id="5585912436068747822">ഫോർമാറ്റുചെയ്യൽ പരാജയപ്പെട്ടു</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">ആപ്പുകൾ ലോഡുചെയ്യുന്നു...</translation>
+<translation id="558984423786125616">ക്രമീകരണത്തിൽ പോർട്ട് മുമ്പേ തന്നെ ചേർത്തിട്ടുണ്ട്</translation>
 <translation id="5592595402373377407">ഇതുവരെയും മതിയായ ഡാറ്റ ലഭ്യമല്ല.</translation>
 <translation id="5593357315997824387">എന്റെ ഫയലുകൾ സമന്വയിപ്പിക്കുക</translation>
 <translation id="5595485650161345191">വിലാസം എഡിറ്റ് ചെയ്യുക</translation>
@@ -3627,6 +3633,7 @@
 <translation id="5639549361331209298">കൂടുതൽ ഓപ്‌ഷനുകൾ കാണുന്നതിന് ഈ പേജ് വീണ്ടും ലോഡ് ചെയ്‌ത് ഹോൾഡ് ചെയ്യുക</translation>
 <translation id="5640133431808313291">സുരക്ഷാ കീകൾ മാനേജ് ചെയ്യുക</translation>
 <translation id="5642508497713047">CRL സൈനര്‍‌</translation>
+<translation id="5643321261065707929">മീറ്റർ ചെയ്‌ത നെറ്റ്‌വർക്ക്</translation>
 <translation id="5643620609347735571">മായ്ച്ചതിന് ശേഷം തുടരുക</translation>
 <translation id="5644857731242502394">കണക്റ്റ് ചെയ്ത ഉപകരണങ്ങൾ സജ്ജീകരിക്കൽ</translation>
 <translation id="5646376287012673985">സ്ഥാനം</translation>
@@ -5540,6 +5547,7 @@
     <ph name="BEGIN_PARAGRAPH5" />നിങ്ങൾക്ക് ഈ സേവനം ക്രമീകരണത്തിൽ ഓഫാക്കാം.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">പിൻ നമ്പറുകൾ യോജിക്കുന്നില്ല</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> ഒരു വിപുലീകരണത്തിൽ നിന്നുള്ള പ്രോക്‌സി ക്രമീകരണം ഉപയോഗിക്കുന്നു</translation>
+<translation id="8097959162767603171">അഡ്‌മിൻ കൺസോളിലുള്ള Chrome ഉപകരണ ലിസ്‌റ്റിലെ സേവന നിബന്ധനകൾ നിങ്ങളുടെ അഡ്‌മിൻ ആദ്യം അംഗീകരിക്കണം.</translation>
 <translation id="8101987792947961127">അടുത്ത റീബൂട്ടിൽ പവർവാഷ് ആവശ്യമാണ്</translation>
 <translation id="8102159139658438129">കണക്‌റ്റ് ചെയ്‌തിരിക്കുന്ന ഫോണിനായുള്ള ഓപ്ഷനുകൾ കാണാൻ <ph name="LINK_BEGIN" />ക്രമീകരണം<ph name="LINK_END" /> എന്നതിലേക്ക് പോവുക</translation>
 <translation id="8104696615244072556">നിങ്ങളുടെ <ph name="IDS_SHORT_PRODUCT_NAME" /> ഉപകരണം പവർവാഷ് ചെയ്‌തശേഷം മുൻ പതിപ്പിലേക്ക് മടങ്ങുക.</translation>

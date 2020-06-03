@@ -499,6 +499,7 @@
 <translation id="1629314197035607094">گذرواژه منقضی شده است</translation>
 <translation id="1630768113285622200">بازراه‌اندازی و ادامه</translation>
 <translation id="1630873818549593964">‏از داده‌های فرزندتان در Classroom محافظت خواهد شد. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">‏گذرواژه در حساب Google شما ذخیره شده است</translation>
 <translation id="1632803087685957583">به شما امکان می‌دهد سرعت تکرار صفحه‌کلید، پیش‌بینی کلمه و سایر موارد را تنظیم کنید</translation>
 <translation id="1633947793238301227">‏غیرفعال کردن «دستیار Google»</translation>
 <translation id="1634783886312010422">آیا قبلاً این گذرواژه را در <ph name="WEBSITE" /> تغییر داده‌اید؟</translation>
@@ -1269,7 +1270,7 @@
 <translation id="2586561813241011046"><ph name="APP_NAME" /> نصب نشد. لطفاً دوباره امتحان کنید، یا با سرپرست تماس بگیرید. کد خطا: <ph name="ERROR_CODE" />.</translation>
 <translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2586672484245266891">لطفاً نشانی وب کوتاه‌تری وارد کنید</translation>
-<translation id="2587922766792651800">پایان مهلت زمانی</translation>
+<translation id="2587922766792651800">پایان درنگ</translation>
 <translation id="2588636910004461974">دستگاه‌های <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">‏در Google جستجو کنید یا نشانی وب را تایپ کنید</translation>
 <translation id="2602501489742255173">برای شروع‌به‌کار تند بکشید</translation>
@@ -1441,7 +1442,7 @@
 <translation id="2791952154587244007">خطایی رخ داده است. برنامه کیوسک نمی‌تواند در این دستگاه به صورت خودکار راه‌اندازی شود.</translation>
 <translation id="2792290659606763004">‏برنامه‌های Android حذف شوند؟</translation>
 <translation id="2794233252405721443">سایت مسدودشده</translation>
-<translation id="2796424461616874739">هنگام اتصال به «<ph name="DEVICE_NAME" />» مهلت زمانی راستی‌آزمایی تمام شد.</translation>
+<translation id="2796424461616874739">هنگام اتصال به «<ph name="DEVICE_NAME" />» درنگ راستی‌آزمایی تمام شد.</translation>
 <translation id="2796740370559399562">ادامه اجازه به کوکی‌ها</translation>
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
 <translation id="2800760947029405028">بارگذاری تصویر</translation>
@@ -1576,6 +1577,7 @@
 <translation id="296026337010986570">‏تمام! نرم‌افزار مضر پاک شد. برای اینکه دوباره افزونه‌ها را روشن کنید، به a href="chrome://extensions"&gt;افزونه‌ها&lt;/a&gt; بروید.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (تمدید امکان‌پذیر است)</translation>
 <translation id="2961695502793809356">برای رفتن به جلو کلیک کنید، برای دیدن سابقه نگه دارید</translation>
+<translation id="2962131322798295505">انتخابگر کاغذدیواری</translation>
 <translation id="2963151496262057773">این افزایه جواب نمی‌دهد: <ph name="PLUGIN_NAME" />آیا می‌خواهید متوقف شود؟</translation>
 <translation id="2964193600955408481">‏غیرفعال کردن Wi-Fi</translation>
 <translation id="2966937470348689686">‏مدیریت تنظیمات برگزیده Android</translation>
@@ -2125,6 +2127,7 @@
 <translation id="3677106374019847299">وارد کردن ارائه‌دهنده سفارشی</translation>
 <translation id="3677657024345889897">کوتاه‌ترین</translation>
 <translation id="3677911431265050325">درخواست سایت ویژه دستگاه همراه</translation>
+<translation id="3677959414150797585">شامل برنامه‌ها، صفحه‌های وب و موارد دیگر می‌شود. تنها درصورتی‌که هم‌رسانی داده‌های استفاده را انتخاب کرده باشید، آمار را برای بهبود پیشنهادها ارسال می‌کند.</translation>
 <translation id="3678156199662914018">برنامهٔ افزودنی: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">صدای نوشتار به گفتار</translation>
 <translation id="3681311097828166361">از بازخوردتان سپاسگزاریم. درحال‌حاضر آفلاین هستید و گزارشتان بعداً ارسال می‌شود.</translation>
@@ -2536,6 +2539,7 @@
 <translation id="4154664944169082762">اثر انگشت</translation>
 <translation id="4157869833395312646">‏رمزنگاری انتقال یافته از دروازه سرور Microsoft</translation>
 <translation id="4159681666905192102">این یک حساب مخصوص بچه‌ها است که توسط <ph name="CUSTODIAN_EMAIL" /> و <ph name="SECOND_CUSTODIAN_EMAIL" /> مدیریت می‌شود.</translation>
+<translation id="4159784952369912983">بنفش</translation>
 <translation id="4163560723127662357">صفحه‌کلید ناشناس</translation>
 <translation id="4168015872538332605">برخی از تنظیمات متعلق به <ph name="PRIMARY_EMAIL" /> با شما به اشتراک گذاشته می‌شود. این تنظیمات وقتی از ورود چندگانه به سیستم استفاده شود، فقط در حساب شما اعمال می‌شود.</translation>
 <translation id="4170314459383239649">پاک کردن هنگام خروج</translation>
@@ -2879,6 +2883,7 @@
 <translation id="4645676300727003670">&amp;حفظ</translation>
 <translation id="4646675363240786305">درگاه‌ها</translation>
 <translation id="4647090755847581616">&amp;بستن برگه </translation>
+<translation id="4647420311443994946">{0,select, tablet{اجرای برنامه هنگام ورود به سیستم رایانه لوحی}computer{اجرای برنامه هنگام ورود به سیستم رایانه}other{اجرای برنامه هنگام ورود به سیستم دستگاه}}</translation>
 <translation id="4647697156028544508">لطفاً پین را برای "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
 <translation id="4648491805942548247">مجوزها کافی نیستند</translation>
 <translation id="4648499713050786492">لطفاً قبل از افزودن شخصی، قفل نمایه‌تان را باز کنید.</translation>
@@ -2891,6 +2896,7 @@
 <translation id="4660540330091848931">درحال تغییر اندازه</translation>
 <translation id="4660838440047236328">چیدمان اتاق شما</translation>
 <translation id="4661407454952063730">داده‌های برنامه می‌توانند هر داده‌ای باشند که برنامه (براساس تنظیمات برنامه‌نویس) ذخیره کرده است، ازجمله داده‌هایی مانند مخاطبین، پیام‌ها، و عکس‌ها.</translation>
+<translation id="4662373422909645029">نام مستعار نباید حاوی عدد باشد</translation>
 <translation id="4662788913887017617">‏این نشانک را با iPhone خود به اشتراک بگذارید</translation>
 <translation id="4663373278480897665">دوربین مجاز است</translation>
 <translation id="4664482161435122549">‏خطای صادر کردن PKCS #12</translation>
@@ -3585,6 +3591,7 @@
 <translation id="5585912436068747822">قالب‌بندی ناموفق بود</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">درحال بار کردن برنامه...</translation>
+<translation id="558984423786125616">درگاه ازقبل در تنظیمات موجود است</translation>
 <translation id="5592595402373377407">هنوز داده کافی در دسترس نیست.</translation>
 <translation id="5593357315997824387">همگام‌سازی فایل‌های من</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
@@ -3628,6 +3635,7 @@
 <translation id="5639549361331209298">تازه‌سازی این صفحه، آن را نگهدارید تا گزینه‌های بیشتری را ببینید</translation>
 <translation id="5640133431808313291">مدیریت کلیدهای امنیتی</translation>
 <translation id="5642508497713047">‏امضاکننده CRL</translation>
+<translation id="5643321261065707929">شبکه محدود</translation>
 <translation id="5643620609347735571">پاک کردن و ادامه دادن</translation>
 <translation id="5644857731242502394">راه‌اندازی دستگاه‌های متصل</translation>
 <translation id="5646376287012673985">مکان</translation>
@@ -3772,6 +3780,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - دوربین یا میکروفون درحال ضبط کردن است</translation>
 <translation id="5841270259333717135">پیکربندی اترنت</translation>
 <translation id="5842497610951477805">فعال کردن بلوتوث</translation>
+<translation id="5844574845205796324">پیشنهاد محتوای جدید برای کاوش</translation>
 <translation id="5846200638699387931">خطای دستوری رابطه: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">‏نصب به‌روزرسانی‌ها و برنامه‌ها. با ادامه دادن، موافقت می‌کنید این دستگاه همچنین می‌تواند به‌طور خودکار به‌روزرسانی و برنامه از Google، شرکت مخابراتی، و سازنده دستگاهتان بارگیری و نصب کند و احتمالاً این کار با مصرف داده شبکه تلفن همراه خواهد بود. بعضی از این برنامه‌ها ممکن است خریدهای درون‌برنامه ارائه دهند.</translation>
 <translation id="5849212445710944278">قبلاً اضافه شده است</translation>
@@ -4116,7 +4125,7 @@
 <translation id="6270770586500173387">ارسال <ph name="BEGIN_LINK1" />اطلاعات برنامه و سیستم<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />معیارها<ph name="END_LINK2" /></translation>
 <translation id="6272643420381259437">هنگام بارگیری افزایه، خطایی (<ph name="ERROR" />) روی داد</translation>
 <translation id="6273677812470008672">کیفیت</translation>
-<translation id="6277105963844135994">مهلت زمانی شبکه</translation>
+<translation id="6277105963844135994">درنگ شبکه</translation>
 <translation id="6277518330158259200">گرفتن نماگرفت</translation>
 <translation id="6278057325678116358">‏استفاده از GTK+‎</translation>
 <translation id="6278776436938569440">تغییر مکان</translation>
@@ -4743,7 +4752,7 @@
 <translation id="7098447629416471489">سایر موتورهای جستجوی ذخیره‌شده در اینجا نشان داده خواهند شد</translation>
 <translation id="7099337801055912064">‏فایل PPD بزرگ است و بار نمی‌شود. حداکثر اندازه ۲۵۰ کیلوبایت است.</translation>
 <translation id="7102687220333134671">به‌روزرسانی‌های خودکار روشن هستند</translation>
-<translation id="7102832101143475489">مهلت زمانی درخواست تمام شد</translation>
+<translation id="7102832101143475489">درنگ درخواست تمام شد</translation>
 <translation id="7102928824073746774">گروه بدون نام - <ph name="GROUP_CONTENTS" /></translation>
 <translation id="7105390788077117391">‏اولویت‌های USB</translation>
 <translation id="710640343305609397">بازکردن تنظیمات شبکه</translation>
@@ -5194,7 +5203,7 @@
 <translation id="7698408911093959127">{COUNT,plural, =1{۱ مورد در فهرست نشانک‌‌گذاری}one{# مورد در فهرست نشانک‌گذاری}other{# مورد در فهرست نشانک‌گذاری}}</translation>
 <translation id="7699968112832915395">افزودن حساب ممکن نیست</translation>
 <translation id="7701040980221191251">هیچ‌کدام</translation>
-<translation id="770157826141786566">مهلت زمانی بازگرداندن این دستگاه گذشته است.</translation>
+<translation id="770157826141786566">درنگ بازگرداندن این دستگاه گذشته است.</translation>
 <translation id="7701869757853594372">مدیریت کاربر</translation>
 <translation id="7701928712056789451">این موارد ممکن است خطرناک باشند</translation>
 <translation id="7702574632857388784">برداشتن <ph name="FILE_NAME" /> از فهرست</translation>
@@ -5537,6 +5546,7 @@
     <ph name="BEGIN_PARAGRAPH5" />می‌توانید این سرویس را در «تنظیمات» خاموش کنید.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">پین‌ها مطابقت ندارند</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> درحال استفاده از تنظیمات پراکسی از افزونه است</translation>
+<translation id="8097959162767603171">‏سرپرستتان ابتدا باید شرایط خدمات را در فهرست دستگاه Chrome در «کنسول سرپرست» قبول کند.</translation>
 <translation id="8101987792947961127">در راه‌اندازی مجدد بعدی پاکسازی لازم است</translation>
 <translation id="8102159139658438129">برای دیدن گزینه‌های تلفن متصل، به <ph name="LINK_BEGIN" />تنظیمات<ph name="LINK_END" /> بروید</translation>
 <translation id="8104696615244072556">‏دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> شما Powerwash می‌شود و به نسخه قبلی باز می‌گردد.</translation>

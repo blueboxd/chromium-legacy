@@ -1292,16 +1292,20 @@ scoped_refptr<const NGLayoutResult> NGInlineNode::Layout(
   auto layout_result = algorithm.Layout();
 
 #if defined(OS_ANDROID)
-  // Cached position data is crucial for line breaking performance and is
-  // preserved across layouts to speed up subsequent layout passes due to
-  // reflow, page zoom, window resize, etc. On Android though reflows are less
-  // common, page zoom isn't used (instead uses pinch-zoom), and the window
-  // typically can't be resized (apart from rotation). To reduce memory usage
-  // discard the cached position data after layout.
-  NGInlineNodeData* data = MutableData();
-  for (auto& item : data->items) {
-    if (item.shape_result_)
-      item.shape_result_->DiscardPositionData();
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    // Cached position data is crucial for line breaking performance and is
+    // preserved across layouts to speed up subsequent layout passes due to
+    // reflow, page zoom, window resize, etc. On Android though reflows are less
+    // common, page zoom isn't used (instead uses pinch-zoom), and the window
+    // typically can't be resized (apart from rotation). To reduce memory usage
+    // discard the cached position data after layout.
+    // TODO(crbug.com/1042604): FragmentItem should save memory enough to re-
+    // enable the position cache.
+    NGInlineNodeData* data = MutableData();
+    for (auto& item : data->items) {
+      if (item.shape_result_)
+        item.shape_result_->DiscardPositionData();
+    }
   }
 #endif  // defined(OS_ANDROID)
 

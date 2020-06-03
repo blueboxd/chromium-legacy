@@ -205,6 +205,7 @@
 <translation id="1753706481035618306">Seitennummer</translation>
 <translation id="1763864636252898013">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Versuchen Sie, die Windows-Netzwerkdiagnose auszuführen.<ph name="END_LINK" /></translation>
+<translation id="1772163372082567643">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt in einer Header-Datei, dass auf alle an ihn gerichteten Anfragen eine Ursprungsrichtlinie angewendet wird. Die Header-Datei ist allerdings fehlerhaft. Daher kann der Browser Ihre Anforderung für <ph name="SITE" /> nicht ausführen. Ursprungsrichtlinien können von Websitebetreibern verwendet werden, um die Sicherheit und andere Eigenschaften einer Website zu konfigurieren.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Synchronisierungs-Passphrase aktualisieren</translation>
 <translation id="1787142507584202372">Hier werden Ihre offenen Tabs angezeigt</translation>
@@ -228,6 +229,7 @@
 <translation id="1898423065542865115">Filtern</translation>
 <translation id="1901443836186977402">{1,plural, =1{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist in den letzten 24 Stunden abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist derzeit auf <ph name="CURRENT_DATE" /> eingestellt. Ist das korrekt? Falls nicht, stellen Sie die Uhr Ihres Systems richtig ein und aktualisieren Sie anschließend diese Seite.}other{Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist vor # Tagen abgelaufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. Die Uhr Ihres Computers ist momentan auf <ph name="CURRENT_DATE" /> eingestellt. Ist das richtig? Wenn nicht, korrigieren Sie die Uhrzeit Ihres Systems und aktualisieren Sie dann diese Seite.}}</translation>
 <translation id="1902576642799138955">Gültigkeitsdauer</translation>
+<translation id="191374271204266022">Als JSON kopieren</translation>
 <translation id="1914326953223720820">Dienst entpacken</translation>
 <translation id="1915697529809968049">Touch ID anstelle des CVCs verwenden?</translation>
 <translation id="1916770123977586577">Laden Sie diese Seite neu, um die aktualisierten Einstellungen für diese Website zu übernehmen</translation>
@@ -701,6 +703,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
     Wenn dies Ihrer Meinung nach fälschlicherweise angezeigt wird, gehen Sie bitte auf: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Weniger als 1 MB</translation>
 <translation id="3990250421422698716">Jog-Versatz</translation>
+<translation id="3996311196211510766">Die Website <ph name="ORIGIN" /> verlangt, dass für alle an sie gestellten Anfragen eine Ursprungsrichtlinie angewendet wird. Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-Dokument mit {COUNT} Seite}other{PDF-Dokument mit {COUNT} Seiten}}</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
@@ -745,6 +748,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4194250254487269611">Ihre Karte kann momentan nicht gespeichert werden</translation>
 <translation id="4196861286325780578">&amp;Verschieben wiederholen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Firewall und Antivirenkonfiguration prüfen<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Ursprungsrichtlinie angewendet wird. Er hat jedoch keine Richtlinie übergeben, was den Browser daran hindert, Ihre Anfrage für <ph name="SITE" /> auszuführen. Ursprungsrichtlinien können von Websitebetreibern verwendet werden, um die Sicherheit und andere Eigenschaften einer Website zu konfigurieren.</translation>
 <translation id="421066178035138955">Virtual-Reality-Geräte und ‑Daten verwenden</translation>
 <translation id="4214357935346142455">Profil der Anmeldeseite</translation>
 <translation id="4215751373031079683">7x9 (Umschlag)</translation>
@@ -1235,6 +1239,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="6259156558325130047">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
+<translation id="6265794661083428563">Kopiert den Wert der Richtlinie <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Helles Blaugrün</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Seiten von Ihrer Leseliste werden hier angezeigt</translation>

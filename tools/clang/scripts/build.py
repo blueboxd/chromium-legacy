@@ -348,13 +348,17 @@ def CopyLibstdcpp(args, build_dir):
   # etc. that live in the bin/ directory, this means they expect to find the .so
   # in their neighbouring lib/ dir.
   # For unit tests we pass -Wl,-rpath to the linker pointing to the lib64 dir
-  # in the tcc toolchain. The binaries we distribute also have an rpath
-  # pointing to that dir, which is ugly, but harmless.
-  # TODO(thakis): Add some setting upstream that allows adding an rpath only
-  # to test binaries.
-  EnsureDirExists(os.path.join(build_dir, 'lib'))
-  CopyFile(libstdcpp, os.path.join(build_dir, 'lib'))
-
+  # in the gcc toolchain, via LLVM_LOCAL_RPATH below.
+  # The two fuzzer tests are weird in that they copy the fuzzer binary from bin/
+  # into the test tree under a different name. To make the relative rpath in
+  # them work, copy libstdc++ to the copied location for now.
+  # TODO(thakis): Instead, make the upstream lit.local.cfg.py for these 2 tests
+  # check if the binary contains an rpath and if so disable the tests.
+  for d in ['lib',
+            'test/tools/llvm-isel-fuzzer/lib',
+            'test/tools/llvm-opt-fuzzer/lib']:
+    EnsureDirExists(os.path.join(build_dir, d))
+    CopyFile(libstdcpp, os.path.join(build_dir, d))
 
 def gn_arg(v):
   if v == 'True':
@@ -508,7 +512,9 @@ def main():
     if not os.access(cc, os.X_OK):
       print('Invalid --gcc-toolchain: ' + args.gcc_toolchain)
       return 1
-    ldflags += ['-Wl,-rpath,' + os.path.join(args.gcc_toolchain, 'lib64')]
+    base_cmake_args += [
+        '-DLLVM_LOCAL_RPATH=' + os.path.join(args.gcc_toolchain, 'lib64')
+    ]
 
 
   if sys.platform == 'darwin':
@@ -605,6 +611,8 @@ def main():
     if lld is not None: bootstrap_args.append('-DCMAKE_LINKER=' + lld)
     RunCommand(['cmake'] + bootstrap_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
+    CopyLibstdcpp(args, LLVM_BOOTSTRAP_DIR)
+    CopyLibstdcpp(args, LLVM_BOOTSTRAP_INSTALL_DIR)
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
       test_targets = [ 'check-all' ]
@@ -667,6 +675,7 @@ def main():
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
+    CopyLibstdcpp(args, LLVM_INSTRUMENTED_DIR)
     RunCommand(['ninja'], msvc_arch='x64')
     print('Instrumented compiler built.')
 

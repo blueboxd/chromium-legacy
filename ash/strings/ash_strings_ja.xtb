@@ -534,6 +534,7 @@
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7600875258240007829">通知をすべて表示</translation>
+<translation id="7624117708979618027">華氏 <ph name="TEMPERATURE_F" /> 度</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" /> の設定を開きます、<ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>

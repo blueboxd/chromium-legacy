@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/secure_dns_config.h"
@@ -24,9 +23,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "net/dns/public/dns_over_https_server_config.h"
-#include "net/dns/public/doh_provider_list.h"
+#include "net/dns/public/doh_provider_entry.h"
 #include "net/dns/public/util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+namespace secure_dns = chrome_browser_net::secure_dns;
 
 namespace settings {
 
@@ -57,11 +58,7 @@ std::unique_ptr<base::DictionaryValue> CreateSecureDnsSettingDict() {
 
 }  // namespace
 
-SecureDnsHandler::SecureDnsHandler()
-    : network_context_getter_(
-          base::BindRepeating(&SecureDnsHandler::GetNetworkContext,
-                              base::Unretained(this))) {}
-
+SecureDnsHandler::SecureDnsHandler() = default;
 SecureDnsHandler::~SecureDnsHandler() = default;
 
 void SecureDnsHandler::RegisterMessages() {
@@ -111,38 +108,14 @@ void SecureDnsHandler::OnJavascriptDisallowed() {
   pref_registrar_.RemoveAll();
 }
 
-base::Value SecureDnsHandler::GetSecureDnsResolverListForCountry(
-    int country_id,
-    const std::vector<net::DohProviderEntry>& providers) {
-  std::vector<std::string> disabled_providers =
-      SplitString(features::kDnsOverHttpsDisabledProvidersParam.Get(), ",",
-                  base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
+base::Value SecureDnsHandler::GetSecureDnsResolverList() {
   base::Value resolvers(base::Value::Type::LIST);
-  resolver_histogram_map_.clear();
-  // Add all non-disabled resolvers that should be displayed in |country_id|.
-  for (const auto& entry : providers) {
-    if (base::Contains(disabled_providers, entry.provider))
-      continue;
-
-    if (entry.display_globally ||
-        std::find_if(
-            entry.display_countries.begin(), entry.display_countries.end(),
-            [&country_id](const std::string& country_code) {
-              return country_codes::CountryCharsToCountryID(
-                         country_code[0], country_code[1]) == country_id;
-            }) != entry.display_countries.end()) {
-      DCHECK(!entry.ui_name.empty());
-      DCHECK(!entry.privacy_policy.empty());
-      base::Value dict(base::Value::Type::DICTIONARY);
-      dict.SetKey("name", base::Value(entry.ui_name));
-      dict.SetKey("value", base::Value(entry.dns_over_https_template));
-      dict.SetKey("policy", base::Value(entry.privacy_policy));
-      resolvers.Append(std::move(dict));
-      DCHECK(entry.provider_id_for_histogram.has_value());
-      resolver_histogram_map_.insert({entry.dns_over_https_template,
-                                      entry.provider_id_for_histogram.value()});
-    }
+  for (const auto* entry : providers_) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetStringKey("name", entry->ui_name);
+    dict.SetStringKey("value", entry->dns_over_https_template);
+    dict.SetStringKey("policy", entry->privacy_policy);
+    resolvers.Append(std::move(dict));
   }
 
   // Randomize the order of the resolvers.
@@ -150,13 +123,10 @@ base::Value SecureDnsHandler::GetSecureDnsResolverListForCountry(
 
   // Add a custom option to the front of the list
   base::Value custom(base::Value::Type::DICTIONARY);
-  custom.SetKey("name",
-                base::Value(l10n_util::GetStringUTF8(IDS_SETTINGS_CUSTOM)));
-  custom.SetKey("value", base::Value("custom"));
-  custom.SetKey("policy", base::Value(std::string()));
+  custom.SetStringKey("name", l10n_util::GetStringUTF8(IDS_SETTINGS_CUSTOM));
+  custom.SetStringKey("value", std::string());  // Empty value means custom.
+  custom.SetStringKey("policy", std::string());
   resolvers.Insert(resolvers.GetList().begin(), std::move(custom));
-  resolver_histogram_map_.insert(
-      {"custom", net::DohProviderIdForHistogram::kCustom});
 
   return resolvers;
 }
@@ -176,15 +146,18 @@ network::mojom::NetworkContext* SecureDnsHandler::GetNetworkContext() {
       ->GetNetworkContext();
 }
 
+void SecureDnsHandler::SetProvidersForTesting(
+    net::DohProviderEntry::List providers) {
+  providers_ = std::move(providers);
+}
+
 void SecureDnsHandler::HandleGetSecureDnsResolverList(
     const base::ListValue* args) {
   AllowJavascript();
   std::string callback_id = args->GetList()[0].GetString();
 
-  ResolveJavascriptCallback(
-      base::Value(callback_id),
-      GetSecureDnsResolverListForCountry(country_codes::GetCurrentCountryID(),
-                                         net::GetDohProviderList()));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            GetSecureDnsResolverList());
 }
 
 void SecureDnsHandler::HandleGetSecureDnsSetting(const base::ListValue* args) {
@@ -203,14 +176,12 @@ void SecureDnsHandler::HandleParseCustomDnsEntry(const base::ListValue* args) {
 
   // Return all templates in the entry, or none if they are not all valid.
   base::Value templates(base::Value::Type::LIST);
-  if (chrome_browser_net::secure_dns::IsValidGroup(custom_entry)) {
-    for (base::StringPiece t :
-         chrome_browser_net::secure_dns::SplitGroup(custom_entry)) {
+  if (secure_dns::IsValidGroup(custom_entry)) {
+    for (base::StringPiece t : secure_dns::SplitGroup(custom_entry)) {
       templates.Append(t);
     }
   }
-  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ValidationAttemptSuccess",
-                        !templates.GetList().empty());
+  secure_dns::UpdateValidationHistogram(!templates.GetList().empty());
   ResolveJavascriptCallback(*callback_id, templates);
 }
 
@@ -236,7 +207,7 @@ void SecureDnsHandler::HandleProbeCustomDnsTemplate(
   overrides.attempts = 1;
   overrides.randomize_ports = false;
   overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
-  chrome_browser_net::secure_dns::ApplyTemplate(&overrides, server_template);
+  secure_dns::ApplyTemplate(&overrides, server_template);
   DCHECK(!runner_);
   runner_ = std::make_unique<chrome_browser_net::DnsProbeRunner>(
       overrides, network_context_getter_);
@@ -251,29 +222,15 @@ void SecureDnsHandler::HandleRecordUserDropdownInteraction(
   std::string new_provider;
   CHECK(args->GetString(0, &old_provider));
   CHECK(args->GetString(1, &new_provider));
-  DCHECK(resolver_histogram_map_.find(old_provider) !=
-         resolver_histogram_map_.end());
-  DCHECK(resolver_histogram_map_.find(new_provider) !=
-         resolver_histogram_map_.end());
-  for (auto& pair : resolver_histogram_map_) {
-    if (pair.first == old_provider) {
-      UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Unselected",
-                                pair.second);
-    } else if (pair.first == new_provider) {
-      UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Selected",
-                                pair.second);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Ignored",
-                                pair.second);
-    }
-  }
+
+  secure_dns::UpdateDropdownHistograms(providers_, old_provider, new_provider);
 }
 
 void SecureDnsHandler::OnProbeComplete() {
   bool success =
       runner_->result() == chrome_browser_net::DnsProbeRunner::CORRECT;
   runner_.reset();
-  UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ProbeAttemptSuccess", success);
+  secure_dns::UpdateProbeHistogram(success);
   ResolveJavascriptCallback(base::Value(probe_callback_id_),
                             base::Value(success));
   probe_callback_id_.clear();
@@ -282,6 +239,14 @@ void SecureDnsHandler::OnProbeComplete() {
 void SecureDnsHandler::SendSecureDnsSettingUpdatesToJavascript() {
   FireWebUIListener("secure-dns-setting-changed",
                     *CreateSecureDnsSettingDict());
+}
+
+// static
+net::DohProviderEntry::List SecureDnsHandler::GetFilteredProviders() {
+  const auto local_providers = secure_dns::ProvidersForCountry(
+      net::DohProviderEntry::GetList(), country_codes::GetCurrentCountryID());
+  return secure_dns::RemoveDisabledProviders(
+      local_providers, secure_dns::GetDisabledProviders());
 }
 
 }  // namespace settings

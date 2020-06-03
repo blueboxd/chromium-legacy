@@ -12,6 +12,7 @@
 
 namespace gfx {
 
+struct CALayerParams;
 class GpuFence;
 
 enum class SwapResult {
@@ -56,6 +57,8 @@ struct GFX_EXPORT SwapCompletionResult {
   explicit SwapCompletionResult(gfx::SwapResult swap_result);
   SwapCompletionResult(gfx::SwapResult swap_result,
                        std::unique_ptr<gfx::GpuFence> gpu_fence);
+  SwapCompletionResult(gfx::SwapResult swap_result,
+                       std::unique_ptr<gfx::CALayerParams> ca_layer_params);
   SwapCompletionResult(SwapCompletionResult&& other);
   ~SwapCompletionResult();
 
@@ -64,7 +67,7 @@ struct GFX_EXPORT SwapCompletionResult {
 
   gfx::SwapResult swap_result = SwapResult::SWAP_FAILED;
   std::unique_ptr<GpuFence> gpu_fence;
-  // TODO(https://crbug.com/894929): Add CALayerParams here.
+  std::unique_ptr<CALayerParams> ca_layer_params;
 };
 
 }  // namespace gfx

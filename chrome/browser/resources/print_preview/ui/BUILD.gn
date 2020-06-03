@@ -165,6 +165,7 @@ if (is_chromeos) {
       ":select_behavior",
       "..:print_preview_utils",
       "../data:destination",
+      "../data:printer_status_cros",
       "//third_party/polymer/v3_0/components-chromium/iron-iconset-svg:iron-iconset-svg",
       "//third_party/polymer/v3_0/components-chromium/iron-meta:iron-meta",
       "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",

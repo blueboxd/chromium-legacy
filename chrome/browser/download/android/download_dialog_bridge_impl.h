@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_LOCATION_DIALOG_BRIDGE_IMPL_H_
-#define CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_LOCATION_DIALOG_BRIDGE_IMPL_H_
+#ifndef CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_DIALOG_BRIDGE_IMPL_H_
+#define CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_DIALOG_BRIDGE_IMPL_H_
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "chrome/browser/download/android/download_location_dialog_bridge.h"
+#include "chrome/browser/download/android/download_dialog_bridge.h"
 #include "chrome/browser/download/download_location_dialog_type.h"
 #include "ui/gfx/native_widget_types.h"
 
-class DownloadLocationDialogBridgeImpl : public DownloadLocationDialogBridge {
+class DownloadDialogBridgeImpl : public DownloadDialogBridge {
  public:
-  DownloadLocationDialogBridgeImpl();
-  ~DownloadLocationDialogBridgeImpl() override;
+  DownloadDialogBridgeImpl();
+  ~DownloadDialogBridgeImpl() override;
 
-  // DownloadLocationDialogBridge implementation.
+  // DownloadDialogBridge implementation.
   void ShowDialog(gfx::NativeWindow native_window,
                   int64_t total_bytes,
                   DownloadLocationDialogType dialog_type,
@@ -41,7 +41,7 @@ class DownloadLocationDialogBridgeImpl : public DownloadLocationDialogBridge {
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   LocationCallback location_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(DownloadLocationDialogBridgeImpl);
+  DISALLOW_COPY_AND_ASSIGN(DownloadDialogBridgeImpl);
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_LOCATION_DIALOG_BRIDGE_IMPL_H_
+#endif  // CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_DIALOG_BRIDGE_IMPL_H_

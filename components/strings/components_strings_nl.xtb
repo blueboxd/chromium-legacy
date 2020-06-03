@@ -205,6 +205,8 @@
 <translation id="1753706481035618306">Paginanummer</translation>
 <translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Voer Windows Netwerkcontrole uit<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Voor de server waar je naartoe gaat (<ph name="ORIGIN" />), is een header ingesteld
+    die vereist dat een herkomstbeleid wordt toegepast op alle verzoeken aan de server. De header heeft echter een verkeerde indeling, waardoor de browser je verzoek voor <ph name="SITE" /> niet kan uitvoeren. Herkomstbeleidsregels kunnen worden gebruikt door site-operators om beveiliging en andere eigenschappen voor een site te configureren.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="1787142507584202372">Je geopende tabbladen worden hier weergegeven</translation>
@@ -228,6 +230,7 @@
 <translation id="1898423065542865115">Filteren</translation>
 <translation id="1901443836186977402">{1,plural, =1{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is in de afgelopen 24 uur verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Klopt dat? Zo niet, dan moet je de klok van je systeem aanpassen en daarna deze pagina vernieuwen.}other{Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het bijbehorende beveiligingscertificaat is # dagen geleden verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_DATE" />. Klopt dat? Zo niet, dan moet je de klok van je systeem aanpassen en daarna deze pagina vernieuwen.}}</translation>
 <translation id="1902576642799138955">Geldigheidsduur</translation>
+<translation id="191374271204266022">Kopiëren als json</translation>
 <translation id="1914326953223720820">Uitpakservice</translation>
 <translation id="1915697529809968049">Touch ID gebruiken in plaats van CVC?</translation>
 <translation id="1916770123977586577">Laad deze pagina opnieuw om je geüpdatete instellingen toe te passen op deze site</translation>
@@ -698,6 +701,8 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
     Als je denkt dat deze waarschuwing onterecht is, ga je naar https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Minder dan 1 MB</translation>
 <translation id="3990250421422698716">Sorteren</translation>
+<translation id="3996311196211510766">De site <ph name="ORIGIN" /> heeft gevraagd een herkomstbeleid
+    toe te passen op alle verzoeken aan de site, maar dit beleid kan momenteel niet worden toegepast.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webpagina in de buurt}other{# webpagina's in de buurt}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Pdf-document met {COUNT} pagina}other{Pdf-document met {COUNT} pagina's}}</translation>
 <translation id="4030383055268325496">&amp;Toevoegen ongedaan maken</translation>
@@ -742,6 +747,11 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4194250254487269611">Je kaart kan op dit moment niet worden opgeslagen</translation>
 <translation id="4196861286325780578">&amp;Opnieuw verplaatsen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controleer firewall- en antivirusconfiguraties<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">De server waar je naartoe gaat (<ph name="ORIGIN" />), heeft gevraagd om
+    een herkomstbeleid toe te passen op alle verzoeken aan de server. Deze heeft nu echter
+    geen beleid geleverd, waardoor de browser je verzoek
+    voor <ph name="SITE" /> niet kan uitvoeren. Herkomstbeleidsregels kunnen worden gebruikt door site-operators
+    om beveiliging en andere eigenschappen voor een site te configureren.</translation>
 <translation id="421066178035138955">Virtualreality-apparaten en -gegevens gebruiken</translation>
 <translation id="4214357935346142455">profiel inlogscherm</translation>
 <translation id="4215751373031079683">7x9 (envelop)</translation>
@@ -1231,6 +1241,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="6259156558325130047">&amp;Opnieuw volgorde wijzigen</translation>
 <translation id="6263376278284652872">Bladwijzers voor <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Terug naar veilige website</translation>
+<translation id="6265794661083428563">Kopieer de waarde van het <ph name="POLICY_NAME" />-beleid</translation>
 <translation id="6266934640124581640">Lichtblauwgroen</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Pagina's uit je leeslijst worden hier weergegeven</translation>

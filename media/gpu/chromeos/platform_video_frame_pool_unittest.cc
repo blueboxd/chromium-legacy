@@ -106,7 +106,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Values(PIXEL_FORMAT_I420,
                                          PIXEL_FORMAT_YV12,
                                          PIXEL_FORMAT_NV12,
-                                         PIXEL_FORMAT_ARGB));
+                                         PIXEL_FORMAT_ARGB,
+                                         PIXEL_FORMAT_P016LE));
 
 TEST_P(PlatformVideoFramePoolTest, SingleFrameReuse) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());

@@ -6,6 +6,7 @@
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
@@ -1081,6 +1082,41 @@ TEST_F('PrintPreviewDestinationSelectTestCrOS', 'ChangeIcon', function() {
 TEST_F('PrintPreviewDestinationSelectTestCrOS', 'EulaIsDisplayed', function() {
   this.runMochaTest(destination_select_test_cros.TestNames.EulaIsDisplayed);
 });
+
+// eslint-disable-next-line no-var
+var PrintPreviewPrinterStatusTestCros = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/destination_select_test_cros.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return printer_status_test_cros.suiteName;
+  }
+
+  /** @override */
+  get featureList() {
+    const kPrinterStatus = ['chromeos::features::kPrinterStatus'];
+    const featureList = super.featureList;
+    featureList.enabled = featureList.enabled ?
+        featureList.enabled.concat(kPrinterStatus) :
+        kPrinterStatus;
+    return featureList;
+  }
+};
+
+TEST_F(
+    'PrintPreviewPrinterStatusTestCros', 'ReasonFromPrinterStatus', function() {
+      this.runMochaTest(
+          printer_status_test_cros.TestNames.ReasonFromPrinterStatus);
+    });
+
+TEST_F(
+    'PrintPreviewPrinterStatusTestCros', 'SendStatusRequestOnce', function() {
+      this.runMochaTest(
+          printer_status_test_cros.TestNames.SendStatusRequestOnce);
+    });
 
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationDropdownCrosTest = class extends PrintPreviewTest {

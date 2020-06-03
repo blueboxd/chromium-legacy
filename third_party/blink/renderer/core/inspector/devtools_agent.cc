@@ -200,7 +200,8 @@ void DevToolsAgent::AttachDevToolsSessionImpl(
   DevToolsSession* session = MakeGarbageCollected<DevToolsSession>(
       this, std::move(host), std::move(session_receiver),
       std::move(io_session_receiver), std::move(reattach_session_state),
-      client_expects_binary_responses, session_id);
+      client_expects_binary_responses, session_id,
+      inspector_task_runner_->isolate_task_runner());
   sessions_.insert(session);
   client_->DebuggerTaskFinished();
 }

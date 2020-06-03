@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Сырсөздүн жарамдуулук мөөнөтү аяктады</translation>
 <translation id="1630768113285622200">Өчүрүп-күйгүзүү жана улантуу</translation>
 <translation id="1630873818549593964">Балаңыздын Класстагы маалыматы корголот. <ph name="LINK_BEGIN" />Кеңири маалымат<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Google аккаунтуңузда сакталган сырсөз</translation>
 <translation id="1632803087685957583">Баскычтобуңуздун кайталоо ылдамдыгын, кийинки сөздү божомолдоону жана башкаларды тууралай аласыз</translation>
 <translation id="1633947793238301227">Google Жардамчыны өчүрүү</translation>
 <translation id="1634783886312010422">Бул сырсөздү <ph name="WEBSITE" /> кызматында өзгөрттүңүз беле?</translation>
@@ -1579,6 +1580,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="296026337010986570">Зыяндуу программа өчүрүлдү. Кеңейтүүлөрдү кайра иштетүү үчүн &lt;a href="chrome://extensions"&gt;Кеңейтүүлөр&lt;/a&gt; бөлүмүнө өтүңүз.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (кеңейтүү берилген)</translation>
 <translation id="2961695502793809356">Алга кетүү үчүн чыкылдатып, таржымалды көрүү үчүн коё бербей кармап туруңуз</translation>
+<translation id="2962131322798295505">Тушкагаз тандагыч</translation>
 <translation id="2963151496262057773">Төмөнкү плагин жооп бербей жатат: <ph name="PLUGIN_NAME" />Аны токтотосузбу?</translation>
 <translation id="2964193600955408481">Wi-Fi'ды өчүрүү</translation>
 <translation id="2966937470348689686">Android жеке жөндөөлөрүн башкаруу</translation>
@@ -2539,6 +2541,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4154664944169082762">Манжа издери</translation>
 <translation id="4157869833395312646">Microsoft Серверинин коргондолгон криптографиясы</translation>
 <translation id="4159681666905192102">Бул <ph name="CUSTODIAN_EMAIL" /> жана <ph name="SECOND_CUSTODIAN_EMAIL" /> тарабынан башкарылган балдардын каттоо эсеби.</translation>
+<translation id="4159784952369912983">Кызгылт көгүш</translation>
 <translation id="4163560723127662357">Белгисиз баскычтоп</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> дегенге таандык жөндөөлөрдүн айрымдары сиз менен бөлүшүлүүдө. Бул жөндөөлөр бир нече профиль менен кирүү мүмкүнчүлүгү колдонулуп жатканда гана аккаунтуңузга таасирин тийгизет.</translation>
 <translation id="4170314459383239649">Чыгууда тазалансын</translation>
@@ -2882,6 +2885,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4645676300727003670">&amp;Кала берсин</translation>
 <translation id="4646675363240786305">Оюкчалар</translation>
 <translation id="4647090755847581616">&amp;Өтмөктү жабуу</translation>
+<translation id="4647420311443994946">{0,select, tablet{Планшетке кирериңиз менен колдонмо автоматтык түрдө башталсын}computer{Компьютерге кирериңиз менен колдонмо автоматтык түрдө башталсын}other{Түзмөккө кирериңиз менен колдонмо автоматтык түрдө башталсын}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" түзмөгүнө PIN кодду киргизиңиз:</translation>
 <translation id="4648491805942548247">Уруксаттар жетишсиз</translation>
 <translation id="4648499713050786492">Адамды кошоордон мурун, профилиңиздин кулпусун ачыңыз.</translation>
@@ -2894,6 +2898,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4660540330091848931">Өлчөмү өзгөртүлүүдө</translation>
 <translation id="4660838440047236328">бөлмөңүздүн көрүнүшү</translation>
 <translation id="4661407454952063730">Колдонмо тууралуу маалыматка иштеп чыгуучунун жөндөөлөрүнүн негизинде сакталган бардык маалымат, анын ичинде байланыштар, билдирүүлөр жана сүрөттөр кириши мүмкүн.</translation>
+<translation id="4662373422909645029">Ылакап атта сан болбошу керек</translation>
 <translation id="4662788913887017617">Бул кыстарманы iPhone’уңуз менен бөлүшүңүз</translation>
 <translation id="4663373278480897665">Камераны колдонууга уруксат берилди</translation>
 <translation id="4664482161435122549">PKCS #12 экспорт катасы</translation>
@@ -3588,6 +3593,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5585912436068747822">Форматталбай койду</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Колдонмолор жүктөлүүдө…</translation>
+<translation id="558984423786125616">Бул оюкча мурун эле кошулган</translation>
 <translation id="5592595402373377407">Жеткиликтүү дайындар жок.</translation>
 <translation id="5593357315997824387">Файлдарым шайкештирилсин</translation>
 <translation id="5595485650161345191">Даректи түзөтүү</translation>
@@ -3631,6 +3637,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5639549361331209298">Бул баракты кайра жүктөп, көбүрөөк параметр көрүү үчүн коё бербей кармап туруңуз</translation>
 <translation id="5640133431808313291">Коопсуздук ачкычтарын башкаруу</translation>
 <translation id="5642508497713047">CRL кол койгуч</translation>
+<translation id="5643321261065707929">Тарифтелген тармак</translation>
 <translation id="5643620609347735571">Тазалоо жана улантуу</translation>
 <translation id="5644857731242502394">Туташтырылган түзмөктөрдү жөндөө</translation>
 <translation id="5646376287012673985">Жайгашкан жер</translation>
@@ -5539,6 +5546,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
     <ph name="BEGIN_PARAGRAPH5" />Бул кызматты жөндөөлөрдөн өчүрсөңүз болот.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN'дер дал келген жок</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> кеңейтүүнүн прокси жөндөөлөрүн колдонуп жатат</translation>
+<translation id="8097959162767603171">Алгач администратордун консолундагы Chrome түзмөктөрүнүн тейлөө шарттарын администраторуңуз кабыл алышы керек.</translation>
 <translation id="8101987792947961127">Жууп салуу аракети кийинки жолу кайра жүктөөдө т</translation>
 <translation id="8102159139658438129">Байланышкан телефондун параметрлерин көрүү үчүн <ph name="LINK_BEGIN" />Жөндөөлөргө<ph name="LINK_END" /> өтүңүз</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> түзмөгүңүздү "жууп салып", аны мурунку версиясына кайтарыңыз.</translation>

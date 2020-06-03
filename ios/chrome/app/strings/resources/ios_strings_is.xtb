@@ -338,6 +338,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5300589172476337783">Sýna</translation>
 <translation id="5317780077021120954">Vista</translation>
 <translation id="5327248766486351172">Heiti</translation>
+<translation id="5352285283572729470">Þessari stillingu er stjórnað</translation>
 <translation id="5388358297987318779">Opna mynd</translation>
 <translation id="5407969256130905701">Fleygja breytingum</translation>
 <translation id="5409365236829784218">Engin uppsett forrit geta opnað þessa skrá.</translation>
@@ -375,6 +376,7 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 <translation id="5869029295770560994">Ég skil</translation>
 <translation id="5871497086027727873">Eitt atriði fært</translation>
 <translation id="5897956970858271241">Opna afritaðan tengil</translation>
+<translation id="5899314093904173337">Ef þú vilt deila með fólki í nágrenninu skaltu láta það skanna þennan QR-kóða með myndavélinni sinni eða QR-forriti</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">Valkostir fyrir þýðingu þessarar síðu</translation>
 <translation id="5938160824633642847">Tækið er næstum því fullt. Losaðu um pláss og reyndu aftur.</translation>
@@ -564,6 +566,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="8174524257672181687">Loka á öll fótspor (ekki mælt með)</translation>
 <translation id="8197543752516192074">Þýða síðu</translation>
 <translation id="8205564605687841303">Hætta við</translation>
+<translation id="8206354486702514201">Stjórnandi valdi þessa stillingu.</translation>
 <translation id="8225985093977202398">Myndir/skrár í skyndiminni</translation>
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8281781826761538115">Sjálfgefið – <ph name="DEFAULT_LOCALE" /></translation>

@@ -24,7 +24,7 @@ class CORE_EXPORT NGFragmentItems {
 
   wtf_size_t Size() const { return size_; }
 
-  using Span = base::span<const scoped_refptr<const NGFragmentItem>>;
+  using Span = base::span<const NGFragmentItem>;
   Span Items() const { return base::make_span(ItemsData(), size_); }
   bool Equals(const Span& span) const {
     return ItemsData() == span.data() && Size() == span.size();
@@ -33,7 +33,7 @@ class CORE_EXPORT NGFragmentItems {
 
   const NGFragmentItem& front() const {
     CHECK_GE(size_, 1u);
-    return *items_[0];
+    return items_[0];
   }
 
   const String& Text(bool first_line) const {
@@ -69,9 +69,7 @@ class CORE_EXPORT NGFragmentItems {
   wtf_size_t ByteSize() const { return ByteSizeFor(Size()); }
 
  private:
-  const scoped_refptr<const NGFragmentItem>* ItemsData() const {
-    return reinterpret_cast<const scoped_refptr<const NGFragmentItem>*>(items_);
-  }
+  const NGFragmentItem* ItemsData() const { return items_; }
 
   static bool CanReuseAll(NGInlineCursor* cursor);
   bool TryDirtyFirstLineFor(const LayoutObject& layout_object) const;
@@ -89,7 +87,7 @@ class CORE_EXPORT NGFragmentItems {
   static_assert(
       sizeof(NGFragmentItem*) == sizeof(scoped_refptr<const NGFragmentItem>),
       "scoped_refptr must be the size of a pointer for |ItemsData()| to work");
-  NGFragmentItem* items_[];
+  NGFragmentItem items_[0];
 };
 
 }  // namespace blink

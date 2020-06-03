@@ -70,7 +70,7 @@ using content::OpenURLParams;
 using content::WebContents;
 
 // If non-null there is a drag underway.
-static TabDragController* g_tab_drag_controller = NULL;
+static TabDragController* g_tab_drag_controller = nullptr;
 
 namespace {
 
@@ -408,7 +408,7 @@ TabDragController::TabDragController()
 
 TabDragController::~TabDragController() {
   if (g_tab_drag_controller == this)
-    g_tab_drag_controller = NULL;
+    g_tab_drag_controller = nullptr;
 
   if (move_loop_widget_)
     move_loop_widget_->RemoveObserver(this);
@@ -1320,7 +1320,7 @@ void TabDragController::Detach(ReleaseCapture release_capture) {
 
   ClearTabDraggingInfo();
   attached_context_->DraggedTabsDetached();
-  attached_context_ = NULL;
+  attached_context_ = nullptr;
   attached_views_.clear();
 }
 
@@ -1441,7 +1441,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
     // Activate may trigger a focus loss, destroying us.
     if (!ref)
       return;
-    tab_strip_to_attach_to_after_exit_ = NULL;
+    tab_strip_to_attach_to_after_exit_ = nullptr;
   } else if (current_state_ == DragState::kWaitingToStop) {
     EndDrag(result == views::Widget::MOVE_LOOP_CANCELED ? END_DRAG_CANCEL
                                                         : END_DRAG_COMPLETE);

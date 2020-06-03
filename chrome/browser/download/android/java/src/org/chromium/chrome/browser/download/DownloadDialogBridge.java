@@ -28,8 +28,8 @@ import java.util.ArrayList;
 /**
  * Helper class to handle communication between download location dialog and native.
  */
-public class DownloadLocationDialogBridge implements ModalDialogProperties.Controller {
-    private long mNativeDownloadLocationDialogBridge;
+public class DownloadDialogBridge implements ModalDialogProperties.Controller {
+    private long mNativeDownloadDialogBridge;
     private PropertyModel mDialogModel;
     private DownloadLocationCustomView mCustomView;
     private ModalDialogManager mModalDialogManager;
@@ -38,18 +38,18 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
     private String mSuggestedPath;
     private Context mContext;
 
-    private DownloadLocationDialogBridge(long nativeDownloadLocationDialogBridge) {
-        mNativeDownloadLocationDialogBridge = nativeDownloadLocationDialogBridge;
+    private DownloadDialogBridge(long nativeDownloadDialogBridge) {
+        mNativeDownloadDialogBridge = nativeDownloadDialogBridge;
     }
 
     @CalledByNative
-    public static DownloadLocationDialogBridge create(long nativeDownloadLocationDialogBridge) {
-        return new DownloadLocationDialogBridge(nativeDownloadLocationDialogBridge);
+    public static DownloadDialogBridge create(long nativeDownloadDialogBridge) {
+        return new DownloadDialogBridge(nativeDownloadDialogBridge);
     }
 
     @CalledByNative
     private void destroy() {
-        mNativeDownloadLocationDialogBridge = 0;
+        mNativeDownloadDialogBridge = 0;
         if (mModalDialogManager != null) {
             mModalDialogManager.dismissDialog(
                     mDialogModel, DialogDismissalCause.DISMISSED_BY_NATIVE);
@@ -119,9 +119,8 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
             if (dir.type == DirectoryOption.DownloadLocationDirectoryType.DEFAULT) {
                 assert (!TextUtils.isEmpty(dir.location));
                 setDownloadAndSaveFileDefaultDirectory(dir.location);
-                DownloadLocationDialogBridgeJni.get().onComplete(
-                        mNativeDownloadLocationDialogBridge, DownloadLocationDialogBridge.this,
-                        mSuggestedPath);
+                DownloadDialogBridgeJni.get().onComplete(
+                        mNativeDownloadDialogBridge, DownloadDialogBridge.this, mSuggestedPath);
             }
             return;
         }
@@ -195,7 +194,7 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
         }
 
         // Update native with new path.
-        if (mNativeDownloadLocationDialogBridge != 0) {
+        if (mNativeDownloadDialogBridge != 0) {
             setDownloadAndSaveFileDefaultDirectory(directoryOption.location);
 
             RecordHistogram.recordEnumeratedHistogram(
@@ -203,8 +202,8 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
                     DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
 
             File file = new File(directoryOption.location, fileName);
-            DownloadLocationDialogBridgeJni.get().onComplete(mNativeDownloadLocationDialogBridge,
-                    DownloadLocationDialogBridge.this, file.getAbsolutePath());
+            DownloadDialogBridgeJni.get().onComplete(
+                    mNativeDownloadDialogBridge, DownloadDialogBridge.this, file.getAbsolutePath());
         }
 
         // Update preference to show prompt based on whether checkbox is checked only when the user
@@ -217,9 +216,9 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
     }
 
     private void cancel() {
-        if (mNativeDownloadLocationDialogBridge != 0) {
-            DownloadLocationDialogBridgeJni.get().onCanceled(
-                    mNativeDownloadLocationDialogBridge, DownloadLocationDialogBridge.this);
+        if (mNativeDownloadDialogBridge != 0) {
+            DownloadDialogBridgeJni.get().onCanceled(
+                    mNativeDownloadDialogBridge, DownloadDialogBridge.this);
         }
     }
 
@@ -227,14 +226,14 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
      * @return The stored download default directory.
      */
     public static String getDownloadDefaultDirectory() {
-        return DownloadLocationDialogBridgeJni.get().getDownloadDefaultDirectory();
+        return DownloadDialogBridgeJni.get().getDownloadDefaultDirectory();
     }
 
     /**
      * @param directory New directory to set as the download default directory.
      */
     public static void setDownloadAndSaveFileDefaultDirectory(String directory) {
-        DownloadLocationDialogBridgeJni.get().setDownloadAndSaveFileDefaultDirectory(directory);
+        DownloadDialogBridgeJni.get().setDownloadAndSaveFileDefaultDirectory(directory);
     }
 
     /**
@@ -254,10 +253,9 @@ public class DownloadLocationDialogBridge implements ModalDialogProperties.Contr
 
     @NativeMethods
     interface Natives {
-        void onComplete(long nativeDownloadLocationDialogBridge,
-                DownloadLocationDialogBridge caller, String returnedPath);
-        void onCanceled(
-                long nativeDownloadLocationDialogBridge, DownloadLocationDialogBridge caller);
+        void onComplete(
+                long nativeDownloadDialogBridge, DownloadDialogBridge caller, String returnedPath);
+        void onCanceled(long nativeDownloadDialogBridge, DownloadDialogBridge caller);
         String getDownloadDefaultDirectory();
         void setDownloadAndSaveFileDefaultDirectory(String directory);
     }

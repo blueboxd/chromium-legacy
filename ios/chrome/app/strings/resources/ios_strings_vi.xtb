@@ -338,6 +338,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5327248766486351172">Tên</translation>
+<translation id="5352285283572729470">Mục cài đặt này được quản lý</translation>
 <translation id="5388358297987318779">Mở hình ảnh</translation>
 <translation id="5407969256130905701">Hủy các thay đổi</translation>
 <translation id="5409365236829784218">Không có ứng dụng nào được cài đặt có thể mở tệp này.</translation>
@@ -564,6 +565,7 @@ Vì tài khoản của bạn do <ph name="HOSTED_DOMAIN" /> quản lý, nên d�
 <translation id="8174524257672181687">Chặn tất cả cookie (Không khuyến nghị)</translation>
 <translation id="8197543752516192074">Dịch trang</translation>
 <translation id="8205564605687841303">Hủy</translation>
+<translation id="8206354486702514201">Cài đặt này được quản trị viên của bạn thực thi.</translation>
 <translation id="8225985093977202398">Tệp và hình ảnh được lưu vào bộ nhớ đệm</translation>
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8281781826761538115">Mặc định - <ph name="DEFAULT_LOCALE" /></translation>

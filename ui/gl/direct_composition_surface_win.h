@@ -31,6 +31,8 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   using VSyncCallback =
       base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
 
+  using OverlayHDRInfoUpdateCallback = base::RepeatingClosure;
+
   struct Settings {
     bool disable_nv12_dynamic_textures = false;
     bool disable_larger_than_screen_overlays = false;
@@ -90,6 +92,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
   static void SetOverlayFormatUsedForTesting(DXGI_FORMAT format);
+
+  static void SetOverlayHDRGpuInfoUpdateCallback(
+      OverlayHDRInfoUpdateCallback callback);
 
   // GLSurfaceEGL implementation.
   bool Initialize(GLSurfaceFormat format) override;

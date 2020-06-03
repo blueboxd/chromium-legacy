@@ -140,8 +140,6 @@ blink_core_sources("loader") {
     "subresource_filter.h",
     "subresource_integrity_helper.cc",
     "subresource_integrity_helper.h",
-    "text_resource_decoder_builder.cc",
-    "text_resource_decoder_builder.h",
     "text_track_loader.cc",
     "text_track_loader.h",
     "threadable_loader.cc",

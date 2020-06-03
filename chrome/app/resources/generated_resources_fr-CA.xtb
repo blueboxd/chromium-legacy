@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">Le mot de passe a expiré</translation>
 <translation id="1630768113285622200">Redémarrer et continuer</translation>
 <translation id="1630873818549593964">Les données de votre enfant dans Classroom seront protégées. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">Mots de passe enregistrés dans votre compte Google</translation>
 <translation id="1632803087685957583">Permet d'ajuster la fréquence de répétition de votre clavier, la prédiction des mots et plus encore</translation>
 <translation id="1633947793238301227">Désactiver l'Assistant Google</translation>
 <translation id="1634783886312010422">Avez-vous déjà changé ce mot de passe sur <ph name="WEBSITE" />?</translation>
@@ -1580,6 +1581,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="296026337010986570">Terminé! Logiciel nuisible supprimé. Pour activer à nouveau les extensions, consultez la page &lt;a href="chrome://extensions"&gt;Extensions&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extension fournie)</translation>
 <translation id="2961695502793809356">Cliquer pour avancer, maintenir enfoncé pour voir l'historique</translation>
+<translation id="2962131322798295505">Sélecteur de fond d'écran</translation>
 <translation id="2963151496262057773">Le plugiciel suivant ne répond pas : <ph name="PLUGIN_NAME" />. Voulez-vous l'arrêter?</translation>
 <translation id="2964193600955408481">Désactiver le réseau Wi-Fi</translation>
 <translation id="2966937470348689686">Gérer les préférences Android</translation>
@@ -2129,6 +2131,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3677106374019847299">Entrer un fournisseur personnalisé</translation>
 <translation id="3677657024345889897">Le plus faible</translation>
 <translation id="3677911431265050325">Voir la version pour appareil mobile</translation>
+<translation id="3677959414150797585">Comprend les applications, les pages Web et plus. Envoie des statistiques afin d'améliorer les suggestions seulement si vous avez choisi de partager les données d'utilisation.</translation>
 <translation id="3678156199662914018">Extension : <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Voix de la synthèse vocale</translation>
 <translation id="3681311097828166361">Nous vous remercions de vos commentaires. Vous êtes actuellement hors connexion, et votre rapport sera envoyé plus tard.</translation>
@@ -2540,6 +2543,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4154664944169082762">Empreintes</translation>
 <translation id="4157869833395312646">Chiffrement par portes de serveur Microsoft</translation>
 <translation id="4159681666905192102">Ce compte est destiné aux enfants. Il est géré par <ph name="CUSTODIAN_EMAIL" /> et <ph name="SECOND_CUSTODIAN_EMAIL" />.</translation>
+<translation id="4159784952369912983">Mauve</translation>
 <translation id="4163560723127662357">Clavier inconnu</translation>
 <translation id="4168015872538332605">Certains paramètres appartenant à <ph name="PRIMARY_EMAIL" /> sont partagés avec vous. Ces paramètres n'influent sur votre compte que lors de l'utilisation de connexions multicomptes.</translation>
 <translation id="4170314459383239649">Effacement à la sortie</translation>
@@ -2883,6 +2887,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4645676300727003670">&amp;Conserver</translation>
 <translation id="4646675363240786305">Ports</translation>
 <translation id="4647090755847581616">&amp;Fermer l'onglet</translation>
+<translation id="4647420311443994946">{0,select, tablet{Démarrer l'application lorsque vous vous connectez à votre tablette}computer{Démarrer l'application lorsque vous vous connectez à votre ordinateur}other{Démarrer l'application lorsque vous vous connectez à votre appareil}}</translation>
 <translation id="4647697156028544508">Veuillez entrer le NIP pour l'appareil « <ph name="DEVICE_NAME" /> » :</translation>
 <translation id="4648491805942548247">Autorisations insuffisantes.</translation>
 <translation id="4648499713050786492">Veuillez déverrouiller votre profil avant d'ajouter une personne.</translation>
@@ -2895,6 +2900,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4660540330091848931">Redimensionnement en cours…</translation>
 <translation id="4660838440047236328">la disposition de votre pièce.</translation>
 <translation id="4661407454952063730">Les données d'application correspondent à toutes les données enregistrées par une application (en fonction des paramètres définis par le concepteur), y compris les données comme les contacts, les messages et les photos.</translation>
+<translation id="4662373422909645029">Aucun chiffre dans le pseudo</translation>
 <translation id="4662788913887017617">Partagez ce favori avec votre iPhone</translation>
 <translation id="4663373278480897665">La caméra est autorisée</translation>
 <translation id="4664482161435122549">Erreur d'exportation de fichiers PKCS n° 12</translation>
@@ -3589,6 +3595,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5585912436068747822">Échec du formatage</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Chargement des applications en cours…</translation>
+<translation id="558984423786125616">Ce port existe déjà dans les paramètres</translation>
 <translation id="5592595402373377407">Données insuffisantes pour l'instant.</translation>
 <translation id="5593357315997824387">Synchroniser mes fichiers</translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
@@ -3632,6 +3639,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5639549361331209298">Actualiser cette page, maintenir enfoncé pour obtenir davantage d'options</translation>
 <translation id="5640133431808313291">Gérer les clés de sécurité</translation>
 <translation id="5642508497713047">Signataire de la liste de révocation de certificats</translation>
+<translation id="5643321261065707929">Réseau à connexion mesurée</translation>
 <translation id="5643620609347735571">Effacer et continuer</translation>
 <translation id="5644857731242502394">Configuration des appareils connectés</translation>
 <translation id="5646376287012673985">Lieu</translation>
@@ -3776,6 +3784,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - Enregistrement de la caméra ou du micro</translation>
 <translation id="5841270259333717135">Configurer l'Ethernet</translation>
 <translation id="5842497610951477805">Activer le Bluetooth</translation>
+<translation id="5844574845205796324">Suggérer du nouveau contenu à explorer</translation>
 <translation id="5846200638699387931">Erreur de syntaxe de relation : <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Installer les mises à jour et les applications. En continuant, vous acceptez que cet appareil puisse également télécharger et installer automatiquement des mises à jour et des applications de Google, de votre fournisseur de services et du fabricant de l'appareil, possiblement par l'intermédiaire du réseau de données cellulaires. Certaines de ces applications peuvent proposer des achats au moyen de l'application.</translation>
 <translation id="5849212445710944278">Déjà ajouté</translation>
@@ -5540,6 +5549,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
     <ph name="BEGIN_PARAGRAPH5" />Vous pouvez désactiver ce service dans les paramètres.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Les NIP ne correspondent pas</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> utilise les paramètres mandataires d'une extension</translation>
+<translation id="8097959162767603171">Votre administrateur doit tout d'abord accepter les conditions d'utilisation dans la liste d'appareils de la console d'administrateur de Chrome.</translation>
 <translation id="8101987792947961127">Réinitialisation « Powerwash » nécessaire au prochain démarrage</translation>
 <translation id="8102159139658438129">Accédez à <ph name="LINK_BEGIN" />Paramètres<ph name="LINK_END" /> pour afficher les options de votre téléphone connecté</translation>
 <translation id="8104696615244072556">Utilisez la fonction Powerwash sur votre appareil <ph name="IDS_SHORT_PRODUCT_NAME" /> et revenez à la version précédente.</translation>

@@ -165,6 +165,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void MaybeShutdownGpuProcess() override;
 #if defined(OS_WIN)
   void DidUpdateOverlayInfo(const gpu::OverlayInfo& overlay_info) override;
+  void DidUpdateHDRStatus(bool hdr_enabled) override;
 #endif
   void BlockDomainFrom3DAPIs(const GURL& url, gpu::DomainGuilt guilt) override;
   void DisableGpuCompositing() override;

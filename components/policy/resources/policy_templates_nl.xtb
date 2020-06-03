@@ -1221,6 +1221,9 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
+<translation id="2787774054174244402">Als je het beleid instelt op 'True', kunnen gebruikers niets naar externe opslagapparaten schrijven.
+
+      Als je 'ExternalStorageReadOnly' instelt op 'False' of niet instelt, kunnen gebruikers bestanden voor externe opslagapparaten met schrijffunctie maken en wijzigen, tenzij de externe opslag is geblokkeerd. (Je kunt externe opslag blokkeren door 'ExternalStorageDisable' in te stellen op 'True'.)</translation>
 <translation id="2799297758492717491">Automatisch afspelen van media toestaan op een witte lijst met URL-patronen</translation>
 <translation id="2801065672151277034">Instellingen voor certificaatbeheer</translation>
 <translation id="2801155097555584385">Een custom startpunt voor batterijoplading opgeven in procenten</translation>
@@ -1344,6 +1347,12 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
 <translation id="2987155890997901449">ARC inschakelen</translation>
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
+<translation id="299519952839316970">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 88. Openbare sessies worden niet meer ondersteund. Gebruik <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> om beheerde gastsessies te configureren.
+      Als dit beleid is ingesteld op 'False', gedragen beheerde gastsessies zich zoals aangegeven in https://support.google.com/chrome/a/answer/3017014 - de standaard 'Openbare sessie'.
+
+      Als dit beleid is ingesteld op 'True' of niet is ingesteld, hanteren beheerde gastsessie het gedrag van een beheerde sessie, waardoor veel van de beperkingen voor reguliere openbare sessies komen te vervallen.
+
+      Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.</translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm toevoegen aan de witte lijst</translation>
 <translation id="3020064401262077616">Hiermee bepaal je de beleidsregels voor ouderlijk toezicht, die alleen op kinderaccounts worden toegepast.</translation>
 <translation id="3020953534071988875">Als je dit beleid configureert, wordt Ambient-verificatie voor incognito- en gastprofielen toegestaan/niet toegestaan in <ph name="PRODUCT_NAME" />.
@@ -1400,6 +1409,17 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
       Als dit beleid niet is ingesteld of als de vervanging geen geldige hostnaam oplevert, wordt er geen hostnaam ingesteld in het DHCP-verzoek. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
+<translation id="3063659901357934128">Hiermee kan <ph name="PRODUCT_NAME" /> experimentele beleidsregels laden.
+
+        WAARSCHUWING: Experimentele beleidsregels worden niet ondersteund en kunnen zonder kennisgeving worden gewijzigd of verwijderd uit toekomstige versies van de browser.
+
+        Een experimentele beleidsregel is mogelijk niet compleet of kan bekende of onbekende fouten bevatten. De beleidsregel kan zonder kennisgeving worden gewijzigd of zelfs worden verwijderd. Door experimentele beleidsregels in te schakelen, kun je browsergegevens kwijtraken of je veiligheid of privacy in gevaar brengen.
+
+        Als een beleidsregel niet in de lijst wordt vermeld en niet officieel is uitgebracht, wordt de waarde hiervan genegeerd in de bètaversie en de stabiele versie van Chrome.
+
+        Als een beleidsregel in de lijst wordt vermeld en niet officieel is uitgebracht, wordt de waarde hiervan toegepast.
+
+        Dit beleid heeft geen invloed op al uitgebrachte beleidsregels.</translation>
 <translation id="3066446511111537292">Toestaan dat gekoppelde gebruikers van dit apparaat ADB-sideloading gebruiken</translation>
 <translation id="3069958900488014740">Hiermee kan WPAD-optimalisatie (Web Proxy Auto-Discovery) worden uitgeschakeld in <ph name="PRODUCT_NAME" />.
 
@@ -1734,6 +1754,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="3583230441447348508">Specificeert een lijst vooraf geconfigureerde netwerk-fileshares.
 
       Elk lijstitem in het beleid is een object met twee leden: 'share_url' en 'mode'. 'share_url' moet de URL zijn van de fileshare en 'mode' moet 'drop_down' of 'pre_mount' zijn. De modus 'drop_down' geeft aan dat 'share_url' wordt toegevoegd aan het dropdownmenu voor het ontdekken van fileshares. De modus 'pre_mount' geeft aan dat 'share_url' is geactiveerd (mounted).</translation>
+<translation id="3584194414857209694">Hiermee worden experimentele beleidsregels ingeschakeld</translation>
 <translation id="3585177699591644295">De toegankelijkheidsfunctie 'Selecteer om uitgesproken te worden' inschakelen.
 
           Als dit beleid is ingesteld op True, is de functie 'Selecteer om uitgesproken te worden' altijd ingeschakeld.
@@ -1947,6 +1968,19 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
           Als de optie niet is ingesteld of is ingesteld op 'False', kunnen gebruikers bestanden naar Google Drive overzetten.</translation>
 <translation id="3915395663995367577">URL naar een PAC-bestand voor de proxy</translation>
+<translation id="3917288538553140422">Als je het beleid instelt, geef je de actie op die moet worden uitgevoerd als de homedirectory van de gebruiker is gemaakt met ecryptfs-versleuteling. Tenzij homedirectory's met ecryptfs-versleuteling worden overgezet naar ext4-versleuteling, worden Android-apps mogelijk gestopt.
+
+      Als het beleid wordt ingesteld op:
+
+      * 'Migrate' (of een niet-ondersteunde optie, zoals 'AskUser' of 'AskForEcryptfsArcUsers'), worden directory's automatisch overgezet naar ext4 zodra er wordt ingelogd, zonder de gebruiker om toestemming te vragen.
+
+      * 'Wipe' of 'MinimalMigrate', worden de oude directory's met ecryptfs-versleuteling bij het inloggen vervangen door nieuwe homedirectory's met ext4-versleuteling. 'MinimalMigrate' probeert inlogtokens te onthouden om zo herhaalde inlogacties te voorkomen.
+
+      * 'DisallowArc' of als het beleid niet wordt ingesteld, kunnen de directory's niet worden overgezet en werken de Android-apps van de gebruiker niet meer.
+
+      Dit beleid is niet van toepassing op Kiosk-gebruikers.
+
+      Waarschuwing: Met 'Wipe' en 'MinimalMigrate' worden lokale gegevens verwijderd.</translation>
 <translation id="3925377537407648234">Schermresolutie en schaalfactor instellen</translation>
 <translation id="3927137827189017535">De toegankelijkheidsfunctie voor plaktoetsen op het inlogscherm inschakelen.
 
@@ -2978,6 +3012,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Dit beleid zal worden verwijderd in <ph name="PRODUCT_NAME" /> voor Mac OS X-versie 87, als de support voor de verouderde certificaatverificatie in Mac OS X ook zal worden verwijderd.
       </translation>
+<translation id="5494917047563607689">Als je het beleid instelt op een waarde lager dan 1 MB of als dit beleid niet wordt ingesteld, gebruikt <ph name="PRODUCT_OS_NAME" /> de standaardgrootte voor het opslaan van apps en extensies in het cachegeheugen voor installaties door meerdere gebruikers van één apparaat. Hierdoor is het niet nodig om elke app of extensie voor elke gebruiker opnieuw te downloaden.</translation>
 <translation id="5498045818698736356">Specificeert een lijst met web-apps die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door de gebruiker.
 
       Elk lijstitem van het beleid is een object met een verplicht element: 'url' en twee optionele elementen: 'default_launch_container' en 'create_desktop_shortcut'. 'url' moet de URL van de te installeren web-app zijn en 'launch_container' moet 'window' of 'tab' zijn om aan te duiden hoe de web-app na de installatie wordt geopend. 'create_desktop_shortcut' moet zijn ingesteld op True als er een snelkoppeling moet worden gemaakt op Linux en Windows. Als 'default_launch_container' wordt weggelaten, wordt de app standaard geopend in een tabblad. Gebruikers kunnen wijzigen in welke container de app wordt geopend, ongeacht de waarde van 'default_launch_container'. Als 'create_desktop_shortcuts' wordt weggelaten, worden er geen snelkoppelingen gemaakt. Bekijk het beleid <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> voor het vastzetten van apps op de Chrome OS-plank.</translation>
@@ -3032,6 +3067,15 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als dit beleid is ingesteld op False of niet is ingesteld, worden de waarschuwingen weergegeven op dergelijke niet-ondersteunde computers of besturingssystemen.</translation>
 <translation id="5565178130821694365">Het wachtwoord moet elke twee dagen (48 uur) worden opgegeven</translation>
+<translation id="556564360355507488">Als je dit beleid configureert, kun je opgeven welke varianten mogen worden toegepast op een zakelijk beheerd <ph name="PRODUCT_OS_NAME" />-apparaat.
+
+      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_OS_NAME" /> aan te bieden zonder een nieuwe versie te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld.
+
+      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op <ph name="PRODUCT_OS_NAME" />.
+
+      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_OS_NAME" />.
+
+      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten op de browser worden toegepast op het inlogscherm. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_OS_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="5566210228171064229">Afdrukken zowel met als zonder pincode toestaan</translation>
 <translation id="557360560705413259">Wanneer deze instelling is ingeschakeld, gebruikt <ph name="PRODUCT_NAME" /> de commonName van een servercertificaat, zodat deze overeenkomt met een hostnaam als er een subjectAlternativeName-extensie ontbreekt voor het certificaat, zolang het certificaat kan worden gevalideerd en is gekoppeld aan lokaal geïnstalleerd CA-certificaten.
 
@@ -3348,6 +3392,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als dit beleid is ingesteld op 'Grote bestandsuploads en -downloads blokkeren', werkt <ph name="PRODUCT_NAME" /> in overeenstemming met de regels die worden beschreven onder 'Grote downloads blokkeren' en 'Grote uploads blokkeren'.
       </translation>
+<translation id="6082161804984853051">Als je het beleid instelt, kan <ph name="PRODUCT_NAME" /> de door jou opgegeven directory gebruiken voor de opslag van gecachte bestanden op de schrijf, ongeacht of gebruikers de optie '--disk-cache-dir' hebben opgegeven.
+
+      Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de standaard cachedirectory. Gebruikers kunnen die instelling echter wijzigen met behulp van de opdrachtregel '--disk-cache-dir'.
+
+      <ph name="PRODUCT_NAME" /> beheert de inhoud van de root-map van een volume. Als je gegevensverlies of andere fouten wilt voorkomen, moet je dit beleid niet instellen op de root-map of een directory die voor andere doeleinden wordt gebruikt. Bekijk de variabelen die je kunt gebruiken (https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables).</translation>
 <translation id="6083631234867522991">Windows (Windows-clients):</translation>
 <translation id="608788685013546076">Drempel voor stroompiekverschuiving van batterij instellen in procenten</translation>
 <translation id="6089679180657323464">Hiermee beheer je de instellingen voor wilco DTC.</translation>
@@ -3767,6 +3816,15 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6786747875388722282">Extensies</translation>
 <translation id="6786967369487349613">De map voor roaming-profielen instellen</translation>
 <translation id="6795485990775913659">Alleen afdrukken toestaan zonder pincode</translation>
+<translation id="6799657852647827750">Als je dit beleid instelt, kun je opgeven welke varianten mogen worden toegepast in <ph name="PRODUCT_NAME" />.
+
+      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_NAME" /> aan te bieden zonder een nieuwe versie van de browser te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld.
+
+      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op de browser.
+
+      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_NAME" />.
+
+      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten worden toegepast op de browser. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="6810445994095397827">JavaScript blokkeren op deze sites</translation>
 <translation id="6813263547126514821">Energiebeheer en uitschakelen</translation>
 <translation id="681446116407619279">Ondersteunde authenticatieschema's</translation>
@@ -4053,6 +4111,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als dit beleid is ingesteld op 'true' of als het niet is ingesteld, worden wake locks van het scherm ingesteld voor stroombeheer, tenzij AllowWakeLocks is ingesteld op 'false'.
 
           Als dit beleid is ingesteld op 'false', worden verzoeken voor wake locks van het scherm gedegradeerd tot verzoeken voor wake locks van het systeem.</translation>
+<translation id="7177293255621000064">Als je het beleid instelt op 'True', zijn alle typen externe opslagmedia (USB-sticks, externe harde schijven, SD's en andere geheugenkaarten, optische opslagapparaten) niet meer beschikbaar in de bestandsbrowser. Als je het beleid instelt op 'False' of niet instelt, kunnen gebruikers externe opslag gebruiken op hun apparaat.
+
+      Opmerking: Het beleid heeft geen invloed op Google Drive en interne opslag. Gebruikers kunnen bestanden die zijn opgeslagen in de map 'Downloads' nog steeds openen.</translation>
 <translation id="7177857088692019405">Snel ontgrendelen</translation>
 <translation id="718126088895133062">Met dit beleid wordt de licentiegebruikers-ID voor <ph name="PLUGIN_VM_NAME" /> voor dit apparaat opgegeven.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5253,6 +5314,11 @@ Dit beleid wordt verwijderd in M75.</translation>
           Als het apparaat het beleid wel ondersteunt, maar het beleid niet wordt ingesteld, wordt de standaard batterijoplaadmodus toegepast en kan de gebruiker de modus niet wijzigen.
 
           Opmerking: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
+<translation id="9055835215213290877">Als je het beleid instelt op 'None', gebruikt <ph name="PRODUCT_NAME" /> de standaard cachegrootte om gecachte bestanden op de schijf op te slaan. Gebruikers kunnen deze instelling niet wijzigen.
+
+      Als je het beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de door jou opgegeven cachegrootte, ongeacht of gebruikers de optie '--disk-cache-size' hebben opgegeven. (Waarden onder enkele megabytes worden naar boven afgerond.)
+
+      Als dit beleid niet is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> de standaardgrootte. Gebruikers kunnen deze instelling wijzigen met behulp van de optie '--disk-cache-size'.</translation>
 <translation id="9077227880520270584">Timer voor automatisch inloggen op lokaal account op apparaat</translation>
 <translation id="9084985621503260744">Specificeer of videoactiviteit invloed heeft op stroombeheer</translation>
 <translation id="9088433379343318874">Contentprovider voor de gebruiker met beperkte rechten inschakelen</translation>

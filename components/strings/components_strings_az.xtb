@@ -205,6 +205,11 @@
 <translation id="1753706481035618306">Səhifə nömrəsi</translation>
 <translation id="1763864636252898013">Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun təhlükəsizlik sertifikatı cihazınızın əməliyyat sistemi tərəfindən doğrulanmayıb. Buna səbəb yanlış konfiqurasiya və ya hücumçu tərəfindən bağlantınızın ələ keçirilməsi ola bilər.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows Şəbəkə Diaqnostikasını işlətməyə çalışın<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Daxil olduğunuz server (<ph name="ORIGIN" />) ona yönləndirilən
+    bütün sorğulara mənbə siyasətin tətbiq edilməsini tələb edən başlıq ayarlayıb. Lakin
+    başlıq yanlış formadadır, bu da brauzerin <ph name="SITE" />
+    üzrə olan sorğunuzu yerinə yetirməsinə mane olur. Mənbə siyasətlər 
+    təhlükəsizlik və digər xüsusiyyətləri konfiqurasiya etmək üçün sayt operatorları tərəfindən istifadə edilə bilər.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Lütfən, sinxronizasiya parol ifadəsini güncəlləşdirin.</translation>
 <translation id="1787142507584202372">Açıq tablarınız burada görünür</translation>
@@ -228,6 +233,7 @@
 <translation id="1898423065542865115">Təmizləmə</translation>
 <translation id="1901443836186977402">{1,plural, =1{Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun güvənlik sertifikatının vaxtı dünən bitib. Buna səbəb yanlış konfiqurasiya və ya hücum edən tərəfindən bağlantınızın ələ keçirilməsi ola bilər. Kompüterinizin saatı hazırda <ph name="CURRENT_DATE" />. Düzgündür? Deyilsə, sistem saatını düzəldib daha sonra səhifəni təzələməlisiniz.}other{Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun güvənlik sertifikatının vaxtı # gün öncə bitib. Buna səbəb yanlış konfiqurasiya və ya hücum edən tərəfindən bağlantınızın ələ keçirilməsi ola bilər. Kompüterinizin saatı hazırda <ph name="CURRENT_DATE" />. Düzgündür? Deyilsə, sistem saatını düzəldib daha sonra səhifəni təzələməlisiniz.}}</translation>
 <translation id="1902576642799138955">Doğrulama müddəti</translation>
+<translation id="191374271204266022">JSON olaraq kopyalayın</translation>
 <translation id="1914326953223720820">Faylların Açılması</translation>
 <translation id="1915697529809968049">CVC əvəzinə Toxunuş ID-i istifadə edilsin?</translation>
 <translation id="1916770123977586577">Yenilənən ayarları bu sayta tətbiq etmək üçün səhifəni təkrar yükləyin</translation>
@@ -701,6 +707,8 @@
     Bunun səhvən göstərildiyini düşünürsünüzsə, bu ünvana baş çəkin: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">1 MB-dan az</translation>
 <translation id="3990250421422698716">Kənarını bükün</translation>
+<translation id="3996311196211510766"><ph name="ORIGIN" /> saytı ona yönləndirilən
+    bütün sorğulara mənbə siyasətin tətbiq edilməsini tələb edib, lakin bu siyasət hazırda tətbiq edilə bilmir.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 veb səhifəsi yaxınlıqdadır}other{# veb səhifəsi yaxınlıqdadır}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} səhifədən ibarət PDF sənədi}other{{COUNT} səhifədən ibarət PDF sənədi}}</translation>
 <translation id="4030383055268325496">Əlavəni geri qaytarın</translation>
@@ -745,6 +753,10 @@
 <translation id="4194250254487269611">Hazırda kartınızı yadda saxlamaq mümkün deyil</translation>
 <translation id="4196861286325780578">Hərəkəti təkrarlayın</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />güvənlik divarı və antivirus konfiqurasiyaları yoxlanılır<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Daxil olacağınız server <ph name="ORIGIN" />, ona göndərilən bütün giriş sorğulara
+    mənbə siyasətinin tətbiq edilməsini tələb edib. Lakin indi
+    siyasəti icra etmək alınmadı, bu isə brauzerin <ph name="SITE" /> saytı üçün sorğunuzu yerinə yetirməsinə icazə vermir. Mənbə siyasətlər
+    sayt üçün təhlükəsizlik və digər xüsusiyyətləri konfiqurasiya etmək üçün sayt operatorları tərəfindən istifadə edilə bilər.</translation>
 <translation id="421066178035138955">Virtual reallıq cihazları və datanı istifadə etmək</translation>
 <translation id="4214357935346142455">giriş ekranı profili</translation>
 <translation id="4215751373031079683">7x9 (Zərf)</translation>
@@ -1235,6 +1247,7 @@
 <translation id="6259156558325130047">&amp;Təkrar sıralamanı yenidən edin</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> əlfəcinləri</translation>
 <translation id="6264485186158353794">Güvənliyə qayıdın</translation>
+<translation id="6265794661083428563"><ph name="POLICY_NAME" /> siyasətinin dəyərini kopyalayın</translation>
 <translation id="6266934640124581640">Açıq-firuzəyi</translation>
 <translation id="6272383483618007430">Google Güncəlləməsi</translation>
 <translation id="6276112860590028508">Oxu siyahısının səhifələri burada görünəcək</translation>

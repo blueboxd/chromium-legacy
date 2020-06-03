@@ -51,6 +51,15 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::
 
   ca_layer_tree_coordinator_.reset(new ui::CALayerTreeCoordinator(
       use_remote_layer_api_, allow_av_sample_buffer_display_layer));
+
+  // Create the CAContext to send this to the GPU process, and the layer for
+  // the context.
+  if (use_remote_layer_api_) {
+    CGSConnectionID connection_id = CGSMainConnectionID();
+    ca_context_.reset([[CAContext contextWithCGSConnection:connection_id
+                                                   options:@{}] retain]);
+    [ca_context_ setLayer:ca_layer_tree_coordinator_->GetCALayerForDisplay()];
+  }
 }
 
 template <typename BaseClass>
@@ -63,14 +72,6 @@ ImageTransportSurfaceOverlayMacBase<
 template <typename BaseClass>
 bool ImageTransportSurfaceOverlayMacBase<BaseClass>::Initialize(
     gl::GLSurfaceFormat format) {
-  // Create the CAContext to send this to the GPU process, and the layer for
-  // the context.
-  if (use_remote_layer_api_) {
-    CGSConnectionID connection_id = CGSMainConnectionID();
-    ca_context_.reset([
-        [CAContext contextWithCGSConnection:connection_id options:@{}] retain]);
-    [ca_context_ setLayer:ca_layer_tree_coordinator_->GetCALayerForDisplay()];
-  }
   return true;
 }
 
@@ -175,11 +176,13 @@ ImageTransportSurfaceOverlayMacBase<BaseClass>::SwapBuffersInternal(
 
   // Send the swap parameters to the browser.
   if (completion_callback) {
-    // TODO(https://crbug.com/894929): Add CALayerParams here.
-    gfx::SwapCompletionResult result(gfx::SwapResult::SWAP_ACK);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(std::move(completion_callback), std::move(result)));
+        base::BindOnce(
+            std::move(completion_callback),
+            gfx::SwapCompletionResult(
+                gfx::SwapResult::SWAP_ACK,
+                std::make_unique<gfx::CALayerParams>(params.ca_layer_params))));
   }
   delegate_->DidSwapBuffersComplete(std::move(params));
   constexpr int64_t kRefreshIntervalInMicroseconds =

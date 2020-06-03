@@ -338,6 +338,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5327248766486351172">Navn</translation>
+<translation id="5352285283572729470">Denne indstilling er administreret</translation>
 <translation id="5388358297987318779">Åbn billede</translation>
 <translation id="5407969256130905701">Kassér ændringer</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
@@ -375,6 +376,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">1 bogmærke blev flyttet</translation>
 <translation id="5897956970858271241">Gå til kopieret link</translation>
+<translation id="5899314093904173337">Du kan dele med folk i nærheden ved at få dem til at scanne denne QR-kode med deres kamera eller app til scanning af QR-koder</translation>
 <translation id="5911030830365207728">Google Oversæt</translation>
 <translation id="5913600720976431809">Valgmuligheder for oversættelse af side</translation>
 <translation id="5938160824633642847">Din enhed er ved at løbe tør for plads. Frigør plads, og prøv igen.</translation>
@@ -564,6 +566,7 @@ Eftersom din konto administreres af <ph name="HOSTED_DOMAIN" />, slettes dine Ch
 <translation id="8174524257672181687">Bloker alle cookies (anbefales ikke)</translation>
 <translation id="8197543752516192074">Oversæt side</translation>
 <translation id="8205564605687841303">Annuller</translation>
+<translation id="8206354486702514201">Denne indstilling håndhæves af din administrator.</translation>
 <translation id="8225985093977202398">Billeder og filer, der er gemt i cache</translation>
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8281781826761538115">Standardsprog – <ph name="DEFAULT_LOCALE" /></translation>

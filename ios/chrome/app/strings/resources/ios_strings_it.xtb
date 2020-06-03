@@ -338,6 +338,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="5352285283572729470">Questa impostazione è gestita</translation>
 <translation id="5388358297987318779">Apri immagine</translation>
 <translation id="5407969256130905701">Annulla modifiche</translation>
 <translation id="5409365236829784218">Non ci sono applicazioni installate in grado di aprire questo file.</translation>
@@ -564,6 +565,7 @@ Poiché il tuo account è gestito da <ph name="HOSTED_DOMAIN" />, i tuoi dati di
 <translation id="8174524257672181687">Blocca tutti i cookie (opzione non consigliata)</translation>
 <translation id="8197543752516192074">Traduci la pagina</translation>
 <translation id="8205564605687841303">Annulla</translation>
+<translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>
 <translation id="8225985093977202398">Immagini e file memorizzati nella cache</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="8281781826761538115">Predefinita - <ph name="DEFAULT_LOCALE" /></translation>

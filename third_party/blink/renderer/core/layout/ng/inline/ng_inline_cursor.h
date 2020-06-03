@@ -174,7 +174,7 @@ class CORE_EXPORT NGInlineCursorPosition {
   void Set(const ItemsSpan::iterator& iter) {
     DCHECK(!paint_fragment_);
     item_iter_ = iter;
-    item_ = iter->get();
+    item_ = &*iter;
   }
 
   void Clear() {

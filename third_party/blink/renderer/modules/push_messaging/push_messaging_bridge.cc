@@ -42,7 +42,7 @@ PushMessagingBridge* PushMessagingBridge::From(
 PushMessagingBridge::PushMessagingBridge(
     ServiceWorkerRegistration& registration)
     : Supplement<ServiceWorkerRegistration>(registration),
-      permission_service_(nullptr) {}
+      permission_service_(registration.GetExecutionContext()) {}
 
 PushMessagingBridge::~PushMessagingBridge() = default;
 

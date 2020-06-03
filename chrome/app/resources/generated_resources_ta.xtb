@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">கடவுச்சொல் காலாவதியாகிவிட்டது</translation>
 <translation id="1630768113285622200">மீண்டும் தொடங்கி தொடர்க</translation>
 <translation id="1630873818549593964">'வகுப்பறையில்' இருக்கும் உங்கள் பிள்ளையின் தரவு பாதுகாக்கப்படும். <ph name="LINK_BEGIN" />மேலும் அறிக<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">கடவுச்சொல் உங்கள் Google கணக்கில் சேமிக்கப்பட்டது</translation>
 <translation id="1632803087685957583">ஒரு விசை மீண்டும் மீண்டும் உள்ளிடப்படும் வேகம், சொல்லைக் கணித்தல் போன்ற விசைப்பலகை அமைப்புகள் பலவற்றை மாற்ற அனுமதிக்கும்</translation>
 <translation id="1633947793238301227">Google Assistantடை முடக்கு</translation>
 <translation id="1634783886312010422">இந்தக் கடவுச்சொல்லை ஏற்கெனவே <ph name="WEBSITE" /> தளத்தில் மாற்றிவிட்டீர்களா?</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">முடிந்தது! தீங்கிழைக்கும் மென்பொருள் அகற்றப்பட்டது. நீட்டிப்புகளை மீண்டும் இயக்க, &lt;a href="chrome://extensions"&gt;நீட்டிப்புகள்&lt;/a&gt; பிரிவுக்குச் செல்லவும்.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (நீட்டிப்பு வழங்கப்பட்டது)</translation>
 <translation id="2961695502793809356">அடுத்த பக்கத்திற்கு செல்ல கிளிக் செய்க, வரலாற்றைக் காண அழுத்திக்கொண்டே இருங்கள்</translation>
+<translation id="2962131322798295505">வால்பேப்பர் தேர்வுக் கருவி</translation>
 <translation id="2963151496262057773">பின்வரும் செருகுநிரல் பதிலளிக்கவில்லை: <ph name="PLUGIN_NAME" />நிறுத்தவா?</translation>
 <translation id="2964193600955408481">வைஃபையை முடக்கு</translation>
 <translation id="2966937470348689686">Android விருப்பத்தேர்வுகளை நிர்வகி</translation>
@@ -2539,6 +2541,7 @@
 <translation id="4154664944169082762">விரல் அச்சுகள்</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4159681666905192102">இது <ph name="CUSTODIAN_EMAIL" /> மற்றும் <ph name="SECOND_CUSTODIAN_EMAIL" /> ஆல் நிர்வகிக்கப்படும் குழந்தைகளுக்கான கணக்காகும்.</translation>
+<translation id="4159784952369912983">பர்பிள்</translation>
 <translation id="4163560723127662357">அறியப்படாத விசைப்பலகை</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> க்கு உரிய சில அமைப்புகள் உங்களுடன் பகிரப்படுகின்றன. பல உள்நுழைவைப் பயன்படுத்தும்போது, இந்த அமைப்புகள் உங்கள் கணக்கை மட்டுமே பாதிக்கும்.</translation>
 <translation id="4170314459383239649">வெளியேறும் போது அழி</translation>
@@ -2882,6 +2885,7 @@
 <translation id="4645676300727003670">&amp;வைத்திரு</translation>
 <translation id="4646675363240786305">போர்ட்கள்</translation>
 <translation id="4647090755847581616">&amp;தாவலை மூடுக</translation>
+<translation id="4647420311443994946">{0,select, tablet{டேப்லெட்டில் உள்நுழையும்போது ஆப்ஸைத் தொடங்கு}computer{கம்ப்யூட்டரில் உள்நுழையும்போது ஆப்ஸைத் தொடங்கு}other{சாதனத்தில் உள்நுழையும்போது ஆப்ஸைத் தொடங்கு}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" க்கான PIN ஐ உள்ளிடுக:</translation>
 <translation id="4648491805942548247">போதிய அனுமதிகள் இல்லை</translation>
 <translation id="4648499713050786492">பயனரைச் சேர்க்கும் முன், உங்கள் சுயவிவரத்தைத் திறக்கவும்.</translation>
@@ -2894,6 +2898,7 @@
 <translation id="4660540330091848931">அளவு மாற்றப்படுகிறது</translation>
 <translation id="4660838440047236328">உங்கள் அறையின் வடிவமைப்பு</translation>
 <translation id="4661407454952063730">ஆப்ஸ் தரவு என்பது தொடர்புகள், செய்திகள், படங்கள் போன்ற தரவு உட்பட ஆப்ஸ் சேமித்த (டெவெலப்பர் அமைப்புகளின் அடிப்படையில்) எந்தத் தரவாகவும் இருக்கலாம்.</translation>
+<translation id="4662373422909645029">புனைபெயரில் எண்கள் இருக்கக்கூடாது</translation>
 <translation id="4662788913887017617">இந்தப் புத்தகக்குறியை உங்கள் iPhone உடன் பகிருங்கள்</translation>
 <translation id="4663373278480897665">கேமரா அனுமதிக்கப்பட்டது</translation>
 <translation id="4664482161435122549">PKCS #12 ஏற்றுமதி பிழை</translation>
@@ -3588,6 +3593,7 @@
 <translation id="5585912436068747822">வடிவமைத்தல் தோல்வியடைந்தது</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">ஆப்ஸை ஏற்றுகிறது...</translation>
+<translation id="558984423786125616">அமைப்புகளில் போர்ட் ஏற்கெனவே உள்ளது</translation>
 <translation id="5592595402373377407">போதுமான தரவு இதுவரை கிடைக்கவில்லை.</translation>
 <translation id="5593357315997824387">எனது கோப்புகளை ஒத்திசை</translation>
 <translation id="5595485650161345191">முகவரியைத் திருத்து</translation>
@@ -3632,6 +3638,7 @@
 <translation id="5639549361331209298">மேலும் விருப்பங்களைக் காண இந்தப் பக்கத்தை மீண்டும் ஏற்றி காத்திருக்கவும்</translation>
 <translation id="5640133431808313291">பாதுகாப்பு விசைகளை நிர்வகித்தல்</translation>
 <translation id="5642508497713047">CRL கையொப்பமிடுநர்</translation>
+<translation id="5643321261065707929">கட்டண நெட்வொர்க்</translation>
 <translation id="5643620609347735571">அழித்து, தொடர்க</translation>
 <translation id="5644857731242502394">இணைக்கப்பட்ட சாதனங்களின் அமைவு</translation>
 <translation id="5646376287012673985">இருப்பிடம்</translation>
@@ -5541,6 +5548,7 @@
     <ph name="BEGIN_PARAGRAPH5" />அமைப்புகளில் இந்தச் சேவையை முடக்கலாம்.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">பின்கள் பொருந்தவில்லை</translation>
 <translation id="809792523045608178">நீட்டிப்பு ஒன்றில் இருந்து பெற்ற ப்ராக்ஸி அமைப்புகளை <ph name="IDS_SHORT_PRODUCT_NAME" /> பயன்படுத்துகிறது</translation>
+<translation id="8097959162767603171">முதலில் நிர்வாகி கன்சோல் Chrome சாதனப் பட்டியலில் உள்ள சேவை விதிமுறைகளை உங்கள் நிர்வாகி ஏற்க வேண்டும்.</translation>
 <translation id="8101987792947961127">அடுத்த மறுதொடக்கத்திற்கு பவர்வாஷ் தேவைப்படுகிறது</translation>
 <translation id="8102159139658438129">இணைக்கப்பட்ட உங்கள் ஃபோனுக்கான விருப்பத்தேர்வுகளைப் பார்க்க, <ph name="LINK_BEGIN" />அமைப்புகளுக்குச்<ph name="LINK_END" /> செல்லவும்</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> சாதனத்தை பவர்வாஷ் செய்து, முந்தைய பதிப்பிற்கு மாறவும்.</translation>

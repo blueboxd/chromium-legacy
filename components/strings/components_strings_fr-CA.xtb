@@ -205,6 +205,7 @@
 <translation id="1753706481035618306">Numéro de page</translation>
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Essayer d'exécuter Windows Network Diagnostics<ph name="END_LINK" />.</translation>
+<translation id="1772163372082567643">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête qui exige qu'une politique d'origine soit appliquée à toutes les demandes adressées à lui. Mais l'en-tête est formaté de manière incorrecte, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des politiques d'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Veuillez mettre à jour votre phrase de passe de synchronisation.</translation>
 <translation id="1787142507584202372">Vos onglets ouverts s'affichent ici</translation>
@@ -228,6 +229,7 @@
 <translation id="1898423065542865115">Filtrage</translation>
 <translation id="1901443836186977402">{1,plural, =1{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré au cours des dernières 24 heures. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}one{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré il y a # jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}other{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré il y a # jours. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}}</translation>
 <translation id="1902576642799138955">Période de validité</translation>
+<translation id="191374271204266022">Copier au format JSON</translation>
 <translation id="1914326953223720820">Service de décompression</translation>
 <translation id="1915697529809968049">Utiliser Touch ID au lieu du code CVC?</translation>
 <translation id="1916770123977586577">Pour appliquer à ce site vos paramètres mis à jour, actualisez cette page</translation>
@@ -703,6 +705,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
     Si vous pensez qu'il s'agit d'une erreur, veuillez visiter la page https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Moins de 1 Mo</translation>
 <translation id="3990250421422698716">Décalage</translation>
+<translation id="3996311196211510766">Le site <ph name="ORIGIN" /> a exigé qu'une politique d'origine soit appliquée à toutes ses demandes, mais cette politique ne peut pas être appliquée actuellement.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Document PDF contenant {COUNT} page}one{Document PDF contenant {COUNT} page}other{Document PDF contenant {COUNT} pages}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
@@ -747,6 +750,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="4194250254487269611">Impossible d'enregistrer votre carte pour le moment</translation>
 <translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />De vérifier les configurations du pare-feu et de l'antivirus<ph name="END_LINK" /></translation>
+<translation id="4209166701302774460">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a exigé qu'une politique de contrôle d'origine soit appliquée à toutes les demandes qu'il reçoit. Cependant, la politique n'a pas pu être émise, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des politiques d'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
 <translation id="421066178035138955">Utiliser les appareils et les données de réalité virtuelle</translation>
 <translation id="4214357935346142455">profil de l'écran de connexion</translation>
 <translation id="4215751373031079683">Enveloppe 7 po x 9 po</translation>
@@ -1237,6 +1241,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="6259156558325130047">&amp;Rétablir la réorganisation</translation>
 <translation id="6263376278284652872">Favoris de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Retour à la sécurité</translation>
+<translation id="6265794661083428563">Copier la valeur de la politique <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Bleu sarcelle clair</translation>
 <translation id="6272383483618007430">Mise à jour Google</translation>
 <translation id="6276112860590028508">Les pages de votre liste de lecture apparaissent ici</translation>

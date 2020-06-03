@@ -2016,7 +2016,8 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter"
         ],
         "merge": {
           "args": [
@@ -2083,7 +2084,8 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android23.textpb",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter"
         ],
         "merge": {
           "args": [

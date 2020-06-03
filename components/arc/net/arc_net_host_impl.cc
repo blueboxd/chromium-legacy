@@ -138,7 +138,10 @@ arc::mojom::NetworkType TranslateNetworkType(const std::string& type) {
 // Parse a shill IPConfig dictionary and appends the resulting mojo
 // IPConfiguration object to the given |ip_configs| vector, only if the
 // IPConfig dictionary contains an address and a gateway property.
-void AddIpConfiguration(std::vector<arc::mojom::IPConfigurationPtr>& ip_configs,
+// TODO(b/143258259) Stop setting IPConfiguration objects once ARC has
+// migrated to the new IP configuration fields introduced in Change-Id
+// I08dfd5daa9ba2946a847e555bb94a01da3866eb9.
+void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
                         const base::Value* shill_ipconfig) {
   if (!shill_ipconfig || !shill_ipconfig->is_dict())
     return;
@@ -180,36 +183,53 @@ void AddIpConfiguration(std::vector<arc::mojom::IPConfigurationPtr>& ip_configs,
         continue;
 
       ip_config->name_servers.push_back(dns);
+      network->host_dns_addresses->push_back(dns);
     }
   }
 
-  ip_configs.push_back(std::move(ip_config));
-}
+  switch (ip_config->type) {
+    case arc::mojom::IPAddressType::IPV4: {
+      network->host_ipv4_prefix_length = ip_config->routing_prefix;
+      network->host_ipv4_address = ip_config->ip_address;
+      network->host_ipv4_gateway = ip_config->gateway;
+      break;
+    }
+    case arc::mojom::IPAddressType::IPV6: {
+      network->host_ipv6_prefix_length = ip_config->routing_prefix;
+      network->host_ipv6_global_addresses->push_back(ip_config->ip_address);
+      network->host_ipv6_gateway = ip_config->gateway;
+      break;
+    }
+    default: {
+      NOTREACHED() << "No IPAddressType defined";
+      break;
+    }
+  }
 
-// Add shill's Device properties to the given mojo NetworkConfiguration objects.
-// This adds the network interface and current IP configurations.
-void AddDeviceProperties(arc::mojom::NetworkConfiguration* network,
-                         const std::string& device_path) {
-  const auto* device = GetStateHandler()->GetDeviceState(device_path);
-  if (!device)
-    return;
+  if (const auto* domains =
+          shill_ipconfig->FindKey(shill::kSearchDomainsProperty)) {
+    if (domains->is_list()) {
+      for (const auto& domain : domains->GetList())
+        network->host_search_domains->push_back(domain.GetString());
+    }
+  }
 
-  network->network_interface = device->interface();
+  const int mtu = shill_ipconfig->FindIntPath(shill::kMtuProperty).value_or(0);
+  if (mtu > 0)
+    network->host_mtu = mtu;
 
-  std::vector<arc::mojom::IPConfigurationPtr> ip_configs;
-  for (const auto& kv : device->ip_configs())
-    AddIpConfiguration(ip_configs, kv.second.get());
-
-  // If the DeviceState had any IP configuration, always use them and ignore
-  // any other IP configuration previously obtained through NetworkState.
-  if (!ip_configs.empty())
-    network->ip_configs = std::move(ip_configs);
+  network->ip_configs->push_back(std::move(ip_config));
 }
 
 arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
     const chromeos::NetworkState* network_state,
     const base::Value* shill_dict) {
   auto mojo = arc::mojom::NetworkConfiguration::New();
+  // Initialize optional array fields to avoid null guards both here and in ARC.
+  mojo->ip_configs = std::vector<arc::mojom::IPConfigurationPtr>();
+  mojo->host_ipv6_global_addresses = std::vector<std::string>();
+  mojo->host_search_domains = std::vector<std::string>();
+  mojo->host_dns_addresses = std::vector<std::string>();
   mojo->connection_state =
       TranslateConnectionState(network_state->connection_state());
   mojo->guid = network_state->guid();
@@ -232,18 +252,26 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
   // yet. This case is covered by requesting shill properties asynchronously
   // when chromeos::NetworkStateHandlerObserver::NetworkPropertiesUpdated is
   // called.
-  std::vector<arc::mojom::IPConfigurationPtr> ip_configs;
+
+  // Add shill's Device properties to the given mojo NetworkConfiguration
+  // objects. This adds the network interface and current IP configurations.
+  if (const auto* device =
+          GetStateHandler()->GetDeviceState(network_state->device_path())) {
+    mojo->network_interface = device->interface();
+    for (const auto& kv : device->ip_configs())
+      AddIpConfiguration(mojo.get(), kv.second.get());
+  }
+
   if (shill_dict) {
     for (const auto* property :
          {shill::kIPConfigProperty, shill::kStaticIPConfigProperty,
           shill::kSavedIPConfigProperty}) {
-      if (!ip_configs.empty())
+      if (!mojo->ip_configs->empty())
         break;
 
-      AddIpConfiguration(ip_configs, shill_dict->FindKey(property));
+      AddIpConfiguration(mojo.get(), shill_dict->FindKey(property));
     }
   }
-  mojo->ip_configs = std::move(ip_configs);
 
   if (mojo->type == arc::mojom::NetworkType::WIFI) {
     mojo->wifi = arc::mojom::WiFi::New();
@@ -256,8 +284,6 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
         shill_dict->FindBoolPath(shill::kWifiHiddenSsid).value_or(false);
     mojo->wifi->signal_strength = network_state->signal_strength();
   }
-
-  AddDeviceProperties(mojo.get(), network_state->device_path());
 
   return mojo;
 }

@@ -70,7 +70,6 @@
 <translation id="3288816184963444640">Закрыть активное окно</translation>
 <translation id="3407560819924487926">Открыть диспетчер задач</translation>
 <translation id="3422679037938588196">Перейти к предыдущему совпадению в строке поиска</translation>
-<translation id="344577624355799426"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
 <translation id="353037708190149633">Сохранить все страницы, открытые в текущем окне, в закладках (в новой папке)</translation>
 <translation id="355103131818127604">Открыть ссылку в новой фоновой вкладке</translation>
 <translation id="3622741593887335780">Увеличить масштаб (когда включена закрепленная или полноэкранная лупа)</translation>
@@ -167,7 +166,6 @@
 <translation id="7077383985738259936">Переключиться на панель закладок или выделить ее (если видна)</translation>
 <translation id="7237562915163138771">Ввести веб-адрес в адресной строке и нажать <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Перевести устройство в спящий режим</translation>
-<translation id="7379254767514753910"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
 <translation id="7422707470576323858">Переключиться на следующий доступный способ ввода</translation>
 <translation id="743754632698445141">Открепить приложение</translation>
 <translation id="7439718573248533901">Удалить следующую букву (удаление вперед)</translation>

@@ -338,6 +338,7 @@
 <translation id="5300589172476337783">Показать</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5327248766486351172">Название</translation>
+<translation id="5352285283572729470">Это управляемая настройка</translation>
 <translation id="5388358297987318779">Открыть изображение</translation>
 <translation id="5407969256130905701">Сбросить изменения</translation>
 <translation id="5409365236829784218">Нет приложений, поддерживающих файлы этого типа.</translation>
@@ -564,6 +565,7 @@
 <translation id="8174524257672181687">Блокировать все файлы cookie (не рекомендуется)</translation>
 <translation id="8197543752516192074">Перевести страницу</translation>
 <translation id="8205564605687841303">Отмена</translation>
+<translation id="8206354486702514201">Этот параметр включен администратором.</translation>
 <translation id="8225985093977202398">Файлы, сохраненные в кеше</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8281781826761538115">Язык по умолчанию: <ph name="DEFAULT_LOCALE" /></translation>

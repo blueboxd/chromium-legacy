@@ -115,8 +115,10 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
       return VA_FOURCC_YV12;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return VA_FOURCC_NV12;
+    case gfx::BufferFormat::P010:
+      return VA_FOURCC_P010;
     default:
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(fmt);
       return 0;
   }
 }
@@ -254,10 +256,8 @@ static const struct {
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
     // VP9 hw encode/decode on profile 1 is not enabled on chromium-vaapi.
     // {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
-    // TODO(crbug.com/1011454, crbug.com/1011469): Reenable VP9PROFILE_PROFILE2
-    // and _PROFILE3 when P010 is completely supported.
-    //{VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-    //{VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
+    {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
+    {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
 };
 
 // Converts the given |va_profile| to the corresponding string.
@@ -1545,8 +1545,10 @@ uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return VA_RT_FORMAT_YUV420;
+    case gfx::BufferFormat::P010:
+      return VA_RT_FORMAT_YUV420_10BPP;
     default:
-      NOTREACHED();
+      NOTREACHED() << gfx::BufferFormatToString(fmt);
       return 0;
   }
 }

@@ -52,6 +52,10 @@ class CORE_EXPORT InspectorTaskRunner final
   // execution.
   void AppendTaskDontInterrupt(Task) LOCKS_EXCLUDED(mutex_);
 
+  scoped_refptr<base::SingleThreadTaskRunner> isolate_task_runner() {
+    return isolate_task_runner_;
+  }
+
  private:
   friend ThreadSafeRefCounted<InspectorTaskRunner>;
   explicit InspectorTaskRunner(

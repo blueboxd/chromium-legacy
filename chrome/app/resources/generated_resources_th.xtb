@@ -502,6 +502,7 @@
 <translation id="1629314197035607094">รหัสผ่านหมดอายุ</translation>
 <translation id="1630768113285622200">รีสตาร์ตและดำเนินการต่อ</translation>
 <translation id="1630873818549593964">ข้อมูลของบุตรหลานใน Classroom จะได้รับการปกป้อง <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
+<translation id="1632082166874334883">จัดเก็บรหัสผ่านในบัญชี Google ของคุณแล้ว</translation>
 <translation id="1632803087685957583">ให้คุณปรับเปลี่ยนอัตราการพิมพ์ซ้ำของแป้นพิมพ์ การคาดคะเนคำ และอื่นๆ</translation>
 <translation id="1633947793238301227">ปิดใช้ Google Assistant</translation>
 <translation id="1634783886312010422">คุณเปลี่ยนรหัสผ่านนี้ใน <ph name="WEBSITE" /> แล้วใช่ไหม</translation>
@@ -1579,6 +1580,7 @@
 <translation id="296026337010986570">เสร็จแล้ว! นำซอฟต์แวร์ที่เป็นอันตรายออกแล้ว หากต้องการเปิดส่วนขยายอีกครั้ง โปรดไปที่&lt;a href="chrome://extensions"&gt;ส่วนขยาย&lt;/a&gt;</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (มีส่วนขยายให้มาด้วย)</translation>
 <translation id="2961695502793809356">คลิกเพื่อไปข้างหน้า กดค้างเพื่อดูประวัติการเข้าชม</translation>
+<translation id="2962131322798295505">เครื่องมือเลือกวอลเปเปอร์</translation>
 <translation id="2963151496262057773">ปลั๊กอินต่อไปนี้ไม่ตอบสนอง: <ph name="PLUGIN_NAME" />คุณต้องการหยุดปลั๊กอินดังกล่าวไหม</translation>
 <translation id="2964193600955408481">ปิดใช้งาน WiFi</translation>
 <translation id="2966937470348689686">จัดการค่ากำหนด Android</translation>
@@ -2539,6 +2541,7 @@
 <translation id="4154664944169082762">ลายนิ้วมือ</translation>
 <translation id="4157869833395312646">วิธีการเข้ารหัสแบบ Server Gated ของ Microsoft</translation>
 <translation id="4159681666905192102">นี่เป็นบัญชีสำหรับเด็กที่จัดการโดย <ph name="CUSTODIAN_EMAIL" /> และ <ph name="SECOND_CUSTODIAN_EMAIL" /></translation>
+<translation id="4159784952369912983">ม่วง</translation>
 <translation id="4163560723127662357">แป้นพิมพ์ที่ไม่รู้จัก</translation>
 <translation id="4168015872538332605">การตั้งค่าบางอย่างที่เป็นของ <ph name="PRIMARY_EMAIL" /> กำลังมีการแชร์กับคุณ การตั้งค่าเหล่านี้มีผลกับบัญชีของคุณเมื่อมีการใช้การลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชีเท่านั้น</translation>
 <translation id="4170314459383239649">ล้างเมื่อออก</translation>
@@ -2882,6 +2885,7 @@
 <translation id="4645676300727003670">&amp;เก็บไว้</translation>
 <translation id="4646675363240786305">พอร์ต</translation>
 <translation id="4647090755847581616">&amp;ปิดแท็บ</translation>
+<translation id="4647420311443994946">{0,select, tablet{เริ่มแอปเมื่อคุณลงชื่อเข้าใช้แท็บเล็ต}computer{เริ่มแอปเมื่อคุณลงชื่อเข้าใช้คอมพิวเตอร์}other{เริ่มแอปเมื่อคุณลงชื่อเข้าใช้อุปกรณ์}}</translation>
 <translation id="4647697156028544508">โปรดป้อน PIN สำหรับ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">สิทธิ์ไม่เพียงพอ</translation>
 <translation id="4648499713050786492">โปรดปลดล็อกโปรไฟล์ของคุณก่อนเพิ่มบุคคล</translation>
@@ -2894,6 +2898,7 @@
 <translation id="4660540330091848931">กำลังปรับขนาด</translation>
 <translation id="4660838440047236328">เลย์เอาต์ของห้อง</translation>
 <translation id="4661407454952063730">ข้อมูลแอปอาจเป็นข้อมูลใดก็ตามที่แอปบันทึกไว้ (ขึ้นอยู่กับการตั้งค่าของนักพัฒนาซอฟต์แวร์) ซึ่งรวมถึงข้อมูลอย่างเช่นรายชื่อติดต่อ ข้อความ และรูปภาพ</translation>
+<translation id="4662373422909645029">ชื่อเล่นต้องไม่มีตัวเลข</translation>
 <translation id="4662788913887017617">แชร์บุ๊กมาร์กนี้กับ iPhone ของคุณ</translation>
 <translation id="4663373278480897665">อนุญาตให้ใช้กล้องถ่ายรูป</translation>
 <translation id="4664482161435122549">ข้อผิดพลาดในการส่งออก PKCS #12</translation>
@@ -3588,6 +3593,7 @@
 <translation id="5585912436068747822">การจัดรูปแบบล้มเหลว</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">กำลังโหลดแอป...</translation>
+<translation id="558984423786125616">มีพอร์ตในการตั้งค่าอยู่แล้ว</translation>
 <translation id="5592595402373377407">ยังไม่มีข้อมูลเพียงพอ</translation>
 <translation id="5593357315997824387">ซิงค์ไฟล์</translation>
 <translation id="5595485650161345191">แก้ไขที่อยู่</translation>
@@ -3631,6 +3637,7 @@
 <translation id="5639549361331209298">โหลดหน้าเว็บนี้ซ้ำ กดค้างไว้เพื่อดูตัวเลือกเพิ่มเติม</translation>
 <translation id="5640133431808313291">จัดการคีย์ความปลอดภัย</translation>
 <translation id="5642508497713047">ผู้เซ็นชื่อ CRL</translation>
+<translation id="5643321261065707929">เครือข่ายมีการวัดปริมาณอินเทอร์เน็ต</translation>
 <translation id="5643620609347735571">ล้างและดำเนินการต่อ</translation>
 <translation id="5644857731242502394">การตั้งค่าอุปกรณ์ที่เชื่อมต่อ</translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
@@ -5540,6 +5547,7 @@
     <ph name="BEGIN_PARAGRAPH5" />คุณปิดบริการนี้ได้ในการตั้งค่า<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN ไม่ตรงกัน</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> ใช้การตั้งค่าพร็อกซีจากส่วนขยายอยู่</translation>
+<translation id="8097959162767603171">ผู้ดูแลระบบของคุณต้องยอมรับข้อกำหนดในการให้บริการในรายการอุปกรณ์ Chrome ของคอนโซลผู้ดูแลระบบก่อน</translation>
 <translation id="8101987792947961127">ต้องใช้ Powerwash ในการรีบูตครั้งถัดไป</translation>
 <translation id="8102159139658438129">ไปที่<ph name="LINK_BEGIN" />การตั้งค่า<ph name="LINK_END" />เพื่อดูตัวเลือกสำหรับโทรศัพท์ที่เชื่อมต่อ</translation>
 <translation id="8104696615244072556">Powerwash อุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME" /> ของคุณและเปลี่ยนกลับไปใช้เวอร์ชันก่อนหน้า</translation>

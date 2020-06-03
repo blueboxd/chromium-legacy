@@ -63,6 +63,7 @@
 <translation id="1654477262762802994">Démarrer une requête vocale</translation>
 <translation id="1658406695958299976">Désolés, nous ne pouvons toujours pas valider votre mot de passe. Remarque : si vous l'avez modifié dernièrement, votre nouveau mot de passe ne sera pas mis à jour qu'une fois que vous vous serez déconnecté. Veuillez donc utiliser votre ancien mot de passe.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> d'autonomie restante</translation>
+<translation id="1698080062160024910">Minuterie de <ph name="TOTAL_TIME" /> : <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adresse IPv6 : <ph name="ADDRESS" /></translation>
 <translation id="1709762881904163296">Paramètres réseau</translation>
 <translation id="1743570585616704562">Doigt non reconnu</translation>
@@ -335,6 +336,7 @@
 <translation id="4924411785043111640">Redémarrer et réinitialiser</translation>
 <translation id="495046168593986294">Faire défiler vers le haut</translation>
 <translation id="4961318399572185831">Diffuser un écran</translation>
+<translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
 <translation id="5030687792513154421">Le temps est écoulé</translation>
 <translation id="5035236842988137213">L'appareil <ph name="DEVICE_NAME" /> est connecté à un nouveau téléphone</translation>
 <translation id="5035389544768382859">Confirmer la configuration de l'écran</translation>
@@ -533,6 +535,7 @@
 <translation id="7569509451529460200">Braille et ChromeVox activés</translation>
 <translation id="7593891976182323525">Recherche ou Majuscule</translation>
 <translation id="7600875258240007829">Afficher toutes les notifications</translation>
+<translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7642647758716480637">Ouvrir les paramètres pour <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propriétaire)</translation>
 <translation id="7647488630410863958">Déverrouillez l'appareil pour voir vos notifications</translation>
@@ -618,10 +621,12 @@
 <translation id="8517041960877371778">Il est possible que votre <ph name="DEVICE_TYPE" /> ne se charge pas lorsqu’il est allumé.</translation>
 <translation id="8563862697512465947">Paramètres de notification</translation>
 <translation id="857201607579416096">Le menu a été déplacé vers le coin inférieur droit de l'écran.</translation>
+<translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8627191004499078455">Connecté à <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Paramètres d'accessibilité</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> géré par votre administrateur</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant</translation>
+<translation id="8646417893960517480">Minuterie de <ph name="TOTAL_TIME" /></translation>
 <translation id="8649101189709089199">Sélectionner pour énoncer</translation>
 <translation id="8652175077544655965">Fermer les paramètres</translation>
 <translation id="8653151467777939995">Afficher les paramètres de notification. Les notifications sont activées</translation>

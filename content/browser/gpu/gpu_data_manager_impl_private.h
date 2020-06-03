@@ -67,6 +67,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateDevicePerfInfo(const gpu::DevicePerfInfo& device_perf_info);
 
   void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
+  void UpdateHDRStatus(bool hdr_enabled);
   void UpdateDx12VulkanRequestStatus(bool request_continues);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
   bool Dx12VulkanRequested() const;

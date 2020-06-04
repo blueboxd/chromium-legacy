@@ -130,11 +130,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MultiplexRouter
     return connector_.PassMessagePipe();
   }
 
-  // Blocks the current sequence until the first incoming message, or
-  // |deadline|.
-  bool WaitForIncomingMessage(MojoDeadline deadline) {
+  // Blocks the current sequence until the first incoming message.
+  bool WaitForIncomingMessage() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return connector_.WaitForIncomingMessage(deadline);
+    return connector_.WaitForIncomingMessage();
   }
 
   // See Binding for details of pause/resume.

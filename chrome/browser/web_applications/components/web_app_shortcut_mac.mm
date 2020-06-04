@@ -1252,8 +1252,7 @@ std::vector<base::FilePath> WebAppShortcutCreator::GetAppBundlesById() const {
 }
 
 bool WebAppShortcutCreator::IsMultiProfile() const {
-  // Only PWAs and bookmark apps are multi-profile capable.
-  return info_->url.is_valid();
+  return info_->is_multi_profile;
 }
 
 void WebAppShortcutCreator::RevealAppShimInFinder(

@@ -672,11 +672,11 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
     alternative_service_info_ =
         GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_);
   }
-  quic::ParsedQuicVersion quic_version = quic::UnsupportedQuicVersion();
+  quic::ParsedQuicVersion quic_version = quic::ParsedQuicVersion::Unsupported();
   if (alternative_service_info_.protocol() == kProtoQUIC) {
     quic_version =
         SelectQuicVersion(alternative_service_info_.advertised_versions());
-    DCHECK_NE(quic_version, quic::UnsupportedQuicVersion());
+    DCHECK_NE(quic_version, quic::ParsedQuicVersion::Unsupported());
   }
 
   if (is_preconnect_) {
@@ -1060,7 +1060,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     // If there is no QUIC version in the advertised versions that is
     // supported, ignore this entry.
     if (SelectQuicVersion(alternative_service_info.advertised_versions()) ==
-        quic::UnsupportedQuicVersion())
+        quic::ParsedQuicVersion::Unsupported())
       continue;
 
     // Check whether there is an existing QUIC session to use for this origin.
@@ -1106,13 +1106,13 @@ quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
   for (const quic::ParsedQuicVersion& advertised : advertised_versions) {
     for (const quic::ParsedQuicVersion& supported : supported_versions) {
       if (supported == advertised) {
-        DCHECK_NE(quic::UnsupportedQuicVersion(), supported);
+        DCHECK_NE(quic::ParsedQuicVersion::Unsupported(), supported);
         return supported;
       }
     }
   }
 
-  return quic::UnsupportedQuicVersion();
+  return quic::ParsedQuicVersion::Unsupported();
 }
 
 bool HttpStreamFactory::JobController::ShouldCreateAlternativeProxyServerJob(

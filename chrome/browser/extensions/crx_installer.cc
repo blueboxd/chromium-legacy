@@ -508,10 +508,6 @@ void CrxInstaller::ShouldComputeHashesForOffWebstoreExtension(
 
 void CrxInstaller::OnUnpackFailure(const CrxInstallError& error) {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackFailureInstallSource",
-                            install_source(), Manifest::NUM_LOCATIONS);
-
   ReportFailureFromFileThread(error);
 }
 
@@ -523,10 +519,6 @@ void CrxInstaller::OnUnpackSuccess(
     const SkBitmap& install_icon,
     declarative_net_request::RulesetChecksums ruleset_checksums) {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
-
-  UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallSource",
-                            install_source(), Manifest::NUM_LOCATIONS);
-
 
   extension_ = extension;
   temp_dir_ = temp_dir;

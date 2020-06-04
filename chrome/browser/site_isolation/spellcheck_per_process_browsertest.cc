@@ -122,16 +122,17 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
                      CheckSpellingCallback) override {}
   void FillSuggestionList(const base::string16& word,
                           FillSuggestionListCallback) override {}
-#endif
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     std::move(callback).Run(std::vector<std::vector<base::string16>>());
   }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN)
+
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 #if defined(OS_ANDROID)
   // spellcheck::mojom::SpellCheckHost:

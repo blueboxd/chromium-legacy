@@ -102,6 +102,10 @@ const char kGenerationRequirementsPrefixLength[] = "prefix_length";
 // Default to 5000 ms.
 const char kGenerationRequirementsTimeout[] = "timeout";
 
+// Enables showing leaked dialog after every successful form submission.
+const char kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[] =
+    "should_force_dialog_after_every_sucessful_form_submission";
+
 }  // namespace features
 
 }  // namespace password_manager

@@ -127,8 +127,8 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   client0.AcceptWithResponder(
       &request, std::make_unique<MessageAccumulator>(&message_queue));
 
-  router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
-  router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router1_->WaitForIncomingMessage();
+  router0_->WaitForIncomingMessage();
 
   EXPECT_FALSE(message_queue.IsEmpty());
 
@@ -145,8 +145,8 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   client0.AcceptWithResponder(
       &request2, std::make_unique<MessageAccumulator>(&message_queue));
 
-  router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
-  router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
+  router1_->WaitForIncomingMessage();
+  router0_->WaitForIncomingMessage();
 
   EXPECT_FALSE(message_queue.IsEmpty());
 

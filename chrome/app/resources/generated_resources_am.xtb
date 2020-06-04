@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">የቁልፍ ሰሌዳዎን ድግምግሞሽ መጠን፣ የቃላት ግምትን እና ተጨማሪ ነገሮችን እንዲያስተካክሉ ያስችልዎታል</translation>
 <translation id="1633947793238301227">Google ረዳትን ያጥፉ</translation>
 <translation id="1634783886312010422">ይህን የይለፍ ቃል በ<ph name="WEBSITE" /> ላይ አስቀድመው ለውጠውታል?</translation>
-<translation id="1635033183663317347">በእርስዎ ኃላፊ የተጫነ።</translation>
 <translation id="1637224376458524414">ይህን ዕልባት በእርስዎ iPhone ላይ ያግኙት</translation>
 <translation id="1637765355341780467">የእርስዎን መገለጫ በመክፈት ላይ የሆነ ችግር ተፈጥሯል። አንዳንድ ባህሪዎች ላይገኙ ይችላሉ።</translation>
 <translation id="1639239467298939599">በመጫን ላይ</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">ውሂብ ከChrome ስምረት</translation>
 <translation id="2200094388063410062">ኢሜይል</translation>
 <translation id="2200356397587687044">Chrome ለመቀጠል ፈቃድ ያስፈልገዋል</translation>
-<translation id="2200729650590440847">የፒን ቁልፍ ማያ ገጽ ቅንብሮች</translation>
 <translation id="220138918934036434">አዝራር ደብቅ</translation>
 <translation id="2202898655984161076">አታሚዎችን መዘርዘር ላይ ችግር ነበር። አንዳንድ አታሚዎችዎ በተሳካ ሁኔታ <ph name="CLOUD_PRINT_NAME" /> ላይ አልተመዘገቡም።</translation>
 <translation id="2203682048752833055">በ<ph name="BEGIN_LINK" />አድራሻ አሞሌው<ph name="END_LINK" /> ላይ ሥራ ላይ የዋለው የፍለጋ ፕሮግራም</translation>
 <translation id="2204034823255629767">የሚተይቡትን ማንኛውም ነገር ያነብባል እና ይቀይራል</translation>
-<translation id="2207166770508557715">የእንቅልፍ ቅንብሮች</translation>
 <translation id="220858061631308971">እባክዎ ይህን የፒን ኮድ በ«<ph name="DEVICE_NAME" />» ላይ ያስገቡት፦</translation>
 <translation id="2212565012507486665">ኩኪዎችን ፍቀድ</translation>
 <translation id="2213140827792212876">ማጋራትን አስወግድ</translation>
@@ -1407,11 +1404,9 @@
 <translation id="2751131328353405138">የLinux መያዣ sshfs በማፈናጠጥ ላይ</translation>
 <translation id="2751739896257479635">EAP የክፍል 2 ማረጋገጥ</translation>
 <translation id="2753677631968972007">የጣቢያ ፈቃዶችን ራስዎ ይቆጣጠሩ።</translation>
-<translation id="2753984311895843016">ስራ የፈታ ኃይል</translation>
 <translation id="2755367719610958252">የተደራሽነት ባህሪያትን ያቀናብሩ</translation>
 <translation id="275662540872599901">ማያ ገጽ ጠፍቷል</translation>
 <translation id="2757338480560142065">እያስቀመጡት ያለው የይለፍ ቃል ከ<ph name="WEBSITE" /> ይለፍ ቃል ጋር የሚዛመድ መሆኑን ያረጋግጡ</translation>
-<translation id="276221322463921688">የማሳያ አቀማመጥ</translation>
 <translation id="2762441749940182211">ካሜራ ታግዷል</translation>
 <translation id="2764786626780673772">የቪፒኤን ዝርዝሮች</translation>
 <translation id="2765217105034171413">ትንሽ</translation>
@@ -6226,7 +6221,6 @@ nil</translation>
 <translation id="8953476467359856141">ባትሪ በመሙላት ላይ ሳለ</translation>
 <translation id="895347679606913382">በመጀመር ላይ…</translation>
 <translation id="8957762313041272117">የቀጥታ ስርጭት መግለጫ ጽሑፍ</translation>
-<translation id="8958804960827200147">የማያ ገጽ አቀማመጥ</translation>
 <translation id="895944840846194039">የJavaScript ማህደረ ትውስታ</translation>
 <translation id="8962083179518285172">ዝርዝሮችን ደብቅ</translation>
 <translation id="8962918469425892674">ይህ ጣቢያ የእንቅስቃሴ ወይም የብርሃን ዳሳሾችን እየተጠቀመ ነው።</translation>

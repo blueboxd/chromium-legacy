@@ -193,10 +193,9 @@ void DedicatedWorker::Start() {
     }
 
     factory_client_->CreateWorkerHost(
-        script_request_url_,
-        credentials_mode,
+        script_request_url_, credentials_mode,
         WebFetchClientSettingsObject(*outside_fetch_client_settings_object_),
-        blob_url_token.PassPipe());
+        std::move(blob_url_token));
     // Continue in OnScriptLoadStarted() or OnScriptLoadStartFailed().
     return;
   }

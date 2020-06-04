@@ -9,7 +9,7 @@
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
       <div id="container" style="content-visibility: hidden; contain-intrinsic-size: 10px;">
-        <div id="child" style="width: 50px; height: 50px;"></div>
+        <div id="child" style="width: 50px; height: 50px; background: blue">Text</div>
       </div>
     `);
 

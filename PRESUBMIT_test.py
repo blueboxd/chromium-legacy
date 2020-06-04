@@ -3524,6 +3524,17 @@ class MojomStabilityCheckTest(unittest.TestCase):
     self.assertEqual(1, len(errors))
     self.assertTrue('not backward-compatible' in errors[0].message)
 
+  def testDeletedFile(self):
+    """Regression test for https://crbug.com/1091407."""
+    errors = self.runTestWithAffectedFiles([
+      MockAffectedFile('a.mojom', [], old_contents=['struct S {};'],
+                       action='D'),
+      MockAffectedFile('b.mojom',
+                       ['struct S {}; struct T { S s; };'],
+                       old_contents=['import "a.mojom"; struct T { S s; };'])
+    ])
+    self.assertEqual([], errors)
+
 
 if __name__ == '__main__':
   unittest.main()

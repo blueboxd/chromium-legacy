@@ -187,7 +187,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       new gl::GLShareGroup(), surface_, context_,
       feature_info()->workarounds().use_virtualized_gl_contexts,
       base::DoNothing(), GpuPreferences().gr_context_type);
-
+  shared_context_state_->disable_check_reset_status_throttling_for_test_ = true;
   shared_context_state_->InitializeGL(GpuPreferences(), feature_info_);
 
   command_buffer_service_.reset(new FakeCommandBufferServiceBase());

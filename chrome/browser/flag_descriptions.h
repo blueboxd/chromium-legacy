@@ -100,6 +100,9 @@ extern const char kAudioWorkletRealtimeThreadDescription[];
 extern const char kUpdatedCellularActivationUiName[];
 extern const char kUpdatedCellularActivationUiDescription[];
 
+extern const char kUseLookalikesForNavigationSuggestionsName[];
+extern const char kUseLookalikesForNavigationSuggestionsDescription[];
+
 extern const char kUseMessagesStagingUrlName[];
 extern const char kUseMessagesStagingUrlDescription[];
 
@@ -1792,11 +1795,6 @@ extern const char kUseXpsForPrintingFromPdfDescription[];
 extern const char kWinUseBrowserSpellCheckerName[];
 extern const char kWinUseBrowserSpellCheckerDescription[];
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-extern const char kWinUseHybridSpellCheckerName[];
-extern const char kWinUseHybridSpellCheckerDescription[];
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #endif  // defined(OS_WIN)
@@ -2418,11 +2416,6 @@ extern const char kPaintPreviewDemoDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-#if defined(OS_CHROMEOS)
-extern const char kPdfAnnotations[];
-extern const char kPdfAnnotationsDescription[];
-#endif  // defined(OS_CHROMEOS)
-
 extern const char kPdfFormSaveName[];
 extern const char kPdfFormSaveDescription[];
 

@@ -100,7 +100,7 @@ XRPose* XRSpace::getPose(XRSpace* other_space) {
 base::Optional<TransformationMatrix> XRSpace::OffsetFromViewer() {
   base::Optional<TransformationMatrix> native_from_viewer =
       NativeFromViewer(session()->GetMojoFrom(
-          device::mojom::blink::XRReferenceSpaceCategory::VIEWER));
+          device::mojom::blink::XRReferenceSpaceType::kViewer));
 
   if (!native_from_viewer) {
     return base::nullopt;

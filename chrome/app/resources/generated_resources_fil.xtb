@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Nagbibigay-daan sa iyong i-adjust ang rate ng pag-uulit ng iyong keyboard, paghula ng salita at higit pa</translation>
 <translation id="1633947793238301227">I-disable ang Google Assistant</translation>
 <translation id="1634783886312010422">Pinalitan mo na ba ang password na ito sa <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Na-install ng iyong tagapangalaga.</translation>
 <translation id="1637224376458524414">Kunin ang bookmark na ito sa iyong iPhone</translation>
 <translation id="1637765355341780467">Nagkaproblema noong binubuksan ang iyong profile. Maaaring hindi available ang ilang feature.</translation>
 <translation id="1639239467298939599">Naglo-load</translation>
@@ -954,12 +953,10 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2199719347983604670">Data mula sa Chrome sync</translation>
 <translation id="2200094388063410062">I-email</translation>
 <translation id="2200356397587687044">Kailangan ng Chrome ng pahintulot upang magpatuloy</translation>
-<translation id="2200729650590440847">Mga setting ng lock screen gamit ang PIN</translation>
 <translation id="220138918934036434">Itago ang pindutan</translation>
 <translation id="2202898655984161076">Nagkaproblema sa paglilista ng mga printer. Maaaring hindi matagumpay na nairehistro ang ilan sa iyong mga printer <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Search engine na ginagamit sa <ph name="BEGIN_LINK" />address bar<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Basahin at baguhin ang anumang tina-type mo</translation>
-<translation id="2207166770508557715">Mga setting ng sleep</translation>
 <translation id="220858061631308971">Pakilagay ang PIN code na ito sa "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Payagan ang cookies</translation>
 <translation id="2213140827792212876">Alisin ang pagbabahagi</translation>
@@ -1408,11 +1405,9 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2751131328353405138">Mina-mount ang sshfs ng Linux container</translation>
 <translation id="2751739896257479635">EAP Phase 2 na pag-authenticate</translation>
 <translation id="2753677631968972007">Manual na kontrolin ang mga pahintulot sa site.</translation>
-<translation id="2753984311895843016">Idle na power</translation>
 <translation id="2755367719610958252">Pamahalaan ang mga feature sa accessibility</translation>
 <translation id="275662540872599901">naka-off ang screen</translation>
 <translation id="2757338480560142065">Tiyaking ang password na sine-save mo ay tumutugma sa iyong password para sa <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Oryentasyon ng monitor</translation>
 <translation id="2762441749940182211">Naka-block ang camera</translation>
 <translation id="2764786626780673772">Mga detalye ng VPN</translation>
 <translation id="2765217105034171413">Maliit</translation>
@@ -6227,7 +6222,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8953476467359856141">Habang nagcha-charge</translation>
 <translation id="895347679606913382">Nagsisimula...</translation>
 <translation id="8957762313041272117">Instant Caption</translation>
-<translation id="8958804960827200147">Oryentasyon ng screen</translation>
 <translation id="895944840846194039">Memory ng JavaScript</translation>
 <translation id="8962083179518285172">Itago ang Mga Detalye</translation>
 <translation id="8962918469425892674">Gumagamit ang site na ito ng sensor ng paggalaw o liwanag.</translation>

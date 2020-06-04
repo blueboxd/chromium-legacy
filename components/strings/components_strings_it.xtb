@@ -206,9 +206,9 @@
 <translation id="1763864636252898013">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza non è considerato attendibile dal sistema operativo del dispositivo. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prova a eseguire lo strumento Diagnostica di rete Windows<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha impostato un'intestazione
-    che richiede un criterio di partenza da applicare a tutte le richieste. Tuttavia
+    che richiede l'applicazione di un criterio di origine per tutte le richieste indirizzate al server. Tuttavia
     l'intestazione non è valida e impedisce al browser di soddisfare
-    la tua richiesta per <ph name="SITE" />. I criteri di partenza possono essere usati dagli
+    la tua richiesta per <ph name="SITE" />. I criteri di origine possono essere usati dagli
     operatori del sito per configurare la sicurezza e altre proprietà del sito.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Aggiorna la tua passphrase di sincronizzazione.</translation>
@@ -708,8 +708,8 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
     Se ritieni che questo avviso sia stato mostrato per sbaglio, visita la pagina https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Meno di 1 MB</translation>
 <translation id="3990250421422698716">Offset jog</translation>
-<translation id="3996311196211510766">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di un criterio di partenza
-    a tutte le sue richieste, ma questo criterio al momento non può essere applicato.</translation>
+<translation id="3996311196211510766">Il sito <ph name="ORIGIN" /> ha richiesto l'applicazione di un criterio di origine
+    a tutte le richieste indirizzate a esso, ma questo criterio al momento non può essere applicato.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Una pagina web nelle vicinanze}other{# pagine web nelle vicinanze}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF contenente {COUNT} pagina}other{Documento PDF contenente {COUNT} pagine}}</translation>
 <translation id="4030383055268325496">&amp;Annulla aggiunta</translation>
@@ -755,9 +755,9 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4196861286325780578">&amp;Ripeti spostamento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Controllare le configurazioni del firewall e antivirus<ph name="END_LINK" /></translation>
 <translation id="4209166701302774460">Il server a cui ti stai collegando, <ph name="ORIGIN" />, ha richiesto
-    l'applicazione di un criterio di partenza per tutte le richieste. Ma adesso non
+    l'applicazione di un criterio di origine per tutte le richieste indirizzate al server. Tuttavia, adesso non
     è riuscito a pubblicare un criterio e ciò impedisce al browser
-    di soddisfare la tua richiesta per il sito <ph name="SITE" />. I criteri di partenza possono essere usati dagli
+    di soddisfare la tua richiesta per il sito <ph name="SITE" />. I criteri di origine possono essere usati dagli
     operatori del sito per configurare la sicurezza e altre proprietà del sito.</translation>
 <translation id="421066178035138955">Usare dati e dispositivi per realtà virtuale</translation>
 <translation id="4214357935346142455">profilo della schermata di accesso</translation>

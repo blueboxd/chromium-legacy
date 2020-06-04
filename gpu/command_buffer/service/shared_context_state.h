@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -49,6 +50,10 @@ namespace gles2 {
 class FeatureInfo;
 struct ContextState;
 }  // namespace gles2
+
+namespace raster {
+class RasterDecoderTestBase;
+}  // namespace raster
 
 class GPU_GLES2_EXPORT SharedContextState
     : public base::trace_event::MemoryDumpProvider,
@@ -192,6 +197,7 @@ class GPU_GLES2_EXPORT SharedContextState
 
  private:
   friend class base::RefCounted<SharedContextState>;
+  friend class raster::RasterDecoderTestBase;
 
   // Observer which is notified when SkiaOutputSurfaceImpl takes ownership of a
   // shared image, and forward information to both histograms and task manager.
@@ -282,6 +288,8 @@ class GPU_GLES2_EXPORT SharedContextState
   base::MRUCache<void*, sk_sp<SkSurface>> sk_surface_cache_;
 
   bool device_needs_reset_ = false;
+  base::Time last_gl_check_graphics_reset_status_;
+  bool disable_check_reset_status_throttling_for_test_ = false;
 
   base::WeakPtrFactory<SharedContextState> weak_ptr_factory_{this};
 

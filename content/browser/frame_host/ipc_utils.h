@@ -21,19 +21,14 @@ class SiteInstance;
 // Verifies that |params| are valid and can be accessed by the renderer process
 // associated with |site_instance|.
 //
-// Returns true if the |params| are valid. In the case |params->blob_url_token|
-// is non-null, it gets deserialized and |out_blob_url_token_remote| is
-// populated. |params| is a mojo Ptr instead const& to make it clear to callees
-// of its mutable nature.
+// If the |params| are valid, returns true.
 //
-// Terminates the renderer with the given |process_id| and returns false if the
-// |params| are invalid.
+// Otherwise, terminates the renderer associated with |site_instance| and
+// returns false.
 //
 // This function has to be called on the UI thread.
-bool VerifyDownloadUrlParams(
-    SiteInstance* site_instance,
-    blink::mojom::DownloadURLParams* params,
-    mojo::PendingRemote<blink::mojom::BlobURLToken>* out_blob_url_token_remote);
+bool VerifyDownloadUrlParams(SiteInstance* site_instance,
+                             const blink::mojom::DownloadURLParams& params);
 
 // Verifies that |params| are valid and can be accessed by the renderer process
 // associated with |site_instance|.

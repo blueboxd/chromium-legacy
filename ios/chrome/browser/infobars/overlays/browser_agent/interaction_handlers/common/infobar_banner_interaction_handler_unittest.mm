@@ -56,13 +56,6 @@ class InfobarBannerInteractionHandlerTest : public PlatformTest {
   InfoBarIOS* infobar_;
 };
 
-// Tests that BannerVisibilityChanged() calls InfobarPresenting() and
-// InfobarDismissed() on the mock delegate.
-TEST_F(InfobarBannerInteractionHandlerTest, Presentation) {
-  EXPECT_CALL(mock_delegate(), InfoBarDismissed());
-  handler_.BannerVisibilityChanged(infobar_, false);
-}
-
 // Tests that pressing the modal button calls adds an OverlayRequest for the
 // modal UI to the WebState's queue at OverlayModality::kInfobarModal.
 TEST_F(InfobarBannerInteractionHandlerTest, ShowModal) {

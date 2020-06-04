@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -555,6 +556,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
       // Make sure we periodically check if the frame should activate.
       pending_surfaces_.insert(current_surface);
       UpdateNeedsBeginFramesInternal();
+#if defined(OS_ANDROID)
       // Ack a pending surface early the client's scheduler to schedule frames
       // for future surface changes This case happens when screen rotation takes
       // place while there is an active frame when this takes place it has a
@@ -584,6 +586,7 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrame(
           }
         }
       }
+#endif
       break;
     case Surface::QueueFrameResult::ACCEPTED_ACTIVE:
       // Nothing to do here.

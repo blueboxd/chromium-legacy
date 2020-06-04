@@ -627,7 +627,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   existing_user_controller_->Init(
       user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
   CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(login_display_.get(), login_display_.get());
+  GetOobeUI()->ShowSigninScreen(login_display_.get());
 }
 
 void LoginDisplayHostWebUI::CancelUserAdding() {
@@ -672,7 +672,7 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 
   CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(login_display_.get(), login_display_.get());
+  GetOobeUI()->ShowSigninScreen(login_display_.get());
 
   OnStartSignInScreenCommon();
 

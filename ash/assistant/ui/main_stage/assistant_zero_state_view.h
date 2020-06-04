@@ -10,10 +10,12 @@
 
 namespace ash {
 
+class AssistantViewDelegate;
+
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantZeroStateView
     : public views::View {
  public:
-  AssistantZeroStateView();
+  explicit AssistantZeroStateView(AssistantViewDelegate* delegate);
   AssistantZeroStateView(const AssistantZeroStateView&) = delete;
   AssistantZeroStateView& operator=(const AssistantZeroStateView&) = delete;
   ~AssistantZeroStateView() override;
@@ -25,6 +27,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantZeroStateView
 
  private:
   void InitLayout();
+
+  AssistantViewDelegate* const delegate_;
 };
 
 }  // namespace ash

@@ -741,26 +741,11 @@ CanvasResourceProvider::CreateBitmapProvider(
 std::unique_ptr<CanvasResourceProvider>
 CanvasResourceProvider::CreateSharedBitmapProvider(
     const IntSize& size,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher) {
-  // TODO(crbug/1035589). The former CanvasResourceProvider::Create was doing
-  // this check as well for SharedBitmapProvider, while this should not make
-  // sense, will be left for a later CL to address this issue and the failing
-  // tests due to not having this check here.
-  if (SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper) {
-    const auto& max_texture_size = context_provider_wrapper->ContextProvider()
-                                       ->GetCapabilities()
-                                       .max_texture_size;
-    if (size.Width() > max_texture_size || size.Height() > max_texture_size) {
-      return nullptr;
-    }
-  }
-
-  // TODO(crbug/1035589). The former CanvasResourceProvider::Create was doing
-  // this check as well for SharedBitmapProvider, as we are passing a weap_ptr
-  // maybe the caller could ensure an always valid weakptr.
+  // SharedBitmapProvider has to have a valid resource_dispatecher to be able to
+  // be created.
   if (!resource_dispatcher)
     return nullptr;
 

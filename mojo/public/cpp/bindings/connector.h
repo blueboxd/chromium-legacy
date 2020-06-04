@@ -161,10 +161,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // be added to the same group.
   void SetConnectionGroup(ConnectionGroup::Ref ref);
 
-  // Waits for the next message on the pipe, blocking until one arrives,
-  // |deadline| elapses, or an error happens. Returns |true| if a message has
-  // been delivered, |false| otherwise.
-  bool WaitForIncomingMessage(MojoDeadline deadline);
+  // Waits for the next message on the pipe, blocking until one arrives or an
+  // error happens. Returns |true| if a message has been delivered, |false|
+  // otherwise.
+  bool WaitForIncomingMessage();
 
   // See Binding for details of pause/resume.
   void PauseIncomingMethodCallProcessing();

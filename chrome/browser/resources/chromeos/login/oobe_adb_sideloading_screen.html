@@ -13,10 +13,9 @@
 
     <!-- Dialog for normal confirmation -->
     <oobe-dialog id="enableAdbSideloadDialog" role="dialog" has-buttons
-        footer-shrinkable
+        for-step="setup" footer-shrinkable
         title-key="enableAdbSideloadingSetupTitle"
-        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
-        hidden="[[!isState_(uiState_, 'setup')]]">
+        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>
@@ -48,10 +47,9 @@
 
     <!-- Dialog for error -->
     <oobe-dialog id="enableAdbSideloadErrorDialog" role="dialog" has-buttons
-        footer-shrinkable
+        for-step="error" footer-shrinkable
         title-key="enableAdbSideloadingErrorTitle"
-        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]"
-        hidden="[[!isState_(uiState_, 'error')]]">
+        aria-label$="[[i18nDynamic(locale, 'enableAdbSideloadingSetupTitle')]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:alert" icon2x="oobe-64:alert">
       </hd-iron-icon>

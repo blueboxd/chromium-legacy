@@ -112,6 +112,7 @@ class TabImpl : public Tab,
   content::WebContents* web_contents() const { return web_contents_.get(); }
 
   bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
+  NewTabDelegate* new_tab_delegate() const { return new_tab_delegate_; }
 
   // Called from Browser when this Tab is losing active status.
   void OnLosingActive();

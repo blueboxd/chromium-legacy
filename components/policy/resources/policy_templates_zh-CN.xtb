@@ -1173,7 +1173,7 @@
 <translation id="2787173078141616821">报告有关 Android 状态的信息</translation>
 <translation id="2787774054174244402">如果此政策设为 True，用户将无法向外部存储设备写入内容。
 
-      除非外部存储设备已被禁用，否则如果您将 ExternalStorageReadOnly 设为 False 或不设置它，用户便能在支持物理写入的外部存储设备上创建和修改文件。（您可以通过将 ExternalStorageDisable 设为 True 来禁用外部存储设备。）</translation>
+      除非外部存储设备已被禁用，否则如果您将 ExternalStorageReadOnly 设为 False 或不设置它，用户便能在没有使用防写入保护的外部存储设备上创建和修改文件。（您可以通过将 ExternalStorageDisable 设为 True 来禁用外部存储设备。）</translation>
 <translation id="2799297758492717491">允许符合网址格式白名单中所列格式的网页自动播放媒体内容</translation>
 <translation id="2801065672151277034">证书管理设置</translation>
 <translation id="2801155097555584385">设定电池充电自定义开始充电值（以百分比表示）</translation>
@@ -1298,10 +1298,10 @@
       要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
-<translation id="299519952839316970">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 88 中移除。公用会话已不再受支持。请改用 <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> 来配置受管理访客会话。
-      如果此政策设为 false，受管理访客会话的行为将会与 https://support.google.com/chrome/a/answer/3017014 页面中所述的标准“公用会话”的行为一样。
+<translation id="299519952839316970">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 88 中移除。公用自助服务终端已不再受支持。请改用 <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> 来配置受管理访客会话。
+      如果此政策设为 false，受管理访客会话的行为将会与 https://support.google.com/chrome/a/answer/3017014 页面中所述的标准“公用自助服务终端”的行为一样。
 
-      如果此政策设为 true 或未设置，受管理访客会话的行为将会与“受管理会话”的行为相同，这会解除常规“公用会话”的众多限制。
+      如果此政策设为 true 或未设置，受管理访客会话的行为将会与“受管理自助服务终端”的行为相同，这会解除常规“公用自助服务终端”的众多限制。
 
       如果您设置了此政策，用户将无法更改或覆盖它。</translation>
 <translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
@@ -1910,7 +1910,7 @@
 
       如果将此政策设为：
 
-      * Migrate（或者不受支持的选项，例如 AskUser 或 AskForEcryptfsArcUsers），那么只要用户登录，目录就会自动（不征求用户意见）迁移到 ext4。
+      * Migrate（或者不受支持的选项，例如 AskUser 或 AskForEcryptfsArcUsers），那么只要用户登录，目录就会在不征求用户意见的情况下自动迁移到 ext4。
 
       * Wipe 或 MinimalMigrate，那么只要用户登录，通过 ext4 加密的新主目录就会替换通过 ecryptfs 加密的旧目录。为了帮助用户避免重复登录，MinimalMigrate 会尝试保留登录令牌。
 
@@ -1918,7 +1918,7 @@
 
       此政策不适用于自助服务终端用户。
 
-      警告：Wipe 和 MinimalMigrate 会移除本地数据。</translation>
+      警告：如果设为 Wipe 和 MinimalMigrate，系统会移除本地数据。</translation>
 <translation id="3925377537407648234">设置显示屏分辨率和缩放比例</translation>
 <translation id="3927137827189017535">在登录屏幕上启用“粘滞键”无障碍功能。
 

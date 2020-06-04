@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '23708cd50e9356487e360219a5293f046d13d504',
+  'skia_revision': '5a2a7b3096d05f7993fc2d4a48432628d6779f4b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -190,11 +190,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
-  'swarming_revision': '90c5e17a82612bc898c90ab1530dd1bd5822eae8',
+  'swarming_revision': '4c095d04179dc725a300085ae21fe3b79900d072',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cabedcafaa77bee365776b3936cde59a51198f7a',
+  'angle_revision': '0df92012a18edab32d14c43d8db72899b3cd1641',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '8436fb411921568d706e0c6a3ce7becd124a9e36',
+  'devtools_frontend_revision': 'b674ea36ab2fab389e7bc57b6651f1103c0f78d0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -309,7 +309,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '4026f6e15a63e637df2a3c67ff9f7e1dc2cd2036',
+  'quiche_revision': 'd7b17f31c55ae26b2688aa6f34a979d5312fa7e9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -855,7 +855,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1feb578b5252adb660eeac8947497f331aea435d',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '93c0a8991c77849614f98e75410921d08c00db86',
       'condition': 'checkout_linux',
   },
 
@@ -1224,7 +1224,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3d920083ed23e730aece1252ce18ef25bbe10256',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '7835859ea8de36fcb15ab8c0f31126fc9c6a3d0f',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1412,7 +1412,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + 'a8c51df76caae94254b1e59999405f739467490e',
 
   'src/third_party/vulkan_memory_allocator':
-    Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'dac952eb0a27736571bf10ac42fbfcc59192f310',
+    Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + '431d6e57284aeb08118ff428dfbd51c94342faa1',
 
   # Display server protocol for Linux.
   'src/third_party/wayland/src': {
@@ -1524,7 +1524,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a437e061d3671338058a51b7d42c3826d0722096',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c461b6d69583218f52fba84da67e7505eeb13802',
     'condition': 'checkout_src_internal',
   },
 

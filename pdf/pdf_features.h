@@ -21,10 +21,6 @@ extern const base::Feature kPDFViewerUpdate;
 extern const base::Feature kSaveEditedPDFForm;
 extern const base::Feature kTabAcrossPDFAnnotations;
 
-#if defined(OS_CHROMEOS)
-extern const base::Feature kPDFAnnotations;
-#endif
-
 }  // namespace features
 }  // namespace chrome_pdf
 

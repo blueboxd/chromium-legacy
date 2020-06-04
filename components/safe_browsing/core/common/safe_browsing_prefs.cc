@@ -239,8 +239,7 @@ void SetExtendedReportingPrefAndMetric(
   RecordExtendedReportingPrefChanged(*prefs, location);
 }
 
-// Only used for tests.
-void SetExtendedReportingPref(PrefService* prefs, bool value) {
+void SetExtendedReportingPrefForTests(PrefService* prefs, bool value) {
   prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
 }
 

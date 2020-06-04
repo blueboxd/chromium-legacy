@@ -46,8 +46,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
-#include "components/performance_manager/public/performance_manager.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -116,10 +114,6 @@ void ChromeExtensionsAPIClient::AttachWebContentsHelpers(
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
-  if (auto* performance_manager_registry =
-          performance_manager::PerformanceManagerRegistry::GetInstance()) {
-    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
-  }
 }
 
 bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(

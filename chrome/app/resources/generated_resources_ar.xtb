@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">تسمح لك بضبط معدل تكرار لوحة المفاتيح، وتوقّع الكلمات، والمزيد</translation>
 <translation id="1633947793238301227">‏إيقاف خدمة "مساعد Google"</translation>
 <translation id="1634783886312010422">هل سبق وغيرت كلمة المرور هذه على <ph name="WEBSITE" />؟</translation>
-<translation id="1635033183663317347">تم التثبيت من قبل الوصيّ.</translation>
 <translation id="1637224376458524414">‏الحصول على هذه الإشارة المرجعية على جهاز iPhone</translation>
 <translation id="1637765355341780467">حدث خطأ ما أثناء فتح ملفك الشخصي. وقد تكون بعض الميزات غير متاحة.</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">‏البيانات من مزامنة Chrome</translation>
 <translation id="2200094388063410062">البريد الإلكتروني</translation>
 <translation id="2200356397587687044">‏يحتاج Chrome إلى إذن للمتابعة</translation>
-<translation id="2200729650590440847">إعدادات شاشة القفل باستخدام رقم تعريف شخصي</translation>
 <translation id="220138918934036434">إخفاء الزر</translation>
 <translation id="2202898655984161076">حدثت مشكلة أثناء إدراج الطابعات. ربما لا يتم تسجيل بعض الطابعات بنجاح في <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">محرك البحث الذي تم استخدامه في <ph name="BEGIN_LINK" />شريط العناوين<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">قراءة وتغيير أي شيء تكتبه</translation>
-<translation id="2207166770508557715">إعدادات السكون</translation>
 <translation id="220858061631308971">يُرجى إدخال رمز رقم التعريف الشخصي هذا على "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">السماح بملفات تعريف الارتباط</translation>
 <translation id="2213140827792212876">إزالة المشاركة</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">‏جارٍ تثبيت نظام ملفات ssh لحاوية نظام التشغيل Linux</translation>
 <translation id="2751739896257479635">‏مصادقة المرحلة الثانية عبر EAP</translation>
 <translation id="2753677631968972007">التحكّم اليدوي بأذونات المواقع الإلكترونية</translation>
-<translation id="2753984311895843016">طاقة غير نشِطة لفترة قصيرة</translation>
 <translation id="2755367719610958252">إدارة ميزات إمكانية الوصول</translation>
 <translation id="275662540872599901">الشاشة متوقفة</translation>
 <translation id="2757338480560142065">يُرجى التأكد من أن كلمة المرور التي تحتفظ بها تُطابِق كلمة مرور <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">اتجاه الشاشة</translation>
 <translation id="2762441749940182211">تم حظر استخدام الكاميرا</translation>
 <translation id="2764786626780673772">‏تفاصيل الشبكة الافتراضية الخاصة (VPN)</translation>
 <translation id="2765217105034171413">صغير</translation>
@@ -6224,7 +6219,6 @@
 <translation id="8953476467359856141">أثناء الشحن</translation>
 <translation id="895347679606913382">بدء التحميل...</translation>
 <translation id="8957762313041272117">النسخ النصي التلقائي</translation>
-<translation id="8958804960827200147">اتجاه الشاشة</translation>
 <translation id="895944840846194039">‏ذاكرة JavaScript</translation>
 <translation id="8962083179518285172">إخفاء التفاصيل</translation>
 <translation id="8962918469425892674">تم السماح لهذا الموقع باستخدام أجهزة استشعار الإضاءة أو الحركة.</translation>

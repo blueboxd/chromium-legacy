@@ -37,6 +37,8 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   blink::WebThemeEngine* ThemeEngine() override;
   bool IsURLSupportedForAppCache(const blink::WebURL& url) override;
 
+  bool IsURLSavableForSavableResource(const blink::WebURL& url) override;
+
   size_t MaxDecodedImageBytes() override;
   bool IsLowEndDevice() override;
   void RecordAction(const blink::UserMetricsAction&) override;

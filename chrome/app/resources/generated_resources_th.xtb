@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">ให้คุณปรับเปลี่ยนอัตราการพิมพ์ซ้ำของแป้นพิมพ์ การคาดคะเนคำ และอื่นๆ</translation>
 <translation id="1633947793238301227">ปิดใช้ Google Assistant</translation>
 <translation id="1634783886312010422">คุณเปลี่ยนรหัสผ่านนี้ใน <ph name="WEBSITE" /> แล้วใช่ไหม</translation>
-<translation id="1635033183663317347">ติดตั้งโดยผู้ดูแล</translation>
 <translation id="1637224376458524414">รับบุ๊กมาร์กนี้ใน iPhone ของคุณ</translation>
 <translation id="1637765355341780467">เกิดข้อผิดพลาดขณะเปิดโปรไฟล์ ฟีเจอร์บางอย่างอาจไม่พร้อมใช้งาน</translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">ข้อมูลจากการซิงค์ของ Chrome</translation>
 <translation id="2200094388063410062">อีเมล</translation>
 <translation id="2200356397587687044">Chrome ต้องการสิทธิ์ในการดำเนินการต่อ</translation>
-<translation id="2200729650590440847">การตั้งค่าหน้าจอล็อกด้วย PIN</translation>
 <translation id="220138918934036434">ปุ่มซ่อน</translation>
 <translation id="2202898655984161076">เกิดปัญหาในการแสดงรายการเครื่องพิมพ์ คุณอาจยังลงทะเบียนเครื่องพิมพ์บางเครื่องกับ <ph name="CLOUD_PRINT_NAME" /> ไม่เรียบร้อย</translation>
 <translation id="2203682048752833055">เครื่องมือค้นหาที่ใช้ใน<ph name="BEGIN_LINK" />แถบที่อยู่เว็บ<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">อ่านและเปลี่ยนแปลงสิ่งที่คุณพิมพ์</translation>
-<translation id="2207166770508557715">การตั้งค่าสลีป</translation>
 <translation id="220858061631308971">โปรดป้อนรหัส PIN นี้บน "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">อนุญาตคุกกี้</translation>
 <translation id="2213140827792212876">นำการแชร์ออก</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">กำลังต่อเชื่อม sshfs ของคอนเทนเนอร์ Linux</translation>
 <translation id="2751739896257479635">การตรวจสอบสิทธิ์ขั้นที่ 2 ของ EAP</translation>
 <translation id="2753677631968972007">ควบคุมสิทธิ์เข้าถึงเว็บไซต์ด้วยตนเอง</translation>
-<translation id="2753984311895843016">การพักเครื่อง</translation>
 <translation id="2755367719610958252">จัดการฟีเจอร์การเข้าถึง</translation>
 <translation id="275662540872599901">ปิดหน้าจอ</translation>
 <translation id="2757338480560142065">ตรวจสอบว่ารหัสผ่านที่คุณจะบันทึกตรงกับรหัสผ่านสำหรับ <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">การวางแนวจอภาพ</translation>
 <translation id="2762441749940182211">บล็อกกล้องถ่ายรูป</translation>
 <translation id="2764786626780673772">รายละเอียด VPN</translation>
 <translation id="2765217105034171413">ขนาดเล็ก</translation>
@@ -2130,6 +2125,7 @@
 <translation id="3677106374019847299">ป้อนชื่อผู้ให้บริการที่กำหนดเอง</translation>
 <translation id="3677657024345889897">เสียงเบาที่สุด</translation>
 <translation id="3677911431265050325">ขอเว็บไซต์ในอุปกรณ์เคลื่อนที่</translation>
+<translation id="3677959414150797585">รวมแอป หน้าเว็บ และอื่นๆ ส่งสถิติเพื่อปรับปรุงคำแนะนำต่อเมื่อคุณเลือกที่จะแชร์ข้อมูลการใช้งาน</translation>
 <translation id="3678156199662914018">ส่วนขยาย: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">เสียงของการอ่านออกเสียงข้อความ</translation>
 <translation id="3681311097828166361">ขอขอบคุณสำหรับความคิดเห็น คุณกำลังออฟไลน์อยู่ในขณะนี้ และระบบจะส่งรายงานของคุณในภายหลัง</translation>
@@ -3782,6 +3778,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - กำลังบันทึกด้วยกล้องหรือไมโครโฟน</translation>
 <translation id="5841270259333717135">กำหนดค่าอีเทอร์เน็ต</translation>
 <translation id="5842497610951477805">เปิดใช้บลูทูธ</translation>
+<translation id="5844574845205796324">แนะนำเนื้อหาใหม่ให้สำรวจ</translation>
 <translation id="5846200638699387931">ข้อผิดพลาดทางไวยากรณ์ที่แสดงความสัมพันธ์: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">ติดตั้งอัปเดตและแอป การดำเนินการต่อหมายความว่าคุณยินยอมให้อุปกรณ์เครื่องนี้ดาวน์โหลดและติดตั้งอัปเดตและแอปจาก Google, ผู้ให้บริการ และผู้ผลิตอุปกรณ์ของคุณโดยอัตโนมัติด้วย ซึ่งอาจมีการใช้อินเทอร์เน็ตมือถือ แอปบางแอปอาจมีการซื้อในแอป</translation>
 <translation id="5849212445710944278">เพิ่มแล้ว</translation>
@@ -6223,7 +6220,6 @@
 <translation id="8953476467359856141">ขณะที่ชาร์จ</translation>
 <translation id="895347679606913382">กำลังเริ่มต้น...</translation>
 <translation id="8957762313041272117">คำบรรยายสด</translation>
-<translation id="8958804960827200147">การวางแนวหน้าจอ</translation>
 <translation id="895944840846194039">หน่วยความจำ JavaScript</translation>
 <translation id="8962083179518285172">ซ่อนรายละเอียด</translation>
 <translation id="8962918469425892674">เว็บไซต์นี้ใช้เซ็นเซอร์ตรวจจับการเคลื่อนไหวหรือแสงอยู่</translation>

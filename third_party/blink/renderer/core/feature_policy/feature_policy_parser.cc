@@ -28,12 +28,12 @@ namespace {
 
 class ParsingContext {
  public:
-  ParsingContext(Vector<String>* messages,
+  ParsingContext(PolicyParserMessageBuffer& logger,
                  scoped_refptr<const SecurityOrigin> self_origin,
                  scoped_refptr<const SecurityOrigin> src_origin,
                  const FeatureNameMap& feature_names,
                  FeaturePolicyParserDelegate* delegate)
-      : messages_(messages),
+      : logger_(logger),
         self_origin_(self_origin),
         src_origin_(src_origin),
         feature_names_(feature_names),
@@ -68,11 +68,6 @@ class ParsingContext {
   // Parse allowlist for feature.
   ParsedAllowlist ParseAllowlist(const Vector<String>& origin_strings);
 
-  inline void Log(const String& message) {
-    if (messages_)
-      messages_->push_back(message);
-  }
-
   bool FeatureObserved(mojom::blink::FeaturePolicyFeature feature);
 
   void ReportFeaturePolicyWebFeatureUsage(mojom::blink::WebFeature feature);
@@ -90,7 +85,7 @@ class ParsingContext {
   // yet.
   void ReportAllowlistTypeUsage();
 
-  Vector<String>* messages_;
+  PolicyParserMessageBuffer& logger_;
   scoped_refptr<const SecurityOrigin> self_origin_;
   scoped_refptr<const SecurityOrigin> src_origin_;
   const FeatureNameMap& feature_names_;
@@ -189,11 +184,12 @@ base::Optional<mojom::blink::FeaturePolicyFeature>
 ParsingContext::ParseFeatureName(const String& feature_name) {
   DCHECK(!feature_name.IsEmpty());
   if (!feature_names_.Contains(feature_name)) {
-    Log("Unrecognized feature: '" + feature_name + "'.");
+    logger_.Warn("Unrecognized feature: '" + feature_name + "'.");
     return base::nullopt;
   }
   if (DisabledByOriginTrial(feature_name, delegate_)) {
-    Log("Origin trial controlled feature not enabled: '" + feature_name + "'.");
+    logger_.Warn("Origin trial controlled feature not enabled: '" +
+                 feature_name + "'.");
     return base::nullopt;
   }
   mojom::blink::FeaturePolicyFeature feature = feature_names_.at(feature_name);
@@ -224,7 +220,7 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
       DCHECK(!origin_string.IsEmpty());
 
       if (!origin_string.ContainsOnlyASCIIOrEmpty()) {
-        Log("Non-ASCII characters in origin.");
+        logger_.Warn("Non-ASCII characters in origin.");
         continue;
       }
 
@@ -274,7 +270,7 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
           target_origin = parsed_origin->ToUrlOrigin();
           allowlist_includes_origin_ = true;
         } else {
-          Log("Unrecognized origin: '" + origin_string + "'.");
+          logger_.Warn("Unrecognized origin: '" + origin_string + "'.");
           continue;
         }
       }
@@ -344,9 +340,9 @@ ParsedFeaturePolicy ParsingContext::Parse(const String& policy) {
   ParsedFeaturePolicy parsed_policy;
 
   if (policy.length() > MAX_LENGTH_PARSE) {
-    Log("Feature policy declaration exceeds size limit(" +
-        String::Number(policy.length()) + ">" +
-        String::Number(MAX_LENGTH_PARSE) + ")");
+    logger_.Error("Feature policy declaration exceeds size limit(" +
+                  String::Number(policy.length()) + ">" +
+                  String::Number(MAX_LENGTH_PARSE) + ")");
     return parsed_policy;
   }
 
@@ -393,9 +389,9 @@ ParsedFeaturePolicy ParsingContext::Parse(const String& policy) {
 ParsedFeaturePolicy FeaturePolicyParser::ParseHeader(
     const String& policy,
     scoped_refptr<const SecurityOrigin> origin,
-    Vector<String>* messages,
+    PolicyParserMessageBuffer& logger,
     FeaturePolicyParserDelegate* delegate) {
-  return Parse(policy, origin, nullptr, messages, GetDefaultFeatureNameMap(),
+  return Parse(policy, origin, nullptr, logger, GetDefaultFeatureNameMap(),
                delegate);
 }
 
@@ -403,9 +399,9 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
-    Vector<String>* messages,
+    PolicyParserMessageBuffer& logger,
     Document* document) {
-  return Parse(policy, self_origin, src_origin, messages,
+  return Parse(policy, self_origin, src_origin, logger,
                GetDefaultFeatureNameMap(), document);
 }
 
@@ -414,10 +410,10 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
-    Vector<String>* messages,
+    PolicyParserMessageBuffer& logger,
     const FeatureNameMap& feature_names,
     FeaturePolicyParserDelegate* delegate) {
-  return ParsingContext(messages, self_origin, src_origin, feature_names,
+  return ParsingContext(logger, self_origin, src_origin, feature_names,
                         delegate)
       .Parse(policy);
 }

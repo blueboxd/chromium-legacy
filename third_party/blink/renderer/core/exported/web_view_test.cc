@@ -1152,7 +1152,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotAssert) {
 
   // The test requires non-empty composition.
   std::string composition_text("hello");
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   active_input_method_controller->SetComposition(
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 5, 5);
@@ -1209,7 +1209,7 @@ TEST_F(WebViewTest, FinishComposingTextCursorPositionChange) {
       web_view->MainFrameImpl()
           ->FrameWidget()
           ->GetActiveWebInputMethodController();
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   active_input_method_controller->SetComposition(
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 3, 3);
@@ -1258,7 +1258,7 @@ TEST_F(WebViewTest, SetCompositionForNewCaretPositions) {
           ->FrameWidget()
           ->GetActiveWebInputMethodController();
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
 
   active_input_method_controller->CommitText("hello", empty_ime_text_spans,
                                              WebRange(), 0);
@@ -1374,7 +1374,7 @@ TEST_F(WebViewTest, SetCompositionWithEmptyText) {
           ->FrameWidget()
           ->GetActiveWebInputMethodController();
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
 
   active_input_method_controller->CommitText("hello", empty_ime_text_spans,
                                              WebRange(), 0);
@@ -1415,7 +1415,7 @@ TEST_F(WebViewTest, CommitTextForNewCaretPositions) {
           ->FrameWidget()
           ->GetActiveWebInputMethodController();
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
 
   // Caret is on the left of composing text.
   active_input_method_controller->CommitText("ab", empty_ime_text_spans,
@@ -1488,7 +1488,7 @@ TEST_F(WebViewTest, CommitTextWhileComposing) {
           ->FrameWidget()
           ->GetActiveWebInputMethodController();
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   active_input_method_controller->SetComposition(
       WebString::FromUTF8("abc"), empty_ime_text_spans, WebRange(), 0, 0);
   WebTextInputInfo info = active_input_method_controller->TextInputInfo();
@@ -1589,7 +1589,7 @@ TEST_F(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
       base_url_ + "text_area_populated.html");
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
 
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
@@ -1691,11 +1691,11 @@ TEST_F(WebViewTest, SetCompositionFromExistingText) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_populated.html");
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
-  WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
+  WebVector<ui::ImeTextSpan> ime_text_spans(static_cast<size_t>(1));
   ime_text_spans[0] =
-      WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                     ui::mojom::ImeTextSpanThickness::kThin,
-                     ui::mojom::ImeTextSpanUnderlineStyle::kSolid, 0, 0);
+      ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, 4,
+                      ui::ImeTextSpan::Thickness::kThin,
+                      ui::ImeTextSpan::UnderlineStyle::kSolid, 0, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->GetInputMethodController();
@@ -1706,7 +1706,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingText) {
   EXPECT_EQ(10, info.selection_end);
   EXPECT_EQ(8, info.composition_start);
   EXPECT_EQ(12, info.composition_end);
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   frame->SetCompositionFromExistingText(0, 0, empty_ime_text_spans);
   info = active_input_method_controller->TextInputInfo();
   EXPECT_EQ(4, info.selection_start);
@@ -1720,17 +1720,17 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "text_area_populated.html");
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
-  WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
+  WebVector<ui::ImeTextSpan> ime_text_spans(static_cast<size_t>(1));
   ime_text_spans[0] =
-      WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                     ui::mojom::ImeTextSpanThickness::kThin,
-                     ui::mojom::ImeTextSpanUnderlineStyle::kSolid, 0, 0);
+      ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, 4,
+                      ui::ImeTextSpan::Thickness::kThin,
+                      ui::ImeTextSpan::UnderlineStyle::kSolid, 0, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
   frame->SetEditableSelectionOffsets(27, 27);
   std::string new_line_text("\n");
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   active_input_method_controller->CommitText(
       WebString::FromUTF8(new_line_text.c_str()), empty_ime_text_spans,
       WebRange(), 0);
@@ -1763,11 +1763,11 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextInRichText) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_rich_text.html");
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
-  WebVector<WebImeTextSpan> ime_text_spans(static_cast<size_t>(1));
+  WebVector<ui::ImeTextSpan> ime_text_spans(static_cast<size_t>(1));
   ime_text_spans[0] =
-      WebImeTextSpan(WebImeTextSpan::Type::kComposition, 0, 4,
-                     ui::mojom::ImeTextSpanThickness::kThin,
-                     ui::mojom::ImeTextSpanUnderlineStyle::kSolid, 0, 0);
+      ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, 4,
+                      ui::ImeTextSpan::Thickness::kThin,
+                      ui::ImeTextSpan::UnderlineStyle::kSolid, 0, 0);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetEditableSelectionOffsets(1, 1);
   WebDocument document = web_view->MainFrameImpl()->GetDocument();
@@ -1784,7 +1784,7 @@ TEST_F(WebViewTest, SetEditableSelectionOffsetsKeepsComposition) {
 
   std::string composition_text_first("hello ");
   std::string composition_text_second("world");
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   WebInputMethodController* active_input_method_controller =
       web_view->MainFrameImpl()
           ->FrameWidget()
@@ -3029,7 +3029,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   WebInputMethodController* active_input_method_controller =
       frame->FrameWidget()->GetActiveWebInputMethodController();
   EXPECT_TRUE(TapElementById(WebInputEvent::Type::kGestureTap, target));
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   frame->SetEditableSelectionOffsets(8, 8);
   EXPECT_TRUE(active_input_method_controller->SetComposition(
       "12345", empty_ime_text_spans, WebRange(), 8, 13));
@@ -3467,7 +3467,7 @@ TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
 
   // Set up a composition that needs to be committed.
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   frame->SetEditableSelectionOffsets(4, 10);
   frame->SetCompositionFromExistingText(8, 12, empty_ime_text_spans);
   WebTextInputInfo info = frame->GetInputMethodController()->TextInputInfo();
@@ -3511,7 +3511,7 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace) {
   // Test both input elements.
   for (int i = 0; i < 2; ++i) {
     // Select composition and do sanity check.
-    WebVector<WebImeTextSpan> empty_ime_text_spans;
+    WebVector<ui::ImeTextSpan> empty_ime_text_spans;
     frame->SetEditableSelectionOffsets(6, 6);
     WebInputMethodController* active_input_method_controller =
         frame->FrameWidget()->GetActiveWebInputMethodController();
@@ -3565,7 +3565,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesntTriggerAutofillTextChange) {
   // Set up a composition that needs to be committed.
   std::string composition_text("testingtext");
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   active_input_method_controller->SetComposition(
       WebString::FromUTF8(composition_text.c_str()), empty_ime_text_spans,
       WebRange(), 0, composition_text.length());
@@ -3598,7 +3598,7 @@ TEST_F(WebViewTest,
   frame->SetAutofillClient(&client);
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
 
   client.ClearChangeCounts();
   frame->SetCompositionFromExistingText(8, 12, empty_ime_text_spans);
@@ -4423,7 +4423,7 @@ TEST_F(WebViewTest, CompositionIsUserGesture) {
   EXPECT_TRUE(
       frame->FrameWidget()->GetActiveWebInputMethodController()->SetComposition(
           WebString::FromUTF8(std::string("hello").c_str()),
-          WebVector<WebImeTextSpan>(), WebRange(), 3, 3));
+          WebVector<ui::ImeTextSpan>(), WebRange(), 3, 3));
   EXPECT_TRUE(frame->HasTransientUserActivation());
   EXPECT_EQ(1, client.TextChanges());
   EXPECT_TRUE(frame->HasMarkedText());
@@ -4954,7 +4954,7 @@ TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture) {
   frame->SetAutofillClient(&client);
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
 
-  WebVector<WebImeTextSpan> empty_ime_text_spans;
+  WebVector<ui::ImeTextSpan> empty_ime_text_spans;
 
   EXPECT_EQ(0, client.TextChanges());
   EXPECT_TRUE(

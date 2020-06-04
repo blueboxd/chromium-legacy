@@ -47,6 +47,7 @@ class PointF;
 
 namespace ui {
 class Cursor;
+struct ImeTextSpan;
 }
 
 namespace blink {
@@ -55,7 +56,6 @@ class WebCoalescedInputEvent;
 class WebDragData;
 class WebPluginContainer;
 class WebURLResponse;
-struct WebImeTextSpan;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebRect;
@@ -180,7 +180,7 @@ class WebPlugin {
   // composition is set successfully. If |replacementRange| is not null, the
   // text inside |replacementRange| will be replaced by |text|
   virtual bool SetComposition(const WebString& text,
-                              const WebVector<WebImeTextSpan>& ime_text_spans,
+                              const WebVector<ui::ImeTextSpan>& ime_text_spans,
                               const WebRange& replacement_range,
                               int selection_start,
                               int selection_end) {
@@ -191,7 +191,7 @@ class WebPlugin {
   // moves the caret according to relativeCaretPosition. If |replacementRange|
   // is not null, the text inside |replacementRange| will be replaced by |text|.
   virtual bool CommitText(const WebString& text,
-                          const WebVector<WebImeTextSpan>& ime_text_spans,
+                          const WebVector<ui::ImeTextSpan>& ime_text_spans,
                           const WebRange& replacement_range,
                           int relative_caret_position) {
     return false;

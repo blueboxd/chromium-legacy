@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">మీ కీబోర్డ్ పునరావృత రేటు, పద సూచన మొదలైనవి సర్దుబాటు చేయడానికి మిమ్మల్ని అనుమతిస్తుంది</translation>
 <translation id="1633947793238301227">Google Assistantను డిజేబుల్ చేయండి</translation>
 <translation id="1634783886312010422">మీరు ఇప్పటికే ఈ పాస్‌వర్డ్‌ను <ph name="WEBSITE" />లో మార్చారా?</translation>
-<translation id="1635033183663317347">మీ పర్యవేక్షకుడు ఇన్‌స్టాల్ చేసారు.</translation>
 <translation id="1637224376458524414">ఈ బుక్‌మార్క్‌ను మీ iPhoneలో పొందండి</translation>
 <translation id="1637765355341780467">మీ ప్రొఫైల్‌ను తెరుస్తున్నప్పుడు ఏదో తప్పు జరిగింది. కొన్ని ఫీచర్‌లు అందుబాటులో ఉండకపోవచ్చు.</translation>
 <translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Chrome సింక్ నుండి డేటా</translation>
 <translation id="2200094388063410062">ఇమెయిల్</translation>
 <translation id="2200356397587687044">కొనసాగడానికి Chromeకి అనుమతి అవసరం</translation>
-<translation id="2200729650590440847">పిన్ లాక్ స్క్రీన్ సెట్టింగ్‌లు</translation>
 <translation id="220138918934036434">బటన్‌ను దాచిపెట్టు</translation>
 <translation id="2202898655984161076">ముద్రణలను జాబితా చెయ్యడంలో సమస్య ఉంది. <ph name="CLOUD_PRINT_NAME" />తో మీ ముద్రణలలో కొన్ని విజయవంతంగా నమోదు చెయ్యబడకపోయి ఉండవచ్చు.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />చిరునామా బార్<ph name="END_LINK" />లో ఉపయోగించాల్సిన శోధన ఇంజిన్</translation>
 <translation id="2204034823255629767">మీరు టైప్ చేసేదాన్ని చదవడం మరియు మార్చడం</translation>
-<translation id="2207166770508557715">స్లీప్ సెట్టింగ్‌లు</translation>
 <translation id="220858061631308971">దయచేసి ఈ PIN కోడ్‌ను "<ph name="DEVICE_NAME" />"లో నమోదు చేయండి:</translation>
 <translation id="2212565012507486665">కుక్కీలను అనుమతించు</translation>
 <translation id="2213140827792212876">షేర్ చేయడాన్ని తీసివేయండి</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Linux కంటెయినర్ sshfsను మౌంట్ చేస్తోంది</translation>
 <translation id="2751739896257479635">EAP 2వ దశ ప్రమాణీకరణ</translation>
 <translation id="2753677631968972007">సైట్ అనుమతులను మాన్యువల్‌గా నియంత్రించడం.</translation>
-<translation id="2753984311895843016">నిష్క్రియ పవర్</translation>
 <translation id="2755367719610958252">యాక్సెస్‌ ఫీచ‌ర్‌ల‌ను నిర్వహించండి</translation>
 <translation id="275662540872599901">స్క్రీన్ ఆఫ్‌లో ఉంది</translation>
 <translation id="2757338480560142065">మీరు సేవ్ చేస్తున్న పాస్‌వర్డ్ మీ <ph name="WEBSITE" /> యొక్క పాస్‌వర్డ్‌తో సరిపోలుతుందని నిర్ధారించుకోండి</translation>
-<translation id="276221322463921688">మానిటర్ ఓరియంటేషన్</translation>
 <translation id="2762441749940182211">కెమెరా బ్లాక్ చేయబడింది</translation>
 <translation id="2764786626780673772">VPN వివరాలు</translation>
 <translation id="2765217105034171413">చిన్నది</translation>
@@ -2886,7 +2881,7 @@
 <translation id="4645676300727003670">&amp;ఉంచు</translation>
 <translation id="4646675363240786305">పోర్ట్‌లు</translation>
 <translation id="4647090755847581616">ట్యాబ్‌ను &amp;మూసివేయి</translation>
-<translation id="4647420311443994946">{0,select, tablet{మీరు మీ టాబ్లెట్‌కు సైన్ ఇన్ చేసినప్పుడు యాప్‌ను ప్రారంభించండి}computer{మీరు మీ కంప్యూటర్‌కు సైన్ ఇన్ చేసినప్పుడు యాప్‌ను ప్రారంభించండి}other{మీరు మీ పరికరంలో సైన్ ఇన్ చేసినప్పుడు యాప్‌ను ప్రారంభించండి}}</translation>
+<translation id="4647420311443994946">{0,select, tablet{మీరు మీ టాబ్లెట్‌లో సైన్ ఇన్ చేసినప్పుడు యాప్‌ను ప్రారంభించండి}computer{మీరు మీ కంప్యూటర్‌కు సైన్ ఇన్ చేసినప్పుడు యాప్‌ను ప్రారంభించండి}other{మీరు మీ పరికరంలో సైన్ ఇన్ చేసినప్పుడు యాప్‌ను ప్రారంభించండి}}</translation>
 <translation id="4647697156028544508">దయచేసి "<ph name="DEVICE_NAME" />" కోసం PINను నమోదు చేయండి:</translation>
 <translation id="4648491805942548247">చాలని అనుమతులు</translation>
 <translation id="4648499713050786492">వ్యక్తిని జోడించే ముందు దయచేసి మీ ప్రొఫైల్‌ను అన్‌లాక్ చేయండి.</translation>
@@ -6221,7 +6216,6 @@
 <translation id="8953476467359856141">ఛార్జింగ్‌లో ఉన్నప్పుడు</translation>
 <translation id="895347679606913382">ప్రారంభిస్తోంది...</translation>
 <translation id="8957762313041272117">లైవ్ క్యాప్షన్</translation>
-<translation id="8958804960827200147">స్క్రీన్ ఓరియంటేషన్</translation>
 <translation id="895944840846194039">JavaScript మెమరీ</translation>
 <translation id="8962083179518285172">వివరాలను దాచిపెట్టు</translation>
 <translation id="8962918469425892674">ఈ సైట్ మోషన్ లేదా లైట్ సెన్సార్‌లను ఉపయోగిస్తోంది.</translation>

@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":hd-iron-icon",
     ":html-echo",
     ":login_screen_behavior",
+    ":multi_step_behavior",
     ":oobe_buttons",
     ":oobe_dialog",
     ":oobe_dialog_host_behavior",
@@ -47,6 +48,9 @@ js_library("login_screen_behavior") {
     ":fake_oobe",
     "//ui/login:display_manager_types",
   ]
+}
+
+js_library("multi_step_behavior") {
 }
 
 js_library("oobe_buttons") {

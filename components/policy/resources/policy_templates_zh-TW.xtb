@@ -1189,7 +1189,7 @@
 <translation id="2787173078141616821">回報 Android 狀態的相關資訊</translation>
 <translation id="2787774054174244402">如果將這項政策設為 True，使用者無法將內容寫入外部儲存裝置。
 
-      除非外部儲存裝置遭到封鎖，否則將 ExternalStorageReadOnly 設為 False 或不設定時，只要外部儲存裝置可供寫入內容，使用者即可在其中建立及修改檔案 (將 ExternalStorageDisable 設為 True 即可封鎖外部儲存裝置)。</translation>
+      除非外部儲存裝置遭到封鎖，否則將 ExternalStorageReadOnly 設為 False 或不設定時，只要外部儲存裝置實際可供寫入內容，使用者即可在其中建立及修改檔案 (將 ExternalStorageDisable 設為 True 即可封鎖外部儲存裝置)。</translation>
 <translation id="2799297758492717491">允許符合網址模式許可清單的網頁自動播放媒體</translation>
 <translation id="2801065672151277034">憑證管理設定</translation>
 <translation id="2801155097555584385">自訂電池開始充電值 (以百分比表示)</translation>
@@ -1311,9 +1311,9 @@
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
 <translation id="299519952839316970">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 88 版中移除。系統已不再支援公開工作階段。請改用 <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> 來設定受管理的訪客工作階段。
-      如果將這項政策設為 False，受管理訪客工作階段的行為將符合 https://support.google.com/chrome/a/answer/3017014 頁面所述的標準「公開工作階段」。
+      如果將這項政策設為 False，接受管理的訪客工作階段運作模式會依照 https://support.google.com/chrome/a/answer/3017014 頁面所述的標準「公開工作階段」。
 
-      如果將這項政策設為 True 或未設定，受管理訪客工作階段的行為將符合「受管理的工作階段」，不像一般的「公開工作階段」有許多限制。
+      如果將這項政策設為 True 或未設定，接受管理的訪客工作階段就會如同「接受管理的工作階段」一般運作，比起一般的「公開工作階段」少了許多限制。
 
       設定這項政策後，使用者即無法變更或覆寫。</translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
@@ -1374,9 +1374,9 @@
 
         警告：實驗性政策不受支援，且在未來的瀏覽器版本中如有變動或遭到移除，恕不另行通知。
 
-        實驗性政策可能會一直處於實驗階段，或仍有已知或未知的瑕疵。這類政策可能會在未通知的情況下進行變更，甚至是遭到移除。啟用實驗性政策可能會造成瀏覽器資料遺失，或對你的安全性或隱私權有不良影響。
+        實驗性政策可能尚未完成實驗階段，或仍有已知或未知的瑕疵。這類政策可能會在未通知的情況下進行變更，甚至是遭到移除。啟用實驗性政策可能會造成瀏覽器資料遺失，或對你的安全性或隱私權有不良影響。
 
-        如果某項政策不在清單中，而且未正式發布，則 Chrome 測試版和 Chrome 穩定版會忽略該政策的值。
+        如果某項政策不在清單中，而且未正式發布，則 Chrome Beta 版和 Chrome 穩定版會忽略該政策的值。
 
         如果某項政策列於清單中，但並未正式發布，系統會套用該政策的值。
 
@@ -2926,7 +2926,7 @@
 
       我們計劃將這項政策從 Mac OS X 適用的 <ph name="PRODUCT_NAME" /> 87 版中移除，屆時也將停止支援 Mac OS X 的舊版憑證驗證器。
       </translation>
-<translation id="5494917047563607689">如果設為 1 MB 以下的值或不設定，<ph name="PRODUCT_OS_NAME" />會為擁有多位使用者的單一裝置，使用預設大小快取要安裝的應用程式和擴充功能，讓每位使用者不必重新下載每個應用程式和擴充功能。</translation>
+<translation id="5494917047563607689">如果設為 1 MB 以下的值或不設定，<ph name="PRODUCT_OS_NAME" /> 會為擁有多位使用者的單一裝置，使用預設大小快取要安裝的應用程式和擴充功能，讓每位使用者不必重新下載每個應用程式和擴充功能。</translation>
 <translation id="5498045818698736356">指定要以無訊息方式 (使用者無需操作) 安裝的網站清單；使用者無法解除安裝或停用這些網站。
 
       這項政策的每個清單項目都是一個物件，由下列必要元素組成：「url」和兩個選擇性元素：「default_launch_container」和「create_desktop_shortcut」。「url」是要安裝的網頁應用程式網址，「launch_container」則是「window」(視窗) 或「tab」(分頁)，用於指定網頁應用程式安裝後所採用的開啟方式。如要在 Linux 和 Windows 上建立桌面捷徑，請將「create_desktop_shortcut」設為 True。如果未設定「default_launch_container」，應用程式預設會在分頁中開啟。無論「default_launch_container」的值為何，使用者都可以變更開啟應用程式的方式。如果未設定「create_desktop_shortcuts」，系統將不會建立桌面捷徑。如需將應用程式固定到 Chrome OS 檔案櫃，請參閱 <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> 政策。</translation>
@@ -2981,7 +2981,7 @@
 
       如果將這項政策設為 False 或不予設定，不受支援的電腦或作業系統上將顯示警告訊息。</translation>
 <translation id="5565178130821694365">每兩天 (48 小時) 須輸入一次密碼</translation>
-<translation id="556564360355507488">你可以透過這項政策指定哪些變化版本可套用至受企業管理的 <ph name="PRODUCT_OS_NAME" />裝置。
+<translation id="556564360355507488">你可以透過這項政策指定哪些變化版本可套用至企業管理的 <ph name="PRODUCT_OS_NAME" />裝置。
 
       變化版本可以透過選擇性啟用或停用現有功能的方式，在不推出新版本的情況下提供對 <ph name="PRODUCT_OS_NAME" />的修改項目。
 
@@ -3299,11 +3299,11 @@
 
       如果將這項政策設為「禁止上傳及下載大型檔案」，<ph name="PRODUCT_NAME" /> 會依照「封鎖大型檔案的下載作業」和「封鎖大型檔案上傳作業」設定的規則執行作業。
       </translation>
-<translation id="6082161804984853051">設定這項政策後，無論使用者是否指定 --disk-cache-dir 標記，<ph name="PRODUCT_NAME" /> 都會使用你提供的目錄將快取檔案儲存在磁碟上。
+<translation id="6082161804984853051">設定這項政策後，無論使用者是否指定 --disk-cache-dir 旗標，<ph name="PRODUCT_NAME" /> 都會使用你提供的目錄將快取檔案儲存在磁碟上。
 
-      如果未設定，<ph name="PRODUCT_NAME" /> 會使用預設的快取目錄，但使用者可透過 --disk-cache-dir 指令列標記來變更這項設定。
+      如果未設定，<ph name="PRODUCT_NAME" /> 會使用預設的快取目錄，但使用者可透過 --disk-cache-dir 指令列旗標來變更這項設定。
 
-      <ph name="PRODUCT_NAME" /> 會管理磁碟區根目錄的內容。因此，請勿將這項政策設為根目錄或任何用於其他用途的目錄，以免遺失資料或發生其他錯誤。如要查看可使用的變數，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
+      <ph name="PRODUCT_NAME" /> 會管理磁碟區根目錄的內容。因此，請勿將這項政策的範圍設在根目錄或任何用於其他用途的目錄，以免遺失資料或發生其他錯誤。如要查看可使用的變數，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
 <translation id="6083631234867522991">Windows (Windows 用戶端)：</translation>
 <translation id="608788685013546076">設定用電尖峰轉移電池閾值 (以百分比為單位)</translation>
 <translation id="6089679180657323464">控管 wilco 診斷與遙測控制器設定。</translation>
@@ -4006,7 +4006,7 @@
           如果這項政策設為「False」，系統將忽略螢幕 Wake Lock 使用要求。</translation>
 <translation id="7177293255621000064">將這項政策設為 True 時，使用者無法透過檔案瀏覽器存取所有類型的外部儲存媒體 (USB 隨身碟、外接硬碟、SD 卡、其他記憶卡和光學儲存媒體)。如果將這項政策設為 False 或不設定，使用者可以在其裝置上使用外部儲存媒體。
 
-      注意：這項政策不會影響 Google 雲端硬碟和內部儲存空間。使用者仍可存取「下載」資料夾中儲存的檔案。</translation>
+      注意：這項政策不會影響 Google 雲端硬碟和內部儲存空間。使用者仍可存取「下載內容」資料夾中儲存的檔案。</translation>
 <translation id="7177857088692019405">快速解鎖</translation>
 <translation id="718126088895133062">這項政策會為這部裝置指定 <ph name="PLUGIN_VM_NAME" /> 授權使用者 ID。</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
@@ -5177,9 +5177,9 @@
           注意：如果指定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />，這項政策會遭到覆寫。</translation>
 <translation id="9055835215213290877">將這項政策設為 None 時，<ph name="PRODUCT_NAME" /> 會使用預設的快取大小將快取檔案儲存在磁碟上，使用者無法變更這項設定。
 
-      如果設定這項政策，無論使用者是否指定 --disk-cache-size 標記，<ph name="PRODUCT_NAME" /> 都會使用你提供的快取大小 (MB 以下的值會進位為 MB)。
+      如果設定這項政策，無論使用者是否指定 --disk-cache-size 旗標，<ph name="PRODUCT_NAME" /> 都會使用你提供的快取大小 (MB 以下的值會進位為 MB)。
 
-      如果未設定，<ph name="PRODUCT_NAME" /> 會使用預設大小，使用者可透過 --disk-cache-size 標記來變更這項設定。</translation>
+      如果未設定，<ph name="PRODUCT_NAME" /> 會使用預設大小，使用者可透過 --disk-cache-size 旗標來變更這項設定。</translation>
 <translation id="9077227880520270584">裝置本機帳戶自動登入計時器</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>

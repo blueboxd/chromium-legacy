@@ -30,6 +30,8 @@ TEST(CastMediaSourceTest, FromCastURLWithDefaults) {
   EXPECT_EQ(DefaultActionPolicy::kCreateSession,
             source->default_action_policy());
   EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[0]);
+  EXPECT_EQ(base::nullopt, source->target_playout_delay());
+  EXPECT_EQ(true, source->allow_audio_capture());
 }
 
 TEST(CastMediaSourceTest, FromCastURL) {
@@ -42,7 +44,9 @@ TEST(CastMediaSourceTest, FromCastURL) {
       "&autoJoinPolicy=tab_and_origin_scoped"
       "&defaultActionPolicy=cast_this_tab"
       "&appParams=appParams"
-      "&supportedAppTypes=ANDROID_TV,WEB");
+      "&supportedAppTypes=ANDROID_TV,WEB"
+      "&streamingTargetPlayoutDelayMillis=42"
+      "&streamingCaptureAudio=0");
   std::unique_ptr<CastMediaSource> source =
       CastMediaSource::FromMediaSourceId(source_id);
   ASSERT_TRUE(source);
@@ -64,6 +68,9 @@ TEST(CastMediaSourceTest, FromCastURL) {
   EXPECT_EQ(ReceiverAppType::kAndroidTv, source->supported_app_types()[0]);
   EXPECT_EQ(ReceiverAppType::kWeb, source->supported_app_types()[1]);
   EXPECT_EQ("appParams", source->app_params());
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(42),
+            source->target_playout_delay());
+  EXPECT_EQ(false, source->allow_audio_capture());
 }
 
 TEST(CastMediaSourceTest, FromLegacyCastURL) {

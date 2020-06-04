@@ -289,7 +289,7 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
   }
 
   const MediaSource source(source_id);
-  if (source.IsTabMirroringSource()) {
+  if (source.IsTabMirroringSource() || source.IsLocalFileSource()) {
     // Ensure the CastRemotingConnector is created before mirroring starts.
     CastRemotingConnector* const connector =
         CastRemotingConnector::Get(web_contents);
@@ -659,6 +659,8 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   if (is_new_query) {
     for (const auto& provider : media_route_providers_) {
       if (sink_availability_.IsAvailableForProvider(provider.first)) {
+        // TODO(crbug.com/1090890): Don't allow MediaSource::ForAnyTab().id() to
+        // be passed here.
         provider.second->StartObservingMediaSinks(source.id());
       }
     }
@@ -687,6 +689,8 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     // Otherwise, the MRPs would have discarded the queries already.
     for (const auto& provider : media_route_providers_) {
       if (sink_availability_.IsAvailableForProvider(provider.first)) {
+        // TODO(crbug.com/1090890): Don't allow MediaSource::ForAnyTab().id() to
+        // be passed here.
         provider.second->StopObservingMediaSinks(source.id());
       }
     }
@@ -839,8 +843,11 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
   if (availability != SinkAvailability::UNAVAILABLE) {
     // Sinks are now available. Tell the MRP to start all sink queries again.
     auto& provider = media_route_providers_[provider_id];
-    for (const auto& source_and_query : sinks_queries_)
+    for (const auto& source_and_query : sinks_queries_) {
+      // TODO(crbug.com/1090890): Don't allow MediaSource::ForAnyTab().id() to
+      // be passed here.
       provider->StartObservingMediaSinks(source_and_query.first);
+    }
   } else if (!sink_availability_.IsAvailable()) {
     // Sinks are no longer available. MRPs have already removed all sink
     // queries.
@@ -886,8 +893,11 @@ void MediaRouterMojoImpl::SyncStateToMediaRouteProvider(
   const auto& provider = media_route_providers_[provider_id];
   // Sink queries.
   if (sink_availability_.IsAvailableForProvider(provider_id)) {
-    for (const auto& it : sinks_queries_)
+    for (const auto& it : sinks_queries_) {
+      // TODO(crbug.com/1090890): Don't allow MediaSource::ForAnyTab().id() to
+      // be passed here.
       provider->StartObservingMediaSinks(it.first);
+    }
   }
 
   // Route queries.

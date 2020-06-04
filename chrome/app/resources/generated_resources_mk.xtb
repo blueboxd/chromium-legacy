@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Ви дозволува да ги приспособите стапката на повторување на тастатурата, предвидувањето зборови и др.</translation>
 <translation id="1633947793238301227">Оневозможување на „Помошникот на Google“</translation>
 <translation id="1634783886312010422">Дали веќе ја променивте лозинкава на <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Инсталирано од вашиот старател.</translation>
 <translation id="1637224376458524414">Преземете го обележувачов на вашиот iPhone</translation>
 <translation id="1637765355341780467">Нешто тргна наопаку при отворањето на профилот. Некои функции може да бидат недостапни.</translation>
 <translation id="1639239467298939599">Се вчитува</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Податоци од „Синхронизација на Chrome“</translation>
 <translation id="2200094388063410062">Испрати по е-пошта</translation>
 <translation id="2200356397587687044">На Chrome му треба дозвола за да продолжи</translation>
-<translation id="2200729650590440847">Поставки за PIN за заклучен екран</translation>
 <translation id="220138918934036434">Сокриј копче</translation>
 <translation id="2202898655984161076">Настана проблем при листањето на печатачите. Некои од вашите печатачи можеби не се успешно регистрирани кај <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Пребарувач што се користи во <ph name="BEGIN_LINK" />лентата за адреси<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Прочитајте го и променете го напишаниот текст</translation>
-<translation id="2207166770508557715">Поставки за режим во мирување</translation>
 <translation id="220858061631308971">Внесете го PIN-кодот на „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2212565012507486665">Дозволи колачиња</translation>
 <translation id="2213140827792212876">Отстрани го споделувањето</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Се вчитува SSHFS за контејнерот за Linux</translation>
 <translation id="2751739896257479635">Автентикација со EAP во фаза 2</translation>
 <translation id="2753677631968972007">Рачно контролирајте ги дозволите за сајтовите.</translation>
-<translation id="2753984311895843016">Во мирување</translation>
 <translation id="2755367719610958252">Управувајте со функциите за пристапност</translation>
 <translation id="275662540872599901">екранот е исклучен</translation>
 <translation id="2757338480560142065">Погрижете се лозинката што ја зачувувате да се совпаѓа со лозинката за <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Ориентација на мониторот</translation>
 <translation id="2762441749940182211">Камерата е блокирана</translation>
 <translation id="2764786626780673772">Детали за VPN</translation>
 <translation id="2765217105034171413">Мало</translation>
@@ -6227,7 +6222,6 @@
 <translation id="8953476467359856141">Додека се полни</translation>
 <translation id="895347679606913382">Се стартува…</translation>
 <translation id="8957762313041272117">Автоматски титлови</translation>
-<translation id="8958804960827200147">Ориентација на екранот</translation>
 <translation id="895944840846194039">Меморија на JavaScript</translation>
 <translation id="8962083179518285172">Сокриј детали</translation>
 <translation id="8962918469425892674">Сајтов користи сензори за движење или светлина.</translation>

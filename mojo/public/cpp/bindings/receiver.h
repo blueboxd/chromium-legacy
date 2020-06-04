@@ -204,7 +204,7 @@ class Receiver {
   // Blocks the calling thread until a new message arrives and is dispatched
   // to the bound implementation.
   bool WaitForIncomingCall() {
-    return internal_state_.WaitForIncomingMethodCall(MOJO_DEADLINE_INDEFINITE);
+    return internal_state_.WaitForIncomingMethodCall();
   }
 
   // Pauses the Remote endpoint, stopping dispatch of callbacks on that end. Any

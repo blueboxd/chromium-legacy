@@ -428,7 +428,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
           PageFromObject(header)->SynchronizedLoad();
           DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
           item.callback(visitor, item.base_object_payload);
-          visitor->AccountMarkedBytesSafe(header);
+          visitor->AccountMarkedBytes(header);
         },
         visitor->task_id());
     if (!finished)
@@ -440,7 +440,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
           PageFromObject(header)->SynchronizedLoad();
           DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
           GCInfo::From(header->GcInfoIndex()).trace(visitor, header->Payload());
-          visitor->AccountMarkedBytesSafe(header);
+          visitor->AccountMarkedBytes(header);
         },
         visitor->task_id());
     if (!finished)

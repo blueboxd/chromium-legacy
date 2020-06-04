@@ -141,8 +141,7 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
 #if defined(OS_CHROMEOS)
   // For Chrome OS, enable printing only if we are not at OOBE.
   enable_printing = !chromeos::LoginDisplayHost::default_host();
-  enable_annotations =
-      base::FeatureList::IsEnabled(chrome_pdf::features::kPDFAnnotations);
+  enable_annotations = true;
 #endif  // defined(OS_CHROMEOS)
   dict->SetKey("printingEnabled", base::Value(enable_printing));
   dict->SetKey("pdfAnnotationsEnabled", base::Value(enable_annotations));

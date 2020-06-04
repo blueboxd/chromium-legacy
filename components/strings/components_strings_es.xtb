@@ -712,7 +712,7 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="3990250421422698716">Agrupar</translation>
 <translation id="3996311196211510766">El sitio web <ph name="ORIGIN" /> ha solicitado que se aplique una política de origen
-    a todas sus solicitudes, pero esta política no se puede aplicar actualmente.</translation>
+    a todas las solicitudes que reciba, pero esta política no se puede aplicar actualmente.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ 1 página web cercana}other{ # páginas web cercanas}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF que contiene {COUNT} página}other{Documento PDF que contiene {COUNT} páginas}}</translation>
 <translation id="4030383055268325496">&amp;Deshacer acción de añadir</translation>
@@ -757,10 +757,10 @@ De lo contrario, tu configuración de privacidad lo impedirá. Permitirá que el
 <translation id="4194250254487269611">En estos momentos no se puede guardar tu tarjeta</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar la configuración del cortafuegos y del antivirus<ph name="END_LINK" /></translation>
-<translation id="4209166701302774460">El servidor al que te diriges, <ph name="ORIGIN" />, ha solicitado que
+<translation id="4209166701302774460">El servidor al que te diriges (<ph name="ORIGIN" />) ha solicitado que
     se aplique una política de origen a todas las solicitudes que reciba. Sin embargo, no ha
     proporcionado ninguna política, lo que impide al navegador procesar tu solicitud
-    de <ph name="SITE" />. Los operadores de sitios web pueden usar las políticas de origen
+    de ir a <ph name="SITE" />. Los operadores de sitios web pueden usar las políticas de origen
     para configurar la seguridad y otras propiedades de un sitio web.</translation>
 <translation id="421066178035138955">Usar dispositivos y datos de realidad virtual</translation>
 <translation id="4214357935346142455">perfil de pantalla de inicio de sesión</translation>

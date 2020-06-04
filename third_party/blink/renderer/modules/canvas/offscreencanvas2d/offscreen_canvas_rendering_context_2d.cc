@@ -583,7 +583,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
-      bounds, paint_type);
+      bounds, paint_type, CanvasRenderingContext2DState::kNoImage);
   paint_canvas->restoreToCount(save_count);
   ValidateStateStack();
 }

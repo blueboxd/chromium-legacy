@@ -2328,6 +2328,8 @@ std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
     const base::string16 truncated_label =
         field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
     buffer << "\n  Label: " << truncated_label;
+
+    buffer << "\n  Is empty: " << (field->IsEmpty() ? "Yes" : "No");
   }
   return buffer;
 }
@@ -2372,6 +2374,8 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
     const base::string16 truncated_label =
         field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
     buffer << Tr{} << "Label:" << truncated_label;
+
+    buffer << Tr{} << "Is empty:" << (field->IsEmpty() ? "Yes" : "No");
     buffer << CTag{"table"};
     buffer << CTag{"td"};
     buffer << CTag{"tr"};

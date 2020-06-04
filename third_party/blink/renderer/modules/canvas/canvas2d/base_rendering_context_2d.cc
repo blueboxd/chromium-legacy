@@ -643,7 +643,10 @@ void BaseRenderingContext2D::DrawPathInternal(
        { c->drawPath(sk_path, *flags); },
        [](const SkIRect& rect)  // overdraw test lambda
        { return false; },
-       bounds, paint_type);
+       bounds, paint_type,
+       GetState().HasPattern(paint_type)
+           ? CanvasRenderingContext2DState::kNonOpaqueImage
+           : CanvasRenderingContext2DState::kNoImage);
 }
 
 static SkPathFillType ParseWinding(const String& winding_rule_string) {
@@ -700,15 +703,20 @@ void BaseRenderingContext2D::fillRect(double x,
   // pattern was unaccelerated is because it was not possible to hold that image
   // in an accelerated texture - that is, into the GPU). That's why we disable
   // the acceleration to be sure that it will work.
-  if (IsAccelerated() && GetState().HasPattern() &&
-      !GetState().PatternIsAccelerated())
+  if (IsAccelerated() &&
+      GetState().HasPattern(CanvasRenderingContext2DState::kFillPaintType) &&
+      !GetState().PatternIsAccelerated(
+          CanvasRenderingContext2DState::kFillPaintType))
     DisableAcceleration();
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { c->drawRect(rect, *flags); },
        [&rect, this](const SkIRect& clip_bounds)  // overdraw test lambda
        { return RectContainsTransformedRect(rect, clip_bounds); },
-       rect, CanvasRenderingContext2DState::kFillPaintType);
+       rect, CanvasRenderingContext2DState::kFillPaintType,
+       GetState().HasPattern(CanvasRenderingContext2DState::kFillPaintType)
+           ? CanvasRenderingContext2DState::kNonOpaqueImage
+           : CanvasRenderingContext2DState::kNoImage);
 }
 
 static void StrokeRectOnCanvas(const FloatRect& rect,
@@ -756,7 +764,10 @@ void BaseRenderingContext2D::strokeRect(double x,
        { StrokeRectOnCanvas(rect, c, flags); },
        [](const SkIRect& clip_bounds)  // overdraw test lambda
        { return false; },
-       bounds, CanvasRenderingContext2DState::kStrokePaintType);
+       bounds, CanvasRenderingContext2DState::kStrokePaintType,
+       GetState().HasPattern(CanvasRenderingContext2DState::kStrokePaintType)
+           ? CanvasRenderingContext2DState::kNonOpaqueImage
+           : CanvasRenderingContext2DState::kNoImage);
 }
 
 void BaseRenderingContext2D::ClipInternal(const Path& path,

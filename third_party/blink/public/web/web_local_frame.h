@@ -20,6 +20,7 @@
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
@@ -38,13 +39,16 @@
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "v8/include/v8.h"
 
 namespace gfx {
 class Point;
 }  // namespace gfx
+
+namespace ui {
+struct ImeTextSpan;
+}  // namespace ui
 
 namespace blink {
 
@@ -240,7 +244,8 @@ class WebLocalFrame : public WebFrame {
   virtual void DownloadURL(
       const WebURLRequest& request,
       network::mojom::RedirectMode cross_origin_redirect_behavior,
-      mojo::ScopedMessagePipeHandle blob_url_token) = 0;
+      CrossVariantMojoRemote<mojom::BlobURLTokenInterfaceBase>
+          blob_url_token) = 0;
 
   // Navigation State -------------------------------------------------------
 
@@ -481,7 +486,7 @@ class WebLocalFrame : public WebFrame {
   virtual bool SetCompositionFromExistingText(
       int composition_start,
       int composition_end,
-      const WebVector<WebImeTextSpan>& ime_text_spans) = 0;
+      const WebVector<ui::ImeTextSpan>& ime_text_spans) = 0;
   virtual void ExtendSelectionAndDelete(int before, int after) = 0;
 
   // Moves the selection extent point. This function does not allow the

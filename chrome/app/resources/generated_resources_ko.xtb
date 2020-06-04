@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">키보드 반복 속도, 단어 예측 등을 조정할 수 있습니다.</translation>
 <translation id="1633947793238301227">Google 어시스턴트 사용 안함</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" />에서 비밀번호를 이미 변경하셨나요?</translation>
-<translation id="1635033183663317347">관리자가 설치함</translation>
 <translation id="1637224376458524414">iPhone에서 이 북마크 이용하기</translation>
 <translation id="1637765355341780467">프로필을 여는 동안 문제가 발생했습니다. 일부 기능을 사용할 수 없습니다.</translation>
 <translation id="1639239467298939599">로드 중</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Chrome 동기화 데이터</translation>
 <translation id="2200094388063410062">이메일</translation>
 <translation id="2200356397587687044">계속하려면 Chrome에 권한이 필요함</translation>
-<translation id="2200729650590440847">PIN 잠금 화면 설정</translation>
 <translation id="220138918934036434">버튼 숨기기</translation>
 <translation id="2202898655984161076">프린터를 나열하는 데 문제가 발생했습니다. <ph name="CLOUD_PRINT_NAME" />에 성공적으로 등록되지 못한 프린터가 있을 수 있습니다.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />주소 표시줄<ph name="END_LINK" />에서 사용되는 검색엔진</translation>
 <translation id="2204034823255629767">입력한 항목 조회 및 변경</translation>
-<translation id="2207166770508557715">수면 설정</translation>
 <translation id="220858061631308971">'<ph name="DEVICE_NAME" />'의 PIN 코드를 입력하세요:</translation>
 <translation id="2212565012507486665">쿠키 허용</translation>
 <translation id="2213140827792212876">공유 폴더 삭제</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Linux 컨테이너 sshfs 마운트 중</translation>
 <translation id="2751739896257479635">EAP 2단계 인증</translation>
 <translation id="2753677631968972007">사이트 권한을 수동으로 관리합니다.</translation>
-<translation id="2753984311895843016">유휴 전력</translation>
 <translation id="2755367719610958252">접근성 기능 관리</translation>
 <translation id="275662540872599901">화면 꺼짐</translation>
 <translation id="2757338480560142065">저장하려는 비밀번호가 <ph name="WEBSITE" />의 비밀번호와 일치하는지 확인하세요.</translation>
-<translation id="276221322463921688">모니터 방향</translation>
 <translation id="2762441749940182211">카메라 차단됨</translation>
 <translation id="2764786626780673772">VPN 세부정보</translation>
 <translation id="2765217105034171413">작게</translation>
@@ -2130,6 +2125,7 @@
 <translation id="3677106374019847299">사용자설정 제공업체 입력</translation>
 <translation id="3677657024345889897">가장 조용하게</translation>
 <translation id="3677911431265050325">모바일 버전으로 보기</translation>
+<translation id="3677959414150797585">앱, 웹페이지 등이 포함됩니다. 사용 데이터를 공유하기로 선택한 경우에만 추천 기능 개선을 위해 통계를 전송합니다.</translation>
 <translation id="3678156199662914018">확장 프로그램: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">텍스트 음성 변환 음성</translation>
 <translation id="3681311097828166361">의견을 보내주셔서 감사합니다. 현재 오프라인 상태이므로 보고서는 나중에 전송됩니다.</translation>
@@ -3780,6 +3776,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - 카메라 또는 마이크 녹음</translation>
 <translation id="5841270259333717135">이더넷 구성</translation>
 <translation id="5842497610951477805">블루투스 사용</translation>
+<translation id="5844574845205796324">둘러볼 새 콘텐츠 추천</translation>
 <translation id="5846200638699387931">관계 구문 오류: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">업데이트 및 앱을 설치합니다. 계속하면 이 기기에서 Google, 이동통신사, 기기 제조업체로부터 업데이트와 앱을 자동으로 다운로드하고 설치할 수 있으며 모바일 데이터를 사용할 수도 있음에 동의하는 것으로 간주됩니다. 일부 앱에서는 인앱 구매가 제공될 수도 있습니다.</translation>
 <translation id="5849212445710944278">이미 추가됨</translation>
@@ -6221,7 +6218,6 @@
 <translation id="8953476467359856141">충전 시</translation>
 <translation id="895347679606913382">다운로드 시작...</translation>
 <translation id="8957762313041272117">실시간 자막</translation>
-<translation id="8958804960827200147">화면 방향</translation>
 <translation id="895944840846194039">자바스크립트 메모리</translation>
 <translation id="8962083179518285172">세부정보 숨기기</translation>
 <translation id="8962918469425892674">사이트에서 모션 센서 또는 조도 센서를 사용 중입니다.</translation>

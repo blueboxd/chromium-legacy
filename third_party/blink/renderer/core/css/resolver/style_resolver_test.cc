@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -258,6 +259,34 @@ TEST_F(StyleResolverTest, AnimationMaskedByImportant) {
   ASSERT_TRUE(div->GetElementAnimations());
   EXPECT_FALSE(div->GetElementAnimations()->BaseComputedStyle());
   EXPECT_FALSE(div->GetElementAnimations()->BaseImportantSet());
+}
+
+TEST_F(StyleResolverTest, CachedExplicitInheritanceFlags) {
+  ScopedMPCDependenciesForTest scoped_feature(true);
+
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #outer { height: 10px; }
+      #inner { height: inherit; }
+    </style>
+    <div id=outer>
+      <div id=inner></div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* outer = GetDocument().getElementById("outer");
+  ASSERT_TRUE(outer);
+  EXPECT_TRUE(outer->ComputedStyleRef().ChildHasExplicitInheritance());
+
+  auto recalc_reason = StyleChangeReasonForTracing::Create("test");
+
+  // This will hit the MatchedPropertiesCache for both #outer/#inner,
+  // which means special care must be taken for the ChildHasExplicit-
+  // Inheritance flag to persist.
+  GetStyleEngine().MarkAllElementsForStyleRecalc(recalc_reason);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(outer->ComputedStyleRef().ChildHasExplicitInheritance());
 }
 
 class StyleResolverFontRelativeUnitTest

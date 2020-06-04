@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">អនុញ្ញាតឲ្យអ្នកកែសម្រួលអត្រាធ្វើឡើងវិញនៃក្តារចុច ការទស្សន៍ទាយពាក្យ និងសកម្មភាពជាច្រើនទៀត</translation>
 <translation id="1633947793238301227">បិទ Google ជំនួយការ</translation>
 <translation id="1634783886312010422">តើអ្នក​បានប្ដូរពាក្យសម្ងាត់នេះ​នៅលើ <ph name="WEBSITE" /> រួចហើយមែនទេ?</translation>
-<translation id="1635033183663317347">ដំឡើងដោយអាណាព្យាបាលរបស់អ្នក។</translation>
 <translation id="1637224376458524414">ទទួល​ចំណាំនេះ​នៅលើ iPhone របស់​អ្នក</translation>
 <translation id="1637765355341780467">មានអ្វីមួយខុសប្រក្រតីនៅពេលបើកប្រវត្តិរូបរបស់អ្នក។ លក្ខណៈមួយចំនួនមិនអាចប្រើបានទេ។</translation>
 <translation id="1639239467298939599">កំពុងដំណើរការ</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">ទិន្នន័យពី Chrome សមកាលកម្ម</translation>
 <translation id="2200094388063410062">អ៊ីមែល</translation>
 <translation id="2200356397587687044">Chrome ត្រូវ​ការ​ការ​អនុញ្ញាត​ដើម្បី​បន្ត</translation>
-<translation id="2200729650590440847">ការកំណត់​អេក្រង់ចាក់សោ​ដោយប្រើ​កូដ PIN</translation>
 <translation id="220138918934036434">ប៊ូតុងលាក់</translation>
 <translation id="2202898655984161076">មានបញ្ហាកើតឡើងនៅក្នុងបញ្ជីម៉ាស៊ីនបោះពុម្ពក្នុងបញ្ជី។ ម៉ាស៊ីនបោះពុម្ពរបស់អ្នកមួយចំនួនប្រហែលមិនអាចចុះឈ្មោះដោយជោគជ័យជាមួយ <ph name="CLOUD_PRINT_NAME" /> ទេ។</translation>
 <translation id="2203682048752833055">ម៉ាស៊ីន​ស្វែងរក​ដែល​ប្រើ​នៅក្នុង <ph name="BEGIN_LINK" />របារ​អាសយដ្ឋាន<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">អាន និងប្តូរអ្វីដែលអ្នកវាយបញ្ចូល</translation>
-<translation id="2207166770508557715">ការកំណត់​ការដេក</translation>
 <translation id="220858061631308971">សូមបញ្ចូលលេខកូដសម្គាល់នេះនៅលើ "<ph name="DEVICE_NAME" />"៖</translation>
 <translation id="2212565012507486665">អនុញ្ញាត​ខូគី</translation>
 <translation id="2213140827792212876">លុបការ​ចែករំលែក</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">កំពុងភ្ជាប់ sshfs ទម្រង់ផ្ទុក Linux</translation>
 <translation id="2751739896257479635">ការផ្ទៀងផ្ទាត់ EAP ដំណាក់កាលទី 2</translation>
 <translation id="2753677631968972007">គ្រប់គ្រង​ការអនុញ្ញាតគេហទំព័រដោយផ្ទាល់។</translation>
-<translation id="2753984311895843016">ការកំណត់​ការដេក</translation>
 <translation id="2755367719610958252">គ្រប់គ្រងលក្ខណៈពិសេសលទ្ធភាពចូលប្រើ</translation>
 <translation id="275662540872599901">បិទអេក្រង់</translation>
 <translation id="2757338480560142065">សូម​ប្រាកដថា ពាក្យសម្ងាត់​ដែលអ្នក​កំពុងរក្សាទុក​ត្រូវគ្នា​នឹងពាក្យសម្ងាត់​របស់អ្នក​សម្រាប់ <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">ទិស​ផ្ទាំងអេក្រង់</translation>
 <translation id="2762441749940182211">បាន​ទប់ស្កាត់​កាមេរ៉ា</translation>
 <translation id="2764786626780673772">ព័ត៌មានលម្អិត​អំពី VPN</translation>
 <translation id="2765217105034171413">តូច</translation>
@@ -3594,7 +3589,7 @@
 <translation id="5585912436068747822">ការសម្អាតបានបរាជ័យ</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">កំពុង​ផ្ទុក​កម្មវិធី...</translation>
-<translation id="558984423786125616">រន្ធមាននៅក្នុងការកំណត់រួចហើយ</translation>
+<translation id="558984423786125616">ច្រកមាននៅក្នុងការកំណត់រួចហើយ</translation>
 <translation id="5592595402373377407">មិនមានទិន្នន័យគ្រប់គ្រាន់នៅឡើយទេ។</translation>
 <translation id="5593357315997824387">ធ្វើសមកាលកម្ម​ឯកសារ​របស់ខ្ញុំ</translation>
 <translation id="5595485650161345191">កែសម្រួលអាសយដ្ឋាន</translation>
@@ -6225,7 +6220,6 @@
 <translation id="8953476467359856141">ពេលកំពុង​សាកថ្ម</translation>
 <translation id="895347679606913382">កំពុងចាប់ផ្តើម...</translation>
 <translation id="8957762313041272117">អក្សររត់ក្នុងពេលជាក់ស្ដែង</translation>
-<translation id="8958804960827200147">ទិស​អេក្រង់</translation>
 <translation id="895944840846194039">មេម៉ូរី JavaScript</translation>
 <translation id="8962083179518285172">លាក់ព័ត៌មានលំអិត</translation>
 <translation id="8962918469425892674">គេហទំព័រ​នេះ​កំពុង​ប្រើ​ឧបករណ៍​ចាប់​ពន្លឺ ឬ​ឧបករណ៍​ចាប់​​ចលនា​។​</translation>

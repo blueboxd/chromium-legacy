@@ -1243,6 +1243,8 @@ class AutotestPrivateStopSmoothnessTrackingFunction : public ExtensionFunction {
  private:
   ~AutotestPrivateStopSmoothnessTrackingFunction() override;
   ResponseAction Run() override;
+
+  void OnReportSmoothness(int smoothness);
 };
 
 class AutotestPrivateWaitForAmbientPhotoAnimationFunction

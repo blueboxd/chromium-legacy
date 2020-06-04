@@ -414,12 +414,6 @@ class NET_EXPORT HostResolverManager
                    const HostCache::Entry& entry,
                    base::TimeDelta ttl);
 
-  // Record time from Request creation until a valid DNS response.
-  void RecordTotalTime(bool speculative,
-                       bool from_cache,
-                       DnsConfig::SecureDnsMode secure_dns_mode,
-                       base::TimeDelta duration) const;
-
   // Removes |job_it| from |jobs_| and return.
   std::unique_ptr<Job> RemoveJob(JobMap::iterator job_it);
 

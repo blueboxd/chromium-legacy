@@ -555,7 +555,7 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->triggering_event_info = triggering_event_info;
   navigation_info->should_check_main_world_content_security_policy =
       should_check_main_world_content_security_policy;
-  navigation_info->blob_url_token = blob_url_token.PassPipe();
+  navigation_info->blob_url_token = std::move(blob_url_token);
   navigation_info->input_start = input_start_time;
   if (origin_document && origin_document->GetFrame()) {
     navigation_info->initiator_frame =

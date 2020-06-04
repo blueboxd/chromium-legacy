@@ -46,6 +46,23 @@ void AddEnabledStateToPing(std::string* ping_value,
 
 }  // namespace
 
+ManifestFetchData::ExtensionData::ExtensionData() : version(base::Version()) {}
+
+ManifestFetchData::ExtensionData::ExtensionData(const ExtensionData& other) =
+    default;
+
+ManifestFetchData::ExtensionData::ExtensionData(
+    const base::Version& version,
+    const std::string& update_url_data,
+    const std::string& install_source,
+    Manifest::Location extension_location)
+    : version(version),
+      update_url_data(update_url_data),
+      install_source(install_source),
+      extension_location(extension_location) {}
+
+ManifestFetchData::ExtensionData::~ExtensionData() = default;
+
 // static
 std::string ManifestFetchData::GetSimpleLocationString(Manifest::Location loc) {
   std::string result = kInvalidLocation;
@@ -87,14 +104,9 @@ ManifestFetchData::ManifestFetchData(const GURL& update_url,
       full_url_(update_url),
       brand_code_(brand_code),
       ping_mode_(ping_mode),
-      fetch_priority_(fetch_priority) {
-  std::string query =
-      full_url_.has_query() ? full_url_.query() + "&" : std::string();
-  query += base_query_params;
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(query);
-  full_url_ = full_url_.ReplaceComponents(replacements);
-
+      fetch_priority_(fetch_priority),
+      is_all_external_policy_download_(false) {
+  UpdateFullUrl(base_query_params);
   request_ids_.insert(request_id);
 }
 
@@ -129,7 +141,9 @@ bool ManifestFetchData::AddExtension(const std::string& id,
                                      const std::string& install_source,
                                      Manifest::Location extension_location,
                                      FetchPriority fetch_priority) {
-  if (extension_ids_.find(id) != extension_ids_.end()) {
+  DCHECK(!is_all_external_policy_download_ ||
+         extension_location == Manifest::Location::EXTERNAL_POLICY_DOWNLOAD);
+  if (extensions_data_.find(id) != extensions_data_.end()) {
     NOTREACHED() << "Duplicate extension id " << id;
     return false;
   }
@@ -192,20 +206,60 @@ bool ManifestFetchData::AddExtension(const std::string& id,
 
   // Check against our max url size, exempting the first extension added.
   int new_size = full_url_.possibly_invalid_spec().size() + extra.size();
-  if (!extension_ids_.empty() && new_size > kExtensionsManifestMaxURLSize) {
+  if (!extensions_data_.empty() && new_size > kExtensionsManifestMaxURLSize) {
     UMA_HISTOGRAM_PERCENTAGE("Extensions.UpdateCheckHitUrlSizeLimit", 1);
     return false;
   }
   UMA_HISTOGRAM_PERCENTAGE("Extensions.UpdateCheckHitUrlSizeLimit", 0);
 
   // We have room so go ahead and add the extension.
-  extension_ids_.insert(id);
+  extensions_data_[id] = ExtensionData(base::Version(version), update_url_data,
+                                       install_source, extension_location);
   full_url_ = GURL(full_url_.possibly_invalid_spec() + extra);
   return true;
 }
 
+void ManifestFetchData::UpdateFullUrl(const std::string& base_query_params) {
+  std::string query =
+      full_url_.has_query() ? full_url_.query() + "&" : std::string();
+  query += base_query_params;
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(query);
+  full_url_ = full_url_.ReplaceComponents(replacements);
+}
+
+void ManifestFetchData::RemoveExtensions(const ExtensionIdSet& id_to_remove,
+                                         const std::string& base_query_params) {
+  const std::map<ExtensionId, ExtensionData> extensions_data =
+      std::move(extensions_data_);
+  extensions_data_.clear();
+  full_url_ = base_url_;
+  UpdateFullUrl(base_query_params);
+
+  for (const auto& data : extensions_data) {
+    const ExtensionId& extension_id = data.first;
+    if (id_to_remove.count(extension_id))
+      continue;
+    const ExtensionData& extension_data = data.second;
+    auto it = pings_.find(extension_id);
+    const PingData* optional_ping_data =
+        it != pings_.end() ? &(it->second) : nullptr;
+    AddExtension(extension_id, extension_data.version.GetString(),
+                 optional_ping_data, extension_data.update_url_data,
+                 extension_data.install_source,
+                 extension_data.extension_location, fetch_priority_);
+  }
+}
+
+ExtensionIdSet ManifestFetchData::GetExtensionIds() const {
+  ExtensionIdSet extension_ids;
+  for (const auto& extension_data : extensions_data_)
+    extension_ids.insert(extension_data.first);
+  return extension_ids;
+}
+
 bool ManifestFetchData::Includes(const std::string& extension_id) const {
-  return extension_ids_.find(extension_id) != extension_ids_.end();
+  return extensions_data_.find(extension_id) != extensions_data_.end();
 }
 
 bool ManifestFetchData::DidPing(const std::string& extension_id,
@@ -229,6 +283,10 @@ void ManifestFetchData::Merge(const ManifestFetchData& other) {
     fetch_priority_ = other.fetch_priority_;
   }
   request_ids_.insert(other.request_ids_.begin(), other.request_ids_.end());
+}
+
+void ManifestFetchData::set_is_all_external_policy_download() {
+  is_all_external_policy_download_ = true;
 }
 
 }  // namespace extensions

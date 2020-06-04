@@ -34,5 +34,7 @@ specific_include_rules = {
     "+base/test/scoped_feature_list.h",
     "+chromeos/constants/chromeos_switches.h",
     "+chromeos/services/assistant/test_support/mock_assistant.h",
+    "+testing/gmock",
+    "+testing/gtest",
   ],
 }

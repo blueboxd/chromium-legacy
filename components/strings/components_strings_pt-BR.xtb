@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Páginas em <ph name="SOURCE_LANGUAGE" /> serão traduzidas para <ph name="TARGET_LANGUAGE" /> de agora em diante.</translation>
 <translation id="1676269943528358898">O site <ph name="SITE" /> geralmente usa criptografia para proteger suas informações. Quando o Google Chrome tentou se conectar a <ph name="SITE" /> dessa vez, o website retornou credenciais incomuns e incorretas. Isso pode acontecer quando um invasor está fingindo ser <ph name="SITE" /> ou quando uma tela de login por Wi-Fi interrompeu a conexão. Suas informações ainda estão protegidas, porque o Google Chrome interrompeu a conexão antes que os dados fossem trocados.</translation>
 <translation id="1682696192498422849">Borda menor primeiro</translation>
+<translation id="168693727862418163">Houve uma falha na validação do valor da política em relação ao esquema, e ele será ignorado.</translation>
 <translation id="168841957122794586">O certificado do servidor contém uma chave de criptografia fraca.</translation>
 <translation id="1697532407822776718">Pronto.</translation>
 <translation id="1703835215927279855">Carta</translation>

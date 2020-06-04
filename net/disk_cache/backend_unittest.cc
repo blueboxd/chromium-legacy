@@ -5279,3 +5279,38 @@ TEST_F(DiskCacheBackendTest, SimpleDontLeakPostDoomCreate) {
 
   // Should not have leaked files here.
 }
+
+TEST_F(DiskCacheBackendTest, BlockFileDelayedWriteFailureRecovery) {
+  // Test that blockfile recovers appropriately when some entries are
+  // in a screwed up state due to an error in delayed writeback.
+  //
+  // https://crbug.com/1086727
+  InitCache();
+
+  const char kKey[] = "Key2";
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+
+  const int kBufSize = 24320;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufSize);
+  CacheTestFillBuffer(buffer->data(), kBufSize, true);
+
+  ASSERT_EQ(kBufSize, WriteSparseData(entry, 0, buffer.get(), kBufSize));
+
+  // Setting the size limit artificially low injects a failure on writing back
+  // data buffered above.
+  SetMaxSize(4096);
+
+  // This causes SparseControl to close the child entry corresponding to
+  // low portion of offset space, triggering the writeback --- which fails
+  // due to the space cap, and in particular fails to allocate data for
+  // a stream, so it gets address 0.
+  ASSERT_EQ(net::ERR_FAILED, WriteSparseData(entry, 16773118, buffer.get(), 4));
+
+  // Now try reading the broken child. This should report an error, not
+  // DCHECK.
+  ASSERT_EQ(net::ERR_FAILED, ReadSparseData(entry, 4, buffer.get(), 4));
+
+  entry->Close();
+}

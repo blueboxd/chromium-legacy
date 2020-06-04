@@ -441,6 +441,7 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormFieldData& field) {
   buffer << Tr{} << "Is focusable:" << field.is_focusable;
   buffer << Tr{} << "Is enabled:" << field.is_enabled;
   buffer << Tr{} << "Is readonly:" << field.is_readonly;
+  buffer << Tr{} << "Is empty:" << (field.value.empty() ? "Yes" : "No");
   buffer << CTag{"table"};
   return buffer;
 }

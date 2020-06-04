@@ -38,6 +38,7 @@ SSLBlockingPageBase::~SSLBlockingPageBase() = default;
 void SSLBlockingPageBase::OnInterstitialClosing() {
   cert_report_helper_->FinishCertCollection();
 }
+
 void SSLBlockingPageBase::SetSSLCertReporterForTesting(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
   cert_report_helper_->SetSSLCertReporterForTesting(

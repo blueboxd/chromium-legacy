@@ -857,7 +857,7 @@ INSTANTIATE_TEST_SUITE_P(Version,
                          ::testing::PrintToStringParamName());
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -966,7 +966,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1045,7 +1045,7 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
 // Tests that when request headers are not delayed, only data buffers are
 // coalesced.
 TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1191,7 +1191,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
 // request headers with data buffers.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendDataCoalesceDataBufferAndHeaderFrame) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1312,7 +1312,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
 // request headers with data buffers.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendvDataCoalesceDataBuffersAndHeaderFrame) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1453,7 +1453,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
 // headers to be sent, if that write fails the stream does not crash.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1495,7 +1495,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
 // headers to be sent, if that write fails the stream does not crash.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendvDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1537,7 +1537,7 @@ TEST_P(BidirectionalStreamQuicImplTest,
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1637,7 +1637,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1747,7 +1747,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1862,7 +1862,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1913,7 +1913,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -1982,7 +1982,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -2099,7 +2099,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeStartNotConfirmed) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, SessionCloseDuringOnStreamReady) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -2132,7 +2132,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionCloseDuringOnStreamReady) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnStreamReady) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -2171,7 +2171,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnStreamReady) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -2234,7 +2234,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -2289,7 +2289,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -2355,7 +2355,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -2437,7 +2437,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }

@@ -13,6 +13,7 @@
 #include "base/profiler/register_context.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier_signal.h"
+#include "base/profiler/stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler_test_util.h"
 #include "base/profiler/thread_delegate_posix.h"
 #include "base/test/bind_test_util.h"

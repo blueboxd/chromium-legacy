@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "content/common/input/ime_text_span_conversions.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -81,7 +80,7 @@ void FrameInputHandlerImpl::SetCompositionFromExistingText(
   ImeEventGuard guard(render_frame_->GetLocalRootRenderWidget()->AsWeakPtr());
 
   render_frame_->GetWebFrame()->SetCompositionFromExistingText(
-      start, end, ConvertUiImeTextSpansToBlinkImeTextSpans(ui_ime_text_spans));
+      start, end, ui_ime_text_spans);
 }
 
 void FrameInputHandlerImpl::ExtendSelectionAndDelete(int32_t before,

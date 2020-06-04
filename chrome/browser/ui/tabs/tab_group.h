@@ -37,7 +37,8 @@ class TabGroup {
 
   // Sets the visual data of the tab group. |is_customized| is true when this
   // method is called from the user explicitly setting the data and defaults to
-  // false for callsites that may set the data such as tab restore.
+  // false for callsites that may set the data such as tab restore. Once set to
+  // true, |is_customized| cannot be reset to false.
   void SetVisualData(const tab_groups::TabGroupVisualData& visual_data,
                      bool is_customized = false);
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -61,6 +62,11 @@ class ForceInstalledMetrics : public ForceInstalledTracker::Observer {
   // force-installed extensions, and is responsible for cleanup of
   // observers.
   void OnForceInstalledExtensionsLoaded() override;
+
+  // Reports cache status for the force installed extensions.
+  void OnExtensionDownloadCacheStatusRetrieved(
+      const ExtensionId& id,
+      ExtensionDownloaderDelegate::CacheStatus cache_status) override;
 
  private:
   // Returns true only in case of some well-known misconfigurations which are

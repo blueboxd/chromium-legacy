@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
-                       Attributes_LineIndexFilter) {
+                       LineIndexFilter) {
   TestAndCheck(R"~~(data:text/html,
                     <input class='input_at_3rd_line'>
                     <input class='input_at_4th_line'>
@@ -103,6 +103,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 ++++AXTextField AXDOMClassList=['input_at_3rd_line']
 ++++AXTextField
 ++++AXTextField AXDOMClassList=['input_at_5th_line']
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest, AXTextMarker) {
+  TestAndCheck(R"~~(data:text/html,
+                    <p>Paragraph</p>)~~",
+               {":3;AXStartTextMarker=*"}, R"~~(AXWebArea
+++AXGroup
+++++AXStaticText AXStartTextMarker={:1, 0, down} AXValue='Paragraph'
 )~~");
 }
 
@@ -143,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
   TestAndCheck(R"~~(data:text/html,
                     <table role="grid"></table>)~~",
                {"AXCellForColumnAndRow([0, 0])=*"}, R"~~(AXWebArea
-++AXTable AXCellForColumnAndRow([0, 0])='(null)'
+++AXTable AXCellForColumnAndRow([0, 0])=NULL
 ++++AXGroup
 )~~");
 }

@@ -505,7 +505,6 @@
 <translation id="1632803087685957583">आपल्या कीबोर्डचा पुनरावृत्ती दर, शब्दाचे पूर्वानुमान आणि बरेच काही समायोजित करण्याची तुम्हाला अनुमती देते</translation>
 <translation id="1633947793238301227">Google Assistant बंद करा</translation>
 <translation id="1634783886312010422">तुम्ही <ph name="WEBSITE" /> वर हा पासवर्ड आधीच बदलला आहे का?</translation>
-<translation id="1635033183663317347">आपल्‍या पालकाद्वारे इंस्टॉल केले.</translation>
 <translation id="1637224376458524414">आपल्या iPhone वर हा बुकमार्क मिळवा</translation>
 <translation id="1637765355341780467">तुमचे प्रोफाइल उघडताना काहीतरी चूक झाली. काही वैशिष्ट्ये अनुपलब्ध असू शकतात.</translation>
 <translation id="1639239467298939599">लोड करीत आहे</translation>
@@ -953,12 +952,10 @@
 <translation id="2199719347983604670">Chrome सिंक मधील डेटा</translation>
 <translation id="2200094388063410062">ईमेल</translation>
 <translation id="2200356397587687044">सुरू ठेवण्यासाठी Chrome ला परवानगीची आवश्यकता आहे</translation>
-<translation id="2200729650590440847">पिन लॉक स्‍क्रीन सेटिंग्ज</translation>
 <translation id="220138918934036434">बटण लपवा</translation>
 <translation id="2202898655984161076">प्रिंटर सूचीबद्ध करताना समस्या आली. तुमचे काही प्रिंटर <ph name="CLOUD_PRINT_NAME" /> सह यशस्वीरित्या नोंदणीकृत नाहीत.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />अ‍ॅड्रेस बार<ph name="END_LINK" /> मध्ये शोध इंजिन वापरले</translation>
 <translation id="2204034823255629767">तुम्ही टाइप करता ती कोणतीहीगोष्ट वाचा आणि बदला</translation>
-<translation id="2207166770508557715">स्लीप सेटिंग्ज</translation>
 <translation id="220858061631308971">कृपया यावर हा पिन कोड प्रविष्‍ट करा "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">कुकींना अनुमती द्या</translation>
 <translation id="2213140827792212876">शेअरिंग काढा</translation>
@@ -1407,11 +1404,9 @@
 <translation id="2751131328353405138">Linux कंटेनर sshfs माउंट करत आहे</translation>
 <translation id="2751739896257479635">EAP टप्पा 2 ऑथेंटिकेशन</translation>
 <translation id="2753677631968972007">साइट परवानग्या मॅन्युअली नियंत्रित करा.</translation>
-<translation id="2753984311895843016">निष्क्रिय पॉवर</translation>
 <translation id="2755367719610958252">ॲक्सेसिबिलिटी वैशिष्ट्ये व्यवस्थापित करा</translation>
 <translation id="275662540872599901">स्क्रीन बंद</translation>
 <translation id="2757338480560142065">तुम्ही सेव्ह करत असलेला पासवर्ड तुमच्या <ph name="WEBSITE" /> च्या पासवर्डशी जुळत असल्याची खात्री करा</translation>
-<translation id="276221322463921688">मॉनिटर ओरिएंटेशन</translation>
 <translation id="2762441749940182211">कॅमेरा ब्लॉक केला आहे</translation>
 <translation id="2764786626780673772">VPN चे तपशील</translation>
 <translation id="2765217105034171413">लहान</translation>
@@ -2129,6 +2124,7 @@
 <translation id="3677106374019847299">कस्टम पुरवठादार एंटर करा</translation>
 <translation id="3677657024345889897">सर्वात शांत</translation>
 <translation id="3677911431265050325">मोबाइल साइटची विनंती करा</translation>
+<translation id="3677959414150797585">अ‍ॅप्स, वेबपेज आणि बऱ्याच गोष्टींचा समावेश आहे. तुम्ही वापर डेटा शेअर करण्याचे निवडले असल्यासच सूचनांमध्ये सुधारणा करण्यासाठी आकडेवारी पाठवते.</translation>
 <translation id="3678156199662914018">एक्स्टेंशनः <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">टेक्‍स्‍ट टू स्‍पीच व्हॉइस</translation>
 <translation id="3681311097828166361">तुमच्या फीडबॅकाबद्दल धन्यवाद. तुम्ही आता ऑफलाइन आहात आणि तुमचा अहवाल नंतर पाठविला जाईल.</translation>
@@ -3779,6 +3775,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - कॅमेरा किंवा मायक्रोफोन रेकॉर्डिंग</translation>
 <translation id="5841270259333717135">इथरनेट कॉन्फिगर करा</translation>
 <translation id="5842497610951477805">ब्लूटूथ सक्षम आहे</translation>
+<translation id="5844574845205796324">एक्सप्लोर करण्यासाठी नवीन आशय सुचवा</translation>
 <translation id="5846200638699387931">रिलेशन सिंटॅक्स एरर: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">अपडेट आणि अ‍ॅप्स इंस्टॉल करा. सुरू ठेवून, तुम्ही सहमती दर्शवता की हे डिव्हाइस शक्यतो मोबाइल डेटा वापरून Google, तुमचा वाहक आणि तुमच्या डिव्हाइसच्या उत्पादकाकडूनदेखील अपडेट आणि अ‍ॅप्स आपोआप डाउनलोड आणि इंस्टॉल करू शकते. यांपैकी काही अ‍ॅप्स अ‍ॅप्समधील खरेदीचा पर्याय देऊ करू शकतात.</translation>
 <translation id="5849212445710944278">आधीच जोडला आहे</translation>
@@ -6220,7 +6217,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8953476467359856141">चार्ज होत असताना</translation>
 <translation id="895347679606913382">प्रारंभ करीत आहे...</translation>
 <translation id="8957762313041272117">लाइव्ह कॅप्शन</translation>
-<translation id="8958804960827200147">स्क्रीन ओरिएंटेशन</translation>
 <translation id="895944840846194039">JavaScript मेमरी</translation>
 <translation id="8962083179518285172">तपशील लपवा</translation>
 <translation id="8962918469425892674">ही साइट गती किंवा प्रकाश सेन्सर वापरत आहे.</translation>

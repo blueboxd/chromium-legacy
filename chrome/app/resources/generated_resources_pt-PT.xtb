@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Permite-lhe ajustar a taxa de repetição do teclado, a previsão de palavras e muito mais</translation>
 <translation id="1633947793238301227">Desativar Assistente Google</translation>
 <translation id="1634783886312010422">Já alterou esta palavra-passe em <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Instalada pelo supervisor.</translation>
 <translation id="1637224376458524414">Obter este marcador no seu iPhone</translation>
 <translation id="1637765355341780467">Ocorreu um erro ao abrir o perfil. Algumas funcionalidades podem estar indisponíveis.</translation>
 <translation id="1639239467298939599">A carregar</translation>
@@ -954,12 +953,10 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2199719347983604670">Dados da Sincronização do Chrome</translation>
 <translation id="2200094388063410062">Email:</translation>
 <translation id="2200356397587687044">O Chrome necessita de autorização para continuar</translation>
-<translation id="2200729650590440847">Definições do ecrã de bloqueio com PIN</translation>
 <translation id="220138918934036434">Ocultar botão</translation>
 <translation id="2202898655984161076">Ocorreu um problema ao listar as impressoras. Algumas impressoras podem não ter sido registadas com êxito no <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motor de pesquisa utilizado na <ph name="BEGIN_LINK" />barra de endereço<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Ler e alterar tudo o que introduzir</translation>
-<translation id="2207166770508557715">Definições de suspensão</translation>
 <translation id="220858061631308971">Introduza este código PIN no "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Permitir cookies</translation>
 <translation id="2213140827792212876">Remover a partilha</translation>
@@ -1407,11 +1404,9 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2751131328353405138">A montar sshfs do contentor do Linux…</translation>
 <translation id="2751739896257479635">Autenticação da fase 2 de EAP</translation>
 <translation id="2753677631968972007">Controle manualmente as autorizações de sites.</translation>
-<translation id="2753984311895843016">Energia em suspensão</translation>
 <translation id="2755367719610958252">Gerir funcionalidades de acessibilidade</translation>
 <translation id="275662540872599901">ecrã desligado</translation>
 <translation id="2757338480560142065">Certifique-se de que a palavra-passe que está a guardar corresponde à sua palavra-passe para <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">Orientação do monitor</translation>
 <translation id="2762441749940182211">Câmara bloqueada</translation>
 <translation id="2764786626780673772">Detalhes da VPN</translation>
 <translation id="2765217105034171413">Pequeno</translation>
@@ -6225,7 +6220,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8953476467359856141">Ao carregar</translation>
 <translation id="895347679606913382">A iniciar...</translation>
 <translation id="8957762313041272117">Legendas instantâneas</translation>
-<translation id="8958804960827200147">Orientação do ecrã</translation>
 <translation id="895944840846194039">Memória JavaScript</translation>
 <translation id="8962083179518285172">Ocultar Detalhes</translation>
 <translation id="8962918469425892674">Este site está a utilizar sensores de movimento ou de luz.</translation>

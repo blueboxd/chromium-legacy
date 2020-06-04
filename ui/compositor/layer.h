@@ -458,7 +458,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   float device_scale_factor() const { return device_scale_factor_; }
 
   // Triggers a call to SwitchToLayer.
-  void SwitchCCLayerForTest();
+  bool SwitchCCLayerForTest();
 
   const cc::Region& damaged_region_for_testing() const {
     return damaged_region_;
@@ -575,8 +575,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Set all filters which got applied to the layer background.
   void SetLayerBackgroundFilters();
 
-  // Cleanup |cc_layer_| and replaces it with |new_layer|.
-  void SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
+  // Cleanup |cc_layer_| and replaces it with |new_layer|. When stopping
+  // animations handled by old cc layer before the switch, |this| could be
+  // released by an animation observer. Returns false when it happens and
+  // callers should take cautions as well. Otherwise returns true.
+  bool SwitchToLayer(scoped_refptr<cc::Layer> new_layer) WARN_UNUSED_RESULT;
 
   void SetCompositorForAnimatorsInTree(Compositor* compositor);
   void ResetCompositorForAnimatorsInTree(Compositor* compositor);

@@ -166,11 +166,6 @@ void LoginDisplayWebUI::ShowWhitelistCheckFailedError() {
     webui_handler_->ShowWhitelistCheckFailedError();
 }
 
-// LoginDisplayWebUI, NativeWindowDelegate implementation: ---------------------
-gfx::NativeWindow LoginDisplayWebUI::GetNativeWindow() const {
-  return parent_window();
-}
-
 // LoginDisplayWebUI, SigninScreenHandlerDelegate implementation: --------------
 void LoginDisplayWebUI::CancelUserAdding() {
   if (!UserAddingScreen::Get()->IsRunning()) {

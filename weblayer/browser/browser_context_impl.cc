@@ -5,6 +5,7 @@
 #include "weblayer/browser/browser_context_impl.h"
 
 #include "base/threading/thread_restrictions.h"
+#include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/client_hints/browser/client_hints.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/in_progress_download_manager.h"
@@ -240,6 +241,8 @@ void BrowserContextImpl::RegisterPrefs(
   security_state::RegisterProfilePrefs(pref_registry);
   language::LanguagePrefs::RegisterProfilePrefs(pref_registry);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
+  blocked_content::SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(
+      pref_registry);
   pref_registry->RegisterBooleanPref(
       prefs::kOfferTranslateEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

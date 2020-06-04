@@ -52,21 +52,30 @@ void NavigateAndWaitForStart(const GURL& url, Tab* tab) {
 base::Value ExecuteScript(Shell* shell,
                           const std::string& script,
                           bool use_separate_isolate) {
+  return ExecuteScript(shell->tab(), script, use_separate_isolate);
+}
+
+base::Value ExecuteScript(Tab* tab,
+                          const std::string& script,
+                          bool use_separate_isolate) {
   base::Value final_result;
   base::RunLoop run_loop;
-  shell->tab()->ExecuteScript(
-      base::ASCIIToUTF16(script), use_separate_isolate,
-      base::BindLambdaForTesting(
-          [&run_loop, &final_result](base::Value result) {
-            final_result = std::move(result);
-            run_loop.Quit();
-          }));
+  tab->ExecuteScript(base::ASCIIToUTF16(script), use_separate_isolate,
+                     base::BindLambdaForTesting(
+                         [&run_loop, &final_result](base::Value result) {
+                           final_result = std::move(result);
+                           run_loop.Quit();
+                         }));
   run_loop.Run();
   return final_result;
 }
 
 void ExecuteScriptWithUserGesture(Shell* shell, const std::string& script) {
-  TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
+  ExecuteScriptWithUserGesture(shell->tab(), script);
+}
+
+void ExecuteScriptWithUserGesture(Tab* tab, const std::string& script) {
+  TabImpl* tab_impl = static_cast<TabImpl*>(tab);
   tab_impl->ExecuteScriptWithUserGestureForTests(base::ASCIIToUTF16(script));
 }
 

@@ -398,8 +398,7 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     base::WeakPtr<CanvasResourceDispatcher> dispatcher_weakptr =
         GetOrCreateResourceDispatcher()->GetWeakPtr();
     provider = CanvasResourceProvider::CreateSharedBitmapProvider(
-        surface_size, SharedGpuContext::ContextProviderWrapper(),
-        FilterQuality(), context_->ColorParams(),
+        surface_size, FilterQuality(), context_->ColorParams(),
         std::move(dispatcher_weakptr));
   }
 

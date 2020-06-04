@@ -69,37 +69,30 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
              << ": hit test result's entity is unavailable, creating "
                 "free-floating anchor ";
 
-    // Let's create free-floating anchor since plane is unavailable. In our
-    // case, we should first attempt to use the local space as it is supposed to
-    // be more stable, but if that is unavailable, we can try using unbounded
-    // space. Otherwise, there's not much we can do so we fail the call.
-    auto reference_space_category =
-        device::mojom::XRReferenceSpaceCategory::LOCAL;
-    auto mojo_from_space = session_->GetMojoFrom(reference_space_category);
-    if (!mojo_from_space) {
-      // Local space is not available, try unbounded.
-      reference_space_category =
-          device::mojom::XRReferenceSpaceCategory::UNBOUNDED;
-      mojo_from_space = session_->GetMojoFrom(reference_space_category);
-    }
+    // Let's create free-floating anchor since plane is unavailable. Grab an
+    // information about reference space that is well-suited for anchor creation
+    // from session:
+    base::Optional<XRSession::ReferenceSpaceInformation>
+        reference_space_information = session_->GetStationaryReferenceSpace();
 
-    if (!mojo_from_space) {
+    if (!reference_space_information) {
       exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                         XRSession::kUnableToRetrieveMatrix);
       return {};
     }
 
-    DCHECK(mojo_from_space->IsInvertible());
+    const TransformationMatrix& mojo_from_space =
+        reference_space_information->mojo_from_space;
 
-    auto space_from_mojo = mojo_from_space->Inverse();
+    DCHECK(mojo_from_space.IsInvertible());
+
+    auto space_from_mojo = mojo_from_space.Inverse();
     auto space_from_anchor = space_from_mojo * (*mojo_from_this_) *
                              this_from_anchor->TransformMatrix();
 
-    auto native_origin =
-        XRNativeOriginInformation::Create(reference_space_category);
-
-    return session_->CreateAnchorHelper(script_state, space_from_anchor,
-                                        native_origin, exception_state);
+    return session_->CreateAnchorHelper(
+        script_state, space_from_anchor,
+        reference_space_information->native_origin, exception_state);
   }
 }
 

@@ -1,0 +1,36 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("nearby_decoder") {
+  sources = [
+    "advertisement.cc",
+    "advertisement.h",
+    "nearby_decoder.cc",
+    "nearby_decoder.h",
+  ]
+
+  deps = [ "//chrome/services/sharing/nearby_decoder/proto" ]
+
+  public_deps = [
+    "//base",
+    "//chrome/services/sharing/public/mojom",
+    "//mojo/public/cpp/bindings",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "advertisement_unittest.cc",
+    "nearby_decoder_unittest.cc",
+  ]
+
+  deps = [
+    ":nearby_decoder",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

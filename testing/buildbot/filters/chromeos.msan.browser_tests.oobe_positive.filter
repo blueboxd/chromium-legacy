@@ -98,6 +98,7 @@ SecurityTokenSamlTest.*
 SiteIsolationFlagHandlingTest.*
 StartupBrowserWindowLaunchSuppressedTest.*
 SyncConsentPolicyDisabledTest.*
+SyncConsentRecorderTest.*
 SyncConsentSplitSettingsSyncTest.*
 SyncConsentTest.*
 SyncConsentTestWithParams.*

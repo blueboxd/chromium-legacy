@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -165,7 +164,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
@@ -399,12 +397,6 @@ void WizardController::Init(OobeScreenId first_screen) {
           base::BindOnce(&WizardController::OnLocalStateInitialized,
                          weak_factory_.GetWeakPtr()));
     }
-  }
-  if (CrosSettings::IsInitialized()) {
-    guest_mode_policy_subscription_ = CrosSettings::Get()->AddSettingsObserver(
-        kAccountsPrefAllowGuest,
-        base::BindRepeating(&WizardController::OnGuestModePolicyUpdated,
-                            weak_factory_.GetWeakPtr()));
   }
 
   // Use the saved screen preference from Local State.
@@ -1612,11 +1604,6 @@ void WizardController::OnAccessibilityStatusChanged(
   } else if (cras->GetOutputVolumePercent() < kMinAudibleOutputVolumePercent) {
     cras->SetOutputVolumePercent(kMinAudibleOutputVolumePercent);
   }
-}
-
-void WizardController::OnGuestModePolicyUpdated() {
-  ash::LoginScreen::Get()->SetAllowLoginAsGuest(
-      user_manager::UserManager::Get()->IsGuestSessionAllowed());
 }
 
 void WizardController::AutoLaunchKioskApp(KioskAppType app_type) {

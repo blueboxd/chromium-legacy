@@ -205,7 +205,7 @@
 <translation id="1753706481035618306">Numéro de page</translation>
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Essayer d'exécuter Windows Network Diagnostics<ph name="END_LINK" />.</translation>
-<translation id="1772163372082567643">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête qui exige qu'une politique d'origine soit appliquée à toutes les demandes adressées à lui. Mais l'en-tête est formaté de manière incorrecte, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des politiques d'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
+<translation id="1772163372082567643">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête qui exige qu'une politique d'origine soit appliquée à toutes les demandes qu'il reçoit. Mais l'en-tête est formaté de manière incorrecte, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des politiques d'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Veuillez mettre à jour votre phrase de passe de synchronisation.</translation>
 <translation id="1787142507584202372">Vos onglets ouverts s'affichent ici</translation>
@@ -705,7 +705,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
     Si vous pensez qu'il s'agit d'une erreur, veuillez visiter la page https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Moins de 1 Mo</translation>
 <translation id="3990250421422698716">Décalage</translation>
-<translation id="3996311196211510766">Le site <ph name="ORIGIN" /> a exigé qu'une politique d'origine soit appliquée à toutes ses demandes, mais cette politique ne peut pas être appliquée actuellement.</translation>
+<translation id="3996311196211510766">Le site <ph name="ORIGIN" /> a exigé qu'une politique d'origine soit appliquée à toutes les demandes qu'il reçoit, mais cette politique ne peut pas être appliquée actuellement.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Document PDF contenant {COUNT} page}one{Document PDF contenant {COUNT} page}other{Document PDF contenant {COUNT} pages}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>

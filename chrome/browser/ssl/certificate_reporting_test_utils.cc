@@ -99,8 +99,8 @@ SSLCertReporterCallback::GetLatestChromeChannelReported() const {
 
 #if !defined(OS_ANDROID)
 void SetCertReportingOptIn(Browser* browser, OptIn opt_in) {
-  safe_browsing::SetExtendedReportingPref(browser->profile()->GetPrefs(),
-                                          opt_in == EXTENDED_REPORTING_OPT_IN);
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser->profile()->GetPrefs(), opt_in == EXTENDED_REPORTING_OPT_IN);
 }
 #endif
 

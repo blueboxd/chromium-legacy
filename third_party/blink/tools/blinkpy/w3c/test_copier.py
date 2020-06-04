@@ -155,14 +155,14 @@ class TestCopier(object):
                 w3c_import_expectations_path):
             if line.is_glob:
                 _log.warning(
-                    'W3CImportExpectations:%d Globs are not allowed in this file.'
-                    % line.lineno)
+                    'W3CImportExpectations:%d Globs are not allowed in this file.',
+                    line.lineno)
                 continue
             if ResultType.Skip in line.results:
                 if line.tags:
                     _log.warning(
-                        'W3CImportExpectations:%d should not have any specifiers'
-                        % line.lineno)
+                        'W3CImportExpectations:%d should not have any specifiers',
+                        line.lineno)
                 paths_to_skip.add(line.test)
 
         return paths_to_skip
@@ -235,5 +235,7 @@ class TestCopier(object):
 
         if not self.import_in_place:
             self.filesystem.copyfile(source_path, dest_path)
-            if self.filesystem.read_binary_file(source_path)[:2] == '#!':
+            # Fix perms: https://github.com/web-platform-tests/wpt/issues/23997
+            if self.filesystem.read_binary_file(source_path)[:2] == '#!' or \
+                    self.filesystem.splitext(source_path)[1].lower() == '.bat':
                 self.filesystem.make_executable(dest_path)

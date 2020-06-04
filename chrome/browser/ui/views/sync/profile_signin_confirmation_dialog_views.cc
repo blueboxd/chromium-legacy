@@ -254,10 +254,6 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
                          kPreferredWidth, explanation_label_height);
 }
 
-void ProfileSigninConfirmationDialogViews::WindowClosing() {
-  Cancel();
-}
-
 void ProfileSigninConfirmationDialogViews::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,

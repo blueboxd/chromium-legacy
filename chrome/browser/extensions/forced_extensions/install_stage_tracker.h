@@ -256,6 +256,12 @@ class InstallStageTracker : public KeyedService {
         const ExtensionId& id,
         const content::BrowserContext* context,
         const InstallationData& data) {}
+
+    // Called when InstallStageTracker retrieves cache status for the
+    // extension.
+    virtual void OnExtensionDownloadCacheStatusRetrieved(
+        const ExtensionId& id,
+        ExtensionDownloaderDelegate::CacheStatus cache_status) {}
   };
 
   explicit InstallStageTracker(const content::BrowserContext* context);

@@ -1932,6 +1932,22 @@ const FeatureEntry::Choice kEnableExperimentalCookieFeaturesChoices[] = {
      switches::kEnableExperimentalCookieFeatures, ""},
 };
 
+#if defined(OS_ANDROID)
+// The variations of --password-change-support.
+const FeatureEntry::FeatureParam
+    kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission[] = {
+        {password_manager::features::
+             kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission,
+         "true"}};
+
+const FeatureEntry::FeatureVariation kPasswordChangeFeatureVariations[] = {
+    {"Force dialog after every successful form submission.",
+     kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission,
+     base::size(
+         kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission),
+     nullptr}};
+#endif  // defined(OS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2414,6 +2430,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kDebugPackedApps)},
+    {"use-lookalikes-for-navigation-suggestions",
+     flag_descriptions::kUseLookalikesForNavigationSuggestionsName,
+     flag_descriptions::kUseLookalikesForNavigationSuggestionsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(net::features::kUseLookalikesForNavigationSuggestions)},
     {"username-first-flow", flag_descriptions::kUsernameFirstFlowName,
      flag_descriptions::kUsernameFirstFlowDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kUsernameFirstFlow)},
@@ -3845,12 +3866,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
 
 #if BUILDFLAG(ENABLE_PDF)
-#if defined(OS_CHROMEOS)
-    {"pdf-annotations", flag_descriptions::kPdfAnnotations,
-     flag_descriptions::kPdfAnnotationsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFAnnotations)},
-#endif  // defined(OS_CHROMEOS)
-
     {"pdf-form-save", flag_descriptions::kPdfFormSaveName,
      flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kSaveEditedPDFForm)},
@@ -4964,13 +4979,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWinUseBrowserSpellCheckerName,
      flag_descriptions::kWinUseBrowserSpellCheckerDescription, kOsWin,
      FEATURE_VALUE_TYPE(spellcheck::kWinUseBrowserSpellChecker)},
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-    {"win-use-hybrid-spellchecker",
-     flag_descriptions::kWinUseHybridSpellCheckerName,
-     flag_descriptions::kWinUseHybridSpellCheckerDescription, kOsWin,
-     FEATURE_VALUE_TYPE(spellcheck::kWinUseHybridSpellChecker)},
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)
 
     {"safety-tips", flag_descriptions::kSafetyTipName,
@@ -5449,11 +5457,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kAmbientModeFeature)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"password-change-support", flag_descriptions::kPasswordChangeName,
-     flag_descriptions::kPasswordChangeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kPasswordChange)},
-
 #if defined(OS_ANDROID)
+    {"password-change-support", flag_descriptions::kPasswordChangeName,
+     flag_descriptions::kPasswordChangeDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(password_manager::features::kPasswordChange,
+                                    kPasswordChangeFeatureVariations,
+                                    "PasswordChangeFeatureVariations.")},
+
     {"context-menu-performance-info",
      flag_descriptions::kContextMenuPerformanceInfoName,
      flag_descriptions::kContextMenuPerformanceInfoDescription, kOsAndroid,

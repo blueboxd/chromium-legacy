@@ -234,7 +234,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest, NothingEnabled) {
 
   // Enable the SBER pref, shouldn't matter since it's a non-official build and
   // field trial isn't enabled.
-  safe_browsing::SetExtendedReportingPref(pref_service(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), true);
 
   // Trial still not allowed, and OnTrialConfigUpdated should not be called
   // either.
@@ -257,7 +257,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   CreateController();
 
   EXPECT_FALSE(trial_controller().IsAllowed());
-  safe_browsing::SetExtendedReportingPref(pref_service(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), true);
 
   // Trial still not allowed, and OnTrialConfigUpdated should not be called
   // either.
@@ -288,7 +288,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   // In a real official build, expect the trial config to be updated.
   EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(true)).Times(1);
 #endif
-  safe_browsing::SetExtendedReportingPref(pref_service(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), true);
 
 #if defined(OFFICIAL_BUILD) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // In a real official build, expect the trial to be allowed now.  (Don't
@@ -326,7 +326,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest, OfficialBuildTrialEnabled) {
   // Enable the SBER pref, which should trigger the OnTrialConfigUpdated
   // callback.
   EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(true)).Times(1);
-  safe_browsing::SetExtendedReportingPref(pref_service(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), true);
 
   // Trial should now be allowed.
   EXPECT_TRUE(trial_controller().IsAllowed());
@@ -378,7 +378,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest, OfficialBuildTrialEnabled) {
   // Disable the SBER pref again, which should trigger the OnTrialConfigUpdated
   // callback.
   EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(false)).Times(1);
-  safe_browsing::SetExtendedReportingPref(pref_service(), false);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), false);
 
   // Not allowed now.
   EXPECT_FALSE(trial_controller().IsAllowed());
@@ -422,7 +422,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   // callback.
   EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(true)).Times(1);
   EXPECT_CALL(mock_config_client_2, OnTrialConfigUpdated(true)).Times(1);
-  safe_browsing::SetExtendedReportingPref(pref_service(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), true);
 
   // Trial should now be allowed.
   EXPECT_TRUE(trial_controller().IsAllowed());
@@ -482,7 +482,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   // callback.
   EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(false)).Times(1);
   EXPECT_CALL(mock_config_client_2, OnTrialConfigUpdated(false)).Times(1);
-  safe_browsing::SetExtendedReportingPref(pref_service(), false);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), false);
 
   // Not allowed now.
   EXPECT_FALSE(trial_controller().IsAllowed());
@@ -515,7 +515,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   // Enable the SBER pref, which should trigger the OnTrialConfigUpdated
   // callback.
   EXPECT_CALL(mock_config_client(), OnTrialConfigUpdated(true)).Times(1);
-  safe_browsing::SetExtendedReportingPref(pref_service(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), true);
 
   // Trial should now be allowed.
   EXPECT_TRUE(trial_controller().IsAllowed());
@@ -549,7 +549,7 @@ TEST_F(TrialComparisonCertVerifierControllerTest,
   EXPECT_FALSE(trial_controller().IsAllowed());
 
   // Enable the SBER pref, shouldn't matter since it's an incognito profile.
-  safe_browsing::SetExtendedReportingPref(pref_service(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(pref_service(), true);
 
   // Trial still not allowed, and OnTrialConfigUpdated should not be called
   // either.

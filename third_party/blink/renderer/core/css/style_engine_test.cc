@@ -2732,6 +2732,12 @@ TEST_F(StyleEngineTest, AtPropertyUseCount) {
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleProperty));
 }
 
+TEST_F(StyleEngineTest, MediaQueryAffectedByViewportSanityCheck) {
+  GetDocument().body()->setInnerHTML("<audio controls>");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetStyleEngine().MediaQueryAffectedByViewportChange());
+}
+
 class ParameterizedStyleEngineTest
     : public testing::WithParamInterface<bool>,
       private ScopedCSSReducedFontLoadingInvalidationsForTest,

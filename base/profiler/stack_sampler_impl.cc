@@ -79,6 +79,8 @@ StackSamplerImpl::StackSamplerImpl(
       module_cache_(module_cache),
       test_delegate_(test_delegate) {
   DCHECK(!unwinders_.empty());
+  for (const auto& unwinder : unwinders_)
+    unwinder->AddInitialModules(module_cache_);
 }
 
 StackSamplerImpl::~StackSamplerImpl() = default;

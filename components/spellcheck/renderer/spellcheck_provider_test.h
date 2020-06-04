@@ -53,11 +53,11 @@ class FakeSpellCheck : public SpellCheck {
   // Test-only method to set the fake language counts
   void SetFakeLanguageCounts(size_t language_count, size_t enabled_count);
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Test-only method to initialize SpellCheck object for the given locale.
   void InitializeSpellCheckForLocale(const std::string& language,
                                      bool use_hunspell);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
   // Returns the current number of spell check languages.
   size_t LanguageCount() override;
@@ -92,7 +92,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   bool SatisfyRequestFromCache(const base::string16& text,
                                blink::WebTextCheckingCompletion* completion);
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   int AddCompletionForTest(
       std::unique_ptr<FakeTextCheckingCompletion> completion,
       SpellCheckProvider::HybridSpellCheckRequestInfo request_info);
@@ -100,7 +100,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   void OnRespondTextCheck(int identifier,
                           const base::string16& line,
                           const std::vector<SpellCheckResult>& results);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)
   void ResetResult();
@@ -110,14 +110,10 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   size_t spelling_service_call_count_ = 0;
 #endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER) || \
-    BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   using RequestTextCheckParams =
       std::pair<base::string16, RequestTextCheckCallback>;
-#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER) ||
-        // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
-#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Variables logging RequestTextCheck() mojo calls.
   std::vector<RequestTextCheckParams> text_check_requests_;
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -148,13 +144,14 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
                      CheckSpellingCallback) override;
   void FillSuggestionList(const base::string16&,
                           FillSuggestionListCallback) override;
-#endif
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN)
+
+#endif
 
 #if defined(OS_ANDROID)
   void DisconnectSessionBridge() override;

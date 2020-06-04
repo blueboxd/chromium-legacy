@@ -401,8 +401,8 @@ bool SharedImageStub::MakeContextCurrent() {
   // improve performance. https://crbug.com/457431
   auto* context = context_state_->real_context();
   if (context->IsCurrent(nullptr))
-    return !context_state_->CheckResetStatus(/*needs_gl=*/true);
-  return context_state_->MakeCurrent(/*surface=*/nullptr, /*needs_gl=*/true);
+    return !context_state_->CheckResetStatus(/*needs_gl=*/false);
+  return context_state_->MakeCurrent(/*surface=*/nullptr, /*needs_gl=*/false);
 }
 
 ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {

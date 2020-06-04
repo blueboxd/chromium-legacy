@@ -175,6 +175,8 @@ blink_core_sources("frame") {
     "rotation_viewport_anchor.h",
     "sandbox_flags.cc",
     "sandbox_flags.h",
+    "savable_resources.cc",
+    "savable_resources.h",
     "scheduling.cc",
     "scheduling.h",
     "screen.cc",

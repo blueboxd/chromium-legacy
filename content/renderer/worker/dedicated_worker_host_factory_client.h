@@ -50,7 +50,8 @@ class DedicatedWorkerHostFactoryClient final
       const blink::WebURL& script_url,
       network::mojom::CredentialsMode credentials_mode,
       const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
-      mojo::ScopedMessagePipeHandle blob_url_token) override;
+      blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>
+          blob_url_token) override;
   scoped_refptr<blink::WebWorkerFetchContext> CloneWorkerFetchContext(
       blink::WebWorkerFetchContext* web_worker_fetch_context,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;

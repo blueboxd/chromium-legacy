@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Omogućuje prilagodbu stope ponavljanja, predviđanja riječi i ostalih značajki tipkovnice</translation>
 <translation id="1633947793238301227">Onemogućivanje Google asistenta</translation>
 <translation id="1634783886312010422">Jeste li već promijenili ovu zaporku na web-lokaciji <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Instalirao tvoj skrbnik.</translation>
 <translation id="1637224376458524414">Koristite ovu oznaku na svojem iPhoneu</translation>
 <translation id="1637765355341780467">Prilikom otvaranja profila dogodila se pogreška. Neke značajke možda nisu dostupne.</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
@@ -954,12 +953,10 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2199719347983604670">Podaci s Chrome sinkronizacije</translation>
 <translation id="2200094388063410062">E-pošta</translation>
 <translation id="2200356397587687044">Chromeu je potrebno dopuštenje da bi nastavio</translation>
-<translation id="2200729650590440847">Postavke PIN-a za zaključan zaslon</translation>
 <translation id="220138918934036434">Sakrij gumb</translation>
 <translation id="2202898655984161076">Postojao je problem s navođenjem pisača. Neki od pisača možda se nisu uspješno prijavili na <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Tražilica koja se upotrebljava na <ph name="BEGIN_LINK" />adresnoj traci<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">čitati i mijenjati sve što pišete</translation>
-<translation id="2207166770508557715">Postavke mirovanja</translation>
 <translation id="220858061631308971">Unesite ovaj PIN kôd na uređaj "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Dopusti kolačiće</translation>
 <translation id="2213140827792212876">Ukloni dijeljenje</translation>
@@ -1408,11 +1405,9 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2751131328353405138">Učitavanje SSHFS-a za Linuxov spremnik</translation>
 <translation id="2751739896257479635">2. faza autentifikacije za EAP</translation>
 <translation id="2753677631968972007">Ručno upravljajte dopuštenjima za web-lokacije.</translation>
-<translation id="2753984311895843016">Napajanje tijekom mirovanja</translation>
 <translation id="2755367719610958252">Upravljajte značajkama pristupačnosti</translation>
 <translation id="275662540872599901">zaslon isključen</translation>
 <translation id="2757338480560142065">Provjerite podudara li se zaporka koju spremate sa zaporkom za <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Usmjerenje monitora</translation>
 <translation id="2762441749940182211">Kamera je blokirana</translation>
 <translation id="2764786626780673772">Pojedinosti o VPN-u</translation>
 <translation id="2765217105034171413">Mali</translation>
@@ -2899,7 +2894,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4660540330091848931">Promjena veličine</translation>
 <translation id="4660838440047236328">izgled vaše sobe</translation>
 <translation id="4661407454952063730">Podaci aplikacije mogu biti bilo koji podaci koje je aplikacija spremila (na temelju postavki razvojnog programera), uključujući podatke kao što su kontakti, poruke i fotografije.</translation>
-<translation id="4662373422909645029">Nadimak ne smije imati brojeve</translation>
+<translation id="4662373422909645029">Nadimak ne smije sadržavati brojeve</translation>
 <translation id="4662788913887017617">Dijelite ovu oznaku sa svojim iPhoneom</translation>
 <translation id="4663373278480897665">Kamera je dopuštena</translation>
 <translation id="4664482161435122549">Pogreška pri izvozu PKCS #12</translation>
@@ -5549,7 +5544,7 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
     <ph name="BEGIN_PARAGRAPH5" />Tu uslugu možete isključiti u Postavkama.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN-ovi se ne podudaraju</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> upotrebljava proxy postavke iz proširenja</translation>
-<translation id="8097959162767603171">Vaš administrator najprije mora prihvatiti uvjete pružanja usluge na popisu Chrome uređaja u administratorskoj konzoli.</translation>
+<translation id="8097959162767603171">Vaš administrator najprije mora prihvatiti uvjete pružanja usluge na popisu Chrome uređaja na administratorskoj konzoli.</translation>
 <translation id="8101987792947961127">Pri sljedećem ponovnom pokretanju potrebno je izvršiti Powerwash</translation>
 <translation id="8102159139658438129">Otvorite <ph name="LINK_BEGIN" />Postavke<ph name="LINK_END" /> da biste vidjeli opcije za povezani telefon</translation>
 <translation id="8104696615244072556">Pokrenite Powerwash na svom <ph name="IDS_SHORT_PRODUCT_NAME" /> uređaju i vratite ga na prethodnu verziju.</translation>
@@ -6225,7 +6220,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8953476467359856141">Tijekom punjenja</translation>
 <translation id="895347679606913382">Početak...</translation>
 <translation id="8957762313041272117">Automatski titlovi</translation>
-<translation id="8958804960827200147">Usmjerenje zaslona</translation>
 <translation id="895944840846194039">Memorija JavaScripta</translation>
 <translation id="8962083179518285172">Sakrij pojedinosti</translation>
 <translation id="8962918469425892674">Ova web-lokacija upotrebljava senzore pokreta ili svjetla.</translation>

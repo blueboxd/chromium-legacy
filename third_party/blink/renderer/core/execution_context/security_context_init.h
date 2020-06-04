@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
+#include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -94,8 +95,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   DocumentPolicy::ParsedDocumentPolicy document_policy_;
   DocumentPolicy::ParsedDocumentPolicy report_only_document_policy_;
   bool initialized_feature_policy_state_ = false;
-  Vector<String> feature_policy_parse_messages_;
-  Vector<String> report_only_feature_policy_parse_messages_;
+  Vector<PolicyParserMessageBuffer::Message> feature_policy_parse_messages_;
   ParsedFeaturePolicy feature_policy_header_;
   ParsedFeaturePolicy report_only_feature_policy_header_;
   LocalFrame* frame_for_opener_feature_state_ = nullptr;

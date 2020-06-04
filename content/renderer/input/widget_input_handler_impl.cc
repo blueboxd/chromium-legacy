@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
@@ -18,7 +17,6 @@
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
@@ -105,17 +103,16 @@ void WidgetInputHandlerImpl::ImeSetComposition(
     const gfx::Range& range,
     int32_t start,
     int32_t end) {
-  RunOnMainThread(
-      base::BindOnce(&RenderWidget::OnImeSetComposition, render_widget_, text,
-                     ConvertUiImeTextSpansToBlinkImeTextSpans(ime_text_spans),
-                     range, start, end));
+  RunOnMainThread(base::BindOnce(&RenderWidget::OnImeSetComposition,
+                                 render_widget_, text, ime_text_spans, range,
+                                 start, end));
 }
 
 static void ImeCommitTextOnMainThread(
     base::WeakPtr<RenderWidget> render_widget,
     scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner,
     const base::string16& text,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
     int32_t relative_cursor_position,
     WidgetInputHandlerImpl::ImeCommitTextCallback callback) {
@@ -132,8 +129,7 @@ void WidgetInputHandlerImpl::ImeCommitText(
     ImeCommitTextCallback callback) {
   RunOnMainThread(
       base::BindOnce(&ImeCommitTextOnMainThread, render_widget_,
-                     base::ThreadTaskRunnerHandle::Get(), text,
-                     ConvertUiImeTextSpansToBlinkImeTextSpans(ime_text_spans),
+                     base::ThreadTaskRunnerHandle::Get(), text, ime_text_spans,
                      range, relative_cursor_position, std::move(callback)));
 }
 

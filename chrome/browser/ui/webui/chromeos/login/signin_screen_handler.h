@@ -55,7 +55,6 @@ class CoreOobeView;
 class ErrorScreensHistogramHelper;
 class GaiaScreenHandler;
 class LoginFeedback;
-class NativeWindowDelegate;
 class User;
 class UserContext;
 
@@ -195,8 +194,6 @@ class SigninScreenHandler
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.
   void SetDelegate(SigninScreenHandlerDelegate* delegate);
-
-  void SetNativeWindowDelegate(NativeWindowDelegate* native_window_delegate);
 
   // NetworkStateInformer::NetworkStateInformerObserver implementation:
   void OnNetworkReady() override;
@@ -406,9 +403,6 @@ class SigninScreenHandler
 
   // A delegate that glues this handler with backend LoginDisplay.
   SigninScreenHandlerDelegate* delegate_ = nullptr;
-
-  // A delegate used to get gfx::NativeWindow.
-  NativeWindowDelegate* native_window_delegate_ = nullptr;
 
   // Whether screen should be shown right after initialization.
   bool show_on_init_ = false;

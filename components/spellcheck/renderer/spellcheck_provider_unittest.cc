@@ -18,7 +18,7 @@
 
 namespace {
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 struct HybridSpellCheckTestCase {
   size_t language_count;
   size_t enabled_language_count;
@@ -43,7 +43,7 @@ std::ostream& operator<<(std::ostream& out,
       << "\", use_spelling_service=" << test_case.use_spelling_service;
   return out;
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 class SpellCheckProviderCacheTest : public SpellCheckProviderTest {
  protected:
@@ -57,7 +57,7 @@ class SpellCheckProviderCacheTest : public SpellCheckProviderTest {
   }
 };
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 // Test fixture for testing hybrid check cases.
 class HybridSpellCheckTest
     : public testing::TestWithParam<HybridSpellCheckTestCase> {
@@ -84,7 +84,7 @@ class CombineSpellCheckResultsTest
   spellcheck::EmptyLocalInterfaceProvider embedder_provider_;
   TestingSpellCheckProvider provider_;
 };
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 TEST_F(SpellCheckProviderCacheTest, SubstringWithoutMisspellings) {
   FakeTextCheckingResult result;
@@ -138,7 +138,7 @@ TEST_F(SpellCheckProviderCacheTest, ResetCacheOnCustomDictionaryUpdate) {
   EXPECT_EQ(result.completion_count_, 0U);
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 // Tests that the SpellCheckProvider does not call into the native spell checker
 // on Windows when the native spell checker flags are disabled.
 TEST_F(SpellCheckProviderTest, ShouldNotUseBrowserSpellCheck) {
@@ -184,10 +184,7 @@ TEST_P(HybridSpellCheckTest, ShouldUseBrowserSpellCheckOnlyWhenNeeded) {
 
   const auto& test_case = GetParam();
   base::test::ScopedFeatureList local_features;
-  local_features.InitWithFeatures(
-      /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                            spellcheck::kWinUseHybridSpellChecker},
-      /*disabled_features=*/{});
+  local_features.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
 
   FakeTextCheckingResult completion;
   provider_.spellcheck()->SetFakeLanguageCounts(
@@ -554,10 +551,7 @@ TEST_P(CombineSpellCheckResultsTest, ShouldCorrectlyCombineHybridResults) {
 
   const auto& test_case = GetParam();
   base::test::ScopedFeatureList local_features;
-  local_features.InitWithFeatures(
-      /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                            spellcheck::kWinUseHybridSpellChecker},
-      /*disabled_features=*/{});
+  local_features.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
   const bool has_browser_check = !test_case.browser_locale.empty();
   const bool has_renderer_check = !test_case.renderer_locale.empty();
 
@@ -615,6 +609,6 @@ TEST_P(CombineSpellCheckResultsTest, ShouldCorrectlyCombineHybridResults) {
     }
   }
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 }  // namespace

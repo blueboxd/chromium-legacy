@@ -106,23 +106,25 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
      * has been called.
      */
     private class FaviconLoader implements FaviconImageCallback {
+        private final String mFaviconUrl;
+        private final Callback<Bitmap> mCallback;
         private final int mFaviconSizePx;
         // Loads the favicons asynchronously.
         private final FaviconHelper mFaviconHelper;
-        private final Callback<Bitmap> mCallback;
 
         private FaviconLoader(String faviconUrl, Callback<Bitmap> callback) {
+            mFaviconUrl = faviconUrl;
+            mCallback = callback;
             mFaviconSizePx =
                     mContext.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
-            mCallback = callback;
             mFaviconHelper = new FaviconHelper();
 
             // TODO(https://crbug.com/1048632): Use the current profile (i.e., regular profile or
             // incognito profile) instead of always using regular profile. It works correctly now,
             // but it is not safe.
             if (!mFaviconHelper.getLocalFaviconImageForURL(
-                        Profile.getLastUsedRegularProfile(), faviconUrl, mFaviconSizePx, this)) {
-                onFaviconAvailable(/*image=*/null, faviconUrl);
+                        Profile.getLastUsedRegularProfile(), mFaviconUrl, mFaviconSizePx, this)) {
+                onFaviconAvailable(/*image=*/null, mFaviconUrl);
             }
         }
 
@@ -140,7 +142,7 @@ public class ChromeSiteSettingsClient implements SiteSettingsClient {
                                 Math.round(FAVICON_CORNER_RADIUS_FRACTION * faviconSizeDp),
                                 FAVICON_BACKGROUND_COLOR,
                                 Math.round(FAVICON_TEXT_SIZE_FRACTION * faviconSizeDp));
-                image = faviconGenerator.generateIconForUrl(iconUrl);
+                image = faviconGenerator.generateIconForUrl(mFaviconUrl);
             }
             mCallback.onResult(image);
         }

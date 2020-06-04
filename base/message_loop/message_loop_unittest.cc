@@ -273,7 +273,8 @@ class MessageLoopTest : public ::testing::Test {};
 #if defined(OS_WIN)
 
 void SubPumpFunc(OnceClosure on_done) {
-  MessageLoopCurrent::ScopedNestableTaskAllower allow_nestable_tasks;
+  MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop
+      allow_nestable_tasks;
   MSG msg;
   while (::GetMessage(&msg, NULL, 0, 0)) {
     ::TranslateMessage(&msg);
@@ -289,7 +290,8 @@ const wchar_t kMessageBoxTitle[] = L"MessageLoop Unit Test";
 // implicit message loops.
 void MessageBoxFunc(TaskList* order, int cookie, bool is_reentrant) {
   order->RecordStart(MESSAGEBOX, cookie);
-  Optional<MessageLoopCurrent::ScopedNestableTaskAllower> maybe_allow_nesting;
+  Optional<MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop>
+      maybe_allow_nesting;
   if (is_reentrant)
     maybe_allow_nesting.emplace();
   ::MessageBox(NULL, L"Please wait...", kMessageBoxTitle, MB_OK);
@@ -955,10 +957,7 @@ namespace {
 
 void FuncThatRuns(TaskList* order, int cookie, RunLoop* run_loop) {
   order->RecordStart(RUNS, cookie);
-  {
-    MessageLoopCurrent::ScopedNestableTaskAllower allow;
-    run_loop->Run();
-  }
+  run_loop->Run();
   order->RecordEnd(RUNS, cookie);
 }
 
@@ -974,10 +973,11 @@ TEST_P(MessageLoopTypedTest, QuitNow) {
 
   TaskList order;
 
-  RunLoop run_loop;
+  RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&FuncThatRuns, &order, 1, Unretained(&run_loop)));
+      FROM_HERE,
+      BindOnce(&FuncThatRuns, &order, 1, Unretained(&nested_run_loop)));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&OrderedFunc, &order, 2));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -1009,7 +1009,7 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitTop) {
   TaskList order;
 
   RunLoop outer_run_loop;
-  RunLoop nested_run_loop;
+  RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -1039,7 +1039,7 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitNested) {
   TaskList order;
 
   RunLoop outer_run_loop;
-  RunLoop nested_run_loop;
+  RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -1104,7 +1104,7 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitBogus) {
   TaskList order;
 
   RunLoop outer_run_loop;
-  RunLoop nested_run_loop;
+  RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
   RunLoop bogus_run_loop;
 
   ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1137,10 +1137,10 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitDeep) {
   TaskList order;
 
   RunLoop outer_run_loop;
-  RunLoop nested_loop1;
-  RunLoop nested_loop2;
-  RunLoop nested_loop3;
-  RunLoop nested_loop4;
+  RunLoop nested_loop1(RunLoop::Type::kNestableTasksAllowed);
+  RunLoop nested_loop2(RunLoop::Type::kNestableTasksAllowed);
+  RunLoop nested_loop3(RunLoop::Type::kNestableTasksAllowed);
+  RunLoop nested_loop4(RunLoop::Type::kNestableTasksAllowed);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, BindOnce(&FuncThatRuns, &order, 1, Unretained(&nested_loop1)));
@@ -1249,10 +1249,11 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitOrderAfter) {
 
   TaskList order;
 
-  RunLoop run_loop;
+  RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
 
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, BindOnce(&FuncThatRuns, &order, 1, Unretained(&run_loop)));
+      FROM_HERE,
+      BindOnce(&FuncThatRuns, &order, 1, Unretained(&nested_run_loop)));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&OrderedFunc, &order, 2));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -1260,13 +1261,13 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitOrderAfter) {
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&OrderedFunc, &order, 3));
   ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, run_loop.QuitClosure());  // has no affect
+      FROM_HERE, nested_run_loop.QuitClosure());  // has no affect
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&OrderedFunc, &order, 4));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                           BindOnce(&FuncThatQuitsNow));
 
-  run_loop.allow_quit_current_deprecated_ = true;
+  nested_run_loop.allow_quit_current_deprecated_ = true;
 
   RunLoop outer_run_loop;
   outer_run_loop.Run();
@@ -1368,7 +1369,7 @@ TEST_P(MessageLoopTypedTest, NestableTasksAllowedExplicitlyInScope) {
       BindOnce(
           [](RunLoop* run_loop) {
             {
-              MessageLoopCurrent::ScopedNestableTaskAllower
+              MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop
                   allow_nestable_tasks;
               EXPECT_TRUE(MessageLoopCurrent::Get()->NestableTasksAllowed());
             }
@@ -1572,8 +1573,8 @@ TEST_F(MessageLoopTest, PostImmediateTaskFromSystemPump) {
 //       work_deduplicator.cc(50): OnWorkStarted
 //  2) SubPumpFunc entered:
 //       message_loop_unittest.cc(278): SubPumpFunc
-//  3) ScopedNestableTaskAllower triggers nested ScheduleWork:
-//       work_deduplicator.cc(34): OnWorkRequested
+//  3) ScopedAllowApplicationTasksInNativeNestedLoop triggers nested
+//     ScheduleWork: work_deduplicator.cc(34): OnWorkRequested
 //  4) Nested system loop starts and pumps internal kMsgHaveWork:
 //       message_loop_unittest.cc(282): SubPumpFunc : Got Message
 //       message_pump_win.cc(302): HandleWorkMessage
@@ -1606,9 +1607,9 @@ TEST_F(MessageLoopTest, PostImmediateTaskFromSystemPump) {
 //  11) Nested application task completes and SubPumpFunc unwinds:
 //       work_deduplicator.cc(58): WillCheckForMoreWork
 //       work_deduplicator.cc(67): DidCheckForMoreWork
-//  12) ~ScopedNestableTaskAllower() makes sure WorkDeduplicator knows we're
-//      back in DoWork() (not relevant in this test but important overall).
-//       work_deduplicator.cc(50): OnWorkStarted
+//  12) ~ScopedAllowApplicationTasksInNativeNestedLoop() makes sure
+//      WorkDeduplicator knows we're back in DoWork() (not relevant in this test
+//      but important overall). work_deduplicator.cc(50): OnWorkStarted
 //  13) Application task which ran SubPumpFunc completes and test finishes.
 //       work_deduplicator.cc(67): DidCheckForMoreWork
 TEST_F(MessageLoopTest, PostDelayedTaskFromSystemPump) {
@@ -1672,11 +1673,11 @@ TEST_F(MessageLoopTest, RepostingWmQuitDoesntStarveUpcomingNativeLoop) {
   // This test ensures that application tasks are being processed by the native
   // subpump despite the kMsgHaveWork event having already been consumed by the
   // time the subpump is entered. This is subtly enforced by
-  // MessageLoopCurrent::ScopedNestableTaskAllower which will ScheduleWork()
-  // upon construction (and if it's absent, the MessageLoop shouldn't process
-  // application tasks so kMsgHaveWork is irrelevant).
-  // Note: This test also fails prior to the fix for https://crbug.com/888559
-  // (in fact, the last two tasks are sufficient as a regression test), probably
+  // MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop which
+  // will ScheduleWork() upon construction (and if it's absent, the MessageLoop
+  // shouldn't process application tasks so kMsgHaveWork is irrelevant). Note:
+  // This test also fails prior to the fix for https://crbug.com/888559 (in
+  // fact, the last two tasks are sufficient as a regression test), probably
   // because of a dangling kMsgHaveWork recreating the effect from
   // MessageLoopTest.NativeMsgProcessingDoesntStealWmQuit.
 
@@ -2065,7 +2066,8 @@ LRESULT CALLBACK TestWndProcThunk(HWND hwnd,
     case 2:
       // Since we're about to enter a modal loop, tell the message loop that we
       // intend to nest tasks.
-      MessageLoopCurrent::ScopedNestableTaskAllower allow_nestable_tasks;
+      MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop
+          allow_nestable_tasks;
       bool did_run = false;
       ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&EndTest, &did_run, hwnd));

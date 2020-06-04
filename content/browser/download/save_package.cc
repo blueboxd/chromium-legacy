@@ -59,6 +59,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
+#include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/filename_util.h"
@@ -919,20 +920,6 @@ void SavePackage::DoSavingProcess() {
   }
 }
 
-bool SavePackage::OnMessageReceived(const IPC::Message& message,
-                                    RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  auto* rfhi = static_cast<RenderFrameHostImpl*>(render_frame_host);
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(SavePackage, message, rfhi)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SavableResourceLinksResponse,
-                        OnSavableResourceLinksResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_SavableResourceLinksError,
-                        OnSavableResourceLinksError)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 // After finishing all SaveItems which need to get data from net.
 // We collect all URLs which have local storage and send the
 // map:(originalURL:currentLocalPath) to render process (backend).
@@ -1149,12 +1136,17 @@ void SavePackage::GetSavableResourceLinks() {
   wait_state_ = RESOURCES_LIST;
 
   DCHECK_EQ(0, number_of_frames_pending_response_);
-  number_of_frames_pending_response_ = web_contents()->SendToAllFrames(
-      new FrameMsg_GetSavableResourceLinks(MSG_ROUTING_NONE));
+  for (RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
+    if (!rfh->IsRenderFrameLive())
+      continue;
+    ++number_of_frames_pending_response_;
+    static_cast<RenderFrameHostImpl*>(rfh)
+        ->GetSavableResourceLinksFromRenderer();
+  }
   DCHECK_LT(0, number_of_frames_pending_response_);
 
   // Enqueue the main frame separately (because this frame won't show up in any
-  // of OnSavableResourceLinksResponse callbacks).
+  // of GetsSavableResourceLinks callbacks).
   FrameTreeNode* main_frame_tree_node =
       static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame())
           ->frame_tree_node();
@@ -1164,11 +1156,11 @@ void SavePackage::GetSavableResourceLinks() {
   all_save_items_count_ = 1;
 }
 
-void SavePackage::OnSavableResourceLinksResponse(
+void SavePackage::SavableResourceLinksResponse(
     RenderFrameHostImpl* sender,
     const std::vector<GURL>& resources_list,
-    const Referrer& referrer,
-    const std::vector<SavableSubframe>& subframes) {
+    blink::mojom::ReferrerPtr referrer,
+    const std::vector<blink::mojom::SavableSubframePtr>& subframes) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (wait_state_ != RESOURCES_LIST)
     return;
@@ -1177,11 +1169,12 @@ void SavePackage::OnSavableResourceLinksResponse(
   int container_frame_tree_node_id =
       sender->frame_tree_node()->frame_tree_node_id();
   for (const GURL& u : resources_list) {
-    EnqueueSavableResource(container_frame_tree_node_id, u, referrer);
+    EnqueueSavableResource(container_frame_tree_node_id, u,
+                           referrer.To<content::Referrer>());
   }
-  for (const SavableSubframe& subframe : subframes) {
+  for (auto& subframe : subframes) {
     RenderFrameHostImpl* rfh_subframe = sender->FindAndVerifyChild(
-        subframe.routing_id,
+        subframe->subframe_token,
         bad_message::DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE);
 
     if (!rfh_subframe) {
@@ -1191,7 +1184,7 @@ void SavePackage::OnSavableResourceLinksResponse(
 
     EnqueueFrame(container_frame_tree_node_id,
                  rfh_subframe->frame_tree_node()->frame_tree_node_id(),
-                 subframe.original_url);
+                 subframe->original_url);
   }
 
   CompleteSavableResourceLinksResponse();
@@ -1261,7 +1254,7 @@ void SavePackage::EnqueueFrame(int container_frame_tree_node_id,
   frame_tree_node_id_to_save_item_[frame_tree_node_id] = save_item;
 }
 
-void SavePackage::OnSavableResourceLinksError(RenderFrameHostImpl* sender) {
+void SavePackage::SavableResourceLinksError(RenderFrameHostImpl* sender) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CompleteSavableResourceLinksResponse();
 }

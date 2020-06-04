@@ -92,8 +92,8 @@ class CanvasResourceDispatcherTest
     // kDefaultPresentationMode` created a sharedBitmap 100% of the time.
     // Investigate study if the Bitmap fallback makes sense or not.
     resource_provider_ = CanvasResourceProvider::CreateSharedBitmapProvider(
-        IntSize(kWidth, kHeight), nullptr /* context_provider_wrapper */,
-        kLow_SkFilterQuality, CanvasColorParams(), dispatcher_->GetWeakPtr());
+        IntSize(kWidth, kHeight), kLow_SkFilterQuality, CanvasColorParams(),
+        dispatcher_->GetWeakPtr());
     if (!resource_provider_) {
       resource_provider_ = CanvasResourceProvider::CreateBitmapProvider(
           IntSize(kWidth, kHeight), kLow_SkFilterQuality, CanvasColorParams());

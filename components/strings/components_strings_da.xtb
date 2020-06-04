@@ -206,7 +206,7 @@
 <translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prøv at køre Windows Netværksdiagnosticering<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Den server, du er på vej til, <ph name="ORIGIN" />, har angivet en header,
-     som kræver, at en politik for oprindelse anvendes ved alle anmodninger, der sendes til den. Der er dog
+     som kræver, at der anvendes en politik for oprindelse på alle anmodninger, der sendes til den. Der er dog
     en fejl i headeren, som forhindrer browseren i at opfylde
     din anmodning til <ph name="SITE" />. Politikker for oprindelse kan anvendes af
     websiteoperatorer til at konfigurere sikkerhed og andre egenskaber for et website.</translation>
@@ -758,7 +758,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tjekke firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
 <translation id="4209166701302774460">Den server, du er på vej til, <ph name="ORIGIN" />, har anmodet om, at
-    en politik for oprindelse anvendes ved alle anmodninger, der sendes til den. Det er dog nu
+    der anvendes en politik for oprindelse på alle anmodninger, der sendes til den. Det er dog nu
     mislykkedes at levere en politik, hvilket forhindrer browseren i at opfylde
     din anmodning til <ph name="SITE" />. Politikker for oprindelse kan anvendes af
     websiteoperatorer til at konfigurere sikkerhed og andre egenskaber for et website.</translation>

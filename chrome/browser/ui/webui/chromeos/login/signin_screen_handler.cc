@@ -71,7 +71,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
-#include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
@@ -486,11 +485,6 @@ void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
   delegate_ = delegate;
   if (delegate_)
     delegate_->SetWebUIHandler(this);
-}
-
-void SigninScreenHandler::SetNativeWindowDelegate(
-    NativeWindowDelegate* native_window_delegate) {
-  native_window_delegate_ = native_window_delegate;
 }
 
 void SigninScreenHandler::OnNetworkReady() {

@@ -41,6 +41,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -220,7 +221,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool SetCompositionFromExistingText(
       int composition_start,
       int composition_end,
-      const WebVector<WebImeTextSpan>& ime_text_spans) override;
+      const WebVector<ui::ImeTextSpan>& ime_text_spans) override;
   void ExtendSelectionAndDelete(int before, int after) override;
   void MoveRangeSelectionExtent(const gfx::Point&) override;
   void ReplaceSelection(const WebString&) override;
@@ -329,7 +330,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DownloadURL(
       const WebURLRequest& request,
       network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
-      mojo::ScopedMessagePipeHandle blob_url_token) override;
+      CrossVariantMojoRemote<mojom::blink::BlobURLTokenInterfaceBase>
+          blob_url_token) override;
 
   void InitializeCoreFrame(
       Page&,

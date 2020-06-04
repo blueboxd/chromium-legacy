@@ -198,13 +198,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Creates the animation for scrolling shelf by |scroll_distance|.
   void StartShelfScrollAnimation(float scroll_distance);
 
-  // Calculates the layout strategy based on the three factors:
-  // (1) scroll offset on the main axis; (2) available space for shelf icons;
-  // (3) Bounds of the scrollable shelf view: actual view bounds or target
-  // bounds.
+  // Calculates the layout strategy based on:
+  // (1) scroll offset on the main axis.
+  // (2) length of the available space to accommodate shelf icons.
   LayoutStrategy CalculateLayoutStrategy(float scroll_distance_on_main_axis,
-                                         int space_for_icons,
-                                         bool use_target_bounds) const;
+                                         int available_length) const;
 
   Shelf* GetShelf();
   const Shelf* GetShelf() const;
@@ -470,6 +468,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Enable/disable the layer clip on |shelf_container_view_|.
   void EnableLayerClipOnShelfContainerView(bool enable);
+
+  // Calculates the length of space required by shelf icons to show without
+  // scroll. Note that the return value includes the padding space between the
+  // app icon and the end of scrollable shelf.
+  int CalculateShelfIconsPreferredLength() const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

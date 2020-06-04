@@ -1498,7 +1498,6 @@ void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
     }
   } else {
 #if defined(OS_CHROMEOS)
-    DCHECK(base::FeatureList::IsEnabled(features::kPDFAnnotations));
     uint32_t length = engine_->GetLoadedByteSize();
     if (IsSaveDataSizeValid(length)) {
       pp::VarArrayBuffer buffer(length);

@@ -1002,25 +1002,26 @@ void ExtensionService::GrantPermissions(const Extension* extension) {
 
 // static
 void ExtensionService::RecordPermissionMessagesHistogram(
-    const Extension* extension, const char* histogram) {
-  // Since this is called from multiple sources, and since the histogram macros
-  // use statics, we need to manually lookup the histogram ourselves.
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      base::StringPrintf("Extensions.Permissions_%s3", histogram), 1,
-      APIPermission::kEnumBoundary, APIPermission::kEnumBoundary + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-
-  base::HistogramBase* counter_has_any = base::BooleanHistogram::FactoryGet(
-      base::StringPrintf("Extensions.HasPermissions_%s3", histogram),
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-
+    const Extension* extension,
+    const char* histogram_basename) {
   PermissionIDSet permissions =
       PermissionMessageProvider::Get()->GetAllPermissionIDs(
           extension->permissions_data()->active_permissions(),
           extension->GetType());
-  counter_has_any->AddBoolean(!permissions.empty());
-  for (const PermissionID& id : permissions)
-    counter->Add(id.id());
+  base::UmaHistogramBoolean(
+      base::StringPrintf("Extensions.HasPermissions_%s3", histogram_basename),
+      !permissions.empty());
+
+  std::string permissions_histogram_name =
+      base::StringPrintf("Extensions.Permissions_%s3", histogram_basename);
+  for (const PermissionID& id : permissions) {
+    // NOTE: APIPermission::kEnumBoundary is equivalent to
+    // "last_valid_value + 1", so we need to not use the two-argument version
+    // of UmaHistogramEnumeration (in addition to kEnumBoundary not being named
+    // kMaxValue).
+    base::UmaHistogramEnumeration(permissions_histogram_name, id.id(),
+                                  APIPermission::kEnumBoundary);
+  }
 }
 
 // TODO(michaelpg): Group with other ExtensionRegistrar::Delegate overrides

@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Hiermee kun je de herhaalsnelheid van het toetsenbord, woordvoorspelling en meer aanpassen</translation>
 <translation id="1633947793238301227">De Google Assistent uitschakelen</translation>
 <translation id="1634783886312010422">Heb je dit wachtwoord al gewijzigd op <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Geïnstalleerd door je ouder/verzorger.</translation>
 <translation id="1637224376458524414">Deze bladwijzer gebruiken op je iPhone</translation>
 <translation id="1637765355341780467">Er is iets misgegaan bij het openen van je profiel. Mogelijk zijn sommige functies niet beschikbaar.</translation>
 <translation id="1639239467298939599">Laden</translation>
@@ -954,12 +953,10 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2199719347983604670">Gegevens van Chrome-synchronisatie</translation>
 <translation id="2200094388063410062">E-mail</translation>
 <translation id="2200356397587687044">Chrome heeft toestemming nodig om verder te gaan</translation>
-<translation id="2200729650590440847">Pincode-instellingen voor vergrendelingsscherm</translation>
 <translation id="220138918934036434">Knop verbergen</translation>
 <translation id="2202898655984161076">Er is een probleem opgetreden met het genereren van het printeroverzicht. Sommige van je printers zijn mogelijk niet geregistreerd voor <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">De zoekmachine die wordt gebruikt in de <ph name="BEGIN_LINK" />adresbalk<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Alles lezen en wijzigen wat je typt</translation>
-<translation id="2207166770508557715">Slaapinstellingen</translation>
 <translation id="220858061631308971">Voer deze pincode in op '<ph name="DEVICE_NAME" />':</translation>
 <translation id="2212565012507486665">Cookies toestaan</translation>
 <translation id="2213140827792212876">Delen verwijderen</translation>
@@ -1408,11 +1405,9 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2751131328353405138">De SSHFS van de Linux-container wordt geactiveerd</translation>
 <translation id="2751739896257479635">EAP Phase 2-verificatie</translation>
 <translation id="2753677631968972007">Siterechten handmatig beheren</translation>
-<translation id="2753984311895843016">Voeding bij inactiviteit</translation>
 <translation id="2755367719610958252">Toegankelijkheidsfuncties beheren</translation>
 <translation id="275662540872599901">scherm uit</translation>
 <translation id="2757338480560142065">Zorg ervoor dat het wachtwoord dat je opslaat, overeenkomt met je wachtwoord voor <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Monitorstand</translation>
 <translation id="2762441749940182211">Camera geblokkeerd</translation>
 <translation id="2764786626780673772">VPN-gegevens</translation>
 <translation id="2765217105034171413">Klein</translation>
@@ -2130,6 +2125,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3677106374019847299">Geef een aangepaste provider op</translation>
 <translation id="3677657024345889897">Stilst</translation>
 <translation id="3677911431265050325">Mobiele site opvragen</translation>
+<translation id="3677959414150797585">Omvat apps, webpagina's en meer. Stuurt alleen statistieken om suggesties te verbeteren als je ervoor hebt gekozen gebruiksgegevens te delen.</translation>
 <translation id="3678156199662914018">Extensie: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Stem voor tekst-naar-spraak</translation>
 <translation id="3681311097828166361">Bedankt voor je feedback. Je bent nu offline en je rapport wordt later verzonden.</translation>
@@ -3782,6 +3778,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" />: camera of microfoon neemt op</translation>
 <translation id="5841270259333717135">Ethernet configureren</translation>
 <translation id="5842497610951477805">Bluetooth inschakelen</translation>
+<translation id="5844574845205796324">Nieuwe content voorstellen om te bekijken</translation>
 <translation id="5846200638699387931">Syntaxisfout in relatie: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Installeer updates en apps. Als je doorgaat, ga je ermee akkoord dat dit apparaat ook automatisch updates of apps van Google, je provider of de fabrikant van je apparaat kan downloaden en installeren, en dat hiervoor mogelijk mobiele data worden gebruikt. Sommige van deze apps kunnen in-app-aankopen aanbieden.</translation>
 <translation id="5849212445710944278">Al toegevoegd</translation>
@@ -6223,7 +6220,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8953476467359856141">Tijdens het opladen</translation>
 <translation id="895347679606913382">Starten...</translation>
 <translation id="8957762313041272117">Live ondertiteling</translation>
-<translation id="8958804960827200147">Schermstand</translation>
 <translation id="895944840846194039">JavaScript-geheugen</translation>
 <translation id="8962083179518285172">Details verbergen</translation>
 <translation id="8962918469425892674">Deze site gebruikt bewegings- of lichtsensoren.</translation>

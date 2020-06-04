@@ -124,9 +124,13 @@ class ExtensionDownloaderDelegate {
     // Cache entry is good and will be used.
     CACHE_HIT = 4,
 
+    // Cache entry will be used in case we fail to fetch the manifest for the
+    // extension.
+    CACHE_HIT_ON_MANIFEST_FETCH_FAILURE = 5,
+
     // Magic constant used by the histogram macros.
     // Always update it to the max value.
-    kMaxValue = CACHE_HIT,
+    kMaxValue = CACHE_HIT_ON_MANIFEST_FETCH_FAILURE,
   };
 
   // Passed as an argument to the completion callbacks to signal whether

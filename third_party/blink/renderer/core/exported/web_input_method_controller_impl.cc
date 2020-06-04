@@ -54,7 +54,7 @@ void WebInputMethodControllerImpl::SetVirtualKeyboardVisibilityRequest(
 
 bool WebInputMethodControllerImpl::SetComposition(
     const WebString& text,
-    const WebVector<WebImeTextSpan>& ime_text_spans,
+    const WebVector<ui::ImeTextSpan>& ime_text_spans,
     const WebRange& replacement_range,
     int selection_start,
     int selection_end) {
@@ -135,7 +135,7 @@ bool WebInputMethodControllerImpl::FinishComposingText(
 
 bool WebInputMethodControllerImpl::CommitText(
     const WebString& text,
-    const WebVector<WebImeTextSpan>& ime_text_spans,
+    const WebVector<ui::ImeTextSpan>& ime_text_spans,
     const WebRange& replacement_range,
     int relative_caret_position) {
   LocalFrame::NotifyUserActivation(GetFrame());

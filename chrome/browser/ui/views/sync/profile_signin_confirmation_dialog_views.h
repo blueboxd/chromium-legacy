@@ -50,9 +50,6 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
 
-  // views::WidgetDelegate::
-  void WindowClosing() override;
-
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,

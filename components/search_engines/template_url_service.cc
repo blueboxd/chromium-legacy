@@ -708,6 +708,23 @@ const TemplateURL* TemplateURLService::GetDefaultSearchProvider() const {
                  : initial_default_search_provider_.get();
 }
 
+const TemplateURL*
+TemplateURLService::GetDefaultSearchProviderIgnoringExtensions() const {
+  std::unique_ptr<TemplateURLData> next_search =
+      default_search_manager_.GetDefaultSearchEngineIgnoringExtensions();
+  if (!next_search)
+    return nullptr;
+
+  // Find the TemplateURL matching the data retrieved.
+  auto iter = std::find_if(template_urls_.begin(), template_urls_.end(),
+                           [this, &next_search](const auto& turl_to_check) {
+                             return TemplateURL::MatchesData(
+                                 turl_to_check.get(), next_search.get(),
+                                 search_terms_data());
+                           });
+  return iter == template_urls_.end() ? nullptr : iter->get();
+}
+
 bool TemplateURLService::IsSearchResultsPageFromDefaultSearchProvider(
     const GURL& url) const {
   const TemplateURL* default_provider = GetDefaultSearchProvider();

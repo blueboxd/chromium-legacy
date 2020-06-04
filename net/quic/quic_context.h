@@ -13,8 +13,8 @@
 namespace net {
 
 // Default QUIC version used in absence of any external configuration.
-constexpr quic::ParsedQuicVersion kDefaultSupportedQuicVersion{
-    quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_46};
+constexpr quic::ParsedQuicVersion kDefaultSupportedQuicVersion =
+    quic::ParsedQuicVersion::Q046();
 
 // Returns a list containing only the current default version.
 inline NET_EXPORT_PRIVATE quic::ParsedQuicVersionVector

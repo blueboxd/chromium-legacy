@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/services/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/utils.h"
@@ -24,6 +25,10 @@
 #include "media/base/channel_layout.h"
 #include "services/audio/public/cpp/device_factory.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
+
+#if BUILDFLAG(ENABLE_FAKE_ASSISTANT_MICROPHONE)
+#include "chromeos/services/assistant/platform/fake_input_device.h"
+#endif  // BUILDFLAG(ENABLE_FAKE_ASSISTANT_MICROPHONE)
 
 namespace chromeos {
 namespace assistant {
@@ -470,11 +475,15 @@ void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
     detect_dead_stream = audio::DeadStreamDetection::kDisabled;
   }
 
+#if BUILDFLAG(ENABLE_FAKE_ASSISTANT_MICROPHONE)
+  source_ = CreateFakeInputDevice();
+#else
   mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
   AssistantClient::Get()->RequestAudioStreamFactory(
       stream_factory.InitWithNewPipeAndPassReceiver());
   source_ = audio::CreateInputDevice(std::move(stream_factory), device_id_,
                                      detect_dead_stream);
+#endif  // BUILDFLAG(ENABLE_FAKE_ASSISTANT_MICROPHONE)
 
   source_->Initialize(param, this);
   source_->Start();

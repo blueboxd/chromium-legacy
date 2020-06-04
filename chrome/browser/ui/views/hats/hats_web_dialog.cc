@@ -19,7 +19,6 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -245,9 +244,6 @@ void HatsWebDialog::CreateWebDialog(Browser* browser) {
   // and background scripts.
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       webview_->web_contents());
-
-  performance_manager::PerformanceManagerRegistry::GetInstance()
-      ->CreatePageNodeForWebContents(webview_->web_contents());
 
   // Start the loading timer once it is created.
   loading_timer_.Start(FROM_HERE, ContentLoadingTimeout(),

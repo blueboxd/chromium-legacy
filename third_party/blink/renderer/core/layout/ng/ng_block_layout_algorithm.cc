@@ -2879,6 +2879,11 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
   }
   container_builder_.AddResult(*result,
                                LogicalOffset(LayoutUnit(), ruby_text_top));
+  // RubyText provides baseline if RubyBase didn't.
+  // This behavior doesn't make much sense, but it's compatible with the legacy
+  // layout.
+  if (!container_builder_.Baseline())
+    PropagateBaselineFromChild(ruby_text_fragment, ruby_text_top);
 }
 
 }  // namespace blink

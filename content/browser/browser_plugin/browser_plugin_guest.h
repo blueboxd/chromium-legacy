@@ -46,7 +46,7 @@
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "third_party/blink/public/web/web_drag_status.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
@@ -292,7 +292,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
 
   void OnImeCommitText(int instance_id,
                        const base::string16& text,
-                       const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+                       const std::vector<ui::ImeTextSpan>& ime_text_spans,
                        const gfx::Range& replacement_range,
                        int relative_cursor_pos);
   void OnImeFinishComposingText(int instance_id, bool keep_selection);

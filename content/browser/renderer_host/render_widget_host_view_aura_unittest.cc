@@ -400,6 +400,13 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
                              std::make_unique<FrameTokenMessageQueue>()),
         widget_impl_(std::move(widget_impl)) {
     lastWheelOrTouchEventLatencyInfo = ui::LatencyInfo();
+    mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
+    mojo::AssociatedRemote<blink::mojom::Widget> blink_widget;
+    auto blink_widget_receiver =
+        blink_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    BindWidgetInterfaces(
+        blink_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
+        blink_widget.Unbind());
   }
 
   void NotifyNewContentRenderingTimeoutForTesting() override {

@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/client/gl_helper.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/compositor/compositor_animation_observer.h"
 
 class ScreenCaptureNotificationUI;
@@ -44,7 +45,7 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   // across a Mojo pipe. This object will be automatically destructed when the
   // Mojo connection is closed.
   static mojo::PendingRemote<mojom::ScreenCaptureSession> Create(
-      mojom::ScreenCaptureSessionNotifierPtr notifier,
+      mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
       const std::string& display_name,
       content::DesktopMediaID desktop_id,
       const gfx::Size& size,
@@ -63,8 +64,9 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   struct DesktopTexture;
   struct PendingBuffer;
 
-  ArcScreenCaptureSession(mojom::ScreenCaptureSessionNotifierPtr notifier,
-                          const gfx::Size& size);
+  ArcScreenCaptureSession(
+      mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
+      const gfx::Size& size);
   ~ArcScreenCaptureSession() override;
 
   // Does additional checks and upon success returns a valid remote,
@@ -89,7 +91,7 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   void NotificationStop();
 
   mojo::Receiver<mojom::ScreenCaptureSession> receiver_{this};
-  mojom::ScreenCaptureSessionNotifierPtr notifier_;
+  mojo::Remote<mojom::ScreenCaptureSessionNotifier> notifier_;
   gfx::Size size_;
   // aura::Window of the display being captured. This corresponds to one of
   // Ash's root windows.

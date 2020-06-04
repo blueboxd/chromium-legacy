@@ -16,6 +16,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
@@ -128,7 +129,7 @@ struct BLINK_EXPORT WebNavigationInfo {
           network::mojom::CSPDisposition::CHECK;
 
   // When navigating to a blob url, this token specifies the blob.
-  mojo::ScopedMessagePipeHandle blob_url_token;
+  CrossVariantMojoRemote<mojom::BlobURLTokenInterfaceBase> blob_url_token;
 
   // When navigation initiated from the user input, this tracks
   // the input start time.

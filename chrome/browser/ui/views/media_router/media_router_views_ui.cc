@@ -501,7 +501,7 @@ void MediaRouterViewsUI::InitCommon() {
 
   // File mirroring is always available.
   query_result_manager_->SetSourcesForCastMode(
-      MediaCastMode::LOCAL_FILE, {MediaSource::ForTab(0)}, origin);
+      MediaCastMode::LOCAL_FILE, {MediaSource::ForLocalFile()}, origin);
 
   SessionID::id_type tab_id =
       sessions::SessionTabHelper::IdForTab(initiator_).id();

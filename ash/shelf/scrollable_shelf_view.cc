@@ -747,18 +747,8 @@ float ScrollableShelfView::CalculateScrollUpperBound(
   if (layout_strategy_ == kNotShowArrowButtons)
     return 0.f;
 
-  // Calculate the length of the available space.
-  int available_length = available_space_for_icons -
-                         2 * ShelfConfig::Get()->GetAppIconEndPadding();
-
-  // Calculate the length of the preferred size.
-  const gfx::Size shelf_preferred_size(
-      shelf_container_view_->GetPreferredSize());
-  const int preferred_length =
-      (GetShelf()->IsHorizontalAlignment() ? shelf_preferred_size.width()
-                                           : shelf_preferred_size.height());
-
-  return std::max(0, preferred_length - available_length);
+  return std::max(
+      0, CalculateShelfIconsPreferredLength() - available_space_for_icons);
 }
 
 float ScrollableShelfView::CalculateClampedScrollOffset(
@@ -805,11 +795,8 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
 
 ScrollableShelfView::LayoutStrategy
 ScrollableShelfView::CalculateLayoutStrategy(float scroll_distance_on_main_axis,
-                                             int space_for_icons,
-                                             bool use_target_bounds) const {
-  if (CanFitAllAppsWithoutScrolling(
-          GetAvailableLocalBounds(use_target_bounds).size(),
-          CalculatePreferredSize())) {
+                                             int available_length) const {
+  if (available_length >= CalculateShelfIconsPreferredLength()) {
     return kNotShowArrowButtons;
   }
 
@@ -819,7 +806,7 @@ ScrollableShelfView::CalculateLayoutStrategy(float scroll_distance_on_main_axis,
   }
 
   if (scroll_distance_on_main_axis ==
-      CalculateScrollUpperBound(space_for_icons)) {
+      CalculateScrollUpperBound(available_length)) {
     // If there is no invisible shelf button at the right side, hide the right
     // button.
     return kShowLeftArrowButton;
@@ -1082,8 +1069,7 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
     main_axis_offset_after_scroll = CalculateTargetOffsetAfterScroll(
         main_axis_offset_after_scroll, page_scroll_distance);
     layout_strategy_after_scroll = CalculateLayoutStrategy(
-        main_axis_offset_after_scroll, GetSpaceForIcons(),
-        /*use_target_bounds= =*/false);
+        main_axis_offset_after_scroll, GetSpaceForIcons());
     visible_space_after_scroll =
         GetMirroredRect(CalculateVisibleSpace(layout_strategy_after_scroll));
     rect_after_scroll = rect_after_adjustment;
@@ -1792,8 +1778,7 @@ float ScrollableShelfView::CalculateTargetOffsetAfterScroll(
   target_offset =
       CalculateClampedScrollOffset(target_offset, GetSpaceForIcons());
   LayoutStrategy layout_strategy_after_scroll =
-      CalculateLayoutStrategy(target_offset, GetSpaceForIcons(),
-                              /*use_target_bounds= =*/false);
+      CalculateLayoutStrategy(target_offset, GetSpaceForIcons());
   target_offset = CalculateScrollDistanceAfterAdjustment(
       target_offset, layout_strategy_after_scroll);
 
@@ -2297,8 +2282,7 @@ void ScrollableShelfView::UpdateScrollOffset(float target_offset) {
 
   // Calculating the layout strategy relies on |scroll_offset_|.
   LayoutStrategy new_strategy = CalculateLayoutStrategy(
-      CalculateMainAxisScrollDistance(), GetSpaceForIcons(),
-      /*use_target_bounds=*/false);
+      CalculateMainAxisScrollDistance(), GetSpaceForIcons());
 
   const bool strategy_needs_update = (layout_strategy_ != new_strategy);
   if (strategy_needs_update) {
@@ -2336,8 +2320,7 @@ int ScrollableShelfView::CalculateScrollOffsetForTargetAvailableSpace(
 
   // Calculates the layout strategy based on the new scroll offset.
   LayoutStrategy new_strategy =
-      CalculateLayoutStrategy(target_scroll_offset, available_space_for_icons,
-                              /*use_target_bounds=*/true);
+      CalculateLayoutStrategy(target_scroll_offset, available_space_for_icons);
 
   // Adjusts the scroll offset with the new strategy.
   target_scroll_offset += CalculateAdjustmentOffset(
@@ -2452,6 +2435,15 @@ void ScrollableShelfView::EnableLayerClipOnShelfContainerView(bool enable) {
       &visible_space_in_shelf_container_coordinates);
   shelf_container_view_->layer()->SetClipRect(
       gfx::ToEnclosedRect(visible_space_in_shelf_container_coordinates));
+}
+
+int ScrollableShelfView::CalculateShelfIconsPreferredLength() const {
+  const gfx::Size shelf_preferred_size(
+      shelf_container_view_->GetPreferredSize());
+  const int preferred_length =
+      (GetShelf()->IsHorizontalAlignment() ? shelf_preferred_size.width()
+                                           : shelf_preferred_size.height());
+  return preferred_length + 2 * ShelfConfig::Get()->GetAppIconEndPadding();
 }
 
 }  // namespace ash

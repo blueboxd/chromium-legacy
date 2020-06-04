@@ -51,7 +51,7 @@ class ExtensionBackgroundPageWaiter : public ProcessManagerObserver,
 
   // ExtensionHostObserver:
   void OnExtensionHostDidStopFirstLoad(const ExtensionHost* host) override;
-  void OnExtensionHostDestroyed(const ExtensionHost* host) override;
+  void OnExtensionHostDestroyed(ExtensionHost* host) override;
 
   content::BrowserContext* const browser_context_;
   scoped_refptr<const Extension> extension_;

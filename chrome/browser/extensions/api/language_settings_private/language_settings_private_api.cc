@@ -260,7 +260,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
-  if (spellcheck::UseWinHybridSpellChecker()) {
+  if (spellcheck::UseBrowserSpellChecker()) {
     SpellcheckService* service =
         SpellcheckServiceFactory::GetForContext(browser_context());
     for (auto& language_val : language_list->GetList()) {

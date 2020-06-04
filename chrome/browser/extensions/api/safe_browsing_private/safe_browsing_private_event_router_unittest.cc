@@ -58,7 +58,7 @@ ACTION_P(CaptureArg, wrapper) {
 
 constexpr char kConnectorsPrefValue[] = R"([
   {
-    "service_provider": "Google"
+    "service_provider": "google"
   }
 ])";
 

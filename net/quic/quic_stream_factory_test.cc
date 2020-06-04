@@ -1008,8 +1008,7 @@ TEST_P(QuicStreamFactoryTest, Create) {
 }
 
 TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -1103,8 +1102,7 @@ TEST_P(QuicStreamFactoryTest, FactoryDestroyedWhenJobPending) {
 }
 
 TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -1150,8 +1148,7 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
 }
 
 TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -3197,7 +3194,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNonMigratableStream(
                                            packet_num++, false, 1, 1, 1));
     }
   } else {
-    if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    if (version_.UsesTls()) {
       if (VersionUsesHttp3(version_.transport_version)) {
         socket_data.AddWrite(
             SYNCHRONOUS,
@@ -3614,8 +3611,7 @@ void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNoOpenStreams(
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
-  EXPECT_EQ(0u, session->GetNumActiveStreams());
-  EXPECT_EQ(0u, session->GetNumDrainingStreams());
+  EXPECT_FALSE(session->HasActiveRequestStreams());
 
   // Trigger connection migration.
   scoped_mock_network_change_notifier_->mock_network_change_notifier()
@@ -5244,7 +5240,7 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_EQ(0u, session->GetNumActiveStreams());
-  EXPECT_EQ(1u, session->GetNumDrainingStreams());
+  EXPECT_TRUE(session->HasActiveRequestStreams());
 
   // There should be three pending tasks, the nearest one will complete
   // migration to the new network.
@@ -5785,7 +5781,7 @@ void QuicStreamFactoryTestBase::TestMigrateSessionEarlyNonMigratableStream(
                                            packet_num++, false, 1, 1, 1));
     }
   } else {
-    if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    if (version_.UsesTls()) {
       if (VersionUsesHttp3(version_.transport_version)) {
         socket_data.AddWrite(
             SYNCHRONOUS,
@@ -10681,8 +10677,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
 }
 
 TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -10831,8 +10826,7 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
 
 // Verifies that the QUIC stream factory is initialized correctly.
 TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -10840,8 +10834,7 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
 }
 
 TEST_P(QuicStreamFactoryTest, MaybeInitializeWithNetworkIsolationKey) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -11072,8 +11065,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigCacheMRUWithNetworkIsolationKey) {
 // around, so evictions happen immediately.
 TEST_P(QuicStreamFactoryTest,
        CryptoConfigCacheMRUWithRealRequestsAndWithNetworkIsolationKey) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -11290,8 +11282,7 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 }
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -11347,8 +11338,7 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
 }
 
 TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -12628,8 +12618,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsyncStaleMatch) {
 // async, and then the result matches.
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceHostResolveAsyncConnectAsyncStaleMatch) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -12704,8 +12693,7 @@ TEST_P(QuicStreamFactoryTest,
 // return, then connection finishes and matches with the result.
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceHostResolveAsyncStaleMatchConnectAsync) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -12854,7 +12842,7 @@ TEST_P(QuicStreamFactoryTest,
 // With dns race experiment on, dns resolve async, stale used and connects
 // async, finishes before dns, but no match
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
@@ -12943,7 +12931,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
 // With dns race experiment on, dns resolve async, stale used and connects
 // async, dns finishes first, but no match
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
@@ -13310,7 +13298,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatchError) {
 // With dns race experiment on, dns resolve async and stale connect async, dns
 // resolve returns error and then preconnect finishes
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
@@ -13375,7 +13363,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
 // resolve returns error and then preconnect fails.
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceResolveAsyncErrorStaleAsyncError) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
@@ -13485,8 +13473,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceHostResolveAsync) {
 // With stale dns and migration before handshake experiment on, migration failed
 // after handshake confirmed, and then fresh resolve returns.
 TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -13565,8 +13552,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedAfterHandshake) {
 // With stale dns experiment on,  the stale session is killed while waiting for
 // handshake
 TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.HasIetfQuicFrames()) {
+  if (version_.UsesTls() && version_.HasIetfQuicFrames()) {
     // 0-rtt is not supported in IETF QUIC yet.
     return;
   }
@@ -13648,7 +13634,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
 }
 
 TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // IETF QUIC uses a different handshake timeout management system.
     return;
   }

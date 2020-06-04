@@ -148,6 +148,7 @@ Tippen Sie auf ein Wort, um eine Suche damit zu starten. Sie können Ihre Suche 
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2156074688469523661">Restliche Websites (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Wenn Sie Inhalte auf Ihrem Smartphone mit einem anderen Gerät teilen möchten, aktivieren Sie auf beiden Geräten in den Chrome-Einstellungen die Synchronisierung</translation>
+<translation id="2169830938017475061">Jetzt</translation>
 <translation id="2175927920773552910">QR-Code</translation>
 <translation id="218608176142494674">Freigabe</translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
@@ -435,7 +436,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4634124774493850572">Passwort verwenden</translation>
 <translation id="4650364565596261010">Systemstandardeinstellung</translation>
 <translation id="4660838440047236328">der Grundriss Ihres Zimmers</translation>
-<translation id="4662373422909645029">Keine Zahlen im Alias</translation>
+<translation id="4662373422909645029">Der Alias darf keine Zahlen enthalten</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
 <translation id="4684427112815847243">Alles synchronisieren</translation>

@@ -22,7 +22,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_observer.h"

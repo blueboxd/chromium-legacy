@@ -166,6 +166,8 @@ component("cpp") {
     "media_client.h",
     "media_controller.cc",
     "media_controller.h",
+    "metrics_util.cc",
+    "metrics_util.h",
     "network_config_service.cc",
     "network_config_service.h",
     "network_icon_image_source.cc",

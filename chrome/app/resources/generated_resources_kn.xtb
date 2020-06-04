@@ -507,7 +507,6 @@
 <translation id="1632803087685957583">ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಪುನರಾವರ್ತನೆ ದರ, ಪದ ಮುನ್ಸೂಚನೆ ಹಾಗೂ ಇನ್ನಷ್ಟನ್ನು ಸರಿಹೊಂದಿಸಲು ನಿಮಗೆ ಅವಕಾಶ ನೀಡುತ್ತದೆ</translation>
 <translation id="1633947793238301227">Google Assistant ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1634783886312010422">ನೀವು ಈಗಾಗಲೇ ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು <ph name="WEBSITE" /> ನಲ್ಲಿ ಬದಲಾಯಿಸಿರುವಿರಾ?</translation>
-<translation id="1635033183663317347">ನಿಮ್ಮ ಮೇಲ್ವಿಚಾರಕರು ಸ್ಥಾಪಿಸಿದ್ದಾರೆ.</translation>
 <translation id="1637224376458524414">ನಿಮ್ಮ iPhone ನಲ್ಲಿ ಈ ಬುಕ್‌ಮಾರ್ಕ್ ಅನ್ನು ಪಡೆದುಕೊಳ್ಳಿ</translation>
 <translation id="1637765355341780467">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ತೆರೆಯುವಾಗ ಏನೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ. ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿರದೇ ಇರಬಹುದು.</translation>
 <translation id="1639239467298939599">ಲೋಡ್ ಆಗುತ್ತಿದೆ</translation>
@@ -955,12 +954,10 @@
 <translation id="2199719347983604670">Chrome ಸಿಂಕ್‌ನಲ್ಲಿನ ಡೇಟಾ</translation>
 <translation id="2200094388063410062">ಇಮೇಲ್‌</translation>
 <translation id="2200356397587687044">ಮುಂದುವರಿಯಲು, Chrome ಗೆ ಅನುಮತಿಯ ಅಗತ್ಯವಿದೆ</translation>
-<translation id="2200729650590440847">ಪಿನ್ ಲಾಕ್ ಸ್ಕ್ರೀನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="220138918934036434">ಬಟನ್ ಅನ್ನು ಮರೆಮಾಡು</translation>
 <translation id="2202898655984161076">ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ಪಟ್ಟಿ ಮಾಡುವಲ್ಲಿ ಸಮಸ್ಯೆ ಉಂಟಾಗಿದೆ. ನಿಮ್ಮ ಕೆಲವು ಪ್ರಿಂಟರ್‌ಗಳು <ph name="CLOUD_PRINT_NAME" /> ನೊಂದಿಗೆ ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಣಿ ಹೊಂದದೆ ಇರಬಹುದು.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />ವಿಳಾಸ ಪಟ್ಟಿ<ph name="END_LINK" />ಯಲ್ಲಿ ಬಳಸಲಾದ ಹುಡುಕಾಟ ಇಂಜಿನ್</translation>
 <translation id="2204034823255629767">ನೀವು ಟೈಪ್‌ ಮಾಡುವ ಯಾವುದನ್ನಾದರೂ ಓದಿ ಮತ್ತು ಬದಲಿಸಿ</translation>
-<translation id="2207166770508557715">ನಿದ್ರಾವಸ್ಥೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="220858061631308971">ದಯವಿಟ್ಟು "<ph name="DEVICE_NAME" />" ಇದರಲ್ಲಿ ಈ ಪಿನ್ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ :</translation>
 <translation id="2212565012507486665">ಕುಕೀಗಳನ್ನು ಅನುಮತಿಸಿ</translation>
 <translation id="2213140827792212876">ಹಂಚಿಕೆಯನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Linux ಕಂಟೇನರ್ sshfs ಅನ್ನು ಅಳವಡಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2751739896257479635">EAP 2 ನೇ ಹಂತದ ಪ್ರಮಾಣೀಕರಣ</translation>
 <translation id="2753677631968972007">ಸೈಟ್ ಅನುಮತಿಗಳನ್ನು ಹಸ್ತಚಾಲಿತವಾಗಿ ನಿಯಂತ್ರಿಸಿ.</translation>
-<translation id="2753984311895843016">ನಿಷ್ಕ್ರಿಯ ಶಕ್ತಿ</translation>
 <translation id="2755367719610958252">ಪ್ರವೇಶಿಸುವಿಕೆ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="275662540872599901">ಸ್ಕ್ರೀನ್ ಆಫ್</translation>
 <translation id="2757338480560142065">ನೀವು ಈಗ ಉಳಿಸುತ್ತಿರುವ ಪಾಸ್‌ವರ್ಡ್, ಈ ಮೊದಲು <ph name="WEBSITE" /> ಗೆ ಹೊಂದಿಸಿದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗೆ ಹೋಲುತ್ತಿದೆಯಾ ಎಂಬುದನ್ನು ದೃಢೀಕರಿಸಿಕೊಳ್ಳಿ</translation>
-<translation id="276221322463921688">ಮಾನಿಟರ್ ಓರಿಯಂಟೇಶನ್</translation>
 <translation id="2762441749940182211">ಕ್ಯಾಮೆರಾವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="2764786626780673772">VPN ವಿವರಗಳು</translation>
 <translation id="2765217105034171413">ಸಣ್ಣ</translation>
@@ -2190,6 +2185,7 @@
 <translation id="3732857534841813090">Google Assistant ಸಂಬಂಧಿತ ಮಾಹಿತಿ</translation>
 <translation id="3733127536501031542">ಹೆಚ್ಚುವಿಕೆಯೊಂದಿಗೆ SSL ಸರ್ವರ್</translation>
 <translation id="3735740477244556633">ಈ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
+<translation id="3738213647660363521">ಕರ್ಸರ್ ಬಣ್ಣವನ್ನು ಕಸ್ಟಮ್ ಮಾಡಿ</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> ತೆರೆಯುವುದೇ?</translation>
 <translation id="3742055079367172538">ಸ್ಕ್ರಿನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ</translation>
@@ -3303,6 +3299,7 @@
 <translation id="52232769093306234">ಪ್ಯಾಕಿಂಗ್ ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="5225324770654022472">ಅಪ್ಲಿಕೇಶನ್‌ಗಳ ಶಾರ್ಟ್‌ಕಟ್ ತೋರಿಸು</translation>
 <translation id="5227679487546032910">ಡಿಫಾಲ್ಟ್ ಕೆನ್ನೀಲಿ ಅವತಾರ್</translation>
+<translation id="5228088094491423618">ಲೈವ್ ಕ್ಯಾಪ್ಶನ್‌ಗಳು</translation>
 <translation id="5228579091201413441">ಸಿಂಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5229189185761556138">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳನ್ನು ನಿರ್ವಹಿಸು</translation>
 <translation id="5230516054153933099">ವಿಂಡೋ</translation>
@@ -6224,7 +6221,6 @@
 <translation id="8953476467359856141">ಚಾರ್ಜ್‌ ಆಗುತ್ತಿರುವಾಗ</translation>
 <translation id="895347679606913382">ಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತಿದೆ...</translation>
 <translation id="8957762313041272117">ಲೈವ್ ಶೀರ್ಷಿಕೆ</translation>
-<translation id="8958804960827200147">ಸ್ಕ್ರೀನ್ ಓರಿಯಂಟೇಶನ್</translation>
 <translation id="895944840846194039">JavaScript ಸ್ಮರಣೆ</translation>
 <translation id="8962083179518285172">ವಿವರಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="8962918469425892674">ಈ ಸೈಟ್ ಚಲನೆ ಅಥವಾ ಲೈಟ್ ಸೆನ್ಸರ್‌ಗಳನ್ನು ಬಳಸುತ್ತಿದೆ.</translation>
@@ -6356,6 +6352,7 @@
 <translation id="9121814364785106365">ಪಿನ್ ಮಾಡಿದ ಟ್ಯಾಬ್ ಆಗಿ ತೆರೆ</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> ಅನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="9124003689441359348">ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
+<translation id="9126149354162942022">ಕರ್ಸರ್‌ನ ಬಣ್ಣ</translation>
 <translation id="9128317794749765148">ಸೆಟಪ್ ಮಾಡುವಿಕೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="9128870381267983090">ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸು</translation>
 <translation id="9130015405878219958">ಅಮಾನ್ಯ ಮೋಡ್ ನಮೂದಿಸಲಾಗಿದೆ.</translation>

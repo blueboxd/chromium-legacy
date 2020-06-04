@@ -54,8 +54,4 @@ mojom("interfaces") {
   if (use_renderer_spellchecker) {
     enabled_features += [ "USE_RENDERER_SPELLCHECKER" ]
   }
-
-  if (use_win_hybrid_spellchecker) {
-    enabled_features += [ "USE_WIN_HYBRID_SPELLCHECKER" ]
-  }
 }

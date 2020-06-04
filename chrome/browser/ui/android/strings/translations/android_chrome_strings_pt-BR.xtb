@@ -148,6 +148,7 @@ Toque em qualquer palavra para pesquisar. Para refinar a pesquisa, toque na tela
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Para compartilhar conteúdo do seu smartphone com outro dispositivo, ative a sincronização nas configurações do Chrome nos dois dispositivos</translation>
+<translation id="2169830938017475061">Agora</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="218608176142494674">Compartilhamento</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -436,7 +437,7 @@ Só você pode ver o que é capturado pela câmera. O site não pode ver essas i
 <translation id="4634124774493850572">Usar senha</translation>
 <translation id="4650364565596261010">Padrão do sistema</translation>
 <translation id="4660838440047236328">o layout do ambiente.</translation>
-<translation id="4662373422909645029">O apelido não pode ter nº</translation>
+<translation id="4662373422909645029">O apelido não pode ter números</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoritos excluídos</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado à sua tela inicial</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>

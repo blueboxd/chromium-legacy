@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">আপনাকে আপনার কীবোর্ডের পুনরাবৃত্তি হার, শব্দ পূর্বাভাষ, এবং আরও অনেক কিছুর সমন্বয় করতে অনুমতি দেয়</translation>
 <translation id="1633947793238301227">Google Assistant অ্যাপ বন্ধ করুন</translation>
 <translation id="1634783886312010422">আপনি কি <ph name="WEBSITE" />-এ আগে থেকেই এই পাসওয়ার্ড পরিবর্তন করেছেন?</translation>
-<translation id="1635033183663317347">আপনার কাস্টডিয়ান দ্বারা এটি ইনস্টল করা হয়েছে।</translation>
 <translation id="1637224376458524414">এই বুকমার্কটি আপনার iPhone এ পান</translation>
 <translation id="1637765355341780467">আপনার প্রোফাইল খোলার সময় কোনো সমস্যা হয়েছে। কিছু বৈশিষ্ট্য অনুপলব্ধ হতে পারে।</translation>
 <translation id="1639239467298939599">লোড হচ্ছে</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Chrome সিঙ্ক থেকে ডেটা</translation>
 <translation id="2200094388063410062">ইমেল</translation>
 <translation id="2200356397587687044">কাজটি চালিয়ে যাওয়ার জন্য Chrome কে অনুমতি দিতে হবে</translation>
-<translation id="2200729650590440847">পিন ব্যবহার করে স্ক্রিন লক করার সেটিংস</translation>
 <translation id="220138918934036434">বোতাম লুকান</translation>
 <translation id="2202898655984161076">মুদ্রকগুলি তালিকাকরণে একটি সমস্যা ছিল৷ আপনার মুদ্রকগুলির মধ্যে কয়েকটি সফলভাবে <ph name="CLOUD_PRINT_NAME" />তে নিবন্ধীকৃত নাও থাকতে পারে৷</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />অ্যাড্রেস বারে<ph name="END_LINK" /> যে সার্চ ইঞ্জিন ব্যবহার করা হয়েছে</translation>
 <translation id="2204034823255629767">আপনি যা টাইপ করেন তা পড়ুন এবং পরিবর্তন করুন</translation>
-<translation id="2207166770508557715">স্লিপ সেটিংস</translation>
 <translation id="220858061631308971">দয়া করে  <ph name="DEVICE_NAME" /> "-এ পিন কোড লিখুন:</translation>
 <translation id="2212565012507486665">কুকিগুলিকে অনুমতি দিন</translation>
 <translation id="2213140827792212876">শেয়ার করা বন্ধ করুন</translation>
@@ -1407,11 +1404,9 @@
 <translation id="2751131328353405138">Linux কন্টেনারে 'ssh' ফাইল সিস্টেম মাউন্ট করা হচ্ছে</translation>
 <translation id="2751739896257479635">EAP ফেজ ২ যাচাইকরণ</translation>
 <translation id="2753677631968972007">কোন কোন সাইটে অনুমতি দেবেন তা ম্যানুয়ালি নিয়ন্ত্রন করুন।</translation>
-<translation id="2753984311895843016">স্লিপ সেটিংস</translation>
 <translation id="2755367719610958252">ব্যবহারযোগ্যতা বৈশিষ্ট্যগুলি পরিচালনা করুন</translation>
 <translation id="275662540872599901">স্ক্রিন বন্ধ</translation>
 <translation id="2757338480560142065">আপনি যে পাসওয়ার্ডটি সেভ করছেন, সেটি <ph name="WEBSITE" />-এ আপনার দেওয়া পাসওয়ার্ডের সাথে মিলছে কিনা ভাল করে তা দেখে নিন</translation>
-<translation id="276221322463921688">মনিটর ওরিয়েন্টেশন</translation>
 <translation id="2762441749940182211">ক্যামেরার ব্যবহার ব্লক করা হয়েছে</translation>
 <translation id="2764786626780673772">VPN-এর বিবরণ</translation>
 <translation id="2765217105034171413">ক্ষুদ্র</translation>
@@ -2129,6 +2124,7 @@
 <translation id="3677106374019847299">কাস্টম প্রদানকারীর নাম লিখুন</translation>
 <translation id="3677657024345889897">অত্যন্ত কম আওয়াজ</translation>
 <translation id="3677911431265050325">মোবাইল সাইটের জন্য অনুরোধ করুন</translation>
+<translation id="3677959414150797585">এর মধ্যে অ্যাপ, ওয়েবপেজ ও আরও অনেক কিছু আছে। আপনি ব্যবহারের ডেটা শেয়ার করার বিকল্প বেছে নিলে, শুধুমাত্র তখনই এটি সাজেশন আরও উন্নত করতে পরিসংখ্যান পাঠায়।</translation>
 <translation id="3678156199662914018">এক্সটেনশন: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">টেক্সট-টু-স্পিচ ভয়েস</translation>
 <translation id="3681311097828166361">আপনার প্রতিক্রিয়ার জন্য ধন্যবাদ। আপনি এখন অফলাইনে আছেন, এবং আপনার প্রতিবেদনটি পরে পাঠানো হবে।</translation>
@@ -3781,6 +3777,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - ক্যামেরা বা মাইক্রোফোন রেকর্ডিং</translation>
 <translation id="5841270259333717135">ইথারনেট কনফিগার করুন</translation>
 <translation id="5842497610951477805">ব্লুটুথ সক্ষম</translation>
+<translation id="5844574845205796324">নতুন কন্টেন্ট চেক করে দেখতে সাজেস্ট করুন</translation>
 <translation id="5846200638699387931">রিলেশন সিন্ট্যাক্সে সমস্যা হয়েছে: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">আপডেট এবং অ্যাপ ইনস্টল করুন। চালিয়ে যাওয়ার অর্থ, আপনি সম্মতি দিচ্ছেন যে, এই ডিভাইসটি অটোমেটিক Google, আপনার পরিষেবা প্রদানকারী এবং আপনার ডিভাইসের প্রস্তুতকারকের থেকে হয়ত মোবাইল ডেটা ব্যবহার করে অ্যাপ এবং আপডেট ডাউনলোড করে ইনস্টল করতে পারে। এই অ্যাপগুলির মধ্যে কয়েকটিতে অ্যাপ-মধ্যস্থ কেনাকাটার সুবিধা থাকতে পারে।</translation>
 <translation id="5849212445710944278">আগেই যোগ করা হয়েছে</translation>
@@ -6221,7 +6218,6 @@
 <translation id="8953476467359856141">চার্জ করার সময়</translation>
 <translation id="895347679606913382">শুরু হচ্ছে...</translation>
 <translation id="8957762313041272117">লাইভ ক্যাপশন</translation>
-<translation id="8958804960827200147">স্ক্রিন ওরিয়েন্টেশন</translation>
 <translation id="895944840846194039">জাভাস্ক্রিপ্ট মেমোরি</translation>
 <translation id="8962083179518285172">বিবরণ লুকান</translation>
 <translation id="8962918469425892674">এই সাইটটি মোশন এবং লাইট সেন্সর ব্যবহার করছে।</translation>

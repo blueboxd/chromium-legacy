@@ -10,10 +10,12 @@
 
 namespace ash {
 
+class AssistantViewDelegate;
+
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
     : public views::View {
  public:
-  AssistantOnboardingView();
+  explicit AssistantOnboardingView(AssistantViewDelegate* delegate);
   AssistantOnboardingView(const AssistantOnboardingView&) = delete;
   AssistantOnboardingView& operator=(const AssistantOnboardingView&) = delete;
   ~AssistantOnboardingView() override;
@@ -21,10 +23,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
   void InitLayout();
+
+  AssistantViewDelegate* const delegate_;
 };
 
 }  // namespace ash

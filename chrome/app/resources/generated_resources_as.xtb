@@ -503,7 +503,6 @@
 <translation id="1632803087685957583">আপোনাক আপোনাৰ কীব’ৰ্ডৰ পুনৰাবৃত্তিৰ হাৰ, শব্দানুমান আৰু বহুতো কাম কৰিবলৈ সুবিধা দিয়ে</translation>
 <translation id="1633947793238301227">Google Assistant অক্ষম কৰক</translation>
 <translation id="1634783886312010422">আপুনি <ph name="WEBSITE" />ত ইতিমধ্যে এই পাছৱৰ্ডটো সলনি কৰিছে নেকি?</translation>
-<translation id="1635033183663317347">আপোনাৰ তদাৰকীয়ে ইনষ্টল কৰিছে।</translation>
 <translation id="1637224376458524414">আপোনাৰ iPhoneত এই বুকমাৰ্কটো পাওক</translation>
 <translation id="1637765355341780467">আপোনাৰ প্ৰ'ফাইলটো খোলাৰ সময়ত কিবা ভুল হ'ল। কিছুমান সুবিধা নাথাকিব পাৰে।</translation>
 <translation id="1639239467298939599">ল'ড কৰি থকা হৈছে</translation>
@@ -951,12 +950,10 @@
 <translation id="2199719347983604670">Chrome ছিংকৰ ডেটা</translation>
 <translation id="2200094388063410062">ইমেইল</translation>
 <translation id="2200356397587687044">অব্যাহত ৰাখিবলৈ Chromeক অনুমতিৰ প্ৰয়োজন হয়</translation>
-<translation id="2200729650590440847">পিনসহ লক স্ক্ৰীনৰ ছেটিংসমূহ</translation>
 <translation id="220138918934036434">লুকুৱাবলৈ ব্যৱহাৰ কৰা বুটাম</translation>
 <translation id="2202898655984161076">প্ৰিন্টাৰসমূহ সূচীবদ্ধ কৰাত কিবা সমস্যা হৈছে। আপোনাৰ কিছুমান প্ৰিণ্টাৰ <ph name="CLOUD_PRINT_NAME" />ত পঞ্জীয়ন কৰা নাথাকিব পাৰে।</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />ঠিকনাৰ বাৰ<ph name="END_LINK" />ত ব্যৱহাৰ কৰা সন্ধানৰ ইঞ্জিন</translation>
 <translation id="2204034823255629767">আপুনি টাইপ কৰা যিকোনো সমল পঢ়ক আৰু সলনি কৰক</translation>
-<translation id="2207166770508557715">শোৱাৰ ছেটিংসমূহ</translation>
 <translation id="220858061631308971">অনুগ্ৰহ কৰি এই পিনক‘ডটো "<ph name="DEVICE_NAME" />"ত দিয়ক:</translation>
 <translation id="2212565012507486665">কুকিসমূহক অনুমতি দিয়ক</translation>
 <translation id="2213140827792212876">শ্বেয়াৰ কৰাটো আঁতৰাওক</translation>
@@ -1405,11 +1402,9 @@
 <translation id="2751131328353405138">Linux কণ্টেইনাৰৰ sshfs মাউণ্ট কৰি থকা হৈছে</translation>
 <translation id="2751739896257479635">EAPৰ ২য় স্তৰৰ বিশ্বাসযোগ্যতাৰ প্ৰমাণীকৰণ</translation>
 <translation id="2753677631968972007">ছাইটৰ অনুমতিবোৰ মেনুৱেলী নিয়ন্ত্ৰণ কৰক।</translation>
-<translation id="2753984311895843016">শোৱাৰ ছেটিংসমূহ</translation>
 <translation id="2755367719610958252">সাধ্য সুবিধাসমূহ পৰিচালনা কৰক</translation>
 <translation id="275662540872599901">স্ক্ৰীণ অফ</translation>
 <translation id="2757338480560142065">আপুনি ছেভ কৰিবলৈ লোৱা পাছৱৰ্ডটো যাতে আপোনাৰ <ph name="WEBSITE" />ৰ পাছৱৰ্ডটোৰ সৈতে মিলে সেয়া নিশ্চিত কৰক</translation>
-<translation id="276221322463921688">মনিটৰৰ দিশ</translation>
 <translation id="2762441749940182211">কেমেৰা অৱৰোধ কৰা হৈছে</translation>
 <translation id="2764786626780673772">ভিপিএনৰ সবিশেষ</translation>
 <translation id="2765217105034171413">সৰু</translation>
@@ -2127,6 +2122,7 @@
 <translation id="3677106374019847299">কাষ্টম প্ৰদানকাৰীৰ নাম দিয়ক</translation>
 <translation id="3677657024345889897">সকলোতকৈ বেছি শান্ত</translation>
 <translation id="3677911431265050325">ম’বাইল ছাইটৰ বাবে অনুৰোধ কৰক</translation>
+<translation id="3677959414150797585">এপ্‌সমূহ, ৱেবছাইটসমূহ আৰু বহুতো অন্তর্ভুক্ত হয়। যদি আপুনি ব্যৱহাৰৰ ডেটা শ্বেয়াৰ কৰিবলৈ বাছনি কৰিছে তেন্তে পৰামর্শসমূহ উন্নত কৰিবলৈ পৰিসংখ্যা পঠিয়ায়।</translation>
 <translation id="3678156199662914018">এক্সটেনশ্বন: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">পাঠৰ পৰা কথনৰ কণ্ঠধ্বনি</translation>
 <translation id="3681311097828166361">আপোনাৰ মতামতৰ বাবে ধন্যবাদ। আপুনি এতিয়া অফলাইন আছে, আপোনাৰ ৰিপ’ৰ্টৰ পাছত পঠিওৱা হ’ব।</translation>
@@ -3774,6 +3770,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - কেমেৰা বা মাইক্ৰফ’নৰ জৰিয়তে ৰেকর্ডিং</translation>
 <translation id="5841270259333717135">ইথাৰনেট কনফিগাৰ কৰক</translation>
 <translation id="5842497610951477805">ব্লুটুথ সক্ষম কৰা আছে</translation>
+<translation id="5844574845205796324">অন্বেষণ কৰিবলৈ নতুন সমলৰ পৰামৰ্শ দিয়ক</translation>
 <translation id="5846200638699387931">ৰিলেশ্বন ছিণ্টেক্স আসোঁৱাহ: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">আপডে’ট আৰু এপ্‌সমূহ ইনষ্টল কৰক। এয়া অব্যাহত ৰাখি আপুনি সন্মতি দিয়ে যে এই ডিভাইচটোৱেও স্বয়ংক্ৰিয়ভাৱে Google, আপোনাৰ বাহক আৰু আপোনাৰ ডিভাইচৰ নির্মাতাৰ পৰা আপডে’ট আৰু এপ্‌সমূহ ডাউনল’ড তথা ইনষ্টল কৰিব পাৰে। এই কার্যৰ বাবে চেলুলাৰ ডেটা ব্যৱহাৰ কৰা হ’ব পাৰে। এই এপ্‌সমূহৰ কিছুমানত এপত ক্ৰয়ৰ সুবিধা থাকিব পাৰে।</translation>
 <translation id="5849212445710944278">ইতিমধ্যে যোগ কৰা হৈছে</translation>
@@ -6206,7 +6203,6 @@
 <translation id="8953476467359856141">চার্জ কৰি থকাৰ সময়ত</translation>
 <translation id="895347679606913382">আৰম্ভ কৰি থকা হৈছে...</translation>
 <translation id="8957762313041272117">লাইভ কেপশ্বন</translation>
-<translation id="8958804960827200147">স্ক্ৰীনৰ দিশ</translation>
 <translation id="895944840846194039">JavaScript মেম’ৰী</translation>
 <translation id="8962083179518285172">সবিশেষ লুকুৱাওক</translation>
 <translation id="8962918469425892674">এই ছাইটটোৱে ম‘শ্বন বা লাইট ছেন্সৰ ব্যৱহাৰ কৰিছে।</translation>

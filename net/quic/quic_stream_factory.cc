@@ -846,7 +846,7 @@ int QuicStreamFactory::Job::DoConnect() {
       NetLogEventType::QUIC_STREAM_FACTORY_JOB_CONNECT, NetLogEventPhase::BEGIN,
       "require_confirmation", require_confirmation);
 
-  DCHECK_NE(quic_version_.transport_version, quic::QUIC_VERSION_UNSUPPORTED);
+  DCHECK_NE(quic_version_, quic::ParsedQuicVersion::Unsupported());
   int rv = factory_->CreateSession(
       key_, quic_version_, cert_verify_flags_, require_confirmation,
       resolve_host_request_->GetAddressResults().value(),
@@ -1033,7 +1033,7 @@ int QuicStreamRequest::Request(
     NetErrorDetails* net_error_details,
     CompletionOnceCallback failed_on_default_network_callback,
     CompletionOnceCallback callback) {
-  DCHECK_NE(quic_version.transport_version, quic::QUIC_VERSION_UNSUPPORTED);
+  DCHECK_NE(quic_version, quic::ParsedQuicVersion::Unsupported());
   DCHECK(net_error_details);
   DCHECK(callback_.is_null());
   DCHECK(host_resolution_callback_.is_null());
@@ -1889,7 +1889,9 @@ int QuicStreamFactory::CreateSession(
   quic::QuicConfig config = config_;
   ConfigureInitialRttEstimate(
       server_id, key.session_key().network_isolation_key(), &config);
-  if (quic_version.transport_version <= quic::QUIC_VERSION_43 &&
+  // QUIC versions that use the IETF invariant header all have NSTP
+  // enabled by default, so we only need to add it for those that don't.
+  if (!quic_version.HasIetfInvariantHeader() &&
       !config.HasClientSentConnectionOption(quic::kNSTP,
                                             quic::Perspective::IS_CLIENT)) {
     // Enable the no stop waiting frames connection option by default.

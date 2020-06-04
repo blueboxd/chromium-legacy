@@ -194,8 +194,9 @@ class OmniboxPopupModel {
   // Returns true if the destination URL of the match is bookmarked.
   bool IsStarredMatch(const AutocompleteMatch& match) const;
 
-  // The user has manually selected a match.
-  bool has_selected_match() { return has_selected_match_; }
+  // Returns true if the selection is on the initial line, which is usually the
+  // default match (except in the no-default-match case).
+  bool SelectionOnInitialLine() const;
 
   // Invoked from the edit model any time the result set of the controller
   // changes.
@@ -281,11 +282,6 @@ class OmniboxPopupModel {
   // suggestion whose tab switch button was focused, so that we may compare
   // if equal.
   GURL old_focused_url_;
-
-  // The user has manually selected a match.
-  // TODO(tommycli): We can _probably_ eliminate this variable. It seems to be
-  // mostly rendundant with selected_line() and result()->default_match().
-  bool has_selected_match_;
 
   // Observers.
   base::ObserverList<OmniboxPopupModelObserver>::Unchecked observers_;

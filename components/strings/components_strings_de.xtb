@@ -703,7 +703,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
     Wenn dies Ihrer Meinung nach fälschlicherweise angezeigt wird, gehen Sie bitte auf: https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Weniger als 1 MB</translation>
 <translation id="3990250421422698716">Jog-Versatz</translation>
-<translation id="3996311196211510766">Die Website <ph name="ORIGIN" /> verlangt, dass für alle an sie gestellten Anfragen eine Ursprungsrichtlinie angewendet wird. Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
+<translation id="3996311196211510766">Die Website <ph name="ORIGIN" /> verlangt, dass auf alle an sie gerichteten Anfragen eine Ursprungsrichtlinie angewendet wird. Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-Dokument mit {COUNT} Seite}other{PDF-Dokument mit {COUNT} Seiten}}</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
@@ -1239,7 +1239,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="6259156558325130047">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
-<translation id="6265794661083428563">Kopiert den Wert der Richtlinie <ph name="POLICY_NAME" /></translation>
+<translation id="6265794661083428563">Den Wert der Richtlinie <ph name="POLICY_NAME" /> kopieren</translation>
 <translation id="6266934640124581640">Helles Blaugrün</translation>
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Seiten von Ihrer Leseliste werden hier angezeigt</translation>

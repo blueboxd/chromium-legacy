@@ -12,7 +12,7 @@
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 #include "components/performance_manager/test_support/decorators_utils.h"
-#include "components/performance_manager/test_support/performance_manager_test_harness.h"
+#include "components/performance_manager/test_support/test_harness_helper.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,8 +32,7 @@ class PageLiveStateDecoratorHelperTest
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    perf_man_ = PerformanceManagerImpl::Create(base::DoNothing());
-    registry_ = PerformanceManagerRegistry::Create();
+    pm_harness_.SetUp();
     helper_ = std::make_unique<PageLiveStateDecoratorHelper>();
     indicator_ = MediaCaptureDevicesDispatcher::GetInstance()
                      ->GetMediaStreamCaptureIndicator();
@@ -44,23 +43,9 @@ class PageLiveStateDecoratorHelperTest
   void TearDown() override {
     DeleteContents();
     helper_.reset();
-    if (registry_) {
-      registry_->TearDown();
-      registry_.reset();
-    }
-    // Have the performance manager destroy itself.
     indicator_.reset();
-    PerformanceManagerImpl::Destroy(std::move(perf_man_));
-    task_environment()->RunUntilIdle();
-
+    pm_harness_.TearDown();
     ChromeRenderViewHostTestHarness::TearDown();
-  }
-
-  std::unique_ptr<content::WebContents> CreateTestWebContents() {
-    std::unique_ptr<content::WebContents> contents =
-        ChromeRenderViewHostTestHarness::CreateTestWebContents();
-    registry_->CreatePageNodeForWebContents(contents.get());
-    return contents;
   }
 
   MediaStreamCaptureIndicator* indicator() { return indicator_.get(); }
@@ -73,9 +58,8 @@ class PageLiveStateDecoratorHelperTest
   void ResetHelper() { helper_.reset(); }
 
  private:
+  PerformanceManagerTestHarnessHelper pm_harness_;
   scoped_refptr<MediaStreamCaptureIndicator> indicator_;
-  std::unique_ptr<PerformanceManagerImpl> perf_man_;
-  std::unique_ptr<PerformanceManagerRegistry> registry_;
   std::unique_ptr<PageLiveStateDecoratorHelper> helper_;
 };
 

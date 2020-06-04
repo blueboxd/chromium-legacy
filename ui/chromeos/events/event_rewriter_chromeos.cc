@@ -338,6 +338,7 @@ bool GetDeviceAttributeRecursive(const base::FilePath& device_path,
 
 constexpr char kLayoutProperty[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
 constexpr char kCustomTopRowLayoutAttribute[] = "function_row_physmap";
+constexpr char kCustomTopRowLayoutProperty[] = "FUNCTION_ROW_PHYSMAP";
 
 bool GetTopRowLayoutProperty(const InputDevice& keyboard_device,
                              std::string* out_prop) {
@@ -413,10 +414,18 @@ bool GetCustomTopRowLayoutAttribute(const InputDevice& keyboard_device,
   return false;
 }
 
+bool GetCustomTopRowLayout(const InputDevice& keyboard_device,
+                           std::string* out_prop) {
+  if (GetCustomTopRowLayoutAttribute(keyboard_device, out_prop))
+    return true;
+  return GetDeviceProperty(keyboard_device.sys_path,
+                           kCustomTopRowLayoutProperty, out_prop);
+}
+
 bool HasCustomTopRowLayout(const InputDevice& keyboard_device) {
   std::string layout;
   base::flat_map<uint32_t, EventRewriterChromeOS::MutableKeyState> top_row_map;
-  return GetCustomTopRowLayoutAttribute(keyboard_device, &layout) &&
+  return GetCustomTopRowLayout(keyboard_device, &layout) &&
          ParseCustomTopRowLayoutMap(layout, &top_row_map);
 }
 
@@ -1635,7 +1644,7 @@ EventDispatchDetails EventRewriterChromeOS::RewriteKeyEventInContext(
 bool EventRewriterChromeOS::StoreCustomTopRowMapping(
     const InputDevice& keyboard_device) {
   std::string layout;
-  if (!GetCustomTopRowLayoutAttribute(keyboard_device, &layout)) {
+  if (!GetCustomTopRowLayout(keyboard_device, &layout)) {
     LOG(WARNING) << "Could not read top row layout map for device "
                  << keyboard_device.id;
     return false;

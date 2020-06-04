@@ -507,7 +507,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1632803087685957583">آپ کو اپنے کی بورڈ کے تکرار کی شرح، لفظ کی پیشین گوئی وغیرہ ایڈجسٹ کرنے کی اجازت دیتی ہے</translation>
 <translation id="1633947793238301227">‏Google اسسٹنٹ غیر فعال کریں</translation>
 <translation id="1634783886312010422">کیا آپ نے پہلے ہی <ph name="WEBSITE" /> پر اس پاس ورڈ کو تبدیل کیا ہے؟</translation>
-<translation id="1635033183663317347">آپ کے محافظ نے انسٹال کیا ہے۔</translation>
 <translation id="1637224376458524414">‏اپنے iPhone پر یہ بُک مارک حاصل کریں</translation>
 <translation id="1637765355341780467">آپ کے پروفائل کو کھولتے وقت کچھ غلط ہوگیا۔ کچھ خصوصیات غیر دستیاب ہو سکتی ہیں۔</translation>
 <translation id="1639239467298939599">لوڈ ہو رہی ہے</translation>
@@ -955,12 +954,10 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2199719347983604670">‏Chrome Sync کا ڈیٹا</translation>
 <translation id="2200094388063410062">ای میل کریں</translation>
 <translation id="2200356397587687044">‏جاری رکھنے کے لیے Chrome کو اجازت درکار ہے</translation>
-<translation id="2200729650590440847">‏مقفل اسکرین کے PIN کی ترتیبات</translation>
 <translation id="220138918934036434">چھپائیں بٹن</translation>
 <translation id="2202898655984161076">پرنٹرز کی فہرست سازی میں ایک مسئلہ پیش آ گیا۔ ممکن ہے آپ کے کچھ پرنٹرز <ph name="CLOUD_PRINT_NAME" /> کے ساتھ کامیابی سے رجسٹرڈ نہیں ہوئے ہوں۔</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />پتہ بار<ph name="END_LINK" /> میں سرچ انجن کا استعمال کیا جاتا ہے</translation>
 <translation id="2204034823255629767">آپ جو کچھ بھی ٹائپ کرتے ہیں اسے پڑھیں اور تبدیل کریں</translation>
-<translation id="2207166770508557715">سلیپ وضع میں بھیجنے کی ترتیبات</translation>
 <translation id="220858061631308971">‏براہ کرم اس PIN کوڈ کو "<ph name="DEVICE_NAME" />" میں داخل کریں:</translation>
 <translation id="2212565012507486665">کوکیز کی اجازت دیں</translation>
 <translation id="2213140827792212876">اشتراک کی سہولت ہٹائیں</translation>
@@ -1409,11 +1406,9 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2751131328353405138">‏Linux کنٹینر sshfs ماؤنٹ ہو رہا ہے</translation>
 <translation id="2751739896257479635">‏EAP مرحلہ 2 توثیق</translation>
 <translation id="2753677631968972007">دستی طور پر سائٹ کی اجازتوں کو کنٹرول کریں۔</translation>
-<translation id="2753984311895843016">معطل پاور</translation>
 <translation id="2755367719610958252">ایکسیسبیلٹی کی خصوصیات کا نظم کریں</translation>
 <translation id="275662540872599901">اسکرین آف ہے</translation>
 <translation id="2757338480560142065">اس بات کو یقینی بنائیں کہ آپ جو پاس ورڈ محفوظ کر رہے ہیں وہ آپ کے <ph name="WEBSITE" /> کے پاس ورڈ سے مماثل ہے۔</translation>
-<translation id="276221322463921688">مانیٹر کی سمت بندی</translation>
 <translation id="2762441749940182211">کیمرا مسدود ہے</translation>
 <translation id="2764786626780673772">‏VPN کی تفصیلات</translation>
 <translation id="2765217105034171413">چھوٹا</translation>
@@ -2132,6 +2127,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3677106374019847299">حسب ضرورت فراہم کنندہ درج کریں</translation>
 <translation id="3677657024345889897">انتہائی خاموش</translation>
 <translation id="3677911431265050325">موبائل سائٹ کی درخواست کریں</translation>
+<translation id="3677959414150797585">ایپس، ویب صفحات اور مزید شامل ہے۔ یہ تجاویز کو بہتر بنانے کے لیے اعداد و شمار صرف تب بھیجتا ہے جب آپ نے استعمال کے ڈیٹا کا اشتراک کرنے کو منتخب کیا ہو۔</translation>
 <translation id="3678156199662914018">ایکسٹینشن: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">ٹیکسٹ ٹو اسپیچ آواز</translation>
 <translation id="3681311097828166361">آپ کے تاثرات کا شکریہ۔ آپ ابھی آف لائن ہیں اور آپ کی رپورٹ بعد میں بھیجی جائے گی۔</translation>
@@ -3784,6 +3780,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - کیمرا یا مائیکروفون ریکارڈ کر رہا ہے</translation>
 <translation id="5841270259333717135">ایتھرنیٹ کو ترتیب دیں</translation>
 <translation id="5842497610951477805">بلوٹوتھ فعال</translation>
+<translation id="5844574845205796324">دریافت کرنے کے لیے نیا مواد تجویز کریں</translation>
 <translation id="5846200638699387931">تعلق کے سِنٹیکس کی خرابی: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">‏اپ ڈیٹس اور ایپس انسٹال کریں جاری رکھ کر، آپ اتفاق کرتے ہیں کہ یہ آلہ ممکنہ طور پر سیلولر ڈیٹا استعمال کر کے Google، آپ کے کیریئر، اور آپ کے آلہ کے مینوفیکچرر سے اپ ڈیٹس اور ایپس خودکار طور پر ڈاؤن لوڈ اور انسٹال کر سکتا ہے۔ ان میں سے کچھ ایپس درون ایپ خریداریوں کی پیش کش کر سکتی ہیں۔</translation>
 <translation id="5849212445710944278">پہلے سے شامل ہے</translation>
@@ -6225,7 +6222,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="8953476467359856141">چارج ہوتے وقت</translation>
 <translation id="895347679606913382">اسٹارٹ ہو رہا ہے…</translation>
 <translation id="8957762313041272117">لائیو کیپشن</translation>
-<translation id="8958804960827200147">اسکرین کی سمت بندی</translation>
 <translation id="895944840846194039">‏JavaScript میموری</translation>
 <translation id="8962083179518285172">تفصیلات چھپائیں</translation>
 <translation id="8962918469425892674">یہ سائٹ موشن یا لائٹ سینسرز کا استعمال کر رہی ہے۔</translation>

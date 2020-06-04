@@ -12,13 +12,13 @@
 #include "base/native_library.h"
 #include "base/profiler/frame.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
-#include "base/profiler/stack_sampler.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
 
 class Unwinder;
+class ModuleCache;
 
 // A thread to target for profiling that will run the supplied closure.
 class TargetThread : public PlatformThread::Delegate {
@@ -139,6 +139,12 @@ void ExpectStackDoesNotContain(
 NativeLibrary LoadOtherLibrary();
 
 uintptr_t GetAddressInOtherLibrary(NativeLibrary library);
+
+// Creates a list of core unwinders required for StackSamplingProfilerTest.
+// This is useful notably on Android, which requires ChromeUnwinderAndroid in
+// addition to the native one.
+std::vector<std::unique_ptr<Unwinder>> CreateCoreUnwindersForTesting(
+    ModuleCache* module_cache);
 
 }  // namespace base
 

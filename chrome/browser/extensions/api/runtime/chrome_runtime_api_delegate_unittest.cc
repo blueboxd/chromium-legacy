@@ -107,7 +107,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
     // expecting a synchronous reply (the real code has to go do at least one
     // network request before getting a response, so this is is a reasonable
     // expectation by delegates).
-    for (const std::string& id : fetch_data->extension_ids()) {
+    for (const std::string& id : fetch_data->GetExtensionIds()) {
       auto no_update = no_updates_.find(id);
       if (no_update != no_updates_.end()) {
         no_updates_.erase(no_update);

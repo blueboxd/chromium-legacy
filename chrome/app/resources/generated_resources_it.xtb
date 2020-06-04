@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Consente di regolare la frequenza di ripetizione della tastiera, la previsione delle parole e altro ancora</translation>
 <translation id="1633947793238301227">Disabilitare l'Assistente Google</translation>
 <translation id="1634783886312010422">Hai già modificato questa password su <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Installata dal supervisore.</translation>
 <translation id="1637224376458524414">Ricevi il preferito sull'iPhone</translation>
 <translation id="1637765355341780467">Si è verificato un errore durante l'apertura del profilo. Alcune funzioni potrebbero non essere disponibili.</translation>
 <translation id="1639239467298939599">Caricamento</translation>
@@ -954,12 +953,10 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2199719347983604670">Dati dalla sincronizzazione Chrome</translation>
 <translation id="2200094388063410062">Email</translation>
 <translation id="2200356397587687044">Chrome ha bisogno dell'autorizzazione per continuare</translation>
-<translation id="2200729650590440847">Impostazioni schermata di blocco con PIN</translation>
 <translation id="220138918934036434">Nascondi pulsante</translation>
 <translation id="2202898655984161076">Si è verificato un problema nella visualizzazione dell'elenco di stampanti. È possibile che alcune stampanti non siano state registrate correttamente con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motore di ricerca utilizzato nella <ph name="BEGIN_LINK" />barra degli indirizzi<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lettura e modifica del testo digitato</translation>
-<translation id="2207166770508557715">Impostazioni di sospensione</translation>
 <translation id="220858061631308971">Inserisci questo codice PIN su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Consenti cookie</translation>
 <translation id="2213140827792212876">Rimuovi condivisione</translation>
@@ -1407,11 +1404,9 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2751131328353405138">Montaggio sshfs del container Linux</translation>
 <translation id="2751739896257479635">Autenticazione fase 2 di tipo EAP</translation>
 <translation id="2753677631968972007">Controlla manualmente le autorizzazioni del sito.</translation>
-<translation id="2753984311895843016">Risparmio energia inattività</translation>
 <translation id="2755367719610958252">Gestisci funzioni di accessibilità</translation>
 <translation id="275662540872599901">schermo spento</translation>
 <translation id="2757338480560142065">Assicurati che la password che stai salvando corrisponda alla password di <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Orientamento del monitor</translation>
 <translation id="2762441749940182211">Videocamera bloccata</translation>
 <translation id="2764786626780673772">Dettagli VPN</translation>
 <translation id="2765217105034171413">Piccola</translation>
@@ -2129,6 +2124,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3677106374019847299">Inserisci un provider DNS personalizzato</translation>
 <translation id="3677657024345889897">Al minimo</translation>
 <translation id="3677911431265050325">Richiedi sito per dispositivi mobili</translation>
+<translation id="3677959414150797585">Sono incluse app, pagine web e altro. Invia statistiche per migliorare i suggerimenti solo se hai scelto di condividere i dati sull'utilizzo.</translation>
 <translation id="3678156199662914018">Estensione: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Voce per sintesi vocale</translation>
 <translation id="3681311097828166361">Grazie per il tuo feedback. Adesso sei offline; il tuo rapporto verrà inviato in un secondo momento.</translation>
@@ -2897,7 +2893,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4660540330091848931">Ridimensionamento</translation>
 <translation id="4660838440047236328">Dati sulla struttura della tua stanza</translation>
 <translation id="4661407454952063730">Per dati delle app si intende qualsiasi dato salvato da un'app (in base alle impostazioni dello sviluppatore), inclusi dati come contatti, messaggi e foto.</translation>
-<translation id="4662373422909645029">Numeri non consentiti nel nickname</translation>
+<translation id="4662373422909645029">Il nickname non può includere numeri</translation>
 <translation id="4662788913887017617">Condividi il preferito con l'iPhone</translation>
 <translation id="4663373278480897665">Videocamera consentita</translation>
 <translation id="4664482161435122549">Errore di esportazione di PKCS #12</translation>
@@ -3781,6 +3777,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - Registrazione tramite fotocamera o microfono in corso</translation>
 <translation id="5841270259333717135">Configura Ethernet</translation>
 <translation id="5842497610951477805">Bluetooth attivato</translation>
+<translation id="5844574845205796324">Ricevi suggerimenti su nuovi contenuti da esplorare</translation>
 <translation id="5846200638699387931">Errore di sintassi nella relazione: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Installa aggiornamenti e app. Se continui, accetti che questo dispositivo possa anche scaricare e installare automaticamente aggiornamenti e app da Google, dal tuo operatore e dal produttore del tuo dispositivo, utilizzando eventualmente la rete dati. Alcune di queste app potrebbero offrire acquisti in-app.</translation>
 <translation id="5849212445710944278">Già aggiunta</translation>
@@ -5546,7 +5543,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
     <ph name="BEGIN_PARAGRAPH5" />Puoi disattivare questo servizio nelle Impostazioni.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">I PIN non corrispondono</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> usa le impostazioni proxy di un'estensione</translation>
-<translation id="8097959162767603171">È necessario che l'amministratore accetti prima i Termini di servizio della Console di amministrazione dell'elenco di dispositivi di Chrome.</translation>
+<translation id="8097959162767603171">È necessario che l'amministratore accetti prima i Termini di servizio nell'elenco di dispositivi Chrome della Console di amministrazione.</translation>
 <translation id="8101987792947961127">Powerwash necessario a prossimo riavvio</translation>
 <translation id="8102159139658438129">Vai alle <ph name="LINK_BEGIN" />Impostazioni<ph name="LINK_END" /> per visualizzare le opzioni disponibili per il tuo telefono collegato</translation>
 <translation id="8104696615244072556">Esegui il Powerwash del tuo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e torna alla versione precedente.</translation>
@@ -6221,7 +6218,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8953476467359856141">Durante la ricarica</translation>
 <translation id="895347679606913382">Avvio download in corso...</translation>
 <translation id="8957762313041272117">Sottotitoli in tempo reale</translation>
-<translation id="8958804960827200147">Orientamento dello schermo</translation>
 <translation id="895944840846194039">Memoria JavaScript</translation>
 <translation id="8962083179518285172">Nascondi dettagli</translation>
 <translation id="8962918469425892674">Questo sito usa sensori di movimento o della luce.</translation>

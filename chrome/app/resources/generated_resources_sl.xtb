@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Omogoča prilagajanje hitrosti ponavljanja za tipkovnico, predvidevanja besed in drugega</translation>
 <translation id="1633947793238301227">Izklop Pomočnika Google</translation>
 <translation id="1634783886312010422">Ali ste že spremenili geslo na spletnem mestu <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Namestil skrbnik</translation>
 <translation id="1637224376458524414">Prejemanje tega zaznamka v iPhonu</translation>
 <translation id="1637765355341780467">Pri odpiranju profila je prišlo do težave. Nekatere funkcije morda niso na voljo.</translation>
 <translation id="1639239467298939599">Nalaganje</translation>
@@ -954,12 +953,10 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2199719347983604670">Podatki iz Sinhronizacije za Chrome</translation>
 <translation id="2200094388063410062">E-pošta</translation>
 <translation id="2200356397587687044">Chrome potrebuje dovoljenje za nadaljevanje</translation>
-<translation id="2200729650590440847">Nastavitve zaklepanja zaslona s kodo PIN</translation>
 <translation id="220138918934036434">Skrij gumb</translation>
 <translation id="2202898655984161076">Težava pri prikazu tiskalnikov. Nekateri od vaših tiskalnikov morda niso uspešno registrirani v storitvi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2203682048752833055">Iskalnik, uporabljen v <ph name="BEGIN_LINK" />naslovni vrstici<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Branje in spreminjanje vsega, kar napišete</translation>
-<translation id="2207166770508557715">Nastavitve stanja pripravljenosti</translation>
 <translation id="220858061631308971">Vnesite PIN za napravo »<ph name="DEVICE_NAME" />«:</translation>
 <translation id="2212565012507486665">Dovoli piškotke</translation>
 <translation id="2213140827792212876">Odstrani skupno rabo</translation>
@@ -1408,11 +1405,9 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2751131328353405138">Vpenjanje datotečnega sistema sshfs vsebnika za Linux</translation>
 <translation id="2751739896257479635">2. faza preverjanja pristnosti EAP</translation>
 <translation id="2753677631968972007">Ročno nadziranje dovoljenj za spletna mesta.</translation>
-<translation id="2753984311895843016">Napajanje med nedejavnostjo</translation>
 <translation id="2755367719610958252">Upravljanje funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="275662540872599901">zaslon je izklopljen</translation>
 <translation id="2757338480560142065">Geslo, ki ga želite shraniti, se mora ujemati z geslom za storitev <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Usmerjenost monitorja</translation>
 <translation id="2762441749940182211">Kamera je blokirana</translation>
 <translation id="2764786626780673772">Podrobnosti o navideznem zasebnem omrežju</translation>
 <translation id="2765217105034171413">Majhna</translation>
@@ -6227,7 +6222,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8953476467359856141">Med polnjenjem</translation>
 <translation id="895347679606913382">Začetek ...</translation>
 <translation id="8957762313041272117">Samodejni podnapisi</translation>
-<translation id="8958804960827200147">Usmerjenost zaslona</translation>
 <translation id="895944840846194039">Pomnilnik za JavaScript</translation>
 <translation id="8962083179518285172">Skrij podrobnosti</translation>
 <translation id="8962918469425892674">To spletno mesto uporablja tipala gibanja ali svetlobe.</translation>

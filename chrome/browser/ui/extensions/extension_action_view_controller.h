@@ -105,7 +105,7 @@ class ExtensionActionViewController
   void OnIconUpdated() override;
 
   // ExtensionHostObserver:
-  void OnExtensionHostDestroyed(const extensions::ExtensionHost* host) override;
+  void OnExtensionHostDestroyed(extensions::ExtensionHost* host) override;
 
   // Checks if the associated |extension| is still valid by checking its
   // status in the registry. Since the OnExtensionUnloaded() notifications are

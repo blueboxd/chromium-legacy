@@ -73,6 +73,10 @@ class NodeHighlightTool : public InspectTool {
                     String selector_list,
                     std::unique_ptr<InspectorHighlightConfig> highlight_config);
 
+  std::unique_ptr<protocol::DictionaryValue> GetNodeInspectorHighlightAsJson(
+      bool append_element_info,
+      bool append_distance_info) const;
+
  private:
   bool ForwardEventsToOverlay() override;
   bool HideOnMouseMove() override;

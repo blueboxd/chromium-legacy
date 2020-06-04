@@ -872,7 +872,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeStreamRequest) {
 }
 
 TEST_P(QuicChromiumClientSessionTest, ConnectionCloseBeforeHandshakeConfirmed) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // TODO(nharper, b/112643533): Figure out why this test fails when TLS is
     // enabled and fix it.
     return;

@@ -2,36 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/savable_resources.h"
+#include "third_party/blink/renderer/core/frame/savable_resources.h"
 
-#include <set>
-
-#include "base/compiler_specific.h"
-#include "base/strings/string_util.h"
-#include "content/public/common/url_utils.h"
-#include "content/renderer/render_frame_impl.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_node.h"
-#include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-using blink::WebDocument;
-using blink::WebElement;
-using blink::WebElementCollection;
-using blink::WebFrame;
-using blink::WebInputElement;
-using blink::WebLocalFrame;
-using blink::WebNode;
-using blink::WebString;
-using blink::WebVector;
-using blink::WebView;
-
-namespace content {
+namespace blink {
 namespace {
 
 // Returns |true| if |web_frame| contains (or should be assumed to contain)
@@ -55,23 +38,23 @@ bool DoesFrameContainHtmlDocument(WebFrame* web_frame,
 }
 
 // If present and valid, then push the link associated with |element|
-// into either SavableResourcesResult::subframes or
-// SavableResourcesResult::resources_list.
-void GetSavableResourceLinkForElement(
-    const WebElement& element,
-    const WebDocument& current_doc,
-    SavableResourcesResult* result) {
+// into either WebSavableResources::ResultImpl::subframes or
+// WebSavableResources::ResultImpl::resources_list.
+void GetSavableResourceLinkForElement(const WebElement& element,
+                                      const WebDocument& current_doc,
+                                      SavableResources::Result* result) {
   // Get absolute URL.
-  WebString link_attribute_value = GetSubResourceLinkFromElement(element);
-  GURL element_url = current_doc.CompleteURL(link_attribute_value);
+  String link_attribute_value =
+      SavableResources::GetSubResourceLinkFromElement(element);
+  KURL element_url = current_doc.CompleteURL(link_attribute_value);
 
   // See whether to report this element as a subframe.
   WebFrame* web_frame = WebFrame::FromFrameOwnerElement(element);
   if (web_frame && DoesFrameContainHtmlDocument(web_frame, element)) {
-    SavableSubframe subframe;
-    subframe.original_url = element_url;
-    subframe.routing_id = RenderFrame::GetRoutingIdForWebFrame(web_frame);
-    result->subframes->push_back(subframe);
+    mojom::blink::SavableSubframePtr subframe =
+        mojom::blink::SavableSubframe::New(element_url,
+                                           web_frame->GetFrameToken());
+    result->AppendSubframe(std::move(subframe));
     return;
   }
 
@@ -80,32 +63,34 @@ void GetSavableResourceLinkForElement(
     return;
 
   // Ignore invalid URL.
-  if (!element_url.is_valid())
+  if (!element_url.IsValid())
     return;
 
   // Ignore those URLs which are not standard protocols. Because FTP
   // protocol does no have cache mechanism, we will skip all
   // sub-resources if they use FTP protocol.
-  if (!element_url.SchemeIsHTTPOrHTTPS() &&
-      !element_url.SchemeIs(url::kFileScheme))
+  if (!element_url.ProtocolIsInHTTPFamily() &&
+      !element_url.ProtocolIs(url::kFileScheme))
     return;
 
-  result->resources_list->push_back(element_url);
+  result->AppendResourceLink(element_url);
 }
 
 }  // namespace
 
-bool GetSavableResourceLinksForFrame(WebLocalFrame* current_frame,
-                                     SavableResourcesResult* result) {
+// static
+bool SavableResources::GetSavableResourceLinksForFrame(
+    LocalFrame* current_frame,
+    SavableResources::Result* result) {
   // Get current frame's URL.
-  GURL current_frame_url = current_frame->GetDocument().Url();
+  KURL current_frame_url = current_frame->GetDocument()->Url();
 
   // If url of current frame is invalid, ignore it.
-  if (!current_frame_url.is_valid())
+  if (!current_frame_url.IsValid())
     return false;
 
   // If url of current frame is not a savable protocol, ignore it.
-  if (!IsSavableURL(current_frame_url))
+  if (!Platform::Current()->IsURLSavableForSavableResource(current_frame_url))
     return false;
 
   // Get current using document.
@@ -115,15 +100,15 @@ bool GetSavableResourceLinksForFrame(WebLocalFrame* current_frame,
   // Go through all elements in this frame.
   for (WebElement element = all.FirstItem(); !element.IsNull();
        element = all.NextItem()) {
-    GetSavableResourceLinkForElement(element,
-                                     current_doc,
-                                     result);
+    GetSavableResourceLinkForElement(element, current_doc, result);
   }
 
   return true;
 }
 
-WebString GetSubResourceLinkFromElement(const WebElement& element) {
+// static
+String SavableResources::GetSubResourceLinkFromElement(
+    const WebElement& element) {
   const char* attribute_name = nullptr;
   if (element.HasHTMLTagName("img") || element.HasHTMLTagName("frame") ||
       element.HasHTMLTagName("iframe") || element.HasHTMLTagName("script")) {
@@ -145,12 +130,10 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
     attribute_name = "data";
   } else if (element.HasHTMLTagName("link")) {
     // If the link element is not linked to css, ignore it.
-    WebString type = element.GetAttribute("type");
-    WebString rel = element.GetAttribute("rel");
-    if ((type.ContainsOnlyASCII() &&
-         base::LowerCaseEqualsASCII(type.Ascii(), "text/css")) ||
-        (rel.ContainsOnlyASCII() &&
-         base::LowerCaseEqualsASCII(rel.Ascii(), "stylesheet"))) {
+    String type = element.GetAttribute("type");
+    String rel = element.GetAttribute("rel");
+    if ((type.ContainsOnlyASCIIOrEmpty() && type.LowerASCII() == "text/css") ||
+        (rel.ContainsOnlyASCIIOrEmpty() && rel.LowerASCII() == "stylesheet")) {
       // TODO(jnd): Add support for extracting links of sub-resources which
       // are inside style-sheet such as @import, url(), etc.
       // See bug: http://b/issue?id=1111667.
@@ -158,16 +141,24 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
     }
   }
   if (!attribute_name)
-    return WebString();
-  WebString value = element.GetAttribute(WebString::FromUTF8(attribute_name));
+    return String();
+  String value = element.GetAttribute(String::FromUTF8(attribute_name));
   // If value has content and not start with "javascript:" then return it,
-  // otherwise return NULL.
+  // otherwise return an empty string.
   if (!value.IsNull() && !value.IsEmpty() &&
-      !base::StartsWith(value.Utf8(),
-                        "javascript:", base::CompareCase::INSENSITIVE_ASCII))
+      !value.StartsWith("javascript:", kTextCaseASCIIInsensitive))
     return value;
 
-  return WebString();
+  return String();
 }
 
-}  // namespace content
+void SavableResources::Result::AppendSubframe(
+    mojom::blink::SavableSubframePtr subframe) {
+  subframes_->emplace_back(std::move(subframe));
+}
+
+void SavableResources::Result::AppendResourceLink(const KURL& url) {
+  resources_list_->emplace_back(url);
+}
+
+}  // namespace blink

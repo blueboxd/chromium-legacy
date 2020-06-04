@@ -54,29 +54,26 @@ class CORE_EXPORT FeaturePolicyParser {
 
  public:
   // Converts a header policy string into a vector of allowlists, one for each
-  // feature specified. Unrecognized features are filtered out. If |messages| is
-  // not null, then any message in the input will cause a warning message to be
-  // appended to it. The optional ExecutionContext is used to determine if any
-  // origin trials affect the parsing.
-  // Example of a feature policy string:
+  // feature specified. Unrecognized features are filtered out. The optional
+  // ExecutionContext is used to determine if any origin trials affect the
+  // parsing. Example of a feature policy string:
   //     "vibrate a.com b.com; fullscreen 'none'; payment 'self', payment *".
   static ParsedFeaturePolicy ParseHeader(
       const String& policy,
       scoped_refptr<const SecurityOrigin>,
-      Vector<String>* messages,
+      PolicyParserMessageBuffer& logger,
       FeaturePolicyParserDelegate* delegate = nullptr);
 
   // Converts a container policy string into a vector of allowlists, given self
   // and src origins provided, one for each feature specified. Unrecognized
-  // features are filtered out. If |messages| is not null, then any message in
-  // the input will cause as warning message to be appended to it. Example of a
+  // features are filtered out. Example of a
   // feature policy string:
   //     "vibrate a.com 'src'; fullscreen 'none'; payment 'self', payment *".
   static ParsedFeaturePolicy ParseAttribute(
       const String& policy,
       scoped_refptr<const SecurityOrigin> self_origin,
       scoped_refptr<const SecurityOrigin> src_origin,
-      Vector<String>* messages,
+      PolicyParserMessageBuffer& logger,
       Document* document = nullptr);
 
   // Converts a feature policy string into a vector of allowlists (see comments
@@ -89,7 +86,7 @@ class CORE_EXPORT FeaturePolicyParser {
       const String& policy,
       scoped_refptr<const SecurityOrigin> self_origin,
       scoped_refptr<const SecurityOrigin> src_origin,
-      Vector<String>* messages,
+      PolicyParserMessageBuffer& logger,
       const FeatureNameMap& feature_names,
       FeaturePolicyParserDelegate* delegate = nullptr);
 };

@@ -181,6 +181,12 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual size_t AudioHardwareBufferSize() { return 0; }
   virtual unsigned AudioHardwareOutputChannels() { return 0; }
 
+  // SavableResource ----------------------------------------------------
+
+  virtual bool IsURLSavableForSavableResource(const WebURL& url) {
+    return false;
+  }
+
   // Creates a device for audio I/O.
   // Pass in (number_of_input_channels > 0) if live/local audio input is
   // desired.

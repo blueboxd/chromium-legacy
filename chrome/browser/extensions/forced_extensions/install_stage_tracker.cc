@@ -125,6 +125,7 @@ void InstallStageTracker::ReportDownloadingCacheStatus(
   InstallationData& data = installation_data_map_[id];
   data.downloading_cache_status = cache_status;
   for (auto& observer : observers_) {
+    observer.OnExtensionDownloadCacheStatusRetrieved(id, cache_status);
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
   }
 }

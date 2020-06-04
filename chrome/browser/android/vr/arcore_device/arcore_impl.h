@@ -236,12 +236,12 @@ class ArCoreImpl : public ArCore {
       const gfx::Transform& mojo_from_viewer,
       const std::vector<mojom::XRInputSourceStatePtr>& input_state);
 
-  // Returns mojo_from_reference_space transform given reference space
-  // category. Mojo_from_reference_space is equivalent to
-  // mojo_from_native_origin for native origins that are reference spaces.
-  // If the transform cannot be found, it will return base::nullopt.
+  // Returns mojo_from_reference_space transform given reference space type.
+  // Mojo_from_reference_space is equivalent to mojo_from_native_origin for
+  // native origins that are reference spaces. If the transform cannot be found,
+  // it will return base::nullopt.
   base::Optional<gfx::Transform> GetMojoFromReferenceSpace(
-      device::mojom::XRReferenceSpaceCategory category,
+      device::mojom::XRReferenceSpaceType type,
       const gfx::Transform& mojo_from_viewer);
 
   // Returns a collection of tuples (input_source_id,

@@ -38,6 +38,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
@@ -258,6 +259,11 @@ WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {
 
 bool BlinkPlatformImpl::IsURLSupportedForAppCache(const blink::WebURL& url) {
   return IsSchemeSupportedForAppCache(url);
+}
+
+bool BlinkPlatformImpl::IsURLSavableForSavableResource(
+    const blink::WebURL& url) {
+  return IsSavableURL(url);
 }
 
 size_t BlinkPlatformImpl::MaxDecodedImageBytes() {

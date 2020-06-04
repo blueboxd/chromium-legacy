@@ -67,10 +67,8 @@ void SpellCheckHostImpl::FillSuggestionList(
   NOTREACHED();
   std::move(callback).Run({});
 }
-#endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
-        //  !BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
 void SpellCheckHostImpl::GetPerLanguageSuggestions(
     const base::string16& word,
     GetPerLanguageSuggestionsCallback callback) {
@@ -79,7 +77,10 @@ void SpellCheckHostImpl::GetPerLanguageSuggestions(
   // This API requires Chrome-only features.
   std::move(callback).Run(std::vector<std::vector<base::string16>>());
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN)
+
+#endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
+        //  !BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
 #if defined(OS_ANDROID)
 void SpellCheckHostImpl::DisconnectSessionBridge() {

@@ -143,6 +143,11 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // call CheckNow() instead of CheckSoon() for its initial update.
   static void UpdateImmediatelyForFirstRun();
 
+  // For testing, changes the backoff policy for ExtensionDownloader's manifest
+  // queue to get less initial delay and the tests don't time out.
+  void SetBackoffPolicyForTesting(
+      const net::BackoffEntry::Policy* backoff_policy);
+
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;

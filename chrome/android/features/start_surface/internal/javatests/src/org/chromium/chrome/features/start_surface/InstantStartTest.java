@@ -19,6 +19,7 @@ import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -39,6 +40,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.Restriction;
@@ -538,6 +540,8 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/omniboxonly"})
+    @DisableIf.Build(message = "Flaky. See https://crbug.com/1091311",
+            sdk_is_greater_than = Build.VERSION_CODES.O)
     public void renderTabGroups() throws IOException, InterruptedException {
         // clang-format on
         createThumbnailBitmapAndWriteToFile(0);

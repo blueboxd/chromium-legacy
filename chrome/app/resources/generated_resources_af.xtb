@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Maak dit vir jou moontlik om jou sleutelbord se herhaalkoers, woordvoorspelling en meer te verstel</translation>
 <translation id="1633947793238301227">Deaktiveer Google Assistent</translation>
 <translation id="1634783886312010422">Het jy hierdie wagwoord reeds op <ph name="WEBSITE" /> verander?</translation>
-<translation id="1635033183663317347">Deur jou voog geïnstalleer.</translation>
 <translation id="1637224376458524414">Kry hierdie boekmerk op jou iPhone</translation>
 <translation id="1637765355341780467">Iets het verkeerd geloop met die oopmaak van jou profiel. Sekere kenmerke kan dalk onbeskikbaar wees.</translation>
 <translation id="1639239467298939599">Laai tans</translation>
@@ -954,12 +953,10 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2199719347983604670">Data van Chrome-sinkronisering af</translation>
 <translation id="2200094388063410062">E-pos</translation>
 <translation id="2200356397587687044">Chrome het toestemming nodig om voort te gaan</translation>
-<translation id="2200729650590440847">PIN-sluitskerminstellings</translation>
 <translation id="220138918934036434">Versteek-knoppie</translation>
 <translation id="2202898655984161076">Kon nie drukkers lys nie. Sommige van jou drukkers het dalk nie suksesvol by <ph name="CLOUD_PRINT_NAME" /> geregistreer nie.</translation>
 <translation id="2203682048752833055">Soekenjin wat in die <ph name="BEGIN_LINK" />adresbalk<ph name="END_LINK" /> gebruik word</translation>
 <translation id="2204034823255629767">Lees en verander enigiets wat jy invoer</translation>
-<translation id="2207166770508557715">Slaapinstellings</translation>
 <translation id="220858061631308971">Voer hierdie PIN-kode op "<ph name="DEVICE_NAME" />" in.</translation>
 <translation id="2212565012507486665">Laat webkoekies toe</translation>
 <translation id="2213140827792212876">Verwyder deling</translation>
@@ -1408,11 +1405,9 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2751131328353405138">Monteer tans die Linux-houer se sshfs</translation>
 <translation id="2751739896257479635">EAP se fase 2-stawing</translation>
 <translation id="2753677631968972007">Beheer werftoestemmings handmatig.</translation>
-<translation id="2753984311895843016">Rustende krag</translation>
 <translation id="2755367719610958252">Bestuur toeganklikheidkenmerke</translation>
 <translation id="275662540872599901">skerm af</translation>
 <translation id="2757338480560142065">Maak seker dat die wagwoord wat jy stoor, ooreenstem met jou wagwoord vir <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Monitor-oriëntasie</translation>
 <translation id="2762441749940182211">Kamera word geblokkeer</translation>
 <translation id="2764786626780673772">VPN-besonderhede</translation>
 <translation id="2765217105034171413">Klein</translation>
@@ -6225,7 +6220,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8953476467359856141">Terwyl dit laai</translation>
 <translation id="895347679606913382">Begin tans …</translation>
 <translation id="8957762313041272117">Intydse Onderskrif</translation>
-<translation id="8958804960827200147">Skermoriëntasie</translation>
 <translation id="895944840846194039">JavaScript-geheue</translation>
 <translation id="8962083179518285172">Versteek besonderhede</translation>
 <translation id="8962918469425892674">Hierdie werf gebruik beweging- of ligsensors.</translation>

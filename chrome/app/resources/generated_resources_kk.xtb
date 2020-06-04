@@ -499,11 +499,10 @@
 <translation id="1629314197035607094">Құпия сөз мерзімі аяқталды.</translation>
 <translation id="1630768113285622200">Қайта қосу және жалғастыру</translation>
 <translation id="1630873818549593964">Classroom қызметіндегі балаңыздың деректері қорғалады. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
-<translation id="1632082166874334883">Құпия сөз Google есептік жазбаңызда сақталған.</translation>
+<translation id="1632082166874334883">Google есептік жазбаңызда сақталған құпия сөз</translation>
 <translation id="1632803087685957583">Пернетақтаның қайталау жиілігін, сөз болжамдарын, т.б. реттеуге мүмкіндік береді</translation>
 <translation id="1633947793238301227">Google Assistant қолданбасын өшіру</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" /> сайтында құпия сөзіңізді өзгерттіңіз бе?</translation>
-<translation id="1635033183663317347">Сақтаушы орнатқан.</translation>
 <translation id="1637224376458524414">Осы бетбелгіні iPhone телефонында алыңыз</translation>
 <translation id="1637765355341780467">Профильді ашу кезінде бірдеңе дұрыс болмады. Кейбір мүмкіндіктер қолжетімді болмауы мүмкін.</translation>
 <translation id="1639239467298939599">Жүктелуде</translation>
@@ -951,12 +950,10 @@
 <translation id="2199719347983604670">Chrome Sync деректері</translation>
 <translation id="2200094388063410062">Электрондық пошта</translation>
 <translation id="2200356397587687044">Жалғастыру үшін Chrome браузеріне рұқсат қажет</translation>
-<translation id="2200729650590440847">PIN құлып экранының параметрлері</translation>
 <translation id="220138918934036434">Жасыру түймесі</translation>
 <translation id="2202898655984161076">Принтерлерді көрсету кезінде қате орын алды. Кейбір принтерлеріңіз <ph name="CLOUD_PRINT_NAME" /> арқылы сәтті тіркелмеген болуы мүмкін.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Мекенжай жолында<ph name="END_LINK" /> пайдаланылатын іздеу жүйесі</translation>
 <translation id="2204034823255629767">Барлық тергендеріңізді оқу және өзгерту</translation>
-<translation id="2207166770508557715">Ұйқы параметрлері</translation>
 <translation id="220858061631308971">Бұл PIN кодын "<ph name="DEVICE_NAME" />" құрылғысына енгізіңіз:</translation>
 <translation id="2212565012507486665">Cookie файлдарына рұқсат беру</translation>
 <translation id="2213140827792212876">Бөлісу мүмкіндігін өшіру</translation>
@@ -1405,11 +1402,9 @@
 <translation id="2751131328353405138">Linux контейнерінің SSHFS жүйесі жалғануда</translation>
 <translation id="2751739896257479635">EAP 2-фаза аутентификациясы</translation>
 <translation id="2753677631968972007">Сайт рұқсаттарын қолмен басқару.</translation>
-<translation id="2753984311895843016">Тыныштық күйіндегі қуат параметрлері</translation>
 <translation id="2755367719610958252">Арнайы мүмкіндіктерді басқару</translation>
 <translation id="275662540872599901">экран өшірулі</translation>
 <translation id="2757338480560142065">Сақталып жатқан құпия сөзіңіздің <ph name="WEBSITE" /> құпия сөзіне сәйкес келетінін тексеріңіз.</translation>
-<translation id="276221322463921688">Монитор бағдары</translation>
 <translation id="2762441749940182211">Камераға тыйым салынған</translation>
 <translation id="2764786626780673772">VPN мәліметтері</translation>
 <translation id="2765217105034171413">Кіші</translation>
@@ -2883,7 +2878,7 @@
 <translation id="4645676300727003670">&amp;Сақтау</translation>
 <translation id="4646675363240786305">Порттар</translation>
 <translation id="4647090755847581616">&amp;Қойындыны жабу</translation>
-<translation id="4647420311443994946">{0,select, tablet{Планшетте есептік жазбаға кірген кезде, қолданба іске Планшетте есептік жазбаға кірген кезде, қолданба іске қосылсын}computer{Компьютерде есептік жазбаға кірген кезде, қолданба іске қосылсын}other{Құрылғыда есептік жазбаға кірген кезде, қолданба іске қосылсын}}</translation>
+<translation id="4647420311443994946">{0,select, tablet{Планшетте есептік жазбаға кірген кезде, қолданба іске қосылсын}computer{Компьютерде есептік жазбаға кірген кезде, қолданба іске қосылсын}other{Құрылғыда есептік жазбаға кірген кезде, қолданба іске қосылсын}}</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" үшін PIN кодын енгізіңіз:</translation>
 <translation id="4648491805942548247">Рұқсаттар жеткіліксіз</translation>
 <translation id="4648499713050786492">Адам суретін қосу үшін профиліңіздің құлпын ашыңыз.</translation>
@@ -5545,7 +5540,7 @@
     <ph name="BEGIN_PARAGRAPH5" />Бұл қызметті "Параметрлер" бөлімінен өшіруге болады.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN кодтары сәйкес келмейді</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> кеңейтімдегі прокси параметрлерді пайдаланып жатыр.</translation>
-<translation id="8097959162767603171">Әкімші алдымен әкімші консоліндегі Chrome құрылғылары тізімінде берілген қызмет көрсету шарттарын қабылдауы керек.</translation>
+<translation id="8097959162767603171">Әкімші алдымен әкімші консоліндегі Chrome құрылғылары тізімінде берілген Қызмет көрсету шарттарын қабылдауы керек.</translation>
 <translation id="8101987792947961127">Келесі қайта жүктеу кезінде Powerwash қажет</translation>
 <translation id="8102159139658438129">Жалғанған телефонның опцияларын көру үшін <ph name="LINK_BEGIN" />Параметрлер<ph name="LINK_END" /> бөліміне өтіңіз</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> құрылғыңызда Powerwash операциясын жасап, алдыңғы нұсқаға қайтыңыз.</translation>
@@ -6221,7 +6216,6 @@
 <translation id="8953476467359856141">Зарядтау кезінде</translation>
 <translation id="895347679606913382">Басталуда…</translation>
 <translation id="8957762313041272117">Live Caption</translation>
-<translation id="8958804960827200147">Экран бағдары</translation>
 <translation id="895944840846194039">JavaScript жады</translation>
 <translation id="8962083179518285172">Мәліметтерді жасыру</translation>
 <translation id="8962918469425892674">Бұл сайт қозғалыс не жарық датчиктерін пайдалануда.</translation>

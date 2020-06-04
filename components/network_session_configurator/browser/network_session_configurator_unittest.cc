@@ -467,15 +467,10 @@ TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
-  // Find first version with QUIC_CRYPTO.
-  quic::ParsedQuicVersionVector all_supported_versions =
-      quic::AllSupportedVersions();
-  auto it = all_supported_versions.begin();
-  while (it->handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
-    ++it;
-    ASSERT_NE(it, all_supported_versions.end());
-  }
-  quic::ParsedQuicVersion version = *it;
+  // Note that this test covers the legacy field param mechanism which relies on
+  // QuicVersionToString. We should now be using ALPNs instead.
+  quic::ParsedQuicVersion version =
+      quic::AllSupportedVersionsWithQuicCrypto().front();
 
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["quic_version"] =
@@ -490,26 +485,24 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParamsAlpn) {
+  quic::ParsedQuicVersion version = quic::AllSupportedVersions().front();
   std::map<std::string, std::string> field_trial_params;
-  field_trial_params["quic_version"] = "h3-T050";
+  field_trial_params["quic_version"] = quic::AlpnForVersion(version);
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  quic::ParsedQuicVersionVector supported_versions = {
-      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_50}};
+  quic::ParsedQuicVersionVector supported_versions = {version};
   EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
        MultipleQuicVersionFromFieldTrialParams) {
-  quic::ParsedQuicVersionVector versions_with_quic_crypto;
-  for (const auto& version : quic::AllSupportedVersions()) {
-    if (version.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
-      versions_with_quic_crypto.push_back(version);
-    }
-  }
+  // Note that this test covers the legacy field param mechanism which relies on
+  // QuicVersionToString. We should now be using ALPNs instead.
+  quic::ParsedQuicVersionVector versions_with_quic_crypto =
+      quic::AllSupportedVersionsWithQuicCrypto();
   ASSERT_LE(2u, versions_with_quic_crypto.size());
 
   quic::ParsedQuicVersion version1 = versions_with_quic_crypto.front();
@@ -908,7 +901,9 @@ INSTANTIATE_TEST_SUITE_P(QuicVersion,
                          ::testing::ValuesIn(quic::AllSupportedVersions()));
 
 TEST_P(NetworkSessionConfiguratorWithQuicVersionTest, QuicVersion) {
-  if (version_.handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
+  // Note that this test covers the legacy mechanism which relies on
+  // QuicVersionToString. We should now be using ALPNs instead.
+  if (!version_.UsesQuicCrypto()) {
     return;
   }
 
@@ -936,7 +931,9 @@ TEST_P(NetworkSessionConfiguratorWithQuicVersionTest, QuicVersionAlpn) {
 
 TEST_P(NetworkSessionConfiguratorWithQuicVersionTest,
        SameQuicVersionsFromFieldTrialParams) {
-  if (version_.handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
+  // Note that this test covers the legacy mechanism which relies on
+  // QuicVersionToString. We should now be using ALPNs instead.
+  if (!version_.UsesQuicCrypto()) {
     return;
   }
 

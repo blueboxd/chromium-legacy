@@ -8,6 +8,7 @@ import android.util.Base64;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.text.ParseException;
@@ -32,6 +33,19 @@ public class VariationsSeedBridge {
     protected static final String VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED =
             "variations_seed_native_stored";
 
+    // These must be kept in sync with VariationsFirstRunPrefEvents in enums.xml.
+    private static final int DEBUG_PREFS_STORED = 0;
+    private static final int DEBUG_PREFS_CLEARED = 1;
+    private static final int DEBUG_PREFS_RETRIEVED_DATA_EMPTY = 2;
+    private static final int DEBUG_PREFS_RETRIEVED_DATA_NON_EMPTY = 3;
+    private static final int DEBUG_PREFS_MAX = 4;
+
+    // TODO(crbug.com/1090968): Debug histogram to investigate a regression. Remove when resolved.
+    private static void logDebugHistogram(int value) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Variations.FirstRunPrefsDebug", value, DEBUG_PREFS_MAX);
+    }
+
     protected static String getVariationsFirstRunSeedPref(String prefName) {
         return ContextUtils.getAppSharedPreferences().getString(prefName, "");
     }
@@ -52,6 +66,7 @@ public class VariationsSeedBridge {
                 .putLong(VARIATIONS_FIRST_RUN_SEED_DATE, date)
                 .putBoolean(VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED, isGzipCompressed)
                 .apply();
+        logDebugHistogram(DEBUG_PREFS_STORED);
     }
 
     @CalledByNative
@@ -65,6 +80,7 @@ public class VariationsSeedBridge {
                 .remove(VARIATIONS_FIRST_RUN_SEED_DATE_HEADER)
                 .remove(VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED)
                 .apply();
+        logDebugHistogram(DEBUG_PREFS_CLEARED);
     }
 
     /**
@@ -94,8 +110,11 @@ public class VariationsSeedBridge {
 
     @CalledByNative
     private static byte[] getVariationsFirstRunSeedData() {
-        return Base64.decode(
+        byte[] data = Base64.decode(
                 getVariationsFirstRunSeedPref(VARIATIONS_FIRST_RUN_SEED_BASE64), Base64.NO_WRAP);
+        logDebugHistogram(data.length == 0 ? DEBUG_PREFS_RETRIEVED_DATA_EMPTY
+                                           : DEBUG_PREFS_RETRIEVED_DATA_NON_EMPTY);
+        return data;
     }
 
     @CalledByNative

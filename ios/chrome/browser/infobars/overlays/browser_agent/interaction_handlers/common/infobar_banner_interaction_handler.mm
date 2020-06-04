@@ -6,7 +6,7 @@
 
 #include "base/check.h"
 #include "base/logging.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
+#include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/common/infobar_banner_overlay_request_callback_installer.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
@@ -17,9 +17,8 @@
 #endif
 
 namespace {
-ConfirmInfoBarDelegate* GetInfobarDelegate(InfoBarIOS* infobar) {
-  ConfirmInfoBarDelegate* delegate =
-      infobar->delegate()->AsConfirmInfoBarDelegate();
+infobars::InfoBarDelegate* GetInfobarDelegate(InfoBarIOS* infobar) {
+  infobars::InfoBarDelegate* delegate = infobar->delegate();
   DCHECK(delegate);
   return delegate;
 }
@@ -37,13 +36,6 @@ std::unique_ptr<OverlayRequestCallbackInstaller>
 InfobarBannerInteractionHandler::CreateInstaller() {
   return std::make_unique<InfobarBannerOverlayRequestCallbackInstaller>(
       request_support_, this);
-}
-
-void InfobarBannerInteractionHandler::BannerVisibilityChanged(
-    InfoBarIOS* infobar,
-    bool visible) {
-  if (!visible)
-    GetInfobarDelegate(infobar)->InfoBarDismissed();
 }
 
 void InfobarBannerInteractionHandler::ShowModalButtonTapped(

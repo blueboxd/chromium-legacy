@@ -13,11 +13,6 @@ namespace spellcheck {
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-const base::Feature kWinUseHybridSpellChecker{
-    "WinUseHybridSpellChecker", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 bool UseBrowserSpellChecker() {
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   return false;
@@ -39,20 +34,6 @@ const base::Feature kWinDelaySpellcheckServiceInit{
 bool WindowsVersionSupportsSpellchecker() {
   return base::win::GetVersion() > base::win::Version::WIN7 &&
          base::win::GetVersion() < base::win::Version::WIN_LAST;
-}
-
-bool UseWinHybridSpellChecker() {
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  // The kWinUseHybridSpellChecker feature flag is always treated as
-  // set if UseBrowserSpellChecker returns true. That is, hybrid spell checking
-  // (platform spell checking with a fallback to Hunspell) is always performed
-  // if kWinUseBrowserSpellChecker is set and the Windows version supports spell
-  // checking.
-  // TODO(crbug.com/1074450): Remove hybrid spellcheck feature flag.
-  return UseBrowserSpellChecker();
-#else
-  return false;
-#endif
 }
 #endif  // defined(OS_WIN)
 

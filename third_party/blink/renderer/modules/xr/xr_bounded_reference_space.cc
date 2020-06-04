@@ -35,7 +35,7 @@ Member<DOMPointReadOnly> RoundedDOMPoint(const FloatPoint3D& val) {
 XRBoundedReferenceSpace::XRBoundedReferenceSpace(XRSession* session)
     : XRReferenceSpace(
           session,
-          device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR) {}
+          device::mojom::blink::XRReferenceSpaceType::kBoundedFloor) {}
 
 XRBoundedReferenceSpace::XRBoundedReferenceSpace(
     XRSession* session,
@@ -43,7 +43,7 @@ XRBoundedReferenceSpace::XRBoundedReferenceSpace(
     : XRReferenceSpace(
           session,
           origin_offset,
-          device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR) {}
+          device::mojom::blink::XRReferenceSpaceType::kBoundedFloor) {}
 
 XRBoundedReferenceSpace::~XRBoundedReferenceSpace() = default;
 

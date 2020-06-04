@@ -51,14 +51,13 @@ class PerformanceManagerRegistry {
   // process, or nullptr if there is none.
   static PerformanceManagerRegistry* GetInstance();
 
+  // Helper function that invokes CreatePageNodeForWebContents only if it hasn't
+  // already been called for the provided WebContents.
+  void MaybeCreatePageNodeForWebContents(content::WebContents* web_contents);
+
   // Must be invoked when a WebContents is created. Creates an associated
-  // PageNode in the PerformanceManager, if it doesn't already exist.
-  //
-  // Note: As of December 2019, this is called by the constructor of
-  // DevtoolsWindow on its main WebContents. It may be called again for the same
-  // WebContents by TabHelpers::AttachTabHelpers() when Devtools is docked.
-  // Hence the support for calling CreatePageNodeForWebContents() for a
-  // WebContents that already has a PageNode.
+  // PageNode in the PerformanceManager, if it doesn't already exist. This
+  // should only be called once for a given |web_contents|.
   virtual void CreatePageNodeForWebContents(
       content::WebContents* web_contents) = 0;
 

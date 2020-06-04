@@ -48,7 +48,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -189,18 +188,12 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
                    const char* url2 = kTestUrl,
                    const char* url3 = kTestUrl) {
     contents1_ = CreateTestWebContents();
-    performance_manager::PerformanceManagerRegistry::GetInstance()
-        ->CreatePageNodeForWebContents(contents1_.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents1_.get());
     nav_handle1_ = CreateTabAndNavigation(url1, contents1_.get());
     contents2_ = CreateTestWebContents();
-    performance_manager::PerformanceManagerRegistry::GetInstance()
-        ->CreatePageNodeForWebContents(contents2_.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents2_.get());
     nav_handle2_ = CreateTabAndNavigation(url2, contents2_.get());
     contents3_ = CreateTestWebContents();
-    performance_manager::PerformanceManagerRegistry::GetInstance()
-        ->CreatePageNodeForWebContents(contents3_.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(contents3_.get());
     nav_handle3_ = CreateTabAndNavigation(url3, contents3_.get());
 

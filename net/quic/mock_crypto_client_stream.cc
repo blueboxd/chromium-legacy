@@ -33,7 +33,6 @@ using quic::NullEncrypter;
 using quic::PACKET_8BYTE_CONNECTION_ID;
 using quic::Perspective;
 using quic::ProofVerifyContext;
-using quic::PROTOCOL_TLS1_3;
 using quic::QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE;
 using quic::QUIC_NO_ERROR;
 using quic::QUIC_PROOF_INVALID;
@@ -156,8 +155,7 @@ bool MockCryptoClientStream::CryptoConnect() {
             ENCRYPTION_ZERO_RTT,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
-      if (session()->connection()->version().handshake_protocol ==
-          quic::PROTOCOL_QUIC_CRYPTO) {
+      if (session()->version().UsesQuicCrypto()) {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
       }
       break;
@@ -200,8 +198,7 @@ bool MockCryptoClientStream::CryptoConnect() {
             ENCRYPTION_FORWARD_SECURE,
             std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
-      if (session()->connection()->version().handshake_protocol ==
-          quic::PROTOCOL_TLS1_3) {
+      if (session()->version().UsesTls()) {
         session()->OnOneRttKeysAvailable();
       } else {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
@@ -282,8 +279,7 @@ void MockCryptoClientStream::NotifySessionOneRttKeyAvailable() {
           ENCRYPTION_FORWARD_SECURE,
           std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
     }
-    if (session()->connection()->version().handshake_protocol ==
-        quic::PROTOCOL_TLS1_3) {
+    if (session()->version().UsesTls()) {
       session()->OnOneRttKeysAvailable();
     } else {
       session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
@@ -338,8 +334,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
 
   QuicErrorCode error;
   std::string error_details;
-  if (session()->connection()->version().handshake_protocol ==
-      PROTOCOL_TLS1_3) {
+  if (session()->version().UsesTls()) {
     TransportParameters params;
     ASSERT_TRUE(config.FillTransportParameters(&params));
     error = session()->config()->ProcessTransportParameters(
@@ -356,8 +351,7 @@ void MockCryptoClientStream::SetConfigNegotiated() {
 }
 
 void MockCryptoClientStream::FillCryptoParams() {
-  if (session()->connection()->version().handshake_protocol ==
-      quic::PROTOCOL_QUIC_CRYPTO) {
+  if (session()->version().UsesQuicCrypto()) {
     crypto_negotiated_params_->key_exchange = kC255;
     crypto_negotiated_params_->aead = kAESG;
     return;

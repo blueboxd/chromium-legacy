@@ -44,7 +44,6 @@ namespace content {
 class DownloadManagerImpl;
 class FrameTreeNode;
 class RenderFrameHostImpl;
-struct SavableSubframe;
 class SaveFileManager;
 class SaveItem;
 class SavePackage;
@@ -127,6 +126,17 @@ class CONTENT_EXPORT SavePackage
 
   void GetSaveInfo();
 
+  // Response from |sender| frame to GetSavableResourceLinks request.
+  void SavableResourceLinksResponse(
+      RenderFrameHostImpl* sender,
+      const std::vector<GURL>& resources_list,
+      blink::mojom::ReferrerPtr referrer,
+      const std::vector<blink::mojom::SavableSubframePtr>& subframes);
+
+  // Response to GetSavableResourceLinks that indicates an error when processing
+  // the frame associated with |sender|.
+  void SavableResourceLinksError(RenderFrameHostImpl* sender);
+
  private:
   friend class base::RefCountedThreadSafe<SavePackage>;
 
@@ -186,10 +196,6 @@ class CONTENT_EXPORT SavePackage
   // Continue processing the save page job after one SaveItem has been finished.
   void DoSavingProcess();
 
-  // WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
-
   // Update the download history of this item upon completion.
   void FinalizeDownloadEntry();
 
@@ -233,18 +239,11 @@ class CONTENT_EXPORT SavePackage
   // and pending responses are counted/tracked by
   // CompleteSavableResourceLinksResponse.
   //
-  // OnSavableResourceLinksResponse creates SaveItems for each savable resource
+  // SavableResourceLinksResponse creates SaveItems for each savable resource
   // and each subframe - these SaveItems get enqueued into |waiting_item_queue_|
   // with the help of CreatePendingSaveItem, EnqueueSavableResource,
   // EnqueueFrame.
   void GetSavableResourceLinks();
-
-  // Response from |sender| frame to GetSavableResourceLinks request.
-  void OnSavableResourceLinksResponse(
-      RenderFrameHostImpl* sender,
-      const std::vector<GURL>& resources_list,
-      const Referrer& referrer,
-      const std::vector<SavableSubframe>& subframes);
 
   // Helper for finding or creating a SaveItem with the given parameters.
   SaveItem* CreatePendingSaveItem(
@@ -272,13 +271,9 @@ class CONTENT_EXPORT SavePackage
                     int frame_tree_node_id,
                     const GURL& frame_original_url);
 
-  // Response to GetSavableResourceLinks that indicates an error when processing
-  // the frame associated with |sender|.
-  void OnSavableResourceLinksError(RenderFrameHostImpl* sender);
-
   // Helper tracking how many |number_of_frames_pending_response_| we have
   // left and kicking off the next phase after we got all the
-  // OnSavableResourceLinksResponse messages we were waiting for.
+  // SavableResourceLinks reply messages we were waiting for.
   void CompleteSavableResourceLinksResponse();
 
   // For each frame in the current page, ask the renderer process associated

@@ -78,4 +78,22 @@ TEST_F(StyleBuilderTest, TextOrientationChangeDirtiesFont) {
   }
 }
 
+TEST_F(StyleBuilderTest, HasExplicitInheritance) {
+  auto parent_style = ComputedStyle::Create();
+  auto style = ComputedStyle::Create();
+  StyleResolverState state(GetDocument(), *GetDocument().body(),
+                           parent_style.get(), parent_style.get());
+  state.SetStyle(style);
+  EXPECT_FALSE(style->HasExplicitInheritance());
+
+  // Flag should not be set for properties which are inherited.
+  StyleBuilder::ApplyProperty(GetCSSPropertyColor(), state,
+                              *CSSInheritedValue::Create());
+  EXPECT_FALSE(style->HasExplicitInheritance());
+
+  StyleBuilder::ApplyProperty(GetCSSPropertyBackgroundColor(), state,
+                              *CSSInheritedValue::Create());
+  EXPECT_TRUE(style->HasExplicitInheritance());
+}
+
 }  // namespace blink

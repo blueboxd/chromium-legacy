@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Paginile în <ph name="SOURCE_LANGUAGE" /> vor fi traduse în <ph name="TARGET_LANGUAGE" /> de acum înainte.</translation>
 <translation id="1676269943528358898">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Google Chrome a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Google Chrome a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="1682696192498422849">Cu latura scurtă înainte</translation>
+<translation id="168693727862418163">Valoarea politicii nu s-a validat în raport cu schema și va fi ignorată.</translation>
 <translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
 <translation id="1697532407822776718">Ești gata!</translation>
 <translation id="1703835215927279855">Letter</translation>

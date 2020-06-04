@@ -2084,3 +2084,94 @@ TEST_F(TemplateURLServiceTest, ChangeDefaultEngineBeforeLoad) {
   model()->SetUserSelectedDefaultSearchProvider(search_engine2);
   histogram_tester.ExpectTotalCount("Search.DefaultSearchChangeOrigin", 2);
 }
+
+TEST_F(TemplateURLServiceTest, GetDefaultSearchProviderIgnoringExtensions) {
+  test_util()->VerifyLoad();
+
+  const TemplateURL* const initial_default =
+      model()->GetDefaultSearchProvider();
+  ASSERT_TRUE(initial_default);
+
+  EXPECT_EQ(initial_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add a new TemplateURL and set it as the default.
+  TemplateURL* const new_user_default = AddKeywordWithDate(
+      "name1", "key1", "http://foo1/{searchTerms}", "http://sugg1",
+      std::string(), "http://icon1", true, "UTF-8;UTF-16");
+  model()->SetUserSelectedDefaultSearchProvider(new_user_default);
+
+  EXPECT_EQ(new_user_default, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add an extension-provided search engine. This becomes the new default.
+  const TemplateURL* const extension_turl =
+      AddExtensionSearchEngine("keyword", "extension id", true);
+  EXPECT_EQ(extension_turl, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add a policy search engine; this takes priority over both the user-selected
+  // and extension-provided engines.
+  std::unique_ptr<TemplateURLData> managed_data = CreateTestSearchEngine();
+  SetManagedDefaultSearchPreferences(*managed_data, true,
+                                     test_util()->profile());
+
+  const TemplateURL* const new_default = model()->GetDefaultSearchProvider();
+  EXPECT_NE(new_default, extension_turl);
+  ExpectSimilar(managed_data.get(), &new_default->data());
+  EXPECT_EQ(new_default, model()->GetDefaultSearchProviderIgnoringExtensions());
+}
+
+TEST_F(TemplateURLServiceTest,
+       EngineReturnedByGetDefaultSearchProviderIgnoringExtensionsTakesOver) {
+  test_util()->VerifyLoad();
+
+  // Add a new TemplateURL and set it as the default.
+  TemplateURL* const new_user_default = AddKeywordWithDate(
+      "name1", "key1", "http://foo1/{searchTerms}", "http://sugg1",
+      std::string(), "http://icon1", true, "UTF-8;UTF-16");
+  model()->SetUserSelectedDefaultSearchProvider(new_user_default);
+
+  // Add an extension-provided search engine. This becomes the new default.
+  constexpr char kExtensionId[] = "extension_id";
+  const TemplateURL* const extension_turl =
+      AddExtensionSearchEngine("keyword", kExtensionId, true);
+  EXPECT_EQ(extension_turl, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Remove the extension-provided engine; the |new_user_default| should take
+  // over.
+  test_util()->RemoveExtensionControlledTURL(kExtensionId);
+  EXPECT_EQ(new_user_default, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(new_user_default,
+            model()->GetDefaultSearchProviderIgnoringExtensions());
+}
+
+TEST_F(
+    TemplateURLServiceTest,
+    GetDefaultSearchProviderIgnoringExtensionsWhenDefaultSearchDisabledByPolicy) {
+  test_util()->VerifyLoad();
+
+  // Add a new TemplateURL and set it as the default.
+  TemplateURL* const new_user_default = AddKeywordWithDate(
+      "name1", "key1", "http://foo1/{searchTerms}", "http://sugg1",
+      std::string(), "http://icon1", true, "UTF-8;UTF-16");
+  model()->SetUserSelectedDefaultSearchProvider(new_user_default);
+
+  // Disable default search by policy. Even though there's a user-selected
+  // search, the default should be null.
+  std::unique_ptr<TemplateURLData> managed_search = CreateTestSearchEngine();
+  SetManagedDefaultSearchPreferences(*managed_search, false,
+                                     test_util()->profile());
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProviderIgnoringExtensions());
+
+  // Add an extension-provided engine; default search should still be null since
+  // it's disabled by policy.
+  AddExtensionSearchEngine("keyword", "extension id", true);
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProvider());
+  EXPECT_EQ(nullptr, model()->GetDefaultSearchProviderIgnoringExtensions());
+}

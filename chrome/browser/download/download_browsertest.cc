@@ -4510,7 +4510,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SafeSupportedFile) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-  safe_browsing::SetExtendedReportingPref(prefs, true);
+  safe_browsing::SetExtendedReportingPrefForTests(prefs, true);
 
   // Make a dangerous file.
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
@@ -4564,7 +4564,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
 IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-  safe_browsing::SetExtendedReportingPref(prefs, true);
+  safe_browsing::SetExtendedReportingPrefForTests(prefs, true);
 
   // Make a dangerous file.
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());

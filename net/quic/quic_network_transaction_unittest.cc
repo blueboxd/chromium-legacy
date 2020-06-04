@@ -1747,7 +1747,8 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
 }
 
 TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
-  quic::ParsedQuicVersion unsupported_version = quic::UnsupportedQuicVersion();
+  quic::ParsedQuicVersion unsupported_version =
+      quic::ParsedQuicVersion::Unsupported();
   // Add support for another QUIC version besides |version_|. Also find an
   // unsupported version.
   for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
@@ -1761,7 +1762,7 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
     break;
   }
   ASSERT_EQ(2u, supported_versions_.size());
-  ASSERT_NE(quic::UnsupportedQuicVersion(), unsupported_version);
+  ASSERT_NE(quic::ParsedQuicVersion::Unsupported(), unsupported_version);
 
   // Set up alternative service to use QUIC with a version that is not
   // supported.
@@ -1840,10 +1841,10 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   alt_svc_info_vector =
       session_->http_server_properties()->GetAlternativeServiceInfos(
           server, NetworkIsolationKey());
-  // All PROTOCOL_QUIC_CRYPTO versions are sent in a single Alt-Svc entry,
-  // therefore they aer accumulated in a single AlternativeServiceInfo, whereas
-  // each PROTOCOL_TLS1_3 version has its own Alt-Svc entry and
-  // AlternativeServiceInfo entry.  Flatten to compare.
+  // Versions that support the legacy Google-specific Alt-Svc format are sent in
+  // a single Alt-Svc entry, therefore they are accumulated in a single
+  // AlternativeServiceInfo, whereas more recent versions all have their own
+  // Alt-Svc entry and AlternativeServiceInfo entry.  Flatten to compare.
   quic::ParsedQuicVersionVector alt_svc_negotiated_versions;
   for (const auto& alt_svc_info : alt_svc_info_vector) {
     EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
@@ -2201,7 +2202,8 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
 
   // Add support for another QUIC version besides |version_| on the client side.
   // Also find a different version advertised by the server.
-  quic::ParsedQuicVersion advertised_version_2 = quic::UnsupportedQuicVersion();
+  quic::ParsedQuicVersion advertised_version_2 =
+      quic::ParsedQuicVersion::Unsupported();
   for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
     if (version == version_)
       continue;
@@ -2213,7 +2215,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
     break;
   }
   ASSERT_EQ(2u, supported_versions_.size());
-  ASSERT_NE(quic::UnsupportedQuicVersion(), advertised_version_2);
+  ASSERT_NE(quic::ParsedQuicVersion::Unsupported(), advertised_version_2);
 
   std::string QuicAltSvcWithVersionHeader =
       base::StringPrintf("Alt-Svc: %s=\":443\", %s=\":443\"\r\n\r\n",
@@ -2275,23 +2277,15 @@ TEST_P(QuicNetworkTransactionTest,
   // TestPacketMakers and the response.
 
   // Find an alternative commonly supported version other than |version_|.
-  quic::ParsedQuicVersion common_version_2 = quic::UnsupportedQuicVersion();
-  if (version_.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
-    for (const quic::ParsedQuicVersion& version :
-         quic::AllSupportedVersions()) {
-      if (version == version_)
-        continue;
+  quic::ParsedQuicVersion common_version_2 =
+      quic::ParsedQuicVersion::Unsupported();
+  for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
+    if (version != version_) {
       common_version_2 = version;
       break;
     }
-  } else if (version_.transport_version == quic::QUIC_VERSION_IETF_DRAFT_27) {
-    common_version_2 = quic::ParsedQuicVersion(
-        quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_IETF_DRAFT_25);
-  } else {
-    common_version_2 = quic::ParsedQuicVersion(
-        quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_IETF_DRAFT_27);
   }
-  ASSERT_NE(quic::UnsupportedQuicVersion(), common_version_2);
+  ASSERT_NE(common_version_2, quic::ParsedQuicVersion::Unsupported());
 
   // Setting up client's preference list: {|version_|, |common_version_2|}.
   supported_versions_.clear();
@@ -2301,12 +2295,13 @@ TEST_P(QuicNetworkTransactionTest,
   // Setting up server's Alt-Svc header in the following preference order:
   // |common_version_2|, |version_|.
   std::string QuicAltSvcWithVersionHeader;
-  quic::ParsedQuicVersion picked_version = quic::UnsupportedQuicVersion();
-    QuicAltSvcWithVersionHeader =
-        "Alt-Svc: " + quic::AlpnForVersion(common_version_2) +
-        "=\":443\"; ma=3600, " + quic::AlpnForVersion(version_) +
-        "=\":443\"; ma=3600\r\n\r\n";
-    picked_version = common_version_2;  // Use server's preference.
+  quic::ParsedQuicVersion picked_version =
+      quic::ParsedQuicVersion::Unsupported();
+  QuicAltSvcWithVersionHeader =
+      "Alt-Svc: " + quic::AlpnForVersion(common_version_2) +
+      "=\":443\"; ma=3600, " + quic::AlpnForVersion(version_) +
+      "=\":443\"; ma=3600\r\n\r\n";
+  picked_version = common_version_2;  // Use server's preference.
 
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
@@ -2558,10 +2553,10 @@ TEST_P(QuicNetworkTransactionTest,
   const AlternativeServiceInfoVector alt_svc_info_vector =
       session_->http_server_properties()->GetAlternativeServiceInfos(
           https_server, NetworkIsolationKey());
-  // However, all PROTOCOL_QUIC_CRYPTO versions are sent in a single Alt-Svc
-  // entry, therefore they aer accumulated in a single AlternativeServiceInfo,
-  // whereas each PROTOCOL_TLS1_3 version has its own Alt-Svc entry and
-  // AlternativeServiceInfo entry.  Flatten to compare.
+  // Versions that support the legacy Google-specific Alt-Svc format are sent in
+  // a single Alt-Svc entry, therefore they are accumulated in a single
+  // AlternativeServiceInfo, whereas more recent versions all have their own
+  // Alt-Svc entry and AlternativeServiceInfo entry.  Flatten to compare.
   quic::ParsedQuicVersionVector alt_svc_negotiated_versions;
   for (const auto& alt_svc_info : alt_svc_info_vector) {
     EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
@@ -2720,7 +2715,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 // alternate network as well, QUIC is marked as broken and the brokenness will
 // not expire when default network changes.
 TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+  if (version_.UsesTls() ||
       GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     // TODO(fayang): Add time driven idle network detection test.
@@ -2830,7 +2825,7 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 // alternate network, QUIC is marked as broken. The brokenness will expire when
 // the default network changes.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+  if (version_.UsesTls() ||
       GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     // TODO(fayang): Add time driven idle network detection test.
@@ -2952,7 +2947,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 // Much like above test, but verifies NetworkIsolationKeys are respected.
 TEST_P(QuicNetworkTransactionTest,
        RetryOnAlternateNetworkWhileTCPSucceedsWithNetworkIsolationKey) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+  if (version_.UsesTls() ||
       GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     // TODO(fayang): Add time driven idle network detection test.
@@ -3100,7 +3095,7 @@ TEST_P(QuicNetworkTransactionTest,
 // before handshake is confirmed. If TCP doesn't succeed but QUIC on the
 // alternative network succeeds, QUIC is not marked as broken.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 ||
+  if (version_.UsesTls() ||
       GetQuicReloadableFlag(quic_use_idle_network_detector)) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     // TODO(fayang): Add time driven idle network detection test.
@@ -3225,7 +3220,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 // Verify that if a QUIC connection times out, the QuicHttpStream will
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -3351,7 +3346,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 // Verify that if a QUIC protocol error occurs after the handshake is confirmed
 // the request fails with QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -3426,7 +3421,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
 // connection times out, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -3574,7 +3569,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 // retried over TCP and the QUIC will be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBroken) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -3672,7 +3667,7 @@ TEST_P(QuicNetworkTransactionTest,
 // Much like above test, but verifies that NetworkIsolationKey is respected.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBrokenWithNetworkIsolationKey) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -3803,7 +3798,7 @@ TEST_P(QuicNetworkTransactionTest,
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5025,7 +5020,7 @@ TEST_P(QuicNetworkTransactionTest, HungAlternativeService) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5072,7 +5067,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5150,7 +5145,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5214,7 +5209,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5315,7 +5310,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5433,7 +5428,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorLocal) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5495,7 +5490,7 @@ TEST_P(QuicNetworkTransactionTest,
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorRemote) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5561,7 +5556,7 @@ TEST_P(QuicNetworkTransactionTest,
 }
 
 TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5644,7 +5639,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
 }
 
 TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5843,7 +5838,7 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
 }
 
 TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -5914,7 +5909,7 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
 
 TEST_P(QuicNetworkTransactionTest,
        DelayTCPOnStartWithQuicSupportOnDifferentIP) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -6064,7 +6059,7 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
 TEST_P(QuicNetworkTransactionTest,
        FailedZeroRttBrokenAlternateProtocolWithNetworkIsolationKey) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     // QUIC with TLS1.3 handshake doesn't support 0-rtt.
     return;
   }
@@ -6691,7 +6686,6 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
   const bool should_send_priority_packet =
       client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43 &&
       !VersionUsesHttp3(version_.transport_version);
   if (should_send_priority_packet) {
     if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
@@ -6820,7 +6814,6 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
   const bool should_send_priority_packet =
       client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43 &&
       !VersionUsesHttp3(version_.transport_version);
   if (should_send_priority_packet) {
     if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
@@ -7111,7 +7104,6 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
 
   const bool should_send_priority_packet =
       client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43 &&
       !VersionUsesHttp3(version_.transport_version);
   if (should_send_priority_packet) {
     if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
@@ -7821,7 +7813,6 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
 
   const bool should_send_priority_packet =
       client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43 &&
       !VersionUsesHttp3(version_.transport_version);
   if (should_send_priority_packet) {
     if (GetQuicReloadableFlag(quic_advance_ack_timeout_update)) {
@@ -9283,8 +9274,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
 
   // Only run this test if HTTP/2 stream dependency info is sent by client (sent
   // in HEADERS frames for requests and PRIORITY frames).
-  if (version_.transport_version < quic::QUIC_VERSION_43 ||
-      !client_headers_include_h2_stream_dependency_) {
+  if (!client_headers_include_h2_stream_dependency_) {
     return;
   }
 

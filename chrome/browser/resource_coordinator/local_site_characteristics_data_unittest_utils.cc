@@ -96,13 +96,16 @@ void NoopLocalSiteCharacteristicsDatabase::GetDatabaseSize(
 ChromeTestHarnessWithLocalDB::~ChromeTestHarnessWithLocalDB() = default;
 
 void ChromeTestHarnessWithLocalDB::SetUp() {
+  // TODO(siggi): Can this die now?
+  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
+  content::SetSystemConnectorForTesting(
+      service_manager::Connector::Create(&connector_receiver));
+
   // Enable the LocalSiteCharacteristicsDataStoreFactory before calling
   // ChromeRenderViewHostTestHarness::SetUp(), this will prevent the creation
   // of a non-mock version of a data store when browser_context() gets
   // initialized.
-  performance_manager_ =
-      performance_manager::PerformanceManagerImpl::Create(base::DoNothing());
-  registry_ = performance_manager::PerformanceManagerRegistry::Create();
+  pm_harness_.SetUp();
 
   performance_manager::PerformanceManagerImpl::CallOnGraph(
       FROM_HERE, base::BindOnce([](performance_manager::Graph* graph) {
@@ -111,18 +114,11 @@ void ChromeTestHarnessWithLocalDB::SetUp() {
 
   LocalSiteCharacteristicsDataStoreFactory::EnableForTesting();
 
-  // TODO(siggi): Can this die now?
-  mojo::PendingReceiver<service_manager::mojom::Connector> connector_receiver;
-  content::SetSystemConnectorForTesting(
-      service_manager::Connector::Create(&connector_receiver));
   ChromeRenderViewHostTestHarness::SetUp();
 }
 
 void ChromeTestHarnessWithLocalDB::TearDown() {
-  registry_->TearDown();
-  registry_.reset();
-  performance_manager::PerformanceManagerImpl::Destroy(
-      std::move(performance_manager_));
+  pm_harness_.TearDown();
   content::SetSystemConnectorForTesting(nullptr);
   ChromeRenderViewHostTestHarness::TearDown();
 }

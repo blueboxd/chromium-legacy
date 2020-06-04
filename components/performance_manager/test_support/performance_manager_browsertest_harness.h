@@ -44,10 +44,6 @@ class PerformanceManagerBrowserTestHarness
   // Waits for an ongoing navigation to terminate on the given |contents|.
   void WaitForLoad(content::WebContents* contents);
 
-  // Allows tests to notify the harness of shells that were created without
-  // harness knowledge. This will attach PM tab helpers.
-  void NotifyShellCreated(content::Shell* shell);
-
  private:
   std::unique_ptr<PerformanceManagerTestHarnessHelper> helper_;
 };

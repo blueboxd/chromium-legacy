@@ -28,14 +28,7 @@ class PlatformSpellChecker;
 class SpellCheckHostChromeImplWinBrowserTest : public InProcessBrowserTest {
  public:
   SpellCheckHostChromeImplWinBrowserTest() {
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                              spellcheck::kWinUseHybridSpellChecker},
-        /*disabled_features=*/{});
-#else
     feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   }
 
   void SetUpOnMainThread() override {
@@ -123,7 +116,6 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
   EXPECT_EQ(result_[0].decoration, SpellCheckResult::SPELLING);
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
                        GetPerLanguageSuggestions) {
   if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
@@ -148,4 +140,3 @@ IN_PROC_BROWSER_TEST_F(SpellCheckHostChromeImplWinBrowserTest,
   ASSERT_EQ(1U, suggestion_result_.size());
   EXPECT_GT(suggestion_result_[0].size(), 0U);
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)

@@ -17,5 +17,8 @@ public final class AwFeatures {
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
 
+    public static final String WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY =
+            "WebViewExtraHeadersSameOriginOnly";
+
     private AwFeatures() {}
 }

@@ -24,13 +24,11 @@ class ExportNotifierTest(LoggingTestCase):
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: foo\n'
             'Taskcluster Link: bar\n'
             'Gerrit CL SHA: num')
 
         actual = PRStatusInfo.from_gerrit_comment(gerrit_comment)
 
-        self.assertEqual(actual.node_id, 'foo')
         self.assertEqual(actual.link, 'bar')
         self.assertEqual(actual.gerrit_sha, 'num')
 
@@ -40,8 +38,7 @@ class ExportNotifierTest(LoggingTestCase):
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: \n'
-            'Taskcluster Link: bar\n'
+            'Taskcluster Link: \n'
             'Gerrit CL SHA: num')
 
         actual = PRStatusInfo.from_gerrit_comment(gerrit_comment)
@@ -56,13 +53,12 @@ class ExportNotifierTest(LoggingTestCase):
         self.assertIsNone(actual)
 
     def test_to_gerrit_comment(self):
-        pr_status_info = PRStatusInfo('foo', 'bar', 'num')
+        pr_status_info = PRStatusInfo('bar', 'num')
         expected = (
             'The exported PR for the current patch failed Taskcluster check(s) '
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: foo\n'
             'Taskcluster Link: bar\n'
             'Gerrit CL SHA: num')
 
@@ -71,13 +67,12 @@ class ExportNotifierTest(LoggingTestCase):
         self.assertEqual(expected, actual)
 
     def test_to_gerrit_comment_latest(self):
-        pr_status_info = PRStatusInfo('foo', 'bar', None)
+        pr_status_info = PRStatusInfo('bar', None)
         expected = (
             'The exported PR for the current patch failed Taskcluster check(s) '
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: foo\n'
             'Taskcluster Link: bar\n'
             'Gerrit CL SHA: Latest')
 
@@ -86,13 +81,12 @@ class ExportNotifierTest(LoggingTestCase):
         self.assertEqual(expected, actual)
 
     def test_to_gerrit_comment_with_patchset(self):
-        pr_status_info = PRStatusInfo('foo', 'bar', 'num')
+        pr_status_info = PRStatusInfo('bar', 'num')
         expected = (
             'The exported PR for the current patch failed Taskcluster check(s) '
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: foo\n'
             'Taskcluster Link: bar\n'
             'Gerrit CL SHA: num\n'
             'Patchset Number: 3')
@@ -130,7 +124,7 @@ class ExportNotifierTest(LoggingTestCase):
                 taskcluster_status, 123), None)
 
     def test_has_latest_taskcluster_status_commented_false(self):
-        pr_status_info = PRStatusInfo('foo', 'bar', 'num')
+        pr_status_info = PRStatusInfo('bar', 'num')
         messages = [{
             "date": "2019-08-20 17:42:05.000000000",
             "message": "Uploaded patch set 1.\nInitial upload",
@@ -143,7 +137,7 @@ class ExportNotifierTest(LoggingTestCase):
         self.assertFalse(actual)
 
     def test_has_latest_taskcluster_status_commented_true(self):
-        pr_status_info = PRStatusInfo('foo', 'bar', 'num')
+        pr_status_info = PRStatusInfo('bar', 'num')
         messages = [
             {
                 "date": "2019-08-20 17:42:05.000000000",
@@ -158,7 +152,6 @@ class ExportNotifierTest(LoggingTestCase):
                  'on GitHub, which could indict cross-broswer failures on the '
                  'exportable changes. Please contact ecosystem-infra@ team for '
                  'more information.\n\n'
-                 'Taskcluster Node ID: foo\n'
                  'Taskcluster Link: bar\n'
                  'Gerrit CL SHA: num\n'
                  'Patchset Number: 3'),
@@ -214,8 +207,7 @@ class ExportNotifierTest(LoggingTestCase):
                          'on GitHub, which could indict cross-broswer failures on the '
                          'exportable changes. Please contact ecosystem-infra@ team for '
                          'more information.\n\n'
-                         'Taskcluster Node ID: notfoo\n'
-                         'Taskcluster Link: bar\n'
+                         'Taskcluster Link: notbar\n'
                          'Gerrit CL SHA: notnum\n'
                          'Patchset Number: 3'),
                         "_revision_number":
@@ -229,13 +221,12 @@ class ExportNotifierTest(LoggingTestCase):
                 }
             },
             api=self.notifier.gerrit)
-        gerrit_dict = {'abc': PRStatusInfo('foo', 'bar', 'num')}
+        gerrit_dict = {'abc': PRStatusInfo('bar', 'num')}
         expected = (
             'The exported PR for the current patch failed Taskcluster check(s) '
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: foo\n'
             'Taskcluster Link: bar\n'
             'Gerrit CL SHA: num\n'
             'Patchset Number: 1')
@@ -269,9 +260,8 @@ class ExportNotifierTest(LoggingTestCase):
                          'on GitHub, which could indict cross-broswer failures on the '
                          'exportable changes. Please contact ecosystem-infra@ team for '
                          'more information.\n\n'
-                         'Taskcluster Node ID: foo\n'
                          'Taskcluster Link: bar\n'
-                         'Gerrit CL SHA: notnum\n'
+                         'Gerrit CL SHA: num\n'
                          'Patchset Number: 3'),
                         "_revision_number":
                         2
@@ -284,7 +274,7 @@ class ExportNotifierTest(LoggingTestCase):
                 }
             },
             api=self.notifier.gerrit)
-        gerrit_dict = {'abc': PRStatusInfo('foo', 'bar', 'num')}
+        gerrit_dict = {'abc': PRStatusInfo('bar', 'num')}
 
         self.notifier.process_failing_prs(gerrit_dict)
 
@@ -312,8 +302,7 @@ class ExportNotifierTest(LoggingTestCase):
                          'on GitHub, which could indict cross-broswer failures on the '
                          'exportable changes. Please contact ecosystem-infra@ team for '
                          'more information.\n\n'
-                         'Taskcluster Node ID: not foo\n'
-                         'Taskcluster Link: bar\n'
+                         'Taskcluster Link: notbar\n'
                          'Gerrit CL SHA: notnum\n'
                          'Patchset Number: 3'),
                         "_revision_number":
@@ -332,10 +321,9 @@ class ExportNotifierTest(LoggingTestCase):
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: foo\n'
             'Taskcluster Link: bar\n'
             'Gerrit CL SHA: Latest')
-        gerrit_dict = {'abc': PRStatusInfo('foo', 'bar', None)}
+        gerrit_dict = {'abc': PRStatusInfo('bar', None)}
 
         self.notifier.process_failing_prs(gerrit_dict)
 
@@ -348,7 +336,7 @@ class ExportNotifierTest(LoggingTestCase):
     def test_process_failing_prs_raise_gerrit_error(self):
         self.notifier.dry_run = False
         self.notifier.gerrit = MockGerritAPI(raise_error=True)
-        gerrit_dict = {'abc': PRStatusInfo('foo', 'bar', 'num')}
+        gerrit_dict = {'abc': PRStatusInfo('bar', 'num')}
 
         self.notifier.process_failing_prs(gerrit_dict)
 
@@ -398,8 +386,7 @@ class ExportNotifierTest(LoggingTestCase):
                          'on GitHub, which could indict cross-broswer failures on the '
                          'exportable changes. Please contact ecosystem-infra@ team for '
                          'more information.\n\n'
-                         'Taskcluster Node ID: notfoo\n'
-                         'Taskcluster Link: bar\n'
+                         'Taskcluster Link: notbar\n'
                          'Gerrit CL SHA: notnum\n'
                          'Patchset Number: 3'),
                         "_revision_number":
@@ -418,7 +405,6 @@ class ExportNotifierTest(LoggingTestCase):
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.\n\n'
-            'Taskcluster Node ID: foo\n'
             'Taskcluster Link: bar\n'
             'Gerrit CL SHA: hash\n'
             'Patchset Number: 2')

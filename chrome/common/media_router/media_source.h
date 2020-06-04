@@ -90,6 +90,7 @@ class MediaSource {
 
   // Protocol-specific media source object creation.
   // Returns MediaSource URI depending on the type of source.
+  static MediaSource ForLocalFile();
   static MediaSource ForAnyTab();
   static MediaSource ForTab(int tab_id);
   static MediaSource ForPresentationUrl(const GURL& presentation_url);
@@ -108,15 +109,23 @@ class MediaSource {
   // extension-based Cast MRP is removed.
   static MediaSource ForDesktop();
 
+  // Returns true if source outputs its content via tab mirroring and isn't a
+  // local file.
   bool IsTabMirroringSource() const;
+
+  // Returns true if source outputs its content via desktop mirroring.
   bool IsDesktopMirroringSource() const;
-  bool IsMirroringSource() const;
+
+  // Returns true if the source is a local file.
+  bool IsLocalFileSource() const;
 
   // Returns true if this is represents a Cast Presentation URL.
   bool IsCastPresentationUrl() const;
 
   // Parses the ID and returns the SessionTabHelper tab ID referencing a source
-  // tab. Returns a non-positive value on error.
+  // tab.  Don't rely on this method returning something useful without first
+  // calling IsTabMirroringSource(); it will return 0 for for ForLocalFile()
+  // source and -1 for non-tab sources or the ForAnyTab() source.
   int TabId() const;
 
   // When this source was created by ForDesktop(string), returns a stream ID
@@ -124,10 +133,6 @@ class MediaSource {
   // content::DesktopStreamsRegistry::RequestMediaForStreamId().  Otherwise
   // returns base::nullopt.
   base::Optional<std::string> DesktopStreamId() const;
-
-  // Checks that this is a parseable URN and is of a known type.
-  // Does not deeper protocol-level syntax checks.
-  bool IsValid() const;
 
   // Returns true this source outputs its content via DIAL.
   // TODO(crbug.com/804419): Move this to in-browser DIAL/Cast MRP when we have

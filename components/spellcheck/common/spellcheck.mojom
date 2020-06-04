@@ -77,7 +77,7 @@ interface SpellCheckHost {
 
   // Returns a list of suggestions for each spellcheck language for a given word
   // with a platform-specific spell checker.
-  [EnableIf=USE_WIN_HYBRID_SPELLCHECKER, Sync]
+  [EnableIf=is_win, Sync]
   GetPerLanguageSuggestions(mojo_base.mojom.String16 word) =>
       (array<array<mojo_base.mojom.String16>> suggestions);
 };

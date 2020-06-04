@@ -216,8 +216,14 @@ extern const char kCalculatorAppId[];
 // The extension id of the demo Calendar application.
 extern const char kCalendarDemoAppId[];
 
+// The extension id of the GMail application.
+extern const char kGMailAppId[];
+
 // The extension id of the demo Google Docs application.
 extern const char kGoogleDocsDemoAppId[];
+
+// The extension id of the Google Drive application.
+extern const char kGoogleDriveAppId[];
 
 // The extension id of the demo Google Sheets application.
 extern const char kGoogleSheetsDemoAppId[];

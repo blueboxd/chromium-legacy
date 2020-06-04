@@ -138,14 +138,14 @@ INSTANTIATE_TEST_SUITE_P(
                  {"fr", "en-US", "en-AU"},
                  {"fr", "en-US"}),
         TestCase("en-US,en", {"en-US"}, {"en-US"}, {"en-US"}),
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
         // Scenario where user disabled the Windows spellcheck feature with some
         // non-Hunspell languages set in preferences.
         TestCase("fr,eu,en-US,ar",
                  {"fr", "eu", "en-US", "ar"},
                  {"fr", "en-US"},
                  {"fr", "en-US"}),
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
         TestCase("hu-HU,hr-HR", {"hr"}, {"hu", "hr"}, {"hr"})));
 
 TEST_P(SpellcheckServiceUnitTest, GetDictionaries) {
@@ -162,7 +162,7 @@ TEST_P(SpellcheckServiceUnitTest, GetDictionaries) {
   EXPECT_EQ(GetParam().expected_dictionaries, dictionaries);
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 class SpellcheckServiceHybridUnitTestBase
     : public SpellcheckServiceUnitTestBase {
  public:
@@ -367,4 +367,4 @@ TEST_P(SpellcheckServiceWindowsDictionaryMappingUnitTest, CheckMappings) {
                     .empty());
   }
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)

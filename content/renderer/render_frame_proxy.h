@@ -186,7 +186,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       bool initiator_frame_has_download_sandbox_flag,
       bool blocking_downloads_in_sandbox_enabled,
       bool initiator_frame_is_ad,
-      mojo::ScopedMessagePipeHandle blob_url_token,
+      blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>
+          blob_url_token,
       const base::Optional<blink::WebImpression>& impression) override;
   void FrameRectsChanged(const blink::WebRect& local_frame_rect,
                          const blink::WebRect& screen_space_rect) override;

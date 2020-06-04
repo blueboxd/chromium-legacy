@@ -47,7 +47,7 @@ quic::ParsedQuicVersion ParsedQuicVersionFromAlpn(
     if (AlpnForVersion(version) == str)
       return version;
   }
-  return {quic::PROTOCOL_UNSUPPORTED, quic::QUIC_VERSION_UNSUPPORTED};
+  return quic::ParsedQuicVersion::Unsupported();
 }
 
 }  // anonymous namespace
@@ -201,8 +201,7 @@ AlternativeServiceInfoVector ProcessAlternativeServices(
     } else if (!IsAlternateProtocolValid(protocol)) {
       quic::ParsedQuicVersion version = ParsedQuicVersionFromAlpn(
           alternative_service_entry.protocol_id, supported_quic_versions);
-      if (version.handshake_protocol == quic::PROTOCOL_UNSUPPORTED ||
-          version.transport_version == quic::QUIC_VERSION_UNSUPPORTED) {
+      if (version == quic::ParsedQuicVersion::Unsupported()) {
         continue;
       }
       protocol = kProtoQUIC;

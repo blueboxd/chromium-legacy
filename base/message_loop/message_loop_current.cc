@@ -81,15 +81,17 @@ void MessageLoopCurrent::SetAddQueueTimeToTasks(bool enable) {
   current_->SetAddQueueTimeToTasks(enable);
 }
 
-MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
+MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop::
+    ScopedAllowApplicationTasksInNativeNestedLoop()
     : sequence_manager_(GetCurrentSequenceManagerImpl()),
-      old_state_(sequence_manager_->IsTaskExecutionAllowed()) {
+      previous_state_(sequence_manager_->IsTaskExecutionAllowed()) {
   TRACE_EVENT_BEGIN0("base", "ScopedNestableTaskAllower");
   sequence_manager_->SetTaskExecutionAllowed(true);
 }
 
-MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
-  sequence_manager_->SetTaskExecutionAllowed(old_state_);
+MessageLoopCurrent::ScopedAllowApplicationTasksInNativeNestedLoop::
+    ~ScopedAllowApplicationTasksInNativeNestedLoop() {
+  sequence_manager_->SetTaskExecutionAllowed(previous_state_);
   TRACE_EVENT_END0("base", "ScopedNestableTaskAllower");
 }
 

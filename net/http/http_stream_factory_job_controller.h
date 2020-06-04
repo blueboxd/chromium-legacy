@@ -253,7 +253,7 @@ class HttpStreamFactory::JobController
   // Returns the first quic::ParsedQuicVersion that has been advertised in
   // |advertised_versions| and is supported, following the order of
   // |advertised_versions|.  If no mutually supported version is found,
-  // quic::UnsupportedQuicVersion() will be returned.
+  // quic::ParsedQuicVersion::Unsupported() will be returned.
   quic::ParsedQuicVersion SelectQuicVersion(
       const quic::ParsedQuicVersionVector& advertised_versions);
 

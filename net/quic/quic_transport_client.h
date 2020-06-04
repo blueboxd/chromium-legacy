@@ -83,8 +83,7 @@ class NET_EXPORT QuicTransportClient
 
   // QUIC protocol version that is used in the origin trial.
   static constexpr quic::ParsedQuicVersion kQuicVersionForOriginTrial =
-      quic::ParsedQuicVersion(quic::PROTOCOL_TLS1_3,
-                              quic::QUIC_VERSION_IETF_DRAFT_27);
+      quic::ParsedQuicVersion::Draft27();
 
   // |visitor| and |context| must outlive this object.
   QuicTransportClient(const GURL& url,

@@ -79,7 +79,7 @@ constexpr char kEmptySettingsPref[] = "[]";
 
 constexpr char kNormalAnalysisSettingsPref[] = R"([
   {
-    "service_provider": "Google",
+    "service_provider": "google",
     "enable": [
       {"url_list": ["*"], "tags": ["dlp", "malware"]},
     ],
@@ -97,7 +97,7 @@ constexpr char kNormalAnalysisSettingsPref[] = R"([
 
 constexpr char kNormalReportingSettingsPref[] = R"([
   {
-    "service_provider": "Google"
+    "service_provider": "google"
   }
 ])";
 

@@ -329,14 +329,14 @@ struct XRPresentationTransportOptions {
   bool wait_for_gpu_fence;
 };
 
-// Native origins that are reference spaces are identified by their category.
+// Native origins that are reference spaces are identified by their type.
 // Used for metrics, don't remove or change values.
-enum XRReferenceSpaceCategory {
-  VIEWER = 0,
-  LOCAL = 1,
-  LOCAL_FLOOR = 2,
-  BOUNDED_FLOOR = 3,
-  UNBOUNDED = 4,
+enum XRReferenceSpaceType {
+  kViewer = 0,
+  kLocal = 1,
+  kLocalFloor = 2,
+  kBoundedFloor = 3,
+  kUnbounded = 4,
 };
 
 // Native origin represents a reference space that is known to the device and
@@ -346,12 +346,12 @@ enum XRReferenceSpaceCategory {
 // XRReferenceSpaceType, XRBoundedReferenceSpace) or returns an XRSpace (for
 // example XRAnchor, XRPlane, XRInputSource). Native origin can be identified,
 // depending on its type, by the id of the entity (this is the case for planes,
-// anchors and input sources), or by reference space category.
+// anchors and input sources), or by reference space type.
 union XRNativeOriginInformation {
   uint32 input_source_id;
   uint64 plane_id;
   uint64 anchor_id;
-  XRReferenceSpaceCategory reference_space_category;
+  XRReferenceSpaceType reference_space_type;
 };
 
 enum XRPlaneOrientation {

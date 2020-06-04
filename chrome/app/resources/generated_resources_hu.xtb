@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Lehetővé teszi a billentyűzet ismétlési sebességére, a várható kifejezésekre stb. vonatkozó beállítások megadását.</translation>
 <translation id="1633947793238301227">A Google Segéd deaktiválása</translation>
 <translation id="1634783886312010422">Módosította már jelszavát a(z) <ph name="WEBSITE" /> webhelyen?</translation>
-<translation id="1635033183663317347">A gondviselő telepítette.</translation>
 <translation id="1637224376458524414">Legyen meg ez a könyvjelző iPhone eszközén</translation>
 <translation id="1637765355341780467">Hiba történt a profil megnyitása során. Lehet, hogy egyes funkciók nem állnak rendelkezésre.</translation>
 <translation id="1639239467298939599">Betöltés</translation>
@@ -954,12 +953,10 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2199719347983604670">A Chrome-szinkronizálás adatai</translation>
 <translation id="2200094388063410062">E-mail</translation>
 <translation id="2200356397587687044">A Chrome-nak szüksége van egy engedélyre a folytatáshoz</translation>
-<translation id="2200729650590440847">Lezárási képernyő PIN-kóddal kapcsolatos beállításai</translation>
 <translation id="220138918934036434">Gomb elrejtése</translation>
 <translation id="2202898655984161076">Hiba történt a nyomtatók felsorolása közben. Lehet, hogy néhány nyomtató nem regisztrálható itt: <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">A <ph name="BEGIN_LINK" />címsávban<ph name="END_LINK" /> használt keresőmotor</translation>
 <translation id="2204034823255629767">Bárminek az olvasása és módosítása, amit Ön begépel</translation>
-<translation id="2207166770508557715">Alvó mód beállításai</translation>
 <translation id="220858061631308971">Kérjük, adja meg a PIN kódot a(z) "<ph name="DEVICE_NAME" />" eszközhöz:</translation>
 <translation id="2212565012507486665">Cookie-k engedélyezése</translation>
 <translation id="2213140827792212876">Megosztás visszavonása</translation>
@@ -1408,11 +1405,9 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2751131328353405138">Linux-tároló SSH-fájlrendszerének csatlakoztatása</translation>
 <translation id="2751739896257479635">EAP hitelesítés 2. fázisa</translation>
 <translation id="2753677631968972007">A webhelyengedélyek manuális kezelése.</translation>
-<translation id="2753984311895843016">Tétlen mód</translation>
 <translation id="2755367719610958252">Kisegítő lehetőségek kezelése</translation>
 <translation id="275662540872599901">képernyő kikapcsolva</translation>
 <translation id="2757338480560142065">Ügyeljen, hogy azt a jelszót mentse el, amelyet ehhez a webhelyhez használ (<ph name="WEBSITE" />)</translation>
-<translation id="276221322463921688">Monitor tájolása</translation>
 <translation id="2762441749940182211">Kamera letiltva</translation>
 <translation id="2764786626780673772">VPN részletei</translation>
 <translation id="2765217105034171413">Kicsi</translation>
@@ -6226,7 +6221,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8953476467359856141">Töltés közben</translation>
 <translation id="895347679606913382">Kezdés...</translation>
 <translation id="8957762313041272117">Élő feliratozás</translation>
-<translation id="8958804960827200147">Képernyő tájolása</translation>
 <translation id="895944840846194039">JavaScript-memória</translation>
 <translation id="8962083179518285172">Részletek elrejtése</translation>
 <translation id="8962918469425892674">Ez a webhely mozgás- vagy fényérzékelőket használ.</translation>

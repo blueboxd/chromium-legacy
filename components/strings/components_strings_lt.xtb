@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Puslapiai, parašyti <ph name="SOURCE_LANGUAGE" />, nuo dabar bus verčiami į <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Google Chrome“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Google Chrome“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="1682696192498422849">Pirmiau trumpasis kraštas</translation>
+<translation id="168693727862418163">Šios politikos vertės nepavyko patvirtinti pagal schemą ir jos bus nepaisoma.</translation>
 <translation id="168841957122794586">Serverio sertifikate yra nesudėtingas kriptografinis raktas.</translation>
 <translation id="1697532407822776718">Viskas nustatyta!</translation>
 <translation id="1703835215927279855">Laiškas</translation>

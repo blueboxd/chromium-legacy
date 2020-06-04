@@ -1569,7 +1569,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
       found_match_for_text = true;
     }
     if (found_match_for_text && alternate_nav_url &&
-        (!popup_model() || !popup_model()->has_selected_match())) {
+        (!popup_model() || popup_model()->SelectionOnInitialLine())) {
       *alternate_nav_url =
           AutocompleteResult::ComputeAlternateNavUrl(input_, *match);
     }

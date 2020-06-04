@@ -304,9 +304,13 @@ void TableSectionPainter::PaintBoxDecorationBackground(
   if (may_have_background) {
     PaintInfo paint_info_for_cells = paint_info.ForDescendants();
     for (auto r = dirtied_rows.Start(); r < dirtied_rows.End(); r++) {
+      base::Optional<ScopedPaintState> row_paint_state;
       for (auto c = dirtied_columns.Start(); c < dirtied_columns.End(); c++) {
-        if (const auto* cell = layout_table_section_.OriginatingCellAt(r, c))
-          PaintBackgroundsBehindCell(*cell, paint_info_for_cells);
+        if (const auto* cell = layout_table_section_.OriginatingCellAt(r, c)) {
+          if (!row_paint_state)
+            row_paint_state.emplace(*cell->Row(), paint_info_for_cells);
+          PaintBackgroundsBehindCell(*cell, row_paint_state->GetPaintInfo());
+        }
       }
     }
   }

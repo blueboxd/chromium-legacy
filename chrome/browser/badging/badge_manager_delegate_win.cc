@@ -5,7 +5,6 @@
 #include "chrome/browser/badging/badge_manager_delegate_win.h"
 
 #include "base/i18n/number_formatting.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,8 +18,6 @@
 namespace badging {
 
 namespace {
-
-constexpr const char* kBadgeMetricName = "Badging.AppBadgeUpdate.Win.Result";
 
 // Determines the badge contents and alt text.
 // base::nullopt if the badge is not set.
@@ -73,23 +70,16 @@ void BadgeManagerDelegateWin::OnAppBadgeUpdated(const web_app::AppId& app_id) {
       GetBadgeContentAndAlt(badge_manager()->GetBadgeValue(app_id));
 
   for (Browser* browser : *BrowserList::GetInstance()) {
-    if (!IsAppBrowser(browser, app_id)) {
-      base::UmaHistogramSparse(
-          kBadgeMetricName,
-          MAKE_HRESULT(SEVERITY_ERROR, FACILITY_ITF,
-                       taskbar::CustomHresultCodes::kIsBrowserAbort));
+    if (!IsAppBrowser(browser, app_id))
       continue;
-    }
 
     auto* window = browser->window()->GetNativeWindow();
 
     if (content_and_alt) {
       taskbar::DrawTaskbarDecorationString(window, content_and_alt->first,
-                                           content_and_alt->second,
-                                           kBadgeMetricName);
+                                           content_and_alt->second);
     } else {
-      taskbar::UpdateTaskbarDecoration(browser->profile(), window,
-                                       kBadgeMetricName);
+      taskbar::UpdateTaskbarDecoration(browser->profile(), window);
     }
   }
 }

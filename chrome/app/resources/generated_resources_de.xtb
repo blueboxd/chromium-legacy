@@ -499,11 +499,10 @@
 <translation id="1629314197035607094">Passwort abgelaufen</translation>
 <translation id="1630768113285622200">Neu starten und fortfahren</translation>
 <translation id="1630873818549593964">Die Daten Ihres Kindes in Classroom sind geschützt. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
-<translation id="1632082166874334883">Das in Ihrem Google-Konto gespeicherte Passwort</translation>
+<translation id="1632082166874334883">In Ihrem Google-Konto gespeichertes Passwort</translation>
 <translation id="1632803087685957583">Ermöglicht die Anpassung der Wiederholungsrate, Wortvervollständigung und mehr für die Tastatur</translation>
 <translation id="1633947793238301227">Google Assistant deaktivieren</translation>
 <translation id="1634783886312010422">Haben Sie dieses Passwort schon auf <ph name="WEBSITE" /> geändert?</translation>
-<translation id="1635033183663317347">Von deinem Erziehungsberechtigten installiert</translation>
 <translation id="1637224376458524414">Dieses Lesezeichen auf dem iPhone abrufen</translation>
 <translation id="1637765355341780467">Beim Öffnen Ihres Profils ist ein Fehler aufgetreten. Einige Funktionen sind möglicherweise nicht verfügbar.</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
@@ -951,12 +950,10 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2199719347983604670">Daten aus der Chrome-Synchronisierung</translation>
 <translation id="2200094388063410062">E-Mail</translation>
 <translation id="2200356397587687044">Chrome benötigt eine Berechtigung, um fortzufahren</translation>
-<translation id="2200729650590440847">PIN-Einstellungen für den Sperrbildschirm</translation>
 <translation id="220138918934036434">Schaltfläche ausblenden</translation>
 <translation id="2202898655984161076">Problem beim Erstellen der Druckerliste. Einige Ihrer Drucker wurden möglicherweise nicht richtig bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="2203682048752833055">In der <ph name="BEGIN_LINK" />Adressleiste<ph name="END_LINK" /> verwendete Suchmaschine</translation>
 <translation id="2204034823255629767">Ihre Eingaben lesen und ändern</translation>
-<translation id="2207166770508557715">Einstellungen für Ruhemodus</translation>
 <translation id="220858061631308971">Geben Sie diesen PIN-Code bitte auf "<ph name="DEVICE_NAME" /> " ein:</translation>
 <translation id="2212565012507486665">Cookies zulassen</translation>
 <translation id="2213140827792212876">Freigabe beenden</translation>
@@ -1404,11 +1401,9 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2751131328353405138">Linux-Container-SSHFS wird bereitgestellt</translation>
 <translation id="2751739896257479635">EAP-Phase 2-Authentifizierung</translation>
 <translation id="2753677631968972007">Websiteberechtigungen manuell verwalten.</translation>
-<translation id="2753984311895843016">Einstellungen für Inaktivität</translation>
 <translation id="2755367719610958252">Bedienungshilfen verwalten</translation>
 <translation id="275662540872599901">Bildschirm aus</translation>
 <translation id="2757338480560142065">Das Passwort, das Sie speichern, muss mit dem Passwort für <ph name="WEBSITE" /> übereinstimmen</translation>
-<translation id="276221322463921688">Monitorausrichtung</translation>
 <translation id="2762441749940182211">Kamera blockiert</translation>
 <translation id="2764786626780673772">VPN-Details</translation>
 <translation id="2765217105034171413">Klein</translation>
@@ -2126,6 +2121,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3677106374019847299">Benutzerdefinierten Anbieter eingeben</translation>
 <translation id="3677657024345889897">Am leisesten</translation>
 <translation id="3677911431265050325">Mobile Version anfordern</translation>
+<translation id="3677959414150797585">Das kann u. a. Apps und Webseiten einschließen. Statistiken zur Verbesserung von Vorschlägen werden nur gesendet, wenn Sie der Freigabe von Nutzungsdaten zugestimmt haben.</translation>
 <translation id="3678156199662914018">Erweiterung: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Stimme der Sprachausgabe</translation>
 <translation id="3681311097828166361">Vielen Dank für Ihr Feedback. Sie sind jetzt offline und Ihr Bericht wird später versendet.</translation>
@@ -2894,7 +2890,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4660540330091848931">Größenanpassung läuft</translation>
 <translation id="4660838440047236328">der Grundriss Ihres Zimmers</translation>
 <translation id="4661407454952063730">App-Daten können alle Daten sein, die eine App aufgrund der Einstellungen des Entwicklers gespeichert hat, wie z. B. Kontakte, Nachrichten und Fotos.</translation>
-<translation id="4662373422909645029">Keine Zahlen im Alias</translation>
+<translation id="4662373422909645029">Der Alias darf keine Zahlen enthalten</translation>
 <translation id="4662788913887017617">Dieses Lesezeichen für mein iPhone freigeben</translation>
 <translation id="4663373278480897665">Kameranutzung zulässig</translation>
 <translation id="4664482161435122549">PKCS #12 - Fehler beim Export</translation>
@@ -3778,6 +3774,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – Kamera oder Mikrofon nimmt auf</translation>
 <translation id="5841270259333717135">Ethernet konfigurieren</translation>
 <translation id="5842497610951477805">Bluetooth aktivieren</translation>
+<translation id="5844574845205796324">Inhaltsvorschläge erhalten</translation>
 <translation id="5846200638699387931">Bezugs-Syntaxfehler: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Updates und Apps installieren. Wenn Sie fortfahren, stimmen Sie zu, dass dieses Gerät automatisch Updates und Apps von Google, Ihrem Mobilfunkanbieter und dem Hersteller Ihres Geräts herunterladen und installieren darf, möglicherweise über eine mobile Datenverbindung. Einige dieser Apps bieten eventuell In-App-Käufe an.</translation>
 <translation id="5849212445710944278">Bereits hinzugefügt</translation>
@@ -6218,7 +6215,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8953476467359856141">Beim Aufladen</translation>
 <translation id="895347679606913382">Wird gestartet...</translation>
 <translation id="8957762313041272117">Automatische Untertitel</translation>
-<translation id="8958804960827200147">Bildschirmausrichtung</translation>
 <translation id="895944840846194039">JavaScript-Speicher</translation>
 <translation id="8962083179518285172">Details ausblenden</translation>
 <translation id="8962918469425892674">Diese Website nutzt Bewegungs- oder Lichtsensoren.</translation>

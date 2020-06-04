@@ -10,8 +10,8 @@
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="recommend_apps.css">
-    <oobe-dialog id="loadingDialog" role="dialog" no-header
-        no-footer-padding hidden="[[!isStep_(uiState_, 'loading')]]">
+    <oobe-dialog id="loadingDialog" role="dialog" no-header for-step="loading"
+        no-footer-padding>
       <div slot="footer" class="flex layout vertical center center-justified">
         <throbber-notice text-key="recommendAppsLoading">
         </throbber-notice>
@@ -20,8 +20,7 @@
     <oobe-dialog id="appsDialog" role="dialog" has-buttons
         title-key="recommendAppsScreenTitle"
         aria-label$="[[i18nDynamic(locale, 'recommendAppsScreenTitle')]]"
-        no-footer-padding footer-shrinkable
-        hidden="[[!isStep_(uiState_, 'list')]]">
+        no-footer-padding footer-shrinkable for-step="list">
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
       <div id="subtitle" slot="subtitle">

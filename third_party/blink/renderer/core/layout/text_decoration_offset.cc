@@ -27,10 +27,12 @@ int TextDecorationOffset::ComputeUnderlineOffsetForUnder(
   int offset_int = (farthest - logical_top).Floor();
 
   // Gaps are not needed for TextTop because it generally has internal
-  // leadings.
+  // leadings. Overline needs to grow upwards, hence subtract thickness.
   if (position_type == FontVerticalPositionType::TextTop)
-    return offset_int;
-  return !IsLineOverSide(position_type) ? offset_int + 1 : offset_int - 1;
+    return offset_int - floorf(text_decoration_thickness);
+  return !IsLineOverSide(position_type)
+             ? offset_int + 1
+             : offset_int - 1 - floorf(text_decoration_thickness);
 }
 
 }  // namespace blink

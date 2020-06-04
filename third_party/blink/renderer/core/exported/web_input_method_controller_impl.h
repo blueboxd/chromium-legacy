@@ -6,11 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_INPUT_METHOD_CONTROLLER_IMPL_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+
+namespace ui {
+struct ImeTextSpan;
+}  // namespace ui
 
 namespace blink {
 
@@ -31,12 +34,12 @@ class CORE_EXPORT WebInputMethodControllerImpl
 
   // WebInputMethodController overrides.
   bool SetComposition(const WebString& text,
-                      const WebVector<WebImeTextSpan>& ime_text_spans,
+                      const WebVector<ui::ImeTextSpan>& ime_text_spans,
                       const WebRange& replacement_range,
                       int selection_start,
                       int selection_end) override;
   bool CommitText(const WebString& text,
-                  const WebVector<WebImeTextSpan>& ime_text_spans,
+                  const WebVector<ui::ImeTextSpan>& ime_text_spans,
                   const WebRange& replacement_range,
                   int relative_caret_position) override;
   bool FinishComposingText(

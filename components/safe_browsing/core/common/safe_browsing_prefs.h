@@ -293,7 +293,7 @@ void SetExtendedReportingPrefAndMetric(PrefService* prefs,
                                        ExtendedReportingOptInLocation location);
 
 // This variant is used to simplify test code by omitting the location.
-void SetExtendedReportingPref(PrefService* prefs, bool value);
+void SetExtendedReportingPrefForTests(PrefService* prefs, bool value);
 
 // Sets the currently active Safe Browsing Enhanced Protection to the specified
 // value.

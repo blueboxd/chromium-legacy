@@ -6,7 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <re2/re2.h>
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -41,6 +40,10 @@ const char kWidthDictAttr[] = "width";
 const char kHeightDictAttr[] = "height";
 const char kRangeLocDictAttr[] = "loc";
 const char kRangeLenDictAttr[] = "len";
+
+const char kSetKeyPrefixDictAttr[] = "_setkey_";
+const char kConstValuePrefix[] = "_const_";
+const char kNULLValue[] = "_const_NULL";
 
 NSArray* PropNodeToIntArray(const PropertyNode& propnode) {
   if (propnode.parameters.size() != 1) {
@@ -115,9 +118,13 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
   base::Value PopulateRange(NSRange) const;
+  base::Value PopulateTextMarker(id,
+                                 const LineIndexesMap& line_indexes_map) const;
   base::Value PopulateObject(id, const LineIndexesMap& line_indexes_map) const;
   base::Value PopulateArray(NSArray*,
                             const LineIndexesMap& line_indexes_map) const;
+
+  std::string NodeToLineIndex(id, const LineIndexesMap&) const;
 
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
@@ -322,6 +329,10 @@ base::Value AccessibilityTreeFormatterMac::PopulatePosition(
 base::Value AccessibilityTreeFormatterMac::PopulateObject(
     id value,
     const LineIndexesMap& line_indexes_map) const {
+  if (value == nil) {
+    return base::Value(kNULLValue);
+  }
+
   // NSArray
   if ([value isKindOfClass:[NSArray class]]) {
     return PopulateArray((NSArray*)value, line_indexes_map);
@@ -333,13 +344,14 @@ base::Value AccessibilityTreeFormatterMac::PopulateObject(
     return PopulateRange([value rangeValue]);
   }
 
+  // AXTextMarker
+  if (content::IsAXTextMarker(value)) {
+    return PopulateTextMarker(value, line_indexes_map);
+  }
+
   // Accessible object.
   if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
-    base::string16 line_index = base::ASCIIToUTF16("-1");
-    if (line_indexes_map.find(value) != line_indexes_map.end()) {
-      line_index = line_indexes_map.at(value);
-    }
-    return base::Value(line_index);
+    return base::Value(NodeToLineIndex(value, line_indexes_map));
   }
 
   // Scalar value.
@@ -355,6 +367,41 @@ base::Value AccessibilityTreeFormatterMac::PopulateRange(
   return range;
 }
 
+base::Value AccessibilityTreeFormatterMac::PopulateTextMarker(
+    id object,
+    const LineIndexesMap& line_indexes_map) const {
+  BrowserAccessibilityPosition::AXPositionInstance position =
+      content::AXTextMarkerToPosition(object);
+  if (position->IsNullPosition()) {
+    return base::Value(kNULLValue);
+  }
+
+  BrowserAccessibility* anchor = position->GetAnchor();
+  BrowserAccessibilityCocoa* cocoa_anchor = ToBrowserAccessibilityCocoa(anchor);
+
+  std::string affinity;
+  switch (position->affinity()) {
+    case ax::mojom::TextAffinity::kNone:
+      affinity = "none";
+      break;
+    case ax::mojom::TextAffinity::kDownstream:
+      affinity = "down";
+      break;
+    case ax::mojom::TextAffinity::kUpstream:
+      affinity = "up";
+      break;
+  }
+
+  base::Value set(base::Value::Type::DICTIONARY);
+  const std::string setkey_prefix = kSetKeyPrefixDictAttr;
+  set.SetStringPath(setkey_prefix + "index1_anchor",
+                    NodeToLineIndex(cocoa_anchor, line_indexes_map));
+  set.SetIntPath(setkey_prefix + "index2_offset", position->text_offset());
+  set.SetStringPath(setkey_prefix + "index3_affinity",
+                    kConstValuePrefix + affinity);
+  return set;
+}
+
 base::Value AccessibilityTreeFormatterMac::PopulateArray(
     NSArray* node_array,
     const LineIndexesMap& line_indexes_map) const {
@@ -362,6 +409,17 @@ base::Value AccessibilityTreeFormatterMac::PopulateArray(
   for (NSUInteger i = 0; i < [node_array count]; i++)
     list.Append(PopulateObject([node_array objectAtIndex:i], line_indexes_map));
   return list;
+}
+
+std::string AccessibilityTreeFormatterMac::NodeToLineIndex(
+    id cocoa_node,
+    const LineIndexesMap& line_indexes_map) const {
+  std::string line_index = ":unknown";
+  auto index_iterator = line_indexes_map.find(cocoa_node);
+  if (index_iterator != line_indexes_map.end()) {
+    line_index = base::UTF16ToUTF8(index_iterator->second);
+  }
+  return kConstValuePrefix + line_index;
 }
 
 base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
@@ -425,20 +483,24 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
 
 std::string AccessibilityTreeFormatterMac::FormatAttributeValue(
     const base::Value& value) {
+  // String.
   if (value.is_string()) {
-    // Special handling for accessible object relations, which are encoded
-    // as a line index the related accessible object is written at. The format
-    // is :LINE_NUM.
-    if (RE2::FullMatch(value.GetString(), "^:\\d+$")) {
-      return value.GetString();
+    // Special handling for constants which are exposed as is, i.e. with no
+    // quotation marks.
+    std::string const_prefix = kConstValuePrefix;
+    if (base::StartsWith(value.GetString(), const_prefix,
+                         base::CompareCase::SENSITIVE)) {
+      return value.GetString().substr(const_prefix.length());
     }
     return "'" + value.GetString() + "'";
   }
 
+  // Integer.
   if (value.is_int()) {
     return base::NumberToString(value.GetInt());
   }
 
+  // List: exposed as [value1, ..., valueN];
   if (value.is_list()) {
     std::string output;
     for (const auto& item : value.GetList()) {
@@ -450,13 +512,23 @@ std::string AccessibilityTreeFormatterMac::FormatAttributeValue(
     return "[" + output + "]";
   }
 
+  // Dictionary. Exposed as {key1: value1, ..., keyN: valueN}. Set-like
+  // dictionary is exposed as {value1, ..., valueN}.
   if (value.is_dict()) {
+    const std::string setkey_prefix(kSetKeyPrefixDictAttr);
     std::string output;
     for (const auto& item : value.DictItems()) {
       if (!output.empty()) {
         output += ", ";
       }
-      output += item.first + ": " + FormatAttributeValue(item.second);
+      // Special set-like dictionaries handling: keys are prefixed by
+      // "_setkey_".
+      if (base::StartsWith(item.first, setkey_prefix,
+                           base::CompareCase::SENSITIVE)) {
+        output += FormatAttributeValue(item.second);
+      } else {
+        output += item.first + ": " + FormatAttributeValue(item.second);
+      }
     }
     return "{" + output + "}";
   }

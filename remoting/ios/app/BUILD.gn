@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/third_party/features.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/ios/app/remoting_ios_tmpl.gni")
 
@@ -145,14 +144,12 @@ ios_remoting_app_tmpl("ios_remoting_app") {
   entitlements_path = "resources/Remoting.entitlements"
   deps = [
     ":app_source_set",
+    "//ios/third_party/material_components_ios:material_components_ios+link",
     "//remoting/ios/app/resources:launchscreen_assets",
     "//remoting/ios/app/resources:remoting_icons",
   ]
 
-  if (ios_third_party_material_components_built_as_framework) {
-    deps += [
-      "//ios/third_party/material_components_ios:material_components_ios+link",
-    ]
-    bundle_deps = [ "//ios/third_party/material_components_ios:material_components_ios+bundle" ]
-  }
+  bundle_deps = [
+    "//ios/third_party/material_components_ios:material_components_ios+bundle",
+  ]
 }

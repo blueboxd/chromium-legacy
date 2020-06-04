@@ -10,13 +10,16 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/service_provider_config.h"
 
 namespace enterprise_connectors {
 
 // The settings for a report service obtained from a connector policy.
 class ReportingServiceSettings {
  public:
-  explicit ReportingServiceSettings(const base::Value& settings_value);
+  explicit ReportingServiceSettings(
+      const base::Value& settings_value,
+      const ServiceProviderConfig& service_provider_config);
   ReportingServiceSettings(ReportingServiceSettings&&);
   ~ReportingServiceSettings();
 
@@ -29,8 +32,10 @@ class ReportingServiceSettings {
   // false, then GetAnalysisSettings will always return base::nullopt.
   bool IsValid() const;
 
-  // The service provider's identifier. This is unique amongst providers.
-  std::string service_provider_;
+  // The service provider matching the name given in a Connector policy. nullptr
+  // implies that a corresponding service provider doesn't exist and that these
+  // settings are not valid.
+  const ServiceProviderConfig::ServiceProvider* service_provider_ = nullptr;
 };
 
 }  // namespace enterprise_connectors

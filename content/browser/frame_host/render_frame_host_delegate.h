@@ -593,6 +593,19 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void OnCookiesAccessed(RenderFrameHostImpl* render_frame_host,
                                  const CookieAccessDetails& details) {}
 
+  // Notified that the renderer responded after calling GetSavableResourceLinks.
+  virtual void SavableResourceLinksResponse(
+      RenderFrameHostImpl* source,
+      const std::vector<GURL>& resources_list,
+      blink::mojom::ReferrerPtr referrer,
+      const std::vector<blink::mojom::SavableSubframePtr>& subframes) {}
+
+  // Notified that the renderer returned an error after calling
+  // GetSavableResourceLinks in case the frame contains non-savable content
+  // (i.e. from a non-savable scheme) or if there were errors gathering the
+  // links.
+  virtual void SavableResourceLinksError(RenderFrameHostImpl* source) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() = default;
 };

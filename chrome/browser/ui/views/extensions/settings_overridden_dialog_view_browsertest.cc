@@ -22,7 +22,9 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/browser_test.h"
@@ -63,26 +65,43 @@ class TestDialogController : public SettingsOverriddenDialogController {
 
 class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
  public:
+  enum class DefaultSearch {
+    kUseDefault,
+    kUseNonGoogleFromDefaultList,
+    kUseNewSearch,
+  };
+
   SettingsOverriddenDialogViewBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kExtensionSettingsOverriddenDialogs);
   }
   ~SettingsOverriddenDialogViewBrowserTest() override = default;
 
+  void SetUpOnMainThread() override {
+    DialogBrowserTest::SetUpOnMainThread();
+    search_test_utils::WaitForTemplateURLServiceToLoad(
+        TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+  }
+
   void ShowUi(const std::string& name) override {
     test_name_ = name;
-    if (name == "SimpleDialog")
+    if (name == "SimpleDialog") {
       ShowSimpleDialog(false, browser());
-    else if (name == "SimpleDialogWithIcon")
+    } else if (name == "SimpleDialogWithIcon") {
       ShowSimpleDialog(true, browser());
-    else if (name == "NtpOverriddenDialog_BackToDefault")
+    } else if (name == "NtpOverriddenDialog_BackToDefault") {
       ShowNtpOverriddenDefaultDialog();
-    else if (name == "NtpOverriddenDialog_Generic")
+    } else if (name == "NtpOverriddenDialog_Generic") {
       ShowNtpOverriddenGenericDialog();
-    else if (name == "SearchOverriddenDialog")
-      ShowSearchOverriddenDialog();
-    else
+    } else if (name == "SearchOverriddenDialog_BackToGoogle") {
+      ShowSearchOverriddenDialog(DefaultSearch::kUseDefault);
+    } else if (name == "SearchOverriddenDialog_BackToOther") {
+      ShowSearchOverriddenDialog(DefaultSearch::kUseNonGoogleFromDefaultList);
+    } else if (name == "SearchOverriddenDialog_Generic") {
+      ShowSearchOverriddenDialog(DefaultSearch::kUseNewSearch);
+    } else {
       NOTREACHED() << name;
+    }
   }
 
   // Creates, shows, and returns a dialog anchored to the given |browser|. The
@@ -112,34 +131,23 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
   }
 
   void ShowNtpOverriddenGenericDialog() {
-    SetNonDefaultSearchProvider();
+    SetNewSearchProvider(DefaultSearch::kUseNonGoogleFromDefaultList);
     LoadExtensionOverridingNewTab();
     NavigateToNewTab();
   }
 
-  void ShowSearchOverriddenDialog() {
-    base::FilePath test_root_path;
-    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path));
-
-    // Load up an extension that overrides search.
-    Profile* const profile = browser()->profile();
-    scoped_refptr<const extensions::Extension> extension =
-        extensions::ChromeTestExtensionLoader(profile).LoadExtension(
-            test_root_path.AppendASCII("extensions/search_provider_override"));
-    ASSERT_TRUE(extension);
-
-    // Perform a search via the omnibox to trigger the dialog.
-    ui_test_utils::SendToOmniboxAndSubmit(browser(), "Penguin",
-                                          base::TimeTicks::Now());
-    content::WaitForLoadStop(
-        browser()->tab_strip_model()->GetActiveWebContents());
+  void ShowSearchOverriddenDialog(DefaultSearch search) {
+    SetNewSearchProvider(search);
+    LoadExtensionOverridingSearch();
+    PerformSearchFromOmnibox();
   }
 
   bool VerifyUi() override {
     if (!DialogBrowserTest::VerifyUi())
       return false;
 
-    if (test_name_ == "SearchOverriddenDialog") {
+    if (base::StartsWith(test_name_, "SearchOverriddenDialog",
+                         base::CompareCase::SENSITIVE)) {
       // Note: Because this is a test, we don't actually expect this navigation
       // to succeed. But we can still check that the user was sent to
       // example.com (the new search engine).
@@ -170,6 +178,17 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
     ASSERT_TRUE(extension);
   }
 
+  void LoadExtensionOverridingSearch() {
+    base::FilePath test_root_path;
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path));
+
+    Profile* const profile = browser()->profile();
+    scoped_refptr<const extensions::Extension> extension =
+        extensions::ChromeTestExtensionLoader(profile).LoadExtension(
+            test_root_path.AppendASCII("extensions/search_provider_override"));
+    ASSERT_TRUE(extension);
+  }
+
   void NavigateToNewTab() {
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL(chrome::kChromeUINewTabURL),
@@ -177,22 +196,43 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
 
-  void SetNonDefaultSearchProvider() {
+  void SetNewSearchProvider(DefaultSearch search) {
+    if (search == DefaultSearch::kUseDefault)
+      return;
+
     TemplateURLService* const template_url_service =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
+
+    bool new_search_shows_in_default_list = true;
+    // If the test requires a search engine that doesn't show in the default
+    // list, we need to add one.
+    if (search == DefaultSearch::kUseNewSearch) {
+      new_search_shows_in_default_list = false;
+      template_url_service->Add(
+          std::make_unique<TemplateURL>(*GenerateDummyTemplateURLData("test")));
+    }
+
     TemplateURLService::TemplateURLVector template_urls =
         template_url_service->GetTemplateURLs();
-    auto iter = std::find_if(template_urls.begin(), template_urls.end(),
-                             [template_url_service](const TemplateURL* turl) {
-                               // For the test, we can be a bit lazier and just
-                               // use HasGoogleBaseURLs() instead of getting the
-                               // full search URL.
-                               return !turl->HasGoogleBaseURLs(
-                                   template_url_service->search_terms_data());
-                             });
+    auto iter =
+        std::find_if(template_urls.begin(), template_urls.end(),
+                     [template_url_service, new_search_shows_in_default_list](
+                         const TemplateURL* turl) {
+                       return !turl->HasGoogleBaseURLs(
+                                  template_url_service->search_terms_data()) &&
+                              template_url_service->ShowInDefaultList(turl) ==
+                                  new_search_shows_in_default_list;
+                     });
     ASSERT_TRUE(iter != template_urls.end());
 
     template_url_service->SetUserSelectedDefaultSearchProvider(*iter);
+  }
+
+  void PerformSearchFromOmnibox() {
+    ui_test_utils::SendToOmniboxAndSubmit(browser(), "Penguin",
+                                          base::TimeTicks::Now());
+    content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents());
   }
 
   std::string test_name_;
@@ -238,7 +278,17 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
 // default search provider is only available on Windows and Mac.
 #if defined(OS_WIN) || defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
-                       InvokeUi_SearchOverriddenDialog) {
+                       InvokeUi_SearchOverriddenDialog_BackToGoogle) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
+                       InvokeUi_SearchOverriddenDialog_BackToOther) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
+                       InvokeUi_SearchOverriddenDialog_Generic) {
   ShowAndVerifyUi();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)

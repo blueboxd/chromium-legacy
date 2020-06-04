@@ -206,8 +206,8 @@
 <translation id="1763864636252898013">Ovaj server nije mogao potvrditi da je ovo domena <ph name="DOMAIN" />. Operativni sistem vašeg uređaja ne smatra njenu potvrdu sigurnosti pouzdanom. Uzrok može biti u pogrešnoj konfiguraciji ili da je napadač presreo vašu vezu.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Probajte pokrenuti Windows mrežnu dijagnostiku<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Server na koji idete, <ph name="ORIGIN" />, ima zaglavlje
-    koje traži da se izvorno pravilo primijeni na sve zahtjeve upućene njemu. Ali,
-    zaglavlje je neispravno, što sprečava da preglednik ispuni
+    koje traži da se izvorno pravilo primijeni na sve zahtjeve upućene njemu. Ali
+    zaglavlje je neispravno što sprečava preglednik da ispuni
     vaš zahtjev za web lokaciju <ph name="SITE" />. Operateri web lokacija mogu koristiti izvorna pravila
     za konfiguriranje sigurnosti i drugih osobina web lokacije.</translation>
 <translation id="1778646502362731194">JIS B0</translation>

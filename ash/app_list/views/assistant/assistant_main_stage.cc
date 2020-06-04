@@ -190,7 +190,7 @@ AppListAssistantMainStage::CreateContentLayoutContainer() {
 
   // Zero state, which will be animated on its own layer.
   zero_state_view_ = content_layout_container->AddChildView(
-      std::make_unique<AssistantZeroStateView>());
+      std::make_unique<AssistantZeroStateView>(delegate_));
   zero_state_view_->SetPaintToLayer();
   zero_state_view_->layer()->SetFillsBoundsOpaquely(false);
 

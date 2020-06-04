@@ -13,10 +13,6 @@ namespace spellcheck {
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-extern const base::Feature kWinUseHybridSpellChecker;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
 bool UseBrowserSpellChecker();
 
 #if defined(OS_WIN)
@@ -33,7 +29,6 @@ extern const base::Feature kWinUseBrowserSpellChecker;
 extern const base::Feature kWinDelaySpellcheckServiceInit;
 
 bool WindowsVersionSupportsSpellchecker();
-bool UseWinHybridSpellChecker();
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)

@@ -1523,6 +1523,8 @@ void BluetoothAdapterBlueZ::UpdateFilter(
 void BluetoothAdapterBlueZ::StartScanWithFilter(
     std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
     DiscoverySessionResultCallback callback) {
+  DCHECK(discovery_filter.get());
+
   if (!IsPresent()) {
     std::move(callback).Run(
         true, UMABluetoothDiscoverySessionOutcome::ADAPTER_NOT_PRESENT);
@@ -1532,39 +1534,16 @@ void BluetoothAdapterBlueZ::StartScanWithFilter(
   BLUETOOTH_LOG(EVENT) << __func__;
 
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-
-  if (discovery_filter && !discovery_filter->IsDefault()) {
-    std::unique_ptr<BluetoothDiscoveryFilter> df(
-        new BluetoothDiscoveryFilter(device::BLUETOOTH_TRANSPORT_DUAL));
-    df->CopyFrom(*discovery_filter);
-    SetDiscoveryFilter(
-        std::move(df),
-        base::BindRepeating(
-            &BluetoothAdapterBlueZ::OnPreSetDiscoveryFilter,
-            weak_ptr_factory_.GetWeakPtr(),
-            base::BindRepeating(copyable_callback, /*is_error=*/false,
-                                UMABluetoothDiscoverySessionOutcome::SUCCESS),
-            base::BindRepeating(copyable_callback, true)),
-        base::BindOnce(
-            &BluetoothAdapterBlueZ::OnPreSetDiscoveryFilterError,
-            weak_ptr_factory_.GetWeakPtr(),
-            base::BindRepeating(copyable_callback, /*is_error=*/false,
-                                UMABluetoothDiscoverySessionOutcome::SUCCESS),
-            base::BindOnce(copyable_callback, true)));
-    return;
-  }
-
-  // This is the first request to start device discovery.
-  bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->StartDiscovery(
-      object_path_,
-      base::BindOnce(
-          &BluetoothAdapterBlueZ::OnStartDiscovery,
+  SetDiscoveryFilter(
+      std::move(discovery_filter),
+      base::BindRepeating(
+          &BluetoothAdapterBlueZ::OnPreSetDiscoveryFilter,
           weak_ptr_factory_.GetWeakPtr(),
           base::BindRepeating(copyable_callback, /*is_error=*/false,
                               UMABluetoothDiscoverySessionOutcome::SUCCESS),
           base::BindRepeating(copyable_callback, true)),
       base::BindOnce(
-          &BluetoothAdapterBlueZ::OnStartDiscoveryError,
+          &BluetoothAdapterBlueZ::OnPreSetDiscoveryFilterError,
           weak_ptr_factory_.GetWeakPtr(),
           base::BindRepeating(copyable_callback, /*is_error=*/false,
                               UMABluetoothDiscoverySessionOutcome::SUCCESS),
@@ -1607,6 +1586,8 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     DiscoverySessionErrorCallback error_callback) {
+  DCHECK(discovery_filter.get());
+
   if (!IsPresent()) {
     std::move(error_callback)
         .Run(UMABluetoothDiscoverySessionOutcome::ADAPTER_REMOVED);
@@ -1614,36 +1595,32 @@ void BluetoothAdapterBlueZ::SetDiscoveryFilter(
   }
 
   bluez::BluetoothAdapterClient::DiscoveryFilter dbus_discovery_filter;
+  uint16_t pathloss;
+  int16_t rssi;
+  uint8_t transport;
+  std::set<device::BluetoothUUID> uuids;
 
-  if (discovery_filter.get() && !discovery_filter->IsDefault()) {
-    uint16_t pathloss;
-    int16_t rssi;
-    uint8_t transport;
-    std::set<device::BluetoothUUID> uuids;
+  if (discovery_filter->GetPathloss(&pathloss))
+    dbus_discovery_filter.pathloss = std::make_unique<uint16_t>(pathloss);
 
-    if (discovery_filter->GetPathloss(&pathloss))
-      dbus_discovery_filter.pathloss.reset(new uint16_t(pathloss));
+  if (discovery_filter->GetRSSI(&rssi))
+    dbus_discovery_filter.rssi = std::make_unique<int16_t>(rssi);
 
-    if (discovery_filter->GetRSSI(&rssi))
-      dbus_discovery_filter.rssi.reset(new int16_t(rssi));
+  transport = discovery_filter->GetTransport();
+  if (transport == device::BLUETOOTH_TRANSPORT_LE) {
+    dbus_discovery_filter.transport = std::make_unique<std::string>("le");
+  } else if (transport == device::BLUETOOTH_TRANSPORT_CLASSIC) {
+    dbus_discovery_filter.transport = std::make_unique<std::string>("bredr");
+  } else if (transport == device::BLUETOOTH_TRANSPORT_DUAL) {
+    dbus_discovery_filter.transport = std::make_unique<std::string>("auto");
+  }
 
-    transport = discovery_filter->GetTransport();
-    if (transport == device::BLUETOOTH_TRANSPORT_LE) {
-      dbus_discovery_filter.transport.reset(new std::string("le"));
-    } else if (transport == device::BLUETOOTH_TRANSPORT_CLASSIC) {
-      dbus_discovery_filter.transport.reset(new std::string("bredr"));
-    } else if (transport == device::BLUETOOTH_TRANSPORT_DUAL) {
-      dbus_discovery_filter.transport.reset(new std::string("auto"));
-    }
+  discovery_filter->GetUUIDs(uuids);
+  if (uuids.size()) {
+    dbus_discovery_filter.uuids = std::make_unique<std::vector<std::string>>();
 
-    discovery_filter->GetUUIDs(uuids);
-    if (uuids.size()) {
-      dbus_discovery_filter.uuids = std::unique_ptr<std::vector<std::string>>(
-          new std::vector<std::string>);
-
-      for (const auto& it : uuids)
-        dbus_discovery_filter.uuids.get()->push_back(it.value());
-    }
+    for (const auto& it : uuids)
+      dbus_discovery_filter.uuids.get()->push_back(it.value());
   }
 
   auto copyable_error_callback =

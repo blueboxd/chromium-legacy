@@ -389,9 +389,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             'passes/args.html'
         ]
         tests_run = get_tests_run(['--order=natural'] + tests_to_run)
+        # because of deduping the test list, they should be run once.
         self.assertEqual([
-            'passes/args.html', 'passes/args.html', 'passes/audio.html',
-            'passes/audio.html'
+            'passes/args.html', 'passes/audio.html'
         ], tests_run)
 
     def test_random_order(self):
@@ -447,8 +447,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             'passes/args.html'
         ]
         tests_run = get_tests_run(['--order=random'] + tests_to_run)
-        self.assertEqual(tests_run.count('passes/audio.html'), 2)
-        self.assertEqual(tests_run.count('passes/args.html'), 2)
+        # because of deduping the test list, they should be run once.
+        self.assertEqual(tests_run.count('passes/audio.html'), 1)
+        self.assertEqual(tests_run.count('passes/args.html'), 1)
 
     def test_no_order(self):
         tests_to_run = [
@@ -464,7 +465,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             'passes/args.html'
         ]
         tests_run = get_tests_run(['--order=none'] + tests_to_run)
-        self.assertEqual(tests_to_run, tests_run)
+        # because of deduping the test list, they should be run once.
+        self.assertEqual(['passes/args.html', 'passes/audio.html'], tests_run)
 
     def test_no_order_with_directory_entries_in_natural_order(self):
         tests_to_run = ['http/tests/ssl', 'perf/foo', 'http/tests/passes']

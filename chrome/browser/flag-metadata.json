@@ -2242,7 +2242,7 @@
   {
     "name": "enable-tls13-early-data",
     "owners": [ "svaldez" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 90
   },
   {
     "name": "enable-touch-drag-drop",
@@ -3515,7 +3515,7 @@
   {
     "name": "password-change-support",
     "owners": [ "selakovic" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "password-check",
@@ -3546,11 +3546,6 @@
     "name": "passwords-account-storage-saving-ui",
     "owners": ["mamir", "fhorschig"],
     "expiry_milestone": 85
-  },
-  {
-    "name": "pdf-annotations",
-    "owners": [ "dstockwell@google.com" ],
-    "expiry_milestone": 76
   },
   {
     "name": "pdf-form-save",
@@ -4345,6 +4340,11 @@
     "name": "use-js-error-page",
     "owners": [ "gambard" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "use-lookalikes-for-navigation-suggestions",
+    "owners": ["jdeblasio", "meacer"],
+    "expiry_milestone": 86
   },
   {
     "name": "use_messages_staging_url",

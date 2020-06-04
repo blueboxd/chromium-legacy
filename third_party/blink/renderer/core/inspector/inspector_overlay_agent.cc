@@ -734,35 +734,23 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   Response response = dom_agent_->AssertNode(node_id, node);
   if (!response.IsSuccess())
     return response;
-  bool is_locked_ancestor = false;
 
-  // If |node| is in a display locked subtree, highlight the highest locked
-  // ancestor element instead.
-  if (Node* locked_ancestor =
-          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
-    node = locked_ancestor;
-    is_locked_ancestor = true;
-  }
-
-  InspectorHighlightConfig config = InspectorHighlight::DefaultConfig();
-  config.show_styles = include_style.fromMaybe(false);
-
+  auto config = std::make_unique<InspectorHighlightConfig>(
+      InspectorHighlight::DefaultConfig());
+  config->show_styles = include_style.fromMaybe(false);
   String format = colorFormat.fromMaybe("hex");
-
   namespace ColorFormatEnum = protocol::Overlay::ColorFormatEnum;
   if (format == ColorFormatEnum::Hsl) {
-    config.color_format = ColorFormat::HSL;
+    config->color_format = ColorFormat::HSL;
   } else if (format == ColorFormatEnum::Rgb) {
-    config.color_format = ColorFormat::RGB;
+    config->color_format = ColorFormat::RGB;
   } else {
-    config.color_format = ColorFormat::HEX;
+    config->color_format = ColorFormat::HEX;
   }
 
-  InspectorHighlight highlight(node, config, InspectorHighlightContrastInfo(),
-                               true /* append_element_info */,
-                               include_distance.fromMaybe(false),
-                               is_locked_ancestor);
-  *result = highlight.AsProtocolValue();
+  NodeHighlightTool tool(node, "" /* selector_list */, std::move(config));
+  *result = tool.GetNodeInspectorHighlightAsJson(
+      true /* append_element_info */, include_distance.fromMaybe(false));
   return Response::Success();
 }
 

@@ -282,6 +282,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   //       2.) The default search engine is disabled by policy.
   const TemplateURL* GetDefaultSearchProvider() const;
 
+  // Returns the default search provider, ignoring any that were provided by an
+  // extension.
+  const TemplateURL* GetDefaultSearchProviderIgnoringExtensions() const;
+
   // Returns true if the |url| is a search results page from the default search
   // provider.
   bool IsSearchResultsPageFromDefaultSearchProvider(const GURL& url) const;

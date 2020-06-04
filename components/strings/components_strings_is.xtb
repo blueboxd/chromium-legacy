@@ -209,8 +209,8 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="1772163372082567643">Netþjónninn sem þú valdir, <ph name="ORIGIN" />, er með stilltan haus
     þar sem farið er fram á að upprunaregla sé notuð við allar aðgangsbeiðnir. En
     hausinn er gallaður, sem kemur í veg fyrir að vafrinn geti uppfyllt
-    beiðni þína fyrir <ph name="SITE" />. Upprunareglur geta verið notaðar af
-    notendum síðu til að stilla öryggi og aðra eiginleika fyrir síðu.</translation>
+    beiðni þína fyrir <ph name="SITE" />. Notendur síðu geta notað upprunareglur
+    til að stilla öryggi og aðra eiginleika síðu.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Uppfærðu aðgangsorðið þitt fyrir samstillingu.</translation>
 <translation id="1787142507584202372">Opnir flipar birtast hér</translation>
@@ -758,10 +758,10 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="4194250254487269611">Ekki er hægt að vista kortið þitt núna</translation>
 <translation id="4196861286325780578">&amp;Endurtaka flutning</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Athuga eldveggjar- og vírusvarnastillingar<ph name="END_LINK" /></translation>
-<translation id="4209166701302774460">Netþjónninn sem þú hefur valið, <ph name="ORIGIN" />, hefur beðið um að
+<translation id="4209166701302774460">Netþjónninn sem þú valdir, <ph name="ORIGIN" />, hefur beðið um að
     upprunaregla sé notuð við allar aðgangsbeiðnir. En hann hefur ekki
     afhent reglu, sem kemur í veg fyrir að vafrinn uppfylli beiðni þína
-    fyrir <ph name="SITE" />. Upprunareglur geta verið notaðar af notendum síðu
+    fyrir <ph name="SITE" />. Notendur síðu geta notað upprunareglur 
     til að stilla öryggi og aðra eiginleika fyrir síðu.</translation>
 <translation id="421066178035138955">Nota sýndarveruleikatæki og -gögn</translation>
 <translation id="4214357935346142455">prófíll innskráningarskjás</translation>

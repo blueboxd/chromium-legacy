@@ -286,7 +286,7 @@ NodeHighlightTool::NodeHighlightTool(
   } else {
     node_ = node;
   }
-  contrast_info_ = FetchContrast(node);
+  contrast_info_ = FetchContrast(node_);
 }
 
 bool NodeHighlightTool::ForwardEventsToOverlay() {
@@ -311,11 +311,10 @@ void NodeHighlightTool::DrawNode() {
                              highlight_config_->show_info &&
                              node_->GetLayoutObject() &&
                              node_->GetDocument().GetFrame();
-  InspectorHighlight highlight(node_.Get(), *highlight_config_, contrast_info_,
-                               append_element_info, false, is_locked_ancestor_);
-  std::unique_ptr<protocol::DictionaryValue> highlight_json =
-      highlight.AsProtocolValue();
-  overlay_->EvaluateInOverlay("drawHighlight", std::move(highlight_json));
+  overlay_->EvaluateInOverlay(
+      "drawHighlight",
+      GetNodeInspectorHighlightAsJson(append_element_info,
+                                      false /* append_distance_info */));
 }
 
 void NodeHighlightTool::DrawMatchingSelector() {
@@ -346,6 +345,16 @@ void NodeHighlightTool::DrawMatchingSelector() {
 void NodeHighlightTool::Trace(Visitor* visitor) const {
   InspectTool::Trace(visitor);
   visitor->Trace(node_);
+}
+
+std::unique_ptr<protocol::DictionaryValue>
+NodeHighlightTool::GetNodeInspectorHighlightAsJson(
+    bool append_element_info,
+    bool append_distance_info) const {
+  InspectorHighlight highlight(node_.Get(), *highlight_config_, contrast_info_,
+                               append_element_info, append_distance_info,
+                               is_locked_ancestor_);
+  return highlight.AsProtocolValue();
 }
 
 // NearbyDistanceTool ----------------------------------------------------------

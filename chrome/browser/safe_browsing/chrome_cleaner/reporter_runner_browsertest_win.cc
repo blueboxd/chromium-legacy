@@ -376,7 +376,7 @@ class ReporterRunnerTest
     Browser* browser = chrome::FindLastActive();
     DCHECK(browser);
     Profile* profile = browser->profile();
-    SetExtendedReportingPref(profile->GetPrefs(), true);
+    SetExtendedReportingPrefForTests(profile->GetPrefs(), true);
   }
 
   // Expects that the reporter has been launched |expected_launch_count| times,

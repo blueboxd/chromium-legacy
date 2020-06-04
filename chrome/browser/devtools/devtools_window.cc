@@ -37,7 +37,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/javascript_dialogs/app_modal_dialog_manager.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sessions/content/session_tab_helper.h"
@@ -955,8 +954,6 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
   zoom::ZoomController::CreateForWebContents(main_web_contents_);
   zoom::ZoomController::FromWebContents(main_web_contents_)
       ->SetShowsNotificationBubble(false);
-  performance_manager::PerformanceManagerRegistry::GetInstance()
-      ->CreatePageNodeForWebContents(main_web_contents_);
 
   g_devtools_window_instances.Get().push_back(this);
 

@@ -231,6 +231,10 @@ NET_EXPORT extern const base::Feature kSchemefulSameSite;
 // those algorithms. If disabled, the algorithms will always be offered.
 NET_EXPORT extern const base::Feature kTLSLegacyCryptoFallbackForMetrics;
 
+// When enabled, DNS_PROBE_FINISHED_NXDOMAIN error pages may show
+// locally-generated suggestions to visit similar domains.
+NET_EXPORT extern const base::Feature kUseLookalikesForNavigationSuggestions;
+
 }  // namespace features
 }  // namespace net
 

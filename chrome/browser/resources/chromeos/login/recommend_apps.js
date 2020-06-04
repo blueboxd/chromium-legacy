@@ -23,24 +23,21 @@ const UIState = {
 Polymer({
   is: 'recommend-apps',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+  behaviors: [
+    OobeI18nBehavior,
+    OobeDialogHostBehavior,
+    LoginScreenBehavior,
+    MultiStepBehavior,
+  ],
 
   EXTERNAL_API: [
     'setWebview',
     'loadAppList',
   ],
 
-  properties: {
-    /**
-     * Current step being displayed.
-     * @type {UIState}
-     * @private
-     */
-    uiState_: {
-      type: String,
-      value: UIState.LOADING,
-    },
+  UI_STEPS: UIState,
 
+  properties: {
     appCount_: {
       type: Number,
       value: 0,
@@ -66,7 +63,7 @@ Polymer({
    * Currently is used for debugging purposes only.
    */
   reset() {
-    this.uiState_ = UIState.LOADING;
+    this.setUIStep(UIState.LOADING);
     this.appCount_ = 0;
     this.appsSelected_ = 0;
   },
@@ -76,6 +73,10 @@ Polymer({
    */
   get defaultControl() {
     return this.$.appsDialog;
+  },
+
+  defaultUIStep() {
+    return UIState.LOADING;
   },
 
   /**
@@ -125,7 +126,7 @@ Polymer({
    * Handles event when contents in the webview is generated.
    */
   onFullyLoaded_() {
-    this.uiState_ = UIState.LIST;
+    this.setUIStep(UIState.LIST);
     this.$.installButton.focus();
   },
 
@@ -166,18 +167,5 @@ Polymer({
   canProceed_(appsSelected) {
     return appsSelected > 0;
   },
-
-  /**
-   * Checks if current step is one of specified steps.
-   * @param {UIState} currentStep Name of current step.
-   * @param {...string} stepsVarArgs List of steps to compare with.
-   * @return {boolean}
-   */
-  isStep_(currentStep, ...stepsVarArgs) {
-    if (stepsVarArgs.length < 1)
-      throw Error('At least one step to compare is required.');
-    return stepsVarArgs.some(step => currentStep === step);
-  },
-
 });
 })();

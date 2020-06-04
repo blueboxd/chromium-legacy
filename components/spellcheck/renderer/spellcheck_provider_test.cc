@@ -16,13 +16,11 @@
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 namespace {
 base::FilePath GetHunspellDirectory() {
   base::FilePath hunspell_directory;
@@ -34,7 +32,7 @@ base::FilePath GetHunspellDirectory() {
   return hunspell_directory;
 }
 }  // namespace
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 FakeTextCheckingResult::FakeTextCheckingResult() = default;
 FakeTextCheckingResult::~FakeTextCheckingResult() = default;
@@ -67,7 +65,7 @@ void FakeSpellCheck::SetFakeLanguageCounts(size_t language_count,
   enabled_language_count_ = enabled_count;
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void FakeSpellCheck::InitializeSpellCheckForLocale(const std::string& language,
                                                    bool use_hunspell) {
   // Non-Hunspell case is passed invalid file to SpellcheckLanguage::Init.
@@ -91,7 +89,7 @@ void FakeSpellCheck::InitializeSpellCheckForLocale(const std::string& language,
       std::make_unique<HunspellEngine>(embedder_provider_);
   SpellCheck::languages_.back()->Init(std::move(file), language);
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 size_t FakeSpellCheck::LanguageCount() {
   return use_fake_counts_ ? language_count_ : SpellCheck::LanguageCount();
@@ -185,15 +183,16 @@ void TestingSpellCheckProvider::FillSuggestionList(const base::string16&,
                                                    FillSuggestionListCallback) {
   NOTREACHED();
 }
-#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
 void TestingSpellCheckProvider::GetPerLanguageSuggestions(
     const base::string16& word,
     GetPerLanguageSuggestionsCallback callback) {
   NOTREACHED();
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN)
+
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 #if defined(OS_ANDROID)
 void TestingSpellCheckProvider::DisconnectSessionBridge() {
@@ -214,7 +213,7 @@ bool TestingSpellCheckProvider::SatisfyRequestFromCache(
   return SpellCheckProvider::SatisfyRequestFromCache(text, completion);
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 int TestingSpellCheckProvider::AddCompletionForTest(
     std::unique_ptr<FakeTextCheckingCompletion> completion,
     SpellCheckProvider::HybridSpellCheckRequestInfo request_info) {
@@ -231,7 +230,7 @@ void TestingSpellCheckProvider::OnRespondTextCheck(
   SpellCheckProvider::OnRespondTextCheck(identifier, line, results);
   base::RunLoop().RunUntilIdle();
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 SpellCheckProviderTest::SpellCheckProviderTest()
     : provider_(&embedder_provider_) {}

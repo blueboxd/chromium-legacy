@@ -503,7 +503,6 @@
 <translation id="1632803087685957583">Омогућавају вам да прилагодите брзину понављања за тастатуру, предвиђање речи и још пуно тога</translation>
 <translation id="1633947793238301227">Онемогућите Google помоћник</translation>
 <translation id="1634783886312010422">Да ли сте већ променили ову лозинку на <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Инсталирао је надређени корисник.</translation>
 <translation id="1637224376458524414">Користите овај обележивач на iPhone-у</translation>
 <translation id="1637765355341780467">Дошло је до проблема при отварању профила. Неке функције ће можда бити недоступне.</translation>
 <translation id="1639239467298939599">Учитавање</translation>
@@ -951,12 +950,10 @@
 <translation id="2199719347983604670">Подаци из Chrome синхронизације</translation>
 <translation id="2200094388063410062">Пошаљи имејлом</translation>
 <translation id="2200356397587687044">Chrome тражи дозволу да настави</translation>
-<translation id="2200729650590440847">Подешавања закључаног екрана који се откључава помоћу PIN-а</translation>
 <translation id="220138918934036434">Сакриј дугме</translation>
 <translation id="2202898655984161076">Дошло је до проблема приликом пописа штампача. Неки од штампача можда нису регистровани са <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Претраживач који се користи из <ph name="BEGIN_LINK" />траке за адресу<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Читање и мењање свега што уносите</translation>
-<translation id="2207166770508557715">Подешавања спавања</translation>
 <translation id="220858061631308971">Унесите овај PIN кôд на уређају „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2212565012507486665">Дозволи колачиће</translation>
 <translation id="2213140827792212876">Уклоните дељење</translation>
@@ -1405,11 +1402,9 @@
 <translation id="2751131328353405138">Прикључује се sshfs Linux контејнера</translation>
 <translation id="2751739896257479635">EAP потврда идентитета 2. фазе:</translation>
 <translation id="2753677631968972007">Ручно контролишите дозволе за сајтове.</translation>
-<translation id="2753984311895843016">Напајање током неактивности</translation>
 <translation id="2755367719610958252">Управљај функцијама приступачности</translation>
 <translation id="275662540872599901">екран је искључен</translation>
 <translation id="2757338480560142065">Проверите да ли се лозинка коју чувате подудара са лозинком за <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Положај монитора</translation>
 <translation id="2762441749940182211">Камера је блокирана</translation>
 <translation id="2764786626780673772">Детаљи о VPN-у</translation>
 <translation id="2765217105034171413">Мала</translation>
@@ -6223,7 +6218,6 @@
 <translation id="8953476467359856141">Током пуњења</translation>
 <translation id="895347679606913382">Започињање...</translation>
 <translation id="8957762313041272117">Титл уживо</translation>
-<translation id="8958804960827200147">Положај екрана</translation>
 <translation id="895944840846194039">JavaScript меморија</translation>
 <translation id="8962083179518285172">Сакриј детаље</translation>
 <translation id="8962918469425892674">Овај сајт користи сензоре покрета или светла.</translation>

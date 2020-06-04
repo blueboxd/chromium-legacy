@@ -29,7 +29,6 @@
 #include "content/common/frame_visual_properties.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
-#include "content/common/savable_subframe.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/impression.h"
@@ -387,11 +386,6 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(content::NavigationDownloadPolicy, download_policy)
 IPC_STRUCT_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::SavableSubframe)
-  IPC_STRUCT_TRAITS_MEMBER(original_url)
-  IPC_STRUCT_TRAITS_MEMBER(routing_id)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(int32_t, parent_routing_id)
   IPC_STRUCT_MEMBER(blink::mojom::TreeScopeType, scope)
@@ -465,10 +459,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
 IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
                     std::string /* name */,
                     std::string /* unique_name */)
-
-// Request to enumerate and return links to all savable resources in the frame
-// Note: this covers only the immediate frame / doesn't cover subframes.
-IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin allowlist.
@@ -718,17 +708,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisplayContentWithCertificateErrors)
 // Sent when the renderer runs content that was loaded with certificate
 // errors.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidRunContentWithCertificateErrors)
-
-// Response to FrameMsg_GetSavableResourceLinks.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
-                    std::vector<GURL> /* savable resource links */,
-                    content::Referrer /* referrer for all the links above */,
-                    std::vector<content::SavableSubframe> /* subframes */)
-
-// Response to FrameMsg_GetSavableResourceLinks in case the frame contains
-// non-savable content (i.e. from a non-savable scheme) or if there were
-// errors gathering the links.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.

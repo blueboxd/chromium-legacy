@@ -65,7 +65,6 @@ class ExportNotifier(object):
             gerrit_sha = self.wpt_github.extract_metadata(
                 WPT_REVISION_FOOTER, pr.body)
             gerrit_dict[gerrit_id] = PRStatusInfo(
-                taskcluster_status['node_id'],
                 taskcluster_status['target_url'], gerrit_sha)
 
         self.process_failing_prs(gerrit_dict)
@@ -129,7 +128,7 @@ class ExportNotifier(object):
             existing_status = PRStatusInfo.from_gerrit_comment(
                 message['message'])
             if existing_status:
-                return existing_status.node_id == pr_status_info.node_id
+                return existing_status.gerrit_sha == pr_status_info.gerrit_sha
 
         return False
 
@@ -176,22 +175,16 @@ class ExportNotifier(object):
 
 
 class PRStatusInfo(object):
-    NODE_ID_TAG = 'Taskcluster Node ID: '
     LINK_TAG = 'Taskcluster Link: '
     CL_SHA_TAG = 'Gerrit CL SHA: '
     PATCHSET_TAG = 'Patchset Number: '
 
-    def __init__(self, node_id, link, gerrit_sha=None):
-        self._node_id = node_id
+    def __init__(self, link, gerrit_sha=None):
         self._link = link
         if gerrit_sha:
             self._gerrit_sha = gerrit_sha
         else:
             self._gerrit_sha = 'Latest'
-
-    @property
-    def node_id(self):
-        return self._node_id
 
     @property
     def link(self):
@@ -203,11 +196,8 @@ class PRStatusInfo(object):
 
     @staticmethod
     def from_gerrit_comment(comment):
-        tags = [
-            PRStatusInfo.NODE_ID_TAG, PRStatusInfo.LINK_TAG,
-            PRStatusInfo.CL_SHA_TAG
-        ]
-        values = ['', '', '']
+        tags = [PRStatusInfo.LINK_TAG, PRStatusInfo.CL_SHA_TAG]
+        values = ['', '']
 
         for line in comment.splitlines():
             for index, tag in enumerate(tags):
@@ -226,12 +216,10 @@ class PRStatusInfo(object):
             'on GitHub, which could indict cross-broswer failures on the '
             'exportable changes. Please contact ecosystem-infra@ team for '
             'more information.')
-        node_id_line = ('\n\n{}{}').format(PRStatusInfo.NODE_ID_TAG,
-                                           self.node_id)
-        link_line = ('\n{}{}').format(PRStatusInfo.LINK_TAG, self.link)
+        link_line = ('\n\n{}{}').format(PRStatusInfo.LINK_TAG, self.link)
         sha_line = ('\n{}{}').format(PRStatusInfo.CL_SHA_TAG, self.gerrit_sha)
 
-        comment = status_line + node_id_line + link_line + sha_line
+        comment = status_line + link_line + sha_line
         if patchset is not None:
             comment += ('\n{}{}').format(PRStatusInfo.PATCHSET_TAG, patchset)
 

@@ -148,6 +148,7 @@ Dodirnite bilo koju riječ da biste pokrenuli pretraživanje. Ako želite preciz
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostale web-lokacije (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Da biste dijelili sadržaj s telefona s nekim drugim uređajem, uključite sinkronizaciju u Chromeovim postavkama na oba uređaja</translation>
+<translation id="2169830938017475061">Sad</translation>
 <translation id="2175927920773552910">QR kôd</translation>
 <translation id="218608176142494674">Dijeljenje</translation>
 <translation id="2227444325776770048">Nastavite kao <ph name="USER_FULL_NAME" /></translation>
@@ -435,7 +436,7 @@ Vaš Google račun može sadržavati druge oblike povijesti pregledavanja, na pr
 <translation id="4634124774493850572">Upotrijebi zaporku</translation>
 <translation id="4650364565596261010">Zadana postavka sustava</translation>
 <translation id="4660838440047236328">izgled vaše sobe</translation>
-<translation id="4662373422909645029">Nadimak ne smije imati brojeve</translation>
+<translation id="4662373422909645029">Nadimak ne smije sadržavati brojeve</translation>
 <translation id="4663756553811254707">Oznake su izbrisane (<ph name="NUMBER_OF_BOOKMARKS" />)</translation>
 <translation id="4665282149850138822">Web-lokacija <ph name="NAME" /> dodana je na početni zaslon</translation>
 <translation id="4684427112815847243">Sinkroniziraj sve</translation>

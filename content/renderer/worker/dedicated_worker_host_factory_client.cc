@@ -49,15 +49,14 @@ void DedicatedWorkerHostFactoryClient::CreateWorkerHost(
     const blink::WebURL& script_url,
     network::mojom::CredentialsMode credentials_mode,
     const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
-    mojo::ScopedMessagePipeHandle blob_url_token) {
+    blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>
+        blob_url_token) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
 
   factory_->CreateWorkerHostAndStartScriptLoad(
       script_url, credentials_mode,
       FetchClientSettingsObjectFromWebToMojom(fetch_client_settings_object),
-      mojo::PendingRemote<blink::mojom::BlobURLToken>(
-          std::move(blob_url_token), blink::mojom::BlobURLToken::Version_),
-      receiver_.BindNewPipeAndPassRemote(),
+      std::move(blob_url_token), receiver_.BindNewPipeAndPassRemote(),
       remote_host_.BindNewPipeAndPassReceiver());
 }
 

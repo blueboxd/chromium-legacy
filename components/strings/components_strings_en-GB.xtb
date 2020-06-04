@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> normally uses encryption to protect your information. When Google Chrome tried to connect to <ph name="SITE" /> this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be <ph name="SITE" />, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Google Chrome stopped the connection before any data was exchanged.</translation>
 <translation id="1682696192498422849">Short edge first</translation>
+<translation id="168693727862418163">This policy value failed to validate against its schema and will be ignored.</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
 <translation id="1697532407822776718">You're all set!</translation>
 <translation id="1703835215927279855">Letter</translation>

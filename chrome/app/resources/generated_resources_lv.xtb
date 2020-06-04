@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Varat pielāgot tastatūras atkārtošanas ātrumu, vārdu paredzēšanu un citus iestatījumus.</translation>
 <translation id="1633947793238301227">Google asistenta atspējošana</translation>
 <translation id="1634783886312010422">Vai jūs jau nomainījāt šo paroli vietnē <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Instalēja aizbildnis.</translation>
 <translation id="1637224376458524414">Iegūstiet šo grāmatzīmi savā iPhone tālrunī</translation>
 <translation id="1637765355341780467">Atverot profilu, radās kļūda. Iespējams, dažas funkcijas nebūs pieejamas.</translation>
 <translation id="1639239467298939599">Notiek ielāde</translation>
@@ -954,12 +953,10 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2199719347983604670">Chrome sinhronizācijas dati</translation>
 <translation id="2200094388063410062">Nosūtīt e-pastā</translation>
 <translation id="2200356397587687044">Pārlūkam Chrome ir nepieciešama atļauja turpināt</translation>
-<translation id="2200729650590440847">Bloķēšanas ekrāna PIN iestatījumi</translation>
 <translation id="220138918934036434">Paslēpt pogu</translation>
 <translation id="2202898655984161076">Radās problēma saistībā ar printeru parādīšanu. Iespējams, daži no printeriem nav sekmīgi reģistrēti pakalpojumā <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Meklētājprogramma, kas tiek izmantota <ph name="BEGIN_LINK" />adreses joslā<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lasīt un mainīt visu, ko rakstāt</translation>
-<translation id="2207166770508557715">Miega režīma iestatījumi</translation>
 <translation id="220858061631308971">Ievadiet šo PIN kodu ierīcē <ph name="DEVICE_NAME" />:</translation>
 <translation id="2212565012507486665">Atļaut sīkfailus</translation>
 <translation id="2213140827792212876">Noņemt kopīgošanu</translation>
@@ -1408,11 +1405,9 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2751131328353405138">Linux konteinera SSH failu sistēmas iekļaušana</translation>
 <translation id="2751739896257479635">EAP 2. fāzes autentificēšana</translation>
 <translation id="2753677631968972007">Manuāli kontrolēt vietņu atļaujas.</translation>
-<translation id="2753984311895843016">Barošanas iestatījumi miega režīmā</translation>
 <translation id="2755367719610958252">Pārvaldīt pieejamības funkcijas</translation>
 <translation id="275662540872599901">ekrāns izslēgts</translation>
 <translation id="2757338480560142065">Parolei, kuru vēlaties saglabāt, ir jāatbilst vietnē <ph name="WEBSITE" /> izmantotajai parolei.</translation>
-<translation id="276221322463921688">Monitora virziens</translation>
 <translation id="2762441749940182211">Kameras lietošana ir bloķēta</translation>
 <translation id="2764786626780673772">VPN dati</translation>
 <translation id="2765217105034171413">Mazs</translation>
@@ -6224,7 +6219,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8953476467359856141">Uzlādes laikā</translation>
 <translation id="895347679606913382">Sākums...</translation>
 <translation id="8957762313041272117">Subtitri reāllaikā</translation>
-<translation id="8958804960827200147">Ekrāna virziens</translation>
 <translation id="895944840846194039">JavaScript atmiņa</translation>
 <translation id="8962083179518285172">Slēpt detaļas</translation>
 <translation id="8962918469425892674">Šajā vietnē tiek izmantoti kustību vai gaismas sensori.</translation>

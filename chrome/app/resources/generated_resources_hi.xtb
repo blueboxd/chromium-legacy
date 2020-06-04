@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">आपको अपने कीबोर्ड को दोहराने की दर, शब्द पूर्वानुमान वगैरह समायोजित करने देती है</translation>
 <translation id="1633947793238301227">Google Assistant बंद करें</translation>
 <translation id="1634783886312010422">क्या आपने <ph name="WEBSITE" /> पर पहले ही पासवर्ड बदल दिया है?</translation>
-<translation id="1635033183663317347">आपके संरक्षक द्वारा इंस्‍टॉल किया गया.</translation>
 <translation id="1637224376458524414">यह बुकमार्क अपने iPhone पर पाएं</translation>
 <translation id="1637765355341780467">आपकी प्रोफ़ाइल खोलते समय कुछ गलत हो गया. हो सकता है कि कुछ सुविधाएं अनुपलब्ध हों.</translation>
 <translation id="1639239467298939599">लोड हो रहा है</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Chrome सिंक का डेटा</translation>
 <translation id="2200094388063410062">ई-मेल</translation>
 <translation id="2200356397587687044">जारी रखने के लिए Chrome को अनुमति चाहिए</translation>
-<translation id="2200729650590440847">पिन लॉक स्क्रीन की सेटिंग</translation>
 <translation id="220138918934036434">छुपाएं बटन</translation>
 <translation id="2202898655984161076">प्रिंटरों को सूचीबद्ध करने में कोई समस्या थी. आपके प्रिंटरों में से कुछ <ph name="CLOUD_PRINT_NAME" /> के साथ सफलतापूर्वक पंजीकृत नहीं हो सके हैं.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />पता बार<ph name="END_LINK" /> में इस्तेमाल किया गया सर्च इंजन</translation>
 <translation id="2204034823255629767">आप जो कुछ भी लिखते हैं उसे पढ़ें और बदलें</translation>
-<translation id="2207166770508557715">स्लीप मोड की सेटिंग</translation>
 <translation id="220858061631308971">कृपया इस पिन कोड को "<ph name="DEVICE_NAME" />" पर दर्ज करें:</translation>
 <translation id="2212565012507486665">कुकी की अनुमति दें</translation>
 <translation id="2213140827792212876">शेयर की गई फ़ाइलें हटाएं</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Linux कंटेनर ssh फ़ाइल सिस्टम माउंट हो रहा है</translation>
 <translation id="2751739896257479635">EAP चरण 2 प्रमाणीकरण</translation>
 <translation id="2753677631968972007">साइट की अनुमतियों को मैन्युअल तरीके से नियंत्रित करें.</translation>
-<translation id="2753984311895843016">स्लीप मोड</translation>
 <translation id="2755367719610958252">सुलभता सुविधाएं प्रबंधित करें</translation>
 <translation id="275662540872599901">स्क्रीन बंद है</translation>
 <translation id="2757338480560142065">पक्का करें कि आप जो पासवर्ड सेव कर रहे हैं वह <ph name="WEBSITE" /> के आपके पासवर्ड से मेल खाता हो</translation>
-<translation id="276221322463921688">मॉनिटर की दिशा</translation>
 <translation id="2762441749940182211">कैमरा ब्लॉक किया गया है</translation>
 <translation id="2764786626780673772">वीपीएन की जानकारी</translation>
 <translation id="2765217105034171413">छोटा</translation>
@@ -6223,7 +6218,6 @@
 <translation id="8953476467359856141">चार्ज करते समय</translation>
 <translation id="895347679606913382">प्रारंभ कर रहा है...</translation>
 <translation id="8957762313041272117">लाइव कैप्शन</translation>
-<translation id="8958804960827200147">स्क्रीन की दिशा</translation>
 <translation id="895944840846194039">JavaScript मेमोरी</translation>
 <translation id="8962083179518285172">विवरण छुपाएं</translation>
 <translation id="8962918469425892674">यह साइट गति या रोशनी के सेंसर का इस्तेमाल कर रही है.</translation>

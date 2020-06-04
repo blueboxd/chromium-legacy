@@ -110,12 +110,16 @@ class CanvasRenderingContext2DState final
   void SetFillStyle(CanvasStyle*);
   CanvasStyle* FillStyle() const { return fill_style_.Get(); }
 
+  // Prefer to use Style() over StrokeStyle() and FillStyle()
+  // if properties of CanvasStyle are concerned
   CanvasStyle* Style(PaintType) const;
 
-  bool HasPattern() const;
+  // Check the pattern in StrokeStyle or FillStyle depending on the PaintType
+  bool HasPattern(PaintType) const;
 
   // Only to be used if the CanvasRenderingContext2DState has Pattern
-  bool PatternIsAccelerated() const;
+  // Pattern is in either StrokeStyle or FillStyle depending on the PaintType
+  bool PatternIsAccelerated(PaintType) const;
 
   enum Direction { kDirectionInherit, kDirectionRTL, kDirectionLTR };
 

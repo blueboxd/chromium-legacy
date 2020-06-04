@@ -503,7 +503,6 @@
 <translation id="1632803087685957583">Hukuruhusu kurekebisha kasi ya kurudia ya kibodi yako, kubashiri neno, na mengine mengi</translation>
 <translation id="1633947793238301227">Zima programu ya Mratibu wa Google</translation>
 <translation id="1634783886312010422">Je, tayari umebadilisha nenosiri hili kwenye <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Kiendelezi kilisakinishwa na mlezi wako.</translation>
 <translation id="1637224376458524414">Pata alamisho hii kwenye iPhone yako</translation>
 <translation id="1637765355341780467">Hitilafu imetokea wakati wa kufungua wasifu wako. Huenda baadhi ya vipengee havipatikani.</translation>
 <translation id="1639239467298939599">Inapakia</translation>
@@ -951,12 +950,10 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2199719347983604670">Data kutoka usawazishaji wa Chrome</translation>
 <translation id="2200094388063410062">Barua pepe</translation>
 <translation id="2200356397587687044">Chrome inahitaji ruhusa ili iendelee</translation>
-<translation id="2200729650590440847">Mipangilio ya skrini inayofungwa kwa kutumia PIN</translation>
 <translation id="220138918934036434">Ficha kitufe</translation>
 <translation id="2202898655984161076">Kulikuwa na tatizo wakati wa kuongeza printa. Huenda baadhi ya printa zako hazikuweza kusajili kwenye <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Mtambo wa kutafuta uliotumiwa kwenye <ph name="BEGIN_LINK" />sehemu ya anwani<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Kusoma na kubadilisha chochote unachocharaza</translation>
-<translation id="2207166770508557715">Mipangilio ya hali tuli</translation>
 <translation id="220858061631308971">Tafadhali weka nambari hii ya PIN kwenye "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Ruhusu vidakuzi</translation>
 <translation id="2213140827792212876">Ondoa faili ya kushiriki</translation>
@@ -1405,11 +1402,9 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2751131328353405138">Inapachika mfumo wa SSHFS wa metadata ya Linux</translation>
 <translation id="2751739896257479635">Uthibitisho wa EAP wa awamu ya pili</translation>
 <translation id="2753677631968972007">Dhibiti ruhusa za tovuti wewe mwenyewe.</translation>
-<translation id="2753984311895843016">Nishati ya hali tuli</translation>
 <translation id="2755367719610958252">Dhibiti vipengele vya zana za walio na matatizo ya kuona au kusikia</translation>
 <translation id="275662540872599901">skrini imezimwa</translation>
 <translation id="2757338480560142065">Hakikisha kwamba nenosiri unalohifadhi linalingana na nenosiri lako kwenye <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Mkao wa skrini</translation>
 <translation id="2762441749940182211">Kamera imezuiwa</translation>
 <translation id="2764786626780673772">Maelezo ya VPN</translation>
 <translation id="2765217105034171413">Ndogo</translation>
@@ -2894,7 +2889,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4660540330091848931">Inabadilisha ukubwa</translation>
 <translation id="4660838440047236328">muundo wa chumba chako</translation>
 <translation id="4661407454952063730">Data ya programu inaweza kuwa data yoyote ambayo imehifadhiwa na programu (kulingana na mipangilio ya msanidi programu), ikiwa ni pamoja na data kama vile anwani, ujumbe na picha.</translation>
-<translation id="4662373422909645029">Jina la utani halipaswi kuwa na nambari</translation>
+<translation id="4662373422909645029">Jina la kuwakilisha halipaswi kuwa na nambari</translation>
 <translation id="4662788913887017617">Shiriki alamisho hii na iPhone yako</translation>
 <translation id="4663373278480897665">Kamera imeruhusiwa</translation>
 <translation id="4664482161435122549">Hitilafu ya Kuhamisha ya PKCS #12</translation>
@@ -5546,7 +5541,7 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
     <ph name="BEGIN_PARAGRAPH5" />Unaweza kuzima huduma hii katika Mipangilio.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">PIN hazilingani</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> inatumia mipangilio ya seva mbadala kutoka kwenye kiendelezi</translation>
-<translation id="8097959162767603171">Ni lazima msimamizi wako akubali kwanza sheria na masharti kwenye orodha ya kifaa cha Chrome katika dashibodi ya Wasimamizi.</translation>
+<translation id="8097959162767603171">Ni lazima msimamizi wako akubali kwanza sheria na masharti kwenye orodha ya vifaa vya Chrome katika dashibodi ya Wasimamizi.</translation>
 <translation id="8101987792947961127">Powerwash inahitajika kwenye kuwasha kunakofuata</translation>
 <translation id="8102159139658438129">Nenda kwenye <ph name="LINK_BEGIN" />Mipangilio<ph name="LINK_END" /> ili uone chaguo za simu yako iliyounganishwa</translation>
 <translation id="8104696615244072556">Tumia Powerwash kwenye kifaa <ph name="IDS_SHORT_PRODUCT_NAME" /> chako na urejee kwenye toleo la awali.</translation>
@@ -6222,7 +6217,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="8953476467359856141">Inapochaji</translation>
 <translation id="895347679606913382">Inaanza...</translation>
 <translation id="8957762313041272117">Manukuu Papo Hapo</translation>
-<translation id="8958804960827200147">Mkao wa skrini</translation>
 <translation id="895944840846194039">Kumbukumbu ya JavaScipt</translation>
 <translation id="8962083179518285172">Ficha Maelezo</translation>
 <translation id="8962918469425892674">Tovuti hii inatumia vitambuzi vya mwangaza au mwendo.</translation>

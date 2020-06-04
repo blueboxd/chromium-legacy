@@ -41,7 +41,9 @@
 # crbug.com/1041233
 -org.chromium.chrome.browser.gesturenav.NavigationHandlerTest.testSwipeNavigateOnNativePage
 -org.chromium.chrome.browser.gesturenav.NavigationHandlerTest.testSwipeNavigateOnRenderedPage
-#
+
 # crbug.com/1062055
 -org.chromium.chrome.browser.metrics.StartupLoadingMetricsTest.testWebApkStartRecorded
 
+# crbug.com/1077316
+-org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoTest.testChangeHomepageAndUndo_*

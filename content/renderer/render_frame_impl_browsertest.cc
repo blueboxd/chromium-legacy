@@ -379,17 +379,15 @@ TEST_F(RenderViewImplDownloadURLTest, DownloadUrlLimit) {
   EXPECT_CALL(*download_url_mock_local_frame_host(), DownloadURL(testing::_))
       .Times(10);
   for (int i = 0; i < 10; ++i) {
-    frame()->GetWebFrame()->DownloadURL(request,
-                                        network::mojom::RedirectMode::kManual,
-                                        mojo::ScopedMessagePipeHandle());
+    frame()->GetWebFrame()->DownloadURL(
+        request, network::mojom::RedirectMode::kManual, mojo::NullRemote());
     base::RunLoop().RunUntilIdle();
   }
 
   EXPECT_CALL(*download_url_mock_local_frame_host(), DownloadURL(testing::_))
       .Times(0);
-  frame()->GetWebFrame()->DownloadURL(request,
-                                      network::mojom::RedirectMode::kManual,
-                                      mojo::ScopedMessagePipeHandle());
+  frame()->GetWebFrame()->DownloadURL(
+      request, network::mojom::RedirectMode::kManual, mojo::NullRemote());
   base::RunLoop().RunUntilIdle();
 }
 

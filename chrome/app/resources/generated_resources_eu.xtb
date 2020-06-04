@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Teklak sakatuta edukitzean, idatzitakoa zenbat aldiz errepikatuko den, hitzen iragarpena erabiliko den eta beste zenbait gauza doitzeko aukera ematen dizu</translation>
 <translation id="1633947793238301227">Desgaitu Google-ren Laguntzailea</translation>
 <translation id="1634783886312010422">Aldatu al duzu pasahitza <ph name="WEBSITE" /> webgunean?</translation>
-<translation id="1635033183663317347">Zaintzaileak instalatu du.</translation>
 <translation id="1637224376458524414">Izan laster-marka iPhone-an</translation>
 <translation id="1637765355341780467">Arazoren bat izan da profila irekitzean. Baliteke eginbide batzuk erabilgarri ez egotea.</translation>
 <translation id="1639239467298939599">Kargatzen</translation>
@@ -954,12 +953,10 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2199719347983604670">Chrome-ren sinkronizazioaren datuak</translation>
 <translation id="2200094388063410062">Posta elektronikoa</translation>
 <translation id="2200356397587687044">Chrome-k baimena behar du aurrera egiteko</translation>
-<translation id="2200729650590440847">PIN kode batekin pantaila blokeatzeko aukeraren ezarpenak</translation>
 <translation id="220138918934036434">Ezkutatu botoia</translation>
 <translation id="2202898655984161076">Arazo bat izan da inprimagailuak zerrendatzean. Agian inprimagailuetako batzuk ez dira behar bezala erregistratu <ph name="CLOUD_PRINT_NAME" /> zerbitzuan.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Helbide-barran<ph name="END_LINK" /> egiten diren bilaketetarako erabiltzen den bilatzailea</translation>
 <translation id="2204034823255629767">Irakurri eta aldatu idazten duzuna</translation>
-<translation id="2207166770508557715">Egoera inaktiboaren ezarpenak</translation>
 <translation id="220858061631308971">Idatzi PIN kodea "<ph name="DEVICE_NAME" />" gailuan:</translation>
 <translation id="2212565012507486665">Onartu cookieak</translation>
 <translation id="2213140827792212876">Kendu partekatzeko aukera</translation>
@@ -1408,11 +1405,9 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2751131328353405138">Linux-en edukiontziaren SSH fitxategi-sistema muntatzen</translation>
 <translation id="2751739896257479635">EAP 2. fasearen autentifikazioa</translation>
 <translation id="2753677631968972007">Kontrolatu eskuz webgunearen baimenak.</translation>
-<translation id="2753984311895843016">Bateria telefonoa inaktibo dagoenean</translation>
 <translation id="2755367719610958252">Kudeatu erabilerraztasun-eginbideak</translation>
 <translation id="275662540872599901">pantaila itzalita dago</translation>
 <translation id="2757338480560142065">Ziurtatu gordetzera zoazen pasahitza bat datorrela <ph name="WEBSITE" /> webguneko pasahitzarekin</translation>
-<translation id="276221322463921688">Monitorearen orientazioa</translation>
 <translation id="2762441749940182211">Kamera blokeatuta dago</translation>
 <translation id="2764786626780673772">VPN konexioaren xehetasunak</translation>
 <translation id="2765217105034171413">Txikia</translation>
@@ -6224,7 +6219,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8953476467359856141">Kargatzen ari denean</translation>
 <translation id="895347679606913382">Hasten…</translation>
 <translation id="8957762313041272117">Istanteko azpitituluak</translation>
-<translation id="8958804960827200147">Pantailaren orientazioa</translation>
 <translation id="895944840846194039">JavaScript memoria</translation>
 <translation id="8962083179518285172">Ezkutatu xehetasunak</translation>
 <translation id="8962918469425892674">Mugimenduaren edo argiaren sentsoreak erabiltzen ari da webgune hau.</translation>

@@ -119,17 +119,17 @@ void UpdateViewFromEyeParameters(
 
 // Returns the session feature corresponding to the given reference space type.
 base::Optional<device::mojom::XRSessionFeature> MapReferenceSpaceTypeToFeature(
-    device::mojom::blink::XRReferenceSpaceCategory type) {
+    device::mojom::blink::XRReferenceSpaceType type) {
   switch (type) {
-    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER:
+    case device::mojom::blink::XRReferenceSpaceType::kViewer:
       return device::mojom::XRSessionFeature::REF_SPACE_VIEWER;
-    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL:
+    case device::mojom::blink::XRReferenceSpaceType::kLocal:
       return device::mojom::XRSessionFeature::REF_SPACE_LOCAL;
-    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR:
+    case device::mojom::blink::XRReferenceSpaceType::kLocalFloor:
       return device::mojom::XRSessionFeature::REF_SPACE_LOCAL_FLOOR;
-    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR:
+    case device::mojom::blink::XRReferenceSpaceType::kBoundedFloor:
       return device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR;
-    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED:
+    case device::mojom::blink::XRReferenceSpaceType::kUnbounded:
       return device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED;
   }
 
@@ -505,15 +505,14 @@ ScriptPromise XRSession::requestReferenceSpace(
     return ScriptPromise();
   }
 
-  device::mojom::blink::XRReferenceSpaceCategory requested_type =
+  device::mojom::blink::XRReferenceSpaceType requested_type =
       XRReferenceSpace::StringToReferenceSpaceType(type);
 
   UMA_HISTOGRAM_ENUMERATION("XR.WebXR.ReferenceSpace.Requested",
                             requested_type);
 
   if (sensorless_session_ &&
-      requested_type !=
-          device::mojom::blink::XRReferenceSpaceCategory::VIEWER) {
+      requested_type != device::mojom::blink::XRReferenceSpaceType::kViewer) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       kReferenceSpaceNotSupported);
     return ScriptPromise();
@@ -541,19 +540,19 @@ ScriptPromise XRSession::requestReferenceSpace(
 
   XRReferenceSpace* reference_space = nullptr;
   switch (requested_type) {
-    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER:
-    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL:
-    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR:
+    case device::mojom::blink::XRReferenceSpaceType::kViewer:
+    case device::mojom::blink::XRReferenceSpaceType::kLocal:
+    case device::mojom::blink::XRReferenceSpaceType::kLocalFloor:
       reference_space =
           MakeGarbageCollected<XRReferenceSpace>(this, requested_type);
       break;
-    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR: {
+    case device::mojom::blink::XRReferenceSpaceType::kBoundedFloor: {
       if (immersive()) {
         reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);
       }
       break;
     }
-    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED:
+    case device::mojom::blink::XRReferenceSpaceType::kUnbounded:
       if (immersive()) {
         reference_space =
             MakeGarbageCollected<XRReferenceSpace>(this, requested_type);
@@ -692,6 +691,35 @@ ScriptPromise XRSession::CreatePlaneAnchorHelper(
   create_anchor_promises_.insert(resolver);
 
   return promise;
+}
+
+base::Optional<XRSession::ReferenceSpaceInformation>
+XRSession::GetStationaryReferenceSpace() const {
+  // For anchor creation, we should first attempt to use the local space as it
+  // is supposed to be more stable, but if that is unavailable, we can try using
+  // unbounded space. Otherwise, there's not much we can do & we have to return
+  // nullopt.
+
+  // Try to get mojo_from_local:
+  auto reference_space_type = device::mojom::XRReferenceSpaceType::kLocal;
+  auto mojo_from_space = GetMojoFrom(reference_space_type);
+
+  if (!mojo_from_space) {
+    // Local space is not available, try to get mojo_from_unbounded:
+    reference_space_type = device::mojom::XRReferenceSpaceType::kUnbounded;
+    mojo_from_space = GetMojoFrom(reference_space_type);
+  }
+
+  if (!mojo_from_space) {
+    // Unbounded is also not available.
+    return base::nullopt;
+  }
+
+  ReferenceSpaceInformation result;
+  result.mojo_from_space = *mojo_from_space;
+  result.native_origin =
+      XRNativeOriginInformation::Create(reference_space_type);
+  return result;
 }
 
 int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
@@ -1630,12 +1658,12 @@ bool XRSession::CanReportPoses() const {
 }
 
 base::Optional<TransformationMatrix> XRSession::GetMojoFrom(
-    device::mojom::blink::XRReferenceSpaceCategory space_type) {
+    device::mojom::blink::XRReferenceSpaceType space_type) const {
   if (!CanReportPoses())
     return base::nullopt;
 
   switch (space_type) {
-    case device::mojom::blink::XRReferenceSpaceCategory::VIEWER:
+    case device::mojom::blink::XRReferenceSpaceType::kViewer:
       if (!mojo_from_viewer_) {
         if (sensorless_session_) {
           return TransformationMatrix();
@@ -1645,16 +1673,16 @@ base::Optional<TransformationMatrix> XRSession::GetMojoFrom(
       }
 
       return *mojo_from_viewer_;
-    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL:
+    case device::mojom::blink::XRReferenceSpaceType::kLocal:
       // TODO(https://crbug.com/1070380): This assumes that local space is
       // equivalent to mojo space! Remove the assumption once the bug is fixed.
       return TransformationMatrix();
-    case device::mojom::blink::XRReferenceSpaceCategory::UNBOUNDED:
+    case device::mojom::blink::XRReferenceSpaceType::kUnbounded:
       // TODO(https://crbug.com/1070380): This assumes that unbounded space is
       // equivalent to mojo space! Remove the assumption once the bug is fixed.
       return TransformationMatrix();
-    case device::mojom::blink::XRReferenceSpaceCategory::LOCAL_FLOOR:
-    case device::mojom::blink::XRReferenceSpaceCategory::BOUNDED_FLOOR:
+    case device::mojom::blink::XRReferenceSpaceType::kLocalFloor:
+    case device::mojom::blink::XRReferenceSpaceType::kBoundedFloor:
       // Information about -floor spaces is currently stored elsewhere (in stage
       // parameters of display_info_). It probably should eventually move here.
       return base::nullopt;

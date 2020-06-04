@@ -23,6 +23,11 @@ const base::Feature kWebViewCollectNonembeddedMetrics{
 const base::Feature kWebViewConnectionlessSafeBrowsing{
     "WebViewConnectionlessSafeBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Only allow extra headers added via loadUrl() to be sent to the original
+// origin; strip them from the request if a cross-origin redirect occurs.
+const base::Feature kWebViewExtraHeadersSameOriginOnly{
+    "WebViewExtraHeadersSameOriginOnly", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Sniff the content stream to guess the MIME type when the application doesn't
 // tell us the MIME type explicitly.
 //

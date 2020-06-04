@@ -257,7 +257,7 @@ class IncidentReportingServiceTest : public testing::Test {
         prefs::kSafeBrowsingEnabled,
         safe_browsing_opt_in == SAFE_BROWSING_ONLY ||
             safe_browsing_opt_in == SAFE_BROWSING_AND_EXTENDED_REPORTING);
-    safe_browsing::SetExtendedReportingPref(
+    safe_browsing::SetExtendedReportingPrefForTests(
         prefs.get(),
         safe_browsing_opt_in == EXTENDED_REPORTING_ONLY ||
             safe_browsing_opt_in == SAFE_BROWSING_AND_EXTENDED_REPORTING);
@@ -723,7 +723,7 @@ TEST_F(IncidentReportingServiceTest, NoUploadBeforeExtendedReporting) {
   // Ensure that no report processing remains.
   ASSERT_FALSE(instance_->IsProcessingReport());
 
-  safe_browsing::SetExtendedReportingPref(profile->GetPrefs(), true);
+  safe_browsing::SetExtendedReportingPrefForTests(profile->GetPrefs(), true);
 
   // Add a variation on the incident to the service.
   instance_->GetIncidentReceiver()->AddIncidentForProfile(

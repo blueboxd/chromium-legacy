@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_INPUT_METHOD_CONTROLLER_H_
 
 #include "third_party/blink/public/platform/web_text_input_info.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_widget.h"
+#include "ui/base/ime/ime_text_span.h"
 
 namespace blink {
 
@@ -33,7 +33,7 @@ class WebInputMethodController {
   // current text which should be replaced by |text|. Returns true if the
   // composition text was set successfully.
   virtual bool SetComposition(const WebString& text,
-                              const WebVector<WebImeTextSpan>& ime_text_spans,
+                              const WebVector<ui::ImeTextSpan>& ime_text_spans,
                               const WebRange& replacement_range,
                               int selection_start,
                               int selection_end) = 0;
@@ -43,7 +43,7 @@ class WebInputMethodController {
   // |replacementRange| (when not null) is the range in current text which
   // should be replaced by |text|.
   virtual bool CommitText(const WebString& text,
-                          const WebVector<WebImeTextSpan>& ime_text_spans,
+                          const WebVector<ui::ImeTextSpan>& ime_text_spans,
                           const WebRange& replacement_range,
                           int relative_caret_position) = 0;
 

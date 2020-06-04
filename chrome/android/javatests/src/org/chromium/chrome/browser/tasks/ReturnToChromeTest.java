@@ -172,6 +172,7 @@ public class ReturnToChromeTest {
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1) // See https://crbug.com/1091268.
     public void testTabSwitcherModeNotTriggeredWithinThreshold_NTP() throws Exception {
         // clang-format on
         InstantStartTest.createTabStateFile(new int[] {0, 1});
@@ -243,6 +244,7 @@ public class ReturnToChromeTest {
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single"})
     @DisableIf.Device(type = {UiDisableIf.TABLET}) // See https://crbug.com/1081754.
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1) // See https://crbug.com/1091268.
     public void testTabSwitcherModeTriggeredWithinThreshold_NTP() throws Exception {
         // clang-format on
         InstantStartTest.createTabStateFile(new int[] {0, 1});

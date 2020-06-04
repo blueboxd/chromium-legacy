@@ -65,8 +65,7 @@ OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
     : view_(popup_view),
       edit_model_(edit_model),
       pref_service_(pref_service),
-      selection_(kNoMatch, NORMAL),
-      has_selected_match_(false) {
+      selection_(kNoMatch, NORMAL) {
   edit_model->set_popup_model(this);
 }
 
@@ -148,7 +147,6 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
 
   if (line != kNoMatch)
     line = std::min(line, result.size() - 1);
-  has_selected_match_ = !reset_to_default;
 
   if (line == selected_line() && !force)
     return;  // Nothing else to do.
@@ -225,22 +223,18 @@ void OmniboxPopupModel::TryDeletingLine(size_t line) {
   if (match.SupportsDeletion()) {
     // Try to preserve the selection even after match deletion.
     const size_t old_selected_line = selected_line();
-    const bool was_temporary_text = has_selected_match_;
 
     // This will synchronously notify both the edit and us that the results
     // have changed, causing both to revert to the default match.
     autocomplete_controller()->DeleteMatch(match);
-    const AutocompleteResult& result = this->result();
-    if (!result.empty() &&
-        (was_temporary_text || old_selected_line != selected_line())) {
-      // Move the selection to the next choice after the deleted one.
-      // SetSelectedLine() will clamp to take care of the case where we deleted
-      // the last item.
-      // TODO(pkasting): Eventually the controller should take care of this
-      // before notifying us, reducing flicker.  At that point the check for
-      // deletability can move there too.
-      SetSelectedLine(old_selected_line, false, true);
-    }
+
+    // Move the selection to the next choice after the deleted one.
+    // SetSelectedLine() will clamp to take care of the case where we deleted
+    // the last item.
+    // TODO(pkasting): Eventually the controller should take care of this
+    // before notifying us, reducing flicker.  At that point the check for
+    // deletability can move there too.
+    SetSelectedLine(old_selected_line, false, true);
   }
 }
 
@@ -249,11 +243,15 @@ bool OmniboxPopupModel::IsStarredMatch(const AutocompleteMatch& match) const {
   return bookmark_model && bookmark_model->IsBookmarked(match.destination_url);
 }
 
+bool OmniboxPopupModel::SelectionOnInitialLine() const {
+  size_t initial_line = result().default_match() ? 0 : kNoMatch;
+  return selected_line() == initial_line;
+}
+
 void OmniboxPopupModel::OnResultChanged() {
   rich_suggestion_bitmaps_.clear();
   const AutocompleteResult& result = this->result();
   size_t old_selected_line = selected_line();
-  has_selected_match_ = false;
 
   if (result.default_match()) {
     Selection selection(0, selected_line_state());

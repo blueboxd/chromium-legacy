@@ -34,9 +34,6 @@ class UsbTabHelperTest
         device_manager.InitWithNewPipeAndPassReceiver());
     chooser_context->SetDeviceManagerForTesting(std::move(device_manager));
 
-    performance_manager::PerformanceManagerRegistry::GetInstance()
-        ->CreatePageNodeForWebContents(web_contents());
-
     NavigateAndCommit(GURL("https://www.google.com"));
   }
 

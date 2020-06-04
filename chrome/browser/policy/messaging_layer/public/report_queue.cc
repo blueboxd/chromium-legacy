@@ -5,17 +5,22 @@
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
 #include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
+#include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
@@ -25,7 +30,6 @@
 
 namespace reporting {
 
-using base::MakeRefCounted;
 using reporting_messaging_layer::EncryptedRecord;
 using reporting_messaging_layer::Record;
 using reporting_messaging_layer::WrappedRecord;

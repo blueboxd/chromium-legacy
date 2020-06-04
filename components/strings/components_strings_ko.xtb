@@ -705,7 +705,7 @@
     이 메시지가 실수로 표시되었다고 생각된다면 다음 페이지를 방문해 주시기 바랍니다. https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">1MB 미만</translation>
 <translation id="3990250421422698716">조그 오프셋</translation>
-<translation id="3996311196211510766">사이트 <ph name="ORIGIN" />이(가) 모든 요청에 출처 정책을 적용하도록 요청했으나 이 정책은 현재 적용할 수 없습니다.</translation>
+<translation id="3996311196211510766">사이트 <ph name="ORIGIN" />에서 모든 요청에 출처 정책을 적용하도록 요청했으나 이 정책은 현재 적용할 수 없습니다.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{주변 웹페이지 1개}other{주변 웹페이지 #개}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT}페이지로 이루어진 PDF 문서}other{{COUNT}페이지로 이루어진 PDF 문서}}</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>

@@ -5,7 +5,8 @@
 #include "third_party/blink/renderer/core/editing/ime/ime_text_span.h"
 
 #include <algorithm>
-#include "third_party/blink/public/web/web_ime_text_span.h"
+#include "ui/base/ime/ime_text_span.h"
+#include "ui/base/ime/mojom/ime_types.mojom-blink.h"
 
 namespace blink {
 
@@ -49,13 +50,13 @@ Vector<String> ConvertStdVectorOfStdStringsToVectorOfStrings(
   return output;
 }
 
-ImeTextSpan::Type ConvertWebTypeToType(WebImeTextSpan::Type type) {
+ImeTextSpan::Type ConvertUiTypeToType(ui::ImeTextSpan::Type type) {
   switch (type) {
-    case WebImeTextSpan::Type::kComposition:
+    case ui::ImeTextSpan::Type::kComposition:
       return ImeTextSpan::Type::kComposition;
-    case WebImeTextSpan::Type::kSuggestion:
+    case ui::ImeTextSpan::Type::kSuggestion:
       return ImeTextSpan::Type::kSuggestion;
-    case WebImeTextSpan::Type::kMisspellingSuggestion:
+    case ui::ImeTextSpan::Type::kMisspellingSuggestion:
       return ImeTextSpan::Type::kMisspellingSuggestion;
   }
 
@@ -63,15 +64,49 @@ ImeTextSpan::Type ConvertWebTypeToType(WebImeTextSpan::Type type) {
   return ImeTextSpan::Type::kComposition;
 }
 
+ui::mojom::ImeTextSpanThickness ConvertUiThicknessToThickness(
+    ui::ImeTextSpan::Thickness thickness) {
+  switch (thickness) {
+    case ui::ImeTextSpan::Thickness::kNone:
+      return ui::mojom::ImeTextSpanThickness::kNone;
+    case ui::ImeTextSpan::Thickness::kThin:
+      return ui::mojom::ImeTextSpanThickness::kThin;
+    case ui::ImeTextSpan::Thickness::kThick:
+      return ui::mojom::ImeTextSpanThickness::kThick;
+  }
+
+  NOTREACHED();
+  return ui::mojom::ImeTextSpanThickness::kNone;
+}
+
+ui::mojom::ImeTextSpanUnderlineStyle ConvertUiUnderlineToUnderline(
+    ui::ImeTextSpan::UnderlineStyle underline) {
+  switch (underline) {
+    case ui::ImeTextSpan::UnderlineStyle::kNone:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kNone;
+    case ui::ImeTextSpan::UnderlineStyle::kSolid:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kSolid;
+    case ui::ImeTextSpan::UnderlineStyle::kDot:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kDot;
+    case ui::ImeTextSpan::UnderlineStyle::kDash:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kDash;
+    case ui::ImeTextSpan::UnderlineStyle::kSquiggle:
+      return ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle;
+  }
+
+  NOTREACHED();
+  return ui::mojom::ImeTextSpanUnderlineStyle::kNone;
+}
+
 }  // namespace
 
-ImeTextSpan::ImeTextSpan(const WebImeTextSpan& ime_text_span)
-    : ImeTextSpan(ConvertWebTypeToType(ime_text_span.type),
+ImeTextSpan::ImeTextSpan(const ui::ImeTextSpan& ime_text_span)
+    : ImeTextSpan(ConvertUiTypeToType(ime_text_span.type),
                   ime_text_span.start_offset,
                   ime_text_span.end_offset,
                   Color(ime_text_span.underline_color),
-                  ime_text_span.thickness,
-                  ime_text_span.underline_style,
+                  ConvertUiThicknessToThickness(ime_text_span.thickness),
+                  ConvertUiUnderlineToUnderline(ime_text_span.underline_style),
                   Color(ime_text_span.text_color),
                   Color(ime_text_span.background_color),
                   Color(ime_text_span.suggestion_highlight_color),

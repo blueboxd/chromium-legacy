@@ -4,6 +4,20 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+component("shared_mojom_traits") {
+  output_name = "latency_shared_mojom_traits"
+  defines = [ "IS_LATENCY_SHARED_MOJOM_TRAITS_IMPL" ]
+  sources = [
+    "latency_info_mojom_traits.cc",
+    "latency_info_mojom_traits.h",
+  ]
+  public_deps = [
+    ":mojom_shared",
+    "//ipc:param_traits",
+    "//ui/latency",
+  ]
+}
+
 mojom("mojom") {
   generate_java = true
   sources = [ "latency_info.mojom" ]
@@ -22,12 +36,14 @@ mojom("mojom") {
           cpp = "::ui::LatencyInfo"
         },
       ]
-      traits_sources = [ "latency_info_mojom_traits.cc" ]
       traits_headers = [ "latency_info_mojom_traits.h" ]
-      traits_public_deps = [ "//ui/latency" ]
-      traits_deps = [ "//ipc:param_traits" ]
+      traits_public_deps = [
+        ":shared_mojom_traits",
+        "//ui/latency",
+      ]
     },
   ]
+  blink_cpp_typemaps = cpp_typemaps
 }
 
 mojom("test_interfaces") {

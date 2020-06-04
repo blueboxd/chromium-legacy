@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_edit_context_init.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/base/ime/ime_text_span.h"
 
 namespace blink {
 
@@ -120,7 +120,7 @@ void EditContext::DispatchTextUpdateEvent(const String& text,
 }
 
 void EditContext::DispatchTextFormatEvent(
-    const WebVector<WebImeTextSpan>& ime_text_spans) {
+    const WebVector<ui::ImeTextSpan>& ime_text_spans) {
   // Loop through the vector and fire textformatupdate event for individual text
   // spans as there could be multiple formats in the spans.
   // TODO(snianu): Try to accumulate the ranges with similar formats and fire
@@ -134,13 +134,13 @@ void EditContext::DispatchTextFormatEvent(
         ime_text_span.end_offset + composition_range_start_;
 
     switch (ime_text_span.thickness) {
-      case ui::mojom::ImeTextSpanThickness::kNone:
+      case ui::ImeTextSpan::Thickness::kNone:
         underline_style = "None";
         break;
-      case ui::mojom::ImeTextSpanThickness::kThin:
+      case ui::ImeTextSpan::Thickness::kThin:
         underline_style = "Thin";
         break;
-      case ui::mojom::ImeTextSpanThickness::kThick:
+      case ui::ImeTextSpan::Thickness::kThick:
         underline_style = "Thick";
         break;
       default:
@@ -375,7 +375,7 @@ void EditContext::GetLayoutBounds(WebRect* web_control_bounds,
 
 bool EditContext::SetComposition(
     const WebString& text,
-    const WebVector<WebImeTextSpan>& ime_text_spans,
+    const WebVector<ui::ImeTextSpan>& ime_text_spans,
     const WebRange& replacement_range,
     int selection_start,
     int selection_end) {
@@ -412,7 +412,7 @@ bool EditContext::SetComposition(
 bool EditContext::SetCompositionFromExistingText(
     int composition_start,
     int composition_end,
-    const WebVector<WebImeTextSpan>& ime_text_spans) {
+    const WebVector<ui::ImeTextSpan>& ime_text_spans) {
   if (composition_start < 0 || composition_end < 0)
     return false;
 
@@ -445,7 +445,7 @@ bool EditContext::SetCompositionFromExistingText(
 }
 
 bool EditContext::CommitText(const WebString& text,
-                             const WebVector<WebImeTextSpan>& ime_text_spans,
+                             const WebVector<ui::ImeTextSpan>& ime_text_spans,
                              const WebRange& replacement_range,
                              int relative_caret_position) {
   // Fire textupdate and textformatupdate events to JS.

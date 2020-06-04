@@ -4,20 +4,25 @@
 
 #include "chrome/browser/enterprise/connectors/reporting_service_settings.h"
 
+#include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/policy/core/browser/url_util.h"
 
 namespace enterprise_connectors {
 
 ReportingServiceSettings::ReportingServiceSettings(
-    const base::Value& settings_value) {
+    const base::Value& settings_value,
+    const ServiceProviderConfig& service_provider_config) {
   if (!settings_value.is_dict())
     return;
 
-  // The service provider identifier should always be there.
-  const std::string* service_provider =
+  // The service provider identifier should always be there, and it should match
+  // an existing provider.
+  const std::string* service_provider_name =
       settings_value.FindStringKey(kKeyServiceProvider);
-  if (service_provider)
-    service_provider_ = *service_provider;
+  if (service_provider_name) {
+    service_provider_ =
+        service_provider_config.GetServiceProvider(*service_provider_name);
+  }
 }
 
 base::Optional<ReportingSettings>
@@ -27,15 +32,15 @@ ReportingServiceSettings::GetReportingSettings() const {
 
   ReportingSettings settings;
 
-  // TODO(rogerta): once service provider configs are implemented set the
-  // reporting URL field.
+  settings.reporting_url = GURL(service_provider_->reporting_url());
+  DCHECK(settings.reporting_url.is_valid());
 
   return settings;
 }
 
 bool ReportingServiceSettings::IsValid() const {
-  // The settings are valid only if provider was given.
-  return !service_provider_.empty();
+  // The settings are valid only if a provider was given.
+  return service_provider_;
 }
 
 ReportingServiceSettings::ReportingServiceSettings(ReportingServiceSettings&&) =

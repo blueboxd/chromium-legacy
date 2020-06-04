@@ -750,7 +750,15 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
     blink::WebMouseWheelEvent mouse_wheel_event =
         ui::MakeWebMouseWheelEvent(*event->AsMouseWheelEvent());
     if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
-      if (ShouldRouteEvents()) {
+      const bool should_route_event = ShouldRouteEvents();
+      // End the touchpad scrolling sequence (if such exists) before handling
+      // a ui::ET_MOUSEWHEEL event.
+      mouse_wheel_phase_handler_.SendWheelEndForTouchpadScrollingIfNeeded(
+          should_route_event);
+
+      mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+          mouse_wheel_event, should_route_event);
+      if (should_route_event) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
             host_view_, &mouse_wheel_event, *event->latency());
       } else {

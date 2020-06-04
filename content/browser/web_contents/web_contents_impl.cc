@@ -4975,6 +4975,19 @@ void WebContentsImpl::DomOperationResponse(const std::string& json_string) {
       Details<const std::string>(&json_string));
 }
 
+void WebContentsImpl::SavableResourceLinksResponse(
+    RenderFrameHostImpl* source,
+    const std::vector<GURL>& resources_list,
+    blink::mojom::ReferrerPtr referrer,
+    const std::vector<blink::mojom::SavableSubframePtr>& subframes) {
+  save_package_->SavableResourceLinksResponse(source, resources_list,
+                                              std::move(referrer), subframes);
+}
+
+void WebContentsImpl::SavableResourceLinksError(RenderFrameHostImpl* source) {
+  save_package_->SavableResourceLinksError(source);
+}
+
 void WebContentsImpl::OnServiceWorkerAccessed(
     RenderFrameHost* render_frame_host,
     const GURL& scope,

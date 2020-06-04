@@ -31,7 +31,9 @@ TabGroup::~TabGroup() = default;
 void TabGroup::SetVisualData(const tab_groups::TabGroupVisualData& visual_data,
                              bool is_customized) {
   visual_data_ = std::make_unique<tab_groups::TabGroupVisualData>(visual_data);
-  is_customized_ = is_customized;
+
+  // Once the visual data is customized, it should stay customized.
+  is_customized_ |= is_customized;
   controller_->ChangeTabGroupVisuals(id_);
 }
 

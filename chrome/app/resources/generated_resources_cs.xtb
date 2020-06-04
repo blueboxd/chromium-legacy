@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Umožňuje upravit rychlost opakování klávesnice, předvídání slov a další nastavení</translation>
 <translation id="1633947793238301227">Deaktivovat Asistenta Google</translation>
 <translation id="1634783886312010422">Už jste toto heslo na webu <ph name="WEBSITE" /> změnili?</translation>
-<translation id="1635033183663317347">Nainstaloval váš opatrovník</translation>
 <translation id="1637224376458524414">Uložte si tuto záložku do iPhonu</translation>
 <translation id="1637765355341780467">Při otevírání vašeho profilu se něco pokazilo. Některé funkce mohou být nedostupné.</translation>
 <translation id="1639239467298939599">Načítání</translation>
@@ -954,12 +953,10 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2199719347983604670">Data ze synchronizace Chromu</translation>
 <translation id="2200094388063410062">E-mail</translation>
 <translation id="2200356397587687044">Chrome k pokračování potřebuje oprávnění</translation>
-<translation id="2200729650590440847">Nastavení uzamknutí obrazovky kódem PIN</translation>
 <translation id="220138918934036434">Skrýt tlačítko</translation>
 <translation id="2202898655984161076">Při vytváření seznamu tiskáren se vyskytla chyba. Některé vaše tiskárny možná nebyly ve službě <ph name="CLOUD_PRINT_NAME" /> úspěšně zaregistrovány.</translation>
 <translation id="2203682048752833055">Vyhledávač používaný v <ph name="BEGIN_LINK" />adresním řádku<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Číst a upravovat vše, co napíšete</translation>
-<translation id="2207166770508557715">Nastavení režimu spánku</translation>
 <translation id="220858061631308971">Zadejte prosím v zařízení <ph name="DEVICE_NAME" /> tento kód PIN:</translation>
 <translation id="2212565012507486665">Povolit cookies</translation>
 <translation id="2213140827792212876">Odstranit sdílení</translation>
@@ -1407,11 +1404,9 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2751131328353405138">Připojování souborového systému SSH kontejneru systému Linux</translation>
 <translation id="2751739896257479635">Ověření EAP Phase 2</translation>
 <translation id="2753677631968972007">Ovládat oprávnění webu ručně.</translation>
-<translation id="2753984311895843016">Napájení při nečinnosti</translation>
 <translation id="2755367719610958252">Spravovat funkce přístupnosti</translation>
 <translation id="275662540872599901">obrazovka je vypnutá</translation>
 <translation id="2757338480560142065">Zkontrolujte, zda se ukládané heslo shoduje s heslem pro web <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">Orientace monitoru</translation>
 <translation id="2762441749940182211">Kamera je blokována</translation>
 <translation id="2764786626780673772">Podrobnosti sítě VPN</translation>
 <translation id="2765217105034171413">Malé</translation>
@@ -5688,7 +5683,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8271246892936492311">{COUNT,plural, =1{Byla smazána 1 záložka}few{Byly smazány # záložky}many{Bylo smazáno # záložky}other{Bylo smazáno # záložek}}</translation>
 <translation id="8272443605911821513">Chcete-li spravovat rozšíření, klikněte v nabídce Nástroje na příkaz Rozšíření.</translation>
 <translation id="8274212285504931082">Nechat Asistenta zobrazovat informace související s obsahem na obrazovce</translation>
-<translation id="8274332263553132018">Odešlete soubor</translation>
+<translation id="8274332263553132018">Odeslat soubor</translation>
 <translation id="8274924778568117936">V průběhu aktualizace <ph name="DEVICE_TYPE" /> nevypínejte ani nezavírejte. Po dokončení instalace se <ph name="DEVICE_TYPE" /> restartuje.</translation>
 <translation id="8275038454117074363">Importovat</translation>
 <translation id="8275080796245127762">Zavolat ze zařízení</translation>
@@ -6222,7 +6217,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8953476467359856141">Při nabíjení</translation>
 <translation id="895347679606913382">Spouštění...</translation>
 <translation id="8957762313041272117">Živý přepis</translation>
-<translation id="8958804960827200147">Orientace obrazovky</translation>
 <translation id="895944840846194039">Paměť JavaScriptu</translation>
 <translation id="8962083179518285172">Skrýt podrobnosti</translation>
 <translation id="8962918469425892674">Tento web používá senzory pohybu nebo osvětlení.</translation>

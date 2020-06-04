@@ -46,6 +46,12 @@ extern const char kGenerationRequirementsVersion[];
 extern const char kGenerationRequirementsPrefixLength[];
 extern const char kGenerationRequirementsTimeout[];
 
+// Password change feature variation.
+// The new variation will allow showing credential leaked dialog after
+// every form submission (helpful for testing).
+extern const char
+    kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[];
+
 }  // namespace features
 
 }  // namespace password_manager

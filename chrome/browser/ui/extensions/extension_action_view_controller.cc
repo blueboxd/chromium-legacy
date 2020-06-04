@@ -292,7 +292,7 @@ void ExtensionActionViewController::OnIconUpdated() {
 }
 
 void ExtensionActionViewController::OnExtensionHostDestroyed(
-    const extensions::ExtensionHost* host) {
+    extensions::ExtensionHost* host) {
   OnPopupClosed();
 }
 

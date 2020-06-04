@@ -123,7 +123,7 @@ void ExtensionEventObserver::OnProcessManagerShutdown(
 }
 
 void ExtensionEventObserver::OnExtensionHostDestroyed(
-    const extensions::ExtensionHost* host) {
+    extensions::ExtensionHost* host) {
   auto it = keepalive_sources_.find(host);
   DCHECK(it != keepalive_sources_.end());
 

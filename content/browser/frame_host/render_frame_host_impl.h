@@ -1688,6 +1688,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnCookiesAccessed(
       network::mojom::CookieAccessDetailsPtr details) override;
 
+  void GetSavableResourceLinksFromRenderer();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2074,6 +2076,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // standalone snapshot of the accessibility tree as |snapshot|.
   void RequestAXTreeSnapshotCallback(AXTreeSnapshotCallback callback,
                                      const AXContentTreeUpdate& snapshot);
+
+  // Callback that will be called as a response to the call to the method
+  // blink::mojom::LocalFrame::GetSavableResourceLinks(). The |reply| passed
+  // will be a nullptr when the url is not the savable URLs or valid.
+  void GetSavableResourceLinksCallback(
+      blink::mojom::GetSavableResourceLinksReplyPtr reply);
 
   // Returns the RenderWidgetHostView used for accessibility. For subframes,
   // this function will return the platform view on the main frame; for main

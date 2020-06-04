@@ -340,6 +340,9 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="1583248206450240930">Standardmäßig <ph name="PRODUCT_FRAME_NAME" /> verwenden</translation>
 <translation id="1588240398285670601">Browsereinstellungen</translation>
 <translation id="1599424828227887013">Website-Isolierung für angegebene Ursprünge auf Android-Geräten aktivieren</translation>
+<translation id="159946228300522107">Wenn für diese Richtlinie "True" festgelegt ist, maximiert Chrome beim ersten Start das erste angezeigte Fenster.
+
+      Ist sie auf "False" gesetzt oder nicht konfiguriert, kann das erste Fenster von Chrome maximiert werden. Das richtet sich nach der Displaygröße.</translation>
 <translation id="1608755754295374538">URLs, denen ohne Nachfrage Zugriff auf Audioaufnahmegeräte gestattet wird</translation>
 <translation id="1615221548356595305">Zusammenführen von HTTP/2-Verbindungen für diese Hosts zulassen, auch wenn Clientzertifikate verwendet werden</translation>
 <translation id="1615855314789673708">Stellt eine Wilco DTC-Konfiguration (Diagnostics and Telemetry Controller) bereit.
@@ -399,6 +402,9 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
         Wenn Sie URLs auf die weiße Liste setzen möchten, die mit den regulären Ausdrücken auf der Liste übereinstimmen, fügen Sie |url_list| reguläre Ausdrücke hinzu.
         Wenn Sie eine App auf die weiße Liste setzen möchten, fügen Sie sie unter Angabe der |app_id| und dem |app_type| |app_list| hinzu.
        </translation>
+<translation id="171511968762040550">Wenn diese Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer Lesezeichen hinzufügen, entfernen oder ändern.
+
+      Ist sie auf "False" gesetzt, können Nutzer keine Lesezeichen hinzufügen, entfernen oder ändern. Sie können aber weiterhin bestehende Lesezeichen verwenden.</translation>
 <translation id="1715151459541210849">Bedienungshilfe "Spracheingabe" aktivieren</translation>
 <translation id="1717817358640580294">Wenn die Richtlinie nicht konfiguriert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten betreffend den Scan an Google senden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Er kann die Ergebnisse der Bereinigung mit Google teilen, damit unerwünschte Software zukünftig besser erkannt wird. Diese Ergebnisse enthalten Dateimetadaten, automatisch installierte Erweiterungen und Registrierungsschlüssel, wie es im Whitepaper zum Datenschutz bei Chrome beschrieben ist.
 
@@ -766,6 +772,12 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="2214880135980649323">Wenn diese Richtlinie aktiviert ist, können Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, die Enterprise Hardware Platform API verwenden.
 Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, darf die Enterprise Hardware Platform API von keinen Erweiterungen verwendet werden.
 Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hangouts-Erweiterung.</translation>
+<translation id="2215238871726750562">Wenn die Richtlinie auf "True" gesetzt ist, wird verhindert, dass das Browserfenster zu Beginn der Sitzung geöffnet wird.
+
+      Ist sie auf "False" gesetzt oder nicht konfiguriert, wird das Browserfenster geöffnet.
+
+      Hinweis: Unter Umständen verhindern andere Richtlinien oder Befehlszeilen-Flags, dass das Browserfenster geöffnet wird.</translation>
+<translation id="2223582957891074498">Wenn die Richtlinie auf "True" gesetzt ist, können keine Screenshots über Tastenkombinationen oder Erweiterungs-APIs aufgenommen werden. Ist sie auf "False" gesetzt, können Screenshots aufgenommen werden.</translation>
 <translation id="2223598546285729819">Standardeinstellung für Benachrichtigungen</translation>
 <translation id="2231817271680715693">Browserverlauf bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="2236488539271255289">Speichern von lokalen Daten für keine Website zulassen</translation>
@@ -798,6 +810,9 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 
       Ist diese Einstellung nicht konfiguriert, können die Nutzer auswählen, ob die Rechtschreibprüfung verwendet werden soll oder nicht.</translation>
 <translation id="229322770310505679">Atomische Richtlinien-Gruppen aktivieren</translation>
+<translation id="22941467117331786">Wenn die Richtlinie auf "True" gesetzt ist, wird während aktiver Sitzungen in der Taskleiste eine große rote Schaltfläche zum Abmelden angezeigt, solange das Display nicht gesperrt ist.
+
+      Ist sie auf "False" gesetzt oder nicht konfiguriert, wird keine Schaltfläche angezeigt.</translation>
 <translation id="2294382669900758280">Das Abspielen von Videos in Android-Apps wird nicht berücksichtigt, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
 <translation id="2303795211377219696">AutoFill für Kreditkarten aktivieren</translation>
@@ -1943,9 +1958,9 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
 
       Bei der Festlegung der Richtlinie auf
 
-      * "Migrate" oder eine nicht unterstützte Optionen wie etwa "AskUser" oder "AskForEcryptfsArcUsers" werden Verzeichnisse bei der Anmeldung automatisch auf ext4 umgestellt, ohne die Zustimmung des Nutzers einzuholen.
+      * "Migrate" oder eine nicht unterstützte Option wie etwa "AskUser" oder "AskForEcryptfsArcUsers" werden Verzeichnisse bei der Anmeldung automatisch auf ext4 umgestellt, ohne die Zustimmung des Nutzers einzuholen.
 
-      *"Wipe oder "MinimalMigrate" werden alte eCryptfs-verschlüsselte Basisverzeichnisse bei der Anmeldung durch neue ext4-verschlüsselte Basisverzeichnisse ersetzt. Damit der Nutzer sich nicht immer wieder neu anmelden muss, versucht "MinimalMigrate", die Anmeldetoken zu übernehmen.
+      * "Wipe" oder "MinimalMigrate" werden alte eCryptfs-verschlüsselte Basisverzeichnisse bei der Anmeldung durch neue ext4-verschlüsselte Basisverzeichnisse ersetzt. Damit der Nutzer sich nicht immer wieder neu anmelden muss, versucht "MinimalMigrate", die Anmeldetoken zu übernehmen.
 
       * "DisallowArc", oder wenn keine Einstellung festgelegt ist, erfolgt keine Migration und die Android-Apps des Nutzers werden beendet.
 
@@ -2463,6 +2478,9 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4802905909524200151">Updateverhalten von <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfigurieren</translation>
 <translation id="4804828344300125154">Nach Nutzerabmeldung immer neu starten.</translation>
 <translation id="4807950475297505572">Die am längsten nicht verwendeten Nutzer werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
+<translation id="4812270373673968774">Wenn die Richtlinie auf "Always" gesetzt ist, wird die Ablage von <ph name="PRODUCT_OS_NAME" /> automatisch ausgeblendet. Ist sie auf "Never" gesetzt, wird die Ablage nie automatisch ausgeblendet.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Falls die Richtlinie nicht konfiguriert ist, können Nutzer selbst entscheiden, ob die Ablage automatisch ausgeblendet werden soll.</translation>
 <translation id="4816674326202173458">Unternehmensnutzer sowohl als primären als auch als sekundären Nutzer zulassen (Standardverhalten für nicht verwaltete Nutzer)</translation>
 <translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
 <translation id="4830531683854509779">Hiermit können Sie festlegen, dass Hardwarestatistiken für SoC-Komponenten gemeldet werden.
@@ -2540,6 +2558,9 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4986560318567565414">Pfad, um vom alternativen Browser zu Chrome zu wechseln.</translation>
 <translation id="4988291787868618635">Auszuführende Aktion bei Erreichen der Inaktivitätsverzögerung</translation>
 <translation id="500149597848135831">Alle Variationen aktivieren</translation>
+<translation id="5017369989680827157">Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer AutoFill für Adressen in der UI steuern.
+
+      Ist sie auf "False" gesetzt, schlägt AutoFill keine Adressinformationen vor und füllt sie auch nicht automatisch aus. Außerdem werden keine zusätzlichen Adressinformationen gespeichert, die Nutzer beim Surfen im Internet senden.</translation>
 <translation id="5023555740504506178">Wenn diese Richtlinie aktiviert oder nicht konfiguriert ist (Standard), können Webseiten
       Bildschirmfreigabe-APIs (z. B. "getDisplayMedia()" oder die Desktop Capture-Erweiterungs-API) verwenden,
       um den Nutzer aufzufordern, einen Tab, ein Fenster oder einen Desktop für die Aufnahme auszuwählen.
@@ -2582,6 +2603,9 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="5073609397321802133">Wenn diese Richtlinie auf "false" gesetzt ist, können Nutzer auf der "Neuer Tab"-Seite den Hintergrund nicht anpassen. Falls bereits ein benutzerdefinierter Hintergrund vorhanden ist, wird er dauerhaft entfernt, auch wenn die Richtlinie später auf "true" gesetzt wird.
 
       Wenn die Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, können Nutzer den Hintergrund auf der "Neuer Tab"-Seite anpassen.</translation>
+<translation id="5075190314377370852">Wenn die Richtlinie auf "True" gesetzt ist, führt <ph name="PRODUCT_NAME" /> immer eine Widerrufsprüfung für Serverzertifikate durch, die erfolgreich bestätigt und von lokal installierten CA-Zertifikaten signiert wurden. Kann <ph name="PRODUCT_NAME" /> keine Informationen zum Widerrufsstatus abrufen, werden solche Zertifikate von <ph name="PRODUCT_NAME" /> als widerrufen behandelt ("hard-fail").
+
+      Falls diese Richtlinie nicht konfiguriert oder auf "False" gesetzt ist, verwendet <ph name="PRODUCT_NAME" /> die vorhandenen Online-Einstellungen zur Widerrufsprüfung.</translation>
 <translation id="5075834892754086022">Wenn diese Richtlinie konfiguriert ist, wird die festgelegte minimale PIN-Länge
            erzwungen. Die absolute Mindestlänge einer PIN beträgt "1". Alle Werte unter "1"
           werden wie "1" behandelt.
@@ -2650,6 +2674,11 @@ Sollte die Richtlinie nicht konfiguriert sein, so wird der Standardsuchanbieter 
       Der Mindestwert beträgt 30 Sekunden und der Höchstwert 24 Stunden.
       Werte außerhalb dieses Bereichs werden auf den jeweiligen Mindest- oder Maximalwert angepasst.</translation>
 <translation id="5163002264923337812">Alte webbasierte Anmeldung aktivieren</translation>
+<translation id="516520353995300280">Wenn diese Richtlinie konfiguriert ist, wird das Erzwingen von Certificate Transparency-Offenlegungsanforderungen für eine Liste von alten Zertifizierungsstellen (CA) für Zertifikatketten mit einem bestimmten <ph name="SUBJECT_PUBLIC_KEY_INFO" />-Hash deaktiviert. Unternehmenshosts können dann weiterhin Zertifikate verwenden, die andernfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Um die Erzwingung zu deaktivieren, muss der <ph name="SUBJECT_PUBLIC_KEY_INFO" />-Hash im Zertifikat einer Zertifizierungsstelle erscheinen, die als alte Zertifizierungsstelle erkannt wird. Dabei handelt es sich um eine Zertifizierungsstelle, der von einem oder mehreren Betriebssystemen öffentlich vertraut wurde, die von <ph name="PRODUCT_NAME" /> unterstützt werden, der aber nicht vom Open-Source-Projekt von Android oder von <ph name="PRODUCT_OS_NAME" /> vertraut wird.
+
+      Ein <ph name="SUBJECT_PUBLIC_KEY_INFO" />-Hash wird angegeben, indem Folgendes verkettet wird: der Hash-Algorithmusname, das Zeichen "/" sowie die Base64-Codierung des Hash-Algorithmus, der auf das DER-codierte <ph name="SUBJECT_PUBLIC_KEY_INFO" /> des angegebenen Zertifikats angewendet wird. Die Base64-Codierung hat dasselbe Format wie ein SPKI-Fingerabdruck. Der einzige erkannte Hash-Algorithmus ist "sha256". Alle anderen werden ignoriert.
+
+      Wenn die Richtlinie nicht konfiguriert ist, werden alle Zertifikate, für die eine Certificate Transparency-Offenlegung erforderlich ist und die nicht offengelegt werden, von <ph name="PRODUCT_NAME" /> als nicht vertrauenswürdig behandelt.</translation>
 <translation id="5168529971295111207">Diese Richtlinie wurde eingestellt. Verwenden Sie stattdessen "ProxyMode".
 
           Mit dieser Richtlinie können Sie angeben, welcher Proxyserver von <ph name="PRODUCT_NAME" /> verwendet werden soll, und verhindern, dass Nutzer die Proxyeinstellungen ändern.
@@ -2794,6 +2823,9 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Wenn die Richtlinie nicht konfiguriert ist oder sie auf den leeren String oder einen ungültigen Portbereich eingestellt ist, kann von WebRTC jeder beliebige verfügbare lokale UDP-Port verwendet werden.</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
+<translation id="5293044154216294358">Wenn die Richtlinie auf "True" gesetzt ist, können Nutzer das Dinosaurierspiel spielen. Ist sie auf "False" gesetzt, können Nutzer das Dinosaurierspiel nicht spielen, wenn das Gerät offline ist
+
+      Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Dinosaurierspiel nicht auf angemeldeten <ph name="PRODUCT_OS_NAME" />-Geräten spielen, auf anderen aber schon.</translation>
 <translation id="5306186200045823863">Der veralteten Symantec-PKI vertrauen</translation>
 <translation id="5307432759655324440">Inkognitomodus - Verfügbarkeit</translation>
 <translation id="5311275381462687162">Einstellung für das alte Standardverhalten des "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Cookies</translation>
@@ -3074,6 +3106,9 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       HINWEIS: Unter Android ist die Website-Isolierung eine experimentelle Funktion, an deren optimierter Unterstützung wir derzeit arbeiten. Aktuell kann es aber zu Geschwindigkeitseinbußen kommen.
 
       HINWEIS: Diese Richtlinie funktioniert nur für Chrome unter Android auf Geräten mit mehr als 1 GB RAM. Damit die Richtlinie auf anderen Plattformen als Android genutzt werden kann, muss "IsolateOrigins" verwendet werden.</translation>
+<translation id="5595998409088126162">Wenn die Richtlinie konfiguriert ist, wird eine Lesezeichenliste erstellt, bei der jedes Lesezeichen ein Wörterbuch mit den Schlüsseln "<ph name="NAME" />" und "<ph name="URL_LABEL" />" ist. Diese Schlüssel enthalten den Namen und das Ziel des jeweiligen Lesezeichens. Administratoren können einen Unterordner konfigurieren, indem ein Lesezeichen ohne den Schlüssel "<ph name="URL_LABEL" />", dafür aber mit dem zusätzlichen Schlüssel "<ph name="CHILDREN" />" festgelegt wird. Dieser Schlüssel enthält wiederum eine Lesezeichenliste. Einige davon können auch Ordner sein. Chrome ergänzt unvollständige URLs, als würden sie über die Adressleiste eingegeben werden. Beispielsweise wird aus "<ph name="GOOGLE_COM" />" dann "<ph name="HTTPS_GOOGLE_COM" />".
+
+      Nutzer können nicht ändern, in welchem Ordner die Lesezeichen abgelegt werden. Sie haben aber die Möglichkeit, den Ordner in der Lesezeichenleiste auszublenden. Der Name des Ordners lautet standardmäßig "Verwaltete Lesezeichen", kann jedoch angepasst werden. Dazu müssen Nutzer der Liste von Lesezeichen ein Wörterbuch mit dem Schlüssel "<ph name="TOPLEVEL_NAME" />" und dem gewünschten Namen als Wert hinzufügen. Verwaltete Lesezeichen werden nicht mit dem Nutzerkonto synchronisiert und können nicht von Erweiterungen geändert werden.</translation>
 <translation id="5599461642204007579"><ph name="MS_AD_NAME" />-Verwaltungseinstellungen</translation>
 <translation id="5618398258385745432">Die entsprechende Einstellung wurde verwendet, bevor die erneute Authentifizierung bei der Ansicht von Passwörtern aktiviert wurde. Seither haben die Einstellung und folglich auch diese Richtlinie keinen Einfluss auf das Verhalten von Chrome. Aktuell werden Passwörter auf der Einstellungsseite des Passwortmanagers nicht als Klartext angezeigt. Dies bedeutet, dass die Einstellungsseite nur einen Platzhalter enthält und das Passwort in Chrome nur dann angezeigt wird, wenn der Nutzer auf "Anzeigen" klickt und sich gegebenenfalls noch einmal authentifiziert. Die ursprüngliche Beschreibung der Richtlinie finden Sie unten.
 
@@ -3112,6 +3147,9 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Ist die Richtlinie auf "0" gesetzt, ist die Speicherung der Authentifikationsdaten deaktiviert. Dadurch kann sich die Anmeldung von Nutzern deutlich verlangsamen, da bei jeder Anmeldung bereichsspezifische Daten abgerufen werden müssen.
 
       Auch für vorübergehende Nutzer werden Bereichsdaten im Cache gespeichert. Wenn die Bereiche vorübergehender Nutzer nicht verfolgt werden sollen, sollte der Cache deaktiviert werden.</translation>
+<translation id="5700097087679928356">Wenn die Richtlinie auf "0" gesetzt ist (Standardeinstellung), kann generell auf die Entwicklertools und die JavaScript-Konsole zugegriffen werden. Für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, ist der Zugriff aber nicht möglich. Ist die Richtlinie auf "1" gesetzt, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden, also auch von Erweiterungen, die über die Unternehmensrichtlinie installiert wurden. Wenn die Richtlinie auf "2" gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr geprüft werden.
+
+      Alle Tastenkombinationen und Einträge im Menü oder Kontextmenü, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, werden deaktiviert.</translation>
 <translation id="570062449808736508">Wenn für diese Richtlinie kein leerer String angegeben ist, wird WebView URL-Einschränkungen des Contentanbieters des angegebenen Befugnisnamens erkennen.</translation>
 <translation id="5708969689202733975">Zulässige Modi für das schnelle Entsperren konfigurieren</translation>
 <translation id="5711016543513883877">
@@ -3334,7 +3372,7 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
       </translation>
 <translation id="6082161804984853051">Wird die Richtlinie festgelegt, dann verwendet <ph name="PRODUCT_NAME" /> das von Ihnen angegebenen Verzeichnis zum Speichern von im Cache gespeicherten Dateien auf dem Laufwerk unabhängig davon, ob der Nutzer das Flag "--disk-cache-dir" angegeben hat.
 
-      Wurde die Richtlinie nicht festgelegt, dann verwendet <ph name="PRODUCT_NAME" /> das Cachestandardverzeichnis. Diese Einstellung können Nutzer jedoch mit dem Flag "--disk-cache-dir" auf der Befehlszeile ändern.
+      Wurde die Richtlinie nicht festgelegt, dann verwendet <ph name="PRODUCT_NAME" /> das Cachestandardverzeichnis. Diese Einstellung können Nutzer jedoch mit dem Befehlszeilen-Flag "--disk-cache-dir" ändern.
 
       <ph name="PRODUCT_NAME" /> verwaltet die Inhalte des Stammverzeichnisses eines Volumes. Daher dürfen Sie, wenn Sie Datenverlust und sonstige Fehler vermeiden möchten, diese Richtlinie nicht auf das Stammverzeichnis oder ein anderes Verzeichnis festlegen, das für andere Zwecke verwendet wird. Informationen zu den Variablen, die Sie verwenden können, finden Sie unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.</translation>
 <translation id="6083631234867522991">Windows (Windows-Clients):</translation>
@@ -3358,6 +3396,11 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6099853574908182288">Standardmäßiger Farbdruckmodus</translation>
 <translation id="6102342563050263313">Scrollen zu in URL-Fragmenten angegebenem Text aktivieren</translation>
 <translation id="6107642964266628393">Legt fest, wie und wann Chrome OS-Updates angewendet werden.</translation>
+<translation id="6110478331147706293">Wenn die Richtlinie konfiguriert ist, wird das Erzwingen von Certificate Transparency-Offenlegungsanforderungen für die Hostnamen in den angegebenen URLs deaktiviert. Dadurch sind Zertifikate weiterhin zulässig, die andernfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Es ist aber schwerer, fehlerhaft ausgestellte Zertifikate für diese Hosts zu erkennen.
+
+      Wenn die Richtlinie nicht konfiguriert ist, werden alle Zertifikate, für die eine Certificate Transparency-Offenlegung erforderlich ist und die nicht offengelegt werden, von <ph name="PRODUCT_NAME" /> als nicht vertrauenswürdig behandelt.
+
+      Ein URL-Muster folgt diesem Format (https://www.chromium.org/administrators/url-blacklist-filter-format). Weil die Zertifikate für einen bestimmten Hostnamen aber unabhängig vom Schema, Port oder Pfad gültig sind, wird von <ph name="PRODUCT_NAME" /> nur der Hostname der URL berücksichtigt. Platzhalter-Hosts werden nicht unterstützt.</translation>
 <translation id="6111936128861357925">Easter Egg-Dinosaurierspiel zulassen</translation>
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>
@@ -3390,6 +3433,11 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
           Ausführliche Beispiele finden Sie unter
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="6178075938488052838">Diese Richtlinie gibt vor, wer eine <ph name="PRODUCT_OS_NAME" />-Sitzung starten darf. Sie verhindert nicht, dass sich Nutzer in weiteren Google-Konten innerhalb von Android anmelden. Wenn Sie dies verhindern möchten, konfigurieren Sie die Android-spezifische Richtlinie "<ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" />" im Rahmen von "<ph name="ARC_POLICY_POLICY_NAME" />".</translation>
+<translation id="6183327369896253878">Wenn diese Richtlinie konfiguriert ist, werden die App-IDs festgelegt, die in <ph name="PRODUCT_OS_NAME" /> in der Launcher-Leiste angezeigt werden. Sie können nicht von Nutzern geändert werden.
+
+      Chrome-Apps werden mit ihrer ID angegeben, z. B. "pjkljhegncpnkpknbcohdijeoejaedia", Android-Apps mit ihrem Paketnamen, z. B. "com.google.android.gm", und Web-Apps mit ihrer URL aus <ph name="WEB_APP_INSTALL_FORCE_LIST_POLICY_NAME" />, z. B. "https://google.com/maps".
+
+      Ist diese Richtlinie nicht konfiguriert, können Nutzer die im Launcher angezeigten Apps ändern.</translation>
 <translation id="6190022522129724693">Standardeinstellung für Pop-ups</translation>
 <translation id="6190367314942602985">Personenbezogene Daten erfassen</translation>
 <translation id="6195802366906945965">Mit dieser Richtlinie kann festgelegt werden, ob die integrierte Zertifikatsprüfung zum Verifizieren von Serverzertifikaten verwendet wird</translation>
@@ -3509,6 +3557,9 @@ Die Richtlinie erlaubt dem Nutzer die Anmeldung in <ph name="PRODUCT_NAME" />.
 
 Durch Festlegen dieser Richtlinie bestimmen Sie, ob sich ein Nutzer in <ph name="PRODUCT_NAME" /> anmelden darf oder nicht. Wenn Sie für diese Richtlinie "False" festlegen, funktionieren Apps und Erweiterungen nicht mehr, die die chrome.identity API verwenden. Aus diesem Grund ist es empfehlenswert, stattdessen "SyncDisabled" zu verwenden.</translation>
 <translation id="6378076389057087301">Angaben zum Einfluss von Audioaktivitäten auf den Energiesparmodus</translation>
+<translation id="6378393933102834628">Wenn die Richtlinie auf "True" gesetzt ist, wird die Verknüpfung "Apps" eingeblendet. Ist sie auf "False" gesetzt, wird die Verknüpfung nie eingeblendet.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Falls die Richtlinie nicht konfiguriert ist, können Nutzer die Verknüpfung "Apps" über das Kontextmenü der Lesezeichenleiste ein- und ausblenden.</translation>
 <translation id="637934607141010488">Meldet eine Liste der Gerätenutzer, die sich kürzlich angemeldet haben
 
       Wird die Richtlinie auf "False" gesetzt, werden die Nutzer nicht gemeldet.</translation>
@@ -3728,6 +3779,17 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6698632841807204978">Schwarz-Weiß-Druck aktivieren</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts aktivieren</translation>
+<translation id="6703251016607733593">Wenn diese Richtlinie konfiguriert ist, wird das Erzwingen von Certificate Transparency-Offenlegungsanforderungen für eine Liste von <ph name="SUBJECT_PUBLIC_KEY_INFO" />-Hashes deaktiviert. Unternehmenshosts können dann weiterhin Zertifikate verwenden, die andernfalls nicht vertrauenswürdig wären, weil sie nicht ordnungsgemäß öffentlich offengelegt wurden. Um die Erzwingung zu deaktivieren, muss der Hash eine der folgenden Bedingungen erfüllen:
+
+      * Der Hash gehört zu einem <ph name="SUBJECT_PUBLIC_KEY_INFO" /> des Serverzertifikats.
+
+      * Der Hash gehört zu einem <ph name="SUBJECT_PUBLIC_KEY_INFO" />, das in einem CA-Zertifikat in der Zertifikatskette erscheint. Dieses CA-Zertifikat wird durch die Erweiterung "X.509v3 nameConstraints" beschränkt, es liegen ein oder mehrere directoryName nameConstraints in permittedSubtrees vor und der directoryName enthält ein organizationName-Attribut.
+
+      * Der Hash gehört zu einem <ph name="SUBJECT_PUBLIC_KEY_INFO" />, das in einem CA-Zertifikat in der Zertifikatskette erscheint, das CA-Zertifikat hat ein oder mehrere OrganizationName-Attribute im Zertifikatsinhaber und das Zertifikat des Servers enthält dieselbe Anzahl OrganizationName-Attribute in derselben Reihenfolge und mit in jedem Byte identischen Werten.
+
+      Geben Sie einen <ph name="SUBJECT_PUBLIC_KEY_INFO" />-Hash an, indem Sie Folgendes verketten: den Hash-Algorithmusnamen, das Zeichen "/" sowie die Base64-Codierung dieses Hash-Algorithmus, die auf das DER-codierte <ph name="SUBJECT_PUBLIC_KEY_INFO" /> des angegebenen Zertifikats angewendet wird. Die Base64-Codierung hat dasselbe Format wie ein SPKI-Fingerabdruck. Der einzige erkannte Hash-Algorithmus ist "sha256". Alle anderen werden ignoriert.
+
+      Wenn die Richtlinie nicht konfiguriert ist, werden alle Zertifikate, für die eine Certificate Transparency-Offenlegung erforderlich ist und die nicht offengelegt werden, von <ph name="PRODUCT_NAME" /> als nicht vertrauenswürdig behandelt.</translation>
 <translation id="6704515759227307131">Diese Richtlinie ist veraltet und wurde durch "AdvancedProtectionAllowed" ersetzt.
 
       Mit dieser Richtlinie wird festgelegt, ob Nutzer, die am erweiterten Sicherheitsprogramm teilnehmen, ihre heruntergeladenen Dateien für einen Malware-Scan an Google senden können. Wird die Richtlinie auf "true" gesetzt oder nicht konfiguriert, werden Nutzer dazu aufgefordert, ihre heruntergeladenen Dateien für einen Tiefenscan an Google zu senden. Wenn der Nutzer die Option zum Scannen auswählt, wird der Download an Google gesendet. Wird diese Richtlinie auf "false" gesetzt, werden Nutzer nicht dazu aufgefordert, ihre heruntergeladenen Dateien an Google zu senden.</translation>
@@ -3738,6 +3800,9 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
           Ist diese Richtlinie ab <ph name="PRODUCT_NAME" /> 76 nicht konfiguriert, wird sie standardmäßig deaktiviert.
 
           Ab <ph name="PRODUCT_NAME" /> 78 wird diese Richtlinie ignoriert und als deaktiviert eingestuft.</translation>
+<translation id="672496466524161417">Wenn die Richtlinie auf "None" gesetzt oder nicht konfiguriert ist, können Nutzer Zertifikate verwalten. Ist sie auf "2" gesetzt, können Nutzer Zertifikate nur ansehen und nicht verwalten.
+
+      Wenn die Richtlinie auf "1" gesetzt ist, können Nutzer Nutzerzertifikate, aber keine Zertifikate für das gesamte Gerät verwalten.</translation>
 <translation id="6731757988219967594">Websites auf oberster Ebene (aber nicht eingebettete iFrames) mit Inhalten nur für Erwachsene filtern</translation>
 <translation id="6734521799274931721">Steuert die Verfügbarkeit von Netzwerkfreigaben unter Chrome OS</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
@@ -4048,6 +4113,9 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfrag
 
       Hinweis: Die Richtlinie wirkt sich nicht auf Google Drive und internen Speicher aus. Die Nutzer können weiterhin auf Dateien zugreifen, die im Ordner "Downloads" gespeichert sind.</translation>
 <translation id="7177857088692019405">Schnelles Entsperren</translation>
+<translation id="7179187054027029272">Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, steht Nutzern, Apps und Erweiterungen mit entsprechenden Berechtigungen der Vollbildmodus zur Verfügung.
+
+      Ist sie auf "False" gesetzt, können Nutzer, Apps oder Erweiterungen nicht in den Vollbildmodus wechseln.</translation>
 <translation id="718126088895133062">Mit dieser Richtlinie wird die Nutzer-ID zur <ph name="PLUGIN_VM_NAME" />-Lizenzierung für dieses Gerät angegeben.</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Hiermit können Sie die Energieverwaltungsrichtlinie zum Umschalten bei Leistungsspitzen aktivieren.
@@ -4626,6 +4694,11 @@ Auf nicht verwalteten Geräten dürfen virtuelle Maschinen ausgeführt werden.</
 <translation id="8140204717286305802">Meldet eine Liste der Netzwerkschnittstellen mit deren Typen und Hardwareadressen an den Server
 
       Wird die Richtlinie auf "False" gesetzt, wird die Liste der Netzwerkschnittstellen nicht gemeldet.</translation>
+<translation id="8140907626566492348">Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, dürfen Nutzern in <ph name="PRODUCT_NAME" /> Produktinformationen auf einem ganzen Tab angezeigt werden.
+
+      Ist sie auf "False" gesetzt, dürfen in <ph name="PRODUCT_NAME" /> keine Produktinformationen auf einem ganzen Tab angezeigt werden.
+
+      Diese Einstellung steuert die Darstellung von Begrüßungsseiten, auf denen sich Nutzer in <ph name="PRODUCT_NAME" /> anmelden können, legt <ph name="PRODUCT_NAME" /> als Standardbrowser des Nutzers fest oder informiert Nutzer auf andere Weise über Produktfunktionen.</translation>
 <translation id="8141795997560411818">Diese Richtlinie verhindert nicht, dass der Nutzer die Android Google Drive App verwendet. Wenn Sie den Zugriff auf Google Drive verhindern möchten, sollten Sie auch das Installieren der Android Google Drive App nicht zulassen.</translation>
 <translation id="8142894094385450823">Empfohlene Sprachen für eine verwaltete Sitzung festlegen</translation>
 <translation id="8146727383888924340">Nutzern das Einlösen von Angeboten über die Chrome OS-Registrierung gestatten</translation>
@@ -4646,6 +4719,9 @@ Wird diese Richtlinie nicht konfiguriert, ist der Datenschutzbildschirm anfangs 
 
       Falls die Richtlinie deaktiviert oder nicht eingestellt wird, werden bei einer Anmeldung reguläre Profile erstellt.</translation>
 <translation id="8158758865057576716">Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktivieren.</translation>
+<translation id="8158897487095710470">Wenn die Richtlinie auf "True" gesetzt ist, wird eine Lesezeichenleiste in <ph name="PRODUCT_NAME" /> angezeigt. Ist sie auf "False" gesetzt, ist keine Lesezeichenleiste zu sehen.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Ist die Richtlinie nicht konfiguriert, können Nutzer entscheiden, ob sie diese Funktion verwenden möchten.</translation>
 <translation id="8159760979508295709">Mit dieser Richtlinie wird die Bedienungshilfe "Mauszeiger hervorheben" aktiviert.
 
           Dabei wird der Bereich um den Mauszeiger beim Bewegen hervorgehoben.
@@ -4812,6 +4888,11 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8424255554404582727">Standarddrehung des Bildschirms festlegen, die bei jedem Neustart erneut angewendet wird</translation>
 <translation id="8426231401662877819">Bildschirm um 90 Grad im Uhrzeigersinn drehen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
+<translation id="843609873781525167">Wenn die Richtlinie auf "True" gesetzt ist, prüft <ph name="PRODUCT_NAME" /> beim Start immer, ob es der Standardbrowser ist. Nach Möglichkeit registriert sich die Anwendung dann automatisch. Ist die Richtlinie auf "False" gesetzt, prüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert.
+
+      Falls die Richtlinie nicht konfiguriert ist, kann der Nutzer festlegen, ob <ph name="PRODUCT_NAME" /> der Standardbrowser ist und ob (falls nicht) entsprechende Benachrichtigungen angezeigt werden sollen.
+
+      Hinweis für <ph name="MS_WIN_NAME" />-Administratoren: Diese Einstellung funktioniert nur auf Computern mit Windows 7. Bei neueren Versionen müssen Sie eine Datei mit "Standardanwendungszuordnungen" angeben, die <ph name="PRODUCT_NAME" /> zum Handler für die <ph name="HTTPS_PROTOCOL" />- und <ph name="HTTP_PROTOCOL" />-Protokolle sowie optional für das <ph name="FTP_PROTOCOL" />-Protokoll und weitere Dateiformate macht. Weitere Informationen finden Sie in der Chrome-Hilfe ( https://support.google.com/chrome?p=make_chrome_default_win ).</translation>
 <translation id="8445576299806775661">Nach jedem größeren Versionsupdate erstellt Chrome für den Fall eines Notfall-Rollbacks einen Snapshot bestimmter Browserdaten des Nutzers. Falls ein Notfall-Rollback für eine Version durchgeführt wird, für die der Nutzer einen passenden Snapshot hat, werden die darin gespeicherten Daten wiederhergestellt. Hierdurch verliert der Nutzer seine Einstellungen wie beispielsweise Lesezeichen und AutoFill-Daten nicht.
 
       Ist diese Richtlinie nicht konfiguriert, wird der Standardwert "3" verwendet.
@@ -4884,6 +4965,9 @@ Die Richtlinie wird in M75 entfernt.</translation>
 
           Wird sie nicht konfiguriert, sind die Tastenkombinationen für Bedienungshilfen standardmäßig aktiviert.</translation>
 <translation id="8525526490824335042">Linux-Container</translation>
+<translation id="8537051350735478658">Wenn die Richtlinie auf "True" gesetzt ist, werden die Suchvorschläge in der Adressleiste von <ph name="PRODUCT_NAME" /> aktiviert. Ist sie auf "False" gesetzt, werden die Suchvorschläge deaktiviert.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Wird sie nicht konfiguriert, sind die Suchvorschläge standardmäßig aktiviert, können aber jederzeit von Nutzern deaktiviert werden.</translation>
 <translation id="8544375438507658205">Standardanwendung für HTML-Darstellung in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8544465954173828789">Zulassen, dass SMS zwischen Smartphone mit Chromebook synchronisiert werden.</translation>
 <translation id="8548832052135586762">Damit wird festgelegt, ob nur in Farbe, nur in Schwarz-Weiß oder ohne Farbmodusbeschränkung gedruckt wird. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
@@ -5227,7 +5311,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
           Wird die Richtlinie nicht konfiguriert, obwohl sie auf dem Gerät unterstützt wird, dann wird der Standardmodus für die Akkuaufladung angewendet und kann vom Nutzer nicht geändert werden.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" diese Richtlinie.</translation>
-<translation id="9055835215213290877">Aufgrund der Einstellung "Kein" der Richtlinie verwendet <ph name="PRODUCT_NAME" /> die Cachestandardgröße zum Speichern im Cache gespeicherter Dateien auf dem Laufwerk. Dies kann vom Nutzer nicht geändert werden.
+<translation id="9055835215213290877">Wenn die Richtlinie auf "None" festgelegt wird, verwendet <ph name="PRODUCT_NAME" /> die Cachestandardgröße zum Speichern von Dateien im Cache auf dem Laufwerk. Dies kann vom Nutzer nicht geändert werden.
 
       Wenn Sie die Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> die von Ihnen angegebene Cachegröße unabhängig davon, ob Nutzer das Flag "--disk-cache-size" angeben oder nicht. Werte, die kleiner als einige Megabyte sind, werden aufgerundet.
 

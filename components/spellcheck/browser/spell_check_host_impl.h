@@ -50,14 +50,15 @@ class SpellCheckHostImpl : public spellcheck::mojom::SpellCheckHost {
                      CheckSpellingCallback callback) override;
   void FillSuggestionList(const base::string16& word,
                           FillSuggestionListCallback callback) override;
-#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
-        // !BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN)
+
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
+        // !BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
 #if defined(OS_ANDROID)
   // spellcheck::mojom::SpellCheckHost:

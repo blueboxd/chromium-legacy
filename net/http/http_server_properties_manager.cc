@@ -529,7 +529,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
   }
 
   // Advertised versions list is optional.
-  // It is only used for PROTOCOL_QUIC_CRYPTO versions.
+  // It is only used for versions that use the legacy Google AltSvc format.
   if (dict.HasKey(kAdvertisedVersionsKey)) {
     const base::ListValue* versions_list = nullptr;
     if (!dict.GetListWithoutPathExpansion(kAdvertisedVersionsKey,
@@ -546,15 +546,15 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
                  << server_str;
         return false;
       }
-      if (!quic::ParsedQuicVersionIsValid(
-              quic::PROTOCOL_QUIC_CRYPTO,
-              quic::QuicTransportVersion(version))) {
-        // This version is not valid, this can happen if we've deprecated
-        // a version that used to be valid.
-        continue;
+      for (const quic::ParsedQuicVersion& supported :
+           quic::AllSupportedVersions()) {
+        if (supported.UsesQuicCrypto() &&
+            supported.SupportsGoogleAltSvcFormat() &&
+            static_cast<int>(supported.transport_version) == version) {
+          advertised_versions.push_back(supported);
+          break;
+        }
       }
-      advertised_versions.push_back(quic::ParsedQuicVersion(
-          quic::PROTOCOL_QUIC_CRYPTO, quic::QuicTransportVersion(version)));
     }
     alternative_service_info->set_advertised_versions(advertised_versions);
   }

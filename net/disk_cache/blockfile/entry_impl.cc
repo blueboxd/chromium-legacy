@@ -1064,7 +1064,6 @@ int EntryImpl::InternalReadData(int index,
   }
 
   address.set_value(entry_.Data()->data_addr[index]);
-  DCHECK(address.is_initialized());
   if (!address.is_initialized()) {
     DoomImpl();
     return net::ERR_FAILED;

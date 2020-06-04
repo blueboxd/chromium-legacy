@@ -499,7 +499,8 @@ class HostResolverManager::RequestImpl
               const base::Optional<ResolveHostParameters>& optional_parameters,
               ResolveContext* resolve_context,
               HostCache* host_cache,
-              base::WeakPtr<HostResolverManager> resolver)
+              base::WeakPtr<HostResolverManager> resolver,
+              const base::TickClock* tick_clock)
       : source_net_log_(source_net_log),
         request_host_(request_host),
         network_isolation_key_(
@@ -516,7 +517,8 @@ class HostResolverManager::RequestImpl
         priority_(parameters_.initial_priority),
         job_(nullptr),
         resolver_(resolver),
-        complete_(false) {}
+        complete_(false),
+        tick_clock_(tick_clock) {}
 
   ~RequestImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -544,7 +546,7 @@ class HostResolverManager::RequestImpl
     } else {
       DCHECK(!job_);
       complete_ = true;
-      LogFinishRequest(rv);
+      LogFinishRequest(rv, false /* async_completion */);
     }
     resolver_ = nullptr;
 
@@ -657,7 +659,7 @@ class HostResolverManager::RequestImpl
     DCHECK(!complete_);
     complete_ = true;
 
-    LogFinishRequest(error);
+    LogFinishRequest(error, true /* async_completion */);
 
     DCHECK(callback_);
     std::move(callback_).Run(HostResolver::SquashErrorCode(error));
@@ -687,19 +689,12 @@ class HostResolverManager::RequestImpl
 
   bool complete() const { return complete_; }
 
-  base::TimeTicks request_time() const {
-    DCHECK(!request_time_.is_null());
-    return request_time_;
-  }
-  void set_request_time(base::TimeTicks request_time) {
-    DCHECK(request_time_.is_null());
-    DCHECK(!request_time.is_null());
-    request_time_ = request_time;
-  }
-
  private:
-  // Logs when a request has just been started.
+  // Logging and metrics for when a request has just been started.
   void LogStartRequest() {
+    DCHECK(request_time_.is_null());
+    request_time_ = tick_clock_->NowTicks();
+
     source_net_log_.BeginEvent(
         NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, [this] {
           base::Value dict(base::Value::Type::DICTIONARY);
@@ -716,10 +711,20 @@ class HostResolverManager::RequestImpl
         });
   }
 
-  // Logs when a request has just completed (before its callback is run).
-  void LogFinishRequest(int net_error) {
+  // Logging and metrics for when a request has just completed (before its
+  // callback is run).
+  void LogFinishRequest(int net_error, bool async_completion) {
     source_net_log_.EndEventWithNetErrorCode(
         NetLogEventType::HOST_RESOLVER_IMPL_REQUEST, net_error);
+
+    if (!parameters_.is_speculative) {
+      DCHECK(!request_time_.is_null());
+      base::TimeDelta duration = tick_clock_->NowTicks() - request_time_;
+
+      UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.Request.TotalTime", duration);
+      if (async_completion)
+        UMA_HISTOGRAM_MEDIUM_TIMES("Net.DNS.Request.TotalTimeAsync", duration);
+    }
   }
 
   // Logs when a request has been cancelled.
@@ -752,6 +757,7 @@ class HostResolverManager::RequestImpl
   base::Optional<HostCache::EntryStaleness> stale_info_;
   ResolveErrorInfo error_info_;
 
+  const base::TickClock* const tick_clock_;
   base::TimeTicks request_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -2575,23 +2581,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       if (had_non_speculative_request_) {
         category = RESOLVE_SUCCESS;
         UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime", duration);
-        switch (query_type_) {
-          case DnsQueryType::A:
-            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV4",
-                                         duration);
-            break;
-          case DnsQueryType::AAAA:
-            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.IPV6",
-                                         duration);
-            break;
-          case DnsQueryType::UNSPECIFIED:
-            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveSuccessTime.UNSPEC",
-                                         duration);
-            break;
-          default:
-            // No histogram for other query types.
-            break;
-        }
       } else {
         category = RESOLVE_SPECULATIVE_SUCCESS;
       }
@@ -2603,23 +2592,6 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       if (had_non_speculative_request_) {
         category = RESOLVE_FAIL;
         UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime", duration);
-        switch (query_type_) {
-          case DnsQueryType::A:
-            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.IPV4",
-                                         duration);
-            break;
-          case DnsQueryType::AAAA:
-            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.IPV6",
-                                         duration);
-            break;
-          case DnsQueryType::UNSPECIFIED:
-            UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.ResolveFailureTime.UNSPEC",
-                                         duration);
-            break;
-          default:
-            // No histogram for other query types.
-            break;
-        }
       } else {
         category = RESOLVE_SPECULATIVE_FAIL;
       }
@@ -2634,6 +2606,13 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
         base::UmaHistogramSparse("Net.DNS.ResolveError.Fast", std::abs(error));
       else
         base::UmaHistogramSparse("Net.DNS.ResolveError.Slow", std::abs(error));
+    }
+
+    if (had_non_speculative_request_) {
+      UmaHistogramMediumTimes(
+          base::StringPrintf("Net.DNS.SecureDnsMode.%s.ResolveTime",
+                             SecureDnsModeToString(secure_dns_mode_).c_str()),
+          duration);
     }
   }
 
@@ -2708,13 +2687,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       RequestImpl* req = requests_.head()->value();
       req->RemoveFromList();
       DCHECK_EQ(this, req->job());
-      // Update the net log and notify registered observers.
-      if (results.did_complete()) {
-        // Record effective total time from creation to completion.
-        resolver_->RecordTotalTime(
-            req->parameters().is_speculative, false /* from_cache */,
-            secure_dns_mode_, tick_clock_->NowTicks() - req->request_time());
-      }
+
       if (results.error() == OK && !req->parameters().is_speculative) {
         req->set_results(
             results.CopyWithDefaultPort(req->request_host().port()));
@@ -2929,7 +2902,7 @@ HostResolverManager::CreateRequest(
 
   return std::make_unique<RequestImpl>(
       net_log, host, network_isolation_key, optional_parameters,
-      resolve_context, host_cache, weak_ptr_factory_.GetWeakPtr());
+      resolve_context, host_cache, weak_ptr_factory_.GetWeakPtr(), tick_clock_);
 }
 
 std::unique_ptr<HostResolverManager::CancellableProbeRequest>
@@ -3092,8 +3065,6 @@ int HostResolverManager::Resolve(RequestImpl* request) {
              ResolveHostParameters::CacheUsage::ALLOWED);
   DCHECK(!invalidation_in_progress_);
 
-  request->set_request_time(tick_clock_->NowTicks());
-
   DnsQueryType effective_query_type;
   HostResolverFlags effective_host_resolver_flags;
   DnsConfig::SecureDnsMode effective_secure_dns_mode;
@@ -3117,8 +3088,6 @@ int HostResolverManager::Resolve(RequestImpl* request) {
     }
     if (stale_info && !request->parameters().is_speculative)
       request->set_stale_info(std::move(stale_info).value());
-    RecordTotalTime(request->parameters().is_speculative, true /* from_cache */,
-                    effective_secure_dns_mode, base::TimeDelta());
     request->set_error_info(results.error(),
                             false /* is_secure_network_error */);
     return HostResolver::SquashErrorCode(results.error());
@@ -3436,24 +3405,6 @@ void HostResolverManager::CacheResult(HostCache* cache,
   // Don't cache an error unless it has a positive TTL.
   if (cache && (entry.error() == OK || ttl > base::TimeDelta()))
     cache->Set(key, entry, tick_clock_->NowTicks(), ttl);
-}
-
-// Record time from Request creation until a valid DNS response.
-void HostResolverManager::RecordTotalTime(
-    bool speculative,
-    bool from_cache,
-    DnsConfig::SecureDnsMode secure_dns_mode,
-    base::TimeDelta duration) const {
-  if (!speculative) {
-    UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTime", duration);
-    UmaHistogramMediumTimes(
-        base::StringPrintf("Net.DNS.SecureDnsMode.%s.TotalTime",
-                           SecureDnsModeToString(secure_dns_mode).c_str()),
-        duration);
-
-    if (!from_cache)
-      UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.TotalTimeNotCached", duration);
-  }
 }
 
 std::unique_ptr<HostResolverManager::Job> HostResolverManager::RemoveJob(

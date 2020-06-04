@@ -840,6 +840,17 @@ bool TabStripModel::IsTabPinned(int index) const {
   return contents_data_[index]->pinned();
 }
 
+bool TabStripModel::IsTabCollapsed(int index) const {
+  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index);
+  return group.has_value() && IsGroupCollapsed(group.value());
+}
+
+bool TabStripModel::IsGroupCollapsed(
+    const tab_groups::TabGroupId& group) const {
+  return group_model()->ContainsTabGroup(group) &&
+         group_model()->GetTabGroup(group)->visual_data()->is_collapsed();
+}
+
 bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked();
 }
@@ -1505,6 +1516,30 @@ int TabStripModel::GetIndexOfNextWebContentsOpenedBy(const WebContents* opener,
       return i;
   }
   return kNoTab;
+}
+
+base::Optional<int> TabStripModel::GetNextExpandedActiveTab(
+    int start_index,
+    base::Optional<tab_groups::TabGroupId> collapsing_group) const {
+  // Check tabs from the start_index first.
+  for (int i = start_index + 1; i < count(); ++i) {
+    base::Optional<tab_groups::TabGroupId> current_group = GetTabGroupForTab(i);
+    if (!current_group.has_value() ||
+        (!IsGroupCollapsed(current_group.value()) &&
+         current_group != collapsing_group)) {
+      return i;
+    }
+  }
+  // Then check tabs before start_index, iterating backwards.
+  for (int i = start_index - 1; i >= 0; --i) {
+    base::Optional<tab_groups::TabGroupId> current_group = GetTabGroupForTab(i);
+    if (!current_group.has_value() ||
+        (!IsGroupCollapsed(current_group.value()) &&
+         current_group != collapsing_group)) {
+      return i;
+    }
+  }
+  return base::nullopt;
 }
 
 void TabStripModel::ForgetAllOpeners() {

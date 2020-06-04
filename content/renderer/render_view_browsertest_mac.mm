@@ -24,7 +24,6 @@
 #include <Cocoa/Cocoa.h>
 
 using blink::WebFrameContentDumper;
-using blink::WebImeTextSpan;
 
 namespace content {
 

@@ -79,11 +79,11 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
                         int route_id,
                         RequestTextCheckCallback callback) override;
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
   void GetPerLanguageSuggestions(
       const base::string16& word,
       GetPerLanguageSuggestionsCallback callback) override;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN)
 
   // Clears a finished request from |requests_|. Exposed to SpellingRequest.
   void OnRequestFinished(SpellingRequest* request);

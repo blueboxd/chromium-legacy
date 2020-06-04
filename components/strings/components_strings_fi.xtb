@@ -759,9 +759,9 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tarkista palomuurin ja virustorjuntaohjelmiston määritykset.<ph name="END_LINK" /></translation>
 <translation id="4209166701302774460">Kohdepalvelin <ph name="ORIGIN" /> pyytää
-    alkuperäkäytännön soveltamista kaikkiin sen saamiin pyyntöihin. Se ei ole palauttanut
-    käytäntöä, joten selain ei nyt voi toteuttaa
-    <ph name="SITE" />-pyyntöä. Alkuperäkäytäntöjen avulla sivuston operaattorit
+    alkuperäkäytännön soveltamista kaikkiin sen saamiin pyyntöihin. Käytännön palauttaminen ei kuitenkaan nyt onnistunut, 
+    , joten selain ei nyt voi toteuttaa
+    <ph name="SITE" />-pyyntöäsi. Alkuperäkäytäntöjen avulla sivuston operaattorit
     voivat määrittää sen tietosuojan ja muita ominaisuuksia.</translation>
 <translation id="421066178035138955">käyttää virtuaalitodellisuuslaitteita ja ‑dataa</translation>
 <translation id="4214357935346142455">kirjautumisnäytön profiili</translation>

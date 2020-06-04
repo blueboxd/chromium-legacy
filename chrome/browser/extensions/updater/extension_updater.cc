@@ -261,6 +261,12 @@ void ExtensionUpdater::UpdateImmediatelyForFirstRun() {
   g_should_immediately_update = true;
 }
 
+void ExtensionUpdater::SetBackoffPolicyForTesting(
+    const net::BackoffEntry::Policy* backoff_policy) {
+  EnsureDownloaderCreated();
+  downloader_->SetBackoffPolicyForTesting(backoff_policy);
+}
+
 void ExtensionUpdater::DoCheckSoon() {
   DCHECK(will_check_soon_);
   CheckNow(CheckParams());

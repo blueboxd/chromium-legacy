@@ -33,6 +33,13 @@ To initially evaluate accuracy of a quality of experience metric, we rely heavil
 * Use the metric implementation to sort the samples.
 * Use [Spearman's rank-order correlation](https://statistics.laerd.com/statistical-guides/spearmans-rank-order-correlation-statistical-guide.php) to evaluate how similar the metric implementation is to the hand ordering.
 
+## Incentivizes the right optimizations
+
+Ideally developers optimize their sites' performance on metrics by improving the user experience.
+But if developers can easily improve their performance on a metric without improving the actual user experience, the metric does not incentivize the right things.
+
+For example, if we use the onload event as the time at which we consider a web page to be fully loaded, developers will shift work after the onload event to improve their page load time. In many cases, this is the right thing to do. But since the onload event doesn't correspond to any real user-visible milestone in loading the page, it's easy to just keep shifting work after it, until eventually the entire page is loaded after onload. So instead we work to write metrics that capture user experience in a way that it's clearer to developers how they should optimize.
+
 ## Stable
 
 A metric is stable if the result doesn’t vary much between successive runs on similar input. This can be quantitatively evaluated, ideally using Chrome Trace Processor and cluster telemetry on the top 10k sites. Eventually we hope to have a concrete threshold for a specific spread metric here, but for now, we gather the stability data, and analyze it by hand.

@@ -413,3 +413,82 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInCrashes) {
   CheckTrustedTypesViolation("chrome://crashes");
 }
+
+// Verify that there's no Trusted Types violation in chrome://omnibox
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInOmnibox) {
+  CheckTrustedTypesViolation("chrome://omnibox");
+}
+
+// Verify that there's no Trusted Types violation in chrome://network-errors
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInNetworkErrors) {
+  CheckTrustedTypesViolation("chrome://network-errors");
+}
+
+// Verify that there's no Trusted Types violation in chrome://cryptohome
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInCryptoHome) {
+  CheckTrustedTypesViolation("chrome://cryptohome");
+}
+
+// Verify that there's no Trusted Types violation in chrome://drive-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInDriveInternals) {
+  CheckTrustedTypesViolation("chrome://drive-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://first-run
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInFirstRun) {
+  CheckTrustedTypesViolation("chrome://first-run");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://machine-learning-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInMachineLearningInternals) {
+  CheckTrustedTypesViolation("chrome://machine-learning-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://power
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInPower) {
+  CheckTrustedTypesViolation("chrome://power");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://explore-sites-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInExploreSitesInternals) {
+  CheckTrustedTypesViolation("chrome://explore-sites-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://snippets-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSnippetsInternals) {
+  CheckTrustedTypesViolation("chrome://snippets-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://webapks
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInWebapks) {
+  CheckTrustedTypesViolation("chrome://webapks");
+}
+
+// Verify that there's no Trusted Types violation in chrome://linux-proxy-config
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInLinuxProxyConfig) {
+  CheckTrustedTypesViolation("chrome://linux-proxy-config");
+}

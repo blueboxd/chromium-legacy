@@ -183,6 +183,13 @@ AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
   return file_path.contains("third_party");
 }
 
+AST_MATCHER(clang::FieldDecl, isInGeneratedLocation) {
+  llvm::StringRef file_path =
+      GetFilePath(Finder->getASTContext().getSourceManager(), Node);
+
+  return file_path.startswith("gen/") || file_path.contains("/gen/");
+}
+
 class FieldDeclFilterFile {
  public:
   explicit FieldDeclFilterFile(const std::string& filepath) {
@@ -470,12 +477,13 @@ int main(int argc, const char* argv[]) {
   //   the source code)
   FieldDeclFilterFile fields_to_exclude(exclude_fields_param);
   auto field_decl_matcher =
-      fieldDecl(allOf(hasType(supported_pointer_types_matcher),
-                      hasUniqueTypeLoc(),
-                      unless(anyOf(isInThirdPartyLocation(),
-                                   isInMacroLocation(), isInExternCContext(),
-                                   isListedInFilterFile(fields_to_exclude),
-                                   implicit_field_decl_matcher))))
+      fieldDecl(
+          allOf(hasType(supported_pointer_types_matcher), hasUniqueTypeLoc(),
+                unless(anyOf(isInThirdPartyLocation(), isInGeneratedLocation(),
+                             isExpansionInSystemHeader(), isInMacroLocation(),
+                             isInExternCContext(),
+                             isListedInFilterFile(fields_to_exclude),
+                             implicit_field_decl_matcher))))
           .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);

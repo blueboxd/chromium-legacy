@@ -566,6 +566,7 @@ _CONFIG = [
             'cc::ApplyViewportChangesArgs',
             'cc::LayerTreeSettings',
             'cc::TaskGraphRunner',
+            'ui::ImeTextSpan',
         ],
     },
     {
@@ -589,6 +590,7 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/core/editing/ime'],
         'allowed': [
+            'ui::ImeTextSpan',
             'ui::TextInputAction',
         ],
     },

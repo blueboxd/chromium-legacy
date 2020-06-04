@@ -603,7 +603,8 @@ void RenderFrameProxy::Navigate(
     bool initiator_frame_has_download_sandbox_flag,
     bool blocking_downloads_in_sandbox_enabled,
     bool initiator_frame_is_ad,
-    mojo::ScopedMessagePipeHandle blob_url_token,
+    blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>
+        blob_url_token,
     const base::Optional<blink::WebImpression>& impression) {
   // The request must always have a valid initiator origin.
   DCHECK(!request.RequestorOrigin().IsNull());
@@ -620,7 +621,10 @@ void RenderFrameProxy::Navigate(
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = request.HasUserGesture();
   params.triggering_event_info = blink::TriggeringEventInfo::kUnknown;
-  params.blob_url_token = blob_url_token.release();
+  params.blob_url_token =
+      mojo::PendingRemote<blink::mojom::BlobURLToken>(std::move(blob_url_token))
+          .PassPipe()
+          .release();
 
   RenderFrameImpl* initiator_render_frame =
       RenderFrameImpl::FromWebFrame(initiator_frame);

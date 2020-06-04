@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">讓你調整鍵盤按鍵重複輸入速率、字詞預測功能等等</translation>
 <translation id="1633947793238301227">停用 Google 助理</translation>
 <translation id="1634783886312010422">你在 <ph name="WEBSITE" /> 上變更了這個密碼嗎？</translation>
-<translation id="1635033183663317347">由您的監護人安裝。</translation>
 <translation id="1637224376458524414">在 iPhone 上取得這個書籤</translation>
 <translation id="1637765355341780467">開啟你的設定檔時發生錯誤，部分功能可能無法使用。</translation>
 <translation id="1639239467298939599">載入中</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Chrome 同步功能資料</translation>
 <translation id="2200094388063410062">電子郵件</translation>
 <translation id="2200356397587687044">Chrome 需要權限才能繼續執行</translation>
-<translation id="2200729650590440847">PIN 碼螢幕鎖定設定</translation>
 <translation id="220138918934036434">隱藏按鈕</translation>
 <translation id="2202898655984161076">列出印表機清單時發生問題，你的部分印表機尚未使用 <ph name="CLOUD_PRINT_NAME" /> 完成註冊。</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />網址列<ph name="END_LINK" />中使用的搜尋引擎</translation>
 <translation id="2204034823255629767">讀取及變更你輸入的任何設定</translation>
-<translation id="2207166770508557715">休眠設定</translation>
 <translation id="220858061631308971">請在「<ph name="DEVICE_NAME" />」上輸入以下 PIN 碼：</translation>
 <translation id="2212565012507486665">允許 Cookie</translation>
 <translation id="2213140827792212876">移除共用設定</translation>
@@ -1407,11 +1404,9 @@
 <translation id="2751131328353405138">正在掛接 Linux 容器 SSHFS</translation>
 <translation id="2751739896257479635">EAP 第 2 階段驗證</translation>
 <translation id="2753677631968972007">手動控管網站權限。</translation>
-<translation id="2753984311895843016">閒置電源</translation>
 <translation id="2755367719610958252">管理無障礙功能</translation>
 <translation id="275662540872599901">螢幕已關閉</translation>
 <translation id="2757338480560142065">請確認要儲存的密碼與 <ph name="WEBSITE" /> 上的密碼相符</translation>
-<translation id="276221322463921688">顯示器方向</translation>
 <translation id="2762441749940182211">無法使用攝影機</translation>
 <translation id="2764786626780673772">VPN 詳細資料</translation>
 <translation id="2765217105034171413">小</translation>
@@ -3591,7 +3586,7 @@
 <translation id="5585912436068747822">無法格式化</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">正在載入應用程式...</translation>
-<translation id="558984423786125616">設定中已有該通訊埠</translation>
+<translation id="558984423786125616">該通訊埠已存在於「設定」中</translation>
 <translation id="5592595402373377407">目前還沒有足夠的資料。</translation>
 <translation id="5593357315997824387">同步處理我的檔案</translation>
 <translation id="5595485650161345191">編輯地址</translation>
@@ -6220,7 +6215,6 @@
 <translation id="8953476467359856141">充電時</translation>
 <translation id="895347679606913382">啟動中...</translation>
 <translation id="8957762313041272117">即時字幕</translation>
-<translation id="8958804960827200147">螢幕方向</translation>
 <translation id="895944840846194039">JavaScript 記憶體使用量</translation>
 <translation id="8962083179518285172">隱藏詳細資料</translation>
 <translation id="8962918469425892674">這個網站正在使用動作感應器或光源感應器。</translation>

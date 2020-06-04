@@ -478,17 +478,6 @@ void SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete(
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     NOTREACHED();
   } else {
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    // The platform spellchecker doesn't support this language. Fall back to
-    // Hunspell, unless the hybrid spellchecker is disabled.
-    if (spellcheck::UseBrowserSpellChecker() &&
-        !spellcheck::UseWinHybridSpellChecker()) {
-      // Can't fall back to Hunspell, because the hybrid spellchecker is not
-      // enabled. We can't spellcheck this language, so there's no further
-      // processing to do.
-      return;
-    }
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     // Either the platform spellchecker is unavailable / disabled, or it doesn't
     // support this language. In either case, we must use Hunspell for this
     // language, unless we are on Android, which doesn't support Hunspell.

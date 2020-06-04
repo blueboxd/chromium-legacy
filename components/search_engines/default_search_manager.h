@@ -99,6 +99,11 @@ class DefaultSearchManager {
   // filled in with the source of the result.
   const TemplateURLData* GetDefaultSearchEngine(Source* source) const;
 
+  // Returns a pointer to the highest-ranking search provider while ignoring
+  // any extension-provided search engines.
+  std::unique_ptr<TemplateURLData> GetDefaultSearchEngineIgnoringExtensions()
+      const;
+
   // Gets the source of the current Default Search Engine value.
   Source GetDefaultSearchEngineSource() const;
 

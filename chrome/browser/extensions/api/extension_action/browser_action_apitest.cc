@@ -806,13 +806,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, CloseBackgroundPage) {
         const ExtensionHostDestructionObserver& other) = delete;
     ~ExtensionHostDestructionObserver() override = default;
 
-    void OnExtensionHostDestroyed(const ExtensionHost* host) override {
-      // TODO(devlin): It would be nice to
-      // ASSERT_TRUE(host_observer_.IsObserving(host));
-      // host_observer_.Remove(host);
-      // But we can't, because |host| is const. Work around it by just
-      // RemoveAll()ing.
-      host_observer_.RemoveAll();
+    void OnExtensionHostDestroyed(ExtensionHost* host) override {
+      ASSERT_TRUE(host_observer_.IsObserving(host));
+      host_observer_.Remove(host);
       run_loop_.QuitWhenIdle();
     }
 

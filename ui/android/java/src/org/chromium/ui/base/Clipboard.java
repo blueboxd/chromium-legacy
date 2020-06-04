@@ -36,6 +36,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
 
@@ -277,6 +278,8 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
 
     /**
      * Setting the clipboard's current primary clip to an image.
+     * This method requires background work and might not be immediately committed upon returning
+     * from this method.
      * @param Uri The {@link Uri} will become the content of the clipboard's primary clip.
      */
     public void setImageUri(final Uri uri) {
@@ -287,9 +290,19 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
 
         grantUriPermission(uri);
 
-        ClipData clip = ClipData.newUri(
-                ContextUtils.getApplicationContext().getContentResolver(), "image", uri);
-        setPrimaryClipNoException(clip);
+        // ClipData.newUri may access the disk (for reading mime types), and cause
+        // StrictModeDiskReadViolation if do it on UI thread.
+        new AsyncTask<ClipData>() {
+            @Override
+            protected ClipData doInBackground() {
+                return ClipData.newUri(
+                        ContextUtils.getApplicationContext().getContentResolver(), "image", uri);
+            }
+            @Override
+            protected void onPostExecute(ClipData clipData) {
+                setPrimaryClipNoException(clipData);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

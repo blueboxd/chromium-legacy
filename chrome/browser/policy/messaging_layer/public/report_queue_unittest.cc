@@ -6,14 +6,19 @@
 
 #include <stdio.h>
 
+#include <utility>
+
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
 #include "chrome/browser/policy/messaging_layer/proto/test.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
+#include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
@@ -63,7 +68,7 @@ class TestEncryptionModule : public EncryptionModule {
  public:
   TestEncryptionModule() = default;
 
-  StatusOr<std::string> EncryptRecord(base::StringPiece record) override {
+  StatusOr<std::string> EncryptRecord(base::StringPiece record) const override {
     return std::string(record);
   }
 
@@ -251,7 +256,7 @@ class AlwaysFailsEncryptionModule final : public TestEncryptionModule {
  public:
   AlwaysFailsEncryptionModule() = default;
 
-  StatusOr<std::string> EncryptRecord(base::StringPiece record) override {
+  StatusOr<std::string> EncryptRecord(base::StringPiece record) const override {
     return Status(error::UNKNOWN, "Failing for Tests");
   }
 

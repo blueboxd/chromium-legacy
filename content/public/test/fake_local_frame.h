@@ -78,7 +78,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
       const base::string16& source_origin,
       const base::string16& target_origin,
       blink::TransferableMessage message) override;
-
+  void GetSavableResourceLinks(
+      GetSavableResourceLinksCallback callback) override;
 #if defined(OS_MACOSX)
   void GetCharacterIndexAtPoint(const gfx::Point& point) override;
   void GetFirstRectForRange(const gfx::Range& range) override;

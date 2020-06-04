@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/infobar_interaction_handler.h"
 
 class OverlayRequestSupport;
+
 namespace web {
 class WebState;
 }
@@ -26,7 +27,7 @@ class InfobarBannerInteractionHandler
   ~InfobarBannerInteractionHandler() override;
 
   // Updates the model when the visibility of |infobar|'s banner is changed.
-  virtual void BannerVisibilityChanged(InfoBarIOS* infobar, bool visible);
+  virtual void BannerVisibilityChanged(InfoBarIOS* infobar, bool visible) {}
   // Updates the model when the main button is tapped for |infobar|'s banner.
   virtual void MainButtonTapped(InfoBarIOS* infobar) {}
   // Shows the modal when the modal button is tapped for |infobar|'s banner.

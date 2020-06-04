@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Permet ajustar la freqüència de repetició del teclat, la predicció de paraules i molt més</translation>
 <translation id="1633947793238301227">Desactiva l'Assistent de Google</translation>
 <translation id="1634783886312010422">Ja has canviat aquesta contrasenya a <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Extensió instal·lada pel tutor.</translation>
 <translation id="1637224376458524414">Accedeix a aquesta adreça d'interès des del teu iPhone</translation>
 <translation id="1637765355341780467">S'ha produït un error mentre obries el perfil. És possible que algunes funcions no estiguin disponibles.</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
@@ -954,12 +953,10 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2199719347983604670">Dades de la sincronització de Chrome</translation>
 <translation id="2200094388063410062">Correu electrònic</translation>
 <translation id="2200356397587687044">Chrome necessita permís per continuar</translation>
-<translation id="2200729650590440847">Configuració de la pantalla de bloqueig amb PIN</translation>
 <translation id="220138918934036434">Amaga el botó</translation>
 <translation id="2202898655984161076">S'ha produït un problema en enumerar les impressores. Pot ser que algunes impressores no s'hagin registrat correctament a <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motor de cerca utilitzat a la <ph name="BEGIN_LINK" />barra d'adreces<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Llegir i canviar tot el que s'escrigui</translation>
-<translation id="2207166770508557715">Configuració del repòs</translation>
 <translation id="220858061631308971">Introduïu aquest codi PIN a "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Permet les galetes</translation>
 <translation id="2213140827792212876">Deixa de compartir</translation>
@@ -1407,11 +1404,9 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2751131328353405138">S'està activant l'SSHFS del contenidor de Linux</translation>
 <translation id="2751739896257479635">Autenticació de fase 2 d'EAP</translation>
 <translation id="2753677631968972007">Controla manualment els permisos dels llocs webs.</translation>
-<translation id="2753984311895843016">Configuració de l'estat inactiu</translation>
 <translation id="2755367719610958252">Gestiona les funcions d'accessibilitat</translation>
 <translation id="275662540872599901">pantalla desactivada</translation>
 <translation id="2757338480560142065">Assegura't que la contrasenya que estàs desant coincideixi amb la contrasenya de: <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Orientació del monitor</translation>
 <translation id="2762441749940182211">La càmera està bloquejada</translation>
 <translation id="2764786626780673772">Detalls de la VPN</translation>
 <translation id="2765217105034171413">Petit</translation>
@@ -2897,7 +2892,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4660540330091848931">S'està canviant la mida</translation>
 <translation id="4660838440047236328">la distribució de la teva habitació</translation>
 <translation id="4661407454952063730">Les dades de les aplicacions poden ser qualsevol mena de dada que hagi desat una aplicació (en funció de la configuració del desenvolupador), com ara els contactes, els missatges i les fotos.</translation>
-<translation id="4662373422909645029">L'àlies no admet nombres</translation>
+<translation id="4662373422909645029">L'àlies no pot incloure nombres</translation>
 <translation id="4662788913887017617">Comparteix aquesta adreça d'interès amb el teu iPhone</translation>
 <translation id="4663373278480897665">La càmera es pot utilitzar</translation>
 <translation id="4664482161435122549">Error d'exportació PKCS #12</translation>
@@ -6225,7 +6220,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8953476467359856141">Mentre es carrega</translation>
 <translation id="895347679606913382">S'està iniciant...</translation>
 <translation id="8957762313041272117">Subtítols instantanis</translation>
-<translation id="8958804960827200147">Orientació de la pantalla</translation>
 <translation id="895944840846194039">Memòria de JavaScript</translation>
 <translation id="8962083179518285172">Amaga els detalls</translation>
 <translation id="8962918469425892674">Aquest lloc web utilitza sensors de llum o moviment.</translation>

@@ -200,6 +200,12 @@
       custom_compare: true,
       mutable: true,
     },
+    // Explicitly inherits a non-inherited property
+    {
+      name: "HasExplicitInheritance",
+      field_template: "monotonic_flag",
+      default_value: "false",
+    },
     // These are set if we used viewport or rem units when resolving a length.
     // FIXME: HasViewportUnits should be a monotonic_flag.
     {

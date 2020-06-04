@@ -283,16 +283,19 @@ void PDFiumFormFiller::Form_OnFocusChange(FPDF_FORMFILLINFO* param,
   if (!engine->PageIndexInBounds(page_index))
     return;
 
-  FS_RECTF annot_rect;
-  if (!FPDFAnnot_GetRect(annot, &annot_rect))
-    return;
+  // Maintain viewport if we are updating focus. This is to ensure that we don't
+  // scroll the focused annotation into view when focus is regained.
+  if (!engine->updating_focus_) {
+    FS_RECTF annot_rect;
+    if (!FPDFAnnot_GetRect(annot, &annot_rect))
+      return;
 
-  pp::Rect screen_rect = engine->pages_[page_index]->PageToScreen(
-      pp::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
-      annot_rect.right, annot_rect.bottom,
-      engine->layout_.options().default_page_orientation());
-
-  engine->ScrollIntoView(screen_rect);
+    pp::Rect screen_rect = engine->pages_[page_index]->PageToScreen(
+        pp::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
+        annot_rect.right, annot_rect.bottom,
+        engine->layout_.options().default_page_orientation());
+    engine->ScrollIntoView(screen_rect);
+  }
 
   engine->OnFocusedAnnotationUpdated(annot, page_index);
 }

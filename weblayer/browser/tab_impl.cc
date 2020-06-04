@@ -10,10 +10,15 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/task/thread_pool.h"
+#include "base/time/default_tick_clock.h"
 #include "cc/layers/layer.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_provider.h"
+#include "components/blocked_content/popup_blocker.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
+#include "components/blocked_content/popup_opener_tab_helper.h"
+#include "components/blocked_content/popup_tracker.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/client_hints/browser/client_hints.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
@@ -36,6 +41,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/web_preferences.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/autofill_client_impl.h"
 #include "weblayer/browser/browser_impl.h"
@@ -48,6 +54,7 @@
 #include "weblayer/browser/page_load_metrics_initialize.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
+#include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_specific_content_settings_delegate.h"
 #include "weblayer/browser/translate_client_impl.h"
@@ -290,6 +297,12 @@ TabImpl::TabImpl(ProfileImpl* profile,
   content_settings::TabSpecificContentSettings::CreateForWebContents(
       web_contents_.get(), std::make_unique<TabSpecificContentSettingsDelegate>(
                                web_contents_.get()));
+  blocked_content::PopupBlockerTabHelper::CreateForWebContents(
+      web_contents_.get());
+  blocked_content::PopupOpenerTabHelper::CreateForWebContents(
+      web_contents_.get(), base::DefaultTickClock::GetInstance(),
+      HostContentSettingsMapFactory::GetForBrowserContext(
+          web_contents_->GetBrowserContext()));
 
   InitializePageLoadMetricsForWebContents(web_contents_.get());
 
@@ -695,14 +708,37 @@ void TabImpl::CancelHttpAuth(JNIEnv* env) {
 content::WebContents* TabImpl::OpenURLFromTab(
     content::WebContents* source,
     const content::OpenURLParams& params) {
-  if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
-    NOTIMPLEMENTED();
-    return nullptr;
+  if (blocked_content::ConsiderForPopupBlocking(params.disposition)) {
+    bool blocked = blocked_content::MaybeBlockPopup(
+                       source, nullptr,
+                       std::make_unique<PopupNavigationDelegateImpl>(
+                           params, source, nullptr),
+                       &params, blink::mojom::WindowFeatures(),
+                       HostContentSettingsMapFactory::GetForBrowserContext(
+                           source->GetBrowserContext())) == nullptr;
+    if (blocked)
+      return nullptr;
   }
 
-  source->GetController().LoadURLWithParams(
+  if (params.disposition == WindowOpenDisposition::CURRENT_TAB) {
+    source->GetController().LoadURLWithParams(
+        content::NavigationController::LoadURLParams(params));
+    return source;
+  }
+
+  // All URLs not opening in the current tab will get a new tab.
+  std::unique_ptr<content::WebContents> new_tab_contents =
+      content::WebContents::Create(content::WebContents::CreateParams(
+          web_contents()->GetBrowserContext()));
+  content::WebContents* new_tab_contents_raw = new_tab_contents.get();
+  bool was_blocked = false;
+  AddNewContents(web_contents(), std::move(new_tab_contents), params.url,
+                 params.disposition, {}, params.user_gesture, &was_blocked);
+  if (was_blocked)
+    return nullptr;
+  new_tab_contents_raw->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
-  return source;
+  return new_tab_contents_raw;
 }
 
 void TabImpl::ShowRepostFormWarningDialog(content::WebContents* source) {
@@ -878,8 +914,17 @@ void TabImpl::AddNewContents(content::WebContents* source,
                              const gfx::Rect& initial_rect,
                              bool user_gesture,
                              bool* was_blocked) {
-  if (!new_tab_delegate_)
+  if (!new_tab_delegate_) {
+    *was_blocked = true;
     return;
+  }
+
+  // At this point the |new_contents| is beyond the popup blocker, but we use
+  // the same logic for determining if the popup tracker needs to be attached.
+  if (source && blocked_content::ConsiderForPopupBlocking(disposition)) {
+    blocked_content::PopupTracker::CreateForWebContents(new_contents.get(),
+                                                        source, disposition);
+  }
 
   std::unique_ptr<Tab> tab =
       std::make_unique<TabImpl>(profile_, std::move(new_contents));

@@ -28,6 +28,7 @@ source_set("sharing") {
   ]
 
   deps = [
+    "nearby_decoder",
     "//jingle:webrtc_glue",
     "//third_party/webrtc_overrides:webrtc_component",
   ]

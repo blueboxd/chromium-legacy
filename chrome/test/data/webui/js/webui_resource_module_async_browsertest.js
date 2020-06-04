@@ -75,6 +75,18 @@ TEST_F('ParseHtmlSubsetModuleTest', 'All', function() {
   mocha.run();
 });
 
+var ParseHtmlSubsetTrustedTypesTest =
+    class extends WebUIResourceModuleAsyncTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=js/parse_html_subset_trusted_types_test.js';
+  }
+};
+
+TEST_F('ParseHtmlSubsetTrustedTypesTest', 'All', function() {
+  mocha.run();
+});
+
 var UtilModuleTest = class extends WebUIResourceModuleAsyncTest {
   /** @override */
   get browsePreload() {

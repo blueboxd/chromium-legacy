@@ -77,7 +77,6 @@ class WebInputEvent;
 class WebMouseEvent;
 class WebPluginContainer;
 class WebURLResponse;
-struct WebImeTextSpan;
 struct WebURLError;
 struct WebPrintParams;
 }  // namespace blink
@@ -234,7 +233,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool HandleCompositionStart(const base::string16& text);
   bool HandleCompositionUpdate(
       const base::string16& text,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
       int selection_start,
       int selection_end);
   bool HandleCompositionEnd(const base::string16& text);
@@ -630,7 +629,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool SendCompositionEventWithImeTextSpanInformationToPlugin(
       PP_InputEvent_Type type,
       const base::string16& text,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
       int selection_start,
       int selection_end);
 

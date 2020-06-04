@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -1438,6 +1439,7 @@ TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
 
   support->SetNeedsBeginFrame(false);
 }
+#if defined(OS_ANDROID)
 // Check CompositorFrame get an early ack if the surface id needs to have
 // pending child needsBeginFrame = true, and NOT new surface ID, then followed
 // by needsBeginFrame = true, and new Surface ID, other classes should not get
@@ -1508,4 +1510,5 @@ TEST_F(CompositorFrameSinkSupportTest, PassesEarlyAcks) {
   // decrease
   EXPECT_LE(GetEarlyAckCount(), EarlyAckCount);
 }
+#endif
 }  // namespace viz

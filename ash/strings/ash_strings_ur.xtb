@@ -63,6 +63,7 @@
 <translation id="1654477262762802994">صوتی استفسار شروع کریں</translation>
 <translation id="1658406695958299976">معذرت، آپ کے پاس ورڈ کی اب بھی توثیق نہیں کی جا سکی۔ نوٹ: اگر آپ نے اپنا پاس ورڈ حال ہی میں تبدیل کیا ہے تو آپ کا نیا پاس ورڈ آپ کے سائن آؤٹ کرنے پر لاگو ہو جائے گا، براہ کرم یہاں پرانا پاس ورڈ استعمال کریں۔</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی</translation>
+<translation id="1698080062160024910"><ph name="TOTAL_TIME" /> ٹائمر · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">‏IPv6 پتہ: <ph name="ADDRESS" /></translation>
 <translation id="1709762881904163296">نیٹ ورک کی ترتیبات</translation>
 <translation id="1743570585616704562">تسلیم شدہ نہیں ہے</translation>
@@ -262,6 +263,7 @@
 <translation id="4017989525502048489">لیزر پوائنٹر</translation>
 <translation id="4021716437419160885">نیچے اسکرول کریں</translation>
 <translation id="4028481283645788203">مزید سیکیورٹی کیلئے پاس ورڈ درکار ہے</translation>
+<translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">آپ اپنی اسکرین کا اشتراک کر رہے ہیں</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ایک ایپ کیلئے آف ہے}other{# ایپس کیلئے آف ہے}}</translation>
 <translation id="4072264167173457037">اوسط سگنل</translation>
@@ -334,6 +336,7 @@
 <translation id="4924411785043111640">ری سٹارٹ اور ری سیٹ کریں</translation>
 <translation id="495046168593986294">اوپر اسکرول کریں</translation>
 <translation id="4961318399572185831">اسکرین کاسٹ کریں</translation>
+<translation id="4969092041573468113"><ph name="HOURS" />گھنٹے <ph name="MINUTES" />منٹ <ph name="SECONDS" />سیکنڈ</translation>
 <translation id="5030687792513154421">وقت ختم ہو گیا</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> نئے فون سے منسلک ہو گیا</translation>
 <translation id="5035389544768382859">ڈسپلے کنفیگریشن کی تصدیق کریں</translation>
@@ -618,10 +621,12 @@
 <translation id="8517041960877371778">ہو سکتا ہے کہ آپ کا <ph name="DEVICE_TYPE" /> آن ہونے کی صورت میں چارج نہ ہو۔</translation>
 <translation id="8563862697512465947">اطلاع کی ترتیبات</translation>
 <translation id="857201607579416096">مینو کو اسکرین کے نچلے دائیں کونے میں منتقل کر دیا گیا۔</translation>
+<translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> سے منسلک ہے</translation>
 <translation id="8631727435199967028">ایکسیسبیلٹی کی ترتیبات</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />، آپ کے منتظم کے زیر انتظام ہے</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> باقی</translation>
+<translation id="8646417893960517480"><ph name="TOTAL_TIME" /> ٹائمر</translation>
 <translation id="8649101189709089199">سننے کے لیے منتخب کریں</translation>
 <translation id="8652175077544655965">ترتیبات بند کریں</translation>
 <translation id="8653151467777939995">اطلاع کی ترتیبات دکھائیں۔ اطلاعات آن ہیں</translation>

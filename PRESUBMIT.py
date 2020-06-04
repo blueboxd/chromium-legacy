@@ -1296,25 +1296,11 @@ _VALID_OS_MACROS = (
 )
 
 
-# These are not checked on the public chromium-presubmit trybot.
-# Add files here that rely on .py files that exists only for target_os="android"
-# checkouts (e.g. //third_party/catapult).
 _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'android_webview/tools/run_cts.pydeps',
-    'build/android/devil_chromium.pydeps',
-    'build/android/gyp/create_bundle_wrapper_script.pydeps',
-    'build/android/gyp/jinja_template.pydeps',
-    'build/android/resource_sizes.pydeps',
-    'build/android/test_runner.pydeps',
-    'build/android/test_wrapper/logdog_wrapper.pydeps',
-    'testing/scripts/run_android_wpt.pydeps',
-    'third_party/android_platform/development/scripts/stack.pydeps',
-]
-
-
-_GENERIC_PYDEPS_FILES = [
     'base/android/jni_generator/jni_generator.pydeps',
     'base/android/jni_generator/jni_registration_generator.pydeps',
+    'build/android/devil_chromium.pydeps',
     'build/android/gyp/aar.pydeps',
     'build/android/gyp/aidl.pydeps',
     'build/android/gyp/allot_native_libraries.pydeps',
@@ -1327,6 +1313,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/create_apk_operations_script.pydeps',
     'build/android/gyp/create_app_bundle_apks.pydeps',
     'build/android/gyp/create_app_bundle.pydeps',
+    'build/android/gyp/create_bundle_wrapper_script.pydeps',
     'build/android/gyp/create_java_binary_script.pydeps',
     'build/android/gyp/create_size_info_files.pydeps',
     'build/android/gyp/desugar.pydeps',
@@ -1342,6 +1329,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/java_cpp_enum.pydeps',
     'build/android/gyp/java_cpp_strings.pydeps',
     'build/android/gyp/jetify_jar.pydeps',
+    'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',
     'build/android/gyp/main_dex_list.pydeps',
     'build/android/gyp/merge_manifest.pydeps',
@@ -1354,12 +1342,21 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/zip.pydeps',
     'build/android/incremental_install/generate_android_manifest.pydeps',
     'build/android/incremental_install/write_installer_json.pydeps',
+    'build/android/resource_sizes.pydeps',
+    'build/android/test_runner.pydeps',
+    'build/android/test_wrapper/logdog_wrapper.pydeps',
     'build/protoc_java.pydeps',
     'chrome/android/features/create_stripped_java_factory.pydeps',
-    'chrome/test/chromedriver/log_replay/client_replay_unittest.pydeps',
-    'chrome/test/chromedriver/test/run_py_tests.pydeps',
     'components/module_installer/android/module_desc_java.pydeps',
     'net/tools/testserver/testserver.pydeps',
+    'testing/scripts/run_android_wpt.pydeps',
+    'third_party/android_platform/development/scripts/stack.pydeps',
+]
+
+
+_GENERIC_PYDEPS_FILES = [
+    'chrome/test/chromedriver/log_replay/client_replay_unittest.pydeps',
+    'chrome/test/chromedriver/test/run_py_tests.pydeps',
     'third_party/blink/renderer/bindings/scripts/build_web_idl_database.pydeps',
     'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'third_party/blink/renderer/bindings/scripts/generate_bindings.pydeps',
@@ -5203,8 +5200,9 @@ def _CheckTranslationExpectations(input_api, output_api,
 
 def _CheckStableMojomChanges(input_api, output_api):
   """Changes to [Stable] mojom types must preserve backward-compatibility."""
-  changed_mojoms = [f for f in input_api.AffectedSourceFiles(None)
-                    if f.LocalPath().endswith('.mojom')]
+  changed_mojoms = input_api.AffectedFiles(
+      include_deletes=True,
+      file_filter=lambda f: f.LocalPath().endswith(('.mojom')))
   delta = []
   for mojom in changed_mojoms:
     old_contents = ''.join(mojom.OldContents()) or None

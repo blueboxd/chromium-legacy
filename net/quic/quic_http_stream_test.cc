@@ -1111,7 +1111,7 @@ TEST_P(QuicHttpStreamTest, LogGranularQuicConnectionError) {
 TEST_P(QuicHttpStreamTest, LogGranularQuicErrorIfHandshakeNotConfirmed) {
   // TODO(nharper): Figure out why this test does not send packets
   // when TLS is used.
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+  if (version_.UsesTls()) {
     Initialize();
 
     return;

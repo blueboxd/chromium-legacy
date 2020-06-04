@@ -72,8 +72,8 @@ IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
 
 IN_PROC_BROWSER_TEST_F(TrialComparisonCertVerifierFeatureEnabledTest,
                        TrialEnabledPrefEnabled) {
-  safe_browsing::SetExtendedReportingPref(browser()->profile()->GetPrefs(),
-                                          true);
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser()->profile()->GetPrefs(), true);
 
   ASSERT_TRUE(https_test_server_.Start());
   base::HistogramTester histograms;
@@ -121,8 +121,8 @@ class TrialComparisonCertVerifierFeatureOverridenByBuiltinVerifierTest
 IN_PROC_BROWSER_TEST_F(
     TrialComparisonCertVerifierFeatureOverridenByBuiltinVerifierTest,
     TrialEnabledPrefEnabledBuiltVerifierEnabled) {
-  safe_browsing::SetExtendedReportingPref(browser()->profile()->GetPrefs(),
-                                          true);
+  safe_browsing::SetExtendedReportingPrefForTests(
+      browser()->profile()->GetPrefs(), true);
 
   ASSERT_TRUE(https_test_server_.Start());
   base::HistogramTester histograms;

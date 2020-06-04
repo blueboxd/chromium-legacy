@@ -682,6 +682,17 @@ bool SharedContextState::CheckResetStatus(bool needs_gl) {
   if (!GrContextIsGL() && !needs_gl)
     return false;
 
+  // Checking the reset status is expensive on some OS/drivers
+  // (https://crbug.com/1090232). Rate limit it.
+  constexpr base::TimeDelta kMinCheckDelay =
+      base::TimeDelta::FromMilliseconds(5);
+  base::Time now = base::Time::Now();
+  if (!disable_check_reset_status_throttling_for_test_ &&
+      now < last_gl_check_graphics_reset_status_ + kMinCheckDelay) {
+    return false;
+  }
+  last_gl_check_graphics_reset_status_ = now;
+
   GLenum driver_status = context()->CheckStickyGraphicsResetStatus();
   if (driver_status == GL_NO_ERROR)
     return false;

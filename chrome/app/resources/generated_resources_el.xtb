@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Σας επιτρέπει να προσαρμόσετε τον ρυθμό επανάληψης του πληκτρολογίου σας, την πρόβλεψη λέξεων και πολλά άλλα</translation>
 <translation id="1633947793238301227">Απενεργοποίηση Βοηθού Google</translation>
 <translation id="1634783886312010422">Αλλάξατε ήδη αυτόν τον κωδικό πρόσβασης στον ιστότοπο <ph name="WEBSITE" />;</translation>
-<translation id="1635033183663317347">Εγκαταστάθηκε από τον κηδεμόνα σας.</translation>
 <translation id="1637224376458524414">Λάβετε αυτόν τον σελιδοδείκτη στο iPhone</translation>
 <translation id="1637765355341780467">Παρουσιάστηκε ένα πρόβλημα κατά το άνοιγμα του προφίλ σας. Μερικές λειτουργίες μπορεί να μην είναι διαθέσιμες.</translation>
 <translation id="1639239467298939599">Γίνεται φόρτωση</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Δεδομένα από τον συγχρονισμό Chrome</translation>
 <translation id="2200094388063410062">Ηλεκτρονικό ταχυδρομείο</translation>
 <translation id="2200356397587687044">Το Chrome χρειάζεται άδεια για να συνεχίσει</translation>
-<translation id="2200729650590440847">Ρυθμίσεις οθόνης κλειδώματος με PIN</translation>
 <translation id="220138918934036434">Απόκρυψη κουμπιού</translation>
 <translation id="2202898655984161076">Προέκυψε πρόβλημα κατά την καταχώριση εκτυπωτών. Μερικοί από τους εκτυπωτές σας ενδέχεται να μην έχουν καταχωρηθεί σωστά με το <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Μηχανή αναζήτησης που χρησιμοποιείται στη <ph name="BEGIN_LINK" />γραμμή διεύθυνσης<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Ανάγνωση και αλλαγή όσων πληκτρολογείτε</translation>
-<translation id="2207166770508557715">Ρυθμίσεις ύπνου</translation>
 <translation id="220858061631308971">Εισαγάγετε αυτόν τον κωδικό PIN στη συσκευή "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Αποδοχή cookie</translation>
 <translation id="2213140827792212876">Κατάργηση κοινοποίησης</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Προσθήκη του συστήματος sshfs του κοντέινερ Linux</translation>
 <translation id="2751739896257479635">2η φάση ελέγχου ταυτότητας EAP:</translation>
 <translation id="2753677631968972007">Μη αυτόματος έλεγχος των αδειών ιστοτόπου.</translation>
-<translation id="2753984311895843016">Κατανάλωση ενέργειας σε κατάσταση αδράνειας</translation>
 <translation id="2755367719610958252">Διαχείριση λειτουργιών προσβασιμότητας</translation>
 <translation id="275662540872599901">η οθόνη απενεργοποιήθηκε</translation>
 <translation id="2757338480560142065">Βεβαιωθείτε ότι ο κωδικός πρόσβασης που αποθηκεύετε αντιστοιχεί στον κωδικό πρόσβασης για την υπηρεσία <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">Προσανατολισμός οθόνης</translation>
 <translation id="2762441749940182211">Η κάμερα έχει αποκλειστεί</translation>
 <translation id="2764786626780673772">Στοιχεία VPN</translation>
 <translation id="2765217105034171413">Μικρό</translation>
@@ -6224,7 +6219,6 @@
 <translation id="8953476467359856141">Κατά τη φόρτιση</translation>
 <translation id="895347679606913382">Έναρξη...</translation>
 <translation id="8957762313041272117">Ζωντανοί υπότιτλοι</translation>
-<translation id="8958804960827200147">Προσανατολισμός οθόνης</translation>
 <translation id="895944840846194039">Μνήμη JavaScript</translation>
 <translation id="8962083179518285172">Απόκρυψη λεπτομερειών</translation>
 <translation id="8962918469425892674">Αυτός ο ιστότοπος χρησιμοποιεί αισθητήρες κίνησης και φωτός.</translation>

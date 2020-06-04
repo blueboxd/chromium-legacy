@@ -978,11 +978,12 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
 
     // In LayoutNG, if box has any OOF descendants, they are propagated to
     // parent. Therefore, we must mark parent chain for layout.
-    if (layout_box->GetCachedLayoutResult() &&
-        layout_box->GetCachedLayoutResult()
-            ->PhysicalFragment()
-            .HasOutOfFlowPositionedDescendants())
-      return false;
+    if (const NGLayoutResult* layouot_result =
+            layout_box->GetCachedLayoutResult()) {
+      if (layouot_result->PhysicalFragment()
+              .HasOutOfFlowPositionedDescendants())
+        return false;
+    }
   }
 
   if (object->IsTextControl())

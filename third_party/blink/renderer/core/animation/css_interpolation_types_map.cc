@@ -157,6 +157,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
       case CSSPropertyID::kShapeMargin:
       case CSSPropertyID::kStrokeDashoffset:
       case CSSPropertyID::kStrokeWidth:
+      case CSSPropertyID::kTextDecorationThickness:
       case CSSPropertyID::kTop:
       case CSSPropertyID::kVerticalAlign:
       case CSSPropertyID::kWebkitBorderHorizontalSpacing:

@@ -35,6 +35,24 @@
    */
   const allowedTags = ['A', 'B', 'SPAN', 'STRONG'];
 
+  /**
+   * This is used to create TrustedHTML.
+   *
+   * @type {TrustedTypePolicy|undefined}
+   */
+  let untrustedHTMLPolicy;
+  if (window.trustedTypes) {
+    untrustedHTMLPolicy = trustedTypes.createPolicy('parse-html-subset', {
+      createHTML: untrustedHTML => {
+        // This is safe because the untrusted HTML will be sanitized
+        // later in this function. We are adding this so that
+        // the sanitization will not cause a Trusted Types violation.
+        // TODO(crbug.com/1086318): Improve parseHtmlSubset sanitizer
+        return untrustedHTML;
+      },
+    });
+  }
+
   /** @param {...Object} var_args Objects to merge. */
   function merge(var_args) {
     const clone = {};
@@ -81,6 +99,11 @@
     const doc = document.implementation.createHTMLDocument('');
     const r = doc.createRange();
     r.selectNode(doc.body);
+
+    if (window.trustedTypes) {
+      s = untrustedHTMLPolicy.createHTML(s);
+    }
+
     // This does not execute any scripts because the document has no view.
     const df = r.createContextualFragment(s);
     walk(df, function(node) {

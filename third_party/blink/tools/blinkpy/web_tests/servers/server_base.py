@@ -75,7 +75,11 @@ class ServerBase(object):
         # redirect them to files.
         self._stdout = self._executive.PIPE
         self._stderr = self._executive.PIPE
+        # The entrypoint process of the server, which may not be the daemon,
+        # e.g. apachectl.
         self._process = None
+        # The PID of the server daemon, which may be different from
+        # self._process.pid.
         self._pid = None
         self._error_log_path = None
 
@@ -149,6 +153,14 @@ class ServerBase(object):
         finally:
             # Make sure we delete the pid file no matter what happens.
             self._remove_pid_file()
+
+    def alive(self):
+        """Checks whether the server is alive."""
+        # This by default checks both the process and ports.
+        # At this point, we think the server has started up, so successes are
+        # normal while failures are not.
+        return self._is_server_running_on_all_ports(
+            success_log_level=logging.DEBUG, failure_log_level=logging.INFO)
 
     def _prepare_config(self):
         """This routine can be overridden by subclasses to do any sort
@@ -252,9 +264,17 @@ class ServerBase(object):
 
         return False
 
-    def _is_server_running_on_all_ports(self):
-        """Returns whether the server is running on all the desired ports."""
+    def _is_server_running_on_all_ports(self,
+                                        success_log_level=logging.INFO,
+                                        failure_log_level=logging.DEBUG):
+        """Returns whether the server is running on all the desired ports.
 
+        Args:
+            success_log_level: Logging level for success (default: INFO)
+            failure_log_level: Logging level for failure (default: DEBUG)
+        """
+        # Check self._pid instead of self._process because the latter might be a
+        # control process that exits after spawning up the daemon.
         # TODO(dpranke): crbug/378444 maybe pid is unreliable on win?
         if (not self._platform.is_win()
                 and not self._executive.check_running_pid(self._pid)):
@@ -268,12 +288,14 @@ class ServerBase(object):
             scheme = mapping['scheme']
             try:
                 s.connect(('localhost', port))
-                _log.info('Server running on %s://localhost:%d', scheme, port)
+                _log.log(success_log_level,
+                         'Server running on %s://localhost:%d', scheme, port)
             except IOError as error:
                 if error.errno not in (errno.ECONNREFUSED, errno.ECONNRESET):
                     raise
-                _log.debug('Server NOT running on %s://localhost:%d : %s',
-                           scheme, port, error)
+                _log.log(failure_log_level,
+                         'Server NOT running on %s://localhost:%d : %s',
+                         scheme, port, error)
                 return False
             finally:
                 s.close()

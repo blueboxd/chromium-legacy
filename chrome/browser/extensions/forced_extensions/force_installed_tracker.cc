@@ -162,6 +162,16 @@ bool ForceInstalledTracker::IsDoneLoading() const {
   return status_ == kWaitingForExtensionReady || status_ == kComplete;
 }
 
+void ForceInstalledTracker::OnExtensionDownloadCacheStatusRetrieved(
+    const ExtensionId& id,
+    ExtensionDownloaderDelegate::CacheStatus cache_status) {
+  // Report cache status only for forced installed extension.
+  if (extensions_.find(id) != extensions_.end()) {
+    for (auto& obs : observers_)
+      obs.OnExtensionDownloadCacheStatusRetrieved(id, cache_status);
+  }
+}
+
 bool ForceInstalledTracker::IsReady() const {
   return status_ == kComplete;
 }

@@ -2012,14 +2012,31 @@
         {
             "platforms": [
                 "android",
-                "android_weblayer",
+                "android_weblayer"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_crbug1006105",
+                    "enable_features": [
+                        "DnsOverHttps"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DnsOverHttpsUi": [
+        {
+            "platforms": [
                 "chromeos",
                 "mac",
                 "windows"
             ],
             "experiments": [
                 {
-                    "name": "Enabled_crbug1006105",
+                    "name": "EnabledLaunch",
+                    "params": {
+                        "ShowUi": "true"
+                    },
                     "enable_features": [
                         "DnsOverHttps"
                     ]
@@ -7473,8 +7490,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "WinUseBrowserSpellChecker",
-                        "WinUseHybridSpellChecker"
+                        "WinUseBrowserSpellChecker"
                     ]
                 }
             ]

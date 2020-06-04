@@ -337,11 +337,11 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   scoped_refptr<const SecurityOrigin> self_origin =
       GetDocument().GetSecurityOrigin();
 
-  Vector<String> messages;
+  PolicyParserMessageBuffer logger;
 
   // Start with the allow attribute
   ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
-      allow_, self_origin, src_origin, &messages, &GetDocument());
+      allow_, self_origin, src_origin, logger, &GetDocument());
 
   // Next, process sandbox flags. These all only take effect if a corresponding
   // policy does *not* exist in the allow attribute's value.
@@ -355,7 +355,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
         if ((sandbox_flags_converted_to_feature_policies_ & pair.first) !=
                 network::mojom::blink::WebSandboxFlags::kNone &&
             IsFeatureDeclared(pair.second, container_policy)) {
-          messages.push_back(String::Format(
+          logger.Warn(String::Format(
               "Allow and Sandbox attributes both mention '%s'. Allow will take "
               "precedence.",
               GetNameForFeature(pair.second).Utf8().c_str()));
@@ -376,7 +376,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
         mojom::blink::FeaturePolicyFeature::kFullscreen, container_policy);
     if (!policy_changed) {
-      messages.push_back(
+      logger.Warn(
           "Allow attribute will take precedence over 'allowfullscreen'.");
     }
   }
@@ -386,7 +386,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
         mojom::blink::FeaturePolicyFeature::kPayment, container_policy);
     if (!policy_changed) {
-      messages.push_back(
+      logger.Warn(
           "Allow attribute will take precedence over 'allowpaymentrequest'.");
     }
   }
@@ -396,11 +396,11 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
   if (policy_)
     policy_->UpdateContainerPolicy(container_policy, src_origin);
 
-  for (const auto& message : messages) {
+  for (const auto& message : logger.GetMessages()) {
     GetDocument().AddConsoleMessage(
         MakeGarbageCollected<ConsoleMessage>(
-            mojom::blink::ConsoleMessageSource::kOther,
-            mojom::blink::ConsoleMessageLevel::kWarning, message),
+            mojom::blink::ConsoleMessageSource::kOther, message.level,
+            message.content),
         /* discard_duplicates */ true);
   }
 

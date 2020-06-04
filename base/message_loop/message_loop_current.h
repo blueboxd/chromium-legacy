@@ -134,21 +134,23 @@ class BASE_EXPORT MessageLoopCurrent {
   //   Otherwise, it will get executed right after task #1 completes at "thread
   //   message loop level".
   //
-  // Prefer RunLoop::Type::kNestableTasksAllowed when nesting is requested by
-  // the application.
-  //
-  // TODO(https://crbug.com/781352): Remove usage of this class alongside
-  // RunLoop and rename it to ScopedApplicationTasksAllowedInNativeNestedLoop(?)
-  // for remaining use cases.
-  class BASE_EXPORT ScopedNestableTaskAllower {
+  // Use RunLoop::Type::kNestableTasksAllowed when nesting is triggered by the
+  // application RunLoop rather than by native code.
+  class BASE_EXPORT ScopedAllowApplicationTasksInNativeNestedLoop {
    public:
-    ScopedNestableTaskAllower();
-    ~ScopedNestableTaskAllower();
+    ScopedAllowApplicationTasksInNativeNestedLoop();
+    ~ScopedAllowApplicationTasksInNativeNestedLoop();
 
    private:
     sequence_manager::internal::SequenceManagerImpl* const sequence_manager_;
-    const bool old_state_;
+    const bool previous_state_;
   };
+
+  // TODO(https://crbug.com/781352): Remove usage of this old class. Either
+  // renaming it to ScopedAllowApplicationTasksInNativeNestedLoop when truly
+  // native or migrating it to RunLoop::Type::kNestableTasksAllowed otherwise.
+  using ScopedNestableTaskAllower =
+      ScopedAllowApplicationTasksInNativeNestedLoop;
 
   // Returns true if nestable tasks are allowed on the current loop at this time
   // (i.e. if a nested loop would start from the callee's point in the stack,

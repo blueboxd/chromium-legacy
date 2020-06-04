@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Дазваляе наладзіць хуткасць паўтарэння клавіш, прагназаванне слоў і многае іншае</translation>
 <translation id="1633947793238301227">Выключыць Памочніка Google</translation>
 <translation id="1634783886312010422">Вы ўжо змянілі гэты пароль на сайце <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Усталявана вашым апекуном.</translation>
 <translation id="1637224376458524414">Выкарыстоўвайце гэту закладку на сваім iPhone</translation>
 <translation id="1637765355341780467">Нешта пайшло не так падчас адкрыцця вашага профілю. Некаторыя функцыі могуць быць недаступныя.</translation>
 <translation id="1639239467298939599">Ідзе загрузка</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Даныя сінхранізацыі Chrome</translation>
 <translation id="2200094388063410062">Адправіць электронны ліст</translation>
 <translation id="2200356397587687044">Браўзеру Chrome патрабуецца дазвол на працяг</translation>
-<translation id="2200729650590440847">Налады выкарыстання PIN-кода для экрана блакіроўкі</translation>
 <translation id="220138918934036434">Кнопка "Схаваць"</translation>
 <translation id="2202898655984161076">Узнікла праблема пры падрыхтоўцы спіса прынтараў. Магчыма, некаторыя прынтары не ўдалося зарэгістраваць у <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Пошукавая сістэма, якая выкарыстоўваецца ў <ph name="BEGIN_LINK" />адрасным радку<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Прагляд і змяненне таго, што вы набіраеце</translation>
-<translation id="2207166770508557715">Налады рэжыму сну</translation>
 <translation id="220858061631308971">Увядзіце гэты PIN-код на прыладзе "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Дазволіць файлы cookie</translation>
 <translation id="2213140827792212876">Спыніць абагульванне</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Ідзе падключэнне файлавай сістэмы SSH кантэйнера Linux</translation>
 <translation id="2751739896257479635">Фаза 2 аўтэнтыфікацыі EAP</translation>
 <translation id="2753677631968972007">Кіраваць дазволамі сайта ўручную.</translation>
-<translation id="2753984311895843016">Сілкаванне пры бяздзейнасці</translation>
 <translation id="2755367719610958252">Кіраваць спецыяльнымі магчымасцямі</translation>
 <translation id="275662540872599901">экран выключаны</translation>
 <translation id="2757338480560142065">Праверце, ці супадае пароль, які вы захоўваеце, з паролем для сайта <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Арыентацыя манітора</translation>
 <translation id="2762441749940182211">Камера заблакіравана</translation>
 <translation id="2764786626780673772">Звесткі пра VPN</translation>
 <translation id="2765217105034171413">Малы</translation>
@@ -6224,7 +6219,6 @@
 <translation id="8953476467359856141">Падчас зарадкі</translation>
 <translation id="895347679606913382">Пачынаецца...</translation>
 <translation id="8957762313041272117">Імгненныя субцітры</translation>
-<translation id="8958804960827200147">Арыентацыя экрана</translation>
 <translation id="895944840846194039">Памяць JavaScript</translation>
 <translation id="8962083179518285172">Схаваць падрабязнасці</translation>
 <translation id="8962918469425892674">Гэты сайт выкарыстоўвае датчыкі руху або святла.</translation>

@@ -52,9 +52,9 @@ device::mojom::blink::XRNativeOriginInformation Create(
 }
 
 device::mojom::blink::XRNativeOriginInformation Create(
-    device::mojom::XRReferenceSpaceCategory reference_space_category) {
+    device::mojom::XRReferenceSpaceType reference_space_type) {
   device::mojom::blink::XRNativeOriginInformation result;
-  result.set_reference_space_category(reference_space_category);
+  result.set_reference_space_type(reference_space_type);
 
   return result;
 }

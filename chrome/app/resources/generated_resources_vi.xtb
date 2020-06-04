@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Cho phép bạn điều chỉnh tốc độ lặp lại, tính năng dự đoán từ và các chức năng khác của bàn phím</translation>
 <translation id="1633947793238301227">Tắt Trợ lý Google</translation>
 <translation id="1634783886312010422">Bạn đã thay đổi mật khẩu này trên trang <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Do người giám hộ của bạn cài đặt.</translation>
 <translation id="1637224376458524414">Truy cập dấu trang này trên iPhone của bạn</translation>
 <translation id="1637765355341780467">Đã xảy ra lỗi khi mở hồ sơ của bạn. Một số tính năng có thể không khả dụng.</translation>
 <translation id="1639239467298939599">Đang tải</translation>
@@ -954,12 +953,10 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2199719347983604670">Dữ liệu từ Chrome Sync</translation>
 <translation id="2200094388063410062">Email</translation>
 <translation id="2200356397587687044">Để tiếp tục, Chrome cần được cấp quyền</translation>
-<translation id="2200729650590440847">Cài đặt màn hình khóa bằng mã PIN</translation>
 <translation id="220138918934036434">Nút ẩn</translation>
 <translation id="2202898655984161076">Đã có sự cố khi liệt kê máy in. Một số máy in của bạn có thể chưa được đăng ký thành công với <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Công cụ tìm kiếm được sử dụng trên <ph name="BEGIN_LINK" />thanh địa chỉ<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Đọc và thay đổi mọi nội dung bạn nhập</translation>
-<translation id="2207166770508557715">Tùy chọn cài đặt ở chế độ ngủ</translation>
 <translation id="220858061631308971">Vui lòng nhập mã PIN này trên "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Cho phép cookie</translation>
 <translation id="2213140827792212876">Xóa thư mục dùng chung</translation>
@@ -1408,11 +1405,9 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2751131328353405138">Đang gắn kết hệ thống tệp SSH của vùng chứa Linux</translation>
 <translation id="2751739896257479635">Xác thực EAP giai đoạn 2</translation>
 <translation id="2753677631968972007">Kiểm soát các quyền của trang web theo cách thủ công.</translation>
-<translation id="2753984311895843016">Nguồn ở chế độ không hoạt động</translation>
 <translation id="2755367719610958252">Quản lý tính năng hỗ trợ tiếp cận</translation>
 <translation id="275662540872599901">màn hình tắt</translation>
 <translation id="2757338480560142065">Đảm bảo mật khẩu bạn đang lưu khớp với mật khẩu cho <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Hướng màn hình</translation>
 <translation id="2762441749940182211">Máy ảnh bị chặn</translation>
 <translation id="2764786626780673772">Chi tiết về VPN</translation>
 <translation id="2765217105034171413">Nhỏ</translation>
@@ -6223,7 +6218,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8953476467359856141">Trong khi sạc</translation>
 <translation id="895347679606913382">Đang bắt đầu...</translation>
 <translation id="8957762313041272117">Phụ đề trực tiếp</translation>
-<translation id="8958804960827200147">Hướng màn hình</translation>
 <translation id="895944840846194039">Bộ nhớ dành cho JavaScript</translation>
 <translation id="8962083179518285172">Ẩn chi tiết</translation>
 <translation id="8962918469425892674">Trang web này đang sử dụng cảm biến chuyển động hoặc ánh sáng.</translation>

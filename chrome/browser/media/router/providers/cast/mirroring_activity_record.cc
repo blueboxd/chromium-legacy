@@ -82,7 +82,7 @@ base::Optional<MirroringActivityRecord::MirroringType> GetMirroringType(
     return base::nullopt;
 
   const auto source = route.media_source();
-  if (source.IsTabMirroringSource())
+  if (source.IsTabMirroringSource() || source.IsLocalFileSource())
     return MirroringActivityRecord::MirroringType::kTab;
   if (source.IsDesktopMirroringSource())
     return MirroringActivityRecord::MirroringType::kDesktop;
@@ -165,9 +165,13 @@ void MirroringActivityRecord::CreateMojoBindings(
       break;
   }
 
-  // Derive session type from capabilities.
+  auto cast_source = CastMediaSource::FromMediaSource(route_.media_source());
+  DCHECK(cast_source);
+
+  // Derive session type from capabilities and media source.
   const bool has_audio = (cast_data_.capabilities &
-                          static_cast<uint8_t>(cast_channel::AUDIO_OUT)) != 0;
+                          static_cast<uint8_t>(cast_channel::AUDIO_OUT)) != 0 &&
+                         cast_source->allow_audio_capture();
   const bool has_video = (cast_data_.capabilities &
                           static_cast<uint8_t>(cast_channel::VIDEO_OUT)) != 0;
   DCHECK(has_audio || has_video);
@@ -179,11 +183,9 @@ void MirroringActivityRecord::CreateMojoBindings(
   // Arrange to start mirroring once the session is set.
   on_session_set_ = base::BindOnce(
       &MirroringActivityRecord::StartMirroring, base::Unretained(this),
-      // TODO(jophba): update to pass target playout delay, once we are
-      // copmletely migrated to native MRP.
       SessionParameters::New(session_type, cast_data_.ip_endpoint.address(),
                              cast_data_.model_name,
-                             /*target_playout_delay*/ base::nullopt),
+                             cast_source->target_playout_delay()),
       channel_to_service_.BindNewPipeAndPassReceiver());
 }
 

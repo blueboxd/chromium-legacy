@@ -901,11 +901,40 @@ if (enable_java_templates) {
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
                              [
-                               "deps",
                                "data_deps",
                                "public_deps",
                                "testonly",
                              ])
+      if (!defined(deps)) {
+        deps = []
+      }
+
+      # Lint only requires generated sources and generated resources from the
+      # build. Since turbine __header targets already depend on and generate all
+      # the generated sources, and the __assetres targets include all generated
+      # resources, lint only needs to depend on the header and assetres targets
+      # rather than the top level java targets.
+      if (defined(invoker.deps)) {
+        foreach(_dep, invoker.deps) {
+          _target_label = get_label_info(_dep, "label_no_toolchain")
+          if (filter_exclude([ _target_label ], _java_library_patterns) == [] &&
+              filter_exclude([ _target_label ], _java_resource_patterns) !=
+              []) {
+            deps += [
+              # Strictly speaking the __header target is sufficient, since they
+              # already depend on resources (due to srcjar deps), but prefer to
+              # be more explicit here since if/when __header targets stop
+              # depending on resources (e.g. if R.java generation moves to java
+              # targets), lint will not be affected.
+              "${_target_label}__assetres",
+              "${_target_label}__header",
+            ]
+          } else {
+            deps += [ _dep ]
+          }
+        }
+      }
+
       _suppressions_file = "//build/android/lint/suppressions.xml"
       if (defined(invoker.lint_suppressions_file)) {
         _suppressions_file = invoker.lint_suppressions_file
@@ -971,7 +1000,10 @@ if (enable_java_templates) {
         # to create the cache dir for us.
         _stamp_path = "$_cache_dir/build.lint.stamp"
       } else {
-        deps += [ "//build/android:prepare_android_lint_cache" ]
+        deps += [
+          "//build/android:prepare_android_lint_cache",
+          invoker.build_config_dep,
+        ]
         inputs += [ invoker.build_config ]
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)

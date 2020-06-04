@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/url_matcher/url_matcher.h"
 
 namespace enterprise_connectors {
@@ -18,7 +19,9 @@ namespace enterprise_connectors {
 // The settings for an analysis service obtained from a connector policy.
 class AnalysisServiceSettings {
  public:
-  explicit AnalysisServiceSettings(const base::Value& settings_value);
+  explicit AnalysisServiceSettings(
+      const base::Value& settings_value,
+      const ServiceProviderConfig& service_provider_config);
   AnalysisServiceSettings(AnalysisServiceSettings&&);
   ~AnalysisServiceSettings();
 
@@ -64,8 +67,10 @@ class AnalysisServiceSettings {
   std::set<std::string> GetTags(
       const std::set<url_matcher::URLMatcherConditionSet::ID>& matches) const;
 
-  // The service provider's identifier. This is unique amongst providers.
-  std::string service_provider_;
+  // The service provider matching the name given in a Connector policy. nullptr
+  // implies that a corresponding service provider doesn't exist and that these
+  // settings are not valid.
+  const ServiceProviderConfig::ServiceProvider* service_provider_ = nullptr;
 
   // The URL matcher created from the patterns set in the analysis policy. The
   // condition set IDs returned after matching against a URL can be used to

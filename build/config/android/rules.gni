@@ -3367,10 +3367,8 @@ if (enable_java_templates) {
                                  "min_sdk_version",
                                ])
         build_config = _build_config
-        deps = [
-          ":$_build_config_target",
-          ":$_java_target",
-        ]
+        build_config_dep = ":$_build_config_target"
+        deps = [ ":$_java_target" ]
       }
     } else {
       not_needed(invoker, [ "manifest_package" ])
@@ -4971,7 +4969,8 @@ if (enable_java_templates) {
                                  "lint_suppressions_file",
                                ])
         build_config = _build_config
-        deps = _module_java_targets + [ ":$_build_config_target" ]
+        build_config_dep = ":$_build_config_target"
+        deps = _module_java_targets
       }
     } else {
       not_needed(invoker, [ "manifest_package" ])

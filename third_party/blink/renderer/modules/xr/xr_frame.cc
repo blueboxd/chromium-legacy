@@ -279,26 +279,20 @@ ScriptPromise XRFrame::CreateAnchorFromNonStationarySpace(
 
   // Space is not considered stationary - need to adjust the app-provided pose.
   // Let's ask the session about the appropriate stationary reference space:
-  auto stationary_reference_space_category =
-      device::mojom::XRReferenceSpaceCategory::LOCAL;
-  auto mojo_from_stationary_space =
-      session_->GetMojoFrom(stationary_reference_space_category);
-  if (!mojo_from_stationary_space) {
-    // Local space is not available, try unbounded.
-    stationary_reference_space_category =
-        device::mojom::XRReferenceSpaceCategory::UNBOUNDED;
-    mojo_from_stationary_space =
-        session_->GetMojoFrom(stationary_reference_space_category);
-  }
+  base::Optional<XRSession::ReferenceSpaceInformation>
+      reference_space_information = session_->GetStationaryReferenceSpace();
 
-  if (!mojo_from_stationary_space) {
+  if (!reference_space_information) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       XRSession::kUnableToRetrieveMatrix);
     return {};
   }
 
-  DCHECK(mojo_from_stationary_space->IsInvertible());
-  auto stationary_space_from_mojo = mojo_from_stationary_space->Inverse();
+  const TransformationMatrix& mojo_from_stationary_space =
+      reference_space_information->mojo_from_space;
+
+  DCHECK(mojo_from_stationary_space.IsInvertible());
+  auto stationary_space_from_mojo = mojo_from_stationary_space.Inverse();
 
   // We now have 2 spaces - the dynamic one passed in to create anchor
   // call, and the stationary one. We also have a rigid transform
@@ -317,13 +311,10 @@ ScriptPromise XRFrame::CreateAnchorFromNonStationarySpace(
   auto stationary_space_from_anchor =
       stationary_space_from_mojo * mojo_from_anchor;
 
-  auto stationary_space_native_origin =
-      XRNativeOriginInformation::Create(stationary_reference_space_category);
-
   // Conversion done, make the adjusted call:
   return session_->CreateAnchorHelper(
       script_state, stationary_space_from_anchor,
-      stationary_space_native_origin, exception_state);
+      reference_space_information->native_origin, exception_state);
 }
 
 void XRFrame::Trace(Visitor* visitor) const {

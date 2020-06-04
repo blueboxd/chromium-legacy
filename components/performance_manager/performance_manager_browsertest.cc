@@ -95,7 +95,6 @@ IN_PROC_BROWSER_TEST_F(PerformanceManagerBrowserTest,
   // Wait for the popup window to appear, and then wait for it to load.
   auto* popup = shell_added_observer.GetShell();
   ASSERT_TRUE(popup);
-  NotifyShellCreated(popup);
   WaitForLoad(popup->web_contents());
 
   auto* contents = shell()->web_contents();

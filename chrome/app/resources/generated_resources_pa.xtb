@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">ਤੁਹਾਨੂੰ ਕੀ-ਬੋਰਡ ਦੀ ਦੁਹਰਾਉਣ ਦੀ ਗਤੀ, ਸ਼ਬਦ ਦਾ ਪੂਰਵ-ਅਨੁਮਾਨ, ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਵਿਵਸਥਿਤ ਕਰਨ ਦੀ ਆਗਿਆ ਦਿੰਦੀਆਂ ਹਨ</translation>
 <translation id="1633947793238301227">Google Assistant ਬੰਦ ਕਰੋ</translation>
 <translation id="1634783886312010422">ਕੀ ਤੁਸੀਂ ਪਹਿਲਾਂ ਹੀ <ph name="WEBSITE" /> 'ਤੇ ਇਹ ਪਾਸਵਰਡ ਬਦਲ ਦਿੱਤਾ ਹੈ?</translation>
-<translation id="1635033183663317347">ਤੁਹਾਡੇ ਨਿਗਰਾਨ ਵੱਲੋਂ ਸਥਾਪਿਤ ਕੀਤਾ ਗਿਆ।</translation>
 <translation id="1637224376458524414">ਆਪਣੇ iPhone 'ਤੇ ਇਹ ਬੁੱਕਮਾਰਕ ਪ੍ਰਾਪਤ ਕਰੋ</translation>
 <translation id="1637765355341780467">ਤੁਹਾਡੇ ਪ੍ਰੋਫ਼ਾਈਲ ਨੂੰ ਖੋਲ੍ਹਣ ਦੌਰਾਨ ਕੋਈ ਗੜਬੜ ਹੋ ਗਈ ਸੀ। ਕੁਝ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਪ੍ਰਾਪਤ ਹੋ ਸਕਦੀਆਂ ਹਨ।</translation>
 <translation id="1639239467298939599">ਲੋਡ ਕਰ ਰਿਹਾ ਹੈ</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Chrome ਸਮਕਾਲੀਕਰਨ ਤੋਂ ਡਾਟਾ</translation>
 <translation id="2200094388063410062">ਈਮੇਲ ਭੇਜੋ</translation>
 <translation id="2200356397587687044">ਜਾਰੀ ਰੱਖਣ ਲਈ Chrome ਨੂੰ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਹੈ</translation>
-<translation id="2200729650590440847">ਪਿੰਨ ਲਾਕ ਸਕ੍ਰੀਨ ਦੀਆਂ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="220138918934036434">ਬਟਨ ਲੁਕਾਓ</translation>
 <translation id="2202898655984161076">ਪ੍ਰਿੰਟਰਾਂ ਦੀ ਸੂਚੀ ਬਣਾਉਣ ਵੇਲੇ ਇੱਕ ਸਮੱਸਿਆ ਹੋਈ ਸੀ। ਤੁਹਾਡੇ ਕੁਝ ਪ੍ਰਿੰਟਰ <ph name="CLOUD_PRINT_NAME" /> ਨਾਲ ਸਫਲਤਾਪੂਰਵਕ ਰਜਿਸਟਰ ਨਹੀਂ ਵੀ ਕੀਤੇ ਜਾ ਸਕਦੇ।</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />ਪਤਾ ਪੱਟੀ<ph name="END_LINK" /> ਵਿੱਚ ਵਰਤਿਆ ਗਿਆ ਖੋਜ ਇੰਜਣ</translation>
 <translation id="2204034823255629767">ਜੋ ਵੀ ਤੁਸੀਂ ਟਾਈਪ ਕਰਦੇ ਹੋ, ਉਹ ਪੜ੍ਹੋ ਅਤੇ ਬਦਲੋ</translation>
-<translation id="2207166770508557715">ਸਲੀਪ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="220858061631308971">ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਪਿੰਨ ਕੋਡ ਨੂੰ "<ph name="DEVICE_NAME" />" 'ਤੇ ਦਰਜ ਕਰੋ:</translation>
 <translation id="2212565012507486665">ਕੁਕੀਜ਼ ਨੂੰ ਆਗਿਆ ਦਿਓ</translation>
 <translation id="2213140827792212876">ਸਾਂਝਾਕਰਨ ਹਟਾਓ</translation>
@@ -1407,11 +1404,9 @@
 <translation id="2751131328353405138">Linux ਕੰਟੇਨਰ sshfs ਨੂੰ ਮਾਊਂਟ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="2751739896257479635">EAP ਫੇਜ਼ 2 ਪ੍ਰਮਾਣੀਕਰਨ</translation>
 <translation id="2753677631968972007">ਸਾਈਟ ਦੀਆਂ ਇਜਾਜ਼ਤਾਂ ਹੱਥੀਂ ਕੰਟਰੋਲ ਕਰੋ।</translation>
-<translation id="2753984311895843016">ਅਕਿਰਿਆਸ਼ੀਲ ਪਾਵਰ</translation>
 <translation id="2755367719610958252">ਪਹੁੰਚਯੋਗਤਾ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ</translation>
 <translation id="275662540872599901">ਸਕ੍ਰੀਨ ਬੰਦ</translation>
 <translation id="2757338480560142065">ਪੱਕਾ ਕਰੋ ਕਿ ਤੁਹਾਡੇ ਵੱਲੋਂ ਰੱਖਿਅਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਪਾਸਵਰਡ <ph name="WEBSITE" /> ਦੇ ਤੁਹਾਡੇ ਪਾਸਵਰਡ ਨਾਲ ਮੇਲ ਖਾਂਦਾ ਹੋਵੇ</translation>
-<translation id="276221322463921688">ਮਾਨੀਟਰ ਦਿਸ਼ਾਮਾਨ</translation>
 <translation id="2762441749940182211">ਕੈਮਰਾ ਬਲਾਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="2764786626780673772">VPN ਸੰਬੰਧੀ ਵੇਰਵੇ</translation>
 <translation id="2765217105034171413">ਛੋਟਾ</translation>
@@ -6220,7 +6215,6 @@
 <translation id="8953476467359856141">ਚਾਰਜਿੰਗ ਵੇਲੇ</translation>
 <translation id="895347679606913382">ਸ਼ੁਰੂ ਹੋ ਰਿਹਾ ਹੈ...</translation>
 <translation id="8957762313041272117">ਲਾਈਵ ਸੁਰਖੀਆਂ</translation>
-<translation id="8958804960827200147">ਸਕ੍ਰੀਨ ਦਿਸ਼ਾਮਾਨ</translation>
 <translation id="895944840846194039">JavaScript ਮੈਮਰੀ</translation>
 <translation id="8962083179518285172">ਵੇਰਵੇ ਲੁਕਾਓ</translation>
 <translation id="8962918469425892674">ਇਹ ਸਾਈਟ ਮੋਸ਼ਨ ਜਾਂ ਲਾਈਟ ਸੈਂਸਰਾਂ ਦੀ ਵਰਤੋਂ ਕਰ ਰਹੀ ਹੈ।</translation>

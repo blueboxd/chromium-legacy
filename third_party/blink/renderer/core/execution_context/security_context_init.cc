@@ -124,16 +124,10 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
     document.GetExecutionContext()->FeaturePolicyFeatureObserved(feature);
   for (const auto& message : feature_policy_parse_messages_) {
     document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Error with Feature-Policy header: " + message));
+        mojom::blink::ConsoleMessageSource::kSecurity, message.level,
+        message.content));
   }
-  for (const auto& message : report_only_feature_policy_parse_messages_) {
-    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "Error with Feature-Policy-Report-Only header: " + message));
-  }
+
   if (!report_only_feature_policy_header_.empty())
     UseCounter::Count(document, WebFeature::kFeaturePolicyReportOnlyHeader);
 
@@ -263,13 +257,23 @@ void SecurityContextInit::InitializeFeaturePolicy(
   if (frame && frame->IsMainFrame() && !frame->OpenerFeatureState().empty())
     frame_for_opener_feature_state_ = frame;
 
+  PolicyParserMessageBuffer feature_policy_logger(
+      "Error with Feature-Policy header: ");
+  PolicyParserMessageBuffer report_only_feature_policy_logger(
+      "Error with Report-Only-Feature-Policy header: ");
+
   feature_policy_header_ = FeaturePolicyParser::ParseHeader(
       initializer.FeaturePolicyHeader(), security_origin_,
-      &feature_policy_parse_messages_, this);
+      feature_policy_logger, this);
 
   report_only_feature_policy_header_ = FeaturePolicyParser::ParseHeader(
       initializer.ReportOnlyFeaturePolicyHeader(), security_origin_,
-      &report_only_feature_policy_parse_messages_, this);
+      report_only_feature_policy_logger, this);
+
+  feature_policy_parse_messages_.AppendVector(
+      feature_policy_logger.GetMessages());
+  feature_policy_parse_messages_.AppendVector(
+      report_only_feature_policy_logger.GetMessages());
 
   if (sandbox_flags_ != network::mojom::blink::WebSandboxFlags::kNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {

@@ -14,20 +14,15 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_database.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/test_support/test_harness_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 class WebContents;
 }
 
-namespace performance_manager {
-class PerformanceManagerImpl;
-}  // namespace performance_manager
-
 namespace resource_coordinator {
-
 
 namespace testing {
 
@@ -107,9 +102,7 @@ class ChromeTestHarnessWithLocalDB : public ChromeRenderViewHostTestHarness {
   void TearDown() override;
 
  private:
-  std::unique_ptr<performance_manager::PerformanceManagerImpl>
-      performance_manager_;
-  std::unique_ptr<performance_manager::PerformanceManagerRegistry> registry_;
+  performance_manager::PerformanceManagerTestHarnessHelper pm_harness_;
 };
 
 }  // namespace testing

@@ -76,6 +76,7 @@ std::unique_ptr<ShortcutInfo> GetShortcutInfo() {
   info->profile_path = base::FilePath("user_data_dir").Append("Profile 1");
   info->profile_name = "profile name";
   info->version_for_display = "stable 1.0";
+  info->is_multi_profile = true;
   return info;
 }
 
@@ -430,7 +431,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateBookmarkAppShortcut) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteShortcutsSingleProfile) {
-  info_->url = GURL();
+  info_->is_multi_profile = false;
 
   base::FilePath other_shim_path =
       shim_path_.DirName().Append("Copy of Shim.app");
@@ -486,7 +487,7 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, DeleteAllShortcutsForProfile) {
-  info_->url = GURL();
+  info_->is_multi_profile = false;
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_,
                                                        info_.get());

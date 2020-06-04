@@ -739,6 +739,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const std::string& mime_type,
       network::mojom::RequestDestination request_destination) override;
   void DomOperationResponse(const std::string& json_string) override;
+  void SavableResourceLinksResponse(
+      RenderFrameHostImpl* source,
+      const std::vector<GURL>& resources_list,
+      blink::mojom::ReferrerPtr referrer,
+      const std::vector<blink::mojom::SavableSubframePtr>& subframes) override;
+  void SavableResourceLinksError(RenderFrameHostImpl* source) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;

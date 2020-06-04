@@ -98,7 +98,6 @@ crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.h
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
-crbug.com/872952 http/tests/media/autoplay/webaudio-autoplay-iframe-with-gesture.html [ Timeout Pass ]
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame.html [ Pass Failure ]
 # ====== Site Isolation failures until here ======
@@ -734,8 +733,22 @@ crbug.com/1067242 [ Mac10.11 ] external/wpt/css/css-text-decor/text-underline-po
 crbug.com/1067242 [ Mac10.12 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
 crbug.com/1067242 [ Mac10.13 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
 crbug.com/1067242 [ Retina ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+crbug.com/785230 [ Win7 ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
+crbug.com/785230 [ Mac10.10 ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
+crbug.com/785230 [ Mac10.11 ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
+crbug.com/785230 [ Mac10.12 ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
+crbug.com/785230 [ Mac10.13 ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
+crbug.com/785230 [ Retina ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
+crbug.com/785230 [ Win7 ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
+crbug.com/785230 [ Mac10.10 ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
+crbug.com/785230 [ Mac10.11 ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
+crbug.com/785230 [ Mac10.12 ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
+crbug.com/785230 [ Mac10.13 ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
+crbug.com/785230 [ Retina ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
 # Windows 10 bots are not on high enough a Windows version to render variable fonts in DirectWrite
 crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
+crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-decoration-thickness-fixed.html [ Failure ]
+crbug.com/1068947 [ Win10 ] external/wpt/css/css-text-decor/text-decoration-thickness-from-font-variable.html [ Failure ]
 
 # Tentative mansonry tests
 crbug.com/1076027 external/wpt/css/css-grid/masonry.tentative/* [ Skip ]
@@ -2584,14 +2597,15 @@ crbug.com/1012242 external/wpt/webvtt/rendering/cues-with-video/processing-model
 crbug.com/965409 external/wpt/css/css-font-loading/fontface-descriptor-updates.html [ Failure ]
 
 # Implement text-decoration-thickness and text-decoration-offset
-crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
-crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linethrough-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
+
+# Linux draws antialiasing differently when overlaying two text layers.
+crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-thickness-ink-skip-dilation.html [ Failure ]
 
 # Implement support for percentage values in scale
 crbug.com/1029997 external/wpt/css/css-transforms/transform-scale-percent-001.html [ Failure ]
@@ -3986,17 +4000,12 @@ crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html?include=workers [ Timeout ]
 
 # RubyNG TODOs
-crbug.com/1069817 external/wpt/css/css-ruby/empty-ruby-base-container-abs.html [ Failure ]
-crbug.com/1069817 external/wpt/css/css-ruby/empty-ruby-base-container-float.html [ Failure ]
-crbug.com/1069817 external/wpt/css/css-ruby/empty-ruby-base-container.html [ Failure ]
 crbug.com/1069817 external/wpt/css/css-ruby/line-break-around-ruby-001.html [ Failure ]
 crbug.com/1069817 fast/ruby/base-shorter-than-text.html [ Failure ]
 crbug.com/1069817 fast/ruby/float-overhang-from-ruby-text.html [ Failure ]
 crbug.com/1069817 fast/ruby/line-break-ruby.html [ Failure ]
 crbug.com/1069817 fast/ruby/position-after.html [ Failure ]
-crbug.com/1069817 fast/ruby/ruby-empty-rt.html [ Failure ]
 crbug.com/1069817 fast/ruby/ruby-run-break.html [ Failure ]
-crbug.com/1069817 fast/ruby/rubyDOM-remove-text2.html [ Failure ]
 crbug.com/1069817 fast/ruby/select-ruby.html [ Failure ]
 crbug.com/1069817 [ Linux ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/1069817 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
@@ -5437,7 +5446,6 @@ crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ P
 # Sheriff 2019-12-17
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
 crbug.com/1034789 virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Timeout ]
-crbug.com/1034789 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 
 # Sheriff 2019-12-23
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
@@ -5633,6 +5641,7 @@ crbug.com/1046784 http/tests/devtools/bindings/navigator-frame-attach-detach.js 
 crbug.com/1046784 http/tests/devtools/forced-layout-in-microtask.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
+crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Pass Timeout ]
 
 # Sheriff 2020-01-28
 crbug.com/1046201 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
@@ -5788,7 +5797,7 @@ crbug.com/1059262 http/tests/worklet/webexposed/global-interface-listing-paint-w
 crbug.com/1058244 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-rtl-manipulation.html [ Pass Failure ]
 
 # Sheriff 2020-03-08
-crbug.com/1059645 [ Mac10.14 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
+crbug.com/1059645 external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 
 # Failing on Fuchsia due to dependency on FuchsiaMediaResourceProvider, which is not implemented in content_shell.
 crbug.com/1061226 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Crash ]
@@ -5945,9 +5954,10 @@ crbug.com/1007228 [ Mac ] external/wpt/fullscreen/api/element-request-fullscreen
 crbug.com/1011811 http/tests/devtools/persistence/automapping-sourcemap.js [ Pass Failure ]
 
 # Sheriff 2020-06-03
-crbug.com/1088441 [ Mac ] http/tests/loading/bad-server-subframe.html [ Pass Failure ]
 crbug.com/1090822 [ Mac10.10 ] virtual/cascade/fast/forms/month/month-appearance-basic.html [ Pass Failure ]
 crbug.com/1083293 [ Linux ] media/video-aspect-ratio.html [ Pass Failure ]
 
 # Sheriff 2020-06-04
 crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Pass Failure Timeout ]
+crbug.com/1090087 transforms/2d/transform-2d.html [ Pass Timeout ]
+crbug.com/1057060 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]

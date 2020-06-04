@@ -46,8 +46,10 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
@@ -60,6 +62,7 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -107,6 +110,7 @@
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/frame/savable_resources.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/frame/virtual_keyboard_overlay_changed_observer.h"
@@ -167,6 +171,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/point.h"
 
 #if defined(OS_MACOSX)
@@ -2551,13 +2556,13 @@ void LocalFrame::DownloadURL(
   }
 
   DownloadURL(request, cross_origin_redirect_behavior,
-              blob_url_token.PassPipe());
+              std::move(blob_url_token));
 }
 
 void LocalFrame::DownloadURL(
     const ResourceRequest& request,
     network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
-    mojo::ScopedMessagePipeHandle blob_url_token) {
+    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token) {
   if (ShouldThrottleDownload())
     return;
 
@@ -2749,6 +2754,28 @@ void LocalFrame::UpdateOpener(
     auto* opener_web_frame = WebFrame::FromFrame(opener_frame);
     web_frame->SetOpener(opener_web_frame);
   }
+}
+
+void LocalFrame::GetSavableResourceLinks(
+    GetSavableResourceLinksCallback callback) {
+  Vector<KURL> resources_list;
+  Vector<mojom::blink::SavableSubframePtr> subframes;
+  SavableResources::Result result(&resources_list, &subframes);
+
+  if (!SavableResources::GetSavableResourceLinksForFrame(this, &result)) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  auto referrer = mojom::blink::Referrer::New(
+      GetDocument()->Url(), GetDocument()->GetReferrerPolicy());
+
+  auto reply = mojom::blink::GetSavableResourceLinksReply::New();
+  reply->resources_list = std::move(resources_list);
+  reply->referrer = std::move(referrer);
+  reply->subframes = std::move(subframes);
+
+  std::move(callback).Run(std::move(reply));
 }
 
 bool LocalFrame::ShouldThrottleDownload() {

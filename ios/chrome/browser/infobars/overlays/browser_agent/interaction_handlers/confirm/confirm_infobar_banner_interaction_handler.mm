@@ -29,6 +29,13 @@ void ConfirmInfobarBannerInteractionHandler::MainButtonTapped(
   infobar->set_accepted(GetInfobarDelegate(infobar)->Accept());
 }
 
+void ConfirmInfobarBannerInteractionHandler::BannerVisibilityChanged(
+    InfoBarIOS* infobar,
+    bool visible) {
+  if (!visible)
+    GetInfobarDelegate(infobar)->InfoBarDismissed();
+}
+
 #pragma mark - Private
 
 ConfirmInfoBarDelegate*

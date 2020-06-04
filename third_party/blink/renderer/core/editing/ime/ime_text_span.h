@@ -33,9 +33,11 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/base/ime/mojom/ime_types.mojom-blink-forward.h"
 
-namespace blink {
+namespace ui {
+struct ImeTextSpan;
+}  // namespace ui
 
-struct WebImeTextSpan;
+namespace blink {
 
 class CORE_EXPORT ImeTextSpan {
   DISALLOW_NEW();
@@ -55,7 +57,7 @@ class CORE_EXPORT ImeTextSpan {
               bool remove_on_finish_composing = false,
               const Vector<String>& suggestions = Vector<String>());
 
-  ImeTextSpan(const WebImeTextSpan&);
+  explicit ImeTextSpan(const ui::ImeTextSpan&);
 
   Type GetType() const { return type_; }
   unsigned StartOffset() const { return start_offset_; }

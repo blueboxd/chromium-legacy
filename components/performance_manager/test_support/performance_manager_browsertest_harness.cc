@@ -58,7 +58,7 @@ void PerformanceManagerBrowserTestHarness::CreatedBrowserMainParts(
           base::BindRepeating([](content::WebContents* contents)
                                   -> content::WebContentsViewDelegate* {
             PerformanceManagerRegistry::GetInstance()
-                ->CreatePageNodeForWebContents(contents);
+                ->MaybeCreatePageNodeForWebContents(contents);
             return content::CreateShellWebContentsViewDelegate(contents);
           }));
 
@@ -127,11 +127,6 @@ void PerformanceManagerBrowserTestHarness::WaitForLoad(
     content::WebContents* contents) {
   WaitForLoadObserver observer(contents);
   observer.Wait();
-}
-
-void PerformanceManagerBrowserTestHarness::NotifyShellCreated(
-    content::Shell* shell) {
-  helper_->OnWebContentsCreated(shell->web_contents());
 }
 
 }  // namespace performance_manager

@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Giver dig mulighed for at justere gentagelseshastighed, ordforslag og meget mere for tastaturet</translation>
 <translation id="1633947793238301227">Deaktiver Google Assistent</translation>
 <translation id="1634783886312010422">Har du allerede ændret denne adgangskode på <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Installeret af din tilsynsførende.</translation>
 <translation id="1637224376458524414">Få dette bogmærke på din iPhone</translation>
 <translation id="1637765355341780467">Noget gik galt ved åbningen af din profil. Nogle funktioner er muligvis ikke tilgængelige.</translation>
 <translation id="1639239467298939599">Indlæser...</translation>
@@ -954,12 +953,10 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2199719347983604670">Data fra Chrome-synkronisering</translation>
 <translation id="2200094388063410062">Mail</translation>
 <translation id="2200356397587687044">Chrome skal have tilladelse til at fortsætte</translation>
-<translation id="2200729650590440847">Indstillinger for pinkode til låseskærm</translation>
 <translation id="220138918934036434">Skjul knap</translation>
 <translation id="2202898655984161076">Der opstod et problem under fortegnelsen af printere. Nogle af dine printere er muligvis ikke registreret korrekt hos <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Den søgemaskine, der bruges i <ph name="BEGIN_LINK" />adresselinjen<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Læs og rediger alt, hvad du indtaster</translation>
-<translation id="2207166770508557715">Indstillinger for dvale</translation>
 <translation id="220858061631308971">Angiv denne pinkode på "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Tillad cookies</translation>
 <translation id="2213140827792212876">Fjern deling</translation>
@@ -1408,11 +1405,9 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2751131328353405138">Tilføjer SSH-filsystemet for Linux-containeren</translation>
 <translation id="2751739896257479635">EAP fase 2-godkendelse</translation>
 <translation id="2753677631968972007">Styr websitetilladelser manuelt</translation>
-<translation id="2753984311895843016">Inaktiv tilstand</translation>
 <translation id="2755367719610958252">Administrer hjælpefunktioner</translation>
 <translation id="275662540872599901">skærmen er slukket</translation>
 <translation id="2757338480560142065">Sørg for, at den adgangskode, du gemmer, er den samme som din adgangskode til <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Skærmretning</translation>
 <translation id="2762441749940182211">Der er blokeret for adgang til kameraet</translation>
 <translation id="2764786626780673772">Info om VPN</translation>
 <translation id="2765217105034171413">Lille</translation>
@@ -3594,7 +3589,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5585912436068747822">Formatering mislykkedes</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Indlæser apps...</translation>
-<translation id="558984423786125616">Porten eksisterer allerede i indstillingerne</translation>
+<translation id="558984423786125616">Porten findes allerede i indstillingerne</translation>
 <translation id="5592595402373377407">Der er ikke nok data til rådighed endnu.</translation>
 <translation id="5593357315997824387">Synkroniser mine filer</translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
@@ -5549,7 +5544,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
     <ph name="BEGIN_PARAGRAPH5" />Du kan deaktivere denne tjeneste i Indstillinger.<ph name="END_PARAGRAPH5" /></translation>
 <translation id="80974698889265265">Pinkoderne stemmer ikke overens</translation>
 <translation id="809792523045608178"><ph name="IDS_SHORT_PRODUCT_NAME" /> anvender proxyindstillinger fra en udvidelse</translation>
-<translation id="8097959162767603171">Din administrator skal først acceptere servicevilkårene i Chrome-enhedslisten i administrationskonsollen.</translation>
+<translation id="8097959162767603171">Din administrator skal først acceptere servicevilkårene i listen over Chrome-enheder i administrationskonsollen.</translation>
 <translation id="8101987792947961127">Powerwash er påkrævet ved næste genstart</translation>
 <translation id="8102159139658438129">Gå til <ph name="LINK_BEGIN" />Indstillinger<ph name="LINK_END" /> for at se valgmulighederne for din tilsluttede telefon</translation>
 <translation id="8104696615244072556">Powerwash din <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed, og nulstil til forrige version.</translation>
@@ -6226,7 +6221,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8953476467359856141">Under opladning</translation>
 <translation id="895347679606913382">Begynder...</translation>
 <translation id="8957762313041272117">Livetekstning</translation>
-<translation id="8958804960827200147">Skærmretning</translation>
 <translation id="895944840846194039">JavaScript-hukommelse</translation>
 <translation id="8962083179518285172">Skjul detaljer</translation>
 <translation id="8962918469425892674">Dette website anvender bevægelses- og lyssensorer.</translation>

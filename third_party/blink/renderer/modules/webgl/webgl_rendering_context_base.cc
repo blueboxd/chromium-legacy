@@ -780,7 +780,8 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
           GetDrawingBuffer()->FilterQuality(), color_params,
           is_origin_top_left_, CanvasResourceProvider::RasterMode::kGPU,
           0u /*shared_image_usage_flags*/);
-  // todo(bug 1035589) Check if this cpu fallback is really needed here
+  // todo(bug 1090962) This CPU fallback is needed as it would break
+  // webgl_conformance_gles_passthrough_tests on Android FYI for Nexus 5x.
   if (!resource_provider || !resource_provider->IsValid()) {
     resource_provider = CanvasResourceProvider::CreateBitmapProvider(
         size, GetDrawingBuffer()->FilterQuality(), color_params);
@@ -791,9 +792,7 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
 
   if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
                                              kBackBuffer)) {
-    // copyRenderingResultsFromDrawingBuffer is expected to always succeed
-    // because we've explicitly created an Accelerated surface and have
-    // already validated it.
+    // CopyRenderingResultsFromDrawingBuffer will handle both CPU and GPU cases.
     NOTREACHED();
     return nullptr;
   }

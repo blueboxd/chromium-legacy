@@ -29,7 +29,6 @@ class DictionaryValue;
 namespace chromeos {
 
 class ErrorScreen;
-class NativeWindowDelegate;
 class NetworkStateInformer;
 class OobeDisplayChooser;
 class SigninScreenHandler;
@@ -87,8 +86,7 @@ class OobeUI : public ui::MojoWebUIController {
   void ShowOobeUI(bool show);
 
   // Shows the signin screen.
-  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
-                        NativeWindowDelegate* native_window_delegate);
+  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate);
 
   // Forwards an accelerator to the webui to be handled.
   void ForwardAccelerator(std::string accelerator_name);

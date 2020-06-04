@@ -826,8 +826,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       wait_for_new_network_(false),
       ignore_read_error_(false),
       headers_include_h2_stream_dependency_(
-          headers_include_h2_stream_dependency &&
-          this->connection()->transport_version() >= quic::QUIC_VERSION_43),
+          headers_include_h2_stream_dependency),
       max_allowed_push_id_(max_allowed_push_id) {
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.
@@ -1864,8 +1863,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
   if (migrate_idle_session_ && CheckIdleTimeExceedsIdleMigrationPeriod())
     return;
 
-  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
-      GetNumDrainingStreams() == 0) {
+  if (!migrate_idle_session_ && !HasActiveRequestStreams()) {
     // connection close packet to be sent since socket may be borked.
     connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
                                   "Write error for non-migratable session",
@@ -2013,8 +2011,7 @@ void QuicChromiumClientSession::OnProbeSucceeded(
   // Close streams that are not migratable to the probed |network|.
   ResetNonMigratableStreams();
 
-  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
-      GetNumDrainingStreams() == 0) {
+  if (!migrate_idle_session_ && !HasActiveRequestStreams()) {
     // If idle sessions won't be migrated, close the connection.
     CloseSessionOnErrorLater(
         ERR_NETWORK_CHANGED,
@@ -2215,8 +2212,7 @@ void QuicChromiumClientSession::MigrateNetworkImmediately(
   // - otherwise, it's brought to default network, cancel the running timer to
   //   migrate back.
 
-  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
-      GetNumDrainingStreams() == 0) {
+  if (!migrate_idle_session_ && !HasActiveRequestStreams()) {
     HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
                                     connection_id(), "No active streams");
     CloseSessionOnErrorLater(
@@ -2310,7 +2306,7 @@ void QuicChromiumClientSession::OnPathDegrading() {
         GetNumActiveStreams());
     UMA_HISTOGRAM_COUNTS_1M(
         "Net.QuicSession.DrainingStreamsOnGoAwayAfterPathDegrading",
-        GetNumDrainingStreams());
+        num_outgoing_draining_streams());
     return;
   }
 
@@ -2338,11 +2334,6 @@ void QuicChromiumClientSession::OnPathDegrading() {
   HistogramAndLogMigrationFailure(MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED,
                                   connection_id(),
                                   "Migration on path degrading not enabled");
-}
-
-bool QuicChromiumClientSession::ShouldKeepConnectionAlive() const {
-  return quic::QuicSpdySession::ShouldKeepConnectionAlive() ||
-         GetNumDrainingOutgoingStreams() > 0;
 }
 
 void QuicChromiumClientSession::OnProofValid(
@@ -2546,8 +2537,7 @@ ProbingResult QuicChromiumClientSession::MaybeStartProbing(
 
   CHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
 
-  if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
-      GetNumDrainingStreams() == 0) {
+  if (!migrate_idle_session_ && !HasActiveRequestStreams()) {
     HistogramAndLogMigrationFailure(MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
                                     connection_id(), "No active streams");
     CloseSessionOnErrorLater(
@@ -2691,7 +2681,7 @@ bool QuicChromiumClientSession::CheckIdleTimeExceedsIdleMigrationPeriod() {
   if (!migrate_idle_session_)
     return false;
 
-  if (GetNumActiveStreams() != 0 || GetNumDrainingStreams() != 0) {
+  if (HasActiveRequestStreams()) {
     return false;
   }
 
@@ -3029,8 +3019,7 @@ MigrationResult QuicChromiumClientSession::Migrate(
   if (network != NetworkChangeNotifier::kInvalidNetworkHandle) {
     // This is a migration attempt from connection migration.
     ResetNonMigratableStreams();
-    if (!migrate_idle_session_ && GetNumActiveStreams() == 0 &&
-        GetNumDrainingStreams() == 0) {
+    if (!migrate_idle_session_ && !HasActiveRequestStreams()) {
       // If idle sessions can not be migrated, close the session if needed.
       if (close_session_on_error) {
         CloseSessionOnErrorLater(

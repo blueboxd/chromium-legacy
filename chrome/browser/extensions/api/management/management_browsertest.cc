@@ -87,8 +87,7 @@ class ExtensionHostDestructionObserver
   }
 
   // ExtensionHostObserver:
-  void OnExtensionHostDestroyed(
-      const extensions::ExtensionHost* host) override {
+  void OnExtensionHostDestroyed(extensions::ExtensionHost* host) override {
     if (host == host_) {
       extension_host_observer_.Remove(host_);
       run_loop_.Quit();

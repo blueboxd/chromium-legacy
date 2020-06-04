@@ -15,6 +15,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/common/extension.h"
 
 class PrefService;
@@ -50,6 +51,11 @@ class ForceInstalledTracker : public ExtensionRegistryObserver,
     // IsReady() to know if it has already been called. If there are no
     // force-installed extensions configured, this method still gets called.
     virtual void OnForceInstalledExtensionsReady() {}
+
+    // Called when cache status is retrieved from InstallationStageTracker.
+    virtual void OnExtensionDownloadCacheStatusRetrieved(
+        const ExtensionId& id,
+        ExtensionDownloaderDelegate::CacheStatus cache_status) {}
   };
 
   ForceInstalledTracker(ExtensionRegistry* registry, Profile* profile);
@@ -81,6 +87,9 @@ class ForceInstalledTracker : public ExtensionRegistryObserver,
   void OnExtensionInstallationFailed(
       const ExtensionId& extension_id,
       InstallStageTracker::FailureReason reason) override;
+  void OnExtensionDownloadCacheStatusRetrieved(
+      const ExtensionId& id,
+      ExtensionDownloaderDelegate::CacheStatus cache_status) override;
 
   // policy::PolicyService::Observer overrides:
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,

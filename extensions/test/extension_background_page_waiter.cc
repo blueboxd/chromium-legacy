@@ -108,14 +108,15 @@ void ExtensionBackgroundPageWaiter::OnExtensionHostDidStopFirstLoad(
 }
 
 void ExtensionBackgroundPageWaiter::OnExtensionHostDestroyed(
-    const ExtensionHost* host) {
+    ExtensionHost* host) {
   // This is only called while we're waiting for the host to be ready (since
   // we remove ourselves as an observer when it's done).
   DCHECK(host_ready_run_loop_.running());
   ASSERT_EQ(extension_->id(), host->extension_id());
   ADD_FAILURE() << "Extension host for " << extension_->name()
                 << "was destroyed before it finished loading.";
-  extension_host_observer_.RemoveAll();
+  ASSERT_TRUE(extension_host_observer_.IsObserving(host));
+  extension_host_observer_.Remove(host);
 }
 
 }  // namespace extensions

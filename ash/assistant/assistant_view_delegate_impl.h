@@ -27,6 +27,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void DownloadImage(const GURL& url,
                      ImageDownloader::DownloadCallback callback) override;
   ::wm::CursorManager* GetCursorManager() override;
+  std::string GetPrimaryUserGivenName() const override;
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   aura::Window* GetRootWindowForNewWindows() override;
   bool IsTabletMode() const override;
@@ -36,9 +37,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void OnNotificationButtonPressed(const std::string& notification_id,
                                    int notification_button_index) override;
   void OnOptInButtonPressed() override;
-  void OnProactiveSuggestionsCloseButtonPressed() override;
-  void OnProactiveSuggestionsViewHoverChanged(bool is_hovering) override;
-  void OnProactiveSuggestionsViewPressed() override;
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion) override;
 
  private:

@@ -10,5 +10,6 @@ dictionary CanvasRenderingContext2DSettings {
     [RuntimeEnabled=CanvasColorManagement] CanvasColorSpace colorSpace = "srgb";
     [RuntimeEnabled=CanvasColorManagement] CanvasPixelFormat pixelFormat = "uint8";
     [RuntimeEnabled=SurfaceEmbeddingFeatures] boolean desynchronized = false;
+    [RuntimeEnabled=NewCanvas2DAPI] boolean willReadFrequently = false;
 };
 

@@ -136,6 +136,7 @@ source_set("fuchsia_filters") {
     "//testing/buildbot/filters/fuchsia.blink_unittests.filter",
     "//testing/buildbot/filters/fuchsia.components_unittests.filter",
     "//testing/buildbot/filters/fuchsia.content_unittests.filter",
+    "//testing/buildbot/filters/fuchsia.headless_browsertests.filter",
     "//testing/buildbot/filters/fuchsia.mojo_unittests.filter",
     "//testing/buildbot/filters/fuchsia.net_perftests.filter",
     "//testing/buildbot/filters/fuchsia.net_unittests.filter",
@@ -204,7 +205,7 @@ source_set("viz_unittests_filters") {
 
   data = [
     "//testing/buildbot/filters/android.emulator.viz_unittests.filter",
-    "//testing/buildbot/filters/gpu.skiarenderer_dawn_viz_unittests.filter",
+    "//testing/buildbot/filters/gpu.linux.skiarenderer_dawn_viz_unittests.filter",
   ]
 }
 

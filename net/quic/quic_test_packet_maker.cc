@@ -129,8 +129,7 @@ QuicTestPacketMaker::QuicTestPacketMaker(
       encryption_level_(quic::ENCRYPTION_FORWARD_SECURE),
       long_header_type_(quic::INVALID_PACKET_TYPE),
       client_headers_include_h2_stream_dependency_(
-          client_headers_include_h2_stream_dependency &&
-          version.transport_version >= quic::QUIC_VERSION_43),
+          client_headers_include_h2_stream_dependency),
       save_packet_frames_(false) {
   DCHECK(!(perspective_ == quic::Perspective::IS_SERVER &&
            client_headers_include_h2_stream_dependency_));
@@ -1334,7 +1333,7 @@ spdy::SpdySerializedFrame QuicTestPacketMaker::MakeSpdyHeadersFrame(
 }
 
 bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
-  if (version_.transport_version > quic::QUIC_VERSION_43) {
+  if (version_.HasIetfInvariantHeader()) {
     return encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE;
   }
   return include_version;
@@ -1342,7 +1341,7 @@ bool QuicTestPacketMaker::ShouldIncludeVersion(bool include_version) const {
 
 quic::QuicPacketNumberLength QuicTestPacketMaker::GetPacketNumberLength()
     const {
-  if (version_.transport_version > quic::QUIC_VERSION_43 &&
+  if (version_.HasIetfInvariantHeader() &&
       encryption_level_ < quic::ENCRYPTION_FORWARD_SECURE &&
       !version_.SendsVariableLengthPacketNumberInLongHeader()) {
     return quic::PACKET_4BYTE_PACKET_NUMBER;

@@ -42,6 +42,7 @@ struct ASH_PUBLIC_EXPORT UserInfo {
   AccountId account_id;
   std::string display_name;
   std::string display_email;
+  std::string given_name;
   UserAvatar avatar;
 
   // True if this user has a newly created profile (first time login on the

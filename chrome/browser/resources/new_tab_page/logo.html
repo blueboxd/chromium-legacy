@@ -2,6 +2,7 @@
   :host {
     --ntp-logo-height: 230px;
     display: inline-block;
+    flex-shrink: 0;
     min-height: var(--ntp-logo-height);
   }
 
@@ -83,7 +84,7 @@
   </template>
 </dom-if>
 <dom-if if="[[showDoodle_]]" restamp>
-  <template> 
+  <template>
     <div id="doodle" title="[[doodle_.description]]">
       <div id="imageContainer" hidden="[[!doodle_.content.imageDoodle]]"
           tabindex="1" on-click="onImageClick_" on-keydown="onImageKeydown_">

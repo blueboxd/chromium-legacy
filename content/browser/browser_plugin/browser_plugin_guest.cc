@@ -35,7 +35,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_visual_properties.h"
-#include "content/common/input/ime_text_span_conversions.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
@@ -472,16 +471,14 @@ void BrowserPluginGuest::OnExecuteEditCommand(int browser_plugin_instance_id,
 void BrowserPluginGuest::OnImeCommitText(
     int browser_plugin_instance_id,
     const base::string16& text,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
-  std::vector<ui::ImeTextSpan> ui_ime_text_spans =
-      ConvertBlinkImeTextSpansToUiImeTextSpans(ime_text_spans);
   GetWebContents()
       ->GetRenderViewHost()
       ->GetWidget()
       ->GetWidgetInputHandler()
-      ->ImeCommitText(text, ui_ime_text_spans, replacement_range,
+      ->ImeCommitText(text, ime_text_spans, replacement_range,
                       relative_cursor_pos, base::OnceClosure());
 }
 

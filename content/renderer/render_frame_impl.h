@@ -130,7 +130,6 @@ class WebString;
 class WebURL;
 struct FramePolicy;
 struct WebContextMenuData;
-struct WebImeTextSpan;
 }  // namespace blink
 
 namespace gfx {
@@ -397,21 +396,19 @@ class CONTENT_EXPORT RenderFrameImpl
   // Simulates IME events for testing purpose.
   void SimulateImeSetComposition(
       const base::string16& text,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
       int selection_start,
       int selection_end);
-  void SimulateImeCommitText(
-      const base::string16& text,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
-      const gfx::Range& replacement_range);
+  void SimulateImeCommitText(const base::string16& text,
+                             const std::vector<ui::ImeTextSpan>& ime_text_spans,
+                             const gfx::Range& replacement_range);
 
   // TODO(jam): remove these once the IPC handler moves from RenderView to
   // RenderFrame.
-  void OnImeSetComposition(
-      const base::string16& text,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
-      int selection_start,
-      int selection_end);
+  void OnImeSetComposition(const base::string16& text,
+                           const std::vector<ui::ImeTextSpan>& ime_text_spans,
+                           int selection_start,
+                           int selection_end);
   void OnImeCommitText(const base::string16& text,
                        const gfx::Range& replacement_range,
                        int relative_cursor_pos);
@@ -1021,7 +1018,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnVisualStateRequest(uint64_t key);
   // TODO(https://crbug.com/995428): Deprecated.
   void OnReload();
-  void OnGetSavableResourceLinks();
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
 

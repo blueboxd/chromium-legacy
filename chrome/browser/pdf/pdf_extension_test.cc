@@ -845,26 +845,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, RedirectsFailInPlugin) {
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, AnnotationsFeatureDisabled) {
-  RunTestsInJsModule("annotations_feature_disabled_test.js", "test.pdf");
-}
-
 IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Printing) {
   RunTestsInJsModule("printing_icon_test.js", "test.pdf");
 }
-
-class PDFAnnotationsJSTest : public PDFExtensionJSTest {
- public:
-  ~PDFAnnotationsJSTest() override = default;
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    PDFExtensionJSTest::SetUpCommandLine(command_line);
-    feature_list_.InitAndEnableFeature(chrome_pdf::features::kPDFAnnotations);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-};
 
 // TODO(https://crbug.com/920684): Test times out.
 #if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
@@ -873,7 +856,7 @@ class PDFAnnotationsJSTest : public PDFExtensionJSTest {
 #else
 #define MAYBE_AnnotationsFeatureEnabled AnnotationsFeatureEnabled
 #endif
-IN_PROC_BROWSER_TEST_F(PDFAnnotationsJSTest, MAYBE_AnnotationsFeatureEnabled) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, MAYBE_AnnotationsFeatureEnabled) {
   RunTestsInJsModule("annotations_feature_enabled_test.js", "test.pdf");
 }
 #endif  // defined(OS_CHROMEOS)

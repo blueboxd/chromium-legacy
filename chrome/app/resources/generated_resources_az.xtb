@@ -502,7 +502,6 @@
 <translation id="1632803087685957583">Klaviatura təkrarlanma sayı, söz proqnozu və digərlərini nizamlamağa icazə verir</translation>
 <translation id="1633947793238301227">Google Assistenti deaktiv edin</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" /> saytında artıq bunu dəyişmisiniz?</translation>
-<translation id="1635033183663317347">Mühafizəçiniz tərəfindən endirilib.</translation>
 <translation id="1637224376458524414">Bu əlfəcini iPhone'da əldə edin</translation>
 <translation id="1637765355341780467">Profilinizi açarkən xəta baş verdi. Bəzi funksiyalar əlçatan olmaya bilər.</translation>
 <translation id="1639239467298939599">Yüklənir</translation>
@@ -950,12 +949,10 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2199719347983604670">Chrome sinxronizasiya datası</translation>
 <translation id="2200094388063410062">E-poçt</translation>
 <translation id="2200356397587687044">Chrome davam etmək üçün icazə tələb edir</translation>
-<translation id="2200729650590440847">PIN kilid ekranı ayarları</translation>
 <translation id="220138918934036434">Düyməni gizlədin</translation>
 <translation id="2202898655984161076">Printerlərin siyahısını tərtib edərkən xəta baş verdi. Bəzi printerləriniz <ph name="CLOUD_PRINT_NAME" /> ilə uğurla qeydiyyat olunmayıb..</translation>
 <translation id="2203682048752833055">Axtarış sistemi <ph name="BEGIN_LINK" />ünvan panelində<ph name="END_LINK" /> istifadə edildi</translation>
 <translation id="2204034823255629767">Oxuyun və yazdığınız istənilən şeyi dəyişin</translation>
-<translation id="2207166770508557715">Yuxu ayarları</translation>
 <translation id="220858061631308971">Bu PIN kodu "<ph name="DEVICE_NAME" />" cihazına daxil edin:</translation>
 <translation id="2212565012507486665">Kukilərə icazə verin</translation>
 <translation id="2213140827792212876">Paylaşımı silin</translation>
@@ -1403,11 +1400,9 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2751131328353405138">Linux konteyneri ssh fayl sistemi quraşdırılır</translation>
 <translation id="2751739896257479635">EAP Faza 2 doğrulaması</translation>
 <translation id="2753677631968972007">Sayt icazələrini əl ilə idarə edin.</translation>
-<translation id="2753984311895843016">Gözləmə rejimində güc</translation>
 <translation id="2755367719610958252">Əlçatımlılıq funksiyalarını idarə edin</translation>
 <translation id="275662540872599901">ekran qapalıdır</translation>
 <translation id="2757338480560142065">Yadda saxlanılan parolun <ph name="WEBSITE" /> paroluna uyğun olduğuna əmin olun</translation>
-<translation id="276221322463921688">Monitorun orientasiyası</translation>
 <translation id="2762441749940182211">Kamera blok edildi</translation>
 <translation id="2764786626780673772">VPN detalları</translation>
 <translation id="2765217105034171413">Kiçik</translation>
@@ -6212,7 +6207,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="8953476467359856141">Şarj edilən zaman</translation>
 <translation id="895347679606913382">Başlayır...</translation>
 <translation id="8957762313041272117">Canlı altyazı</translation>
-<translation id="8958804960827200147">Ekranın orientasiyası</translation>
 <translation id="895944840846194039">JavaScript yaddaşı</translation>
 <translation id="8962083179518285172">Detalları gizlədin</translation>
 <translation id="8962918469425892674">Bu sayt hərəkət və ya açıq sensorlardan istifadə edir.</translation>

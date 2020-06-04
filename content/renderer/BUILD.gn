@@ -247,8 +247,6 @@ target(link_target_type, "renderer") {
     "renderer_main_platform_delegate_win.cc",
     "sad_plugin.cc",
     "sad_plugin.h",
-    "savable_resources.cc",
-    "savable_resources.h",
     "seccomp_sandbox_status_android.cc",
     "seccomp_sandbox_status_android.h",
     "service_worker/controller_service_worker_connector.cc",

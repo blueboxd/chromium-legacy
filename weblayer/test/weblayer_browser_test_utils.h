@@ -35,6 +35,9 @@ void NavigateAndWaitForStart(const GURL& url, Tab* tab);
 base::Value ExecuteScript(Shell* shell,
                           const std::string& script,
                           bool use_separate_isolate);
+base::Value ExecuteScript(Tab* tab,
+                          const std::string& script,
+                          bool use_separate_isolate);
 
 // Executes |script| in |shell| with a user gesture. Useful for tests of
 // functionality that gates action on a user gesture having occurred.
@@ -46,6 +49,7 @@ base::Value ExecuteScript(Shell* shell,
 // - Does not allow running in a separate isolate as the  machinery for
 //   setting a user gesture works only in the main isolate.
 void ExecuteScriptWithUserGesture(Shell* shell, const std::string& script);
+void ExecuteScriptWithUserGesture(Tab* tab, const std::string& script);
 
 /// Gets the title of the current webpage in |shell|.
 const base::string16& GetTitle(Shell* shell);

@@ -452,3 +452,7 @@ QUIC_FLAG(bool,
 
 // If true, disable QUIC version h3-T050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_t050, false)
+
+// If true, do not arm PTO on half RTT packets if they are the only ones in
+// flight.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_server_pto_timeout, false)

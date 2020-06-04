@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Umožňuje nastaviť rýchlosť opakovania klávesnice, predpoveď ďalšieho slova a ďalšie</translation>
 <translation id="1633947793238301227">Zakázať Asistenta Google</translation>
 <translation id="1634783886312010422">Už ste zmenili toto heslo na webe <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Nainštalované vaším opatrovníkom</translation>
 <translation id="1637224376458524414">Uložte si túto záložku do zariadenia iPhone</translation>
 <translation id="1637765355341780467">Pri pokuse o otvorenie profilu sa vyskytla chyba. Niektoré funkcie nemusia byť k dispozícii.</translation>
 <translation id="1639239467298939599">Prebieha načítavanie</translation>
@@ -954,12 +953,10 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2199719347983604670">Údaje zo synchronizácie Chromu</translation>
 <translation id="2200094388063410062">E‑mail</translation>
 <translation id="2200356397587687044">Chrome potrebuje na pokračovanie povolenie</translation>
-<translation id="2200729650590440847">Nastavenia odomknutia uzamknutej obrazovky kódom PIN</translation>
 <translation id="220138918934036434">Skryť tlačidlo</translation>
 <translation id="2202898655984161076">Pri vytváraní zoznamu tlačiarní sa vyskytol problém. Niektoré z vašich tlačiarní možno nie sú v službe <ph name="CLOUD_PRINT_NAME" /> registrované.</translation>
 <translation id="2203682048752833055">Vyhľadávač, ktorý sa používa v <ph name="BEGIN_LINK" />paneli s adresou<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Čítať a meniť všetko, čo napíšete</translation>
-<translation id="2207166770508557715">Nastavenia režimu spánku</translation>
 <translation id="220858061631308971">Zadajte tento kód PIN v zariadení „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2212565012507486665">Povoliť súbory cookie</translation>
 <translation id="2213140827792212876">Odstrániť zdieľanie</translation>
@@ -1407,11 +1404,9 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2751131328353405138">Inštaluje sa systém SSHFS kontajnera Linux</translation>
 <translation id="2751739896257479635">Overenie totožnosti EAP – 2. fáza:</translation>
 <translation id="2753677631968972007">Ručne ovládať povolenia webu</translation>
-<translation id="2753984311895843016">Napájanie pri nečinnosti</translation>
 <translation id="2755367719610958252">Spravovať funkcie dostupnosti</translation>
 <translation id="275662540872599901">obrazovka je vypnutá</translation>
 <translation id="2757338480560142065">Ukladané heslo sa musí zhodovať s tým, ktoré používate pre web <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">Orientácia monitora</translation>
 <translation id="2762441749940182211">Kamera je zablokovaná</translation>
 <translation id="2764786626780673772">Podrobnosti o sieti VPN</translation>
 <translation id="2765217105034171413">Malé</translation>
@@ -6223,7 +6218,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8953476467359856141">Počas nabíjania</translation>
 <translation id="895347679606913382">Spúšťa sa...</translation>
 <translation id="8957762313041272117">Živý prepis</translation>
-<translation id="8958804960827200147">Orientácia obrazovky</translation>
 <translation id="895944840846194039">Pamäť JavaScript</translation>
 <translation id="8962083179518285172">Skryť podrobnosti</translation>
 <translation id="8962918469425892674">Tento web používa senzory pohybu alebo svetla.</translation>

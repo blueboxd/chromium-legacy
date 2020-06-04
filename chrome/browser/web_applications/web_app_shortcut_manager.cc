@@ -120,6 +120,7 @@ std::unique_ptr<ShortcutInfo> WebAppShortcutManager::BuildShortcutInfoForWebApp(
   shortcut_info->profile_path = profile()->GetPath();
   shortcut_info->profile_name =
       profile()->GetPrefs()->GetString(prefs::kProfileName);
+  shortcut_info->is_multi_profile = true;
 
   if (const apps::FileHandlers* file_handlers =
           file_handler_manager_->GetEnabledFileHandlers(app->app_id())) {

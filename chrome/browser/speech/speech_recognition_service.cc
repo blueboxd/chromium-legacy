@@ -4,6 +4,7 @@
 
 #include "chrome/browser/speech/speech_recognition_service.h"
 
+#include "chrome/browser/service_sandbox_type.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/service_process_host.h"
 

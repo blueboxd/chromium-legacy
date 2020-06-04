@@ -63,7 +63,6 @@
 #include "content/common/page_messages.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer_host.mojom.h"
-#include "content/common/savable_subframe.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_package/signed_exchange_utils.h"
@@ -128,7 +127,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "content/renderer/savable_resources.h"
 #include "content/renderer/service_worker/service_worker_network_provider_for_frame.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
@@ -208,6 +206,7 @@
 #include "third_party/blink/public/web/web_plugin_document.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_range.h"
+#include "third_party/blink/public/web/web_savable_resources_test_support.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_searchable_form_data.h"
 #include "third_party/blink/public/web/web_security_policy.h"
@@ -840,17 +839,15 @@ void RecordSuffixedRendererMemoryMetrics(
 }
 
 mojo::PendingRemote<blink::mojom::BlobURLToken> CloneBlobURLToken(
-    mojo::MessagePipeHandle handle) {
-  if (!handle.is_valid())
+    blink::CrossVariantMojoRemote<blink::mojom::BlobURLTokenInterfaceBase>&
+        blob_url_token) {
+  if (!blob_url_token)
     return mojo::NullRemote();
-  mojo::PendingRemote<blink::mojom::BlobURLToken> result;
-  mojo::Remote<blink::mojom::BlobURLToken> token(
-      mojo::PendingRemote<blink::mojom::BlobURLToken>(
-          mojo::ScopedMessagePipeHandle(handle),
-          blink::mojom::BlobURLToken::Version_));
-  token->Clone(result.InitWithNewPipeAndPassReceiver());
-  ignore_result(token.Unbind().PassPipe().release());
-  return result;
+  mojo::PendingRemote<blink::mojom::BlobURLToken> cloned_token;
+  mojo::Remote<blink::mojom::BlobURLToken> token(std::move(blob_url_token));
+  token->Clone(cloned_token.InitWithNewPipeAndPassReceiver());
+  blob_url_token = token.Unbind();
+  return cloned_token;
 }
 
 // Creates a fully functional DocumentState in the case where we do not have
@@ -2100,7 +2097,7 @@ void RenderFrameImpl::PluginCrashed(const base::FilePath& plugin_path,
 
 void RenderFrameImpl::SimulateImeSetComposition(
     const base::string16& text,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
   GetMainFrameRenderWidget()->OnImeSetComposition(
@@ -2110,7 +2107,7 @@ void RenderFrameImpl::SimulateImeSetComposition(
 
 void RenderFrameImpl::SimulateImeCommitText(
     const base::string16& text,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range) {
   GetMainFrameRenderWidget()->OnImeCommitText(text, ime_text_spans,
                                               replacement_range, 0);
@@ -2118,7 +2115,7 @@ void RenderFrameImpl::SimulateImeCommitText(
 
 void RenderFrameImpl::OnImeSetComposition(
     const base::string16& text,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
   // When a PPAPI plugin has focus, we bypass WebKit.
@@ -2208,8 +2205,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
-    IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
-                        OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Delete, OnDeleteFrame)
   IPC_END_MESSAGE_MAP()
@@ -5554,11 +5549,11 @@ void RenderFrameImpl::BeginNavigation(
 
   if (info->navigation_policy == blink::kWebNavigationPolicyDownload) {
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token =
-        CloneBlobURLToken(info->blob_url_token.get());
+        CloneBlobURLToken(info->blob_url_token);
 
     frame_->DownloadURL(info->url_request,
                         network::mojom::RedirectMode::kFollow,
-                        blob_url_token.PassPipe());
+                        std::move(blob_url_token));
   } else {
     OpenURL(std::move(info));
   }
@@ -5573,23 +5568,6 @@ void RenderFrameImpl::CommitSyncNavigation(
   navigation_params->service_worker_network_provider =
       ServiceWorkerNetworkProviderForFrame::CreateInvalidInstance();
   frame_->CommitNavigation(std::move(navigation_params), BuildDocumentState());
-}
-
-void RenderFrameImpl::OnGetSavableResourceLinks() {
-  std::vector<GURL> resources_list;
-  std::vector<SavableSubframe> subframes;
-  SavableResourcesResult result(&resources_list, &subframes);
-
-  if (!GetSavableResourceLinksForFrame(frame_, &result)) {
-    Send(new FrameHostMsg_SavableResourceLinksError(routing_id_));
-    return;
-  }
-
-  Referrer referrer = Referrer(frame_->GetDocument().Url(),
-                               frame_->GetDocument().GetReferrerPolicy());
-
-  Send(new FrameHostMsg_SavableResourceLinksResponse(
-      routing_id_, resources_list, referrer, subframes));
 }
 
 // mojom::MhtmlFileWriter implementation
@@ -5744,7 +5722,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   params.disposition = RenderViewImpl::NavigationPolicyToDisposition(policy);
   params.triggering_event_info = info->triggering_event_info;
   params.blob_url_token =
-      CloneBlobURLToken(info->blob_url_token.get()).PassPipe().release();
+      CloneBlobURLToken(info->blob_url_token).PassPipe().release();
   params.should_replace_current_entry =
       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem &&
       render_view_->history_list_length_;
@@ -6050,7 +6028,7 @@ void RenderFrameImpl::BeginNavigationInternal(
     client_side_redirect_url = frame_->GetDocument().Url();
 
   mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token(
-      CloneBlobURLToken(info->blob_url_token.get()));
+      CloneBlobURLToken(info->blob_url_token));
 
   int load_flags = info->url_request.GetLoadFlagsForWebUrlRequest();
   std::unique_ptr<base::DictionaryValue> initiator;

@@ -502,7 +502,6 @@
 <translation id="1632803087685957583">तपाईँलाई आफ्नो किबोर्डको दोहोरिने दर, शब्दको पूर्वानुमान र थप कुराहरू समायोजन गर्न दिन्छ</translation>
 <translation id="1633947793238301227">Google सहायक असक्षम पार्नुहोस्</translation>
 <translation id="1634783886312010422">तपाईंले <ph name="WEBSITE" /> मा यो पासवर्ड परिवर्तन गरिसक्नुभयो?</translation>
-<translation id="1635033183663317347">तपाईँको संरक्षकद्वारा स्थापना गरियो।</translation>
 <translation id="1637224376458524414">आफ्नो iPhone मा यो बुकमार्क प्राप्त गर्नुहोस्</translation>
 <translation id="1637765355341780467">तपाईँको प्रोफाइल खोल्दा केही गडबड भयो। केही सुविधाहरू उपलब्ध नहुन सक्छन्।</translation>
 <translation id="1639239467298939599">लोड गर्दै</translation>
@@ -950,12 +949,10 @@
 <translation id="2199719347983604670">Chrome सिंकको डेटा</translation>
 <translation id="2200094388063410062">E-mail</translation>
 <translation id="2200356397587687044">खाली गर्ने प्रक्रिया जारी राख्न Chrome लाई अनुमति चाहिन्छ</translation>
-<translation id="2200729650590440847">लक स्क्रिनको PIN सम्बन्धी सेटिङ</translation>
 <translation id="220138918934036434">बटन लुकाउनुहोस्</translation>
 <translation id="2202898655984161076">मुद्रकहरूको सूची बनाउनमा समस्या थियो। तपाइँका केही मुद्रकहरू <ph name="CLOUD_PRINT_NAME" /> सँग सफलतापूर्वक दर्ता नभएको हुन सक्छ।</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />ठेगाना बार<ph name="END_LINK" /> मा प्रयोग गरिएको खोज इन्जिन</translation>
 <translation id="2204034823255629767">तपाईंले टाइप गर्नुहुने कुनैपनि कुरालाई पढ्नुहोस् र परिवर्तन गर्नुहोस्</translation>
-<translation id="2207166770508557715">स्लिप मोडका सेटिङ</translation>
 <translation id="220858061631308971">कृपया "<ph name="DEVICE_NAME" />" मा यो पिन कोड प्रविष्टि गर्नुहोस्:</translation>
 <translation id="2212565012507486665">कुकीहरूलाई अनुमति दिनुहोस्</translation>
 <translation id="2213140827792212876">आदान प्रदानसम्बन्धी आइकन हटाउनुहोस्</translation>
@@ -1404,11 +1401,9 @@
 <translation id="2751131328353405138">Linux कन्टेनरको sshfs माउन्ट हुँदै छ</translation>
 <translation id="2751739896257479635">EAP चरण २ प्रमाणीकरण</translation>
 <translation id="2753677631968972007">म्यानुअल रूपमा साइटका अनुमतिहरू नियन्त्रण गर्नुहोस्।</translation>
-<translation id="2753984311895843016">स्लिप मोड</translation>
 <translation id="2755367719610958252">पहुँच सम्बन्धी सुविधाहरूलाई व्यवस्थापन गर्नुहोस्</translation>
 <translation id="275662540872599901">स्क्रिन निष्क्रिय छ</translation>
 <translation id="2757338480560142065">तपाईंले सुरक्षित गर्न लाग्नुभएको पासवर्ड तपाईंको <ph name="WEBSITE" /> को पासवर्डसँग मेल खान्छ भन्ने कुरा सुनिश्चित गर्नुहोस्</translation>
-<translation id="276221322463921688">मनिटरको झुकाव</translation>
 <translation id="2762441749940182211">क्यामेरा प्रयोग गर्नमाथि रोक लगाइयो</translation>
 <translation id="2764786626780673772">VPN सम्बन्धी विवरण</translation>
 <translation id="2765217105034171413">सानो</translation>
@@ -3589,7 +3584,7 @@
 <translation id="5585912436068747822">फर्म्याटिङ असफल भयो</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">एपहरू लोड गर्दै...</translation>
-<translation id="558984423786125616">यो पोर्ट पहिले नै सेटिङमा थपिएको छ</translation>
+<translation id="558984423786125616">यो पोर्ट पहिलेदेखि नै सेटिङमा छ</translation>
 <translation id="5592595402373377407">अझै पर्याप्त डाटा उपलब्ध छैन।</translation>
 <translation id="5593357315997824387">मेरा फाइलहरू सिंक गर्नुहोस्</translation>
 <translation id="5595485650161345191">ठेगाना सम्पादन गर्नुहोस्</translation>
@@ -6217,7 +6212,6 @@
 <translation id="8953476467359856141">चार्ज भइरहेका बेला</translation>
 <translation id="895347679606913382">सुरु हुँदैछ...</translation>
 <translation id="8957762313041272117">लाइभ क्याप्सन</translation>
-<translation id="8958804960827200147">स्क्रिनको झुकाव</translation>
 <translation id="895944840846194039">जाभास्क्रिप्ट स्मृति</translation>
 <translation id="8962083179518285172">विवरणहरू लुकाउनुहोस्</translation>
 <translation id="8962918469425892674">यो साइटले चाल वा प्रकाशसम्बन्धी सेन्सरहरू प्रयोग गर्दै छ।</translation>

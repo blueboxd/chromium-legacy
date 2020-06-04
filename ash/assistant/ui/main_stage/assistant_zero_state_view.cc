@@ -18,7 +18,8 @@
 
 namespace ash {
 
-AssistantZeroStateView::AssistantZeroStateView() {
+AssistantZeroStateView::AssistantZeroStateView(AssistantViewDelegate* delegate)
+    : delegate_(delegate) {
   SetID(AssistantViewID::kZeroStateView);
   InitLayout();
 }
@@ -43,7 +44,7 @@ void AssistantZeroStateView::InitLayout() {
 
   // Onboarding.
   if (chromeos::assistant::features::IsBetterOnboardingEnabled()) {
-    AddChildView(std::make_unique<AssistantOnboardingView>());
+    AddChildView(std::make_unique<AssistantOnboardingView>(delegate_));
     return;
   }
 

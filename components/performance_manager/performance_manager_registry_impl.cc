@@ -122,20 +122,16 @@ void PerformanceManagerRegistryImpl::CreatePageNodeForWebContents(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto result = web_contents_.insert(web_contents);
-  if (result.second) {
-    // Create a PerformanceManagerTabHelper if |web_contents| doesn't already
-    // have one. Support for multiple calls to CreatePageNodeForWebContents()
-    // with the same WebContents is required for Devtools -- see comment in
-    // header file.
-    PerformanceManagerTabHelper::CreateForWebContents(web_contents);
-    PerformanceManagerTabHelper* tab_helper =
-        PerformanceManagerTabHelper::FromWebContents(web_contents);
-    DCHECK(tab_helper);
-    tab_helper->SetDestructionObserver(this);
+  DCHECK(result.second);
 
-    for (auto& observer : observers_)
-      observer.OnPageNodeCreatedForWebContents(web_contents);
-  }
+  PerformanceManagerTabHelper::CreateForWebContents(web_contents);
+  PerformanceManagerTabHelper* tab_helper =
+      PerformanceManagerTabHelper::FromWebContents(web_contents);
+  DCHECK(tab_helper);
+  tab_helper->SetDestructionObserver(this);
+
+  for (auto& observer : observers_)
+    observer.OnPageNodeCreatedForWebContents(web_contents);
 }
 
 PerformanceManagerRegistryImpl::Throttles

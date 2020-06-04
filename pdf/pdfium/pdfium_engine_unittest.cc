@@ -24,9 +24,11 @@ namespace chrome_pdf {
 namespace {
 
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Return;
+using ::testing::StrictMock;
 
 MATCHER_P2(LayoutWithSize, width, height, "") {
   return arg.size() == pp::Size(width, height);
@@ -799,6 +801,71 @@ TEST_F(PDFiumEngineTabbingTest, RetainSelectionOnFocusNotInFormTextArea) {
             GetFocusedElementType(engine.get()));
   EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
   EXPECT_EQ(1u, GetSelectionSize(engine.get()));
+}
+
+class ScrollingTestClient : public TestClient {
+ public:
+  ScrollingTestClient() = default;
+  ~ScrollingTestClient() override = default;
+  ScrollingTestClient(const ScrollingTestClient&) = delete;
+  ScrollingTestClient& operator=(const ScrollingTestClient&) = delete;
+
+  // Mock PDFEngine::Client methods.
+  MOCK_METHOD1(ScrollToX, void(int));
+  MOCK_METHOD2(ScrollToY, void(int, bool));
+};
+
+TEST_F(PDFiumEngineTabbingTest, MaintainViewportWhenFocusIsUpdated) {
+  StrictMock<ScrollingTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(2, engine->GetNumberOfPages());
+  engine->PluginSizeUpdated(pp::Size(60, 40));
+
+  {
+    InSequence sequence;
+    static constexpr PP_Point kScrollValue = {510, 478};
+    EXPECT_CALL(client, ScrollToY(kScrollValue.y, false))
+        .WillOnce(Invoke(
+            [&engine]() { engine->ScrolledToYPosition(kScrollValue.y); }));
+    EXPECT_CALL(client, ScrollToX(kScrollValue.x)).WillOnce(Invoke([&engine]() {
+      engine->ScrolledToXPosition(kScrollValue.x);
+    }));
+  }
+
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kNone,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(-1, GetLastFocusedPage(engine.get()));
+
+  // Tabbing to bring the document into focus.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kDocument,
+            GetFocusedElementType(engine.get()));
+
+  // Tab to an annotation.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+
+  // Scroll focused annotation out of viewport.
+  static constexpr PP_Point kScrollPosition = {242, 746};
+  engine->ScrolledToXPosition(kScrollPosition.x);
+  engine->ScrolledToYPosition(kScrollPosition.y);
+
+  engine->UpdateFocus(/*has_focus=*/false);
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetLastFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(1, GetLastFocusedAnnotationIndex(engine.get()));
+
+  // Restore focus, we shouldn't have any calls to scroll viewport.
+  engine->UpdateFocus(/*has_focus=*/true);
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
 }
 
 }  // namespace chrome_pdf

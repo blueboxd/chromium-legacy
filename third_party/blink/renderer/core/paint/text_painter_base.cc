@@ -13,12 +13,20 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
+
+// We usually use the text decoration thickness to determine how far
+// ink-skipped text decorations should be away from the glyph
+// contours. Cap this at 5 CSS px in each direction when thickness
+// growths larger than that. A value of 13 closely matches FireFox'
+// implementation.
+constexpr float kDecorationClipMaxDilation = 13;
 
 TextPainterBase::TextPainterBase(GraphicsContext& context,
                                  const Font& font,
@@ -264,10 +272,18 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
   for (const AppliedTextDecoration& decoration : decorations) {
     TextDecoration lines = decoration.Lines();
     if (EnumHasFlags(lines, TextDecoration::kLineThrough)) {
-      const float line_through_offset = 2 * decoration_info.baseline / 3;
+      // For increased line thickness, the line-through decoration needs to grow
+      // in both directions from its origin, subtract half the thickness to keep
+      // it centered at the same origin.
+      const float line_through_offset =
+          2 * decoration_info.baseline / 3 - decoration_info.thickness / 2;
+      // Floor double_offset in order to avoid double-line gap to appear
+      // of different size depending on position where the double line
+      // is drawn because of rounding downstream in
+      // GraphicsContext::DrawLineForText.
       AppliedDecorationPainter decoration_painter(
           context, decoration_info, line_through_offset, decoration,
-          decoration_info.double_offset, 0);
+          floorf(decoration_info.double_offset), 0);
       // No skip: ink for line-through,
       // compare https://github.com/w3c/csswg-drafts/issues/711
       decoration_painter.Paint();
@@ -326,17 +342,41 @@ static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
 
 float ComputeDecorationThickness(const ComputedStyle* style,
                                  const SimpleFontData* font_data) {
-  // TODO(https://crbug.com/785230): Implement text-decoration-thickness setting
-  // and the from-font keyword here. We previously tried reading
-  // font_data->FontMetrics().UnderlineThickness() here but that never returned
-  // anything other than 0. Removed no-op implementation until we implement
-  // from-font behavior here. Keep font_data argument for now as this will be
-  // needed for the from-font implementation.
+  DCHECK(style);
+  const TextDecorationThickness& style_thickness =
+      style->GetTextDecorationThickness();
 
-  // Set the thickness of the line to be 10% (or something else ?)of the
-  // computed font size and not less than 1px.  Using computedFontSize should
-  // take care of zoom as well.
-  return std::max(1.f, style->ComputedFontSize() / 10.f);
+  float auto_underline_thickness =
+      std::max(1.f, style->ComputedFontSize() / 10.f);
+
+  if (style_thickness.IsAuto())
+    return auto_underline_thickness;
+
+  // In principle we would not need to test for font_data if
+  // |style_thickness.Thickness()| is fixed, but a null font_data here
+  // would be a rare / error situation anyway, so practically, we can
+  // early out here.
+  if (!font_data)
+    return auto_underline_thickness;
+
+  if (style_thickness.IsFromFont()) {
+    base::Optional<float> underline_thickness_font_metric =
+        font_data->GetFontMetrics().UnderlineThickness().value();
+
+    if (!underline_thickness_font_metric)
+      return auto_underline_thickness;
+
+    return std::max(1.f, underline_thickness_font_metric.value());
+  }
+
+  DCHECK(!style_thickness.IsFromFont());
+
+  const Length& style_thickness_length = style_thickness.Thickness();
+  float font_size = font_data->PlatformData().size();
+  float text_decoration_thickness_pixels =
+      FloatValueForLength(style_thickness_length, font_size);
+
+  return std::max(1.f, text_decoration_thickness_pixels);
 }
 
 }  // anonymous namespace
@@ -399,10 +439,11 @@ void TextPainterBase::PaintDecorationUnderOrOverLine(
   if (decoration_info.style->TextDecorationSkipInk() ==
       ETextDecorationSkipInk::kAuto) {
     FloatRect decoration_bounds = decoration_painter.Bounds();
-    ClipDecorationsStripe(-decoration_info.baseline + decoration_bounds.Y() -
-                              decoration_info.local_origin.Y(),
-                          decoration_bounds.Height(),
-                          decoration_info.thickness);
+    ClipDecorationsStripe(
+        -decoration_info.baseline + decoration_bounds.Y() -
+            decoration_info.local_origin.Y(),
+        decoration_bounds.Height(),
+        std::min(decoration_info.thickness, kDecorationClipMaxDilation));
   }
   decoration_painter.Paint();
 }

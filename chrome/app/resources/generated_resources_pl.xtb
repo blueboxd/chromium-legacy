@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Pozwala zmienić ustawienia m.in. podpowiadania słów czy szybkości powtarzania klawiszy</translation>
 <translation id="1633947793238301227">Wyłącz Asystenta Google</translation>
 <translation id="1634783886312010422">Czy hasło w witrynie <ph name="WEBSITE" /> zostało już zmienione?</translation>
-<translation id="1635033183663317347">Zainstalowane przez opiekuna.</translation>
 <translation id="1637224376458524414">Pobierz tę zakładkę na swojego iPhone'a</translation>
 <translation id="1637765355341780467">Coś poszło nie tak podczas otwierania Twojego profilu. Niektóre funkcje mogą być niedostępne.</translation>
 <translation id="1639239467298939599">Wczytuję</translation>
@@ -950,12 +949,10 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2199719347983604670">Dane synchronizacji Chrome</translation>
 <translation id="2200094388063410062">E-mail</translation>
 <translation id="2200356397587687044">Chrome wymaga pozwolenia na kontynuację</translation>
-<translation id="2200729650590440847">Ustawienia kodu PIN dla ekranu blokady</translation>
 <translation id="220138918934036434">Ukryj przycisk</translation>
 <translation id="2202898655984161076">Podczas tworzenia listy drukarek wystąpił problem. Niektóre drukarki mogły nie zostać pomyślnie zarejestrowane w usłudze <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Wyszukiwarka używana w <ph name="BEGIN_LINK" />pasku adresu<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Odczyt i zmiana wpisanego tekstu</translation>
-<translation id="2207166770508557715">Ustawienia uśpienia</translation>
 <translation id="220858061631308971">Wpisz ten kod PIN na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="2212565012507486665">Zezwalaj na pliki cookie</translation>
 <translation id="2213140827792212876">Usuń udostępnianie</translation>
@@ -1404,11 +1401,9 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2751131328353405138">Podłączam system plików ssh kontenera Linuksa</translation>
 <translation id="2751739896257479635">Uwierzytelnianie EAP Phase 2</translation>
 <translation id="2753677631968972007">Ręcznie określ uprawnienia do witryn.</translation>
-<translation id="2753984311895843016">Zasilanie w stanie nieaktywnym</translation>
 <translation id="2755367719610958252">Zarządzaj ułatwieniami dostępu</translation>
 <translation id="275662540872599901">ekran wyłączony</translation>
 <translation id="2757338480560142065">Upewnij się, że zapisujesz hasło do witryny <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">Orientacja monitora</translation>
 <translation id="2762441749940182211">Zablokowano dostęp do kamery</translation>
 <translation id="2764786626780673772">Szczegóły sieci VPN</translation>
 <translation id="2765217105034171413">Mały</translation>
@@ -6221,7 +6216,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8953476467359856141">Podczas ładowania</translation>
 <translation id="895347679606913382">Zaczynam...</translation>
 <translation id="8957762313041272117">Napisy na żywo</translation>
-<translation id="8958804960827200147">Orientacja ekranu</translation>
 <translation id="895944840846194039">Pamięć JavaScript</translation>
 <translation id="8962083179518285172">Ukryj szczegóły</translation>
 <translation id="8962918469425892674">Ta witryna używa czujników ruchu lub oświetlenia.</translation>

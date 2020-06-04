@@ -379,6 +379,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       }
     }
   }
+
+  if (self.hasInitializedUI && level == SceneActivationLevelUnattached) {
+    [self teardownUI];
+  }
 }
 
 - (void)sceneStateWillShowModalOverlay:(SceneState*)sceneState {

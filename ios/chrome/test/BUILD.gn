@@ -6,7 +6,6 @@ import("//ios/build/chrome_build.gni")
 import("//ios/build/config.gni")
 import("//ios/chrome/features.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
-import("//ios/third_party/features.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -131,18 +130,16 @@ source_set("run_all_unittests") {
     "//mojo/core/embedder",
   ]
 
-  if (ios_third_party_material_components_built_as_framework) {
-    if (ios_chrome_links_with_material_components_framework) {
-      public_deps = [
-        "//ios/third_party/material_components_ios:material_components_ios+bundle",
-        "//ios/third_party/material_components_ios:material_components_ios+link",
-      ]
-    } else {
-      assert_no_deps = [
-        "//ios/third_party/material_components_ios:material_components_ios+bundle",
-        "//ios/third_party/material_components_ios:material_components_ios+link",
-      ]
-    }
+  if (ios_chrome_links_with_material_components_framework) {
+    public_deps = [
+      "//ios/third_party/material_components_ios:material_components_ios+bundle",
+      "//ios/third_party/material_components_ios:material_components_ios+link",
+    ]
+  } else {
+    assert_no_deps = [
+      "//ios/third_party/material_components_ios:material_components_ios+bundle",
+      "//ios/third_party/material_components_ios:material_components_ios+link",
+    ]
   }
 }
 

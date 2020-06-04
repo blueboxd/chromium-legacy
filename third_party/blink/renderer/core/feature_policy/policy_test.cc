@@ -28,13 +28,13 @@ class PolicyTest : public testing::Test {
     page_holder_ = std::make_unique<DummyPageHolder>();
 
     auto origin = SecurityOrigin::CreateFromString(kSelfOrigin);
-    Vector<String> messages;
+
     auto feature_policy = FeaturePolicy::CreateFromParentPolicy(
         nullptr, ParsedFeaturePolicy(), origin->ToUrlOrigin());
     auto header = FeaturePolicyParser::ParseHeader(
         "fullscreen *; payment 'self'; midi 'none'; camera 'self' "
         "https://example.com https://example.net",
-        origin.get(), &messages);
+        origin.get(), dummy_logger_);
     feature_policy->SetHeaderPolicy(header);
 
     auto& security_context = page_holder_->GetDocument().GetSecurityContext();
@@ -43,6 +43,9 @@ class PolicyTest : public testing::Test {
   }
 
   DOMFeaturePolicy* GetPolicy() const { return policy_; }
+
+  PolicyParserMessageBuffer dummy_logger_ =
+      PolicyParserMessageBuffer("", true /* discard_message */);
 
  protected:
   std::unique_ptr<DummyPageHolder> page_holder_;
@@ -170,7 +173,7 @@ TEST_F(IFramePolicyTest, TestCombinedPolicy) {
   ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
       "geolocation 'src'; payment 'none'; midi; camera 'src'",
       SecurityOrigin::CreateFromString(kSelfOrigin),
-      SecurityOrigin::CreateFromString(kOriginA), nullptr);
+      SecurityOrigin::CreateFromString(kOriginA), dummy_logger_);
   GetPolicy()->UpdateContainerPolicy(
       container_policy, SecurityOrigin::CreateFromString(kOriginA));
   Vector<String> allowed_features = GetPolicy()->allowedFeatures(nullptr);

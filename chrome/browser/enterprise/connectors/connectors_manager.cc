@@ -206,7 +206,8 @@ void ConnectorsManager::CacheAnalysisConnectorPolicy(
       g_browser_process->local_state()->GetList(pref);
   if (policy_value && policy_value->is_list()) {
     for (const base::Value& service_settings : policy_value->GetList())
-      analysis_connector_settings_[connector].emplace_back(service_settings);
+      analysis_connector_settings_[connector].emplace_back(
+          service_settings, service_provider_config_);
   }
 }
 
@@ -222,7 +223,8 @@ void ConnectorsManager::CacheReportingConnectorPolicy(
       g_browser_process->local_state()->GetList(pref);
   if (policy_value && policy_value->is_list()) {
     for (const base::Value& service_settings : policy_value->GetList())
-      reporting_connector_settings_[connector].emplace_back(service_settings);
+      reporting_connector_settings_[connector].emplace_back(
+          service_settings, service_provider_config_);
   }
 }
 

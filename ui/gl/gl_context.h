@@ -277,6 +277,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
   void DestroyBackpressureFences();
 #endif
 
+  void MarkVirtualContextLost() { virtual_context_lost_ = true; }
+
  private:
   friend class base::RefCounted<GLContext>;
 
@@ -309,6 +311,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
   bool state_dirtied_externally_ = false;
   std::unique_ptr<GLStateRestorer> state_restorer_;
   std::unique_ptr<GLVersionInfo> version_info_;
+  // This bit allows us to avoid virtual context state restoration in the case
+  // where this underlying context becomes lost.  https://crbug.com/1061442
+  bool virtual_context_lost_ = false;
 
 #if defined(OS_MACOSX)
   std::map<uint64_t, std::unique_ptr<GLFence>> backpressure_fences_;

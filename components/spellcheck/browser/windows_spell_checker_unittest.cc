@@ -31,15 +31,7 @@ namespace {
 class WindowsSpellCheckerTest : public testing::Test {
  public:
   WindowsSpellCheckerTest() {
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-    // Force hybrid spellchecking to be enabled.
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                              spellcheck::kWinUseHybridSpellChecker},
-        /*disabled_features=*/{});
-#else
     feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
     // The WindowsSpellchecker object can be created even on Windows versions
     // that don't support platform spellchecking. However, the spellcheck
@@ -82,7 +74,6 @@ class WindowsSpellCheckerTest : public testing::Test {
       std::move(quit_).Run();
   }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   void PerLanguageSuggestionsCompletionCallback(
       const spellcheck::PerLanguageSuggestions& suggestions) {
     callback_finished_ = true;
@@ -90,7 +81,6 @@ class WindowsSpellCheckerTest : public testing::Test {
     if (quit_)
       std::move(quit_).Run();
   }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
   void RetrieveSpellcheckLanguagesCompletionCallback(
       const std::vector<std::string>& spellcheck_languages) {
@@ -112,9 +102,7 @@ class WindowsSpellCheckerTest : public testing::Test {
 
   bool set_language_result_;
   std::vector<SpellCheckResult> spell_check_results_;
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   spellcheck::PerLanguageSuggestions per_language_suggestions_;
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
   std::vector<std::string> spellcheck_languages_;
 
   base::test::TaskEnvironment task_environment_{
@@ -217,7 +205,6 @@ TEST_F(WindowsSpellCheckerTest, RetrieveSpellcheckLanguagesFakeDictionaries) {
   ASSERT_EQ(spellcheck_languages_for_testing, spellcheck_languages_);
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 TEST_F(WindowsSpellCheckerTest, GetPerLanguageSuggestions) {
   ASSERT_EQ(set_language_result_,
             spellcheck::WindowsVersionSupportsSpellchecker());
@@ -239,6 +226,5 @@ TEST_F(WindowsSpellCheckerTest, GetPerLanguageSuggestions) {
   ASSERT_EQ(per_language_suggestions_.size(), 1u);
   ASSERT_GT(per_language_suggestions_[0].size(), 0u);
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 }  // namespace

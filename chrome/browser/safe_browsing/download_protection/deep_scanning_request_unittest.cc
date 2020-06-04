@@ -224,6 +224,10 @@ class DeepScanningRequestTest : public testing::TestWithParam<bool> {
 
     enterprise_connectors::AnalysisSettings default_settings;
     default_settings.tags = {"malware"};
+    if (!use_legacy_policies()) {
+      default_settings.analysis_url =
+          GURL("https://safebrowsing.google.com/safebrowsing/uploads/scan");
+    }
 
     ASSERT_EQ(settings.value().tags, default_settings.tags);
     ASSERT_EQ(settings.value().block_large_files,

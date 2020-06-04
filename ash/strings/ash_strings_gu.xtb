@@ -63,6 +63,7 @@
 <translation id="1654477262762802994">વૉઇસ ક્વેરી શરૂ કરો</translation>
 <translation id="1658406695958299976">માફ કરશો, તમારો પાસવર્ડ હજી ચકાસી શકાયો નથી. નોંધ: જો તમે તાજેતરમાં તમારો પાસવર્ડ બદલ્યો હોય, તો તમારો નવો પાસવર્ડ તમે એક વાર સાઇન આઉટ કરી લો તે પછી લાગુ થશે, કૃપા કરીને અહીં જૂના પાસવર્ડનો ઉપયોગ કરો.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
+<translation id="1698080062160024910"><ph name="TOTAL_TIME" /> ટાઇમર · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 સરનામું: <ph name="ADDRESS" /></translation>
 <translation id="1709762881904163296">નેટવર્ક સેટિંગ</translation>
 <translation id="1743570585616704562">ઓળખાયેલ નથી</translation>
@@ -335,6 +336,7 @@
 <translation id="4924411785043111640">ફરી શરૂ કરો અને રીસેટ કરો</translation>
 <translation id="495046168593986294">ઉપર સ્ક્રોલ કરો</translation>
 <translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
+<translation id="4969092041573468113"><ph name="HOURS" /> કલાક <ph name="MINUTES" /> મિનિટ <ph name="SECONDS" /> સેકન્ડ</translation>
 <translation id="5030687792513154421">સમય પૂરો થયો</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />, નવા ફોન સાથે કનેક્ટ થયું</translation>
 <translation id="5035389544768382859">ડિસ્પ્લેની ગોઠવણને કન્ફર્મ કરો</translation>
@@ -619,10 +621,12 @@
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8563862697512465947">સૂચના સેટિંગ્સ</translation>
 <translation id="857201607579416096">મેનૂને સ્ક્રીનની નીચેના જમણા ખૂણામાં ખસેડ્યું.</translation>
+<translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> સાથે કનેક્ટ થયા</translation>
 <translation id="8631727435199967028">ઍક્સેસિબિલિટી સેટિંગ</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>
+<translation id="8646417893960517480"><ph name="TOTAL_TIME" /> ટાઇમર</translation>
 <translation id="8649101189709089199">બોલીને-પસંદ-કરો</translation>
 <translation id="8652175077544655965">સેટિંગ બંધ કરો</translation>
 <translation id="8653151467777939995">નોટિફિકેશન સેટિંગ બતાવો. નોટિફિકેશન ચાલુ છે</translation>

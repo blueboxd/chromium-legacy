@@ -117,7 +117,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
 #endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  if (!spellcheck::UseWinHybridSpellChecker()) {
+  if (!spellcheck::UseBrowserSpellChecker()) {
     // A user may have disabled the Windows spellcheck feature after adding
     // non-Hunspell supported languages on the language settings page. Remove
     // preferences for non-Hunspell languages so that there is no attempt to
@@ -165,7 +165,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
                  content::NotificationService::AllSources());
 
 #if defined(OS_WIN)
-  if (spellcheck::UseWinHybridSpellChecker() && platform_spell_checker()) {
+  if (spellcheck::UseBrowserSpellChecker() && platform_spell_checker()) {
     spellcheck_platform::RetrieveSpellcheckLanguages(
         platform_spell_checker(),
         base::BindOnce(&SpellcheckService::InitWindowsDictionaryLanguages,
@@ -208,7 +208,7 @@ void SpellcheckService::GetDictionaries(
   for (const auto& accept_language : accept_languages) {
     Dictionary dictionary;
 #if defined(OS_WIN)
-    if (spellcheck::UseWinHybridSpellChecker()) {
+    if (spellcheck::UseBrowserSpellChecker()) {
       SpellcheckService* spellcheck =
           SpellcheckServiceFactory::GetForContext(browser_context);
       if (spellcheck && spellcheck->UsesWindowsDictionary(accept_language))
@@ -256,7 +256,7 @@ std::string SpellcheckService::GetSupportedAcceptLanguageCode(
           supported_language_full_tag);
 
 #if defined(OS_WIN)
-  if (!spellcheck::UseWinHybridSpellChecker())
+  if (!spellcheck::UseBrowserSpellChecker())
     return supported_accept_language;
 
   // Exclude dictionaries that are for private use, such as "ja-Latn-JP-x-ext".
@@ -421,7 +421,7 @@ void SpellcheckService::LoadHunspellDictionaries() {
     // accept language.
     std::string platform_spellcheck_language;
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    if (spellcheck::UseWinHybridSpellChecker()) {
+    if (spellcheck::UseBrowserSpellChecker()) {
       std::string windows_dictionary_name =
           GetSupportedWindowsDictionaryLanguage(dictionary);
       if (!windows_dictionary_name.empty()) {
@@ -765,7 +765,7 @@ std::vector<std::string> SpellcheckService::GetNormalizedAcceptLanguages(
         accept_languages.begin(), accept_languages.end(),
         accept_languages.begin(), [&](const std::string& language) {
 #if defined(OS_WIN)
-          if (spellcheck::UseWinHybridSpellChecker() &&
+          if (spellcheck::UseBrowserSpellChecker() &&
               UsesWindowsDictionary(language))
             return language;
 #endif  // defined(OS_WIN)

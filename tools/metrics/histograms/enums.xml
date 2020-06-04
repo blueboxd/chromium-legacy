@@ -23241,6 +23241,7 @@ Called by update_extension_histograms.py.-->
   <int value="2" label="MISS"/>
   <int value="3" label="OUTDATED"/>
   <int value="4" label="HIT"/>
+  <int value="5" label="HIT_ON_MANIFEST_FETCH_FAILURE"/>
 </enum>
 
 <enum name="ExtensionInstallationDownloadingStage">
@@ -33503,14 +33504,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147417848" label="RPC_E_DISCONNECTED"/>
   <int value="-2147221232" label="CLASS_E_NOAGGREGATION"/>
   <int value="-2147221164" label="REGDB_E_CLASSNOTREG"/>
-  <int value="-2147220480"
-      label="custom error for taskbar::CustomHresultCodes::kIsBrowserAbort"/>
-  <int value="-2147220479"
-      label="custom error for taskbar::CustomHresultCodes::kInvalidIcon"/>
-  <int value="-2147220478"
-      label="custom error for taskbar::CustomHresultCodes::kWindowsInvisible"/>
-  <int value="-2147220477"
-      label="custom error for taskbar::CustomHresultCodes::kImageLoading"/>
   <int value="-2147219455" label="GOOPDATE_E_NO_NETWORK"/>
   <int value="-2147219437" label="GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY"/>
   <int value="-2147219198" label="GOOPDATEINSTALL_E_INSTALLER_FAILED"/>
@@ -38872,6 +38865,8 @@ from previous Chrome versions.
   <int value="-1808576075" label="SystemTrayUnified:enabled"/>
   <int value="-1808477331" label="MidiManagerCros:disabled"/>
   <int value="-1807797669" label="google-doodle-url"/>
+  <int value="-1806739839"
+      label="UseLookalikesForNavigationSuggestions:disabled"/>
   <int value="-1804485171" label="disable-fullscreen-tab-detaching"/>
   <int value="-1802502753" label="enable-manual-password-generation:enabled"/>
   <int value="-1799801575" label="CookieDeprecationMessages:enabled"/>
@@ -39390,6 +39385,8 @@ from previous Chrome versions.
   <int value="-1232629319" label="ResamplingScrollEvents:disabled"/>
   <int value="-1231507397" label="NtpZeroSuggest:enabled"/>
   <int value="-1230610048" label="SyncWifiConfigurations:disabled"/>
+  <int value="-1228546373"
+      label="UseLookalikesForNavigationSuggestions:enabled"/>
   <int value="-1228035246" label="PasswordEditingAndroid:enabled"/>
   <int value="-1227660915" label="WebContentsOcclusion:disabled"/>
   <int value="-1225772151" label="OfflineHome:disabled"/>
@@ -69092,6 +69089,13 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Invalid Signature"/>
   <int value="3" label="Invalid Signature for Seed"/>
   <int value="4" label="Valid Signature for Seed"/>
+</enum>
+
+<enum name="VariationsFirstRunPrefEvents">
+  <int value="0" label="Prefs stored"/>
+  <int value="1" label="Prefs cleared"/>
+  <int value="2" label="Prefs retrieved - empty"/>
+  <int value="3" label="Prefs retrieved - non-empty"/>
 </enum>
 
 <enum name="VariationsFirstRunResult">

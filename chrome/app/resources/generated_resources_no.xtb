@@ -503,7 +503,6 @@
 <translation id="1632803087685957583">Lar deg justere repetisjonshastigheten på tastaturet, ordforslag osv.</translation>
 <translation id="1633947793238301227">Slå av Google-assistenten</translation>
 <translation id="1634783886312010422">Har du allerede endret dette passordet på <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Installert av din foresatte.</translation>
 <translation id="1637224376458524414">Få dette bokmerket på iPhone</translation>
 <translation id="1637765355341780467">Det oppsto en feil ved åpning av profilen din. Det kan hende at enkelte funksjoner ikke er tilgjengelige.</translation>
 <translation id="1639239467298939599">Laster inn</translation>
@@ -951,12 +950,10 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2199719347983604670">Data fra Chrome-synkronisering</translation>
 <translation id="2200094388063410062">E-post</translation>
 <translation id="2200356397587687044">Chrome trenger tillatelse for å fortsette</translation>
-<translation id="2200729650590440847">Innstillinger for PIN-kode på låseskjermen</translation>
 <translation id="220138918934036434">Skjul knappen</translation>
 <translation id="2202898655984161076">Det oppstod et problem med oppføring av skrivere. Enkelte av skriverne dine er ikke registrert på <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Søkemotoren som brukes i <ph name="BEGIN_LINK" />adressefeltet<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">lese og endre alt du skriver</translation>
-<translation id="2207166770508557715">Innstillinger for hvilemodus</translation>
 <translation id="220858061631308971">Skriv inn denne PIN-koden på «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="2212565012507486665">Tillat informasjonskapsler</translation>
 <translation id="2213140827792212876">Slutt å dele</translation>
@@ -1405,11 +1402,9 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2751131328353405138">Setter inn sshfs for Linux-beholderen</translation>
 <translation id="2751739896257479635">Fase 2-autentisering av EAP</translation>
 <translation id="2753677631968972007">Styr nettstedstillatelser manuelt.</translation>
-<translation id="2753984311895843016">Strøm ved inaktivitet</translation>
 <translation id="2755367719610958252">Administrer tilgjengelighetsfunksjoner</translation>
 <translation id="275662540872599901">skjerm av</translation>
 <translation id="2757338480560142065">Sørg for at passordet du lagrer, samsvarer med passordet ditt for <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">Skjermretning</translation>
 <translation id="2762441749940182211">Kameraet er blokkert</translation>
 <translation id="2764786626780673772">VPN-detaljer</translation>
 <translation id="2765217105034171413">Liten</translation>
@@ -6220,7 +6215,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8953476467359856141">Når enheten lades</translation>
 <translation id="895347679606913382">Starter...</translation>
 <translation id="8957762313041272117">Direkteteksting</translation>
-<translation id="8958804960827200147">Skjermretning</translation>
 <translation id="895944840846194039">JavaScript-minne</translation>
 <translation id="8962083179518285172">Skjul detaljer</translation>
 <translation id="8962918469425892674">Dette nettstedet bruker bevegelses- eller lyssensorer.</translation>

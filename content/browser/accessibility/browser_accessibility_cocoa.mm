@@ -301,11 +301,10 @@ id CreateTextMarkerRange(const AXPlatformRange range) {
 
 BrowserAccessibilityPositionInstance CreatePositionFromTextMarker(
     id text_marker) {
-  AXTextMarkerRef cf_text_marker = static_cast<AXTextMarkerRef>(text_marker);
-  DCHECK(cf_text_marker);
-  if (CFGetTypeID(cf_text_marker) != AXTextMarkerGetTypeID())
+  if (!content::IsAXTextMarker(text_marker))
     return BrowserAccessibilityPosition::CreateNullPosition();
 
+  AXTextMarkerRef cf_text_marker = static_cast<AXTextMarkerRef>(text_marker);
   if (AXTextMarkerGetLength(cf_text_marker) != sizeof(SerializedPosition))
     return BrowserAccessibilityPosition::CreateNullPosition();
 
@@ -726,6 +725,20 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 #ifndef NSAccessibilityLanguageAttribute
 #define NSAccessibilityLanguageAttribute @"AXLanguage"
 #endif
+
+bool content::IsAXTextMarker(id object) {
+  if (object == nil)
+    return false;
+
+  AXTextMarkerRef cf_text_marker = static_cast<AXTextMarkerRef>(object);
+  DCHECK(cf_text_marker);
+  return CFGetTypeID(cf_text_marker) == AXTextMarkerGetTypeID();
+}
+
+BrowserAccessibilityPosition::AXPositionInstance
+content::AXTextMarkerToPosition(id text_marker) {
+  return CreatePositionFromTextMarker(text_marker);
+}
 
 @implementation BrowserAccessibilityCocoa
 

@@ -48,8 +48,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) BindingStateBase {
   void PauseIncomingMethodCallProcessing();
   void ResumeIncomingMethodCallProcessing();
 
-  bool WaitForIncomingMethodCall(
-      MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE);
+  bool WaitForIncomingMethodCall();
 
   void PauseRemoteCallbacksUntilFlushCompletes(PendingFlush flush);
   void FlushAsync(AsyncFlusher flusher);

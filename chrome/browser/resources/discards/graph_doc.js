@@ -25,10 +25,10 @@ const /** number */ kFrameNodesTargetY = kPageNodesYRange + 50;
 const /** number */ kFrameNodesTopMargin = kPageNodesYRange;
 const /** number */ kFrameNodesBottomMargin = kWorkerNodesYRange + 50;
 
-// The maximum strength of a Y-force.
+// The maximum strength of a boundary force.
 // According to https://github.com/d3/d3-force#positioning, strength values
 // outside the range [0,1] are "not recommended".
-const /** number */ kMaxYStrength = 1;
+const /** number */ kMaxBoundaryStrength = 1;
 
 // The strength of a high Y-force. This is appropriate for forces that
 // strongly pull towards an attractor, but can still be overridden by the
@@ -360,7 +360,7 @@ class PageNode extends GraphNode {
   /** @override */
   get targetYPositionStrength() {
     // Gravitate strongly towards the top of the graph. Can be overridden by
-    // the bounding force which uses kMaxYStrength.
+    // the bounding force which uses kMaxBoundaryStrength.
     return kHighYStrength;
   }
 
@@ -442,7 +442,7 @@ class ProcessNode extends GraphNode {
   /** @return {number} */
   get targetYPositionStrength() {
     // Gravitate strongly towards the bottom of the graph. Can be overridden by
-    // the bounding force which uses kMaxYStrength.
+    // the bounding force which uses kMaxBoundaryStrength.
     return kHighYStrength;
   }
 
@@ -483,7 +483,7 @@ class WorkerNode extends GraphNode {
   /** @return {number} */
   get targetYPositionStrength() {
     // Gravitate strongly towards the worker area of the graph. Can be
-    // overridden by the bounding force which uses kMaxYStrength.
+    // overridden by the bounding force which uses kMaxBoundaryStrength.
     return kHighYStrength;
   }
 
@@ -510,14 +510,19 @@ class WorkerNode extends GraphNode {
 }
 
 /**
- * A force that bounds GraphNodes |allowedYRange| in Y.
+ * A force that bounds GraphNodes |allowedYRange| in Y,
+ * as well as bounding them to stay in page bounds in X.
  * @param {number} graphHeight
+ * @param {number} graphWidth
  */
-function boundingForce(graphHeight) {
+function boundingForce(graphHeight, graphWidth) {
   /** @type {!Array<!GraphNode>} */
   let nodes = [];
   /** @type {!Array<!Array>} */
   let bounds = [];
+  const xBounds = [2 * kNodeRadius, graphWidth - 2 * kNodeRadius];
+  const boundPosition = (pos, bound) =>
+      Math.max(bound[0], Math.min(pos, bound[1]));
 
   /** @param {number} alpha */
   function force(alpha) {
@@ -529,12 +534,19 @@ function boundingForce(graphHeight) {
       // Calculate where the node will end up after movement. If it will be out
       // of bounds apply a counter-force to bring it back in.
       const yNextPosition = node.y + node.vy;
-      const yBoundedPosition =
-          Math.max(bound[0], Math.min(yNextPosition, bound[1]));
+      const yBoundedPosition = boundPosition(yNextPosition, bound);
       if (yNextPosition !== yBoundedPosition) {
         // Do not include alpha because we want to be strongly repelled from
         // the boundary even if alpha has decayed.
-        node.vy += (yBoundedPosition - yNextPosition) * kMaxYStrength;
+        node.vy += (yBoundedPosition - yNextPosition) * kMaxBoundaryStrength;
+      }
+
+      const xNextPosition = node.x + node.vx;
+      const xBoundedPosition = boundPosition(xNextPosition, xBounds);
+      if (xNextPosition !== xBoundedPosition) {
+        // Do not include alpha because we want to be strongly repelled from
+        // the boundary even if alpha has decayed.
+        node.vx += (xBoundedPosition - xNextPosition) * kMaxBoundaryStrength;
       }
     }
   }
@@ -1248,7 +1260,7 @@ class Graph {
                        .strength(this.getTargetYPositionStrength_.bind(this));
     this.simulation_.force('x_pos', xForce);
     this.simulation_.force('y_pos', yForce);
-    this.simulation_.force('y_bound', boundingForce(this.height_));
+    this.simulation_.force('y_bound', boundingForce(this.height_, this.width_));
 
     if (!this.wasResized_) {
       this.wasResized_ = true;

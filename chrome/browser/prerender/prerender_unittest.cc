@@ -660,14 +660,8 @@ TEST_F(PrerenderTest, PredictorPrefetchHoldbackOffPredictorReferrer) {
                          url, nullptr, gfx::Size()));
 }
 
-// Flaky on Android, crbug.com/1087876.
-#if defined(OS_ANDROID)
-#define MAYBE_PrerenderDisabledOnLowEndDevice \
-  DISABLED_PrerenderDisabledOnLowEndDevice
-#else
-#define MAYBE_PrerenderDisabledOnLowEndDevice PrerenderDisabledOnLowEndDevice
-#endif
-TEST_F(PrerenderTest, MAYBE_PrerenderDisabledOnLowEndDevice) {
+// Flaky on Android and Mac, crbug.com/1087876.
+TEST_F(PrerenderTest, DISABLED_PrerenderDisabledOnLowEndDevice) {
   GURL url("http://www.google.com/");
   ASSERT_TRUE(IsNoStatePrefetchEnabled());
   prerender_manager()->SetIsLowEndDevice(true);
@@ -713,17 +707,11 @@ TEST_F(PrerenderTest, FoundTest) {
 }
 
 // Flaky on Android, crbug.com/1088454.
-#if defined(OS_ANDROID)
-#define MAYBE_DuplicateTest_NoStatePrefetch \
-  DISABLED_DuplicateTest_NoStatePrefetch
-#else
-#define MAYBE_DuplicateTest_NoStatePrefetch DuplicateTest_NoStatePrefetch
-#endif
 // Make sure that if queue a request, and a second prerender request for the
 // same URL comes in, that the second request attaches to the first prerender,
 // and we don't use the second prerender contents.
 // This test is the same as the "DuplicateTest" above, but for NoStatePrefetch.
-TEST_F(PrerenderTest, MAYBE_DuplicateTest_NoStatePrefetch) {
+TEST_F(PrerenderTest, DISABLED_DuplicateTest_NoStatePrefetch) {
   test_utils::RestorePrerenderMode restore_prerender_mode;
   prerender_manager()->SetMode(
       PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
@@ -1669,13 +1657,7 @@ TEST_F(PrerenderTest, LinkManagerExpireThenAddAgain) {
 }
 
 // Flaky on Android, crbug.com/1087876.
-#if defined(OS_ANDROID)
-#define MAYBE_LinkManagerCancelThenAddAgain \
-  DISABLED_LinkManagerCancelThenAddAgain
-#else
-#define MAYBE_LinkManagerCancelThenAddAgain LinkManagerCancelThenAddAgain
-#endif
-TEST_F(PrerenderTest, MAYBE_LinkManagerCancelThenAddAgain) {
+TEST_F(PrerenderTest, DISABLED_LinkManagerCancelThenAddAgain) {
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
   GURL url("http://www.myexample.com");
   DummyPrerenderContents* first_prerender_contents =

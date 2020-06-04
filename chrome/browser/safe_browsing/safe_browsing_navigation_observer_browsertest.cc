@@ -451,8 +451,8 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
       bool extended_reporting_enabled,
       bool is_incognito,
       SafeBrowsingNavigationObserverManager::AttributionResult result) {
-    SetExtendedReportingPref(browser()->profile()->GetPrefs(),
-                             extended_reporting_enabled);
+    SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(),
+                                     extended_reporting_enabled);
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                  extended_reporting_enabled);
     return SafeBrowsingNavigationObserverManager::

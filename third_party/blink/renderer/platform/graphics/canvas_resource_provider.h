@@ -89,7 +89,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   static std::unique_ptr<CanvasResourceProvider> CreateSharedBitmapProvider(
       const IntSize&,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       SkFilterQuality,
       const CanvasColorParams&,
       base::WeakPtr<CanvasResourceDispatcher>);

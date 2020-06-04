@@ -164,6 +164,7 @@
 <translation id="2924296707677495905">Transliteration (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">Mongolian</translation>
+<translation id="2939410873710774399">To open files with <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), first move them to the <ph name="FOLDER_NAME" /> folder.</translation>
 <translation id="2942290791863759244">German NEO 2 keyboard</translation>
 <translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">Use a shorter name</translation>
@@ -324,6 +325,7 @@
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> items selected</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="485316830061041779">German</translation>
+<translation id="4859297381873413734">To open files with <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), first copy them to the <ph name="FOLDER_NAME" /> folder.</translation>
 <translation id="4867079195717347957">Click to sort the column in descending order.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
 <translation id="4880214202172289027">Volume slider</translation>

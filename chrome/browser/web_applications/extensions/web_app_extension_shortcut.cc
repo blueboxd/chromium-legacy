@@ -188,6 +188,7 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
 
   // File Handlers should only be included in bookmark apps.
   if (app->from_bookmark()) {
+    shortcut_info->is_multi_profile = true;
     FileHandlerManager& file_handler_manager =
         WebAppProviderBase::GetProviderBase(profile)->file_handler_manager();
     if (const auto* file_handlers =

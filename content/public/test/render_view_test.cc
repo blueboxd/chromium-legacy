@@ -468,6 +468,8 @@ void RenderViewTest::SetUp() {
   view_params->hidden = false;
   view_params->never_composited = false;
   view_params->visual_properties = InitialVisualProperties();
+  std::tie(view_params->widget_host, view_params->widget) =
+      render_widget_host_->BindNewWidgetInterfaces();
   std::tie(view_params->frame_widget_host, view_params->frame_widget) =
       render_widget_host_->BindNewFrameWidgetInterfaces();
 

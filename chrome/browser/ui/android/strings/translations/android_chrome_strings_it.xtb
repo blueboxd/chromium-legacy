@@ -148,6 +148,7 @@ Tocca una parola per eseguire una ricerca. Per perfezionare la ricerca, tocca e 
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="2156074688469523661">Siti rimanenti (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Per condividere contenuti dal tuo telefono con un altro dispositivo, attiva la sincronizzazione nelle impostazioni di Chrome su entrambi i dispositivi</translation>
+<translation id="2169830938017475061">Ora</translation>
 <translation id="2175927920773552910">Codice QR</translation>
 <translation id="218608176142494674">Condivisione</translation>
 <translation id="2227444325776770048">Continua come <ph name="USER_FULL_NAME" /></translation>
@@ -435,7 +436,7 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4634124774493850572">Utilizza password</translation>
 <translation id="4650364565596261010">Predefinito</translation>
 <translation id="4660838440047236328">Dati sulla struttura della tua stanza</translation>
-<translation id="4662373422909645029">Numeri non consentiti nel nickname</translation>
+<translation id="4662373422909645029">Il nickname non può includere numeri</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Preferiti eliminati</translation>
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>

@@ -91,6 +91,11 @@ dep_libevent =
 # Determines whether message_pump_libevent should be used.
 use_libevent = dep_libevent && !is_ios
 
+# Whether or not cfi table should be enabled on arm.
+# TODO(crbug.com/1090409): Replace can_unwind_with_cfi_table once sampling
+# profiler is enabled on android.
+enable_arm_cfi_table = is_android && !is_component_build && current_cpu == "arm"
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -2184,6 +2189,7 @@ buildflag_header("debugging_buildflags") {
     "CAN_UNWIND_WITH_FRAME_POINTERS=$can_unwind_with_frame_pointers",
     "UNSAFE_DEVELOPER_BUILD=$is_unsafe_developer_build",
     "CAN_UNWIND_WITH_CFI_TABLE=$can_unwind_with_cfi_table",
+    "ENABLE_ARM_CFI_TABLE=$enable_arm_cfi_table",
     "ENABLE_GDBINIT_WARNING=$enable_gdbinit_warning",
     "ENABLE_LLDBINIT_WARNING=$enable_lldbinit_warning",
   ]
@@ -2503,6 +2509,9 @@ source_set("base_stack_sampling_profiler_test_util") {
     "//base/test:test_support",
     "//testing/gtest",
   ]
+  if (is_android) {
+    deps += [ ":native_unwinder_android" ]
+  }
 }
 
 bundle_data("base_unittests_bundle_data") {
@@ -3008,7 +3017,7 @@ test("base_unittests") {
     # generated from debug info in the binary. Removing "default_symbols" and
     # adding symbols config removes the "strip_debug" config that strips the
     # debug info, on base unittests apk.
-    if (can_unwind_with_cfi_table) {
+    if (can_unwind_with_cfi_table || enable_arm_cfi_table) {
       configs -= [ "//build/config/compiler:default_symbols" ]
       if (symbol_level == 2) {
         configs += [ "//build/config/compiler:symbols" ]
@@ -3016,6 +3025,8 @@ test("base_unittests") {
         configs += [ "//build/config/compiler:minimal_symbols" ]
       }
       add_unwind_tables_in_apk = true
+    }
+    if (can_unwind_with_cfi_table) {
       sources += [ "trace_event/cfi_backtrace_android_unittest.cc" ]
     }
     if (current_cpu == "arm") {

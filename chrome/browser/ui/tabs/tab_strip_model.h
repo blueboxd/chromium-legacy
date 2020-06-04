@@ -347,6 +347,10 @@ class TabStripModel : public TabGroupController {
   // See description above class for details on pinned tabs.
   bool IsTabPinned(int index) const;
 
+  bool IsTabCollapsed(int index) const;
+
+  bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const;
+
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
@@ -543,6 +547,16 @@ class TabStripModel : public TabGroupController {
   // spawned by the specified WebContents after |start_index|.
   int GetIndexOfNextWebContentsOpenedBy(const content::WebContents* opener,
                                         int start_index) const;
+
+  // Finds the next available tab to switch to as the active tab starting at
+  // |index|. This method will check the indices to the right of |index| before
+  // checking the indices to the left of |index|. |index| cannot be returned.
+  // |collapsing_group| is optional and used in cases where the group is
+  // collapsing but not yet reflected in the model. Returns base::nullopt if
+  // there are no valid tabs.
+  base::Optional<int> GetNextExpandedActiveTab(
+      int index,
+      base::Optional<tab_groups::TabGroupId> collapsing_group) const;
 
   // Forget all opener relationships, to reduce unpredictable tab switching
   // behavior in complex session states. The exact circumstances under which

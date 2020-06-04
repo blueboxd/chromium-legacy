@@ -248,11 +248,12 @@ the assessment? Be especially on the lookout for Highs that are really
 Criticals, and Lows that are really Mediums (make sure to account for process
 types and sandbox boundaries).
 
-For V8 issues, it can be hard to identify the correct security severity. If
-you're not sure, please take your best guess, and add the
-`Security_Needs_Attention-Severity` label alongside the regular
-`Security_Severity-*` label. If you do this, the V8 team will check the
-severity later and change it if necessary.
+For V8 issues, it can be hard to identify the correct security severity.
+Always set the severity to High unless there's strong evidence of an obvious
+mitigation. Please add the `Security_Needs_Attention-Severity` label alongside
+the regular `Security_Severity-*` label. If the bug is not exploitable, or is
+mitigated, the V8 team will reduce the security severity (to avoid unnecessary
+risk of merging the bug into stable branches).
 
 #### Step 3. [Label, label, label](security-labels.md).
 

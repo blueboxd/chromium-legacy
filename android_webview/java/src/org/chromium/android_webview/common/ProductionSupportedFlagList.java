@@ -68,5 +68,8 @@ public final class ProductionSupportedFlagList {
                     "WebViewBrotliSupport", "Enables brotli compression support in WebView."),
             Flag.baseFeature(
                     "AppCache", "Controls AppCache to facilitate testing against future removal."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY,
+                    "Only allow extra headers added via loadUrl() to be sent to the same origin "
+                            + "as the original request."),
     };
 }

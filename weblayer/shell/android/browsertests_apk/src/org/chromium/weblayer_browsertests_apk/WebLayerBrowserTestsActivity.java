@@ -20,6 +20,8 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
 import org.chromium.native_test.NativeBrowserTestActivity;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.NewTabCallback;
+import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
@@ -96,6 +98,14 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
             public void onVisibleUriChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
+        });
+        // Set a new tab callback to make sure popups are added.
+        mTab.setNewTabCallback(new NewTabCallback() {
+            @Override
+            public void onNewTab(Tab tab, @NewTabType int type) {}
+
+            @Override
+            public void onCloseTab() {}
         });
     }
 

@@ -33,10 +33,5 @@ const base::Feature kSaveEditedPDFForm = {"SaveEditedPDFForm",
 const base::Feature kTabAcrossPDFAnnotations = {
     "TabAcrossPDFAnnotations", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-const base::Feature kPDFAnnotations{"PDFAnnotations",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 }  // namespace features
 }  // namespace chrome_pdf

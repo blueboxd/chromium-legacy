@@ -80,7 +80,7 @@ std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateMainJob(
   auto main_job = std::make_unique<MockHttpStreamFactoryJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, kProtoUnknown,
-      quic::UnsupportedQuicVersion(), ProxyServer(), is_websocket,
+      quic::ParsedQuicVersion::Unsupported(), ProxyServer(), is_websocket,
       enable_ip_based_pooling, net_log);
 
   // Keep raw pointer to Job but pass ownership.
@@ -135,8 +135,8 @@ std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateAltProxyJob(
   auto alternative_job = std::make_unique<MockHttpStreamFactoryJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, kProtoUnknown,
-      quic::UnsupportedQuicVersion(), alternative_proxy_server, is_websocket,
-      enable_ip_based_pooling, net_log);
+      quic::ParsedQuicVersion::Unsupported(), alternative_proxy_server,
+      is_websocket, enable_ip_based_pooling, net_log);
 
   // Keep raw pointer to Job but pass ownership.
   alternative_job_ = alternative_job.get();

@@ -24,10 +24,8 @@ void ShelfContainerView::Initialize() {
 }
 
 gfx::Size ShelfContainerView::CalculateIdealSize(int button_size) const {
-  const int button_strip_size =
-      ShelfView::GetSizeOfAppButtons(shelf_view_->last_visible_index() -
-                                         shelf_view_->first_visible_index() + 1,
-                                     button_size);
+  const int button_strip_size = ShelfView::GetSizeOfAppButtons(
+      shelf_view_->number_of_visible_apps(), button_size);
   return shelf_view_->shelf()->IsHorizontalAlignment()
              ? gfx::Size(button_strip_size, button_size)
              : gfx::Size(button_size, button_strip_size);

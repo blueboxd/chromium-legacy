@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -38,9 +37,6 @@ gfx::NativeWindow CreateWebDialogWidget(views::Widget::InitParams params,
   // and background scripts.
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       view->web_contents());
-
-  performance_manager::PerformanceManagerRegistry::GetInstance()
-      ->CreatePageNodeForWebContents(view->web_contents());
 
   if (show)
     widget->Show();

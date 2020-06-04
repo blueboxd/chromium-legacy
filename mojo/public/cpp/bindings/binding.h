@@ -140,9 +140,8 @@ class Binding {
   // This method may only be called if the object has been bound to a message
   // pipe. This returns once a message is received either on the master
   // interface or any associated interfaces.
-  bool WaitForIncomingMethodCall(
-      MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE) {
-    return internal_state_.WaitForIncomingMethodCall(deadline);
+  bool WaitForIncomingMethodCall() {
+    return internal_state_.WaitForIncomingMethodCall();
   }
 
   // Closes the message pipe that was previously bound. Put this object into a

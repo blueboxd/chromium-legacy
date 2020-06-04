@@ -63,7 +63,6 @@ base::WeakPtr<PageNode> PerformanceManager::GetPageNodeForWebContents(
       PerformanceManagerTabHelper::FromWebContents(wc);
   if (!helper)
     return nullptr;
-
   return helper->page_node()->GetWeakPtr();
 }
 

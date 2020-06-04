@@ -30,7 +30,6 @@
 #include "ui/gl/gpu_preference.h"
 
 using blink::WebCoalescedInputEvent;
-using blink::WebImeTextSpan;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;

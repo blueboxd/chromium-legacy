@@ -165,6 +165,17 @@ class CastMediaSource {
   DefaultActionPolicy default_action_policy() const {
     return default_action_policy_;
   }
+  base::Optional<base::TimeDelta> target_playout_delay() const {
+    return target_playout_delay_;
+  }
+  void set_target_playout_delay(
+      const base::Optional<base::TimeDelta>& target_playout_delay) {
+    target_playout_delay_ = target_playout_delay;
+  }
+  bool allow_audio_capture() const { return allow_audio_capture_; }
+  void set_allow_audio_capture(bool allow_audio_capture) {
+    allow_audio_capture_ = allow_audio_capture;
+  }
   const std::string& app_params() const { return app_params_; }
   void set_app_params(const std::string& app_params) {
     app_params_ = app_params;
@@ -180,9 +191,11 @@ class CastMediaSource {
   AutoJoinPolicy auto_join_policy_;
   DefaultActionPolicy default_action_policy_;
   base::TimeDelta launch_timeout_ = kDefaultLaunchTimeout;
-  // Empty if not set.
+  // Optional parameters.
   std::string client_id_;
   base::Optional<cast_channel::BroadcastRequest> broadcast_request_;
+  base::Optional<base::TimeDelta> target_playout_delay_;
+  bool allow_audio_capture_ = true;
   std::vector<ReceiverAppType> supported_app_types_ = {ReceiverAppType::kWeb};
   std::string app_params_;
 };

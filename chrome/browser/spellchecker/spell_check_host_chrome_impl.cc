@@ -194,7 +194,7 @@ void SpellCheckHostChromeImpl::RequestTextCheck(
                      base::Unretained(this))));
 }
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN)
 void SpellCheckHostChromeImpl::GetPerLanguageSuggestions(
     const base::string16& word,
     GetPerLanguageSuggestionsCallback callback) {
@@ -208,7 +208,7 @@ void SpellCheckHostChromeImpl::GetPerLanguageSuggestions(
   spellcheck_platform::GetPerLanguageSuggestions(
       spellcheck->platform_spell_checker(), word, std::move(callback));
 }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN)
 
 void SpellCheckHostChromeImpl::OnRequestFinished(SpellingRequest* request) {
   auto iterator = requests_.find(request);

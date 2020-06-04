@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
@@ -528,7 +529,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DownloadURL(
       const ResourceRequest& request,
       network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
-      mojo::ScopedMessagePipeHandle blob_url_token);
+      mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token);
 
   // blink::mojom::LocalFrame overrides:
   void GetTextSurroundingSelection(
@@ -582,6 +583,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
       mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver) final;
   void UpdateOpener(
       const base::Optional<base::UnguessableToken>& opener_routing_id) final;
+  void GetSavableResourceLinks(GetSavableResourceLinksCallback callback) final;
 
   // blink::mojom::LocalMainFrame overrides:
   void AnimateDoubleTapZoom(const gfx::Point& point,

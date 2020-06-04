@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Suteikiama galimybė koreguoti klaviatūros kartojimo dažnį, žodžių numatymą ir daugiau</translation>
 <translation id="1633947793238301227">Išjungti „Google“ padėjėją</translation>
 <translation id="1634783886312010422">Ar jau pakeitėte slaptažodį svetainėje <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Įdiegė jūsų prižiūrėtojas.</translation>
 <translation id="1637224376458524414">Gaukite šią žymę „iPhone“ įrenginyje</translation>
 <translation id="1637765355341780467">Atidarant profilį įvyko klaida. Kai kurios funkcijos gali būti nepasiekiamos.</translation>
 <translation id="1639239467298939599">Įkeliama</translation>
@@ -954,12 +953,10 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2199719347983604670">„Chrome“ sinchronizavimo duomenys</translation>
 <translation id="2200094388063410062">El. paštas</translation>
 <translation id="2200356397587687044">Norint tęsti „Chrome“ reikia leidimo</translation>
-<translation id="2200729650590440847">PIN kodu užrakinamo ekrano nustatymai</translation>
 <translation id="220138918934036434">Paslėpti mygtuką</translation>
 <translation id="2202898655984161076">Sudarant spausdintuvų sąrašą iškilo problema. Kai kurie spausdintuvai galėjo nebūti sėkmingai užregistruoti „<ph name="CLOUD_PRINT_NAME" />“.</translation>
 <translation id="2203682048752833055">Paieškos variklis, naudojamas <ph name="BEGIN_LINK" />adreso juostoje<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Skaityti ir keisti viską, ką įvedate</translation>
-<translation id="2207166770508557715">Miego būsenos nustatymai</translation>
 <translation id="220858061631308971">Įveskite šį PIN kodą „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2212565012507486665">Leisti slapukus</translation>
 <translation id="2213140827792212876">Pašalinti bendrinimą</translation>
@@ -1408,11 +1405,9 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2751131328353405138">Įdedamos „Linux“ sudėtinio rodinio SSH failų sistemos</translation>
 <translation id="2751739896257479635">EAP 2 tapatybės nustatymo etapas</translation>
 <translation id="2753677631968972007">Neautomatiškai valdyti svetainių leidimus.</translation>
-<translation id="2753984311895843016">Galia esant neveikos būsenai</translation>
 <translation id="2755367719610958252">Tvarkyti pritaikymo neįgaliesiems funkcijas</translation>
 <translation id="275662540872599901">ekranas išjungtas</translation>
 <translation id="2757338480560142065">Įsitikinkite, kad išsaugomas slaptažodis atitinka <ph name="WEBSITE" /> slaptažodį</translation>
-<translation id="276221322463921688">Monitoriaus orientacija</translation>
 <translation id="2762441749940182211">Fotoaparatas užblokuotas</translation>
 <translation id="2764786626780673772">Išsami VPN informacija</translation>
 <translation id="2765217105034171413">Mažas</translation>
@@ -2190,6 +2185,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3732857534841813090">Aktuali „Google“ padėjėjo informacija</translation>
 <translation id="3733127536501031542">SSL serveris su sąranka</translation>
 <translation id="3735740477244556633">Rūšiuoti pagal</translation>
+<translation id="3738213647660363521">Tinkinta žymeklio spalva</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Atidaryti „<ph name="APPLICATION" />“?</translation>
 <translation id="3742055079367172538">Ekrano kopija padaryta</translation>
@@ -3302,6 +3298,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="52232769093306234">Nepavyko supakuoti.</translation>
 <translation id="5225324770654022472">Rodyti spartųjį programų klavišą</translation>
 <translation id="5227679487546032910">Numatytasis tamsiai žydras pseudoportretas</translation>
+<translation id="5228088094491423618">Subtitrai realiuoju laiku</translation>
 <translation id="5228579091201413441">Įgalinti sinchronizavimą</translation>
 <translation id="5229189185761556138">Tvarkyti įvesties metodus</translation>
 <translation id="5230516054153933099">Langas</translation>
@@ -6226,7 +6223,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8953476467359856141">Įkraunant</translation>
 <translation id="895347679606913382">Pradedama...</translation>
 <translation id="8957762313041272117">Subtitrai realiuoju laiku</translation>
-<translation id="8958804960827200147">Ekrano orientacija</translation>
 <translation id="895944840846194039">„JavaScript“ atmintis</translation>
 <translation id="8962083179518285172">Slėpti išsamią informaciją</translation>
 <translation id="8962918469425892674">Šioje svetainėje naudojami judesio arba šviesos jutikliai.</translation>
@@ -6358,6 +6354,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9121814364785106365">Atidaryti kaip susegtą skirtuką</translation>
 <translation id="9122176249172999202">„<ph name="IDS_SHORT_PRODUCT_NAME" />“ pristabdyta</translation>
 <translation id="9124003689441359348">Išsaugoti slaptažodžiai bus rodomi čia</translation>
+<translation id="9126149354162942022">Žymeklio spalva</translation>
 <translation id="9128317794749765148">Nepavyko užbaigti nustatymo proceso</translation>
 <translation id="9128870381267983090">Prisijungti prie tinklo</translation>
 <translation id="9130015405878219958">Įvestas neteisingas režimas.</translation>

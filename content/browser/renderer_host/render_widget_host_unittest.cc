@@ -583,6 +583,26 @@ class RenderWidgetHostTest : public testing::Test {
   virtual void ConfigureView(TestView* view) {
   }
 
+  void ReinitalizeHost() {
+    mojo::AssociatedRemote<blink::mojom::WidgetHost> widget_host;
+    mojo::AssociatedRemote<blink::mojom::Widget> widget;
+    auto widget_receiver =
+        widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    host_->BindWidgetInterfaces(
+        widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
+        widget.Unbind());
+
+    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget;
+    auto frame_widget_receiver =
+        frame_widget.BindNewEndpointAndPassDedicatedReceiverForTesting();
+    host_->BindFrameWidgetInterfaces(
+        frame_widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting(),
+        frame_widget.Unbind());
+
+    host_->Init();
+  }
+
   base::TimeTicks GetNextSimulatedEventTime() {
     last_simulated_event_time_ += simulated_event_time_delta_;
     return last_simulated_event_time_;
@@ -1043,7 +1063,7 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {
   // RenderWidget is being created.
   VisualProperties props = host_->GetInitialVisualProperties();
   // The RenderWidget is recreated with the initial VisualProperties.
-  host_->Init();
+  ReinitalizeHost();
 
   // The new RenderWidget sends a frame token, which is lower than what the
   // previous RenderWidget sent. This should be okay, as the expected token has
@@ -1694,7 +1714,7 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
   // RenderWidget is being created.
   VisualProperties props = host_->GetInitialVisualProperties();
   // The RenderWidget is recreated with the initial VisualProperties.
-  host_->Init();
+  ReinitalizeHost();
 
   // Make sure the input router is in a fresh state.
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
@@ -1763,7 +1783,7 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsScreenRectsAck) {
   // RenderWidget is being created.
   VisualProperties props = host_->GetInitialVisualProperties();
   // The RenderWidget is recreated with the initial VisualProperties.
-  host_->Init();
+  ReinitalizeHost();
 
   // The RenderWidget is shown when navigation completes. This sends screen
   // rects again. The IPC is sent as it's not waiting for an ack.

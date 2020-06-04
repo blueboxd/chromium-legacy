@@ -85,11 +85,12 @@ struct ArcScreenCaptureSession::DesktopTexture {
 
 // static
 mojo::PendingRemote<mojom::ScreenCaptureSession>
-ArcScreenCaptureSession::Create(mojom::ScreenCaptureSessionNotifierPtr notifier,
-                                const std::string& display_name,
-                                content::DesktopMediaID desktop_id,
-                                const gfx::Size& size,
-                                bool enable_notification) {
+ArcScreenCaptureSession::Create(
+    mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
+    const std::string& display_name,
+    content::DesktopMediaID desktop_id,
+    const gfx::Size& size,
+    bool enable_notification) {
   // This will get cleaned up when the connection error handler is called.
   ArcScreenCaptureSession* session =
       new ArcScreenCaptureSession(std::move(notifier), size);
@@ -101,7 +102,7 @@ ArcScreenCaptureSession::Create(mojom::ScreenCaptureSessionNotifierPtr notifier,
 }
 
 ArcScreenCaptureSession::ArcScreenCaptureSession(
-    mojom::ScreenCaptureSessionNotifierPtr notifier,
+    mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
     const gfx::Size& size)
     : notifier_(std::move(notifier)),
       size_(size),

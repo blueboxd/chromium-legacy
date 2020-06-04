@@ -169,6 +169,21 @@ class XRSession final
       uint64_t plane_id,
       ExceptionState& exception_state);
 
+  // Helper POD type containing the information needed for anchor creation in
+  // case the anchor needs to be transformed to be expressed relative to a
+  // stationary reference space.
+  struct ReferenceSpaceInformation {
+    device::mojom::blink::XRNativeOriginInformation native_origin;
+    blink::TransformationMatrix mojo_from_space;
+  };
+
+  // Helper for anchor creation - returns information about the reference space
+  // type and its transform. The resulting reference space will be well-suited
+  // for anchor creation (i.e. the native origin set in the struct will be
+  // describing a stationary space). If a stationary reference space is not
+  // available, the method returns nullopt.
+  base::Optional<ReferenceSpaceInformation> GetStationaryReferenceSpace() const;
+
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);
 
@@ -300,7 +315,7 @@ class XRSession final
   // stored elsewhere, this method will not work for those reference space
   // types.
   base::Optional<TransformationMatrix> GetMojoFrom(
-      device::mojom::blink::XRReferenceSpaceCategory space_type);
+      device::mojom::blink::XRReferenceSpaceType space_type) const;
 
   // Creates presentation frame based on current state of the session.
   // State currently used in XRFrame creation is mojo_from_viewer_ and

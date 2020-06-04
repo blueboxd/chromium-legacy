@@ -29,6 +29,7 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
   result.preserve_drawing_buffer = attrs->preserveDrawingBuffer();
   result.power_preference = attrs->powerPreference();
   result.stencil = attrs->stencil();
+  result.will_read_frequently = attrs->willReadFrequently();
   result.xr_compatible = attrs->xrCompatible();
   return result;
 }

@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">Дає змогу налаштувати швидкість повтору клавіатури, передбачення слів тощо</translation>
 <translation id="1633947793238301227">Вимкнути Google Асистента</translation>
 <translation id="1634783886312010422">Ви вже змінили пароль на сайті <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Установив опікун.</translation>
 <translation id="1637224376458524414">Додайте цю закладку на iPhone</translation>
 <translation id="1637765355341780467">Не вдалося відкрити профіль. Деякі функції можуть бути недоступні.</translation>
 <translation id="1639239467298939599">Завантаження</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">Дані Синхронізації Chrome</translation>
 <translation id="2200094388063410062">Електронна пошта</translation>
 <translation id="2200356397587687044">Chrome потрібен дозвіл, щоб продовжити</translation>
-<translation id="2200729650590440847">Налаштування PIN-коду заблокованого екрана</translation>
 <translation id="220138918934036434">Сховати кнопку</translation>
 <translation id="2202898655984161076">Виникала проблема зі складенням списку принтерів. Можливо, деякі з ваших принтерів не зареєстровано в <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Пошукова система, яка використовується в <ph name="BEGIN_LINK" />адресному рядку<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Читати й змінювати весь введений вами текст</translation>
-<translation id="2207166770508557715">Налаштування режиму сну</translation>
 <translation id="220858061631308971">Введіть цей PIN-код на пристрої "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Дозволити файли cookie</translation>
 <translation id="2213140827792212876">Скасувати доступ</translation>
@@ -1408,11 +1405,9 @@
 <translation id="2751131328353405138">Підключення файлової системи SSH контейнера Linux</translation>
 <translation id="2751739896257479635">2-га фаза автентифікації EAP</translation>
 <translation id="2753677631968972007">Ручне керування дозволами сайтів.</translation>
-<translation id="2753984311895843016">Живлення, коли пристрій неактивний</translation>
 <translation id="2755367719610958252">Керувати спеціальними можливостями</translation>
 <translation id="275662540872599901">екран вимкнено</translation>
 <translation id="2757338480560142065">Переконайтеся, що новий пароль збігається з паролем для веб-сайту <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Орієнтація монітора</translation>
 <translation id="2762441749940182211">Заборонено використовувати камеру</translation>
 <translation id="2764786626780673772">Дані про VPN</translation>
 <translation id="2765217105034171413">Малий</translation>
@@ -2130,6 +2125,7 @@
 <translation id="3677106374019847299">Введіть назву свого постачальника послуг</translation>
 <translation id="3677657024345889897">Найтихіше</translation>
 <translation id="3677911431265050325">Мобільний сайт</translation>
+<translation id="3677959414150797585">Зокрема, додатки, веб-сторінки й інше. Надсилає статистику, щоб покращувати пропозиції, лише якщо ви погодилися ділитися даними про використання.</translation>
 <translation id="3678156199662914018">Розширення: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Голос синтезу мовлення</translation>
 <translation id="3681311097828166361">Дякуємо за відгук. Звіт буде надіслано пізніше, оскільки зараз ви офлайн.</translation>
@@ -2189,6 +2185,7 @@
 <translation id="3732857534841813090">Інформація, пов'язана з Google Асистентом</translation>
 <translation id="3733127536501031542">SSL-сервер із підвищенням</translation>
 <translation id="3735740477244556633">Параметри сортування</translation>
+<translation id="3738213647660363521">Власний колір курсора</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Відкрити додаток <ph name="APPLICATION" />?</translation>
 <translation id="3742055079367172538">Знімок екрана зроблено</translation>
@@ -3301,6 +3298,7 @@
 <translation id="52232769093306234">Помилка пакування.</translation>
 <translation id="5225324770654022472">Показувати ярлики додатків</translation>
 <translation id="5227679487546032910">Стандартний бірюзовий аватар</translation>
+<translation id="5228088094491423618">Живі субтитри</translation>
 <translation id="5228579091201413441">Увімкнути синхронізацію</translation>
 <translation id="5229189185761556138">Керувати способами введення</translation>
 <translation id="5230516054153933099">Вікно</translation>
@@ -3782,6 +3780,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – запис на камері або мікрофоні ввімкнено</translation>
 <translation id="5841270259333717135">Налаштувати Ethernet</translation>
 <translation id="5842497610951477805">Увімкнути Bluetooth</translation>
+<translation id="5844574845205796324">Пропонувати новий контент</translation>
 <translation id="5846200638699387931">Синтаксична помилка у відношенні: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Встановлювати оновлення й додатки. Продовжуючи, ви дозволяєте цьому пристрою автоматично завантажувати та встановлювати оновлення й додатки від Google, вашого оператора та виробника пристрою, зокрема через мобільний трафік. Деякі додатки можуть пропонувати внутрішні покупки.</translation>
 <translation id="5849212445710944278">Уже додано</translation>
@@ -6223,7 +6222,6 @@
 <translation id="8953476467359856141">Якщо пристрій заряджається</translation>
 <translation id="895347679606913382">Запуск...</translation>
 <translation id="8957762313041272117">Живі субтитри</translation>
-<translation id="8958804960827200147">Орієнтація екрана</translation>
 <translation id="895944840846194039">Пам’ять JavaScript</translation>
 <translation id="8962083179518285172">Сховати деталі</translation>
 <translation id="8962918469425892674">Цей сайт використовує датчики руху чи світла.</translation>
@@ -6355,6 +6353,7 @@
 <translation id="9121814364785106365">Відкрити як закріплену вкладку</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" />: призупинено</translation>
 <translation id="9124003689441359348">Тут відображатимуться збережені паролі</translation>
+<translation id="9126149354162942022">Колір курсора</translation>
 <translation id="9128317794749765148">Не вдалося завершити встановлення</translation>
 <translation id="9128870381267983090">З'єднатися з мережею</translation>
 <translation id="9130015405878219958">Введено недійсний режим.</translation>

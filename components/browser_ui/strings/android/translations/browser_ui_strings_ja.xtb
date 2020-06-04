@@ -65,6 +65,7 @@
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
 <translation id="300526633675317032">ウェブサイトのストレージ <ph name="SIZE_IN_KB" /> のデータをすべて削除します。</translation>
+<translation id="301521992641321250">自動ブロックされました</translation>
 <translation id="3115898365077584848">情報を表示</translation>
 <translation id="3123473560110926937">一部のサイトでブロックされています</translation>
 <translation id="3190152372525844641"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>

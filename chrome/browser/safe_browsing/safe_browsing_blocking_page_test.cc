@@ -1160,7 +1160,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, NoBackToSafety) {
 // policy, to be replaced by a policy on the SBER setting itself.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        ReportingDisabledByPolicy) {
-  SetExtendedReportingPref(browser()->profile()->GetPrefs(), true);
+  SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), true);
   browser()->profile()->GetPrefs()->SetBoolean(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
 
@@ -1761,7 +1761,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ToggleSBEROn) {
     SetReportSentCallback(threat_report_sent_runner->QuitClosure());
 
   // Initially disable SBER.
-  SetExtendedReportingPref(browser()->profile()->GetPrefs(), false);
+  SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), false);
   ASSERT_FALSE(IsExtendedReportingEnabled(*browser()->profile()->GetPrefs()));
   // Navigate to a site that triggers a warning.
   const GURL url = SetupWarningAndNavigate(browser());
@@ -1786,7 +1786,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ToggleSBEROn) {
 // Toggle the SBER opt in checkbox and check it disables reporting.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ToggleSBEROff) {
   // Initially enable SBER.
-  SetExtendedReportingPref(browser()->profile()->GetPrefs(), true);
+  SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), true);
   ASSERT_TRUE(IsExtendedReportingEnabled(*browser()->profile()->GetPrefs()));
   // Navigate to a site that triggers a warning.
   const GURL url = SetupWarningAndNavigate(browser());

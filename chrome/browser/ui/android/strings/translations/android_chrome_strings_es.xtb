@@ -148,6 +148,7 @@ Toca cualquier palabra para buscarla. Para acotar la búsqueda, mantén pulsado 
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios web restantes (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2157851137955077194">Si quieres compartir algo de tu teléfono con otro dispositivo, activa la sincronización en la configuración de Chrome en ambos dispositivos.</translation>
+<translation id="2169830938017475061">Ahora</translation>
 <translation id="2175927920773552910">Código QR</translation>
 <translation id="218608176142494674">Compartir</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -423,7 +424,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4538018662093857852">Activar el modo básico</translation>
 <translation id="4550003330909367850">Para ver o copiar tu contraseña aquí, configura el bloqueo de pantalla en este dispositivo.</translation>
 <translation id="4558311620361989323">Combinaciones de teclas en páginas web</translation>
-<translation id="4561979708150884304">Sin conexión</translation>
+<translation id="4561979708150884304">No hay conexión</translation>
 <translation id="4565377596337484307">Ocultar contraseña</translation>
 <translation id="4572422548854449519">Inicia sesión en la cuenta gestionada</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
@@ -472,7 +473,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="488187801263602086">Cambiar nombre de archivo</translation>
 <translation id="4882831918239250449">Controlar cómo se utiliza el historial de navegación para personalizar la Búsqueda, los anuncios y mucho más</translation>
 <translation id="4885273946141277891">Número de instancias de Chrome no admitido.</translation>
-<translation id="4908869848243824489">Discover by Google</translation>
+<translation id="4908869848243824489">Discover de Google</translation>
 <translation id="4910889077668685004">Aplicaciones para pagar</translation>
 <translation id="4913161338056004800">Borrar estadísticas</translation>
 <translation id="4913169188695071480">Dejar de actualizar</translation>
@@ -717,7 +718,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">Tu descarga sigue en curso</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> pestañas cerradas</translation>
-<translation id="685850645784703949">Discover by Google: desactivado</translation>
+<translation id="685850645784703949">Discover de Google: desactivado</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos de Autocompletar formulario</translation>
 <translation id="6884306546558072722">Sigue explorando sin conexión</translation>

@@ -43,9 +43,11 @@ NGAnnotationOverhang GetOverhang(const NGInlineItemResult& item) {
       for (const auto& base_child_link :
            To<NGPhysicalContainerFragment>(child_fragment)
                .PostLayoutChildren()) {
-        found_line = true;
         const LayoutUnit line_inline_size =
             NGFragment(writing_mode, *base_child_link).InlineSize();
+        if (line_inline_size == LayoutUnit())
+          continue;
+        found_line = true;
         const LayoutUnit start =
             base_child_link.offset
                 .ConvertToLogical(writing_mode, base_style.Direction(),

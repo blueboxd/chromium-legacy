@@ -37,6 +37,7 @@ from blinkpy.web_tests.layout_package.json_results_generator import convert_time
 from blinkpy.web_tests.models import test_expectations, typ_types
 from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.port.base import Port
+from collections import OrderedDict
 
 _log = logging.getLogger(__name__)
 
@@ -90,6 +91,8 @@ class WebTestFinder(object):
             running_all_tests = True
 
         test_files = filter_tests(test_files, [f.split('::') for f in filters])
+        # de-dupe the test list here before running them.
+        test_files = list(OrderedDict.fromkeys(test_files))
         return (paths, test_files, running_all_tests)
 
     def _times_trie(self):

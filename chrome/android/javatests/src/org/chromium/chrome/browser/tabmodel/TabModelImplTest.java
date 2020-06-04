@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.SmallTest;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.TabState;
@@ -121,7 +123,10 @@ public class TabModelImplTest {
 
     @Test
     @SmallTest
-    public void validIndexAfterRestored_FromPreviousActivity() {
+    @DisableIf.Build(message = "https://crbug.com/1091148",
+            sdk_is_greater_than = Build.VERSION_CODES.N, sdk_is_less_than = Build.VERSION_CODES.P)
+    public void
+    validIndexAfterRestored_FromPreviousActivity() {
         ChromeTabbedActivity newActivity =
                 ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
         createTabModelSelectorTabModelObserver(newActivity.getTabModelSelector());

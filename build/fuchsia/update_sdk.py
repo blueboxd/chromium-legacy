@@ -26,60 +26,56 @@ SDK_SIGNATURE_FILE = '.hash'
 
 EXTRA_SDK_HASH_PREFIX = ''
 SDK_TARBALL_PATH_TEMPLATE = (
-    'gs://fuchsia/development/{sdk_hash}/sdk/{platform}-amd64/gn.tar.gz')
+    'gs://{bucket}/development/{sdk_hash}/sdk/{platform}-amd64/gn.tar.gz')
 
 
-def GetSdkGeneration(hash):
+def ReadFile(filename):
+  with open(os.path.join(os.path.dirname(__file__), filename), 'r') as f:
+    return f.read()
+
+
+def GetCloudStorageBucket():
+  return ReadFile('sdk-bucket.txt').strip()
+
+
+def GetSdkHash(bucket):
+  hashes = GetSdkHashList()
+  return max(hashes, key=lambda sdk:GetSdkGeneration(bucket, sdk)) if hashes else None
+
+
+def GetSdkHashList():
+  """Read filename entries from sdk-hash-files.list (one per line), substitute
+  {platform} in each entry if present, and read from each filename."""
+  platform = GetHostOsFromPlatform()
+  filenames = [
+      line.strip() for line in ReadFile('sdk-hash-files.list').replace(
+          '{platform}', platform).splitlines()
+  ]
+  sdk_hashes = [ReadFile(filename).strip() for filename in filenames]
+  return sdk_hashes
+
+
+def GetSdkGeneration(bucket, hash):
   if not hash:
     return None
 
+  sdk_path = GetSdkTarballPath(bucket, hash)
   cmd = [
       os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gsutil.py'), 'ls', '-L',
-      GetSdkTarballForPlatformAndHash(hash)
+      sdk_path
   ]
   logging.debug("Running '%s'", " ".join(cmd))
   sdk_details = subprocess.check_output(cmd)
   m = re.search('Generation:\s*(\d*)', sdk_details)
   if not m:
-    return None
+    raise RuntimeError('Could not find SDK generation for {sdk_path}'.format(
+        sdk_path=sdk_path))
   return int(m.group(1))
 
 
-def GetSdkHashForPlatform():
-  filename = '{platform}.sdk.sha1'.format(platform =  GetHostOsFromPlatform())
-
-  # Get the hash of the SDK in chromium.
-  sdk_hash = None
-  hash_file = os.path.join(os.path.dirname(__file__), filename)
-  with open(hash_file, 'r') as f:
-    sdk_hash = f.read().strip()
-
-  # Get the hash of the SDK with the extra prefix.
-  extra_sdk_hash = None
-  if EXTRA_SDK_HASH_PREFIX:
-    extra_hash_file = os.path.join(os.path.dirname(__file__),
-                                   EXTRA_SDK_HASH_PREFIX + filename)
-    with open(extra_hash_file, 'r') as f:
-      extra_sdk_hash = f.read().strip()
-
-  # If both files are empty, return an error.
-  if not sdk_hash and not extra_sdk_hash:
-    logging.error(
-        'No SHA1 found in {} or {}'.format(hash_file, extra_hash_file),
-        file=sys.stderr)
-    return 1
-
-  # Return the newer SDK based on the generation number.
-  sdk_generation = GetSdkGeneration(sdk_hash)
-  extra_sdk_generation = GetSdkGeneration(extra_sdk_hash)
-  if extra_sdk_generation > sdk_generation:
-    return extra_sdk_hash
-  return sdk_hash
-
-
-def GetSdkTarballForPlatformAndHash(sdk_hash):
+def GetSdkTarballPath(bucket, sdk_hash):
   return SDK_TARBALL_PATH_TEMPLATE.format(
-      sdk_hash=sdk_hash, platform=GetHostOsFromPlatform())
+      bucket=bucket, sdk_hash=sdk_hash, platform=GetHostOsFromPlatform())
 
 
 def GetSdkSignature(sdk_hash, boot_images):
@@ -124,7 +120,7 @@ def DownloadAndUnpackFromCloudStorage(url, output_dir):
                                         task.stderr.read())
 
 
-def DownloadSdkBootImages(sdk_hash, boot_image_names):
+def DownloadSdkBootImages(bucket, sdk_hash, boot_image_names):
   if not boot_image_names:
     return
 
@@ -151,10 +147,9 @@ def DownloadSdkBootImages(sdk_hash, boot_image_names):
 
     logging.info(
         'Downloading Fuchsia boot images for %s.%s...' % (device_type, arch))
-    images_tarball_url = \
-        'gs://fuchsia/development/{sdk_hash}/images/'\
+    images_tarball_url = 'gs://{bucket}/development/{sdk_hash}/images/'\
         '{device_type}-{arch}.tgz'.format(
-            sdk_hash=sdk_hash, device_type=device_type, arch=arch)
+            bucket=bucket, sdk_hash=sdk_hash, device_type=device_type, arch=arch)
     DownloadAndUnpackFromCloudStorage(images_tarball_url, image_output_dir)
 
 
@@ -178,7 +173,8 @@ def main():
   except:
     return 0
 
-  sdk_hash = GetSdkHashForPlatform()
+  bucket = GetCloudStorageBucket()
+  sdk_hash = GetSdkHash(bucket)
   if not sdk_hash:
     return 1
 
@@ -193,7 +189,7 @@ def main():
 
     EnsureDirExists(SDK_ROOT)
     DownloadAndUnpackFromCloudStorage(
-        GetSdkTarballForPlatformAndHash(sdk_hash), SDK_ROOT)
+        GetSdkTarballPath(bucket, sdk_hash), SDK_ROOT)
 
     # Clean out the boot images directory.
     if (os.path.exists(IMAGES_ROOT)):
@@ -204,7 +200,7 @@ def main():
       # Ensure that the boot images are downloaded for this SDK.
       # If the developer opted into downloading hardware boot images in their
       # .gclient file, then only the hardware boot images will be downloaded.
-      DownloadSdkBootImages(sdk_hash, args.boot_images)
+      DownloadSdkBootImages(bucket, sdk_hash, args.boot_images)
     except subprocess.CalledProcessError as e:
       logging.error(("command '%s' failed with status %d.%s"), " ".join(e.cmd),
                     e.returncode, " Details: " + e.output if e.output else "")

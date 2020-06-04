@@ -506,7 +506,6 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="1632803087685957583">Omogućava vam da podesite brzinu ponavljanja tastature, predviđanje riječi i još mnogo toga</translation>
 <translation id="1633947793238301227">Onemogućite Google Asistenta</translation>
 <translation id="1634783886312010422">Jeste li već promijenili ovu lozinku na web lokaciji <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Instalirao je nadređeni korisnik.</translation>
 <translation id="1637224376458524414">Preuzmite oznaku na iPhone uređaju</translation>
 <translation id="1637765355341780467">Došlo je do problema prilikom otvaranja vašeg profila. Neke funkcije možda neće biti dostupne.</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
@@ -954,12 +953,10 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2199719347983604670">Podaci od Sinhronizacije Chromea</translation>
 <translation id="2200094388063410062">E-pošta</translation>
 <translation id="2200356397587687044">Chromeu je potrebna dozvola za nastavak</translation>
-<translation id="2200729650590440847">Postavke zaključavanja ekrana PIN-om</translation>
 <translation id="220138918934036434">Dugme za sakrivanje</translation>
 <translation id="2202898655984161076">Došlo je do problema prilikom navođenja štampača. Moguće je da neki od vaših štampača nisu uspješno registrirani na serveru <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Pretraživač korišten u <ph name="BEGIN_LINK" />traci za adresu<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">ČItanje i mijenjanje svega što unesete</translation>
-<translation id="2207166770508557715">Postavke stanja mirovanja</translation>
 <translation id="220858061631308971">Unesite ovaj PIN kod na "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Dozvoli kolačiće</translation>
 <translation id="2213140827792212876">Ukloni dijeljenje</translation>
@@ -1408,11 +1405,9 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2751131328353405138">Aktiviranje SSHF sistema Linux spremnika</translation>
 <translation id="2751739896257479635">EAP faza 2 autentifikacije</translation>
 <translation id="2753677631968972007">Ručno kontrolirajte odobrenja za web lokacije.</translation>
-<translation id="2753984311895843016">Napajanje u neaktivnom stanju</translation>
 <translation id="2755367719610958252">Upravljajte funkcijama pristupačnosti</translation>
 <translation id="275662540872599901">ekran je isključen</translation>
 <translation id="2757338480560142065">Provjerite podudara li se lozinka koju želite sačuvati s lozinkom za web lokaciju <ph name="WEBSITE" /></translation>
-<translation id="276221322463921688">Orijentacija monitora</translation>
 <translation id="2762441749940182211">Kamera je blokirana</translation>
 <translation id="2764786626780673772">Detalji o VPN-u</translation>
 <translation id="2765217105034171413">Malo</translation>
@@ -2559,7 +2554,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4190828427319282529">Isticanje fokusa tastature</translation>
 <translation id="4191805472951276951">Preuzeti sadržaj</translation>
 <translation id="4194570336751258953">Omogući funkciju Dodirni za klik</translation>
-<translation id="4195643157523330669">Otvori na novoj kartici</translation>
+<translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="4195814663415092787">Nastavite gdje ste stali</translation>
 <translation id="4198146608511578238">Da pričate Google Asistentu, samo držite ikonu na pokretaču.</translation>
 <translation id="4200689466366162458">Prilagođene riječi</translation>
@@ -2886,7 +2881,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4645676300727003670">&amp;Zadrži</translation>
 <translation id="4646675363240786305">Priključci</translation>
 <translation id="4647090755847581616">&amp;Zatvori karticu</translation>
-<translation id="4647420311443994946">{0,select, tablet{Pokreni aplikaciju prilikom prijave na tabletu}computer{Pokreni aplikaciju prilikom prijave na računaru}other{Pokreni aplikaciju prilikom prijave na uređaju}}</translation>
+<translation id="4647420311443994946">{0,select, tablet{Pokretanje aplikacije prilikom prijave na tabletu}computer{Pokretanje aplikacije prilikom prijave na računaru}other{Pokretanje aplikaciju prilikom prijave na uređaju}}</translation>
 <translation id="4647697156028544508">Unesite PIN za uređaj "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Nedovoljno odobrenja</translation>
 <translation id="4648499713050786492">Otključajte profil prije nego što dodate osobu.</translation>
@@ -6225,7 +6220,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8953476467359856141">Tokom punjenja</translation>
 <translation id="895347679606913382">Pokretanje…</translation>
 <translation id="8957762313041272117">Automatski titlovi</translation>
-<translation id="8958804960827200147">Orijentacija ekrana</translation>
 <translation id="895944840846194039">JavaScript memorija</translation>
 <translation id="8962083179518285172">Sakrij detalje</translation>
 <translation id="8962918469425892674">Ova web lokacija koristi senzore pokreta ili svjetlosne senzore.</translation>

@@ -48,6 +48,11 @@ struct ShortcutInfo {
   std::set<std::string> file_handler_extensions;
   std::set<std::string> file_handler_mime_types;
 
+  // An app is multi-profile if there is a single shortcut and single app shim
+  // for all profiles. The app itself has a profile switcher that may be used
+  // to open windows for the various profiles. This is relevant only on macOS.
+  bool is_multi_profile = false;
+
  private:
   // Since gfx::ImageFamily |favicon| has a non-thread-safe reference count in
   // its member and is bound to current thread, always destroy ShortcutInfo

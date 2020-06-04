@@ -16,12 +16,12 @@
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/events/base_event_utils.h"
 #include "v8/include/v8.h"
 
@@ -208,8 +208,8 @@ void TextInputController::Install(blink::WebLocalFrame* frame) {
 void TextInputController::InsertText(const std::string& text) {
   if (auto* controller = GetInputMethodController()) {
     controller->CommitText(blink::WebString::FromUTF8(text),
-                           std::vector<blink::WebImeTextSpan>(),
-                           blink::WebRange(), 0);
+                           std::vector<ui::ImeTextSpan>(), blink::WebRange(),
+                           0);
   }
 }
 
@@ -263,8 +263,8 @@ void TextInputController::SetMarkedText(const std::string& text,
   blink::WebString web_text(blink::WebString::FromUTF8(text));
 
   // Split underline into up to 3 elements (before, selection, and after).
-  std::vector<blink::WebImeTextSpan> ime_text_spans;
-  blink::WebImeTextSpan ime_text_span;
+  std::vector<ui::ImeTextSpan> ime_text_spans;
+  ui::ImeTextSpan ime_text_span;
   if (!start) {
     ime_text_span.end_offset = length;
   } else {
@@ -273,15 +273,14 @@ void TextInputController::SetMarkedText(const std::string& text,
     ime_text_span.start_offset = start;
     ime_text_span.end_offset = start + length;
   }
-  ime_text_span.thickness = ui::mojom::ImeTextSpanThickness::kThick;
-  ime_text_span.underline_style = ui::mojom::ImeTextSpanUnderlineStyle::kSolid;
+  ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThick;
+  ime_text_span.underline_style = ui::ImeTextSpan::UnderlineStyle::kSolid;
   ime_text_spans.push_back(ime_text_span);
   if (start + length < static_cast<int>(web_text.length())) {
     ime_text_span.start_offset = ime_text_span.end_offset;
     ime_text_span.end_offset = web_text.length();
-    ime_text_span.thickness = ui::mojom::ImeTextSpanThickness::kThin;
-    ime_text_span.underline_style =
-        ui::mojom::ImeTextSpanUnderlineStyle::kSolid;
+    ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThin;
+    ime_text_span.underline_style = ui::ImeTextSpan::UnderlineStyle::kSolid;
     ime_text_spans.push_back(ime_text_span);
   }
 
@@ -300,7 +299,7 @@ void TextInputController::SetMarkedTextFromExistingText(int start, int end) {
                                                    "is not a local frame.";
 
   view()->MainFrame()->ToWebLocalFrame()->SetCompositionFromExistingText(
-      start, end, std::vector<blink::WebImeTextSpan>());
+      start, end, std::vector<ui::ImeTextSpan>());
 }
 
 bool TextInputController::HasMarkedText() {
@@ -385,14 +384,14 @@ void TextInputController::SetComposition(const std::string& text) {
   blink::WebString newText = blink::WebString::FromUTF8(text);
   size_t textLength = newText.length();
 
-  std::vector<blink::WebImeTextSpan> ime_text_spans;
-  ime_text_spans.push_back(blink::WebImeTextSpan(
-      blink::WebImeTextSpan::Type::kComposition, 0, textLength,
-      ui::mojom::ImeTextSpanThickness::kThin,
-      ui::mojom::ImeTextSpanUnderlineStyle::kSolid, SK_ColorTRANSPARENT));
+  std::vector<ui::ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ui::ImeTextSpan(
+      ui::ImeTextSpan::Type::kComposition, 0, textLength,
+      ui::ImeTextSpan::Thickness::kThin,
+      ui::ImeTextSpan::UnderlineStyle::kSolid, SK_ColorTRANSPARENT));
   if (auto* controller = GetInputMethodController()) {
     controller->SetComposition(
-        newText, blink::WebVector<blink::WebImeTextSpan>(ime_text_spans),
+        newText, blink::WebVector<ui::ImeTextSpan>(std::move(ime_text_spans)),
         blink::WebRange(), textLength, textLength);
   }
 }

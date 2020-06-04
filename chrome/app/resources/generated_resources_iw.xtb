@@ -503,7 +503,6 @@
 <translation id="1632803087685957583">הגדרה זו מאפשרת לך להתאים את קצב החזרה של המקלדת, חיזוי מילים ועוד</translation>
 <translation id="1633947793238301227">‏השבתה של Google Assistant</translation>
 <translation id="1634783886312010422">האם כבר שינית את הסיסמה הזו באתר <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">הותקן על ידי האפוטרופוס שלך.</translation>
 <translation id="1637224376458524414">‏שליחה של סימניה זו למכשיר ה-iPhone</translation>
 <translation id="1637765355341780467">אירעה שגיאה בפתיחת הפרופיל שלך. ייתכן שחלק מהתכונות לא יהיו זמינות.</translation>
 <translation id="1639239467298939599">טוען</translation>
@@ -951,12 +950,10 @@
 <translation id="2199719347983604670">‏נתונים מסנכרון Chrome</translation>
 <translation id="2200094388063410062">אימייל</translation>
 <translation id="2200356397587687044">‏Chrome צריך הרשאה כדי להמשיך</translation>
-<translation id="2200729650590440847">הגדרות נעילת מסך עם קוד אימות</translation>
 <translation id="220138918934036434">לחצן הסתר</translation>
 <translation id="2202898655984161076">היתה בעיה ברישום מדפסות. ייתכן שחלק מהמדפסות שלך לא נרשמו בהצלחה ב-<ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">מנוע החיפוש שבאמצעותו מבוצע חיפוש מ<ph name="BEGIN_LINK" />שורת כתובת האתר<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">לקרוא ולשנות את כל מה שאתה מקליד</translation>
-<translation id="2207166770508557715">הגדרות מצב שינה</translation>
 <translation id="220858061631308971">‏הזן את קוד PIN זה ב-"<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">‏אישור קובצי cookie</translation>
 <translation id="2213140827792212876">הסרת השיתוף</translation>
@@ -1406,11 +1403,9 @@
 <translation id="2751131328353405138">‏המערכת טוענת את ה-sshfs של הקונטיינר של Linux.</translation>
 <translation id="2751739896257479635">‏אימות שלב 2 של EAP</translation>
 <translation id="2753677631968972007">שליטה ידנית בהרשאות של האתר.</translation>
-<translation id="2753984311895843016">שימוש בחשמל במצב לא פעיל</translation>
 <translation id="2755367719610958252">נהל תכונות נגישות</translation>
 <translation id="275662540872599901">מסך כבוי</translation>
 <translation id="2757338480560142065">יש לוודא שהסיסמה שנשמרת זהה לסיסמה שלך עבור <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">כיוון הצג</translation>
 <translation id="2762441749940182211">לא ניתן להשתמש במצלמה בדף זה</translation>
 <translation id="2764786626780673772">‏פרטי VPN</translation>
 <translation id="2765217105034171413">קטן</translation>
@@ -2884,7 +2879,7 @@
 <translation id="4645676300727003670">&amp;שמור</translation>
 <translation id="4646675363240786305">יציאות</translation>
 <translation id="4647090755847581616">&amp;סגור כרטיסייה</translation>
-<translation id="4647420311443994946">{0,select, tablet{הפעלת האפליקציה בעת כניסה לחשבון בטאבלט}computer{הפעלת האפליקציה בעת כניסה לחשבון במחשב}other{הפעלת האפליקציה בעת כניסה לחשבון במכשיר}}</translation>
+<translation id="4647420311443994946">{0,select, tablet{הפעלת האפליקציה בכניסה לחשבון בטאבלט}computer{הפעלת האפליקציה בכניסה לחשבון במחשב}other{הפעלת האפליקציה בכניסה לחשבון במכשיר}}</translation>
 <translation id="4647697156028544508">‏הזן PIN עבור "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">הרשאות לא מספיקות</translation>
 <translation id="4648499713050786492">יש לבטל את נעילת הפרופיל שלך לפני הוספה של משתמש מסוים.</translation>
@@ -6224,7 +6219,6 @@
 <translation id="8953476467359856141">בזמן טעינה</translation>
 <translation id="895347679606913382">מתחיל...</translation>
 <translation id="8957762313041272117">כתוביות מיידיות</translation>
-<translation id="8958804960827200147">כיוון המסך</translation>
 <translation id="895944840846194039">‏זיכרון JavaScript</translation>
 <translation id="8962083179518285172">הסתר פרטים</translation>
 <translation id="8962918469425892674">האתר הזה משתמש בחיישני תנועה או תאורה.</translation>

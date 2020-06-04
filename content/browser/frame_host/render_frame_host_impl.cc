@@ -3416,9 +3416,7 @@ void RenderFrameHostImpl::UpdateFaviconURL(
 
 void RenderFrameHostImpl::DownloadURL(
     blink::mojom::DownloadURLParamsPtr blink_parameters) {
-  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token;
-  if (!VerifyDownloadUrlParams(GetSiteInstance(), blink_parameters.get(),
-                               &blob_url_token))
+  if (!VerifyDownloadUrlParams(GetSiteInstance(), *blink_parameters))
     return;
 
   mojo::PendingRemote<blink::mojom::Blob> blob_data_remote(
@@ -3476,7 +3474,8 @@ void RenderFrameHostImpl::DownloadURL(
     return;
   }
 
-  StartDownload(std::move(parameters), std::move(blob_url_token));
+  StartDownload(std::move(parameters),
+                std::move(blink_parameters->blob_url_token));
 }
 
 void RenderFrameHostImpl::ReportNoBinderForInterface(const std::string& error) {
@@ -4667,6 +4666,18 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
 void RenderFrameHostImpl::RequestOverlayRoutingToken(
     RequestOverlayRoutingTokenCallback callback) {
   std::move(callback).Run(frame_token_);
+}
+
+void RenderFrameHostImpl::GetSavableResourceLinksCallback(
+    blink::mojom::GetSavableResourceLinksReplyPtr reply) {
+  if (!reply) {
+    delegate_->SavableResourceLinksError(this);
+    return;
+  }
+
+  delegate_->SavableResourceLinksResponse(this, reply->resources_list,
+                                          std::move(reply->referrer),
+                                          reply->subframes);
 }
 
 void RenderFrameHostImpl::DomOperationResponse(const std::string& json_string) {
@@ -6616,6 +6627,15 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
       ax_mode.mode(),
       base::BindOnce(&RenderFrameHostImpl::RequestAXTreeSnapshotCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void RenderFrameHostImpl::GetSavableResourceLinksFromRenderer() {
+  if (!IsRenderFrameLive())
+    return;
+
+  GetAssociatedLocalFrame()->GetSavableResourceLinks(
+      base::BindOnce(&RenderFrameHostImpl::GetSavableResourceLinksCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RenderFrameHostImpl::SetAccessibilityCallbackForTesting(

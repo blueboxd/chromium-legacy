@@ -502,7 +502,6 @@
 <translation id="1632803087685957583">તમને તમારા કીબોર્ડ પુનરાવર્તન દર, શબ્દ પૂર્વાનુમાન અને વધુને સમાયોજિત કરવાની મંજૂરી આપે છે</translation>
 <translation id="1633947793238301227">Google Assistant બંધ કરો</translation>
 <translation id="1634783886312010422">શું તમે પહેલેથી <ph name="WEBSITE" /> પર પાસવર્ડ બદલી નાખ્યો હતો?</translation>
-<translation id="1635033183663317347">તમારા સંરક્ષક દ્વારા ઇન્સ્ટોલ કરાયું</translation>
 <translation id="1637224376458524414">આ બુકમાર્ક તમારા iPhone પર મેળવો</translation>
 <translation id="1637765355341780467">તમારી પ્રોફાઇલ ખોલતી વખતે કંઈક ખોટું થયું. કેટલીક સુવિધાઓ અનુપલબ્ધ હોઈ શકે છે.</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
@@ -950,12 +949,10 @@
 <translation id="2199719347983604670">Chrome સિંકમાંનો ડેટા</translation>
 <translation id="2200094388063410062">ઇ-મેઇલ</translation>
 <translation id="2200356397587687044">Chromeને આગળ વધવા મંજૂરીની જરૂર છે</translation>
-<translation id="2200729650590440847">પિન લૉક સ્ક્રીનના સેટિંગ</translation>
 <translation id="220138918934036434">છુપાવો બટન</translation>
 <translation id="2202898655984161076">પિંટર્સની સૂચિ બનાવવામાં સમસ્યા આવી. તમારા કેટલાક પ્રિંટર્સ<ph name="CLOUD_PRINT_NAME" /> સાથે સફળતાપૂર્વક નોંધાઈ શક્યા નથી.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />સરનામાં બાર<ph name="END_LINK" />માં ઉપયોગમાં લેવામાં આવેલ શોધ એંજિન</translation>
 <translation id="2204034823255629767">તમે જે કંઈ લખો છો તેને વાંચો અને બદલો</translation>
-<translation id="2207166770508557715">સ્લીપ મોડના સેટિંગ</translation>
 <translation id="220858061631308971">કૃપા કરીને "<ph name="DEVICE_NAME" />" પર આ પિન કોડ દાખલ કરો:</translation>
 <translation id="2212565012507486665">કુકીને મંજૂરી આપો</translation>
 <translation id="2213140827792212876">શેરિંગ કાઢી નાખો</translation>
@@ -1404,11 +1401,9 @@
 <translation id="2751131328353405138">Linux કન્ટેનરનાં sshfsને માઉન્ટ કરી રહ્યાં છીએ</translation>
 <translation id="2751739896257479635">EAP તબક્કા 2 માટેનું પ્રમાણીકરણ</translation>
 <translation id="2753677631968972007">સાઇટની પરવાનગીઓને મેન્યુઅલી નિયંત્રિત કરો.</translation>
-<translation id="2753984311895843016">પાવર નિષ્ક્રિય કરવાના સેટિંગ</translation>
 <translation id="2755367719610958252">ઍક્સેસિબિલિટી સુવિધાઓ સંચાલિત કરો</translation>
 <translation id="275662540872599901">સ્ક્રીન બંધ છે</translation>
 <translation id="2757338480560142065"><ph name="WEBSITE" /> માટેના તમારા પાસવર્ડ સાથે, તમે સાચવી રહ્યાં છો તે પાસવર્ડ મેળ ખાતો હોવાની ખાતરી કરો</translation>
-<translation id="276221322463921688">મૉનિટરનું ઓરિએન્ટેશન</translation>
 <translation id="2762441749940182211">કૅમેરા અવરોધિત</translation>
 <translation id="2764786626780673772">VPNની વિગતો</translation>
 <translation id="2765217105034171413">નાનું</translation>
@@ -2126,6 +2121,7 @@
 <translation id="3677106374019847299">કસ્ટમ પ્રદાતા દાખલ કરો</translation>
 <translation id="3677657024345889897">પૂર્ણ શાંતતા</translation>
 <translation id="3677911431265050325">મોબાઇલ સાઇટની વિનંતી કરો</translation>
+<translation id="3677959414150797585">આમાં ઍપ, વેબપેજ અને બીજું ઘણું શામેલ છે. જો તમે વપરાશનો ડેટા શેર કરવાનું પસંદ કર્યું હોય, તો જ તે સૂચનોને બહેતર બનાવવા માટે આંકડા મોકલે છે.</translation>
 <translation id="3678156199662914018">એક્સ્ટેંશન: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">ટેક્સ્ટ ટૂ સ્પીચ વૉઇસ</translation>
 <translation id="3681311097828166361">તમારા પ્રતિસાદ બદલ આભાર. તમે હમણાં ઑફલાઇન છો અને તમારી રિપોર્ટ પછીથી મોકલવામાં આવશે.</translation>
@@ -3779,6 +3775,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - કૅમેરા અથવા માઇક્રોફોન રેકોર્ડિંગ</translation>
 <translation id="5841270259333717135">ઇથરનેટ ગોઠવો</translation>
 <translation id="5842497610951477805">બ્લૂટૂથ ચાલુ</translation>
+<translation id="5844574845205796324">શોધખોળ કરવા માટે નવું કન્ટેન્ટ સૂચવો</translation>
 <translation id="5846200638699387931">રિલેશન સિન્ટેક્સ ભૂલ: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">અપડેટ અને ઍપ ઇન્સ્ટૉલ કરો. આગળ વધીને, તમે સંમત થાઓ છો કે આ ડિવાઇસ સંભવતઃ મોબાઇલ ડેટાનો ઉપયોગ કરીને Google, તમારા કૅરિઅર અને તમારા ડિવાઇસના નિર્માતાના અપડેટ અને ઍપ ઑટોમૅટિક રીતે ડાઉનલોડ અને ઇન્સ્ટૉલ પણ કરી શકે છે. આમાંની અમુક ઍપ ઍપમાંથી ખરીદીની ઑફર કરી શકે છે. આમાંથી અમુક ઍપ, ઍપમાંથી ખરીદીઓની ઑફર કરી શકે છે.</translation>
 <translation id="5849212445710944278">પહેલેથી ઉમેરેલ છે</translation>
@@ -6215,7 +6212,6 @@ USB ડિવાઇસ</translation>
 <translation id="8953476467359856141">ચાર્જિંગ થતી વખતે</translation>
 <translation id="895347679606913382">પ્રારંભ કરે છે...</translation>
 <translation id="8957762313041272117">લાઇવ કૅપ્શન</translation>
-<translation id="8958804960827200147">સ્ક્રીનનું ઓરિએન્ટેશન</translation>
 <translation id="895944840846194039">JavaScript મેમરી</translation>
 <translation id="8962083179518285172">વિગતો છુપાવો</translation>
 <translation id="8962918469425892674">આ સાઇટ મોશન અથવા લાઇટ સેન્સરનો ઉપયોગ કરી રહી છે.</translation>

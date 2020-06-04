@@ -38,9 +38,10 @@ import signal
 
 from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
+from blinkpy.web_tests.port.base import ARTIFACTS_SUB_DIR
 from blinkpy.web_tests.port.factory import configuration_options
 from blinkpy.web_tests.port.factory import python_server_options
-from blinkpy.web_tests.port.base import ARTIFACTS_SUB_DIR
+from blinkpy.web_tests.servers.server_base import ServerError
 
 _log = logging.getLogger(__name__)
 
@@ -64,8 +65,7 @@ def main(server_constructor,
          description=None,
          **kwargs):
     host = Host()
-    # Signals will interrupt sleep, so we can use a long duration.
-    sleep_fn = sleep_fn or (lambda: host.sleep(10))
+    sleep_fn = sleep_fn or (lambda: host.sleep(1))
 
     parser = optparse.OptionParser(
         description=description, formatter=RawTextHelpFormatter())
@@ -106,6 +106,11 @@ def main(server_constructor,
     try:
         while True:
             sleep_fn()
+            if not server.alive():
+                raise ServerError('Server is no longer listening')
+    except ServerError as e:
+        _log.error(e)
     except (SystemExit, KeyboardInterrupt):
         _log.info('Exiting...')
+    finally:
         server.stop()

@@ -424,11 +424,12 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
   // feature policy is successfully enabled via the origin trial.
   scoped_refptr<const SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString(kFrobulateEnabledOrigin);
-  Vector<String> messages;
+
+  PolicyParserMessageBuffer logger;
   ParsedFeaturePolicy result;
   result = FeaturePolicyParser::Parse("frobulate", security_origin, nullptr,
-                                      &messages, feature_map, document);
-  EXPECT_TRUE(messages.IsEmpty());
+                                      logger, feature_map, document);
+  EXPECT_TRUE(logger.GetMessages().IsEmpty());
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFrobulate, result[0].feature);
 }

@@ -2655,7 +2655,7 @@ const NGLayoutResult* LayoutBox::GetCachedLayoutResult() const {
   const NGLayoutResult* result = layout_results_[0].get();
   if (result->IsSingleUse())
     return nullptr;
-  DCHECK(result->PhysicalFragment().IsAlive());
+  DCHECK(result->PhysicalFragment().IsAlive() || BeingDestroyed());
   DCHECK_EQ(layout_results_.size(), 1u);
   return result;
 }

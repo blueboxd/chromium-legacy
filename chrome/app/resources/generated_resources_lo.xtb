@@ -504,7 +504,6 @@
 <translation id="1632803087685957583">ອະນຸຍາດໃຫ້ທ່ານປັບອັດຕາການຊໍ້າຄືນຂອງແປ້ນພິມ, ການຄາດເດົາຄຳ ແລະ ອື່ນໆອີກ</translation>
 <translation id="1633947793238301227">ປິດການນຳໃຊ້ຜູ້ຊ່ວຍ Google</translation>
 <translation id="1634783886312010422">ທ່ານໄດ້ປ່ຽນລະຫັດຜ່ານນີ້ໃນ <ph name="WEBSITE" /> ແລ້ວບໍ?</translation>
-<translation id="1635033183663317347">ຕິດ​ຕັ້ງ​ໂດຍ​ຜູ້​ຄວບ​ຄຸມ​​ຂອງ​ທ່ານ​ແລ້ວ.</translation>
 <translation id="1637224376458524414">ໃຊ້ບຸກມາກນີ້ໃນ iPhone ຂອງທ່ານ</translation>
 <translation id="1637765355341780467">ມີບາງຢ່າງຜິດພາດ ໃນເວລາເປີດໂປຣໄຟລ໌ຂອງທ່ານ. ບາງຄຸນສົມບັດອາດຈະບໍ່ສາມາດໃຊ້ໄດ້.</translation>
 <translation id="1639239467298939599">ກໍາລັງໂຫຼດ</translation>
@@ -952,12 +951,10 @@
 <translation id="2199719347983604670">ຂໍ້ມູນຈາກ Chrome sync</translation>
 <translation id="2200094388063410062">ອີເມວ</translation>
 <translation id="2200356397587687044">Chrome ຕ້ອງການມີການອະນຸຍາດເພື່ອສືບຕໍ່</translation>
-<translation id="2200729650590440847">ການຕັ້ງຄ່າໜ້າຈໍການປົດລັອກດ້ວຍ PIN</translation>
 <translation id="220138918934036434">ເຊື່ອງປຸ່ມ​</translation>
 <translation id="2202898655984161076">ມີບັນຫາການເຮັດລາຍຊື່ເຄື່ອງພິມ. ບາງເຄື່ອງພິມອາດຈະບໍ່ໄດ້ລົງທະບຽນຢ່າງສໍາເລັດກັບ <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">ໂປຣແກຣມຊອກຫາທີ່ໃຊ້ໃນ <ph name="BEGIN_LINK" />ແຖບທີ່ຢູ່<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">ອ່ານ​ ແລະ​​ປ່ຽນອັນໃດໜຶ່ງທີ່​ທ່ານ​ພິມ</translation>
-<translation id="2207166770508557715">ການຕັ້ງຄ່າການນອນ</translation>
 <translation id="220858061631308971">ກະລຸນາໃສ່ PIN ນີ້ຢູ່ໃນ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">ອະນຸຍາດຄຸກກີ້</translation>
 <translation id="2213140827792212876">ລຶບການແບ່ງປັນອອກ</translation>
@@ -1406,11 +1403,9 @@
 <translation id="2751131328353405138">ກຳລັງເຊື່ອມຕໍ່ sshfs ຂອງກ່ອງບັນຈຸ Linux</translation>
 <translation id="2751739896257479635">ການຮັບຮອງຄວາມຖືກຕ້ອງ EAP ໄລຍະທີ 2</translation>
 <translation id="2753677631968972007">ຄວບຄຸມການອະນຸຍາດເວັບໄຊດ້ວຍຕົນເອງ</translation>
-<translation id="2753984311895843016">ບໍ່ໃຊ້ພະລັງງານ</translation>
 <translation id="2755367719610958252">ຈັດການຄຸນສົມບັດການຊ່ວຍເຂົ້າເຖິງ</translation>
 <translation id="275662540872599901">ໜ້າຈໍປິດຢູ່</translation>
 <translation id="2757338480560142065">ກວດໃຫ້ແນ່ໃຈວ່າລະຫັດຜ່ານທີ່ທ່ານກຳລັງບັນທຶກກົງກັບລະຫັດຜ່ານຂອງທ່ານສຳລັບ <ph name="WEBSITE" /> ຫຼືບໍ່.</translation>
-<translation id="276221322463921688">ທິດທາງໜ້າຈໍ</translation>
 <translation id="2762441749940182211">ບລັອກກ້ອງຖ່າຍຮູບໄວ້ແລ້ວ</translation>
 <translation id="2764786626780673772">ລາຍລະອຽດ VPN</translation>
 <translation id="2765217105034171413">ນ້ອຍ</translation>
@@ -6221,7 +6216,6 @@
 <translation id="8953476467359856141">ໃນຂະນະທີ່ສາກຢູ່</translation>
 <translation id="895347679606913382">ກໍາລັງເລີ່ມຕົ້ນ...</translation>
 <translation id="8957762313041272117">ຄຳບັນຍາຍສົດ</translation>
-<translation id="8958804960827200147">ທິດທາງໜ້າຈໍ</translation>
 <translation id="895944840846194039">ຄວາມ​ຈໍາ JavaScript</translation>
 <translation id="8962083179518285172">ເຊື່ອງ​ລາຍ​ລະ​ອຽດ</translation>
 <translation id="8962918469425892674">ເວັບໄຊນີ້ກຳລັງໃຊ້ເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ ຫຼື ແສງ.</translation>

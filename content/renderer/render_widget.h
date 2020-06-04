@@ -54,10 +54,10 @@
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
+#include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
@@ -487,14 +487,13 @@ class CONTENT_EXPORT RenderWidget
   void OnCursorVisibilityChange(bool is_visible);
   void OnSetEditCommandsForNextKeyEvent(
       std::vector<blink::mojom::EditCommandPtr> edit_commands);
-  void OnImeSetComposition(
-      const base::string16& text,
-      const std::vector<blink::WebImeTextSpan>& ime_text_spans,
-      const gfx::Range& replacement_range,
-      int selection_start,
-      int selection_end);
+  void OnImeSetComposition(const base::string16& text,
+                           const std::vector<ui::ImeTextSpan>& ime_text_spans,
+                           const gfx::Range& replacement_range,
+                           int selection_start,
+                           int selection_end);
   void OnImeCommitText(const base::string16& text,
-                       const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+                       const std::vector<ui::ImeTextSpan>& ime_text_spans,
                        const gfx::Range& replacement_range,
                        int relative_cursor_pos);
   void OnImeFinishComposingText(bool keep_selection);

@@ -5,6 +5,9 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_client_impl.h"
 
 #include <memory>
+#include <utility>
+
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -106,7 +109,7 @@ void RemoteFrameClientImpl::Navigate(
         should_replace_current_entry, is_opener_navigation,
         initiator_frame_has_download_sandbox_flag,
         blocking_downloads_in_sandbox_enabled, initiator_frame_is_ad,
-        blob_url_token.PassPipe(), impression);
+        std::move(blob_url_token), impression);
   }
 }
 

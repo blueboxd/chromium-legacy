@@ -321,7 +321,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedBitmap) {
       1 /* placeholder_canvas_id */, kSize);
 
   auto provider = CanvasResourceProvider::CreateSharedBitmapProvider(
-      kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
+      kSize, kLow_SkFilterQuality, kColorParams,
       resource_dispatcher.GetWeakPtr());
 
   EXPECT_EQ(provider->Size(), kSize);

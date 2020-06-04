@@ -370,6 +370,8 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown() {
+  EndNudge();
+
   SplitViewController::Get(root_window_)->RemoveObserver(this);
   ScreenRotationAnimator::GetForRootWindow(root_window_)->RemoveObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
@@ -591,6 +593,8 @@ void OverviewGrid::AddItemInMruOrder(aura::Window* window,
 void OverviewGrid::RemoveItem(OverviewItem* overview_item,
                               bool item_destroying,
                               bool reposition) {
+  EndNudge();
+
   // Use reverse iterator to be efficient when removing all.
   auto iter = std::find_if(window_list_.rbegin(), window_list_.rend(),
                            base::MatchesUniquePtr(overview_item));

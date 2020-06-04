@@ -504,7 +504,6 @@ xizmatlarini sizga moslashtirish maqsadlarida foydalanishi mumkin. Bu ruxsatni m
 <translation id="1632803087685957583">Tugmalar qaytarilish tezligi, so‘zlar taklifi va boshqalarni sozlash imkonini beradi</translation>
 <translation id="1633947793238301227">Google Assistentni faolsizlantirish</translation>
 <translation id="1634783886312010422"><ph name="WEBSITE" /> saytidagi parolingizni allaqachon oʻzgartirdingizmi?</translation>
-<translation id="1635033183663317347">Vasiyingiz tomonidan o‘rnatilgan.</translation>
 <translation id="1637224376458524414">Bu xatcho‘pni iPhone’ga saqlang</translation>
 <translation id="1637765355341780467">Profilni ochib bo‘lmadi. Ba’zi funksiyalar ishlamasligi mumkin.</translation>
 <translation id="1639239467298939599">Yuklanmoqda</translation>
@@ -952,12 +951,10 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2199719347983604670">Chrome sync maʼlumotlari</translation>
 <translation id="2200094388063410062">Email</translation>
 <translation id="2200356397587687044">Chrome davom etishga ruxsat so‘ramoqda</translation>
-<translation id="2200729650590440847">PIN kod bilan ekranni qulflash sozlamalari</translation>
 <translation id="220138918934036434">Tugmani yashirish</translation>
 <translation id="2202898655984161076">Printerlar ro‘yxatini yuklashda xatolik yuz berdi. Ba’zi printerlar <ph name="CLOUD_PRINT_NAME" /> yordamida ro‘yxatdan o‘tkazilmagan bo‘lishi mumkin.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Manzil qatorida<ph name="END_LINK" /> ishlatiladigan qidiruv tizimi</translation>
 <translation id="2204034823255629767">Kiritilayotgan matnni ko‘rish va o‘zagartirish</translation>
-<translation id="2207166770508557715">Uyqu rejimi sozlamalari</translation>
 <translation id="220858061631308971">“<ph name="DEVICE_NAME" />” qurilmasi PIN-kodini kiriting:</translation>
 <translation id="2212565012507486665">Cookie fayllariga ruxsat berish</translation>
 <translation id="2213140827792212876">Ulashuvni bekor qilish</translation>
@@ -1406,11 +1403,9 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2751131328353405138">Linux konteyneri SSHFS yordamida ulanmoqda</translation>
 <translation id="2751739896257479635">EAP autentifikatsiya 2-bosqichi</translation>
 <translation id="2753677631968972007">Sayt ruxsatlarini qoʻlda boshqarish.</translation>
-<translation id="2753984311895843016">Nofaol rejimda quvvat sozlamalari</translation>
 <translation id="2755367719610958252">Maxsus imkoniyatlarni sozlash</translation>
 <translation id="275662540872599901">ekran o‘chiq</translation>
 <translation id="2757338480560142065">Saqlayotgan parolingiz <ph name="WEBSITE" /> uchun mos kelishini tekshiring</translation>
-<translation id="276221322463921688">Monitor joylashuvi</translation>
 <translation id="2762441749940182211">Kamera bloklandi</translation>
 <translation id="2764786626780673772">VPN axboroti</translation>
 <translation id="2765217105034171413">Kichik</translation>
@@ -2188,6 +2183,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3732857534841813090">Google Assistentga aloqador axborot</translation>
 <translation id="3733127536501031542">Darajasi ko‘tarilgan SSL-server</translation>
 <translation id="3735740477244556633">Saralash tartibi</translation>
+<translation id="3738213647660363521">Maxsus rangli kursor</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> ochilsinmi?</translation>
 <translation id="3742055079367172538">Ekran suratga olindi</translation>
@@ -3300,6 +3296,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="52232769093306234">Arxivlab bo‘lmadi.</translation>
 <translation id="5225324770654022472">“Xizmatlar” tugmasini ko‘rsatish</translation>
 <translation id="5227679487546032910">Standart moviy avatar</translation>
+<translation id="5228088094491423618">Jonli izohlar</translation>
 <translation id="5228579091201413441">Sinxronlashni yoqish</translation>
 <translation id="5229189185761556138">Matn kiritish usullarini boshqarish</translation>
 <translation id="5230516054153933099">Oyna</translation>
@@ -6221,7 +6218,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="8953476467359856141">Quvvat olayotganda</translation>
 <translation id="895347679606913382">Boshlanmoqda...</translation>
 <translation id="8957762313041272117">Jonli izoh</translation>
-<translation id="8958804960827200147">Ekran joylashuvi</translation>
 <translation id="895944840846194039">JavaScript xotirasi</translation>
 <translation id="8962083179518285172">Tafsilotlarni yopish</translation>
 <translation id="8962918469425892674">Bu sayt harakat yoki yorug‘lik sensorlaridan foydalanmoqda.</translation>
@@ -6353,6 +6349,7 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="9121814364785106365">Qadalgan ichki oyna sifatida ochish</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> pauza qilindi</translation>
 <translation id="9124003689441359348">Saqlangan parollar shu yerda turadi</translation>
+<translation id="9126149354162942022">Kursor rangi</translation>
 <translation id="9128317794749765148">Oxirigacha sozlanmadi</translation>
 <translation id="9128870381267983090">Tarmoqqa ulanish</translation>
 <translation id="9130015405878219958">Noto‘g‘ri rejim ko‘rsatildi.</translation>

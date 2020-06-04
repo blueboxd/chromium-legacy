@@ -36,10 +36,11 @@ class ArcScreenCaptureBridge : public KeyedService,
   ~ArcScreenCaptureBridge() override;
 
   // mojom::ScreenCaptureHost overrides:
-  void OpenSession(mojom::ScreenCaptureSessionNotifierPtr notifier,
-                   const std::string& package_name,
-                   const gfx::Size& size,
-                   OpenSessionCallback callback) override;
+  void OpenSession(
+      mojo::PendingRemote<mojom::ScreenCaptureSessionNotifier> notifier,
+      const std::string& package_name,
+      const gfx::Size& size,
+      OpenSessionCallback callback) override;
   void RequestPermission(const std::string& display_name,
                          const std::string& package_name,
                          RequestPermissionCallback callback) override;

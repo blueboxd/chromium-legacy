@@ -112,17 +112,24 @@ const base::Version& GetSelfVersion() {
       version.reset(base::SysUTF8ToNSString(state.next_version.GetString()));
     }
 
+    base::scoped_nsobject<CRUUpdateStateStateWrapper> updateStateStateWrapper(
+        [[CRUUpdateStateStateWrapper alloc]
+            initWithUpdateStateState:state.state],
+        base::scoped_policy::RETAIN);
+    base::scoped_nsobject<CRUErrorCategoryWrapper> errorCategoryWrapper(
+        [[CRUErrorCategoryWrapper alloc]
+            initWithErrorCategory:state.error_category],
+        base::scoped_policy::RETAIN);
+
     base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
         [[CRUUpdateStateWrapper alloc]
               initWithAppId:base::SysUTF8ToNSString(state.app_id)
-                      state:[[CRUUpdateStateStateWrapper alloc]
-                                initWithUpdateStateState:state.state]
+                      state:updateStateStateWrapper.get()
                     version:version.get()
             downloadedBytes:state.downloaded_bytes
                  totalBytes:state.total_bytes
             installProgress:state.install_progress
-              errorCategory:[[CRUErrorCategoryWrapper alloc]
-                                initWithErrorCategory:state.error_category]
+              errorCategory:errorCategoryWrapper.get()
                   errorCode:state.error_code
                   extraCode:state.extra_code1]);
     [updateState observeUpdateState:updateStateWrapper.get()];
@@ -151,17 +158,24 @@ const base::Version& GetSelfVersion() {
       version.reset(base::SysUTF8ToNSString(state.next_version.GetString()));
     }
 
+    base::scoped_nsobject<CRUUpdateStateStateWrapper> updateStateStateWrapper(
+        [[CRUUpdateStateStateWrapper alloc]
+            initWithUpdateStateState:state.state],
+        base::scoped_policy::RETAIN);
+    base::scoped_nsobject<CRUErrorCategoryWrapper> errorCategoryWrapper(
+        [[CRUErrorCategoryWrapper alloc]
+            initWithErrorCategory:state.error_category],
+        base::scoped_policy::RETAIN);
+
     base::scoped_nsobject<CRUUpdateStateWrapper> updateStateWrapper(
         [[CRUUpdateStateWrapper alloc]
               initWithAppId:base::SysUTF8ToNSString(state.app_id)
-                      state:[[CRUUpdateStateStateWrapper alloc]
-                                initWithUpdateStateState:state.state]
+                      state:updateStateStateWrapper.get()
                     version:version.get()
             downloadedBytes:state.downloaded_bytes
                  totalBytes:state.total_bytes
             installProgress:state.install_progress
-              errorCategory:[[CRUErrorCategoryWrapper alloc]
-                                initWithErrorCategory:state.error_category]
+              errorCategory:errorCategoryWrapper.get()
                   errorCode:state.error_code
                   extraCode:state.extra_code1]);
     [updateState observeUpdateState:updateStateWrapper.get()];

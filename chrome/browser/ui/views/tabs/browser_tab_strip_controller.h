@@ -149,11 +149,6 @@ class BrowserTabStripController : public TabStripController,
   // Resets the tabstrips stacked layout (true or false) from prefs.
   void UpdateStackedLayout();
 
-  // Finds the next available tab to switch to as the active tab when the
-  // |index| is collapsing. Returns base::nullopt if there are no valid tabs.
-  base::Optional<int> FindNextAvailableActiveTabForCollapsingGroup(
-      const tab_groups::TabGroupId group) const;
-
   TabStripModel* model_;
 
   TabStrip* tabstrip_;

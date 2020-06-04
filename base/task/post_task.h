@@ -99,27 +99,6 @@ namespace base {
 // have to worry about this. You will encounter DCHECKs or nullptr dereferences
 // if this is violated. For tests, prefer base::test::TaskEnvironment.
 
-// Equivalent to calling PostTask with default TaskTraits.
-BASE_EXPORT bool PostTask(const Location& from_here, OnceClosure task);
-inline bool PostTask(OnceClosure task,
-                     const Location& from_here = Location::Current()) {
-  return PostTask(from_here, std::move(task));
-}
-
-// Equivalent to calling PostTaskAndReply with default TaskTraits.
-BASE_EXPORT bool PostTaskAndReply(const Location& from_here,
-                                  OnceClosure task,
-                                  OnceClosure reply);
-
-// Equivalent to calling PostTaskAndReplyWithResult with default TaskTraits.
-template <typename TaskReturnType, typename ReplyArgType>
-bool PostTaskAndReplyWithResult(const Location& from_here,
-                                OnceCallback<TaskReturnType()> task,
-                                OnceCallback<void(ReplyArgType)> reply) {
-  return PostTaskAndReplyWithResult(from_here, {ThreadPool()}, std::move(task),
-                                    std::move(reply));
-}
-
 // Posts |task| with specific |traits|. Returns false if the task definitely
 // won't run because of current shutdown state.
 BASE_EXPORT bool PostTask(const Location& from_here,

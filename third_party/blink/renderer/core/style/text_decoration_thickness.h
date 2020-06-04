@@ -22,6 +22,7 @@ class TextDecorationThickness {
 
   bool IsFromFont() const { return thickness_from_font_; }
   Length Thickness() const;
+  bool IsAuto() const { return !thickness_from_font_ && thickness_.IsAuto(); }
 
   bool operator==(const TextDecorationThickness&) const;
 

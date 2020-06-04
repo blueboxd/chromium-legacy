@@ -6,60 +6,24 @@
 #define CHROME_BROWSER_POLICY_MESSAGING_LAYER_PUBLIC_REPORT_QUEUE_H_
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
+#include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
 #include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
+#include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/proto/record_constants.pb.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
 namespace reporting {
-
-// TODO(b/153659559) Temporary StorageModule until the real one is ready.
-class StorageModule : public base::RefCounted<StorageModule> {
- public:
-  StorageModule() = default;
-
-  StorageModule(const StorageModule& other) = delete;
-  StorageModule& operator=(const StorageModule& other) = delete;
-
-  // AddRecord will add |record| to the |StorageModule| according to the
-  // provided |priority|. On completion, |callback| will be called.
-  virtual void AddRecord(reporting_messaging_layer::EncryptedRecord record,
-                         reporting_messaging_layer::Priority priority,
-                         base::OnceCallback<void(Status)> callback) = 0;
-
- protected:
-  virtual ~StorageModule() = default;
-
- private:
-  friend base::RefCounted<StorageModule>;
-};
-
-// TODO(b/153659559) Temporary EncryptionModule until the real one is ready.
-class EncryptionModule : public base::RefCounted<EncryptionModule> {
- public:
-  EncryptionModule() = default;
-
-  EncryptionModule(const EncryptionModule& other) = delete;
-  EncryptionModule& operator=(const EncryptionModule& other) = delete;
-
-  // EncryptRecord will attempt to encrypt the provided |record|. On success the
-  // return value will contain the encrypted string.
-  virtual StatusOr<std::string> EncryptRecord(base::StringPiece record) = 0;
-
- protected:
-  virtual ~EncryptionModule() = default;
-
- private:
-  friend base::RefCounted<EncryptionModule>;
-};
 
 // A |ReportQueue| is configured with a |ReportQueueConfiguration|.  A
 // |ReportQueue| allows a user to |Enqueue| a message for delivery to a handler

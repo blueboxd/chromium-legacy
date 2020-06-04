@@ -6290,15 +6290,12 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrame) {
 
 // Regression test for https://crbug.com/736063.
 TEST_F(AltSvcFrameTest, IgnoreQuicAltSvcWithUnsupportedVersion) {
+  // Note that this test only uses the legacy Google-specific Alt-Svc format.
   const char origin[] = "https://mail.example.org";
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
   spdy::SpdyAltSvcWireFormat::AlternativeService quic_alternative_service(
       "quic", "alternative.example.org", 443, 86400,
       spdy::SpdyAltSvcWireFormat::VersionVector());
-  // TODO(zhongyi): spdy::SpdyAltSvcWireFormat::ParseHeaderFieldValue expects
-  // positve versions while VersionVector allows nonnegative verisons. Fix the
-  // parse function and change the hardcoded invalid version to
-  // quic::QUIC_VERSION_UNSUPPORTED.
   quic_alternative_service.version.push_back(/* invalid QUIC version */ 1);
   altsvc_ir.add_altsvc(quic_alternative_service);
   altsvc_ir.set_origin(origin);

@@ -885,8 +885,6 @@ void QuicConnectionLogger::OnIncomingAck(
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_ACK_FRAME_RECEIVED,
                     [&] { return NetLogQuicAckFrameParams(&frame); });
-
-  // TODO(rch, rtenneti) sort out histograms for QUIC_VERSION_34 and above.
 }
 
 void QuicConnectionLogger::OnStopWaitingFrame(

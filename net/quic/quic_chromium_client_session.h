@@ -523,7 +523,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                         const quic::QuicSocketAddress& peer_address,
                         bool is_connectivity_probe) override;
   void OnPathDegrading() override;
-  bool ShouldKeepConnectionAlive() const override;
 
   // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;

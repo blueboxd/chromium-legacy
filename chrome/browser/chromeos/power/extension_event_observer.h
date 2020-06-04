@@ -82,7 +82,7 @@ class ExtensionEventObserver : public ProfileManagerObserver,
   void OnProcessManagerShutdown(extensions::ProcessManager* manager) override;
 
   // extensions::ExtensionHostObserver:
-  void OnExtensionHostDestroyed(const extensions::ExtensionHost* host) override;
+  void OnExtensionHostDestroyed(extensions::ExtensionHost* host) override;
   void OnBackgroundEventDispatched(const extensions::ExtensionHost* host,
                                    const std::string& event_name,
                                    int event_id) override;

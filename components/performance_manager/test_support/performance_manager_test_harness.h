@@ -14,8 +14,10 @@ namespace performance_manager {
 // RenderViewHost harness. Allows for creating full WebContents, and their
 // accompanying structures in the graph. The task environment is accessed
 // via content::RenderViewHostTestHarness::task_environment(). RenderFrameHosts
-// and such are not created, so this is suitable for unittests but not
-// browsertests.
+// and such are not created, so this is suitable for unit tests but not
+// browser tests.
+//
+// Meant to be used from components_unittests, but not from unit_tests.
 class PerformanceManagerTestHarness
     : public content::RenderViewHostTestHarness {
  public:

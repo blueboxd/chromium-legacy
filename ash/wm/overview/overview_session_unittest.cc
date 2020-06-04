@@ -3776,6 +3776,31 @@ TEST_P(TabletModeOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
 }
 
+// Tests that there is no crash when destroying a window during a nudge drag.
+// Regression test for https://crbug.com/997335.
+TEST_P(TabletModeOverviewSessionTest, DestroyWindowDuringNudge) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(overview_controller()->InOverviewSession());
+
+  OverviewItem* item = GetOverviewItemForWindow(window1.get());
+  const gfx::PointF item_center = item->target_bounds().CenterPoint();
+
+  // Drag |item1| vertically to start nudging.
+  overview_session()->InitiateDrag(item, item_center,
+                                   /*is_touch_dragging=*/true);
+  overview_session()->Drag(item, item_center + gfx::Vector2dF(0, 160));
+
+  // Destroy |window2| and |window3|,then keep dragging. There should be no
+  // crash.
+  window2.reset();
+  window3.reset();
+  overview_session()->Drag(item, item_center + gfx::Vector2dF(0, 260));
+}
+
 TEST_P(TabletModeOverviewSessionTest, MultiTouch) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));

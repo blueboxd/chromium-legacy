@@ -1927,11 +1927,10 @@ TEST_F(WorkspaceWindowResizerTest, DragToMaximizeStartingInSnapRegion) {
   window_->SetProperty(aura::client::kResizeBehaviorKey,
                        aura::client::kResizeBehaviorCanResize |
                            aura::client::kResizeBehaviorCanMaximize);
-  WindowState::Get(window_.get())->Maximize();
 
   std::unique_ptr<WindowResizer> resizer =
       CreateResizerForTest(window_.get(), gfx::Point(400.f, 1.f));
-  resizer->Drag(gfx::PointF(400.f, 25.f), 0);
+  resizer->Drag(gfx::PointF(400.f, 5.f), 0);
   resizer->CompleteDrag();
   ASSERT_FALSE(WindowState::Get(window_.get())->IsMaximized());
 
@@ -1941,7 +1940,7 @@ TEST_F(WorkspaceWindowResizerTest, DragToMaximizeStartingInSnapRegion) {
   resizer.reset();
   resizer = CreateResizerForTest(window_.get(), gfx::Point(400.f, 1.f));
   resizer->Drag(gfx::PointF(400.f, 400.f), 0);
-  resizer->Drag(gfx::PointF(400.f, 25.f), 0);
+  resizer->Drag(gfx::PointF(400.f, 5.f), 0);
   resizer->CompleteDrag();
   EXPECT_TRUE(WindowState::Get(window_.get())->IsMaximized());
 }
@@ -1995,7 +1994,7 @@ TEST_F(WorkspaceWindowResizerTest, MultiDisplayRestoreBounds) {
       display::Screen::GetScreen()->GetDisplayNearestPoint(
           gfx::Point(1200, 200)));
   resizer->Drag(gfx::PointF(1200.f, 200.f), 0);
-  resizer->Drag(gfx::PointF(1200.f, 20.f), 0);
+  resizer->Drag(gfx::PointF(1200.f, 5.f), 0);
   resizer->CompleteDrag();
   ASSERT_TRUE(window_state->IsMaximized());
 

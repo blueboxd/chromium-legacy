@@ -8,6 +8,7 @@
 #include "components/performance_manager/public/graph/policies/tab_loading_frame_navigation_policy.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/performance_manager_main_thread_mechanism.h"
+#include "components/performance_manager/public/performance_manager_owned.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"

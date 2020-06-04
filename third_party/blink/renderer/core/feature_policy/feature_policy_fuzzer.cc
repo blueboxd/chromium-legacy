@@ -16,11 +16,11 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support =
       blink::BlinkFuzzerTestSupport();
-  WTF::Vector<WTF::String> messages;
+  blink::PolicyParserMessageBuffer logger;
   // TODO(csharrison): Be smarter about parsing this origin for performance.
   scoped_refptr<const blink::SecurityOrigin> origin =
       blink::SecurityOrigin::CreateFromString("https://example.com/");
   blink::FeaturePolicyParser::ParseHeader(WTF::String(data, size), origin.get(),
-                                          &messages);
+                                          logger);
   return 0;
 }

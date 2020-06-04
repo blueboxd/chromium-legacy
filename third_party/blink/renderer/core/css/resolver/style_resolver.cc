@@ -1903,6 +1903,10 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
     if (!IsForcedColorsModeEnabled() || is_inherited_cache_hit) {
       state.Style()->CopyNonInheritedFromCached(
           *cached_matched_properties->computed_style);
+      // If the child style is a cache hit, we'll never reach StyleBuilder::
+      // ApplyProperty, hence we'll never set the flag on the parent.
+      if (state.Style()->HasExplicitInheritance())
+        state.ParentStyle()->SetChildHasExplicitInheritance();
       is_non_inherited_cache_hit = true;
     }
     UpdateFont(state);

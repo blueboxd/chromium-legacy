@@ -593,7 +593,7 @@ base::Optional<uint64_t> ArCoreImpl::SubscribeToHitTest(
     mojom::XRRayPtr ray) {
   // First, check if we recognize the type of the native origin.
 
-  if (native_origin_information->is_reference_space_category()) {
+  if (native_origin_information->is_reference_space_type()) {
     // Reference spaces are implicitly recognized and don't carry an ID.
   } else if (native_origin_information->is_input_source_id()) {
     // Input source IDs are verified in the higher layer as ArCoreImpl does
@@ -770,21 +770,21 @@ ArCoreImpl::GetMojoFromInputSources(
 }
 
 base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromReferenceSpace(
-    device::mojom::XRReferenceSpaceCategory category,
+    device::mojom::XRReferenceSpaceType type,
     const gfx::Transform& mojo_from_viewer) {
-  switch (category) {
-    case device::mojom::XRReferenceSpaceCategory::LOCAL:
+  switch (type) {
+    case device::mojom::XRReferenceSpaceType::kLocal:
       return gfx::Transform{};
-    case device::mojom::XRReferenceSpaceCategory::LOCAL_FLOOR: {
+    case device::mojom::XRReferenceSpaceType::kLocalFloor: {
       auto result = gfx::Transform{};
       result.Translate3d(0, -GetEstimatedFloorHeight(), 0);
       return result;
     }
-    case device::mojom::XRReferenceSpaceCategory::VIEWER:
+    case device::mojom::XRReferenceSpaceType::kViewer:
       return mojo_from_viewer;
-    case device::mojom::XRReferenceSpaceCategory::BOUNDED_FLOOR:
+    case device::mojom::XRReferenceSpaceType::kBoundedFloor:
       return base::nullopt;
-    case device::mojom::XRReferenceSpaceCategory::UNBOUNDED:
+    case device::mojom::XRReferenceSpaceType::kUnbounded:
       return base::nullopt;
   }
 }
@@ -806,7 +806,7 @@ bool ArCoreImpl::NativeOriginExists(
       }
 
       return false;
-    case mojom::XRNativeOriginInformation::Tag::REFERENCE_SPACE_CATEGORY:
+    case mojom::XRNativeOriginInformation::Tag::REFERENCE_SPACE_TYPE:
       // All reference spaces are known to ARCore.
       return true;
 
@@ -837,9 +837,9 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
       }
 
       return base::nullopt;
-    case mojom::XRNativeOriginInformation::Tag::REFERENCE_SPACE_CATEGORY:
+    case mojom::XRNativeOriginInformation::Tag::REFERENCE_SPACE_TYPE:
       return GetMojoFromReferenceSpace(
-          native_origin_information.get_reference_space_category(),
+          native_origin_information.get_reference_space_type(),
           mojo_from_viewer);
     case mojom::XRNativeOriginInformation::Tag::PLANE_ID:
       return plane_manager_->GetMojoFromPlane(

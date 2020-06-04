@@ -9,12 +9,12 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_mode.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "ui/base/ime/ime_text_span.h"
 
 namespace blink {
 
@@ -145,12 +145,12 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
 
   // WebInputMethodController overrides.
   bool SetComposition(const WebString& text,
-                      const WebVector<WebImeTextSpan>& ime_text_spans,
+                      const WebVector<ui::ImeTextSpan>& ime_text_spans,
                       const WebRange& replacement_range,
                       int selection_start,
                       int selection_end) override;
   bool CommitText(const WebString& text,
-                  const WebVector<WebImeTextSpan>& ime_text_spans,
+                  const WebVector<ui::ImeTextSpan>& ime_text_spans,
                   const WebRange& replacement_range,
                   int relative_caret_position) override;
   bool FinishComposingText(
@@ -173,7 +173,7 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   bool SetCompositionFromExistingText(
       int composition_start,
       int composition_end,
-      const WebVector<WebImeTextSpan>& ime_text_spans);
+      const WebVector<ui::ImeTextSpan>& ime_text_spans);
 
   bool IsVirtualKeyboardPolicyManual() const override;
   bool IsEditContextActive() const override;
@@ -213,7 +213,8 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   // TextFormatUpdateEvent (e.g. backgroundColor, textDecoration, etc.). The
   // consumer of the EditContext should update their view accordingly to provide
   // the user with visual feedback as prescribed by the software keyboard.
-  void DispatchTextFormatEvent(const WebVector<WebImeTextSpan>& ime_text_spans);
+  void DispatchTextFormatEvent(
+      const WebVector<ui::ImeTextSpan>& ime_text_spans);
 
   // The textupdate event will be fired on the EditContext when user input has
   // resulted in characters being applied to the editable region. The event

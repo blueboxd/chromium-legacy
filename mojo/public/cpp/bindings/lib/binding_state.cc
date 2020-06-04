@@ -36,9 +36,9 @@ void BindingStateBase::ResumeIncomingMethodCallProcessing() {
   router_->ResumeIncomingMethodCallProcessing();
 }
 
-bool BindingStateBase::WaitForIncomingMethodCall(MojoDeadline deadline) {
+bool BindingStateBase::WaitForIncomingMethodCall() {
   DCHECK(router_);
-  return router_->WaitForIncomingMessage(deadline);
+  return router_->WaitForIncomingMessage();
 }
 
 void BindingStateBase::PauseRemoteCallbacksUntilFlushCompletes(

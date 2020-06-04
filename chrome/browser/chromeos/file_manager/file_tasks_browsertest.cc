@@ -86,7 +86,7 @@ void VerifyTasks(int* remaining,
       << " for extension: " << expectation.file_extensions;
 
   // Verify no other task is set as default.
-  EXPECT_EQ(1u,
+  EXPECT_EQ(1,
             std::count_if(result->begin(), result->end(),
                           [](const auto& task) { return task.is_default(); }))
       << expectation.file_extensions;

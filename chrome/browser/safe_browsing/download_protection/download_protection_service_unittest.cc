@@ -744,7 +744,8 @@ class DownloadProtectionServiceTestBase
   }
 
   void SetExtendedReportingPreference(bool is_extended_reporting) {
-    SetExtendedReportingPref(profile()->GetPrefs(), is_extended_reporting);
+    SetExtendedReportingPrefForTests(profile()->GetPrefs(),
+                                     is_extended_reporting);
   }
 
   // Verify that corrupted ZIP/DMGs do send a ping.
@@ -3008,13 +3009,13 @@ TEST_P(DownloadProtectionServiceTest,
 
   content::DownloadItemUtils::AttachInfo(&item, nullptr, web_contents());
 
-  SetExtendedReportingPref(profile()->GetPrefs(), true);
+  SetExtendedReportingPrefForTests(profile()->GetPrefs(), true);
   std::unique_ptr<ReferrerChainData> referrer_chain_data =
       download_service_->IdentifyReferrerChain(item);
   // 6 entries means 5 interactions between entries.
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 6u);
 
-  SetExtendedReportingPref(profile()->GetPrefs(), false);
+  SetExtendedReportingPrefForTests(profile()->GetPrefs(), false);
   referrer_chain_data = download_service_->IdentifyReferrerChain(item);
   // 3 entries means 2 interactions between entries.
   EXPECT_EQ(referrer_chain_data->referrer_chain_length(), 3u);

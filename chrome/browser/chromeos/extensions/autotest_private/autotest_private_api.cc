@@ -22,10 +22,10 @@
 #include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/desks_helper.h"
-#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -45,6 +45,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/strcat.h"
@@ -152,6 +153,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
@@ -713,11 +715,24 @@ bool GetDisplayIdFromOptionalArg(const std::unique_ptr<std::string>& arg,
   return true;
 }
 
-using DisplaySmoothnessTrackers =
-    std::map<int64_t, std::unique_ptr<ash::FpsCounter>>;
-DisplaySmoothnessTrackers* GetDisplaySmoothnessTrackers() {
-  static base::NoDestructor<DisplaySmoothnessTrackers> trackers;
+struct SmoothnessTrackerInfo {
+  base::Optional<ui::ThroughputTracker> tracker;
+  base::OnceCallback<void(int smoothness)> callback;
+};
+using DisplaySmoothnessTrackerInfos = std::map<int64_t, SmoothnessTrackerInfo>;
+DisplaySmoothnessTrackerInfos* GetDisplaySmoothnessTrackerInfos() {
+  static base::NoDestructor<DisplaySmoothnessTrackerInfos> trackers;
   return trackers.get();
+}
+
+// Forwards |smoothness| to the callback for |display_id| and resets.
+void ForwardSmoothessAndReset(int64_t display_id, int smoothness) {
+  auto* infos = GetDisplaySmoothnessTrackerInfos();
+  auto it = infos->find(display_id);
+  DCHECK(it != infos->end());
+  DCHECK(it->second.callback);
+  std::move(it->second.callback).Run(smoothness);
+  infos->erase(it);
 }
 
 std::string ResolutionToString(
@@ -4416,8 +4431,8 @@ AutotestPrivateStartSmoothnessTrackingFunction::Run() {
         Error(base::StrCat({"Invalid display id: ", *params->display_id})));
   }
 
-  auto* trackers = GetDisplaySmoothnessTrackers();
-  if (trackers->find(display_id) != trackers->end()) {
+  auto* infos = GetDisplaySmoothnessTrackerInfos();
+  if (infos->find(display_id) != infos->end()) {
     return RespondNow(
         Error(base::StrCat({"Smoothness already tracked for display: ",
                             base::NumberToString(display_id)})));
@@ -4430,8 +4445,11 @@ AutotestPrivateStartSmoothnessTrackingFunction::Run() {
          base::NumberToString(display_id)})));
   }
 
-  (*trackers)[display_id] =
-      std::make_unique<ash::FpsCounter>(root_window->layer()->GetCompositor());
+  auto tracker =
+      root_window->layer()->GetCompositor()->RequestNewThroughputTracker();
+  tracker.Start(ash::metrics_util::ForSmoothness(
+      base::BindRepeating(&ForwardSmoothessAndReset, display_id)));
+  (*infos)[display_id].tracker = std::move(tracker);
   return RespondNow(NoArguments());
 }
 
@@ -4454,22 +4472,24 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
         Error(base::StrCat({"Invalid display id: ", *params->display_id})));
   }
 
-  auto* trackers = GetDisplaySmoothnessTrackers();
-  auto it = trackers->find(display_id);
-  if (it == trackers->end()) {
+  auto* infos = GetDisplaySmoothnessTrackerInfos();
+  auto it = infos->find(display_id);
+  if (it == infos->end()) {
     return RespondNow(
         Error(base::StrCat({"Smoothness is not tracked for display: ",
                             base::NumberToString(display_id)})));
   }
 
-  auto fps_tracker = std::move(it->second);
-  trackers->erase(it);
+  it->second.callback = base::BindOnce(
+      &AutotestPrivateStopSmoothnessTrackingFunction::OnReportSmoothness, this);
+  it->second.tracker->Stop();
 
-  const int smoothness = fps_tracker->ComputeSmoothness();
-  if (smoothness == -1)
-    return RespondNow(Error("Could not compute smoothness."));
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
 
-  return RespondNow(OneArgument(std::make_unique<base::Value>(smoothness)));
+void AutotestPrivateStopSmoothnessTrackingFunction::OnReportSmoothness(
+    int smoothness) {
+  Respond(OneArgument(std::make_unique<base::Value>(smoothness)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

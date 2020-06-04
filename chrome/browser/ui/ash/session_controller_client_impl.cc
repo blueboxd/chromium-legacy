@@ -91,6 +91,7 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   session->user_info.account_id = user.GetAccountId();
   session->user_info.display_name = base::UTF16ToUTF8(user.display_name());
   session->user_info.display_email = user.display_email();
+  session->user_info.given_name = base::UTF16ToUTF8(user.GetGivenName());
   session->user_info.is_ephemeral =
       UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user.GetAccountId());
   session->user_info.has_gaia_account = user.has_gaia_account();

@@ -1875,15 +1875,14 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       case IME_SETCOMPOSITION:
         main_widget()->OnImeSetComposition(
             base::WideToUTF16(ime_message->ime_string),
-            std::vector<blink::WebImeTextSpan>(), gfx::Range::InvalidRange(),
+            std::vector<ui::ImeTextSpan>(), gfx::Range::InvalidRange(),
             ime_message->selection_start, ime_message->selection_end);
         break;
 
       case IME_COMMITTEXT:
         main_widget()->OnImeCommitText(
             base::WideToUTF16(ime_message->ime_string),
-            std::vector<blink::WebImeTextSpan>(), gfx::Range::InvalidRange(),
-            0);
+            std::vector<ui::ImeTextSpan>(), gfx::Range::InvalidRange(), 0);
         break;
 
       case IME_FINISHCOMPOSINGTEXT:
@@ -1892,7 +1891,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_CANCELCOMPOSITION:
         main_widget()->OnImeSetComposition(base::string16(),
-                                           std::vector<blink::WebImeTextSpan>(),
+                                           std::vector<ui::ImeTextSpan>(),
                                            gfx::Range::InvalidRange(), 0, 0);
         break;
     }
@@ -2133,7 +2132,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   const base::string16 empty_string;
-  const std::vector<blink::WebImeTextSpan> empty_ime_text_span;
+  const std::vector<ui::ImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds;
   main_widget()->OnSetFocus(true);
 
@@ -2146,8 +2145,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 
   for (const gfx::Rect& r : bounds)
     EXPECT_LT(0, r.width());
-  main_widget()->OnImeCommitText(empty_string,
-                                 std::vector<blink::WebImeTextSpan>(),
+  main_widget()->OnImeCommitText(empty_string, std::vector<ui::ImeTextSpan>(),
                                  gfx::Range::InvalidRange(), 0);
 
   // Non surrogate pair unicode character.
@@ -3083,7 +3081,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   const base::string16 empty_string;
-  const std::vector<blink::WebImeTextSpan> empty_ime_text_span;
+  const std::vector<ui::ImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds_at_1x;
   main_widget()->OnSetFocus(true);
 

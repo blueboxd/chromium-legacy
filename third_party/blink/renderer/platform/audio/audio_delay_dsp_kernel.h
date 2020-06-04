@@ -35,9 +35,22 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
  public:
   AudioDelayDSPKernel(double max_delay_time, float sample_rate);
 
+  // Process the delay.  Basically dispatches to either ProcessKRate or
+  // ProcessARate.
   void Process(const float* source,
                float* destination,
                uint32_t frames_to_process) override;
+
+  // Handles k-rate processing
+  void ProcessKRate(const float* source,
+                    float* destination,
+                    uint32_t frames_to_process);
+
+  // Handles a-rate processing
+  void ProcessARate(const float* source,
+                    float* destination,
+                    uint32_t frames_to_process);
+
   void Reset() override;
 
   float MaxDelayTime() const { return max_delay_time_; }

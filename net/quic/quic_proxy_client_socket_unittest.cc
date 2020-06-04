@@ -187,9 +187,7 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(20));
-    if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      quic::QuicEnableVersion(version_);
-    }
+    quic::QuicEnableVersion(version_);
   }
 
   void SetUp() override {}

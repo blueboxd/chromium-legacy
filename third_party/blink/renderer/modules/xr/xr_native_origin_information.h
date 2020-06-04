@@ -24,7 +24,7 @@ device::mojom::blink::XRNativeOriginInformation Create(
     const XRReferenceSpace* reference_space);
 
 device::mojom::blink::XRNativeOriginInformation Create(
-    device::mojom::XRReferenceSpaceCategory reference_space_category);
+    device::mojom::XRReferenceSpaceType reference_space_type);
 
 }  // namespace XRNativeOriginInformation
 

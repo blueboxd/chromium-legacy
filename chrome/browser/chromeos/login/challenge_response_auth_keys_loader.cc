@@ -228,10 +228,9 @@ class ExtensionLoadObserver final
 
   // extensions::ExtensionHostObserver
 
-  void OnExtensionHostDestroyed(
-      const extensions::ExtensionHost* host) override {
-    // TODO(crbug.com/1086475): Just stop observing |host| instead of all.
-    extension_host_observer_.RemoveAll();
+  void OnExtensionHostDestroyed(extensions::ExtensionHost* host) override {
+    DCHECK(extension_host_observer_.IsObserving(host));
+    extension_host_observer_.Remove(host);
     StopWaitingOnExtension(host->extension_id());
   }
 

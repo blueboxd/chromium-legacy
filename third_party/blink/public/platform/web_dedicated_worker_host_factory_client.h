@@ -9,7 +9,9 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 
 namespace base {
@@ -42,7 +44,8 @@ class WebDedicatedWorkerHostFactoryClient {
       const blink::WebURL& script_url,
       network::mojom::CredentialsMode credentials_mode,
       const blink::WebFetchClientSettingsObject& fetch_client_settings_object,
-      mojo::ScopedMessagePipeHandle blob_url_token) = 0;
+      CrossVariantMojoRemote<mojom::BlobURLTokenInterfaceBase>
+          blob_url_token) = 0;
 
   // Clones the given WebWorkerFetchContext for nested workers.
   virtual scoped_refptr<WebWorkerFetchContext> CloneWorkerFetchContext(

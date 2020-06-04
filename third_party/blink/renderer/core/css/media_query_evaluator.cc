@@ -910,8 +910,13 @@ void MediaQueryEvaluator::Init() {
 }
 
 bool MediaQueryEvaluator::Eval(const MediaQueryExp& expr) const {
-  if (!media_values_ || !media_values_->HasValues())
-    return true;
+  if (!media_values_ || !media_values_->HasValues()) {
+    // media_values_ should only be nullptr when parsing UA stylesheets. The
+    // only media queries we support in UA stylesheets are media type queries.
+    // If HasValues() return false, it means the document frame is nullptr.
+    NOTREACHED();
+    return false;
+  }
 
   DCHECK(g_function_map);
 

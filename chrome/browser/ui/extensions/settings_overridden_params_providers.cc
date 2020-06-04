@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,15 +22,38 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_url_handler.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace settings_overridden_params {
 
 namespace {
 
+// Returns the number of extensions that are currently enabled that override the
+// default search setting.
+size_t GetNumberOfExtensionsThatOverrideSearch(Profile* profile) {
+  const auto* const registry = extensions::ExtensionRegistry::Get(profile);
+  const auto overrides_search = [](auto extension) {
+    auto* const settings = extensions::SettingsOverrides::Get(extension.get());
+    return settings && settings->search_engine;
+  };
+  return std::count_if(registry->enabled_extensions().begin(),
+                       registry->enabled_extensions().end(), overrides_search);
+}
+
+// Returns true if the given |template_url| corresponds to Google search.
+bool IsGoogleSearch(const TemplateURL& template_url,
+                    const TemplateURLService& template_url_service) {
+  GURL search_url =
+      template_url.GenerateSearchURL(template_url_service.search_terms_data());
+  return google_util::IsGoogleSearchUrl(search_url);
+}
+
 // Returns true if Google is the default search provider.
 bool GoogleIsDefaultSearchProvider(Profile* profile) {
-  TemplateURLService* template_url_service =
+  const TemplateURLService* const template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
   const TemplateURL* const default_search =
       template_url_service->GetDefaultSearchProvider();
@@ -39,9 +63,65 @@ bool GoogleIsDefaultSearchProvider(Profile* profile) {
     return false;
   }
 
-  GURL search_url = default_search->GenerateSearchURL(
-      template_url_service->search_terms_data());
-  return google_util::IsGoogleSearchUrl(search_url);
+  return IsGoogleSearch(*default_search, *template_url_service);
+}
+
+struct SecondarySearchInfo {
+  enum class Type {
+    // Google is the secondary search engine.
+    kGoogle,
+    // The secondary search is one of the default-populated searches, but is
+    // not Google.
+    kNonGoogleInDefaultList,
+    // Some other search engine is the secondary search.
+    kOther,
+  };
+
+  Type type;
+
+  // The name of the search engine; only populated when |type| is
+  // kOtherDefaultOption.
+  base::string16 name;
+};
+
+// Returns details about the search that would take over, if the currently-
+// controlling extension were to be disabled.
+SecondarySearchInfo GetSecondarySearchInfo(Profile* profile) {
+  // First, check if there's another extension that would take over.
+  size_t num_overriding_extensions =
+      GetNumberOfExtensionsThatOverrideSearch(profile);
+  // This method should only be called when there's an extension that overrides
+  // the search engine.
+  DCHECK_GE(num_overriding_extensions, 1u);
+
+  if (num_overriding_extensions > 1)  // Another extension would take over.
+    return {SecondarySearchInfo::Type::kOther};
+
+  const TemplateURLService* const template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile);
+  const TemplateURL* const secondary_search =
+      template_url_service->GetDefaultSearchProviderIgnoringExtensions();
+  if (!secondary_search) {
+    // We couldn't find a default (this could potentially happen if e.g. the
+    // default search engine is disabled by policy).
+    // TODO(devlin): It *seems* like in that case, extensions also shouldn't be
+    // able to override it. Investigate.
+    return {SecondarySearchInfo::Type::kOther};
+  }
+
+  if (IsGoogleSearch(*secondary_search, *template_url_service))
+    return {SecondarySearchInfo::Type::kGoogle};
+
+  if (!template_url_service->ShowInDefaultList(secondary_search)) {
+    // Found another search engine, but it's not one of the default options.
+    return {SecondarySearchInfo::Type::kOther};
+  }
+
+  DCHECK(!secondary_search->short_name().empty());
+
+  // The secondary search engine is another of the defaults.
+  return {SecondarySearchInfo::Type::kNonGoogleInDefaultList,
+          secondary_search->short_name()};
 }
 
 }  // namespace
@@ -134,9 +214,6 @@ GetSearchOverriddenParams(Profile* profile) {
   const char* preference_name =
       extensions::SettingsApiBubbleDelegate::kAcknowledgedPreference;
 
-  constexpr char kHistogramName[] =
-      "Extensions.SettingsOverridden.GenericSearchOverriddenDialogResult";
-
   // Find the active search engine (which is provided by the extension).
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
@@ -162,16 +239,47 @@ GetSearchOverriddenParams(Profile* profile) {
       search_url, kFormatRules, net::UnescapeRule::SPACES, nullptr, nullptr,
       nullptr);
 
-  // TODO(devlin): Adjust these strings based on the previous search engine.
-  base::string16 dialog_title = l10n_util::GetStringUTF16(
-      IDS_EXTENSION_SEARCH_OVERRIDDEN_DIALOG_TITLE_GENERIC);
+  constexpr char kGenericDialogHistogramName[] =
+      "Extensions.SettingsOverridden.GenericSearchOverriddenDialogResult";
+  constexpr char kBackToOtherHistogramName[] =
+      "Extensions.SettingsOverridden.BackToOtherSearchOverriddenDialogResult";
+  constexpr char kBackToGoogleHistogramName[] =
+      "Extensions.SettingsOverridden.BackToGoogleSearchOverriddenDialogResult";
+
+  SecondarySearchInfo secondary_search = GetSecondarySearchInfo(profile);
+
+  const char* histogram_name = nullptr;
+  const gfx::VectorIcon* icon = nullptr;
+  base::string16 dialog_title;
+  switch (secondary_search.type) {
+    case SecondarySearchInfo::Type::kGoogle:
+      histogram_name = kBackToGoogleHistogramName;
+      dialog_title = l10n_util::GetStringUTF16(
+          IDS_EXTENSION_SEARCH_OVERRIDDEN_DIALOG_TITLE_BACK_TO_GOOGLE);
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+      icon = &kGoogleGLogoIcon;
+#endif
+      break;
+    case SecondarySearchInfo::Type::kNonGoogleInDefaultList:
+      DCHECK(!secondary_search.name.empty());
+      histogram_name = kBackToOtherHistogramName;
+      dialog_title = l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_SEARCH_OVERRIDDEN_DIALOG_TITLE_BACK_TO_OTHER,
+          secondary_search.name);
+      break;
+    case SecondarySearchInfo::Type::kOther:
+      histogram_name = kGenericDialogHistogramName;
+      dialog_title = l10n_util::GetStringUTF16(
+          IDS_EXTENSION_SEARCH_OVERRIDDEN_DIALOG_TITLE_GENERIC);
+      break;
+  }
   base::string16 dialog_message = l10n_util::GetStringFUTF16(
       IDS_EXTENSION_SEARCH_OVERRIDDEN_DIALOG_BODY_GENERIC, formatted_search_url,
       base::UTF8ToUTF16(extension->name().c_str()));
 
   return ExtensionSettingsOverriddenDialog::Params(
-      extension->id(), preference_name, kHistogramName, std::move(dialog_title),
-      std::move(dialog_message), nullptr);
+      extension->id(), preference_name, histogram_name, std::move(dialog_title),
+      std::move(dialog_message), icon);
 }
 
 }  // namespace settings_overridden_params

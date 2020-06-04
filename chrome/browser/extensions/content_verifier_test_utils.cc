@@ -42,7 +42,8 @@ void DownloaderTestDelegate::StartUpdateCheck(
     std::unique_ptr<ManifestFetchData> fetch_data) {
   requests_.push_back(std::move(fetch_data));
   const ManifestFetchData* data = requests_.back().get();
-  for (const auto& id : data->extension_ids()) {
+  const ExtensionIdSet extension_ids = data->GetExtensionIds();
+  for (const auto& id : extension_ids) {
     if (base::Contains(responses_, id)) {
       CRXFileInfo crx_info(responses_[id].second, GetTestVerifierFormat());
       crx_info.extension_id = id;

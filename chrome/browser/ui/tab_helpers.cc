@@ -103,8 +103,8 @@
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/password_manager/core/browser/password_manager.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/sync/engine/sync_engine_switches.h"
@@ -275,11 +275,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   PDFPluginPlaceholderObserver::CreateForWebContents(web_contents);
-  if (auto* performance_manager_registry =
-          performance_manager::PerformanceManagerRegistry::GetInstance()) {
-    performance_manager_registry->CreatePageNodeForWebContents(web_contents);
+  if (performance_manager::PerformanceManager::IsAvailable())
     performance_manager::TabPropertiesDecorator::SetIsTab(web_contents, true);
-  }
   permissions::PermissionRequestManager::CreateForWebContents(web_contents);
   // The PopupBlockerTabHelper has an implicit dependency on
   // ChromeSubresourceFilterClient being available in its constructor.

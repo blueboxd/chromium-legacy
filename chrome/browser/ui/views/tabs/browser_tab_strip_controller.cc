@@ -353,9 +353,10 @@ void BrowserTabStripController::ToggleTabGroupCollapsedState(
   // tab should switch to the next available tab. If there are no available tabs
   // for the active tab to switch to, the group will not toggle to collapse.
   const bool is_currently_collapsed = IsGroupCollapsed(group);
-  if (!is_currently_collapsed) {
+  if (!is_currently_collapsed &&
+      model_->GetTabGroupForTab(GetActiveIndex()) == group) {
     const base::Optional<int> next_active =
-        FindNextAvailableActiveTabForCollapsingGroup(group);
+        model_->GetNextExpandedActiveTab(GetActiveIndex(), group);
     if (!next_active.has_value())
       return;
     model_->ActivateTabAt(next_active.value(),
@@ -703,30 +704,4 @@ void BrowserTabStripController::UpdateStackedLayout() {
       g_browser_process->local_state(), &adjust_layout);
   tabstrip_->set_adjust_layout(adjust_layout);
   tabstrip_->SetStackedLayout(stacked_layout);
-}
-
-base::Optional<int>
-BrowserTabStripController::FindNextAvailableActiveTabForCollapsingGroup(
-    const tab_groups::TabGroupId group) const {
-  const int starting_index = GetActiveIndex();
-  const std::vector<int> tabs_in_group = ListTabsInGroup(group);
-
-  if (starting_index < tabs_in_group.front() ||
-      starting_index > tabs_in_group.back()) {
-    return starting_index;
-  }
-
-  for (int i = 0; i < model_->count(); i++) {
-    int current_index = (i + starting_index) % model_->count();
-    base::Optional<tab_groups::TabGroupId> current_group =
-        model_->GetTabGroupForTab(current_index);
-    if (!current_group.has_value() ||
-        (!IsGroupCollapsed(current_group.value()) && current_group != group)) {
-      return current_index;
-    }
-    const std::vector<int> tabs_in_group =
-        ListTabsInGroup(current_group.value());
-  }
-
-  return base::nullopt;
 }

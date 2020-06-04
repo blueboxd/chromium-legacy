@@ -110,6 +110,33 @@ const base::FilePath::CharType kSimpleWithPopupExt[] =
     FILE_PATH_LITERAL("simple_with_popup");
 const base::FilePath::CharType kAppUnpackedExt[] = FILE_PATH_LITERAL("app");
 
+// This is to enforce zero initial delay.
+constexpr net::BackoffEntry::Policy kDefaultBackOffPolicyForTesting = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms.
+    0,
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0.1,
+
+    // Maximum amount of time we are willing to delay our request in ms.
+    600000,  // Ten minutes.
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    // Don't use initial delay unless the last request was an error.
+    false,
+};
+
 // Registers a handler to respond to requests whose path matches |match_path|.
 // The response contents are generated from |template_file|, by replacing all
 // "${URL_PLACEHOLDER}" substrings in the file with the request URL excluding
@@ -1482,6 +1509,94 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
       extensions::PendingExtensionManager::PolicyReinstallReason::
           NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE_SKIP,
       1);
+}
+
+// Verifies that the extension is installed when the manifest is not fetched in
+// case the remote update server is down.
+// TODO(http://crbug.com/1086148): Add a check whether the cache entry is
+// recorded in ForceInstalledMetrics after the bug is fixed.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallForcelistServerShutDown) {
+  base::HistogramTester histogram_tester;
+  ExtensionRequestInterceptor interceptor;
+
+  extensions::ExtensionRegistry* registry = extension_registry();
+  ASSERT_FALSE(registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
+
+  extension_service()->updater()->SetBackoffPolicyForTesting(
+      &kDefaultBackOffPolicyForTesting);
+
+  base::FilePath extension_path(ui_test_utils::GetTestFilePath(
+      base::FilePath(kTestExtensionsDir), base::FilePath(kGoodV1CrxName)));
+
+  test_extension_cache_->AllowCaching(kGoodCrxId);
+  test_extension_cache_->PutExtension(
+      kGoodCrxId, "" /* expected hash, ignored by ExtensionCacheFake */,
+      extension_path, "1.0", base::DoNothing());
+  // Shut down test update server to make update manifest and CRX queries fail
+  // with network error code net::ERR_CONNECTION_REFUSED.
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  PolicyMap policies;
+  AddExtensionToForceList(&policies, kGoodCrxId, url);
+  extensions::TestExtensionRegistryObserver observer(registry);
+  UpdateProviderPolicy(policies);
+
+  observer.WaitForExtensionInstalled();
+
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(kGoodCrxId));
+}
+
+// Verifies that the extension is installed when the manifest is not fetched in
+// case the device is offline. This test mimics a server providing
+// ERR_INTERNET_DISCONNECTED response instead of actually having the device
+// offline.
+// TODO(http://crbug.com/1086148): Add a check whether the cache entry is
+// recorded in ForceInstalledMetrics after the bug is fixed.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelistOffline) {
+  base::HistogramTester histogram_tester;
+  ExtensionRequestInterceptor interceptor;
+
+  extensions::ExtensionRegistry* registry = extension_registry();
+  ASSERT_FALSE(registry->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
+  // This simulates inability to make network requests for fetching the
+  // extension update manifest and CRX files.
+  {
+    interceptor.set_interceptor_hook(base::BindLambdaForTesting(
+        [&](content::URLLoaderInterceptor::RequestParams* params) {
+          if (params->url_request.url.path() !=
+              "/extensions/good_v1_update_manifest.xml")
+            return false;
+          params->client->OnComplete(network::URLLoaderCompletionStatus(
+              net::ERR_INTERNET_DISCONNECTED));
+          return true;
+        }));
+  }
+  extension_service()->updater()->SetBackoffPolicyForTesting(
+      &kDefaultBackOffPolicyForTesting);
+
+  base::FilePath extension_path(ui_test_utils::GetTestFilePath(
+      base::FilePath(kTestExtensionsDir), base::FilePath(kGoodV1CrxName)));
+
+  test_extension_cache_->AllowCaching(kGoodCrxId);
+  test_extension_cache_->PutExtension(
+      kGoodCrxId, "" /* expected hash, ignored by ExtensionCacheFake */,
+      extension_path, "1.0", base::DoNothing());
+  PolicyMap policies;
+  AddExtensionToForceList(&policies, kGoodCrxId, url);
+
+  extensions::TestExtensionRegistryObserver observer(registry);
+  UpdateProviderPolicy(policies);
+  observer.WaitForExtensionInstalled();
+
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(kGoodCrxId));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,

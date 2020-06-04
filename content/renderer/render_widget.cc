@@ -130,7 +130,6 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #endif  // defined(OS_POSIX)
 
-using blink::WebImeTextSpan;
 using blink::WebDeviceEmulationParams;
 using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
@@ -1951,7 +1950,7 @@ void RenderWidget::OnShowContextMenu(ui::MenuSourceType source_type,
 
 void RenderWidget::OnImeSetComposition(
     const base::string16& text,
-    const std::vector<WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int selection_start,
     int selection_end) {
@@ -1969,7 +1968,8 @@ void RenderWidget::OnImeSetComposition(
   blink::WebInputMethodController* controller = GetInputMethodController();
   if (!controller ||
       !controller->SetComposition(
-          WebString::FromUTF16(text), WebVector<WebImeTextSpan>(ime_text_spans),
+          WebString::FromUTF16(text),
+          WebVector<ui::ImeTextSpan>(ime_text_spans),
           replacement_range.IsValid()
               ? WebRange(replacement_range.start(), replacement_range.length())
               : WebRange(),
@@ -1987,7 +1987,7 @@ void RenderWidget::OnImeSetComposition(
 
 void RenderWidget::OnImeCommitText(
     const base::string16& text,
-    const std::vector<WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
   if (!ShouldHandleImeEvents())
@@ -2004,7 +2004,7 @@ void RenderWidget::OnImeCommitText(
   GetWebWidget()->SetHandlingInputEvent(true);
   if (auto* controller = GetInputMethodController()) {
     controller->CommitText(
-        WebString::FromUTF16(text), WebVector<WebImeTextSpan>(ime_text_spans),
+        WebString::FromUTF16(text), WebVector<ui::ImeTextSpan>(ime_text_spans),
         replacement_range.IsValid()
             ? WebRange(replacement_range.start(), replacement_range.length())
             : WebRange(),

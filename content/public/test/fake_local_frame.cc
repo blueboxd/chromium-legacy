@@ -99,6 +99,9 @@ void FakeLocalFrame::PostMessageEvent(
     const base::string16& target_origin,
     blink::TransferableMessage message) {}
 
+void FakeLocalFrame::GetSavableResourceLinks(
+    GetSavableResourceLinksCallback callback) {}
+
 #if defined(OS_MACOSX)
 void FakeLocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {}
 void FakeLocalFrame::GetFirstRectForRange(const gfx::Range& range) {}

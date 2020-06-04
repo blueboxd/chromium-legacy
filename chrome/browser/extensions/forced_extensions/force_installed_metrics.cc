@@ -18,7 +18,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/updater/extension_downloader.h"
-#include "extensions/browser/updater/extension_downloader_delegate.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/arc/arc_prefs.h"
@@ -313,6 +312,13 @@ void ForceInstalledMetrics::OnForceInstalledExtensionsLoaded() {
     ReportMetrics();
   reported_ = true;
   timer_->Stop();
+}
+
+void ForceInstalledMetrics::OnExtensionDownloadCacheStatusRetrieved(
+    const ExtensionId& id,
+    ExtensionDownloaderDelegate::CacheStatus cache_status) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledCacheStatus",
+                            cache_status);
 }
 
 }  //  namespace extensions

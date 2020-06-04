@@ -301,8 +301,16 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
 }
 
 TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
+  // Note that this test covers the legacy mechanism which relies on
+  // QuicVersionToString. We should now be using ALPNs instead.
   base::test::TaskEnvironment task_environment_(
       base::test::TaskEnvironment::MainThreadType::IO);
+
+  quic::ParsedQuicVersion version =
+      quic::AllSupportedVersionsWithQuicCrypto().front();
+  std::string experimental_options =
+      "{\"QUIC\":{\"quic_version\":\"" +
+      quic::QuicVersionToString(version.transport_version) + "\"}}";
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -327,7 +335,7 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"quic_version\":\"QUIC_VERSION_46\"}}",
+      experimental_options,
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
@@ -346,15 +354,17 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersion) {
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::QuicParams* quic_params = context->quic_context()->params();
   EXPECT_EQ(quic_params->supported_versions.size(), 1u);
-  EXPECT_EQ(quic_params->supported_versions[0],
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                                    quic::QUIC_VERSION_46));
+  EXPECT_EQ(quic_params->supported_versions[0], version);
 }
 
 TEST(URLRequestContextConfigTest, SetSupportedQuicVersionByAlpn) {
   base::test::TaskEnvironment task_environment_(
       base::test::TaskEnvironment::MainThreadType::IO);
 
+  quic::ParsedQuicVersion version = quic::AllSupportedVersions().front();
+  std::string experimental_options =
+      "{\"QUIC\":{\"quic_version\":\"" + quic::AlpnForVersion(version) + "\"}}";
+
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
@@ -378,7 +388,7 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersionByAlpn) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"quic_version\":\"h3-T050\"}}",
+      experimental_options,
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
@@ -397,9 +407,7 @@ TEST(URLRequestContextConfigTest, SetSupportedQuicVersionByAlpn) {
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
   const net::QuicParams* quic_params = context->quic_context()->params();
   EXPECT_EQ(quic_params->supported_versions.size(), 1u);
-  EXPECT_EQ(
-      quic_params->supported_versions[0],
-      quic::ParsedQuicVersion(quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_50));
+  EXPECT_EQ(quic_params->supported_versions[0], version);
 }
 
 TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
@@ -429,7 +437,7 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"quic_version\":\"QUIC_VERSION_33\"}}",
+      "{\"QUIC\":{\"quic_version\":\"h3-Q047\"}}",
       // MockCertVerifier to use for testing purposes.
       std::unique_ptr<net::CertVerifier>(),
       // Enable network quality estimator.
@@ -449,8 +457,7 @@ TEST(URLRequestContextConfigTest, SetUnsupportedQuicVersion) {
   const net::QuicParams* quic_params = context->quic_context()->params();
   EXPECT_EQ(quic_params->supported_versions.size(), 1u);
   EXPECT_EQ(quic_params->supported_versions[0],
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO,
-                                    quic::QUIC_VERSION_46));
+            net::kDefaultSupportedQuicVersion);
 }
 
 TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {

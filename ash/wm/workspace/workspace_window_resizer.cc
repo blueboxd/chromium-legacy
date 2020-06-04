@@ -65,7 +65,11 @@ constexpr int kScreenEdgeInsetForTouchDrag = 32;
 // neighboring display. For touch dragging, you may be able to drag out of the
 // display because the physical device has a border around the display. Either
 // case makes it difficult to drag to the edge without this tolerance.
-constexpr int kScreenEdgeInsetForSnapping = 32;
+constexpr int kScreenEdgeInsetForSnappingSides = 32;
+// Similar but for snapping to the top. It is less aggressive since users need
+// to grab the caption and making it too aggressive will lead to more accidental
+// snaps when trying to align windows' top edges to the top of the display.
+constexpr int kScreenEdgeInsetForSnappingTop = 8;
 
 // When dragging an attached window this is the min size we'll make sure is
 // visible. In the vertical direction we take the max of this and that from
@@ -326,16 +330,16 @@ WorkspaceWindowResizer::SnapType GetSnapType(
   // corresponding work area edge. For example, assuming the shelf is the only
   // element that alters work area, dragging a window to the left edge when the
   // shelf is aligned to the bottom will trigger a window snap if the location
-  // is between 0 and |kScreenEdgeInsetForSnapping|, but dragging a window to
-  // the left edge when the shelf is aligned to the left will trigger a window
-  // snap once it is past the shelf's right edge.
+  // is between 0 and |kScreenEdgeInsetForSnappingSides|, but dragging a window
+  // to the left edge when the shelf is aligned to the left will trigger a
+  // window snap once it is past the shelf's right edge.
   gfx::Insets insets;
   if (area.x() == display.bounds().x())
-    insets.set_left(kScreenEdgeInsetForSnapping);
+    insets.set_left(kScreenEdgeInsetForSnappingSides);
   if (area.right() == display.bounds().right())
-    insets.set_right(kScreenEdgeInsetForSnapping);
+    insets.set_right(kScreenEdgeInsetForSnappingSides);
   if (area.y() == display.bounds().y())
-    insets.set_top(kScreenEdgeInsetForSnapping);
+    insets.set_top(kScreenEdgeInsetForSnappingTop);
   area.Inset(insets);
 
   if (location_in_screen.x() <= area.x())

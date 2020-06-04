@@ -505,7 +505,6 @@
 <translation id="1632803087685957583">Позволяет настроить подсказки, скорость повтора клавиш и т д.</translation>
 <translation id="1633947793238301227">Выключить Google Ассистента</translation>
 <translation id="1634783886312010422">Вы уже поменяли пароль на сайте <ph name="WEBSITE" />?</translation>
-<translation id="1635033183663317347">Установлено службой поддержки</translation>
 <translation id="1637224376458524414">Получите эту закладку на iPhone</translation>
 <translation id="1637765355341780467">Не удалось открыть профиль. Некоторые функции могут быть недоступны.</translation>
 <translation id="1639239467298939599">Загрузка</translation>
@@ -953,12 +952,10 @@
 <translation id="2199719347983604670">Данные, сохраненные с помощью синхронизации Chrome</translation>
 <translation id="2200094388063410062">Электронная почта</translation>
 <translation id="2200356397587687044">Браузеру Chrome требуется разрешение</translation>
-<translation id="2200729650590440847">Настройки блокировки экрана с помощью PIN-кода</translation>
 <translation id="220138918934036434">Скрыть кнопку</translation>
 <translation id="2202898655984161076">Возникла проблема с перечнем принтеров. Возможно, некоторые принтеры не удалось зарегистрировать при помощи <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Поисковая система, используемая в <ph name="BEGIN_LINK" />адресной строке<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Просмотр и изменение вводимого текста</translation>
-<translation id="2207166770508557715">Настройки спящего режима</translation>
 <translation id="220858061631308971">Введите PIN-код для устройства "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2212565012507486665">Разрешить файлы cookie</translation>
 <translation id="2213140827792212876">Закрыть доступ</translation>
@@ -1406,11 +1403,9 @@
 <translation id="2751131328353405138">Подключение контейнера Linux с помощью SSHFS</translation>
 <translation id="2751739896257479635">2-й этап аутентификации EAP</translation>
 <translation id="2753677631968972007">Управление доступом к сайтам вручную</translation>
-<translation id="2753984311895843016">Настройки питания в режиме бездействия</translation>
 <translation id="2755367719610958252">Настроить специальные возможности</translation>
 <translation id="275662540872599901">экран выключен</translation>
 <translation id="2757338480560142065">Убедитесь, что пароль, который вы сохраняете, совпадает с паролем для сайта <ph name="WEBSITE" />.</translation>
-<translation id="276221322463921688">Ориентация монитора</translation>
 <translation id="2762441749940182211">Доступ к камере запрещен</translation>
 <translation id="2764786626780673772">Сведения о VPN</translation>
 <translation id="2765217105034171413">Мелкий</translation>
@@ -2128,6 +2123,7 @@
 <translation id="3677106374019847299">Введите название поставщика услуг</translation>
 <translation id="3677657024345889897">Минимальная громкость</translation>
 <translation id="3677911431265050325">Мобильная версия</translation>
+<translation id="3677959414150797585">Показывать рекомендуемые приложения, веб-страницы и другой контент. Статистику для улучшения рекомендаций мы будем собирать, только если вы разрешите отправку данных об использовании функции.</translation>
 <translation id="3678156199662914018">Расширение: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Голос для озвучивания текста</translation>
 <translation id="3681311097828166361">Благодарим за отзыв. Отчет будет отправлен, когда вы подключитесь к Интернету.</translation>
@@ -3780,6 +3776,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" />: идет запись с камеры или микрофона</translation>
 <translation id="5841270259333717135">Настроить Ethernet</translation>
 <translation id="5842497610951477805">Включение и отключение Bluetooth</translation>
+<translation id="5844574845205796324">Предлагать контент</translation>
 <translation id="5846200638699387931">Ошибка синтаксиса отношений: <ph name="ERROR_LINE" />.</translation>
 <translation id="5846807460505171493">Установка обновлений и приложений. Продолжая, вы разрешаете устройству автоматически скачивать и устанавливать обновления и приложения от производителя устройства, оператора связи и компании Google (в том числе по мобильной сети). Некоторые из этих приложений могут предлагать платный контент.</translation>
 <translation id="5849212445710944278">Слово уже добавлено.</translation>
@@ -6220,7 +6217,6 @@
 <translation id="8953476467359856141">Если устройство заряжается</translation>
 <translation id="895347679606913382">Запуск...</translation>
 <translation id="8957762313041272117">Автоматические субтитры</translation>
-<translation id="8958804960827200147">Ориентация экрана</translation>
 <translation id="895944840846194039">Память JavaScript</translation>
 <translation id="8962083179518285172">Скрыть детали</translation>
 <translation id="8962918469425892674">Этот сайт использует датчики движения и освещенности</translation>

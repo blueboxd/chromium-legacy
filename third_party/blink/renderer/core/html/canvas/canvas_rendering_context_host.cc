@@ -122,7 +122,10 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
     // If LowLatency is enabled, we need a resource that is able to perform well
     // in such mode. It will first try a PassThrough provider and, if that is
     // not possible, it will try a SharedImage with the appropriate flags.
-    if (RenderingContext() && RenderingContext()->UsingSwapChain()) {
+    if ((RenderingContext() && RenderingContext()->UsingSwapChain()) ||
+        RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+      // If either SwapChain is enabled or WebGLImage mode is enabled, we can
+      // try a passthrough provider.
       DCHECK(LowLatencyEnabled());
       provider = CanvasResourceProvider::CreatePassThroughProvider(
           Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
@@ -163,8 +166,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
   // provider.
   if (!provider) {
     provider = CanvasResourceProvider::CreateSharedBitmapProvider(
-        Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
-        ColorParams(), std::move(dispatcher));
+        Size(), FilterQuality(), ColorParams(), std::move(dispatcher));
   }
   if (!provider) {
     provider = CanvasResourceProvider::CreateBitmapProvider(
@@ -247,8 +249,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
   // provider.
   if (!provider) {
     provider = CanvasResourceProvider::CreateSharedBitmapProvider(
-        Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
-        ColorParams(), std::move(dispatcher));
+        Size(), FilterQuality(), ColorParams(), std::move(dispatcher));
   }
   if (!provider) {
     provider = CanvasResourceProvider::CreateBitmapProvider(

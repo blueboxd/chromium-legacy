@@ -506,7 +506,6 @@
 <translation id="1632803087685957583">讓您調整鍵盤的重複頻率和字詞預測等功能</translation>
 <translation id="1633947793238301227">停用「Google 助理」</translation>
 <translation id="1634783886312010422">您是否已在 <ph name="WEBSITE" /> 上變更此密碼？</translation>
-<translation id="1635033183663317347">已由監護人安裝</translation>
 <translation id="1637224376458524414">在 iPhone 上取得此書籤</translation>
 <translation id="1637765355341780467">開啟您的設定檔時發生錯誤，部分功能可能無法使用。</translation>
 <translation id="1639239467298939599">載入中</translation>
@@ -954,12 +953,10 @@
 <translation id="2199719347983604670">從 Chrome 同步的資料</translation>
 <translation id="2200094388063410062">電郵</translation>
 <translation id="2200356397587687044">Chrome 需要權限才能繼續</translation>
-<translation id="2200729650590440847">PIN 上鎖畫面設定</translation>
 <translation id="220138918934036434">隱藏按鈕</translation>
 <translation id="2202898655984161076">列出打印機清單時發生問題，您的部分打印機尚未在 <ph name="CLOUD_PRINT_NAME" /> 完成註冊。</translation>
 <translation id="2203682048752833055">在<ph name="BEGIN_LINK" />網址列<ph name="END_LINK" />中使用的搜尋引擎</translation>
 <translation id="2204034823255629767">讀取及變更您輸入的任何設定</translation>
-<translation id="2207166770508557715">休眠設定</translation>
 <translation id="220858061631308971">請在「<ph name="DEVICE_NAME" />」上輸入以下 PIN：</translation>
 <translation id="2212565012507486665">允許 Cookie</translation>
 <translation id="2213140827792212876">移除共用設定</translation>
@@ -1407,11 +1404,9 @@
 <translation id="2751131328353405138">正在連接 Linux 容器 SSHFS</translation>
 <translation id="2751739896257479635">EAP 第 2 階段驗證</translation>
 <translation id="2753677631968972007">手動控制網站權限。</translation>
-<translation id="2753984311895843016">閒置電源</translation>
 <translation id="2755367719610958252">管理無障礙功能</translation>
 <translation id="275662540872599901">螢幕已關閉</translation>
 <translation id="2757338480560142065">請確保您儲存的密碼與 <ph name="WEBSITE" /> 上的密碼相符</translation>
-<translation id="276221322463921688">顯示器方向</translation>
 <translation id="2762441749940182211">已禁止使用相機</translation>
 <translation id="2764786626780673772">VPN 詳細資料</translation>
 <translation id="2765217105034171413">小</translation>
@@ -2129,7 +2124,7 @@
 <translation id="3677106374019847299">輸入自訂的供應商</translation>
 <translation id="3677657024345889897">最小聲</translation>
 <translation id="3677911431265050325">切換至流動網站</translation>
-<translation id="3677959414150797585">包括應用程式、網頁，以及更多。只有在您選擇分享使用情況資料下，系統才會傳送統計資料以改善建議內容。</translation>
+<translation id="3677959414150797585">包括應用程式、網頁，以及更多。只有在您選擇分享使用情況資料時，系統才會傳送統計資料以改善建議內容。</translation>
 <translation id="3678156199662914018">擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">「文字轉語音」語音</translation>
 <translation id="3681311097828166361">多謝您提供的意見反映。您目前處於離線狀態，系統會稍後傳送您的報告。</translation>
@@ -6223,7 +6218,6 @@
 <translation id="8953476467359856141">充電時</translation>
 <translation id="895347679606913382">即將開始下載…</translation>
 <translation id="8957762313041272117">即時字幕</translation>
-<translation id="8958804960827200147">螢幕方向</translation>
 <translation id="895944840846194039">JavaScript 記憶體使用量</translation>
 <translation id="8962083179518285172">隱藏詳情</translation>
 <translation id="8962918469425892674">此網站正在使用動作或光線感應器。</translation>

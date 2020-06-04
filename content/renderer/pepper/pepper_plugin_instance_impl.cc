@@ -110,7 +110,6 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
-#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_script_forbidden_scope.h"
@@ -932,7 +931,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
 bool PepperPluginInstanceImpl::SendCompositionEventToPlugin(
     PP_InputEvent_Type type,
     const base::string16& text) {
-  std::vector<blink::WebImeTextSpan> empty;
+  std::vector<ui::ImeTextSpan> empty;
   return SendCompositionEventWithImeTextSpanInformationToPlugin(
       type, text, empty, static_cast<int>(text.size()),
       static_cast<int>(text.size()));
@@ -942,7 +941,7 @@ bool PepperPluginInstanceImpl::
     SendCompositionEventWithImeTextSpanInformationToPlugin(
         PP_InputEvent_Type type,
         const base::string16& text,
-        const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+        const std::vector<ui::ImeTextSpan>& ime_text_spans,
         int selection_start,
         int selection_end) {
   // Keep a reference on the stack. See NOTE above.
@@ -991,8 +990,7 @@ bool PepperPluginInstanceImpl::
 
   // Set the composition target.
   for (size_t i = 0; i < ime_text_spans.size(); ++i) {
-    if (ime_text_spans[i].thickness ==
-        ui::mojom::ImeTextSpanThickness::kThick) {
+    if (ime_text_spans[i].thickness == ui::ImeTextSpan::Thickness::kThick) {
       auto it = std::find(event.composition_segment_offsets.begin(),
                           event.composition_segment_offsets.end(),
                           utf8_offsets[2 * i + 2]);
@@ -1033,7 +1031,7 @@ bool PepperPluginInstanceImpl::HandleCompositionStart(
 
 bool PepperPluginInstanceImpl::HandleCompositionUpdate(
     const base::string16& text,
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
     int selection_start,
     int selection_end) {
   return SendCompositionEventWithImeTextSpanInformationToPlugin(
@@ -2318,7 +2316,7 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
         return false;
       render_frame_->SimulateImeCommitText(
           base::UTF8ToUTF16(input_event.character_text),
-          std::vector<blink::WebImeTextSpan>(), gfx::Range());
+          std::vector<ui::ImeTextSpan>(), gfx::Range());
       break;
     default:
       return false;
@@ -2341,13 +2339,13 @@ void PepperPluginInstanceImpl::SimulateImeSetCompositionEvent(
   base::string16 utf16_text =
       base::UTF8ToUTF16AndAdjustOffsets(input_event.character_text, &offsets);
 
-  std::vector<blink::WebImeTextSpan> ime_text_spans;
+  std::vector<ui::ImeTextSpan> ime_text_spans;
   for (size_t i = 2; i + 1 < offsets.size(); ++i) {
-    blink::WebImeTextSpan ime_text_span;
+    ui::ImeTextSpan ime_text_span;
     ime_text_span.start_offset = offsets[i];
     ime_text_span.end_offset = offsets[i + 1];
     if (input_event.composition_target_segment == static_cast<int32_t>(i - 2))
-      ime_text_span.thickness = ui::mojom::ImeTextSpanThickness::kThick;
+      ime_text_span.thickness = ui::ImeTextSpan::Thickness::kThick;
     ime_text_spans.push_back(ime_text_span);
   }
 

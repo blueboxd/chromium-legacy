@@ -46,9 +46,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "components/spellcheck/common/spellcheck_features.h"
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
 using content::BrowserContext;
 using content::RenderProcessHost;
@@ -119,12 +119,12 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     SpellcheckService* spellcheck =
         SpellcheckServiceFactory::GetForContext(renderer_->GetBrowserContext());
 
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-    if (spellcheck::UseWinHybridSpellChecker()) {
-      // If the Windows hybrid spell checker is in use, initialization is async.
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+    if (spellcheck::UseBrowserSpellChecker()) {
+      // If the Windows native spell checker is in use, initialization is async.
       RunTestRunLoop();
     }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
     ASSERT_NE(nullptr, spellcheck);
   }
@@ -480,14 +480,14 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceHostBrowserTest, CallSpellingService) {
 // Tests that we can delete a corrupted BDICT file used by hunspell. We do not
 // run this test on Mac because Mac does not use hunspell by default.
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  if (spellcheck::UseWinHybridSpellChecker()) {
-    // If doing hybrid spell checking on Windows, Hunspell dictionaries are not
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  if (spellcheck::UseBrowserSpellChecker()) {
+    // If doing native spell checking on Windows, Hunspell dictionaries are not
     // used for en-US, so the corrupt dictionary event will never be raised.
     // Skip this test.
     return;
   }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
   // Corrupted BDICT data: please do not use this BDICT data for other tests.
   const uint8_t kCorruptedBDICT[] = {

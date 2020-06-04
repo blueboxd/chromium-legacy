@@ -206,7 +206,7 @@
 <translation id="1763864636252898013">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya tidak dipercayai oleh sistem pengendalian peranti anda. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Cuba jalankan Diagnostik Rangkaian Windows<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Pelayan destinasi anda, <ph name="ORIGIN" />, telah menetapkan pengepala
-    yang menghendaki dasar asal dikenakan pada semua permintaan yang diterima oleh pelayan itu. Tetapi
+    yang menghendaki dasar asal dikenakan pada semua permintaan yang diterima oleh pelayan itu. Walau bagaimanapun,
     pengepala tersebut telah rosak dan menghalang penyemak imbas daripada memenuhi
     permintaan anda untuk <ph name="SITE" />. Dasar asal boleh digunakan oleh
     pengendali tapak untuk mengkonfigurasi keselamatan dan sifat lain bagi tapak.</translation>

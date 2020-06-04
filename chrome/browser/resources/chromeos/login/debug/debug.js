@@ -447,15 +447,10 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'recommend-apps',
       kind: ScreenKind.NORMAL,
+      handledSteps: 'list',
       // Known issue: reset() does not clear list of apps, so loadAppList
       // will append apps instead of replacing.
       states: [
-        {
-          id: 'loading',
-          trigger: (screen) => {
-            screen.reset();
-          }
-        },
         {
           id: '2-apps',
           trigger: (screen) => {
@@ -579,7 +574,10 @@ cr.define('cr.ui.login.debug', function() {
       this.debuggerVisible_ = false;
       /** Element with Debugger UI */
       this.debuggerOverlay_ = undefined;
-      /** ID of screen OOBE is currently in */
+      /**
+       * ID of screen OOBE is currently in. Note that it is only updated upon
+       * opening overlay and during screenshot series.
+       */
       this.currentScreenId_ = undefined;
       /** ID of last screen on which Debugger UI was displayed */
       this.stateCachedFor_ = undefined;
@@ -828,7 +826,6 @@ cr.define('cr.ui.login.debug', function() {
       if (state.data) {
         data = state.data;
       }
-      this.lastScreen = screen;
       this.currentScreenId_ = screenId;
       this.lastScreenState_ = stateId;
       /** @suppress {visibility} */
@@ -837,6 +834,7 @@ cr.define('cr.ui.login.debug', function() {
       if (state.trigger) {
         state.trigger(displayManager.currentScreen);
       }
+      this.lastScreen = displayManager.currentScreen;
     }
 
     createScreensList() {
@@ -848,7 +846,37 @@ cr.define('cr.ui.login.debug', function() {
       /** @suppress {visibility} */
       for (var id of cr.ui.Oobe.instance_.screens_) {
         if (id in this.screenMap) {
-          this.knownScreens.push(this.screenMap[id]);
+          let screenDef = this.screenMap[id];
+          let screenElement = $(id);
+          if (screenElement.listSteps &&
+              typeof screenElement.listSteps === 'function') {
+            if (screenDef.stateMap_['default']) {
+              screenDef.states = [];
+              screenDef.stateMap_ = {};
+            }
+            let handledSteps = new Set();
+            if (screenDef.handledSteps) {
+              for (let step of screenDef.handledSteps.split(','))
+                handledSteps.add(step);
+            }
+            for (let step of screenElement.listSteps()) {
+              if (handledSteps.has(step))
+                continue;
+              let state = {
+                id: 'step-' + step,
+                data: screenDef.data,
+                trigger: (screen) => {
+                  screen.setUIStep(step);
+                },
+              };
+              screenDef.states.push(state);
+              screenDef.stateMap_[state.id] = state;
+            }
+            if (screenDef.defaultState === 'default')
+              screenDef.defaultState = 'step-' + screenElement.defaultUIStep();
+          }
+          this.knownScreens.push(screenDef);
+          this.screenMap[id] = screenDef;
         } else {
           console.error('### Screen not registered in debug overlay ' + id);
           let unknownScreen = {

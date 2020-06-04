@@ -40,8 +40,7 @@ class QuicStreamRequest;
 // HttpProxySocketParams only needs the socket params for one of the proxy
 // types.  The other param must be NULL.  When using an HTTP proxy,
 // |transport_params| must be set.  When using an HTTPS proxy or QUIC proxy,
-// |ssl_params| must be set. Also, if using a QUIC proxy, |quic_version| must
-// not be quic::QUIC_VERSION_UNSUPPORTED.
+// |ssl_params| must be set.
 class NET_EXPORT_PRIVATE HttpProxySocketParams
     : public base::RefCounted<HttpProxySocketParams> {
  public:

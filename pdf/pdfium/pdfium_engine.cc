@@ -947,6 +947,7 @@ void PDFiumEngine::KillFormFocus() {
 }
 
 void PDFiumEngine::UpdateFocus(bool has_focus) {
+  base::AutoReset<bool> updating_focus_guard(&updating_focus_, true);
   if (has_focus) {
     UpdateFocusItemType(last_focused_item_type_);
     if (focus_item_type_ == FocusElementType::kPage &&

@@ -11,6 +11,9 @@
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
+#include "ash/public/cpp/session/session_types.h"
+#include "ash/public/cpp/session/user_info.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
@@ -50,6 +53,13 @@ void AssistantViewDelegateImpl::DownloadImage(
 
 ::wm::CursorManager* AssistantViewDelegateImpl::GetCursorManager() {
   return Shell::Get()->cursor_manager();
+}
+
+std::string AssistantViewDelegateImpl::GetPrimaryUserGivenName() const {
+  return Shell::Get()
+      ->session_controller()
+      ->GetPrimaryUserSession()
+      ->user_info.given_name;
 }
 
 aura::Window* AssistantViewDelegateImpl::GetRootWindowForDisplayId(
@@ -92,22 +102,6 @@ void AssistantViewDelegateImpl::OnNotificationButtonPressed(
 void AssistantViewDelegateImpl::OnOptInButtonPressed() {
   for (auto& observer : view_delegate_observers_)
     observer.OnOptInButtonPressed();
-}
-
-void AssistantViewDelegateImpl::OnProactiveSuggestionsCloseButtonPressed() {
-  for (auto& observer : view_delegate_observers_)
-    observer.OnProactiveSuggestionsCloseButtonPressed();
-}
-
-void AssistantViewDelegateImpl::OnProactiveSuggestionsViewHoverChanged(
-    bool is_hovering) {
-  for (auto& observer : view_delegate_observers_)
-    observer.OnProactiveSuggestionsViewHoverChanged(is_hovering);
-}
-
-void AssistantViewDelegateImpl::OnProactiveSuggestionsViewPressed() {
-  for (auto& observer : view_delegate_observers_)
-    observer.OnProactiveSuggestionsViewPressed();
 }
 
 void AssistantViewDelegateImpl::OnSuggestionChipPressed(

@@ -22,7 +22,7 @@ We also need to create the runtime feature flag kWinUseBrowserSpellChecker
 for Windows OS. The feature flag is used to choose between the platform or
 Hunspell spellchecker at runtime.
 
-## Note on the Windows Hybrid spellchecker
+### Note on the Windows Hybrid spellchecker
 On Windows, the platform spell checker relies on user-installed language packs.
 It is possible for a user to enable spell checking in Chrome for a language
 while not having installed the necessary language pack in the Windows settings.
@@ -30,9 +30,3 @@ while not having installed the necessary language pack in the Windows settings.
 For those situations, the spell checker on Windows will first try to use the
 platform spell checker. For languages where this is not possible, Hunspell will
 be used instead.
-
-To control this fallback logic, a separate build flag
-use_win_hybrid_spellchecker is used. In addition, for experiment purposes, a
-feature flag kWinUseHybridSpellChecker is used to control this behavior at
-runtime. Finally, this fallback logic requires the platform spell checker to be
-available, so it also uses the browser spell checker checks described above.

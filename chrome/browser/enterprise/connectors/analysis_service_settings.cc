@@ -4,22 +4,29 @@
 
 #include "chrome/browser/enterprise/connectors/analysis_service_settings.h"
 
+#include "chrome/browser/enterprise/connectors/service_provider_config.h"
 #include "components/policy/core/browser/url_util.h"
 
 namespace enterprise_connectors {
 
 AnalysisServiceSettings::AnalysisServiceSettings(
-    const base::Value& settings_value) {
+    const base::Value& settings_value,
+    const ServiceProviderConfig& service_provider_config) {
   if (!settings_value.is_dict())
     return;
 
-  // The service provider identifier should always be there.
-  const std::string* service_provider =
+  // The service provider identifier should always be there, and it should match
+  // an existing provider.
+  const std::string* service_provider_name =
       settings_value.FindStringKey(kKeyServiceProvider);
-  if (service_provider)
-    service_provider_ = *service_provider;
-  else
+  if (service_provider_name) {
+    service_provider_ =
+        service_provider_config.GetServiceProvider(*service_provider_name);
+    if (!service_provider_)
+      return;
+  } else {
     return;
+  }
 
   // Add the patterns to the settings, which configures settings.matcher and
   // settings.*_pattern_settings. No enable patterns implies the settings are
@@ -96,6 +103,8 @@ base::Optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
   settings.block_password_protected_files = block_password_protected_files_;
   settings.block_large_files = block_large_files_;
   settings.block_unsupported_file_types = block_unsupported_file_types_;
+  settings.analysis_url = GURL(service_provider_->analysis_url());
+  DCHECK(settings.analysis_url.is_valid());
 
   return settings;
 }
@@ -111,6 +120,7 @@ void AnalysisServiceSettings::AddUrlPatternSettings(
     bool enabled,
     url_matcher::URLMatcherConditionSet::ID* id) {
   DCHECK(id);
+  DCHECK(service_provider_);
   if (enabled)
     DCHECK(disabled_patterns_settings_.empty());
   else
@@ -121,8 +131,10 @@ void AnalysisServiceSettings::AddUrlPatternSettings(
   const base::Value* tags = url_settings_value.FindListKey(kKeyTags);
   if (tags && tags->is_list()) {
     for (const base::Value& tag : tags->GetList()) {
-      if (tag.is_string())
+      if (tag.is_string() &&
+          (service_provider_->analysis_tags().count(tag.GetString()) == 1)) {
         setting.tags.insert(tag.GetString());
+      }
     }
   } else {
     return;
@@ -177,7 +189,7 @@ std::set<std::string> AnalysisServiceSettings::GetTags(
 
 bool AnalysisServiceSettings::IsValid() const {
   // The settings are invalid if no provider was given.
-  if (service_provider_.empty())
+  if (!service_provider_)
     return false;
 
   // The settings are invalid if no enabled pattern(s) exist since that would

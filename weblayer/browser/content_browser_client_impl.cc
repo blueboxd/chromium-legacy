@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/blocked_content/popup_blocker.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
 #include "components/network_time/network_time_tracker.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -53,6 +55,7 @@
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -60,9 +63,11 @@
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/download_manager_delegate_impl.h"
 #include "weblayer/browser/feature_list_creator.h"
+#include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/http_auth_handler_impl.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
@@ -437,11 +442,6 @@ bool ContentBrowserClientImpl::CanCreateWindow(
     return false;
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          embedder_support::kDisablePopupBlocking)) {
-    return true;
-  }
-
   // WindowOpenDisposition has a *ton* of types, but the following are really
   // the only ones that should be hit for this code path.
   switch (disposition) {
@@ -457,8 +457,27 @@ bool ContentBrowserClientImpl::CanCreateWindow(
       return false;
   }
 
-  // TODO(https://crbug.com/1019922): support proper popup blocking.
-  return user_gesture;
+  GURL popup_url(target_url);
+  web_contents->GetMainFrame()->GetProcess()->FilterURL(false, &popup_url);
+  // Use ui::PAGE_TRANSITION_LINK to match the similar logic in //chrome.
+  content::OpenURLParams params(popup_url, referrer, disposition,
+                                ui::PAGE_TRANSITION_LINK,
+                                /*is_renderer_initiated*/ true);
+  params.user_gesture = user_gesture;
+  params.initiator_origin = source_origin;
+  params.source_render_frame_id = opener->GetRoutingID();
+  params.source_render_process_id = opener->GetProcess()->GetID();
+  params.source_site_instance = opener->GetSiteInstance();
+  // The content::OpenURLParams are created just for the delegate, and do not
+  // correspond to actual params created by //content, so pass null for the
+  // |open_url_params| argument here.
+  return blocked_content::MaybeBlockPopup(
+             web_contents, &opener_top_level_frame_url,
+             std::make_unique<PopupNavigationDelegateImpl>(params, web_contents,
+                                                           opener),
+             /*open_url_params*/ nullptr, features,
+             HostContentSettingsMapFactory::GetForBrowserContext(
+                 web_contents->GetBrowserContext())) != nullptr;
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>>

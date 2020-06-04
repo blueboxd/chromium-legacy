@@ -19,14 +19,14 @@ class XRReferenceSpace : public XRSpace {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static device::mojom::blink::XRReferenceSpaceCategory
-  StringToReferenceSpaceType(const String& reference_space_type);
+  static device::mojom::blink::XRReferenceSpaceType StringToReferenceSpaceType(
+      const String& reference_space_type);
 
   XRReferenceSpace(XRSession* session,
-                   device::mojom::blink::XRReferenceSpaceCategory type);
+                   device::mojom::blink::XRReferenceSpaceType type);
   XRReferenceSpace(XRSession* session,
                    XRRigidTransform* origin_offset,
-                   device::mojom::blink::XRReferenceSpaceCategory type);
+                   device::mojom::blink::XRReferenceSpaceType type);
   ~XRReferenceSpace() override;
 
   base::Optional<TransformationMatrix> NativeFromMojo() override;
@@ -47,7 +47,7 @@ class XRReferenceSpace : public XRSpace {
   // the identity pose instead of the result of multiplying inverse matrices.
   XRPose* getPose(XRSpace* other_space) override;
 
-  device::mojom::blink::XRReferenceSpaceCategory GetType() const;
+  device::mojom::blink::XRReferenceSpaceType GetType() const;
 
   XRReferenceSpace* getOffsetReferenceSpace(XRRigidTransform* transform);
 
@@ -73,7 +73,7 @@ class XRReferenceSpace : public XRSpace {
   // Floor from mojo (aka local-floor_from_mojo) transform.
   std::unique_ptr<TransformationMatrix> floor_from_mojo_;
   Member<XRRigidTransform> origin_offset_;
-  device::mojom::blink::XRReferenceSpaceCategory type_;
+  device::mojom::blink::XRReferenceSpaceType type_;
 };
 
 }  // namespace blink

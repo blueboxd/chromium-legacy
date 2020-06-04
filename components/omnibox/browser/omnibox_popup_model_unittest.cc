@@ -97,11 +97,11 @@ TEST_F(OmniboxPopupModelTest, SetSelectedLine) {
   result->AppendMatches(input, matches);
   result->SortAndCull(input, nullptr);
   popup_model()->OnResultChanged();
-  EXPECT_FALSE(popup_model()->has_selected_match());
+  EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
   popup_model()->SetSelectedLine(0, true, false);
-  EXPECT_FALSE(popup_model()->has_selected_match());
+  EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
   popup_model()->SetSelectedLine(0, false, false);
-  EXPECT_TRUE(popup_model()->has_selected_match());
+  EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
 }
 
 TEST_F(OmniboxPopupModelTest, SetSelectedLineWithNoDefaultMatches) {
@@ -122,19 +122,19 @@ TEST_F(OmniboxPopupModelTest, SetSelectedLineWithNoDefaultMatches) {
 
   popup_model()->OnResultChanged();
   EXPECT_EQ(OmniboxPopupModel::kNoMatch, popup_model()->selected_line());
-  EXPECT_FALSE(popup_model()->has_selected_match());
+  EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
 
   popup_model()->SetSelectedLine(0, false, false);
   EXPECT_EQ(0U, popup_model()->selected_line());
-  EXPECT_TRUE(popup_model()->has_selected_match());
+  EXPECT_FALSE(popup_model()->SelectionOnInitialLine());
 
   popup_model()->SetSelectedLine(1, false, false);
   EXPECT_EQ(1U, popup_model()->selected_line());
-  EXPECT_TRUE(popup_model()->has_selected_match());
+  EXPECT_FALSE(popup_model()->SelectionOnInitialLine());
 
   popup_model()->ResetToInitialState();
   EXPECT_EQ(OmniboxPopupModel::kNoMatch, popup_model()->selected_line());
-  EXPECT_FALSE(popup_model()->has_selected_match());
+  EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
 }
 
 TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {

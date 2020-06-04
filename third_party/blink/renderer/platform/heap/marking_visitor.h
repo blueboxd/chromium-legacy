@@ -88,10 +88,9 @@ class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
 ALWAYS_INLINE void MarkingVisitorCommon::AccountMarkedBytes(
     HeapObjectHeader* header) {
   marked_bytes_ +=
-      header->IsLargeObject()
-          ? reinterpret_cast<LargeObjectPage*>(PageFromObject(header))
-                ->ObjectSize()
-          : header->size();
+      header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
+          ? static_cast<LargeObjectPage*>(PageFromObject(header))->ObjectSize()
+          : header->size<HeapObjectHeader::AccessMode::kAtomic>();
 }
 
 ALWAYS_INLINE bool MarkingVisitorCommon::MarkHeaderNoTracing(
@@ -264,9 +263,6 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor
 
   virtual void FlushWorklists();
 
-  // Concurrent variant of MarkingVisitorCommon::AccountMarkedBytes.
-  void AccountMarkedBytesSafe(HeapObjectHeader*);
-
   bool IsConcurrent() const override { return true; }
 
   bool DeferredTraceIfConcurrent(TraceDescriptor desc) override {
@@ -278,14 +274,6 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor
   NotSafeToConcurrentlyTraceWorklist::View
       not_safe_to_concurrently_trace_worklist_;
 };
-
-ALWAYS_INLINE void ConcurrentMarkingVisitor::AccountMarkedBytesSafe(
-    HeapObjectHeader* header) {
-  marked_bytes_ +=
-      header->IsLargeObject<HeapObjectHeader::AccessMode::kAtomic>()
-          ? static_cast<LargeObjectPage*>(PageFromObject(header))->ObjectSize()
-          : header->size<HeapObjectHeader::AccessMode::kAtomic>();
-}
 
 // static
 ALWAYS_INLINE bool ConcurrentMarkingVisitor::IsInConstruction(

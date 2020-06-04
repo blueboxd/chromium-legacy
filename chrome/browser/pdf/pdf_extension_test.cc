@@ -2643,21 +2643,28 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabInAndOutOfPDFPlugin) {
   content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
-  // Set focus on PDF document.
-  ASSERT_TRUE(content::ExecuteScript(
-      guest_contents, "document.getElementById('plugin').focus();"));
+  // Set focus on last toolbar element (zoom-out-button).
+  ASSERT_TRUE(content::ExecuteScript(guest_contents,
+                                     R"(document.getElementById('zoom-toolbar')
+                                            .$['zoom-out-button']
+                                            .$$('cr-icon-button')
+                                            .focus();)"));
 
-  // The script will ensure we return the id of the focused element on focus.
-  std::string script =
-      "function onFocus(e) {"
-      "  domAutomationController.send(e.target.id);"
-      "}"
-      "const plugin = document.getElementById('plugin');"
-      "const button = "
-      "document.getElementById('zoom-toolbar').$['zoom-out-button'];"
-      "plugin.addEventListener('focus', onFocus);"
-      "button.addEventListener('focus', onFocus);";
-  ASSERT_TRUE(content::ExecuteScript(guest_contents, script));
+  // The script will ensure we return the the focused element on focus.
+  const char kScript[] = R"(
+    const plugin = document.getElementById('plugin');
+    plugin.addEventListener('focus', () => {
+      window.domAutomationController.send('plugin');
+    });
+
+    const button = document.getElementById('zoom-toolbar')
+                   .$['zoom-out-button']
+                   .$$('cr-icon-button');
+    button.addEventListener('focus', () => {
+      window.domAutomationController.send('zoom-out-button');
+    });
+  )";
+  ASSERT_TRUE(content::ExecuteScript(guest_contents, kScript));
 
   // Helper to simulate a tab press and wait for a focus message.
   auto press_tab_and_wait_for_message = [guest_contents](bool reverse) {
@@ -2669,11 +2676,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabInAndOutOfPDFPlugin) {
     return reply;
   };
 
+  // Press <tab> and ensure that PDF document receives focus.
+  EXPECT_EQ("\"plugin\"", press_tab_and_wait_for_message(false));
   // Press <shift-tab> and ensure that last toolbar element (zoom-out-button)
   // receives focus.
   EXPECT_EQ("\"zoom-out-button\"", press_tab_and_wait_for_message(true));
-  // Press <tab> and ensure that PDF document receives focus.
-  EXPECT_EQ("\"plugin\"", press_tab_and_wait_for_message(false));
 }
 
 // This test suite does a simple text-extraction based on the accessibility

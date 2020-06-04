@@ -74,9 +74,20 @@ the `network::NetworkService` instance.
 # What happens if the network service crashes?
 
 *In the out-of-process case*: If the network service crashes, it gets restarted
-in a new utility process. The goal is for the failure to be mostly recoverable:
-some in-flight requests may fail, but any tabs open will continue to function
-and later requests will succeed.
+in a new utility process. The goal is for the failure to be mostly recoverable.
+It is important to note that any URLLoaderFactories bound to the Network Service
+before it crashes become disconnected, and will no longer continue to work.
+Therefore it is useful to establish reconnection logic if it is detected that
+the URLLoaderFactory is no longer connected.
+
+For example, a navigation request's URLLoaderFactory comes from
+`StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal` in the
+browser process. This method has logic to detect if the URLLoaderFactory it
+would normally return is disconnected. In that case, it creates a new one which
+is used for all future navigation requests. Since most URLLoaderFactory users
+use factories that are not created out-of-band, and are provided by some
+service, reconnection logic is often implemented for free, and is usually not
+something to worry about.
 
 *In the in-process case*: If the network service crashes in this case, of
 course, the entire browser crashes. This is one reason for the goal to always

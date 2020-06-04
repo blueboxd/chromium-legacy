@@ -1817,8 +1817,10 @@ ContentSecurityPolicy* FrameLoader::CreateCSP(
   // See:
   // - https://w3c.github.io/webappsec-cspee/#required-csp-header
   // - https://w3c.github.io/webappsec-cspee/#allow-csp-from-header
-  if (RequiredCSP().IsEmpty())
+  if (RequiredCSP().IsEmpty() ||
+      base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE)) {
     return csp;
+  }
 
   const SecurityOrigin* parent_security_origin =
       frame_->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin();

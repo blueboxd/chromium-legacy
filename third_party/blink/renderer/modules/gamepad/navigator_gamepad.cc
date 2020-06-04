@@ -146,8 +146,8 @@ GamepadHapticActuator* NavigatorGamepad::GetVibrationActuatorForGamepad(
   int pad_index = gamepad.index();
   DCHECK_GE(pad_index, 0);
   if (!vibration_actuators_[pad_index]) {
-    auto* actuator = GamepadHapticActuator::Create(*DomWindow(), pad_index);
-    actuator->SetType(gamepad.GetVibrationActuatorType());
+    auto* actuator = MakeGarbageCollected<GamepadHapticActuator>(
+        *DomWindow(), pad_index, gamepad.GetVibrationActuatorType());
     vibration_actuators_[pad_index] = actuator;
   }
   return vibration_actuators_[pad_index].Get();

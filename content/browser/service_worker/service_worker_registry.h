@@ -349,8 +349,6 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void OnStoragePolicyChanged();
   bool ShouldPurgeOnShutdown(const url::Origin& origin);
 
-  void BindRemoteStorageControlIfNeeded();
-
   // The ServiceWorkerContextCore object must outlive this.
   ServiceWorkerContextCore* const context_;
 

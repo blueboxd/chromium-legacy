@@ -27,6 +27,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.AutofillProviderImpl;
+import org.chromium.components.browser_ui.http_auth.LoginPrompt;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
@@ -69,7 +70,7 @@ import java.util.Map;
  * Implementation of ITab.
  */
 @JNINamespace("weblayer")
-public final class TabImpl extends ITab.Stub {
+public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     private static int sNextId = 1;
     // Map from id to TabImpl.
     private static final Map<Integer, TabImpl> sTabMap = new HashMap<Integer, TabImpl>();
@@ -85,6 +86,7 @@ public final class TabImpl extends ITab.Stub {
     private TabViewAndroidDelegate mViewAndroidDelegate;
     // BrowserImpl this TabImpl is in. This is only null during creation.
     private BrowserImpl mBrowser;
+    private LoginPrompt mLoginPrompt;
     /**
      * The AutofillProvider that integrates with system-level autofill. This is null until
      * updateFromBrowser() is invoked.
@@ -663,6 +665,27 @@ public final class TabImpl extends ITab.Stub {
         getBrowser().destroyTab(this);
     }
 
+    @CalledByNative
+    private void showHttpAuthPrompt(String host, String url) {
+        mLoginPrompt = new LoginPrompt(mBrowser.getContext(), host, url, this);
+        mLoginPrompt.show();
+    }
+
+    @CalledByNative
+    private void closeHttpAuthPrompt() {
+        mLoginPrompt = null;
+    }
+
+    @Override
+    public void cancel() {
+        TabImplJni.get().cancelHttpAuth(mNativeTab);
+    }
+
+    @Override
+    public void proceed(String username, String password) {
+        TabImplJni.get().setHttpAuth(mNativeTab, username, password);
+    }
+
     public void destroy() {
         // Ensure that this method isn't called twice.
         assert mInterceptNavigationDelegate != null;
@@ -824,5 +847,7 @@ public final class TabImpl extends ITab.Stub {
         boolean setData(long nativeTabImpl, String[] data);
         String[] getData(long nativeTabImpl);
         boolean isRendererControllingBrowserControlsOffsets(long nativeTabImpl);
+        void setHttpAuth(long nativeTabImpl, String username, String password);
+        void cancelHttpAuth(long nativeTabImpl);
     }
 }

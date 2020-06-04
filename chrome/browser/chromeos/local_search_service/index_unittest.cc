@@ -18,6 +18,29 @@ namespace local_search_service {
 
 namespace {
 
+// This is (data-id, content-ids).
+using ResultWithIds = std::pair<std::string, std::vector<std::string>>;
+using ContentWithId = std::pair<std::string, std::string>;
+
+// Creates test data to be registered to the index. |input| is a map from
+// id to contents (id and content).
+std::vector<Data> CreateTestData(
+    const std::map<std::string, std::vector<ContentWithId>>& input) {
+  std::vector<Data> output;
+  for (const auto& item : input) {
+    Data data;
+    data.id = item.first;
+    std::vector<Content>& contents = data.contents;
+    for (const auto& content_with_id : item.second) {
+      const Content content(content_with_id.first,
+                            base::UTF8ToUTF16(content_with_id.second));
+      contents.push_back(content);
+    }
+    output.push_back(data);
+  }
+  return output;
+}
+
 void CheckSearchParams(const SearchParams& actual,
                        const SearchParams& expected) {
   EXPECT_DOUBLE_EQ(actual.relevance_threshold, expected.relevance_threshold);
@@ -25,7 +48,41 @@ void CheckSearchParams(const SearchParams& actual,
                    expected.partial_match_penalty_rate);
   EXPECT_EQ(actual.use_prefix_only, expected.use_prefix_only);
   EXPECT_EQ(actual.use_edit_distance, expected.use_edit_distance);
-  EXPECT_EQ(actual.split_search_tags, expected.split_search_tags);
+}
+
+void FindAndCheckResults(Index* index,
+                         std::string query,
+                         int32_t max_results,
+                         ResponseStatus expected_status,
+                         const std::vector<ResultWithIds>& expected_results) {
+  DCHECK(index);
+
+  std::vector<Result> results;
+  auto status = index->Find(base::UTF8ToUTF16(query), max_results, &results);
+
+  EXPECT_EQ(status, expected_status);
+
+  if (!results.empty()) {
+    // If results are returned, check size and values match the expected.
+    EXPECT_EQ(results.size(), expected_results.size());
+    for (size_t i = 0; i < results.size(); ++i) {
+      EXPECT_EQ(results[i].id, expected_results[i].first);
+      EXPECT_EQ(results[i].positions.size(), expected_results[i].second.size());
+
+      for (size_t j = 0; j < results[i].positions.size(); ++j) {
+        EXPECT_EQ(results[i].positions[j].content_id,
+                  expected_results[i].second[j]);
+      }
+      // Scores should be non-increasing.
+      if (i < results.size() - 1) {
+        EXPECT_GE(results[i].score, results[i + 1].score);
+      }
+    }
+    return;
+  }
+
+  // If no results are returned, expected ids should be empty.
+  EXPECT_TRUE(expected_results.empty());
 }
 
 }  // namespace
@@ -52,7 +109,6 @@ TEST_F(IndexTest, SetSearchParams) {
         default_params.partial_match_penalty_rate / 2;
     search_params.use_prefix_only = !default_params.use_prefix_only;
     search_params.use_edit_distance = !default_params.use_edit_distance;
-    search_params.split_search_tags = !default_params.split_search_tags;
 
     index_.SetSearchParams(search_params);
 
@@ -63,8 +119,8 @@ TEST_F(IndexTest, SetSearchParams) {
 }
 
 TEST_F(IndexTest, RelevanceThreshold) {
-  const std::map<std::string, std::vector<std::string>> data_to_register = {
-      {"id1", {"Wi-Fi"}}, {"id2", {"famous"}}};
+  const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
+      {"id1", {{"tag1", "Wi-Fi"}}}, {"id2", {{"tag2", "famous"}}}};
   std::vector<Data> data = CreateTestData(data_to_register);
   index_.AddOrUpdate(data);
   EXPECT_EQ(index_.GetSize(), 2u);
@@ -73,45 +129,60 @@ TEST_F(IndexTest, RelevanceThreshold) {
     search_params.relevance_threshold = 0.0;
     index_.SetSearchParams(search_params);
 
-    FindAndCheck(&index_, "wifi",
-                 /*max_results=*/-1, ResponseStatus::kSuccess, {"id1", "id2"});
+    const std::vector<ResultWithIds> expected_results = {{"id1", {"tag1"}},
+                                                         {"id2", {"tag2"}}};
+    FindAndCheckResults(&index_, "wifi",
+                        /*max_results=*/-1, ResponseStatus::kSuccess,
+                        expected_results);
   }
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.3;
     index_.SetSearchParams(search_params);
 
-    FindAndCheck(&index_, "wifi",
-                 /*max_results=*/-1, ResponseStatus::kSuccess, {"id1"});
+    const std::vector<ResultWithIds> expected_results = {{"id1", {"tag1"}}};
+    FindAndCheckResults(&index_, "wifi",
+                        /*max_results=*/-1, ResponseStatus::kSuccess,
+                        expected_results);
   }
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.9;
     index_.SetSearchParams(search_params);
 
-    FindAndCheck(&index_, "wifi",
-                 /*max_results=*/-1, ResponseStatus::kSuccess, {});
+    FindAndCheckResults(&index_, "wifi",
+                        /*max_results=*/-1, ResponseStatus::kSuccess, {});
   }
 }
 
 TEST_F(IndexTest, MaxResults) {
-  const std::map<std::string, std::vector<std::string>> data_to_register = {
-      {"id1", {"Wi-Fi"}}, {"id2", {"famous"}}};
+  const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
+      {"id1", {{"tag1", "abcde"}, {"tag2", "Wi-Fi"}}},
+      {"id2", {{"tag3", "wifi"}}}};
   std::vector<Data> data = CreateTestData(data_to_register);
   index_.AddOrUpdate(data);
   EXPECT_EQ(index_.GetSize(), 2u);
   SearchParams search_params;
-  // Set relevance threshold to 0 to ensure everything matches.
-  search_params.relevance_threshold = 0.0;
+  search_params.relevance_threshold = 0.3;
   index_.SetSearchParams(search_params);
 
-  FindAndCheck(&index_, "wifi",
-               /*max_results=*/-1, ResponseStatus::kSuccess, {"id1", "id2"});
-  FindAndCheck(&index_, "wifi",
-               /*max_results=*/1, ResponseStatus::kSuccess, {"id1"});
+  {
+    const std::vector<ResultWithIds> expected_results = {{"id2", {"tag3"}},
+                                                         {"id1", {"tag2"}}};
+    FindAndCheckResults(&index_, "wifi",
+                        /*max_results=*/-1, ResponseStatus::kSuccess,
+                        expected_results);
+  }
+  {
+    const std::vector<ResultWithIds> expected_results = {{"id2", {"tag3"}}};
+    FindAndCheckResults(&index_, "wifi",
+                        /*max_results=*/1, ResponseStatus::kSuccess,
+                        expected_results);
+  }
 }
 
 TEST_F(IndexTest, ResultFound) {
+  // Register search tags but not contents to test backward compatibility.
   const std::map<std::string, std::vector<std::string>> data_to_register = {
       {"id1", {"id1", "tag1a", "tag1b"}}, {"xyz", {"xyz"}}};
   std::vector<Data> data = CreateTestData(data_to_register);
@@ -121,114 +192,12 @@ TEST_F(IndexTest, ResultFound) {
   EXPECT_EQ(index_.GetSize(), 2u);
 
   // Find result with query "id1". It returns an exact match.
-  FindAndCheck(&index_, "id1",
-               /*max_results=*/-1, ResponseStatus::kSuccess, {"id1"});
-  FindAndCheck(&index_, "abc",
-               /*max_results=*/-1, ResponseStatus::kSuccess, {});
-}
-
-TEST_F(IndexTest, SearchTagSplit) {
-  const std::map<std::string, std::vector<std::string>> data_to_register = {
-      {"id1", {"hello hello again world!", "tag1a"}}, {"id2", {"tag2a"}}};
-  std::vector<Data> data = CreateTestData(data_to_register);
-  EXPECT_EQ(data.size(), 2u);
-
-  SearchParams search_params;
-  search_params.split_search_tags = true;
-  index_.SetSearchParams(search_params);
-  index_.AddOrUpdate(data);
-  EXPECT_EQ(index_.GetSize(), 2u);
-
-  {
-    std::vector<base::string16> search_tags;
-    std::vector<base::string16> individual_search_tags;
-    index_.GetSearchTagsForTesting("id1", &search_tags,
-                                   &individual_search_tags);
-    EXPECT_EQ(search_tags.size(), 2u);
-    EXPECT_EQ(search_tags[0], base::UTF8ToUTF16("hello hello again world!"));
-    EXPECT_EQ(search_tags[1], base::UTF8ToUTF16("tag1a"));
-    EXPECT_EQ(individual_search_tags.size(), 4u);
-    EXPECT_EQ(individual_search_tags[0], base::UTF8ToUTF16("again"));
-    EXPECT_EQ(individual_search_tags[1], base::UTF8ToUTF16("hello"));
-    EXPECT_EQ(individual_search_tags[2], base::UTF8ToUTF16("tag1a"));
-    EXPECT_EQ(individual_search_tags[3], base::UTF8ToUTF16("world!"));
-  }
-  {
-    std::vector<base::string16> search_tags;
-    std::vector<base::string16> individual_search_tags;
-    index_.GetSearchTagsForTesting("id2", &search_tags,
-                                   &individual_search_tags);
-    EXPECT_EQ(search_tags.size(), 1u);
-    EXPECT_EQ(search_tags[0], base::UTF8ToUTF16("tag2a"));
-    EXPECT_EQ(individual_search_tags.size(), 0u);
-  }
-
-  // Single-word query.
-  FindAndCheck(&index_, "vorld", /*max_results=*/-1, ResponseStatus::kSuccess,
-               {"id1"});
-  // Multi-word query.
-  FindAndCheck(&index_, "hello vorld hello", /*max_results=*/-1,
-               ResponseStatus::kSuccess, {"id1"});
-
-  EXPECT_EQ(index_.Delete({"id1", "id10"}), 1u);
-  {
-    std::vector<base::string16> search_tags;
-    std::vector<base::string16> individual_search_tags;
-    index_.GetSearchTagsForTesting("id1", &search_tags,
-                                   &individual_search_tags);
-    EXPECT_EQ(search_tags.size(), 0u);
-    EXPECT_EQ(individual_search_tags.size(), 0u);
-  }
-}
-
-TEST_F(IndexTest, SearchTagNotSplit) {
-  const std::map<std::string, std::vector<std::string>> data_to_register = {
-      {"id1", {"hello hello again world!", "tag1a"}}, {"id2", {"tag2a"}}};
-  std::vector<Data> data = CreateTestData(data_to_register);
-  EXPECT_EQ(data.size(), 2u);
-
-  SearchParams search_params;
-  search_params.split_search_tags = false;
-  index_.SetSearchParams(search_params);
-  index_.AddOrUpdate(data);
-  EXPECT_EQ(index_.GetSize(), 2u);
-
-  {
-    std::vector<base::string16> search_tags;
-    std::vector<base::string16> individual_search_tags;
-    index_.GetSearchTagsForTesting("id1", &search_tags,
-                                   &individual_search_tags);
-    EXPECT_EQ(search_tags.size(), 2u);
-    EXPECT_EQ(search_tags[0], base::UTF8ToUTF16("hello hello again world!"));
-    EXPECT_EQ(search_tags[1], base::UTF8ToUTF16("tag1a"));
-    EXPECT_EQ(individual_search_tags.size(), 0u);
-  }
-  {
-    std::vector<base::string16> search_tags;
-    std::vector<base::string16> individual_search_tags;
-    index_.GetSearchTagsForTesting("id2", &search_tags,
-                                   &individual_search_tags);
-    EXPECT_EQ(search_tags.size(), 1u);
-    EXPECT_EQ(search_tags[0], base::UTF8ToUTF16("tag2a"));
-    EXPECT_EQ(individual_search_tags.size(), 0u);
-  }
-
-  // Single-word query.
-  FindAndCheck(&index_, "vorld", /*max_results=*/-1, ResponseStatus::kSuccess,
-               {"id1"});
-  // Multi-word query.
-  FindAndCheck(&index_, "hello vorld hello", /*max_results=*/-1,
-               ResponseStatus::kSuccess, {"id1"});
-
-  EXPECT_EQ(index_.Delete({"id1", "id10"}), 1u);
-  {
-    std::vector<base::string16> search_tags;
-    std::vector<base::string16> individual_search_tags;
-    index_.GetSearchTagsForTesting("id1", &search_tags,
-                                   &individual_search_tags);
-    EXPECT_EQ(search_tags.size(), 0u);
-    EXPECT_EQ(individual_search_tags.size(), 0u);
-  }
+  const std::vector<ResultWithIds> expected_results = {{"id1", {""}}};
+  FindAndCheckResults(&index_, "id1",
+                      /*max_results=*/-1, ResponseStatus::kSuccess,
+                      expected_results);
+  FindAndCheckResults(&index_, "abc",
+                      /*max_results=*/-1, ResponseStatus::kSuccess, {});
 }
 
 }  // namespace local_search_service

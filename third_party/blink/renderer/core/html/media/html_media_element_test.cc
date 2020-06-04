@@ -38,6 +38,7 @@ namespace {
 
 class MockWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
+  MOCK_METHOD0(OnTimeUpdate, void());
   MOCK_CONST_METHOD0(HasAudio, bool());
   MOCK_CONST_METHOD0(HasVideo, bool());
   MOCK_CONST_METHOD0(Duration, double());
@@ -604,6 +605,54 @@ TEST_P(HTMLMediaElementTest, NoPendingActivityEvenIfBeforeMetadata) {
   SetNetworkState(WebMediaPlayer::kNetworkStateIdle);
   EXPECT_FALSE(Media()->HasPendingActivity());
   EXPECT_TRUE(MediaShouldBeOpaque());
+}
+
+TEST_P(HTMLMediaElementTest, OnTimeUpdate_DurationChange) {
+  // Change from no duration to 1s will trigger OnTimeUpdate().
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->DurationChanged(1, false);
+
+  // Change from 1s to 2s will trigger OnTimeUpdate().
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->DurationChanged(2, false);
+
+  // No duration change -> no OnTimeUpdate().
+  Media()->DurationChanged(2, false);
+}
+
+TEST_P(HTMLMediaElementTest, OnTimeUpdate_PlayPauseSetRate) {
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->Play();
+
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->setPlaybackRate(0.5);
+
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->pause();
+
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->setPlaybackRate(1.5);
+
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->Play();
+}
+
+TEST_P(HTMLMediaElementTest, OnTimeUpdate_ReadyState) {
+  // The ready state affects the progress of media time, so the player should
+  // be kept informed.
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  SetReadyState(HTMLMediaElement::kHaveCurrentData);
+
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+}
+
+TEST_P(HTMLMediaElementTest, OnTimeUpdate_Seeking) {
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->setCurrentTime(1);
+
+  EXPECT_CALL(*MockMediaPlayer(), OnTimeUpdate());
+  Media()->setCurrentTime(2);
 }
 
 }  // namespace blink

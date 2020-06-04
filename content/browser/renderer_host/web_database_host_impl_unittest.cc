@@ -15,7 +15,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/fake_mojo_message_dispatch_context.h"
-#include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -222,7 +222,7 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
       [&](base::File) { success_callback_was_called = true; });
   base::Optional<std::string> error_callback_message;
 
-  mojo::core::SetDefaultProcessErrorCallback(base::BindLambdaForTesting(
+  mojo::SetDefaultProcessErrorHandler(base::BindLambdaForTesting(
       [&](const std::string& message) { error_callback_message = message; }));
 
   // Verify that an error occurs with OpenFile() call before process shutdown.
@@ -268,8 +268,7 @@ TEST_F(WebDatabaseHostImplTest, ProcessShutdown) {
     EXPECT_FALSE(error_callback_message.has_value());
   }
 
-  mojo::core::SetDefaultProcessErrorCallback(
-      mojo::core::ProcessErrorCallback());
+  mojo::SetDefaultProcessErrorHandler(base::NullCallback());
 }
 
 }  // namespace content

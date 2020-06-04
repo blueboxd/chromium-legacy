@@ -427,4 +427,13 @@ void FakeDriveFs::SendNativeMessageRequest(
   std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, "");
 }
 
+void FakeDriveFs::SetStartupArguments(const std::string& arguments,
+                                      SetStartupArgumentsCallback callback) {
+  std::move(callback).Run(false);
+}
+
+void FakeDriveFs::GetStartupArguments(GetStartupArgumentsCallback callback) {
+  std::move(callback).Run("");
+}
+
 }  // namespace drivefs

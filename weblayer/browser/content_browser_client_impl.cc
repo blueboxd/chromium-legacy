@@ -60,6 +60,7 @@
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/download_manager_delegate_impl.h"
 #include "weblayer/browser/feature_list_creator.h"
+#include "weblayer/browser/http_auth_handler_impl.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -683,6 +684,21 @@ ContentBrowserClientImpl::GetWideColorGamutHeuristic() {
   // Always match window since a mismatch can cause inefficiency in surface
   // flinger.
   return WideColorGamutHeuristic::kUseWindow;
+}
+
+std::unique_ptr<content::LoginDelegate>
+ContentBrowserClientImpl::CreateLoginDelegate(
+    const net::AuthChallengeInfo& auth_info,
+    content::WebContents* web_contents,
+    const content::GlobalRequestID& request_id,
+    bool is_main_frame,
+    const GURL& url,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    bool first_auth_attempt,
+    LoginAuthRequiredCallback auth_required_callback) {
+  return std::make_unique<HttpAuthHandlerImpl>(
+      auth_info, web_contents, first_auth_attempt,
+      std::move(auth_required_callback));
 }
 #endif  // OS_ANDROID
 

@@ -180,6 +180,29 @@ const base::Feature kPrioritizeCompositingAndLoadingDuringEarlyLoading{
 const base::Feature kHighPriorityDatabaseTaskType{
     "HighPriorityDatabaseTaskType", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, wake ups from throttleable TaskQueues are limited to 1 per
+// |kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds| in a page that has
+// been backgrounded for |kIntensiveWakeUpThrottling_GracePeriodSeconds|
+// seconds.
+//
+// Intensive wake up throttling is enforced in addition to other throttling
+// mechanisms:
+//  - 1 wake up per second in a background page or hidden cross-origin frame
+//  - 1% CPU time in a page that has been backgrounded for 10 seconds
+//
+// Feature tracking bug: https://crbug.com/1075553
+PLATFORM_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
+
+// Duration between wake ups in seconds. For the kIntensiveWakeUpThrottling
+// feature.
+PLATFORM_EXPORT extern const base::FeatureParam<int>
+    kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds;
+
+// Grace period after backgrounding a page during which there is no intensive
+// wake up throttling, in seconds. For the kIntensiveWakeUpThrottling feature.
+PLATFORM_EXPORT extern const base::FeatureParam<int>
+    kIntensiveWakeUpThrottling_GracePeriodSeconds;
+
 }  // namespace scheduler
 }  // namespace blink
 

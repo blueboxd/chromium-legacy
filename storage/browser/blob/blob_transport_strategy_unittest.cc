@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
@@ -20,8 +21,8 @@
 #include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/test/mock_bytes_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +70,7 @@ class BlobTransportStrategyTest : public testing::Test {
     limits_.min_page_file_size = kTestBlobStorageMinFileSizeBytes;
     limits_.max_file_size = kTestBlobStorageMaxFileSizeBytes;
 
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &BlobTransportStrategyTest::OnBadMessage, base::Unretained(this)));
 
     // Disallow IO on the main loop.
@@ -78,9 +79,7 @@ class BlobTransportStrategyTest : public testing::Test {
 
   void TearDown() override {
     base::ThreadRestrictions::SetIOAllowed(true);
-
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   void OnBadMessage(const std::string& error) {

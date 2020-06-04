@@ -158,7 +158,6 @@ source_set("tests") {
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//device/base/synchronization",
-    "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",

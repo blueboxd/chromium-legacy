@@ -18,6 +18,16 @@ class TokenizedString;
 
 namespace local_search_service {
 
+struct Content {
+  // An identifier for the content in Data.
+  std::string id;
+  base::string16 content;
+  Content(const std::string& id, const base::string16& content);
+  Content();
+  Content(const Content& content);
+  ~Content();
+};
+
 struct Data {
   // Identifier of the data item, should be unique across the registry. Clients
   // will decide what ids to use, they could be paths, urls or any opaque string
@@ -27,9 +37,13 @@ struct Data {
   std::string id;
 
   // Data item will be matched between its search tags and query term.
+  // TODO(jiameng): this will be deprecated in the next cl.
   std::vector<base::string16> search_tags;
+  std::vector<Content> contents;
 
+  // TODO(jiameng): this will be deprecated in the next cl.
   Data(const std::string& id, const std::vector<base::string16>& search_tags);
+  Data(const std::string& id, const std::vector<Content>& contents);
   Data();
   Data(const Data& data);
   ~Data();
@@ -40,13 +54,14 @@ struct SearchParams {
   double partial_match_penalty_rate = 0.9;
   bool use_prefix_only = false;
   bool use_edit_distance = false;
-  bool split_search_tags = false;
 };
 
-// A numeric range used to represent the start and end position.
-struct Range {
+struct Position {
+  std::string content_id;
+  // TODO(jiameng): |start| and |end| will be implemented for inverted index
+  // later.
   uint32_t start;
-  uint32_t end;
+  uint32_t length;
 };
 
 // Result is one item that matches a given query. It contains the id of the item
@@ -54,11 +69,13 @@ struct Range {
 struct Result {
   // Id of the data.
   std::string id;
-  // Relevance score, in the range of [0,1].
+  // Relevance score.
   double score;
-  // Matching ranges.
-  std::vector<Range> hits;
-
+  // Position of the matching text.
+  // We currently use linear map, which will return one matching content, hence
+  // the vector has only one element. When we have inverted index, we will have
+  // multiple matching contents.
+  std::vector<Position> positions;
   Result();
   Result(const Result& result);
   ~Result();
@@ -102,17 +119,15 @@ class Index {
 
   // Returns matching results for a given query.
   // Zero |max_results| means no max.
+  // For each data in the index, we return the 1st search tag that matches
+  // the query (i.e. above the threshold). Client should put the most
+  // important search tag first when registering the data in the index.
   local_search_service::ResponseStatus Find(
       const base::string16& query,
       uint32_t max_results,
       std::vector<local_search_service::Result>* results);
 
   void SetSearchParams(const local_search_service::SearchParams& search_params);
-
-  void GetSearchTagsForTesting(
-      const std::string& id,
-      std::vector<base::string16>* search_tags,
-      std::vector<base::string16>* individual_search_tags);
 
   SearchParams GetSearchParamsForTesting();
 
@@ -122,15 +137,10 @@ class Index {
       const base::string16& query,
       uint32_t max_results) const;
 
-  // A map from key to tokenized search-tags.
-  // The 1st component corresponds to the tokens of original input search tags.
-  // The 2nd component is only filled if |search_params_.split_search_tags| is
-  // true. For a data item, if all its search tags contain single words
-  // the corresponding 2nd component will be empty, as it'll be the same
-  // as the original input.
-  std::map<std::string,
-           std::pair<std::vector<std::unique_ptr<TokenizedString>>,
-                     std::vector<std::unique_ptr<TokenizedString>>>>
+  // A map from key to a vector of (tag-id, tokenized tag).
+  std::map<
+      std::string,
+      std::vector<std::pair<std::string, std::unique_ptr<TokenizedString>>>>
       data_;
 
   // Search parameters.

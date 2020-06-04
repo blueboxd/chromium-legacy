@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "base/debug/dump_without_crashing.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
@@ -1618,6 +1619,7 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
 }
 
 bool ContentSecurityPolicy::Subsumes(const ContentSecurityPolicy& other) const {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE));
   if (!policies_.size() || !other.policies_.size())
     return !policies_.size();
   // Required-CSP must specify only one policy.
@@ -1679,6 +1681,9 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
   if (context_required_csp.IsEmpty() || context_required_csp.IsNull()) {
     return true;
   }
+
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
+    return true;
 
   auto* context_policy = MakeGarbageCollected<ContentSecurityPolicy>();
   context_policy->AddPolicyFromHeaderValue(context_required_csp,

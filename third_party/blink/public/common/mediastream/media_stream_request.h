@@ -57,7 +57,8 @@ struct BLINK_COMMON_EXPORT MediaStreamDevice {
       const std::string& id,
       const std::string& name,
       media::VideoFacingMode facing,
-      const base::Optional<std::string>& group_id = base::nullopt);
+      const base::Optional<std::string>& group_id = base::nullopt,
+      const base::Optional<bool>& pan_tilt_zoom_supported = base::nullopt);
   MediaStreamDevice(mojom::MediaStreamType type,
                     const std::string& id,
                     const std::string& name,
@@ -97,6 +98,10 @@ struct BLINK_COMMON_EXPORT MediaStreamDevice {
 
   // The device's group ID.
   base::Optional<std::string> group_id;
+
+  // Whether the device supports pan-tilt-zoom.
+  // Only applicable to video devices.
+  base::Optional<bool> pan_tilt_zoom_supported;
 
   // The device id of a matched output device if any (otherwise empty).
   // Only applicable to audio devices.

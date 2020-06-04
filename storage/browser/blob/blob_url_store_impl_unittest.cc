@@ -5,10 +5,11 @@
 #include "storage/browser/blob/blob_url_store_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -27,13 +28,12 @@ class BlobURLStoreImplTest : public testing::Test {
   void SetUp() override {
     context_ = std::make_unique<BlobStorageContext>();
 
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &BlobURLStoreImplTest::OnBadMessage, base::Unretained(this)));
   }
 
   void TearDown() override {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   void OnBadMessage(const std::string& error) {

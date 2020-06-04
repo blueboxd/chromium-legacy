@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -43,6 +44,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
@@ -92,6 +94,8 @@ class MenuListSelectType final : public SelectType {
   }
   void MaximumOptionWidthMightBeChanged() const override;
 
+  void CreateShadowSubtree(ShadowRoot& root) override;
+  Element& InnerElement() const override;
   void ShowPopup() override;
   void HidePopup() override;
   void PopupDidHide() override;
@@ -290,6 +294,22 @@ bool MenuListSelectType::HandlePopupOpenKeyboardEvent() {
   SaveLastSelection();
   ShowPopup();
   return true;
+}
+
+void MenuListSelectType::CreateShadowSubtree(ShadowRoot& root) {
+  Document& doc = select_->GetDocument();
+  Element* inner_element = MakeGarbageCollected<MenuListInnerElement>(doc);
+  inner_element->setAttribute(html_names::kAriaHiddenAttr, "true");
+  // Make sure InnerElement() always has a Text node.
+  inner_element->appendChild(Text::Create(doc, g_empty_string));
+  root.insertBefore(inner_element, root.firstChild());
+}
+
+Element& MenuListSelectType::InnerElement() const {
+  auto* inner_element =
+      DynamicTo<Element>(select_->UserAgentShadowRoot()->firstChild());
+  DCHECK(inner_element);
+  return *inner_element;
 }
 
 void MenuListSelectType::ShowPopup() {
@@ -1307,6 +1327,15 @@ void SelectType::HandleMouseRelease() {}
 void SelectType::ListBoxOnChange() {}
 
 void SelectType::ClearLastOnChangeSelection() {}
+
+void SelectType::CreateShadowSubtree(ShadowRoot& root) {}
+
+Element& SelectType::InnerElement() const {
+  NOTREACHED();
+  // Returning select_ doesn't make sense, but we need to return an element
+  // to compile this source. This function must not be called.
+  return *select_;
+}
 
 void SelectType::ShowPopup() {
   NOTREACHED();

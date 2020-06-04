@@ -331,14 +331,21 @@ bool ValidateProcessMmaps(base::Value* process_mmaps,
   return true;
 }
 
+void HandleOOM(size_t unsued_size) {
+  LOG(FATAL) << "Out of memory.";
+}
+
 }  // namespace
 
 TestDriver::TestDriver()
     : wait_for_ui_thread_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                           base::WaitableEvent::InitialState::NOT_SIGNALED) {
+  base::PartitionAllocGlobalInit(HandleOOM);
   partition_allocator_.init();
 }
-TestDriver::~TestDriver() = default;
+TestDriver::~TestDriver() {
+  base::PartitionAllocGlobalUninitForTesting();
+}
 
 bool TestDriver::RunTest(const Options& options) {
   options_ = options;

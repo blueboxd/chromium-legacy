@@ -157,7 +157,6 @@ source_set("tests") {
     ":audio",
     "//base/test:test_support",
     "//media:test_support",
-    "//mojo/core/embedder",
     "//services/audio/public/cpp",
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",

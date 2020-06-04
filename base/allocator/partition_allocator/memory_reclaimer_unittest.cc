@@ -18,6 +18,14 @@
 
 namespace base {
 
+namespace {
+
+void HandleOOM(size_t unused_size) {
+  LOG(FATAL) << "Out of memory";
+}
+
+}  // namespace
+
 class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
  public:
   PartitionAllocMemoryReclaimerTest()
@@ -27,6 +35,7 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
+    PartitionAllocGlobalInit(HandleOOM);
     PartitionAllocMemoryReclaimer::Instance()->ResetForTesting();
     allocator_ = std::make_unique<PartitionAllocatorGeneric>();
     allocator_->init();
@@ -36,6 +45,7 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
     allocator_ = nullptr;
     PartitionAllocMemoryReclaimer::Instance()->ResetForTesting();
     task_environment_.FastForwardUntilNoTasksRemain();
+    PartitionAllocGlobalUninitForTesting();
   }
 
   void StartReclaimer() {

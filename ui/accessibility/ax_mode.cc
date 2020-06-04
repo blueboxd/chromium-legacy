@@ -41,6 +41,9 @@ std::string AXMode::ToString() const {
       case AXMode::kLabelImages:
         flag_name = "kLabelImages";
         break;
+      case AXMode::kPDF:
+        flag_name = "kPDF";
+        break;
     }
 
     DCHECK(flag_name);

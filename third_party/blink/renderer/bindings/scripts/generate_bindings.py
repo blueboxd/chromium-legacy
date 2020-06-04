@@ -59,7 +59,6 @@ def main():
         'dictionary': bind_gen.generate_dictionaries,
         'enumeration': bind_gen.generate_enumerations,
         'interface': bind_gen.generate_interfaces,
-        'union': bind_gen.generate_unions,
     }
 
     for task in tasks:
@@ -72,14 +71,27 @@ def main():
         web_idl.Component('core'): options.output_core_reldir,
         web_idl.Component('modules'): options.output_modules_reldir,
     }
-
     bind_gen.init(
         root_src_dir=options.root_src_dir,
         root_gen_dir=options.root_gen_dir,
         component_reldirs=component_reldirs)
 
+    task_queue = bind_gen.TaskQueue()
+
     for task in tasks:
-        dispatch_table[task](web_idl_database=web_idl_database)
+        dispatch_table[task](task_queue=task_queue,
+                             web_idl_database=web_idl_database)
+
+    def report_progress(total, done):
+        out = sys.stdout
+        if not out.isatty():
+            return
+        percentage = int(float(done) / float(total) * 100)
+        message = "Blink-V8 bindings generation: {}% done\r".format(percentage)
+        out.write(message)
+        out.flush()
+
+    task_queue.run(report_progress)
 
 
 if __name__ == '__main__':

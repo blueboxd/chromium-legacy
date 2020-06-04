@@ -64,9 +64,6 @@ struct OobeScreen {
   constexpr static StaticOobeScreenId SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE{
       "ad-password-change"};
 
-  // Special "first screen" that initiates full OOBE flow.
-  constexpr static StaticOobeScreenId SCREEN_SPECIAL_OOBE{"oobe"};
-
   constexpr static StaticOobeScreenId SCREEN_UNKNOWN{"unknown"};
 };
 

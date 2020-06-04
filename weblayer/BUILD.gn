@@ -165,6 +165,8 @@ source_set("weblayer_lib_base") {
     "browser/file_select_helper.h",
     "browser/host_content_settings_map_factory.cc",
     "browser/host_content_settings_map_factory.h",
+    "browser/http_auth_handler_impl.cc",
+    "browser/http_auth_handler_impl.h",
     "browser/i18n_util.cc",
     "browser/i18n_util.h",
     "browser/javascript_tab_modal_dialog_manager_delegate_android.cc",

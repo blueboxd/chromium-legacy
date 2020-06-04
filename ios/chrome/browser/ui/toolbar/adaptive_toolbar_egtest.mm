@@ -292,7 +292,13 @@ void CheckButtonsVisibilityIPad() {
 
   CheckVisibilityInToolbar(ShareButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ReloadButton(), ButtonVisibilityPrimary);
-  CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityPrimary);
+  if ([ChromeEarlGrey isChangeTabSwitcherPositionEnabled]) {
+    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityNone);
+    CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityPrimary);
+  } else {
+    CheckVisibilityInToolbar(BookmarkButton(), ButtonVisibilityPrimary);
+    CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityNone);
+  }
 
   CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityPrimary);
@@ -391,7 +397,8 @@ UIViewController* TopPresentedViewController() {
 
 // Tests that bookmarks button is spotlighted for the bookmarked pages.
 - (void)testBookmarkButton {
-  if (![ChromeEarlGrey isRegularXRegularSizeClass]) {
+  if (![ChromeEarlGrey isRegularXRegularSizeClass] ||
+      [ChromeEarlGrey isChangeTabSwitcherPositionEnabled]) {
     EARL_GREY_TEST_SKIPPED(
         @"The bookmark button is only visible on Regular x Regular size "
         @"classes.");

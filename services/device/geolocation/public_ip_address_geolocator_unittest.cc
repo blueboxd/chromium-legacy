@@ -9,9 +9,9 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -42,7 +42,7 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
  protected:
   void SetUp() override {
     // Intercept Mojo bad-message errors.
-    mojo::core::SetDefaultProcessErrorCallback(
+    mojo::SetDefaultProcessErrorHandler(
         base::BindRepeating(&PublicIpAddressGeolocatorTest::OnMojoBadMessage,
                             base::Unretained(this)));
 
@@ -57,8 +57,7 @@ class PublicIpAddressGeolocatorTest : public testing::Test {
 
   void TearDown() override {
     // Stop intercepting Mojo bad-message errors.
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   // Deal with mojo bad message.

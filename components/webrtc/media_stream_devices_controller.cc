@@ -113,8 +113,13 @@ void MediaStreamDevicesController::RequestPermissions(
         permission_status.content_setting == CONTENT_SETTING_ASK;
 
 #if !defined(OS_ANDROID)
-    // TODO(crbug.com/934063): Check that hardware supports PTZ before
-    if (request.request_pan_tilt_zoom_permission) {
+    // Request CAMERA_PAN_TILT_ZOOM only if the the website requested
+    // the pan-tilt-zoom permission and there are suitable PTZ capable devices
+    // available.
+    if (request.request_pan_tilt_zoom_permission &&
+        controller->HasAvailableDevices(
+            ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
+            request.requested_video_device_id)) {
       permissions::PermissionResult permission_status =
           permission_manager->GetPermissionStatusForFrame(
               ContentSettingsType::CAMERA_PAN_TILT_ZOOM, rfh,
@@ -521,7 +526,8 @@ bool MediaStreamDevicesController::HasAvailableDevices(
   const MediaStreamDevices* devices = nullptr;
   if (content_type == ContentSettingsType::MEDIASTREAM_MIC) {
     devices = &enumerator_->GetAudioCaptureDevices();
-  } else if (content_type == ContentSettingsType::MEDIASTREAM_CAMERA) {
+  } else if (content_type == ContentSettingsType::MEDIASTREAM_CAMERA ||
+             content_type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM) {
     devices = &enumerator_->GetVideoCaptureDevices();
   } else {
     NOTREACHED();
@@ -535,19 +541,26 @@ bool MediaStreamDevicesController::HasAvailableDevices(
   if (devices->empty())
     return false;
 
-  // Note: we check device_id before dereferencing devices. If the requested
-  // device id is non-empty, then the corresponding device list must not be
-  // nullptr.
-  if (!device_id.empty()) {
-    auto it = std::find_if(devices->begin(), devices->end(),
-                           [device_id](const blink::MediaStreamDevice& device) {
-                             return device.id == device_id;
-                           });
-    if (it == devices->end())
-      return false;
+  // If there are no particular device requirements, all devices will do.
+  if (device_id.empty() &&
+      content_type != ContentSettingsType::CAMERA_PAN_TILT_ZOOM) {
+    return true;
   }
 
-  return true;
+  // Try to find a device which fulfils all device requirements.
+  for (const blink::MediaStreamDevice& device : *devices) {
+    if (!device_id.empty() && device.id != device_id) {
+      continue;
+    }
+    if (content_type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM &&
+        device.pan_tilt_zoom_supported.has_value() &&
+        !device.pan_tilt_zoom_supported.value()) {
+      continue;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace webrtc

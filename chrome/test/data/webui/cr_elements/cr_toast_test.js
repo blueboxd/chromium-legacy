@@ -5,15 +5,19 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 // #import {MockTimer} from '../mock_timer.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-toast', function() {
+  /** @type {!CrToastElement} */
   let toast;
+
+  /** @type {!MockTimer} */
   let mockTimer;
 
   setup(function() {
-    PolymerTest.clearBody();
-    toast = document.createElement('cr-toast');
+    document.body.innerHTML = '';
+    toast = /** @type {!CrToastElement} */ (document.createElement('cr-toast'));
     document.body.appendChild(toast);
     mockTimer = new MockTimer();
     mockTimer.install();

@@ -6,13 +6,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_associated_interfaces.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -211,7 +212,7 @@ TEST_P(ReceiverSetTest, ReceiverSetReportBadMessage) {
   PingImpl impl;
 
   std::string last_received_error;
-  core::SetDefaultProcessErrorCallback(
+  SetDefaultProcessErrorHandler(
       base::BindRepeating([](std::string* out_error,
                              const std::string& error) { *out_error = error; },
                           &last_received_error));
@@ -241,14 +242,14 @@ TEST_P(ReceiverSetTest, ReceiverSetReportBadMessage) {
 
   EXPECT_TRUE(receivers.empty());
 
-  core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
+  SetDefaultProcessErrorHandler(base::NullCallback());
 }
 
 TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallback) {
   PingImpl impl;
 
   std::string last_received_error;
-  core::SetDefaultProcessErrorCallback(
+  SetDefaultProcessErrorHandler(
       base::BindRepeating([](std::string* out_error,
                              const std::string& error) { *out_error = error; },
                           &last_received_error));
@@ -291,14 +292,14 @@ TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallback) {
 
   EXPECT_TRUE(receivers.empty());
 
-  core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
+  SetDefaultProcessErrorHandler(base::NullCallback());
 }
 
 TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallbackOutlivesReceiverSet) {
   PingImpl impl;
 
   std::string last_received_error;
-  core::SetDefaultProcessErrorCallback(
+  SetDefaultProcessErrorHandler(
       base::BindRepeating([](std::string* out_error,
                              const std::string& error) { *out_error = error; },
                           &last_received_error));
@@ -319,7 +320,7 @@ TEST_P(ReceiverSetTest, ReceiverSetGetBadMessageCallbackOutlivesReceiverSet) {
   std::move(bad_message_callback).Run("message 1");
   EXPECT_EQ("message 1", last_received_error);
 
-  core::SetDefaultProcessErrorCallback(mojo::core::ProcessErrorCallback());
+  SetDefaultProcessErrorHandler(base::NullCallback());
 }
 
 class PingProviderImpl : public AssociatedPingProvider, public PingService {

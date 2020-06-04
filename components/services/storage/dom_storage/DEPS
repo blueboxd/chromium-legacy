@@ -10,7 +10,4 @@ specific_include_rules = {
     "+sql",
     "+storage/common/database",
   ],
-  "session_storage_impl_unittest\.cc": [
-    "+mojo/core",
-  ],
 }

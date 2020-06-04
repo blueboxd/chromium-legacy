@@ -236,6 +236,10 @@ const base::FeatureParam<TrustTokenOriginTrialSpec>
         TrustTokenOriginTrialSpec::kOriginTrialNotRequired,
         &kTrustTokenOriginTrialParamOptions};
 
+// Enables the Content Security Policy Embedded Enforcement check out of blink
+const base::Feature kOutOfBlinkCSPEE{"OutOfBlinkCSPEE",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }

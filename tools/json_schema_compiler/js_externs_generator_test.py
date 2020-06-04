@@ -82,18 +82,26 @@ namespace fakeApi {
 
     [deprecated="Use a new method."] static DOMString returnString();
 
+    static void instanceOfObjectParam([instanceOf=SomeType] object obj);
+
     static void optionalParam(optional OptionalParamCallback callback);
 
-    static void nonFinalOptionalParams(DOMString string,
-                                       optional double num,
-                                       object obj,
-                                       optional boolean bool,
-                                       optional Baz baz,
-                                       VoidCallback callback);
+    static void nonFinalOptionalParams(
+        DOMString string,
+        optional double num,
+        object obj,
+        [instanceOf = SomeType] object someType,
+        [instanceOf = SomeType] optional object optionalSomeType,
+        optional boolean bool,
+        optional Baz baz,
+        VoidCallback callback);
 
-    static void multipleOptionalParams(optional DOMString param1,
-                                       optional DOMString param2,
-                                       optional VoidCallback callback);
+    static void multipleOptionalParams(
+        optional DOMString param1,
+        optional DOMString param2,
+        optional object obj,
+        [instanceOf = SomeType] optional object optionalSomeType,
+        optional VoidCallback callback);
   };
 
   interface Events {
@@ -228,6 +236,12 @@ chrome.fakeApi.bazGreek = function(callback) {};
 chrome.fakeApi.returnString = function() {};
 
 /**
+ * @param {SomeType} obj
+ * @see https://developer.chrome.com/extensions/fakeApi#method-instanceOfObjectParam
+ */
+chrome.fakeApi.instanceOfObjectParam = function(obj) {};
+
+/**
  * @param {function((!chrome.fakeApi.Qux|undefined)): void=} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-optionalParam
  */
@@ -237,20 +251,24 @@ chrome.fakeApi.optionalParam = function(callback) {};
  * @param {string} string
  * @param {?number|undefined} num
  * @param {Object} obj
+ * @param {SomeType} someType
+ * @param {?SomeType|undefined} optionalSomeType
  * @param {?boolean|undefined} bool
  * @param {?chrome.fakeApi.Baz|undefined} baz
  * @param {function(): void} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-nonFinalOptionalParams
  */
-chrome.fakeApi.nonFinalOptionalParams = function(string, num, obj, bool, baz, callback) {};
+chrome.fakeApi.nonFinalOptionalParams = function(string, num, obj, someType, optionalSomeType, bool, baz, callback) {};
 
 /**
  * @param {string=} param1
  * @param {string=} param2
+ * @param {Object=} obj
+ * @param {SomeType=} optionalSomeType
  * @param {function(): void=} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-multipleOptionalParams
  */
-chrome.fakeApi.multipleOptionalParams = function(param1, param2, callback) {};
+chrome.fakeApi.multipleOptionalParams = function(param1, param2, obj, optionalSomeType, callback) {};
 
 /**
  * Fired when we realize it's a trap!

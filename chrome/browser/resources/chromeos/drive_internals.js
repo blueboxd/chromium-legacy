@@ -91,6 +91,10 @@ function updateCacheContents(cacheEntry) {
   $('cache-contents').appendChild(tr);
 }
 
+function updateStartupArguments(args) {
+  $('startup-arguments-input').value = args;
+}
+
 /**
  * Updates the Local Storage summary.
  * @param {Object} localStorageSummary Dictionary describing the status of local
@@ -237,6 +241,10 @@ function updateKeyValueList(ul, list) {
   }
 }
 
+function updateStartupArgumentsStatus(success) {
+  $('arguments-status-text').textContent = (success ? 'success' : 'failed');
+}
+
 /**
  * Updates the text next to the 'reset' button to update the status.
  * @param {boolean} success whether or not resetting has succeeded.
@@ -288,6 +296,12 @@ document.addEventListener('DOMContentLoaded', function() {
   chrome.send('pageLoaded');
 
   updateToc();
+
+  $('startup-arguments-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    $('arguments-status-text').textContent = 'applying...';
+    chrome.send('setStartupArguments', [$('startup-arguments-input').value]);
+  });
 
   $('button-restart-drive').addEventListener('click', function() {
     chrome.send('restartDrive');

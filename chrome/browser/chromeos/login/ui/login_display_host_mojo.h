@@ -188,6 +188,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Set if this has been added as a |OobeUI::Observer|.
   bool added_as_oobe_observer_ = false;
 
+  // Set if Gaia dialog is shown with prefilled email.
+  base::Optional<AccountId> gaia_reauth_account_id_;
+
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);

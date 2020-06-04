@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 import itertools
-import multiprocessing
-import os.path
 
 import web_idl
 
@@ -47,8 +45,8 @@ from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
-from .package_initializer import package_initializer
 from .path_manager import PathManager
+from .task_queue import TaskQueue
 
 
 def _is_none_or_str(arg):
@@ -6839,42 +6837,25 @@ def generate_init_idl_interfaces(web_idl_database,
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def run_multiprocessing_task(args):
-    interface, package_initializer = args
-    package_initializer.init()
-    generate_interface(interface)
-
-
-def generate_interfaces(web_idl_database):
+def generate_interfaces(task_queue, web_idl_database):
+    assert isinstance(task_queue, TaskQueue)
     assert isinstance(web_idl_database, web_idl.Database)
 
-    generate_install_properties_per_feature(
-        web_idl_database, "InstallPropertiesPerFeature",
-        "properties_per_feature_installer")
-    generate_install_properties_per_feature(
-        web_idl_database,
-        "InstallPropertiesPerFeatureForTesting",
-        "properties_per_feature_installer_for_testing",
-        for_testing=True)
-    generate_init_idl_interfaces(web_idl_database, "InitIDLInterfaces",
-                                 "init_idl_interfaces")
-    generate_init_idl_interfaces(
-        web_idl_database,
-        "InitIDLInterfacesForTesting",
-        "init_idl_interfaces_for_testing",
-        for_testing=True)
+    for interface in web_idl_database.interfaces:
+        task_queue.post_task(generate_interface, interface)
 
-    # More processes do not mean better performance.  The default size was
-    # chosen heuristically.
-    process_pool_size = 8
-    cpu_count = multiprocessing.cpu_count()
-    process_pool_size = max(1, min(cpu_count / 2, process_pool_size))
-
-    pool = multiprocessing.Pool(process_pool_size)
-    # Prior to Python3, Pool.map doesn't support user interrupts (e.g. Ctrl-C),
-    # although Pool.map_async(...).get(...) does.
-    timeout_in_sec = 3600  # Just enough long time
-    pool.map_async(
-        run_multiprocessing_task,
-        map(lambda interface: (interface, package_initializer()),
-            web_idl_database.interfaces)).get(timeout_in_sec)
+    task_queue.post_task(generate_install_properties_per_feature,
+                         web_idl_database, "InstallPropertiesPerFeature",
+                         "properties_per_feature_installer")
+    task_queue.post_task(generate_install_properties_per_feature,
+                         web_idl_database,
+                         "InstallPropertiesPerFeatureForTesting",
+                         "properties_per_feature_installer_for_testing",
+                         for_testing=True)
+    task_queue.post_task(generate_init_idl_interfaces, web_idl_database,
+                         "InitIDLInterfaces", "init_idl_interfaces")
+    task_queue.post_task(generate_init_idl_interfaces,
+                         web_idl_database,
+                         "InitIDLInterfacesForTesting",
+                         "init_idl_interfaces_for_testing",
+                         for_testing=True)

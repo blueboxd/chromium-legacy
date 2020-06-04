@@ -9,6 +9,9 @@
 #include <memory>
 #include <type_traits>
 
+#include "base/allocator/partition_allocator/page_allocator_internal.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
@@ -199,6 +202,20 @@ static void PartitionAllocBaseInit(
 void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
   DCHECK(on_out_of_memory);
   internal::g_oom_handling_function = on_out_of_memory;
+
+#if defined(ARCH_CPU_64_BITS)
+  // Reserve address space for partition alloc.
+  if (IsPartitionAllocGigaCageEnabled())
+    internal::PartitionAddressSpace::Instance()->Init();
+#endif
+}
+
+void PartitionAllocGlobalUninitForTesting() {
+#if defined(ARCH_CPU_64_BITS)
+  if (IsPartitionAllocGigaCageEnabled())
+    internal::PartitionAddressSpace::Instance()->UninitForTesting();
+#endif
+  internal::g_oom_handling_function = nullptr;
 }
 
 void PartitionRoot::Init(size_t bucket_count, size_t maximum_allocation) {

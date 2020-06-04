@@ -215,17 +215,16 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceDescriptors(
           device_provider_->GetDeviceDisplayName(unique_id);
       if (display_name.empty())
         display_name = reinterpret_cast<char*>(cap.card);
-#if defined(OS_CHROMEOS)
       device_descriptors->emplace_back(
           display_name, unique_id, model_id,
           VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE,
           VideoCaptureTransportType::OTHER_TRANSPORT,
-          device_provider_->GetCameraFacing(unique_id, model_id));
+#if defined(OS_CHROMEOS)
+          device_provider_->GetCameraFacing(unique_id, model_id),
 #else
-      device_descriptors->emplace_back(
-          display_name, unique_id, model_id,
-          VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE);
+          VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
 #endif
+          IsPanTiltZoomSupported(fd.get()));
     }
   }
   // Since JS doesn't have API to get camera facing, we sort the list to make
@@ -252,6 +251,22 @@ void VideoCaptureDeviceFactoryLinux::GetSupportedFormats(
 
 int VideoCaptureDeviceFactoryLinux::DoIoctl(int fd, int request, void* argp) {
   return HANDLE_EINTR(v4l2_->ioctl(fd, request, argp));
+}
+
+// Check if the video capture device supports at least one of pan, tilt and zoom
+// controls.
+bool VideoCaptureDeviceFactoryLinux::IsPanTiltZoomSupported(int fd) {
+  for (int control_id : {V4L2_CID_PAN_ABSOLUTE, V4L2_CID_TILT_ABSOLUTE,
+                         V4L2_CID_ZOOM_ABSOLUTE}) {
+    v4l2_queryctrl range = {};
+    range.id = control_id;
+    range.type = V4L2_CTRL_TYPE_INTEGER;
+    if (DoIoctl(fd, VIDIOC_QUERYCTRL, &range) == 0 &&
+        range.minimum < range.maximum) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool VideoCaptureDeviceFactoryLinux::HasUsableFormats(int fd,

@@ -286,7 +286,6 @@ if (!is_ios) {
       "//base:i18n",
       "//base/test:test_support",
       "//crypto",
-      "//mojo/core/embedder",
       "//mojo/core/test:test_support",
       "//testing/gtest",
     ]

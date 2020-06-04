@@ -59,10 +59,10 @@ LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
 
 LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
                                   const NGPaintFragment& paint_fragment) {
-  return ComputeLogicalRectFor(
-      physical_rect, paint_fragment.Style().GetWritingMode(),
-      paint_fragment.PhysicalFragment().ResolvedDirection(),
-      paint_fragment.Size());
+  const NGPhysicalFragment& physical_fragment =
+      paint_fragment.PhysicalFragment();
+  return physical_fragment.ConvertToLogical(
+      physical_rect, physical_fragment.ResolvedDirection(), physical_rect.size);
 }
 
 LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
@@ -143,21 +143,6 @@ LogicalRect ExpandSelectionRectToLineHeight(const LogicalRect& rect,
       line.Current().Size());
   return ExpandSelectionRectToLineHeight(
       rect, ComputeLogicalRectFor(line_physical_rect, cursor));
-}
-
-LogicalOffset ChildLogicalOffsetInParent(const NGPaintFragment& child) {
-  DCHECK(child.Parent());
-  const NGPaintFragment& parent = *child.Parent();
-  return child.Offset().ConvertToLogical(parent.Style().GetWritingMode(),
-                                         parent.Style().Direction(),
-                                         parent.Size(), child.Size());
-}
-
-LogicalSize ChildLogicalSizeInParent(const NGPaintFragment& child) {
-  DCHECK(child.Parent());
-  const NGPaintFragment& parent = *child.Parent();
-  return NGFragment(parent.Style().GetWritingMode(), child.PhysicalFragment())
-      .Size();
 }
 
 base::Optional<PositionWithAffinity> PositionForPointInChild(
@@ -897,10 +882,11 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
     if (child->PhysicalFragment().IsFloating())
       continue;
 
-    const LayoutUnit child_inline_min =
-        ChildLogicalOffsetInParent(*child).inline_offset;
+    const LogicalRect logical_child_rect = PhysicalFragment().ConvertToLogical(
+        PhysicalRect(child->Offset(), child->Size()), child->Size());
+    const LayoutUnit child_inline_min = logical_child_rect.offset.inline_offset;
     const LayoutUnit child_inline_max =
-        child_inline_min + ChildLogicalSizeInParent(*child).inline_size;
+        child_inline_min + logical_child_rect.size.inline_size;
 
     // Try to resolve if |point| falls in any child in inline direction.
     if (inline_point >= child_inline_min && inline_point <= child_inline_max) {
@@ -986,9 +972,10 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
     if (!child->PhysicalFragment().IsLineBox() || child->Children().IsEmpty())
       continue;
 
-    const LayoutUnit line_min = ChildLogicalOffsetInParent(*child).block_offset;
-    const LayoutUnit line_max =
-        line_min + ChildLogicalSizeInParent(*child).block_size;
+    const LogicalRect logical_child_rect = PhysicalFragment().ConvertToLogical(
+        PhysicalRect(child->Offset(), child->Size()), child->Size());
+    const LayoutUnit line_min = logical_child_rect.offset.block_offset;
+    const LayoutUnit line_max = line_min + logical_child_rect.size.block_size;
 
     // Try to resolve if |point| falls in a line box in block direction.
     // Hitting on line bottom doesn't count, to match legacy behavior.

@@ -485,8 +485,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   }
 
   if (suggestion_state) {
-    LogPasswordDropdownShown(*suggestion_state,
-                             _passwordManagerClient->IsIncognito());
+    LogPasswordDropdownShown(*suggestion_state);
   }
 
   completion([suggestions copy], self);
@@ -506,8 +505,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       completion();
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
-              kShowAll,
-          _passwordManagerClient->IsIncognito());
+              kShowAll);
       return;
     }
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
@@ -517,15 +515,13 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                       fieldIdentifier:uniqueFieldID];
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
-              kGenerate,
-          _passwordManagerClient->IsIncognito());
+              kGenerate);
       return;
     }
     default: {
       password_manager::metrics_util::LogPasswordDropdownItemSelected(
           password_manager::metrics_util::PasswordDropdownSelectedOption::
-              kPassword,
-          _passwordManagerClient->IsIncognito());
+              kPassword);
       DCHECK([suggestion.value hasSuffix:kSuggestionSuffix]);
       NSString* username = [suggestion.value
           substringToIndex:suggestion.value.length - kSuggestionSuffix.length];

@@ -413,17 +413,7 @@ scoped_refptr<ServiceWorkerRegistration> CreateNewServiceWorkerRegistration(
     ServiceWorkerRegistry* registry,
     const blink::mojom::ServiceWorkerRegistrationOptions& options) {
   scoped_refptr<ServiceWorkerRegistration> registration;
-  // Using nestable run loop because:
-  // * The CreateNewRegistration() internally uses a mojo remote and the
-  //   receiver of the remote lives in the same process/sequence in tests.
-  // * When the receiver lives in the same process a nested task is posted so
-  //   that a sent mojo message to be dispatched to the receiver.
-  // * Default run loop doesn't execute nested tasks. Tests will hang when
-  //   default run loop is used.
-  // TODO(bashi): Figure out a way to avoid using nested loop as it's
-  // problematic especially on the IO thread. This function is called on the IO
-  // thread when ServiceWorkerOnUI is disabled.
-  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::RunLoop run_loop;
   registry->CreateNewRegistration(
       options,
       base::BindLambdaForTesting(

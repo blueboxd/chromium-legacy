@@ -27,7 +27,7 @@ namespace {
 
 // Make sure GetNetConstants doesn't crash.
 TEST(NetLogUtil, GetNetConstants) {
-  std::unique_ptr<base::Value> constants(GetNetConstants());
+  base::Value constants(GetNetConstants());
 }
 
 // Make sure GetNetInfo doesn't crash when called on contexts with and without

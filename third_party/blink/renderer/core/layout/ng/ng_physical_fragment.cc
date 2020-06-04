@@ -506,6 +506,20 @@ bool NGPhysicalFragment::ShouldPaintDragCaret() const {
   return false;
 }
 
+LogicalRect NGPhysicalFragment::ConvertToLogical(
+    const PhysicalRect& physical_rect,
+    PhysicalSize inner_size) const {
+  return ConvertToLogical(physical_rect, Style().Direction(), inner_size);
+}
+
+LogicalRect NGPhysicalFragment::ConvertToLogical(
+    const PhysicalRect& physical_rect,
+    TextDirection direction,
+    PhysicalSize inner_size) const {
+  return physical_rect.ConvertToLogical(Style().GetWritingMode(), direction,
+                                        Size(), inner_size);
+}
+
 String NGPhysicalFragment::ToString() const {
   StringBuilder output;
   output.AppendFormat("Type: '%d' Size: '%s'", Type(),

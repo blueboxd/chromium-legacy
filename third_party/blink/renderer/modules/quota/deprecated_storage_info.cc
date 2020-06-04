@@ -53,7 +53,8 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
                     WebFeature::kQuotaRead);
   // Dispatching the request to DeprecatedStorageQuota, as this interface is
   // deprecated in favor of DeprecatedStorageQuota.
-  DeprecatedStorageQuota* storage_quota = GetStorageQuota(storage_type);
+  DeprecatedStorageQuota* storage_quota =
+      GetStorageQuota(storage_type, ExecutionContext::From(script_state));
   if (!storage_quota) {
     // Unknown storage type is requested.
     DeprecatedStorageQuota::EnqueueStorageErrorCallback(
@@ -76,7 +77,8 @@ void DeprecatedStorageInfo::requestQuota(
                     WebFeature::kQuotaRead);
   // Dispatching the request to DeprecatedStorageQuota, as this interface is
   // deprecated in favor of DeprecatedStorageQuota.
-  DeprecatedStorageQuota* storage_quota = GetStorageQuota(storage_type);
+  DeprecatedStorageQuota* storage_quota =
+      GetStorageQuota(storage_type, ExecutionContext::From(script_state));
   if (!storage_quota) {
     // Unknown storage type is requested.
     DeprecatedStorageQuota::EnqueueStorageErrorCallback(
@@ -88,18 +90,19 @@ void DeprecatedStorageInfo::requestQuota(
 }
 
 DeprecatedStorageQuota* DeprecatedStorageInfo::GetStorageQuota(
-    int storage_type) {
+    int storage_type,
+    ExecutionContext* execution_context) {
   switch (storage_type) {
     case kTemporary:
       if (!temporary_storage_) {
         temporary_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-            DeprecatedStorageQuota::kTemporary);
+            DeprecatedStorageQuota::kTemporary, execution_context);
       }
       return temporary_storage_.Get();
     case kPersistent:
       if (!persistent_storage_) {
         persistent_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-            DeprecatedStorageQuota::kPersistent);
+            DeprecatedStorageQuota::kPersistent, execution_context);
       }
       return persistent_storage_.Get();
   }

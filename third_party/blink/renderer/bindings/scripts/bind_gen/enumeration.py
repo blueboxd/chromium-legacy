@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import web_idl
+
 from . import name_style
 from .blink_v8_bridge import blink_class_name
 from .code_node import EmptyNode
@@ -23,6 +25,7 @@ from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
 from .path_manager import PathManager
+from .task_queue import TaskQueue
 
 
 def make_factory_methods(cg_context):
@@ -355,6 +358,9 @@ def generate_enumeration(enumeration):
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def generate_enumerations(web_idl_database):
+def generate_enumerations(task_queue, web_idl_database):
+    assert isinstance(task_queue, TaskQueue)
+    assert isinstance(web_idl_database, web_idl.Database)
+
     for enumeration in web_idl_database.enumerations:
-        generate_enumeration(enumeration)
+        task_queue.post_task(generate_enumeration, enumeration)

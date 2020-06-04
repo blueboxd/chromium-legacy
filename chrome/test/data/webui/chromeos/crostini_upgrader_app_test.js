@@ -196,15 +196,18 @@ suite('<crostini-upgrader-app>', () => {
     expectEquals(fakeBrowserProxy.handler.getCallCount('upgrade'), 0);
     // The UI pauses for 2000 ms before continuing.
     await waitMillis(2010).then(flushTasks());
-    fakeBrowserProxy.page.precheckStatus(
-        chromeos.crostiniUpgrader.mojom.UpgradePrecheckStatus.OK);
-    await flushTasks();
 
-    expectEquals(fakeBrowserProxy.handler.getCallCount('upgrade'), 1);
-    expectFalse(getUpgradeProgressBar().hidden);
-    fakeBrowserProxy.page.onUpgradeProgress(['foo', 'bar']);
-    fakeBrowserProxy.page.onUpgradeFailed();
-    await flushTasks();
+    const kMaxUpgradeAttempts = 3;
+    for (let i = 0; i < kMaxUpgradeAttempts; i++) {
+      fakeBrowserProxy.page.precheckStatus(
+          chromeos.crostiniUpgrader.mojom.UpgradePrecheckStatus.OK);
+      await flushTasks();
+      expectEquals(fakeBrowserProxy.handler.getCallCount('upgrade'), i + 1);
+      expectFalse(getUpgradeProgressBar().hidden);
+      fakeBrowserProxy.page.onUpgradeProgress(['foo', 'bar']);
+      fakeBrowserProxy.page.onUpgradeFailed();
+      await flushTasks();
+    }
 
     expectEquals(fakeBrowserProxy.handler.getCallCount('restore'), 0);
     await clickAction();

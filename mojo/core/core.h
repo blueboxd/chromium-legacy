@@ -54,8 +54,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
   scoped_refptr<Dispatcher> GetAndRemoveDispatcher(MojoHandle handle);
 
-  void SetDefaultProcessErrorCallback(ProcessErrorCallback callback);
-
   // Creates a message pipe endpoint with an unbound peer port returned in
   // |*peer|. Useful for setting up cross-process bootstrap message pipes. The
   // returned message pipe handle is usable immediately by the caller.

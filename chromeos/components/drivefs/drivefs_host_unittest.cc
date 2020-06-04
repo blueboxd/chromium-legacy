@@ -114,6 +114,10 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
     pending_bootstrap_ = std::move(pending_bootstrap);
   }
 
+  void set_verbose_logging_enabled(bool enabled) {
+    verbose_logging_enabled_ = enabled;
+  }
+
   // DriveFsHost::MountObserver:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
   MOCK_METHOD2(OnMountFailed,
@@ -153,9 +157,12 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
     return base::FilePath("/MyFiles");
   }
 
+  bool IsVerboseLoggingEnabled() override { return verbose_logging_enabled_; }
+
   signin::IdentityManager* const identity_manager_;
   const AccountId account_id_;
   mojo::PendingRemote<mojom::DriveFsBootstrap> pending_bootstrap_;
+  bool verbose_logging_enabled_ = false;
   invalidation::FakeInvalidationService invalidation_service_;
   drive::DriveNotificationManager drive_notification_manager_;
 
@@ -295,6 +302,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
     EXPECT_EQ("test@example.com", config->user_email);
     EXPECT_EQ("recovered files",
               config->lost_and_found_directory_name.value_or("<None>"));
+    verbose_logging_enabled_ = config->enable_verbose_logging;
     init_access_token_ = std::move(config->access_token);
     receiver_.Bind(std::move(drive_fs_receiver));
     mojo::FusePipes(std::move(pending_delegate_receiver_), std::move(delegate));
@@ -311,6 +319,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
   base::MockOneShotTimer* timer_;
+  base::Optional<bool> verbose_logging_enabled_;
 
   mojo::Receiver<mojom::DriveFsBootstrap> bootstrap_receiver_{this};
   MockDriveFs mock_drivefs_;
@@ -336,6 +345,8 @@ TEST_F(DriveFsHostTest, Basic) {
 
   ASSERT_NO_FATAL_FAILURE(DoMount());
   EXPECT_FALSE(init_access_token_);
+  ASSERT_TRUE(verbose_logging_enabled_);
+  EXPECT_FALSE(verbose_logging_enabled_.value());
 
   EXPECT_EQ(base::FilePath("/media/drivefsroot/salt-g-ID"),
             host_->GetMountPath());
@@ -346,6 +357,15 @@ TEST_F(DriveFsHostTest, Basic) {
   delegate_.set_disconnect_handler(run_loop.QuitClosure());
   host_->Unmount();
   run_loop.Run();
+}
+
+TEST_F(DriveFsHostTest, EnableVerboseLogging) {
+  ASSERT_FALSE(host_->IsMounted());
+
+  host_delegate_->set_verbose_logging_enabled(true);
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  ASSERT_TRUE(verbose_logging_enabled_);
+  EXPECT_TRUE(verbose_logging_enabled_.value());
 }
 
 TEST_F(DriveFsHostTest, GetMountPathWhileUnmounted) {

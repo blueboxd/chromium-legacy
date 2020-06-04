@@ -7,10 +7,8 @@
 #include <stdint.h>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
-#include "build/build_config.h"
 #include "mojo/core/configuration.h"
 #include "mojo/core/core.h"
 #include "mojo/core/entrypoints.h"
@@ -28,10 +26,6 @@ void Init(const Configuration& configuration) {
 
 void Init() {
   Init(Configuration());
-}
-
-void SetDefaultProcessErrorCallback(ProcessErrorCallback callback) {
-  Core::Get()->SetDefaultProcessErrorCallback(std::move(callback));
 }
 
 scoped_refptr<base::TaskRunner> GetIOTaskRunner() {

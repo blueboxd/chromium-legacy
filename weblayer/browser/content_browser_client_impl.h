@@ -111,6 +111,15 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
                                       int child_process_id) override;
 #if defined(OS_ANDROID)
   WideColorGamutHeuristic GetWideColorGamutHeuristic() override;
+  std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
+      const net::AuthChallengeInfo& auth_info,
+      content::WebContents* web_contents,
+      const content::GlobalRequestID& request_id,
+      bool is_main_frame,
+      const GURL& url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      bool first_auth_attempt,
+      LoginAuthRequiredCallback auth_required_callback) override;
 #endif  // OS_ANDROID
 
   void CreateFeatureListAndFieldTrials();

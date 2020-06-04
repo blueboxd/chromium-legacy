@@ -209,17 +209,18 @@ void FakeVideoCaptureDeviceFactory::GetDeviceDescriptors(
     device_descriptors->emplace_back(
         base::StringPrintf("fake_device_%d", entry_index), entry.device_id,
 #if defined(OS_LINUX)
-        VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE
+        VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE,
 #elif defined(OS_MACOSX)
-        VideoCaptureApi::MACOSX_AVFOUNDATION
+        VideoCaptureApi::MACOSX_AVFOUNDATION,
 #elif defined(OS_WIN)
-        VideoCaptureApi::WIN_DIRECT_SHOW
+        VideoCaptureApi::WIN_DIRECT_SHOW,
 #elif defined(OS_ANDROID)
-        VideoCaptureApi::ANDROID_API2_LEGACY
+        VideoCaptureApi::ANDROID_API2_LEGACY,
 #elif defined(OS_FUCHSIA)
-        VideoCaptureApi::UNKNOWN
+        VideoCaptureApi::UNKNOWN,
 #endif
-        );
+        VideoCaptureTransportType::OTHER_TRANSPORT,
+        entry.photo_device_config.pan_tilt_zoom_supported);
     entry_index++;
   }
 }
@@ -255,6 +256,7 @@ void FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
   std::vector<gfx::Size> resolutions = ArrayToVector(kDefaultResolutions);
   std::vector<float> frame_rates = ArrayToVector(kDefaultFrameRates);
   int device_count = kDefaultDeviceCount;
+  FakePhotoDeviceConfig photo_device_config;
   FakeVideoCaptureDevice::DisplayMediaType display_media_type =
       FakeVideoCaptureDevice::DisplayMediaType::ANY;
 
@@ -331,6 +333,13 @@ void FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
       } else if (base::EqualsCaseInsensitiveASCII(param.back(), "browser")) {
         display_media_type = FakeVideoCaptureDevice::DisplayMediaType::BROWSER;
       }
+    } else if (base::EqualsCaseInsensitiveASCII(param.front(),
+                                                "hardware-support")) {
+      photo_device_config.pan_tilt_zoom_supported = false;
+      if (base::EqualsCaseInsensitiveASCII(param.back(), "pan-tilt-zoom"))
+        photo_device_config.pan_tilt_zoom_supported = true;
+      else if (!base::EqualsCaseInsensitiveASCII(param.back(), "none"))
+        LOG(WARNING) << "Unknown hardware support " << param.back();
     }
   }
 
@@ -342,6 +351,7 @@ void FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
     settings.device_id = base::StringPrintf(kDefaultDeviceIdMask, device_index);
     AppendAllCombinationsToFormatsContainer(
         pixel_formats, resolutions, frame_rates, &settings.supported_formats);
+    settings.photo_device_config = photo_device_config;
     settings.display_media_type = display_media_type;
     config->push_back(settings);
   }

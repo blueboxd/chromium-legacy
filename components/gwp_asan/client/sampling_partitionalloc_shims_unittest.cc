@@ -50,10 +50,15 @@ constexpr size_t kLoopIterations = kSamplingFrequency * 4;
 constexpr int kSuccess = 0;
 constexpr int kFailure = 1;
 
+static void HandleOOM(size_t unused_size) {
+  LOG(FATAL) << "Out of memory.";
+}
+
 class SamplingPartitionAllocShimsTest : public base::MultiProcessTest {
  public:
   static void multiprocessTestSetup() {
     crash_reporter::InitializeCrashKeys();
+    base::PartitionAllocGlobalInit(HandleOOM);
     InstallPartitionAllocHooks(
         AllocatorState::kMaxMetadata, AllocatorState::kMaxMetadata,
         AllocatorState::kMaxSlots, kSamplingFrequency, base::DoNothing());

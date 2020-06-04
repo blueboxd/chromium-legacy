@@ -36,7 +36,7 @@ _setup_sys_path()
 from .dictionary import generate_dictionaries
 from .enumeration import generate_enumerations
 from .interface import generate_interfaces
-from .union import generate_unions
+from .task_queue import TaskQueue
 
 
 def init(root_src_dir, root_gen_dir, component_reldirs):

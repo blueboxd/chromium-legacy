@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin.account_picker;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,6 +46,7 @@ public class AccountPickerCoordinator {
      *                 account.
      * @param selectedAccountName The name of the account that should be marked as selected.
      */
+    @MainThread
     public AccountPickerCoordinator(
             RecyclerView view, Listener listener, @Nullable String selectedAccountName) {
         assert listener != null : "The argument AccountPickerCoordinator.Listener cannot be null!";
@@ -66,6 +68,7 @@ public class AccountPickerCoordinator {
     /**
      * Destroys the resources used by the coordinator.
      */
+    @MainThread
     public void destroy() {
         mMediator.destroy();
     }

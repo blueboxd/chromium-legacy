@@ -31,6 +31,7 @@
 namespace {
 char kUrl[] = "https://test.test/";
 char kUsdzFileName[] = "important_file.usdz";
+char kRealityFileName[] = "important_file.reality";
 
 // Substitutes real TabHelper for testing.
 template <class TabHelper>
@@ -177,6 +178,23 @@ TEST_F(BrowserDownloadServiceTest, UsdzExtension) {
       1);
 }
 
+// Tests that BrowserDownloadService uses ARQuickLookTabHelper for .REALITY
+// extension.
+TEST_F(BrowserDownloadServiceTest, RealityExtension) {
+  ASSERT_TRUE(download_controller()->GetDelegate());
+  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), "other");
+  task->SetSuggestedFilename(base::UTF8ToUTF16(kRealityFileName));
+  web::DownloadTask* task_ptr = task.get();
+  download_controller()->GetDelegate()->OnDownloadCreated(
+      download_controller(), &web_state_, std::move(task));
+  ASSERT_EQ(1U, ar_quick_look_tab_helper()->tasks().size());
+  EXPECT_EQ(task_ptr, ar_quick_look_tab_helper()->tasks()[0].get());
+  ASSERT_TRUE(download_manager_tab_helper()->tasks().empty());
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadMimeType",
+      static_cast<base::HistogramBase::Sample>(DownloadMimeTypeResult::Other),
+      1);
+}
 // Tests that BrowserDownloadService uses ARQuickLookTabHelper for USDZ Mime
 // type.
 TEST_F(BrowserDownloadServiceTest, UsdzMimeType) {

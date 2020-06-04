@@ -81,6 +81,7 @@ static const char kInternal[] = "internal";
 static const char kLabelImages[] = "labelImages";
 static const char kNative[] = "native";
 static const char kPage[] = "page";
+static const char kPDF[] = "pdf";
 static const char kScreenReader[] = "screenreader";
 static const char kShowOrRefreshTree[] = "showOrRefreshTree";
 static const char kText[] = "text";
@@ -178,6 +179,7 @@ void HandleAccessibilityRequestCallback(
   bool text = mode.has_mode(ui::AXMode::kInlineTextBoxes);
   bool screenreader = mode.has_mode(ui::AXMode::kScreenReader);
   bool html = mode.has_mode(ui::AXMode::kHTML);
+  bool pdf = mode.has_mode(ui::AXMode::kPDF);
 
   // The "native" and "web" flags are disabled if
   // --disable-renderer-accessibility is set.
@@ -203,6 +205,9 @@ void HandleAccessibilityRequestCallback(
   data.SetString(kLabelImages, are_accessibility_image_labels_enabled
                                    ? (label_images ? kOn : kOff)
                                    : kDisabled);
+
+  // The "pdf" flag is independent of the others.
+  data.SetString(kPDF, pdf ? kOn : kOff);
 
   bool show_internal = pref->GetBoolean(prefs::kShowInternalAccessibilityTree);
   data.SetString(kInternal, show_internal ? kOn : kOff);

@@ -421,7 +421,7 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)showTabSwitcher {
-  [ChromeEarlGrey waitForAndTapButton:chrome_test_util::TabGridOpenButton()];
+  [ChromeEarlGrey waitForAndTapButton:chrome_test_util::ShowTabsButton()];
 }
 
 #pragma mark - Cookie Utilities (EG2)
@@ -881,6 +881,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (BOOL)isAutofillCompanyNameEnabled {
   return [ChromeEarlGreyAppInterface isAutofillCompanyNameEnabled];
+}
+
+- (BOOL)isChangeTabSwitcherPositionEnabled {
+  return [ChromeEarlGreyAppInterface isChangeTabSwitcherPositionEnabled];
 }
 
 - (BOOL)isDemographicMetricsReportingEnabled {

@@ -270,4 +270,102 @@ IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest,
               total_attribute_count(complete_nodes[i]));
 }
 
+IN_PROC_BROWSER_TEST_F(SnapshotAXTreeBrowserTest, SnapshotPDFMode) {
+  // The "PDF" accessibility mode is used when getting a snapshot of the
+  // accessibility tree in order to export a tagged PDF. Ensure that
+  // we're serializing the right set of attributes needed for a PDF and
+  // also ensure that we're *not* wasting time serializing attributes
+  // that are not needed for PDF export.
+  GURL url(R"HTML(data:text/html,<body>
+                  <img src="" alt="Unicorns">
+                  <ul>
+                    <li aria-posinset="5">
+                      <span style="color: red;">Red text</span>
+                  </ul>
+                  <table role="table">
+                    <tr>
+                      <td colspan="2">
+                    </tr>
+                    <tr>
+                      <td>1</td><td>2</td>
+                    </tr>
+                  </table>
+                  </body>)HTML");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  AXTreeSnapshotWaiter waiter;
+  web_contents->RequestAXTreeSnapshot(
+      base::BindOnce(&AXTreeSnapshotWaiter::ReceiveSnapshot,
+                     base::Unretained(&waiter)),
+      ui::AXMode::kPDF);
+  waiter.Wait();
+
+  // Dump the whole tree if one of the assertions below fails
+  // to aid in debugging why it failed.
+  SCOPED_TRACE(waiter.snapshot().ToString());
+
+  // Scan all of the nodes and make some general assertions.
+  int dom_node_id_count = 0;
+  for (const ui::AXNodeData& node_data : waiter.snapshot().nodes) {
+    // Every node should have a valid role, state, and ID.
+    EXPECT_NE(ax::mojom::Role::kUnknown, node_data.role);
+    EXPECT_NE(0, node_data.id);
+
+    if (node_data.GetIntAttribute(ax::mojom::IntAttribute::kDOMNodeId) != 0)
+      dom_node_id_count++;
+
+    // We don't need bounding boxes to make a tagged PDF. Ensure those are
+    // uninitialized.
+    EXPECT_TRUE(node_data.relative_bounds.bounds.IsEmpty());
+
+    // We shouldn't get any inline text box nodes. They aren't needed to
+    // make a tagged PDF and they make up a large fraction of nodes in the
+    // tree when present.
+    EXPECT_NE(ax::mojom::Role::kInlineTextBox, node_data.role);
+
+    // We shouldn't have any style information like color in the tree.
+    EXPECT_FALSE(node_data.HasIntAttribute(ax::mojom::IntAttribute::kColor));
+  }
+
+  // Many nodes should have a DOM node id. That's not normally included
+  // in the accessibility tree but it's needed for associating nodes with
+  // rendered text in the PDF file.
+  EXPECT_GT(dom_node_id_count, 5);
+
+  // Build an AXTree from the snapshot and make some specific assertions.
+  ui::AXTree tree(waiter.snapshot());
+  ui::AXNode* root = tree.root();
+  ASSERT_TRUE(root);
+  ASSERT_EQ(ax::mojom::Role::kRootWebArea, root->data().role);
+
+  // Img alt text should be present.
+  ui::AXNode* image = root->GetUnignoredChildAtIndex(0);
+  ASSERT_TRUE(image);
+  ASSERT_EQ(ax::mojom::Role::kImage, image->data().role);
+  ASSERT_EQ("Unicorns", image->data().GetStringAttribute(
+                            ax::mojom::StringAttribute::kName));
+
+  // List attributes like posinset should be present.
+  ui::AXNode* ul = root->GetUnignoredChildAtIndex(1);
+  ASSERT_TRUE(ul);
+  ASSERT_EQ(ax::mojom::Role::kList, ul->data().role);
+  ui::AXNode* li = ul->GetUnignoredChildAtIndex(0);
+  ASSERT_TRUE(li);
+  ASSERT_EQ(ax::mojom::Role::kListItem, li->data().role);
+  EXPECT_EQ(5, *li->GetPosInSet());
+
+  // Table attributes like colspan should be present.
+  ui::AXNode* table = root->GetUnignoredChildAtIndex(2);
+  ASSERT_TRUE(table);
+  ASSERT_EQ(ax::mojom::Role::kTable, table->data().role);
+  ui::AXNode* tr = table->GetUnignoredChildAtIndex(0);
+  ASSERT_TRUE(tr);
+  ASSERT_EQ(ax::mojom::Role::kRow, tr->data().role);
+  ui::AXNode* td = tr->GetUnignoredChildAtIndex(0);
+  ASSERT_TRUE(td);
+  ASSERT_EQ(ax::mojom::Role::kCell, td->data().role);
+  EXPECT_EQ(2, *td->GetTableCellColSpan());
+}
+
 }  // namespace content

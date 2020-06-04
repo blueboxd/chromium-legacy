@@ -153,10 +153,6 @@ scoped_refptr<Dispatcher> Core::GetAndRemoveDispatcher(MojoHandle handle) {
   return dispatcher;
 }
 
-void Core::SetDefaultProcessErrorCallback(ProcessErrorCallback callback) {
-  default_process_error_callback_ = std::move(callback);
-}
-
 MojoHandle Core::CreatePartialMessagePipe(ports::PortRef* peer) {
   RequestContext request_context;
   ports::PortRef local_port;

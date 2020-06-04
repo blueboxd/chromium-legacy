@@ -131,6 +131,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetVolume(double volume) override;
   void SetLatencyHint(double seconds) override;
   void OnRequestPictureInPicture() override;
+  void OnTimeUpdate() override;
   void SetSinkId(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback completion_callback) override;
@@ -447,21 +448,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //   - pending_suspend_resume_cycle_,
   //   - enter_pip_callback_,
   void UpdatePlayState();
-
-  // Calculates the current position state for the media element and notifies
-  // |delegate_| if it has changed.
-  //
-  // Spec: https://wicg.github.io/mediasession/#position-state
-  //
-  // This method should be called any time its dependent values change. These
-  // are:
-  //   - pipeline_controller_->GetMediaDuration()
-  //   - pipeline_media_duration_for_test_
-  //   - pipeline_controller_->GetMediaTime()
-  //   - playback_rate_
-  //   - Seeking() / seek_time_
-  //   - paused_, paused_time_
-  void UpdateMediaPositionState();
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_flinging,

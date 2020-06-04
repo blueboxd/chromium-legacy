@@ -127,7 +127,6 @@ void AXTreeSnapshotterImpl::SnapshotContentTree(ui::AXMode ax_mode,
 
   BlinkAXTreeSource tree_source(render_frame_, ax_mode);
   tree_source.SetRoot(root);
-  tree_source.EnableDOMNodeIDs();
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source);
 
   // The serializer returns an AXContentTreeUpdate, which can store a complete

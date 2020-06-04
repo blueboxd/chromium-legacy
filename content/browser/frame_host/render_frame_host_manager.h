@@ -46,7 +46,6 @@ class RenderViewHost;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class TestWebContents;
-struct FrameReplicationState;
 
 // Manages RenderFrameHosts for a FrameTreeNode. It maintains a
 // current_frame_host() which is the content currently visible to the user. When
@@ -121,10 +120,7 @@ class CONTENT_EXPORT RenderFrameHostManager
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
         const base::Optional<base::UnguessableToken>& opener_frame_token,
-        int proxy_routing_id,
-        const base::UnguessableToken& frame_token,
-        const base::UnguessableToken& devtools_frame_token,
-        const FrameReplicationState& replicated_frame_state) = 0;
+        int proxy_routing_id) = 0;
     virtual void CreateRenderWidgetHostViewForRenderManager(
         RenderViewHost* render_view_host) = 0;
     virtual bool CreateRenderFrameForRenderManager(

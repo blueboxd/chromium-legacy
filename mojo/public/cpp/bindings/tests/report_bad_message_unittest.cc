@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "mojo/public/interfaces/bindings/tests/test_bad_messages.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,15 +64,14 @@ class ReportBadMessageTest : public BindingsTestBase {
   ReportBadMessageTest() = default;
 
   void SetUp() override {
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &ReportBadMessageTest::OnProcessError, base::Unretained(this)));
 
     impl_.Bind(remote_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   TestBadMessages* remote() { return remote_.get(); }

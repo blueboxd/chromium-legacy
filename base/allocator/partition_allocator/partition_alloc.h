@@ -75,6 +75,7 @@
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
@@ -219,6 +220,7 @@ class BASE_EXPORT PartitionStatsDumper {
 };
 
 BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
+BASE_EXPORT void PartitionAllocGlobalUninitForTesting();
 
 ALWAYS_INLINE void* PartitionRoot::Alloc(size_t size, const char* type_name) {
   return AllocFlags(0, size, type_name);

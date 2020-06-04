@@ -33,8 +33,8 @@ enum NetInfoSource {
 // Returns a friendly string to use for a given NetInfoSource in the net log.
 NET_EXPORT const char* NetInfoSourceToString(NetInfoSource source);
 
-// Create a dictionary containing a legend for net/ constants.
-NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetConstants();
+// Creates a dictionary containing a legend for net/ constants.
+NET_EXPORT base::Value GetNetConstants();
 
 // Retrieves a dictionary containing information about the current state of
 // |context|.  |info_sources| is a set of NetInfoSources OR'd together,

@@ -669,7 +669,7 @@ chrome.developerPrivate.notifyDragInstallInProgress = function() {};
 
 /**
  * Loads an extension / app.
- * @param {Object} directory The directory to load the extension from.
+ * @param {DirectoryEntry} directory The directory to load the extension from.
  * @param {function(string): void} callback
  */
 chrome.developerPrivate.loadDirectory = function(directory, callback) {};

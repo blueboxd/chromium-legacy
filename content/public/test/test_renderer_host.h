@@ -135,7 +135,6 @@ class RenderViewHostTester {
 
   // Gives tests access to RenderViewHostImpl::CreateRenderView.
   virtual bool CreateTestRenderView(
-      const base::string16& frame_name,
       const base::Optional<base::UnguessableToken>& opener_frame_route_id,
       int proxy_routing_id,
       bool created_with_opener) = 0;

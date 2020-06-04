@@ -54,7 +54,7 @@ enum ReauthReason {
 };
 
 void RecordReauthReason(const AccountId& account_id, ReauthReason reason);
-void SendReauthReason(const AccountId& account_id);
+void SendReauthReason(const AccountId& account_id, bool password_changed);
 
 }  // namespace chromeos
 

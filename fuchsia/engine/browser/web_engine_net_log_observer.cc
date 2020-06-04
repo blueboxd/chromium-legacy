@@ -20,7 +20,8 @@ namespace {
 
 std::unique_ptr<base::DictionaryValue> GetWebEngineConstants() {
   std::unique_ptr<base::DictionaryValue> constants_dict =
-      net::GetNetConstants();
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(net::GetNetConstants()));
 
   base::DictionaryValue dict;
   dict.SetKey("name", base::Value("WebEngine"));

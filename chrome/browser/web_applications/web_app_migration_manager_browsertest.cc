@@ -284,6 +284,27 @@ IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
+                       InstallShadowBookmarkApp) {
+  EXPECT_FALSE(provider().registrar().AsBookmarkAppRegistrar());
+  AwaitRegistryReady();
+
+  auto* extensions_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  extensions::TestExtensionRegistryObserver extensions_registry_observer(
+      extensions_registry);
+
+  ui_test_utils::NavigateToURL(browser(), GURL{kSimpleManifestStartUrl});
+  AppId app_id = InstallWebAppAsUserViaOmnibox();
+
+  EXPECT_TRUE(provider().registrar().IsInstalled(app_id));
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions_registry_observer.WaitForExtensionInstalled();
+  EXPECT_EQ(extension->id(), app_id);
+  EXPECT_EQ("Manifest test app", extension->short_name());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppMigrationManagerBrowserTest,
                        PRE_UninstallShadowBookmarkApp) {
   EXPECT_TRUE(provider().registrar().AsBookmarkAppRegistrar());
   AwaitRegistryReady();

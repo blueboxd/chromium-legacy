@@ -32,12 +32,6 @@ template("standalone_system_webview_apk_tmpl") {
         "//android_webview/nonembedded:system_webview_manifest"
     deps = upstream_only_webview_deps
     min_sdk_version = 21
-
-    # Material design is a large dependency that pulls in a lot of res/ files.
-    # At time of this comment, adding this dep even when unused adds 220kb.
-    assert_no_deps = [
-      "//third_party/android_deps:com_google_android_material_material_java",
-    ]
   }
 }
 

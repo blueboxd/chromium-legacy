@@ -221,17 +221,27 @@ void PepperWebPluginImpl::UpdateFocus(bool focused,
     instance_->SetWebKitFocus(focused);
 
     if (focused && instance_->SupportsKeyboardFocus()) {
-      int modifiers = blink::WebInputEvent::kNoModifiers;
-      if (focus_type == blink::mojom::FocusType::kBackward)
-        modifiers |= blink::WebInputEvent::kShiftKey;
-      // As part of focus management for plugin, blink brings plugin to focus
-      // but does not forward the tab event to plugin. Hence simulating tab
-      // event here to enable seamless tabbing across UI & plugin.
-      blink::WebKeyboardEvent simulated_event(
-          blink::WebInputEvent::Type::kKeyDown, modifiers, base::TimeTicks());
-      simulated_event.windows_key_code = ui::KeyboardCode::VKEY_TAB;
-      ui::Cursor cursor;
-      instance_->HandleInputEvent(simulated_event, &cursor);
+      switch (focus_type) {
+        case blink::mojom::FocusType::kForward:
+        case blink::mojom::FocusType::kBackward: {
+          int modifiers = blink::WebInputEvent::kNoModifiers;
+          if (focus_type == blink::mojom::FocusType::kBackward)
+            modifiers |= blink::WebInputEvent::kShiftKey;
+          // As part of focus management for plugin, blink brings plugin to
+          // focus but does not forward the tab event to plugin. Hence
+          // simulating tab event here to enable seamless tabbing across UI &
+          // plugin.
+          blink::WebKeyboardEvent simulated_event(
+              blink::WebInputEvent::Type::kKeyDown, modifiers,
+              base::TimeTicks());
+          simulated_event.windows_key_code = ui::KeyboardCode::VKEY_TAB;
+          ui::Cursor cursor;
+          instance_->HandleInputEvent(simulated_event, &cursor);
+          break;
+        }
+        default:
+          break;
+      }
     }
   }
 }

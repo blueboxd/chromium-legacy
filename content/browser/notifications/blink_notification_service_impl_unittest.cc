@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
@@ -32,9 +33,9 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "content/test/test_content_browser_client.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/notifications/notification_constants.h"
@@ -147,14 +148,13 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
     browser_context_.SetPermissionControllerDelegate(
         std::make_unique<testing::NiceMock<MockPermissionManager>>());
 
-    mojo::core::SetDefaultProcessErrorCallback(base::AdaptCallbackForRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::AdaptCallbackForRepeating(
         base::BindOnce(&BlinkNotificationServiceImplTest::OnMojoError,
                        base::Unretained(this))));
   }
 
   void TearDown() override {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
 
     embedded_worker_helper_.reset();
 

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "media/base/video_facing.h"
 #include "third_party/blink/public/common/common_export.h"
 
@@ -32,7 +33,8 @@ struct BLINK_COMMON_EXPORT WebMediaDeviceInfo {
       const std::string& device_id,
       const std::string& label,
       const std::string& group_id,
-      media::VideoFacingMode video_facing = media::MEDIA_VIDEO_FACING_NONE);
+      media::VideoFacingMode video_facing = media::MEDIA_VIDEO_FACING_NONE,
+      const base::Optional<bool>& pan_tilt_zoom_supported = base::nullopt);
   explicit WebMediaDeviceInfo(
       const media::VideoCaptureDeviceDescriptor& descriptor);
   ~WebMediaDeviceInfo();
@@ -42,7 +44,9 @@ struct BLINK_COMMON_EXPORT WebMediaDeviceInfo {
   std::string device_id;
   std::string label;
   std::string group_id;
-  media::VideoFacingMode video_facing;
+  media::VideoFacingMode video_facing =
+      media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
+  base::Optional<bool> pan_tilt_zoom_supported;
 };
 
 using WebMediaDeviceInfoArray = std::vector<WebMediaDeviceInfo>;

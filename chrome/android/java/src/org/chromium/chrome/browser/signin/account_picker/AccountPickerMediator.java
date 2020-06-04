@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.signin.account_picker;
 import android.content.Context;
 import android.text.TextUtils;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
@@ -42,6 +43,7 @@ class AccountPickerMediator {
     private final ProfileDataCache.Observer mProfileDataObserver = accountId -> updateProfileData();
     private List<String> mAccountNames;
 
+    @MainThread
     AccountPickerMediator(Context context, MVCListAdapter.ModelList listModel,
             AccountPickerCoordinator.Listener listener, @Nullable String selectedAccountName) {
         mListModel = listModel;
@@ -59,6 +61,7 @@ class AccountPickerMediator {
     /**
      * Unregisters the observers used by the mediator.
      */
+    @MainThread
     void destroy() {
         mProfileDataCache.removeObserver(mProfileDataObserver);
         mAccountManagerFacade.removeObserver(mAccountsChangeObserver);

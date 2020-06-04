@@ -45,7 +45,7 @@ bind_gen/name_style.py
 bind_gen/package_initializer.py
 bind_gen/path_manager.py
 bind_gen/style_format.py
-bind_gen/union.py
+bind_gen/task_queue.py
 generate_bindings.py
 web_idl/__init__.py
 web_idl/argument.py

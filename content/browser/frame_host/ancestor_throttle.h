@@ -45,6 +45,7 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
 
  private:
   enum class LoggingDisposition { LOG_TO_CONSOLE, DO_NOT_LOG_TO_CONSOLE };
+  enum class CheckResult { BLOCK, PROCEED };
 
   FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest, ParsingXFrameOptions);
   FRIEND_TEST_ALL_PREFIXES(AncestorThrottleTest, ErrorsParsingXFrameOptions);
@@ -55,17 +56,20 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult ProcessResponseImpl(
       LoggingDisposition logging,
       bool is_response_check);
-  void ParseError(const std::string& value, HeaderDisposition disposition);
-  void ConsoleError(HeaderDisposition disposition);
-  NavigationThrottle::ThrottleAction EvaluateContentSecurityPolicy(
+  void ParseXFrameOptionsError(const std::string& value,
+                               HeaderDisposition disposition);
+  void ConsoleErrorXFrameOptions(HeaderDisposition disposition);
+  CheckResult EvaluateXFrameOptions(LoggingDisposition logging);
+  CheckResult EvaluateFrameAncestors(
       const std::vector<network::mojom::ContentSecurityPolicyPtr>&
           content_security_policy);
 
   // Parses an 'X-Frame-Options' header. If the result is either CONFLICT
   // or INVALID, |header_value| will be populated with the value which caused
   // the parse error.
-  HeaderDisposition ParseHeader(const net::HttpResponseHeaders* headers,
-                                std::string* header_value);
+  HeaderDisposition ParseXFrameOptionsHeader(
+      const net::HttpResponseHeaders* headers,
+      std::string* header_value);
 
   DISALLOW_COPY_AND_ASSIGN(AncestorThrottle);
 };

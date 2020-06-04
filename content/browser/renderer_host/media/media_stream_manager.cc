@@ -2541,7 +2541,8 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
   MediaStreamDevices devices;
   for (const auto& info : device_infos) {
     devices.emplace_back(stream_type, info.device_id, info.label,
-                         info.video_facing, info.group_id);
+                         info.video_facing, info.group_id,
+                         info.pan_tilt_zoom_supported);
   }
 
   return devices;

@@ -132,7 +132,24 @@ class FakeV4L2Impl::OpenedDevice {
 
   int s_ext_ctrls(v4l2_ext_controls* control) { return kSuccessReturnValue; }
 
-  int queryctrl(v4l2_queryctrl* control) { return EINVAL; }
+  int queryctrl(v4l2_queryctrl* control) {
+    switch (control->id) {
+      case V4L2_CID_PAN_ABSOLUTE:
+      case V4L2_CID_TILT_ABSOLUTE:
+      case V4L2_CID_ZOOM_ABSOLUTE:
+        if (!config_.descriptor.pan_tilt_zoom_supported().has_value() ||
+            !config_.descriptor.pan_tilt_zoom_supported().value()) {
+          return EINVAL;
+        }
+        control->flags = 0;
+        control->minimum = 100;
+        control->maximum = 400;
+        control->step = 1;
+        return 0;
+      default:
+        return EINVAL;
+    }
+  }
 
   int s_fmt(v4l2_format* format) {
     if (format->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)

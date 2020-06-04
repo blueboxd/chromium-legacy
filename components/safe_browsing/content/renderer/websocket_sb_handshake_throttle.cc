@@ -23,22 +23,9 @@ namespace safe_browsing {
 WebSocketSBHandshakeThrottle::WebSocketSBHandshakeThrottle(
     mojom::SafeBrowsing* safe_browsing,
     int render_frame_id)
-    : render_frame_id_(render_frame_id),
-      safe_browsing_(safe_browsing),
-      result_(Result::UNKNOWN) {}
+    : render_frame_id_(render_frame_id), safe_browsing_(safe_browsing) {}
 
-WebSocketSBHandshakeThrottle::~WebSocketSBHandshakeThrottle() {
-  // ThrottleHandshake() should always be called, but since that is done all the
-  // way over in Blink, just avoid logging if it is not called rather than
-  // DCHECK()ing.
-  if (start_time_.is_null())
-    return;
-  if (result_ == Result::UNKNOWN) {
-    result_ = Result::ABANDONED;
-    UMA_HISTOGRAM_TIMES("SafeBrowsing.WebSocket.Elapsed.Abandoned",
-                        base::TimeTicks::Now() - start_time_);
-  }
-}
+WebSocketSBHandshakeThrottle::~WebSocketSBHandshakeThrottle() = default;
 
 void WebSocketSBHandshakeThrottle::ThrottleHandshake(
     const blink::WebURL& url,
@@ -48,7 +35,8 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   completion_callback_ = std::move(completion_callback);
   url_ = url;
   int load_flags = 0;
-  start_time_ = base::TimeTicks::Now();
+  DCHECK_EQ(state_, State::kInitial);
+  state_ = State::kStarted;
   safe_browsing_->CreateCheckerAndCheck(
       render_frame_id_, url_checker_.BindNewPipeAndPassReceiver(), url, "GET",
       net::HttpRequestHeaders(), load_flags,
@@ -65,17 +53,14 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
 
 void WebSocketSBHandshakeThrottle::OnCompleteCheck(bool proceed,
                                                    bool showed_interstitial) {
-  DCHECK(!start_time_.is_null());
-  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
+  DCHECK_EQ(state_, State::kStarted);
   if (proceed) {
-    result_ = Result::SAFE;
-    UMA_HISTOGRAM_TIMES("SafeBrowsing.WebSocket.Elapsed.Safe", elapsed);
+    state_ = State::kSafe;
     std::move(completion_callback_).Run(base::nullopt);
   } else {
     // When the insterstitial is dismissed the page is navigated and this object
     // is destroyed before reaching here.
-    result_ = Result::BLOCKED;
-    UMA_HISTOGRAM_TIMES("SafeBrowsing.WebSocket.Elapsed.Blocked", elapsed);
+    state_ = State::kBlocked;
     std::move(completion_callback_)
         .Run(blink::WebString::FromUTF8(base::StringPrintf(
             "WebSocket connection to %s failed safe browsing check",
@@ -93,7 +78,8 @@ void WebSocketSBHandshakeThrottle::OnCheckResult(
     return;
   }
 
-  // TODO(yzshen): Notify the network service to pause processing response body.
+  // TODO(yzshen): Notify the network service to stop reading from the
+  // WebSocket.
   if (!notifier_receiver_) {
     notifier_receiver_ =
         std::make_unique<mojo::Receiver<mojom::UrlCheckNotifier>>(this);
@@ -102,14 +88,12 @@ void WebSocketSBHandshakeThrottle::OnCheckResult(
 }
 
 void WebSocketSBHandshakeThrottle::OnMojoDisconnect() {
-  DCHECK_EQ(result_, Result::UNKNOWN);
+  DCHECK(state_ == State::kStarted);
 
   url_checker_.reset();
   notifier_receiver_.reset();
 
-  // Make the destructor record NOT_SUPPORTED in the result histogram.
-  result_ = Result::NOT_SUPPORTED;
-  // Don't record the time elapsed because it's unlikely to be meaningful.
+  state_ = State::kNotSupported;
   std::move(completion_callback_).Run(base::nullopt);
   // |this| is destroyed here.
 }

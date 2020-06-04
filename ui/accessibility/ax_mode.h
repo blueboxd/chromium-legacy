@@ -60,10 +60,14 @@ class AX_EXPORT AXMode {
   // The accessibility tree will contain automatic image annotations.
   static constexpr uint32_t kLabelImages = 1 << 5;
 
+  // The accessibility tree will contain enough information to export
+  // an accessible PDF.
+  static constexpr uint32_t kPDF = 1 << 6;
+
   // Update this to include the last supported mode flag. If you add
   // another, be sure to update the stream insertion operator for
   // logging and debugging.
-  static constexpr uint32_t kLastModeFlag = 1 << 5;
+  static constexpr uint32_t kLastModeFlag = 1 << 6;
 
   constexpr AXMode() : flags_(0) {}
   constexpr AXMode(uint32_t flags) : flags_(flags) {}

@@ -13,17 +13,15 @@
 
 namespace net_log {
 
-std::unique_ptr<base::Value> GetConstantsForNetLog(
+base::Value GetConstantsForNetLog(
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string) {
-  std::unique_ptr<base::DictionaryValue> constants_dict =
-      net::GetNetConstants();
-  DCHECK(constants_dict);
+  base::Value constants_dict = net::GetNetConstants();
 
   auto platform_dict =
       GetPlatformConstantsForNetLog(command_line_string, channel_string);
   if (platform_dict)
-    constants_dict->MergeDictionary(platform_dict.get());
+    constants_dict.MergeDictionary(platform_dict.get());
   return constants_dict;
 }
 

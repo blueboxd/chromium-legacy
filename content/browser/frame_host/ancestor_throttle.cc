@@ -199,69 +199,8 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     return NavigationThrottle::PROCEED;
   }
 
-  std::string header_value;
-  HeaderDisposition disposition =
-      ParseHeader(request->GetResponseHeaders(), &header_value);
-
-  switch (disposition) {
-    case HeaderDisposition::CONFLICT:
-      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
-        ParseError(header_value, disposition);
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::CONFLICT);
-      return NavigationThrottle::BLOCK_RESPONSE;
-
-    case HeaderDisposition::INVALID:
-      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
-        ParseError(header_value, disposition);
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::INVALID);
-      // TODO(mkwst): Consider failing here.
-      break;
-
-    case HeaderDisposition::DENY:
-      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
-        ConsoleError(disposition);
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::DENY);
-      return NavigationThrottle::BLOCK_RESPONSE;
-
-    case HeaderDisposition::SAMEORIGIN: {
-      // Block the request when any ancestor is not same-origin.
-      RenderFrameHostImpl* parent = request->GetParentFrame();
-      url::Origin current_origin =
-          url::Origin::Create(navigation_handle()->GetURL());
-      while (parent) {
-        if (!parent->GetLastCommittedOrigin().IsSameOriginWith(
-                current_origin)) {
-          RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN_BLOCKED);
-          if (logging == LoggingDisposition::LOG_TO_CONSOLE)
-            ConsoleError(disposition);
-
-          // TODO(mkwst): Stop recording this metric once we convince other
-          // vendors to follow our lead with XFO: SAMEORIGIN processing.
-          //
-          // https://crbug.com/250309
-          if (parent->GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
-                  current_origin)) {
-            RecordXFrameOptionsUsage(
-                XFrameOptionsHistogram::SAMEORIGIN_WITH_BAD_ANCESTOR_CHAIN);
-          }
-
-          return NavigationThrottle::BLOCK_RESPONSE;
-        }
-        parent = parent->GetParent();
-      }
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN);
-      break;
-    }
-
-    case HeaderDisposition::NONE:
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::NONE);
-      break;
-    case HeaderDisposition::BYPASS:
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::BYPASS);
-      break;
-    case HeaderDisposition::ALLOWALL:
-      RecordXFrameOptionsUsage(XFrameOptionsHistogram::ALLOWALL);
-      break;
+  if (EvaluateXFrameOptions(logging) == CheckResult::BLOCK) {
+    return NavigationThrottle::BLOCK_RESPONSE;
   }
 
   // X-Frame-Option is checked on both redirect and final responses. However,
@@ -269,8 +208,15 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
   if (!is_response_check)
     return NavigationThrottle::PROCEED;
 
-  return EvaluateContentSecurityPolicy(
-      request->response()->parsed_headers->content_security_policy);
+  const std::vector<network::mojom::ContentSecurityPolicyPtr>&
+      content_security_policies =
+          request->response()->parsed_headers->content_security_policy;
+
+  if (EvaluateFrameAncestors(content_security_policies) == CheckResult::BLOCK) {
+    return NavigationThrottle::BLOCK_RESPONSE;
+  }
+
+  return NavigationThrottle::PROCEED;
 }
 
 const char* AncestorThrottle::GetNameForLogging() {
@@ -280,8 +226,8 @@ const char* AncestorThrottle::GetNameForLogging() {
 AncestorThrottle::AncestorThrottle(NavigationHandle* handle)
     : NavigationThrottle(handle) {}
 
-void AncestorThrottle::ParseError(const std::string& value,
-                                  HeaderDisposition disposition) {
+void AncestorThrottle::ParseXFrameOptionsError(const std::string& value,
+                                               HeaderDisposition disposition) {
   DCHECK(disposition == HeaderDisposition::CONFLICT ||
          disposition == HeaderDisposition::INVALID);
   if (!navigation_handle()->GetRenderFrameHost())
@@ -309,7 +255,8 @@ void AncestorThrottle::ParseError(const std::string& value,
       blink::mojom::ConsoleMessageLevel::kError, message);
 }
 
-void AncestorThrottle::ConsoleError(HeaderDisposition disposition) {
+void AncestorThrottle::ConsoleErrorXFrameOptions(
+    HeaderDisposition disposition) {
   DCHECK(disposition == HeaderDisposition::DENY ||
          disposition == HeaderDisposition::SAMEORIGIN);
   if (!navigation_handle()->GetRenderFrameHost())
@@ -329,8 +276,76 @@ void AncestorThrottle::ConsoleError(HeaderDisposition disposition) {
       blink::mojom::ConsoleMessageLevel::kError, message);
 }
 
-NavigationThrottle::ThrottleAction
-AncestorThrottle::EvaluateContentSecurityPolicy(
+AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
+    LoggingDisposition logging) {
+  std::string header_value;
+  NavigationRequest* request = NavigationRequest::From(navigation_handle());
+  HeaderDisposition disposition =
+      ParseXFrameOptionsHeader(request->GetResponseHeaders(), &header_value);
+
+  switch (disposition) {
+    case HeaderDisposition::CONFLICT:
+      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+        ParseXFrameOptionsError(header_value, disposition);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::CONFLICT);
+      return CheckResult::BLOCK;
+
+    case HeaderDisposition::INVALID:
+      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+        ParseXFrameOptionsError(header_value, disposition);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::INVALID);
+      // TODO(mkwst): Consider failing here.
+      return CheckResult::PROCEED;
+
+    case HeaderDisposition::DENY:
+      if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+        ConsoleErrorXFrameOptions(disposition);
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::DENY);
+      return CheckResult::BLOCK;
+
+    case HeaderDisposition::SAMEORIGIN: {
+      // Block the request when any ancestor is not same-origin.
+      RenderFrameHostImpl* parent = request->GetParentFrame();
+      url::Origin current_origin =
+          url::Origin::Create(navigation_handle()->GetURL());
+      while (parent) {
+        if (!parent->GetLastCommittedOrigin().IsSameOriginWith(
+                current_origin)) {
+          RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN_BLOCKED);
+          if (logging == LoggingDisposition::LOG_TO_CONSOLE)
+            ConsoleErrorXFrameOptions(disposition);
+
+          // TODO(mkwst): Stop recording this metric once we convince other
+          // vendors to follow our lead with XFO: SAMEORIGIN processing.
+          //
+          // https://crbug.com/250309
+          if (parent->GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
+                  current_origin)) {
+            RecordXFrameOptionsUsage(
+                XFrameOptionsHistogram::SAMEORIGIN_WITH_BAD_ANCESTOR_CHAIN);
+          }
+
+          return CheckResult::BLOCK;
+        }
+        parent = parent->GetParent();
+      }
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN);
+      return CheckResult::PROCEED;
+    }
+
+    case HeaderDisposition::NONE:
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::NONE);
+      return CheckResult::PROCEED;
+    case HeaderDisposition::BYPASS:
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::BYPASS);
+      return CheckResult::PROCEED;
+    case HeaderDisposition::ALLOWALL:
+      RecordXFrameOptionsUsage(XFrameOptionsHistogram::ALLOWALL);
+      return CheckResult::PROCEED;
+  }
+}
+
+AncestorThrottle::CheckResult AncestorThrottle::EvaluateFrameAncestors(
     const std::vector<network::mojom::ContentSecurityPolicyPtr>&
         content_security_policy) {
   // TODO(lfg): If the initiating document is known and correspond to the
@@ -359,15 +374,15 @@ AncestorThrottle::EvaluateContentSecurityPolicy(
             true /* is_response_check */, empty_source_location,
             network::CSPContext::CheckCSPDisposition::CHECK_ALL_CSP,
             navigation_handle()->IsFormSubmission())) {
-      return NavigationThrottle::BLOCK_RESPONSE;
+      return CheckResult::BLOCK;
     }
     parent = ParentForAncestorThrottle(parent);
   }
 
-  return NavigationThrottle::PROCEED;
+  return CheckResult::PROCEED;
 }
 
-AncestorThrottle::HeaderDisposition AncestorThrottle::ParseHeader(
+AncestorThrottle::HeaderDisposition AncestorThrottle::ParseXFrameOptionsHeader(
     const net::HttpResponseHeaders* headers,
     std::string* header_value) {
   DCHECK(header_value);
@@ -411,12 +426,13 @@ AncestorThrottle::HeaderDisposition AncestorThrottle::ParseHeader(
   // https://www.w3.org/TR/CSP/#frame-ancestors-and-frame-options
   if (result != HeaderDisposition::NONE &&
       result != HeaderDisposition::ALLOWALL &&
+      // TODO(antoniosartori): Use the already parsed CSP header instead of the
+      // raw headers here as soon as we remove
+      // network::features::kOutOfBlinkFrameAncestors
       HeadersContainFrameAncestorsCSP(headers, false)) {
-    // TODO(mkwst): 'frame-ancestors' is currently handled in Blink. We should
-    // handle it here instead. Until then, don't block the request, and let
-    // Blink handle it. https://crbug.com/555418
     return HeaderDisposition::BYPASS;
   }
+
   return result;
 }
 

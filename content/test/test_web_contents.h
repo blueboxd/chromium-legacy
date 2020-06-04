@@ -122,10 +122,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host,
       const base::Optional<base::UnguessableToken>& opener_frame_token,
-      int proxy_routing_id,
-      const base::UnguessableToken& frame_token,
-      const base::UnguessableToken& devtools_frame_token,
-      const FrameReplicationState& replicated_frame_state) override;
+      int proxy_routing_id) override;
 
   // Returns a clone of this TestWebContents. The returned object is also a
   // TestWebContents. The caller owns the returned object.

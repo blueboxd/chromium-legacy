@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS If there is no required csp, iframe should load.
+FAIL Iframe with empty returned CSP should be blocked. assert_equals: expected (undefined) undefined but got (boolean) true
+PASS Iframe with matching CSP should load.
+PASS Iframe with more restricting CSP should load.
+FAIL Iframe with less restricting CSP should be blocked. assert_equals: expected (undefined) undefined but got (boolean) true
+FAIL Iframe with a different CSP should be blocked. assert_unreached: No message should be sent from the frame. Reached unreachable code
+PASS Iframe with a matching and more restrictive ports should load.
+PASS Iframe should load even if the ports are different but are default for the protocols.
+Harness: the test ran to completion.
+

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <utility>
-
 #include <map>
 #include <vector>
 
@@ -201,7 +200,18 @@ void WebAppInstallFinalizer::FinalizeInstall(
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       std::move(commit_callback));
 
-  // TODO(crbug.com/1020037): Install shadow bookmark app in extensions.
+  // Backward compatibility: If a legacy finalizer was provided then install a
+  // duplicate bookmark app in the extensions registry. No callback, this is
+  // fire-and-forget install. If a user gets switched back to legacy mode they
+  // still able to use the duplicate.
+  //
+  // We should install shadow bookmark app only for kSync source (we sync only
+  // user-installed apps). System, Policy, WebAppStore, Default apps should not
+  // get a shadow bookmark app.
+  if (legacy_finalizer_ && source == Source::kSync) {
+    legacy_finalizer_->FinalizeInstall(web_app_info, options,
+                                       base::DoNothing());
+  }
 }
 
 void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(

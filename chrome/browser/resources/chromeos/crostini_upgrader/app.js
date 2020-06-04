@@ -32,6 +32,8 @@ const State = {
   SUCCEEDED: 'succeeded',
 };
 
+const kMaxUpgradeAttempts = 3;
+
 
 Polymer({
   is: 'crostini-upgrader-app',
@@ -89,6 +91,12 @@ Polymer({
     progressLineDisplayMs_: {
       type: Number,
       value: 300,
+    },
+
+    /** @private */
+    upgradeAttemptCount_: {
+      type: Number,
+      value: 0,
     },
 
     /**
@@ -155,6 +163,10 @@ Polymer({
       }),
       callbackRouter.onUpgradeFailed.addListener(() => {
         assert(this.state_ === State.UPGRADING);
+        if (this.upgradeAttemptCount_ < kMaxUpgradeAttempts) {
+          this.precheckThenUpgrade_();
+          return;
+        }
         if (this.backupCheckboxChecked_) {
           this.state_ = State.OFFER_RESTORE;
         } else {
@@ -199,6 +211,13 @@ Polymer({
   },
 
   /** @private */
+  precheckThenUpgrade_() {
+    this.startPrechecks_(() => {
+      this.startUpgrade_();
+    }, () => {});
+  },
+
+  /** @private */
   onActionButtonClick_() {
     switch (this.state_) {
       case State.SUCCEEDED:
@@ -207,16 +226,13 @@ Polymer({
         this.closeDialog_();
         break;
       case State.PRECHECKS_FAILED:
-        this.startPrechecks_(() => {
-          this.startUpgrade_();
-        }, () => {});
+        this.precheckThenUpgrade_();
+        break;
       case State.PROMPT:
         if (this.backupCheckboxChecked_) {
           this.startBackup_(/*showFileChooser=*/ false);
         } else {
-          this.startPrechecks_(() => {
-            this.startUpgrade_();
-          }, () => {});
+          this.precheckThenUpgrade_();
         }
         break;
       case State.OFFER_RESTORE:
@@ -271,6 +287,7 @@ Polymer({
   /** @private */
   startUpgrade_() {
     this.state_ = State.UPGRADING;
+    this.upgradeAttemptCount_++;
     BrowserProxy.getInstance().handler.upgrade();
   },
 

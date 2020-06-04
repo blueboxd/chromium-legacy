@@ -17,6 +17,7 @@ android_resources("weblayer_resources") {
   custom_package = "org.chromium.weblayer_private"
   deps = [
     ":weblayer_strings_grd",
+    "//components/browser_ui/http_auth/android:java_resources",
     "//components/browser_ui/settings/android:java_resources",
     "//components/browser_ui/site_settings/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
@@ -119,6 +120,7 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/android:provider_java",
+    "//components/browser_ui/http_auth/android:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/notifications/android:java",
     "//components/browser_ui/settings/android:java",

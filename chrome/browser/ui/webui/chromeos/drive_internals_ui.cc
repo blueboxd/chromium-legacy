@@ -22,6 +22,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -217,6 +218,14 @@ std::pair<ino_t, base::ListValue> GetServiceLogContents(
   return {inode, std::move(result)};
 }
 
+bool GetDeveloperMode() {
+  std::string output;
+  if (!base::GetAppOutput({"/usr/bin/crossystem", "cros_debug"}, &output)) {
+    return false;
+  }
+  return output == "1";
+}
+
 class DriveInternalsWebUIHandler;
 
 void ZipLogs(Profile* profile,
@@ -261,6 +270,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     web_ui()->RegisterMessageCallback(
         "periodicUpdate",
         base::BindRepeating(&DriveInternalsWebUIHandler::OnPeriodicUpdate,
+                            weak_ptr_factory_.GetWeakPtr()));
+    web_ui()->RegisterMessageCallback(
+        "setStartupArguments",
+        base::BindRepeating(&DriveInternalsWebUIHandler::SetStartupArguments,
                             weak_ptr_factory_.GetWeakPtr()));
     web_ui()->RegisterMessageCallback(
         "restartDrive",
@@ -410,6 +423,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateDriveDebugSection() {
     SetSectionEnabled("drive-debug", true);
 
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(GetDeveloperMode),
+        base::BindOnce(&DriveInternalsWebUIHandler::OnGetDeveloperMode,
+                       weak_ptr_factory_.GetWeakPtr()));
+
     // Propagate the amount of local free space in bytes.
     base::FilePath home_path;
     if (base::PathService::Get(base::DIR_HOME, &home_path)) {
@@ -421,6 +440,31 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
     } else {
       LOG(ERROR) << "Home directory not found";
     }
+  }
+
+  // Called when GetDeveloperMode() is complete.
+  void OnGetDeveloperMode(bool enabled) {
+    developer_mode_ = enabled;
+    if (!enabled) {
+      return;
+    }
+
+    // Get the startup arguments.
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (integration_service) {
+      integration_service->GetStartupArguments(
+          base::BindOnce(&DriveInternalsWebUIHandler::OnGetStartupArguments,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
+  }
+
+  // Called when GetStartupArguments() is complete.
+  void OnGetStartupArguments(const std::string& arguments) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(developer_mode_);
+    MaybeCallJavascript("updateStartupArguments", base::Value(arguments));
+    SetSectionEnabled("startup-arguments-form", true);
   }
 
   // Called when AmountOfFreeDiskSpace() is complete.
@@ -552,6 +596,41 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
                         std::move(response.second));
   }
 
+  // Called when the "Startup Arguments" field on the page is submitted.
+  void SetStartupArguments(const base::ListValue* args) {
+    AllowJavascript();
+
+    if (!developer_mode_) {
+      return;
+    }
+
+    if (args->GetList().size() < 1 || !args->GetList()[0].is_string()) {
+      OnSetStartupArguments(false);
+      return;
+    }
+
+    drive::DriveIntegrationService* integration_service =
+        GetIntegrationService();
+    if (!integration_service) {
+      OnSetStartupArguments(false);
+      return;
+    }
+
+    integration_service->SetStartupArguments(
+        args->GetList()[0].GetString(),
+        base::BindOnce(&DriveInternalsWebUIHandler::OnSetStartupArguments,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void OnSetStartupArguments(bool success) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(developer_mode_);
+    if (success) {
+      RestartDrive(nullptr);
+    }
+    MaybeCallJavascript("updateStartupArgumentsStatus", base::Value(success));
+  }
+
   // Called when the "Restart Drive" button on the page is pressed.
   void RestartDrive(const base::ListValue* args) {
     AllowJavascript();
@@ -618,6 +697,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Service log file is being parsed.
   bool service_log_file_is_processing_ = false;
+
+  // Whether developer mode is enabled for debug commands.
+  bool developer_mode_ = false;
 
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);

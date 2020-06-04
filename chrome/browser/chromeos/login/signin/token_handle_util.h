@@ -59,6 +59,8 @@ class TokenHandleUtil {
   static void StoreTokenHandle(const AccountId& account_id,
                                const std::string& handle);
 
+  static void SetInvalidTokenForTesting(const char* token);
+
  private:
   // Associates GaiaOAuthClient::Delegate with User ID and Token.
   class TokenDelegate : public gaia::GaiaOAuthClient::Delegate {

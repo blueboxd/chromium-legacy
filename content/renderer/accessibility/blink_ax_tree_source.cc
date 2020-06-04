@@ -410,10 +410,6 @@ void BlinkAXTreeSource::SetLoadInlineTextBoxesForId(int32_t id) {
   load_inline_text_boxes_ids_.insert(id);
 }
 
-void BlinkAXTreeSource::EnableDOMNodeIDs() {
-  enable_dom_node_ids_ = true;
-}
-
 bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";
@@ -574,13 +570,23 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   TRACE_EVENT1("accessibility", "BlinkAXTreeSource::SerializeNode", "role",
                ui::ToString(dst->role));
 
+  SerializeNameAndDescriptionAttributes(src, dst);
+
+  if (accessibility_mode_.has_mode(ui::AXMode::kScreenReader) ||
+      accessibility_mode_.has_mode(ui::AXMode::kPDF)) {
+    SerializeListAttributes(src, dst);
+    SerializeTableAttributes(src, dst);
+  }
+
+  if (accessibility_mode_.has_mode(ui::AXMode::kPDF)) {
+    SerializePDFAttributes(src, dst);
+    // Return early. None of the following attributes are needed for PDFs.
+    return;
+  }
+
   SerializeBoundingBoxAttributes(src, dst);
 
-  if (enable_dom_node_ids_)
-    SerializePDFAttributes(src, dst);
-
   SerializeSparseAttributes(src, dst);
-  SerializeNameAndDescriptionAttributes(src, dst);
   SerializeValueAttributes(src, dst);
   SerializeStateAttributes(src, dst);
   SerializeChooserPopupAttributes(src, dst);
@@ -590,8 +596,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
     SerializeMarkerAttributes(src, dst);
     if (src.IsInLiveRegion())
       SerializeLiveRegionAttributes(src, dst);
-    SerializeListAttributes(src, dst);
-    SerializeTableAttributes(src, dst);
     SerializeOtherScreenReaderAttributes(src, dst);
   }
 

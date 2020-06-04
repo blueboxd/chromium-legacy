@@ -57,13 +57,6 @@ String ResultToString(GamepadHapticsResult result) {
 
 namespace blink {
 
-// static
-GamepadHapticActuator* GamepadHapticActuator::Create(ExecutionContext& context,
-                                                     int pad_index) {
-  return MakeGarbageCollected<GamepadHapticActuator>(
-      context, pad_index, device::GamepadHapticActuatorType::kDualRumble);
-}
-
 GamepadHapticActuator::GamepadHapticActuator(
     ExecutionContext& context,
     int pad_index,

@@ -24,12 +24,33 @@ enum class ProactivelySwapBrowsingInstanceLevel {
   // Swap BrowsingInstance on cross-site navigations, but try to reuse the
   // current renderer process if possible.
   kCrossSiteReuseProcess = 2,
-  // TODO(rakina): Add another level for BrowsingInstance swap on same-site
-  // navigations with process reuse.
+  // Swap BrowsingInstance swap on same-site navigations, with process reuse.
+  kSameSite = 3,
+
+  kMaxValue = kSameSite,
 };
+
+// Levels of ProactivelySwapBrowsingInstance as strings (excluding kDisabled).
+CONTENT_EXPORT std::array<
+    std::string,
+    static_cast<size_t>(ProactivelySwapBrowsingInstanceLevel::kMaxValue)>
+ProactivelySwapBrowsingInstanceFeatureEnabledLevelValues();
+
+// Whether ProactivelySwapBrowsingInstance is enabled or not. Will return true
+// if the value is set to either of {kCrossSiteSwapProcess,
+// kCrossSiteReuseProcess, kSameSite}.
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
 
+// Whether ProactivelySwapBrowsingInstance with process reuse is enabled or not.
+// Will return true if the value is set to either of {kCrossSiteReuseProcess,
+// kSameSite}.
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled();
+
+// Whether ProactivelySwapBrowsingInstance for same-site navigation is enabled
+// or not. Will return true if the value is set to kSameSite.
+CONTENT_EXPORT bool
+IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
+
 CONTENT_EXPORT extern const char
     kProactivelySwapBrowsingInstanceLevelParameterName[];
 

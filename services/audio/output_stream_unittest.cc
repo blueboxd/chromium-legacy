@@ -7,15 +7,16 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "services/audio/stream_factory.h"
 #include "services/audio/test/mock_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -122,13 +123,12 @@ class TestEnvironment {
         stream_factory_receiver_(
             &stream_factory_,
             remote_stream_factory_.BindNewPipeAndPassReceiver()) {
-    mojo::core::SetDefaultProcessErrorCallback(bad_message_callback_.Get());
+    mojo::SetDefaultProcessErrorHandler(bad_message_callback_.Get());
   }
 
   ~TestEnvironment() {
     audio_manager_.Shutdown();
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   using MockDeleteCallback = base::MockCallback<OutputStream::DeleteCallback>;

@@ -110,6 +110,10 @@ void AllocateRandomly(base::PartitionRootGeneric* root,
   }
 }
 
+void HandleOOM(size_t unused_size) {
+  LOG(FATAL) << "Out of memory";
+}
+
 }  // namespace
 
 namespace base {
@@ -142,9 +146,12 @@ class PartitionAllocTest : public testing::Test {
   ~PartitionAllocTest() override = default;
 
   void SetUp() override {
+    PartitionAllocGlobalInit(HandleOOM);
     allocator.init();
     generic_allocator.init();
   }
+
+  void TearDown() override { PartitionAllocGlobalUninitForTesting(); }
 
   PartitionRoot::Page* GetFullPage(size_t size) {
     size_t real_size = size + kExtraAllocSize;

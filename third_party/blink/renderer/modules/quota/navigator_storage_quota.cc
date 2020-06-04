@@ -69,7 +69,7 @@ StorageManager* NavigatorStorageQuota::storage(Navigator& navigator) {
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const {
   if (!temporary_storage_) {
     temporary_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-        DeprecatedStorageQuota::kTemporary);
+        DeprecatedStorageQuota::kTemporary, GetSupplementable()->DomWindow());
   }
   return temporary_storage_.Get();
 }
@@ -77,15 +77,15 @@ DeprecatedStorageQuota* NavigatorStorageQuota::webkitTemporaryStorage() const {
 DeprecatedStorageQuota* NavigatorStorageQuota::webkitPersistentStorage() const {
   if (!persistent_storage_) {
     persistent_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-        DeprecatedStorageQuota::kPersistent);
+        DeprecatedStorageQuota::kPersistent, GetSupplementable()->DomWindow());
   }
   return persistent_storage_.Get();
 }
 
 StorageManager* NavigatorStorageQuota::storage() const {
   if (!storage_manager_) {
-    storage_manager_ = MakeGarbageCollected<StorageManager>(
-        GetSupplementable() ? GetSupplementable()->DomWindow() : nullptr);
+    storage_manager_ =
+        MakeGarbageCollected<StorageManager>(GetSupplementable()->DomWindow());
   }
   return storage_manager_.Get();
 }

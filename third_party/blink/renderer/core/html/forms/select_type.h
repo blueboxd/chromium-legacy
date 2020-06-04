@@ -58,6 +58,8 @@ class SelectType : public GarbageCollected<SelectType> {
   // This is for ListBoxes.
   virtual void ClearLastOnChangeSelection();
 
+  virtual void CreateShadowSubtree(ShadowRoot& root);
+  virtual Element& InnerElement() const;
   virtual void ShowPopup();
   virtual void HidePopup();
   virtual void PopupDidHide();

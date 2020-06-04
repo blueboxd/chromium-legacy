@@ -358,14 +358,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   for (NSInteger i = 0; i < numberOfTabs; i++) {
     [ChromeEarlGreyUI openNewTab];
   }
-  id<GREYMatcher> matcher;
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    matcher = grey_accessibilityID(@"Enter Tab Switcher");
-  } else {
-    matcher = grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
-                         grey_sufficientlyVisible(), nil);
-  }
-  [[EarlGrey selectElementWithMatcher:matcher]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_accessibilityValue([NSString
                             stringWithFormat:@"%@", @(numberOfTabs + 1)])];
 }
@@ -575,15 +568,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   // Check that the fake omnibox is here.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  id<GREYMatcher> tabGridMatcher = nil;
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    tabGridMatcher = grey_accessibilityID(@"Enter Tab Switcher");
-  } else {
-    tabGridMatcher =
-        grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
-                   grey_sufficientlyVisible(), nil);
-  }
-  [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_accessibilityValue(
                             [NSString stringWithFormat:@"%i", 2])];
 
@@ -593,14 +578,14 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   // press gesture recognizer.  Disable this here so the test can be re-enabled.
   {
     ScopedSynchronizationDisabler disabler;
-    [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
         performAction:grey_longPressWithDuration(0.05)];
   }
   [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:tabGridMatcher]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_accessibilityValue(
                             [NSString stringWithFormat:@"%i", 3])];
 }

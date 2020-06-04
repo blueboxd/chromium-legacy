@@ -57,6 +57,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     virtual std::unique_ptr<DriveFsBootstrapListener> CreateMojoListener();
     virtual base::FilePath GetMyFilesPath() = 0;
     virtual std::string GetLostAndFoundDirectoryName() = 0;
+    virtual bool IsVerboseLoggingEnabled() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

@@ -2,10 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import itertools
-import multiprocessing
-import os.path
-
 import web_idl
 
 from . import name_style
@@ -13,7 +9,6 @@ from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_default_value_expr
 from .blink_v8_bridge import make_v8_to_blink_value
-from .code_node import CodeNode
 from .code_node import Likeliness
 from .code_node import ListNode
 from .code_node import SequenceNode
@@ -39,8 +34,8 @@ from .codegen_utils import make_forward_declarations
 from .codegen_utils import make_header_include_directives
 from .codegen_utils import write_code_node_to_file
 from .mako_renderer import MakoRenderer
-from .package_initializer import package_initializer
 from .path_manager import PathManager
+from .task_queue import TaskQueue
 
 
 _DICT_MEMBER_PRESENCE_PREDICATES = {
@@ -1029,31 +1024,9 @@ def generate_dictionary(dictionary):
     write_code_node_to_file(source_node, path_manager.gen_path_to(source_path))
 
 
-def run_multiprocessing_task(args):
-    dictionary, package_initializer = args
-    package_initializer.init()
-    generate_dictionary(dictionary)
+def generate_dictionaries(task_queue, web_idl_database):
+    assert isinstance(task_queue, TaskQueue)
+    assert isinstance(web_idl_database, web_idl.Database)
 
-
-def generate_dictionaries(web_idl_database):
-    # More processes do not mean better performance.  The default size was
-    # chosen heuristically.
-    process_pool_size = 8
-    cpu_count = multiprocessing.cpu_count()
-    process_pool_size = max(1, min(cpu_count / 2, process_pool_size))
-
-    pool = multiprocessing.Pool(process_pool_size)
-    # Prior to Python3, Pool.map doesn't support user interrupts (e.g. Ctrl-C),
-    # although Pool.map_async(...).get(...) does.
-    timeout_in_sec = 3600  # Just enough long time
-    pool.map_async(
-        run_multiprocessing_task,
-        map(lambda dictionary: (dictionary, package_initializer()),
-            web_idl_database.dictionaries)).get(timeout_in_sec)
-
-    return
-
-    # When it is difficult to see errors in generator, use following loop
-    # instead of parallel runs above.
     for dictionary in web_idl_database.dictionaries:
-        generate_dictionary(dictionary)
+        task_queue.post_task(generate_dictionary, dictionary)

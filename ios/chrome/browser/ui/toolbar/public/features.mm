@@ -12,4 +12,4 @@
 #endif
 
 const base::Feature kChangeTabSwitcherPosition{
-    "kChangeTabSwitcherPosition", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChangeTabSwitcherPosition", base::FEATURE_DISABLED_BY_DEFAULT};

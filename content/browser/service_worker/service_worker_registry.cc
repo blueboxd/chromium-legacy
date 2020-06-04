@@ -154,8 +154,7 @@ void ServiceWorkerRegistry::CreateNewRegistration(
     blink::mojom::ServiceWorkerRegistrationOptions options,
     NewRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  BindRemoteStorageControlIfNeeded();
-  remote_storage_control_->GetNewRegistrationId(base::BindOnce(
+  storage()->GetNewRegistrationId(base::BindOnce(
       &ServiceWorkerRegistry::DidGetNewRegistrationId,
       weak_factory_.GetWeakPtr(), std::move(options), std::move(callback)));
 }
@@ -1382,17 +1381,6 @@ bool ServiceWorkerRegistry::ShouldPurgeOnShutdown(const url::Origin& origin) {
     return false;
   return special_storage_policy_->IsStorageSessionOnly(origin.GetURL()) &&
          !special_storage_policy_->IsStorageProtected(origin.GetURL());
-}
-
-void ServiceWorkerRegistry::BindRemoteStorageControlIfNeeded() {
-  DCHECK(!(remote_storage_control_.is_bound() &&
-           !remote_storage_control_.is_connected()))
-      << "Rebinding is not supported yet.";
-
-  if (remote_storage_control_.is_bound())
-    return;
-
-  storage_control_->Bind(remote_storage_control_.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace content

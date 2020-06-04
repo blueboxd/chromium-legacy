@@ -1035,9 +1035,8 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   RenderFrameHostManager* manager1 =
       web_contents1->GetRenderManagerForTesting();
   // Test the case that new RVH is considered live.
-  manager1->current_host()->CreateRenderView(
-      base::nullopt, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
-      base::UnguessableToken::Create(), FrameReplicationState(), false);
+  manager1->current_host()->CreateRenderView(base::nullopt, MSG_ROUTING_NONE,
+                                             false);
   EXPECT_TRUE(manager1->current_host()->IsRenderViewLive());
   EXPECT_TRUE(manager1->current_frame_host()->IsRenderFrameLive());
 
@@ -1071,9 +1070,8 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
       web_contents2->GetRenderManagerForTesting();
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
-  manager2->current_host()->CreateRenderView(
-      base::nullopt, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
-      base::UnguessableToken::Create(), FrameReplicationState(), false);
+  manager2->current_host()->CreateRenderView(base::nullopt, MSG_ROUTING_NONE,
+                                             false);
   EXPECT_TRUE(manager2->current_host()->IsRenderViewLive());
 
   const GURL kUrl2(GetWebUIURL("foo/bar"));
@@ -1392,9 +1390,8 @@ TEST_P(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
   contents()->SetOpener(opener1.get());
 
   // Make sure the new opener RVH is considered live.
-  opener1_manager->current_host()->CreateRenderView(
-      base::nullopt, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
-      base::UnguessableToken::Create(), FrameReplicationState(), false);
+  opener1_manager->current_host()->CreateRenderView(base::nullopt,
+                                                    MSG_ROUTING_NONE, false);
   EXPECT_TRUE(opener1_manager->current_host()->IsRenderViewLive());
   EXPECT_TRUE(opener1_manager->current_frame_host()->IsRenderFrameLive());
 

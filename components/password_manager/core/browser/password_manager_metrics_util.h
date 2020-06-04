@@ -486,11 +486,10 @@ void LogContextOfShowAllSavedPasswordsAccepted(
     ShowAllSavedPasswordsContext context);
 
 // Log the type of the password dropdown when it's shown.
-void LogPasswordDropdownShown(PasswordDropdownState state, bool off_the_record);
+void LogPasswordDropdownShown(PasswordDropdownState state);
 
 // Log the type of the password dropdown suggestion when chosen.
-void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type,
-                                     bool off_the_record);
+void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type);
 
 // Log a password successful submission event.
 void LogPasswordSuccessfulSubmissionIndicatorEvent(

@@ -47,7 +47,6 @@ namespace content {
 class SiteInstance;
 class TestRenderFrameHost;
 class TestWebContents;
-struct FrameReplicationState;
 
 // Utility function to initialize FrameHostMsg_DidCommitProvisionalLoad_Params
 // with given parameters.
@@ -215,7 +214,6 @@ class TestRenderViewHost
   MockRenderProcessHost* GetProcess() override;
 
   bool CreateTestRenderView(
-      const base::string16& frame_name,
       const base::Optional<base::UnguessableToken>& opener_frame_token,
       int proxy_route_id,
       bool window_was_created_with_opener) override;
@@ -224,10 +222,8 @@ class TestRenderViewHost
   bool CreateRenderView(
       const base::Optional<base::UnguessableToken>& opener_frame_token,
       int proxy_route_id,
-      const base::UnguessableToken& frame_token,
-      const base::UnguessableToken& devtools_frame_token,
-      const FrameReplicationState& replicated_frame_state,
       bool window_was_created_with_opener) override;
+
   void OnWebkitPreferencesChanged() override;
 
   // RenderViewHostImpl:

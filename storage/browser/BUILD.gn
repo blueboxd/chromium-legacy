@@ -328,7 +328,7 @@ source_set("unittests") {
     ":test_support",
     "//base/test:test_support",
     "//components/services/filesystem/public/mojom",
-    "//mojo/core/embedder",
+    "//mojo/public/cpp/system",
     "//net:test_support",
     "//services/network/public/cpp",
     "//services/network/public/mojom",

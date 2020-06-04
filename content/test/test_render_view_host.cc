@@ -245,24 +245,16 @@ TestRenderViewHost::~TestRenderViewHost() {
 }
 
 bool TestRenderViewHost::CreateTestRenderView(
-    const base::string16& frame_name,
     const base::Optional<base::UnguessableToken>& opener_frame_token,
     int proxy_route_id,
     bool window_was_created_with_opener) {
-  FrameReplicationState replicated_state;
-  replicated_state.name = base::UTF16ToUTF8(frame_name);
   return CreateRenderView(opener_frame_token, proxy_route_id,
-                          base::UnguessableToken::Create(),
-                          base::UnguessableToken::Create(), replicated_state,
                           window_was_created_with_opener);
 }
 
 bool TestRenderViewHost::CreateRenderView(
     const base::Optional<base::UnguessableToken>& opener_frame_token,
     int proxy_route_id,
-    const base::UnguessableToken& frame_token,
-    const base::UnguessableToken& devtools_frame_token,
-    const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());
   GetWidget()->set_renderer_initialized(true);

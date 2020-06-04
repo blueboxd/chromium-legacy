@@ -4,16 +4,16 @@
 
 cr.define('cr.toastManager', () => {
   /* eslint-disable */
-  /** @private {?cr.toastManager.CrToastManagerElement} */
+  /** @private {?CrToastManagerElement} */
   let toastManagerInstance = null;
   /* eslint-enable */
 
-  /** @return {!cr.toastManager.CrToastManagerElement} */
+  /** @return {!CrToastManagerElement} */
   /* #export */ function getToastManager() {
     return assert(toastManagerInstance);
   }
 
-  /** @param {?cr.toastManager.CrToastManagerElement} instance */
+  /** @param {?CrToastManagerElement} instance */
   function setInstance(instance) {
     assert(!instance || !toastManagerInstance);
     toastManagerInstance = instance;
@@ -23,7 +23,7 @@ cr.define('cr.toastManager', () => {
    * @fileoverview Element which shows toasts with optional undo button.
    */
   // eslint-disable-next-line
-  /* #export */ let CrToastManagerElement = Polymer({
+  Polymer({
     is: 'cr-toast-manager',
 
     properties: {
@@ -94,7 +94,6 @@ cr.define('cr.toastManager', () => {
 
   // #cr_define_end
   return {
-    CrToastManagerElement: CrToastManagerElement,
     getToastManager: getToastManager,
   };
 });

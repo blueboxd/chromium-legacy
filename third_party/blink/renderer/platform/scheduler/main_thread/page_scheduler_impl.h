@@ -218,19 +218,19 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void UpdateBackgroundSchedulingLifecycleState(
       NotificationPolicy notification_policy);
 
-  // As a part of UpdateBackgroundSchedulingLifecycleState set correct
-  // background_time_budget_pool_ state depending on page visibility and
-  // number of active connections.
-  void UpdateBackgroundBudgetPoolSchedulingLifecycleState();
+  // Adjusts settings of a budget pool depending on current state of the page.
+  void UpdateCPUTimeBudgetPool(base::sequence_manager::LazyNow* lazy_now);
+  void UpdateWakeUpBudgetPool(base::sequence_manager::LazyNow* lazy_now);
 
   // Callback for marking page is silent after a delay since last audible
   // signal.
   void OnAudioSilent();
 
-  // Callback for enabling throttling in background after specified delay.
+  // Callbacks for adjusting the settings of a budget pool after a delay.
   // TODO(altimin): Trigger throttling depending on the loading state
   // of the page.
-  void DoThrottlePage();
+  void DoThrottleCPUTime();
+  void DoIntensivelyThrottleWakeUps();
 
   // Notify frames that the page scheduler state has been updated.
   void NotifyFrames();
@@ -262,11 +262,13 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool nested_runloop_;
   bool is_main_frame_local_;
   bool is_cpu_time_throttled_;
+  bool are_wake_ups_intensively_throttled_;
   bool keep_active_;
   CPUTimeBudgetPool* cpu_time_budget_pool_;
   WakeUpBudgetPool* wake_up_budget_pool_;
   PageScheduler::Delegate* delegate_;
-  CancelableClosureHolder do_throttle_page_callback_;
+  CancelableClosureHolder do_throttle_cpu_time_callback_;
+  CancelableClosureHolder do_intensively_throttle_wake_ups_callback_;
   CancelableClosureHolder on_audio_silent_closure_;
   CancelableClosureHolder do_freeze_page_callback_;
   const base::TimeDelta delay_for_background_tab_freezing_;

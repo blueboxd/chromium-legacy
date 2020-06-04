@@ -1086,8 +1086,6 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   if (args)
     args->GetString(0, &email);
   set_populated_email(email);
-  if (!email.empty())
-    SendReauthReason(AccountId::FromUserEmail(email));
   OnShowAddUser();
 }
 

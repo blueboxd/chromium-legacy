@@ -163,10 +163,21 @@ class FrameSchedulerImplTest : public testing::Test {
             base::test::TaskEnvironment::TimeSource::MOCK_TIME,
             base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
+  // Constructs a FrameSchedulerImplTest with a list of features to enable and a
+  // list of features to disable.
   FrameSchedulerImplTest(std::vector<base::Feature> features_to_enable,
                          std::vector<base::Feature> features_to_disable)
       : FrameSchedulerImplTest() {
     feature_list_.InitWithFeatures(features_to_enable, features_to_disable);
+  }
+
+  // Constructs a FrameSchedulerImplTest with a list of features to enable and
+  // associated params.
+  explicit FrameSchedulerImplTest(
+      const std::vector<base::test::ScopedFeatureList::FeatureAndParams>&
+          features_to_enable)
+      : FrameSchedulerImplTest() {
+    feature_list_.InitWithFeaturesAndParameters(features_to_enable, {});
   }
 
   ~FrameSchedulerImplTest() override = default;
@@ -440,6 +451,18 @@ void RunTaskOfLength(base::test::TaskEnvironment* task_environment,
                      base::TimeDelta length) {
   task_environment->FastForwardBy(length);
 }
+
+class FrameSchedulerImplTestWithIntensiveWakeUpThrottling
+    : public FrameSchedulerImplTest {
+ public:
+  FrameSchedulerImplTestWithIntensiveWakeUpThrottling()
+      : FrameSchedulerImplTest(
+            {{kIntensiveWakeUpThrottling,
+              {// Make the grace period for intensive throttling shorter than
+               // the grace period for freezing, because freezing hides the
+               // effect of intensive throttling.
+               {kIntensiveWakeUpThrottling_GracePeriodSeconds.name, "60"}}}}) {}
+};
 
 }  // namespace
 
@@ -2401,6 +2424,82 @@ TEST_F(FrameSchedulerImplTest, ThrottledJSTimerTasksRunTime) {
                              start + base::TimeDelta::FromMilliseconds(2000),
                              start + base::TimeDelta::FromMilliseconds(3000),
                              start + base::TimeDelta::FromMilliseconds(6000)));
+}
+
+TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottling, TaskExecution) {
+  constexpr int kNumTasks = 5;
+  constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kGracePeriod = base::TimeDelta::FromSeconds(
+      kIntensiveWakeUpThrottling_GracePeriodSeconds.Get());
+  const base::TimeDelta kDurationBetweenWakeUps = base::TimeDelta::FromSeconds(
+      kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds.Get());
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimer);
+
+  // Snap the time to a multiple of |kDurationBetweenWakeUps|. Otherwise,
+  // the time at which tasks can run after throttling is enabled will vary.
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeTicks aligned_start_time =
+      start_time.SnappedToNextTick(base::TimeTicks(), kDurationBetweenWakeUps);
+  if (aligned_start_time != start_time)
+    task_environment_.FastForwardBy(aligned_start_time - start_time);
+
+  // Hide the page. This starts the delay to throttle background wake ups.
+  EXPECT_TRUE(page_scheduler_->IsPageVisible());
+  page_scheduler_->SetPageVisible(false);
+
+  // Initially, wake ups are not throttled.
+  {
+    int counter = 0;
+    for (int i = 0; i < kNumTasks; ++i) {
+      task_runner->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&IncrementCounter, base::Unretained(&counter)),
+          i * kShortDelay);
+    }
+
+    EXPECT_EQ(0, counter);
+    task_environment_.FastForwardBy(kShortDelay * kNumTasks);
+    EXPECT_EQ(kNumTasks, counter);
+    task_environment_.FastForwardBy(kGracePeriod - kNumTasks * kShortDelay);
+  }
+
+  // After |kGracePeriod|, wake ups are limited to 1 per
+  // |kDurationBetweenWakeUps|.
+  {
+    int counter = 0;
+    for (int i = 0; i < kNumTasks; ++i) {
+      task_runner->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&IncrementCounter, base::Unretained(&counter)),
+          (i + 1) * kShortDelay);
+    }
+
+    EXPECT_EQ(0, counter);
+    // No task should run before |kDurationBetweenWakeUps| has elapsed.
+    for (int i = 0; i < kNumTasks; ++i) {
+      task_environment_.FastForwardBy(kShortDelay);
+      EXPECT_EQ(0, counter);
+    }
+    // All tasks should run after |kDurationBetweenWakeUps| has elapsed.
+    task_environment_.FastForwardBy(kDurationBetweenWakeUps -
+                                    kNumTasks * kShortDelay);
+    EXPECT_EQ(kNumTasks, counter);
+  }
+
+  {
+    // Post an extra task. It should run after another |kDurationBetweenWakeUps|
+    // has elapsed.
+    int counter = 0;
+    task_runner->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&IncrementCounter, base::Unretained(&counter)),
+        kShortDelay);
+    task_environment_.FastForwardBy(kShortDelay);
+    EXPECT_EQ(0, counter);
+    task_environment_.FastForwardBy(kDurationBetweenWakeUps - kShortDelay);
+    EXPECT_EQ(1, counter);
+  }
 }
 
 }  // namespace frame_scheduler_impl_unittest

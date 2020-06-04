@@ -67,7 +67,8 @@ class DescriptorDeviceProvider
   std::vector<VideoCaptureDeviceDescriptor> descriptors_;
 };
 
-class VideoCaptureDeviceFactoryLinuxTest : public ::testing::Test {
+class VideoCaptureDeviceFactoryLinuxTest
+    : public ::testing::TestWithParam<VideoCaptureDeviceDescriptor> {
  public:
   VideoCaptureDeviceFactoryLinuxTest() {}
   ~VideoCaptureDeviceFactoryLinuxTest() override = default;
@@ -89,13 +90,11 @@ class VideoCaptureDeviceFactoryLinuxTest : public ::testing::Test {
   std::unique_ptr<VideoCaptureDeviceFactoryLinux> factory_;
 };
 
-TEST_F(VideoCaptureDeviceFactoryLinuxTest, EnumerateSingleFakeV4L2Device) {
+TEST_P(VideoCaptureDeviceFactoryLinuxTest, EnumerateSingleFakeV4L2DeviceUsing) {
   // Setup
-  const std::string stub_display_name = "Fake Device 0";
-  const std::string stub_device_id = "/dev/video0";
-  VideoCaptureDeviceDescriptor descriptor(stub_display_name, stub_device_id);
+  const VideoCaptureDeviceDescriptor& descriptor = GetParam();
   fake_device_provider_->AddDevice(descriptor);
-  fake_v4l2_->AddDevice(stub_device_id, FakeV4L2DeviceConfig(descriptor));
+  fake_v4l2_->AddDevice(descriptor.device_id, FakeV4L2DeviceConfig(descriptor));
 
   // Exercise
   VideoCaptureDeviceDescriptors descriptors;
@@ -103,9 +102,26 @@ TEST_F(VideoCaptureDeviceFactoryLinuxTest, EnumerateSingleFakeV4L2Device) {
 
   // Verification
   ASSERT_EQ(1u, descriptors.size());
-  ASSERT_EQ(stub_device_id, descriptors[0].device_id);
-  ASSERT_EQ(stub_display_name, descriptors[0].display_name());
+  EXPECT_EQ(descriptor.device_id, descriptors[0].device_id);
+  EXPECT_EQ(descriptor.display_name(), descriptors[0].display_name());
+  EXPECT_EQ(descriptor.pan_tilt_zoom_supported().value(),
+            descriptors[0].pan_tilt_zoom_supported());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    VideoCaptureDeviceFactoryLinuxTest,
+    ::testing::Values(
+        VideoCaptureDeviceDescriptor("Fake Device 0",
+                                     "/dev/video0",
+                                     VideoCaptureApi::UNKNOWN,
+                                     VideoCaptureTransportType::OTHER_TRANSPORT,
+                                     /*pan_tilt_zoom_supported=*/false),
+        VideoCaptureDeviceDescriptor("Fake Device 0",
+                                     "/dev/video0",
+                                     VideoCaptureApi::UNKNOWN,
+                                     VideoCaptureTransportType::OTHER_TRANSPORT,
+                                     /*pan_tilt_zoom_supported=*/true)));
 
 TEST_F(VideoCaptureDeviceFactoryLinuxTest,
        ReceiveFramesFromSinglePlaneFakeDevice) {

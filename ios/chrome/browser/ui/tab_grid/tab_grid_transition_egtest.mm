@@ -25,7 +25,6 @@ using chrome_test_util::TabGridDoneButton;
 using chrome_test_util::TabGridIncognitoTabsPanelButton;
 using chrome_test_util::TabGridNewIncognitoTabButton;
 using chrome_test_util::TabGridNewTabButton;
-using chrome_test_util::TabGridOpenButton;
 using chrome_test_util::TabGridOpenTabsPanelButton;
 
 namespace {

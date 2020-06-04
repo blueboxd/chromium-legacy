@@ -94,7 +94,6 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   void OpenedOnIOThread(
       const base::UnguessableToken& session_id,
       const blink::MediaStreamDevice& device,
-      base::TimeTicks start_time,
       const base::Optional<media::AudioParameters>& input_params,
       const base::Optional<std::string>& matched_output_device_id);
 

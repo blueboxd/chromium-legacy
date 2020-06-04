@@ -136,49 +136,48 @@ const char* NetInfoSourceToString(NetInfoSource source) {
   return "?";
 }
 
-std::unique_ptr<base::DictionaryValue> GetNetConstants() {
-  std::unique_ptr<base::DictionaryValue> constants_dict(
-      new base::DictionaryValue());
+base::Value GetNetConstants() {
+  base::Value constants_dict(base::Value::Type::DICTIONARY);
 
   // Version of the file format.
-  constants_dict->SetInteger("logFormatVersion", kLogFormatVersion);
+  constants_dict.SetIntKey("logFormatVersion", kLogFormatVersion);
 
   // Add a dictionary with information on the relationship between event type
   // enums and their symbolic names.
-  constants_dict->SetKey("logEventTypes", NetLog::GetEventTypesAsValue());
+  constants_dict.SetKey("logEventTypes", NetLog::GetEventTypesAsValue());
 
   // Add a dictionary with information about the relationship between CertStatus
   // flags and their symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
     for (const auto& flag : kCertStatusFlags)
-      dict->SetInteger(flag.name, flag.constant);
+      dict.SetIntKey(flag.name, flag.constant);
 
-    constants_dict->Set("certStatusFlag", std::move(dict));
+    constants_dict.SetKey("certStatusFlag", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between
   // CertVerifier::VerifyFlags and their symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict->SetInteger("VERIFY_DISABLE_NETWORK_FETCHES",
-                     CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES);
+    dict.SetIntKey("VERIFY_DISABLE_NETWORK_FETCHES",
+                   CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES);
 
     static_assert(CertVerifier::VERIFY_FLAGS_LAST == (1 << 0),
                   "Update with new flags");
 
-    constants_dict->Set("certVerifierFlags", std::move(dict));
+    constants_dict.SetKey("certVerifierFlags", std::move(dict));
   }
 
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict->SetInteger(
+    dict.SetIntKey(
         "kStrong",
         static_cast<int>(SimplePathBuilderDelegate::DigestPolicy::kStrong));
-    dict->SetInteger(
+    dict.SetIntKey(
         "kWeakAllowSha1",
         static_cast<int>(
             SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1));
@@ -187,127 +186,126 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
                       SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1,
                   "Update with new flags");
 
-    constants_dict->Set("certPathBuilderDigestPolicy", std::move(dict));
+    constants_dict.SetKey("certPathBuilderDigestPolicy", std::move(dict));
   }
 
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict->SetInteger("DISTRUSTED",
-                     static_cast<int>(CertificateTrustType::DISTRUSTED));
-    dict->SetInteger("UNSPECIFIED",
-                     static_cast<int>(CertificateTrustType::UNSPECIFIED));
-    dict->SetInteger("TRUSTED_ANCHOR",
-                     static_cast<int>(CertificateTrustType::TRUSTED_ANCHOR));
-    dict->SetInteger(
-        "TRUSTED_ANCHOR_WITH_CONSTRAINTS",
-        static_cast<int>(
-            CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS));
+    dict.SetIntKey("DISTRUSTED",
+                   static_cast<int>(CertificateTrustType::DISTRUSTED));
+    dict.SetIntKey("UNSPECIFIED",
+                   static_cast<int>(CertificateTrustType::UNSPECIFIED));
+    dict.SetIntKey("TRUSTED_ANCHOR",
+                   static_cast<int>(CertificateTrustType::TRUSTED_ANCHOR));
+    dict.SetIntKey("TRUSTED_ANCHOR_WITH_CONSTRAINTS",
+                   static_cast<int>(
+                       CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS));
 
     static_assert(CertificateTrustType::LAST ==
                       CertificateTrustType::TRUSTED_ANCHOR_WITH_CONSTRAINTS,
                   "Update with new flags");
 
-    constants_dict->Set("certificateTrustType", std::move(dict));
+    constants_dict.SetKey("certificateTrustType", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between load flag
   // enums and their symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
     for (const auto& flag : kLoadFlags)
-      dict->SetInteger(flag.name, flag.constant);
+      dict.SetIntKey(flag.name, flag.constant);
 
-    constants_dict->Set("loadFlag", std::move(dict));
+    constants_dict.SetKey("loadFlag", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between load state
   // enums and their symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
     for (const auto& state : kLoadStateTable)
-      dict->SetInteger(state.name, state.constant);
+      dict.SetIntKey(state.name, state.constant);
 
-    constants_dict->Set("loadState", std::move(dict));
+    constants_dict.SetKey("loadState", std::move(dict));
   }
 
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 #define NET_INFO_SOURCE(label, string, value) \
-  dict->SetInteger(string, NET_INFO_##label);
+  dict.SetIntKey(string, NET_INFO_##label);
 #include "net/base/net_info_source_list.h"
 #undef NET_INFO_SOURCE
-    constants_dict->Set("netInfoSources", std::move(dict));
+    constants_dict.SetKey("netInfoSources", std::move(dict));
   }
 
   // Add information on the relationship between net error codes and their
   // symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
     for (const auto& error : kNetErrors)
-      dict->SetInteger(ErrorToShortString(error), error);
+      dict.SetIntKey(ErrorToShortString(error), error);
 
-    constants_dict->Set("netError", std::move(dict));
+    constants_dict.SetKey("netError", std::move(dict));
   }
 
   // Add information on the relationship between QUIC error codes and their
   // symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
     for (quic::QuicErrorCode error = quic::QUIC_NO_ERROR;
          error < quic::QUIC_LAST_ERROR;
          error = static_cast<quic::QuicErrorCode>(error + 1)) {
-      dict->SetInteger(QuicErrorCodeToString(error), static_cast<int>(error));
+      dict.SetIntKey(QuicErrorCodeToString(error), static_cast<int>(error));
     }
 
-    constants_dict->Set("quicError", std::move(dict));
+    constants_dict.SetKey("quicError", std::move(dict));
   }
 
   // Add information on the relationship between QUIC RST_STREAM error codes
   // and their symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
     for (quic::QuicRstStreamErrorCode error = quic::QUIC_STREAM_NO_ERROR;
          error < quic::QUIC_STREAM_LAST_ERROR;
          error = static_cast<quic::QuicRstStreamErrorCode>(error + 1)) {
-      dict->SetInteger(QuicRstStreamErrorCodeToString(error),
-                       static_cast<int>(error));
+      dict.SetIntKey(QuicRstStreamErrorCodeToString(error),
+                     static_cast<int>(error));
     }
 
-    constants_dict->Set("quicRstStreamError", std::move(dict));
+    constants_dict.SetKey("quicRstStreamError", std::move(dict));
   }
 
   // Information about the relationship between event phase enums and their
   // symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict->SetInteger("PHASE_BEGIN", static_cast<int>(NetLogEventPhase::BEGIN));
-    dict->SetInteger("PHASE_END", static_cast<int>(NetLogEventPhase::END));
-    dict->SetInteger("PHASE_NONE", static_cast<int>(NetLogEventPhase::NONE));
+    dict.SetIntKey("PHASE_BEGIN", static_cast<int>(NetLogEventPhase::BEGIN));
+    dict.SetIntKey("PHASE_END", static_cast<int>(NetLogEventPhase::END));
+    dict.SetIntKey("PHASE_NONE", static_cast<int>(NetLogEventPhase::NONE));
 
-    constants_dict->Set("logEventPhase", std::move(dict));
+    constants_dict.SetKey("logEventPhase", std::move(dict));
   }
 
   // Information about the relationship between source type enums and
   // their symbolic names.
-  constants_dict->SetKey("logSourceType", NetLog::GetSourceTypesAsValue());
+  constants_dict.SetKey("logSourceType", NetLog::GetSourceTypesAsValue());
 
   // Information about the relationship between address family enums and
   // their symbolic names.
   {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED", ADDRESS_FAMILY_UNSPECIFIED);
-    dict->SetInteger("ADDRESS_FAMILY_IPV4", ADDRESS_FAMILY_IPV4);
-    dict->SetInteger("ADDRESS_FAMILY_IPV6", ADDRESS_FAMILY_IPV6);
+    dict.SetIntKey("ADDRESS_FAMILY_UNSPECIFIED", ADDRESS_FAMILY_UNSPECIFIED);
+    dict.SetIntKey("ADDRESS_FAMILY_IPV4", ADDRESS_FAMILY_IPV4);
+    dict.SetIntKey("ADDRESS_FAMILY_IPV6", ADDRESS_FAMILY_IPV6);
 
-    constants_dict->Set("addressFamily", std::move(dict));
+    constants_dict.SetKey("addressFamily", std::move(dict));
   }
 
   // Information about how the "time ticks" values we have given it relate to
@@ -327,14 +325,15 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
         base::TimeTicks::Now() - base::TimeTicks();
     int64_t tick_to_unix_time_ms =
         (time_since_epoch - reference_time_ticks).InMilliseconds();
-    constants_dict->SetKey("timeTickOffset",
-                           NetLogNumberValue(tick_to_unix_time_ms));
+    constants_dict.SetKey("timeTickOffset",
+                          NetLogNumberValue(tick_to_unix_time_ms));
   }
 
   // TODO(eroman): Is this needed?
   // "clientInfo" key is required for some log readers. Provide a default empty
   // value for compatibility.
-  constants_dict->Set("clientInfo", std::make_unique<base::DictionaryValue>());
+  constants_dict.SetKey("clientInfo",
+                        base::Value(base::Value::Type::DICTIONARY));
 
   // Add a list of active field experiments.
   {
@@ -346,8 +345,9 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
          it != active_groups.end(); ++it) {
       field_trial_groups->AppendString(it->trial_name + ":" + it->group_name);
     }
-    constants_dict->Set("activeFieldTrialGroups",
-                        std::move(field_trial_groups));
+    constants_dict.SetKey(
+        "activeFieldTrialGroups",
+        base::Value::FromUniquePtrValue(std::move(field_trial_groups)));
   }
 
   return constants_dict;

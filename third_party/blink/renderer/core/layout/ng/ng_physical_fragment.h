@@ -337,6 +337,14 @@ class CORE_EXPORT NGPhysicalFragment
   // be confused with the CSS 'direction' property.
   TextDirection ResolvedDirection() const;
 
+  // Helper function to convert to |PhysicalRect| to |LogicalRect| with
+  // |Style().Direction()|
+  LogicalRect ConvertToLogical(const PhysicalRect& physical_rect,
+                               PhysicalSize inner_size) const;
+  LogicalRect ConvertToLogical(const PhysicalRect& physical_rect,
+                               TextDirection direction,
+                               PhysicalSize inner_size) const;
+
   // Utility functions for caret painting. Note that carets are painted as part
   // of the containing block's foreground.
   bool ShouldPaintCursorCaret() const;

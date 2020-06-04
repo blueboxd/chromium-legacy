@@ -122,8 +122,10 @@ void DeprecatedStorageQuota::EnqueueStorageErrorCallback(
                            WrapPersistent(DOMError::Create(exception_code))));
 }
 
-DeprecatedStorageQuota::DeprecatedStorageQuota(Type type)
-    : type_(type), quota_host_(nullptr) {}
+DeprecatedStorageQuota::DeprecatedStorageQuota(
+    Type type,
+    ExecutionContext* execution_context)
+    : type_(type), quota_host_(execution_context) {}
 
 void DeprecatedStorageQuota::queryUsageAndQuota(
     ScriptState* script_state,

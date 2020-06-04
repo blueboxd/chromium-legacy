@@ -67,6 +67,14 @@ interface DriveFs {
   // encoded proto message.
   SendNativeMessageRequest(string request) => (
       FileError error, string response);
+
+  // Sets the arguments to be parsed by DriveFS on startup. Should only be
+  // called in developer mode.
+  SetStartupArguments(string arguments) => (bool success);
+
+  // Gets the currently set arguments parsed by DriveFS on startup. Should only
+  // be called in developer mode.
+  GetStartupArguments() => (string arguments);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -111,7 +119,7 @@ interface DriveFsDelegate {
   OnHeartbeat();
 };
 
-// Next MinVersion: 5
+// Next MinVersion: 6
 struct DriveFsConfiguration {
   string user_email;
 
@@ -128,6 +136,9 @@ struct DriveFsConfiguration {
 
   [MinVersion=4]
   bool enable_experimental_mirroring = false;
+
+  [MinVersion=5]
+  bool enable_verbose_logging = false;
 };
 
 enum AccessTokenStatus {

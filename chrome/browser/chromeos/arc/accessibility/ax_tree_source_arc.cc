@@ -131,81 +131,16 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     computed_bounds_[id] = ComputeEnclosingBounds(tree_map_[id].get());
   }
 
-  // Calculate the focused ID.
-  if (event_data->event_type == AXEventType::VIEW_FOCUSED) {
-    AccessibilityInfoDataWrapper* focused_node =
-        GetFromId(event_data->source_id);
-    if (focused_node && focused_node->IsVisibleToUser()) {
-      // Sometimes Android sets focus on unfocusable node, e.g. ListView.
-      AccessibilityInfoDataWrapper* adjusted_node =
-          FindFirstFocusableNode(focused_node);
-      android_focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
-                                                   : event_data->source_id;
-    }
-  } else if (event_data->event_type == AXEventType::VIEW_SELECTED) {
-    // In Android, VIEW_SELECTED event is dispatched in the two cases below:
-    // 1. Changing a value in ProgressBar or TimePicker.
-    // 2. Selecting an item in the context of an AdapterView.
+  if (!UpdateAndroidFocusedId(*event_data)) {
+    // Exit this function if the focused node doesn't exist nor isn't visible.
+    return;
+  }
+
+  if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED &&
+      event_data->event_text) {
     AccessibilityInfoDataWrapper* source_node =
         GetFromId(event_data->source_id);
-    if (!source_node || !source_node->IsNode())
-      return;
-    AXNodeInfoData* node_info = source_node->GetNode();
-    DCHECK(node_info);
-
-    bool is_range_change = !node_info->range_info.is_null();
-    if (!is_range_change) {
-      AccessibilityInfoDataWrapper* selected_node =
-          GetSelectedNodeInfoFromAdapterView(event_data);
-      if (!selected_node || !selected_node->IsVisibleToUser())
-        return;
-
-      android_focused_id_ = selected_node->GetId();
-    }
-  } else if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED) {
-    // When accessibility window changed, a11y event of WINDOW_CONTENT_CHANGED
-    // is fired from Android multiple times.
-    // The event of WINDOW_STATE_CHANGED is fired only once for each window
-    // change and use it as a trigger to move the a11y focus to the first node.
-    AccessibilityInfoDataWrapper* focused_node =
-        GetFromId(event_data->source_id);
-    AccessibilityInfoDataWrapper* new_focus =
-        FindFirstFocusableNode(focused_node);
-    if (IsValid(new_focus))
-      android_focused_id_ = new_focus->GetId();
-
-    if (event_data->event_text)
-      UpdateAXNameCache(focused_node, *event_data->event_text);
-  }
-
-  if (!android_focused_id_ || !GetFromId(*android_focused_id_)) {
-    AccessibilityInfoDataWrapper* root = GetRoot();
-    // TODO(sarakato): Add proper fix once cause of invalid node is known.
-    if (!IsValid(root)) {
-      return;
-    } else {
-      android_focused_id_ = root_id_;
-    }
-  }
-
-  AccessibilityInfoDataWrapper* focused_node =
-      android_focused_id_.has_value() ? GetFromId(*android_focused_id_)
-                                      : nullptr;
-
-  // Ensure that the focused node correctly gets focus.
-  while (focused_node) {
-    bool focusable_node = focused_node->IsNode() &&
-                          !IsImportantInAndroid(focused_node->GetNode());
-    bool root_window = focused_node->GetId() == root_id_;
-    if (!focusable_node && !root_window)
-      break;
-    AccessibilityInfoDataWrapper* parent = GetParent(focused_node);
-    if (parent) {
-      android_focused_id_ = parent->GetId();
-      focused_node = parent;
-    } else {
-      break;
-    }
+    UpdateAXNameCache(source_node, *event_data->event_text);
   }
 
   ApplyCachedProperties();
@@ -213,6 +148,9 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = ax_tree_id();
 
+  AccessibilityInfoDataWrapper* focused_node =
+      android_focused_id_.has_value() ? GetFromId(*android_focused_id_)
+                                      : nullptr;
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
   event.event_type = ToAXEvent(event_data->event_type,
@@ -462,8 +400,8 @@ AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
 
 AccessibilityInfoDataWrapper*
 AXTreeSourceArc::GetSelectedNodeInfoFromAdapterView(
-    AXEventData* event_data) const {
-  AccessibilityInfoDataWrapper* source_node = GetFromId(event_data->source_id);
+    const AXEventData& event_data) const {
+  AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
   if (!source_node || !source_node->IsNode())
     return nullptr;
 
@@ -476,11 +414,11 @@ AXTreeSourceArc::GetSelectedNodeInfoFromAdapterView(
     // The event source is not an item of AdapterView. If the event source is
     // AdapterView, select the child. Otherwise, this is an unrelated event.
     int item_count, from_index, current_item_index;
-    if (!GetProperty(event_data->int_properties, AXEventIntProperty::ITEM_COUNT,
+    if (!GetProperty(event_data.int_properties, AXEventIntProperty::ITEM_COUNT,
                      &item_count) ||
-        !GetProperty(event_data->int_properties, AXEventIntProperty::FROM_INDEX,
+        !GetProperty(event_data.int_properties, AXEventIntProperty::FROM_INDEX,
                      &from_index) ||
-        !GetProperty(event_data->int_properties,
+        !GetProperty(event_data.int_properties,
                      AXEventIntProperty::CURRENT_ITEM_INDEX,
                      &current_item_index)) {
       return nullptr;
@@ -509,6 +447,77 @@ AXTreeSourceArc::GetSelectedNodeInfoFromAdapterView(
     selected_node = children[0];
   }
   return selected_node;
+}
+
+bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
+  if (event_data.event_type == AXEventType::VIEW_FOCUSED) {
+    AccessibilityInfoDataWrapper* focused_node =
+        GetFromId(event_data.source_id);
+    if (focused_node && focused_node->IsVisibleToUser()) {
+      // Sometimes Android sets focus on unfocusable node, e.g. ListView.
+      AccessibilityInfoDataWrapper* adjusted_node =
+          FindFirstFocusableNode(focused_node);
+      android_focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
+                                                   : event_data.source_id;
+    }
+  } else if (event_data.event_type == AXEventType::VIEW_SELECTED) {
+    // In Android, VIEW_SELECTED event is dispatched in the two cases below:
+    // 1. Changing a value in ProgressBar or TimePicker in ARC P.
+    // 2. Selecting an item in the context of an AdapterView.
+    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
+    DCHECK(source_node);
+    DCHECK(source_node->IsNode());
+    AXNodeInfoData* node_info = source_node->GetNode();
+    DCHECK(node_info);
+
+    bool is_range_change = !node_info->range_info.is_null();
+    if (!is_range_change) {
+      AccessibilityInfoDataWrapper* selected_node =
+          GetSelectedNodeInfoFromAdapterView(event_data);
+      if (!selected_node || !selected_node->IsVisibleToUser())
+        return false;
+
+      android_focused_id_ = selected_node->GetId();
+    }
+  } else if (event_data.event_type == AXEventType::WINDOW_STATE_CHANGED) {
+    // When accessibility window changed, a11y event of WINDOW_CONTENT_CHANGED
+    // is fired from Android multiple times.
+    // The event of WINDOW_STATE_CHANGED is fired only once for each window
+    // change and use it as a trigger to move the a11y focus to the first node.
+    AccessibilityInfoDataWrapper* source_node = GetFromId(event_data.source_id);
+    AccessibilityInfoDataWrapper* new_focus =
+        FindFirstFocusableNode(source_node);
+    if (IsValid(new_focus))
+      android_focused_id_ = new_focus->GetId();
+  }
+
+  if (!android_focused_id_ || !GetFromId(*android_focused_id_)) {
+    AccessibilityInfoDataWrapper* root = GetRoot();
+    DCHECK(IsValid(root));
+    android_focused_id_ = root_id_;
+  }
+
+  AccessibilityInfoDataWrapper* focused_node =
+      android_focused_id_.has_value() ? GetFromId(*android_focused_id_)
+                                      : nullptr;
+
+  // Ensure that the focused node correctly gets focus.
+  while (focused_node) {
+    bool focusable_node = focused_node->IsNode() &&
+                          !IsImportantInAndroid(focused_node->GetNode());
+    bool root_window = focused_node->GetId() == root_id_;
+    if (!focusable_node && !root_window)
+      break;
+    AccessibilityInfoDataWrapper* parent = GetParent(focused_node);
+    if (parent) {
+      android_focused_id_ = parent->GetId();
+      focused_node = parent;
+    } else {
+      break;
+    }
+  }
+
+  return true;
 }
 
 void AXTreeSourceArc::UpdateAXNameCache(

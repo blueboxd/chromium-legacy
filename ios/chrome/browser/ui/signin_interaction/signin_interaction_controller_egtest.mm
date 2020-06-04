@@ -470,7 +470,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
       TapOnPrimarySignInButtonInRecentTabs();
       break;
     case OpenSigninMethodFromTabSwitcher:
-      [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridOpenButton()]
+      [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
           performAction:grey_tap()];
       [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                               TabGridOtherDevicesPanelButton()]

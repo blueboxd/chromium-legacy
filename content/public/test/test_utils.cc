@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -207,6 +208,12 @@ bool AreDefaultSiteInstancesEnabled() {
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kSitePerProcess);
+}
+
+bool CanSameSiteMainFrameNavigationsChangeRenderFrameHosts() {
+  // TODO(crbug.com/936696): Also return true when RenderDocument for main frame
+  // is enabled.
+  return IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
 }
 
 GURL GetWebUIURL(const std::string& host) {

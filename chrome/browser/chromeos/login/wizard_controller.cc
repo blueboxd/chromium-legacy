@@ -372,10 +372,10 @@ void WizardController::Init(OobeScreenId first_screen) {
   first_screen_ = first_screen;
 
   bool oobe_complete = StartupUtils::IsOobeCompleted();
-  if (!oobe_complete)
+  if (!oobe_complete) {
     UpdateOobeConfiguration();
-  if (!oobe_complete || first_screen == OobeScreen::SCREEN_SPECIAL_OOBE)
     is_out_of_box_ = true;
+  }
 
   // This is a hacky way to check for local state corruption, because
   // it depends on the fact that the local state is loaded

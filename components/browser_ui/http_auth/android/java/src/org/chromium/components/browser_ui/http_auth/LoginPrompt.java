@@ -6,15 +6,16 @@ package org.chromium.components.browser_ui.http_auth;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 
+import org.chromium.components.browser_ui.widget.text.AlertDialogEditText;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -28,8 +29,8 @@ public class LoginPrompt {
     private final Observer mObserver;
 
     private AlertDialog mDialog;
-    private EditText mUsernameView;
-    private EditText mPasswordView;
+    private AlertDialogEditText mUsernameView;
+    private AlertDialogEditText mPasswordView;
 
     /**
      * This is a public interface that provides the result of the prompt.
@@ -46,17 +47,35 @@ public class LoginPrompt {
         public void proceed(String username, String password);
     }
 
-    public LoginPrompt(Context context, String messageBody, Observer observer) {
+    /**
+     * Constructs an http auth prompt.
+     *
+     * @param context The Context to use.
+     * @param messageBody The text to show to the user.
+     * @param autofillUrl If not null, Android Autofill support is enabled for the form with the
+     *     given url being set as the web domain for the View control.
+     * @param observer An interface to receive the result of the prompt.
+     */
+    public LoginPrompt(Context context, String messageBody, String autofillUrl, Observer observer) {
         mContext = context;
         mMessageBody = messageBody;
         mObserver = observer;
-        createDialog();
+        createDialog(autofillUrl);
     }
 
-    private void createDialog() {
+    private void createDialog(String autofillUrl) {
         View v = LayoutInflater.from(mContext).inflate(R.layout.http_auth_dialog, null);
-        mUsernameView = (EditText) v.findViewById(R.id.username);
-        mPasswordView = (EditText) v.findViewById(R.id.password);
+        mUsernameView = (AlertDialogEditText) v.findViewById(R.id.username);
+        mPasswordView = (AlertDialogEditText) v.findViewById(R.id.password);
+        if (autofillUrl != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // By default Android Autofill support is turned off for these controls because Chrome
+            // uses its own autofill provider (Chrome Sync). If an app is using Android Autofill
+            // then we need to enable Android Autofill for the controls.
+            mUsernameView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
+            mPasswordView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
+            mUsernameView.setUrl(autofillUrl);
+            mPasswordView.setUrl(autofillUrl);
+        }
         mPasswordView.setOnEditorActionListener((v1, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 mDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();

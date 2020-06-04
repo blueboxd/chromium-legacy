@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
-#include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
 #include "third_party/blink/renderer/core/html/forms/select_type.h"
 #include "third_party/blink/renderer/core/html/html_hr_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
@@ -1196,21 +1195,11 @@ void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
       will_be_removed->remove();
     }
   }
-  if (UsesMenuList()) {
-    Element* inner_element =
-        MakeGarbageCollected<MenuListInnerElement>(GetDocument());
-    inner_element->setAttribute(html_names::kAriaHiddenAttr, "true");
-    // Make sure InnerElement() always has a Text node.
-    inner_element->appendChild(Text::Create(GetDocument(), g_empty_string));
-    root.insertBefore(inner_element, root.firstChild());
-  }
+  select_type_->CreateShadowSubtree(root);
 }
 
 Element& HTMLSelectElement::InnerElement() const {
-  DCHECK(UsesMenuList());
-  auto* inner_element = DynamicTo<Element>(UserAgentShadowRoot()->firstChild());
-  DCHECK(inner_element);
-  return *inner_element;
+  return select_type_->InnerElement();
 }
 
 HTMLOptionElement* HTMLSelectElement::SpatialNavigationFocusedOption() {

@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+PASS Test same origin: Test same policy for both iframes
+PASS Test same origin: Test more restrictive policy on second iframe
+FAIL Test same origin: Test less restrictive policy on second iframe assert_unreached: Child iframes have unexpected csp:"script-src 'unsafe-inline';" Reached unreachable code
+PASS Test same origin: Test no policy on second iframe
+PASS Test same origin: Test no policy on first iframe
+PASS Test same origin: Test invalid policy on first iframe (bad directive)
+PASS Test same origin: Test invalid policy on first iframe (report directive)
+PASS Test same origin: Test invalid policy on second iframe (bad directive)
+PASS Test same origin: Test invalid policy on second iframe (report directive)
+Harness: the test ran to completion.
+

@@ -4,14 +4,35 @@
 
 #include "base/allocator/partition_allocator/partition_page.h"
 
+#include "base/allocator/partition_allocator/address_pool_manager.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_root_base.h"
 #include "base/check.h"
+#include "base/feature_list.h"
+#include "base/notreached.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {
 
 namespace {
+
+void DecommitPages(void* address, size_t size) {
+#if defined(ARCH_CPU_64_BITS)
+  internal::AddressPoolManager::GetInstance()->Free(
+      internal::GetDirectMapPool(), address, size);
+#if defined(OS_MACOSX)
+  SetSystemPagesAccess(address, size, PageReadWrite);
+  memset(address, 0, size);
+#endif
+  SetSystemPagesAccess(address, size, PageInaccessible);
+  DecommitSystemPages(address, size);
+#else
+  NOTREACHED();
+#endif
+}
 
 template <bool thread_safe>
 ALWAYS_INLINE DeferredUnmap
@@ -179,7 +200,12 @@ void PartitionPage<thread_safe>::DecommitIfPossible(
 }
 
 void DeferredUnmap::Unmap() {
-  FreePages(ptr, size);
+  DCHECK(ptr && size > 0);
+  if (IsPartitionAllocGigaCageEnabled()) {
+    DecommitPages(ptr, size);
+  } else {
+    FreePages(ptr, size);
+  }
 }
 
 template struct PartitionPage<ThreadSafe>;

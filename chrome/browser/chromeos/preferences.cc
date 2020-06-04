@@ -266,6 +266,8 @@ void Preferences::RegisterProfilePrefs(
                                 false);
   registry->RegisterStringPref(drive::prefs::kDriveFsProfileSalt, "");
   registry->RegisterBooleanPref(drive::prefs::kDriveFsPinnedMigrated, false);
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsEnableVerboseLogging,
+                                false);
   // We don't sync ::prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(::prefs::kLanguageCurrentInputMethod, "");

@@ -6,7 +6,7 @@ cr.define('accessibility', function() {
   'use strict';
 
   // Note: keep these values in sync with the values in
-  // content/common/accessibility_mode_enums.h
+  // ui/accessibility/ax_mode.h
   const AXMode = {
     kNativeAPIs: 1 << 0,
     kWebContents: 1 << 1,
@@ -14,6 +14,7 @@ cr.define('accessibility', function() {
     kScreenReader: 1 << 3,
     kHTML: 1 << 4,
     kLabelImages: 1 << 5,
+    kPDF: 1 << 6,
 
     get kAXModeWebContentsOnly() {
       return AXMode.kWebContents | AXMode.kInlineTextBoxes |
@@ -229,6 +230,7 @@ cr.define('accessibility', function() {
       row.appendChild(createModeElement(AXMode.kHTML, data, 'web'));
       row.appendChild(
           createModeElement(AXMode.kLabelImages, data, 'labelImages'));
+      row.appendChild(createModeElement(AXMode.kPDF, data, 'pdf'));
     } else {
       const siteInfo = document.createElement('span');
       siteInfo.appendChild(formatValue(data, 'name'));
@@ -313,6 +315,8 @@ cr.define('accessibility', function() {
         return 'HTML';
       case AXMode.kLabelImages:
         return 'Label images';
+      case AXMode.kPDF:
+        return 'PDF';
     }
     return 'unknown';
   }

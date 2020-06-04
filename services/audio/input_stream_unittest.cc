@@ -9,16 +9,17 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/task_environment.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "services/audio/stream_factory.h"
 #include "services/audio/test/mock_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -128,14 +129,13 @@ class AudioServiceInputStreamTest : public testing::Test {
   ~AudioServiceInputStreamTest() override { audio_manager_.Shutdown(); }
 
   void SetUp() override {
-    mojo::core::SetDefaultProcessErrorCallback(
+    mojo::SetDefaultProcessErrorHandler(
         base::BindRepeating(&AudioServiceInputStreamTest::BadMessageCallback,
                             base::Unretained(this)));
   }
 
   void TearDown() override {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   mojo::PendingRemote<media::mojom::AudioInputStream> CreateStream(

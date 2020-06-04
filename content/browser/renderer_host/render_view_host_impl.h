@@ -43,7 +43,6 @@
 
 namespace content {
 
-struct FrameReplicationState;
 class TimeoutMonitor;
 
 // A callback which will be called immediately before EnterBackForwardCache
@@ -130,18 +129,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   //   created with an opener. (The opener may have been closed since.)
   // |proxy_route_id| is only used when creating a RenderView in an inactive
   //   state.
-  // |frame_token| contains the frame token for the associated
-  //   RenderFrameHostImpl or RenderFrameProxyHost.
-  // |devtools_frame_token| contains the devtools token for tagging requests
-  //   and attributing them to the context frame.
-  // |replicated_frame_state| contains replicated data for the top-level
-  //   frame, such as its name and sandbox flags.
   virtual bool CreateRenderView(
       const base::Optional<base::UnguessableToken>& opener_frame_token,
       int proxy_route_id,
-      const base::UnguessableToken& frame_token,
-      const base::UnguessableToken& devtools_frame_token,
-      const FrameReplicationState& replicated_frame_state,
       bool window_was_created_with_opener);
 
   // Tracks whether this RenderViewHost is in an active state (rather than

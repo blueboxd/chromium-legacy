@@ -163,6 +163,8 @@ class JsUtil(object):
         c = Code()
         self.AppendObjectDefinition(c, namespace_name, js_type.properties)
         return c
+      if js_type.instance_of:
+        return Code().Append(js_type.instance_of)
       return Code().Append('Object')
     if js_type.property_type is PropertyType.ARRAY:
       return (Code().Append('!Array<').

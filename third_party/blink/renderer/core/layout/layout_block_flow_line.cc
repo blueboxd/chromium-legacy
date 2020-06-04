@@ -2403,13 +2403,6 @@ bool LayoutBlockFlow::GeneratesLineBoxesForInlineChild(LayoutObject* inline_obj)
 }
 
 void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
-  LayoutUnit end_padding = HasOverflowClip() ? PaddingEnd() : LayoutUnit();
-  // FIXME: Need to find another way to do this, since scrollbars could show
-  // when we don't want them to.
-  if (HasOverflowClip() && !end_padding && GetNode() &&
-      IsRootEditableElement(*GetNode()) && StyleRef().IsLeftToRightDirection())
-    end_padding = LayoutUnit(1);
-
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {
     for (const NGPaintFragment* child : paint_fragment->Children()) {
       if (child->HasSelfPaintingLayer())

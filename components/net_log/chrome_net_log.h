@@ -24,7 +24,7 @@ namespace net_log {
 // names of error codes.
 //
 // Safe to call on any thread.
-std::unique_ptr<base::Value> GetConstantsForNetLog(
+base::Value GetConstantsForNetLog(
     const base::CommandLine::StringType& command_line_string,
     const std::string& channel_string);
 

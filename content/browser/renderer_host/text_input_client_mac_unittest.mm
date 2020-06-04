@@ -75,7 +75,7 @@ class TextInputClientMacTest : public content::RenderViewHostTestHarness {
     content::RenderViewHostTestHarness::SetUp();
     local_frame_ = std::make_unique<TextInputClientLocalFrame>(web_contents());
     RenderViewHostTester::For(rvh())->CreateTestRenderView(
-        base::string16(), base::nullopt, MSG_ROUTING_NONE, false);
+        base::nullopt, MSG_ROUTING_NONE, false);
     widget_ = rvh()->GetWidget();
     FocusWebContentsOnMainFrame();
   }

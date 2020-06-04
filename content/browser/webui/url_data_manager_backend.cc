@@ -227,13 +227,12 @@ bool URLDataManagerBackend::CheckURLIsValid(const GURL& url) {
 }
 
 bool URLDataManagerBackend::IsValidNetworkErrorCode(int error_code) {
-  std::unique_ptr<base::DictionaryValue> error_codes = net::GetNetConstants();
+  base::Value error_codes = net::GetNetConstants();
   const base::DictionaryValue* net_error_codes_dict = nullptr;
 
-  for (base::DictionaryValue::Iterator itr(*error_codes); !itr.IsAtEnd();
-       itr.Advance()) {
-    if (itr.key() == kNetworkErrorKey) {
-      itr.value().GetAsDictionary(&net_error_codes_dict);
+  for (const auto& item : error_codes.DictItems()) {
+    if (item.first == kNetworkErrorKey) {
+      item.second.GetAsDictionary(&net_error_codes_dict);
       break;
     }
   }

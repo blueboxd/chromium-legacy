@@ -35,14 +35,12 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
                              completion_callback) override;
 
  private:
-  // These values are logged to UMA so do not renumber or reuse.
-  enum class Result {
-    UNKNOWN = 0,
-    SAFE = 1,
-    BLOCKED = 2,
-    ABANDONED = 3,
-    NOT_SUPPORTED = 4,
-    RESULT_COUNT
+  enum class State {
+    kInitial,
+    kStarted,
+    kSafe,
+    kBlocked,
+    kNotSupported,
   };
 
   // mojom::UrlCheckNotifier implementation.
@@ -60,8 +58,10 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
   mojo::Remote<mojom::SafeBrowsingUrlChecker> url_checker_;
   mojom::SafeBrowsing* safe_browsing_;
   std::unique_ptr<mojo::Receiver<mojom::UrlCheckNotifier>> notifier_receiver_;
-  base::TimeTicks start_time_;
-  Result result_;
+
+  // |state_| is used to validate that events happen in the right order. It
+  // isn't used to control the behaviour of the class.
+  State state_ = State::kInitial;
 
   base::WeakPtrFactory<WebSocketSBHandshakeThrottle> weak_factory_{this};
 

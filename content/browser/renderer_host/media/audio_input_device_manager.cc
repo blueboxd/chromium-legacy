@@ -135,7 +135,6 @@ base::UnguessableToken AudioInputDeviceManager::Open(
     audio_system_->GetAssociatedOutputDeviceID(
         device.id, base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
                                   base::Unretained(this), session_id, device,
-                                  base::TimeTicks::Now(),
                                   base::Optional<media::AudioParameters>()));
   } else {
     // TODO(tommi): As is, we hit this code path when device.type is
@@ -151,8 +150,7 @@ base::UnguessableToken AudioInputDeviceManager::Open(
 
     audio_system_->GetInputDeviceInfo(
         device.id, base::BindOnce(&AudioInputDeviceManager::OpenedOnIOThread,
-                                  base::Unretained(this), session_id, device,
-                                  base::TimeTicks::Now()));
+                                  base::Unretained(this), session_id, device));
   }
 
   return session_id;
@@ -230,7 +228,6 @@ void AudioInputDeviceManager::RegisterKeyboardMicStream(
 void AudioInputDeviceManager::OpenedOnIOThread(
     const base::UnguessableToken& session_id,
     const blink::MediaStreamDevice& device,
-    base::TimeTicks start_time,
     const base::Optional<media::AudioParameters>& input_params,
     const base::Optional<std::string>& matched_output_device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -238,10 +235,7 @@ void AudioInputDeviceManager::OpenedOnIOThread(
   DCHECK(!input_params || input_params->IsValid());
   DCHECK(!matched_output_device_id || !matched_output_device_id->empty());
 
-  UMA_HISTOGRAM_TIMES("Media.AudioInputDeviceManager.OpenOnDeviceThreadTime",
-                      base::TimeTicks::Now() - start_time);
   SendAudioLogMessage("Opened({session_id=" + session_id.ToString() + "})");
-
   blink::MediaStreamDevice media_stream_device(device.type, device.id,
                                                device.name);
   media_stream_device.set_session_id(session_id);

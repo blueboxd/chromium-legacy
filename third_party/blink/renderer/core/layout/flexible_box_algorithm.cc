@@ -745,9 +745,12 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
   // css-flexbox section 4.5
   const Length& min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
                                          : child.StyleRef().MinHeight();
-  // TODO(dgrogan): min.IsIntrinsic should also get past this check when in the
-  // item's block direction.
-  if (!min.IsAuto())
+  bool main_axis_is_childs_block_axis =
+      IsHorizontalFlow() != child.StyleRef().IsHorizontalWritingMode();
+  bool intrinsic_in_childs_block_axis =
+      main_axis_is_childs_block_axis &&
+      (min.IsMinContent() || min.IsMaxContent() || min.IsFitContent());
+  if (!min.IsAuto() && !intrinsic_in_childs_block_axis)
     return false;
 
   // webkit-box treats min-size: auto as 0.

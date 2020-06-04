@@ -78,7 +78,8 @@ class DriveFsHost::MountState : public DriveFsSession,
         std::move(access_token),
         auth_delegate->IsMetricsCollectionEnabled(),
         delegate->GetLostAndFoundDirectoryName(),
-        base::FeatureList::IsEnabled(chromeos::features::kDriveFsMirroring)};
+        base::FeatureList::IsEnabled(chromeos::features::kDriveFsMirroring),
+        delegate->IsVerboseLoggingEnabled()};
     return DriveFsConnection::Create(delegate->CreateMojoListener(),
                                      std::move(config));
   }

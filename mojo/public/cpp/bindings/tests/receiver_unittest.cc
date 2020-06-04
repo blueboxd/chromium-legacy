@@ -16,7 +16,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -25,6 +24,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/tests/bindings_test_base.h"
 #include "mojo/public/cpp/bindings/tests/receiver_unittest.test-mojom.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
@@ -516,7 +516,7 @@ TEST_P(ReceiverTest, ReportBadMessage) {
       [&] { receiver.ReportBadMessage("received bad message"); }));
 
   std::string received_error;
-  core::SetDefaultProcessErrorCallback(base::BindLambdaForTesting(
+  SetDefaultProcessErrorHandler(base::BindLambdaForTesting(
       [&](const std::string& error) { received_error = error; }));
 
   remote->Ping(base::DoNothing());
@@ -525,7 +525,7 @@ TEST_P(ReceiverTest, ReportBadMessage) {
   EXPECT_TRUE(called);
   EXPECT_EQ("received bad message", received_error);
 
-  core::SetDefaultProcessErrorCallback(base::NullCallback());
+  SetDefaultProcessErrorHandler(base::NullCallback());
 }
 
 TEST_P(ReceiverTest, GetBadMessageCallback) {
@@ -535,7 +535,7 @@ TEST_P(ReceiverTest, GetBadMessageCallback) {
   ReportBadMessageCallback bad_message_callback;
 
   std::string received_error;
-  core::SetDefaultProcessErrorCallback(base::BindLambdaForTesting(
+  SetDefaultProcessErrorHandler(base::BindLambdaForTesting(
       [&](const std::string& error) { received_error = error; }));
 
   {
@@ -552,7 +552,7 @@ TEST_P(ReceiverTest, GetBadMessageCallback) {
   std::move(bad_message_callback).Run("delayed bad message");
   EXPECT_EQ("delayed bad message", received_error);
 
-  core::SetDefaultProcessErrorCallback(base::NullCallback());
+  SetDefaultProcessErrorHandler(base::NullCallback());
 }
 
 TEST_P(ReceiverTest, InvalidPendingReceivers) {

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
@@ -272,6 +273,11 @@ void LoginDisplayHostMojo::OnBrowserCreated() {
 void LoginDisplayHostMojo::ShowGaiaDialog(const AccountId& prefilled_account) {
   DCHECK(GetOobeUI());
 
+  if (prefilled_account.is_valid()) {
+    gaia_reauth_account_id_ = prefilled_account;
+  } else {
+    gaia_reauth_account_id_.reset();
+  }
   ShowGaiaDialogCommon(prefilled_account);
 
   ShowDialog();
@@ -438,9 +444,21 @@ void LoginDisplayHostMojo::OnAuthSuccess(const UserContext& user_context) {
     std::move(pending_auth_state_->callback).Run(true);
     pending_auth_state_.reset();
   }
+
+  if (gaia_reauth_account_id_.has_value()) {
+    SendReauthReason(gaia_reauth_account_id_.value(),
+                     false /* password changed */);
+    gaia_reauth_account_id_.reset();
+  }
 }
 
-void LoginDisplayHostMojo::OnPasswordChangeDetected() {}
+void LoginDisplayHostMojo::OnPasswordChangeDetected() {
+  if (gaia_reauth_account_id_.has_value()) {
+    SendReauthReason(gaia_reauth_account_id_.value(),
+                     true /* password changed */);
+    gaia_reauth_account_id_.reset();
+  }
+}
 
 void LoginDisplayHostMojo::OnOldEncryptionDetected(
     const UserContext& user_context,
@@ -506,6 +524,7 @@ void LoginDisplayHostMojo::HideDialog() {
   // with hidden error screens).
   StopObservingOobeUI();
   dialog_->Hide();
+  gaia_reauth_account_id_.reset();
 }
 
 void LoginDisplayHostMojo::ObserveOobeUI() {

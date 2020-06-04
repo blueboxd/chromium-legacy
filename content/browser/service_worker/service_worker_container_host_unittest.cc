@@ -36,7 +36,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
-#include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -116,7 +116,7 @@ class ServiceWorkerContainerHostTest : public testing::Test {
   void SetUp() override {
     old_content_browser_client_ =
         SetBrowserClientForTesting(&test_content_browser_client_);
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &ServiceWorkerContainerHostTest::OnMojoError, base::Unretained(this)));
 
     helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
@@ -145,8 +145,7 @@ class ServiceWorkerContainerHostTest : public testing::Test {
     registration3_ = nullptr;
     helper_.reset();
     SetBrowserClientForTesting(old_content_browser_client_);
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   ServiceWorkerRemoteContainerEndpoint PrepareServiceWorkerContainerHost(

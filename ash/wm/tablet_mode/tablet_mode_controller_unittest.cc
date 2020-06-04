@@ -1776,7 +1776,8 @@ TEST_P(TabletModeControllerScreenshotTest, EnterTabletModeWhileAnimating) {
 
 // Tests that the screenshot is visible when a window animation happens when
 // entering tablet mode.
-TEST_P(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
+// Crashes on Linux Chrome OS.  http://crbug.com/1091085
+TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(300, 200));
 

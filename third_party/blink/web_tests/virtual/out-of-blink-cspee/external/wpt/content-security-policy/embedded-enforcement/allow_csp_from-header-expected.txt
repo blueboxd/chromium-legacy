@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS Same origin iframes are always allowed.
+PASS Same origin iframes are allowed even if the Allow-CSP-From is empty.
+PASS Same origin iframes are allowed even if the Allow-CSP-From is not present.
+PASS Same origin iframes are allowed even if Allow-CSP-From does not match origin.
+FAIL Cross origin iframe with an empty Allow-CSP-From header gets blocked. assert_equals: expected (undefined) undefined but got (boolean) true
+FAIL Cross origin iframe without Allow-CSP-From header gets blocked. assert_equals: expected (undefined) undefined but got (boolean) true
+PASS Cross origin iframe with correct Allow-CSP-From header is allowed.
+FAIL Iframe with improper Allow-CSP-From header gets blocked. assert_unreached: No message should be sent from the frame. Reached unreachable code
+PASS Allow-CSP-From header with a star value allows cross origin frame.
+FAIL Star Allow-CSP-From header enforces EmbeddingCSP. assert_equals: expected (string) "inline" but got (undefined) undefined
+FAIL Allow-CSP-From header enforces EmbeddingCSP. assert_equals: expected (string) "inline" but got (undefined) undefined
+Harness: the test ran to completion.
+

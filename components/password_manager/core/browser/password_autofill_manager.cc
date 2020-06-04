@@ -369,8 +369,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
   if (identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
     password_client_->GeneratePassword();
     metrics_util::LogPasswordDropdownItemSelected(
-        PasswordDropdownSelectedOption::kGenerate,
-        password_client_->IsIncognito());
+        PasswordDropdownSelectedOption::kGenerate);
   } else if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
              identifier ==
                  autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY) {
@@ -379,8 +378,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
         metrics_util::ShowAllSavedPasswordsContext::kPassword);
     metrics_util::LogPasswordDropdownItemSelected(
-        PasswordDropdownSelectedOption::kShowAll,
-        password_client_->IsIncognito());
+        PasswordDropdownSelectedOption::kShowAll);
 
     if (password_client_->GetMetricsRecorder()) {
       using UserAction =
@@ -400,8 +398,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     OnUnlockItemAccepted(static_cast<autofill::PopupItemId>(identifier));
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
-        PasswordDropdownSelectedOption::kPassword,
-        password_client_->IsIncognito());
+        PasswordDropdownSelectedOption::kPassword);
     bool success = FillSuggestion(GetUsernameFromSuggestion(value), identifier);
     DCHECK(success);
   }
@@ -604,8 +601,7 @@ void PasswordAutofillManager::LogMetricsForSuggestions(
         continue;
     }
   }
-  metrics_util::LogPasswordDropdownShown(dropdown_state,
-                                         password_client_->IsIncognito());
+  metrics_util::LogPasswordDropdownShown(dropdown_state);
 }
 
 bool PasswordAutofillManager::ShowPopup(

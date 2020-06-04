@@ -11,9 +11,7 @@
 
 /** @fileoverview Externs generated from namespace: automation */
 
-/**
- * @const
- */
+/** @const */
 chrome.automation = {};
 
 /**
@@ -515,9 +513,9 @@ chrome.automation.FindParams;
 
 /**
  * @typedef {{
- *   anchorObject: Object,
+ *   anchorObject: AutomationNode,
  *   anchorOffset: number,
- *   focusObject: Object,
+ *   focusObject: AutomationNode,
  *   focusOffset: number
  * }}
  * @see https://developer.chrome.com/extensions/automation#type-SetDocumentSelectionParams
@@ -1903,16 +1901,16 @@ chrome.automation.getAccessibilityFocus = function(callback) {};
  * tree changes to listen to, and note that listnening to all tree changes can
  * be expensive.
  * @param {!chrome.automation.TreeChangeObserverFilter} filter
- * @param {function(!chrome.automation.TreeChange): void} observer A listener for
- *     changes on the <code>AutomationNode</code> tree.
+ * @param {function(!chrome.automation.TreeChange): void} observer A listener
+ *     for changes on the <code>AutomationNode</code> tree.
  * @see https://developer.chrome.com/extensions/automation#method-addTreeChangeObserver
  */
 chrome.automation.addTreeChangeObserver = function(filter, observer) {};
 
 /**
  * Remove a tree change observer.
- * @param {function(!chrome.automation.TreeChange): void} observer A listener for
- *     changes on the <code>AutomationNode</code> tree.
+ * @param {function(!chrome.automation.TreeChange): void} observer A listener
+ *     for changes on the <code>AutomationNode</code> tree.
  * @see https://developer.chrome.com/extensions/automation#method-removeTreeChangeObserver
  */
 chrome.automation.removeTreeChangeObserver = function(observer) {};

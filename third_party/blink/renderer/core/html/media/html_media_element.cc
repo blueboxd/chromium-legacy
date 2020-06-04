@@ -2135,6 +2135,7 @@ void HTMLMediaElement::Seek(double time) {
 
   // 11 - Set the current playback position to the given new playback position.
   GetWebMediaPlayer()->Seek(time);
+  GetWebMediaPlayer()->OnTimeUpdate();
 
   // 14-17 are handled, if necessary, when the engine signals a readystate
   // change or otherwise satisfies seek completion and signals a time change.
@@ -2358,8 +2359,13 @@ void HTMLMediaElement::UpdatePlaybackRate() {
   // FIXME: remove web_media_player_ check once we figure out how
   // web_media_player_ is going out of sync with readystate.
   // web_media_player_ is cleared but readystate is not set to kHaveNothing.
-  if (web_media_player_ && PotentiallyPlaying())
-    GetWebMediaPlayer()->SetRate(playbackRate());
+  if (!web_media_player_)
+    return;
+
+  if (PotentiallyPlaying())
+    web_media_player_->SetRate(playbackRate());
+
+  web_media_player_->OnTimeUpdate();
 }
 
 bool HTMLMediaElement::ended() const {
@@ -2779,6 +2785,9 @@ void HTMLMediaElement::PlaybackProgressTimerFired(TimerBase*) {
 }
 
 void HTMLMediaElement::ScheduleTimeupdateEvent(bool periodic_event) {
+  if (web_media_player_)
+    web_media_player_->OnTimeUpdate();
+
   // Per spec, consult current playback position to check for changing time.
   double media_time = CurrentPlaybackPosition();
   bool media_time_has_progressed =
@@ -3359,6 +3368,9 @@ void HTMLMediaElement::DurationChanged(double duration, bool request_seek) {
   duration_ = duration;
   ScheduleEvent(event_type_names::kDurationchange);
 
+  if (web_media_player_)
+    web_media_player_->OnTimeUpdate();
+
   if (GetLayoutObject())
     GetLayoutObject()->UpdateFromElement();
 
@@ -3544,6 +3556,9 @@ void HTMLMediaElement::UpdatePlayState() {
 
   if (GetLayoutObject())
     GetLayoutObject()->UpdateFromElement();
+
+  if (web_media_player_)
+    web_media_player_->OnTimeUpdate();
 }
 
 void HTMLMediaElement::StopPeriodicTimers() {

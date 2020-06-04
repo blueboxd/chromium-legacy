@@ -127,8 +127,7 @@ void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
   if (!render_view_host()->IsRenderViewLive()) {
     render_view_host()->GetProcess()->Init();
     RenderViewHostTester::For(render_view_host())
-        ->CreateTestRenderView(base::string16(), base::nullopt,
-                               MSG_ROUTING_NONE, false);
+        ->CreateTestRenderView(base::nullopt, MSG_ROUTING_NONE, false);
   }
 }
 

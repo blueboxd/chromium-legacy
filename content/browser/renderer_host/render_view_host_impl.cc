@@ -37,6 +37,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -334,9 +335,6 @@ SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() {
 bool RenderViewHostImpl::CreateRenderView(
     const base::Optional<base::UnguessableToken>& opener_frame_token,
     int proxy_route_id,
-    const base::UnguessableToken& frame_token,
-    const base::UnguessableToken& devtools_frame_token,
-    const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   TRACE_EVENT0("renderer_host,navigation",
                "RenderViewHostImpl::CreateRenderView");
@@ -358,11 +356,17 @@ bool RenderViewHostImpl::CreateRenderView(
          proxy_route_id != MSG_ROUTING_NONE));
 
   RenderFrameHostImpl* main_rfh = nullptr;
+  RenderFrameProxyHost* main_rfph = nullptr;
   if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
     main_rfh = RenderFrameHostImpl::FromID(GetProcess()->GetID(),
                                            main_frame_routing_id_);
     DCHECK(main_rfh);
+  } else {
+    main_rfph =
+        RenderFrameProxyHost::FromID(GetProcess()->GetID(), proxy_route_id);
   }
+  const FrameTreeNode* const frame_tree_node =
+      main_rfh ? main_rfh->frame_tree_node() : main_rfph->frame_tree_node();
 
   GetWidget()->set_renderer_initialized(true);
 
@@ -391,12 +395,13 @@ bool RenderViewHostImpl::CreateRenderView(
     std::tie(params->frame_widget_host, params->frame_widget) =
         main_rfh->GetRenderWidgetHost()->BindNewFrameWidgetInterfaces();
   }
-  params->main_frame_frame_token = frame_token;
+  params->main_frame_frame_token =
+      main_rfh ? main_rfh->GetFrameToken() : main_rfph->GetFrameToken();
   params->session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
   params->opener_frame_token = opener_frame_token;
-  params->replicated_frame_state = replicated_frame_state;
+  params->replicated_frame_state = frame_tree_node->current_replication_state();
   params->proxy_routing_id = proxy_route_id;
   params->hidden = GetWidget()->delegate()->IsHidden();
   params->never_composited = delegate_->IsNeverComposited();
@@ -406,7 +411,7 @@ bool RenderViewHostImpl::CreateRenderView(
         main_rfh->frame_tree_node()->has_committed_real_load();
     DCHECK_EQ(params->main_frame_frame_token, main_rfh->GetFrameToken());
   }
-  params->devtools_main_frame_token = devtools_frame_token;
+  params->devtools_main_frame_token = frame_tree_node->devtools_frame_token();
   // GuestViews in the same StoragePartition need to find each other's frames.
   params->renderer_wide_named_frame_lookup = GetSiteInstance()->IsGuest();
   params->inside_portal = delegate_->IsPortal();

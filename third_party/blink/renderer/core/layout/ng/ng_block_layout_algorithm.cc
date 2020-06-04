@@ -59,10 +59,7 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
             container, container_style, *line_item, cursor);
-    return line_rect
-        .ConvertToLogical(container_style.GetWritingMode(),
-                          container_style.Direction(), container.Size(),
-                          cursor.Current().Size())
+    return container.ConvertToLogical(line_rect, cursor.Current().Size())
         .BlockEndOffset();
   }
 
@@ -80,10 +77,7 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
   PhysicalRect line_rect =
       last_line->ScrollableOverflow(container, container_style);
   line_rect.Move(last_line_offset);
-  return line_rect
-      .ConvertToLogical(container_style.GetWritingMode(),
-                        container_style.Direction(), container.Size(),
-                        last_line->Size())
+  return container.ConvertToLogical(line_rect, last_line->Size())
       .BlockEndOffset();
 }
 
@@ -108,10 +102,7 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
             container, container_style, *line_item, cursor);
-    return line_rect
-        .ConvertToLogical(container_style.GetWritingMode(),
-                          container_style.Direction(), container.Size(),
-                          cursor.Current().Size())
+    return container.ConvertToLogical(line_rect, cursor.Current().Size())
         .offset.block_offset;
   }
 
@@ -120,10 +111,7 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
       PhysicalRect line_rect =
           line->ScrollableOverflow(container, container_style);
       line_rect.Move(child_link.offset);
-      return line_rect
-          .ConvertToLogical(container_style.GetWritingMode(),
-                            container_style.Direction(), container.Size(),
-                            line->Size())
+      return container.ConvertToLogical(line_rect, line->Size())
           .offset.block_offset;
     }
   }

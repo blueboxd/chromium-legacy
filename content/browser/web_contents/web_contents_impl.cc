@@ -6557,10 +6557,7 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
 bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
     const base::Optional<base::UnguessableToken>& opener_frame_token,
-    int proxy_routing_id,
-    const base::UnguessableToken& frame_token,
-    const base::UnguessableToken& devtools_frame_token,
-    const FrameReplicationState& replicated_frame_state) {
+    int proxy_routing_id) {
   TRACE_EVENT0("browser,navigation",
                "WebContentsImpl::CreateRenderViewForRenderManager");
 
@@ -6568,8 +6565,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     CreateRenderWidgetHostViewForRenderManager(render_view_host);
 
   if (!static_cast<RenderViewHostImpl*>(render_view_host)
-           ->CreateRenderView(opener_frame_token, proxy_routing_id, frame_token,
-                              devtools_frame_token, replicated_frame_state,
+           ->CreateRenderView(opener_frame_token, proxy_routing_id,
                               created_with_opener_)) {
     return false;
   }

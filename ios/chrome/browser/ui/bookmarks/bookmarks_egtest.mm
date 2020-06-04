@@ -79,7 +79,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGrey verifyBookmarksWithTitle:bookmarkTitle expectedCount:1];
 
   // Verify the star is lit.
-  if (![ChromeEarlGrey isCompactWidth]) {
+  if (![ChromeEarlGrey isCompactWidth] &&
+      ![ChromeEarlGrey isChangeTabSwitcherPositionEnabled]) {
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityLabel(
                                      l10n_util::GetNSString(IDS_TOOLTIP_STAR))]
@@ -87,7 +88,9 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   }
 
   // Open the BookmarkEditor.
-  if ([ChromeEarlGrey isCompactWidth]) {
+
+  if ([ChromeEarlGrey isCompactWidth] ||
+      [ChromeEarlGrey isChangeTabSwitcherPositionEnabled]) {
     [ChromeEarlGreyUI openToolsMenu];
     [[[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_accessibilityID(
@@ -113,7 +116,9 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [BookmarkEarlGrey verifyBookmarksWithTitle:bookmarkTitle expectedCount:0];
 
   // Verify the the page is no longer bookmarked.
-  if ([ChromeEarlGrey isCompactWidth]) {
+
+  if ([ChromeEarlGrey isCompactWidth] ||
+      [ChromeEarlGrey isChangeTabSwitcherPositionEnabled]) {
     [ChromeEarlGreyUI openToolsMenu];
     [[[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_accessibilityID(
@@ -222,7 +227,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       performAction:grey_tap()];
 
   // Edit the bookmark.
-  if (![ChromeEarlGrey isCompactWidth]) {
+  if (![ChromeEarlGrey isCompactWidth] &&
+      ![ChromeEarlGrey isChangeTabSwitcherPositionEnabled]) {
     [[EarlGrey selectElementWithMatcher:StarButton()] performAction:grey_tap()];
   } else {
     [ChromeEarlGreyUI openToolsMenu];

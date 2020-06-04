@@ -4480,7 +4480,7 @@
             ],
             "experiments": [
                 {
-                    "name": "WithEnhancedExperiment_20200603",
+                    "name": "WithEnhancedExperiment_20200604",
                     "params": {
                         "DefaultInIncognito": "true"
                     },

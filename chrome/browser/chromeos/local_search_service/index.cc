@@ -16,72 +16,59 @@ namespace local_search_service {
 
 namespace {
 
-using Hits = std::vector<local_search_service::Range>;
+using Positions = std::vector<local_search_service::Position>;
+using TokenizedStringWithId =
+    std::pair<std::string, std::unique_ptr<TokenizedString>>;
 
-// |individual_tokenized| can be nullptr if there is no need to split
-// the input search tags by space.
-void TokenizeSearchTags(
-    const std::vector<base::string16>& search_tags,
-    std::vector<std::unique_ptr<TokenizedString>>* tokenized,
-    std::vector<std::unique_ptr<TokenizedString>>* individual_tokenized) {
+// TODO(jiameng): |search_tags| will be removed in the next cl.
+void TokenizeSearchTags(const std::vector<base::string16>& search_tags,
+                        const std::vector<Content>& contents,
+                        std::vector<TokenizedStringWithId>* tokenized) {
   DCHECK(tokenized);
 
-  bool has_multiple_words = false;
-  std::set<base::string16> unique_tags;
-  for (const auto& tag : search_tags) {
-    tokenized->push_back(std::make_unique<TokenizedString>(tag));
-    if (individual_tokenized) {
-      const std::vector<base::string16> words =
-          base::SplitString(tag, base::kWhitespaceASCIIAs16,
-                            base::WhitespaceHandling::TRIM_WHITESPACE,
-                            base::SplitResult::SPLIT_WANT_NONEMPTY);
-      std::copy(words.begin(), words.end(),
-                std::inserter(unique_tags, unique_tags.end()));
-      if (words.size() > 1) {
-        has_multiple_words = true;
-      }
+  // Only one of them may be non-empty.
+  DCHECK(search_tags.empty() || contents.empty());
+
+  if (!search_tags.empty()) {
+    const std::string empty_content_id;
+    for (const auto& tag : search_tags) {
+      tokenized->push_back(std::make_pair(
+          empty_content_id, std::make_unique<TokenizedString>(tag)));
     }
+    return;
   }
 
-  if (!has_multiple_words)
-    return;
-
-  DCHECK(individual_tokenized);
-  for (const auto& tag : unique_tags) {
-    individual_tokenized->push_back(std::make_unique<TokenizedString>(tag));
+  for (const auto& content : contents) {
+    tokenized->push_back(std::make_pair(
+        content.id, std::make_unique<TokenizedString>(content.content)));
   }
 }
 
 // Returns whether a given item with |search_tags| is relevant to |query| using
 // fuzzy string matching.
-bool IsItemRelevant(
-    const TokenizedString& query,
-    const std::vector<std::unique_ptr<TokenizedString>>& search_tags,
-    double relevance_threshold,
-    bool use_prefix_only,
-    bool use_weighted_ratio,
-    bool use_edit_distance,
-    double partial_match_penalty_rate,
-    double* relevance_score,
-    Hits* hits) {
+bool IsItemRelevant(const TokenizedString& query,
+                    const std::vector<TokenizedStringWithId>& search_tags,
+                    double relevance_threshold,
+                    bool use_prefix_only,
+                    bool use_edit_distance,
+                    double partial_match_penalty_rate,
+                    double* relevance_score,
+                    Positions* positions) {
   DCHECK(relevance_score);
-  DCHECK(hits);
+  DCHECK(positions);
 
   if (search_tags.empty())
     return false;
 
   for (const auto& tag : search_tags) {
     FuzzyTokenizedStringMatch match;
-    if (match.IsRelevant(query, *tag, relevance_threshold, use_prefix_only,
-                         use_weighted_ratio, use_edit_distance,
-                         partial_match_penalty_rate, 0.1)) {
+    if (match.IsRelevant(query, *(tag.second), relevance_threshold,
+                         use_prefix_only, true /* use_weighted_ratio */,
+                         use_edit_distance, partial_match_penalty_rate, 0.1)) {
       *relevance_score = match.relevance();
-      for (const auto& hit : match.hits()) {
-        local_search_service::Range range;
-        range.start = hit.start();
-        range.end = hit.end();
-        hits->push_back(range);
-      }
+      Position position;
+      position.content_id = tag.first;
+      positions->push_back(position);
       return true;
     }
   }
@@ -96,9 +83,20 @@ bool CompareResults(const local_search_service::Result& r1,
 
 }  // namespace
 
+local_search_service::Content::Content(const std::string& id,
+                                       const base::string16& content)
+    : id(id), content(content) {}
+local_search_service::Content::Content() = default;
+local_search_service::Content::Content(const Content& content) = default;
+local_search_service::Content::~Content() = default;
+
 local_search_service::Data::Data(const std::string& id,
                                  const std::vector<base::string16>& search_tags)
     : id(id), search_tags(search_tags) {}
+local_search_service::Data::Data(
+    const std::string& id,
+    const std::vector<local_search_service::Content>& contents)
+    : id(id), contents(contents) {}
 local_search_service::Data::Data() = default;
 local_search_service::Data::Data(const Data& data) = default;
 local_search_service::Data::~Data() = default;
@@ -120,12 +118,8 @@ void Index::AddOrUpdate(const std::vector<local_search_service::Data>& data) {
     DCHECK(!id.empty());
 
     // If a key already exists, it will overwrite earlier data.
-    data_[id] = {std::vector<std::unique_ptr<TokenizedString>>(),
-                 std::vector<std::unique_ptr<TokenizedString>>()};
-    auto& tokenized = data_[id];
-    TokenizeSearchTags(
-        item.search_tags, &tokenized.first,
-        search_params_.split_search_tags ? &tokenized.second : nullptr);
+    data_[id] = std::vector<TokenizedStringWithId>();
+    TokenizeSearchTags(item.search_tags, item.contents, &data_[id]);
   }
 }
 
@@ -166,78 +160,28 @@ void Index::SetSearchParams(
   search_params_ = search_params;
 }
 
-void Index::GetSearchTagsForTesting(
-    const std::string& id,
-    std::vector<base::string16>* search_tags,
-    std::vector<base::string16>* individual_search_tags) {
-  DCHECK(search_tags);
-  DCHECK(individual_search_tags);
-
-  search_tags->clear();
-  individual_search_tags->clear();
-
-  const auto& it = data_.find(id);
-  if (it != data_.end()) {
-    for (const auto& tag : it->second.first) {
-      search_tags->push_back(tag->text());
-    }
-    for (const auto& tag : it->second.second) {
-      individual_search_tags->push_back(tag->text());
-    }
-  }
-}
-
 SearchParams Index::GetSearchParamsForTesting() {
   return search_params_;
 }
 
-// For each data item, each of its search tag could be a single word
-// or multiple words. When we match a query with a search tag, we could match
-// the query with the full search tag, or with individual words in the search
-// tag.
-// 1. If the query itself is a single word, then we consider it a match if the
-// query matches with a word of the search tag. In this case, we use simple
-// fuzzy ratio and prefix matching (instead of weighted ratio) for better
-// accuracy and speeds. However, if the search tag is not split into words, then
-// we would need weighted ratio to discover the match. The accuracy may be
-// lower.
-// 2. If the query contains multiple words, then we will have to match it with
-// the full search tag because we do not split the query words.
-// TODO(jiameng): this is complex and multi-word query and search tags should
-// really be handled by TF-IDF based matching. We will soon move to TF-IDF
-// method.
 std::vector<local_search_service::Result> Index::GetSearchResults(
     const base::string16& query,
     uint32_t max_results) const {
-  const std::vector<base::string16> query_words =
-      base::SplitString(query, base::kWhitespaceASCIIAs16,
-                        base::WhitespaceHandling::TRIM_WHITESPACE,
-                        base::SplitResult::SPLIT_WANT_NONEMPTY);
-  const bool query_has_multiple_words = query_words.size() > 1;
-  const bool use_weighted_ratio =
-      query_has_multiple_words || !search_params_.split_search_tags;
-
   std::vector<local_search_service::Result> results;
   const TokenizedString tokenized_query(query);
 
   for (const auto& item : data_) {
     double relevance_score = 0.0;
-    Hits hits;
-    // Use the full search tags if we use weighted ratio or if this data item
-    // has not split search tags.
-    const auto& used_search_tags =
-        (use_weighted_ratio || item.second.second.empty()) ? item.second.first
-                                                           : item.second.second;
-    if (IsItemRelevant(tokenized_query, used_search_tags,
-                       search_params_.relevance_threshold,
-                       search_params_.use_prefix_only, use_weighted_ratio,
-                       search_params_.use_edit_distance,
-                       search_params_.partial_match_penalty_rate,
-                       &relevance_score, &hits)) {
+    Positions positions;
+    if (IsItemRelevant(
+            tokenized_query, item.second, search_params_.relevance_threshold,
+            search_params_.use_prefix_only, search_params_.use_edit_distance,
+            search_params_.partial_match_penalty_rate, &relevance_score,
+            &positions)) {
       local_search_service::Result result;
       result.id = item.first;
       result.score = relevance_score;
-      result.hits = hits;
+      result.positions = positions;
       results.push_back(result);
     }
   }

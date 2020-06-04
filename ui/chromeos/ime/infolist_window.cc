@@ -218,8 +218,7 @@ void InfolistWindow::InitWidget() {
       wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
   // BubbleFrameView will be initialized through CreateBubble.
-  GetBubbleFrameView()->SetBubbleBorder(
-      std::unique_ptr<views::BubbleBorder>(new InfolistBorder()));
+  GetBubbleFrameView()->SetBubbleBorder(std::make_unique<InfolistBorder>());
   SizeToContents();
 }
 

@@ -24,6 +24,8 @@ const char* const kDefaultHandleStatus = kHandleStatusValid;
 
 constexpr int kMaxRetries = 3;
 
+const char* g_invalid_token_for_testing = nullptr;
+
 }  // namespace
 
 TokenHandleUtil::TokenHandleUtil() {}
@@ -90,6 +92,11 @@ void TokenHandleUtil::CheckToken(
     return;
   }
 
+  if (g_invalid_token_for_testing && g_invalid_token_for_testing == token) {
+    callback.Run(account_id, INVALID);
+    return;
+  }
+
   // Constructor starts validation.
   validation_delegates_[token] = std::make_unique<TokenDelegate>(
       weak_factory_.GetWeakPtr(), account_id, token,
@@ -102,6 +109,11 @@ void TokenHandleUtil::StoreTokenHandle(const AccountId& account_id,
   user_manager::known_user::SetStringPref(account_id, kTokenHandlePref, handle);
   user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
                                           kHandleStatusValid);
+}
+
+// static
+void TokenHandleUtil::SetInvalidTokenForTesting(const char* token) {
+  g_invalid_token_for_testing = token;
 }
 
 void TokenHandleUtil::OnValidationComplete(const std::string& token) {

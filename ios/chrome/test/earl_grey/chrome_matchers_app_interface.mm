@@ -51,6 +51,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -340,13 +341,9 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       grey_sufficientlyVisible(), nil);
 }
 
-+ (id<GREYMatcher>)tabletTabSwitcherOpenButton {
-  return [ChromeMatchersAppInterface
-      buttonWithAccessibilityLabelID:(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER)];
-}
-
 + (id<GREYMatcher>)showTabsButton {
-  if (IsIPadIdiom()) {
+  if (IsIPadIdiom() &&
+      !base::FeatureList::IsEnabled(kChangeTabSwitcherPosition)) {
     return grey_accessibilityID(@"Enter Tab Switcher");
   }
   return grey_allOf(grey_accessibilityID(kToolbarStackButtonIdentifier),
@@ -713,15 +710,6 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 + (id<GREYMatcher>)openInButton {
   return [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:IDS_IOS_OPEN_IN];
-}
-
-+ (id<GREYMatcher>)tabGridOpenButton {
-  if (IsRegularXRegularSizeClass()) {
-    return [self
-        buttonWithAccessibilityLabelID:IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER];
-  } else {
-    return [self buttonWithAccessibilityLabelID:IDS_IOS_TOOLBAR_SHOW_TABS];
-  }
 }
 
 + (id<GREYMatcher>)tabGridCellAtIndex:(unsigned int)index {

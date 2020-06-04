@@ -26,8 +26,8 @@
 #include "build/chromecast_buildflags.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
@@ -276,10 +276,8 @@ NetworkService::NetworkService(
 
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly, like in most unit tests.
-  if (registry_) {
-    mojo::core::SetDefaultProcessErrorCallback(
-        base::BindRepeating(&HandleBadMessage));
-  }
+  if (registry_)
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(&HandleBadMessage));
 
   if (receiver.is_valid())
     Bind(std::move(receiver));
@@ -462,7 +460,9 @@ void NetworkService::StartNetLog(base::File file,
                                  net::NetLogCaptureMode capture_mode,
                                  base::Value client_constants) {
   DCHECK(client_constants.is_dict());
-  std::unique_ptr<base::DictionaryValue> constants = net::GetNetConstants();
+  std::unique_ptr<base::DictionaryValue> constants =
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(net::GetNetConstants()));
   constants->MergeDictionary(&client_constants);
 
   file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(

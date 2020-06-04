@@ -4,9 +4,12 @@
 
 #include "base/allocator/partition_allocator/partition_bucket.h"
 
+#include "base/allocator/partition_allocator/address_pool_manager.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
@@ -18,6 +21,21 @@ namespace base {
 namespace internal {
 
 namespace {
+
+char* CommitPages(internal::pool_handle pool, size_t map_size) {
+#if defined(ARCH_CPU_64_BITS)
+  char* ptr = reinterpret_cast<char*>(
+      internal::AddressPoolManager::GetInstance()->Alloc(pool, map_size));
+  if (UNLIKELY(!ptr))
+    return nullptr;
+  DCHECK(!(map_size & kSystemPageOffsetMask));
+  SetSystemPagesAccess(ptr, map_size, PageReadWrite);
+  return ptr;
+#else
+  NOTREACHED();
+  return nullptr;
+#endif
+}
 
 template <bool thread_safe>
 ALWAYS_INLINE PartitionPage<thread_safe>* PartitionDirectMap(
@@ -41,9 +59,14 @@ ALWAYS_INLINE PartitionPage<thread_safe>* PartitionDirectMap(
   map_size += kPageAllocationGranularityOffsetMask;
   map_size &= kPageAllocationGranularityBaseMask;
 
-  char* ptr = reinterpret_cast<char*>(AllocPages(nullptr, map_size,
-                                                 kSuperPageSize, PageReadWrite,
-                                                 PageTag::kPartitionAlloc));
+  char* ptr = nullptr;
+  if (IsPartitionAllocGigaCageEnabled()) {
+    ptr = CommitPages(GetDirectMapPool(), map_size);
+  } else {
+    ptr = reinterpret_cast<char*>(AllocPages(nullptr, map_size, kSuperPageSize,
+                                             PageReadWrite,
+                                             PageTag::kPartitionAlloc));
+  }
   if (UNLIKELY(!ptr))
     return nullptr;
 
@@ -229,9 +252,14 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   // page table bloat and not fragmenting address spaces in 32 bit
   // architectures.
   char* requested_address = root->next_super_page;
-  char* super_page = reinterpret_cast<char*>(
-      AllocPages(requested_address, kSuperPageSize, kSuperPageSize,
-                 PageReadWrite, PageTag::kPartitionAlloc));
+  char* super_page = nullptr;
+  if (IsPartitionAllocGigaCageEnabled()) {
+    super_page = CommitPages(GetNormalBucketPool(), kSuperPageSize);
+  } else {
+    super_page = reinterpret_cast<char*>(
+        AllocPages(requested_address, kSuperPageSize, kSuperPageSize,
+                   PageReadWrite, PageTag::kPartitionAlloc));
+  }
   if (UNLIKELY(!super_page))
     return nullptr;
 
@@ -294,7 +322,7 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
 
   PartitionSuperPageExtentEntry<thread_safe>* current_extent =
       root->current_extent;
-  bool is_new_extent = (super_page != requested_address);
+  const bool is_new_extent = super_page != requested_address;
   if (UNLIKELY(is_new_extent)) {
     if (UNLIKELY(!current_extent)) {
       DCHECK(!root->first_extent);

@@ -167,6 +167,16 @@ class DriveIntegrationService : public KeyedService,
 
   void RestartDrive();
 
+  // Sets the arguments to be parsed by DriveFS on startup. Should only be
+  // called in developer mode.
+  void SetStartupArguments(std::string arguments,
+                           base::OnceCallback<void(bool)> callback);
+
+  // Gets the currently set arguments parsed by DriveFS on startup. Should only
+  // be called in developer mode.
+  void GetStartupArguments(
+      base::OnceCallback<void(const std::string&)> callback);
+
  private:
   enum State {
     NOT_INITIALIZED,

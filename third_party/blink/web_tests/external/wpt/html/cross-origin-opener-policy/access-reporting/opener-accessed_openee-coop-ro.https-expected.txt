@@ -1,0 +1,21 @@
+This is a testharness.js-based test.
+FAIL Call blur assert_not_equals: got disallowed value "timeout"
+FAIL Call foo assert_not_equals: got disallowed value "timeout"
+FAIL Call location assert_not_equals: got disallowed value "timeout"
+FAIL Call opener assert_not_equals: got disallowed value "timeout"
+FAIL Call postMessage assert_not_equals: got disallowed value "timeout"
+FAIL Call window assert_not_equals: got disallowed value "timeout"
+FAIL Read blur assert_not_equals: got disallowed value "timeout"
+FAIL Read foo assert_not_equals: got disallowed value "timeout"
+FAIL Read location assert_not_equals: got disallowed value "timeout"
+FAIL Read opener assert_not_equals: got disallowed value "timeout"
+FAIL Read postMessage assert_not_equals: got disallowed value "timeout"
+FAIL Read window assert_not_equals: got disallowed value "timeout"
+FAIL Write blur assert_not_equals: got disallowed value "timeout"
+FAIL Write foo assert_not_equals: got disallowed value "timeout"
+FAIL Write location assert_not_equals: got disallowed value "timeout"
+FAIL Write opener assert_not_equals: got disallowed value "timeout"
+FAIL Write postMessage assert_not_equals: got disallowed value "timeout"
+FAIL Write window assert_not_equals: got disallowed value "timeout"
+Harness: the test ran to completion.
+

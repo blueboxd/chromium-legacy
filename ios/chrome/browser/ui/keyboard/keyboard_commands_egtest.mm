@@ -113,7 +113,8 @@ using chrome_test_util::SettingsDoneButton;
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/pony.html")];
 
   // Bookmark page
-  if ([ChromeEarlGrey isIPadIdiom]) {
+  if ([ChromeEarlGrey isIPadIdiom] &&
+      ![ChromeEarlGrey isChangeTabSwitcherPositionEnabled]) {
     id<GREYMatcher> bookmarkMatcher =
         chrome_test_util::ButtonWithAccessibilityLabelId(IDS_TOOLTIP_STAR);
     [[EarlGrey selectElementWithMatcher:bookmarkMatcher]

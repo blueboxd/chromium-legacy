@@ -95,6 +95,7 @@ class TEST_TYPES(object):
 # This list will be removed or replace by an opt-out list.
 LIGHTWEIGHT_TESTERS = [
     'android-pixel2-perf', 'android-pixel2_webview-perf', 'linux-perf',
+    'mac-10_12_laptop_low_end-perf', 'mac-10_13_laptop_high_end-perf',
     'win-10-perf', 'win-10_laptop_low_end-perf', 'android-pixel2-perf-fyi',
     'linux-perf-fyi', 'win-10_laptop_low_end-perf_HP-Candidate'
 ]
@@ -627,6 +628,14 @@ BUILDERS = {
         'perf_processor': True,
     },
     'win-10_laptop_low_end-processor-perf': {
+        'platform': 'linux',
+        'perf_processor': True,
+    },
+    'mac-10_12_laptop_low_end-processor-perf': {
+        'platform': 'linux',
+        'perf_processor': True,
+    },
+    'mac-10_13_laptop_high_end-processor-perf': {
         'platform': 'linux',
         'perf_processor': True,
     },

@@ -181,7 +181,9 @@ void NetLogExporter::StartWithScratchDir(
 
   state_ = STATE_RUNNING;
 
-  std::unique_ptr<base::DictionaryValue> constants = net::GetNetConstants();
+  std::unique_ptr<base::DictionaryValue> constants =
+      base::DictionaryValue::From(
+          base::Value::ToUniquePtrValue(net::GetNetConstants()));
 
   if (extra_constants)
     constants->MergeDictionary(extra_constants);

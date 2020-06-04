@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -20,8 +21,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
@@ -438,13 +439,12 @@ class BadMessageTestHelper {
  public:
   BadMessageTestHelper()
       : dummy_message_(0, 0, 0, 0, nullptr), context_(&dummy_message_) {
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &BadMessageTestHelper::OnBadMessage, base::Unretained(this)));
   }
 
   ~BadMessageTestHelper() {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   const std::vector<std::string>& bad_message_reports() const {

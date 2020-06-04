@@ -13,6 +13,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
@@ -47,9 +48,9 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "crypto/sha2.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "net/base/cache_type.h"
 #include "net/base/features.h"
 #include "net/base/hash_value.h"
@@ -6460,15 +6461,14 @@ TEST_F(NetworkContextTest, DisableTrustTokens) {
 class NetworkContextExpectBadMessageTest : public NetworkContextTest {
  public:
   NetworkContextExpectBadMessageTest() {
-    mojo::core::SetDefaultProcessErrorCallback(
+    mojo::SetDefaultProcessErrorHandler(
         base::BindLambdaForTesting([&](const std::string&) {
           EXPECT_FALSE(got_bad_message_);
           got_bad_message_ = true;
         }));
   }
   ~NetworkContextExpectBadMessageTest() override {
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
  protected:

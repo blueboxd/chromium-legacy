@@ -26,8 +26,8 @@
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "components/services/storage/dom_storage/testing_legacy_session_storage_database.h"
-#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/system/functions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -65,15 +65,14 @@ class SessionStorageImplTest : public testing::Test {
   }
 
   void SetUp() override {
-    mojo::core::SetDefaultProcessErrorCallback(base::BindRepeating(
+    mojo::SetDefaultProcessErrorHandler(base::BindRepeating(
         &SessionStorageImplTest::OnBadMessage, base::Unretained(this)));
   }
 
   void TearDown() override {
     if (session_storage_)
       ShutDownSessionStorage();
-    mojo::core::SetDefaultProcessErrorCallback(
-        mojo::core::ProcessErrorCallback());
+    mojo::SetDefaultProcessErrorHandler(base::NullCallback());
   }
 
   void OnBadMessage(const std::string& reason) { bad_message_called_ = true; }

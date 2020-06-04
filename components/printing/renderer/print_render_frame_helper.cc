@@ -1962,8 +1962,7 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   std::unique_ptr<content::AXTreeSnapshotter> snapshotter;
   if (delegate_->ShouldGenerateTaggedPDF()) {
     snapshotter = render_frame()->CreateAXTreeSnapshotter();
-    snapshotter->Snapshot(ui::kAXModeComplete, 0,
-                          &metafile.accessibility_tree());
+    snapshotter->Snapshot(ui::AXMode::kPDF, 0, &metafile.accessibility_tree());
   }
 
   PrintHostMsg_DidPrintDocument_Params page_params;

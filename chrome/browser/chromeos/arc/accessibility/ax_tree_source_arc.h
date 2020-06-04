@@ -124,7 +124,13 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
       AccessibilityInfoDataWrapper* info_data) const;
 
   AccessibilityInfoDataWrapper* GetSelectedNodeInfoFromAdapterView(
-      mojom::AccessibilityEventData* event_data) const;
+      const mojom::AccessibilityEventData& event_data) const;
+
+  // Update android_focused_id_ from given AccessibilityEventData.
+  // Returns true if it is successfully updated to existing node.
+  // Returns false if we don't dispatch the processing event to chrome
+  // automation.
+  bool UpdateAndroidFocusedId(const mojom::AccessibilityEventData& event_data);
 
   void UpdateAXNameCache(AccessibilityInfoDataWrapper* focused_node,
                          const std::vector<std::string>& event_text);

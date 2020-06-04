@@ -156,14 +156,10 @@ class FrameDelivererFactory {
 };
 
 struct FakePhotoDeviceConfig {
-  FakePhotoDeviceConfig()
-      : should_fail_get_photo_capabilities(false),
-        should_fail_set_photo_options(false),
-        should_fail_take_photo(false) {}
-
-  bool should_fail_get_photo_capabilities;
-  bool should_fail_set_photo_options;
-  bool should_fail_take_photo;
+  bool pan_tilt_zoom_supported = true;
+  bool should_fail_get_photo_capabilities = false;
+  bool should_fail_set_photo_options = false;
+  bool should_fail_take_photo = false;
 };
 
 // Implements the photo functionality of a FakeVideoCaptureDevice

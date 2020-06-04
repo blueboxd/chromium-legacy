@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -76,6 +77,7 @@ public class GestureListenerManagerTest {
      * Assertions for GestureStateListener.onScrollOffsetOrExtentChanged.
      */
     @Test
+    @DisabledTest(message = "crbug.com/1091129")
     @LargeTest
     @Feature({"Browser"})
     public void testOnScrollOffsetOrExtentChanged() throws Throwable {

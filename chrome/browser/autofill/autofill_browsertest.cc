@@ -224,7 +224,8 @@ class AutofillTest : public InProcessBrowserTest {
 // Test that Autofill aggregates a minimum valid profile.
 // The minimum required address fields must be specified: First Name, Last Name,
 // Address Line 1, City, Zip Code, and State.
-IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfile) {
+// TODO(crbug.com/1090343): Flaky on all platforms.
+IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AggregatesMinValidProfile) {
   FormMap data;
   data["NAME_FIRST"] = "Bob";
   data["NAME_LAST"] = "Smith";

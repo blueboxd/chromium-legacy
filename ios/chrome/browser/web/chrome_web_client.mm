@@ -346,8 +346,5 @@ web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
 }
 
 bool ChromeWebClient::IsEmbedderBlockRestoreUrlEnabled() {
-  if (@available(iOS 13, *)) {
-    return base::FeatureList::IsEnabled(kEmbedderBlockRestoreUrl);
-  }
-  return false;
+  return ios::GetChromeBrowserProvider()->MightBlockUrlDuringRestore();
 }

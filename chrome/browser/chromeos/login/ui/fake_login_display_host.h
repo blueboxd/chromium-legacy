@@ -41,11 +41,8 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void StartSignInScreen() override;
   void OnPreferencesChanged() override;
   void PrewarmAuthentication() override;
-  void StartAppLaunch(const std::string& app_id,
-                      bool is_auto_launch) override;
   void StartDemoAppLaunch() override;
-  void StartArcKiosk(const AccountId& account_id) override;
-  void StartWebKiosk(const AccountId& account_id) override;
+  void StartKiosk(const KioskAppId& kiosk_app_id, bool is_auto_launch) override;
   void CompleteLogin(const chromeos::UserContext& user_context) override;
   void OnGaiaScreenReady() override;
   void SetDisplayEmail(const std::string& email) override;

@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/arc_kiosk_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "ui/base/ui_base_features.h"
 
 namespace chromeos {
@@ -135,42 +137,6 @@ void LoginDisplayHostCommon::PrewarmAuthentication() {
       &LoginDisplayHostCommon::OnAuthPrewarmDone, weak_factory_.GetWeakPtr()));
 }
 
-void LoginDisplayHostCommon::StartAppLaunch(const std::string& app_id,
-                                            bool is_auto_launch) {
-  VLOG(1) << "Login >> start app launch.";
-  SetStatusAreaVisible(false);
-
-  // Wait for the |CrosSettings| to become either trusted or permanently
-  // untrusted.
-  const CrosSettingsProvider::TrustedStatus status =
-      CrosSettings::Get()->PrepareTrustedValues(
-          base::BindOnce(&LoginDisplayHostCommon::StartAppLaunch,
-                         weak_factory_.GetWeakPtr(), app_id, is_auto_launch));
-  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
-    return;
-
-  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-    // If the |CrosSettings| are permanently untrusted, refuse to launch a
-    // single-app kiosk mode session.
-    LOG(ERROR) << "Login >> Refusing to launch single-app kiosk mode.";
-    SetStatusAreaVisible(true);
-    return;
-  }
-
-  if (system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation()) {
-    // If the device is disabled, bail out. A device disabled screen will be
-    // shown by the DeviceDisablingManager.
-    return;
-  }
-
-  OnStartAppLaunch();
-
-  app_launch_controller_ =
-      std::make_unique<AppLaunchController>(app_id, this, GetOobeUI());
-
-  app_launch_controller_->StartAppLaunch(is_auto_launch);
-}
-
 void LoginDisplayHostCommon::StartDemoAppLaunch() {
   VLOG(1) << "Login >> starting demo app.";
   SetStatusAreaVisible(false);
@@ -179,25 +145,18 @@ void LoginDisplayHostCommon::StartDemoAppLaunch() {
   demo_app_launcher_->StartDemoAppLaunch();
 }
 
-void LoginDisplayHostCommon::StartArcKiosk(const AccountId& account_id) {
-  VLOG(1) << "Login >> start ARC kiosk.";
-  SetStatusAreaVisible(false);
-  arc_kiosk_controller_ =
-      std::make_unique<ArcKioskController>(this, GetOobeUI());
-  arc_kiosk_controller_->StartArcKiosk(account_id);
-
-  OnStartAppLaunch();
-}
-
-void LoginDisplayHostCommon::StartWebKiosk(const AccountId& account_id) {
+void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
+                                        bool is_auto_launch) {
+  VLOG(1) << "Login >> start kiosk of type "
+          << static_cast<int>(kiosk_app_id.type);
   SetStatusAreaVisible(false);
 
   // Wait for the |CrosSettings| to become either trusted or permanently
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
-      CrosSettings::Get()->PrepareTrustedValues(
-          base::BindOnce(&LoginDisplayHostCommon::StartWebKiosk,
-                         weak_factory_.GetWeakPtr(), account_id));
+      CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
+          &LoginDisplayHostCommon::StartKiosk, weak_factory_.GetWeakPtr(),
+          kiosk_app_id, is_auto_launch));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -214,11 +173,43 @@ void LoginDisplayHostCommon::StartWebKiosk(const AccountId& account_id) {
     // shown by the DeviceDisablingManager.
     return;
   }
+
   OnStartAppLaunch();
 
-  web_kiosk_controller_ =
-      std::make_unique<WebKioskController>(this, GetOobeUI());
-  web_kiosk_controller_->StartWebKiosk(account_id);
+  int auto_launch_delay = -1;
+  if (is_auto_launch) {
+    if (!CrosSettings::Get()->GetInteger(
+            kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+            &auto_launch_delay)) {
+      auto_launch_delay = 0;
+    }
+    DCHECK_EQ(0, auto_launch_delay)
+        << "Kiosks do not support non-zero auto-login delays";
+  }
+
+  extensions::SetCurrentFeatureSessionType(
+      is_auto_launch && auto_launch_delay == 0
+          ? extensions::FeatureSessionType::AUTOLAUNCHED_KIOSK
+          : extensions::FeatureSessionType::KIOSK);
+
+  switch (kiosk_app_id.type) {
+    case KioskAppType::ARC_APP:
+      arc_kiosk_controller_ =
+          std::make_unique<ArcKioskController>(this, GetOobeUI());
+      arc_kiosk_controller_->StartArcKiosk(*kiosk_app_id.account_id);
+      break;
+    case KioskAppType::CHROME_APP:
+      app_launch_controller_ = std::make_unique<AppLaunchController>(
+          *kiosk_app_id.app_id, this, GetOobeUI());
+      app_launch_controller_->StartAppLaunch(is_auto_launch &&
+                                             auto_launch_delay == 0);
+      break;
+    case KioskAppType::WEB_APP:
+      web_kiosk_controller_ =
+          std::make_unique<WebKioskController>(this, GetOobeUI());
+      web_kiosk_controller_->StartWebKiosk(*kiosk_app_id.account_id);
+      break;
+  }
 }
 
 void LoginDisplayHostCommon::CompleteLogin(const UserContext& user_context) {

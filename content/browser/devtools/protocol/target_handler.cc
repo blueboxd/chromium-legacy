@@ -978,37 +978,43 @@ void TargetHandler::DevToolsAgentHostCrashed(DevToolsAgentHost* host,
 
 // ----------------- More protocol methods -------------------
 
-protocol::Response TargetHandler::CreateBrowserContext(
-    Maybe<bool> dispose_on_detach,
-    Maybe<std::string> proxy_server,
-    Maybe<std::string> proxy_bypass_list,
-    std::string* out_context_id) {
-  if (access_mode_ != AccessMode::kBrowser)
-    return Response::ServerError(kNotAllowedError);
+void TargetHandler::CreateBrowserContext(
+    Maybe<bool> in_disposeOnDetach,
+    Maybe<String> in_proxyServer,
+    Maybe<String> in_proxyBypassList,
+    std::unique_ptr<CreateBrowserContextCallback> callback) {
+  if (access_mode_ != AccessMode::kBrowser) {
+    callback->sendFailure(Response::ServerError(kNotAllowedError));
+    return;
+  }
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
-  if (!delegate)
-    return Response::ServerError(
-        "Browser context management is not supported.");
+  if (!delegate) {
+    callback->sendFailure(
+        Response::ServerError("Browser context management is not supported."));
+    return;
+  }
   BrowserContext* context = delegate->CreateBrowserContext();
-  if (!context)
-    return Response::ServerError("Failed to create browser context.");
+  if (!context) {
+    callback->sendFailure(
+        Response::ServerError("Failed to create browser context."));
+    return;
+  }
 
-  if (proxy_server.isJust()) {
+  if (in_proxyServer.isJust()) {
     net::ProxyConfig proxy_config;
-    proxy_config.proxy_rules().ParseFromString(proxy_server.fromJust());
-    if (proxy_bypass_list.isJust()) {
+    proxy_config.proxy_rules().ParseFromString(in_proxyServer.fromJust());
+    if (in_proxyBypassList.isJust()) {
       proxy_config.proxy_rules().bypass_rules.ParseFromString(
-          proxy_bypass_list.fromJust());
+          in_proxyBypassList.fromJust());
     }
     contexts_with_overridden_proxy_[context->UniqueId()] =
         std::move(proxy_config);
   }
 
-  *out_context_id = context->UniqueId();
-  if (dispose_on_detach.fromMaybe(false))
-    dispose_on_detach_context_ids_.insert(*out_context_id);
-  return Response::Success();
+  if (in_disposeOnDetach.fromMaybe(false))
+    dispose_on_detach_context_ids_.insert(context->UniqueId());
+  callback->sendSuccess(context->UniqueId());
 }
 
 protocol::Response TargetHandler::GetBrowserContexts(

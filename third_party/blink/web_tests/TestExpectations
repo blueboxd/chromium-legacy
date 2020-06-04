@@ -1455,7 +1455,37 @@ crbug.com/1053725 [ Mac ] fast/forms/textarea/textarea-metrics.html [ Skip ]
 # ====== Form Controls Refresh failures until here ======
 
 
+# ====== CORS virtual test failures from here ======
+# Expectations for virtual/cors/.
+# Failures for linux-blink-cors-rel fyi bot should not be marked here, but be in
+# FlagExpectations/disable-features=OutOfBlinkCors instead.
 
+# Following tests failed in the initial run. Confirmed that this list is a
+# subset of disabled tests in FlagExpectations/disable-features=OutOfBlinkCors.
+crbug.com/1091139 virtual/cors/external/wpt/fetch/api/basic/keepalive.html [ Skip ]
+crbug.com/1091139 virtual/cors/external/wpt/fetch/api/basic/request-upload.any.html [ Skip ]
+crbug.com/1091139 virtual/cors/external/wpt/fetch/api/basic/request-upload.any.worker.html [ Skip ]
+crbug.com/1091139 virtual/cors/external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
+crbug.com/1091139 virtual/cors/external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
+crbug.com/1091139 virtual/cors/external/wpt/resource-timing/redirects.sub.html [ Skip ]
+crbug.com/1091139 virtual/cors/external/wpt/resource-timing/resource_connection_reuse_mixed_content_redirect.html [ Skip ]
+crbug.com/1091139 virtual/cors/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/fetch/serviceworker/fetch_upload-base-https-other-https.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/fetch/serviceworker/fetch_upload.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/fetch/window/fetch_upload-base-https-other-https.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/fetch/window/fetch_upload.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/fetch/workers/fetch_upload-base-https-other-https.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/fetch/workers/fetch_upload.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/misc/resource-timing-sizes-redirect-worker.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/misc/resource-timing-sizes-redirect.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Skip ]
+crbug.com/1091139 virtual/cors/http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Skip ]
+
+# Add other failures after this line with some explanations.
+
+# ====== CORS virtual test failures until here ======
 
 
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-hover-focused-unselected.html [ Skip ]
@@ -5918,7 +5948,6 @@ crbug.com/1011811 http/tests/devtools/persistence/automapping-sourcemap.js [ Pas
 crbug.com/1088441 [ Mac ] http/tests/loading/bad-server-subframe.html [ Pass Failure ]
 crbug.com/1090822 [ Mac10.10 ] virtual/cascade/fast/forms/month/month-appearance-basic.html [ Pass Failure ]
 crbug.com/1083293 [ Linux ] media/video-aspect-ratio.html [ Pass Failure ]
-crbug.com/1027434 [ Mac10.13 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
 
 # Sheriff 2020-06-04
 crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Pass Failure Timeout ]

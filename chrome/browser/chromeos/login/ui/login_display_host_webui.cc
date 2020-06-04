@@ -1102,10 +1102,13 @@ void ShowLoginWizard(OobeScreenId first_screen) {
     // Manages its own lifetime. See ShutdownDisplayHost().
     auto* display_host = new LoginDisplayHostWebUI();
     if (!auto_launch_app_id.empty()) {
-      display_host->StartAppLaunch(auto_launch_app_id, auto_launch);
+      display_host->StartKiosk(KioskAppId::ForChromeApp(auto_launch_app_id),
+                               auto_launch);
     } else {
-      display_host->StartWebKiosk(
-          WebKioskAppManager::Get()->GetAutoLaunchAccountId());
+      display_host->StartKiosk(
+          KioskAppId::ForWebApp(
+              WebKioskAppManager::Get()->GetAutoLaunchAccountId()),
+          auto_launch);
     }
     return;
   }

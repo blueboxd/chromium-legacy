@@ -42,11 +42,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void StartUserAdding(base::OnceClosure completion_callback) final;
   void StartSignInScreen() final;
   void PrewarmAuthentication() final;
-  void StartAppLaunch(const std::string& app_id,
-                      bool is_auto_launch) final;
   void StartDemoAppLaunch() final;
-  void StartArcKiosk(const AccountId& account_id) final;
-  void StartWebKiosk(const AccountId& account_id) final;
+  void StartKiosk(const KioskAppId& kiosk_app_id, bool is_auto_launch) final;
   void CompleteLogin(const UserContext& user_context) final;
   void OnGaiaScreenReady() final;
   void SetDisplayEmail(const std::string& email) final;

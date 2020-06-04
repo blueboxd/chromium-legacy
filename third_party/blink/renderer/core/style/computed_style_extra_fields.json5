@@ -190,9 +190,10 @@
       default_value: "false",
       custom_compare: true,
     },
-    // Explicitly inherits a non-inherited property
+    // Set on parent style when a child explicitly inherits a
+    // non-inherited property
     {
-      name: "HasExplicitlyInheritedProperties",
+      name: "ChildHasExplicitInheritance",
       field_template: "monotonic_flag",
       default_value: "false",
       custom_copy: true,

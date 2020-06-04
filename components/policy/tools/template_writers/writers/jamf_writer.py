@@ -14,7 +14,7 @@ def GetWriter(config):
   See the constructor of TemplateWriter for description of
   arguments.
   '''
-  return JamfWriter(['mac'], config)
+  return JamfWriter(['mac', 'ios'], config)
 
 
 class JamfWriter(template_writer.TemplateWriter):

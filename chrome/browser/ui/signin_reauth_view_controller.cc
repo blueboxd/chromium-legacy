@@ -145,6 +145,11 @@ void SigninReauthViewController::OnGaiaReauthPageComplete(
   OnStateChanged();
 }
 
+void SigninReauthViewController::SetObserverForTesting(
+    Observer* test_observer) {
+  test_observer_ = test_observer;
+}
+
 void SigninReauthViewController::CompleteReauth(signin::ReauthResult result) {
   if (dialog_delegate_) {
     dialog_delegate_observer_.Remove(dialog_delegate_);
@@ -204,6 +209,9 @@ void SigninReauthViewController::ShowGaiaReauthPage() {
     // This corresponds to a SAML account.
     ShowGaiaReauthPageInNewTab();
   }
+
+  if (test_observer_)
+    test_observer_->OnGaiaReauthPageShown();
 }
 
 void SigninReauthViewController::ShowGaiaReauthPageInDialog() {

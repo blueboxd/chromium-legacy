@@ -14313,11 +14313,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   std::string double_tap_actions_json =
       base::StringPrintf(actions_template.c_str(), tap_position.x(),
                          tap_position.y(), tap_position.x(), tap_position.y());
-  base::JSONReader json_reader;
-  base::Optional<base::Value> params =
-      json_reader.ReadToValue(double_tap_actions_json);
-  ASSERT_TRUE(params.has_value()) << json_reader.GetErrorMessage();
-  ActionsParser actions_parser(std::move(params.value()));
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(double_tap_actions_json);
+  ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
+  ActionsParser actions_parser(std::move(*parsed_json.value));
 
   ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
   auto synthetic_gesture_doubletap =
@@ -15035,11 +15034,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       actions_template.c_str(), scroll_start_location_in_screen.x(),
       scroll_start_location_in_screen.y(), scroll_end_location_in_screen.x(),
       scroll_end_location_in_screen.y());
-  base::JSONReader json_reader;
-  base::Optional<base::Value> touch_params =
-      json_reader.ReadToValue(touch_move_sequence_json);
-  ASSERT_TRUE(touch_params.has_value()) << json_reader.GetErrorMessage();
-  ActionsParser actions_parser(std::move(touch_params.value()));
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(touch_move_sequence_json);
+  ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
+  ActionsParser actions_parser(std::move(*parsed_json.value));
 
   ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
   auto synthetic_scroll_gesture =

@@ -6,18 +6,18 @@
 // #import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
 // #import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {eventToPromise} from '../test_util.m.js';
-// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-toggle', function() {
-  /** @type {!CrToggleElement} */
   let toggle;
 
   setup(function() {
-    document.body.innerHTML = '';
-    toggle =
-        /** @type {!CrToggleElement} */ (document.createElement('cr-toggle'));
-    document.body.appendChild(toggle);
+    PolymerTest.clearBody();
+    document.body.innerHTML = `
+      <cr-toggle id="toggle"></cr-toggle>
+    `;
+
+    toggle = document.getElementById('toggle');
     assertNotChecked();
   });
 
@@ -26,8 +26,7 @@ suite('cr-toggle', function() {
     assertTrue(toggle.hasAttribute('checked'));
     assertEquals('true', toggle.getAttribute('aria-pressed'));
     // Asserting that the toggle button has actually moved.
-    assertTrue(
-        getComputedStyle(toggle.$$('#knob')).transform.includes('matrix'));
+    assertTrue(getComputedStyle(toggle.$.knob).transform.includes('matrix'));
   }
 
   function assertNotChecked() {
@@ -35,7 +34,7 @@ suite('cr-toggle', function() {
     assertEquals(null, toggle.getAttribute('checked'));
     assertEquals('false', toggle.getAttribute('aria-pressed'));
     // Asserting that the toggle button has not moved.
-    assertEquals('none', getComputedStyle(toggle.$$('#knob')).transform);
+    assertEquals('none', getComputedStyle(toggle.$.knob).transform);
   }
 
   function assertDisabled() {

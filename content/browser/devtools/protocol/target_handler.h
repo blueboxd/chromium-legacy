@@ -88,10 +88,11 @@ class TargetHandler : public DevToolsDomainHandler,
                        bool* out_success) override;
   Response ExposeDevToolsProtocol(const std::string& target_id,
                                   Maybe<std::string> binding_name) override;
-  Response CreateBrowserContext(Maybe<bool> dispose_on_detach,
-                                Maybe<std::string> proxy_server,
-                                Maybe<std::string> proxy_bypass_list,
-                                std::string* out_context_id) override;
+  void CreateBrowserContext(
+      Maybe<bool> in_disposeOnDetach,
+      Maybe<String> in_proxyServer,
+      Maybe<String> in_proxyBypassList,
+      std::unique_ptr<CreateBrowserContextCallback> callback) override;
   void DisposeBrowserContext(
       const std::string& context_id,
       std::unique_ptr<DisposeBrowserContextCallback> callback) override;

@@ -363,16 +363,10 @@ js_type_check("closure_compile_local") {
                   ]
   deps = [
     ":chai_assert",
-    ":mock_timer.m",
     ":test_browser_proxy.m",
     ":test_plural_string_proxy",
     ":test_util.m",
   ]
-}
-
-js_library("mock_timer.m") {
-  sources = [ "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js" ]
-  extra_deps = [ ":modulize_local" ]
 }
 
 js_library("test_util.m") {

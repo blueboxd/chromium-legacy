@@ -468,6 +468,7 @@ public class SiteSettingsTest {
      * Blocks specific sites from setting cookies and ensures that no cookies can be set.
      */
     @Test
+    @DisabledTest(message = "crbug.com/1090274")
     @SmallTest
     @Feature({"Preferences"})
     // Todo(eokoyomon) figure out how to set and test third party cookie setting in this test

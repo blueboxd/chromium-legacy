@@ -288,7 +288,7 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
       old_style.JustifyItems() != new_style.JustifyItems())
     return Difference::kInherited;
   bool non_inherited_equal = old_style.NonInheritedEqual(new_style);
-  if (!non_inherited_equal && old_style.HasExplicitlyInheritedProperties()) {
+  if (!non_inherited_equal && old_style.ChildHasExplicitInheritance()) {
     return Difference::kInherited;
   }
   bool variables_independent = RuntimeEnabledFeatures::CSSCascadeEnabled() &&
@@ -2446,8 +2446,8 @@ void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
 }
 
 void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
-  if (other.HasExplicitlyInheritedProperties())
-    SetHasExplicitlyInheritedProperties();
+  if (other.ChildHasExplicitInheritance())
+    SetChildHasExplicitInheritance();
 }
 
 bool ComputedStyle::ShadowListHasCurrentColor(const ShadowList* shadow_list) {

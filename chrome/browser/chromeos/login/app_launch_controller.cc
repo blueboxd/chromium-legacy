@@ -23,6 +23,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -40,7 +41,6 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/common/features/feature_session_type.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/ui_base_features.h"
 
@@ -158,10 +158,10 @@ AppLaunchController::~AppLaunchController() {
     app_launch_splash_screen_view_->SetDelegate(nullptr);
 }
 
-void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
+void AppLaunchController::StartAppLaunch(bool auto_launch) {
   SYSLOG(INFO) << "Starting kiosk mode...";
 
-  RecordKioskLaunchUMA(is_auto_launch);
+  RecordKioskLaunchUMA(auto_launch);
 
   host_->GetLoginDisplay()->SetUIEnabled(true);
 
@@ -175,28 +175,12 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   CHECK(KioskAppManager::Get());
   CHECK(KioskAppManager::Get()->GetApp(app_id_, &app));
 
-  int auto_launch_delay = -1;
-  if (is_auto_launch) {
-    if (!CrosSettings::Get()->GetInteger(
-            kAccountsPrefDeviceLocalAccountAutoLoginDelay,
-            &auto_launch_delay)) {
-      auto_launch_delay = 0;
-    }
-    DCHECK_EQ(0, auto_launch_delay)
-        << "Kiosks do not support non-zero auto-login delays";
-
-    // If we are launching a kiosk app with zero delay, mark it appropriately.
-    if (auto_launch_delay == 0)
-      KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(app_id_);
+  if (auto_launch) {
+    KioskAppManager::Get()->SetAppWasAutoLaunchedWithZeroDelay(app_id_);
   }
 
-  extensions::SetCurrentFeatureSessionType(
-      is_auto_launch && auto_launch_delay == 0
-          ? extensions::FeatureSessionType::AUTOLAUNCHED_KIOSK
-          : extensions::FeatureSessionType::KIOSK);
-
   kiosk_profile_loader_.reset(new KioskProfileLoader(
-      app.account_id, KioskAppManager::AppType::CHROME_APP, false, this));
+      app.account_id, KioskAppType::CHROME_APP, false, this));
   kiosk_profile_loader_->Start();
 }
 

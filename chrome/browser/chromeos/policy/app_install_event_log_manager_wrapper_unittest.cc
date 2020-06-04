@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
@@ -67,7 +67,7 @@ class AppInstallEventLogManagerWrapperTest : public testing::Test {
   void SetUp() override { app_list_.AppendString(kPackageName); }
 
   void PopulateLogFileAndPrefs() {
-    AppInstallEventLog log(log_file_path_);
+    ArcAppInstallEventLog log(log_file_path_);
     em::AppInstallReportLogEvent event;
     event.set_timestamp(0);
     event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);

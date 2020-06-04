@@ -352,7 +352,7 @@ TEST_F(MatchedPropertiesCacheTest, ExplicitlyInheritedCacheable) {
 
   auto style = CreateStyle();
   auto parent = CreateStyle();
-  parent->SetHasExplicitlyInheritedProperties();
+  parent->SetChildHasExplicitInheritance();
 
   StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
                            parent.get());
@@ -371,7 +371,7 @@ TEST_F(MatchedPropertiesCacheTest, NotCacheableWithIncomparableDependency) {
 
   auto style = CreateStyle();
   auto parent = CreateStyle();
-  parent->SetHasExplicitlyInheritedProperties();
+  parent->SetChildHasExplicitInheritance();
 
   StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
                            parent.get());
@@ -461,7 +461,7 @@ TEST_F(MatchedPropertiesCacheTest,
 
   auto style = CreateStyle();
   auto parent = CreateStyle();
-  parent->SetHasExplicitlyInheritedProperties();
+  parent->SetChildHasExplicitInheritance();
 
   StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
                            parent.get());

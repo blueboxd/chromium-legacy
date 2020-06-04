@@ -74,6 +74,7 @@ const char* const kKnownSettings[] = {
     kCastReceiverName,
     kDeviceAttestationEnabled,
     kDeviceAutoUpdateTimeRestrictions,
+    kDeviceCrostiniArcAdbSideloadingAllowed,
     kDeviceDisabled,
     kDeviceDisabledMessage,
     kDeviceDisplayResolution,
@@ -930,6 +931,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
   new_values_cache->SetBoolean(kDevicePowerwashAllowed, is_powerwash_allowed);
+
+  if (policy.has_device_crostini_arc_adb_sideloading_allowed()) {
+    const em::DeviceCrostiniArcAdbSideloadingAllowedProto& container(
+        policy.device_crostini_arc_adb_sideloading_allowed());
+    if (container.has_mode()) {
+      new_values_cache->SetValue(kDeviceCrostiniArcAdbSideloadingAllowed,
+                                 base::Value(container.mode()));
+    }
+  }
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,

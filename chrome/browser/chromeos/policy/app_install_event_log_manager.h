@@ -30,12 +30,12 @@ class AppInstallReportRequest;
 
 namespace policy {
 
-class AppInstallEventLog;
+class ArcAppInstallEventLog;
 
 // Ties together collection, storage and upload of app push-install event logs.
-// Owns an |AppInstallEventLog| for log storage and an |AppInstallEventLogger|
-// for log collection. The |AppInstallEventUploader| is passed to the
-// constructor and must outlive |this|.
+// Owns an |ArcAppInstallEventLog| for log storage and an
+// |AppInstallEventLogger| for log collection. The |AppInstallEventUploader| is
+// passed to the constructor and must outlive |this|.
 //
 // Newly added log entries are held in memory first and stored to disk no more
 // than five seconds later. The log is also written to disk every time it has
@@ -148,7 +148,7 @@ class AppInstallEventLogManager : public AppInstallEventLogger::Delegate,
     LogSize GetSize() const;
 
     // The actual log store.
-    std::unique_ptr<AppInstallEventLog> log_;
+    std::unique_ptr<ArcAppInstallEventLog> log_;
 
     // Ensures that methods are not called from the wrong thread.
     SEQUENCE_CHECKER(sequence_checker_);

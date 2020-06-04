@@ -80,6 +80,20 @@ std::unique_ptr<net::test_server::HttpResponse> HandleReauthURL(
   return nullptr;
 }
 
+class ReauthTestObserver : SigninReauthViewController::Observer {
+ public:
+  explicit ReauthTestObserver(SigninReauthViewController* controller) {
+    controller->SetObserverForTesting(this);
+  }
+
+  void WaitUntilGaiaReauthPageIsShown() { run_loop_.Run(); }
+
+  void OnGaiaReauthPageShown() override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
 // Browser tests for SigninReauthViewController.
@@ -102,6 +116,7 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
+    https_server()->ServeFilesFromSourceDirectory("chrome/test/data");
     https_server()->RegisterRequestHandler(
         base::BindRepeating(&HandleReauthURL, base_url()));
     reauth_challenge_response_ =
@@ -237,4 +252,37 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
       browser(), kReauthDialogTimeout));
   RedirectGaiaChallengeTo(https_server()->GetURL(kReauthDonePath));
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kSuccess);
+}
+
+// Tests that links from the Gaia page are opened in a new tab.
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       OpenLinksInNewTab) {
+  content::WebContents* original_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  const GURL& target_url = https_server()->GetURL("/link_with_target.html");
+  content::TestNavigationObserver target_content_observer(target_url);
+  target_content_observer.StartWatchingNewWebContents();
+  ShowReauthPrompt();
+  RedirectGaiaChallengeTo(target_url);
+
+  ReauthTestObserver reauth_observer(signin_reauth_view_controller());
+  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
+      browser(), kReauthDialogTimeout));
+  reauth_observer.WaitUntilGaiaReauthPageIsShown();
+  target_content_observer.Wait();
+
+  content::WebContents* dialog_contents =
+      signin_reauth_view_controller()->GetWebContents();
+  content::TestNavigationObserver new_tab_observer(nullptr);
+  new_tab_observer.StartWatchingNewWebContents();
+  ASSERT_TRUE(content::ExecuteScript(
+      dialog_contents, "document.getElementsByTagName('a')[0].click();"));
+  new_tab_observer.Wait();
+
+  content::WebContents* new_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(new_contents, original_contents);
+  EXPECT_NE(new_contents, dialog_contents);
+  EXPECT_EQ(new_contents->GetURL(), https_server()->GetURL("/title1.html"));
 }

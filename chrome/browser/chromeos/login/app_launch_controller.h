@@ -43,8 +43,7 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
 
   ~AppLaunchController() override;
 
-  // Starts launching an app - set |auto_launch| to true if the app is being
-  // auto-launched with zero delay.
+  // Starts launching an app.
   void StartAppLaunch(bool auto_launch);
 
   bool waiting_for_network() { return waiting_for_network_; }

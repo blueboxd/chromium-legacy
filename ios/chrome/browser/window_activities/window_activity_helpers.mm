@@ -44,7 +44,7 @@ NSUserActivity* ActivityToOpenNewTab(bool in_incognito) {
   return activity;
 }
 
-NSUserActivity* ActivityToLoadURL(LoadURLOrigin origin,
+NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin,
                                   const GURL& url,
                                   const web::Referrer& referrer,
                                   bool in_incognito) {
@@ -62,7 +62,8 @@ NSUserActivity* ActivityToLoadURL(LoadURLOrigin origin,
   return activity;
 }
 
-NSUserActivity* ActivityToLoadURL(LoadURLOrigin origin, const GURL& url) {
+NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin,
+                                  const GURL& url) {
   NSUserActivity* activity = BaseActivityForURLOpening(false);
   NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
   params[kOriginKey] = [NSNumber numberWithInteger:origin];
@@ -101,4 +102,10 @@ UrlLoadParams LoadParamsFromActivity(NSUserActivity* activity) {
   }
 
   return params;
+}
+
+WindowActivityOrigin OriginOfActivity(NSUserActivity* activity) {
+  NSNumber* origin = activity.userInfo[kOriginKey];
+  return origin ? static_cast<WindowActivityOrigin>(origin.intValue)
+                : WindowActivityUnknownOrigin;
 }

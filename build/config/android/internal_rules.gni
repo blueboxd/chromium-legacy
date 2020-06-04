@@ -16,37 +16,65 @@ import("//build/util/generate_wrapper.gni")
 import("//build_overrides/build.gni")
 assert(is_android)
 
-# These filters identify most targets that eventually use the java_library_impl
-# template.
-_java_lib_patterns = [
+# The following _java_*_types variables capture all the existing target types.
+# If a new type is introduced, please add it to one of these categories,
+# preferring the more specific resource/library types.
+_java_resource_types = [
+  "android_assets",
+  "android_resources",
+]
+
+_java_library_types = [
+  "java_library",
+  "system_java_library",
+  "android_app_bundle_module",
+]
+
+# These are leaf java target types. They cannot be passed as deps to other
+# targets. Thus their naming schemes are not enforced.
+_java_leaf_types = [
+  "android_apk",
+  "android_app_bundle",
+  "dist_aar",
+  "dist_jar",
+  "java_annotation_processor",
+  "java_binary",
+  "junit_binary",
+]
+
+# All _java_resource_types targets must conform to these patterns.
+_java_resource_patterns = [
+  "*:*_assets",
+  "*android*:assets",
+  "*:*_apk_*resources",
+  "*android*:resources",
+  "*:*_resources",
+  "*:*_grd",
+  "*:*locale_paks",
+  "*:*_java_strings",
+  "*:*strings_java",
+]
+
+# All _java_library_types targets must conform to these patterns. This includes
+# all non-leaf targets that use java_library_impl.
+_java_library_patterns = [
   "*:*_java",
   "*:*_javalib",
-  "*:*_java_*",  # e.g. java_test_support
+  "*:*_java_*",  # e.g. chrome_java_test_support
   "*:java",
   "*:junit",
   "*:junit_*",
   "*:*_junit_*",
   "*:*javatests",
+  "*:*_bundle_module",
 
   # TODO(agrieve): Rename targets below to match above patterns.
-  "*android_webview/glue*:glue",
+  "//android_webview/glue/glue:glue",
+  "//android_webview/glue:glue",
 ]
 
-# These identify targets that have .build_config files (except for android_apk,
-# java_binary, android_app_bundle since we never need to depend on these).
-_java_target_patterns = _java_lib_patterns + [
-                          "*:*_assets",
-                          "*android*:assets",
-                          "*:*_apk_*resources",
-                          "*android*:resources",
-                          "*:*_resources",
-                          "*:*_grd",
-                          "*:*locale_paks",
-                          "*_bundle_module",
-                        ]
-
-# These targets match _java_lib_patterns but do not use java_library_impl.
-_java_lib_exceptions = _java_target_patterns - _java_lib_patterns
+# These identify all non-leaf targets that have .build_config files.
+_java_target_patterns = _java_library_patterns + _java_resource_patterns
 
 _r8_path = "//third_party/r8/lib/r8.jar"
 _desugar_jdk_libs_json = "//third_party/r8/desugar_jdk_libs.json"
@@ -118,14 +146,24 @@ template("write_build_config") {
   _target_label =
       get_label_info(":${_parent_invoker.target_name}", "label_no_toolchain")
 
-  # Don't need to enforce naming scheme for these targets since we never
-  # consider them in dependency chains.
-  if (_type != "android_apk" && _type != "java_binary" && _type != "dist_jar" &&
-      _type != "java_annotation_processor" && _type != "dist_aar" &&
-      _type != "android_app_bundle") {
+  # Ensure targets match naming patterns so that __assetres, __header, __impl
+  # targets work properly. Those generated targets allow for effective deps
+  # filtering.
+  if (filter_exclude([ _type ], _java_resource_types) == []) {
+    if (filter_exclude([ _target_label ], _java_resource_patterns) != []) {
+      assert(false, "Invalid java resource target name: $_target_label")
+    }
+  } else if (filter_exclude([ _type ], _java_library_types) == []) {
+    if (filter_exclude([ _target_label ], _java_library_patterns) != [] ||
+        filter_exclude([ _target_label ], _java_resource_patterns) == []) {
+      assert(false, "Invalid java library target name: $_target_label")
+    }
+  } else if (_type == "group") {
     if (filter_exclude([ _target_label ], _java_target_patterns) != []) {
       assert(false, "Invalid java target name: $_target_label")
     }
+  } else if (filter_exclude([ _type ], _java_leaf_types) != []) {
+    assert(false, "This java type needs a category: $_type")
   }
 
   if (defined(invoker.public_target_label)) {
@@ -2058,9 +2096,13 @@ if (enable_java_templates) {
   # final R.java sources for all resource packages the binary depends on.
   #
   # Input variables:
+  #   android_sdk_dep: The sdk dep that these resources should compile against.
+  #
   #   deps: Specifies the input dependencies for this target.
   #
   #   build_config: Path to the .build_config file corresponding to the target.
+  #
+  #   build_config_dep: Dep target to generate the .build_config file.
   #
   #   android_manifest: Path to root manifest for the binary.
   #
@@ -2171,7 +2213,23 @@ if (enable_java_templates) {
                              "visibility",
                            ])
 
-    _deps = invoker.deps
+    _deps = [
+      invoker.android_sdk_dep,
+      invoker.build_config_dep,
+    ]
+    if (defined(invoker.android_manifest_dep)) {
+      _deps += [ invoker.android_manifest_dep ]
+    }
+    foreach(_dep, invoker.deps) {
+      _target_label = get_label_info(_dep, "label_no_toolchain")
+      if (filter_exclude([ _target_label ], _java_library_patterns) == [] &&
+          filter_exclude([ _target_label ], _java_resource_patterns) != []) {
+        # Depend on the java libraries' transitive __assetres target instead.
+        _deps += [ "${_target_label}__assetres" ]
+      } else {
+        _deps += [ _dep ]
+      }
+    }
 
     if (defined(invoker.arsc_output)) {
       _arsc_output = invoker.arsc_output
@@ -3025,9 +3083,10 @@ if (enable_java_templates) {
         deps = []
         foreach(_dep, invoker.deps) {
           _target_label = get_label_info(_dep, "label_no_toolchain")
-          if (filter_exclude([ _target_label ], _java_lib_patterns) == [] &&
-              filter_exclude([ _target_label ], _java_lib_exceptions) != []) {
-            # This is a java dep, so replace it.
+          if (filter_exclude([ _target_label ], _java_library_patterns) == [] &&
+              filter_exclude([ _target_label ], _java_resource_patterns) !=
+              []) {
+            # This is a java library dep, so replace it.
             deps += [ "${_target_label}__${_group_name}" ]
           } else {
             # Transitive java group targets should also include direct deps.
@@ -3326,32 +3385,29 @@ if (enable_java_templates) {
       }
     }
 
-    _public_deps = []
-    _non_java_deps = []
     _java_header_deps = []
     _java_impl_deps = []
-    _java_full_deps = []
-    _analysis_public_deps = []
-    _sdk_deps = []
+    _non_java_deps = []
     if (defined(invoker.deps)) {
       foreach(_dep, invoker.deps) {
         _target_label = get_label_info(_dep, "label_no_toolchain")
-        if (filter_exclude([ _target_label ], _java_lib_patterns) == [] &&
-            filter_exclude([ _target_label ], _java_lib_exceptions) != []) {
+        if (filter_exclude([ _target_label ], _java_library_patterns) == [] &&
+            filter_exclude([ _target_label ], _java_resource_patterns) != []) {
           # This is a java dep, so replace it with its header.
           _java_header_deps += [ "${_target_label}__header" ]
           _java_impl_deps += [ "${_target_label}__impl" ]
-          _java_full_deps += [ _dep ]
         } else {
           _non_java_deps += [ _dep ]
         }
       }
     }
 
+    _extra_java_deps = []
+
     # TODO(crbug.com/1078484): Don't use desugared .jar files for java binaries.
     if (_is_java_binary && enable_bazel_desugar &&
         (!defined(invoker.enable_desugar) || invoker.enable_desugar)) {
-      _non_java_deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
+      _extra_java_deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
     }
 
     if (_is_prebuilt || _has_sources) {
@@ -3364,14 +3420,12 @@ if (enable_java_templates) {
             !invoker.jacoco_never_instrument && _jacoco_instrument
       }
       if (_jacoco_instrument) {
-        _non_java_deps += [ "//third_party/jacoco:jacocoagent_java" ]
+        _extra_java_deps += [ "//third_party/jacoco:jacocoagent_java" ]
       }
     }
 
     # Don't need to depend on the apk-under-test to be packaged.
     if (defined(invoker.apk_under_test)) {
-      # No need to add to _java_full_deps since that is only used for
-      # write_build_config.
       _java_header_deps += [ "${invoker.apk_under_test}__java__header" ]
       _java_impl_deps += [ "${invoker.apk_under_test}__java__impl" ]
     }
@@ -3387,12 +3441,12 @@ if (enable_java_templates) {
       }
 
       # This is an android_system_java_prebuilt target, so no headers.
-      _sdk_deps = [ _sdk_java_dep ]
+      _extra_java_deps += [ _sdk_java_dep ]
     }
 
-    _classpath_deps = _java_header_deps + _non_java_deps + _sdk_deps +
+    _classpath_deps = _java_header_deps + _non_java_deps + _extra_java_deps +
                       [ ":$_build_config_target_name" ]
-    _full_classpath_deps = _java_impl_deps + _non_java_deps + _sdk_deps +
+    _full_classpath_deps = _java_impl_deps + _non_java_deps + _extra_java_deps +
                            [ ":$_build_config_target_name" ]
 
     # Often needed, but too hard to figure out when ahead of time.
@@ -3470,7 +3524,10 @@ if (enable_java_templates) {
       enable_jetify = defined(invoker.enable_jetify) && invoker.enable_jetify
       is_prebuilt = _is_prebuilt
       jetified_jar_path = _jetified_jar_path
-      possible_config_deps = _java_full_deps + _non_java_deps + _sdk_deps
+      possible_config_deps = _extra_java_deps
+      if (defined(invoker.deps)) {
+        possible_config_deps += invoker.deps
+      }
       if (defined(apk_under_test)) {
         possible_config_deps += [ apk_under_test ]
       }
@@ -3513,6 +3570,7 @@ if (enable_java_templates) {
       _header_target_name = "${target_name}__header"
     }
 
+    _analysis_public_deps = []
     if (_has_sources) {
       if (defined(invoker.enable_errorprone)) {
         _enable_errorprone = invoker.enable_errorprone
@@ -3600,6 +3658,7 @@ if (enable_java_templates) {
       }
     }  # _has_sources
 
+    _public_deps = []
     if (_is_prebuilt || _has_sources) {
       if (_is_prebuilt) {
         generate_interface_jar(_header_target_name) {
@@ -3748,6 +3807,11 @@ if (enable_java_templates) {
     # the non-analysis steps of other targets that depend on this one.
     group("${target_name}__impl") {
       public_deps = _public_deps
+    }
+
+    java_lib_group("${target_name}__assetres") {
+      forward_variables_from(invoker, [ "deps" ])
+      group_name = "assetres"
     }
 
     group(target_name) {

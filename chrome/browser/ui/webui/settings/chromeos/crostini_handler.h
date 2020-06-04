@@ -83,8 +83,14 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleQueryArcAdbRequest(const base::ListValue* args);
   // Handle a request for enabling adb sideloading in ARC.
   void HandleEnableArcAdbRequest(const base::ListValue* args);
+  // Called after establishing whether enabling adb sideloading is allowed for
+  // the user and device
+  void OnCanEnableArcAdbSideloading(bool can_change_adb_sideloading);
   // Handle a request for disabling adb sideloading in ARC.
   void HandleDisableArcAdbRequest(const base::ListValue* args);
+  // Called after establishing whether disabling adb sideloading is allowed for
+  // the user and device
+  void OnCanDisableArcAdbSideloading(bool can_change_adb_sideloading);
   // Launch the Crostini terminal.
   void LaunchTerminal();
   // Handle a request for showing the container upgrade view.
@@ -93,9 +99,6 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void OnQueryAdbSideload(
       SessionManagerClient::AdbSideloadResponseCode response_code,
       bool enabled);
-  // Returns whether the current user can change adb sideloading configuration
-  // on current device.
-  bool CheckEligibilityToChangeArcAdbSideloading() const;
   // Handle a request for the CrostiniUpgraderDialog status.
   void HandleCrostiniUpgraderDialogStatusRequest(const base::ListValue* args);
   // Handle a request for the availability of a container upgrade.
@@ -142,6 +145,10 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleSetCrostiniMicSharingEnabled(const base::ListValue* args);
   // Handles a request for getting the permissions for Crostini Mic access.
   void HandleGetCrostiniMicSharingEnabled(const base::ListValue* args);
+  // Handle a request for checking permission for changing ARC adb sideloading.
+  void HandleCanChangeArcAdbSideloadingRequest(const base::ListValue* args);
+  // Callback of HandleCanChangeArcAdbSideloadingRequest.
+  void OnCanChangeArcAdbSideloading(bool can_change_arc_adb_sideloading);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

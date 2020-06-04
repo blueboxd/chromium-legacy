@@ -87,14 +87,10 @@ void FakeLoginDisplayHost::OnPreferencesChanged() {}
 
 void FakeLoginDisplayHost::PrewarmAuthentication() {}
 
-void FakeLoginDisplayHost::StartAppLaunch(const std::string& app_id,
-                                          bool is_auto_launch) {}
-
 void FakeLoginDisplayHost::StartDemoAppLaunch() {}
 
-void FakeLoginDisplayHost::StartArcKiosk(const AccountId& account_id) {}
-
-void FakeLoginDisplayHost::StartWebKiosk(const AccountId& account_id) {}
+void FakeLoginDisplayHost::StartKiosk(const KioskAppId& kiosk_app_id,
+                                      bool is_auto_launch) {}
 
 void FakeLoginDisplayHost::CompleteLogin(const UserContext& user_context) {}
 

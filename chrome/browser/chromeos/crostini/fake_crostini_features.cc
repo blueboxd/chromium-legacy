@@ -71,10 +71,14 @@ bool FakeCrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
   return original_features_->IsContainerUpgradeUIAllowed(profile);
 }
 
-bool FakeCrostiniFeatures::CanChangeAdbSideloading(Profile* profile) {
-  if (can_change_adb_sideloading_.has_value())
-    return *can_change_adb_sideloading_;
-  return original_features_->CanChangeAdbSideloading(profile);
+void FakeCrostiniFeatures::CanChangeAdbSideloading(
+    Profile* profile,
+    CanChangeAdbSideloadingCallback callback) {
+  if (can_change_adb_sideloading_.has_value()) {
+    std::move(callback).Run(*can_change_adb_sideloading_);
+    return;
+  }
+  original_features_->CanChangeAdbSideloading(profile, std::move(callback));
 }
 
 }  // namespace crostini

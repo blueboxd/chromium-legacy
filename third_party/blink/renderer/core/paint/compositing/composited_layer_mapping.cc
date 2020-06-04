@@ -359,7 +359,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
 void CompositedLayerMapping::UpdateRasterizationPolicy() {
   bool transformed_rasterization_allowed =
       !(owning_layer_.GetCompositingReasons() &
-        CompositingReason::kComboAllDirectReasons);
+        CompositingReason::kComboTransformedRasterizationDisallowedReasons);
   graphics_layer_->CcLayer()->SetTransformedRasterizationAllowed(
       transformed_rasterization_allowed);
   if (non_scrolling_squashing_layer_) {

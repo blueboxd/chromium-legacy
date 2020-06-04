@@ -587,6 +587,7 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source,
   bool is_child = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
   html_source->AddBoolean("isChild", is_child);
 
+  base::string16 tooltip;
   if (is_child) {
     std::string custodian = supervised_user_service->GetCustodianName();
     std::string second_custodian =
@@ -602,9 +603,10 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source,
           IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_MANAGED_BY_TWO_PARENTS_TOOLTIP,
           base::UTF8ToUTF16(custodian), base::UTF8ToUTF16(second_custodian));
     }
-    html_source->AddString("accountManagerPrimaryAccountChildManagedTooltip",
-                           child_managed_tooltip);
+    tooltip = child_managed_tooltip;
   }
+  html_source->AddString("accountManagerPrimaryAccountChildManagedTooltip",
+                         tooltip);
 }
 
 }  // namespace

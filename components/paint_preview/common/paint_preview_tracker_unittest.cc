@@ -61,6 +61,33 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
   // underlying private picture record.
 }
 
+TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPictureWithScroll) {
+  const base::UnguessableToken kDocToken = base::UnguessableToken::Create();
+  const base::UnguessableToken kEmbeddingToken =
+      base::UnguessableToken::Create();
+  PaintPreviewTracker tracker(kDocToken, kEmbeddingToken, true);
+  tracker.SetScrollForFrame(SkISize::Make(10, 20));
+
+  const base::UnguessableToken kEmbeddingTokenChild =
+      base::UnguessableToken::Create();
+  gfx::Rect rect(50, 40, 30, 20);
+  uint32_t content_id =
+      tracker.CreateContentForRemoteFrame(rect, kEmbeddingTokenChild);
+  PictureSerializationContext* context =
+      tracker.GetPictureSerializationContext();
+  EXPECT_TRUE(context->count(content_id));
+  EXPECT_EQ((*context)[content_id], kEmbeddingTokenChild);
+
+  SkPictureRecorder recorder;
+  SkCanvas* canvas = recorder.beginRecording(100, 100);
+  tracker.CustomDataToSkPictureCallback(canvas, content_id);
+  sk_sp<SkPicture> pic = recorder.finishRecordingAsPicture();
+
+  // TODO(crbug/1009552): find a good way to check that a filler picture was
+  // actually inserted into |pic|. This is difficult without using the
+  // underlying private picture record.
+}
+
 TEST(PaintPreviewTrackerTest, TestGlyphRunList) {
   const base::UnguessableToken kEmbeddingToken =
       base::UnguessableToken::Create();

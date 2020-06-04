@@ -18,6 +18,9 @@
     <oobe-dialog has-buttons hidden="[[showOn_(ui_state,
         'update-required-message')]]" id="update-required-dialog"
         title-key="updateRequiredTitle">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
+      </hd-iron-icon>
       <div slot="subtitle">
         [[i18nDynamic(locale,'updateRequiredMessage', enterpriseDomain,
             deviceName)]]
@@ -38,6 +41,9 @@
         'update-error')]]" id="update-required-error-dialog"
         title-key="updateRequiredTitle"
         subtitle-key="errorMessage">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
+      </hd-iron-icon>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button inverse on-tap="onSelectNetworkClicked_"
             class="focus-on-show" text-key="selectNetworkButtonCaption">
@@ -65,6 +71,9 @@
     <oobe-dialog hidden="[[showOn_(ui_state, 'update-need-permission')]]"
         has-buttons title-key="updateRequiredTitle"
         id="update-need-permission-dialog">
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
+      </hd-iron-icon>
       <div slot="subtitle" class="update-subtitle">
         [[i18nDynamic(locale,'updateOverCellularPromptMessage',
             enterpriseDomain)]]
@@ -85,6 +94,9 @@
     <oobe-dialog hidden="[[showOn_(ui_state, 'update-no-network')]]"
         has-buttons title-key="updateRequiredTitle"
         id="update-required-no-network-dialog">
+      <hd-iron-icon slot="oobe-icon"
+        icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
+      </hd-iron-icon>
       <div slot="subtitle" class="update-subtitle"
           id="no-network-message">
         [[i18nDynamic(locale,'noNetworkMessage', enterpriseDomain)]]
@@ -107,8 +119,15 @@
         title-key="eolTitle"
         subtitle-key="eolMessage">
       <hd-iron-icon slot="oobe-icon" id="eol-alert-icon"
-          icon1x="oobe-32:alert" icon2x="oobe-64:alert">
+          icon1x="oobe-32:warning" icon2x="oobe-64:warning">
       </hd-iron-icon>
+      <div slot="footer" class="flex layout vertical center-justified center">
+        <!-- Use lock image indicating that end-of-life has been reached and
+             the device is disabled for further use  -->
+        <img class="update-illustration oobe-illustration"
+            srcset="images/1x/device-disabled.svg 1x,
+                    images/2x/device-disabled.svg 2x">
+      </div>
     </oobe-dialog>
 
   </template>

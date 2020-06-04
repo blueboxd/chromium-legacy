@@ -5145,18 +5145,22 @@ void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()}, base::BindOnce([]() {
         base::FilePath path;
-        CHECK(base::CreateTemporaryFile(&path));
+        if (!base::CreateTemporaryFile(&path))
+          return base::File();
 
         int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
                     base::File::FLAG_WRITE | base::File::FLAG_DELETE_ON_CLOSE;
-        auto file = base::File(base::FilePath(path), flags);
-        CHECK(file.IsValid());
-        return file;
+        return base::File(base::FilePath(path), flags);
       }),
       base::BindOnce(
           [](mojo::Remote<blink::mojom::DiskAllocator> allocator,
              base::File file) {
-            allocator->ProvideTemporaryFile(std::move(file));
+            // File creation failed in the background. In this case, don't
+            // provide a file, the renderer will not wait for one (see the
+            // incognito case above, the renderer deals with no file being
+            // provided).
+            if (file.IsValid())
+              allocator->ProvideTemporaryFile(std::move(file));
           },
           std::move(allocator)));
 }

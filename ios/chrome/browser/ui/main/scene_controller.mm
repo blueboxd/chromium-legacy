@@ -16,7 +16,9 @@
 #include "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #import "ios/chrome/app/application_delegate/url_opener_params.h"
+#import "ios/chrome/app/application_delegate/user_activity_handler.h"
 #include "ios/chrome/app/application_mode.h"
+#import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/main_controller_guts.h"
@@ -29,8 +31,6 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
-#import "ios/chrome/browser/ui/blocking_overlay/blocking_overlay_view_controller.h"
-
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
+#import "ios/chrome/browser/ui/blocking_overlay/blocking_overlay_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -302,6 +303,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                          startupInformation:self.mainController
                                    appState:self.mainController.appState];
         }
+        if (self.sceneState.connectionOptions.shortcutItem) {
+          [UserActivityHandler
+              performActionForShortcutItem:self.sceneState.connectionOptions
+                                               .shortcutItem
+                         completionHandler:nil
+                                 tabOpener:self
+                        startupInformation:self.mainController
+                         interfaceProvider:self.interfaceProvider];
+        }
         self.sceneState.connectionOptions = nil;
 
         // Handle URL opening from
@@ -311,6 +321,28 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
           self.sceneState.URLContextsToOpen = nil;
         }
       }
+
+      if (self.mainController.startupParameters) {
+        ApplicationModeForTabOpening mode =
+            self.mainController.startupParameters.launchInIncognito
+                ? ApplicationModeForTabOpening::INCOGNITO
+                : ApplicationModeForTabOpening::NORMAL;
+        [self
+            dismissModalsAndOpenSelectedTabInMode:mode
+                                withUrlLoadParams:UrlLoadParams::InNewTab(
+                                                      self.mainController
+                                                          .startupParameters
+                                                          .externalURL)
+                                   dismissOmnibox:
+                                       [self.mainController.startupParameters
+                                               postOpeningAction] !=
+                                       FOCUS_OMNIBOX
+                                       completion:^{
+                                         self.mainController.startupParameters =
+                                             nil;
+                                       }];
+      }
+
     } else {
       NSDictionary* launchOptions = self.mainController.launchOptions;
       URLOpenerParams* params =
@@ -338,6 +370,15 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       [self finishDismissingTabSwitcher];
     }
   }
+
+  if (sceneState.currentOrigin != WindowActivityRestoredOrigin) {
+    if (IsMultiwindowSupported()) {
+      if (@available(iOS 13, *)) {
+        // TODO(crbug.com/1084905): log metrics for open in window.
+        LOG(WARNING) << "New scene origin: " << (int)sceneState.currentOrigin;
+      }
+    }
+  }
 }
 
 - (void)sceneStateWillShowModalOverlay:(SceneState*)sceneState {
@@ -346,12 +387,16 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 
 - (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState {
   [self.blockingOverlayViewController.view removeFromSuperview];
+  self.blockingOverlayViewController = nil;
 }
 
 // TODO(crbug.com/1072408): factor out into a new class.
 - (void)displayBlockingOverlay {
   self.blockingOverlayViewController =
       [[BlockingOverlayViewController alloc] init];
+  self.blockingOverlayViewController.blockingSceneCommandHandler =
+      HandlerForProtocol(self.mainController.appState.appCommandDispatcher,
+                         BlockingSceneCommands);
   UIView* overlayView = self.blockingOverlayViewController.view;
   [self.sceneState.window addSubview:overlayView];
   overlayView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -380,6 +425,16 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
       self.sceneState.URLContextsToOpen = nil;
     });
   }
+}
+
+- (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
+                   completionHandler:(void (^)(BOOL succeeded))completionHandler
+    API_AVAILABLE(ios(13)) {
+  [UserActivityHandler performActionForShortcutItem:shortcutItem
+                                  completionHandler:completionHandler
+                                          tabOpener:self
+                                 startupInformation:self.mainController
+                                  interfaceProvider:self.interfaceProvider];
 }
 
 #pragma mark - AppStateObserver

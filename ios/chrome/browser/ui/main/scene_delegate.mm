@@ -12,6 +12,8 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kOriginDetectedKey = @"OriginDetectedKey";
+
 @implementation SceneDelegate
 
 - (SceneState*)sceneState {
@@ -46,8 +48,40 @@
                  options:(UISceneConnectionOptions*)connectionOptions
     API_AVAILABLE(ios(13)) {
   self.sceneState.scene = base::mac::ObjCCastStrict<UIWindowScene>(scene);
+  self.sceneState.currentOrigin = [self originFromSession:session
+                                                  options:connectionOptions];
   self.sceneState.activationLevel = SceneActivationLevelBackground;
   self.sceneState.connectionOptions = connectionOptions;
+}
+
+- (WindowActivityOrigin)originFromSession:(UISceneSession*)session
+                                  options:(UISceneConnectionOptions*)options
+    API_AVAILABLE(ios(13)) {
+  WindowActivityOrigin origin = WindowActivityUnknownOrigin;
+
+  // When restoring the session, the origin is set to restore to avoid
+  // observers treating this as a new request. Also the only time the origin
+  // can be correctly detected is on the first observation, because subsequent
+  // view are restored, and do not contain the user activities. The key
+  // kOriginDetectedKey is set in the session uerInfo to track just that.
+  if (session.userInfo[kOriginDetectedKey]) {
+    origin = WindowActivityRestoredOrigin;
+  } else {
+    NSMutableDictionary* userInfo =
+        [NSMutableDictionary dictionaryWithDictionary:session.userInfo];
+    userInfo[kOriginDetectedKey] = kOriginDetectedKey;
+    session.userInfo = userInfo;
+    origin = WindowActivityExternalOrigin;
+    for (NSUserActivity* activity in options.userActivities) {
+      WindowActivityOrigin activityOrigin = OriginOfActivity(activity);
+      if (activityOrigin != WindowActivityUnknownOrigin) {
+        origin = activityOrigin;
+        break;
+      }
+    }
+  }
+
+  return origin;
 }
 
 - (void)sceneDidDisconnect:(UIScene*)scene API_AVAILABLE(ios(13)) {
@@ -57,10 +91,12 @@
 #pragma mark Transitioning to the Foreground
 
 - (void)sceneWillEnterForeground:(UIScene*)scene API_AVAILABLE(ios(13)) {
+  self.sceneState.currentOrigin = WindowActivityRestoredOrigin;
   self.sceneState.activationLevel = SceneActivationLevelForegroundInactive;
 }
 
 - (void)sceneDidBecomeActive:(UIScene*)scene API_AVAILABLE(ios(13)) {
+  self.sceneState.currentOrigin = WindowActivityRestoredOrigin;
   self.sceneState.activationLevel = SceneActivationLevelForegroundActive;
 }
 
@@ -79,6 +115,14 @@
     API_AVAILABLE(ios(13)) {
   DCHECK(!self.sceneState.URLContextsToOpen);
   self.sceneState.URLContextsToOpen = URLContexts;
+}
+
+- (void)windowScene:(UIWindowScene*)windowScene
+    performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
+               completionHandler:(void (^)(BOOL succeeded))completionHandler
+    API_AVAILABLE(ios(13)) {
+  [_sceneController performActionForShortcutItem:shortcutItem
+                               completionHandler:completionHandler];
 }
 
 @end

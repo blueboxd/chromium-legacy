@@ -51,12 +51,17 @@ uint32_t PaintPreviewTracker::CreateContentForRemoteFrame(
     const gfx::Rect& rect,
     const base::UnguessableToken& embedding_token) {
   sk_sp<SkPicture> pic = SkPicture::MakePlaceholder(
-      SkRect::MakeXYWH(rect.x(), rect.y(), rect.width(), rect.height()));
+      SkRect::MakeXYWH(rect.x() + scroll_.width(), rect.y() + scroll_.height(),
+                       rect.width(), rect.height()));
   const uint32_t content_id = pic->uniqueID();
   DCHECK(!base::Contains(content_id_to_embedding_token_, content_id));
   content_id_to_embedding_token_[content_id] = embedding_token;
   subframe_pics_[content_id] = pic;
   return content_id;
+}
+
+void PaintPreviewTracker::SetScrollForFrame(const SkISize& scroll) {
+  scroll_ = scroll;
 }
 
 void PaintPreviewTracker::AddGlyphs(const SkTextBlob* blob) {

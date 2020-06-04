@@ -49,9 +49,7 @@ Polymer({
     /** @private {boolean} */
     canChangeAdbSideloading_: {
       type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('canChangeAdbSideloading');
-      },
+      value: false,
     },
 
     /** @private {boolean} */
@@ -68,8 +66,18 @@ Polymer({
           this.arcAdbEnabled_ = enabled;
           this.arcAdbNeedPowerwash_ = need_powerwash;
         });
+
+    this.addWebUIListener(
+        'crostini-can-change-arc-adb-sideload-changed',
+        (can_change_arc_adb_sideloading) => {
+          this.canChangeAdbSideloading_ = can_change_arc_adb_sideloading;
+        });
+
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestArcAdbSideloadStatus();
+
+    settings.CrostiniBrowserProxyImpl.getInstance()
+        .getCanChangeArcAdbSideloading();
   },
 
   /**

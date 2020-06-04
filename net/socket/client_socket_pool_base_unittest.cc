@@ -4224,11 +4224,11 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithoutBackupJob) {
   // Verify the backup timer doesn't create a backup job, by making
   // the backup job a pending job instead of a waiting job, so it
   // *would* complete if it were created.
+  base::RunLoop loop;
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-      base::TimeDelta::FromSeconds(1));
-  base::RunLoop().Run();
+      FROM_HERE, loop.QuitWhenIdleClosure(), base::TimeDelta::FromSeconds(1));
+  loop.Run();
   EXPECT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
 }
 

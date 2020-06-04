@@ -1394,6 +1394,29 @@ TEST_F(CompositedLayerMappingTest, TransformedRasterizationForInlineTransform) {
       target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
 }
 
+TEST_F(CompositedLayerMappingTest,
+       TransformedRasterizationForScrollDependentPosition) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target"
+      style="transform: translateX(0.3px);
+             position: fixed; top: 20px; left: 30px;">
+        FIXED
+    </div>
+    <div style="height: 4000px; width: 4000px;
+         background: silver;">
+    </div>
+  )HTML");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  ASSERT_TRUE(target && target->IsBox());
+  PaintLayer* target_layer = ToLayoutBox(target)->Layer();
+  GraphicsLayer* target_graphics_layer =
+      target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
+  ASSERT_TRUE(target_graphics_layer);
+  EXPECT_TRUE(
+      target_graphics_layer->CcLayer()->transformed_rasterization_allowed());
+}
+
 TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);

@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/syslog_logging.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -56,8 +57,8 @@ void WebKioskController::StartWebKiosk(const AccountId& account_id) {
                            base::BindOnce(&WebKioskController::OnTimerFire,
                                           weak_ptr_factory_.GetWeakPtr()));
 
-  kiosk_profile_loader_.reset(new KioskProfileLoader(
-      account_id, WebKioskAppManager::AppType::WEB_APP, false, this));
+  kiosk_profile_loader_.reset(
+      new KioskProfileLoader(account_id, KioskAppType::WEB_APP, false, this));
   kiosk_profile_loader_->Start();
 }
 

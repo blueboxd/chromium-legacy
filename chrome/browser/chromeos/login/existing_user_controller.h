@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -52,6 +53,7 @@ namespace chromeos {
 class CrosSettings;
 class LoginDisplay;
 class OAuth2TokenInitializer;
+class KioskAppId;
 
 namespace login {
 class NetworkStateHelper;
@@ -164,9 +166,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
-  void LoginAsKioskApp(const std::string& app_id);
-  void LoginAsArcKioskApp(const AccountId& account_id);
-  void LoginAsWebKioskApp(const AccountId& account_id);
+  void LoginAsKioskApp(KioskAppId kiosk_app_id);
   // Retrieve public session and ARC kiosk auto-login policy and update the
   // timer.
   void ConfigureAutoLogin();

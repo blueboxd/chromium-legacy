@@ -226,69 +226,6 @@ BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
                                         const size_t byte_size,
                                         std::string* output);
 
-#if defined(WCHAR_T_IS_UTF16)
-// Utility functions to access the underlying string buffer as a wide char
-// pointer.
-//
-// Note: These functions violate strict aliasing when char16 and wchar_t are
-// unrelated types. We thus pass -fno-strict-aliasing to the compiler on
-// non-Windows platforms [1], and rely on it being off in Clang's CL mode [2].
-//
-// [1] https://crrev.com/b9a0976622/build/config/compiler/BUILD.gn#244
-// [2]
-// https://github.com/llvm/llvm-project/blob/1e28a66/clang/lib/Driver/ToolChains/Clang.cpp#L3949
-inline wchar_t* as_writable_wcstr(char16* str) {
-  return reinterpret_cast<wchar_t*>(str);
-}
-
-inline wchar_t* as_writable_wcstr(string16& str) {
-  return reinterpret_cast<wchar_t*>(data(str));
-}
-
-inline const wchar_t* as_wcstr(const char16* str) {
-  return reinterpret_cast<const wchar_t*>(str);
-}
-
-inline const wchar_t* as_wcstr(StringPiece16 str) {
-  return reinterpret_cast<const wchar_t*>(str.data());
-}
-
-// Utility functions to access the underlying string buffer as a char16 pointer.
-inline char16* as_writable_u16cstr(wchar_t* str) {
-  return reinterpret_cast<char16*>(str);
-}
-
-inline char16* as_writable_u16cstr(std::wstring& str) {
-  return reinterpret_cast<char16*>(data(str));
-}
-
-inline const char16* as_u16cstr(const wchar_t* str) {
-  return reinterpret_cast<const char16*>(str);
-}
-
-inline const char16* as_u16cstr(WStringPiece str) {
-  return reinterpret_cast<const char16*>(str.data());
-}
-
-// Utility functions to convert between base::WStringPiece and
-// base::StringPiece16.
-inline WStringPiece AsWStringPiece(StringPiece16 str) {
-  return WStringPiece(as_wcstr(str.data()), str.size());
-}
-
-inline StringPiece16 AsStringPiece16(WStringPiece str) {
-  return StringPiece16(as_u16cstr(str.data()), str.size());
-}
-
-inline std::wstring AsWString(StringPiece16 str) {
-  return std::wstring(as_wcstr(str.data()), str.size());
-}
-
-inline string16 AsString16(WStringPiece str) {
-  return string16(as_u16cstr(str.data()), str.size());
-}
-#endif  // defined(WCHAR_T_IS_UTF16)
-
 // Trims any whitespace from either end of the input string.
 //
 // The StringPiece versions return a substring referencing the input buffer.
@@ -347,7 +284,7 @@ BASE_EXPORT bool IsStringUTF8AllowingNoncharacters(StringPiece str);
 BASE_EXPORT bool IsStringASCII(StringPiece str);
 BASE_EXPORT bool IsStringASCII(StringPiece16 str);
 
-#if defined(BASE_STRING16_IS_STD_U16STRING) || defined(WCHAR_T_IS_UTF32)
+#if defined(WCHAR_T_IS_UTF32)
 BASE_EXPORT bool IsStringASCII(WStringPiece str);
 #endif
 
@@ -535,89 +472,6 @@ BASE_EXPORT std::string ReplaceStringPlaceholders(
 BASE_EXPORT string16 ReplaceStringPlaceholders(const string16& format_string,
                                                const string16& a,
                                                size_t* offset);
-
-// The following section contains overloads of the previously defined APIs for
-// std::wstring and base::WStringPiece. In order to discourage using
-// std::wstring in cross-platform code, these overloads are only enabled on
-// Windows, and only if std::wstring is a different type than base::string16.
-#if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
-BASE_EXPORT std::wstring ToLowerASCII(WStringPiece str);
-
-BASE_EXPORT std::wstring ToUpperASCII(WStringPiece str);
-
-BASE_EXPORT int CompareCaseInsensitiveASCII(WStringPiece a, WStringPiece b);
-
-BASE_EXPORT bool EqualsCaseInsensitiveASCII(WStringPiece a, WStringPiece b);
-
-BASE_EXPORT bool RemoveChars(WStringPiece input,
-                             WStringPiece remove_chars,
-                             std::wstring* output);
-
-BASE_EXPORT bool ReplaceChars(WStringPiece input,
-                              WStringPiece replace_chars,
-                              WStringPiece replace_with,
-                              std::wstring* output);
-
-BASE_EXPORT bool TrimString(WStringPiece input,
-                            WStringPiece trim_chars,
-                            std::string* output);
-
-BASE_EXPORT WStringPiece TrimString(WStringPiece input,
-                                    WStringPiece trim_chars,
-                                    TrimPositions positions);
-
-BASE_EXPORT TrimPositions TrimWhitespace(WStringPiece input,
-                                         TrimPositions positions,
-                                         std::wstring* output);
-
-BASE_EXPORT WStringPiece TrimWhitespace(WStringPiece input,
-                                        TrimPositions positions);
-
-BASE_EXPORT std::wstring CollapseWhitespace(
-    WStringPiece text,
-    bool trim_sequences_with_line_breaks);
-
-BASE_EXPORT bool ContainsOnlyChars(WStringPiece input, WStringPiece characters);
-
-BASE_EXPORT bool LowerCaseEqualsASCII(WStringPiece str,
-                                      StringPiece lowecase_ascii);
-
-BASE_EXPORT bool EqualsASCII(StringPiece16 str, StringPiece ascii);
-
-BASE_EXPORT bool StartsWith(WStringPiece str,
-                            WStringPiece search_for,
-                            CompareCase case_sensitivity);
-
-BASE_EXPORT bool EndsWith(WStringPiece str,
-                          WStringPiece search_for,
-                          CompareCase case_sensitivity);
-
-BASE_EXPORT void ReplaceFirstSubstringAfterOffset(std::wstring* str,
-                                                  size_t start_offset,
-                                                  WStringPiece find_this,
-                                                  WStringPiece replace_with);
-
-BASE_EXPORT void ReplaceSubstringsAfterOffset(std::wstring* str,
-                                              size_t start_offset,
-                                              WStringPiece find_this,
-                                              WStringPiece replace_with);
-
-BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
-
-BASE_EXPORT std::wstring JoinString(span<const std::wstring> parts,
-                                    WStringPiece separator);
-
-BASE_EXPORT std::wstring JoinString(span<const WStringPiece> parts,
-                                    WStringPiece separator);
-
-BASE_EXPORT std::wstring JoinString(std::initializer_list<WStringPiece> parts,
-                                    WStringPiece separator);
-
-BASE_EXPORT std::wstring ReplaceStringPlaceholders(
-    WStringPiece format_string,
-    const std::vector<string16>& subst,
-    std::vector<size_t>* offsets);
-#endif
 
 }  // namespace base
 

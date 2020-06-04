@@ -989,9 +989,9 @@ void WizardController::OnEnrollmentDone() {
   VLOG(1) << "Enrollment done";
 
   if (KioskAppManager::Get()->IsAutoLaunchEnabled()) {
-    AutoLaunchKioskApp();
+    AutoLaunchKioskApp(KioskAppType::CHROME_APP);
   } else if (WebKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid()) {
-    AutoLaunchWebKioskApp();
+    AutoLaunchKioskApp(KioskAppType::WEB_APP);
   } else if (g_browser_process->platform_part()
                  ->browser_policy_connector_chromeos()
                  ->IsEnterpriseManaged()) {
@@ -1030,7 +1030,7 @@ void WizardController::OnKioskAutolaunchScreenExit(
   switch (result) {
     case KioskAutolaunchScreen::Result::COMPLETED:
       DCHECK(KioskAppManager::Get()->IsAutoLaunchEnabled());
-      AutoLaunchKioskApp();
+      AutoLaunchKioskApp(KioskAppType::CHROME_APP);
       break;
     case KioskAutolaunchScreen::Result::CANCELED:
       ShowLoginScreen();
@@ -1532,7 +1532,7 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
   } else if (screen_id == AutoEnrollmentCheckScreenView::kScreenId) {
     ShowAutoEnrollmentCheckScreen();
   } else if (screen_id == AppLaunchSplashScreenView::kScreenId) {
-    AutoLaunchKioskApp();
+    AutoLaunchKioskApp(KioskAppType::CHROME_APP);
   } else if (screen_id == HIDDetectionView::kScreenId) {
     ShowHIDDetectionScreen();
   } else if (screen_id == DeviceDisabledScreenView::kScreenId) {
@@ -1619,49 +1619,35 @@ void WizardController::OnGuestModePolicyUpdated() {
       user_manager::UserManager::Get()->IsGuestSessionAllowed());
 }
 
-void WizardController::AutoLaunchKioskApp() {
-  KioskAppManager::App app_data;
-  std::string app_id = KioskAppManager::Get()->GetAutoLaunchApp();
-  CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
-
-  // Wait for the |CrosSettings| to become either trusted or permanently
-  // untrusted.
-  const CrosSettingsProvider::TrustedStatus status =
-      CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
-          &WizardController::AutoLaunchKioskApp, weak_factory_.GetWeakPtr()));
-  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
-    return;
-
-  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-    // If the |cros_settings_| are permanently untrusted, show an error message
-    // and refuse to auto-launch the kiosk app.
-    GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
-    GetLoginDisplayHost()->SetStatusAreaVisible(false);
-    ShowErrorScreen();
-    return;
+void WizardController::AutoLaunchKioskApp(KioskAppType app_type) {
+  KioskAppId kiosk_app_id;
+  switch (app_type) {
+    case KioskAppType::CHROME_APP: {
+      KioskAppManagerBase::App app_data;
+      std::string app_id = KioskAppManager::Get()->GetAutoLaunchApp();
+      CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
+      kiosk_app_id = KioskAppId::ForChromeApp(app_id);
+      break;
+    }
+    case KioskAppType::WEB_APP: {
+      const AccountId account_id =
+          WebKioskAppManager::Get()->GetAutoLaunchAccountId();
+      kiosk_app_id = KioskAppId::ForWebApp(account_id);
+      break;
+    }
+    case KioskAppType::ARC_APP:
+      // TODO(crbug.com/1015383): Implement auto launch flow after enrollment
+      // for arc kiosk.
+      NOTREACHED();
+      return;
   }
-
-  if (system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation()) {
-    // If the device is disabled, bail out. A device disabled screen will be
-    // shown by the DeviceDisablingManager.
-    return;
-  }
-
-  const bool auto_launch = true;
-  GetLoginDisplayHost()->StartAppLaunch(app_id, auto_launch);
-}
-
-void WizardController::AutoLaunchWebKioskApp() {
-  const AccountId account_id =
-      WebKioskAppManager::Get()->GetAutoLaunchAccountId();
-  CHECK(WebKioskAppManager::Get()->GetAppByAccountId(account_id));
 
   // Wait for the |CrosSettings| to become either trusted or permanently
   // untrusted.
   const CrosSettingsProvider::TrustedStatus status =
       CrosSettings::Get()->PrepareTrustedValues(
-          base::BindOnce(&WizardController::AutoLaunchWebKioskApp,
-                         weak_factory_.GetWeakPtr()));
+          base::BindOnce(&WizardController::AutoLaunchKioskApp,
+                         weak_factory_.GetWeakPtr(), app_type));
   if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
     return;
 
@@ -1680,7 +1666,8 @@ void WizardController::AutoLaunchWebKioskApp() {
     return;
   }
 
-  GetLoginDisplayHost()->StartWebKiosk(account_id);
+  constexpr bool auto_launch = true;
+  GetLoginDisplayHost()->StartKiosk(kiosk_app_id, auto_launch);
 }
 
 // static

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/app_install_event_log.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "chrome/browser/chromeos/policy/single_arc_app_install_event_log.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,9 +23,6 @@ namespace policy {
 
 namespace {
 
-static const int kLogCapacity = 1024;
-static const int kMaxLogs = 1024;
-
 static const char kFirstPackageName[] = "com.example.first";
 static const char kSecondPackageName[] = "com.example.second";
 static const char kPackageNameTemplate[] = "com.example.";
@@ -32,14 +30,14 @@ static const char kFileName[] = "event.log";
 
 }  // namespace
 
-class AppInstallEventLogTest : public testing::Test {
+class ArcAppInstallEventLogTest : public testing::Test {
  protected:
-  AppInstallEventLogTest() {}
+  ArcAppInstallEventLogTest() {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_name_ = temp_dir_.GetPath().Append(kFileName);
-    log_ = std::make_unique<AppInstallEventLog>(file_name_);
+    log_ = std::make_unique<ArcAppInstallEventLog>(file_name_);
   }
 
   void VerifyTenLogEntriesEach(int first_app_timestamp_offset,
@@ -71,31 +69,32 @@ class AppInstallEventLogTest : public testing::Test {
   void OverflowMaxLogs() {
     em::AppInstallReportLogEvent event;
     event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
-    for (int i = 0; i < kMaxLogs - 1; ++i) {
+    for (int i = 0; i < ArcAppInstallEventLog::kMaxLogs - 1; ++i) {
       event.set_timestamp(i);
       std::stringstream package;
       package << kPackageNameTemplate << i;
       log_->Add(package.str(), event);
     }
     for (int i = 0; i < 10; ++i) {
-      event.set_timestamp(i + kMaxLogs - 1);
+      event.set_timestamp(i + ArcAppInstallEventLog::kMaxLogs - 1);
       log_->Add(kFirstPackageName, event);
     }
     for (int i = 0; i < 20; ++i) {
-      event.set_timestamp(i + kMaxLogs + 29);
+      event.set_timestamp(i + ArcAppInstallEventLog::kMaxLogs + 29);
       log_->Add(kSecondPackageName, event);
     }
   }
 
   void VerifyOneLogEntryEachPlusFirstApp(int first_app_log_entries) {
-    ASSERT_EQ(kMaxLogs, report_.app_install_reports_size());
+    ASSERT_EQ(ArcAppInstallEventLog::kMaxLogs,
+              report_.app_install_reports_size());
     std::map<std::string, em::AppInstallReport> logs;
-    for (int i = 0; i < kMaxLogs; ++i) {
+    for (int i = 0; i < ArcAppInstallEventLog::kMaxLogs; ++i) {
       logs[report_.app_install_reports(i).package()] =
           report_.app_install_reports(i);
     }
 
-    for (int i = 0; i < kMaxLogs - 1; ++i) {
+    for (int i = 0; i < ArcAppInstallEventLog::kMaxLogs - 1; ++i) {
       std::stringstream package;
       package << kPackageNameTemplate << i;
       const auto log = logs.find(package.str());
@@ -112,7 +111,8 @@ class AppInstallEventLogTest : public testing::Test {
     EXPECT_EQ(kFirstPackageName, log->second.package());
     ASSERT_EQ(first_app_log_entries, log->second.logs_size());
     for (int i = 0; i < first_app_log_entries; ++i) {
-      EXPECT_EQ(i + kMaxLogs - 1, log->second.logs(i).timestamp());
+      EXPECT_EQ(i + ArcAppInstallEventLog::kMaxLogs - 1,
+                log->second.logs(i).timestamp());
       EXPECT_EQ(em::AppInstallReportLogEvent::SUCCESS,
                 log->second.logs(i).event_type());
     }
@@ -122,16 +122,16 @@ class AppInstallEventLogTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   base::FilePath file_name_;
-  std::unique_ptr<AppInstallEventLog> log_;
+  std::unique_ptr<ArcAppInstallEventLog> log_;
   em::AppInstallReportRequest report_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcAppInstallEventLogTest);
 };
 
 // Do not add any log entries. Serialize the log. Verify that the serialization
 // contains no log entries.
-TEST_F(AppInstallEventLogTest, SerializeEmpty) {
+TEST_F(ArcAppInstallEventLogTest, SerializeEmpty) {
   EXPECT_EQ(0, log_->total_size());
   EXPECT_EQ(0, log_->max_size());
 
@@ -141,7 +141,7 @@ TEST_F(AppInstallEventLogTest, SerializeEmpty) {
 
 // Populate the logs for two apps. Verify that the entries are serialized
 // correctly.
-TEST_F(AppInstallEventLogTest, AddAndSerialize) {
+TEST_F(ArcAppInstallEventLogTest, AddAndSerialize) {
   em::AppInstallReportLogEvent event;
   event.set_timestamp(0);
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
@@ -182,7 +182,7 @@ TEST_F(AppInstallEventLogTest, AddAndSerialize) {
 // Add 10 log entries for an app. Serialize the log. Clear the serialized log
 // entries and verify that the log becomes empty. Then, serialize the log again
 // and verify it contains no log entries.
-TEST_F(AppInstallEventLogTest, SerializeAndClear) {
+TEST_F(ArcAppInstallEventLogTest, SerializeAndClear) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 10; ++i) {
@@ -207,7 +207,7 @@ TEST_F(AppInstallEventLogTest, SerializeAndClear) {
 // entries each for the first and a second app. Clear the serialized log
 // entries. Then, serialize the log again. Verify that it now contains the
 // entries added after the first serialization.
-TEST_F(AppInstallEventLogTest, SerializeAddClearAndSerialize) {
+TEST_F(ArcAppInstallEventLogTest, SerializeAddClearAndSerialize) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 10; ++i) {
@@ -243,9 +243,9 @@ TEST_F(AppInstallEventLogTest, SerializeAddClearAndSerialize) {
 // more app. Serialize the log. Verify that the log entries for the last app
 // were ignored. Then, clear the serialized log entries. Verify that the log
 // becomes empty.
-TEST_F(AppInstallEventLogTest, OverflowSerializeAndClear) {
+TEST_F(ArcAppInstallEventLogTest, OverflowSerializeAndClear) {
   OverflowMaxLogs();
-  EXPECT_EQ(kMaxLogs + 9, log_->total_size());
+  EXPECT_EQ(ArcAppInstallEventLog::kMaxLogs + 9, log_->total_size());
   EXPECT_EQ(10, log_->max_size());
 
   log_->Serialize(&report_);
@@ -264,15 +264,15 @@ TEST_F(AppInstallEventLogTest, OverflowSerializeAndClear) {
 // more app. Add more entries for one of the apps already in the log. Serialize
 // the log. Verify that the log entries for the last app were ignored. Then,
 // clear the serialized log entries. Verify that the log becomes empty.
-TEST_F(AppInstallEventLogTest, OverflowAddSerializeAndClear) {
+TEST_F(ArcAppInstallEventLogTest, OverflowAddSerializeAndClear) {
   OverflowMaxLogs();
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 20; ++i) {
-    event.set_timestamp(i + kMaxLogs + 9);
+    event.set_timestamp(i + ArcAppInstallEventLog::kMaxLogs + 9);
     log_->Add(kFirstPackageName, event);
   }
-  EXPECT_EQ(kMaxLogs + 29, log_->total_size());
+  EXPECT_EQ(ArcAppInstallEventLog::kMaxLogs + 29, log_->total_size());
   EXPECT_EQ(30, log_->max_size());
 
   log_->Serialize(&report_);
@@ -291,9 +291,9 @@ TEST_F(AppInstallEventLogTest, OverflowAddSerializeAndClear) {
 // more app. Serialize the log. Add more entries for one of the apps already in
 // the log and another app. Clear the log. Verify that the log now contains the
 // entries added after serialization for the app that was already in the log.
-TEST_F(AppInstallEventLogTest, OverflowSerializeAddAndClear) {
+TEST_F(ArcAppInstallEventLogTest, OverflowSerializeAddAndClear) {
   OverflowMaxLogs();
-  EXPECT_EQ(kMaxLogs + 9, log_->total_size());
+  EXPECT_EQ(ArcAppInstallEventLog::kMaxLogs + 9, log_->total_size());
   EXPECT_EQ(10, log_->max_size());
 
   log_->Serialize(&report_);
@@ -301,11 +301,11 @@ TEST_F(AppInstallEventLogTest, OverflowSerializeAddAndClear) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 20; ++i) {
-    event.set_timestamp(i + kMaxLogs + 9);
+    event.set_timestamp(i + ArcAppInstallEventLog::kMaxLogs + 9);
     log_->Add(kFirstPackageName, event);
   }
   for (int i = 0; i < 10; ++i) {
-    event.set_timestamp(i + kMaxLogs + 49);
+    event.set_timestamp(i + ArcAppInstallEventLog::kMaxLogs + 49);
     log_->Add(kSecondPackageName, event);
   }
 
@@ -320,37 +320,38 @@ TEST_F(AppInstallEventLogTest, OverflowSerializeAddAndClear) {
   EXPECT_EQ(kFirstPackageName, app_log.package());
   ASSERT_EQ(20, app_log.logs_size());
   for (int i = 0; i < 20; ++i) {
-    EXPECT_EQ(i + kMaxLogs + 9, app_log.logs(i).timestamp());
+    EXPECT_EQ(i + ArcAppInstallEventLog::kMaxLogs + 9,
+              app_log.logs(i).timestamp());
   }
 }
 
 // Add 10 log entries for a first app and more entries than the log has capacity
 // for for a second app. Verify that the total and maximum log sizes are
 // reported correctly.
-TEST_F(AppInstallEventLogTest, OverflowSingleApp) {
+TEST_F(ArcAppInstallEventLogTest, OverflowSingleApp) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 10; ++i) {
     event.set_timestamp(i);
     log_->Add(kFirstPackageName, event);
   }
-  for (int i = 0; i < kLogCapacity + 1; ++i) {
+  for (int i = 0; i < SingleArcAppInstallEventLog::kLogCapacity + 1; ++i) {
     event.set_timestamp(i + 10);
     log_->Add(kSecondPackageName, event);
   }
-  EXPECT_EQ(10 + kLogCapacity, log_->total_size());
-  EXPECT_EQ(kLogCapacity, log_->max_size());
+  EXPECT_EQ(10 + SingleArcAppInstallEventLog::kLogCapacity, log_->total_size());
+  EXPECT_EQ(SingleArcAppInstallEventLog::kLogCapacity, log_->max_size());
 }
 
 // Create an empty log. Store the log. Verify that no log file is created.
-TEST_F(AppInstallEventLogTest, Store) {
+TEST_F(ArcAppInstallEventLogTest, Store) {
   log_->Store();
   EXPECT_FALSE(base::PathExists(file_name_));
 }
 
 // Add a log entry. Store the log. Verify that a log file is created. Then,
 // delete the log file. Store the log. Verify that no log file is created.
-TEST_F(AppInstallEventLogTest, AddStoreAndStore) {
+TEST_F(ArcAppInstallEventLogTest, AddStoreAndStore) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   event.set_timestamp(0);
@@ -366,7 +367,7 @@ TEST_F(AppInstallEventLogTest, AddStoreAndStore) {
 
 // Serialize the log. Clear the serialized log entries. Store the log. Verify
 // that no log file is created.
-TEST_F(AppInstallEventLogTest, SerializeClearAndStore) {
+TEST_F(ArcAppInstallEventLogTest, SerializeClearAndStore) {
   log_->Serialize(&report_);
   log_->ClearSerialized();
   log_->Store();
@@ -376,7 +377,7 @@ TEST_F(AppInstallEventLogTest, SerializeClearAndStore) {
 // Add a log entry. Serialize the log. Clear the serialized log entries. Store
 // the log. Verify that a log file is created. Verify that that the log contents
 // are loaded correctly.
-TEST_F(AppInstallEventLogTest, AddSerializeCleaStoreAndLoad) {
+TEST_F(ArcAppInstallEventLogTest, AddSerializeCleaStoreAndLoad) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   event.set_timestamp(0);
@@ -386,7 +387,7 @@ TEST_F(AppInstallEventLogTest, AddSerializeCleaStoreAndLoad) {
   log_->Store();
   EXPECT_TRUE(base::PathExists(file_name_));
 
-  AppInstallEventLog log(file_name_);
+  ArcAppInstallEventLog log(file_name_);
   EXPECT_EQ(0, log.total_size());
   EXPECT_EQ(0, log.max_size());
 
@@ -398,7 +399,7 @@ TEST_F(AppInstallEventLogTest, AddSerializeCleaStoreAndLoad) {
 // Populate and store a log. Load the log. Verify that that the log contents are
 // loaded correctly. Then, delete the log file. Store the log. Verify that no
 // log file is created.
-TEST_F(AppInstallEventLogTest, StoreLoadAndStore) {
+TEST_F(ArcAppInstallEventLogTest, StoreLoadAndStore) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 10; ++i) {
@@ -412,7 +413,7 @@ TEST_F(AppInstallEventLogTest, StoreLoadAndStore) {
 
   log_->Store();
 
-  AppInstallEventLog log(file_name_);
+  ArcAppInstallEventLog log(file_name_);
   EXPECT_EQ(20, log.total_size());
   EXPECT_EQ(10, log.max_size());
 
@@ -428,7 +429,7 @@ TEST_F(AppInstallEventLogTest, StoreLoadAndStore) {
 
 // Populate and serialize a log. Store the log. Load the log. Clear serialized
 // entries in the loaded log. Verify that no entries are removed.
-TEST_F(AppInstallEventLogTest, SerializeStoreLoadAndClear) {
+TEST_F(ArcAppInstallEventLogTest, SerializeStoreLoadAndClear) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 10; ++i) {
@@ -440,7 +441,7 @@ TEST_F(AppInstallEventLogTest, SerializeStoreLoadAndClear) {
 
   log_->Store();
 
-  AppInstallEventLog log(file_name_);
+  ArcAppInstallEventLog log(file_name_);
   EXPECT_EQ(10, log.total_size());
   EXPECT_EQ(10, log.max_size());
 
@@ -461,7 +462,7 @@ TEST_F(AppInstallEventLogTest, SerializeStoreLoadAndClear) {
 
 // Populate and serialize a log. Store the log. Change the version in the log
 // file. Load the log. Verify that the log contents are not loaded.
-TEST_F(AppInstallEventLogTest, LoadVersionMismatch) {
+TEST_F(ArcAppInstallEventLogTest, LoadVersionMismatch) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 10; ++i) {
@@ -483,7 +484,7 @@ TEST_F(AppInstallEventLogTest, LoadVersionMismatch) {
       file->Write(0, reinterpret_cast<const char*>(&version), sizeof(version)));
   file.reset();
 
-  AppInstallEventLog log(file_name_);
+  ArcAppInstallEventLog log(file_name_);
   EXPECT_EQ(0, log.total_size());
   EXPECT_EQ(0, log.max_size());
 
@@ -494,7 +495,7 @@ TEST_F(AppInstallEventLogTest, LoadVersionMismatch) {
 // Add 10 log entries each for two apps. Store the log. Truncate the file to the
 // length of a log containing 10 log entries for one app plus one byte. Load the
 // log. Verify that the log contains 10 logs for one app.
-TEST_F(AppInstallEventLogTest, LoadTruncated) {
+TEST_F(ArcAppInstallEventLogTest, LoadTruncated) {
   em::AppInstallReportLogEvent event;
   event.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   for (int i = 0; i < 10; ++i) {
@@ -519,7 +520,7 @@ TEST_F(AppInstallEventLogTest, LoadTruncated) {
   file->SetLength(size + 1);
   file.reset();
 
-  AppInstallEventLog log(file_name_);
+  ArcAppInstallEventLog log(file_name_);
   EXPECT_EQ(10, log.total_size());
   EXPECT_EQ(10, log.max_size());
 

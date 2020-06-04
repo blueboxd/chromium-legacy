@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground, NativeLayer, NativeLayerImpl, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, getSelectDropdownBackground, GREEN_PRINTER_STATUS, NativeLayer, NativeLayerImpl, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity, RED_PRINTER_STATUS} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {Base, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -189,27 +189,27 @@ suite(printer_status_test_cros.suiteName, function() {
           const dropdown = destinationSelect.$$('#dropdown');
           return whenStatusRequestsDone.then(() => {
             assertEquals(
-                'green',
+                GREEN_PRINTER_STATUS,
                 dropdown.$$(`#${escapeForwardSlahes(destination1.key)}`)
                     .firstChild.style.backgroundColor);
             assertEquals(
-                'green',
+                GREEN_PRINTER_STATUS,
                 dropdown.$$(`#${escapeForwardSlahes(destination2.key)}`)
                     .firstChild.style.backgroundColor);
             assertEquals(
-                'green',
+                GREEN_PRINTER_STATUS,
                 dropdown.$$(`#${escapeForwardSlahes(destination3.key)}`)
                     .firstChild.style.backgroundColor);
             assertEquals(
-                'red',
+                RED_PRINTER_STATUS,
                 dropdown.$$(`#${escapeForwardSlahes(destination4.key)}`)
                     .firstChild.style.backgroundColor);
             assertEquals(
-                'red',
+                RED_PRINTER_STATUS,
                 dropdown.$$(`#${escapeForwardSlahes(destination5.key)}`)
                     .firstChild.style.backgroundColor);
             assertEquals(
-                'red',
+                RED_PRINTER_STATUS,
                 dropdown.$$(`#${escapeForwardSlahes(destination6.key)}`)
                     .firstChild.style.backgroundColor);
             assertEquals(

@@ -76,6 +76,10 @@ void ChromeBrowserProvider::AddSerializableData(
     web::SerializableUserDataManager* user_data_manager,
     web::WebState* web_state) {}
 
+bool ChromeBrowserProvider::MightBlockUrlDuringRestore() {
+  return false;
+}
+
 bool ChromeBrowserProvider::ShouldBlockUrlDuringRestore(
     const GURL& url,
     web::WebState* web_state) {

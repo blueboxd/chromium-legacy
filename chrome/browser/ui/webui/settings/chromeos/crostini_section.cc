@@ -434,9 +434,6 @@ void CrostiniSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           chromeos::ProfileHelper::IsOwnerProfile(profile()));
   html_source->AddBoolean("isEnterpriseManaged",
                           IsDeviceManaged() || IsProfileManaged(profile()));
-  html_source->AddBoolean(
-      "canChangeAdbSideloading",
-      crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(profile()));
   html_source->AddBoolean("showCrostiniContainerUpgrade",
                           IsContainerUpgradeAllowed());
   html_source->AddBoolean("showCrostiniDiskResize", IsDiskResizingAllowed());

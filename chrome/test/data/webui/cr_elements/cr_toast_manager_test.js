@@ -5,17 +5,14 @@
 // clang-format off
 // #import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 // #import {eventToPromise} from '../test_util.m.js';
-// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-toast-manager', () => {
-  /** @type {!CrToastManagerElement} */
   let toastManager;
 
   suiteSetup(() => {
-    document.body.innerHTML = '';
-    toastManager = /** @type {!CrToastManagerElement} */ (
-        document.createElement('cr-toast-manager'));
+    PolymerTest.clearBody();
+    toastManager = document.createElement('cr-toast-manager');
     document.body.appendChild(toastManager);
   });
 
@@ -48,7 +45,6 @@ suite('cr-toast-manager', () => {
 
   test('duration passed through to toast', () => {
     toastManager.duration = 3;
-    assertEquals(
-        3, /** @type {!CrToastElement} */ (toastManager.$$('#toast').duration));
+    assertEquals(3, toastManager.$.toast.duration);
   });
 });

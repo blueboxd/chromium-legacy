@@ -158,6 +158,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     _startupInformation = startupInformation;
     _browserLauncher = browserLauncher;
     _mainApplicationDelegate = applicationDelegate;
+    _appCommandDispatcher = [[CommandDispatcher alloc] init];
 
     if (@available(iOS 13, *)) {
       if (IsSceneStartupSupported()) {

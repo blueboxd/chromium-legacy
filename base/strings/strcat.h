@@ -76,17 +76,6 @@ inline string16 StrCat(std::initializer_list<StringPiece16> pieces) {
   return StrCat(make_span(pieces));
 }
 
-#if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
-BASE_EXPORT std::wstring StrCat(span<const WStringPiece> pieces)
-    WARN_UNUSED_RESULT;
-BASE_EXPORT std::wstring StrCat(span<const std::wstring> pieces)
-    WARN_UNUSED_RESULT;
-
-inline std::wstring StrCat(std::initializer_list<WStringPiece> pieces) {
-  return StrCat(make_span(pieces));
-}
-#endif  // defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
-
 // StrAppend -------------------------------------------------------------------
 //
 // Appends a sequence of strings to a destination. Prefer:
@@ -111,16 +100,10 @@ inline void StrAppend(string16* dest,
   StrAppend(dest, make_span(pieces));
 }
 
-#if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
-BASE_EXPORT void StrAppend(std::wstring* dest, span<const WStringPiece> pieces);
-BASE_EXPORT void StrAppend(std::wstring* dest, span<const std::wstring> pieces);
-
-inline void StrAppend(std::wstring* dest,
-                      std::initializer_list<WStringPiece> pieces) {
-  StrAppend(dest, make_span(pieces));
-}
-#endif  // defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
-
 }  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/strcat_win.h"
+#endif
 
 #endif  // BASE_STRINGS_STRCAT_H_

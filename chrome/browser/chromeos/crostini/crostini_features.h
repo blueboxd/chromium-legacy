@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_FEATURES_H_
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_FEATURES_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 class Profile;
 
@@ -43,10 +45,17 @@ class CrostiniFeatures {
   // Returns true if container upgrade ui is allowed by flag.
   virtual bool IsContainerUpgradeUIAllowed(Profile*);
 
-  // Returns whether the user is allowed to enable and disable ADB sideloading
+  using CanChangeAdbSideloadingCallback =
+      base::OnceCallback<void(bool can_change_adb_sideloading)>;
+
+  // Checks whether the user is allowed to enable and disable ADB sideloading
   // based on whether the user is the owner, whether the user and the device
-  // are managed, and feature flag and policies for managed case.
-  virtual bool CanChangeAdbSideloading(Profile* profile);
+  // are managed, and feature flag and policies for managed case. Once this is
+  // established, the callback is invoked and passed a boolean indicating
+  // whether changes to ADB sideloading are allowed.
+  virtual void CanChangeAdbSideloading(
+      Profile* profile,
+      CanChangeAdbSideloadingCallback callback);
 
   // TODO(crbug.com/1004708): Move other functions from crostini_util to here.
 
@@ -55,6 +64,9 @@ class CrostiniFeatures {
 
   CrostiniFeatures();
   virtual ~CrostiniFeatures();
+
+ private:
+  base::WeakPtrFactory<CrostiniFeatures> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniFeatures);
 };

@@ -323,13 +323,14 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       base::Optional<String> end_mark,
       ExceptionState&);
 
-  PerformanceMeasure* MeasureWithDetail(ScriptState*,
-                                        const AtomicString& measure_name,
-                                        const StringOrDouble& start,
-                                        base::Optional<double> duration,
-                                        const StringOrDouble& end,
-                                        const ScriptValue& detail,
-                                        ExceptionState&);
+  PerformanceMeasure* MeasureWithDetail(
+      ScriptState*,
+      const AtomicString& measure_name,
+      const base::Optional<StringOrDouble>& start,
+      const base::Optional<double>& duration,
+      const base::Optional<StringOrDouble>& end,
+      const ScriptValue& detail,
+      ExceptionState&);
 
   void CopySecondaryBuffer();
   PerformanceEntryVector getEntriesByTypeInternal(

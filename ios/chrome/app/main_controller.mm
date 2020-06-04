@@ -25,6 +25,7 @@
 #include "components/ukm/ios/features.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
+#import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/memory_monitor.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
@@ -77,6 +78,7 @@
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
@@ -210,7 +212,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 }  // namespace
 
-@interface MainController () <PrefObserverDelegate> {
+@interface MainController () <PrefObserverDelegate, BlockingSceneCommands> {
   IBOutlet UIWindow* _window;
 
   // Weak; owned by the ChromeBrowserProvider.
@@ -384,6 +386,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Register all providers before calling any Chromium code.
   [ProviderRegistration registerProviders];
+
+  // Start dispatching for blocking UI commands.
+  [self.appState.appCommandDispatcher
+      startDispatchingToTarget:self
+                   forProtocol:@protocol(BlockingSceneCommands)];
 
   if (@available(iOS 13, *)) {
     if (IsSceneStartupSupported()) {
@@ -1240,6 +1247,29 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       ->Remove(timePeriod, removeMask, base::BindOnce(removalCompletion));
 }
 
+#pragma mark - BlockingSceneCommands
+
+- (void)activateBlockingScene:(UIScene*)requestingScene
+    API_AVAILABLE(ios(13.0)) {
+  if (@available(iOS 13, *)) {
+    UISceneActivationRequestOptions* options =
+        [[UISceneActivationRequestOptions alloc] init];
+    options.requestingScene = requestingScene;
+    UIScene* blockingScene = self.appState.sceneShowingBlockingUI.scene;
+    if (!blockingScene) {
+      return;
+    }
+    [[UIApplication sharedApplication]
+        requestSceneSessionActivation:blockingScene.session
+                         userActivity:nil
+                              options:options
+                         errorHandler:^(NSError* error) {
+                           LOG(ERROR) << base::SysNSStringToUTF8(
+                               error.localizedDescription);
+                           NOTREACHED();
+                         }];
+  }
+}
 
 @end
 

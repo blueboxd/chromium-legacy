@@ -2338,8 +2338,6 @@ jumbo_source_set("browser") {
       "//build/config/linux/atspi2",
     ]
 
-    deps += [ "//ui/gfx/x" ]
-
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
     }

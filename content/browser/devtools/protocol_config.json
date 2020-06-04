@@ -94,7 +94,7 @@
             },
             {
                 "domain": "Target",
-                "async": ["disposeBrowserContext", "setAutoAttach"]
+                "async": ["createBrowserContext", "disposeBrowserContext", "setAutoAttach"]
             },
             {
                 "domain": "Tethering",

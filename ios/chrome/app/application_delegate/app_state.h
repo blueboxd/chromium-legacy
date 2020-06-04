@@ -9,6 +9,7 @@
 
 @class AppState;
 @protocol BrowserLauncher;
+@class CommandDispatcher;
 @class SceneState;
 @class MainApplicationDelegate;
 @class MemoryWarningHelper;
@@ -41,6 +42,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
      startupInformation:(id<StartupInformation>)startupInformation
     applicationDelegate:(MainApplicationDelegate*)applicationDelegate
     NS_DESIGNATED_INITIALIZER;
+
+// Dispatcher for app-level commands for multiwindow use cases.
+// Most features should use the browser-level dispatcher instead.
+@property(nonatomic, strong) CommandDispatcher* appCommandDispatcher;
 
 // YES if the user has ever interacted with the application. May be NO if the
 // application has been woken up by the system for background work.

@@ -133,23 +133,25 @@ double UserTiming::GetTimeOrFindMarkTime(const AtomicString& measure_name,
   return time;
 }
 
-PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
-                                        const AtomicString& measure_name,
-                                        const StringOrDouble& start,
-                                        base::Optional<double> duration,
-                                        const StringOrDouble& end,
-                                        const ScriptValue& detail,
-                                        ExceptionState& exception_state) {
+PerformanceMeasure* UserTiming::Measure(
+    ScriptState* script_state,
+    const AtomicString& measure_name,
+    const base::Optional<StringOrDouble>& start,
+    const base::Optional<double>& duration,
+    const base::Optional<StringOrDouble>& end,
+    const ScriptValue& detail,
+    ExceptionState& exception_state) {
   double start_time =
-      start.IsNull()
-          ? 0.0
-          : GetTimeOrFindMarkTime(measure_name, start, exception_state);
+      start.has_value()
+          ? GetTimeOrFindMarkTime(measure_name, start.value(), exception_state)
+          : 0;
   if (exception_state.HadException())
     return nullptr;
 
   double end_time =
-      end.IsNull() ? performance_->now()
-                   : GetTimeOrFindMarkTime(measure_name, end, exception_state);
+      end.has_value()
+          ? GetTimeOrFindMarkTime(measure_name, end.value(), exception_state)
+          : performance_->now();
   if (exception_state.HadException())
     return nullptr;
 
@@ -157,11 +159,11 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
     // When |duration| is specified, we require that exactly one of |start| and
     // |end| were specified. Then, since |start| + |duration| = |end|, we'll
     // compute the missing boundary.
-    if (start.IsNull()) {
+    if (!start) {
       start_time = end_time - duration.value();
     } else {
-      DCHECK(end.IsNull()) << "When duration is specified, one of 'start' or "
-                              "'end' must be unspecified";
+      DCHECK(!end) << "When duration is specified, one of 'start' or "
+                      "'end' must be unspecified";
       end_time = start_time + duration.value();
     }
   }

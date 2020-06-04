@@ -660,7 +660,7 @@ void UserSessionManager::InitNonKioskExtensionFeaturesSessionType(
   // type has be set before kiosk app controller takes over, as at that point
   // kiosk app profile would already be initialized - feature session type
   // should be set before that.
-  if (user->GetType() == user_manager::USER_TYPE_KIOSK_APP) {
+  if (user->IsKioskType()) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kLoginUser)) {
       // For kiosk session crash recovery, feature session type has be set

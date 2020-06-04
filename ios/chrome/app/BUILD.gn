@@ -137,6 +137,7 @@ source_set("app_internal") {
 
   deps = [
     ":app",
+    ":blocking_scene_commands",
     ":mode",
     ":tests_hook",
     "//base",
@@ -264,6 +265,13 @@ source_set("app_internal") {
     "//ios/chrome/app/application_delegate:application_delegate_internal",
     "//ios/chrome/browser/ui/main:scene",
   ]
+}
+
+source_set("blocking_scene_commands") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "blocking_scene_commands.h" ]
+
+  deps = [ "//base" ]
 }
 
 source_set("mode") {

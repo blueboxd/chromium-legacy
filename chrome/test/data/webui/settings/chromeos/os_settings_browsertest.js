@@ -954,7 +954,7 @@ var OSSettingsPeoplePageAccountManagerTest =
   }
 };
 
-TEST_F('OSSettingsPeoplePageAccountManagerTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPeoplePageAccountManagerTest', 'AllJsTests', () => {
   mocha.run();
 });
 

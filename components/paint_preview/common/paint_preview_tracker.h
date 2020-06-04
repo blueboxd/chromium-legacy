@@ -50,6 +50,9 @@ class PaintPreviewTracker {
       const gfx::Rect& rect,
       const base::UnguessableToken& embedding_token);
 
+  // Sets the scroll position for the top layer frame.
+  void SetScrollForFrame(const SkISize& scroll);
+
   // Adds the glyphs in |blob| to the glyph usage tracker for the |blob|'s
   // associated typface.
   void AddGlyphs(const SkTextBlob* blob);
@@ -82,6 +85,8 @@ class PaintPreviewTracker {
   const base::UnguessableToken guid_;
   const base::Optional<base::UnguessableToken> embedding_token_;
   const bool is_main_frame_;
+
+  SkISize scroll_;
 
   std::vector<mojom::LinkDataPtr> links_;
   PictureSerializationContext content_id_to_embedding_token_;

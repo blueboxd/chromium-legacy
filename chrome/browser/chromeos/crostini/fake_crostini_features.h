@@ -28,8 +28,10 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   bool IsEnabled(Profile* profile) override;
   bool IsExportImportUIAllowed(Profile* profile) override;
   bool IsRootAccessAllowed(Profile* profile) override;
-  bool IsContainerUpgradeUIAllowed(Profile*) override;
-  bool CanChangeAdbSideloading(Profile* profile) override;
+  bool IsContainerUpgradeUIAllowed(Profile* profile) override;
+  void CanChangeAdbSideloading(
+      Profile* profile,
+      CanChangeAdbSideloadingCallback callback) override;
 
   void SetAll(bool flag);
   void ClearAll();

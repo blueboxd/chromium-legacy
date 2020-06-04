@@ -466,4 +466,7 @@ const char kSystemProxySettingsKeySystemServicesUsername[] =
 const char kSystemProxySettingsKeySystemServicesPassword[] =
     "system_services_password";
 
+// An enum pref that indicates whether adb sideloading is allowed on this device
+const char kDeviceCrostiniArcAdbSideloadingAllowed[] =
+    "cros.device.crostini_arc_adb_sideloading_allowed";
 }  // namespace chromeos

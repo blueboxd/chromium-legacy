@@ -7,9 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol BlockingSceneCommands;
+
 // This view controller presents an overlay UI that obscures all contents of the
 // screen and instruct the user to finish a dialog in another window.
 @interface BlockingOverlayViewController : UIViewController
+
+// Handler for blocking scene commands.
+@property(nonatomic, weak) id<BlockingSceneCommands>
+    blockingSceneCommandHandler;
 
 @end
 

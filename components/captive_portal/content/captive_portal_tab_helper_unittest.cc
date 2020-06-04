@@ -298,9 +298,19 @@ TEST_F(CaptivePortalTabHelperTest, UnexpectedProvisionalLoad) {
   cross_process_navigation->CommitErrorPage();
 }
 
-// Similar to the above test, except the original RenderViewHost manages to
+// Similar to the above test, except the original RenderFrameHost manages to
 // commit before its navigation is aborted.
 TEST_F(CaptivePortalTabHelperTest, UnexpectedCommit) {
+  if (content::CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
+    // same-site main-frame navigations, the same-site navigation below will
+    // create a pending RenderFrameHost, which will be deleted when a cross-site
+    // navigation starts (because it also creates a pending RenderFrameHost).
+    // This means the case we wanted for this test is not possible with
+    // ProactivelySwapBrowsingInstance or RenderDocument, so we should just skip
+    // this test.
+    return;
+  }
   GURL same_site_url = GURL(kHttpUrl);
   GURL cross_process_url = GURL(kHttpsUrl2);
 

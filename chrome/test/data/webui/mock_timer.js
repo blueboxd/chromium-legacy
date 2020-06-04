@@ -23,10 +23,10 @@
 
     /**
      * Details for active timers.
-     * @type {!Array<{callback: Function,
+     * @type {Array<{callback: Function,
      *                delay: number,
      *                key: number,
-     *                repeats: boolean}|undefined>}
+     *                repeats: boolean}>}
      * @private
      */
     this.timers_ = [];

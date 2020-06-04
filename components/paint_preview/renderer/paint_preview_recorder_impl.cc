@@ -155,9 +155,12 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
     bounds = gfx::Rect(params->clip_rect.size());
   }
 
-  cc::PaintRecorder recorder;
   auto tracker = std::make_unique<PaintPreviewTracker>(
       params->guid, frame->GetEmbeddingToken(), is_main_frame_);
+  auto size = frame->GetScrollOffset();
+  tracker->SetScrollForFrame(SkISize::Make(size.width, size.height));
+
+  cc::PaintRecorder recorder;
   cc::PaintCanvas* canvas =
       recorder.beginRecording(bounds.width(), bounds.height());
   canvas->SetPaintPreviewTracker(tracker.get());

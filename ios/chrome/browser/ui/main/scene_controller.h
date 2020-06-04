@@ -44,6 +44,11 @@
 @property(nonatomic, strong, readonly) id<BrowserInterfaceProvider>
     interfaceProvider;
 
+// Handler for the UIWindowSceneDelegate callback with the same selector.
+- (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
+                   completionHandler:(void (^)(BOOL succeeded))completionHandler
+    API_AVAILABLE(ios(13));
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MAIN_SCENE_CONTROLLER_H_

@@ -1618,9 +1618,6 @@ CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
     const PaintArtifact& paint_artifact) const {
   DCHECK(layer_debug_info_enabled_);
 
-  if (layer.compositing_type == PendingLayer::kOverlap)
-    return CompositingReason::kOverlap;
-
   if (layer.compositing_type == PendingLayer::kRequiresOwnLayer) {
     const auto& first_chunk = layer.FirstPaintChunk(paint_artifact);
     if (IsCompositedScrollHitTest(first_chunk))
@@ -1648,12 +1645,19 @@ CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
                              &previous_layer->property_tree_state.Transform()) {
     reasons |= layer.property_tree_state.Transform()
                    .DirectCompositingReasonsForDebugging();
+    if (!layer.property_tree_state.Transform().BackfaceVisibilitySameAsParent())
+      reasons |= CompositingReason::kBackfaceVisibilityHidden;
   }
   if (!previous_layer || &layer.property_tree_state.Effect() !=
                              &previous_layer->property_tree_state.Effect()) {
     reasons |= layer.property_tree_state.Effect()
                    .DirectCompositingReasonsForDebugging();
   }
+
+  if (reasons == CompositingReason::kNone &&
+      layer.compositing_type == PendingLayer::kOverlap)
+    reasons = CompositingReason::kOverlap;
+
   return reasons;
 }
 

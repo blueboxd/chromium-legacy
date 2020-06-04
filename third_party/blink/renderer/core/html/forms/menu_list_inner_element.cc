@@ -33,6 +33,16 @@ MenuListInnerElement::CustomStyleForLayoutObject() {
   style->SetTextOverflow(parent_style.TextOverflow());
   style->SetUserModify(EUserModify::kReadOnly);
 
+  if (style->LineHeight() == ComputedStyleInitialValues::InitialLineHeight()) {
+    // line-height should be consistent with MenuListIntrinsicBlockSize()
+    // in layout_box.cc.
+    const SimpleFontData* font_data = style->GetFont().PrimaryFont();
+    if (font_data)
+      style->SetLineHeight(Length::Fixed(font_data->GetFontMetrics().Height()));
+    else
+      style->SetLineHeight(Length::Fixed(style->FontSize()));
+  }
+
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
   // But we only do that for the cases where html.css would otherwise use

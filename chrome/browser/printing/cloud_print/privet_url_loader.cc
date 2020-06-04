@@ -250,8 +250,8 @@ void PrivetURLLoader::OnDownloadedToString(
     return;
   }
 
-  base::JSONReader json_reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  base::Optional<base::Value> value = json_reader.ReadToValue(*response_body);
+  base::Optional<base::Value> value =
+      base::JSONReader::Read(*response_body, base::JSON_ALLOW_TRAILING_COMMAS);
   if (!value || !value->is_dict()) {
     delegate_->OnError(0, JSON_PARSE_ERROR);
     return;

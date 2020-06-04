@@ -1212,9 +1212,7 @@ class ComputedStyle : public ComputedStyleBase,
   bool LoadingCustomFontsEqual(const ComputedStyle&) const;
   bool InheritedDataShared(const ComputedStyle&) const;
 
-  bool HasChildDependentFlags() const {
-    return HasExplicitlyInheritedProperties();
-  }
+  bool HasChildDependentFlags() const { return ChildHasExplicitInheritance(); }
   void CopyChildDependentFlagsFrom(const ComputedStyle&);
 
   // Counters.

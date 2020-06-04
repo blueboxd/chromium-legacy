@@ -104,6 +104,11 @@ void CrostiniHandler::RegisterMessages() {
       base::BindRepeating(&CrostiniHandler::HandleQueryArcAdbRequest,
                           weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
+      "getCanChangeArcAdbSideloading",
+      base::BindRepeating(
+          &CrostiniHandler::HandleCanChangeArcAdbSideloadingRequest,
+          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
       "enableArcAdbSideload",
       base::BindRepeating(&CrostiniHandler::HandleEnableArcAdbRequest,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -437,7 +442,15 @@ void CrostiniHandler::OnQueryAdbSideload(
 
 void CrostiniHandler::HandleEnableArcAdbRequest(const base::ListValue* args) {
   CHECK_EQ(0U, args->GetList().size());
-  if (!CheckEligibilityToChangeArcAdbSideloading())
+
+  crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(
+      profile_, base::BindOnce(&CrostiniHandler::OnCanEnableArcAdbSideloading,
+                               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniHandler::OnCanEnableArcAdbSideloading(
+    bool can_change_adb_sideloading) {
+  if (!can_change_adb_sideloading)
     return;
 
   LogEvent(CrostiniSettingsEvent::kEnableAdbSideloading);
@@ -451,7 +464,15 @@ void CrostiniHandler::HandleEnableArcAdbRequest(const base::ListValue* args) {
 
 void CrostiniHandler::HandleDisableArcAdbRequest(const base::ListValue* args) {
   CHECK_EQ(0U, args->GetList().size());
-  if (!CheckEligibilityToChangeArcAdbSideloading())
+
+  crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(
+      profile_, base::BindOnce(&CrostiniHandler::OnCanDisableArcAdbSideloading,
+                               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniHandler::OnCanDisableArcAdbSideloading(
+    bool can_change_adb_sideloading) {
+  if (!can_change_adb_sideloading)
     return;
 
   LogEvent(CrostiniSettingsEvent::kDisableAdbSideloading);
@@ -462,10 +483,6 @@ void CrostiniHandler::HandleDisableArcAdbRequest(const base::ListValue* args) {
 
   chromeos::PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_FOR_USER, "disable adb sideloading");
-}
-
-bool CrostiniHandler::CheckEligibilityToChangeArcAdbSideloading() const {
-  return crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(profile_);
 }
 
 void CrostiniHandler::LaunchTerminal() {
@@ -500,6 +517,22 @@ void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
       chromeos::SessionManagerClient::Get();
   client->QueryAdbSideload(base::BindOnce(&CrostiniHandler::OnQueryAdbSideload,
                                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniHandler::HandleCanChangeArcAdbSideloadingRequest(
+    const base::ListValue* args) {
+  AllowJavascript();
+  CHECK_EQ(0U, args->GetList().size());
+
+  crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(
+      profile_, base::BindOnce(&CrostiniHandler::OnCanChangeArcAdbSideloading,
+                               weak_ptr_factory_.GetWeakPtr()));
+}
+
+void CrostiniHandler::OnCanChangeArcAdbSideloading(
+    bool can_change_arc_adb_sideloading) {
+  FireWebUIListener("crostini-can-change-arc-adb-sideload-changed",
+                    base::Value(can_change_arc_adb_sideloading));
 }
 
 void CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest(

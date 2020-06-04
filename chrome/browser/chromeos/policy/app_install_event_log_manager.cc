@@ -17,8 +17,8 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -167,7 +167,7 @@ AppInstallEventLogManager::LogSize AppInstallEventLogManager::Log::Init(
     const base::FilePath& file_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!log_);
-  log_ = std::make_unique<AppInstallEventLog>(file_path);
+  log_ = std::make_unique<ArcAppInstallEventLog>(file_path);
   return GetSize();
 }
 

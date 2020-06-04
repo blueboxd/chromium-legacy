@@ -20,9 +20,9 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log.h"
 #include "chrome/browser/profiles/reporting_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -285,7 +285,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
 
   void VerifyLogFile() {
     EXPECT_TRUE(base::PathExists(log_file_path_));
-    AppInstallEventLog log(log_file_path_);
+    ArcAppInstallEventLog log(log_file_path_);
     em::AppInstallReportRequest log_events;
     log.Serialize(&log_events);
     EXPECT_TRUE(ContainsSameEvents(events_, log_events));
@@ -337,7 +337,7 @@ TEST_F(AppInstallEventLogManagerTest, CreateEmpty) {
 // the log. Verify that no store is scheduled and an expedited initial upload
 // occurs after fifteen minutes.
 TEST_F(AppInstallEventLogManagerTest, CreateNonEmpty) {
-  AppInstallEventLog log(log_file_path_);
+  ArcAppInstallEventLog log(log_file_path_);
   events_[kPackageNames[0]].push_back(event_);
   log.Add(kPackageNames[0], event_);
   log.Store();
@@ -734,7 +734,7 @@ TEST_F(AppInstallEventLogManagerTest, StoreOnShutdown) {
 // to the app-install event log. Verify that the prefs are cleared and an
 // immediate deletion of the log file is scheduled.
 TEST_F(AppInstallEventLogManagerTest, Clear) {
-  AppInstallEventLog log(log_file_path_);
+  ArcAppInstallEventLog log(log_file_path_);
   events_[kPackageNames[0]].push_back(event_);
   log.Add(kPackageNames[0], event_);
   log.Store();

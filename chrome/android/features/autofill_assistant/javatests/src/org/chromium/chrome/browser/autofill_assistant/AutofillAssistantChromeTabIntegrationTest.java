@@ -50,8 +50,10 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rec
 import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.StopProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.TellProto;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -368,6 +370,45 @@ public class AutofillAssistantChromeTabIntegrationTest {
                 is(getURL(TEST_PAGE_B)));
 
         // Third press on back button navigates back.
+        Espresso.pressBack();
+        waitUntil(()
+                          -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(
+                                  getURL(TEST_PAGE_A)));
+    }
+
+    @Test
+    @MediumTest
+    public void backButtonInStoppedAutofillAssistantState() {
+        ChromeTabUtils.loadUrlOnUiThread(
+                mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setTell(TellProto.newBuilder().setMessage("Shutdown"))
+                         .build());
+        list.add((ActionProto) ActionProto.newBuilder().setStop(StopProto.newBuilder()).build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath(TEST_PAGE_A)
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Done")))
+                        .build(),
+                list);
+        setupScripts(script);
+        startAutofillAssistantOnTab(TEST_PAGE_B);
+
+        waitUntilViewMatchesCondition(withText("Shutdown"), isCompletelyDisplayed());
+
+        // First press on back button fully destroys Autofill Assistant UI, without Undo.
+        Espresso.pressBack();
+        waitUntilViewAssertionTrue(withId(R.id.autofill_assistant), doesNotExist(), 3000L);
+        onView(withText("Shutdown")).check(doesNotExist());
+        onView(withText(R.string.undo)).check(doesNotExist());
+        assertThat(mTestRule.getActivity().getActivityTab().getUrl().getSpec(),
+                is(getURL(TEST_PAGE_B)));
+
+        // Second press on back button navigates back.
         Espresso.pressBack();
         waitUntil(()
                           -> mTestRule.getActivity().getActivityTab().getUrl().getSpec().equals(

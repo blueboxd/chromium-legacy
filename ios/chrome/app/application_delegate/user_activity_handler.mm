@@ -239,7 +239,9 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
                                 browserState:interfaceProvider.currentInterface
                                                  .browserState];
   }
-  completionHandler(handledShortcutItem);
+  if (completionHandler) {
+    completionHandler(handledShortcutItem);
+  }
 }
 
 + (BOOL)willContinueUserActivityWithType:(NSString*)userActivityType {

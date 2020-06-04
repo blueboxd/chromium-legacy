@@ -3013,7 +3013,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
             return;
 
           NSUserActivity* loadURLActivity =
-              ActivityToLoadURL(LoadURLContextMenuOrigin, link, referrer,
+              ActivityToLoadURL(WindowActivityContextMenuOrigin, link, referrer,
                                 strongSelf.isOffTheRecord);
           [strongSelf.dispatcher openNewWindowWithActivity:loadURLActivity];
         };

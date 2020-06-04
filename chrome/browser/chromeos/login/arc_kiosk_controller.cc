@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -54,7 +55,7 @@ void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
                      weak_ptr_factory_.GetWeakPtr()));
 
   kiosk_profile_loader_ = std::make_unique<KioskProfileLoader>(
-      account_id, ArcKioskAppManager::AppType::ARC_APP, false, this);
+      account_id, KioskAppType::ARC_APP, false, this);
   kiosk_profile_loader_->Start();
 }
 

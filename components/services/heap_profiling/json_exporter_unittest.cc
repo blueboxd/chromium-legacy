@@ -425,13 +425,13 @@ TEST(ProfilingJsonExporterTest, LargeAllocation) {
   std::string json = ExportMemoryMapsAndV2StackTraceToJSON(&params);
 
   // JSON should parse.
-  base::JSONReader json_reader(base::JSON_PARSE_RFC);
-  base::Optional<base::Value> result = json_reader.ReadToValue(json);
-  ASSERT_TRUE(result.has_value()) << json_reader.GetErrorMessage();
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(json);
+  ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
 
   // Validate the allocators summary.
   const base::Value* malloc_summary =
-      result.value().FindPath({"allocators", "malloc"});
+      parsed_json.value->FindPath({"allocators", "malloc"});
   ASSERT_TRUE(malloc_summary);
   const base::Value* malloc_size =
       malloc_summary->FindPath({"attrs", "size", "value"});
@@ -445,7 +445,7 @@ TEST(ProfilingJsonExporterTest, LargeAllocation) {
   // Validate allocators details.
   // heaps_v2.allocators.malloc.sizes.reduce((a,s)=>a+s,0).
   const base::Value* malloc =
-      result.value().FindPath({"heaps_v2", "allocators", "malloc"});
+      parsed_json.value->FindPath({"heaps_v2", "allocators", "malloc"});
   const base::Value* malloc_sizes = malloc->FindKey("sizes");
   EXPECT_EQ(1u, malloc_sizes->GetList().size());
   EXPECT_EQ(0x9876543210ul, malloc_sizes->GetList()[0].GetDouble());

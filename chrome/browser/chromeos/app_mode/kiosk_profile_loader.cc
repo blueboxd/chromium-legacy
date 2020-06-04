@@ -16,6 +16,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -131,7 +132,7 @@ class KioskProfileLoader::CryptohomedChecker
 // KioskProfileLoader
 
 KioskProfileLoader::KioskProfileLoader(const AccountId& app_account_id,
-                                       KioskAppManagerBase::AppType app_type,
+                                       KioskAppType app_type,
                                        bool use_guest_mount,
                                        Delegate* delegate)
     : account_id_(app_account_id),
@@ -151,15 +152,15 @@ void KioskProfileLoader::Start() {
 void KioskProfileLoader::LoginAsKioskAccount() {
   login_performer_.reset(new ChromeLoginPerformer(this));
   switch (app_type_) {
-    case KioskAppManagerBase::AppType::ARC_APP:
+    case KioskAppType::ARC_APP:
       // Arc kiosks do not support ephemeral mount.
       DCHECK(!use_guest_mount_);
       login_performer_->LoginAsArcKioskAccount(account_id_);
       return;
-    case KioskAppManagerBase::AppType::CHROME_APP:
+    case KioskAppType::CHROME_APP:
       login_performer_->LoginAsKioskAccount(account_id_, use_guest_mount_);
       return;
-    case KioskAppManagerBase::AppType::WEB_APP:
+    case KioskAppType::WEB_APP:
       // Web kiosks do not support ephemeral mount.
       DCHECK(!use_guest_mount_);
       login_performer_->LoginAsWebKioskAccount(account_id_);

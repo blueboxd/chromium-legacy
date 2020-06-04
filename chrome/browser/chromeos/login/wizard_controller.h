@@ -54,6 +54,7 @@ class NetworkStateHelper;
 class DemoSetupController;
 class ErrorScreen;
 struct Geoposition;
+enum class KioskAppType;
 class LoginDisplayHost;
 class SimpleGeolocationProvider;
 class TimeZoneProvider;
@@ -289,10 +290,7 @@ class WizardController {
   void UpdateStatusAreaVisibilityForScreen(OobeScreenId screen_id);
 
   // Launched kiosk app configured for auto-launch.
-  void AutoLaunchKioskApp();
-
-  // Launched webkiosk app configured for auto-launch.
-  void AutoLaunchWebKioskApp();
+  void AutoLaunchKioskApp(KioskAppType app_type);
 
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);

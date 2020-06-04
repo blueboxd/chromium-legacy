@@ -28,6 +28,9 @@ import {getSelectDropdownBackground} from '../print_preview_utils.js';
 
 import {SelectBehavior} from './select_behavior.js';
 
+export const GREEN_PRINTER_STATUS = 'var(--google-green-700)';
+export const RED_PRINTER_STATUS = 'var(--google-red-600)';
+
 Polymer({
   is: 'print-preview-destination-select-cros',
 
@@ -270,12 +273,12 @@ Polymer({
 
     const statusReason = this.getStatusReasonFromPrinterStatus_(printerStatus);
     if (statusReason === PrinterStatusReason.NO_ERROR) {
-      circle.firstChild.style.backgroundColor = 'green';
+      circle.firstChild.style.backgroundColor = GREEN_PRINTER_STATUS;
       return;
     }
 
     if (statusReason !== PrinterStatusReason.UNKNOWN_REASON) {
-      circle.firstChild.style.backgroundColor = 'red';
+      circle.firstChild.style.backgroundColor = RED_PRINTER_STATUS;
       return;
     }
   },

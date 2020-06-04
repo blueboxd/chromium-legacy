@@ -285,8 +285,8 @@ class StyleCascadeTest : public PageTestBase,
     CSSStyleSheet* sheet =
         CSSStyleSheet::Create(GetDocument(), init, exception_state);
     sheet->replaceSync(css_text, exception_state);
-    sheet->Contents()->EnsureRuleSet(MediaQueryEvaluator(),
-                                     kRuleHasNoSpecialState);
+    sheet->Contents()->EnsureRuleSet(
+        MediaQueryEvaluator(GetDocument().GetFrame()), kRuleHasNoSpecialState);
     return sheet;
   }
 

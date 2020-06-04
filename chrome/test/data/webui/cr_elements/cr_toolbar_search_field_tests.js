@@ -6,29 +6,27 @@
 // #import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.m.js';
 //
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-// #import {assertEquals, assertDeepEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
+// #import {blur, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-toolbar-search-field. */
 suite('cr-toolbar-search-field', function() {
-  /** @type {!CrToolbarSearchFieldElement} */
-  let field;
+  /** @type {?CrToolbarSearchFieldElement} */
+  let field = null;
 
   /** @type {?Array<string>} */
   let searches = null;
 
   /** @param {string} term */
   function simulateSearch(term) {
-    field.$$('#searchInput').value = term;
+    field.$.searchInput.value = term;
     field.onSearchTermInput();
     field.onSearchTermSearch();
   }
 
   setup(function() {
-    document.body.innerHTML = '';
-    field = /** @type {!CrToolbarSearchFieldElement} */ (
-        document.createElement('cr-toolbar-search-field'));
+    PolymerTest.clearBody();
+    field = document.createElement('cr-toolbar-search-field');
     searches = [];
     field.addEventListener('search-changed', function(event) {
       searches.push(event.detail);
@@ -38,6 +36,8 @@ suite('cr-toolbar-search-field', function() {
 
   teardown(function() {
     field.remove();
+    field = null;
+    searches = null;
   });
 
   // Test that no initial 'search-changed' event is fired during
@@ -63,19 +63,18 @@ suite('cr-toolbar-search-field', function() {
     assertFalse(field.showingSearch);
     field.click();
     assertTrue(field.showingSearch);
-    assertEquals(field.$$('#searchInput'), field.root.activeElement);
+    assertEquals(field.$.searchInput, field.root.activeElement);
 
-    field.$$('#searchInput').blur();
+    MockInteractions.blur(field.$.searchInput);
     assertFalse(field.showingSearch);
 
     field.click();
-    assertEquals(field.$$('#searchInput'), field.root.activeElement);
+    assertEquals(field.$.searchInput, field.root.activeElement);
 
     MockInteractions.pressAndReleaseKeyOn(
-        /** @type {!HTMLElement} */ (field.$$('#searchInput')), 27, '',
-        'Escape');
+        field.$.searchInput, 27, '', 'Escape');
     assertFalse(field.showingSearch, 'Pressing escape closes field.');
-    assertNotEquals(field.$$('#searchInput'), field.root.activeElement);
+    assertNotEquals(field.$.searchInput, field.root.activeElement);
   });
 
   test('clear search button clears and refocuses input', function() {
@@ -89,7 +88,7 @@ suite('cr-toolbar-search-field', function() {
     clearSearch.click();
     assertTrue(field.showingSearch);
     assertEquals('', field.getValue());
-    assertEquals(field.$$('#searchInput'), field.root.activeElement);
+    assertEquals(field.$.searchInput, field.root.activeElement);
     assertFalse(field.hasSearchText);
     assertFalse(field.spinnerActive);
   });
@@ -198,7 +197,7 @@ suite('cr-toolbar-search-field', function() {
   test('blur does not close field when a search is active', function() {
     field.click();
     simulateSearch('test');
-    field.$$('#searchInput').blur();
+    MockInteractions.blur(field.$.searchInput);
 
     assertTrue(field.showingSearch);
   });
@@ -218,7 +217,7 @@ suite('cr-toolbar-search-field', function() {
   });
 
   test('closes when value is cleared while unfocused', function() {
-    field.$$('#searchInput').focus();
+    MockInteractions.focus(field.$.searchInput);
     simulateSearch('test');
     Polymer.dom.flush();
 
@@ -229,7 +228,7 @@ suite('cr-toolbar-search-field', function() {
 
     // Does close the field if it is blurred before being cleared.
     simulateSearch('test');
-    field.$$('#searchInput').blur();
+    MockInteractions.blur(field.$.searchInput);
     field.setValue('');
     assertFalse(field.showingSearch);
   });

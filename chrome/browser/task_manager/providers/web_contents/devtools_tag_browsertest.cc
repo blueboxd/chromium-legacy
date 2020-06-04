@@ -11,6 +11,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace task_manager {
@@ -111,8 +112,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DevToolsTaskIsProvided) {
   const int64_t task_id = task->task_id();
   LoadTestPage(kTestPage2);
   EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
-  EXPECT_EQ(task_id, task_manager.tasks().back()->task_id());
-  EXPECT_EQ(task, task_manager.tasks().back());
+  if (content::CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
+    // same-site main frame navigations, the navigation above will result in a
+    // new RenderFrameHost, so the DevTools task will move (but still exist
+    // in the tasks list).
+    EXPECT_NE(task_id, task_manager.tasks().back()->task_id());
+    EXPECT_NE(task, task_manager.tasks().back());
+    EXPECT_EQ(task_id, task_manager.tasks()[0]->task_id());
+    EXPECT_EQ(task, task_manager.tasks()[0]);
+  } else {
+    EXPECT_EQ(task_id, task_manager.tasks().back()->task_id());
+    EXPECT_EQ(task, task_manager.tasks().back());
+  }
   EXPECT_NE(task_manager.tasks()[0]->title(),
             task_manager.tasks()[1]->title());
 

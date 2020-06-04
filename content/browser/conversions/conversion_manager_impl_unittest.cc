@@ -18,6 +18,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_test_utils.h"
 #include "content/browser/conversions/storable_conversion.h"
@@ -313,7 +314,14 @@ TEST_F(ConversionManagerImplTest, ConversionsSentFromUI_ReportedImmediately) {
   EXPECT_EQ(2u, test_reporter_->num_reports());
 }
 
-TEST_F(ConversionManagerImplTest, ExpiredReportsAtStartup_Delayed) {
+// TODO(crbug.com/1088449): Flaky on Linux and Android.
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#define MAYBE_ExpiredReportsAtStartup_Delayed \
+  DISABLED_ExpiredReportsAtStartup_Delayed
+#else
+#define MAYBE_ExpiredReportsAtStartup_Delayed ExpiredReportsAtStartup_Delayed
+#endif
+TEST_F(ConversionManagerImplTest, MAYBE_ExpiredReportsAtStartup_Delayed) {
   // Create a report that will be reported at t= 2 days.
   base::Time start_time = clock().Now();
   conversion_manager_->HandleImpression(

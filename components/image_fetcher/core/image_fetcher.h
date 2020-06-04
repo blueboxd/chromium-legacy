@@ -83,7 +83,7 @@ class ImageFetcherParams {
     skip_transcoding_ = skip_transcoding;
   }
 
-  bool skip_disk_cache_read() { return skip_disk_cache_read_; }
+  bool skip_disk_cache_read() const { return skip_disk_cache_read_; }
 
   void set_skip_disk_cache_read(bool skip_disk_cache_read) {
     skip_disk_cache_read_ = skip_disk_cache_read;

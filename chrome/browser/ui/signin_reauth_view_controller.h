@@ -40,6 +40,15 @@ class SigninReauthViewController
     : public SigninViewControllerDelegate,
       public SigninViewControllerDelegate::Observer {
  public:
+  // An observer class currently used only for tests.
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+    // Called when the WebContents displaying the reauth confirmation UI has
+    // been swapped with Gaia reauth WebContents.
+    virtual void OnGaiaReauthPageShown() = 0;
+  };
+
   enum class GaiaReauthPageState {
     kStarted = 0,    // The Gaia Reauth page is loading in background.
     kNavigated = 1,  // The first navigation has been committed.
@@ -80,6 +89,9 @@ class SigninReauthViewController
   // Called when the Gaia reauth has been completed and the result is available.
   void OnGaiaReauthPageComplete(signin::ReauthResult result);
 
+  // Public for testing.
+  void SetObserverForTesting(Observer* test_observer);
+
  private:
   // Calls |reauth_callback_| with |result| and closes all Reauth UIs.
   void CompleteReauth(signin::ReauthResult result);
@@ -113,6 +125,8 @@ class SigninReauthViewController
   bool user_confirmed_reauth_ = false;
   GaiaReauthPageState gaia_reauth_page_state_ = GaiaReauthPageState::kStarted;
   base::Optional<signin::ReauthResult> gaia_reauth_page_result_;
+
+  Observer* test_observer_ = nullptr;
 
   base::WeakPtrFactory<SigninReauthViewController> weak_ptr_factory_{this};
 };

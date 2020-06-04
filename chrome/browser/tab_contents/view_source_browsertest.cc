@@ -339,7 +339,18 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInMainframe) {
                             "document.getElementById('form').submit();"));
   form_post_observer.Wait();
   GURL target_url(embedded_test_server()->GetURL("a.com", "/echoall"));
-  EXPECT_EQ(target_url, original_main_frame->GetLastCommittedURL());
+
+  content::RenderFrameHost* current_main_frame =
+      original_contents->GetMainFrame();
+  if (content::CanSameSiteMainFrameNavigationsChangeRenderFrameHosts()) {
+    // When ProactivelySwapBrowsingInstance or RenderDocument is enabled on
+    // same-site main frame navigations, the form submission above will result
+    // in a change of RFH.
+    EXPECT_NE(current_main_frame, original_main_frame);
+  } else {
+    EXPECT_EQ(current_main_frame, original_main_frame);
+  }
+  EXPECT_EQ(target_url, current_main_frame->GetLastCommittedURL());
 
   // Extract the response nonce.
   std::string response_nonce;
@@ -347,13 +358,13 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInMainframe) {
       domAutomationController.send(
           document.getElementById('response-nonce').innerText); )";
   EXPECT_TRUE(ExecuteScriptAndExtractString(
-      original_main_frame, response_nonce_extraction_script, &response_nonce));
+      current_main_frame, response_nonce_extraction_script, &response_nonce));
 
   // Open view-source mode tab for the main frame.  This tries to mimic the
   // behavior of RenderViewContextMenu::ExecuteCommand when it handles
   // IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE.
   content::WebContentsAddedObserver view_source_contents_observer;
-  original_main_frame->ViewSource();
+  current_main_frame->ViewSource();
   content::WebContents* view_source_contents =
       view_source_contents_observer.GetWebContents();
   EXPECT_TRUE(WaitForLoadStop(view_source_contents));
@@ -390,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInMainframe) {
 
   // Verify that the original contents and the view-source contents are in a
   // different process - see https://crbug.com/699493.
-  EXPECT_NE(original_main_frame->GetSiteInstance(),
+  EXPECT_NE(current_main_frame->GetSiteInstance(),
             view_source_contents->GetMainFrame()->GetSiteInstance());
 
   // Verify the title of view-source is derived from the URL (not from the title
@@ -399,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, HttpPostInMainframe) {
   EXPECT_EQ("EmbeddedTestServer - EchoAll",
             base::UTF16ToUTF8(original_contents->GetTitle()));
   EXPECT_THAT(title, Not(HasSubstr("EmbeddedTestServer - EchoAll")));
-  GURL original_url = original_main_frame->GetLastCommittedURL();
+  GURL original_url = current_main_frame->GetLastCommittedURL();
   EXPECT_THAT(title, HasSubstr(content::kViewSourceScheme));
   EXPECT_THAT(title, HasSubstr(original_url.host()));
   EXPECT_THAT(title, HasSubstr(original_url.port()));

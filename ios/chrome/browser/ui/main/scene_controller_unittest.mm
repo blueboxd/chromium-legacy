@@ -28,4 +28,8 @@ class SceneControllerTest : public PlatformTest {
 // TODO(crbug.com/1072366): Add a test for
 // ContentSuggestionsSchedulerNotifications receiving notifyForeground:.
 
+// TODO(crbug.com/1084905): Add a test for keeping validity of detecting a fresh
+// open in new window coming from ios dock. 'Dock' is considered the default
+// when the new window opening request is external to chrome and unknown.
+
 }  // namespace

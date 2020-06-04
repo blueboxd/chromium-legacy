@@ -1437,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
   // not possible to inject an auto-launch policy before it runs.
   LoginDisplayHost* login_display_host = LoginDisplayHost::default_host();
   ASSERT_TRUE(login_display_host);
-  login_display_host->StartAppLaunch(test_app_id(), true);
+  login_display_host->StartKiosk(KioskAppId::ForChromeApp(test_app_id()), true);
 
   // Check that no launch has started.
   EXPECT_FALSE(login_display_host->GetAppLaunchController());

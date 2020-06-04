@@ -5,6 +5,24 @@
     "args": ["--enable-features=TopLevelAwait"]
   },
   {
+    "prefix": "cors",
+    "bases": ["external/wpt/cors",
+              "external/wpt/fetch",
+              "external/wpt/fonts",
+              "external/wpt/loading",
+              "external/wpt/preload",
+              "external/wpt/referrer-policy",
+              "external/wpt/resource-timing",
+              "external/wpt/service-workers",
+              "external/wpt/xhr",
+              "http/tests/fetch",
+              "http/tests/misc",
+              "http/tests/navigation",
+              "http/tests/security",
+              "http/tests/xmlhttprequest"],
+    "args": ["--disable-features=OutOfBlinkCors"]
+  },
+  {
     "prefix": "disable-accept-language-header",
     "bases": ["http/tests/navigation/language"],
     "args": ["--disable-features=AcceptLanguageHeader"]

@@ -248,8 +248,8 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
   if (!RuntimeEnabledFeatures::MPCDependenciesEnabled()) {
     // The cache assumes static knowledge about which properties are inherited.
     // Without a flat tree parent, StyleBuilder::ApplyProperty will not
-    // SetHasExplicitlyInheritedProperties on the parent style.
-    if (!state.ParentNode() || parent_style.HasExplicitlyInheritedProperties())
+    // SetChildHasExplicitInheritance on the parent style.
+    if (!state.ParentNode() || parent_style.ChildHasExplicitInheritance())
       return false;
     return true;
   }

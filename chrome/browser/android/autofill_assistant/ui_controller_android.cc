@@ -753,7 +753,8 @@ bool UiControllerAndroid::OnBackButtonClicked(
   }
 
   // For BROWSE state the back button should react in its default way.
-  if (ui_delegate_->GetState() == AutofillAssistantState::BROWSE) {
+  if (ui_delegate_ != nullptr &&
+      ui_delegate_->GetState() == AutofillAssistantState::BROWSE) {
     return false;
   }
 

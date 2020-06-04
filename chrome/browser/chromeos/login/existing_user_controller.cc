@@ -1565,17 +1565,8 @@ void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
   LoginAsPublicSessionInternal(new_user_context);
 }
 
-void ExistingUserController::LoginAsKioskApp(const std::string& app_id) {
-  constexpr bool kAutoStart = false;
-  GetLoginDisplayHost()->StartAppLaunch(app_id, kAutoStart);
-}
-
-void ExistingUserController::LoginAsArcKioskApp(const AccountId& account_id) {
-  GetLoginDisplayHost()->StartArcKiosk(account_id);
-}
-
-void ExistingUserController::LoginAsWebKioskApp(const AccountId& account_id) {
-  GetLoginDisplayHost()->StartWebKiosk(account_id);
+void ExistingUserController::LoginAsKioskApp(KioskAppId kiosk_app_id) {
+  GetLoginDisplayHost()->StartKiosk(kiosk_app_id, /*auto_launch*/ false);
 }
 
 void ExistingUserController::ConfigureAutoLogin() {
@@ -1939,17 +1930,18 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   }
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
-    LoginAsKioskApp(user_context.GetAccountId().GetUserEmail());
+    LoginAsKioskApp(
+        KioskAppId::ForChromeApp(user_context.GetAccountId().GetUserEmail()));
     return;
   }
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
-    LoginAsArcKioskApp(user_context.GetAccountId());
+    LoginAsKioskApp(KioskAppId::ForArcApp(user_context.GetAccountId()));
     return;
   }
 
   if (user_context.GetUserType() == user_manager::USER_TYPE_WEB_KIOSK_APP) {
-    LoginAsWebKioskApp(user_context.GetAccountId());
+    LoginAsKioskApp(KioskAppId::ForWebApp(user_context.GetAccountId()));
     return;
   }
 

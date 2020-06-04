@@ -139,6 +139,11 @@ SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
     // This class doesn't care about browser sync consent.
     CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo(
         signin::ConsentLevel::kNotRequired);
+    if (account_info.IsEmpty()) {
+      // No primary account (can happen when it was removed from the device).
+      return content::NavigationThrottle::DEFER;
+    }
+
     ReauthenticateChildAccount(
         web_contents, account_info.email,
         base::Bind(&SupervisedUserGoogleAuthNavigationThrottle::

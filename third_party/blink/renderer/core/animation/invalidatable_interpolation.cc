@@ -209,7 +209,7 @@ void InvalidatableInterpolation::SetFlagIfInheritUsed(
       To<CSSPropertySpecificKeyframe>(*end_keyframe_).Value();
   if ((start_value && start_value->IsInheritedValue()) ||
       (end_value && end_value->IsInheritedValue())) {
-    state.ParentStyle()->SetHasExplicitlyInheritedProperties();
+    state.ParentStyle()->SetChildHasExplicitInheritance();
   }
 }
 

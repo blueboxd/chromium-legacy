@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -79,38 +80,109 @@ bool IsArcManagedAdbSideloadingAllowedByUserPolicy(
   return false;
 }
 
-bool IsArcManagedAdbSideloadingSupported(
+using CanChangeAdbSideloadingCallback =
+    crostini::CrostiniFeatures::CanChangeAdbSideloadingCallback;
+
+// Reads the value of DeviceCrostiniArcAdbSideloadingAllowed. If the value is
+// temporarily untrusted the |callback| will be invoked later when trusted
+// values are available.
+void CanChangeAdbSideloadingOnManagedDevice(
+    CanChangeAdbSideloadingCallback callback,
+    bool is_profile_enterprise_managed,
+    crostini::CrostiniArcAdbSideloadingUserAllowanceMode user_policy) {
+  // Wrap |callback| in a RepeatingCallback. This is necessary to cater to the
+  // somewhat awkward PrepareTrustedValues interface, which for some return
+  // values invokes the callback passed to it, and for others requires the code
+  // here to do so.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
+
+  auto* const cros_settings = chromeos::CrosSettings::Get();
+  auto status = cros_settings->PrepareTrustedValues(base::BindOnce(
+      &CanChangeAdbSideloadingOnManagedDevice, repeating_callback,
+      is_profile_enterprise_managed, user_policy));
+
+  if (status != chromeos::CrosSettingsProvider::TRUSTED) {
+    return;
+  }
+
+  // Get the updated policy.
+  int crostini_arc_abd_sideloading_device_allowance_mode = -1;
+  if (!cros_settings->GetInteger(
+          chromeos::kDeviceCrostiniArcAdbSideloadingAllowed,
+          &crostini_arc_abd_sideloading_device_allowance_mode)) {
+    // If the device policy is not set, adb sideloading is not allowed
+    DVLOG(1) << "adb sideloading device policy is not set, therefore "
+                "sideloading is not allowed";
+    repeating_callback.Run(false);
+    return;
+  }
+
+  using Mode =
+      enterprise_management::DeviceCrostiniArcAdbSideloadingAllowedProto;
+
+  bool is_adb_sideloading_allowed_by_device_policy;
+  switch (crostini_arc_abd_sideloading_device_allowance_mode) {
+    case Mode::DISALLOW:
+    case Mode::DISALLOW_WITH_POWERWASH:
+      is_adb_sideloading_allowed_by_device_policy = false;
+      break;
+    case Mode::ALLOW_FOR_AFFILIATED_USERS:
+      is_adb_sideloading_allowed_by_device_policy = true;
+      break;
+    default:
+      is_adb_sideloading_allowed_by_device_policy = false;
+      break;
+  }
+
+  if (is_adb_sideloading_allowed_by_device_policy) {
+    if (is_profile_enterprise_managed) {
+      // TODO(https://crbug.com/1081811, janagrill): Add check for affiliated
+      // user
+      repeating_callback.Run(
+          IsArcManagedAdbSideloadingAllowedByUserPolicy(user_policy));
+      return;
+    }
+
+    DVLOG(1) << "adb sideloading is unsupported for this managed device";
+    repeating_callback.Run(false);
+    return;
+  }
+
+  DVLOG(1) << "adb sideloading is not allowed by the device policy";
+  repeating_callback.Run(false);
+}
+
+void CanChangeManagedAdbSideloading(
     bool is_device_enterprise_managed,
     bool is_profile_enterprise_managed,
     bool is_owner_profile,
-    crostini::CrostiniArcAdbSideloadingUserAllowanceMode user_policy) {
+    crostini::CrostiniArcAdbSideloadingUserAllowanceMode user_policy,
+    CanChangeAdbSideloadingCallback callback) {
   DCHECK(is_device_enterprise_managed || is_profile_enterprise_managed);
 
   if (!base::FeatureList::IsEnabled(
           chromeos::features::kArcManagedAdbSideloadingSupport)) {
     DVLOG(1) << "adb sideloading is disabled by a feature flag";
-    return false;
+    std::move(callback).Run(false);
+    return;
   }
 
   if (is_device_enterprise_managed) {
-    // TODO(https://crbug.com/1073928, janagrill): Add check for device policy
-    if (is_profile_enterprise_managed) {
-      // TODO(https://crbug.com/1081811, janagrill): Add check for affiliated
-      // user
-      return IsArcManagedAdbSideloadingAllowedByUserPolicy(user_policy);
-    }
-
-    DVLOG(1) << "adb sideloading is unsupported for this managed device";
-    return false;
+    CanChangeAdbSideloadingOnManagedDevice(
+        std::move(callback), is_profile_enterprise_managed, user_policy);
+    return;
   }
 
   if (is_owner_profile) {
     // We know here that the profile is enterprise-managed so no need to check
-    return IsArcManagedAdbSideloadingAllowedByUserPolicy(user_policy);
+    std::move(callback).Run(
+        IsArcManagedAdbSideloadingAllowedByUserPolicy(user_policy));
+    return;
   }
 
   DVLOG(1) << "Only the owner can change adb sideloading status";
-  return false;
+  std::move(callback).Run(false);
 }
 
 }  // namespace
@@ -190,12 +262,15 @@ bool CrostiniFeatures::IsContainerUpgradeUIAllowed(Profile* profile) {
              chromeos::features::kCrostiniWebUIUpgrader);
 }
 
-bool CrostiniFeatures::CanChangeAdbSideloading(Profile* profile) {
+void CrostiniFeatures::CanChangeAdbSideloading(
+    Profile* profile,
+    CanChangeAdbSideloadingCallback callback) {
   // First rule out a child account as it is a special case - a child can be an
   // owner, but ADB sideloading is currently not supported for this case
   if (profile->IsChild()) {
     DVLOG(1) << "adb sideloading is currently unsupported for child accounts";
-    return false;
+    std::move(callback).Run(false);
+    return;
   }
 
   // Check the managed device and/or user case
@@ -211,19 +286,21 @@ bool CrostiniFeatures::CanChangeAdbSideloading(Profile* profile) {
             profile->GetPrefs()->GetInteger(
                 crostini::prefs::kCrostiniArcAdbSideloadingUserPref));
 
-    return IsArcManagedAdbSideloadingSupported(is_device_enterprise_managed,
-                                               is_profile_enterprise_managed,
-                                               is_owner_profile, user_policy);
+    CanChangeManagedAdbSideloading(
+        is_device_enterprise_managed, is_profile_enterprise_managed,
+        is_owner_profile, user_policy, std::move(callback));
+    return;
   }
 
   // Here we are sure that the user is not enterprise-managed and we therefore
   // only check whether the user is the owner
   if (!is_owner_profile) {
     DVLOG(1) << "Only the owner can change adb sideloading status";
-    return false;
+    std::move(callback).Run(false);
+    return;
   }
 
-  return true;
+  std::move(callback).Run(true);
 }
 
 }  // namespace crostini

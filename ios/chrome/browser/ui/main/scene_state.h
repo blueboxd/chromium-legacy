@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+
 @class AppState;
 @class SceneController;
 @class SceneState;
@@ -60,6 +62,10 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 
 // The current activation level.
 @property(nonatomic, assign) SceneActivationLevel activationLevel;
+
+// The current origin of the scene.  After window creation this will be
+// WindowActivityRestoredOrigin.
+@property(nonatomic, assign) WindowActivityOrigin currentOrigin;
 
 // Window ID, used for restoration.
 // TODO(crbug.com/1069762): remove this.

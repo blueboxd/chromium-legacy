@@ -253,16 +253,17 @@ void PageNodeImpl::SetOpenerFrameNodeAndOpenedType(FrameNodeImpl* opener,
   DCHECK_NE(this, opener->page_node());
   DCHECK_NE(OpenedType::kInvalid, opened_type);
 
-  // Can't already have an opener.
-  DCHECK_EQ(nullptr, opener_frame_node_);
-  DCHECK_EQ(OpenedType::kInvalid, opened_type_);
+  auto* previous_opener = opener_frame_node_;
+  auto previous_type = opened_type_;
 
+  if (previous_opener)
+    previous_opener->RemoveOpenedPage(PassKey(), this);
   opener_frame_node_ = opener;
   opened_type_ = opened_type;
   opener->AddOpenedPage(PassKey(), this);
 
   for (auto* observer : GetObservers())
-    observer->OnOpenerFrameNodeChanged(this, nullptr, OpenedType::kInvalid);
+    observer->OnOpenerFrameNodeChanged(this, previous_opener, previous_type);
 }
 
 void PageNodeImpl::ClearOpenerFrameNodeAndOpenedType() {

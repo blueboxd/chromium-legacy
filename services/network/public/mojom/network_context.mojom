@@ -1310,7 +1310,8 @@ interface NetworkContext {
       url.mojom.Origin source_origin, array<CorsOriginPattern> allow_patterns,
       array<CorsOriginPattern> block_patterns) => ();
 
-  // Sets extra CORS safelisted request headers names dynamically.
+  // Sets extra CORS safelisted request headers names dynamically. Headers need
+  // to be in lower case.
   SetCorsExtraSafelistedRequestHeaderNames(
       array<string> cors_extra_safelisted_request_header_names);
 

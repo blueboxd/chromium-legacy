@@ -19,6 +19,7 @@ viz_component("resource_format_utils") {
   sources = [
     "resources/resource_format_utils.cc",
     "resources/resource_format_utils.h",
+    "resources/resource_format_utils_mac.mm",
     "resources/resource_sizes.h",
     "viz_resource_format_export.h",
   ]

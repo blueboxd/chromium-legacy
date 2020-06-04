@@ -28,9 +28,11 @@ SequenceMatcher::Match::Match(int pos_first, int pos_second, int len)
 
 SequenceMatcher::SequenceMatcher(const base::string16& first_string,
                                  const base::string16& second_string,
-                                 bool use_edit_distance)
+                                 bool use_edit_distance,
+                                 double num_matching_blocks_penalty)
     : first_string_(first_string),
       second_string_(second_string),
+      num_matching_blocks_penalty_(num_matching_blocks_penalty),
       dp_common_string_(second_string.size() + 1, 0) {
   DCHECK(!first_string_.empty() || !second_string_.empty());
 
@@ -189,10 +191,15 @@ double SequenceMatcher::Ratio() {
     int sum_match = 0;
     const int sum_length = first_string_.size() + second_string_.size();
     DCHECK_NE(sum_length, 0);
+    const int num_blocks = GetMatchingBlocks().size();
     for (const auto& match : GetMatchingBlocks()) {
       sum_match += match.length;
     }
-    block_matching_ratio_ = 2.0 * sum_match / sum_length;
+    // Subtract two because the last one is always an "empty block". Hence
+    // actual number of matching blocks is |num_blocks - 1|.
+    block_matching_ratio_ =
+        2.0 * sum_match / sum_length *
+        exp(-(num_blocks - 2) * num_matching_blocks_penalty_);
   }
   return block_matching_ratio_;
 }

@@ -28,7 +28,7 @@ class CSSNamespaceRule final : public CSSRule {
   void Trace(Visitor*) const override;
 
  private:
-  CSSRule::Type type() const override { return kNamespaceRule; }
+  CSSRule::Type GetType() const override { return kNamespaceRule; }
 
   Member<StyleRuleNamespace> namespace_rule_;
 };
@@ -36,7 +36,7 @@ class CSSNamespaceRule final : public CSSRule {
 template <>
 struct DowncastTraits<CSSNamespaceRule> {
   static bool AllowFrom(const CSSRule& rule) {
-    return rule.type() == CSSRule::kNamespaceRule;
+    return rule.GetType() == CSSRule::kNamespaceRule;
   }
 };
 

@@ -154,6 +154,12 @@ class PixelTestPages(object):
   def DefaultPages(base_name):
     sw_compositing_args = ['--disable-gpu-compositing']
 
+    # The optimizer script spat out pretty similar values for most MP4 tests, so
+    # combine into a single set of parameters.
+    general_mp4_algo = algo.SobelMatchingAlgorithm(max_different_pixels=56300,
+                                                   pixel_delta_threshold=35,
+                                                   edge_threshold=80)
+
     return [
         PixelTestPage('pixel_background_image.html',
                       base_name + '_BackgroundImage',
@@ -203,51 +209,60 @@ class PixelTestPages(object):
         PixelTestPage('pixel_background.html',
                       base_name + '_SolidColorBackground',
                       test_rect=[500, 500, 100, 100]),
-        PixelTestPage('pixel_video_mp4.html',
-                      base_name + '_Video_MP4',
-                      test_rect=[0, 0, 240, 135],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        PixelTestPage(
+            'pixel_video_mp4.html',
+            base_name + '_Video_MP4',
+            test_rect=[0, 0, 240, 135],
+            # Most images are actually very similar, but Pixel 2
+            # tends to produce images with all colors shifted by a
+            # small amount.
+            matching_algorithm=general_mp4_algo),
+        # Surprisingly stable, does not appear to require inexact matching.
         PixelTestPage('pixel_video_mp4.html',
                       base_name + '_Video_MP4_DXVA',
                       browser_args=['--disable-features=D3D11VideoDecoder'],
-                      test_rect=[0, 0, 240, 135],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      test_rect=[0, 0, 240, 135]),
         PixelTestPage('pixel_video_mp4_four_colors_aspect_4x3.html',
                       base_name + '_Video_MP4_FourColors_Aspect_4x3',
                       test_rect=[0, 0, 240, 135],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=41700,
+                          pixel_delta_threshold=15,
+                          edge_threshold=40)),
         PixelTestPage('pixel_video_mp4_four_colors_rot_90.html',
                       base_name + '_Video_MP4_FourColors_Rot_90',
                       test_rect=[0, 0, 270, 240],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      matching_algorithm=general_mp4_algo),
         PixelTestPage('pixel_video_mp4_four_colors_rot_180.html',
                       base_name + '_Video_MP4_FourColors_Rot_180',
                       test_rect=[0, 0, 240, 135],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      matching_algorithm=general_mp4_algo),
         PixelTestPage('pixel_video_mp4_four_colors_rot_270.html',
                       base_name + '_Video_MP4_FourColors_Rot_270',
                       test_rect=[0, 0, 270, 240],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      matching_algorithm=general_mp4_algo),
         PixelTestPage('pixel_video_mp4_rounded_corner.html',
                       base_name + '_Video_MP4_Rounded_Corner',
-                      test_rect=[0, 0, 240, 135]),
+                      test_rect=[0, 0, 240, 135],
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=30500,
+                          pixel_delta_threshold=15,
+                          edge_threshold=70)),
         PixelTestPage('pixel_video_vp9.html',
                       base_name + '_Video_VP9',
                       test_rect=[0, 0, 240, 135],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=114000,
+                          pixel_delta_threshold=30,
+                          edge_threshold=20)),
         PixelTestPage('pixel_video_vp9.html',
                       base_name + '_Video_VP9_DXVA',
                       browser_args=['--disable-features=D3D11VideoDecoder'],
                       test_rect=[0, 0, 240, 135],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=31100,
+                          pixel_delta_threshold=30,
+                          edge_threshold=250)),
 
         # The MP4 contains H.264 which is primarily hardware decoded on bots.
         PixelTestPage(
@@ -255,8 +270,11 @@ class PixelTestPages(object):
             '/media/test/data/four-colors.mp4',
             base_name + '_Video_Context_Loss_MP4',
             test_rect=[0, 0, 240, 135],
-            grace_period_end=datetime.date(2020, 6, 22),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
+            # Optimizer script spat out a value of 255 for the Sobel edge
+            # threshold, so use fuzzy for now since it's slightly more
+            # efficient.
+            matching_algorithm=algo.FuzzyMatchingAlgorithm(
+                max_different_pixels=31700, pixel_delta_threshold=20),
             expected_per_process_crashes={
                 CRASH_TYPE_GPU: 1,
             }),
@@ -266,8 +284,10 @@ class PixelTestPages(object):
                        '?src=/media/test/data/four-colors-vp9.webm'),
                       base_name + '_Video_Context_Loss_VP9',
                       test_rect=[0, 0, 240, 135],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
+                      matching_algorithm=algo.SobelMatchingAlgorithm(
+                          max_different_pixels=54400,
+                          pixel_delta_threshold=30,
+                          edge_threshold=250),
                       expected_per_process_crashes={
                           CRASH_TYPE_GPU: 1,
                       }),
@@ -305,28 +325,20 @@ class PixelTestPages(object):
         PixelTestPage('pixel_webgl_read_pixels_tab_switch.html',
                       base_name + '_WebGLReadPixelsTabSwitch',
                       test_rect=[0, 0, 100, 100],
-                      optional_action='SwitchTabs',
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      optional_action='SwitchTabs'),
         PixelTestPage('pixel_webgl_read_pixels_tab_switch.html',
                       base_name +
                       '_WebGLReadPixelsTabSwitch_SoftwareCompositing',
                       test_rect=[0, 0, 100, 100],
                       browser_args=sw_compositing_args,
-                      optional_action='SwitchTabs',
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      optional_action='SwitchTabs'),
         PixelTestPage('pixel_offscreen_canvas_ibrc_webgl_main.html',
                       base_name + '_OffscreenCanvasIBRCWebGLMain',
                       test_rect=[0, 0, 300, 300],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       optional_action='RunOffscreenCanvasIBRCWebGLTest'),
         PixelTestPage('pixel_offscreen_canvas_ibrc_webgl_worker.html',
                       base_name + '_OffscreenCanvasIBRCWebGLWorker',
                       test_rect=[0, 0, 300, 300],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       optional_action='RunOffscreenCanvasIBRCWebGLTest'),
     ]
 
@@ -340,15 +352,11 @@ class PixelTestPages(object):
         PixelTestPage('pixel_background.html',
                       base_name + '_GpuRasterization_BlueBox',
                       test_rect=[0, 0, 220, 220],
-                      browser_args=browser_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=browser_args),
         PixelTestPage('concave_paths.html',
                       base_name + '_GpuRasterization_ConcavePaths',
                       test_rect=[0, 0, 100, 100],
-                      browser_args=browser_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=browser_args),
         PixelTestPage('pixel_precision_rounded_corner.html',
                       base_name + '_PrecisionRoundedCorner',
                       test_rect=[0, 0, 400, 400],
@@ -401,9 +409,7 @@ class PixelTestPages(object):
         PixelTestPage('pixel_offscreenCanvas_webgl_paint_after_resize.html',
                       base_name + '_OffscreenCanvasWebGLPaintAfterResize',
                       test_rect=[0, 0, 200, 200],
-                      browser_args=browser_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=browser_args),
         PixelTestPage('pixel_offscreenCanvas_transferToImageBitmap_main.html',
                       base_name + '_OffscreenCanvasTransferToImageBitmap',
                       test_rect=[0, 0, 300, 300],
@@ -488,9 +494,7 @@ class PixelTestPages(object):
         PixelTestPage('pixel_canvas_low_latency_webgl.html',
                       base_name + '_CanvasLowLatencyWebGL',
                       test_rect=[0, 0, 200, 200],
-                      browser_args=browser_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=browser_args),
     ]
 
   @staticmethod
@@ -506,15 +510,11 @@ class PixelTestPages(object):
         PixelTestPage('pixel_canvas_low_latency_webgl.html',
                       base_name + '_CanvasLowLatencyWebGLSwapChain',
                       test_rect=[0, 0, 200, 200],
-                      browser_args=browser_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=browser_args),
         PixelTestPage('pixel_canvas_low_latency_webgl_alpha_false.html',
                       base_name + '_CanvasLowLatencyWebGLSwapChainAlphaFalse',
                       test_rect=[0, 0, 200, 200],
-                      browser_args=browser_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=browser_args),
     ]
 
   # Only add these tests on platforms where SwiftShader is enabled.
@@ -539,9 +539,7 @@ class PixelTestPages(object):
         PixelTestPage('pixel_repeated_webgl_to_2d.html',
                       base_name + '_RepeatedWebGLTo2D' + suffix,
                       test_rect=[0, 0, 256, 256],
-                      browser_args=browser_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=browser_args),
     ]
 
   # Test rendering where GPU process is blocked.
@@ -634,9 +632,7 @@ class PixelTestPages(object):
         PixelTestPage('pixel_webgl_premultiplied_alpha_false.html',
                       base_name + '_WebGL_PremultipliedAlpha_False_NoOverlays',
                       test_rect=[0, 0, 150, 150],
-                      browser_args=no_overlays_args,
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+                      browser_args=no_overlays_args),
     ]
 
   # Pages that should be run only on dual-GPU MacBook Pros (at the
@@ -647,34 +643,24 @@ class PixelTestPages(object):
         PixelTestPage('pixel_webgl_high_to_low_power.html',
                       base_name + '_WebGLHighToLowPower',
                       test_rect=[0, 0, 300, 300],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       optional_action='RunTestWithHighPerformanceTab'),
         PixelTestPage('pixel_webgl_low_to_high_power.html',
                       base_name + '_WebGLLowToHighPower',
                       test_rect=[0, 0, 300, 300],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       optional_action='RunLowToHighPowerTest'),
         PixelTestPage('pixel_webgl_low_to_high_power_alpha_false.html',
                       base_name + '_WebGLLowToHighPowerAlphaFalse',
                       test_rect=[0, 0, 300, 300],
-                      grace_period_end=datetime.date(2020, 6, 22),
-                      matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
                       optional_action='RunLowToHighPowerTest'),
         PixelTestPage(
             'pixel_offscreen_canvas_ibrc_webgl_main.html',
             base_name + '_OffscreenCanvasIBRCWebGLHighPerfMain',
             test_rect=[0, 0, 300, 300],
-            grace_period_end=datetime.date(2020, 6, 22),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
             optional_action='RunOffscreenCanvasIBRCWebGLHighPerfTest'),
         PixelTestPage(
             'pixel_offscreen_canvas_ibrc_webgl_worker.html',
             base_name + '_OffscreenCanvasIBRCWebGLHighPerfWorker',
             test_rect=[0, 0, 300, 300],
-            grace_period_end=datetime.date(2020, 6, 22),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
             optional_action='RunOffscreenCanvasIBRCWebGLHighPerfTest'),
     ]
 

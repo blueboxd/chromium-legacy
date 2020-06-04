@@ -27,6 +27,7 @@ jumbo_source_set("unit_tests") {
 
   deps = [
     ":core",
+    ":features",
     "//net:test_support",
     "//testing/gtest",
   ]

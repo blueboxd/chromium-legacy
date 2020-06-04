@@ -85,6 +85,11 @@ base::string16 DictationButtonTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_DICTATION_BUTTON_ACCESSIBLE_NAME);
 }
 
+void DictationButtonTray::HandleLocaleChange() {
+  icon_->set_tooltip_text(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_DICTATION));
+}
+
 void DictationButtonTray::HideBubbleWithView(
     const TrayBubbleView* bubble_view) {
   // This class has no bubbles to hide.

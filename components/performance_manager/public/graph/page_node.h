@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 
+#include <ostream>
 #include <string>
 
 #include "base/containers/flat_set.h"
@@ -33,16 +34,21 @@ class PageNode : public Node {
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
 
-  // Reasons for which one frame can become the opener of a page.
+  // Reasons for which a frame can become the opener of a page.
   enum class OpenedType {
     // Returned if this node doesn't have an opener.
     kInvalid,
-    // This node is a popup (the opener created it via window.open).
+    // This page is a popup (the opener created it via window.open).
     kPopup,
-    // This node is a guest view. This can be many things (<webview>, <portal>,
-    // <appview>, etc) but backed by the same inner/outer WebContents mechanism.
+    // This page is a guest view. This can be many things (<webview>, <appview>,
+    // etc) but is backed by the same inner/outer WebContents mechanism.
     kGuestView,
+    // This page is a portal.
+    kPortal,
   };
+
+  // Returns a string for a PageNode::OpenedType enumeration.
+  static const char* ToString(PageNode::OpenedType opened_type);
 
   PageNode();
   ~PageNode() override;
@@ -166,9 +172,11 @@ class PageNodeObserver {
 
   // Notifications of property changes.
 
-  // Invoked when this page has been assigned an opener, or had one removed.
-  // This can happen a page is opened via window.open, webviews, portals, etc,
-  // or when that relationship is subsequently severed.
+  // Invoked when this page has been assigned an opener, had the opener change,
+  // or had the opener removed. This can happen if a page is opened via
+  // window.open, webviews, portals, etc, or when that relationship is
+  // subsequently severed or reparented. Note that this can be invoked *after*
+  // OnBeforePageNodeRemoved() if a page disappears while still attached.
   virtual void OnOpenerFrameNodeChanged(const PageNode* page_node,
                                         const FrameNode* previous_opener,
                                         OpenedType previous_opened_type) = 0;
@@ -259,5 +267,9 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
 };
 
 }  // namespace performance_manager
+
+// std::ostream support for PageNode::OpenedType.
+std::ostream& operator<<(std::ostream& os,
+                         performance_manager::PageNode::OpenedType opened_type);
 
 #endif  // COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_

@@ -10,11 +10,14 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_math.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
+class GLContext;
+class GLSurface;
 
 class GL_EXPORT GLImageMemory : public GLImage {
  public:
@@ -65,6 +68,9 @@ class GL_EXPORT GLImageMemory : public GLImage {
   size_t stride_;
 
   unsigned buffer_ = 0;
+  // The context/surface from which the |buffer_| is created.
+  base::WeakPtr<GLContext> original_context_;
+  base::WeakPtr<GLSurface> original_surface_;
   size_t buffer_bytes_ = 0;
   int memcpy_tasks_ = 0;
 

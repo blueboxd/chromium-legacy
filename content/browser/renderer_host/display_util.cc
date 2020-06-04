@@ -53,21 +53,7 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
 
 // static
 void DisplayUtil::GetDefaultScreenInfo(ScreenInfo* screen_info) {
-  // Some tests are run with no Screen initialized.
-  display::Screen* screen = display::Screen::GetScreen();
-  if (!screen) {
-    *screen_info = ScreenInfo();
-    return;
-  }
-#if defined(USE_AURA)
-  // This behavior difference between Aura and other platforms may or may not
-  // be intentional, and may or may not have any effect.
-  gfx::NativeView null_native_view = nullptr;
-  display::Display display = screen->GetDisplayNearestView(null_native_view);
-#else
-  display::Display display = screen->GetPrimaryDisplay();
-#endif
-  DisplayToScreenInfo(screen_info, display);
+  return GetNativeViewScreenInfo(screen_info, nullptr);
 }
 
 // static

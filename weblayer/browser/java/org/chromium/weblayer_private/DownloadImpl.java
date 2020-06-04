@@ -23,7 +23,6 @@ import org.chromium.components.browser_ui.notifications.NotificationManagerProxy
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
-import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.DownloadError;
@@ -335,18 +334,14 @@ public final class DownloadImpl extends IDownload.Stub {
         PendingIntentProvider deletePendingIntent =
                 PendingIntentProvider.getBroadcast(context, mNotificationId, deleteIntent, 0);
 
-        ChannelsInitializer channelsInitializer = new ChannelsInitializer(notificationManager,
-                WebLayerNotificationChannels.getInstance(), context.getResources());
-
         @DownloadState
         int state = getState();
         String channelId = state == DownloadState.COMPLETE
                 ? WebLayerNotificationChannels.ChannelId.COMPLETED_DOWNLOADS
                 : WebLayerNotificationChannels.ChannelId.ACTIVE_DOWNLOADS;
 
-        WebLayerNotificationBuilder builder =
-                new WebLayerNotificationBuilder(context, channelId, channelsInitializer,
-                        new NotificationMetadata(0, NOTIFICATION_TAG, mNotificationId));
+        WebLayerNotificationBuilder builder = WebLayerNotificationBuilder.create(
+                channelId, new NotificationMetadata(0, NOTIFICATION_TAG, mNotificationId));
         builder.setOngoing(true)
                 .setDeleteIntent(deletePendingIntent)
                 .setPriorityBeforeO(NotificationCompat.PRIORITY_DEFAULT);

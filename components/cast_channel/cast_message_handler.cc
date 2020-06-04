@@ -21,6 +21,9 @@ namespace {
 // The max launch timeout amount for session launch requests.
 constexpr base::TimeDelta kLaunchMaxTimeout = base::TimeDelta::FromMinutes(2);
 
+// The max size of Cast Message is 64KB.
+constexpr int kMaxCastMessagePayload = 64 * 1024;
+
 void ReportParseError(const std::string& error) {
   DVLOG(1) << "Error parsing JSON message: " << error;
 }
@@ -169,7 +172,7 @@ void CastMessageHandler::RequestReceiverStatus(int channel_id) {
                           CreateReceiverStatusRequest(sender_id_, request_id));
 }
 
-void CastMessageHandler::SendBroadcastMessage(
+Result CastMessageHandler::SendBroadcastMessage(
     int channel_id,
     const std::vector<std::string>& app_ids,
     const BroadcastRequest& request) {
@@ -178,7 +181,7 @@ void CastMessageHandler::SendBroadcastMessage(
   CastSocket* socket = socket_service_->GetSocket(channel_id);
   if (!socket) {
     DVLOG(2) << __func__ << ": socket not found: " << channel_id;
-    return;
+    return Result::kFailed;
   }
 
   int request_id = NextRequestId();
@@ -189,7 +192,11 @@ void CastMessageHandler::SendBroadcastMessage(
   // about the response, as broadcasts are fire-and-forget.
   CastMessage message =
       CreateBroadcastRequest(sender_id_, request_id, app_ids, request);
+  if (message.ByteSizeLong() > kMaxCastMessagePayload) {
+    return Result::kFailed;
+  }
   SendCastMessageToSocket(socket, message);
+  return Result::kOk;
 }
 
 void CastMessageHandler::LaunchSession(
@@ -213,12 +220,18 @@ void CastMessageHandler::LaunchSession(
   launch_timeout = std::min(launch_timeout, kLaunchMaxTimeout);
   DVLOG(2) << __func__ << ", channel_id: " << channel_id
            << ", request_id: " << request_id;
+  CastMessage message = CreateLaunchRequest(
+      sender_id_, request_id, app_id, locale_, supported_app_types, app_params);
+  if (message.ByteSizeLong() > kMaxCastMessagePayload) {
+    LaunchSessionResponse response;
+    response.result = LaunchSessionResponse::kError;
+    std::move(callback).Run(std::move(response));
+    return;
+  }
   if (requests->AddLaunchRequest(std::make_unique<LaunchSessionRequest>(
                                      request_id, std::move(callback), clock_),
                                  launch_timeout)) {
-    SendCastMessageToSocket(
-        socket, CreateLaunchRequest(sender_id_, request_id, app_id, locale_,
-                                    supported_app_types, app_params));
+    SendCastMessageToSocket(socket, message);
   }
 }
 
@@ -264,6 +277,9 @@ Result CastMessageHandler::SendAppMessage(int channel_id,
                                           const CastMessage& message) {
   DCHECK(!IsCastInternalNamespace(message.namespace_()))
       << ": unexpected app message namespace: " << message.namespace_();
+  if (message.ByteSizeLong() > kMaxCastMessagePayload) {
+    return Result::kFailed;
+  }
   return SendCastMessage(channel_id, message);
 }
 

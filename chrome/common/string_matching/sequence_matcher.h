@@ -30,9 +30,16 @@ class SequenceMatcher {
     // Length of the common substring.
     int length;
   };
+
+  // |num_matching_blocks_penalty| is used to penalize too many small matching
+  // blocks. For the same number of matching characters, we prefer fewer
+  // matching blocks. Value equal to 0 means no penalty. Values greater than 0
+  // means heavier penalty will be applied to larger number of blocks. This is
+  // only appled if |use_edit_distance| is false.
   SequenceMatcher(const base::string16& first_string,
                   const base::string16& second_string,
-                  bool use_edit_distance);
+                  bool use_edit_distance,
+                  double num_matching_blocks_penalty);
 
   ~SequenceMatcher() = default;
 
@@ -59,6 +66,7 @@ class SequenceMatcher {
  private:
   base::string16 first_string_;
   base::string16 second_string_;
+  double num_matching_blocks_penalty_ = 0.0;
   double edit_distance_ratio_ = -1.0;
   double block_matching_ratio_ = -1.0;
   std::vector<Match> matching_blocks_;

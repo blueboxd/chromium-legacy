@@ -16,6 +16,11 @@ const SELECT_TO_SPEAK_TRAY_CLASS_NAME =
 const GSUITE_APP_REGEXP =
     /^https:\/\/docs\.(?:sandbox\.)?google\.com\/(?:(?:presentation)|(?:document)|(?:spreadsheets)|(?:drawings)){1}\//;
 
+// A RGBA hex string for the default background shading color, which is black at
+// 40% opacity (hex 66). This should be equivalent to using
+// AshColorProvider::ShieldLayerType kShield40.
+const DEFAULT_BACKGROUND_SHADING_COLOR = '#0006';
+
 /**
  * Determines if a node is in one of the known Google GSuite apps that needs
  * special case treatment for speaking selected text. Not all Google GSuite
@@ -426,13 +431,15 @@ class SelectToSpeak {
    * @private
    */
   setFocusRings_(rects, drawBackground) {
+    let color = '#0000';  // Fully transparent.
+    if (drawBackground && this.prefsManager_.backgroundShadingEnabled()) {
+      color = DEFAULT_BACKGROUND_SHADING_COLOR;
+    }
     chrome.accessibilityPrivate.setFocusRings([{
       rects,
       type: chrome.accessibilityPrivate.FocusType.GLOW,
       color: this.prefsManager_.focusRingColor(),
-      backgroundColor: drawBackground ?
-          this.prefsManager_.focusRingBackgroundColor() :
-          '#0000'
+      backgroundColor: color,
     }]);
   }
 

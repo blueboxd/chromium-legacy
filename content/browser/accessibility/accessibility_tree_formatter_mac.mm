@@ -50,9 +50,10 @@ NSArray* PropNodeToIntArray(const PropertyNode& propnode) {
   }
 
   const auto& arraynode = propnode.parameters[0];
-  if (arraynode.value != base::ASCIIToUTF16("[]")) {
+  if (arraynode.name_or_value != base::ASCIIToUTF16("[]")) {
     LOG(ERROR) << "Failed to parse " << propnode.original_property
-               << " to IntArray: " << arraynode.value << " is not array";
+               << " to IntArray: " << arraynode.name_or_value
+               << " is not array";
     return nil;
   }
 
@@ -60,9 +61,10 @@ NSArray* PropNodeToIntArray(const PropertyNode& propnode) {
       [[NSMutableArray alloc] initWithCapacity:arraynode.parameters.size()];
   for (const auto& paramnode : arraynode.parameters) {
     int param = 0;
-    if (!base::StringToInt(paramnode.value, &param)) {
+    if (!base::StringToInt(paramnode.name_or_value, &param)) {
       LOG(ERROR) << "Failed to parse " << propnode.original_property
-                 << " to IntArray: " << paramnode.value << " is not a number";
+                 << " to IntArray: " << paramnode.name_or_value
+                 << " is not a number";
       return nil;
     }
     [array addObject:@(param)];
@@ -91,7 +93,8 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
       const base::StringPiece& pattern) override;
 
  private:
-  using LineIndexesMap = std::map<const gfx::NativeViewAccessible, int>;
+  using LineIndexesMap =
+      std::map<const gfx::NativeViewAccessible, base::string16>;
 
   void RecursiveBuildAccessibilityTree(const BrowserAccessibilityCocoa* node,
                                        const LineIndexesMap& line_indexes_map,
@@ -216,7 +219,9 @@ void AccessibilityTreeFormatterMac::RecursiveBuildLineIndexesMap(
     const BrowserAccessibilityCocoa* cocoa_node,
     LineIndexesMap* line_indexes_map,
     int* counter) {
-  line_indexes_map->insert({cocoa_node, ++(*counter)});
+  const base::string16 line_index =
+      base::string16(1, ':') + base::NumberToString16(++(*counter));
+  line_indexes_map->insert({cocoa_node, line_index});
   for (BrowserAccessibilityCocoa* cocoa_child in [cocoa_node children]) {
     RecursiveBuildLineIndexesMap(cocoa_child, line_indexes_map, counter);
   }
@@ -230,10 +235,16 @@ void AccessibilityTreeFormatterMac::AddProperties(
   BrowserAccessibility* node = [cocoa_node owner];
   dict->SetKey("id", base::Value(base::NumberToString16(node->GetId())));
 
+  base::string16 line_index = base::ASCIIToUTF16("-1");
+  if (line_indexes_map.find(cocoa_node) != line_indexes_map.end()) {
+    line_index = line_indexes_map.at(cocoa_node);
+  }
+
   // Attributes
   for (NSString* supportedAttribute in
        [cocoa_node accessibilityAttributeNames]) {
-    if (GetMatchingPropertyNode(SysNSStringToUTF16(supportedAttribute))) {
+    if (GetMatchingPropertyNode(line_index,
+                                SysNSStringToUTF16(supportedAttribute))) {
       id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
       if (value != nil) {
         dict->SetPath(SysNSStringToUTF8(supportedAttribute),
@@ -246,9 +257,9 @@ void AccessibilityTreeFormatterMac::AddProperties(
   for (NSString* supportedAttribute in
        [cocoa_node accessibilityParameterizedAttributeNames]) {
     id param = nil;
-    auto propnode =
-        GetMatchingPropertyNode(SysNSStringToUTF16(supportedAttribute));
-    if (propnode.value == base::ASCIIToUTF16("AXCellForColumnAndRow")) {
+    auto propnode = GetMatchingPropertyNode(
+        line_index, SysNSStringToUTF16(supportedAttribute));
+    if (propnode.name_or_value == base::ASCIIToUTF16("AXCellForColumnAndRow")) {
       param = PropNodeToIntArray(propnode);
       if (param == nil) {
         dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
@@ -324,11 +335,11 @@ base::Value AccessibilityTreeFormatterMac::PopulateObject(
 
   // Accessible object.
   if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
-    int line_index = -1;
+    base::string16 line_index = base::ASCIIToUTF16("-1");
     if (line_indexes_map.find(value) != line_indexes_map.end()) {
       line_index = line_indexes_map.at(value);
     }
-    return base::Value(":" + base::NumberToString(line_index));
+    return base::Value(line_index);
   }
 
   // Scalar value.

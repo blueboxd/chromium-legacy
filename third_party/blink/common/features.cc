@@ -412,6 +412,11 @@ const base::Feature kSubresourceRedirect{"SubresourceRedirect",
 const base::Feature kCompositeCrossOriginIframes{
     "CompositeCrossOriginIframes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, enforces new interoperable semantics for 3D transforms.
+// See crbug.com/1008483.
+const base::Feature kTransformInterop{"TransformInterop",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, beacons (and friends) have ResourceLoadPriority::kLow,
 // not ResourceLoadPriority::kVeryLow.
 const base::Feature kSetLowPriorityForBeacon{"SetLowPriorityForBeacon",

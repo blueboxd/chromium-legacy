@@ -20,7 +20,7 @@ TEST(CSSPageRule, Serializing) {
   if (sheet.CssRules()) {
     EXPECT_EQ(1u, sheet.CssRules()->length());
     EXPECT_EQ(String(css_rule), sheet.CssRules()->item(0)->cssText());
-    EXPECT_EQ(CSSRule::kPageRule, sheet.CssRules()->item(0)->type());
+    EXPECT_EQ(CSSRule::kPageRule, sheet.CssRules()->item(0)->GetType());
     auto* page_rule = To<CSSPageRule>(sheet.CssRules()->item(0));
     EXPECT_EQ(":left", page_rule->selectorText());
   }

@@ -10,6 +10,7 @@
 #include <tuple>
 
 #include "base/macros.h"
+#include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 
 namespace chromeos {
@@ -24,14 +25,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
 
   void Init(dbus::Bus* bus) override;
 
-  void ListScanners(DBusMethodCallback<ScannerTable> callback) override;
+  void ListScanners(
+      DBusMethodCallback<lorgnette::ListScannersResponse> callback) override;
   void ScanImageToString(std::string device_name,
                          const ScanProperties& properties,
                          DBusMethodCallback<std::string> callback) override;
-
-  // Adds a fake scanner table entry, which will be returned by ListScanners().
-  void AddScannerTableEntry(const std::string& device_name,
-                            const ScannerTableEntry& entry);
 
   // Adds a fake scan data, which will be returned by ScanImageToString(),
   // if |device_name| and |properties| are matched.
@@ -39,8 +37,12 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
                    const ScanProperties& properties,
                    const std::string& data);
 
+  // Sets the response returned by ListScanners().
+  void SetListScannersResponse(
+      const lorgnette::ListScannersResponse& list_scanners_response);
+
  private:
-  ScannerTable scanner_table_;
+  lorgnette::ListScannersResponse list_scanners_response_;
 
   // Use tuple for a map below, which has pre-defined "less", for convenience.
   using ScanDataKey = std::tuple<std::string /* device_name */,

@@ -238,6 +238,7 @@ source_set("unit_tests") {
       "data_offer_unittest.cc",
       "data_source_unittest.cc",
       "display_unittest.cc",
+      "drag_drop_operation_unittest.cc",
       "gaming_seat_unittest.cc",
       "input_method_surface_unittest.cc",
       "keyboard_unittest.cc",

@@ -9,6 +9,7 @@
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 SigninErrorNotifierFactory::SigninErrorNotifierFactory()
@@ -35,6 +36,10 @@ SigninErrorNotifierFactory* SigninErrorNotifierFactory::GetInstance() {
 
 KeyedService* SigninErrorNotifierFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  // If this is during dummy login from tests, suppress the notification.
+  if (chromeos::switches::IsGaiaServicesDisabled())
+    return nullptr;
+
   Profile* profile = static_cast<Profile*>(context);
   return new SigninErrorNotifier(
       SigninErrorControllerFactory::GetForProfile(profile), profile);

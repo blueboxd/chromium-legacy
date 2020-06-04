@@ -269,8 +269,14 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
       std::make_unique<gpu::SharedImageRepresentationFactory>(
           dependency_->GetSharedImageManager(), memory_tracker);
 
+  // TODO(https://crbug.com/958166): The initial |image_format_| should not be
+  // used, and the gfx::BufferFormat specified in Reshape should be used
+  // instead, because it may be updated to reflect changes in the content being
+  // displayed (e.g, HDR content appearing on-screen).
 #if defined(USE_OZONE)
   image_format_ = GetResourceFormat(display::DisplaySnapshot::PrimaryFormat());
+#elif defined(OS_MACOSX)
+  image_format_ = BGRA_8888;
 #else
   image_format_ = RGBA_8888;
 #endif

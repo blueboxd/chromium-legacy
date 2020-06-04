@@ -316,8 +316,19 @@ class GraphNode {
     return -200;
   }
 
-  /** @return {!Array<number>} */
+  /** @return {!Array<number>} an array of node ids. */
   get linkTargets() {
+    return [];
+  }
+
+  /**
+   * Dashed links express ownership relationships. An object can own multiple
+   * things, but be owned by exactly one (per relationship type). As such, the
+   * relationship is expressed on the *owned* object. These links are drawn with
+   * an arrow at the beginning of the link, pointing to the owned object.
+   * @return {!Array<number>} an array of node ids.
+   */
+  get dashedLinkTargets() {
     return [];
   }
 
@@ -369,6 +380,14 @@ class PageNode extends GraphNode {
   /** override */
   get manyBodyStrength() {
     return -600;
+  }
+
+  /** override */
+  get dashedLinkTargets() {
+    if (this.page.openerFrameId) {
+      return [this.page.openerFrameId];
+    }
+    return [];
   }
 }
 
@@ -590,6 +609,12 @@ class Graph {
      */
     this.linkGroup_ = null;
 
+    /**
+     * A selection for the top-level <g> node that contains all dashed edges.
+     * @private {d3.selection}
+     */
+    this.dashedLinkGroup_ = null;
+
     /** @private {!Map<number, !GraphNode>} */
     this.nodes_ = new Map();
 
@@ -598,6 +623,12 @@ class Graph {
      * @private {!Array<!d3.ForceLink>}
      */
     this.links_ = [];
+
+    /**
+     * The dashed links.
+     * @private {!Array<!d3.ForceLink>}
+     */
+    this.dashedLinks_ = [];
 
     /**
      * The host window.
@@ -655,8 +686,9 @@ class Graph {
     // Create the <g> elements that host nodes and links.
     // The link groups are created first so that all links end up behind nodes.
     const svg = d3.select(this.svg_);
-    this.toolTipLinkGroup_ = svg.append('g').attr('class', 'toolTipLinks');
+    this.toolTipLinkGroup_ = svg.append('g').attr('class', 'tool-tip-links');
     this.linkGroup_ = svg.append('g').attr('class', 'links');
+    this.dashedLinkGroup_ = svg.append('g').attr('class', 'dashed-links');
     this.nodeGroup_ = svg.append('g').attr('class', 'nodes');
     this.separatorGroup_ = svg.append('g').attr('class', 'separators');
 
@@ -697,7 +729,11 @@ class Graph {
   /** @override */
   pageChanged(page) {
     const pageNode = /** @type {!PageNode} */ (this.nodes_.get(page.id));
+
+    // Page node dashed links may change dynamically, so account for that here.
+    this.removeDashedNodeLinks_(pageNode);
     pageNode.page = page;
+    this.addDashedNodeLinks_(pageNode);
   }
 
   /** @override */
@@ -732,6 +768,7 @@ class Graph {
 
     // Remove any links, and then the node itself.
     this.removeNodeLinks_(node);
+    this.removeDashedNodeLinks_(node);
     this.nodes_.delete(nodeId);
   }
 
@@ -776,8 +813,18 @@ class Graph {
    * @private
    */
   removeNodeLinks_(node) {
-    // Filter away any links to or from the deleted node.
+    // Filter away any links to or from the provided node.
     this.links_ = this.links_.filter(
+        link => link.source !== node && link.target !== node);
+  }
+
+  /**
+   * @param {!GraphNode} node
+   * @private
+   */
+  removeDashedNodeLinks_(node) {
+    // Filter away any dashed links to or from the provided node.
+    this.dashedLinks_ = this.dashedLinks_.filter(
         link => link.source !== node && link.target !== node);
   }
 
@@ -915,9 +962,17 @@ class Graph {
     // Select the links.
     const link = this.linkGroup_.selectAll('line').data(this.links_);
     // Add new links.
-    link.enter().append('line').attr('stroke-width', 1);
+    link.enter().append('line');
     // Remove dead links.
     link.exit().remove();
+
+    // Select the dashed links.
+    const dashedLink =
+        this.dashedLinkGroup_.selectAll('line').data(this.dashedLinks_);
+    // Add new dashed links.
+    dashedLink.enter().append('line');
+    // Remove dead dashed links.
+    dashedLink.exit().remove();
 
     // Select the nodes, except for any dead ones that are still transitioning.
     const nodes = Array.from(this.nodes_.values());
@@ -931,6 +986,7 @@ class Graph {
                            .call(this.drag_)
                            .on('click', this.onGraphNodeClick_.bind(this));
       const circles = newNodes.append('circle')
+                          .attr('id', d => `circle-${d.id}`)
                           .attr('r', kNodeRadius * 1.5)
                           .attr('fill', 'green');  // New nodes appear green.
 
@@ -981,9 +1037,11 @@ class Graph {
 
     // Update and restart the simulation if the graph changed.
     if (!node.enter().empty() || !node.exit().empty() ||
-        !link.enter().empty() || !link.exit().empty()) {
+        !link.enter().empty() || !link.exit().empty() ||
+        !dashedLink.enter().empty() || !dashedLink.exit().empty()) {
       this.simulation_.nodes(nodes);
-      this.simulation_.force('link').links(this.links_);
+      const links = this.links_.concat(this.dashedLinks_);
+      this.simulation_.force('link').links(links);
 
       this.restartSimulation_();
     }
@@ -996,6 +1054,12 @@ class Graph {
 
     const lines = this.linkGroup_.selectAll('line');
     lines.attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+
+    const dashedLines = this.dashedLinkGroup_.selectAll('line');
+    dashedLines.attr('x1', d => d.source.x)
         .attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y);
@@ -1013,6 +1077,7 @@ class Graph {
   addNode_(node) {
     this.nodes_.set(node.id, node);
     this.addNodeLinks_(node);
+    this.addDashedNodeLinks_(node);
     node.setInitialPosition(this.width_, this.height_);
   }
 
@@ -1023,11 +1088,25 @@ class Graph {
    * @private
    */
   addNodeLinks_(node) {
-    const linkTargets = node.linkTargets;
-    for (const linkTarget of linkTargets) {
+    for (const linkTarget of node.linkTargets) {
       const target = this.nodes_.get(linkTarget);
       if (target) {
         this.links_.push({source: node, target: target});
+      }
+    }
+  }
+
+  /**
+   * Adds all the dashed links for a node to the graph.
+   *
+   * @param {!GraphNode} node
+   * @private
+   */
+  addDashedNodeLinks_(node) {
+    for (const dashedLinkTarget of node.dashedLinkTargets) {
+      const target = this.nodes_.get(dashedLinkTarget);
+      if (target) {
+        this.dashedLinks_.push({source: node, target: target});
       }
     }
   }
@@ -1068,6 +1147,9 @@ class Graph {
       d.fx = null;
       d.fy = null;
     }
+
+    // Toggle the pinned class as appropriate for the circle backing this node.
+    d3.select(`#circle-${d.id}`).classed('pinned', d.fx != null);
   }
 
   /**

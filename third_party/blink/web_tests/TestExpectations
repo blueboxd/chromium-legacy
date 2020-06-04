@@ -1277,8 +1277,14 @@ crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-ma
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-script-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window.html [ Skip ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-workers.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-enumeration.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-getTables.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-getTables-large-fonts.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-blob.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-workers-enumeration.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-workers-getTables.html [ Skip ]
+crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-workers-blob.html [ Skip ]
+crbug.com/1087671 [ Mac ] virtual/font-access/http/tests/font-access/font-access-window-getTables-large-fonts.html [ Skip ]
 
 # ====== Style team owned tests from here ======
 
@@ -4065,7 +4071,7 @@ crbug.com/852645 gamepad/full-screen-gamepad.html [ Timeout ]
 crbug.com/718155 payments/payment-request-in-iframe.html [ Failure ]
 crbug.com/718155 payments/payment-request-in-iframe-nested-not-allowed.html [ Failure ]
 
-# Expect to fail. The test is applicable only when PaymentRequestOptionalTotal flag is disabled.
+# Expect to fail. The test is applicable only when DigitalGoods flag is disabled.
 crbug.com/1080870 http/tests/payments/payment-request-app-store-billing-mandatory-total.html [ Failure ]
 
 # Layout Tests on Swarming (Windows) - https://crbug.com/717347
@@ -5831,10 +5837,6 @@ crbug.com/1073792 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/eve
 # the inspector-protocol/media tests only work in the virtual test environment.
 crbug.com/1074129 inspector-protocol/media/media-player.js [ TIMEOUT ]
 
-# Sheriff 2020-04-29
-crbug.com/1076467 [ Mac ] virtual/font-access/http/tests/font-access/font-access-workers.html [ Pass Timeout Crash ]
-crbug.com/1076467 [ Mac ] virtual/font-access/http/tests/font-access/font-access-window.html [ Pass Timeout Crash ]
-
 # Sheriff 2020-04-30
 crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Timeout ]
 
@@ -5908,3 +5910,7 @@ crbug.com/1011811 http/tests/devtools/persistence/automapping-sourcemap.js [ Pas
 crbug.com/1088441 [ Mac ] http/tests/loading/bad-server-subframe.html [ Pass Failure ]
 crbug.com/1090822 [ Mac10.10 ] virtual/cascade/fast/forms/month/month-appearance-basic.html [ Pass Failure ]
 crbug.com/1083293 [ Linux ] media/video-aspect-ratio.html [ Pass Failure ]
+crbug.com/1027434 [ Mac10.13 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+
+# Sheriff 2020-06-04
+crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Pass Failure Timeout ]

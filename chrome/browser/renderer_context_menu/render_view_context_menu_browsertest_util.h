@@ -36,6 +36,7 @@ class ContextMenuWaiter {
   ~ContextMenuWaiter();
 
   content::ContextMenuParams& params();
+  const std::vector<int>& GetCapturedCommandIds() const;
 
   // Wait until the context menu is opened and closed.
   void WaitForMenuOpenAndClose();
@@ -46,6 +47,8 @@ class ContextMenuWaiter {
   void Cancel(RenderViewContextMenu* context_menu);
 
   content::ContextMenuParams params_;
+  std::vector<int> captured_command_ids_;
+
   base::RunLoop run_loop_;
   base::Optional<int> maybe_command_to_execute_;
 

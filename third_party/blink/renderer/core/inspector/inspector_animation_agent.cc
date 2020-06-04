@@ -447,7 +447,7 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
         css_agent_->FindEffectiveDeclaration(*property, styles);
     // Ignore inline styles.
     if (!style || !style->ParentStyleSheet() || !style->parentRule() ||
-        style->parentRule()->type() != CSSRule::kStyleRule)
+        style->parentRule()->GetType() != CSSRule::kStyleRule)
       continue;
     digestor.UpdateUtf8(property->GetPropertyNameString());
     digestor.UpdateUtf8(css_agent_->StyleSheetId(style->ParentStyleSheet()));

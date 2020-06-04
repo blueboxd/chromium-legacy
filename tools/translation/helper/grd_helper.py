@@ -34,7 +34,9 @@ TAGS_TO_IGNORE = (
 
 
 def GetGrdMessages(grd_path_or_string, dir_path):
-  """Load the grd file and return a dict of message ids to messages."""
+  """Load the grd file and return a dict of message ids to messages.
+
+  Ignores non-translateable messages."""
   doc = grit.grd_reader.Parse(
       grd_path_or_string,
       dir_path,
@@ -46,6 +48,7 @@ def GetGrdMessages(grd_path_or_string, dir_path):
   return {
       msg.attrs['name']: msg
       for msg in doc.GetChildrenOfType(grit.node.message.MessageNode)
+      if msg.IsTranslateable()
   }
 
 

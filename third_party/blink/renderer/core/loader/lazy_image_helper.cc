@@ -74,12 +74,6 @@ void LazyImageHelper::StartMonitoring(blink::Element* element) {
   if (auto* html_image = DynamicTo<HTMLImageElement>(element)) {
     LoadingAttributeValue effective_loading_attr = GetLoadingAttributeValue(
         html_image->FastGetAttribute(html_names::kLoadingAttr));
-    // If the 'lazyload' feature policy is enforced, the attribute value
-    // loading='eager' is considered as 'auto'.
-    if (effective_loading_attr == LoadingAttributeValue::kEager &&
-        document->IsLazyLoadPolicyEnforced()) {
-      effective_loading_attr = LoadingAttributeValue::kAuto;
-    }
     DCHECK_NE(effective_loading_attr, LoadingAttributeValue::kEager);
     if (effective_loading_attr == LoadingAttributeValue::kAuto) {
       deferral_message = DeferralMessage::kLoadEventsDeferred;
@@ -128,8 +122,7 @@ LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
     }
   }
 
-  if (loading_attr == LoadingAttributeValue::kEager &&
-      !frame.GetDocument()->IsLazyLoadPolicyEnforced()) {
+  if (loading_attr == LoadingAttributeValue::kEager) {
     UseCounter::Count(frame.GetDocument(),
                       WebFeature::kLazyLoadImageLoadingAttributeEager);
     return LazyImageHelper::Eligibility::kDisabled;

@@ -107,21 +107,21 @@ class SearchHandlerTest : public testing::Test {
 };
 
 TEST_F(SearchHandlerTest, AddAndRemove) {
-  // Add printing search tags to registry and search for "Printing".
+  // Add printing search tags to registry and search for "Print".
   search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
 
-  // 2 results should be available for a "Printing" query.
+  // 3 results should be available for a "Print" query.
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("Printing"),
+      .Search(base::ASCIIToUTF16("Print"),
               /*max_num_results=*/3u,
               mojom::ParentResultBehavior::kDoNotIncludeParentResults,
               &search_results);
-  EXPECT_EQ(search_results.size(), 2u);
+  EXPECT_EQ(search_results.size(), 3u);
 
   // Limit results to 1 max and ensure that only 1 result is returned.
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("Printing"),
+      .Search(base::ASCIIToUTF16("Print"),
               /*max_num_results=*/1u,
               mojom::ParentResultBehavior::kDoNotIncludeParentResults,
               &search_results);
@@ -139,7 +139,7 @@ TEST_F(SearchHandlerTest, AddAndRemove) {
   // returned for "Printing".
   search_tag_registry_.RemoveSearchTags(GetPrintingSearchConcepts());
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("Printing"),
+      .Search(base::ASCIIToUTF16("Print"),
               /*max_num_results=*/3u,
               mojom::ParentResultBehavior::kDoNotIncludeParentResults,
               &search_results);
@@ -187,11 +187,11 @@ TEST_F(SearchHandlerTest, DefaultRank) {
   search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
   std::vector<mojom::SearchResultPtr> search_results;
 
-  // Search for "Printing". Only the IDS_OS_SETTINGS_TAG_PRINTING result
+  // Search for "Print". Only the IDS_OS_SETTINGS_TAG_PRINTING result
   // contains the word "Printing", but the other results have the similar word
   // "Printer". Thus, "Printing" has a higher relevance score.
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
-      .Search(base::ASCIIToUTF16("Printing"),
+      .Search(base::ASCIIToUTF16("Print"),
               /*max_num_results=*/3u,
               mojom::ParentResultBehavior::kAllowParentResults,
               &search_results);

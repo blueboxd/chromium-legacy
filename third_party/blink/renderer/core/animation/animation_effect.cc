@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
+#include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/timing_calculations.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
@@ -107,8 +108,32 @@ void AnimationEffect::updateTiming(OptionalEffectTiming* optional_timing,
   InvalidateAndNotifyOwner();
 }
 
-void AnimationEffect::UpdateInheritedTime(base::Optional<double> inherited_time,
-                                          TimingUpdateReason reason) const {
+base::Optional<Timing::Phase> TimelinePhaseToTimingPhase(
+    base::Optional<TimelinePhase> phase) {
+  base::Optional<Timing::Phase> result;
+  if (phase) {
+    switch (phase.value()) {
+      case TimelinePhase::kBefore:
+        result = Timing::Phase::kPhaseBefore;
+        break;
+      case TimelinePhase::kActive:
+        result = Timing::Phase::kPhaseActive;
+        break;
+      case TimelinePhase::kAfter:
+        result = Timing::Phase::kPhaseAfter;
+        break;
+      case TimelinePhase::kInactive:
+        // Timing::Phase does not have an inactive phase.
+        break;
+    }
+  }
+  return result;
+}
+
+void AnimationEffect::UpdateInheritedTime(
+    base::Optional<double> inherited_time,
+    base::Optional<TimelinePhase> inherited_timeline_phase,
+    TimingUpdateReason reason) const {
   base::Optional<double> playback_rate = base::nullopt;
   if (GetAnimation())
     playback_rate = GetAnimation()->playbackRate();
@@ -117,15 +142,21 @@ void AnimationEffect::UpdateInheritedTime(base::Optional<double> inherited_time,
           ? Timing::AnimationDirection::kBackwards
           : Timing::AnimationDirection::kForwards;
 
+  base::Optional<Timing::Phase> timeline_phase =
+      TimelinePhaseToTimingPhase(inherited_timeline_phase);
+
   bool needs_update = needs_update_ || last_update_time_ != inherited_time ||
-                      (owner_ && owner_->EffectSuppressed());
+                      (owner_ && owner_->EffectSuppressed()) ||
+                      last_update_phase_ != timeline_phase;
   needs_update_ = false;
   last_update_time_ = inherited_time;
+  last_update_phase_ = timeline_phase;
 
   const base::Optional<double> local_time = inherited_time;
   if (needs_update) {
     Timing::CalculatedTiming calculated = SpecifiedTiming().CalculateTimings(
-        local_time, direction, IsA<KeyframeEffect>(this), playback_rate);
+        local_time, timeline_phase, direction, IsA<KeyframeEffect>(this),
+        playback_rate);
 
     const bool was_canceled = calculated.phase != calculated_.phase &&
                               calculated.phase == Timing::kPhaseNone;

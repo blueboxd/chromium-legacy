@@ -34,6 +34,10 @@ void TimeTrayItemView::UpdateAlignmentForShelf(Shelf* shelf) {
   time_view_->UpdateClockLayout(clock_layout);
 }
 
+void TimeTrayItemView::HandleLocaleChange() {
+  time_view_->Refresh();
+}
+
 void TimeTrayItemView::OnSessionStateChanged(
     session_manager::SessionState state) {
   time_view_->SetTextColor(TrayIconColor(state));

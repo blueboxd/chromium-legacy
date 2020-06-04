@@ -708,6 +708,10 @@ static CompositingReasons CompositingReasonsForTransformProperty() {
   reasons |= CompositingReason::kWillChangeOpacity;
   reasons |= CompositingReason::kWillChangeFilter;
   reasons |= CompositingReason::kWillChangeBackdropFilter;
+
+  if (RuntimeEnabledFeatures::TransformInteropEnabled())
+    reasons |= CompositingReason::kBackfaceInvisibility3DAncestor;
+
   return reasons;
 }
 
@@ -840,6 +844,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
     }
   }
 
+  // properties_->Transform() is present if a CSS transform is present,
+  // and is also present if transform-style: preserve-3d is set.
+  // See NeedsTransform.
   if (properties_->Transform()) {
     context_.current.transform = properties_->Transform();
     if (object_.StyleRef().Preserves3D()) {
@@ -850,6 +857,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
       context_.current.rendering_context_id = 0;
       context_.current.should_flatten_inherited_transform = true;
     }
+  } else if (RuntimeEnabledFeatures::TransformInteropEnabled()) {
+    // With kTransformInterop enabled, 3D rendering contexts follow the
+    // DOM ancestor chain, so flattening should apply regardless of
+    // presence of transform.
+    context_.current.rendering_context_id = 0;
+    context_.current.should_flatten_inherited_transform = true;
   }
 }
 
@@ -2602,6 +2615,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
     UpdateCssClip();
     UpdateFilter();
     UpdateOverflowControlsClip();
+  } else if (RuntimeEnabledFeatures::TransformInteropEnabled()) {
+    // With kTransformInterop enabled, 3D rendering contexts follow the
+    // DOM ancestor chain, so flattening should apply regardless of
+    // presence of transform.
+    context_.current.rendering_context_id = 0;
+    context_.current.should_flatten_inherited_transform = true;
   }
   UpdateLocalBorderBoxContext();
 }

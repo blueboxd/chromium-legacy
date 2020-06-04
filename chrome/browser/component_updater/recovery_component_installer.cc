@@ -416,7 +416,8 @@ void RecoveryComponentInstaller::Install(
   auto result = update_client::InstallFunctionWrapper(
       base::BindOnce(&RecoveryComponentInstaller::DoInstall,
                      base::Unretained(this), std::cref(unpack_path)));
-  base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 bool RecoveryComponentInstaller::DoInstall(

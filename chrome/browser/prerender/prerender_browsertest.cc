@@ -214,7 +214,7 @@ std::string CreateServerRedirect(const std::string& dest_url) {
 }
 
 // Clears the specified data using BrowsingDataRemover.
-void ClearBrowsingData(Browser* browser, int remove_mask) {
+void ClearBrowsingData(Browser* browser, uint64_t remove_mask) {
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(browser->profile());
   content::BrowsingDataRemoverCompletionObserver observer(remover);

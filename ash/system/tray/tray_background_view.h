@@ -85,6 +85,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called from GetAccessibleNodeData, must return a valid accessible name.
   virtual base::string16 GetAccessibleNameForTray() = 0;
 
+  // Called when a locale change is detected. It should reload any strings the
+  // view may be using. Note that the locale is not expected to change after the
+  // user logs in.
+  virtual void HandleLocaleChange() = 0;
+
   // Called when the bubble is resized.
   virtual void BubbleResized(const TrayBubbleView* bubble_view);
 

@@ -427,6 +427,20 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // added to the WebContents tree at this point, but can be observed safely.
   virtual void InnerWebContentsCreated(WebContents* inner_web_contents) {}
 
+  // Notifies that an |inner_web_contents| instance has been attached to the
+  // provided |render_frame_host|. By the time this is called the
+  // |inner_web_contents| will have been added to the WebContents tree.
+  virtual void InnerWebContentsAttached(WebContents* inner_web_contents,
+                                        RenderFrameHost* render_frame_host,
+                                        bool is_full_page) {}
+
+  // Notifies that an |inner_web_contents| instance has been detached from this
+  // WebContents. InnerWebContentsAttached() will already have been called for
+  // the |inner_web_contents|. By the time this is called the
+  // |inner_web_contents| will have been removed from the WebContents tree, but
+  // will still be alive and is safe to observe.
+  virtual void InnerWebContentsDetached(WebContents* inner_web_contents) {}
+
   // Invoked when WebContents::Clone() was used to clone a WebContents.
   virtual void DidCloneToNewWebContents(WebContents* old_web_contents,
                                         WebContents* new_web_contents) {}

@@ -2712,6 +2712,19 @@ CSSValue* ComputedStyleUtils::ValueForGapLength(const GapLength& gap_length,
   return ZoomAdjustedPixelValueForLength(gap_length.GetLength(), style);
 }
 
+CSSValue* ComputedStyleUtils::ValueForStyleName(const StyleName& name) {
+  if (name.IsCustomIdent())
+    return MakeGarbageCollected<CSSCustomIdentValue>(name.GetValue());
+  return MakeGarbageCollected<CSSStringValue>(name.GetValue());
+}
+
+CSSValue* ComputedStyleUtils::ValueForStyleNameOrKeyword(
+    const StyleNameOrKeyword& value) {
+  if (value.IsKeyword())
+    return CSSIdentifierValue::Create(value.GetKeyword());
+  return ValueForStyleName(value.GetName());
+}
+
 std::unique_ptr<CrossThreadStyleValue>
 ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
     CSSStyleValue* style_value) {

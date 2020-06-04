@@ -5,6 +5,8 @@
 #include "content/renderer/worker/shared_worker_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "content/renderer/loader/resource_dispatcher.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/worker/embedded_shared_worker_stub.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
@@ -53,8 +55,10 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
       appcache_host_id.value_or(base::UnguessableToken()),
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller_info),
-      std::move(host), std::move(receiver),
-      std::move(browser_interface_broker));
+      std::move(host), std::move(receiver), std::move(browser_interface_broker),
+      RenderThreadImpl::current()
+          ->resource_dispatcher()
+          ->cors_exempt_header_list());
 }
 
 }  // namespace content

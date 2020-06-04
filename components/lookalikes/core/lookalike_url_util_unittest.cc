@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/lookalikes/core/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(LookalikeUrlUtilTest, IsEditDistanceAtMostOne) {
@@ -71,15 +73,45 @@ bool IsGoogleScholar(const GURL& hostname) {
   return hostname.host() == "scholar.google.com";
 }
 
+struct TargetEmbeddingHeuristicTestCase {
+  const std::string hostname;
+  // Empty when there is no match.
+  const std::string expected_safe_host;
+  const TargetEmbeddingType expected_type;
+};
+
+void ValidateTestCases(
+    const std::vector<DomainInfo>& engaged_sites,
+    const std::vector<TargetEmbeddingHeuristicTestCase>& test_cases) {
+  for (auto& test_case : test_cases) {
+    std::string safe_hostname;
+    TargetEmbeddingType embedding_type = GetTargetEmbeddingType(
+        test_case.hostname, engaged_sites,
+        base::BindRepeating(&IsGoogleScholar), &safe_hostname);
+    if (test_case.expected_type != TargetEmbeddingType::kNone) {
+      EXPECT_EQ(safe_hostname, test_case.expected_safe_host)
+          << "Expected that \"" << test_case.hostname
+          << " should trigger because of " << test_case.expected_safe_host
+          << " But "
+          << (safe_hostname.empty() ? "it didn't trigger."
+                                    : "triggered because of ")
+          << safe_hostname;
+      EXPECT_EQ(embedding_type, test_case.expected_type)
+          << "Right warning type was not triggered for " << test_case.hostname
+          << ".";
+    } else {
+      EXPECT_EQ(embedding_type, TargetEmbeddingType::kNone)
+          << "Expected that " << test_case.hostname
+          << "\" shouldn't trigger but it did. Because of URL:"
+          << safe_hostname;
+    }
+  }
+}
+
 TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
-  const std::vector<DomainInfo> engaged_sites = {
+  const std::vector<DomainInfo> kEngagedSites = {
       GetDomainInfo(GURL("https://highengagement.com"))};
-  const struct TargetEmbeddingHeuristicTestCase {
-    const std::string hostname;
-    // Empty when there is no match.
-    const std::string safe_hostname;
-    const TargetEmbeddingType embedding_type;
-  } kTestCases[] = {
+  const std::vector<TargetEmbeddingHeuristicTestCase> kTestCases = {
       // The length of the url should not affect the outcome.
       {"this-is-a-very-long-url-but-it-should-not-affect-the-"
        "outcome-of-this-target-embedding-test-google.com-login.com",
@@ -159,7 +191,10 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       {"google.com", "", TargetEmbeddingType::kNone},
       {"google.co.uk", "", TargetEmbeddingType::kNone},
       {"google.randomreg-login.com", "", TargetEmbeddingType::kNone},
+  };
 
+  // Test cases for "enhanced protection", aka mixed-TLD, target embedding.
+  const std::vector<TargetEmbeddingHeuristicTestCase> kEPTestCases = {
       // Same tests with another important TLDs.
       {"this-is-a-very-long-url-but-it-should-not-affect-the-"
        "outcome-of-this-target-embedding-test-google.edu-login.com",
@@ -224,26 +259,12 @@ TEST(LookalikeUrlUtilTest, TargetEmbeddingTest) {
       {"foo.googleedu-foo.com", "", TargetEmbeddingType::kNone},
   };
 
-  for (const auto& kTestCase : kTestCases) {
-    std::string safe_hostname;
-    TargetEmbeddingType embedding_type = GetTargetEmbeddingType(
-        kTestCase.hostname, engaged_sites,
-        base::BindRepeating(&IsGoogleScholar), &safe_hostname);
-    if (kTestCase.embedding_type != TargetEmbeddingType::kNone) {
-      EXPECT_EQ(safe_hostname, kTestCase.safe_hostname)
-          << "Expected that \"" << kTestCase.hostname
-          << " should trigger because of " << kTestCase.safe_hostname << " But "
-          << (safe_hostname.empty() ? "it didn't trigger."
-                                    : "triggered because of ")
-          << safe_hostname;
-      EXPECT_EQ(embedding_type, kTestCase.embedding_type)
-          << "Right warning type was not triggered for " << kTestCase.hostname
-          << ".";
-    } else {
-      EXPECT_EQ(embedding_type, TargetEmbeddingType::kNone)
-          << "Expected that " << kTestCase.hostname
-          << "\" shouldn't trigger but it did. Because of URL:"
-          << safe_hostname;
-    }
-  }
+  ValidateTestCases(kEngagedSites, kTestCases);
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      lookalikes::features::kDetectTargetEmbeddingLookalikes,
+      {{"enhanced_protection_enabled", "true"}});
+
+  ValidateTestCases(kEngagedSites, kEPTestCases);
 }

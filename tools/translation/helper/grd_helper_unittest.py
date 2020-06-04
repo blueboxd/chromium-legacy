@@ -33,7 +33,7 @@ class GrdHelperTest(unittest.TestCase):
     # listed here.
     self.assertTrue('IDS_TEST_STRING1' in messages)
     self.assertTrue('IDS_TEST_STRING2' in messages)
-    self.assertTrue('IDS_TEST_STRING_NON_TRANSLATEABLE' in messages)
+    self.assertFalse('IDS_TEST_STRING_NON_TRANSLATEABLE' in messages)
 
   def testReadGrdpMessages(self):
     messages = grd_helper.GetGrdpMessagesFromString(

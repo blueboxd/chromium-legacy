@@ -113,15 +113,10 @@ MetadataRecorder::MetadataProvider::~MetadataProvider() = default;
 
 size_t MetadataRecorder::MetadataProvider::GetItems(
     ItemArray* const items) const {
-  // Assertion is only necessary so that thread annotations recognize that
-  // |read_lock_| is acquired.
-  metadata_recorder_->read_lock_.AssertAcquired();
   return metadata_recorder_->GetItems(items);
 }
 
 size_t MetadataRecorder::GetItems(ItemArray* const items) const {
-  read_lock_.AssertAcquired();
-
   // If a writer adds a new item after this load, it will be ignored.  We do
   // this instead of calling item_slots_used_.load() explicitly in the for loop
   // bounds checking, which would be expensive.

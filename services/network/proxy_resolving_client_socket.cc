@@ -38,10 +38,12 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     net::HttpNetworkSession* network_session,
     const net::CommonConnectJobParams* common_connect_job_params,
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     bool use_tls)
     : network_session_(network_session),
       common_connect_job_params_(common_connect_job_params),
       url_(url),
+      network_isolation_key_(network_isolation_key),
       use_tls_(use_tls),
       net_log_(net::NetLogWithSource::Make(network_session_->net_log(),
                                            net::NetLogSourceType::SOCKET)),
@@ -245,8 +247,8 @@ int ProxyResolvingClientSocket::DoProxyResolve() {
   //
   // TODO(https://crbug.com/1023439): Pass along a NetworkIsolationKey.
   return network_session_->proxy_resolution_service()->ResolveProxy(
-      url_, net::HttpRequestHeaders::kPostMethod,
-      net::NetworkIsolationKey::Todo(), &proxy_info_,
+      url_, net::HttpRequestHeaders::kPostMethod, network_isolation_key_,
+      &proxy_info_,
       base::BindOnce(&ProxyResolvingClientSocket::OnIOComplete,
                      base::Unretained(this)),
       &proxy_resolve_request_, net_log_);
@@ -299,7 +301,7 @@ int ProxyResolvingClientSocket::DoInitConnection() {
       use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_server(),
       proxy_annotation_tag, &ssl_config, &ssl_config, true /* force_tunnel */,
       net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
-      net::MAXIMUM_PRIORITY, net::SocketTag(), net::NetworkIsolationKey(),
+      net::MAXIMUM_PRIORITY, net::SocketTag(), network_isolation_key_,
       false /* disable_secure_dns */, common_connect_job_params_, this);
   return connect_job_->Connect();
 }

@@ -534,7 +534,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
 
     // The result->append()'ed types should be exactly the same as in
     // flattenSourceData().
-    switch (rule->type()) {
+    switch (rule->GetType()) {
       case CSSRule::kStyleRule:
       case CSSRule::kImportRule:
       case CSSRule::kCharsetRule:
@@ -1026,7 +1026,7 @@ CSSStyleRule* InspectorStyleSheet::SetRuleSelector(
 
   CSSRule* rule = RuleForSourceData(source_data);
   if (!rule || !rule->parentStyleSheet() ||
-      rule->type() != CSSRule::kStyleRule) {
+      rule->GetType() != CSSRule::kStyleRule) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
@@ -1065,7 +1065,7 @@ CSSKeyframeRule* InspectorStyleSheet::SetKeyframeKey(
 
   CSSRule* rule = RuleForSourceData(source_data);
   if (!rule || !rule->parentStyleSheet() ||
-      rule->type() != CSSRule::kKeyframeRule) {
+      rule->GetType() != CSSRule::kKeyframeRule) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
@@ -1145,7 +1145,7 @@ CSSMediaRule* InspectorStyleSheet::SetMediaRuleText(
 
   CSSRule* rule = RuleForSourceData(source_data);
   if (!rule || !rule->parentStyleSheet() ||
-      rule->type() != CSSRule::kMediaRule) {
+      rule->GetType() != CSSRule::kMediaRule) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
@@ -1259,7 +1259,7 @@ CSSStyleRule* InspectorStyleSheet::InsertCSSOMRuleBySourceRange(
                                        exception_state);
 
   CSSRule* rule = RuleForSourceData(containing_rule_source_data);
-  if (!rule || rule->type() != CSSRule::kMediaRule) {
+  if (!rule || rule->GetType() != CSSRule::kMediaRule) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotFoundError,
                                       "Cannot insert rule in non-media rule.");
     return nullptr;
@@ -1342,7 +1342,7 @@ bool InspectorStyleSheet::DeleteRule(const SourceRange& range,
   }
   CSSRule* parent_rule = rule->parentRule();
   if (parent_rule) {
-    if (parent_rule->type() != CSSRule::kMediaRule) {
+    if (parent_rule->GetType() != CSSRule::kMediaRule) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNotFoundError,
           "Cannot remove rule from non-media rule.");

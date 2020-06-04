@@ -43784,6 +43784,7 @@ Called by update_use_counter_css.py.-->
   <int value="662" label="content-visibility"/>
   <int value="663" label="text-decoration-thickness"/>
   <int value="664" label="page-orientation"/>
+  <int value="665" label="animation-timeline"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -59226,6 +59227,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="10"
       label="The page triggered a desktop capture request. It was denied and
              the warning was shown."/>
+  <int value="11"
+      label="User pasted something on the page and the warning was shown."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">
@@ -69946,6 +69949,13 @@ Full version information for the fingerprint enum values:
   <int value="7005" label="HIDDEN_to_WILL_HIDE"/>
   <int value="7006" label="HIDDEN_to_HIDING"/>
   <int value="7007" label="HIDDEN_to_HIDDEN"/>
+</enum>
+
+<enum name="VirtualKeyboardEmojiTriggerType">
+  <int value="0" label="Base emoji from the emoji picker"/>
+  <int value="1" label="Variant emoji from the emoji picker"/>
+  <int value="2" label="Base emoji from the popup"/>
+  <int value="3" label="Variant emoji from the popup"/>
 </enum>
 
 <enum name="VirtualKeyboardErrorTypeHashes">

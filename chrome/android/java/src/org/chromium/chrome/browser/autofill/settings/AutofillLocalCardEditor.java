@@ -78,6 +78,8 @@ public class AutofillLocalCardEditor extends AutofillCreditCardEditor {
         // Set the visibility of the nickname field based on the experiment flag.
         mNicknameLabel.setVisibility(isNicknameManagementEnabled() ? View.VISIBLE : View.GONE);
         mNicknameText.addTextChangedListener(nicknameTextWatcher());
+        mNicknameText.setOnFocusChangeListener(
+                (view, hasFocus) -> mNicknameLabel.setCounterEnabled(hasFocus));
         // Set text watcher to format credit card number
         mNumberText.addTextChangedListener(new CreditCardNumberFormattingTextWatcher());
 

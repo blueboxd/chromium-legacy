@@ -101,7 +101,7 @@ class ReportingServiceImpl : public ReportingService {
         NetworkIsolationKey::Todo(), url, std::move(header_value)));
   }
 
-  void RemoveBrowsingData(int data_type_mask,
+  void RemoveBrowsingData(uint64_t data_type_mask,
                           const base::RepeatingCallback<bool(const GURL&)>&
                               origin_filter) override {
     DoOrBacklogTask(base::BindOnce(&ReportingServiceImpl::DoRemoveBrowsingData,
@@ -109,7 +109,7 @@ class ReportingServiceImpl : public ReportingService {
                                    origin_filter));
   }
 
-  void RemoveAllBrowsingData(int data_type_mask) override {
+  void RemoveAllBrowsingData(uint64_t data_type_mask) override {
     DoOrBacklogTask(
         base::BindOnce(&ReportingServiceImpl::DoRemoveAllBrowsingData,
                        base::Unretained(this), data_type_mask));
@@ -174,14 +174,14 @@ class ReportingServiceImpl : public ReportingService {
   }
 
   void DoRemoveBrowsingData(
-      int data_type_mask,
+      uint64_t data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
     DCHECK(initialized_);
     ReportingBrowsingDataRemover::RemoveBrowsingData(
         context_->cache(), data_type_mask, origin_filter);
   }
 
-  void DoRemoveAllBrowsingData(int data_type_mask) {
+  void DoRemoveAllBrowsingData(uint64_t data_type_mask) {
     DCHECK(initialized_);
     ReportingBrowsingDataRemover::RemoveAllBrowsingData(context_->cache(),
                                                         data_type_mask);

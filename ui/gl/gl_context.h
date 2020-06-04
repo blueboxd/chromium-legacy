@@ -13,6 +13,7 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/atomic_flag.h"
 #include "build/build_config.h"
 #include "ui/gfx/extension_set.h"
@@ -90,7 +91,8 @@ struct GL_EXPORT GLContextAttribs {
 };
 
 // Encapsulates an OpenGL context, hiding platform specific management.
-class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
+class GL_EXPORT GLContext : public base::RefCounted<GLContext>,
+                            public base::SupportsWeakPtr<GLContext> {
  public:
   explicit GLContext(GLShareGroup* share_group);
 

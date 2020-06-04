@@ -82,4 +82,9 @@
         <item name="android:src">@drawable/ic_play_arrow_white_36dp</item>
         <item name="android:tint">@color/modern_grey_800</item>
     </style>
+
+    <!-- Download Later Styles -->
+    <style name="TextAppearance.DownloadLaterTitle" parent="TextAppearance.AlertDialogTitleStyle">
+        <item name="android:textSize">20sp</item>
+    </style>
 </resources>

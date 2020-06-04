@@ -81,6 +81,8 @@ blink_core_sources("rendering") {
     "style_inherited_variables.h",
     "style_initial_data.cc",
     "style_initial_data.h",
+    "style_name.h",
+    "style_name_or_keyword.h",
     "style_non_inherited_variables.h",
     "style_offset_rotation.h",
     "style_path.cc",
@@ -114,6 +116,8 @@ blink_core_tests("unit_tests") {
     "computed_style_test.cc",
     "filter_operations_test.cc",
     "style_difference_test.cc",
+    "style_name_or_keyword_test.cc",
+    "style_name_test.cc",
     "style_variables_test.cc",
     "svg_computed_style_test.cc",
   ]

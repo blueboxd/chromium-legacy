@@ -96,7 +96,7 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {}
 
-  void RemoveAndWait(int remove_mask) {
+  void RemoveAndWait(uint64_t remove_mask) {
     content::BrowsingDataRemover* remover =
         content::BrowserContext::GetBrowsingDataRemover(
             shell()->web_contents()->GetBrowserContext());
@@ -109,7 +109,7 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
   }
 
   void RemoveWithFilterAndWait(
-      int remove_mask,
+      uint64_t remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter) {
     content::BrowsingDataRemover* remover =
         content::BrowserContext::GetBrowsingDataRemover(

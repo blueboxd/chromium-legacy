@@ -476,6 +476,12 @@ MojoResult MojoShutdown(const MojoShutdownOptions* options) {
   return INVOKE_THUNK(Shutdown, options);
 }
 
+MojoResult MojoSetDefaultProcessErrorHandler(
+    MojoDefaultProcessErrorHandler handler,
+    const struct MojoSetDefaultProcessErrorHandlerOptions* options) {
+  return INVOKE_THUNK(SetDefaultProcessErrorHandler, handler, options);
+}
+
 }  // extern "C"
 
 void MojoEmbedderSetSystemThunks(const MojoSystemThunks* thunks) {

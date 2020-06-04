@@ -876,6 +876,12 @@ void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
 }
 
 // static
+void AutofillMetrics::LogCreditCardUploadLegalMessageLinkClicked() {
+  base::RecordAction(base::UserMetricsAction(
+      "Autofill_CreditCardUpload_LegalMessageLinkClicked"));
+}
+
+// static
 void AutofillMetrics::LogCreditCardUploadFeedbackMetric(
     CreditCardUploadFeedbackMetric metric) {
   DCHECK_LT(metric, NUM_CREDIT_CARD_UPLOAD_FEEDBACK_METRICS);

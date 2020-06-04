@@ -12,4 +12,5 @@
   readonly attribute USVString fullName;
   readonly attribute USVString family;
   [CallWith=ScriptState] Promise<FontTableMap> getTables(optional sequence<ByteString> tables);
+  [CallWith=ScriptState] Promise<Blob> blob();
 };

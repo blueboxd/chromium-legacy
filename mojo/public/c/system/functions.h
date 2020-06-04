@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "mojo/public/c/system/invitation.h"
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
 

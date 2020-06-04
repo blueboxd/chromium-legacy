@@ -203,8 +203,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return network::mojom::ReferrerPolicy::kDefault;
   }
 
-  bool IsLoadingFrameDefaultEagerEnforced() const;
-
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
   FramePolicy frame_policy_;

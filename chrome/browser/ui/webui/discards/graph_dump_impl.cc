@@ -192,31 +192,18 @@ void DiscardsGraphDumpImpl::SubscribeToChanges(
   }
 
   // Send creation notifications for all existing nodes.
-  for (const performance_manager::ProcessNode* process_node :
-       graph_->GetAllProcessNodes())
-    SendProcessNotification(process_node, true);
+  SendNotificationToAllNodes(/* created = */ true);
 
-  for (const performance_manager::PageNode* page_node :
-       graph_->GetAllPageNodes()) {
-    SendPageNotification(page_node, true);
-    StartPageFaviconRequest(page_node);
-
-    // Dispatch preorder frame notifications.
-    for (const performance_manager::FrameNode* main_frame_node :
-         page_node->GetMainFrameNodes()) {
-      ForFrameAndOffspring(
-          main_frame_node,
-          [this](const performance_manager::FrameNode* frame_node) {
-            this->SendFrameNotification(frame_node, true);
-            this->StartFrameFaviconRequest(frame_node);
-          });
-    }
-  }
-
-  for (const performance_manager::WorkerNode* worker_node :
-       graph_->GetAllWorkerNodes()) {
-    SendWorkerNotification(worker_node, true);
-  }
+  // It is entirely possible for there to be circular link references between
+  // nodes that already existed at the point this object was created (the loop
+  // was closed after the two nodes themselves were created). We don't have the
+  // exact order of historical events that led to the current graph state, so we
+  // simply fire off a node changed notification for all nodes after the node
+  // creation. This ensures that all targets exist the second time through, and
+  // any loops are closed. Afterwards any newly created loops will be properly
+  // maintained as node creation/destruction/link events will be fed to the
+  // graph in the proper order.
+  SendNotificationToAllNodes(/* created = */ false);
 
   // Subscribe to subsequent notifications.
   graph_->AddFrameNodeObserver(this);
@@ -302,6 +289,18 @@ void DiscardsGraphDumpImpl::OnBeforePageNodeRemoved(
     const performance_manager::PageNode* page_node) {
   SendDeletionNotification(page_node);
   RemoveNode(page_node);
+}
+
+void DiscardsGraphDumpImpl::OnOpenerFrameNodeChanged(
+    const performance_manager::PageNode* page_node,
+    const performance_manager::FrameNode*,
+    OpenedType) {
+  // This notification can arrive for a page node that has already been
+  // removed, because it fires as part of the |page_node| destructor. If that's
+  // the case then ignore this silently.
+  if (!HasNode(page_node))
+    return;
+  SendPageNotification(page_node, false);
 }
 
 void DiscardsGraphDumpImpl::OnFaviconUpdated(
@@ -390,13 +389,19 @@ void DiscardsGraphDumpImpl::RemoveNode(const performance_manager::Node* node) {
   DCHECK_EQ(1u, erased);
 }
 
+bool DiscardsGraphDumpImpl::HasNode(
+    const performance_manager::Node* node) const {
+  return node_ids_.find(node) != node_ids_.end();
+}
+
 int64_t DiscardsGraphDumpImpl::GetNodeId(
-    const performance_manager::Node* node) {
+    const performance_manager::Node* node) const {
   if (node == nullptr)
     return 0;
 
-  DCHECK(node_ids_.find(node) != node_ids_.end());
-  return node_ids_[node].GetUnsafeValue();
+  auto it = node_ids_.find(node);
+  DCHECK(it != node_ids_.end());
+  return it->second.GetUnsafeValue();
 }
 
 DiscardsGraphDumpImpl::FaviconRequestHelper*
@@ -436,6 +441,36 @@ void DiscardsGraphDumpImpl::StartFrameFaviconRequest(
                                 GetNodeId(frame_node)));
 }
 
+void DiscardsGraphDumpImpl::SendNotificationToAllNodes(bool created) {
+  for (const performance_manager::ProcessNode* process_node :
+       graph_->GetAllProcessNodes())
+    SendProcessNotification(process_node, created);
+
+  for (const performance_manager::PageNode* page_node :
+       graph_->GetAllPageNodes()) {
+    SendPageNotification(page_node, created);
+    if (created)
+      StartPageFaviconRequest(page_node);
+
+    // Dispatch preorder frame notifications.
+    for (const performance_manager::FrameNode* main_frame_node :
+         page_node->GetMainFrameNodes()) {
+      ForFrameAndOffspring(
+          main_frame_node,
+          [this, created](const performance_manager::FrameNode* frame_node) {
+            this->SendFrameNotification(frame_node, created);
+            if (created)
+              this->StartFrameFaviconRequest(frame_node);
+          });
+    }
+  }
+
+  for (const performance_manager::WorkerNode* worker_node :
+       graph_->GetAllWorkerNodes()) {
+    SendWorkerNotification(worker_node, created);
+  }
+}
+
 void DiscardsGraphDumpImpl::SendFrameNotification(
     const performance_manager::FrameNode* frame,
     bool created) {
@@ -458,10 +493,11 @@ void DiscardsGraphDumpImpl::SendFrameNotification(
   frame_info->description_json =
       ToJSON(graph_->GetNodeDataDescriberRegistry()->DescribeNodeData(frame));
 
-  if (created)
+  if (created) {
     change_subscriber_->FrameCreated(std::move(frame_info));
-  else
+  } else {
     change_subscriber_->FrameChanged(std::move(frame_info));
+  }
 }
 
 void DiscardsGraphDumpImpl::SendPageNotification(
@@ -473,6 +509,7 @@ void DiscardsGraphDumpImpl::SendPageNotification(
 
   page_info->id = GetNodeId(page_node);
   page_info->main_frame_url = page_node->GetMainFrameUrl();
+  page_info->opener_frame_id = GetNodeId(page_node->GetOpenerFrameNode());
   page_info->description_json = ToJSON(
       graph_->GetNodeDataDescriberRegistry()->DescribeNodeData(page_node));
 

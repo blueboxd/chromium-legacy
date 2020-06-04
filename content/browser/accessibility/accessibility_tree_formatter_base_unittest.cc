@@ -10,8 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
-#include <iostream>
-
 namespace content {
 
 class AccessibilityTreeFormatterBaseTest : public testing::Test {
@@ -33,11 +31,15 @@ class AccessibilityTreeFormatterBaseTest : public testing::Test {
 };
 
 void ParseAndCheck(const char* input, const char* expected) {
-  auto got = PropertyNode::FromProperty(base::UTF8ToUTF16(input)).ToString();
+  AccessibilityTreeFormatter::PropertyFilter filter(
+      base::UTF8ToUTF16(input),
+      AccessibilityTreeFormatter::PropertyFilter::ALLOW);
+  auto got = PropertyNode::FromPropertyFilter(filter).ToString();
   EXPECT_EQ(got, expected);
 }
 
 TEST_F(AccessibilityTreeFormatterBaseTest, ParseProperty) {
+  // Properties and methods.
   ParseAndCheck("Role", "Role");
   ParseAndCheck("ChildAt(3)", "ChildAt(3)");
   ParseAndCheck("Cell(3, 4)", "Cell(3, 4)");
@@ -48,6 +50,10 @@ TEST_F(AccessibilityTreeFormatterBaseTest, ParseProperty) {
   ParseAndCheck("[3, 4]", "[](3, 4)");
   ParseAndCheck("Cell([3, 4])", "Cell([](3, 4))");
 
+  // Line indexes filter.
+  ParseAndCheck(":3,:5;AXDOMClassList", ":3,:5;AXDOMClassList");
+
+  // Wrong format.
   ParseAndCheck("Role(3", "Role(3)");
   ParseAndCheck("TableFor(CellBy(id", "TableFor(CellBy(id))");
   ParseAndCheck("[3, 4", "[](3, 4)");

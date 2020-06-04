@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/lookalikes/core/features.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/core/features.h"
@@ -234,7 +235,9 @@ class SafetyTipPageInfoBubbleViewBrowserTest
               {{"topsites", "true"},
                {"editdistance", "true"},
                {"editdistance_siteengagement", "true"},
-               {"targetembedding", "true"}}}},
+               {"targetembedding", "true"}}},
+             {lookalikes::features::kDetectTargetEmbeddingLookalikes,
+              {{"enhanced_protection_enabled", "true"}}}},
             {});
     }
 

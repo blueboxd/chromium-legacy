@@ -729,8 +729,17 @@ void RemoteFrame::SetCcLayer(cc::Layer* cc_layer,
           IsIgnoredForHitTest());
     }
   }
+  HTMLFrameOwnerElement* owner = To<HTMLFrameOwnerElement>(Owner());
+  owner->SetNeedsCompositingUpdate();
 
-  To<HTMLFrameOwnerElement>(Owner())->SetNeedsCompositingUpdate();
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // New layers for remote frames are controlled by Blink's embedder.
+    // To ensure the new surface is painted, we need to repaint the frame
+    // owner's PaintLayer.
+    LayoutBoxModelObject* layout_object = owner->GetLayoutBoxModelObject();
+    if (layout_object && layout_object->Layer())
+      layout_object->Layer()->SetNeedsRepaint();
+  }
 }
 
 void RemoteFrame::AdvanceFocus(mojom::blink::FocusType type,

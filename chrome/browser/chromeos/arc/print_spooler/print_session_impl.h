@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace ash {
@@ -42,7 +43,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
   static mojo::PendingRemote<mojom::PrintSessionHost> Create(
       std::unique_ptr<content::WebContents> web_contents,
       std::unique_ptr<ash::ArcCustomTab> custom_tab,
-      mojom::PrintSessionInstancePtr instance);
+      mojo::PendingRemote<mojom::PrintSessionInstance> instance);
 
   PrintSessionImpl(const PrintSessionImpl&) = delete;
   PrintSessionImpl& operator=(const PrintSessionImpl&) = delete;
@@ -54,7 +55,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
  private:
   PrintSessionImpl(std::unique_ptr<content::WebContents> web_contents,
                    std::unique_ptr<ash::ArcCustomTab> custom_tab,
-                   mojom::PrintSessionInstancePtr instance,
+                   mojo::PendingRemote<mojom::PrintSessionInstance> instance,
                    mojo::PendingReceiver<mojom::PrintSessionHost> receiver);
   friend class content::WebContentsUserData<PrintSessionImpl>;
 
@@ -95,7 +96,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
   void StartPrintNow();
 
   // Used to send messages to ARC and request a new print document.
-  mojom::PrintSessionInstancePtr instance_;
+  mojo::Remote<mojom::PrintSessionInstance> instance_;
 
   // Receiver for PrintRenderer.
   mojo::AssociatedReceiver<printing::mojom::PrintRenderer>

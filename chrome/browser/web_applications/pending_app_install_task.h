@@ -28,6 +28,7 @@ namespace web_app {
 class AppShortcutManager;
 class FileHandlerManager;
 class InstallFinalizer;
+class InstallManager;
 class WebAppUiManager;
 enum class InstallResultCode;
 
@@ -62,6 +63,7 @@ class PendingAppInstallTask {
                                  FileHandlerManager* file_handler_manager,
                                  WebAppUiManager* ui_manager,
                                  InstallFinalizer* install_finalizer,
+                                 InstallManager* install_manager,
                                  ExternalInstallOptions install_options);
 
   virtual ~PendingAppInstallTask();
@@ -95,6 +97,7 @@ class PendingAppInstallTask {
   AppShortcutManager* const shortcut_manager_;
   FileHandlerManager* const file_handler_manager_;
   InstallFinalizer* const install_finalizer_;
+  InstallManager* const install_manager_;
   WebAppUiManager* const ui_manager_;
 
   ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;

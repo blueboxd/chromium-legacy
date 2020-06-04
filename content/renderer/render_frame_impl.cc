@@ -3697,7 +3697,10 @@ RenderFrameImpl::CreateWorkerFetchContext() {
           provider->context(), render_view_->renderer_preferences(),
           std::move(watcher_receiver), GetLoaderFactoryBundle()->Clone(),
           GetLoaderFactoryBundle()->CloneWithoutAppCacheFactory(),
-          /*pending_subresource_loader_updater=*/mojo::NullReceiver());
+          /*pending_subresource_loader_updater=*/mojo::NullReceiver(),
+          RenderThreadImpl::current()
+              ->resource_dispatcher()
+              ->cors_exempt_header_list());
 
   worker_fetch_context->set_ancestor_frame_id(routing_id_);
   worker_fetch_context->set_frame_request_blocker(frame_request_blocker_);

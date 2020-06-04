@@ -2658,13 +2658,21 @@ EVENT_TYPE(AUTH_LIBRARY_ACQUIRE_CREDS)
 // This operation involves invoking an external library which may perform disk,
 // IPC, and network IO as a part of its work.
 //
-// On Posix platforms, the END phase has the following parameters.
+// On Windows, the BEGIN phase has the following parameters:
+//   {
+//     "spn": <Service Principle Name>,
+//     "context_flags": <Integer with bitfield value>
+//   }
+//
+// The END phase has the following parameters.
+//
+// On Posix platforms:
 //   {
 //     "context": <GSSAPI Context Description>,
 //     "status" : <GSSAPI Status if the operation failed>
 //   }
 //
-// On Windows, the END phase has the following parameters.
+// On Windows:
 //   {
 //     "context": <SSPI Context Description>
 //     "status" : <SSPI SECURITY_STATUS>

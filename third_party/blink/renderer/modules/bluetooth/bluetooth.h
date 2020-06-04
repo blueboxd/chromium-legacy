@@ -24,14 +24,13 @@ class ScriptPromise;
 class ScriptState;
 
 class Bluetooth final : public EventTargetWithInlineData,
-                        public ExecutionContextLifecycleObserver,
                         public PageVisibilityObserver,
                         public mojom::blink::WebBluetoothAdvertisementClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Bluetooth);
 
  public:
-  explicit Bluetooth(ExecutionContext*);
+  explicit Bluetooth(LocalDOMWindow*);
   ~Bluetooth() override;
 
   // IDL exposed interface:
@@ -56,9 +55,6 @@ class Bluetooth final : public EventTargetWithInlineData,
 
   // GC
   void Trace(Visitor*) const override;
-
-  // ExecutionContextLifecycleObserver
-  void ContextDestroyed() override {}
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(advertisementreceived, kAdvertisementreceived)
 
@@ -92,6 +88,8 @@ class Bluetooth final : public EventTargetWithInlineData,
   // Ensures only one BluetoothDevice instance represents each
   // Bluetooth device inside a single global object.
   HeapHashMap<String, Member<BluetoothDevice>> device_instance_map_;
+
+  Member<LocalDOMWindow> window_;
 
   HeapMojoAssociatedReceiverSet<mojom::blink::WebBluetoothAdvertisementClient,
                                 Bluetooth>

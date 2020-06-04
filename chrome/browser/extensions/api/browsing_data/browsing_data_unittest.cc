@@ -72,15 +72,17 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     return remover_->GetLastUsedBeginTimeForTesting();
   }
 
-  int GetRemovalMask() { return remover_->GetLastUsedRemovalMaskForTesting(); }
+  uint64_t GetRemovalMask() {
+    return remover_->GetLastUsedRemovalMaskForTesting();
+  }
 
-  int GetOriginTypeMask() {
+  uint64_t GetOriginTypeMask() {
     return remover_->GetLastUsedOriginTypeMaskForTesting();
   }
 
-  int GetAsMask(const base::DictionaryValue* dict,
-                std::string path,
-                int mask_value) {
+  uint64_t GetAsMask(const base::DictionaryValue* dict,
+                     std::string path,
+                     uint64_t mask_value) {
     bool result;
     EXPECT_TRUE(dict->GetBoolean(path, &result)) << "for " << path;
     return result ? mask_value : 0;
@@ -88,7 +90,7 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
 
   void RunBrowsingDataRemoveFunctionAndCompareRemovalMask(
       const std::string& data_types,
-      int expected_mask) {
+      uint64_t expected_mask) {
     auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
     SCOPED_TRACE(data_types);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
@@ -99,15 +101,16 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     EXPECT_EQ(UNPROTECTED_WEB, GetOriginTypeMask());
   }
 
-  void RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(const std::string& key,
-                                                         int expected_mask) {
+  void RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
+      const std::string& key,
+      uint64_t expected_mask) {
     RunBrowsingDataRemoveFunctionAndCompareRemovalMask(
         std::string("{\"") + key + "\": true}", expected_mask);
   }
 
   void RunBrowsingDataRemoveFunctionAndCompareOriginTypeMask(
       const std::string& protectedStr,
-      int expected_mask) {
+      uint64_t expected_mask) {
     auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
     SCOPED_TRACE(protectedStr);
     EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(
@@ -119,7 +122,7 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
   }
 
   template <class ShortcutFunction>
-  void RunAndCompareRemovalMask(int expected_mask) {
+  void RunAndCompareRemovalMask(uint64_t expected_mask) {
     scoped_refptr<ShortcutFunction> function = new ShortcutFunction();
     SCOPED_TRACE(ShortcutFunction::function_name());
     EXPECT_EQ(NULL,
@@ -161,8 +164,8 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
   }
 
   void SetPrefsAndVerifySettings(int data_type_flags,
-                                 int expected_origin_type_mask,
-                                 int expected_removal_mask) {
+                                 uint64_t expected_origin_type_mask,
+                                 uint64_t expected_removal_mask) {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetInteger(
         browsing_data::prefs::kLastClearBrowsingDataTab,
@@ -200,8 +203,8 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
   }
 
   void SetBasicPrefsAndVerifySettings(int data_type_flags,
-                                      int expected_origin_type_mask,
-                                      int expected_removal_mask) {
+                                      uint64_t expected_origin_type_mask,
+                                      uint64_t expected_removal_mask) {
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetInteger(
         browsing_data::prefs::kLastClearBrowsingDataTab,
@@ -223,8 +226,8 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     VerifyRemovalMask(expected_origin_type_mask, expected_removal_mask);
   }
 
-  void VerifyRemovalMask(int expected_origin_type_mask,
-                         int expected_removal_mask) {
+  void VerifyRemovalMask(uint64_t expected_origin_type_mask,
+                         uint64_t expected_removal_mask) {
     scoped_refptr<BrowsingDataSettingsFunction> function =
         new BrowsingDataSettingsFunction();
     SCOPED_TRACE("settings");
@@ -238,7 +241,7 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     EXPECT_TRUE(result->GetDictionary("options", &options));
     base::DictionaryValue* origin_types;
     EXPECT_TRUE(options->GetDictionary("originTypes", &origin_types));
-    int origin_type_mask =
+    uint64_t origin_type_mask =
         GetAsMask(origin_types, "unprotectedWeb", UNPROTECTED_WEB) |
         GetAsMask(origin_types, "protectedWeb", PROTECTED_WEB) |
         GetAsMask(origin_types, "extension", EXTENSION);
@@ -246,7 +249,7 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
 
     base::DictionaryValue* data_to_remove;
     EXPECT_TRUE(result->GetDictionary("dataToRemove", &data_to_remove));
-    int removal_mask =
+    uint64_t removal_mask =
         GetAsMask(data_to_remove, "appcache",
                   content::BrowsingDataRemover::DATA_TYPE_APP_CACHE) |
         GetAsMask(data_to_remove, "cache",
@@ -467,9 +470,9 @@ TEST_F(BrowsingDataApiTest, BrowsingDataRemovalInputFromSettings) {
   prefs->SetBoolean(browsing_data::prefs::kDeleteHostedAppsData, false);
   prefs->SetBoolean(browsing_data::prefs::kDeletePasswords, false);
   prefs->SetBoolean(prefs::kClearPluginLSODataEnabled, false);
-  int expected_mask = content::BrowsingDataRemover::DATA_TYPE_CACHE |
-                      content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
-                      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
+  uint64_t expected_mask = content::BrowsingDataRemover::DATA_TYPE_CACHE |
+                           content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
+                           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
   std::string json;
   // Scoping for the traces.
   {

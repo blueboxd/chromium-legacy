@@ -228,6 +228,11 @@ struct MojoSystemThunks {
   // Core ABI version 2 additions begin here.
 
   MojoResult (*Shutdown)(const struct MojoShutdownOptions* options);
+
+  // Core ABI version 3 additions begin here.
+  MojoResult (*SetDefaultProcessErrorHandler)(
+      MojoDefaultProcessErrorHandler handler,
+      const struct MojoSetDefaultProcessErrorHandlerOptions* options);
 };
 #pragma pack(pop)
 

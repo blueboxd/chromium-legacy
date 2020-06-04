@@ -60,7 +60,7 @@ base::Optional<base::Version> GetSnapshotToRestore(
 // indicates the types of data to be cleared from the profile's snapshots.
 void RemoveDataForProfile(base::Time delete_begin,
                           const base::FilePath& profile_path,
-                          int remove_mask);
+                          uint64_t remove_mask);
 
 }  // namespace downgrade
 

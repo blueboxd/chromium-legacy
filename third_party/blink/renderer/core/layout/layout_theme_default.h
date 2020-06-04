@@ -75,7 +75,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   void AdjustButtonStyle(ComputedStyle&) const override;
 
   bool PopsMenuBySpaceKey() const final { return true; }
-  bool PopsMenuByReturnKey() const final { return true; }
+  bool PopsMenuByReturnKey() const final;
   bool PopsMenuByAltDownUpOrF4Key() const override { return true; }
 
   bool ShouldOpenPickerWithF4Key() const override;

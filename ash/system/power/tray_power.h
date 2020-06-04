@@ -31,6 +31,9 @@ class PowerTrayView : public TrayItemView,
   base::string16 GetTooltipText(const gfx::Point& p) const override;
   const char* GetClassName() const override;
 
+  // TrayItemView:
+  void HandleLocaleChange() override;
+
   // PowerStatus::Observer:
   void OnPowerStatusChanged() override;
 

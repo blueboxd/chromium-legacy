@@ -84,7 +84,7 @@ public final class ShareSheetCoordinatorTest {
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         List<PropertyModel> propertyModels =
-                coordinator.createTopRowPropertyModels(bottomSheet, activity);
+                coordinator.createTopRowPropertyModels(bottomSheet, activity, /*shareParams=*/null);
         Assert.assertEquals("Property model list should be empty.", 0, propertyModels.size());
     }
 

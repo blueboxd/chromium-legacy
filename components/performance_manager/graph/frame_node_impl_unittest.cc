@@ -498,7 +498,7 @@ TEST_F(FrameNodeImplTest, OpenerRelationships) {
 
   // You can always call the pre-delete opener clearing helper, even if you
   // have no such relationships.
-  frameB1->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+  frameB1->SeverOpenedPagesAndMaybeReparentForTesting();
 
   // You can't clear an opener if you don't already have one.
   EXPECT_DCHECK_DEATH(pageB->ClearOpenerFrameNodeAndOpenedType());
@@ -533,11 +533,6 @@ TEST_F(FrameNodeImplTest, OpenerRelationships) {
   EXPECT_EQ(1u, frameA1->opened_page_nodes().count(pageB.get()));
   EXPECT_EQ(1u, pframeA1->GetOpenedPageNodes().count(pageB.get()));
   testing::Mock::VerifyAndClear(&obs);
-
-  // Once you have an opener, you can't set it again (it has to be cleared
-  // first).
-  EXPECT_DCHECK_DEATH(pageB->SetOpenerFrameNodeAndOpenedType(
-      frameA1.get(), OpenedType::kPopup));
 
   // Set another opener relationship.
   EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageC.get(), nullptr,
@@ -589,7 +584,7 @@ TEST_F(FrameNodeImplTest, OpenerRelationships) {
   // Clear the second relationship (initiated from the frame).
   EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageC.get(), frameA1.get(),
                                             OpenedType::kPopup));
-  frameA1->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+  frameA1->SeverOpenedPagesAndMaybeReparentForTesting();
   EXPECT_EQ(nullptr, pageC->opener_frame_node());
   EXPECT_EQ(OpenedType::kInvalid, pageC->opened_type());
   EXPECT_TRUE(frameA1->opened_page_nodes().empty());
@@ -609,9 +604,7 @@ TEST_F(FrameNodeImplTest, OpenerRelationships) {
   // Clear it with the helper, and expect it to be reparented to node A1.
   EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), frameA2.get(),
                                             OpenedType::kPopup));
-  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), nullptr,
-                                            OpenedType::kInvalid));
-  frameA2->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+  frameA2->SeverOpenedPagesAndMaybeReparentForTesting();
   EXPECT_EQ(frameA1.get(), pageB->opener_frame_node());
   EXPECT_EQ(OpenedType::kPopup, pageB->opened_type());
   EXPECT_EQ(1u, frameA1->opened_page_nodes().size());
@@ -623,7 +616,7 @@ TEST_F(FrameNodeImplTest, OpenerRelationships) {
   // was already parented to the root.
   EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), frameA1.get(),
                                             OpenedType::kPopup));
-  frameA1->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+  frameA1->SeverOpenedPagesAndMaybeReparentForTesting();
   EXPECT_EQ(nullptr, pageB->opener_frame_node());
   EXPECT_EQ(OpenedType::kInvalid, pageB->opened_type());
   EXPECT_TRUE(frameA1->opened_page_nodes().empty());

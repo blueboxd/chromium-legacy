@@ -242,8 +242,9 @@ void ProfileResetter::ResetCookiesAndSiteData() {
 
   cookies_remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_);
   cookies_remover_->AddObserver(this);
-  int remove_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
-                    content::BrowsingDataRemover::DATA_TYPE_CACHE;
+  uint64_t remove_mask =
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+      content::BrowsingDataRemover::DATA_TYPE_CACHE;
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
 

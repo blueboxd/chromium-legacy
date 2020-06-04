@@ -71,6 +71,10 @@ base::string16 NetworkTrayView::GetTooltipText(const gfx::Point& p) const {
   return tooltip_;
 }
 
+void NetworkTrayView::HandleLocaleChange() {
+  UpdateConnectionStatus(false /* notify_a11y */);
+}
+
 void NetworkTrayView::NetworkIconChanged() {
   UpdateNetworkStateHandlerIcon();
   UpdateConnectionStatus(false /* notify_a11y */);

@@ -567,6 +567,13 @@ bool H264Decoder::ModifyReferencePicList(const H264SliceHeader* slice_hdr,
           DVLOG(1) << "Malformed stream, no pic num " << pic_num_lx;
           return false;
         }
+
+        if (ref_idx_lx > num_ref_idx_lX_active_minus1) {
+          DVLOG(1) << "Bounds mismatch: expected " << ref_idx_lx
+                   << " <= " << num_ref_idx_lX_active_minus1;
+          return false;
+        }
+
         ShiftRightAndInsert(ref_pic_listx, ref_idx_lx,
                             num_ref_idx_lX_active_minus1, pic);
         ref_idx_lx++;

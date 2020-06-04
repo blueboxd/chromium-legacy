@@ -110,7 +110,7 @@ if (_build_ios_webkit) {
       "$_webkit_ios_out_product_dir/com.apple.WebKit.WebContent.xpc/com.apple.WebKit.WebContent.Development",
     ]
     args = [
-      "--ios-simulator",
+      "--ios_simulator",
       "--asan",
       "--output_dir",
       rebase_path("$_webkit_ios_out_base_dir"),

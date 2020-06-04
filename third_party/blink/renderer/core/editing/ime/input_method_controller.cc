@@ -1576,6 +1576,10 @@ WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
 
 ui::mojom::VirtualKeyboardPolicy
 InputMethodController::VirtualKeyboardPolicyOfFocusedElement() const {
+  // Return the default value if ExecutionContext is not defined.
+  if (!IsAvailable())
+    return ui::mojom::VirtualKeyboardPolicy::AUTO;
+
   AtomicString vk_policy =
       GetVirtualKeyboardPolicyAttribute(GetDocument().FocusedElement());
 

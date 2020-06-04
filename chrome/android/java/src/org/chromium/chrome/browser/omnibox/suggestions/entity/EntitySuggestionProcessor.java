@@ -74,7 +74,7 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
+    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
         return suggestion.getType() == OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY;
     }
 

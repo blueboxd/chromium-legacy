@@ -350,6 +350,12 @@ MojoResult MojoShutdownImpl(const MojoShutdownOptions* options) {
   return MOJO_RESULT_UNIMPLEMENTED;
 }
 
+MojoResult MojoSetDefaultProcessErrorHandlerImpl(
+    MojoDefaultProcessErrorHandler handler,
+    const MojoSetDefaultProcessErrorHandlerOptions* options) {
+  return g_core->SetDefaultProcessErrorHandler(handler, options);
+}
+
 }  // extern "C"
 
 MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
@@ -396,7 +402,8 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoAcceptInvitationImpl,
                              MojoSetQuotaImpl,
                              MojoQueryQuotaImpl,
-                             MojoShutdownImpl};
+                             MojoShutdownImpl,
+                             MojoSetDefaultProcessErrorHandlerImpl};
 
 }  // namespace
 

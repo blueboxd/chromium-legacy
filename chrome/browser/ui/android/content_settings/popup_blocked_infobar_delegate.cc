@@ -12,8 +12,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -122,15 +122,17 @@ bool PopupBlockedInfoBarDelegate::Accept() {
   // Launch popups.
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
-  PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents);
+  blocked_content::PopupBlockerTabHelper* popup_blocker_helper =
+      blocked_content::PopupBlockerTabHelper::FromWebContents(web_contents);
   DCHECK(popup_blocker_helper);
-  PopupBlockerTabHelper::PopupIdMap blocked_popups =
+  blocked_content::PopupBlockerTabHelper::PopupIdMap blocked_popups =
       popup_blocker_helper->GetBlockedPopupRequests();
-  for (PopupBlockerTabHelper::PopupIdMap::iterator it = blocked_popups.begin();
-      it != blocked_popups.end(); ++it)
+  for (blocked_content::PopupBlockerTabHelper::PopupIdMap::iterator it =
+           blocked_popups.begin();
+       it != blocked_popups.end(); ++it) {
     popup_blocker_helper->ShowBlockedPopup(it->first,
                                            WindowOpenDisposition::CURRENT_TAB);
+  }
 
   content_settings::RecordPopupsAction(
       content_settings::POPUPS_ACTION_CLICKED_ALWAYS_SHOW_ON_MOBILE);

@@ -342,7 +342,7 @@ interface OemCryptoService {
 // that runs in Chrome OS.
 // Next Method ID: 1
 interface OemCryptoHost {
-  Connect@0(OemCryptoService& oemcryptor);
+  Connect@0(pending_receiver<OemCryptoService> oemcryptor);
 };
 
 // OemCryptoInstance is implemented in the liboemcrypto.so library that runs in

@@ -67,7 +67,6 @@ struct CORE_EXPORT CachedDocumentParameters {
   bool viewport_meta_enabled;
   network::mojom::ReferrerPolicy referrer_policy;
   SubresourceIntegrity::IntegrityFeatures integrity_features;
-  bool lazyload_policy_enforced;
   LocalFrame::LazyLoadImageSetting lazy_load_image_setting;
   WeakPersistent<LazyLoadImageObserver> lazy_load_image_observer;
 };

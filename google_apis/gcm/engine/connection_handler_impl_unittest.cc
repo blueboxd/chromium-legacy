@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
@@ -38,6 +39,7 @@
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace gcm {
 namespace {
@@ -249,8 +251,12 @@ void GCMConnectionHandlerImplTest::BuildSocket(const ReadList& read_list,
       network::mojom::ProxyResolvingSocketOptions::New();
   options->use_tls = true;
   mojo_socket_remote_.reset();
+  const url::Origin kOrigin = url::Origin::Create(kDestination);
   mojo_socket_factory_remote_->CreateProxyResolvingSocket(
-      kDestination, std::move(options),
+      kDestination,
+      net::NetworkIsolationKey(kOrigin /* top_frame_origin */,
+                               kOrigin /* frame_origin */),
+      std::move(options),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       mojo_socket_remote_.BindNewPipeAndPassReceiver(),
       mojo::NullRemote() /* observer */,

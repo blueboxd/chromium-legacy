@@ -17,6 +17,7 @@
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
@@ -26,6 +27,8 @@
 #include "net/ssl/ssl_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace gcm {
 
@@ -359,8 +362,13 @@ void ConnectionFactoryImpl::StartConnection() {
   network::mojom::ProxyResolvingSocketOptionsPtr options =
       network::mojom::ProxyResolvingSocketOptions::New();
   options->use_tls = true;
+  // |current_endpoint| is always a Google URL, so this NetworkIsolationKey will
+  // be the same for all callers, and will allow pooling all connections to GCM
+  // in one socket connection, if an H2 or QUIC proxy is in use.
+  auto origin = url::Origin::Create(current_endpoint);
+  net::NetworkIsolationKey network_isolation_key(origin, origin);
   socket_factory_->CreateProxyResolvingSocket(
-      current_endpoint, std::move(options),
+      current_endpoint, std::move(network_isolation_key), std::move(options),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation),
       socket_.BindNewPipeAndPassReceiver(), mojo::NullRemote() /* observer */,
       base::BindOnce(&ConnectionFactoryImpl::OnConnectDone,

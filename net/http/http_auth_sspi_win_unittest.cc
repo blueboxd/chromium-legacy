@@ -260,6 +260,18 @@ TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds_Logging) {
 
   expected = base::JSONReader::Read(R"(
     {
+       "flags": {
+          "delegated": false,
+          "mutual": false,
+          "value": "0x00000000"
+       },
+       "spn": "HTTP/intranet.google.com"
+    }
+  )");
+  EXPECT_EQ(expected, entries[0].params);
+
+  expected = base::JSONReader::Read(R"(
+    {
       "context": {
          "authority": "Dodgy Server",
          "flags": {

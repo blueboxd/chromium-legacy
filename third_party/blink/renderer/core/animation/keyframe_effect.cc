@@ -591,9 +591,10 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
     case Timing::kPhaseNone:
       return AnimationTimeDelta::Max();
     case Timing::kPhaseBefore:
-      DCHECK_GE(start_time, local_time.value());
-      return forwards ? AnimationTimeDelta::FromSecondsD(start_time -
-                                                         local_time.value())
+      // Return value is clamped at 0 to prevent unexpected results that could
+      // be caused by returning negative values.
+      return forwards ? AnimationTimeDelta::FromSecondsD(std::max<double>(
+                            start_time - local_time.value(), 0))
                       : AnimationTimeDelta::Max();
     case Timing::kPhaseActive:
       if (forwards) {

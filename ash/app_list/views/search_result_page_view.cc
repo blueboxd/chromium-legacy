@@ -440,7 +440,7 @@ void SearchResultPageView::SearchEngineChanged() {}
 
 void SearchResultPageView::ShowAssistantChanged() {}
 
-void SearchResultPageView::OnAssistantPrivacyInfoViewCloseButtonPressed() {
+void SearchResultPageView::OnPrivacyInfoViewCloseButtonPressed() {
   ReorderSearchResultContainers();
 }
 

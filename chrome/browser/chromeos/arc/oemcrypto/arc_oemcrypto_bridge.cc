@@ -73,7 +73,7 @@ ArcOemCryptoBridge::~ArcOemCryptoBridge() {
 }
 
 void ArcOemCryptoBridge::OnBootstrapMojoConnection(
-    mojom::OemCryptoServiceRequest request,
+    mojo::PendingReceiver<mojom::OemCryptoService> receiver,
     bool result) {
   if (!result) {
     // This can currently happen due to limited device support, so do not log
@@ -84,10 +84,11 @@ void ArcOemCryptoBridge::OnBootstrapMojoConnection(
     return;
   }
   DVLOG(1) << "ArcOemCryptoBridge succeeded with Mojo bootstrapping.";
-  ConnectToDaemon(std::move(request));
+  ConnectToDaemon(std::move(receiver));
 }
 
-void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
+void ArcOemCryptoBridge::Connect(
+    mojo::PendingReceiver<mojom::OemCryptoService> receiver) {
   DVLOG(1) << "ArcOemCryptoBridge::Connect called";
 
   // Check that the user has Attestation for Content Protection enabled in
@@ -109,7 +110,7 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
 
   if (oemcrypto_host_daemon_remote_.is_bound()) {
     DVLOG(1) << "Re-using bootstrap connection for OemCryptoService Connect";
-    ConnectToDaemon(std::move(request));
+    ConnectToDaemon(std::move(receiver));
     return;
   }
   DVLOG(1) << "Bootstrapping the OemCrypto connection via D-Bus";
@@ -139,11 +140,11 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
       ->BootstrapMojoConnection(
           std::move(fd),
           base::BindOnce(&ArcOemCryptoBridge::OnBootstrapMojoConnection,
-                         weak_factory_.GetWeakPtr(), std::move(request)));
+                         weak_factory_.GetWeakPtr(), std::move(receiver)));
 }
 
 void ArcOemCryptoBridge::ConnectToDaemon(
-    mojom::OemCryptoServiceRequest request) {
+    mojo::PendingReceiver<mojom::OemCryptoService> receiver) {
   if (!oemcrypto_host_daemon_remote_) {
     VLOG(1) << "Mojo connection is already lost.";
     return;
@@ -155,18 +156,18 @@ void ArcOemCryptoBridge::ConnectToDaemon(
       content::GetIOThreadTaskRunner({}).get(), FROM_HERE,
       base::BindOnce(&GetGpuBufferManagerOnIOThread),
       base::BindOnce(&ArcOemCryptoBridge::FinishConnectingToDaemon,
-                     weak_factory_.GetWeakPtr(), std::move(request)));
+                     weak_factory_.GetWeakPtr(), std::move(receiver)));
 }
 
 void ArcOemCryptoBridge::FinishConnectingToDaemon(
-    mojom::OemCryptoServiceRequest request,
+    mojo::PendingReceiver<mojom::OemCryptoService> receiver,
     mojo::PendingRemote<mojom::ProtectedBufferManager> gpu_buffer_manager) {
   if (!oemcrypto_host_daemon_remote_) {
     VLOG(1) << "Mojo connection is already lost.";
     return;
   }
 
-  oemcrypto_host_daemon_remote_->Connect(std::move(request),
+  oemcrypto_host_daemon_remote_->Connect(std::move(receiver),
                                          std::move(gpu_buffer_manager));
 }
 

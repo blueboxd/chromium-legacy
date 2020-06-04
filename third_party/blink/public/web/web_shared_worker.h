@@ -34,12 +34,14 @@
 #include <memory>
 
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom-shared.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -75,8 +77,10 @@ class BLINK_EXPORT WebSharedWorker {
       const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
       const base::UnguessableToken& appcache_host_id,
       const base::UnguessableToken& devtools_worker_token,
-      mojo::ScopedMessagePipeHandle content_settings_handle,
-      mojo::ScopedMessagePipeHandle browser_interface_broker,
+      CrossVariantMojoRemote<mojom::WorkerContentSettingsProxyInterfaceBase>
+          content_settings,
+      CrossVariantMojoRemote<mojom::BrowserInterfaceBrokerInterfaceBase>
+          browser_interface_broker,
       bool pause_worker_context_on_start) = 0;
 
   // Sends a connect event to the SharedWorker context.

@@ -40,10 +40,10 @@ void GamepadDispatcher::ResetVibrationActuator(
                                                           std::move(callback));
 }
 
-GamepadDispatcher::GamepadDispatcher(ExecutionContext* context)
+GamepadDispatcher::GamepadDispatcher(ExecutionContext& context)
     :  // See https://bit.ly/2S0zRAS for task types.
-      task_runner_(context->GetTaskRunner(TaskType::kMiscPlatformAPI)),
-      gamepad_haptics_manager_remote_(context) {}
+      task_runner_(context.GetTaskRunner(TaskType::kMiscPlatformAPI)),
+      gamepad_haptics_manager_remote_(&context) {}
 
 GamepadDispatcher::~GamepadDispatcher() = default;
 

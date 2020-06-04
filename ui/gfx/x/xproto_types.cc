@@ -58,6 +58,12 @@ void FutureBase::SyncImpl(Error** raw_error, uint8_t** raw_reply) {
   sequence_ = base::nullopt;
 }
 
+void FutureBase::SyncImpl(Error** raw_error) {
+  DCHECK(sequence_);
+  *raw_error = xcb_request_check(connection_->XcbConnection(), {*sequence_});
+  sequence_ = base::nullopt;
+}
+
 void FutureBase::OnResponseImpl(ResponseCallback callback) {
   DCHECK(sequence_);
   connection_->AddRequest(*sequence_, std::move(callback));

@@ -187,8 +187,10 @@ class BASE_EXPORT MetadataRecorder {
     // Retrieves the first |available_slots| items in the metadata recorder and
     // copies them into |items|, returning the number of metadata items that
     // were copied. To ensure that all items can be copied, |available slots|
-    // should be greater than or equal to |MAX_METADATA_COUNT|.
-    size_t GetItems(ItemArray* const items) const;
+    // should be greater than or equal to |MAX_METADATA_COUNT|. Requires
+    // NO_THREAD_SAFETY_ANALYSIS because clang's analyzer doesn't understand the
+    // cross-class locking used in this class' implementation.
+    size_t GetItems(ItemArray* const items) const NO_THREAD_SAFETY_ANALYSIS;
 
    private:
     const MetadataRecorder* const metadata_recorder_;

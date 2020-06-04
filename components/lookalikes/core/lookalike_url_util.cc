@@ -48,6 +48,12 @@ const size_t kMinTargetHostnameSize = 7;
 // Tip.
 const size_t kMinWrongTLDLengthForInterstitial = 3;
 
+// If enabled, detect target embeddings across TLDs, eg. detect google.gov-X.tld
+// as a google.com embedding. This is tuned by further parameters below.
+const base::FeatureParam<bool> kEnableTargetEmbeddingEnhancedProtection{
+    &lookalikes::features::kDetectTargetEmbeddingLookalikes,
+    "enhanced_protection_enabled", false};
+
 // Domains using one of these TLDs will receive an extra layer of protection.
 // Even if the embedding target uses another valid TLD instead of their actual
 // TLD to embed them, the heuristic will trigger (for example
@@ -354,16 +360,17 @@ std::string GetEmbeddedTarget(const std::string& e2LD,
   std::vector<std::string> tlds_representing_words_list =
       base::SplitString(kTargetEmbeddingTldsRepresentingWords.Get(), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  // If the |TLD| is one of the TLDs that is also a common English word, we only
-  // want to match with the actual TLD and not all important TLDs.
-  // For example, for youtube-to-mp4.com, there will be a call to this function
-  // with |e2LD| = "youtube" and |TLD| = "to". If "to" is in
-  // |tlds_representing_words_list|, we will only try to match "youtube.to".
-  // However, if "to" is not in |tlds_representing_words_list|, in addition to
-  // "youtube.to", we will try to test if "youtube" paired with any of
-  // |important_tlds| is an engaged or top 500 domain.
+
+  // Enhanced Protection (aka Other-TLD) matching:
+  //
+  // When enabled, if |TLD| isn't a common English word, identify target
+  // embeddings wherein |TLD| is different than the protected domain's TLD.
+  //
+  // For example, when enabled, flag "youtube-net.*" as embedding, since
+  // youtube.com is a top domain (but don't trigger on youtube-to-*).
   DCHECK(!kTargetEmbeddingEnhancedProtectionTlds.Get().empty());
-  if (!base::Contains(tlds_representing_words_list, TLD)) {
+  if (kEnableTargetEmbeddingEnhancedProtection.Get() &&
+      !base::Contains(tlds_representing_words_list, TLD)) {
     important_tlds =
         base::SplitString(kTargetEmbeddingEnhancedProtectionTlds.Get(), ",",
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

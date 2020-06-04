@@ -61,6 +61,11 @@ base::string16 SelectToSpeakTray::GetAccessibleNameForTray() {
       IDS_ASH_SELECT_TO_SPEAK_TRAY_ACCESSIBLE_NAME);
 }
 
+void SelectToSpeakTray::HandleLocaleChange() {
+  icon_->set_tooltip_text(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SELECT_TO_SPEAK));
+}
+
 const char* SelectToSpeakTray::GetClassName() const {
   return kSelectToSpeakTrayClassName;
 }

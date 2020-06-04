@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_TRAY_H_
 #define ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_TRAY_H_
 
+#include <list>
 #include <memory>
 
 #include "ash/ash_export.h"
@@ -20,8 +21,8 @@ class MessagePopupView;
 namespace ash {
 
 namespace tray {
-class TimeTrayItemView;
 class NetworkTrayView;
+class TimeTrayItemView;
 }  // namespace tray
 
 class CurrentLocaleView;
@@ -30,6 +31,7 @@ class ManagedDeviceTrayItemView;
 class NotificationCounterView;
 class QuietModeView;
 class PrivacyScreenToastController;
+class TrayItemView;
 class UnifiedSliderBubbleController;
 class UnifiedSystemTrayBubble;
 class UnifiedSystemTrayModel;
@@ -142,6 +144,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   void CloseBubble() override;
   base::string16 GetAccessibleNameForBubble() override;
   base::string16 GetAccessibleNameForTray() override;
+  void HandleLocaleChange() override;
   void HideBubble(const TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
@@ -181,6 +184,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   message_center::MessagePopupView* GetPopupViewForNotificationID(
       const std::string& notification_id);
 
+  // Adds the tray item to the the unified system tray container.
+  // The container takes the ownership of |tray_item|.
+  void AddTrayItemToContainer(TrayItemView* tray_item);
+
   const std::unique_ptr<UiDelegate> ui_delegate_;
 
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
@@ -204,6 +211,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   tray::TimeTrayItemView* const time_view_;
 
   tray::NetworkTrayView* network_tray_view_ = nullptr;
+
+  // Contains all tray items views added to tray_container().
+  std::list<TrayItemView*> tray_items_;
 
   base::OneShotTimer timer_;
 

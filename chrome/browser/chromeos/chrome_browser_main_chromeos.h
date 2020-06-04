@@ -70,10 +70,6 @@ namespace internal {
 class DBusServices;
 }  // namespace internal
 
-namespace network_health {
-class NetworkHealth;
-}  // namespace network_health
-
 namespace power {
 class SmartChargingManager;
 namespace ml {
@@ -117,7 +113,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
  private:
   std::unique_ptr<default_app_order::ExternalLoader> app_order_loader_;
-  std::unique_ptr<network_health::NetworkHealth> network_health_;
   std::unique_ptr<NetworkPrefStateObserver> network_pref_state_observer_;
   std::unique_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   std::unique_ptr<RendererFreezer> renderer_freezer_;

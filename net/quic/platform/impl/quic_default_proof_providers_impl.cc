@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -64,7 +65,10 @@ class ProofVerifierChromiumWithOwnership : public net::ProofVerifierChromium {
                                    &ct_policy_enforcer_,
                                    &transport_security_state_,
                                    &ct_verifier_,
-                                   UnknownRootAllowlistForHost(host)),
+                                   UnknownRootAllowlistForHost(host),
+                                   // Fine to use an empty NetworkIsolationKey
+                                   // here, since this isn't used in Chromium.
+                                   net::NetworkIsolationKey()),
         cert_verifier_(std::move(cert_verifier)) {}
 
  private:

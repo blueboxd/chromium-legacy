@@ -68,12 +68,12 @@ class NET_EXPORT ReportingService {
   // Removes browsing data from the Reporting system. See
   // ReportingBrowsingDataRemover for more details.
   virtual void RemoveBrowsingData(
-      int data_type_mask,
+      uint64_t data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) = 0;
 
   // Like RemoveBrowsingData except removes data for all origins without a
   // filter.
-  virtual void RemoveAllBrowsingData(int data_type_mask) = 0;
+  virtual void RemoveAllBrowsingData(uint64_t data_type_mask) = 0;
 
   // Shuts down the Reporting service so that no new headers or reports are
   // processed, and pending uploads are cancelled.

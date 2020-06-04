@@ -770,7 +770,7 @@ class BrowserView : public BrowserWindow,
   View* find_bar_host_view_ = nullptr;
 
   // The download shelf view (view at the bottom of the page).
-  std::unique_ptr<DownloadShelfView> download_shelf_;
+  DownloadShelfView* download_shelf_ = nullptr;
 
   // The InfoBarContainerView that contains InfoBars for the current tab.
   InfoBarContainerView* infobar_container_ = nullptr;

@@ -16,6 +16,8 @@
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/lru_cache.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrix.h"
 
@@ -44,6 +46,8 @@ void VerifySettingsAreUnchanged(const DarkModeSettings& a,
 }
 
 #endif  // DCHECK_IS_ON()
+
+const size_t kMaxCacheSize = 1024u;
 
 bool ShouldApplyToImage(const DarkModeSettings& settings,
                         const FloatRect& src_rect,
@@ -88,10 +92,36 @@ sk_sp<SkColorFilter> MakeGrayscaleFilter(float grayscale_percent) {
 
 }  // namespace
 
+// DarkModeInvertedColorCache - Implements cache for inverted colors.
+class DarkModeInvertedColorCache {
+ public:
+  DarkModeInvertedColorCache() : cache_(kMaxCacheSize) {}
+  ~DarkModeInvertedColorCache() = default;
+
+  SkColor GetInvertedColor(DarkModeColorFilter* filter, SkColor color) {
+    WTF::IntegralWithAllKeys<SkColor> key(color);
+    SkColor* cached_value = cache_.Get(key);
+    if (cached_value)
+      return *cached_value;
+
+    SkColor inverted_color = filter->InvertColor(Color(color)).Rgb();
+    cache_.Put(key, std::move(inverted_color));
+    return inverted_color;
+  }
+
+  void Clear() { cache_.Clear(); }
+
+  size_t size() { return cache_.size(); }
+
+ private:
+  WTF::LruCache<WTF::IntegralWithAllKeys<SkColor>, SkColor> cache_;
+};
+
 DarkModeFilter::DarkModeFilter()
     : text_classifier_(nullptr),
       color_filter_(nullptr),
-      image_filter_(nullptr) {
+      image_filter_(nullptr),
+      inverted_color_cache_(new DarkModeInvertedColorCache()) {
   DarkModeSettings default_settings;
   default_settings.mode = DarkModeInversionAlgorithm::kOff;
   UpdateSettings(default_settings);
@@ -110,6 +140,8 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
 #endif
     return;
   }
+
+  inverted_color_cache_->Clear();
 
   settings_ = new_settings;
   color_filter_ = DarkModeColorFilter::FromSettings(settings_);
@@ -137,8 +169,11 @@ Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
   if (role_override_.has_value())
     role = role_override_.value();
 
-  if (ShouldApplyToColor(color, role))
-    return color_filter_->InvertColor(color);
+  if (ShouldApplyToColor(color, role)) {
+    return Color(inverted_color_cache_->GetInvertedColor(color_filter_.get(),
+                                                         color.Rgb()));
+  }
+
   return color;
 }
 
@@ -165,10 +200,8 @@ base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
   if (flags.HasShader()) {
     dark_mode_flags.setColorFilter(color_filter_->ToSkColorFilter());
   } else if (ShouldApplyToColor(flags.getColor(), role)) {
-    Color inverted_color = color_filter_->InvertColor(flags.getColor());
-    dark_mode_flags.setColor(
-        SkColorSetARGB(inverted_color.Alpha(), inverted_color.Red(),
-                       inverted_color.Green(), inverted_color.Blue()));
+    dark_mode_flags.setColor(inverted_color_cache_->GetInvertedColor(
+        color_filter_.get(), flags.getColor()));
   }
 
   return base::make_optional<cc::PaintFlags>(std::move(dark_mode_flags));
@@ -211,6 +244,10 @@ bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
       return false;
   }
   NOTREACHED();
+}
+
+size_t DarkModeFilter::GetInvertedColorCacheSizeForTesting() {
+  return inverted_color_cache_->size();
 }
 
 ScopedDarkModeElementRoleOverride::ScopedDarkModeElementRoleOverride(

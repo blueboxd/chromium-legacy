@@ -562,8 +562,12 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FrameDepth) {
 }
 
 // Test that an ad frame with visible resource gets a FCP.
+//
+// This test is flaky on multiple platforms https://crbug.com/1090976
+// TODO(https://crbug.com/1090976): Wait until the histogram is recorded instead
+// of until 4 resources are complete.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
-                       FirstContentfulPaintRecorded) {
+                       DISABLED_FirstContentfulPaintRecorded) {
   SetRulesetWithRules(
       {subresource_filter::testing::CreateSuffixRule("pixel.png")});
   base::HistogramTester histogram_tester;

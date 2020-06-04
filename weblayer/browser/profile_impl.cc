@@ -83,8 +83,8 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
 
   ~DataClearer() override { remover_->RemoveObserver(this); }
 
-  void ClearData(int mask, base::Time from_time, base::Time to_time) {
-    int origin_types =
+  void ClearData(uint64_t mask, base::Time from_time, base::Time to_time) {
+    uint64_t origin_types =
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
         content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
     remover_->RemoveAndReply(from_time, to_time, mask, origin_types, this);
@@ -166,7 +166,7 @@ void ProfileImpl::ClearBrowsingData(
   // browser_context_ and then BrowsingDataRemover, which in turn would call
   // OnBrowsingDataRemoverDone(), even though the clearing hasn't been finished.
 
-  int remove_mask = 0;
+  uint64_t remove_mask = 0;
   // This follows what Chrome does: see browsing_data_bridge.cc.
   for (auto data_type : data_types) {
     switch (data_type) {
@@ -288,7 +288,7 @@ void ProfileImpl::OnProfileMarked(std::unique_ptr<ProfileImpl> profile,
       profile->GetBrowserContext(),
       base::BindOnce(&ProfileImpl::NukeDataAfterRemovingData,
                      std::move(profile), std::move(done_callback)));
-  int remove_all_mask = 0x8fffffff;
+  uint64_t remove_all_mask = 0xffffffffffffffffull;
   clearer->ClearData(remove_all_mask, base::Time::Min(), base::Time::Max());
 }
 

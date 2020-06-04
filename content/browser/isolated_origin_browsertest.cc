@@ -511,7 +511,15 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyTest,
   // Change OriginPolicy manifest to stop isolating the sub-origin. It should
   // still be isolated, to remain consistent with the other frame.
   SetOriginPolicyManifest(R"({ })");
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "The page did not request origin isolation, but was isolated anyway*");
+
   NavigateFrameToURL(child_frame_node1, isolated_suborigin_url);
+
+  console_observer.Wait();
+
   EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
             child_frame_node1->current_frame_host()->GetSiteInstance());
 
@@ -553,7 +561,15 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyTest,
   // Change OriginPolicy manifest to start isolating the sub-origin. It should
   // still be not-isolated, to remain consistent with the other frame.
   SetOriginPolicyManifest(R"({ "ids": ["my-policy"], "isolation": true })");
+
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "The page requested origin isolation, but could not be isolated*");
+
   NavigateFrameToURL(child_frame_node1, isolated_suborigin_url);
+
+  console_observer.Wait();
+
   EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
             child_frame_node1->current_frame_host()->GetSiteInstance());
 

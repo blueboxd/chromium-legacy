@@ -1149,6 +1149,7 @@ void ShelfLayoutManager::OnDisplayMetricsChanged(
 
 void ShelfLayoutManager::OnLocaleChanged() {
   shelf_->shelf_widget()->HandleLocaleChange();
+  shelf_->status_area_widget()->HandleLocaleChange();
   shelf_->navigation_widget()->HandleLocaleChange();
 
   // Layout update is needed when language changes between LTR and RTL.

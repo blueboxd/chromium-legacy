@@ -58,6 +58,16 @@ class ASH_EXPORT ShellDelegate {
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;
 
+  // Returns true if |window| allows default touch behaviors. If false, it means
+  // no default touch behavior is allowed (i.e., the touch action of window is
+  // cc::TouchAction::kNone). This function is used by BackGestureEventHandler
+  // to decide if we can perform the system default back gesture.
+  virtual bool AllowDefaultTouchActions(gfx::NativeWindow window);
+
+  // Returns true if we should wait for touch press ack when deciding if back
+  // gesture can be performed.
+  virtual bool ShouldWaitForTouchPressAck(gfx::NativeWindow window);
+
   // Checks whether a drag-drop operation is a tab drag.
   virtual bool IsTabDrag(const ui::OSExchangeData& drop_data);
 

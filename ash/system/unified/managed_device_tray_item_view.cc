@@ -46,6 +46,10 @@ const char* ManagedDeviceTrayItemView::GetClassName() const {
   return "ManagedDeviceTrayItemView";
 }
 
+void ManagedDeviceTrayItemView::HandleLocaleChange() {
+  Update();
+}
+
 void ManagedDeviceTrayItemView::Update() {
   SessionControllerImpl* session = Shell::Get()->session_controller();
   if (session->IsUserPublicAccount()) {

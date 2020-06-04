@@ -33,7 +33,9 @@ abstract class AwDataDirLock {
     private static final String TAG = "AwDataDirLock";
 
     private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
-    private static final int LOCK_RETRIES = 5;
+
+    // This results in a maximum wait time of 1.5s
+    private static final int LOCK_RETRIES = 16;
     private static final int LOCK_SLEEP_MS = 100;
 
     private static RandomAccessFile sLockFile;
@@ -75,7 +77,7 @@ abstract class AwDataDirLock {
                 throw new RuntimeException("Failed to create lock file " + lockFile, e);
             }
 
-            // Some Android versions may have a race where a new instance of an app process can
+            // Android versions before 11 have edge cases where a new instance of an app process can
             // be started while an existing one is still in the process of being killed. Retry
             // the lock a few times to give the old process time to fully go away.
             for (int attempts = 1; attempts <= LOCK_RETRIES; ++attempts) {

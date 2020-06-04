@@ -66,6 +66,8 @@ CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange&,
 CSSValue* ConsumeAnimationName(CSSParserTokenRange&,
                                const CSSParserContext&,
                                bool allow_quoted_name);
+CSSValue* ConsumeAnimationTimeline(CSSParserTokenRange&,
+                                   const CSSParserContext&);
 CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange&,
                                          const CSSParserContext&);
 bool ConsumeAnimationShorthand(

@@ -38,6 +38,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
     bool disable_larger_than_screen_overlays = false;
     bool disable_vp_scaling = false;
     size_t max_pending_frames = 2;
+    bool use_angle_texture_offset = false;
   };
 
   DirectCompositionSurfaceWin(
@@ -121,6 +122,7 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   bool SupportsDCLayers() const override;
   bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
+  gfx::Vector2d GetDrawOffset() const override;
   bool SupportsGpuVSync() const override;
   void SetGpuVSyncEnabled(bool enabled) override;
   // This schedules an overlay plane to be displayed on the next SwapBuffers

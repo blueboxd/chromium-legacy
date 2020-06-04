@@ -94,7 +94,7 @@ static void JNI_BrowsingDataBridge_ClearBrowsingData(
   std::vector<int> data_types_vector;
   base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);
 
-  int remove_mask = 0;
+  uint64_t remove_mask = 0;
   for (const int data_type : data_types_vector) {
     switch (static_cast<browsing_data::BrowsingDataType>(data_type)) {
       case browsing_data::BrowsingDataType::HISTORY:

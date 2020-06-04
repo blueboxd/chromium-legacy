@@ -325,6 +325,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                         uint64_t* limit,
                         uint64_t* usage);
 
+  MojoResult SetDefaultProcessErrorHandler(
+      MojoDefaultProcessErrorHandler handler,
+      const MojoSetDefaultProcessErrorHandlerOptions* options);
+
   void GetActiveHandlesForTest(std::vector<MojoHandle>* handles);
 
  private:

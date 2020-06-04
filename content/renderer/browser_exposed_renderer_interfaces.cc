@@ -22,6 +22,7 @@
 #include "content/public/common/resource_usage_reporter.mojom.h"
 #include "content/public/common/resource_usage_reporter_type_converters.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
@@ -181,6 +182,20 @@ void CreateFrameFactory(mojo::PendingReceiver<mojom::FrameFactory> receiver) {
                               std::move(receiver));
 }
 
+void CreateEmbeddedWorker(
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
+    base::WeakPtr<RenderThreadImpl> render_thread,
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        receiver) {
+  initiator_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &EmbeddedWorkerInstanceClientImpl::CreateForRequest,
+          initiator_task_runner,
+          render_thread->resource_dispatcher()->cors_exempt_header_list(),
+          std::move(receiver)));
+}
+
 }  // namespace
 
 void ExposeRendererInterfacesToBrowser(
@@ -197,10 +212,10 @@ void ExposeRendererInterfacesToBrowser(
       base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-  binders->Add(
-      base::BindRepeating(&EmbeddedWorkerInstanceClientImpl::CreateForRequest,
-                          task_runner_for_service_worker_startup),
-      task_runner_for_service_worker_startup);
+  binders->Add(base::BindRepeating(&CreateEmbeddedWorker,
+                                   task_runner_for_service_worker_startup,
+                                   render_thread),
+               base::ThreadTaskRunnerHandle::Get());
 
   binders->Add(base::BindRepeating(&CreateFrameFactory),
                base::ThreadTaskRunnerHandle::Get());

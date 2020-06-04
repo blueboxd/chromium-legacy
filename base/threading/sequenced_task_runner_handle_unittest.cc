@@ -67,7 +67,7 @@ TEST_F(SequencedTaskRunnerHandleTest, FromThreadPoolSequencedTask) {
 }
 
 TEST_F(SequencedTaskRunnerHandleTest, NoHandleFromUnsequencedTask) {
-  base::ThreadPool::PostTask(base::BindOnce(
+  base::PostTask(base::BindOnce(
       []() { EXPECT_FALSE(SequencedTaskRunnerHandle::IsSet()); }));
   task_environment_.RunUntilIdle();
 }

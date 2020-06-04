@@ -113,7 +113,6 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/credit_card_nickname_label"
         android:labelFor="@+id/credit_card_nickname_edit"
-        app:counterEnabled="true"
         app:counterMaxLength="25"
         app:errorEnabled="true"
         android:layout_width="match_parent"

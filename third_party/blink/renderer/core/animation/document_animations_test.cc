@@ -22,6 +22,7 @@ class MockAnimationTimeline : public AnimationTimeline {
  public:
   MockAnimationTimeline(Document* document) : AnimationTimeline(document) {}
 
+  MOCK_METHOD0(Phase, TimelinePhase());
   MOCK_CONST_METHOD0(IsActive, bool());
   MOCK_METHOD0(ZeroTimeInSeconds, double());
   MOCK_METHOD0(InitialStartTimeForAnimations,

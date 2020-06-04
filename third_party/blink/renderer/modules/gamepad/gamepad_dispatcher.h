@@ -30,7 +30,7 @@ class GamepadDispatcher final : public GarbageCollected<GamepadDispatcher>,
   USING_GARBAGE_COLLECTED_MIXIN(GamepadDispatcher);
 
  public:
-  explicit GamepadDispatcher(ExecutionContext* context);
+  explicit GamepadDispatcher(ExecutionContext& context);
   ~GamepadDispatcher() override;
 
   void SampleGamepads(device::Gamepads&);

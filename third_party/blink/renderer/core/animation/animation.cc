@@ -1833,15 +1833,20 @@ bool Animation::Update(TimingUpdateReason reason) {
     UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
 
   if (content_) {
-    base::Optional<double> inherited_time = idle || !timeline_->currentTime()
-                                                ? base::nullopt
-                                                : CurrentTimeInternal();
+    base::Optional<double> inherited_time;
+    base::Optional<TimelinePhase> timeline_phase;
 
-    // Special case for end-exclusivity when playing backwards.
-    if (inherited_time == 0 && EffectivePlaybackRate() < 0)
-      inherited_time = -1;
+    if (!idle) {
+      inherited_time = CurrentTimeInternal();
+      // Special case for end-exclusivity when playing backwards.
+      if (inherited_time == 0 && EffectivePlaybackRate() < 0)
+        inherited_time = -1;
 
-    content_->UpdateInheritedTime(inherited_time, reason);
+      timeline_phase = timeline_->Phase();
+    }
+
+    content_->UpdateInheritedTime(inherited_time, timeline_phase, reason);
+
     // After updating the animation time if the animation is no longer current
     // blink will no longer composite the element (see
     // CompositingReasonFinder::RequiresCompositingFor*Animation). We cancel any

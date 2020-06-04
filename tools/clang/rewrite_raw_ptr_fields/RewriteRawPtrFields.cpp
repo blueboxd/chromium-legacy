@@ -60,7 +60,8 @@ class ReplacementsPrinter : public clang::tooling::SourceFileCallbacks {
 
   void PrintReplacement(const clang::SourceManager& source_manager,
                         const clang::SourceRange& replacement_range,
-                        std::string replacement_text) {
+                        std::string replacement_text,
+                        bool should_add_include = false) {
     if (ShouldSuppressOutput())
       return;
 
@@ -75,12 +76,14 @@ class ReplacementsPrinter : public clang::tooling::SourceFileCallbacks {
                  << ":::" << replacement.getLength()
                  << ":::" << replacement_text << "\n";
 
-    bool was_inserted = false;
-    std::tie(std::ignore, was_inserted) =
-        files_with_already_added_includes_.insert(file_path.str());
-    if (was_inserted)
-      llvm::outs() << "include-user-header:::" << file_path
-                   << ":::-1:::-1:::" << kIncludePath << "\n";
+    if (should_add_include) {
+      bool was_inserted = false;
+      std::tie(std::ignore, was_inserted) =
+          files_with_already_added_includes_.insert(file_path.str());
+      if (was_inserted)
+        llvm::outs() << "include-user-header:::" << file_path
+                     << ":::-1:::-1:::" << kIncludePath << "\n";
+    }
   }
 
  private:
@@ -290,6 +293,9 @@ AST_MATCHER(clang::FieldDecl, hasUniqueTypeLoc) {
   return !has_sibling_with_same_type_loc;
 }
 
+// Rewrites |SomeClass* field| (matched as "fieldDecl") into
+// |CheckedPtr<SomeClass> field| and for each file rewritten in such way adds an
+// |#include "base/memory/checked_ptr.h"|.
 class FieldDeclRewriter : public MatchFinder::MatchCallback {
  public:
   explicit FieldDeclRewriter(ReplacementsPrinter* replacements_printer)
@@ -334,7 +340,8 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
 
     // Generate and print a replacement.
     replacements_printer_->PrintReplacement(source_manager, replacement_range,
-                                            replacement_text);
+                                            replacement_text,
+                                            true /* should_add_include */);
   }
 
  private:
@@ -363,6 +370,35 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     return result;
   }
 
+  ReplacementsPrinter* const replacements_printer_;
+};
+
+// Rewrites |my_struct.ptr_field| (matched as "affectedMemberExpr") into
+// |my_struct.ptr_field.get()|.
+class AffectedExprRewriter : public MatchFinder::MatchCallback {
+ public:
+  AffectedExprRewriter(ReplacementsPrinter* replacements_printer)
+      : replacements_printer_(replacements_printer) {}
+
+  void run(const MatchFinder::MatchResult& result) override {
+    const clang::SourceManager& source_manager = *result.SourceManager;
+
+    const clang::MemberExpr* member_expr =
+        result.Nodes.getNodeAs<clang::MemberExpr>("affectedMemberExpr");
+    assert(member_expr && "matcher should bind 'affectedMemberExpr'");
+
+    clang::SourceLocation member_name_start = member_expr->getMemberLoc();
+    size_t member_name_length = member_expr->getMemberDecl()->getName().size();
+    clang::SourceLocation insertion_loc =
+        member_name_start.getLocWithOffset(member_name_length);
+
+    clang::SourceRange replacement_range(insertion_loc, insertion_loc);
+
+    replacements_printer_->PrintReplacement(source_manager, replacement_range,
+                                            ".get()");
+  }
+
+ private:
   ReplacementsPrinter* const replacements_printer_;
 };
 
@@ -443,6 +479,69 @@ int main(int argc, const char* argv[]) {
           .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
+
+  // Matches expressions that used to return a value of type |SomeClass*|
+  // but after the rewrite return an instance of |CheckedPtr<SomeClass>|.
+  // Many such expressions might need additional changes after the rewrite:
+  // - Some expressions (printf args, const_cast args, etc.) might need |.get()|
+  //   appended.
+  // - Using such expressions in specific contexts (e.g. as in-out arguments or
+  //   as a return value of a function returning references) may require
+  //   additional work and should cause related fields to be emitted as
+  //   candidates for the --field-filter-file parameter.
+  auto affected_member_expr_matcher =
+      memberExpr(member(field_decl_matcher)).bind("affectedMemberExpr");
+  auto affected_implicit_expr_matcher = implicitCastExpr(has(expr(anyOf(
+      // Only single implicitCastExpr is present in case of:
+      // |auto* v = s.ptr_field;|
+      expr(affected_member_expr_matcher),
+      // 2nd nested implicitCastExpr is present in case of:
+      // |const auto* v = s.ptr_field;|
+      expr(implicitCastExpr(has(affected_member_expr_matcher)))))));
+  auto affected_expr_matcher =
+      expr(anyOf(affected_member_expr_matcher, affected_implicit_expr_matcher));
+
+  // Places where |.get()| needs to be appended =========
+  // Given
+  //   void foo(const S& s) {
+  //     printf("%p", s.y);
+  //     const_cast<...>(s.y)
+  //     reinterpret_cast<...>(s.y)
+  //   }
+  // matches the |s.y| expr if it matches the |affected_expr_matcher| above.
+  auto affected_expr_that_needs_fixing_matcher = expr(allOf(
+      affected_expr_matcher,
+      hasParent(expr(anyOf(callExpr(callee(functionDecl(isVariadic()))),
+                           cxxConstCastExpr(), cxxReinterpretCastExpr())))));
+  AffectedExprRewriter affected_expr_rewriter(&replacements_printer);
+  match_finder.addMatcher(affected_expr_that_needs_fixing_matcher,
+                          &affected_expr_rewriter);
+
+  // Affected ternary operator args =========
+  // Given
+  //   void foo(const S& s) {
+  //     cond ? s.y : ...
+  //   }
+  // binds the |s.y| expr if it matches the |affected_expr_matcher| above.
+  auto affected_ternary_operator_arg_matcher =
+      conditionalOperator(eachOf(hasTrueExpression(affected_expr_matcher),
+                                 hasFalseExpression(affected_expr_matcher)));
+  match_finder.addMatcher(affected_ternary_operator_arg_matcher,
+                          &affected_expr_rewriter);
+
+  // |auto| type declarations =========
+  // Given
+  //   struct S { int* y; };
+  //   void foo(const S& s) {
+  //     auto* p = s.y;
+  //   }
+  // binds the |s.y| expr if it matches the |affected_expr_matcher| above.
+  auto auto_var_decl_matcher = declStmt(forEach(varDecl(
+      allOf(hasType(pointerType(pointee(autoType()))),
+            hasInitializer(anyOf(
+                affected_implicit_expr_matcher,
+                initListExpr(hasInit(0, affected_implicit_expr_matcher))))))));
+  match_finder.addMatcher(auto_var_decl_matcher, &affected_expr_rewriter);
 
   // Prepare and run the tool.
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =

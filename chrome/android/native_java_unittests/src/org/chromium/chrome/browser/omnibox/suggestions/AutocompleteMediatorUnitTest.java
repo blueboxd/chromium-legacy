@@ -94,7 +94,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.setSuggestionVisibilityState(
                 AutocompleteMediator.SuggestionVisibilityState.ALLOWED);
 
-        when(mMockProcessor.doesProcessSuggestion(any())).thenReturn(true);
+        when(mMockProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
         when(mMockProcessor.createModel())
                 .thenAnswer((mock) -> new PropertyModel(SuggestionCommonProperties.ALL_KEYS));
         when(mMockProcessor.getMinimumViewHeight()).thenReturn(SUGGESTION_MIN_HEIGHT);

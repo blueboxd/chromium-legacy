@@ -87,7 +87,7 @@ class PaymentRequestOptionalTotalTest : public testing::Test {
 // methods. Total is required in this scenario.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagEnabledTotalIsRequiredWhenMixMethods) {
-  RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(true);
+  RuntimeEnabledFeatures::SetDigitalGoodsEnabled(true);
 
   PaymentRequestV8TestingScope scope;
   // Intentionally leaves the total of details unset.
@@ -112,7 +112,7 @@ TEST_F(PaymentRequestOptionalTotalTest,
 // billing methods, total is required.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagDisabledTotalIsRequiredWhenMixMethods) {
-  RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(false);
+  RuntimeEnabledFeatures::SetDigitalGoodsEnabled(false);
 
   PaymentRequestV8TestingScope scope;
   // Intentionally leaves the total of details unset.
@@ -135,7 +135,7 @@ TEST_F(PaymentRequestOptionalTotalTest,
 // only requesting app-store billing methods.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagEnabledTotalGetPlaceHolder) {
-  RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(true);
+  RuntimeEnabledFeatures::SetDigitalGoodsEnabled(true);
 
   PaymentRequestV8TestingScope scope;
   // Intentionally leaves the total of details unset.
@@ -158,7 +158,7 @@ TEST_F(PaymentRequestOptionalTotalTest,
 // When the OptionalTotal is disabled: undefined total is rejected.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagDisabledTotalGetRejected) {
-  RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(false);
+  RuntimeEnabledFeatures::SetDigitalGoodsEnabled(false);
 
   PaymentRequestV8TestingScope scope;
   // Intentionally leaves the total of details unset.
@@ -184,7 +184,7 @@ TEST_F(PaymentRequestOptionalTotalTest,
 // app-store billing methods.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagEnabledTotalGetOverridden) {
-  RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(true);
+  RuntimeEnabledFeatures::SetDigitalGoodsEnabled(true);
 
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();
@@ -210,7 +210,7 @@ TEST_F(PaymentRequestOptionalTotalTest,
 // requesting app-store billing methods.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagDisabledTotalNotGetOverridden) {
-  RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(false);
+  RuntimeEnabledFeatures::SetDigitalGoodsEnabled(false);
 
   PaymentRequestV8TestingScope scope;
   PaymentDetailsInit* details = PaymentDetailsInit::Create();

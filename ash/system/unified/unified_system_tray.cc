@@ -138,24 +138,24 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
       kUnifiedTrayContentPadding -
           ShelfConfig::Get()->status_area_hit_region_padding(),
       0);
-  tray_container()->AddChildView(current_locale_view_);
-  tray_container()->AddChildView(ime_mode_view_);
-  tray_container()->AddChildView(managed_device_view_);
-  tray_container()->AddChildView(notification_counter_item_);
-  tray_container()->AddChildView(quiet_mode_view_);
+  AddTrayItemToContainer(current_locale_view_);
+  AddTrayItemToContainer(ime_mode_view_);
+  AddTrayItemToContainer(managed_device_view_);
+  AddTrayItemToContainer(notification_counter_item_);
+  AddTrayItemToContainer(quiet_mode_view_);
 
   if (features::IsSeparateNetworkIconsEnabled()) {
     network_tray_view_ =
         new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary);
-    tray_container()->AddChildView(
+    AddTrayItemToContainer(
         new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
   } else {
     network_tray_view_ =
         new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
   }
-  tray_container()->AddChildView(network_tray_view_);
-  tray_container()->AddChildView(new tray::PowerTrayView(shelf));
-  tray_container()->AddChildView(time_view_);
+  AddTrayItemToContainer(network_tray_view_);
+  AddTrayItemToContainer(new tray::PowerTrayView(shelf));
+  AddTrayItemToContainer(time_view_);
 
   set_separator_visibility(false);
 
@@ -391,6 +391,11 @@ base::string16 UnifiedSystemTray::GetAccessibleNameForQuickSettingsBubble() {
       IDS_ASH_QUICK_SETTINGS_BUBBLE_ACCESSIBLE_DESCRIPTION);
 }
 
+void UnifiedSystemTray::HandleLocaleChange() {
+  for (TrayItemView* item : tray_items_)
+    item->HandleLocaleChange();
+}
+
 base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
   base::string16 time = base::TimeFormatTimeOfDayWithHourClockType(
       base::Time::Now(),
@@ -478,4 +483,8 @@ UnifiedSystemTray::GetPopupViewForNotificationID(
   return ui_delegate_->GetPopupViewForNotificationID(notification_id);
 }
 
+void UnifiedSystemTray::AddTrayItemToContainer(TrayItemView* tray_item) {
+  tray_items_.push_back(tray_item);
+  tray_container()->AddChildView(tray_item);
+}
 }  // namespace ash

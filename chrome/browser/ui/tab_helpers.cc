@@ -71,7 +71,6 @@
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/focus_tab_after_navigation_helper.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
@@ -91,6 +90,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/blocked_content/popup_opener_tab_helper.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/client_hints/browser/client_hints.h"
@@ -283,7 +283,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   permissions::PermissionRequestManager::CreateForWebContents(web_contents);
   // The PopupBlockerTabHelper has an implicit dependency on
   // ChromeSubresourceFilterClient being available in its constructor.
-  PopupBlockerTabHelper::CreateForWebContents(web_contents);
+  blocked_content::PopupBlockerTabHelper::CreateForWebContents(web_contents);
   blocked_content::PopupOpenerTabHelper::CreateForWebContents(
       web_contents, base::DefaultTickClock::GetInstance(),
       HostContentSettingsMapFactory::GetForProfile(profile));

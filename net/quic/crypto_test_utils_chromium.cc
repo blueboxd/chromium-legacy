@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
@@ -53,7 +54,8 @@ class TestProofVerifierChromium : public ProofVerifierChromium {
                               ct_policy_enforcer.get(),
                               transport_security_state.get(),
                               cert_transparency_verifier.get(),
-                              {"test.example.com"}),
+                              {"test.example.com"},
+                              NetworkIsolationKey()),
         cert_verifier_(std::move(cert_verifier)),
         transport_security_state_(std::move(transport_security_state)),
         cert_transparency_verifier_(std::move(cert_transparency_verifier)),

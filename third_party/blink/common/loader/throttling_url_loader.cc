@@ -12,6 +12,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -27,6 +28,43 @@ void MergeRemovedHeaders(std::vector<std::string>* removed_headers_A,
       removed_headers_A->emplace_back(std::move(header));
   }
 }
+
+#if DCHECK_IS_ON()
+void CheckThrottleWillNotCauseCorsPreflight(
+    const std::set<std::string>& initial_headers,
+    const std::set<std::string>& initial_cors_exempt_headers,
+    const net::HttpRequestHeaders& headers,
+    const net::HttpRequestHeaders& cors_exempt_headers,
+    const std::vector<std::string> cors_exempt_header_list) {
+  base::flat_set<std::string> cors_exempt_header_flat_set(
+      cors_exempt_header_list);
+  for (auto& header : headers.GetHeaderVector()) {
+    if (initial_headers.find(header.key) == initial_headers.end() &&
+        !network::cors::IsCorsSafelistedHeader(header.key, header.value)) {
+      bool is_cors_exempt = cors_exempt_header_flat_set.count(header.key);
+      NOTREACHED()
+          << "Throttle added cors unsafe header " << header.key
+          << (is_cors_exempt
+                  ? " . Header is cors exempt so should have "
+                    "been added to RequestHeaders::cors_exempt_headers "
+                    "instead of "
+                    "of RequestHeaders::cors_exempt_headers."
+                  : "");
+    }
+  }
+
+  for (auto& header : cors_exempt_headers.GetHeaderVector()) {
+    if (cors_exempt_header_flat_set.count(header.key) == 0 &&
+        initial_cors_exempt_headers.find(header.key) ==
+            initial_cors_exempt_headers.end()) {
+      NOTREACHED() << "Throttle added cors exempt header " << header.key
+                   << " but it wasn't configured as cors exempt by the "
+                      "browser. See "
+                   << "StoragePartition::UpdateCorsMitigationList().";
+    }
+  }
+}
+#endif
 
 }  // namespace
 
@@ -173,13 +211,16 @@ ThrottlingURLLoader::StartInfo::StartInfo(
     int32_t in_request_id,
     uint32_t in_options,
     network::ResourceRequest* in_url_request,
-    scoped_refptr<base::SingleThreadTaskRunner> in_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> in_task_runner,
+    base::Optional<std::vector<std::string>> in_cors_exempt_header_list)
     : url_loader_factory(std::move(in_url_loader_factory)),
       routing_id(in_routing_id),
       request_id(in_request_id),
       options(in_options),
       url_request(*in_url_request),
-      task_runner(std::move(in_task_runner)) {}
+      task_runner(std::move(in_task_runner)) {
+  cors_exempt_header_list = std::move(in_cors_exempt_header_list);
+}
 
 ThrottlingURLLoader::StartInfo::~StartInfo() = default;
 
@@ -212,11 +253,13 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     network::ResourceRequest* url_request,
     network::mojom::URLLoaderClient* client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::Optional<std::vector<std::string>> cors_exempt_header_list) {
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
       std::move(throttles), client, traffic_annotation));
   loader->Start(std::move(factory), routing_id, request_id, options,
-                url_request, std::move(task_runner));
+                url_request, std::move(task_runner),
+                std::move(cors_exempt_header_list));
   return loader;
 }
 
@@ -351,7 +394,8 @@ void ThrottlingURLLoader::Start(
     int32_t request_id,
     uint32_t options,
     network::ResourceRequest* url_request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::Optional<std::vector<std::string>> cors_exempt_header_list) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_completed_);
 
@@ -362,7 +406,28 @@ void ThrottlingURLLoader::Start(
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
+
+#if DCHECK_IS_ON()
+      std::set<std::string> initial_headers, initial_cors_exempt_headers;
+      if (cors_exempt_header_list) {
+        for (auto& header : url_request->headers.GetHeaderVector())
+          initial_headers.insert(header.key);
+
+        for (auto& header : url_request->cors_exempt_headers.GetHeaderVector())
+          initial_cors_exempt_headers.insert(header.key);
+      }
+#endif
+
       throttle->WillStartRequest(url_request, &throttle_deferred);
+
+#if DCHECK_IS_ON()
+      if (cors_exempt_header_list) {
+        CheckThrottleWillNotCauseCorsPreflight(
+            initial_headers, initial_cors_exempt_headers, url_request->headers,
+            url_request->cors_exempt_headers, *cors_exempt_header_list);
+      }
+#endif
+
       if (original_url_ != url_request->url) {
         DCHECK(throttle_will_start_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
@@ -384,9 +449,9 @@ void ThrottlingURLLoader::Start(
     }
   }
 
-  start_info_ =
-      std::make_unique<StartInfo>(factory, routing_id, request_id, options,
-                                  url_request, std::move(task_runner));
+  start_info_ = std::make_unique<StartInfo>(
+      factory, routing_id, request_id, options, url_request,
+      std::move(task_runner), std::move(cors_exempt_header_list));
   if (deferred)
     deferred_stage_ = DEFERRED_START;
   else
@@ -611,6 +676,19 @@ void ThrottlingURLLoader::OnReceiveRedirect(
       throttle->WillRedirectRequest(
           &redirect_info_copy, *response_head, &throttle_deferred,
           &removed_headers, &modified_headers, &modified_cors_exempt_headers);
+
+      if (!weak_ptr)
+        return;
+
+#if DCHECK_IS_ON()
+      if (start_info_->cors_exempt_header_list) {
+        CheckThrottleWillNotCauseCorsPreflight(
+            std::set<std::string>(), std::set<std::string>(), modified_headers,
+            modified_cors_exempt_headers,
+            *start_info_->cors_exempt_header_list);
+      }
+#endif
+
       if (redirect_info_copy.new_url != redirect_info.new_url) {
         DCHECK(throttle_will_redirect_redirect_url_.is_empty())
             << "ThrottlingURLLoader doesn't support multiple throttles "
@@ -618,8 +696,6 @@ void ThrottlingURLLoader::OnReceiveRedirect(
         throttle_will_redirect_redirect_url_ = redirect_info_copy.new_url;
       }
 
-      if (!weak_ptr)
-        return;
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
 

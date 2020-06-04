@@ -214,7 +214,7 @@ class WebUITabCounterButton : public views::Button,
   void UpdateColors();
   void MaybeStartThrobber(TabStripModel* tab_strip_model,
                           const TabStripModelChange& change);
-  void MaybeStopThrobber();
+  void StopThrobber();
   void Init();
 
   // views::Button:
@@ -323,27 +323,29 @@ void WebUITabCounterButton::MaybeStartThrobber(
     const auto& contents = change.GetInsert()->contents;
     if (contents.size() > 1 ||
         tab_strip_model->GetActiveWebContents() != contents[0].contents) {
-      throbber_->Start();
+      // If the throbber is already showing, just reset the timer so that the
+      // animation continues smoothly for tabs created in quick succession.
+      if (throbber_timer_.IsRunning()) {
+        throbber_timer_.Reset();
+      } else {
+        throbber_->Start();
 
-      // Automatically stop the throbber after 1 second. Currently we do not
-      // check the real loading state of the new tab(s), as that adds
-      // unnecessary complexity. The purpose of the throbber is just to indicate
-      // to the user that some activity has happened in the background, which
-      // may not otherwise have been obvious because the tab strip is hidden in
-      // this mode.
-      throbber_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
-                            this, &WebUITabCounterButton::MaybeStopThrobber);
+        // Automatically stop the throbber after 1 second. Currently we do not
+        // check the real loading state of the new tab(s), as that adds
+        // unnecessary complexity. The purpose of the throbber is just to
+        // indicate to the user that some activity has happened in the
+        // background, which may not otherwise have been obvious because the tab
+        // strip is hidden in this mode.
+        throbber_timer_.Start(FROM_HERE,
+                              base::TimeDelta::FromMilliseconds(1000), this,
+                              &WebUITabCounterButton::StopThrobber);
+      }
     }
   }
 }
 
-void WebUITabCounterButton::MaybeStopThrobber() {
-  // Stop the throbber if no other background tabs have been created. Otherwise,
-  // reset the timer to keep the throbber running smoothly.
-  if (throbber_timer_.IsRunning())
-    throbber_timer_.Reset();
-  else
-    throbber_->Stop();
+void WebUITabCounterButton::StopThrobber() {
+  throbber_->Stop();
 }
 
 void WebUITabCounterButton::Init() {

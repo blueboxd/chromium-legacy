@@ -28,9 +28,9 @@ bool MockBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() {
 void MockBrowsingDataRemoverDelegate::RemoveEmbedderData(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
+    uint64_t remove_mask,
     BrowsingDataFilterBuilder* filter_builder,
-    int origin_type_mask,
+    uint64_t origin_type_mask,
     base::OnceClosure callback) {
   actual_calls_.emplace_back(delete_begin, delete_end, remove_mask,
                              origin_type_mask, filter_builder->Copy(),
@@ -41,8 +41,8 @@ void MockBrowsingDataRemoverDelegate::RemoveEmbedderData(
 void MockBrowsingDataRemoverDelegate::ExpectCall(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     BrowsingDataFilterBuilder* filter_builder) {
   expected_calls_.emplace_back(delete_begin, delete_end, remove_mask,
                                origin_type_mask, filter_builder->Copy(),
@@ -52,8 +52,8 @@ void MockBrowsingDataRemoverDelegate::ExpectCall(
 void MockBrowsingDataRemoverDelegate::ExpectCallDontCareAboutFilterBuilder(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask) {
+    uint64_t remove_mask,
+    uint64_t origin_type_mask) {
   expected_calls_.emplace_back(
       delete_begin, delete_end, remove_mask, origin_type_mask,
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST),
@@ -81,8 +81,8 @@ void MockBrowsingDataRemoverDelegate::VerifyAndClearExpectations() {
 MockBrowsingDataRemoverDelegate::CallParameters::CallParameters(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     bool should_compare_filter)
     : delete_begin_(delete_begin),

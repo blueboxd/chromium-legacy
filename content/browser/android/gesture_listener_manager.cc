@@ -137,6 +137,16 @@ void GestureListenerManager::SetMultiTouchZoomSupportEnabled(
     rwhva_->SetMultiTouchZoomSupportEnabled(enabled);
 }
 
+void GestureListenerManager::SetHasListenersAttached(JNIEnv* env,
+                                                     jboolean enabled) {
+  if (has_listeners_attached_ == enabled)
+    return;
+
+  has_listeners_attached_ = enabled;
+  if (rwhva_)
+    rwhva_->UpdateReportAllRootScrolls();
+}
+
 void GestureListenerManager::GestureEventAck(
     const blink::WebGestureEvent& event,
     blink::mojom::InputEventResultState ack_result) {
@@ -223,10 +233,9 @@ void GestureListenerManager::UpdateRenderProcessConnection(
     RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {
   if (old_rwhva)
-    old_rwhva->set_gesture_listener_manager(nullptr);
-  if (new_rwhva) {
-    new_rwhva->set_gesture_listener_manager(this);
-  }
+    old_rwhva->SetGestureListenerManager(nullptr);
+  if (new_rwhva)
+    new_rwhva->SetGestureListenerManager(this);
   rwhva_ = new_rwhva;
 }
 

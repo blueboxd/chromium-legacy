@@ -490,8 +490,7 @@ void MultipleFieldsTemporalInputTypeView::HandleKeydownEvent(
       ((event.key() == "ArrowDown" && event.getModifierState("Alt")) ||
        (LayoutTheme::GetTheme().ShouldOpenPickerWithF4Key() &&
         event.key() == "F4") ||
-       (features::IsFormControlsRefreshEnabled() &&
-        (event.key() == "Enter" || event.key() == " ")))) {
+       (features::IsFormControlsRefreshEnabled() && event.key() == " "))) {
     if (PickerIndicatorElement* element = GetPickerIndicatorElement())
       element->OpenPopup();
     event.SetDefaultHandled();

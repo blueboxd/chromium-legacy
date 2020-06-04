@@ -37,7 +37,8 @@ namespace content {
 class CONTENT_EXPORT PropertyNode final {
  public:
   // Parses a property node from a string.
-  static PropertyNode FromProperty(const base::string16&);
+  static PropertyNode FromPropertyFilter(
+      const AccessibilityTreeFormatter::PropertyFilter& filter);
 
   PropertyNode();
   PropertyNode(PropertyNode&&);
@@ -46,12 +47,16 @@ class CONTENT_EXPORT PropertyNode final {
   PropertyNode& operator=(PropertyNode&& other);
   explicit operator bool() const;
 
-  base::string16 value;
+  base::string16 name_or_value;
   std::vector<PropertyNode> parameters;
 
   // Used to store the origianl unparsed property including invocation
   // parameters if any.
   base::string16 original_property;
+
+  // The list of line indexes of accessible objects the property is allowed to
+  // be called for.
+  std::vector<base::string16> line_indexes;
 
   std::string ToString() const;
 
@@ -128,7 +133,8 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   // Returns a property node struct built for a matching property filter,
   // which includes a property name and invocation parameters if any.
   // If no matching property filter, then empty property node is returned.
-  PropertyNode GetMatchingPropertyNode(const base::string16& text);
+  PropertyNode GetMatchingPropertyNode(const base::string16& line_index,
+                                       const base::string16& property_name);
 
   // Process accessibility tree with filters for output.
   // Given a dictionary that contains a platform-specific dictionary

@@ -123,7 +123,7 @@ base::Optional<base::Version> GetSnapshotToRestore(
 
 void RemoveDataForProfile(base::Time delete_begin,
                           const base::FilePath& profile_path,
-                          int remove_mask) {
+                          uint64_t remove_mask) {
   SnapshotManager snapshot_manager(profile_path.DirName());
   snapshot_manager.DeleteSnapshotDataForProfile(
       delete_begin, profile_path.BaseName(), remove_mask);

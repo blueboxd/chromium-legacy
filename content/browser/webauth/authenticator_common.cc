@@ -540,13 +540,12 @@ AuthenticatorCommon::CreateRequestDelegate() {
 
 void AuthenticatorCommon::StartMakeCredentialRequest(
     bool allow_skipping_pin_touch) {
-  discovery_factory_ =
+  device::FidoDiscoveryFactory* discovery_factory =
       AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
           static_cast<RenderFrameHostImpl*>(render_frame_host_)
               ->frame_tree_node());
-  if (!discovery_factory_) {
-    discovery_factory_ = request_delegate_->GetDiscoveryFactory();
-  }
+  if (!discovery_factory)
+    discovery_factory = request_delegate_->GetDiscoveryFactory();
 
   if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     std::vector<device::CableDiscoveryData> cable_pairings =
@@ -558,15 +557,15 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
     if (request_delegate_->SetCableTransportInfo(
             /*cable_extension_provided=*/false, have_paired_phones,
             qr_generator_key)) {
-      discovery_factory_->set_cable_data(cable_pairings,
-                                         std::move(qr_generator_key));
+      discovery_factory->set_cable_data(cable_pairings,
+                                        std::move(qr_generator_key));
     }
   }
 
   make_credential_options_->allow_skipping_pin_touch = allow_skipping_pin_touch;
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      discovery_factory_,
+      discovery_factory,
       GetAvailableTransports(render_frame_host_, request_delegate_.get(),
                              caller_origin_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
@@ -595,13 +594,12 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
 
 void AuthenticatorCommon::StartGetAssertionRequest(
     bool allow_skipping_pin_touch) {
-  discovery_factory_ =
+  device::FidoDiscoveryFactory* discovery_factory =
       AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
           static_cast<RenderFrameHostImpl*>(render_frame_host_)
               ->frame_tree_node());
-  if (!discovery_factory_) {
-    discovery_factory_ = request_delegate_->GetDiscoveryFactory();
-  }
+  if (!discovery_factory)
+    discovery_factory = request_delegate_->GetDiscoveryFactory();
 
   std::vector<device::CableDiscoveryData> cable_pairings;
   bool have_cable_extension = false;
@@ -625,12 +623,12 @@ void AuthenticatorCommon::StartGetAssertionRequest(
   if ((!cable_pairings.empty() || qr_generator_key.has_value()) &&
       request_delegate_->SetCableTransportInfo(
           have_cable_extension, have_paired_phones, qr_generator_key)) {
-    discovery_factory_->set_cable_data(std::move(cable_pairings),
-                                       std::move(qr_generator_key));
+    discovery_factory->set_cable_data(std::move(cable_pairings),
+                                      std::move(qr_generator_key));
   }
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      discovery_factory_,
+      discovery_factory,
       GetAvailableTransports(render_frame_host_, request_delegate_.get(),
                              caller_origin_),
       *ctap_get_assertion_request_, allow_skipping_pin_touch,
@@ -1487,15 +1485,6 @@ void AuthenticatorCommon::Cleanup() {
 
   timer_->Stop();
   request_.reset();
-  if (discovery_factory_) {
-    // The FidoDiscoveryFactory instance may have been obtained via
-    // AuthenticatorEnvironmentImpl::GetDiscoveryFactoryOverride() (in unit
-    // tests or when WebDriver injected a virtual authenticator), in which case
-    // it may be long-lived and handle more than one request. Hence, we need to
-    // reset all per-request state before deleting its pointer.
-    discovery_factory_->ResetRequestState();
-    discovery_factory_ = nullptr;
-  }
   ctap_make_credential_request_.reset();
   make_credential_options_.reset();
   request_delegate_.reset();

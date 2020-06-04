@@ -32,6 +32,7 @@ class SelectToSpeakOptionsPage {
             select.disabled = true;
           }
         });
+    this.syncCheckboxControlToPref_('backgroundShading', 'backgroundShading');
     this.setUpHighlightListener_();
     this.setUpTtsButtonClickListener_();
     chrome.metricsPrivate.recordUserAction(

@@ -21,7 +21,6 @@ import org.chromium.components.browser_ui.notifications.NotificationManagerProxy
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.PendingIntentProvider;
-import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 import org.chromium.components.webrtc.MediaCaptureNotificationUtil;
 import org.chromium.components.webrtc.MediaCaptureNotificationUtil.MediaType;
 import org.chromium.content_public.browser.WebContents;
@@ -224,19 +223,14 @@ public class MediaStreamManager {
         int mediaType = audio && video ? MediaType.AUDIO_AND_VIDEO
                                        : audio ? MediaType.AUDIO_ONLY : MediaType.VIDEO_ONLY;
 
-        NotificationManagerProxy notificationManagerProxy = getNotificationManager();
-        ChannelsInitializer channelsInitializer = new ChannelsInitializer(notificationManagerProxy,
-                WebLayerNotificationChannels.getInstance(), appContext.getResources());
-
         // TODO(crbug/1076098): don't pass a URL in incognito.
         ChromeNotification notification = MediaCaptureNotificationUtil.createNotification(
-                new WebLayerNotificationBuilder(appContext,
+                WebLayerNotificationBuilder.create(
                         WebLayerNotificationChannels.ChannelId.WEBRTC_CAM_AND_MIC,
-                        channelsInitializer,
                         new NotificationMetadata(0, AV_STREAM_TAG, mNotificationId)),
                 mediaType, mTab.getWebContents().getVisibleUrl().getSpec(),
                 WebLayerImpl.getClientApplicationName(), contentIntent, null /*stopIntent*/);
-        notificationManagerProxy.notify(notification);
+        getNotificationManager().notify(notification);
 
         updateActiveNotifications(true);
         notifyClient(audio, video);

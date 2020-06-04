@@ -21,6 +21,7 @@ component("system") {
     "file_data_source.h",
     "filtered_data_source.cc",
     "filtered_data_source.h",
+    "functions.cc",
     "functions.h",
     "handle.h",
     "handle_signal_tracker.cc",

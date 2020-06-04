@@ -46,7 +46,7 @@ HTMLTemplateElement::HTMLTemplateElement(Document& document)
 HTMLTemplateElement::~HTMLTemplateElement() = default;
 
 DocumentFragment* HTMLTemplateElement::ContentInternal() const {
-  if (!content_)
+  if (!content_ && GetExecutionContext())
     content_ = MakeGarbageCollected<TemplateContentDocumentFragment>(
         GetDocument().EnsureTemplateDocument(),
         const_cast<HTMLTemplateElement*>(this));
@@ -76,7 +76,7 @@ void HTMLTemplateElement::CloneNonAttributePropertiesFrom(
 
 void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {
   HTMLElement::DidMoveToNewDocument(old_document);
-  if (!content_)
+  if (!content_ || !GetExecutionContext())
     return;
   GetDocument().EnsureTemplateDocument().AdoptIfNeeded(*content_);
 }

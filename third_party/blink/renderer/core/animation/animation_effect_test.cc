@@ -86,7 +86,8 @@ class TestAnimationEffect : public AnimationEffect {
 
   void UpdateInheritedTime(double time, TimingUpdateReason reason) {
     event_delegate_->Reset();
-    AnimationEffect::UpdateInheritedTime(time, reason);
+    AnimationEffect::UpdateInheritedTime(
+        time, /*inherited_phase*/ base::nullopt, reason);
   }
 
   void UpdateChildrenAndEffects() const override {}

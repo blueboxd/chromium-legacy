@@ -1974,6 +1974,11 @@ void RenderThreadImpl::SetUserAgentMetadata(
   user_agent_metadata_ = user_agent_metadata;
 }
 
+void RenderThreadImpl::SetCorsExemptHeaderList(
+    const std::vector<std::string>& list) {
+  resource_dispatcher_->SetCorsExemptHeaderList(list);
+}
+
 void RenderThreadImpl::UpdateScrollbarTheme(
     mojom::UpdateScrollbarThemeParamsPtr params) {
 #if defined(OS_MACOSX)

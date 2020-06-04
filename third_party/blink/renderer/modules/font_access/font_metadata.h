@@ -46,6 +46,7 @@ class BLINK_EXPORT FontMetadata final : public ScriptWrappable {
 
   ScriptPromise getTables(ScriptState*);
   ScriptPromise getTables(ScriptState*, const Vector<String>& tables);
+  ScriptPromise blob(ScriptState*);
 
   void Trace(Visitor*) const override;
 
@@ -53,6 +54,8 @@ class BLINK_EXPORT FontMetadata final : public ScriptWrappable {
   static void getTablesImpl(ScriptPromiseResolver* resolver,
                             const String& postscriptName,
                             const Vector<String>& tables);
+  static void blobImpl(ScriptPromiseResolver* resolver,
+                       const String& postscriptName);
   String postscriptName_;
   String fullName_;
   String family_;

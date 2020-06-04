@@ -64,7 +64,7 @@ constexpr CSSPropertyID
 CSSPropertyPriorityData<kAnimationPropertyPriority>::Last() {
   static_assert(
       static_cast<int>(CSSPropertyID::kTransitionTimingFunction) ==
-          static_cast<int>(CSSPropertyID::kAnimationDelay) + 11,
+          static_cast<int>(CSSPropertyID::kAnimationDelay) + 12,
       "CSSPropertyID::kTransitionTimingFunction should be the end of the high "
       "priority property range");
   static_assert(

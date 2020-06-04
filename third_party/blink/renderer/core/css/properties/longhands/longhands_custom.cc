@@ -348,6 +348,34 @@ const CSSValue* AnimationPlayState::InitialValue() const {
   return value;
 }
 
+const CSSValue* AnimationTimeline::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context) const {
+  return css_property_parser_helpers::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeAnimationTimeline, range, context);
+}
+
+const CSSValue* AnimationTimeline::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  const CSSAnimationData* animation_data = style.Animations();
+  if (animation_data) {
+    for (const auto& timeline : animation_data->TimelineList())
+      list->Append(*ComputedStyleUtils::ValueForStyleNameOrKeyword(timeline));
+  } else {
+    list->Append(*InitialValue());
+  }
+  return list;
+}
+
+const CSSValue* AnimationTimeline::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kAuto);
+}
+
 const CSSValue* AnimationTimingFunction::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

@@ -129,6 +129,10 @@ base::string16 LogoutButtonTray::GetAccessibleNameForTray() {
   return button_->GetText();
 }
 
+void LogoutButtonTray::HandleLocaleChange() {
+  UpdateButtonTextAndImage();
+}
+
 void LogoutButtonTray::UpdateVisibility() {
   LoginStatus login_status = shelf()->GetStatusAreaWidget()->login_status();
   SetVisiblePreferred(show_logout_button_in_tray_ &&

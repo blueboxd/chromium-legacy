@@ -297,6 +297,11 @@ base::string16 PaletteTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE);
 }
 
+void PaletteTray::HandleLocaleChange() {
+  icon_->set_tooltip_text(
+      l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
+}
+
 void PaletteTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (bubble_->bubble_view() == bubble_view)
     HidePalette();

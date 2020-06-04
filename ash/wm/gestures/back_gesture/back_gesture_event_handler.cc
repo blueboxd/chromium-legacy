@@ -13,6 +13,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_affordance.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -26,6 +27,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -170,7 +172,20 @@ void BackGestureEventHandler::OnDisplayMetricsChanged(
   }
 }
 
-void BackGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {}
+void BackGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (should_wait_for_touch_ack_) {
+    aura::Window* target = static_cast<aura::Window*>(event->target());
+    gfx::Point screen_location = event->location();
+    ::wm::ConvertPointToScreen(target, &screen_location);
+    if (MaybeHandleBackGesture(event, screen_location))
+      event->StopPropagation();
+
+    // Reset |should_wait_for_touch_ack_| for the last gesture event in the
+    // sequence.
+    if (event->type() == ui::ET_GESTURE_END)
+      should_wait_for_touch_ack_ = false;
+  }
+}
 
 void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   // Do not handle PEN and ERASER events for back gesture. PEN events can come
@@ -208,14 +223,6 @@ void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   }
   last_touch_point_ = event->location();
 
-  ui::TouchEvent touch_event_copy = *event;
-  if (!gesture_provider_.OnTouchEvent(&touch_event_copy))
-    return;
-
-  gesture_provider_.OnTouchEventAck(
-      touch_event_copy.unique_event_id(), /*event_consumed=*/false,
-      /*is_source_touch_event_set_non_blocking=*/false);
-
   // Get the event target from TouchEvent since target of the GestureEvent
   // from GetAndResetPendingGestures is nullptr. The coordinate conversion is
   // done outside the loop as the previous gesture events in a sequence may
@@ -226,11 +233,28 @@ void BackGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   gfx::Point screen_location = event->location();
   ::wm::ConvertPointToScreen(target, &screen_location);
-  const std::vector<std::unique_ptr<ui::GestureEvent>> gestures =
-      gesture_provider_.GetAndResetPendingGestures();
-  for (const auto& gesture : gestures) {
-    if (MaybeHandleBackGesture(gesture.get(), screen_location))
-      event->StopPropagation();
+
+  if (event->type() == ui::ET_TOUCH_PRESSED &&
+      ShouldWaitForTouchPressAck(screen_location)) {
+    should_wait_for_touch_ack_ = true;
+    return;
+  }
+
+  if (!should_wait_for_touch_ack_) {
+    ui::TouchEvent touch_event_copy = *event;
+    if (!gesture_provider_.OnTouchEvent(&touch_event_copy))
+      return;
+
+    gesture_provider_.OnTouchEventAck(
+        touch_event_copy.unique_event_id(), /*event_consumed=*/false,
+        /*is_source_touch_event_set_non_blocking=*/false);
+
+    std::vector<std::unique_ptr<ui::GestureEvent>> gestures =
+        gesture_provider_.GetAndResetPendingGestures();
+    for (const auto& gesture : gestures) {
+      if (MaybeHandleBackGesture(gesture.get(), screen_location))
+        event->StopPropagation();
+    }
   }
 }
 
@@ -386,6 +410,8 @@ bool BackGestureEventHandler::CanStartGoingBack(
   if (!top_window && !shell->overview_controller()->InOverviewSession())
     return false;
 
+  // If the event location falls into the window's gesture exclusion zone, do
+  // not handle it.
   for (aura::Window* window = top_window; window; window = window->parent()) {
     SkRegion* gesture_exclusion =
         window->GetProperty(kSystemGestureExclusionKey);
@@ -398,6 +424,10 @@ bool BackGestureEventHandler::CanStartGoingBack(
       }
     }
   }
+
+  // If the target window does not allow touch action, do not handle it.
+  if (!Shell::Get()->shell_delegate()->AllowDefaultTouchActions(top_window))
+    return false;
 
   gfx::Rect hit_bounds_in_screen(display::Screen::GetScreen()
                                      ->GetDisplayNearestWindow(top_window)
@@ -419,6 +449,16 @@ void BackGestureEventHandler::SendBackEvent(const gfx::Point& screen_location) {
   window_util::SendBackKeyEvent(window_util::GetRootWindowAt(screen_location));
   RecordEndScenarioType(GetEndScenarioType(back_gesture_start_scenario_type_,
                                            BackGestureEndType::kBack));
+}
+
+bool BackGestureEventHandler::ShouldWaitForTouchPressAck(
+    const gfx::Point& screen_location) {
+  if (!CanStartGoingBack(screen_location))
+    return false;
+
+  aura::Window* top_window = window_util::GetTopWindow();
+  return !top_window->GetProperty(kIsShowingInOverviewKey) &&
+         Shell::Get()->shell_delegate()->ShouldWaitForTouchPressAck(top_window);
 }
 
 }  // namespace ash

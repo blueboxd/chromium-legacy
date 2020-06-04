@@ -42,6 +42,7 @@
 namespace blink {
 
 class Animation;
+enum class TimelinePhase;
 class AnimationEffectOwner;
 class EffectTiming;
 class ComputedEffectTiming;
@@ -134,6 +135,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   // it will (if necessary) recalculate timings and (if necessary) call
   // updateChildrenAndEffects.
   void UpdateInheritedTime(base::Optional<double> inherited_time,
+                           base::Optional<TimelinePhase> inherited_phase,
                            TimingUpdateReason) const;
   void Invalidate() const { needs_update_ = true; }
   void InvalidateAndNotifyOwner() const;
@@ -167,6 +169,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   mutable Timing::CalculatedTiming calculated_;
   mutable bool needs_update_;
   mutable base::Optional<double> last_update_time_;
+  mutable base::Optional<Timing::Phase> last_update_phase_;
   double cancel_time_;
   const Timing::CalculatedTiming& EnsureCalculated() const;
 };

@@ -43,23 +43,23 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   void SetEmbedderDelegate(
       BrowsingDataRemoverDelegate* embedder_delegate) override;
   bool DoesOriginMatchMaskForTesting(
-      int origin_type_mask,
+      uint64_t origin_type_mask,
       const url::Origin& origin,
       storage::SpecialStoragePolicy* special_storage_policy) override;
   void Remove(const base::Time& delete_begin,
               const base::Time& delete_end,
-              int remove_mask,
-              int origin_type_mask) override;
+              uint64_t remove_mask,
+              uint64_t origin_type_mask) override;
   void RemoveAndReply(const base::Time& delete_begin,
                       const base::Time& delete_end,
-                      int remove_mask,
-                      int origin_type_mask,
+                      uint64_t remove_mask,
+                      uint64_t origin_type_mask,
                       Observer* observer) override;
   void RemoveWithFilterAndReply(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      int remove_mask,
-      int origin_type_mask,
+      uint64_t remove_mask,
+      uint64_t origin_type_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
       Observer* observer) override;
 
@@ -71,8 +71,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
           void(base::OnceClosure continue_to_completion)>& callback) override;
 
   const base::Time& GetLastUsedBeginTimeForTesting() override;
-  int GetLastUsedRemovalMaskForTesting() override;
-  int GetLastUsedOriginTypeMaskForTesting() override;
+  uint64_t GetLastUsedRemovalMaskForTesting() override;
+  uint64_t GetLastUsedOriginTypeMaskForTesting() override;
 
   // Used for testing.
   void OverrideStoragePartitionForTesting(StoragePartition* storage_partition);
@@ -82,8 +82,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   virtual void RemoveInternal(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      int remove_mask,
-      int origin_type_mask,
+      uint64_t remove_mask,
+      uint64_t origin_type_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
       Observer* observer);
 
@@ -118,8 +118,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   struct CONTENT_EXPORT RemovalTask {
     RemovalTask(const base::Time& delete_begin,
                 const base::Time& delete_end,
-                int remove_mask,
-                int origin_type_mask,
+                uint64_t remove_mask,
+                uint64_t origin_type_mask,
                 std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
                 Observer* observer);
     RemovalTask(RemovalTask&& other) noexcept;
@@ -131,8 +131,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
 
     base::Time delete_begin;
     base::Time delete_end;
-    int remove_mask;
-    int origin_type_mask;
+    uint64_t remove_mask;
+    uint64_t origin_type_mask;
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
     std::vector<Observer*> observers;
     base::Time task_started;
@@ -156,9 +156,9 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // TODO(crbug.com/589586): Support all backends w/ origin filter.
   void RemoveImpl(const base::Time& delete_begin,
                   const base::Time& delete_end,
-                  int remove_mask,
+                  uint64_t remove_mask,
                   BrowsingDataFilterBuilder* filter_builder,
-                  int origin_type_mask);
+                  uint64_t origin_type_mask);
 
   // Notifies observers and transitions to the idle state.
   void Notify();
@@ -198,10 +198,10 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   base::Time delete_end_;
 
   // The removal mask for the current removal operation.
-  int remove_mask_ = 0;
+  uint64_t remove_mask_ = 0;
 
   // From which types of origins should we remove data?
-  int origin_type_mask_ = 0;
+  uint64_t origin_type_mask_ = 0;
 
   // True if Remove has been invoked.
   bool is_removing_;

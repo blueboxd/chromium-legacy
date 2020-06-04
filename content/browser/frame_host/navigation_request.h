@@ -218,6 +218,21 @@ class CONTENT_EXPORT NavigationRequest
   };
   OptInIsolationCheckResult IsOptInIsolationRequested(const GURL& url);
 
+  // The origin isolation end result is determined early in the lifecycle of a
+  // NavigationRequest, but used late. In particular, we want to trigger use
+  // counters and console warnings once navigation has committed.
+  enum class OptInOriginIsolationEndResult {
+    kNotRequestedAndNotIsolated,
+    kNotRequestedButIsolated,
+    kRequestedViaOriginPolicyButNotIsolated,
+    kRequestedViaOriginPolicyAndIsolated,
+    kRequestedViaHeaderButNotIsolated,
+    kRequestedViaHeaderAndIsolated
+  };
+  void DetermineOriginIsolationEndResult(
+      OptInIsolationCheckResult check_result);
+  void ProcessOriginIsolationEndResult();
+
   // NavigationHandle implementation:
   int64_t GetNavigationId() override;
   const GURL& GetURL() override;
@@ -1326,6 +1341,9 @@ class CONTENT_EXPORT NavigationRequest
   // The sandbox flags of the document to be loaded. This is computed at
   // 'ReadyToCommit' time.
   base::Optional<network::mojom::WebSandboxFlags> sandbox_flags_to_commit_;
+
+  OptInOriginIsolationEndResult origin_isolation_end_result_ =
+      OptInOriginIsolationEndResult::kNotRequestedAndNotIsolated;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

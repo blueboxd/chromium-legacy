@@ -201,6 +201,10 @@ bool GLSurface::SetDrawRectangle(const gfx::Rect& rect) {
   return false;
 }
 
+gfx::Vector2d GLSurface::GetDrawOffset() const {
+  return gfx::Vector2d();
+}
+
 void GLSurface::SetRelyOnImplicitSync() {
   // Some GLSurface derived classes might not implement this workaround while
   // still being allocated on devices where the workaround is enabled.
@@ -463,6 +467,10 @@ bool GLSurfaceAdapter::SupportsProtectedVideo() const {
 
 bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {
   return surface_->SetDrawRectangle(rect);
+}
+
+gfx::Vector2d GLSurfaceAdapter::GetDrawOffset() const {
+  return surface_->GetDrawOffset();
 }
 
 void GLSurfaceAdapter::SetRelyOnImplicitSync() {

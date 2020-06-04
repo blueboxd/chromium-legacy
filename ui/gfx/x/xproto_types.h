@@ -87,6 +87,7 @@ class COMPONENT_EXPORT(X11) FutureBase {
   FutureBase& operator=(FutureBase&& future);
 
   void SyncImpl(Error** raw_error, uint8_t** raw_reply);
+  void SyncImpl(Error** raw_error);
 
   void OnResponseImpl(ResponseCallback callback);
 
@@ -149,10 +150,7 @@ class Future : public FutureBase {
 template <>
 inline Response<void> Future<void>::Sync() {
   Error* raw_error = nullptr;
-  uint8_t* raw_reply = nullptr;
-  SyncImpl(&raw_error, &raw_reply);
-
-  DCHECK(!raw_reply);
+  SyncImpl(&raw_error);
 
   std::unique_ptr<Error, base::FreeDeleter> error;
   if (raw_error)

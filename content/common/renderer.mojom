@@ -295,6 +295,9 @@ interface Renderer {
   // decide to ship https://github.com/WICG/ua-client-hints.
   SetUserAgentMetadata(blink.mojom.UserAgentMetadata metadata);
 
+  // Sets the CORS exempt header list for sanity checking (e.g. DCHECKs).
+  SetCorsExemptHeaderList(array<string> list);
+
   // Tells the renderer about a scrollbar appearance change. Only for use on
   // OS X.
   UpdateScrollbarTheme(UpdateScrollbarThemeParams params);

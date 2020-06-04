@@ -30,6 +30,7 @@ class ManagedDeviceTrayItemView : public TrayItemView,
 
   // views::TrayItemView:
   const char* GetClassName() const override;
+  void HandleLocaleChange() override;
 
  private:
   void Update();

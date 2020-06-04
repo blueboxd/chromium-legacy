@@ -1029,6 +1029,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Return 0 if no stencil attachment.
   GLenum GetBoundFramebufferStencilFormat(GLenum target);
 
+  gfx::Vector2d GetBoundFramebufferDrawOffset() const {
+    if (GetBoundDrawFramebuffer() || offscreen_target_frame_buffer_.get())
+      return gfx::Vector2d();
+    return surface_->GetDrawOffset();
+  }
+
   void MarkDrawBufferAsCleared(GLenum buffer, GLint drawbuffer_i);
 
   // Wrapper for CompressedTexImage{2|3}D commands.
@@ -6400,9 +6406,19 @@ void GLES2DecoderImpl::OnUseFramebuffer() const {
     return;
   state_.fbo_binding_for_scissor_workaround_dirty = false;
 
-  if (workarounds().restore_scissor_on_fbo_change) {
-    api()->glScissorFn(state_.scissor_x, state_.scissor_y, state_.scissor_width,
-                       state_.scissor_height);
+  if (supports_dc_layers_) {
+    gfx::Vector2d draw_offset = GetBoundFramebufferDrawOffset();
+    api()->glViewportFn(state_.viewport_x + draw_offset.x(),
+                        state_.viewport_y + draw_offset.y(),
+                        state_.viewport_width, state_.viewport_height);
+  }
+
+  if (workarounds().restore_scissor_on_fbo_change || supports_dc_layers_) {
+    // The driver forgets the correct scissor when modifying the FBO binding.
+    gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
+    api()->glScissorFn(state_.scissor_x + scissor_offset.x(),
+                       state_.scissor_y + scissor_offset.y(),
+                       state_.scissor_width, state_.scissor_height);
   }
 
   if (workarounds().restore_scissor_on_fbo_change) {
@@ -8519,8 +8535,10 @@ void GLES2DecoderImpl::RestoreClearState() {
   state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
                                   state_.enable_flags.scissor_test);
   RestoreDeviceWindowRectangles();
-  api()->glScissorFn(state_.scissor_x, state_.scissor_y, state_.scissor_width,
-                     state_.scissor_height);
+  gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
+  api()->glScissorFn(state_.scissor_x + scissor_offset.x(),
+                     state_.scissor_y + scissor_offset.y(),
+                     state_.scissor_width, state_.scissor_height);
 }
 
 GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
@@ -13046,14 +13064,17 @@ void GLES2DecoderImpl::DoViewport(GLint x, GLint y, GLsizei width,
   state_.viewport_y = y;
   state_.viewport_width = std::min(width, viewport_max_width_);
   state_.viewport_height = std::min(height, viewport_max_height_);
-  api()->glViewportFn(x, y, width, height);
+  gfx::Vector2d viewport_offset = GetBoundFramebufferDrawOffset();
+  api()->glViewportFn(x + viewport_offset.x(), y + viewport_offset.y(), width,
+                      height);
 }
 
 void GLES2DecoderImpl::DoScissor(GLint x,
                                  GLint y,
                                  GLsizei width,
                                  GLsizei height) {
-  api()->glScissorFn(x, y, width, height);
+  gfx::Vector2d draw_offset = GetBoundFramebufferDrawOffset();
+  api()->glScissorFn(x + draw_offset.x(), y + draw_offset.y(), width, height);
 }
 
 error::Error GLES2DecoderImpl::HandleVertexAttribDivisorANGLE(
@@ -14417,7 +14438,9 @@ bool GLES2DecoderImpl::ClearLevelUsingGL(Texture* texture,
     api()->glClearDepthFn(1.0f);
     state_.SetDeviceDepthMask(GL_TRUE);
     state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
-    api()->glScissorFn(xoffset, yoffset, width, height);
+    gfx::Vector2d scissor_offset = GetBoundFramebufferDrawOffset();
+    api()->glScissorFn(xoffset + scissor_offset.x(),
+                       yoffset + scissor_offset.y(), width, height);
     ClearDeviceWindowRectangles();
 
     api()->glClearFn((have_color ? GL_COLOR_BUFFER_BIT : 0) |

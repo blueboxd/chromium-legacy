@@ -17,7 +17,7 @@ namespace gl {
 
 class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
  public:
-  DirectCompositionChildSurfaceWin();
+  explicit DirectCompositionChildSurfaceWin(bool use_angle_texture_offset);
 
   // GLSurfaceEGL implementation.
   bool Initialize(GLSurfaceFormat format) override;
@@ -31,6 +31,7 @@ class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   bool OnMakeCurrent(GLContext* context) override;
   bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
+  gfx::Vector2d GetDrawOffset() const override;
   void SetVSyncEnabled(bool enabled) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -61,6 +62,8 @@ class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   // to it. Returns false if this fails.
   bool ReleaseDrawTexture(bool will_discard);
 
+  const bool use_angle_texture_offset_;
+
   gfx::Size size_ = gfx::Size(1, 1);
   bool enable_dc_layers_ = false;
   bool has_alpha_ = true;
@@ -76,6 +79,7 @@ class GL_EXPORT DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   EGLSurface real_surface_ = 0;
   bool first_swap_ = true;
   gfx::Rect swap_rect_;
+  gfx::Vector2d draw_offset_;
 
   // This is a number that increments once for every EndDraw on a surface, and
   // is used to determine when the contents have changed so Commit() needs to

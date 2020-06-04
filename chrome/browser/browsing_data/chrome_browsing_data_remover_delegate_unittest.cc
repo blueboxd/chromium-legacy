@@ -189,10 +189,12 @@ const char kWebOrigin[] = "https://www.example.com/";
 
 // Shorthands for origin types.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-const int kExtension = ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EXTENSION;
+const uint64_t kExtension =
+    ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EXTENSION;
 #endif
-const int kProtected = content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
-const int kUnprotected =
+const uint64_t kProtected =
+    content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
+const uint64_t kUnprotected =
     content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
 
 // TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
@@ -930,7 +932,7 @@ class MockReportingService : public net::ReportingService {
     NOTREACHED();
   }
 
-  void RemoveBrowsingData(int data_type_mask,
+  void RemoveBrowsingData(uint64_t data_type_mask,
                           const base::RepeatingCallback<bool(const GURL&)>&
                               origin_filter) override {
     ++remove_calls_;
@@ -938,7 +940,7 @@ class MockReportingService : public net::ReportingService {
     last_origin_filter_ = origin_filter;
   }
 
-  void RemoveAllBrowsingData(int data_type_mask) override {
+  void RemoveAllBrowsingData(uint64_t data_type_mask) override {
     ++remove_all_calls_;
     last_data_type_mask_ = data_type_mask;
     last_origin_filter_ = base::RepeatingCallback<bool(const GURL&)>();
@@ -959,7 +961,7 @@ class MockReportingService : public net::ReportingService {
 
   int remove_calls() const { return remove_calls_; }
   int remove_all_calls() const { return remove_all_calls_; }
-  int last_data_type_mask() const { return last_data_type_mask_; }
+  uint64_t last_data_type_mask() const { return last_data_type_mask_; }
   const base::RepeatingCallback<bool(const GURL&)>& last_origin_filter() const {
     return last_origin_filter_;
   }
@@ -967,7 +969,7 @@ class MockReportingService : public net::ReportingService {
  private:
   int remove_calls_ = 0;
   int remove_all_calls_ = 0;
-  int last_data_type_mask_ = 0;
+  uint64_t last_data_type_mask_ = 0;
   base::RepeatingCallback<bool(const GURL&)> last_origin_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(MockReportingService);
@@ -1172,9 +1174,9 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
 
   void BlockUntilBrowsingDataRemoved(const base::Time& delete_begin,
                                      const base::Time& delete_end,
-                                     int remove_mask,
+                                     uint64_t remove_mask,
                                      bool include_protected_origins) {
-    int origin_type_mask =
+    uint64_t origin_type_mask =
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
     if (include_protected_origins) {
       origin_type_mask |=
@@ -1193,7 +1195,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   void BlockUntilOriginDataRemoved(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      int remove_mask,
+      uint64_t remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
     content::BrowsingDataRemoverCompletionObserver completion_observer(
         remover_);
@@ -1209,9 +1211,11 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     return remover_->GetLastUsedBeginTimeForTesting();
   }
 
-  int GetRemovalMask() { return remover_->GetLastUsedRemovalMaskForTesting(); }
+  uint64_t GetRemovalMask() {
+    return remover_->GetLastUsedRemovalMaskForTesting();
+  }
 
-  int GetOriginTypeMask() {
+  uint64_t GetOriginTypeMask() {
     return remover_->GetLastUsedOriginTypeMaskForTesting();
   }
 
@@ -1222,7 +1226,7 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   }
 
   bool Match(const GURL& origin,
-             int mask,
+             uint64_t mask,
              storage::SpecialStoragePolicy* policy) {
     return remover_->DoesOriginMatchMaskForTesting(
         mask, url::Origin::Create(origin), policy);
@@ -1429,8 +1433,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   RemovePasswordsTester tester(GetProfile());
   EXPECT_CALL(*tester.store(), RemoveLoginsByURLAndTimeImpl(_, _, _));
 
-  int removal_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
-                     ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
+  uint64_t removal_mask =
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
 
   BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
                                 removal_mask, false);
@@ -2963,9 +2968,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
   }
 
   // Delete all data types that trigger website setting deletions.
-  int mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
-             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
-             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
+  uint64_t mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
+                  ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+                  ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), mask, false);
 

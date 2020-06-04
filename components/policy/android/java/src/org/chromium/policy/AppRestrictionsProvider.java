@@ -40,8 +40,15 @@ public class AppRestrictionsProvider extends AbstractAppRestrictionsProvider {
             long startTime = SystemClock.elapsedRealtime();
             Bundle bundle = mUserManager.getApplicationRestrictions(packageName);
             long endTime = SystemClock.elapsedRealtime();
-            RecordHistogram.recordTimesHistogram(
-                    "Enterprise.AppRestrictionLoadTime2", endTime - startTime);
+            long duration = endTime - startTime;
+            RecordHistogram.recordTimesHistogram("Enterprise.AppRestrictionLoadTime2", duration);
+            if (bundle.isEmpty()) {
+                RecordHistogram.recordTimesHistogram(
+                        "Enterprise.AppRestrictionLoadTime2.EmptyBundle", duration);
+            } else {
+                RecordHistogram.recordTimesHistogram(
+                        "Enterprise.AppRestrictionLoadTime2.NonEmptyBundle", duration);
+            }
             return bundle;
         } catch (SecurityException e) {
             // Android bug may throw SecurityException. See crbug.com/886814.

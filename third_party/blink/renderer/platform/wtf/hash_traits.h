@@ -231,6 +231,12 @@ struct SimpleClassHashTraits : GenericHashTraits<T> {
   }
 };
 
+// Default traits disallow both 0 and max as keys -- use these traits to allow
+// all values as keys.
+template <typename T>
+struct HashTraits<IntegralWithAllKeys<T>>
+    : SimpleClassHashTraits<IntegralWithAllKeys<T>> {};
+
 template <typename P>
 struct HashTraits<scoped_refptr<P>> : SimpleClassHashTraits<scoped_refptr<P>> {
   static_assert(sizeof(void*) == sizeof(scoped_refptr<P>),

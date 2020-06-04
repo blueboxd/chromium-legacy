@@ -56,6 +56,37 @@ async function getTables(options) {
   return output;
 }
 
+async function blob(options) {
+  options = Object.assign({
+    postscriptNameFilter: [],
+  }, options);
+
+  const nameFilterSet = new Set(options.postscriptNameFilter);
+  const iterator = navigator.fonts.query();
+  const localFonts = [];
+  for await (const f of navigator.fonts.query()) {
+    if (nameFilterSet.size > 0) {
+      if (!nameFilterSet.has(f.postscriptName)) {
+        continue;
+      }
+    }
+    localFonts.push(f);
+  }
+
+  let output = [];
+  for (const f of localFonts) {
+    const tableBlob = await f.blob();
+    output.push({
+      postscriptName: f.postscriptName,
+      fullName: f.fullName,
+      family: f.family,
+      blob: tableBlob,
+    });
+  }
+
+  return output;
+}
+
 async function handleMessage(event) {
   try {
     switch(event.data.action) {
@@ -67,6 +98,9 @@ async function handleMessage(event) {
       break;
     case "getTables":
       postMessage({type: "getTables", data: await getTables(event.data.options)});
+      break;
+    case "blob":
+      postMessage({type: "blob", data: await blob(event.data.options)});
       break;
     default:
       postMessage({type: "error", data: "FAILURE: Received unknown message: " + event.data});

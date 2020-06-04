@@ -21,6 +21,21 @@ class LocalMinimaParameterOptimizer(
   MIN_EDGE_THRESHOLD_WEIGHT = 0
   MIN_MAX_DIFF_WEIGHT = MIN_DELTA_THRESHOLD_WEIGHT = 0
 
+  def __init__(self, args, test_name):
+    super(LocalMinimaParameterOptimizer, self).__init__(args, test_name)
+    # These are (or will be) maps of ints to maps of ints to ints, i.e. a 2D
+    # array containing ints, just using maps instead of lists. They hold the
+    # most permissive value visited so far that resulted in a comparison failure
+    # for a particular parameter given the other two parameters. These are used
+    # to prune combinations we don't care about, similar to skipping
+    # combinations that produce a higher weight than our smallest.
+    # Delta -> Edge -> Max Diff
+    self._permissive_max_diff_map = {}
+    # Max Diff -> Edge -> Delta
+    self._permissive_delta_map = {}
+    # Max Diff -> Delta -> Edge
+    self._permissive_edge_map = {}
+
   @classmethod
   def AddArguments(cls, parser):
     common_group, sobel_group, fuzzy_group = super(
@@ -75,7 +90,8 @@ class LocalMinimaParameterOptimizer(
     # Do a search, only considering adjacent parameters if:
     # 1. Their weight is less than or equal to the smallest found weight.
     # 2. They haven't been visited already.
-    # 3. The current parameters result in a successful comparison.
+    # 3. They are not guaranteed to fail based on previously tested parameters.
+    # 4. The current parameters result in a successful comparison.
     while len(to_visit):
       current_parameters = None
       if self._args.use_bfs:
@@ -86,6 +102,9 @@ class LocalMinimaParameterOptimizer(
       if weight > smallest_weight:
         continue
       if current_parameters in visited_parameters:
+        continue
+      if self._ParametersAreGuaranteedToFail(current_parameters):
+        visited_parameters.add(current_parameters)
         continue
       visited_parameters.add(current_parameters)
       success, _, _ = self._RunComparisonForParameters(current_parameters)
@@ -101,10 +120,74 @@ class LocalMinimaParameterOptimizer(
                        weight, current_parameters)
           smallest_weight = weight
           smallest_parameters = [current_parameters]
+      else:
+        self._UpdateMostPermissiveFailedParameters(current_parameters)
     print 'Found %d parameter(s) with the smallest weight:' % len(
         smallest_parameters)
     for p in smallest_parameters:
       print p
+
+  def _ParametersAreGuaranteedToFail(self, parameters):
+    """Checks whether the given ParameterSet is guaranteed to fail.
+
+    A ParameterSet is guaranteed to fail if we have already tried and failed
+    with a similar ParameterSet that was more permissive. Specifically, if we
+    have tried and failed with a ParameterSet with all but one parameters
+    matching, and the non-matching parameter was more permissive than the
+    current one.
+
+    Args:
+      parameters: The ParameterSet instance to check.
+
+    Returns:
+      True if |parameters| is guaranteed to fail based on previously tried
+      parameters, otherwise False.
+    """
+    permissive_max_diff = self._permissive_max_diff_map.get(
+        parameters.delta_threshold, {}).get(parameters.edge_threshold, -1)
+    if parameters.max_diff < permissive_max_diff:
+      return True
+
+    permissive_delta = self._permissive_delta_map.get(
+        parameters.max_diff, {}).get(parameters.edge_threshold, -1)
+    if parameters.delta_threshold < permissive_delta:
+      return True
+
+    permissive_edge = self._permissive_edge_map.get(
+        parameters.max_diff, {}).get(parameters.delta_threshold, sys.maxsize)
+    if parameters.edge_threshold > permissive_edge:
+      return True
+
+    return False
+
+  def _UpdateMostPermissiveFailedParameters(self, parameters):
+    """Updates the array of most permissive failed parameters.
+
+    This is used in conjunction with _ParametersAreGuaranteedToFail to prune
+    ParameterSets without having to actually test them. Values are updated if
+    |parameters| shares two parameters with a a previously failed ParameterSet,
+    but |parameters|' third parameter is more permissive.
+
+    Args:
+      parameters: A ParameterSet to pull updated values from.
+    """
+    permissive_max_diff = self._permissive_max_diff_map.setdefault(
+        parameters.delta_threshold, {}).get(parameters.edge_threshold, -1)
+    permissive_max_diff = max(permissive_max_diff, parameters.max_diff)
+    self._permissive_max_diff_map[parameters.delta_threshold][
+        parameters.edge_threshold] = permissive_max_diff
+
+    permissive_delta = self._permissive_delta_map.setdefault(
+        parameters.max_diff, {}).get(parameters.edge_threshold, -1)
+    permissive_delta = max(permissive_delta, parameters.delta_threshold)
+    self._permissive_delta_map[parameters.max_diff][
+        parameters.edge_threshold] = permissive_delta
+
+    permissive_edge = self._permissive_edge_map.setdefault(
+        parameters.max_diff, {}).get(parameters.delta_threshold, sys.maxsize)
+    permissive_edge = min(permissive_edge, parameters.edge_threshold)
+    self._permissive_edge_map[parameters.max_diff][
+        parameters.delta_threshold] = permissive_edge
 
   def _AdjacentParameters(self, starting_parameters):
     max_diff = starting_parameters.max_diff

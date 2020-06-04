@@ -321,17 +321,12 @@ void WebRuntimeFeatures::EnablePaymentHandlerMinimalUI(bool enable) {
   RuntimeEnabledFeatures::SetPaymentHandlerMinimalUIEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnablePaymentRequestOptionalTotal(bool enable) {
-  RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnablePaymentRequest(bool enable) {
   RuntimeEnabledFeatures::SetPaymentRequestEnabled(enable);
   if (!enable) {
     // Disable features that depend on Payment Request API.
     RuntimeEnabledFeatures::SetPaymentAppEnabled(false);
     RuntimeEnabledFeatures::SetPaymentHandlerMinimalUIEnabled(false);
-    RuntimeEnabledFeatures::SetPaymentRequestOptionalTotalEnabled(false);
     RuntimeEnabledFeatures::SetPaymentMethodChangeEventEnabled(false);
   }
 }
@@ -682,6 +677,16 @@ void WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(bool enable) {
 
 void WebRuntimeFeatures::EnableInstalledApp(bool enable) {
   RuntimeEnabledFeatures::SetInstalledAppEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableTransformInterop(bool enable) {
+  RuntimeEnabledFeatures::SetTransformInteropEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableVideoWakeLockOptimisationHiddenMuted(
+    bool enable) {
+  RuntimeEnabledFeatures::SetVideoWakeLockOptimisationHiddenMutedEnabled(
+      enable);
 }
 
 }  // namespace blink

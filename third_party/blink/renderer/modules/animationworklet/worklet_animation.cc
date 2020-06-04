@@ -391,8 +391,10 @@ void WorkletAnimation::cancel() {
   // regular animations, we should not detach them immediately and update the
   // value in the next frame. See https://crbug.com/883312.
   if (IsActive(play_state_)) {
-    for (auto& effect : effects_)
-      effect->UpdateInheritedTime(base::nullopt, kTimingUpdateOnDemand);
+    for (auto& effect : effects_) {
+      effect->UpdateInheritedTime(base::nullopt, base::nullopt,
+                                  kTimingUpdateOnDemand);
+    }
   }
   SetPlayState(Animation::kIdle);
   SetCurrentTime(base::nullopt);
@@ -476,7 +478,7 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
     effects_[i]->UpdateInheritedTime(
         local_times_[i] ? base::Optional<double>(local_times_[i]->InSecondsF())
                         : base::nullopt,
-        reason);
+        base::nullopt, reason);
   }
 }
 

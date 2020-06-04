@@ -402,7 +402,6 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwDebug.java",
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
-    "java/src/org/chromium/android_webview/AwFeatures.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
     "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
     "java/src/org/chromium/android_webview/AwHistogramRecorder.java",
@@ -464,6 +463,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/gfx/RootBeginFrameSourceWebView.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsServiceClient.java",
+    "java/src/org/chromium/android_webview/metrics/AwNonembeddedUmaReplayer.java",
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
@@ -475,7 +475,6 @@ android_library("browser_java") {
     ":common_aidl_java",
     ":common_crash_java",
     ":common_java",
-    ":common_metrics_java",
     ":common_platform_services_java",
     ":common_variations_java",
     ":resources",
@@ -521,20 +520,6 @@ android_library("browser_java") {
   srcjar_deps = [
     "//android_webview/browser:browser_enums",
     "//components/safe_browsing/core/db:sb_threat_values",
-  ]
-}
-
-android_library("common_metrics_java") {
-  sources = [
-    "java/src/org/chromium/android_webview/common/metrics/AwNonembeddedUmaRecorder.java",
-    "java/src/org/chromium/android_webview/common/metrics/AwNonembeddedUmaReplayer.java",
-  ]
-  deps = [
-    ":common_aidl_java",
-    ":common_java",
-    "//android_webview/proto:metrics_bridge_records_proto_java",
-    "//base:base_java",
-    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
   ]
 }
 
@@ -598,6 +583,7 @@ android_library("common_crash_java") {
 
 android_library("common_java") {
   sources = [
+    "java/src/org/chromium/android_webview/common/AwFeatures.java",
     "java/src/org/chromium/android_webview/common/AwResource.java",
     "java/src/org/chromium/android_webview/common/AwSwitches.java",
     "java/src/org/chromium/android_webview/common/CommandLineUtil.java",

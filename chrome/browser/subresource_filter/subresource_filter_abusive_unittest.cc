@@ -9,7 +9,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "components/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/safe_browsing/core/db/util.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"

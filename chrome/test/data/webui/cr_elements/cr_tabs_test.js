@@ -7,26 +7,28 @@
 // #import {eventToPromise, flushTasks} from '../test_util.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {assertEquals, assertNotEquals, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr_tabs_test', function() {
-  /** @type {?CrTabsElement} */
-  let tabs = null;
+  /** @type {!CrTabsElement} */
+  let tabs;
 
   setup(() => {
-    PolymerTest.clearBody();
-    document.body.innerHTML = `<cr-tabs></cr-tabs>`;
-    tabs = document.querySelector('cr-tabs');
+    document.body.innerHTML = '';
+    tabs = /** @type {!CrTabsElement} */ (document.createElement('cr-tabs'));
     tabs.tabNames = ['tab1', 'tab2', 'tab3'];
+    document.body.appendChild(tabs);
     return test_util.flushTasks();
   });
 
   /**
    * @param {number} index
-   * @return {HTMLElement}
+   * @return {!HTMLElement}
    */
   function getTabElement(index) {
-    return tabs.$$(`.tab:nth-of-type(${index + 1})`);
+    return /** @type {!HTMLElement} */ (
+        tabs.$$(`.tab:nth-of-type(${index + 1})`));
   }
 
   /**
@@ -57,13 +59,13 @@ suite('cr_tabs_test', function() {
   }
 
   /**
-   * @param {string} string
+   * @param {string} key
    * @param {number} initialSelection
    * @param {number} expectedSelection
    */
   async function checkKey(key, initialSelection, expectedSelection) {
     await checkUiChange(
-        () => MockInteractions.keyDownOn(tabs, null, [], key), initialSelection,
+        () => MockInteractions.keyDownOn(tabs, 0, [], key), initialSelection,
         expectedSelection);
   }
 
@@ -125,7 +127,7 @@ suite('cr_tabs_test', function() {
   });
 
   test('selection underline does not freeze with two tabs', async () => {
-    const underline = tabs.$.selectionBar;
+    const underline = tabs.$$('#selectionBar');
     const fullyExpanded = 'translateX(0%) scaleX(1)';
     tabs.tabNames = ['tab1', 'tab2'];
     assertEquals(undefined, tabs.selected);

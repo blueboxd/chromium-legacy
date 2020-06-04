@@ -189,16 +189,6 @@
       depends_on: ["IdleDetection"],
     },
     {
-      name: "LazyLoad",
-      feature_policy_name: "lazyload",
-      depends_on: ["ExperimentalProductivityFeatures"],
-    },
-    {
-      name: "LoadingFrameDefaultEager",
-      feature_policy_name: "loading-frame-default-eager",
-      depends_on: ["ExperimentalProductivityFeatures"]
-    },
-    {
       name: "Magnetometer",
       feature_policy_name: "magnetometer",
     },

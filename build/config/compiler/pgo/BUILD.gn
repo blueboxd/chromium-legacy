@@ -15,15 +15,15 @@ config("pgo_instrumentation_flags") {
   # are not required to be defined when we're not actually using PGO.
   if (chrome_pgo_phase == 1 && is_clang && !is_nacl && is_a_target_toolchain) {
     # TODO(sebmarchand): Add a GN flag that allows setting the PGO profile
-    # name or find a way to remove use {target_name} in the filename?
+    # name or find a way to use {target_name} in the filename?
     # This uses the "%m" specifier to allow concurrent runs of the
     # instrumented image.
-    cflags = [ "-fprofile-instr-generate=%m.profraw" ]
+    cflags = [ "-fprofile-generate=%m.profraw" ]
     if (!is_win) {
       # Windows directly calls link.exe instead of the compiler driver when
       # linking, and embeds the path to the profile runtime library as
       # dependent library into each object file.
-      ldflags = [ "-fprofile-instr-generate" ]
+      ldflags = [ "-fprofile-generate" ]
     }
   }
 }
@@ -75,6 +75,13 @@ config("pgo_optimization_flags") {
       # out of date, so make sure we don't error for those cases.
       "-Wno-profile-instr-unprofiled",
       "-Wno-profile-instr-out-of-date",
+
+      # Some hashing conflict results in a lot of warning like this when doing
+      # a PGO build:
+      #   warning: foo.cc: Function control flow change detected (hash mismatch)
+      #   [-Wbackend-plugin]
+      # See https://crbug.com/978401
+      "-Wno-backend-plugin",
     ]
   }
 }

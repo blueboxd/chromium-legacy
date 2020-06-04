@@ -388,12 +388,34 @@ bool IsTargetSpaceTransformBackFaceVisible(
   return to_target.IsBackFaceVisible();
 }
 
-template <typename LayerType>
-bool IsLayerBackFaceVisible(LayerType* layer,
-                            int transform_tree_index,
-                            const PropertyTrees* property_trees) {
-  return IsTargetSpaceTransformBackFaceVisible(layer, transform_tree_index,
-                                               property_trees);
+bool IsTransformToRootOf3DRenderingContextVisible(
+    Layer* layer,
+    int transform_tree_index,
+    const PropertyTrees* property_trees) {
+  return true;
+}
+
+bool IsTransformToRootOf3DRenderingContextVisible(
+    LayerImpl* layer,
+    int transform_tree_index,
+    const PropertyTrees* property_trees) {
+  const TransformTree& transform_tree = property_trees->transform_tree;
+  int root_id = transform_tree_index;
+  int sorting_context_id =
+      transform_tree.Node(transform_tree_index)->sorting_context_id;
+  while (root_id > 0 && transform_tree.Node(root_id - 1)->sorting_context_id ==
+                            sorting_context_id)
+    root_id--;
+
+  // TODO(chrishtr): cache this on the transform trees if needed, similar to
+  // |to_target| and |to_screen|.
+  gfx::Transform to_3d_root;
+  if (transform_tree_index != root_id)
+    property_trees->transform_tree.CombineTransformsBetween(
+        transform_tree_index, root_id, &to_3d_root);
+  to_3d_root.PreconcatTransform(
+      property_trees->transform_tree.Node(root_id)->to_parent);
+  return to_3d_root.IsBackFaceVisible();
 }
 
 inline bool TransformToScreenIsKnown(Layer* layer,
@@ -445,7 +467,8 @@ bool LayerNeedsUpdate(LayerType* layer,
     // backface is not visible.
     if (TransformToScreenIsKnown(layer, backface_transform_id, tree) &&
         !HasSingularTransform(backface_transform_id, tree) &&
-        IsLayerBackFaceVisible(layer, backface_transform_id, property_trees)) {
+        draw_property_utils::IsLayerBackFaceVisible(
+            layer, backface_transform_id, property_trees)) {
       UMA_HISTOGRAM_BOOLEAN(
           "Compositing.Renderer.LayerUpdateSkippedDueToBackface", true);
       return false;
@@ -472,35 +495,6 @@ inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
       transform_tree.Node(layer->transform_tree_index());
   return !transform_node->node_and_ancestors_are_animated_or_invertible ||
          !effect_node->is_drawn;
-}
-
-inline bool LayerShouldBeSkippedForDrawPropertiesComputation(
-    LayerImpl* layer,
-    const TransformTree& transform_tree,
-    const EffectTree& effect_tree) {
-  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
-
-  if (effect_node->HasRenderSurface() && effect_node->subtree_has_copy_request)
-    return false;
-
-  // Skip if the node's subtree is hidden and no need to cache.
-  if (effect_node->subtree_hidden && !effect_node->cache_render_surface)
-    return true;
-
-  // If the layer transform is not invertible, it should be skipped. In case the
-  // transform is animating and singular, we should not skip it.
-  const TransformNode* transform_node =
-      transform_tree.Node(layer->transform_tree_index());
-
-  if (!transform_node->node_and_ancestors_are_animated_or_invertible ||
-      !effect_node->is_drawn)
-    return true;
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "Compositing.Renderer.LayerSkippedForDrawPropertiesDueToBackface",
-      effect_node->hidden_by_backface_visibility);
-
-  return effect_node->hidden_by_backface_visibility;
 }
 
 gfx::Rect LayerDrawableContentRect(
@@ -922,8 +916,8 @@ void ComputeInitialRenderSurfaceList(LayerTreeImpl* layer_tree_impl,
     bool is_root = layer_tree_impl->IsRootLayer(layer);
 
     bool skip_draw_properties_computation =
-        LayerShouldBeSkippedForDrawPropertiesComputation(
-            layer, property_trees->transform_tree, property_trees->effect_tree);
+        draw_property_utils::LayerShouldBeSkippedForDrawPropertiesComputation(
+            layer, property_trees);
 
     bool skip_for_invertibility = SkipForInvertibility(layer, property_trees);
 
@@ -1172,6 +1166,61 @@ bool NodeMayContainBackdropBlurFilter(const EffectNode& node) {
 
 }  // namespace
 
+bool CC_EXPORT LayerShouldBeSkippedForDrawPropertiesComputation(
+    LayerImpl* layer,
+    const PropertyTrees* property_trees) {
+  const TransformTree& transform_tree = property_trees->transform_tree;
+  const EffectTree& effect_tree = property_trees->effect_tree;
+  const EffectNode* effect_node = effect_tree.Node(layer->effect_tree_index());
+
+  if (effect_node->HasRenderSurface() && effect_node->subtree_has_copy_request)
+    return false;
+
+  // Skip if the node's subtree is hidden and no need to cache.
+  if (effect_node->subtree_hidden && !effect_node->cache_render_surface)
+    return true;
+
+  // If the layer transform is not invertible, it should be skipped. In case the
+  // transform is animating and singular, we should not skip it.
+  const TransformNode* transform_node =
+      transform_tree.Node(layer->transform_tree_index());
+
+  if (!transform_node->node_and_ancestors_are_animated_or_invertible ||
+      !effect_node->is_drawn)
+    return true;
+  if (layer->layer_tree_impl()->settings().enable_transform_interop) {
+    return layer->should_check_backface_visibility() &&
+           IsLayerBackFaceVisible(layer, layer->transform_tree_index(),
+                                  property_trees);
+  } else {
+    return effect_node->hidden_by_backface_visibility;
+  }
+}
+
+bool CC_EXPORT IsLayerBackFaceVisible(LayerImpl* layer,
+                                      int transform_tree_index,
+                                      const PropertyTrees* property_trees) {
+  if (layer->layer_tree_impl()->settings().enable_transform_interop) {
+    return IsTransformToRootOf3DRenderingContextVisible(
+        layer, transform_tree_index, property_trees);
+  } else {
+    return IsTargetSpaceTransformBackFaceVisible(layer, transform_tree_index,
+                                                 property_trees);
+  }
+}
+
+bool CC_EXPORT IsLayerBackFaceVisible(Layer* layer,
+                                      int transform_tree_index,
+                                      const PropertyTrees* property_trees) {
+  if (layer->layer_tree_host()->GetSettings().enable_transform_interop) {
+    return IsTransformToRootOf3DRenderingContextVisible(
+        layer, transform_tree_index, property_trees);
+  } else {
+    return IsTargetSpaceTransformBackFaceVisible(layer, transform_tree_index,
+                                                 property_trees);
+  }
+}
+
 void ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
                                        gfx::Transform* transform) {
   DCHECK(effect_node->HasRenderSurface());
@@ -1203,7 +1252,6 @@ void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
 void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
                                std::vector<LayerImpl*>* visible_layer_list) {
   const PropertyTrees* property_trees = layer_tree_impl->property_trees();
-  const TransformTree& transform_tree = property_trees->transform_tree;
   const EffectTree& effect_tree = property_trees->effect_tree;
 
   for (auto* layer_impl : *layer_tree_impl) {
@@ -1212,8 +1260,8 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
     layer_impl->EnsureValidPropertyTreeIndices();
 
     if (!IsRootLayer(layer_impl) &&
-        LayerShouldBeSkippedForDrawPropertiesComputation(
-            layer_impl, transform_tree, effect_tree))
+        LayerShouldBeSkippedForDrawPropertiesComputation(layer_impl,
+                                                         property_trees))
       continue;
 
     bool layer_is_drawn =

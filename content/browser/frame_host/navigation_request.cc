@@ -1192,6 +1192,7 @@ NavigationRequest::~NavigationRequest() {
 
   if (IsNavigationStarted()) {
     GetDelegate()->DidFinishNavigation(this);
+    ProcessOriginIsolationEndResult();
     if (IsInMainFrame()) {
       TRACE_EVENT_NESTABLE_ASYNC_END2(
           "navigation", "Navigation StartToCommit",
@@ -1849,6 +1850,77 @@ NavigationRequest::IsOptInIsolationRequested(const GURL& url) {
   return OptInIsolationCheckResult::NONE;
 }
 
+void NavigationRequest::DetermineOriginIsolationEndResult(
+    OptInIsolationCheckResult check_result) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  const url::Origin origin = url::Origin::Create(common_params_->url);
+  const IsolationContext& isolation_context =
+      render_frame_host_->GetSiteInstance()->GetIsolationContext();
+  const bool got_isolated =
+      policy->ShouldOriginGetOptInIsolation(isolation_context, origin);
+
+  switch (check_result) {
+    case OptInIsolationCheckResult::NONE:
+      origin_isolation_end_result_ =
+          got_isolated
+              ? OptInOriginIsolationEndResult::kNotRequestedButIsolated
+              : OptInOriginIsolationEndResult::kNotRequestedAndNotIsolated;
+      break;
+    case OptInIsolationCheckResult::ORIGIN_POLICY:
+      origin_isolation_end_result_ =
+          got_isolated ? OptInOriginIsolationEndResult::
+                             kRequestedViaOriginPolicyAndIsolated
+                       : OptInOriginIsolationEndResult::
+                             kRequestedViaOriginPolicyButNotIsolated;
+      break;
+    case OptInIsolationCheckResult::HEADER:
+      origin_isolation_end_result_ =
+          got_isolated
+              ? OptInOriginIsolationEndResult::kRequestedViaHeaderAndIsolated
+              : OptInOriginIsolationEndResult::
+                    kRequestedViaHeaderButNotIsolated;
+      break;
+  }
+}
+
+void NavigationRequest::ProcessOriginIsolationEndResult() {
+  if (!HasCommitted() || IsErrorPage() || IsSameDocument())
+    return;
+
+  if (origin_isolation_end_result_ ==
+          OptInOriginIsolationEndResult::kRequestedViaHeaderAndIsolated ||
+      origin_isolation_end_result_ ==
+          OptInOriginIsolationEndResult::kRequestedViaHeaderButNotIsolated)
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        render_frame_host_, blink::mojom::WebFeature::kOriginIsolationHeader);
+
+  const url::Origin origin = url::Origin::Create(GetURL());
+
+  if (origin_isolation_end_result_ ==
+          OptInOriginIsolationEndResult::kRequestedViaHeaderButNotIsolated ||
+      origin_isolation_end_result_ ==
+          OptInOriginIsolationEndResult::
+              kRequestedViaOriginPolicyButNotIsolated)
+    render_frame_host_->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        base::StringPrintf(
+            "The page requested origin isolation, but could not be isolated "
+            "since the origin '%s' had previously been seen with no "
+            "isolation. Update your headers to uniformly isolate all pages "
+            "on the origin.",
+            origin.Serialize().c_str()));
+
+  if (origin_isolation_end_result_ ==
+      OptInOriginIsolationEndResult::kNotRequestedButIsolated)
+    render_frame_host_->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        base::StringPrintf("The page did not request origin isolation, but "
+                           "was isolated anyway because the origin '%s' had "
+                           "previously been isolated. Update your headers to "
+                           "uniformly isolate all pages on the origin.",
+                           origin.Serialize().c_str()));
+}
+
 void NavigationRequest::OnResponseStarted(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     network::mojom::URLResponseHeadPtr response_head,
@@ -2097,10 +2169,7 @@ void NavigationRequest::OnResponseStarted(
   DCHECK(render_frame_host_ || !response_should_be_rendered_);
 
   if (render_frame_host_) {
-    if (opt_in_isolation == OptInIsolationCheckResult::HEADER) {
-      GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-          render_frame_host_, blink::mojom::WebFeature::kOriginIsolationHeader);
-    }
+    DetermineOriginIsolationEndResult(opt_in_isolation);
 
     // TODO(pmeuleman, ahemery): Only set COOP and COEP values on
     // RenderFrameHost when the navigation commits. In the meantime, keep them
@@ -3023,10 +3092,17 @@ void NavigationRequest::UpdateNavigationHandleTimingsOnResponseReceived() {
     navigation_handle_timing_->first_response_start_time =
         response_head_->load_timing.receive_headers_start;
   }
-  if (navigation_handle_timing_->first_loader_callback_time.is_null()) {
+  base::TimeTicks loader_callback_time = base::TimeTicks::Now();
+  if (navigation_handle_timing_->first_loader_callback_time.is_null())
     navigation_handle_timing_->first_loader_callback_time =
-        base::TimeTicks::Now();
-  }
+        loader_callback_time;
+
+  navigation_handle_timing_->final_request_start_time =
+      response_head_->load_timing.send_start;
+  navigation_handle_timing_->final_response_start_time =
+      response_head_->load_timing.receive_headers_start;
+  navigation_handle_timing_->final_loader_callback_time = loader_callback_time;
+
   // |navigation_commit_sent_time| will be updated by
   // UpdateNavigationHandleTimingsOnCommitSent() later.
   DCHECK(navigation_handle_timing_->navigation_commit_sent_time.is_null());

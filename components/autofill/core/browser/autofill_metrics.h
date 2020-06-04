@@ -1159,6 +1159,7 @@ class AutofillMetrics {
       SaveCardPromptMetric metric,
       bool is_uploading,
       security_state::SecurityLevel security_level);
+  static void LogCreditCardUploadLegalMessageLinkClicked();
   static void LogCreditCardUploadFeedbackMetric(
       CreditCardUploadFeedbackMetric metric);
   static void LogManageCardsPromptMetric(ManageCardsPromptMetric metric,

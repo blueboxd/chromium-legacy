@@ -54,14 +54,12 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
                 R.dimen.omnibox_suggestion_comfortable_height);
     }
 
-    @Override
-    public void onUrlFocusChange(boolean hasFocus) {}
-
-    @Override
-    public void recordItemPresented(PropertyModel model) {}
-
-    @Override
-    public void recordItemUsed(PropertyModel model) {}
+    /**
+     * @return The desired size of Omnibox suggestion favicon.
+     */
+    protected int getDesiredFaviconSize() {
+        return mDesiredFaviconWidthPx;
+    }
 
     @Override
     public void onNativeInitialized() {
@@ -78,9 +76,6 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
             }
         }
     }
-
-    @Override
-    public void onSuggestionsReceived() {}
 
     @Override
     public int getMinimumViewHeight() {

@@ -248,6 +248,11 @@ void StatusAreaWidget::UpdateTargetBoundsForGesture(int shelf_position) {
     target_bounds_.set_x(shelf_position);
 }
 
+void StatusAreaWidget::HandleLocaleChange() {
+  for (auto* tray_button : tray_buttons_)
+    tray_button->HandleLocaleChange();
+}
+
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
   if (!initialized_)
     return;

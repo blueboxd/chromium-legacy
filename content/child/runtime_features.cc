@@ -228,8 +228,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnablePaymentRequest, features::kWebPayments, kUseFeatureState},
     {wf::EnablePaymentHandlerMinimalUI, features::kWebPaymentsMinimalUI,
      kEnableOnly},
-    {wf::EnablePaymentRequestOptionalTotal,
-     features::kPaymentRequestOptionalTotal, kEnableOnly},
     {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps, kEnableOnly},
     {wf::EnableGenericSensorExtraClasses, features::kGenericSensorExtraClasses,
      kEnableOnly},
@@ -321,7 +319,10 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableInstalledApp, features::kInstalledApp, kDisableOnly},
     {wf::EnableWebAuthenticationGetAssertionFeaturePolicy,
      device::kWebAuthGetAssertionFeaturePolicy, kUseFeatureState},
-
+    {wf::EnableTransformInterop, blink::features::kTransformInterop,
+     kUseFeatureState},
+    {wf::EnableVideoWakeLockOptimisationHiddenMuted,
+     media::kWakeLockOptimisationHiddenMuted, kUseFeatureState},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

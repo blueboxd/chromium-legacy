@@ -375,7 +375,7 @@ void SnapshotManager::PurgeInvalidAndOldSnapshots(
 void SnapshotManager::DeleteSnapshotDataForProfile(
     base::Time delete_begin,
     const base::FilePath& profile_base_name,
-    int remove_mask) {
+    uint64_t remove_mask) {
   using DataType = ChromeBrowsingDataRemoverDelegate;
 
   bool delete_all =

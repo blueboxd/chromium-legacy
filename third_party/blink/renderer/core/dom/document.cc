@@ -8444,12 +8444,6 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() const {
   return false;
 }
 
-bool Document::IsLazyLoadPolicyEnforced() const {
-  return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-         !GetSecurityContext().GetFeaturePolicy()->IsFeatureEnabled(
-             mojom::blink::FeaturePolicyFeature::kLazyLoad);
-}
-
 bool Document::IsFocusAllowed() const {
   if (GetFrame() && GetFrame()->GetPage()->InsidePortal())
     return false;

@@ -14,6 +14,7 @@
 #include "jingle/glue/fake_ssl_client_socket.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
@@ -106,7 +107,9 @@ void P2PSocketTcpBase::Init(const net::IPEndPoint& local_address,
 
   socket_ = proxy_resolving_socket_factory_->CreateSocket(
       GURL("https://" + dest_host_port_pair.ToString()),
-      IsTlsClientSocket(type_));
+      // TODO(https://crbug.com/1021661): Pass in a non-empty
+      // NetworkIsolationKey here.
+      net::NetworkIsolationKey::Todo(), IsTlsClientSocket(type_));
 
   if (IsPseudoTlsClientSocket(type_)) {
     socket_ =

@@ -30,6 +30,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_source.h"
@@ -42,6 +43,7 @@
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
+#include "url/origin.h"
 
 namespace jingle_glue {
 
@@ -191,11 +193,16 @@ class MockProxyResolvingSocketFactory
   // mojom::ProxyResolvingSocketFactory implementation.
   void CreateProxyResolvingSocket(
       const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
       network::mojom::ProxyResolvingSocketOptionsPtr options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojo::PendingReceiver<network::mojom::ProxyResolvingSocket> receiver,
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
       CreateProxyResolvingSocketCallback callback) override {
+    url::Origin origin = url::Origin::Create(url);
+    EXPECT_EQ(net::NetworkIsolationKey(origin /* top_frame_origin */,
+                                       origin /* frame_origin */),
+              network_isolation_key);
     auto socket = std::make_unique<MockProxyResolvingSocket>();
     socket_raw_ = socket.get();
     proxy_resolving_socket_receivers_.Add(std::move(socket),

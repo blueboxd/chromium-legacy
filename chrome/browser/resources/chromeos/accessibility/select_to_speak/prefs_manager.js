@@ -34,9 +34,8 @@ class PrefsManager {
     /** @private {boolean} */
     this.migrationInProgress_ = false;
 
-    /** @private {string} */
-    // TODO(crbug.com/1079424): Add this to Select-to-Speak settings UI.
-    this.focusRingBackgroundColor_ = '#0000';
+    /** @private {boolean} */
+    this.backgroundShadingEnabled_ = false;
   }
 
   /**
@@ -219,7 +218,10 @@ class PrefsManager {
   initPreferences() {
     var updatePrefs = () => {
       chrome.storage.sync.get(
-          ['voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor'],
+          [
+            'voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor',
+            'backgroundShading'
+          ],
           (prefs) => {
             if (prefs['voice']) {
               this.voiceNameFromPrefs_ = prefs['voice'];
@@ -233,6 +235,12 @@ class PrefsManager {
               this.highlightColor_ = prefs['highlightColor'];
             } else {
               chrome.storage.sync.set({'highlightColor': this.highlightColor_});
+            }
+            if (prefs['backgroundShading'] !== undefined) {
+              this.backgroundShadingEnabled_ = prefs['backgroundShading'];
+            } else {
+              chrome.storage.sync.set(
+                  {'backgroundShading': this.backgroundShadingEnabled_});
             }
             if (prefs['rate'] && prefs['pitch']) {
               // Removes 'rate' and 'pitch' prefs after migrating data to global
@@ -319,11 +327,11 @@ class PrefsManager {
   /**
    * Gets the user's focus ring background color. If the user disabled greying
    * out the background, alpha will be set to fully transparent.
-   * @return {string} hex code for the background of the focus rings.
+   * @return {boolean} True if the background shade should be drawn.
    * @public
    */
-  focusRingBackgroundColor() {
-    return this.focusRingBackgroundColor_;
+  backgroundShadingEnabled() {
+    return this.backgroundShadingEnabled_;
   }
 }
 

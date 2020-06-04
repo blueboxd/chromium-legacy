@@ -298,8 +298,13 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, PostScriptLevel2Basic) {
   for (int i = 0; i < kNumberOfPages; ++i) {
     ASSERT_TRUE(GetPage(i));
     // The output is PS encapsulated in EMF.
+#ifdef NTDDI_WIN10_VB  // Windows 10.0.19041
+    ASSERT_TRUE(GetPageExpectedEmfData(
+        GetFileNameForPageNumber("pdf_converter_basic_ps_new_page_", i)));
+#else
     ASSERT_TRUE(GetPageExpectedEmfData(
         GetFileNameForPageNumber("pdf_converter_basic_ps_page_", i)));
+#endif
     ComparePageEmfHeader();
     ComparePageEmfPayload();
   }
@@ -317,8 +322,13 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest, PostScriptLevel3Basic) {
   for (int i = 0; i < kNumberOfPages; ++i) {
     ASSERT_TRUE(GetPage(i));
     // The output is PS encapsulated in EMF.
+#ifdef NTDDI_WIN10_VB  // Windows 10.0.19041
+    ASSERT_TRUE(GetPageExpectedEmfData(
+        GetFileNameForPageNumber("pdf_converter_basic_ps_new_page_", i)));
+#else
     ASSERT_TRUE(GetPageExpectedEmfData(
         GetFileNameForPageNumber("pdf_converter_basic_ps_page_", i)));
+#endif
     ComparePageEmfHeader();
     ComparePageEmfPayload();
   }
@@ -368,8 +378,13 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest,
       kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
       /*autorotate=*/false, /*use_color=*/true,
       PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2);
+#ifdef NTDDI_WIN10_VB  // Windows 10.0.19041
+  RunSinglePagePdfToPostScriptConverterTest(pdf_settings, "bug_806746.pdf",
+                                            "bug_806746_new.emf");
+#else
   RunSinglePagePdfToPostScriptConverterTest(pdf_settings, "bug_806746.pdf",
                                             "bug_806746.emf");
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest,
@@ -378,8 +393,13 @@ IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest,
       kLetter200DpiRect, gfx::Point(0, 0), k200DpiSize,
       /*autorotate=*/false, /*use_color=*/true,
       PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
+#ifdef NTDDI_WIN10_VB  // Windows 10.0.19041
+  RunSinglePagePdfToPostScriptConverterTest(pdf_settings, "bug_806746.pdf",
+                                            "bug_806746_new.emf");
+#else
   RunSinglePagePdfToPostScriptConverterTest(pdf_settings, "bug_806746.pdf",
                                             "bug_806746.emf");
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(PdfToEmfConverterBrowserTest,

@@ -5,6 +5,7 @@
 #ifndef MEDIA_GPU_WINDOWS_AV1_GUIDS_H_
 #define MEDIA_GPU_WINDOWS_AV1_GUIDS_H_
 
+#include <dxva.h>
 #include <initguid.h>
 
 #if WDK_NTDDI_VERSION <= NTDDI_WIN10_19H1

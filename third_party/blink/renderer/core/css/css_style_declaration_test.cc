@@ -20,7 +20,7 @@ TEST(CSSStyleDeclarationTest, getPropertyShorthand) {
   sheet.AddCSSRules("div { padding: var(--p); }");
   ASSERT_TRUE(sheet.CssRules());
   ASSERT_EQ(1u, sheet.CssRules()->length());
-  ASSERT_EQ(CSSRule::kStyleRule, sheet.CssRules()->item(0)->type());
+  ASSERT_EQ(CSSRule::kStyleRule, sheet.CssRules()->item(0)->GetType());
   CSSStyleRule* style_rule = To<CSSStyleRule>(sheet.CssRules()->item(0));
   CSSStyleDeclaration* style = style_rule->style();
   ASSERT_TRUE(style);

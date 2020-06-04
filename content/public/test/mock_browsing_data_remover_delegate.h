@@ -26,23 +26,23 @@ class MockBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate {
   bool MayRemoveDownloadHistory() override;
   void RemoveEmbedderData(const base::Time& delete_begin,
                           const base::Time& delete_end,
-                          int remove_mask,
+                          uint64_t remove_mask,
                           BrowsingDataFilterBuilder* filter_builder,
-                          int origin_type_mask,
+                          uint64_t origin_type_mask,
                           base::OnceClosure callback) override;
 
   // Add an expected call for testing.
   void ExpectCall(const base::Time& delete_begin,
                   const base::Time& delete_end,
-                  int remove_mask,
-                  int origin_type_mask,
+                  uint64_t remove_mask,
+                  uint64_t origin_type_mask,
                   BrowsingDataFilterBuilder* filter_builder);
 
   // Add an expected call that doesn't have to match the filter_builder.
   void ExpectCallDontCareAboutFilterBuilder(const base::Time& delete_begin,
                                             const base::Time& delete_end,
-                                            int remove_mask,
-                                            int origin_type_mask);
+                                            uint64_t remove_mask,
+                                            uint64_t origin_type_mask);
 
   // Verify that expected and actual calls match.
   void VerifyAndClearExpectations();
@@ -52,8 +52,8 @@ class MockBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate {
    public:
     CallParameters(const base::Time& delete_begin,
                    const base::Time& delete_end,
-                   int remove_mask,
-                   int origin_type_mask,
+                   uint64_t remove_mask,
+                   uint64_t origin_type_mask,
                    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
                    bool should_compare_filter);
     ~CallParameters();
@@ -66,8 +66,8 @@ class MockBrowsingDataRemoverDelegate : public BrowsingDataRemoverDelegate {
 
     base::Time delete_begin_;
     base::Time delete_end_;
-    int remove_mask_;
-    int origin_type_mask_;
+    uint64_t remove_mask_;
+    uint64_t origin_type_mask_;
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_;
     bool should_compare_filter_;
   };

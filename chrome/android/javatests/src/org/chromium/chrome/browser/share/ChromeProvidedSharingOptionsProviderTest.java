@@ -65,7 +65,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
         mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
                 /*activityTabProvider=*/null, /*bottomSheetController=*/null,
                 new ShareSheetBottomSheetContent(mActivity), mPrefServiceBridge,
-                /*shareStartTime=*/0);
+                /*shareParams=*/null, /*shareStartTime=*/0);
 
         // Return false to indicate printing is disabled.
         Mockito.when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(false);

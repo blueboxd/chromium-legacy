@@ -44,6 +44,7 @@ namespace blink {
 
 class EffectTiming;
 class ComputedEffectTiming;
+enum class TimelinePhase;
 
 struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
@@ -174,6 +175,7 @@ struct CORE_EXPORT Timing {
   };
 
   CalculatedTiming CalculateTimings(base::Optional<double> local_time,
+                                    base::Optional<Phase> timeline_phase,
                                     AnimationDirection animation_direction,
                                     bool is_keyframe_effect,
                                     base::Optional<double> playback_rate) const;

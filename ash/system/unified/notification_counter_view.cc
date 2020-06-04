@@ -132,6 +132,10 @@ base::string16 NotificationCounterView::GetAccessibleNameString() const {
       message_center::MessageCenter::Get()->NotificationCount());
 }
 
+void NotificationCounterView::HandleLocaleChange() {
+  Update();
+}
+
 void NotificationCounterView::OnSessionStateChanged(
     session_manager::SessionState state) {
   Update();
@@ -166,6 +170,11 @@ void QuietModeView::Update() {
   } else {
     SetVisible(false);
   }
+}
+
+void QuietModeView::HandleLocaleChange() {
+  image_view()->set_tooltip_text(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_QUIET_MODE_TOOLTIP));
 }
 
 void QuietModeView::OnSessionStateChanged(session_manager::SessionState state) {

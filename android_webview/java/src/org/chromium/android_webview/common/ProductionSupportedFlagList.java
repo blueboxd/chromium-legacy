@@ -61,7 +61,7 @@ public final class ProductionSupportedFlagList {
                             + "rendering engine)."),
             Flag.baseFeature("EnableSharedImageForWebview", "Enables shared images for WebView."),
             Flag.baseFeature("VizForWebView", "Enables Viz for WebView."),
-            Flag.baseFeature("WebViewConnectionlessSafeBrowsing",
+            Flag.baseFeature(AwFeatures.WEBVIEW_CONNECTIONLESS_SAFE_BROWSING,
                     "Uses GooglePlayService's 'connectionless' APIs for Safe Browsing "
                             + "security checks."),
             Flag.baseFeature(

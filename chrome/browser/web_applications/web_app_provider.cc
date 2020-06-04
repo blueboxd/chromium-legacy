@@ -258,7 +258,7 @@ void WebAppProvider::ConnectSubsystems() {
       install_manager_.get(), system_web_app_manager_.get());
   pending_app_manager_->SetSubsystems(
       registrar_.get(), shortcut_manager_.get(), file_handler_manager_.get(),
-      ui_manager_.get(), install_finalizer_.get());
+      ui_manager_.get(), install_finalizer_.get(), install_manager_.get());
   external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
   system_web_app_manager_->SetSubsystems(
       pending_app_manager_.get(), registrar_.get(), registry_controller_.get(),

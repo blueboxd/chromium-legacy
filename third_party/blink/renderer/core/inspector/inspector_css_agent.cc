@@ -918,8 +918,8 @@ Response InspectorCSSAgent::getMediaQueries(
     const CSSRuleVector& flat_rules = style_sheet->FlatRules();
     for (unsigned i = 0; i < flat_rules.size(); ++i) {
       CSSRule* rule = flat_rules.at(i).Get();
-      if (rule->type() == CSSRule::kMediaRule ||
-          rule->type() == CSSRule::kImportRule)
+      if (rule->GetType() == CSSRule::kMediaRule ||
+          rule->GetType() == CSSRule::kImportRule)
         CollectMediaQueriesFromRule(rule, medias->get());
     }
   }
@@ -2534,7 +2534,7 @@ Response InspectorCSSAgent::takeCoverageDelta(
     HeapHashMap<Member<const StyleRule>, Member<CSSStyleRule>> rule_to_css_rule;
     const CSSRuleVector& css_rules = style_sheet->FlatRules();
     for (auto css_rule : css_rules) {
-      if (css_rule->type() != CSSRule::kStyleRule)
+      if (css_rule->GetType() != CSSRule::kStyleRule)
         continue;
       CSSStyleRule* css_style_rule = AsCSSStyleRule(css_rule);
       rule_to_css_rule.Set(css_style_rule->GetStyleRule(), css_style_rule);

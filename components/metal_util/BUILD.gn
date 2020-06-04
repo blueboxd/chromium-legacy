@@ -4,15 +4,6 @@
 
 import("//testing/test.gni")
 
-config("metal_weak_framework") {
-  ldflags = [
-    "-weak_framework",
-    "Metal",
-    "-weak_framework",
-    "MetalKit",
-  ]
-}
-
 component("metal_util") {
   output_name = "metal"
 
@@ -38,11 +29,14 @@ component("metal_util") {
     "//components/crash/core/common:crash_key",
   ]
 
-  libs = [
+  frameworks = [
     "Cocoa.framework",
     "IOSurface.framework",
     "QuartzCore.framework",
   ]
 
-  configs += [ ":metal_weak_framework" ]
+  weak_frameworks = [
+    "Metal.framework",
+    "MetalKit.framework",
+  ]
 }

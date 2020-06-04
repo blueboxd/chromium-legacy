@@ -289,6 +289,16 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
             kHistogramNavigationTimingNavigationStartToFirstLoaderCallback,
         expected_count);
     histogram_tester_.ExpectTotalCount(
+        internal::kHistogramNavigationTimingNavigationStartToFinalRequestStart,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::kHistogramNavigationTimingNavigationStartToFinalResponseStart,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingNavigationStartToFinalLoaderCallback,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
         internal::
             kHistogramNavigationTimingNavigationStartToNavigationCommitSent,
         expected_count);
@@ -301,6 +311,18 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     histogram_tester_.ExpectTotalCount(
         internal::
             kHistogramNavigationTimingFirstResponseStartToFirstLoaderCallback,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingFinalRequestStartToFinalResponseStart,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingFinalResponseStartToFinalLoaderCallback,
+        expected_count);
+    histogram_tester_.ExpectTotalCount(
+        internal::
+            kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent,
         expected_count);
   }
 

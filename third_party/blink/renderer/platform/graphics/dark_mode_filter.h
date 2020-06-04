@@ -22,6 +22,7 @@ namespace blink {
 class DarkModeColorClassifier;
 class DarkModeColorFilter;
 class ScopedDarkModeElementRoleOverride;
+class DarkModeInvertedColorCache;
 
 class PLATFORM_EXPORT DarkModeFilter {
  public:
@@ -51,6 +52,7 @@ class PLATFORM_EXPORT DarkModeFilter {
                                  cc::PaintFlags* flags);
 
   SkColorFilter* GetImageFilterForTesting() { return image_filter_.get(); }
+  size_t GetInvertedColorCacheSizeForTesting();
 
  private:
   friend class ScopedDarkModeElementRoleOverride;
@@ -64,6 +66,7 @@ class PLATFORM_EXPORT DarkModeFilter {
   std::unique_ptr<DarkModeColorFilter> color_filter_;
   sk_sp<SkColorFilter> image_filter_;
   base::Optional<ElementRole> role_override_;
+  std::unique_ptr<DarkModeInvertedColorCache> inverted_color_cache_;
 };
 
 // Temporarily override the element role for the scope of this object's

@@ -357,15 +357,15 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     VerifyDownloadCount(1u);
   }
 
-  void RemoveAndWait(int remove_mask) {
+  void RemoveAndWait(uint64_t remove_mask) {
     RemoveAndWait(remove_mask, base::Time(), base::Time::Max());
   }
 
-  void RemoveAndWait(int remove_mask, base::Time delete_begin) {
+  void RemoveAndWait(uint64_t remove_mask, base::Time delete_begin) {
     RemoveAndWait(remove_mask, delete_begin, base::Time::Max());
   }
 
-  void RemoveAndWait(int remove_mask,
+  void RemoveAndWait(uint64_t remove_mask,
                      base::Time delete_begin,
                      base::Time delete_end) {
     content::BrowsingDataRemover* remover =
@@ -380,7 +380,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void RemoveWithFilterAndWait(
-      int remove_mask,
+      uint64_t remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
     content::BrowsingDataRemover* remover =
         content::BrowserContext::GetBrowsingDataRemover(

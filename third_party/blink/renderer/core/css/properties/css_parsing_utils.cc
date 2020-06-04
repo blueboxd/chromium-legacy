@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_ray_value.h"
 #include "third_party/blink/renderer/core/css/css_shadow_value.h"
+#include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/css_timing_function_value.h"
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
@@ -566,6 +567,20 @@ CSSValue* ConsumeAnimationName(CSSParserTokenRange& range,
   }
 
   return css_property_parser_helpers::ConsumeCustomIdent(range, context);
+}
+
+CSSValue* ConsumeAnimationTimeline(CSSParserTokenRange& range,
+                                   const CSSParserContext& context) {
+  if (auto* value =
+          css_property_parser_helpers::ConsumeIdent<CSSValueID::kNone,
+                                                    CSSValueID::kAuto>(range)) {
+    return value;
+  }
+  if (auto* value =
+          css_property_parser_helpers::ConsumeCustomIdent(range, context)) {
+    return value;
+  }
+  return css_property_parser_helpers::ConsumeString(range);
 }
 
 CSSValue* ConsumeAnimationTimingFunction(CSSParserTokenRange& range,

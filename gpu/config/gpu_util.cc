@@ -170,6 +170,15 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
   if (blacklisted_features.count(GPU_FEATURE_TYPE_GPU_RASTERIZATION))
     return kGpuFeatureStatusBlacklisted;
 
+  // Enable gpu rasterization for vulkan, unless it is overridden by
+  // commandline.
+  if (base::FeatureList::IsEnabled(features::kVulkan) &&
+      !base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kDefaultEnableGpuRasterization.name,
+          base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
+    return kGpuFeatureStatusEnabled;
+  }
+
   // Gpu Rasterization on platforms that are not fully enabled is controlled by
   // a finch experiment.
   if (!base::FeatureList::IsEnabled(features::kDefaultEnableGpuRasterization))
@@ -207,11 +216,14 @@ GpuFeatureStatus GetOopRasterizationFeatureStatus(
   else if (gpu_preferences.enable_oop_rasterization)
     return kGpuFeatureStatusEnabled;
 
-  // TODO(enne): Eventually oop rasterization will replace gpu rasterization,
-  // and so we will need to address the underlying bugs or turn of GPU
-  // rasterization for these cases.
-  if (blacklisted_features.count(GPU_FEATURE_TYPE_OOP_RASTERIZATION))
-    return kGpuFeatureStatusBlacklisted;
+  // Enable OOP rasterization for vulkan, unless it is overridden by
+  // commandline.
+  if (base::FeatureList::IsEnabled(features::kVulkan) &&
+      !base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kDefaultEnableOopRasterization.name,
+          base::FeatureList::OVERRIDE_DISABLE_FEATURE)) {
+    return kGpuFeatureStatusEnabled;
+  }
 
   // OOP Rasterization on platforms that are not fully enabled is controlled by
   // a finch experiment.

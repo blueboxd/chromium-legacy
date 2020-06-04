@@ -346,8 +346,8 @@ void MetricsReporter::NetworkRequestComplete(NetworkRequestType type,
 
 void MetricsReporter::OnLoadStream(LoadStreamStatus load_from_store_status,
                                    LoadStreamStatus final_status) {
-  LOG(ERROR) << "OnLoadStream load_from_store_status=" << load_from_store_status
-             << " final_status=" << final_status;
+  DVLOG(1) << "OnLoadStream load_from_store_status=" << load_from_store_status
+           << " final_status=" << final_status;
   base::UmaHistogramEnumeration(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial", final_status);
   if (load_from_store_status != LoadStreamStatus::kNoStatus) {
@@ -375,7 +375,7 @@ void MetricsReporter::OnLoadMoreBegin(SurfaceId surface_id) {
 }
 
 void MetricsReporter::OnLoadMore(LoadStreamStatus status) {
-  LOG(ERROR) << "OnLoadMore status=" << status;
+  DVLOG(1) << "OnLoadMore status=" << status;
   base::UmaHistogramEnumeration(
       "ContentSuggestions.Feed.LoadStreamStatus.LoadMore", status);
 }

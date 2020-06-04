@@ -53,7 +53,7 @@ public class BaseSuggestionProcessorTest {
         }
 
         @Override
-        public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
+        public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
             return true;
         }
 

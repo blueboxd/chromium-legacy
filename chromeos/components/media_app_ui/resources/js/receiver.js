@@ -145,6 +145,10 @@ parentMessagePipe.registerHandler(Message.LOAD_FILES, async (message) => {
   await loadFiles(new ReceivedFileList(filesMessage));
 });
 
+// As soon as the LOAD_FILES handler is installed, signal readiness to the
+// parent frame (privileged context).
+parentMessagePipe.sendMessage(Message.IFRAME_READY);
+
 /**
  * A delegate which exposes privileged WebUI functionality to the media
  * app.

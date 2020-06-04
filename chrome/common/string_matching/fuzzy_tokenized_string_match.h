@@ -44,7 +44,8 @@ class FuzzyTokenizedStringMatch {
                               const TokenizedString& text,
                               bool partial,
                               double partial_match_penalty_rate,
-                              bool use_edit_distance);
+                              bool use_edit_distance,
+                              double num_matching_blocks_penalty);
 
   // TokenSortRatio takes two set of tokens, sorts them and find the similarity
   // between two sorted strings. This function assumes that TokenizedString is
@@ -53,7 +54,8 @@ class FuzzyTokenizedStringMatch {
                                const TokenizedString& text,
                                bool partial,
                                double partial_match_penalty_rate,
-                               bool use_edit_distance);
+                               bool use_edit_distance,
+                               double num_matching_blocks_penalty);
 
   // Finds the best ratio of shorter text with a part of longer text.
   // This function assumes that TokenizedString is already normalized (converted
@@ -61,7 +63,8 @@ class FuzzyTokenizedStringMatch {
   static double PartialRatio(const base::string16& query,
                              const base::string16& text,
                              double partial_match_penalty_rate,
-                             bool use_edit_distance);
+                             bool use_edit_distance,
+                             double num_matching_blocks_penalty);
 
   // Combines scores from different ratio functions. This function assumes that
   // TokenizedString is already normalized (converted to lower cases).
@@ -69,7 +72,8 @@ class FuzzyTokenizedStringMatch {
   static double WeightedRatio(const TokenizedString& query,
                               const TokenizedString& text,
                               double partial_match_penalty_rate,
-                              bool use_edit_distance);
+                              bool use_edit_distance,
+                              double num_matching_blocks_penalty);
   // Since prefix match should always be favored over other matches, this
   // function is dedicated to calculate a prefix match score in range of [0, 1].
   // This score has two components: first character match and whole prefix
@@ -85,7 +89,8 @@ class FuzzyTokenizedStringMatch {
                   bool use_prefix_only,
                   bool use_weighted_ratio,
                   bool use_edit_distance,
-                  double partial_match_penalty_rate);
+                  double partial_match_penalty_rate,
+                  double num_matching_blocks_penalty = 0.0);
   double relevance() const { return relevance_; }
   const Hits& hits() const { return hits_; }
 

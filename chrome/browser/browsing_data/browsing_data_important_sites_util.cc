@@ -55,8 +55,8 @@ void BrowsingDataTaskObserver::OnBrowsingDataRemoverDone() {
 
 namespace browsing_data_important_sites_util {
 
-void Remove(int remove_mask,
-            int origin_mask,
+void Remove(uint64_t remove_mask,
+            uint64_t origin_mask,
             browsing_data::TimePeriod time_period,
             std::unique_ptr<content::BrowsingDataFilterBuilder> filter_builder,
             content::BrowsingDataRemover* remover,
@@ -64,8 +64,8 @@ void Remove(int remove_mask,
   auto* observer =
       new BrowsingDataTaskObserver(remover, std::move(callback), 2);
 
-  int filterable_mask = 0;
-  int nonfilterable_mask = remove_mask;
+  uint64_t filterable_mask = 0;
+  uint64_t nonfilterable_mask = remove_mask;
 
   if (!filter_builder->IsEmptyBlacklist()) {
     filterable_mask =

@@ -222,6 +222,8 @@ class CORE_EXPORT InputMethodController final
 
   FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
                            InputModeOfFocusedElement);
+  FRIEND_TEST_ALL_PREFIXES(InputMethodControllerTest,
+                           VirtualKeyboardPolicyOfFocusedElement);
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodController);
 };

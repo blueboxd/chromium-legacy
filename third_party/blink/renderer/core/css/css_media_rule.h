@@ -47,7 +47,7 @@ class CSSMediaRule final : public CSSConditionRule {
   void Trace(Visitor*) const override;
 
  private:
-  CSSRule::Type type() const override { return kMediaRule; }
+  CSSRule::Type GetType() const override { return kMediaRule; }
 
   scoped_refptr<MediaQuerySet> MediaQueries() const;
 
@@ -57,7 +57,7 @@ class CSSMediaRule final : public CSSConditionRule {
 template <>
 struct DowncastTraits<CSSMediaRule> {
   static bool AllowFrom(const CSSRule& rule) {
-    return rule.type() == CSSRule::kMediaRule;
+    return rule.GetType() == CSSRule::kMediaRule;
   }
 };
 

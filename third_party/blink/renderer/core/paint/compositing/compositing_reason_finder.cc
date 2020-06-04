@@ -107,6 +107,19 @@ static bool ShouldPreferCompositingForLayoutView(
   return false;
 }
 
+static CompositingReasons BackfaceInvisibility3DAncestorReason(
+    const PaintLayer& layer) {
+  if (RuntimeEnabledFeatures::TransformInteropEnabled()) {
+    if (auto* compositing_container = layer.CompositingContainer()) {
+      if (compositing_container->GetLayoutObject()
+              .StyleRef()
+              .BackfaceVisibility() == EBackfaceVisibility::kHidden)
+        return CompositingReason::kBackfaceInvisibility3DAncestor;
+    }
+  }
+  return CompositingReason::kNone;
+}
+
 CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     const LayoutObject& object) {
   // TODO(wangxianzhu): Don't depend on PaintLayer for CompositeAfterPaint.
@@ -144,9 +157,9 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
       bool force_prefer_compositing_to_lcd_text =
           reasons != CompositingReason::kNone ||
           // In CompositeAfterPaint though we don't treat hidden backface as
-          // a direct compositing reason, it's very likely that the object will
-          // be composited, and it also indicates preference of compositing,
-          // so we prefer composited scrolling here.
+          // a direct compositing reason, it's very likely that the object
+          // will be composited, and it also indicates preference of
+          // compositing, so we prefer composited scrolling here.
           style.BackfaceVisibility() == EBackfaceVisibility::kHidden ||
           (object.IsLayoutView() &&
            ShouldPreferCompositingForLayoutView(To<LayoutView>(object)));
@@ -162,6 +175,8 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     }
   }
 
+  reasons |= BackfaceInvisibility3DAncestorReason(*layer);
+
   if (object.CanHaveAdditionalCompositingReasons())
     reasons |= object.AdditionalCompositingReasons();
 
@@ -170,9 +185,9 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
 
 bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
     const LayoutObject& layout_object) {
-  // Note that we ask the layoutObject if it has a transform, because the style
-  // may have transforms, but the layoutObject may be an inline that doesn't
-  // support them.
+  // Note that we ask the layoutObject if it has a transform, because the
+  // style may have transforms, but the layoutObject may be an inline that
+  // doesn't support them.
   if (!layout_object.HasTransformRelatedProperty())
     return false;
 
@@ -196,9 +211,10 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
   if (RequiresCompositingForRootScroller(layer))
     direct_reasons |= CompositingReason::kRootScroller;
 
-  // Composite |layer| if it is inside of an ancestor scrolling layer, but that
-  // scrolling layer is not on the stacking context ancestor chain of |layer|.
-  // See the definition of the scrollParent property in Layer for more detail.
+  // Composite |layer| if it is inside of an ancestor scrolling layer, but
+  // that scrolling layer is not on the stacking context ancestor chain of
+  // |layer|. See the definition of the scrollParent property in Layer for
+  // more detail.
   if (const PaintLayer* scrolling_ancestor = layer.AncestorScrollingLayer()) {
     if (scrolling_ancestor->NeedsCompositedScrolling() &&
         layer.ScrollParent()) {
@@ -233,6 +249,8 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 
   if (layout_object.CanHaveAdditionalCompositingReasons())
     direct_reasons |= layout_object.AdditionalCompositingReasons();
+
+  direct_reasons |= BackfaceInvisibility3DAncestorReason(layer);
 
   DCHECK(
       !(direct_reasons & CompositingReason::kComboAllStyleDeterminedReasons));
@@ -287,8 +305,8 @@ bool CompositingReasonFinder::RequiresCompositingForRootScroller(
     const PaintLayer& layer) {
   // The root scroller needs composited scrolling layers even if it doesn't
   // actually have scrolling since CC has these assumptions baked in for the
-  // viewport. Because this is only needed for CC, we can skip it if compositing
-  // is not enabled.
+  // viewport. Because this is only needed for CC, we can skip it if
+  // compositing is not enabled.
   const auto& settings = *layer.GetLayoutObject().GetDocument().GetSettings();
   if (!settings.GetAcceleratedCompositingEnabled())
     return false;

@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/mojom/print_spooler.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 class Profile;
@@ -37,19 +38,21 @@ class ArcPrintSpoolerBridge : public KeyedService,
   ~ArcPrintSpoolerBridge() override;
 
   // mojom::PrintSpoolerHost:
-  void StartPrintInCustomTab(mojo::ScopedHandle scoped_handle,
-                             int32_t task_id,
-                             int32_t surface_id,
-                             int32_t top_margin,
-                             mojom::PrintSessionInstancePtr instance,
-                             StartPrintInCustomTabCallback callback) override;
+  void StartPrintInCustomTab(
+      mojo::ScopedHandle scoped_handle,
+      int32_t task_id,
+      int32_t surface_id,
+      int32_t top_margin,
+      mojo::PendingRemote<mojom::PrintSessionInstance> instance,
+      StartPrintInCustomTabCallback callback) override;
 
-  void OnPrintDocumentSaved(int32_t task_id,
-                            int32_t surface_id,
-                            int32_t top_margin,
-                            mojom::PrintSessionInstancePtr instance,
-                            StartPrintInCustomTabCallback callback,
-                            base::FilePath file_path);
+  void OnPrintDocumentSaved(
+      int32_t task_id,
+      int32_t surface_id,
+      int32_t top_margin,
+      mojo::PendingRemote<mojom::PrintSessionInstance> instance,
+      StartPrintInCustomTabCallback callback,
+      base::FilePath file_path);
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

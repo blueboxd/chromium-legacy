@@ -1375,6 +1375,11 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   if (IsA<LayoutView>(this) || IsSVGForeignObject() || IsTextControl())
     return true;
   // https://www.w3.org/TR/css-transforms-1/#containing-block-for-all-descendants
+
+  if (RuntimeEnabledFeatures::TransformInteropEnabled() &&
+      style->TransformStyle3D() == ETransformStyle3D::kPreserve3d)
+    return true;
+
   if (style->HasTransformRelatedProperty()) {
     if (!IsInline() || IsAtomicInlineLevel())
       return true;
@@ -2031,6 +2036,14 @@ StyleDifference LayoutObject::AdjustStyleDifference(
         (IsSVG() && StyleRef().SvgStyle().IsStrokeColorCurrentColor()) ||
         IsListMarker() || IsDetailsMarker() || IsMathML())
       diff.SetNeedsPaintInvalidation();
+  }
+
+  // TODO(1088373): Pixel_WebGLHighToLowPower fails without this. This isn't the
+  // right way to ensure GPU switching. Investigate and do it in the right way.
+  if (RuntimeEnabledFeatures::CSSReducedFontLoadingInvalidationsEnabled() &&
+      !diff.NeedsPaintInvalidation() && IsLayoutView() && Style() &&
+      !Style()->GetFont().IsFallbackValid()) {
+    diff.SetNeedsPaintInvalidation();
   }
 
   // The answer to layerTypeRequired() for plugins, iframes, and canvas can

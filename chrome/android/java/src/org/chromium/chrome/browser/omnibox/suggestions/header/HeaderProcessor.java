@@ -41,24 +41,9 @@ public class HeaderProcessor implements DropdownItemProcessor {
     }
 
     @Override
-    public void onUrlFocusChange(boolean hasFocus) {}
-
-    @Override
-    public void onNativeInitialized() {}
-
-    @Override
     public PropertyModel createModel() {
         return new PropertyModel(HeaderViewProperties.ALL_KEYS);
     }
-
-    @Override
-    public void recordItemPresented(PropertyModel model) {}
-
-    @Override
-    public void recordItemUsed(PropertyModel model) {}
-
-    @Override
-    public void onSuggestionsReceived() {}
 
     /**
      * Populate a model for the group header.

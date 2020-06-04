@@ -1754,6 +1754,10 @@ body.files-ng .downloads-warning {
   flex: none;
   flex-direction: row;
   height: 40px;
+  opacity: 1;
+  transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,
+              opacity 150ms ease 50ms;
+  visibility: visible;
 }
 
 body:not(.files-ng) .downloads-warning a:link,
@@ -1798,6 +1802,13 @@ body:not(.files-ng) .downloads-warning[hidden] {
   height: 0;
 }
 
+body.files-ng .downloads-warning[hidden] {
+  display: flex !important;  /* Overrides [hidden] for animation. */
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+
 @keyframes heightAnimation {
   0% {
     display: flex;
@@ -1829,13 +1840,25 @@ body.files-ng .volume-warning {
   flex-direction: row;
   font-size: 13px;
   height: 40px;
+  opacity: 1;
   overflow: hidden;
   position: relative;
+  transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1) 0s,
+              opacity 150ms ease 50ms;
+  visibility: visible;
 }
 
-.volume-warning[hidden] {
+body:not(.files-ng) .volume-warning[hidden] {
   border-top-width: 0;
   height: 0;
+}
+
+body.files-ng .volume-warning[hidden] {
+  border-top-width: 0;
+  display: flex !important;  /* Overrides [hidden] for animation. */
+  height: 0;
+  opacity: 0;
+  visibility: hidden;
 }
 
 body:not(.files-ng) .volume-warning .drive-icon {

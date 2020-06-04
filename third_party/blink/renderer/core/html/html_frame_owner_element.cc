@@ -474,13 +474,10 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   // Update the |should_lazy_load_children_| value according to the "loading"
   // attribute immediately, so that it still gets respected even if the "src"
   // attribute gets parsed in ParseAttribute() before the "loading" attribute
-  // does. Note that when the *feature policy* for "lazyload" is disabled, the
-  // attribute value loading="eager" is ignored (i.e., interpreted as
-  // "auto" instead).
+  // does.
   if (should_lazy_load_children_ &&
       EqualIgnoringASCIICase(FastGetAttribute(html_names::kLoadingAttr),
-                             "eager") &&
-      !GetDocument().IsLazyLoadPolicyEnforced()) {
+                             "eager")) {
     should_lazy_load_children_ = false;
   }
 
@@ -536,13 +533,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   if (IsPlugin())
     request.SetSkipServiceWorker(true);
 
-  // When the feature policy "loading-frame-default-eager" is disabled in
-  // the document, loading attribute value "auto" (or unset/invalid values) will
-  // also be interpreted as "lazy".
   const auto& loading_attr = FastGetAttribute(html_names::kLoadingAttr);
-  bool loading_lazy_set = EqualIgnoringASCIICase(loading_attr, "lazy") ||
-                          (IsLoadingFrameDefaultEagerEnforced() &&
-                           !EqualIgnoringASCIICase(loading_attr, "eager"));
+  bool loading_lazy_set = EqualIgnoringASCIICase(loading_attr, "lazy");
 
   if (!lazy_load_frame_observer_ &&
       IsFrameLazyLoadable(GetDocument(), url, loading_lazy_set,
@@ -586,11 +578,7 @@ bool HTMLFrameOwnerElement::ShouldLazyLoadChildren() const {
 void HTMLFrameOwnerElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kLoadingAttr) {
-    // Note that when the *feature policy* for "lazyload" is disabled, the
-    // attribute value loading="eager" is ignored (i.e., interpreted as
-    // "auto" instead).
-    if (EqualIgnoringASCIICase(params.new_value, "eager") &&
-        !GetDocument().IsLazyLoadPolicyEnforced()) {
+    if (EqualIgnoringASCIICase(params.new_value, "eager")) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kLazyLoadFrameLoadingAttributeEager);
       should_lazy_load_children_ = false;
@@ -634,12 +622,6 @@ void HTMLFrameOwnerElement::Trace(Visitor* visitor) const {
   visitor->Trace(lazy_load_frame_observer_);
   HTMLElement::Trace(visitor);
   FrameOwner::Trace(visitor);
-}
-
-bool HTMLFrameOwnerElement::IsLoadingFrameDefaultEagerEnforced() const {
-  return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-         !GetDocument().IsFeatureEnabled(
-             mojom::blink::FeaturePolicyFeature::kLoadingFrameDefaultEager);
 }
 
 }  // namespace blink

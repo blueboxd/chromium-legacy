@@ -274,7 +274,7 @@ class FakeRenderFrameMetadataObserver
   ~FakeRenderFrameMetadataObserver() override {}
 
 #if defined(OS_ANDROID)
-  void ReportAllRootScrollsForAccessibility(bool enabled) override {}
+  void ReportAllRootScrolls(bool enabled) override {}
 #endif
   void ReportAllFrameSubmissionsForTesting(bool enabled) override {}
 

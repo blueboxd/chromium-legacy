@@ -52,7 +52,7 @@ function test3() {
     debug('Test opening of popup using enter key');
     popup.focus();
     eventSender.keyDown('\r', []);
-    shouldBeTrue('internals.isSelectPopupVisible(popup)');
+    shouldBeFalse('internals.isSelectPopupVisible(popup)');
     popup.blur();
 
     debug('Works for all platforms');

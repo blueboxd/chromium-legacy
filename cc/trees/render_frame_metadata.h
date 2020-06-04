@@ -41,8 +41,7 @@ class CC_EXPORT RenderFrameMetadata {
   // specified.
   SkColor root_background_color = SK_ColorWHITE;
 
-  // Scroll offset of the root layer. This optional parameter is only valid
-  // during tests.
+  // Scroll offset of the root layer.
   base::Optional<gfx::Vector2dF> root_scroll_offset;
 
   // Selection region relative to the current viewport. If the selection is

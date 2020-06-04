@@ -32,9 +32,10 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   LorgnetteManagerClientImpl() = default;
   ~LorgnetteManagerClientImpl() override = default;
 
-  void ListScanners(DBusMethodCallback<ScannerTable> callback) override {
+  void ListScanners(
+      DBusMethodCallback<lorgnette::ListScannersResponse> callback) override {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
-                                 lorgnette::kListScannersMethod);
+                                 lorgnette::kListScannersProtoMethod);
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnListScanners,
@@ -153,46 +154,24 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   };
 
   // Called when ListScanners completes.
-  void OnListScanners(DBusMethodCallback<ScannerTable> callback,
-                      dbus::Response* response) {
-    dbus::MessageReader table_reader(nullptr);
-    if (!response || !dbus::MessageReader(response).PopArray(&table_reader)) {
+  void OnListScanners(
+      DBusMethodCallback<lorgnette::ListScannersResponse> callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to obtain ListScannersResponse";
       std::move(callback).Run(base::nullopt);
       return;
     }
 
-    ScannerTable scanners;
-    while (table_reader.HasMoreData()) {
-      std::string device_name;
-      dbus::MessageReader device_entry_reader(nullptr);
-      dbus::MessageReader device_element_reader(nullptr);
-      if (!table_reader.PopDictEntry(&device_entry_reader) ||
-          !device_entry_reader.PopString(&device_name) ||
-          !device_entry_reader.PopArray(&device_element_reader)) {
-        LOG(ERROR) << "Failed to decode response from ListScanners";
-        std::move(callback).Run(base::nullopt);
-        return;
-      }
-
-      ScannerTableEntry scanner_entry;
-      while (device_element_reader.HasMoreData()) {
-        std::string attribute;
-        std::string value;
-        dbus::MessageReader device_attribute_reader(nullptr);
-        if (!device_element_reader.PopDictEntry(&device_attribute_reader) ||
-            !device_attribute_reader.PopString(&attribute) ||
-            !device_attribute_reader.PopString(&value)) {
-          LOG(ERROR) << "Failed to decode response from ListScanners";
-          std::move(callback).Run(base::nullopt);
-          return;
-        }
-        scanner_entry.emplace(std::move(attribute), std::move(value));
-      }
-
-      scanners.emplace(std::move(device_name), std::move(scanner_entry));
+    lorgnette::ListScannersResponse response_proto;
+    dbus::MessageReader reader(response);
+    if (!reader.PopArrayOfBytesAsProto(&response_proto)) {
+      LOG(ERROR) << "Failed to read ListScannersResponse";
+      std::move(callback).Run(base::nullopt);
+      return;
     }
 
-    std::move(callback).Run(std::move(scanners));
+    std::move(callback).Run(std::move(response_proto));
   }
 
   // Called when a response for ScanImage() is received.

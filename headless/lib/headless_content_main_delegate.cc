@@ -99,9 +99,15 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
       ui::SCALE_FACTOR_NONE);
 
 #else
-
   base::FilePath dir_module;
+
+// Fuchsia doesn't implement DIR_MODULE
+#if !defined(OS_FUCHSIA)
   bool result = base::PathService::Get(base::DIR_MODULE, &dir_module);
+#else
+  bool result = base::PathService::Get(base::DIR_ASSETS, &dir_module);
+#endif  // !defined(OS_FUCHSIA)
+
   DCHECK(result);
 
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,

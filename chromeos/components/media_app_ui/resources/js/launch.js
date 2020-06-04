@@ -54,6 +54,15 @@ let currentDirectoryHandle = null;
 /** A pipe through which we can send messages to the guest frame. */
 const guestMessagePipe = new MessagePipe('chrome-untrusted://media-app');
 
+/**
+ * Promise that resolves once the iframe is ready to receive messages. This is
+ * to allow initial file processing to run in parallel with the iframe load.
+ * @type {!Promise<undefined>}
+ */
+const iframeReady = new Promise(resolve => {
+  guestMessagePipe.registerHandler(Message.IFRAME_READY, resolve);
+});
+
 guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
   let response = mediaAppPageHandler.openFeedbackDialog();
   if (response === null) {
@@ -284,6 +293,7 @@ async function sendSnapshotToGuest(snapshot) {
   for (const fd of snapshot) {
     fd.file = null;
   }
+  await iframeReady;
   await guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
 }
 
@@ -469,9 +479,10 @@ async function advance(direction) {
   await sendFilesToGuest();
 }
 
-// Wait for 'load' (and not DOMContentLoaded) to ensure the subframe has been
-// loaded and is ready to respond to postMessage.
-window.addEventListener('load', () => {
+/**
+ * Installs the handler for launch files, if window.launchQueue is available.
+ */
+function installLaunchHandler() {
   if (!window.launchQueue) {
     console.error('FileHandling API missing.');
     return;
@@ -491,4 +502,6 @@ window.addEventListener('load', () => {
     const focusEntry = assertCast(params.files[1]);
     launchWithDirectory(directory, focusEntry);
   });
-});
+}
+
+installLaunchHandler();

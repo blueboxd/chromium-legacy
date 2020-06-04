@@ -22,6 +22,9 @@ class NotificationCounterView : public TrayItemView, public SessionObserver {
   // Returns a string describing the current state for accessibility.
   base::string16 GetAccessibleNameString() const;
 
+  // TrayItemView:
+  void HandleLocaleChange() override;
+
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
@@ -45,6 +48,9 @@ class QuietModeView : public TrayItemView, public SessionObserver {
   ~QuietModeView() override;
 
   void Update();
+
+  // TrayItemView:
+  void HandleLocaleChange() override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;

@@ -431,6 +431,16 @@ base::string16 ImeMenuTray::GetAccessibleNameForTray() {
   return l10n_util::GetStringUTF16(IDS_ASH_IME_MENU_ACCESSIBLE_NAME);
 }
 
+void ImeMenuTray::HandleLocaleChange() {
+  if (image_view_) {
+    image_view_->set_tooltip_text(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
+  }
+
+  if (label_)
+    label_->SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
+}
+
 void ImeMenuTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {
   if (bubble_->bubble_view() == bubble_view)
     CloseBubble();

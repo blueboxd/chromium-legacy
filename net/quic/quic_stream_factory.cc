@@ -2264,7 +2264,8 @@ QuicStreamFactory::CreateCryptoConfigHandle(
           std::make_unique<ProofVerifierChromium>(
               cert_verifier_, ct_policy_enforcer_, transport_security_state_,
               cert_transparency_verifier_,
-              HostsFromOrigins(params_.origins_to_force_quic_on)),
+              HostsFromOrigins(params_.origins_to_force_quic_on),
+              actual_network_isolation_key),
           this);
 
   quic::QuicCryptoClientConfig* crypto_config = crypto_config_owner->config();

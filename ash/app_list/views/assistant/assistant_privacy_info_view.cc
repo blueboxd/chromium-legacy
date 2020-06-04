@@ -15,7 +15,8 @@ namespace ash {
 AssistantPrivacyInfoView::AssistantPrivacyInfoView(
     AppListViewDelegate* view_delegate,
     SearchResultPageView* search_result_page_view)
-    : PrivacyInfoView(IDS_APP_LIST_ASSISTANT_PRIVACY_INFO),
+    : PrivacyInfoView(IDS_APP_LIST_ASSISTANT_PRIVACY_INFO,
+                      IDS_APP_LIST_LEARN_MORE),
       view_delegate_(view_delegate),
       search_result_page_view_(search_result_page_view) {}
 
@@ -27,7 +28,7 @@ void AssistantPrivacyInfoView::ButtonPressed(views::Button* sender,
     return;
 
   view_delegate_->MarkAssistantPrivacyInfoDismissed();
-  search_result_page_view_->OnAssistantPrivacyInfoViewCloseButtonPressed();
+  search_result_page_view_->OnPrivacyInfoViewCloseButtonPressed();
 }
 
 void AssistantPrivacyInfoView::StyledLabelLinkClicked(views::StyledLabel* label,

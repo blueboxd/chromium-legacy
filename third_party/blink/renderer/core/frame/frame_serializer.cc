@@ -488,7 +488,7 @@ void FrameSerializer::SerializeCSSRule(CSSRule* rule) {
   DCHECK(rule->parentStyleSheet()->OwnerDocument());
   Document& document = *rule->parentStyleSheet()->OwnerDocument();
 
-  switch (rule->type()) {
+  switch (rule->GetType()) {
     case CSSRule::kStyleRule:
       RetrieveResourcesForProperties(
           &To<CSSStyleRule>(rule)->GetStyleRule()->Properties(), document);

@@ -95,7 +95,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   // Check object role or purpose.
   bool IsControllingVideoElement() const;
-  bool IsDefault() const override;
+  bool IsDefault() const final;
   bool IsMultiline() const override;
   bool IsEditable() const override { return IsNativeTextControl(); }
   bool ComputeIsEditableRoot() const override;

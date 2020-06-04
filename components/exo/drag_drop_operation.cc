@@ -238,6 +238,8 @@ void DragDropOperation::StartDragDropOperation() {
   uint32_t dnd_operations =
       DndActionsToDragOperations(source_->get()->GetActions());
 
+  base::WeakPtr<DragDropOperation> weak_ptr = weak_ptr_factory_.GetWeakPtr();
+
   started_by_this_object_ = true;
   // This triggers a nested run loop that terminates when the drag and drop
   // operation is completed.
@@ -245,6 +247,10 @@ void DragDropOperation::StartDragDropOperation() {
       std::move(os_exchange_data_), origin_->get()->window()->GetRootWindow(),
       origin_->get()->window(), drag_start_point_, dnd_operations,
       event_source_);
+
+  // The instance deleted during StartDragAndDrop's nested RunLoop.
+  if (!weak_ptr)
+    return;
 
   if (op) {
     // Success

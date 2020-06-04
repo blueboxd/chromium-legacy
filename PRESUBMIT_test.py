@@ -2726,6 +2726,10 @@ class StringTest(unittest.TestCase):
                  <message name="IDS_TEST1">
                    Test string 1
                  </message>
+                 <message name="IDS_TEST_STRING_NON_TRANSLATEABLE1"
+                     translateable="false">
+                   Non translateable message 1, should be ignored
+                 </message>
                </messages>
              </release>
            </grit>
@@ -2740,6 +2744,10 @@ class StringTest(unittest.TestCase):
                  </message>
                  <message name="IDS_TEST2">
                    Test string 2
+                 </message>
+                 <message name="IDS_TEST_STRING_NON_TRANSLATEABLE2"
+                     translateable="false">
+                   Non translateable message 2, should be ignored
                  </message>
                </messages>
              </release>

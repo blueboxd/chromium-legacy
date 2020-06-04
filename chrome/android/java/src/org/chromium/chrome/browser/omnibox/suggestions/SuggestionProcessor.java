@@ -13,9 +13,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 public interface SuggestionProcessor extends DropdownItemProcessor {
     /**
      * @param suggestion The suggestion to process.
-     * @return Whether this suggestion processor handles this type of suggestion.
+     * @param position The position of the suggestion in the list.
+     * @return Whether this suggestion processor handles this type of suggestion at this position.
      */
-    boolean doesProcessSuggestion(OmniboxSuggestion suggestion);
+    boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position);
 
     /**
      * Populate a model for the given suggestion.

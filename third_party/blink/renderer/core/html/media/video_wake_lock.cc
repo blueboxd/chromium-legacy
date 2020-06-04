@@ -30,7 +30,10 @@ VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
                                   this, true);
   VideoElement().addEventListener(event_type_names::kVolumechange, this, true);
 
-  StartIntersectionObserver();
+  if (RuntimeEnabledFeatures::VideoWakeLockOptimisationHiddenMutedEnabled())
+    StartIntersectionObserver();
+  else
+    is_visible_ = true;
 
   RemotePlaybackController* remote_playback_controller =
       RemotePlaybackController::From(VideoElement());
@@ -43,8 +46,10 @@ VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
 void VideoWakeLock::ElementDidMoveToNewDocument() {
   SetExecutionContext(VideoElement().GetExecutionContext());
 
-  intersection_observer_->disconnect();
-  StartIntersectionObserver();
+  if (RuntimeEnabledFeatures::VideoWakeLockOptimisationHiddenMutedEnabled()) {
+    intersection_observer_->disconnect();
+    StartIntersectionObserver();
+  }
 }
 
 void VideoWakeLock::PageVisibilityChanged() {
@@ -53,6 +58,8 @@ void VideoWakeLock::PageVisibilityChanged() {
 
 void VideoWakeLock::OnVisibilityChanged(
     const HeapVector<Member<IntersectionObserverEntry>>& entries) {
+  DCHECK(RuntimeEnabledFeatures::VideoWakeLockOptimisationHiddenMutedEnabled());
+
   is_visible_ = (entries.back()->intersectionRatio() > 0);
   Update();
 }

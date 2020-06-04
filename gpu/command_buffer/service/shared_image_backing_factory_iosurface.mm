@@ -110,28 +110,11 @@ base::scoped_nsprotocol<id<MTLTexture>> API_AVAILABLE(macos(10.11))
                        viz::ResourceFormat format) {
   TRACE_EVENT0("gpu", "SharedImageBackingFactoryIOSurface::CreateMetalTexture");
   base::scoped_nsprotocol<id<MTLTexture>> mtl_texture;
-  MTLPixelFormat mtl_pixel_format;
-  switch (format) {
-    case viz::RED_8:
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-      mtl_pixel_format = MTLPixelFormatR8Unorm;
-      break;
-    case viz::RG_88:
-      mtl_pixel_format = MTLPixelFormatRG8Unorm;
-      break;
-    case viz::RGBA_8888:
-      mtl_pixel_format = MTLPixelFormatRGBA8Unorm;
-      break;
-    case viz::BGRA_8888:
-      mtl_pixel_format = MTLPixelFormatBGRA8Unorm;
-      break;
-    default:
-      // TODO(https://crbug.com/952063): Add support for all formats supported
-      // by GLImageIOSurface.
-      DLOG(ERROR) << "Resource format not yet supported in Metal.";
-      return mtl_texture;
-  }
+  MTLPixelFormat mtl_pixel_format =
+      static_cast<MTLPixelFormat>(viz::ToMTLPixelFormat(format));
+  if (mtl_pixel_format == MTLPixelFormatInvalid)
+    return mtl_texture;
+
   base::scoped_nsobject<MTLTextureDescriptor> mtl_tex_desc(
       [MTLTextureDescriptor new]);
   [mtl_tex_desc setTextureType:MTLTextureType2D];

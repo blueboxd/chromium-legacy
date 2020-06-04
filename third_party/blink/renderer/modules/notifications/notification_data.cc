@@ -78,11 +78,15 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
   if (options->hasBadge() && !options->badge().IsEmpty())
     notification_data->badge = CompleteURL(context, options->badge());
 
-  VibrationController::VibrationPattern vibration_pattern =
-      VibrationController::SanitizeVibrationPattern(options->vibrate());
+  VibrationController::VibrationPattern vibration_pattern;
+  if (options->hasVibrate()) {
+    vibration_pattern =
+        VibrationController::SanitizeVibrationPattern(options->vibrate());
+  }
   notification_data->vibration_pattern = Vector<int32_t>();
   notification_data->vibration_pattern->Append(vibration_pattern.data(),
                                                vibration_pattern.size());
+
   notification_data->timestamp = options->hasTimestamp()
                                      ? static_cast<double>(options->timestamp())
                                      : base::Time::Now().ToDoubleT() * 1000.0;
@@ -90,7 +94,9 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
   notification_data->silent = options->silent();
   notification_data->require_interaction = options->requireInteraction();
 
-  if (options->hasData()) {
+  // TODO(crbug.com/1070871, crbug.com/1070964): |data| member has a null value
+  // as a default value, and we don't need |hasData()| check actually.
+  if (options->hasData() && !options->data().IsNull()) {
     const ScriptValue& data = options->data();
     v8::Isolate* isolate = data.GetIsolate();
     DCHECK(isolate->InContext());

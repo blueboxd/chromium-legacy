@@ -9,14 +9,29 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.webkit.WebViewFactory;
 
+import androidx.annotation.NonNull;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.NotificationBuilder;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.browser_ui.notifications.channels.ChannelsInitializer;
 
 /** A notification builder for WebLayer which has extra logic to make icons work correctly. */
 final class WebLayerNotificationBuilder extends NotificationBuilder {
-    public WebLayerNotificationBuilder(Context context, String channelId,
+    /** Creates a notification builder. */
+    public static WebLayerNotificationBuilder create(
+            @WebLayerNotificationChannels.ChannelId String channelId,
+            @NonNull NotificationMetadata metadata) {
+        Context appContext = ContextUtils.getApplicationContext();
+        ChannelsInitializer initializer =
+                new ChannelsInitializer(new NotificationManagerProxyImpl(appContext),
+                        WebLayerNotificationChannels.getInstance(), appContext.getResources());
+        return new WebLayerNotificationBuilder(appContext, channelId, initializer, metadata);
+    }
+
+    private WebLayerNotificationBuilder(Context context, String channelId,
             ChannelsInitializer channelsInitializer, NotificationMetadata metadata) {
         super(context, channelId, channelsInitializer, metadata);
     }

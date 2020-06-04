@@ -107,6 +107,8 @@ base::string16 StatusAreaOverflowButtonTray::GetAccessibleNameForTray() {
                                   : IDS_ASH_STATUS_AREA_OVERFLOW_BUTTON_EXPAND);
 }
 
+void StatusAreaOverflowButtonTray::HandleLocaleChange() {}
+
 void StatusAreaOverflowButtonTray::HideBubbleWithView(
     const TrayBubbleView* bubble_view) {}
 

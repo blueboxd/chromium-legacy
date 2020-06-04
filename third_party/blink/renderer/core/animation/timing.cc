@@ -153,13 +153,15 @@ ComputedEffectTiming* Timing::getComputedTiming(
 
 Timing::CalculatedTiming Timing::CalculateTimings(
     base::Optional<double> local_time,
+    base::Optional<Phase> timeline_phase,
     AnimationDirection animation_direction,
     bool is_keyframe_effect,
     base::Optional<double> playback_rate) const {
   const double active_duration = ActiveDuration();
 
-  const Timing::Phase current_phase =
-      CalculatePhase(active_duration, local_time, animation_direction, *this);
+  Timing::Phase current_phase = CalculatePhase(
+      active_duration, local_time, timeline_phase, animation_direction, *this);
+
   const base::Optional<AnimationTimeDelta> active_time =
       CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
                           local_time, current_phase, *this);

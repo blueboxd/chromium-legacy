@@ -340,4 +340,27 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest, ShowAndThenHideVKOnKeyDown) {
   type_observer_hide.Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardPolicyTest,
+                       VKVisibilityRequestInDeletedDocument) {
+  // ui_controls::SendTouchEvents which uses InjectTouchInput API only works
+  // on Windows 8 and up.
+  if (base::win::GetVersion() < base::win::Version::WIN8) {
+    return;
+  }
+  NavigateAndWaitForLoad();
+
+  // Tap on the first textarea that would trigger show() call and then on the
+  // second textarea that would trigger hide() call.
+  gfx::Rect bounds = GetActiveWebContents()->GetContainerBounds();
+  TextInputManagerVkVisibilityRequestObserver type_observer_none(
+      GetActiveWebContents(),
+      ui::mojom::VirtualKeyboardVisibilityRequest::NONE);
+  ASSERT_TRUE(ui_controls::SendTouchEvents(
+      ui_controls::PRESS, 1,
+      bounds.x() + kTextAreaWidth / 2 + kTextAreaOffsetX * 8,
+      bounds.y() + kTextAreaHeight / 2));
+  WaitForTitle("focusin5");
+  type_observer_none.Wait();
+}
+
 }  // namespace

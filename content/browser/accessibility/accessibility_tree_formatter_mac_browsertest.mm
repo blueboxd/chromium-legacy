@@ -93,6 +93,20 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Attributes_LineIndexFilter) {
+  TestAndCheck(R"~~(data:text/html,
+                    <input class='input_at_3rd_line'>
+                    <input class='input_at_4th_line'>
+                    <input class='input_at_5th_line'>)~~",
+               {":3,:5;AXDOMClassList=*"}, R"~~(AXWebArea
+++AXGroup
+++++AXTextField AXDOMClassList=['input_at_3rd_line']
+++++AXTextField
+++++AXTextField AXDOMClassList=['input_at_5th_line']
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        ParameterizedAttributes) {
   TestAndCheck(R"~~(data:text/html,
                     <table role="grid"><tr><td>CELL</td></tr></table>)~~",

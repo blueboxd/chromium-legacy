@@ -557,6 +557,14 @@
       status: "stable",
       depends_on: ["CSSCascade"],
     },
+    // Support for declarative parts of scroll-animations-1, i.e.
+    // the animation-timeline property and the @scroll-timeline rule.
+    //
+    // https://drafts.csswg.org/scroll-animations-1/#animation-timeline
+    // https://drafts.csswg.org/scroll-animations-1/#scroll-timeline-at-rule
+    {
+      name: "CSSScrollTimeline"
+    },
     {
       name: "CSSSnapSize",
       status: "experimental",
@@ -1374,10 +1382,6 @@
       status: "experimental",
     },
     {
-      name: "PaymentRequestOptionalTotal",
-      status: "experimental",
-    },
-    {
       name: "PaymentRetry",
       status: "stable",
     },
@@ -1604,7 +1608,7 @@
     {
       name: "ScrollTimeline",
       status: "experimental",
-      implied_by: ['AnimationWorklet']
+      implied_by: ['AnimationWorklet', 'CSSScrollTimeline']
     },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
     // as per the spec, matching other Web engines.
@@ -1785,6 +1789,11 @@
       origin_trial_feature_name: "RTCInsertableStreams",
       implied_by: ["RTCInsertableStreams"],
     },
+    // When enabled, enforces new interoperable semantics for 3D transforms.
+    // See crbug.com/1008483.
+    {
+      name: "TransformInterop",
+    },
     // This is conditionally set if the platform supports translation.
     {
       name: "TranslateService"
@@ -1854,6 +1863,10 @@
     },
     {
       name: "VideoRotateToFullscreen",
+    },
+    {
+      name: "VideoWakeLockOptimisationHiddenMuted",
+      status: "stable",
     },
     {
       name: "VirtualKeyboard",

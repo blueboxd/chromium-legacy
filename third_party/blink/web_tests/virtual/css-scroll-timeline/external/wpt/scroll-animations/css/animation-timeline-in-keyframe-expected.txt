@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+PASS The animation-timeline property may not be used in keyframes
+Harness: the test ran to completion.
+

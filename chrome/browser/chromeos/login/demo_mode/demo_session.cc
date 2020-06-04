@@ -450,11 +450,13 @@ void DemoSession::InstallDemoResources() {
 
   Profile* const profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  const base::FilePath downloads =
-      file_manager::util::GetDownloadsFolderForProfile(profile);
+  // TODO(b/158057730): Revert this back to Downloads once the ARC++ Download
+  // folder bug in Managed Guest Sessions has been fixed.
+  const base::FilePath my_files =
+      file_manager::util::GetMyFilesFolderForProfile(profile);
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::BindOnce(&InstallDemoMedia, demo_resources_->path(), downloads));
+      base::BindOnce(&InstallDemoMedia, demo_resources_->path(), my_files));
 }
 
 void DemoSession::LoadAndLaunchHighlightsApp() {

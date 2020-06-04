@@ -240,6 +240,10 @@ void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
   style.SetMinWidth(Length::Fixed(size.Width() * zoom_level));
 }
 
+bool LayoutThemeDefault::PopsMenuByReturnKey() const {
+  return !features::IsFormControlsRefreshEnabled();
+}
+
 bool LayoutThemeDefault::ShouldOpenPickerWithF4Key() const {
   return true;
 }

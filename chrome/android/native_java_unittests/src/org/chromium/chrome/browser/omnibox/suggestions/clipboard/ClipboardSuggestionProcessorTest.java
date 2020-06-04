@@ -197,4 +197,22 @@ public class ClipboardSuggestionProcessorTest {
         Assert.assertEquals(
                 mBitmap.getHeight(), ((BitmapDrawable) icon.drawable).getBitmap().getHeight());
     }
+
+    @CalledByNativeJavaTest
+    public void clipboardSuggestion_thumbnailShouldResizeIfTooLarge() {
+        int size = ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_favicon_size);
+
+        Bitmap largeBitmap = Bitmap.createBitmap(size * 2, size * 2, Config.ARGB_8888);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Assert.assertTrue(largeBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos));
+        byte[] bitmapData = baos.toByteArray();
+        createClipboardSuggestion(
+                OmniboxSuggestionType.CLIPBOARD_IMAGE, GURL.emptyGURL(), bitmapData);
+        SuggestionDrawableState icon = mModel.get(BaseSuggestionViewProperties.ICON);
+        Assert.assertNotNull(icon);
+
+        Assert.assertEquals(size, ((BitmapDrawable) icon.drawable).getBitmap().getWidth());
+        Assert.assertEquals(size, ((BitmapDrawable) icon.drawable).getBitmap().getHeight());
+    }
 }

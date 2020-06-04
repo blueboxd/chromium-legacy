@@ -159,7 +159,7 @@ TEST(UserDataDowngradeTests, RemoveDataForProfile) {
     EXPECT_TRUE(
         base::PathExists(snapshot_profile_path_default.Append(item.path)));
     EXPECT_EQ((item.data_types &
-               ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS) == 0,
+               ChromeBrowsingDataRemoverDelegate::DATA_TYPE_BOOKMARKS) == 0ULL,
               base::PathExists(snapshot_profile_path_1.Append(item.path)));
   }
 
@@ -175,7 +175,7 @@ TEST(UserDataDowngradeTests, RemoveDataForProfile) {
   RemoveDataForProfile(base::Time::Min(), profile_path_default, remove_mask);
   for (const auto& item : profile_items) {
     EXPECT_EQ(
-        (item.data_types & remove_mask) == 0,
+        (item.data_types & remove_mask) == 0ULL,
         base::PathExists(snapshot_profile_path_default.Append(item.path)));
   }
   // Wipe profile 1

@@ -46,11 +46,14 @@ TEST_F(DocumentScanInterfaceChromeosTest, ListScanners) {
   constexpr const char* kScannerManufacturer = "Jacques-Louis David";
   constexpr const char* kScannerModel = "Le Havre";
   constexpr const char* kScannerType = "Impressionism";
-  GetLorgnetteManagerClient()->AddScannerTableEntry(
-      kScannerName,
-      {{lorgnette::kScannerPropertyManufacturer, kScannerManufacturer},
-       {lorgnette::kScannerPropertyModel, kScannerModel},
-       {lorgnette::kScannerPropertyType, kScannerType}});
+  lorgnette::ScannerInfo scanner;
+  scanner.set_name(kScannerName);
+  scanner.set_manufacturer(kScannerManufacturer);
+  scanner.set_model(kScannerModel);
+  scanner.set_type(kScannerType);
+  lorgnette::ListScannersResponse response;
+  *response.add_scanners() = std::move(scanner);
+  GetLorgnetteManagerClient()->SetListScannersResponse(response);
 
   base::RunLoop run_loop;
   scan_interface_.ListScanners(base::BindOnce(

@@ -36,7 +36,7 @@ public class TileSuggestionProcessor implements SuggestionProcessor {
     }
 
     @Override
-    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
+    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
         return suggestion.getType() == OmniboxSuggestionType.TILE_SUGGESTION;
     }
 

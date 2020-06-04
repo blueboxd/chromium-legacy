@@ -207,7 +207,7 @@ TEST_F(RenderFrameMetadataObserverImplTest, SendRootScrollsForAccessibility) {
 
   // Enable reporting for root scroll changes. This will generate one
   // notification.
-  observer_impl().ReportAllRootScrollsForAccessibility(true);
+  observer_impl().ReportAllRootScrolls(true);
   {
     base::RunLoop run_loop;
     EXPECT_CALL(client(), OnRenderFrameMetadataChanged(expected_frame_token,

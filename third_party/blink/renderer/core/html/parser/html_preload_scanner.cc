@@ -295,13 +295,6 @@ class TokenPreloadScanner::StartTagScanner {
     request->SetCharset(Charset());
     request->SetDefer(defer_);
 
-    LoadingAttrValue effective_loading_attr_value = loading_attr_value_;
-    // If the 'lazyload' feature policy is enforced, the attribute value
-    // loading='eager' is considered as 'auto'.
-    if (effective_loading_attr_value == LoadingAttrValue::kEager &&
-        document_parameters.lazyload_policy_enforced) {
-      effective_loading_attr_value = LoadingAttrValue::kAuto;
-    }
     if (type == ResourceType::kImage && Match(tag_impl_, html_names::kImgTag) &&
         IsLazyLoadImageDeferable(document_parameters)) {
       return nullptr;
@@ -559,14 +552,7 @@ class TokenPreloadScanner::StartTagScanner {
       return false;
     }
 
-    // If the 'lazyload' feature policy is enforced, the attribute value
-    // loading='eager' is considered as 'auto'.
-    LoadingAttrValue effective_loading_attr_value = loading_attr_value_;
-    if (effective_loading_attr_value == LoadingAttrValue::kEager &&
-        document_parameters.lazyload_policy_enforced) {
-      effective_loading_attr_value = LoadingAttrValue::kAuto;
-    }
-    switch (effective_loading_attr_value) {
+    switch (loading_attr_value_) {
       case LoadingAttrValue::kEager:
         return false;
       case LoadingAttrValue::kLazy:
@@ -1114,7 +1100,6 @@ CachedDocumentParameters::CachedDocumentParameters(Document* document) {
   referrer_policy = document->GetReferrerPolicy();
   integrity_features =
       SubresourceIntegrityHelper::GetFeatures(document->GetExecutionContext());
-  lazyload_policy_enforced = document->IsLazyLoadPolicyEnforced();
   if (document->Loader() && document->Loader()->GetFrame()) {
     lazy_load_image_setting =
         document->Loader()->GetFrame()->GetLazyLoadImageSetting();

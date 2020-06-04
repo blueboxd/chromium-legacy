@@ -3379,6 +3379,9 @@
   <message name="IDS_NETWORK_UI_GLOBAL_POLICY" desc="Label for global policy properties">
     Global Policy:
   </message>
+  <message name="IDS_NETWORK_UI_NETWORK_HEALTH" desc="Label for network health section">
+    Network Health Snapshot
+  </message>
   <message name="IDS_NETWORK_UI_NETWORK_LISTS" desc="Label for network lists section">
     Network (Service) and Device properties
   </message>

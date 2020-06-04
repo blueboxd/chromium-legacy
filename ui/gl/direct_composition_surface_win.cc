@@ -286,7 +286,8 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
     : GLSurfaceEGL(),
       child_window_(parent_window),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      root_surface_(new DirectCompositionChildSurfaceWin()),
+      root_surface_(new DirectCompositionChildSurfaceWin(
+          settings.use_angle_texture_offset)),
       layer_tree_(std::make_unique<DCLayerTree>(
           settings.disable_nv12_dynamic_textures,
           settings.disable_larger_than_screen_overlays,
@@ -739,6 +740,10 @@ bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   }
 
   return result;
+}
+
+gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
+  return root_surface_->GetDrawOffset();
 }
 
 bool DirectCompositionSurfaceWin::SupportsGpuVSync() const {

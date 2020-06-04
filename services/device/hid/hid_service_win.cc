@@ -4,15 +4,16 @@
 
 #include "services/device/hid/hid_service_win.h"
 
-#include <memory>
-
 #define INITGUID
 
 #include <dbt.h>
+#include <devpkey.h>
 #include <setupapi.h>
 #include <stddef.h>
+#include <wdmguid.h>
 #include <winioctl.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -22,15 +23,111 @@
 #include "base/memory/free_deleter.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_devinfo.h"
+#include "base/win/win_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_connection_win.h"
 #include "services/device/hid/hid_device_info.h"
 
 namespace device {
+
+namespace {
+
+// Looks up the value of a GUID-type device property specified by |property| for
+// the device described by |device_info_data|. On success, returns true and sets
+// |property_buffer| to the property value. Returns false if the property is not
+// present or has a different type.
+bool GetDeviceGuidProperty(HDEVINFO device_info_set,
+                           SP_DEVINFO_DATA& device_info_data,
+                           const DEVPROPKEY& property,
+                           GUID* property_buffer) {
+  DEVPROPTYPE property_type;
+  if (!SetupDiGetDeviceProperty(
+          device_info_set, &device_info_data, &property, &property_type,
+          reinterpret_cast<PBYTE>(property_buffer), sizeof(*property_buffer),
+          /*RequiredSize=*/nullptr, /*Flags=*/0) ||
+      property_type != DEVPROP_TYPE_GUID) {
+    return false;
+  }
+  return true;
+}
+
+// Looks up information about the device described by |device_interface_data|
+// in |device_info_set|. On success, returns true and sets |device_info_data|
+// and |device_path|. Returns false if an error occurred.
+bool GetDeviceInfoAndPathFromInterface(
+    HDEVINFO device_info_set,
+    SP_DEVICE_INTERFACE_DATA& device_interface_data,
+    SP_DEVINFO_DATA* device_info_data,
+    base::string16* device_path) {
+  // Get the required buffer size. When called with
+  // DeviceInterfaceDetailData == nullptr and DeviceInterfaceDetailSize == 0,
+  // SetupDiGetDeviceInterfaceDetail returns the required buffer size at
+  // RequiredSize and fails with GetLastError() == ERROR_INSUFFICIENT_BUFFER.
+  DWORD required_size;
+  if (SetupDiGetDeviceInterfaceDetail(device_info_set, &device_interface_data,
+                                      /*DeviceInterfaceDetailData=*/nullptr,
+                                      /*DeviceInterfaceDetailSize=*/0,
+                                      &required_size,
+                                      /*DeviceInfoData=*/nullptr) ||
+      GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+    return false;
+  }
+
+  std::unique_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA, base::FreeDeleter>
+      device_interface_detail_data(
+          static_cast<SP_DEVICE_INTERFACE_DETAIL_DATA*>(malloc(required_size)));
+  device_interface_detail_data->cbSize = sizeof(*device_interface_detail_data);
+
+  // Call the function again with the correct buffer size to get the detailed
+  // data for this device.
+  if (!SetupDiGetDeviceInterfaceDetail(device_info_set, &device_interface_data,
+                                       device_interface_detail_data.get(),
+                                       required_size, /*RequiredSize=*/nullptr,
+                                       device_info_data)) {
+    return false;
+  }
+
+  // Windows uses case-insensitive paths and may return paths that differ only
+  // by case. Canonicalize the device path by converting to lowercase.
+  base::string16 path =
+      base::string16(device_interface_detail_data->DevicePath);
+  DCHECK(base::IsStringASCII(path));
+  *device_path = base::ToLowerASCII(path);
+  return true;
+}
+
+// Returns a device info set containing only the device described by
+// |device_path|, or an invalid ScopedDevInfo if there was an error while
+// creating the device set. The device info is returned in |device_info_data|.
+base::win::ScopedDevInfo GetDeviceInfoFromPath(
+    const base::string16& device_path,
+    SP_DEVINFO_DATA* device_info_data) {
+  base::win::ScopedDevInfo device_info_set(SetupDiGetClassDevs(
+      &GUID_DEVINTERFACE_HID, /*Enumerator=*/nullptr,
+      /*hwndParent=*/0, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
+  if (!device_info_set.is_valid())
+    return base::win::ScopedDevInfo();
+
+  SP_DEVICE_INTERFACE_DATA device_interface_data;
+  device_interface_data.cbSize = sizeof(device_interface_data);
+  if (!SetupDiOpenDeviceInterface(device_info_set.get(), device_path.c_str(),
+                                  /*OpenFlags=*/0, &device_interface_data)) {
+    return base::win::ScopedDevInfo();
+  }
+
+  base::string16 intf_device_path;
+  GetDeviceInfoAndPathFromInterface(device_info_set.get(),
+                                    device_interface_data, device_info_data,
+                                    &intf_device_path);
+  DCHECK_EQ(intf_device_path, device_path);
+  return device_info_set;
+}
+
+}  // namespace
 
 HidServiceWin::HidServiceWin()
     : task_runner_(base::SequencedTaskRunnerHandle::Get()),
@@ -82,41 +179,37 @@ base::WeakPtr<HidService> HidServiceWin::GetWeakPtr() {
 void HidServiceWin::EnumerateBlocking(
     base::WeakPtr<HidServiceWin> service,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  base::win::ScopedDevInfo dev_info(
-      SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, nullptr, nullptr,
-                          DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
+  base::win::ScopedDevInfo dev_info(SetupDiGetClassDevs(
+      &GUID_DEVINTERFACE_HID, /*Enumerator=*/nullptr,
+      /*hwndParent=*/nullptr, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
 
   if (dev_info.is_valid()) {
-    SP_DEVICE_INTERFACE_DATA device_interface_data;
-    device_interface_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+    SP_DEVICE_INTERFACE_DATA device_interface_data = {0};
+    device_interface_data.cbSize = sizeof(device_interface_data);
 
     for (int device_index = 0; SetupDiEnumDeviceInterfaces(
-             dev_info.get(), nullptr, &GUID_DEVINTERFACE_HID, device_index,
-             &device_interface_data);
+             dev_info.get(), /*DeviceInfoData=*/nullptr, &GUID_DEVINTERFACE_HID,
+             device_index, &device_interface_data);
          ++device_index) {
-      DWORD required_size = 0;
-
-      // Determime the required size of detail struct.
-      SetupDiGetDeviceInterfaceDetail(dev_info.get(), &device_interface_data,
-                                      nullptr, 0, &required_size, nullptr);
-
-      std::unique_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA, base::FreeDeleter>
-      device_interface_detail_data(
-          static_cast<SP_DEVICE_INTERFACE_DETAIL_DATA*>(malloc(required_size)));
-      device_interface_detail_data->cbSize =
-          sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-
-      // Get the detailed data for this device.
-      BOOL res = SetupDiGetDeviceInterfaceDetail(
-          dev_info.get(), &device_interface_data,
-          device_interface_detail_data.get(), required_size, nullptr, nullptr);
-      if (!res) {
+      SP_DEVINFO_DATA dev_info_data = {0};
+      dev_info_data.cbSize = sizeof(dev_info_data);
+      base::string16 device_path;
+      if (!GetDeviceInfoAndPathFromInterface(dev_info.get(),
+                                             device_interface_data,
+                                             &dev_info_data, &device_path)) {
         continue;
       }
 
-      base::string16 device_path(device_interface_detail_data->DevicePath);
-      DCHECK(base::IsStringASCII(device_path));
-      AddDeviceBlocking(service, task_runner, base::ToLowerASCII(device_path));
+      // Get the container ID for the physical device.
+      GUID container_id;
+      if (!GetDeviceGuidProperty(dev_info.get(), dev_info_data,
+                                 DEVPKEY_Device_ContainerId, &container_id)) {
+        continue;
+      }
+      std::string physical_device_id =
+          base::UTF16ToUTF8(base::win::String16FromGUID(container_id));
+
+      AddDeviceBlocking(service, task_runner, device_path, physical_device_id);
     }
   }
 
@@ -171,14 +264,15 @@ void HidServiceWin::CollectInfoFromValueCaps(
 void HidServiceWin::AddDeviceBlocking(
     base::WeakPtr<HidServiceWin> service,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::string16& device_path) {
+    const base::string16& device_path,
+    const std::string& physical_device_id) {
   base::win::ScopedHandle device_handle(OpenDevice(device_path));
   if (!device_handle.IsValid()) {
     return;
   }
 
   HIDD_ATTRIBUTES attrib = {0};
-  attrib.Size = sizeof(HIDD_ATTRIBUTES);
+  attrib.Size = sizeof(attrib);
   if (!HidD_GetAttributes(device_handle.Get(), &attrib)) {
     HID_LOG(EVENT) << "Failed to get device attributes.";
     return;
@@ -238,24 +332,24 @@ void HidServiceWin::AddDeviceBlocking(
 
   // 1023 characters plus NULL terminator is more than enough for a USB string
   // descriptor which is limited to 126 characters.
-  wchar_t buffer[1024];
+  base::char16 buffer[1024];
   std::string product_name;
   if (HidD_GetProductString(device_handle.Get(), &buffer[0], sizeof(buffer))) {
     // NULL termination guaranteed by the API.
-    product_name = base::SysWideToUTF8(buffer);
+    product_name = base::UTF16ToUTF8(buffer);
   }
   std::string serial_number;
   if (HidD_GetSerialNumberString(device_handle.Get(), &buffer[0],
                                  sizeof(buffer))) {
     // NULL termination guaranteed by the API.
-    serial_number = base::SysWideToUTF8(buffer);
+    serial_number = base::UTF16ToUTF8(buffer);
   }
 
   // This populates the HidDeviceInfo instance without a raw report descriptor.
   // The descriptor is unavailable on Windows because HID devices are exposed to
   // user-space as individual top-level collections.
   scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
-      device_path, /*physical_device_id=*/"", attrib.VendorID, attrib.ProductID,
+      device_path, physical_device_id, attrib.VendorID, attrib.ProductID,
       product_name, serial_number,
       // TODO(reillyg): Detect Bluetooth. crbug.com/443335
       mojom::HidBusType::kHIDBusTypeUSB, std::move(collection_info),
@@ -268,10 +362,24 @@ void HidServiceWin::AddDeviceBlocking(
 
 void HidServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const base::string16& device_path) {
+  SP_DEVINFO_DATA device_info_data = {0};
+  device_info_data.cbSize = sizeof(device_info_data);
+  auto device_info_set = GetDeviceInfoFromPath(device_path, &device_info_data);
+  if (!device_info_set.is_valid())
+    return;
+
+  GUID container_id;
+  if (!GetDeviceGuidProperty(device_info_set.get(), device_info_data,
+                             DEVPKEY_Device_ContainerId, &container_id)) {
+    return;
+  }
+  std::string physical_device_id =
+      base::UTF16ToUTF8(base::win::String16FromGUID(container_id));
+
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HidServiceWin::AddDeviceBlocking,
-                     weak_factory_.GetWeakPtr(), task_runner_, device_path));
+      FROM_HERE, base::BindOnce(&HidServiceWin::AddDeviceBlocking,
+                                weak_factory_.GetWeakPtr(), task_runner_,
+                                device_path, physical_device_id));
 }
 
 void HidServiceWin::OnDeviceRemoved(const GUID& class_guid,

@@ -66,8 +66,8 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
       base::TimeDelta timeout,
-      mojo::PendingRemote<blink::mojom::BlobRegistry>
-          download_to_blob_registry);
+      mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
+      const std::vector<std::string>& cors_exempt_header_list);
 
   ~SyncLoadContext() override;
 
@@ -86,7 +86,8 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       base::WaitableEvent* abort_event,
       base::TimeDelta timeout,
       mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const std::vector<std::string>& cors_exempt_header_list);
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,

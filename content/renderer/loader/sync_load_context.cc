@@ -101,11 +101,13 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
     base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,
     base::TimeDelta timeout,
-    mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry) {
-  auto* context = new SyncLoadContext(
-      request.get(), std::move(pending_url_loader_factory), response,
-      redirect_or_response_event, abort_event, timeout,
-      std::move(download_to_blob_registry), loading_task_runner);
+    mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
+    const std::vector<std::string>& cors_exempt_header_list) {
+  auto* context =
+      new SyncLoadContext(request.get(), std::move(pending_url_loader_factory),
+                          response, redirect_or_response_event, abort_event,
+                          timeout, std::move(download_to_blob_registry),
+                          loading_task_runner, cors_exempt_header_list);
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
       traffic_annotation, loader_options, base::WrapUnique(context),
@@ -121,7 +123,8 @@ SyncLoadContext::SyncLoadContext(
     base::WaitableEvent* abort_event,
     base::TimeDelta timeout,
     mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const std::vector<std::string>& cors_exempt_header_list)
     : response_(response),
       body_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       download_to_blob_registry_(std::move(download_to_blob_registry)),
@@ -138,6 +141,7 @@ SyncLoadContext::SyncLoadContext(
 
   // Constructs a new ResourceDispatcher specifically for this request.
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
+  resource_dispatcher_->SetCorsExemptHeaderList(cors_exempt_header_list);
 
   // Initialize the final URL with the original request URL. It will be
   // overwritten on redirects.

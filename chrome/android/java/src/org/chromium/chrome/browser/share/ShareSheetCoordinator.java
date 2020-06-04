@@ -65,7 +65,8 @@ class ShareSheetCoordinator {
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         mShareStartTime = shareStartTime;
-        List<PropertyModel> chromeFeatures = createTopRowPropertyModels(bottomSheet, activity);
+        List<PropertyModel> chromeFeatures =
+                createTopRowPropertyModels(bottomSheet, activity, params);
         List<PropertyModel> thirdPartyApps =
                 createBottomRowPropertyModels(bottomSheet, activity, params, saveLastUsed);
 
@@ -87,13 +88,14 @@ class ShareSheetCoordinator {
     }
 
     List<PropertyModel> createTopRowPropertyModels(
-            ShareSheetBottomSheetContent bottomSheet, Activity activity) {
+            ShareSheetBottomSheetContent bottomSheet, Activity activity, ShareParams shareParams) {
         if (mExcludeFirstParty) {
             return new ArrayList<>();
         }
         ChromeProvidedSharingOptionsProvider chromeProvidedSharingOptionsProvider =
                 new ChromeProvidedSharingOptionsProvider(activity, mTabProvider,
-                        mBottomSheetController, bottomSheet, mPrefServiceBridge, mShareStartTime);
+                        mBottomSheetController, bottomSheet, mPrefServiceBridge, shareParams,
+                        mShareStartTime);
         return chromeProvidedSharingOptionsProvider.createPropertyModels(new HashSet<>(
                 Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
                         ContentType.TEXT, ContentType.IMAGE, ContentType.OTHER_FILE_TYPE)));

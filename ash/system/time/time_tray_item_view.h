@@ -25,6 +25,9 @@ class TimeTrayItemView : public TrayItemView, public SessionObserver {
   void UpdateAlignmentForShelf(Shelf* shelf);
   TimeView* time_view() { return time_view_; }
 
+  // TrayItemView:
+  void HandleLocaleChange() override;
+
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 

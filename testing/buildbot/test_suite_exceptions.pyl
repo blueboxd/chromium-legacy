@@ -671,7 +671,7 @@
         'args': [
           '--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb',
           # https://crbug.com/1046059
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.chrome_public_test_apk.filter',
         ],
         'swarming': {
           'named_caches': [
@@ -897,6 +897,9 @@
     },
   },
   'content_shell_crash_test': {
+    'remove_from': [
+      'android-marshmallow-x86-fyi-rel', # crbug.com/1084353
+    ],
     'modifications': {
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,  # https://crbug.com/861730
@@ -1152,6 +1155,14 @@
   'headless_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
+      'Fuchsia ARM64',  # https://crbug.com/757053
+      'Fuchsia x64', # https://crbug.com/757053
+    ],
+  },
+  'headless_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/757053
+      'Fuchsia x64', # https://crbug.com/757053
     ],
   },
   'info_collection_tests': {
@@ -2089,6 +2100,11 @@
       'Linux Release (NVIDIA)',
     ],
   },
+  'telemetry_chromium_minidump_unittests': {
+    'remove_from': [
+      'android-marshmallow-x86-fyi-rel', # crbug.com/1084352
+    ],
+  },
   'telemetry_monochrome_minidump_unittests': {
     'remove_from': [
       # Monochrome isn't supported on M.
@@ -2149,6 +2165,7 @@
       },
     },
     'remove_from': [
+      'android-marshmallow-x86-fyi-rel', # crbug.com/1084352
       # There's no need to run telemetry_perf_unittests on both lollipop and
       # marshmallow on the CQ. https://crbug.com/1026487.
       'android-marshmallow-arm64-rel',

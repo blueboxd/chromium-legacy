@@ -32,8 +32,10 @@ constexpr int kIconSizeDip = 20;
 
 }  // namespace
 
-PrivacyInfoView::PrivacyInfoView(const int info_string_id) {
-  InitLayout(info_string_id);
+PrivacyInfoView::PrivacyInfoView(const int info_string_id,
+                                 const int link_string_id)
+    : info_string_id_(info_string_id), link_string_id_(link_string_id) {
+  InitLayout();
 }
 
 PrivacyInfoView::~PrivacyInfoView() = default;
@@ -84,7 +86,7 @@ void PrivacyInfoView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void PrivacyInfoView::InitLayout(const int info_string_id) {
+void PrivacyInfoView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kRowMarginDip)));
   row_container_ = AddChildView(std::make_unique<views::View>());
@@ -108,7 +110,7 @@ void PrivacyInfoView::InitLayout(const int info_string_id) {
   InitInfoIcon();
 
   // Text.
-  InitText(info_string_id);
+  InitText();
 
   // Spacer.
   layout_manager->SetFlexForView(
@@ -126,12 +128,11 @@ void PrivacyInfoView::InitInfoIcon() {
                                              gfx::kGoogleBlue600));
 }
 
-void PrivacyInfoView::InitText(const int info_string_id) {
-  const base::string16 link =
-      l10n_util::GetStringUTF16(IDS_APP_LIST_LEARN_MORE);
+void PrivacyInfoView::InitText() {
+  const base::string16 link = l10n_util::GetStringUTF16(link_string_id_);
   size_t offset;
   const base::string16 text =
-      l10n_util::GetStringFUTF16(info_string_id, link, &offset);
+      l10n_util::GetStringFUTF16(info_string_id_, link, &offset);
   auto text_view = std::make_unique<views::StyledLabel>(text, this);
   views::StyledLabel::RangeStyleInfo style;
   style.custom_font = text_view->GetDefaultFontList().Derive(
@@ -155,9 +156,7 @@ void PrivacyInfoView::InitCloseButton() {
                                                gfx::kGoogleGrey700));
   close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  // TODO(crbug/1079169): Create a new string that is not Assistant-specific.
-  base::string16 close_button_label(
-      l10n_util::GetStringUTF16(IDS_APP_LIST_ASSISTANT_PRIVACY_INFO_CLOSE));
+  base::string16 close_button_label(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SetAccessibleName(close_button_label);
   close_button->SetTooltipText(close_button_label);
   close_button->SetFocusBehavior(FocusBehavior::ALWAYS);

@@ -308,6 +308,14 @@ const char kHistogramNavigationTimingNavigationStartToFirstResponseStart[] =
 const char kHistogramNavigationTimingNavigationStartToFirstLoaderCallback[] =
     "PageLoad.Experimental.NavigationTiming."
     "NavigationStartToFirstLoaderCallback";
+const char kHistogramNavigationTimingNavigationStartToFinalRequestStart[] =
+    "PageLoad.Experimental.NavigationTiming.NavigationStartToFinalRequestStart";
+const char kHistogramNavigationTimingNavigationStartToFinalResponseStart[] =
+    "PageLoad.Experimental.NavigationTiming."
+    "NavigationStartToFinalResponseStart";
+const char kHistogramNavigationTimingNavigationStartToFinalLoaderCallback[] =
+    "PageLoad.Experimental.NavigationTiming."
+    "NavigationStartToFinalLoaderCallback";
 const char kHistogramNavigationTimingNavigationStartToNavigationCommitSent[] =
     "PageLoad.Experimental.NavigationTiming."
     "NavigationStartToNavigationCommitSent";
@@ -319,6 +327,16 @@ const char kHistogramNavigationTimingFirstRequestStartToFirstResponseStart[] =
 const char kHistogramNavigationTimingFirstResponseStartToFirstLoaderCallback[] =
     "PageLoad.Experimental.NavigationTiming."
     "FirstResponseStartToFirstLoaderCallback";
+const char kHistogramNavigationTimingFinalRequestStartToFinalResponseStart[] =
+    "PageLoad.Experimental.NavigationTiming."
+    "FinalRequestStartToFinalResponseStart";
+const char kHistogramNavigationTimingFinalResponseStartToFinalLoaderCallback[] =
+    "PageLoad.Experimental.NavigationTiming."
+    "FinalResponseStartToFinalLoaderCallback";
+const char
+    kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent[] =
+        "PageLoad.Experimental.NavigationTiming."
+        "FinalLoaderCallbackToNavigationCommitSent";
 
 }  // namespace internal
 
@@ -802,6 +820,9 @@ void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
       timing.first_request_start_time.is_null() ||
       timing.first_response_start_time.is_null() ||
       timing.first_loader_callback_time.is_null() ||
+      timing.final_request_start_time.is_null() ||
+      timing.final_response_start_time.is_null() ||
+      timing.final_loader_callback_time.is_null() ||
       timing.navigation_commit_sent_time.is_null())
     return;
   // TODO(https://crbug.com/1076710): Change these early-returns to DCHECKs
@@ -812,6 +833,16 @@ void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
       timing.first_loader_callback_time > timing.navigation_commit_sent_time) {
     return;
   }
+  if (navigation_start_time > timing.final_request_start_time ||
+      timing.final_request_start_time > timing.final_response_start_time ||
+      timing.final_response_start_time > timing.final_loader_callback_time ||
+      timing.final_loader_callback_time > timing.navigation_commit_sent_time) {
+    return;
+  }
+  DCHECK_LE(timing.first_request_start_time, timing.final_request_start_time);
+  DCHECK_LE(timing.first_response_start_time, timing.final_response_start_time);
+  DCHECK_LE(timing.first_loader_callback_time,
+            timing.final_loader_callback_time);
 
   // Record the elapsed time from the navigation start milestone.
   PAGE_LOAD_HISTOGRAM(
@@ -823,6 +854,17 @@ void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramNavigationTimingNavigationStartToFirstLoaderCallback,
       timing.first_loader_callback_time - navigation_start_time);
+
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramNavigationTimingNavigationStartToFinalRequestStart,
+      timing.final_request_start_time - navigation_start_time);
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramNavigationTimingNavigationStartToFinalResponseStart,
+      timing.final_response_start_time - navigation_start_time);
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramNavigationTimingNavigationStartToFinalLoaderCallback,
+      timing.final_loader_callback_time - navigation_start_time);
+
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramNavigationTimingNavigationStartToNavigationCommitSent,
       timing.navigation_commit_sent_time - navigation_start_time);
@@ -835,6 +877,19 @@ void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
       internal::
           kHistogramNavigationTimingFirstResponseStartToFirstLoaderCallback,
       timing.first_loader_callback_time - timing.first_response_start_time);
+
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramNavigationTimingFinalRequestStartToFinalResponseStart,
+      timing.final_response_start_time - timing.final_request_start_time);
+  PAGE_LOAD_HISTOGRAM(
+      internal::
+          kHistogramNavigationTimingFinalResponseStartToFinalLoaderCallback,
+      timing.final_loader_callback_time - timing.final_response_start_time);
+
+  PAGE_LOAD_HISTOGRAM(
+      internal::
+          kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent,
+      timing.navigation_commit_sent_time - timing.final_loader_callback_time);
 }
 
 // This method records values for metrics that were not recorded during any

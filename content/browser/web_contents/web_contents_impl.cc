@@ -1890,10 +1890,17 @@ void WebContentsImpl::AttachInnerWebContents(
     DCHECK_EQ(1u, node_.GetInnerWebContents().size());
     inner_web_contents_impl->SetAsFocusedWebContentsIfNecessary();
   }
+
+  for (auto& observer : observers_) {
+    observer.InnerWebContentsAttached(inner_web_contents_impl,
+                                      render_frame_host, is_full_page);
+  }
 }
 
 std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
-  DCHECK(node_.outer_web_contents());
+  auto* outer_web_contents = GetOuterWebContents();
+  DCHECK(outer_web_contents);
+
   RecursivelyUnregisterFrameSinkIds();
   if (RenderWidgetHostViewBase* view =
           static_cast<RenderWidgetHostViewBase*>(GetMainFrame()->GetView())) {
@@ -1929,6 +1936,11 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   // used for portals, or it should get a different name.
   GetMainFrame()->set_browser_plugin_embedder_ax_tree_id(ui::AXTreeIDUnknown());
   GetMainFrame()->UpdateAXTreeData();
+
+  // Invoke on the *outer* web contents observers for symmetry.
+  for (auto& observer : outer_web_contents->observers_)
+    observer.InnerWebContentsDetached(this);
+
   return web_contents;
 }
 

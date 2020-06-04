@@ -21,20 +21,20 @@ public interface DropdownItemProcessor {
     int getMinimumViewHeight();
 
     /**
-     * @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean)
-     */
-    void onUrlFocusChange(boolean hasFocus);
-
-    /**
-     * Signals that native initialization has completed.
-     */
-    void onNativeInitialized();
-
-    /**
      * Create a model for views managed by the processor.
      * @return A newly created model.
      */
     PropertyModel createModel();
+
+    /**
+     * @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean)
+     */
+    default void onUrlFocusChange(boolean hasFocus) {}
+
+    /**
+     * Signals that native initialization has completed.
+     */
+    default void onNativeInitialized() {}
 
     /**
      * Record suggestion impressions for this processor.
@@ -43,7 +43,7 @@ public interface DropdownItemProcessor {
      * or closing the app).
      * This call is invoked once for every model created by the processor.
      */
-    void recordItemPresented(PropertyModel model);
+    default void recordItemPresented(PropertyModel model) {}
 
     /**
      * Record suggestion usage for this processor.
@@ -51,10 +51,10 @@ public interface DropdownItemProcessor {
      * this processor.
      * This call is invoked once for every model created by the processor.
      */
-    void recordItemUsed(PropertyModel model);
+    default void recordItemUsed(PropertyModel model) {}
 
     /**
      * Signals that the dropdown list is about to be populated with new content.
      */
-    void onSuggestionsReceived();
+    default void onSuggestionsReceived() {}
 }

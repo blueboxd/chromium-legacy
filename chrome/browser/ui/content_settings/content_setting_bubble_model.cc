@@ -35,7 +35,6 @@
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
 #include "chrome/common/chrome_features.h"
@@ -44,6 +43,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
@@ -972,7 +972,8 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
   set_title(l10n_util::GetStringUTF16(IDS_BLOCKED_POPUPS_TITLE));
 
   // Build blocked popup list.
-  auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
+  auto* helper =
+      blocked_content::PopupBlockerTabHelper::FromWebContents(web_contents);
   std::map<int32_t, GURL> blocked_popups = helper->GetBlockedPopupRequests();
   for (const auto& blocked_popup : blocked_popups)
     AddListItem(CreateUrlListItem(blocked_popup.first, blocked_popup.second));
@@ -989,7 +990,8 @@ void ContentSettingPopupBubbleModel::BlockedUrlAdded(int32_t id,
 
 void ContentSettingPopupBubbleModel::OnListItemClicked(int index,
                                                        int event_flags) {
-  auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents());
+  auto* helper =
+      blocked_content::PopupBlockerTabHelper::FromWebContents(web_contents());
   helper->ShowBlockedPopup(item_id_from_item_index(index),
                            ui::DispositionFromEventFlags(event_flags));
   RemoveListItem(index);

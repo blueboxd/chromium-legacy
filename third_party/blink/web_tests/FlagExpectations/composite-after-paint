@@ -35,8 +35,6 @@ compositing/overflow/scrolls-with-respect-to.html [ Skip ]
 external/wpt/paint-timing/fcp-only/fcp-opacity.html [ Skip ]
 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-opacity.html [ Skip ]
 
-crbug.com/1090431 external/wpt/html/user-activation/message-event-activation-api-iframe-cross-origin.sub.tentative.html [ Timeout ]
-
 # Can't rebaseline because the file path is too long.
 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Skip ]
 

@@ -132,6 +132,9 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "Layer painted on top of other layers as decoration"},
     {CompositingReason::kLayerForOther, "layerForOther",
      "Layer for link highlight, frame overlay, etc."},
+    {CompositingReason::kBackfaceInvisibility3DAncestor,
+     "BackfaceInvisibility3DAncestor",
+     "Ancestor in same 3D rendering context has a hidden backface"},
 };
 
 }  // anonymous namespace

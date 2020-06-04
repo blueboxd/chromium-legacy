@@ -135,8 +135,8 @@ class FrameNodeImpl
     return weak_factory_.GetWeakPtr();
   }
 
-  void SeverOpenedPagesAndMaybeReparentPopupsForTesting() {
-    SeverOpenedPagesAndMaybeReparentPopups();
+  void SeverOpenedPagesAndMaybeReparentForTesting() {
+    SeverOpenedPagesAndMaybeReparent();
   }
 
  protected:
@@ -226,9 +226,9 @@ class FrameNodeImpl
 
   // Helper function to sever all opened page relationships. This is called
   // before destroying the frame node in "OnBeforeLeavingGraph". Note that this
-  // will reparent popups to the root frame of the page if this frame isn't
-  // the root.
-  void SeverOpenedPagesAndMaybeReparentPopups();
+  // will reparent opened pages to this frame's parent so that tracking is
+  // maintained.
+  void SeverOpenedPagesAndMaybeReparent();
 
   // This is not quite the same as GetMainFrame, because there can be multiple
   // main frames while the main frame is navigating. This explicitly walks up

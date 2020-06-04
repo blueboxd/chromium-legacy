@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/core/exported/web_shared_worker_impl.h"
 
 #include <memory>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -39,7 +41,6 @@
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
-#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -178,8 +179,10 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebFetchClientSettingsObject& outside_fetch_client_settings_object,
     const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,
-    mojo::ScopedMessagePipeHandle content_settings_handle,
-    mojo::ScopedMessagePipeHandle browser_interface_broker,
+    CrossVariantMojoRemote<
+        mojom::blink::WorkerContentSettingsProxyInterfaceBase> content_settings,
+    CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
+        browser_interface_broker,
     bool pause_worker_context_on_start) {
   DCHECK(IsMainThread());
   CHECK(constructor_origin.Get()->CanAccessSharedWorkers());
@@ -236,17 +239,13 @@ void WebSharedWorkerImpl::StartWorkerContext(
       outside_settings_object->GetHttpsState(),
       MakeGarbageCollected<WorkerClients>(),
       std::make_unique<SharedWorkerContentSettingsProxy>(
-          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
-              std::move(content_settings_handle), 0u)),
+          std::move(content_settings)),
       base::nullopt /* response_address_space */,
       nullptr /* origin_trial_tokens */, devtools_worker_token,
       std::move(worker_settings), kV8CacheOptionsDefault,
       nullptr /* worklet_module_response_map */,
-      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
-          std::move(browser_interface_broker),
-          mojom::blink::BrowserInterfaceBroker::Version_),
-      BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
-      base::UnguessableToken());
+      std::move(browser_interface_broker), BeginFrameProviderParams(),
+      nullptr /* parent_feature_policy */, base::UnguessableToken());
 
   reporting_proxy_ = MakeGarbageCollected<SharedWorkerReportingProxy>(
       this, ParentExecutionContextTaskRunners::Create());
@@ -284,8 +283,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
   }
 
   // We are now ready to inspect worker thread.
-  client_->WorkerReadyForInspection(devtools_agent_remote.PassPipe(),
-                                    devtools_agent_host_receiver.PassPipe());
+  client_->WorkerReadyForInspection(std::move(devtools_agent_remote),
+                                    std::move(devtools_agent_host_receiver));
 }
 
 void WebSharedWorkerImpl::TerminateWorkerContext() {

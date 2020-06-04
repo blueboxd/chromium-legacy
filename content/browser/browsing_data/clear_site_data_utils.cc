@@ -75,7 +75,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
       domain_filter_builder->AddRegisterableDomain(domain);
 
       pending_task_count_++;
-      int remove_mask = BrowsingDataRemover::DATA_TYPE_COOKIES;
+      uint64_t remove_mask = BrowsingDataRemover::DATA_TYPE_COOKIES;
       if (avoid_closing_connections_) {
         remove_mask |= BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
       }
@@ -87,7 +87,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
     }
 
     // Delete origin-scoped data.
-    int remove_mask = 0;
+    uint64_t remove_mask = 0;
     if (clear_storage_)
       remove_mask |= BrowsingDataRemover::DATA_TYPE_DOM_STORAGE;
     if (clear_cache_)

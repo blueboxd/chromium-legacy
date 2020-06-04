@@ -33623,7 +33623,7 @@
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb",
           "--git-revision=${got_revision}",
           "--avd-config=../../tools/android/avd/proto/generic_playstore_android28.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_p.chrome_public_test_apk.filter"
         ],
         "merge": {
           "args": [

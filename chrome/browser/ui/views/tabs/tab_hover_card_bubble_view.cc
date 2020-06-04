@@ -51,7 +51,7 @@
 
 namespace {
 // Maximum number of lines that a title label occupies.
-int kTitleMaxLines = 2;
+constexpr int kHoverCardTitleMaxLines = 2;
 
 bool AreHoverCardImagesEnabled() {
   return base::FeatureList::IsEnabled(features::kTabHoverCardImages);
@@ -389,11 +389,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
   title_label_->SetMultiLine(true);
-  title_label_->SetMaxLines(kTitleMaxLines);
-  title_label_->SetProperty(
-      views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                               views::MaximumFlexSizeRule::kPreferred, true));
+  title_label_->SetMaxLines(kHoverCardTitleMaxLines);
 
   title_fade_label_ = AddChildView(std::make_unique<FadeLabel>(
       base::string16(), CONTEXT_TAB_HOVER_CARD_TITLE,
@@ -401,7 +397,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   title_fade_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_fade_label_->SetVerticalAlignment(gfx::ALIGN_TOP);
   title_fade_label_->SetMultiLine(true);
-  title_fade_label_->SetMaxLines(kTitleMaxLines);
+  title_fade_label_->SetMaxLines(kHoverCardTitleMaxLines);
 
   domain_label_ = AddChildView(std::make_unique<views::Label>(
       base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY,
@@ -428,6 +424,8 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     preview_image_->SetPreferredSize(preview_size);
   }
 
+  // Set up layout.
+
   views::FlexLayout* const layout =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetOrientation(views::LayoutOrientation::kVertical);
@@ -437,14 +435,31 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   layout->SetChildViewIgnoredByLayout(title_fade_label_, true);
   layout->SetChildViewIgnoredByLayout(domain_fade_label_, true);
 
-  constexpr int kVerticalMargin = 10;
   constexpr int kHorizontalMargin = 18;
-  layout->SetInteriorMargin(gfx::Insets(kVerticalMargin, kHorizontalMargin));
+  constexpr int kVerticalMargin = 10;
+
+  gfx::Insets title_margins(kVerticalMargin, kHorizontalMargin);
+
+  // In some browser types (e.g. ChromeOS terminal app) we hide the domain
+  // label. In those cases, we need to adjust the bottom margin of the title
+  // element because it is no longer above another text element and needs a
+  // bottom margin.
+  const bool show_domain = tab->controller()->ShowDomainInHoverCards();
+  domain_label_->SetVisible(show_domain);
+  if (show_domain) {
+    title_margins.set_bottom(0);
+    domain_label_->SetProperty(
+        views::kMarginsKey,
+        gfx::Insets(0, kHorizontalMargin, kVerticalMargin, kHorizontalMargin));
+  }
+
+  title_label_->SetProperty(views::kMarginsKey, title_margins);
   title_label_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kPreferred));
-  domain_label_->SetVisible(tab->controller()->ShowDomainInHoverCard(tab));
+
+  // Set up widget.
 
   widget_ = views::BubbleDialogDelegateView::CreateBubble(this);
   set_adjust_if_offscreen(true);

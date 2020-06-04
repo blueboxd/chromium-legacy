@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
@@ -384,6 +385,23 @@ AtomicString CSSToStyleMap::MapAnimationName(const CSSValue& value) {
     return AtomicString(custom_ident_value->Value());
   DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
   return CSSAnimationData::InitialName();
+}
+
+StyleNameOrKeyword CSSToStyleMap::MapAnimationTimeline(const CSSValue& value) {
+  if (value.IsInitialValue())
+    return CSSAnimationData::InitialTimeline();
+  if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK(ident->GetValueID() == CSSValueID::kAuto ||
+           ident->GetValueID() == CSSValueID::kNone);
+    return StyleNameOrKeyword(ident->GetValueID());
+  }
+  if (auto* custom_ident = DynamicTo<CSSCustomIdentValue>(value)) {
+    return StyleNameOrKeyword(
+        StyleName(custom_ident->Value(), StyleName::Type::kCustomIdent));
+  }
+  return StyleNameOrKeyword(
+      StyleName(AtomicString(To<CSSStringValue>(value).Value()),
+                StyleName::Type::kString));
 }
 
 EAnimPlayState CSSToStyleMap::MapAnimationPlayState(const CSSValue& value) {

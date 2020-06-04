@@ -44,7 +44,7 @@ InertEffect::InertEffect(KeyframeEffectModelBase* model,
       inherited_time_(inherited_time) {}
 
 void InertEffect::Sample(HeapVector<Member<Interpolation>>& result) const {
-  UpdateInheritedTime(inherited_time_, kTimingUpdateOnDemand);
+  UpdateInheritedTime(inherited_time_, base::nullopt, kTimingUpdateOnDemand);
   if (!IsInEffect()) {
     result.clear();
     return;

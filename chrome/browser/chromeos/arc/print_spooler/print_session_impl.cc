@@ -211,7 +211,7 @@ bool IsPdfPluginLoaded(content::WebContents* web_contents) {
 mojo::PendingRemote<mojom::PrintSessionHost> PrintSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    mojom::PrintSessionInstancePtr instance) {
+    mojo::PendingRemote<mojom::PrintSessionInstance> instance) {
   DCHECK(custom_tab);
   if (!instance)
     return mojo::NullRemote();
@@ -227,7 +227,7 @@ mojo::PendingRemote<mojom::PrintSessionHost> PrintSessionImpl::Create(
 PrintSessionImpl::PrintSessionImpl(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    mojom::PrintSessionInstancePtr instance,
+    mojo::PendingRemote<mojom::PrintSessionInstance> instance,
     mojo::PendingReceiver<mojom::PrintSessionHost> receiver)
     : ArcCustomTabModalDialogHost(std::move(custom_tab), web_contents.get()),
       instance_(std::move(instance)),

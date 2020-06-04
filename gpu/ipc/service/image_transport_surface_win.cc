@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/win/windows_version.h"
+#include "components/viz/common/features.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
@@ -41,6 +42,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       settings.disable_larger_than_screen_overlays =
           workarounds.disable_larger_than_screen_overlays;
       settings.disable_vp_scaling = workarounds.disable_vp_scaling;
+      settings.use_angle_texture_offset = features::IsUsingSkiaRenderer();
       auto vsync_callback = delegate->GetGpuVSyncCallback();
       auto dc_surface = base::MakeRefCounted<gl::DirectCompositionSurfaceWin>(
           std::move(vsync_provider), std::move(vsync_callback), surface_handle,

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FORMAT_UTILS_H_
 #define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FORMAT_UTILS_H_
 
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/viz_resource_format_export.h"
 #include "gpu/vulkan/buildflags.h"
@@ -72,6 +73,10 @@ VIZ_RESOURCE_FORMAT_EXPORT wgpu::TextureFormat ToDawnFormat(
 // WGPUTextureFormat instead.
 VIZ_RESOURCE_FORMAT_EXPORT WGPUTextureFormat
 ToWGPUFormat(ResourceFormat format);
+
+#if defined(OS_MACOSX)
+VIZ_RESOURCE_FORMAT_EXPORT unsigned int ToMTLPixelFormat(ResourceFormat format);
+#endif
 
 }  // namespace viz
 

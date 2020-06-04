@@ -58,10 +58,10 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     send_metadata |= force_send;
   }
 
-  // Allways cache the full metadata, so that it can correctly be sent upon
-  // ReportAllFrameSubmissionsForTesting or
-  // ReportAllRootScrollsForAccessibility. This must only be done after we've
-  // compared the two for changes.
+  // Always cache the full metadata, so that it can correctly be sent upon
+  // ReportAllFrameSubmissionsForTesting or on android, which notifies on any
+  // root scroll offset change. This must only be done after we've compared the
+  // two for changes.
   last_render_frame_metadata_ = render_frame_metadata;
 
   // If the metadata is different, updates all the observers; or the metadata is
@@ -109,9 +109,8 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
 }
 
 #if defined(OS_ANDROID)
-void RenderFrameMetadataObserverImpl::ReportAllRootScrollsForAccessibility(
-    bool enabled) {
-  report_all_root_scrolls_for_accessibility_enabled_ = enabled;
+void RenderFrameMetadataObserverImpl::ReportAllRootScrolls(bool enabled) {
+  report_all_root_scrolls_enabled_ = enabled;
 
   if (enabled)
     SendLastRenderFrameMetadata();
@@ -160,7 +159,7 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
 
 #if defined(OS_ANDROID)
   bool need_send_root_scroll =
-      report_all_root_scrolls_for_accessibility_enabled_ &&
+      report_all_root_scrolls_enabled_ &&
       rfm1.root_scroll_offset != rfm2.root_scroll_offset;
   if (rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
       rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||

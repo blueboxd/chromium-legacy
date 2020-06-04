@@ -84,7 +84,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/net/network_health.h"
+#include "chrome/browser/chromeos/net/network_health/network_health_service.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
@@ -879,7 +879,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   network_pref_state_observer_ = std::make_unique<NetworkPrefStateObserver>();
 
   // Initialize the NetworkHealth aggregator.
-  network_health_ = std::make_unique<network_health::NetworkHealth>();
+  network_health::NetworkHealthService* network_health_service =
+      network_health::NetworkHealthService::GetInstance();
+  DCHECK(network_health_service);
 
   // Initialize input methods.
   input_method::InputMethodManager* manager =
@@ -1054,7 +1056,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // We should remove observers attached to D-Bus clients before
   // DBusThreadManager is shut down.
   network_pref_state_observer_.reset();
-  network_health_.reset();
   power_metrics_reporter_.reset();
   renderer_freezer_.reset();
   fast_transition_observer_.reset();

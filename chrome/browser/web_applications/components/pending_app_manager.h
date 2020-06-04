@@ -27,6 +27,7 @@ class AppRegistrar;
 class AppShortcutManager;
 class FileHandlerManager;
 class InstallFinalizer;
+class InstallManager;
 class WebAppUiManager;
 
 enum class RegistrationResultCode { kSuccess, kAlreadyRegistered, kTimeout };
@@ -60,7 +61,8 @@ class PendingAppManager {
                      AppShortcutManager* shortcut_manager,
                      FileHandlerManager* file_handler_manager,
                      WebAppUiManager* ui_manager,
-                     InstallFinalizer* finalizer);
+                     InstallFinalizer* finalizer,
+                     InstallManager* install_manager);
 
   // Queues an installation operation with the highest priority. Essentially
   // installing the app immediately if there are no ongoing operations or
@@ -121,6 +123,7 @@ class PendingAppManager {
   FileHandlerManager* file_handler_manager() { return file_handler_manager_; }
   WebAppUiManager* ui_manager() { return ui_manager_; }
   InstallFinalizer* finalizer() { return finalizer_; }
+  InstallManager* install_manager() { return install_manager_; }
 
   virtual void OnRegistrationFinished(const GURL& launch_url,
                                       RegistrationResultCode result);
@@ -155,6 +158,7 @@ class PendingAppManager {
   FileHandlerManager* file_handler_manager_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallFinalizer* finalizer_ = nullptr;
+  InstallManager* install_manager_ = nullptr;
 
   base::flat_map<ExternalInstallSource, SynchronizeRequest>
       synchronize_requests_;

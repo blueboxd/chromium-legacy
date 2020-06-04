@@ -495,6 +495,11 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
       GetSecurityLevel(), GetSyncState());
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableFixedPaymentsBubbleLogging)) {
+    AutofillMetrics::LogCreditCardUploadLegalMessageLinkClicked();
+  }
 }
 
 void SaveCardBubbleControllerImpl::OnManageCardsClicked() {

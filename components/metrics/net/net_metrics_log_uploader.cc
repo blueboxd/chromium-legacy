@@ -4,12 +4,17 @@
 
 #include "components/metrics/net/net_metrics_log_uploader.h"
 
+#include <sstream>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
@@ -21,7 +26,9 @@
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/reporting_info.pb.h"
+#include "third_party/zlib/google/compression_utils.h"
 #include "url/gurl.h"
 
 namespace {
@@ -182,6 +189,52 @@ bool EncryptAndBase64EncodeString(const std::string& plaintext,
   return true;
 }
 
+#ifndef NDEBUG
+void LogUploadingHistograms(const std::string& compressed_log_data) {
+  if (!VLOG_IS_ON(2))
+    return;
+
+  std::string uncompressed;
+  if (!compression::GzipUncompress(compressed_log_data, &uncompressed)) {
+    DVLOG(2) << "failed to uncompress log";
+    return;
+  }
+  metrics::ChromeUserMetricsExtension proto;
+  if (!proto.ParseFromString(uncompressed)) {
+    DVLOG(2) << "failed to parse uncompressed log";
+    return;
+  };
+  DVLOG(2) << "Uploading histograms...";
+
+  const base::StatisticsRecorder::Histograms histograms =
+      base::StatisticsRecorder::GetHistograms();
+  auto get_histogram_name = [&](uint64_t name_hash) -> std::string {
+    for (base::HistogramBase* histogram : histograms) {
+      if (histogram->name_hash() == name_hash)
+        return histogram->histogram_name();
+    }
+    return base::StrCat({"unnamed ", base::NumberToString(name_hash)});
+  };
+
+  for (int i = 0; i < proto.histogram_event_size(); i++) {
+    const metrics::HistogramEventProto& event = proto.histogram_event(i);
+
+    std::stringstream summary;
+    summary << " sum=" << event.sum();
+    for (int j = 0; j < event.bucket_size(); j++) {
+      const metrics::HistogramEventProto::Bucket& b = event.bucket(j);
+      // Empty fields have a specific meaning, see
+      // third_party/metrics_proto/histogram_event.proto.
+      summary << " bucket["
+              << (b.has_min() ? base::NumberToString(b.min()) : "..") << '-'
+              << (b.has_max() ? base::NumberToString(b.max()) : "..") << ")="
+              << (b.has_count() ? base::NumberToString(b.count()) : "(1)");
+    }
+    DVLOG(2) << get_histogram_name(event.name_hash()) << summary.str();
+  }
+}
+#endif
+
 }  // namespace
 
 namespace metrics {
@@ -242,6 +295,13 @@ void NetMetricsLogUploader::UploadLogToURL(
     const ReportingInfo& reporting_info,
     const GURL& url) {
   DCHECK(!log_hash.empty());
+
+#ifndef NDEBUG
+  // For debug builds, you can use -vmodule=net_metrics_log_uploader=2
+  // to enable logging of uploaded histograms. You probably also want to use
+  // --force-enable-metrics-reporting, or metrics reporting may not be enabled.
+  LogUploadingHistograms(compressed_log_data);
+#endif
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;

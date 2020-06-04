@@ -187,6 +187,11 @@ void SafeBrowsingUserInteractionObserver::DidToggleFullscreenModeForTab(
   // DO NOT add code past this point. |this| is destroyed.
 }
 
+void SafeBrowsingUserInteractionObserver::OnPaste() {
+  ShowInterstitial(DelayedWarningEvent::kWarningShownOnPaste);
+  // DO NOT add code past this point. |this| is destroyed.
+}
+
 void SafeBrowsingUserInteractionObserver::OnBubbleAdded() {
   // The page requested a permission that triggered a permission prompt. Deny
   // and show the interstitial.

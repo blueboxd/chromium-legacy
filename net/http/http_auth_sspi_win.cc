@@ -547,7 +547,12 @@ int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
   if (delegation_type_ != DelegationType::kNone)
     context_flags |= (ISC_REQ_DELEGATE | ISC_REQ_MUTUAL_AUTH);
 
-  net_log.BeginEvent(NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX);
+  net_log.BeginEvent(NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX, [&] {
+    base::Value params{base::Value::Type::DICTIONARY};
+    params.SetStringKey("spn", spn);
+    params.SetKey("flags", ContextFlagsToValue(context_flags));
+    return params;
+  });
 
   // This returns a token that is passed to the remote server.
   DWORD context_attributes = 0;

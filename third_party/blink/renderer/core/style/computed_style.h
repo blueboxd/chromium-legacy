@@ -2393,10 +2393,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Note: We currently don't include every grouping property on the spec to
   // maintain backward compatibility.  [css-transforms]
   // https://drafts.csswg.org/css-transforms/#grouping-property-values
-  bool HasGroupingProperty() const {
-    return !IsOverflowVisible() || HasFilterInducingProperty() ||
-           HasNonInitialOpacity();
-  }
+  CORE_EXPORT bool HasGroupingProperty() const;
 
   // Return true if any transform related property (currently
   // transform/motionPath, transformStyle3D, perspective, or

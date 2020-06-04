@@ -32,7 +32,7 @@ public class TailSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
+    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
         return mAlignTailSuggestions
                 && suggestion.getType() == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL;
     }

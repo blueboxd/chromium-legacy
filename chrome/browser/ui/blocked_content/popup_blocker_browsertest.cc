@@ -18,7 +18,6 @@
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -38,6 +37,7 @@
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/blocked_content/list_item_position.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/embedder_support/switches.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
@@ -146,8 +146,8 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
       ADD_FAILURE() << "Failed to execute script in active tab.";
       return -1;
     }
-    PopupBlockerTabHelper* popup_blocker_helper =
-        PopupBlockerTabHelper::FromWebContents(tab);
+    blocked_content::PopupBlockerTabHelper* popup_blocker_helper =
+        blocked_content::PopupBlockerTabHelper::FromWebContents(tab);
     return popup_blocker_helper->GetBlockedPopupsCount();
   }
 
@@ -222,8 +222,8 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     ui_test_utils::TabAddedWaiter tab_add(browser);
 
     // Launch the blocked popup.
-    PopupBlockerTabHelper* popup_blocker_helper =
-        PopupBlockerTabHelper::FromWebContents(web_contents);
+    blocked_content::PopupBlockerTabHelper* popup_blocker_helper =
+        blocked_content::PopupBlockerTabHelper::FromWebContents(web_contents);
     ui_test_utils::WaitForViewVisibility(browser, VIEW_ID_CONTENT_SETTING_POPUP,
                                          true);
     EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
@@ -310,7 +310,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupPositionMetrics) {
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(web_contents, "test()"));
   EXPECT_EQ(4, GetBlockedContentsCount());
 
-  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
+  auto* popup_blocker =
+      blocked_content::PopupBlockerTabHelper::FromWebContents(web_contents);
   std::vector<int32_t> ids;
   for (const auto& it : popup_blocker->GetBlockedPopupRequests())
     ids.push_back(it.first);
@@ -361,13 +362,17 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupMetrics) {
 
   tester.ExpectBucketCount(
       kPopupActions,
-      static_cast<int>(PopupBlockerTabHelper::Action::kInitiated), 2);
+      static_cast<int>(
+          blocked_content::PopupBlockerTabHelper::Action::kInitiated),
+      2);
   tester.ExpectBucketCount(
-      kPopupActions, static_cast<int>(PopupBlockerTabHelper::Action::kBlocked),
+      kPopupActions,
+      static_cast<int>(
+          blocked_content::PopupBlockerTabHelper::Action::kBlocked),
       2);
 
   // Click through one of them.
-  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(
+  auto* popup_blocker = blocked_content::PopupBlockerTabHelper::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
   popup_blocker->ShowBlockedPopup(
       popup_blocker->GetBlockedPopupRequests().begin()->first,
@@ -375,7 +380,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupMetrics) {
 
   tester.ExpectBucketCount(
       kPopupActions,
-      static_cast<int>(PopupBlockerTabHelper::Action::kClickedThroughNoGesture),
+      static_cast<int>(blocked_content::PopupBlockerTabHelper::Action::
+                           kClickedThroughNoGesture),
       1);
 
   // Whitelist the site and navigate again.
@@ -385,7 +391,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupMetrics) {
   ui_test_utils::NavigateToURL(browser(), url);
   tester.ExpectBucketCount(
       kPopupActions,
-      static_cast<int>(PopupBlockerTabHelper::Action::kInitiated), 4);
+      static_cast<int>(
+          blocked_content::PopupBlockerTabHelper::Action::kInitiated),
+      4);
   // 4 initiated popups, 2 blocked, and 1 clicked through.
   tester.ExpectTotalCount(kPopupActions, 4 + 2 + 1);
 }

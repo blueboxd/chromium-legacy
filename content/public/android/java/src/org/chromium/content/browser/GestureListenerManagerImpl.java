@@ -7,6 +7,8 @@ package org.chromium.content.browser;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
@@ -97,12 +99,30 @@ public class GestureListenerManagerImpl
 
     @Override
     public void addListener(GestureStateListener listener) {
-        mListeners.addObserver(listener);
+        final boolean didAdd = mListeners.addObserver(listener);
+        if (mNativeGestureListenerManager != 0 && didAdd
+                && listener instanceof GestureStateListenerWithScroll) {
+            GestureListenerManagerImplJni.get().setHasListenersAttached(
+                    mNativeGestureListenerManager, true);
+        }
     }
 
     @Override
     public void removeListener(GestureStateListener listener) {
-        mListeners.removeObserver(listener);
+        final boolean didRemove = mListeners.removeObserver(listener);
+        if (mNativeGestureListenerManager != 0 && didRemove
+                && (listener instanceof GestureStateListenerWithScroll)
+                && !hasGestureStateListenerWithScroll()) {
+            GestureListenerManagerImplJni.get().setHasListenersAttached(
+                    mNativeGestureListenerManager, false);
+        }
+    }
+
+    private boolean hasGestureStateListenerWithScroll() {
+        for (GestureStateListener listener : mListeners) {
+            if (listener instanceof GestureStateListenerWithScroll) return true;
+        }
+        return false;
     }
 
     @Override
@@ -129,6 +149,11 @@ public class GestureListenerManagerImpl
     /** Returns whether there's an active, ongoing fling scroll. */
     public boolean hasActiveFlingScroll() {
         return mHasActiveFlingScroll;
+    }
+
+    @VisibleForTesting
+    public boolean shouldReportAllRootScrolls() {
+        return hasGestureStateListenerWithScroll();
     }
 
     // WindowEventObserver
@@ -384,5 +409,6 @@ public class GestureListenerManagerImpl
                 GestureListenerManagerImpl caller, boolean enabled);
         void setMultiTouchZoomSupportEnabled(long nativeGestureListenerManager,
                 GestureListenerManagerImpl caller, boolean enabled);
+        void setHasListenersAttached(long nativeGestureListenerManager, boolean hasListeners);
     }
 }

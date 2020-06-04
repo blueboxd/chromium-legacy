@@ -61,7 +61,8 @@ QuicTransportClient::QuicTransportClient(
               context->transport_security_state(),
               context->cert_transparency_verifier(),
               std::set<std::string>(HostsFromOrigins(
-                  quic_context_->params()->origins_to_force_quic_on))),
+                  quic_context_->params()->origins_to_force_quic_on)),
+              isolation_key_),
           /* session_cache */ nullptr) {}
 
 QuicTransportClient::~QuicTransportClient() = default;

@@ -330,6 +330,7 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
   TestWebAppUiManager* ui_manager() { return ui_manager_; }
   TestAppRegistrar* registrar() { return registrar_; }
   TestPendingAppInstallFinalizer* finalizer() { return install_finalizer_; }
+  WebAppInstallManager* install_manager() { return install_manager_; }
   TestAppShortcutManager* shortcut_manager() { return shortcut_manager_; }
   TestFileHandlerManager* file_handler_manager() {
     return file_handler_manager_;
@@ -372,7 +373,7 @@ class PendingAppInstallTaskTest : public ChromeRenderViewHostTestHarness {
 
     auto task = std::make_unique<PendingAppInstallTask>(
         profile(), registrar_, shortcut_manager_, file_handler_manager_,
-        ui_manager_, install_finalizer_, std::move(options));
+        ui_manager_, install_finalizer_, install_manager_, std::move(options));
     return task;
   }
 
@@ -902,7 +903,7 @@ TEST_F(PendingAppInstallTaskTest, InstallURLLoadFailed) {
         ExternalInstallSource::kInternalDefault);
     PendingAppInstallTask install_task(
         profile(), registrar(), shortcut_manager(), file_handler_manager(),
-        ui_manager(), finalizer(), install_options);
+        ui_manager(), finalizer(), install_manager(), install_options);
 
     install_task.Install(
         web_contents(), result_pair.loader_result,
@@ -919,9 +920,9 @@ TEST_F(PendingAppInstallTaskTest, FailedWebContentsDestroyed) {
   ExternalInstallOptions install_options(
       GURL(), DisplayMode::kStandalone,
       ExternalInstallSource::kInternalDefault);
-  PendingAppInstallTask install_task(profile(), registrar(), shortcut_manager(),
-                                     file_handler_manager(), ui_manager(),
-                                     finalizer(), install_options);
+  PendingAppInstallTask install_task(
+      profile(), registrar(), shortcut_manager(), file_handler_manager(),
+      ui_manager(), finalizer(), install_manager(), install_options);
 
   install_task.Install(
       web_contents(), WebAppUrlLoader::Result::kFailedWebContentsDestroyed,

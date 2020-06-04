@@ -36,6 +36,8 @@ using CompositingReasons = uint64_t;
   V(WillChangeOpacity)                                                        \
   V(WillChangeFilter)                                                         \
   V(WillChangeBackdropFilter)                                                 \
+  /* Reasons that depend on ancestor properties */                            \
+  V(BackfaceInvisibility3DAncestor)                                           \
   /* This flag is needed only when none of the explicit kWillChange* reasons  \
      are set. */                                                              \
   V(WillChangeOther)                                                          \
@@ -124,7 +126,8 @@ class PLATFORM_EXPORT CompositingReason {
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
         kOutOfFlowClipping | kVideoOverlay | kXrOverlay | kRoot |
-        kRootScroller | kScrollDependentPosition,
+        kRootScroller | kScrollDependentPosition |
+        kBackfaceInvisibility3DAncestor,
 
     kComboAllDirectReasons = kComboAllDirectStyleDeterminedReasons |
                              kComboAllDirectNonStyleDeterminedReasons,

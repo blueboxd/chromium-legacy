@@ -112,7 +112,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
           subresource_loader_updater,
       const GURL& script_url_to_skip_throttling,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
-      int32_t service_worker_route_id);
+      int32_t service_worker_route_id,
+      const std::vector<std::string>& cors_exempt_header_list);
   // Called on the initiator thread.
   ~ServiceWorkerContextClient() override;
 
@@ -282,6 +283,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   std::unique_ptr<blink::WebEmbeddedWorker> worker_;
 
   int32_t service_worker_route_id_;
+
+  std::vector<std::string> cors_exempt_header_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

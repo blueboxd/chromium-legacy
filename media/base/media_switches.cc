@@ -464,6 +464,9 @@ const base::Feature kFailUrlProvisionFetcherForTesting{
 const base::Feature kHardwareSecureDecryption{
     "HardwareSecureDecryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kWakeLockOptimisationHiddenMuted{
+    "kWakeLockOptimisationHiddenMuted", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables encrypted AV1 support in EME requestMediaKeySystemAccess() query by
 // Widevine key system if it is also supported by the underlying Widevine CDM.
 // This feature does not affect the actual playback of encrypted AV1 if it's

@@ -82,6 +82,9 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
   void UpdateLayout(bool animate) override;
   void UpdateTargetBoundsForGesture(int shelf_position) override;
 
+  // Called by shelf layout manager when a locale change has been detected.
+  void HandleLocaleChange();
+
   // Sets system tray visibility. Shows or hides widget if needed.
   void SetSystemTrayVisibility(bool visible);
 

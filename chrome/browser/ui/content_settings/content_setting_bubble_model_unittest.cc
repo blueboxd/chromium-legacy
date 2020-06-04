@@ -19,8 +19,8 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/blocked_window_params.h"
+#include "chrome/browser/ui/blocked_content/chrome_popup_navigation_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/fake_owner.h"
 #include "chrome/common/chrome_features.h"
@@ -29,6 +29,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/blocked_content/popup_blocker.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -1270,7 +1272,7 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->OnContentBlocked(ContentSettingsType::POPUPS);
 
-  PopupBlockerTabHelper::CreateForWebContents(web_contents());
+  blocked_content::PopupBlockerTabHelper::CreateForWebContents(web_contents());
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           nullptr, web_contents(), ContentSettingsType::POPUPS));
@@ -1286,9 +1288,12 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
   for (size_t i = 1; i <= kItemCount; i++) {
     NavigateParams navigate_params =
         params.CreateNavigateParams(web_contents());
-    EXPECT_TRUE(MaybeBlockPopup(web_contents(), &url, &navigate_params,
-                                nullptr /*=open_url_params*/,
-                                params.features()));
+    EXPECT_FALSE(blocked_content::MaybeBlockPopup(
+        web_contents(), &url,
+        std::make_unique<ChromePopupNavigationDelegate>(
+            std::move(navigate_params)),
+        nullptr /*=open_url_params*/, params.features(),
+        HostContentSettingsMapFactory::GetForProfile(profile())));
     EXPECT_EQ(i, list_items.size());
   }
 }

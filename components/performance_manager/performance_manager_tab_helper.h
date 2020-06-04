@@ -69,6 +69,11 @@ class PerformanceManagerTabHelper
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
+  void InnerWebContentsAttached(content::WebContents* inner_web_contents,
+                                content::RenderFrameHost* render_frame_host,
+                                bool is_full_page) override;
+  void InnerWebContentsDetached(
+      content::WebContents* inner_web_contents) override;
   void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;

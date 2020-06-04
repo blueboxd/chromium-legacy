@@ -59,9 +59,6 @@ enum FeaturePolicyFeature {
   // which interfere with document's input stream (document.write(),
   // document.close(), etc.).
   kDocumentWrite = 28,
-  // TODO(ekaramad): kLazyLoad is deprecated; remove.
-  // Used to enforce lazyloading for a frame and any nested <iframe> or image.
-  kLazyLoad = 29,
   // Controls access to Screen Wake Lock
   kScreenWakeLock = 31,
   // These are the defined sandbox features implemented as policy-controlled
@@ -84,9 +81,6 @@ enum FeaturePolicyFeature {
   kHid = 43,
   // Controls access to Idle Detection
   kIdleDetection = 44,
-
-  // Loading policies.
-  kLoadingFrameDefaultEager = 48,
 
   // Implements sandbox flag: allow-downloads.
   kDownloads = 49,

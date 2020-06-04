@@ -331,7 +331,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
 
   void BlockUntilBrowsingDataRemoved(const base::Time& delete_begin,
                                      const base::Time& delete_end,
-                                     int remove_mask,
+                                     uint64_t remove_mask,
                                      bool include_protected_origins) {
     // TODO(msramek): Consider moving |storage_partition| to the test fixture.
     StoragePartitionRemovalTestStoragePartition storage_partition;
@@ -342,7 +342,8 @@ class BrowsingDataRemoverImplTest : public testing::Test {
 
     remover_->OverrideStoragePartitionForTesting(&storage_partition);
 
-    int origin_type_mask = BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
+    uint64_t origin_type_mask =
+        BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
     if (include_protected_origins)
       origin_type_mask |= BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
 
@@ -359,7 +360,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
   void BlockUntilOriginDataRemoved(
       const base::Time& delete_begin,
       const base::Time& delete_end,
-      int remove_mask,
+      uint64_t remove_mask,
       std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
     StoragePartitionRemovalTestStoragePartition storage_partition;
 
@@ -389,9 +390,11 @@ class BrowsingDataRemoverImplTest : public testing::Test {
     return remover_->GetLastUsedBeginTimeForTesting();
   }
 
-  int GetRemovalMask() { return remover_->GetLastUsedRemovalMaskForTesting(); }
+  uint64_t GetRemovalMask() {
+    return remover_->GetLastUsedRemovalMaskForTesting();
+  }
 
-  int GetOriginTypeMask() {
+  uint64_t GetOriginTypeMask() {
     return remover_->GetLastUsedOriginTypeMaskForTesting();
   }
 
@@ -413,7 +416,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
   }
 
   bool Match(const GURL& origin,
-             int mask,
+             uint64_t mask,
              storage::SpecialStoragePolicy* policy) {
     return remover_->DoesOriginMatchMaskForTesting(
         mask, url::Origin::Create(origin), policy);
@@ -632,8 +635,8 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveMultipleTypes) {
   EXPECT_CALL(*downloads_tester.download_manager(),
               RemoveDownloadsByURLAndTime(_, _, _));
 
-  int removal_mask = BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
-                     BrowsingDataRemover::DATA_TYPE_COOKIES;
+  uint64_t removal_mask = BrowsingDataRemover::DATA_TYPE_DOWNLOADS |
+                          BrowsingDataRemover::DATA_TYPE_COOKIES;
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), removal_mask,
                                 false);
@@ -1474,7 +1477,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
       BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
   EXPECT_FALSE(remover->IsRemovingForTesting());
 
-  int test_removal_masks[] = {
+  uint64_t test_removal_masks[] = {
       BrowsingDataRemover::DATA_TYPE_COOKIES,
       BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE,
       BrowsingDataRemover::DATA_TYPE_COOKIES,
@@ -1494,7 +1497,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
       BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE,
   };
 
-  for (int removal_mask : test_removal_masks) {
+  for (uint64_t removal_mask : test_removal_masks) {
     remover->Remove(base::Time(), base::Time::Max(), removal_mask,
                     BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   }

@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/mock_callback.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -43,6 +44,21 @@ using base::TimeDelta;
 
 namespace media {
 namespace mp4 {
+namespace {
+
+// Useful in single-track test media cases that need to verify
+// keyframe/non-keyframe sequence in output of parse.
+enum class Keyframeness {
+  kKeyframe = 0,
+  kNonKeyframe,
+};
+
+// Tells gtest how to print our Keyframeness enum values.
+std::ostream& operator<<(std::ostream& os, Keyframeness k) {
+  return os << (k == Keyframeness::kKeyframe ? "kKeyframe" : "kNonKeyframe");
+}
+
+}  // namespace
 
 // Matchers for verifying common media log entry strings.
 MATCHER(SampleEncryptionInfoUnavailableLog, "") {
@@ -80,6 +96,7 @@ class MP4StreamParserTest : public testing::Test {
   StreamParser::TrackId audio_track_id_;
   StreamParser::TrackId video_track_id_;
   bool verifying_keyframeness_sequence_;
+  StrictMock<base::MockRepeatingCallback<void(Keyframeness)>> keyframeness_cb_;
 
   bool AppendData(const uint8_t* data, size_t length) {
     return parser_->Parse(data, length);
@@ -141,11 +158,6 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
-  // Useful in single-track test media cases that need to verify
-  // keyframe/non-keyframe sequence in output of parse.
-  MOCK_METHOD0(ParsedKeyframe, void());
-  MOCK_METHOD0(ParsedNonKeyframe, void());
-
   bool NewBuffersF(const StreamParser::BufferQueueMap& buffer_queue_map) {
     DecodeTimestamp lowest_end_dts = kNoDecodeTimestamp();
     for (const auto& it : buffer_queue_map) {
@@ -167,10 +179,9 @@ class MP4StreamParserTest : public testing::Test {
 
         // Let single-track tests verify the sequence of keyframes/nonkeyframes.
         if (verifying_keyframeness_sequence_) {
-          if (buf->is_key_frame())
-            ParsedKeyframe();
-          else
-            ParsedNonKeyframe();
+          keyframeness_cb_.Run(buf->is_key_frame()
+                                   ? Keyframeness::kKeyframe
+                                   : Keyframeness::kNonKeyframe);
         }
       }
     }
@@ -347,8 +358,8 @@ TEST_F(MP4StreamParserTest, AVC_KeyAndNonKeyframeness_Match_Container) {
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
   verifying_keyframeness_sequence_ = true;
-  EXPECT_CALL(*this, ParsedKeyframe());
-  EXPECT_CALL(*this, ParsedNonKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kKeyframe));
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kNonKeyframe));
   ParseMP4File("bear-640x360-v-2frames_frag.mp4", 512);
 }
 
@@ -366,8 +377,8 @@ TEST_F(MP4StreamParserTest, AVC_Keyframeness_Mismatches_Container) {
   EXPECT_MEDIA_LOG(DebugLog(
       "ISO-BMFF container metadata for video frame indicates that the frame is "
       "not a keyframe, but the video frame contents indicate the opposite."));
-  EXPECT_CALL(*this, ParsedKeyframe());
-  EXPECT_CALL(*this, ParsedNonKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kKeyframe));
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kNonKeyframe));
   ParseMP4File("bear-640x360-v-2frames-keyframe-is-non-sync-sample_frag.mp4",
                512);
 }
@@ -383,11 +394,11 @@ TEST_F(MP4StreamParserTest, AVC_NonKeyframeness_Mismatches_Container) {
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
   verifying_keyframeness_sequence_ = true;
-  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kKeyframe));
   EXPECT_MEDIA_LOG(DebugLog(
       "ISO-BMFF container metadata for video frame indicates that the frame is "
       "a keyframe, but the video frame contents indicate the opposite."));
-  EXPECT_CALL(*this, ParsedNonKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kNonKeyframe));
   ParseMP4File("bear-640x360-v-2frames-nonkeyframe-is-sync-sample_frag.mp4",
                512);
 }
@@ -405,7 +416,7 @@ TEST_F(MP4StreamParserTest, MPEG2_AAC_LC) {
 }
 
 TEST_F(MP4StreamParserTest, MPEG4_XHE_AAC) {
-  InSequence s;
+  InSequence s;  // The keyframeness sequence matters for this test.
   std::set<int> audio_object_types;
   audio_object_types.insert(kISO_14496_3);
   parser_.reset(new MP4StreamParser(audio_object_types, false, false));
@@ -417,8 +428,8 @@ TEST_F(MP4StreamParserTest, MPEG4_XHE_AAC) {
   // This test file contains a single audio keyframe followed by 23
   // non-keyframes.
   verifying_keyframeness_sequence_ = true;
-  EXPECT_CALL(*this, ParsedKeyframe());
-  EXPECT_CALL(*this, ParsedNonKeyframe()).Times(23);
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kKeyframe));
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kNonKeyframe)).Times(23);
 
   ParseMP4File("noise-xhe-aac.mp4", 512);
   EXPECT_EQ(audio_decoder_config_.profile(), AudioCodecProfile::kXHE_AAC);
@@ -506,8 +517,8 @@ TEST_F(MP4StreamParserTest, HEVC_KeyAndNonKeyframeness_Match_Container) {
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
   verifying_keyframeness_sequence_ = true;
-  EXPECT_CALL(*this, ParsedKeyframe());
-  EXPECT_CALL(*this, ParsedNonKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kKeyframe));
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kNonKeyframe));
   ParseMP4File("bear-320x240-v-2frames_frag-hevc.mp4", 256);
 }
 
@@ -525,8 +536,8 @@ TEST_F(MP4StreamParserTest, HEVC_Keyframeness_Mismatches_Container) {
   EXPECT_MEDIA_LOG(DebugLog(
       "ISO-BMFF container metadata for video frame indicates that the frame is "
       "not a keyframe, but the video frame contents indicate the opposite."));
-  EXPECT_CALL(*this, ParsedKeyframe());
-  EXPECT_CALL(*this, ParsedNonKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kKeyframe));
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kNonKeyframe));
   ParseMP4File(
       "bear-320x240-v-2frames-keyframe-is-non-sync-sample_frag-hevc.mp4", 256);
 }
@@ -542,11 +553,11 @@ TEST_F(MP4StreamParserTest, HEVC_NonKeyframeness_Mismatches_Container) {
   params.detected_audio_track_count = 0;
   InitializeParserWithInitParametersExpectations(params);
   verifying_keyframeness_sequence_ = true;
-  EXPECT_CALL(*this, ParsedKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kKeyframe));
   EXPECT_MEDIA_LOG(DebugLog(
       "ISO-BMFF container metadata for video frame indicates that the frame is "
       "a keyframe, but the video frame contents indicate the opposite."));
-  EXPECT_CALL(*this, ParsedNonKeyframe());
+  EXPECT_CALL(keyframeness_cb_, Run(Keyframeness::kNonKeyframe));
   ParseMP4File(
       "bear-320x240-v-2frames-nonkeyframe-is-sync-sample_frag-hevc.mp4", 256);
 }

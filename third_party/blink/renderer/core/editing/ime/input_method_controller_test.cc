@@ -3305,4 +3305,13 @@ TEST_F(InputMethodControllerTest, SetCompositionInMyanmar) {
       div->innerHTML());
 }
 
+TEST_F(InputMethodControllerTest, VirtualKeyboardPolicyOfFocusedElement) {
+  EXPECT_EQ(ui::mojom::VirtualKeyboardPolicy::AUTO,
+            Controller().VirtualKeyboardPolicyOfFocusedElement());
+  InsertHTMLElement("<input id='a' virtualkeyboardpolicy='manual'>", "a")
+      ->focus();
+  EXPECT_EQ(ui::mojom::VirtualKeyboardPolicy::MANUAL,
+            Controller().VirtualKeyboardPolicyOfFocusedElement());
+}
+
 }  // namespace blink

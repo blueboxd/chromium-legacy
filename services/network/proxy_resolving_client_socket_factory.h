@@ -16,6 +16,7 @@
 namespace net {
 struct CommonConnectJobParams;
 class HttpNetworkSession;
+class NetworkIsolationKey;
 class URLRequestContext;
 }  // namespace net
 
@@ -37,11 +38,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocketFactory {
   // doesn't need to explicitly sanitize the url, any sensitive data (like
   // embedded usernames and passwords), and local data (i.e. reference fragment)
   // will be sanitized by net::ProxyService::ResolveProxyHelper() before the url
-  // is disclosed to the proxy. If |use_tls|, TLS connect will be used in
-  // addition to TCP connect. The URLRequestContext's SSL configurations will be
-  // respected when establishing a TLS connection.
-  std::unique_ptr<ProxyResolvingClientSocket> CreateSocket(const GURL& url,
-                                                           bool use_tls);
+  // is disclosed to the proxy.
+  //
+  // |network_isolation_key| indicates the network shard to use for storing
+  // shared network state (DNS cache entries, shared H2/QUIC proxy connections,
+  // etc).  Proxy connections will only be shared with other
+  // ProxyResolvingClientSockets, not with standards HTTP/HTTPS requests.
+  //
+  // If |use_tls| is true, TLS connect will be used in addition to TCP connect.
+  // The URLRequestContext's SSL configurations will be respected when
+  // establishing a TLS connection.
+  std::unique_ptr<ProxyResolvingClientSocket> CreateSocket(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      bool use_tls);
 
   const net::HttpNetworkSession* network_session() const {
     return network_session_.get();

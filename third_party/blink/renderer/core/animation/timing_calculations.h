@@ -73,10 +73,12 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
 }
 
 // https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
-static inline Timing::Phase CalculatePhase(double active_duration,
-                                           base::Optional<double> local_time,
-                                           Timing::AnimationDirection direction,
-                                           const Timing& specified) {
+static inline Timing::Phase CalculatePhase(
+    double active_duration,
+    base::Optional<double> local_time,
+    base::Optional<Timing::Phase> timeline_phase,
+    Timing::AnimationDirection direction,
+    const Timing& specified) {
   DCHECK_GE(active_duration, 0);
   if (!local_time)
     return Timing::kPhaseNone;
@@ -85,6 +87,8 @@ static inline Timing::Phase CalculatePhase(double active_duration,
   double before_active_boundary_time =
       std::max(std::min(specified.start_delay, end_time), 0.0);
   if (local_time.value() < before_active_boundary_time ||
+      (local_time.value() == before_active_boundary_time && timeline_phase &&
+       timeline_phase.value() == Timing::kPhaseBefore) ||
       (local_time.value() == before_active_boundary_time &&
        direction == Timing::AnimationDirection::kBackwards)) {
     return Timing::kPhaseBefore;
@@ -92,6 +96,8 @@ static inline Timing::Phase CalculatePhase(double active_duration,
   double active_after_boundary_time = std::max(
       std::min(specified.start_delay + active_duration, end_time), 0.0);
   if (local_time > active_after_boundary_time ||
+      (local_time.value() == active_after_boundary_time && timeline_phase &&
+       timeline_phase.value() == Timing::kPhaseAfter) ||
       (local_time == active_after_boundary_time &&
        direction == Timing::AnimationDirection::kForwards)) {
     return Timing::kPhaseAfter;

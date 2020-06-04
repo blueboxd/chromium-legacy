@@ -19,8 +19,10 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/mojom/worker/worker_content_settings_proxy.mojom.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
@@ -50,12 +52,14 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     mojo::PendingRemote<blink::mojom::SharedWorkerHost> host,
     mojo::PendingReceiver<blink::mojom::SharedWorker> receiver,
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
-        browser_interface_broker)
+        browser_interface_broker,
+    const std::vector<std::string>& cors_exempt_header_list)
     : receiver_(this, std::move(receiver)),
       host_(std::move(host)),
       url_(info->url),
       renderer_preferences_(renderer_preferences),
-      preference_watcher_receiver_(std::move(preference_watcher_receiver)) {
+      preference_watcher_receiver_(std::move(preference_watcher_receiver)),
+      cors_exempt_header_list_(cors_exempt_header_list) {
   DCHECK(main_script_load_params);
   DCHECK(pending_subresource_loader_factory_bundle);
 
@@ -112,8 +116,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       info->content_security_policy_type, info->creation_address_space,
       FetchClientSettingsObjectFromMojomToWeb(
           info->outside_fetch_client_settings_object),
-      appcache_host_id, devtools_worker_token, content_settings.PassPipe(),
-      browser_interface_broker.PassPipe(), pause_on_start);
+      appcache_host_id, devtools_worker_token, std::move(content_settings),
+      std::move(browser_interface_broker), pause_on_start);
 
   // If the host drops its connection, then self-destruct.
   receiver_.set_disconnect_handler(base::BindOnce(
@@ -126,14 +130,13 @@ EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
 }
 
 void EmbeddedSharedWorkerStub::WorkerReadyForInspection(
-    mojo::ScopedMessagePipeHandle devtools_agent_remote_handle,
-    mojo::ScopedMessagePipeHandle devtools_agent_host_receiver_handle) {
-  mojo::PendingRemote<blink::mojom::DevToolsAgent> remote(
-      std::move(devtools_agent_remote_handle),
-      blink::mojom::DevToolsAgent::Version_);
-  mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> receiver(
-      std::move(devtools_agent_host_receiver_handle));
-  host_->OnReadyForInspection(std::move(remote), std::move(receiver));
+    blink::CrossVariantMojoRemote<blink::mojom::DevToolsAgentInterfaceBase>
+        devtools_agent_remote,
+    blink::CrossVariantMojoReceiver<
+        blink::mojom::DevToolsAgentHostInterfaceBase>
+        devtools_agent_host_receiver) {
+  host_->OnReadyForInspection(std::move(devtools_agent_remote),
+                              std::move(devtools_agent_host_receiver));
 }
 
 void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed(
@@ -178,7 +181,8 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext() {
           std::move(preference_watcher_receiver_),
           subresource_loader_factory_bundle_->Clone(),
           std::move(fallback_factory),
-          /*pending_subresource_loader_updater*/ mojo::NullReceiver());
+          /*pending_subresource_loader_updater*/ mojo::NullReceiver(),
+          cors_exempt_header_list_);
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.

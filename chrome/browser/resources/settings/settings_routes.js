@@ -33,6 +33,7 @@ import {Route} from './router.m.js';
  *   MANAGE_PROFILE: !Route,
  *   ON_STARTUP: !Route,
  *   PASSWORDS: !Route,
+ *   DEVICE_PASSWORDS: !Route,
  *   PAYMENTS: !Route,
  *   PEOPLE: !Route,
  *   PRINTING: !Route,

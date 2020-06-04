@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_view.h"
@@ -809,89 +810,6 @@ TEST_F(SaveCardBubbleControllerImplTest,
       AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_HIDDEN, 1);
 }
 
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_LegalMessageLink) {
-  ShowUploadBubble();
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_RequestingCardholderName_LegalMessageLink) {
-  ShowUploadBubble(AutofillClient::SaveCreditCardOptions()
-                       .with_should_request_name_from_user(true)
-                       .with_show_prompt());
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Upload.FirstShow.RequestingCardholderName",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_FirstShow_RequestingExpirationDate_LegalMessageLink) {
-  ShowUploadBubble(AutofillClient::SaveCreditCardOptions()
-                       .with_should_request_expiration_date_from_user(true)
-                       .with_show_prompt());
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Upload.FirstShow.RequestingExpirationDate",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_Reshows_LegalMessageLink) {
-  ShowUploadBubble();
-  CloseAndReshowBubble();
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Upload.Reshows",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_Reshows_RequestingCardholderName_LegalMessageLink) {
-  ShowUploadBubble(AutofillClient::SaveCreditCardOptions()
-                       .with_should_request_name_from_user(true)
-                       .with_show_prompt());
-  CloseAndReshowBubble();
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Upload.Reshows.RequestingCardholderName",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
-TEST_F(SaveCardBubbleControllerImplTest,
-       Metrics_Upload_Reshows_RequestingExpirationDate_LegalMessageLink) {
-  ShowUploadBubble(AutofillClient::SaveCreditCardOptions()
-                       .with_should_request_expiration_date_from_user(true)
-                       .with_show_prompt());
-  CloseAndReshowBubble();
-
-  base::HistogramTester histogram_tester;
-  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SaveCreditCardPrompt.Upload.Reshows.RequestingExpirationDate",
-      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
-}
-
 // Param of the SaveCardBubbleSingletonTestData:
 // -- bool metrics_revamp_experiment_enabled;
 // -- bool first_shown_is_local;
@@ -1233,14 +1151,39 @@ TEST_P(SaveCardBubbleLoggingTest, Metrics_SecurityLevel) {
         "Autofill.SaveCreditCardPromptOffer." + destination_ + ".SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, expected_count);
   } else {
-    EXPECT_THAT(
-        histogram_tester.GetAllSamples("Autofill.SaveCreditCardPrompt." +
-                                       destination_ + ".SECURE"),
-        ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED,
-                           expected_count),
-                    Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED,
-                           expected_count)));
+    histogram_tester.ExpectTotalCount(
+        "Autofill.SaveCreditCardPromptOffer." + destination_ + ".SECURE", 0);
   }
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("Autofill.SaveCreditCardPrompt." +
+                                     destination_ + ".SECURE"),
+      ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED,
+                         expected_count),
+                  Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN_DEPRECATED,
+                         expected_count)));
+}
+
+TEST_P(SaveCardBubbleLoggingTest, Metrics_LegalMessageLinkedClicked) {
+  if (destination_ == "Local")
+    return;
+
+  TriggerFlow();
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
+  controller()->OnLegalMessageLinkClicked(GURL("http://www.example.com"));
+
+  if (metrics_revamp_experiment_enabled_) {
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_CreditCardUpload_LegalMessageLinkClicked"));
+  } else {
+    EXPECT_EQ(0, user_action_tester.GetActionCount(
+                     "Autofill_CreditCardUpload_LegalMessageLinkClicked"));
+  }
+
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveCreditCardPrompt." + destination_ + "." + show_,
+      AutofillMetrics::SAVE_CARD_PROMPT_DISMISS_CLICK_LEGAL_MESSAGE, 1);
 }
 
 // TODO(crbug.com/932818): Delete (manage card) or move (sign in promo) below

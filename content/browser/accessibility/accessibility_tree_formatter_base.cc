@@ -38,35 +38,62 @@ const char kSkipChildren[] = "@NO_CHILDREN_DUMP";
 //
 
 // static
-PropertyNode PropertyNode::FromProperty(const base::string16& property) {
+PropertyNode PropertyNode::FromPropertyFilter(
+    const AccessibilityTreeFormatter::PropertyFilter& filter) {
+  // Property invocation: property_str expected format is
+  // prop_name or prop_name(arg1, ... argN).
   PropertyNode root;
-  Parse(&root, property.begin(), property.end());
+  Parse(&root, filter.property_str.begin(), filter.property_str.end());
 
   PropertyNode* node = &root.parameters[0];
-  node->original_property = property;
+  node->original_property = filter.property_str;
+
+  // Line indexes filter: filter_str expected format is
+  // :line_num_1, ... :line_num_N, a comma separated list of line indexes
+  // the property should be queried for. For example, ":1,:5,:7" indicates that
+  // the property should called for objects placed on 1, 5 and 7 lines only.
+  if (!filter.filter_str.empty()) {
+    node->line_indexes =
+        base::SplitString(filter.filter_str, base::string16(1, ','),
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  }
+
   return std::move(*node);
 }
 
 PropertyNode::PropertyNode() = default;
 PropertyNode::PropertyNode(PropertyNode&& o)
-    : value(std::move(o.value)),
+    : name_or_value(std::move(o.name_or_value)),
       parameters(std::move(o.parameters)),
-      original_property(std::move(o.original_property)) {}
+      original_property(std::move(o.original_property)),
+      line_indexes(std::move(o.line_indexes)) {}
 PropertyNode::~PropertyNode() = default;
 
 PropertyNode& PropertyNode::operator=(PropertyNode&& o) {
-  value = std::move(o.value);
+  name_or_value = std::move(o.name_or_value);
   parameters = std::move(o.parameters);
   original_property = std::move(o.original_property);
+  line_indexes = std::move(o.line_indexes);
   return *this;
 }
 
 PropertyNode::operator bool() const {
-  return !value.empty();
+  return !name_or_value.empty();
 }
 
 std::string PropertyNode::ToString() const {
-  std::string out = base::UTF16ToUTF8(value);
+  std::string out;
+  for (const auto& index : line_indexes) {
+    if (!out.empty()) {
+      out += ',';
+    }
+    out += base::UTF16ToUTF8(index);
+  }
+  if (!out.empty()) {
+    out += ';';
+  }
+
+  out += base::UTF16ToUTF8(name_or_value);
   if (parameters.size()) {
     out += '(';
     for (size_t i = 0; i < parameters.size(); i++) {
@@ -81,10 +108,11 @@ std::string PropertyNode::ToString() const {
 }
 
 // private
-PropertyNode::PropertyNode(const base::string16& v) : value(v) {}
+PropertyNode::PropertyNode(const base::string16& name_or_value)
+    : name_or_value(name_or_value) {}
 PropertyNode::PropertyNode(PropertyNode::iterator begin,
                            PropertyNode::iterator end)
-    : value(begin, end) {}
+    : name_or_value(begin, end) {}
 
 // private static
 PropertyNode::iterator PropertyNode::Parse(PropertyNode* node,
@@ -139,7 +167,26 @@ PropertyNode::iterator PropertyNode::Parse(PropertyNode* node,
   return iter;
 }
 
+//
 // AccessibilityTreeFormatter
+//
+
+AccessibilityTreeFormatter::PropertyFilter::PropertyFilter(
+    const PropertyFilter&) = default;
+
+AccessibilityTreeFormatter::PropertyFilter::PropertyFilter(
+    const base::string16& str,
+    Type type)
+    : match_str(str), type(type) {
+  size_t index = str.find(';');
+  if (index != std::string::npos) {
+    filter_str = str.substr(0, index);
+    if (index + 1 < str.length()) {
+      match_str = str.substr(index + 1, std::string::npos);
+    }
+  }
+  property_str = match_str.substr(0, match_str.find('='));
+}
 
 AccessibilityTreeFormatter::TestPass AccessibilityTreeFormatter::GetTestPass(
     size_t index) {
@@ -299,24 +346,25 @@ AccessibilityTreeFormatterBase::GetVersionSpecificExpectedFileSuffix() {
 }
 
 PropertyNode AccessibilityTreeFormatterBase::GetMatchingPropertyNode(
-    const base::string16& text) {
-  // Find the first allow-filter matching the property name.
-  // The filters have form of name(args)=value. Here we match the name part.
-  const base::string16 filter_delim = base::ASCIIToUTF16("=");
+    const base::string16& line_index,
+    const base::string16& property_name) {
+  // Find the first allow-filter matching the line index and the property name.
   for (const auto& filter : property_filters_) {
-    base::String16Tokenizer filter_tokenizer(filter.match_str, filter_delim);
-    if (!filter_tokenizer.GetNext()) {
+    PropertyNode property_node = PropertyNode::FromPropertyFilter(filter);
+
+    // Skip if the line index filter doesn't matched (if specified).
+    if (!property_node.line_indexes.empty() &&
+        std::find(property_node.line_indexes.begin(),
+                  property_node.line_indexes.end(),
+                  line_index) == property_node.line_indexes.end()) {
       continue;
     }
-
-    base::string16 property = filter_tokenizer.token();
-    PropertyNode property_node = PropertyNode::FromProperty(property);
 
     // The filter should be either an exact property match or a wildcard
     // matching to support filter collections like AXRole* which matches
     // AXRoleDescription.
-    if (text == property_node.value ||
-        base::MatchPattern(text, property_node.value)) {
+    if (property_name == property_node.name_or_value ||
+        base::MatchPattern(property_name, property_node.name_or_value)) {
       switch (filter.type) {
         case PropertyFilter::ALLOW_EMPTY:
         case PropertyFilter::ALLOW:

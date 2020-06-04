@@ -1203,6 +1203,27 @@
             ]
         }
     ],
+    "CSSReducedFontLoadingInvalidations": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CSSReducedFontLoadingInvalidations"
+                    ]
+                }
+            ]
+        }
+    ],
     "CacheStorageEagerReading": [
         {
             "platforms": [
@@ -2392,6 +2413,26 @@
             ]
         }
     ],
+    "FindInPageBestEffortPriority": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200601",
+                    "enable_features": [
+                        "BlinkSchedulerBestEffortPriorityForFindInPage"
+                    ]
+                }
+            ]
+        }
+    ],
     "FlexNG": [
         {
             "platforms": [
@@ -2826,6 +2867,21 @@
                         "IPH_HomepagePromoCard"
                     ],
                     "disable_features": []
+                }
+            ]
+        }
+    ],
+    "IOSCrashReportBreadcrumbs": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LogBreadcrumbs"
+                    ]
                 }
             ]
         }
@@ -3491,6 +3547,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MacAllowBackgroundingProcesses"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MacCustomPaperSize": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableCustomMacPaperSizes"
                     ]
                 }
             ]

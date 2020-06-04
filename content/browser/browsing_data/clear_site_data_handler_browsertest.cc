@@ -87,12 +87,12 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
                                bool cookies,
                                bool storage,
                                bool cache) {
-    const int kOriginTypeMask =
+    const uint64_t kOriginTypeMask =
         BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
         BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;
 
     if (cookies) {
-      int data_type_mask =
+      uint64_t data_type_mask =
           BrowsingDataRemover::DATA_TYPE_COOKIES |
           BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
 
@@ -103,7 +103,7 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
                  kOriginTypeMask, &filter_builder);
     }
     if (storage || cache) {
-      int data_type_mask =
+      uint64_t data_type_mask =
           (storage ? BrowsingDataRemover::DATA_TYPE_DOM_STORAGE : 0) |
           (cache ? BrowsingDataRemover::DATA_TYPE_CACHE : 0);
 

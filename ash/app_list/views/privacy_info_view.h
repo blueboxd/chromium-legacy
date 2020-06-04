@@ -34,20 +34,23 @@ class PrivacyInfoView : public views::View,
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  protected:
-  explicit PrivacyInfoView(int info_string_id);
+  PrivacyInfoView(int info_string_id, int link_string_id);
 
   bool IsCloseButton(views::Button* button) const;
 
  private:
-  void InitLayout(int info_string_id);
+  void InitLayout();
   void InitInfoIcon();
-  void InitText(int info_string_id);
+  void InitText();
   void InitCloseButton();
 
   views::View* row_container_ = nullptr;        // Owned by view hierarchy.
   views::ImageView* info_icon_ = nullptr;       // Owned by view hierarchy.
   views::StyledLabel* text_view_ = nullptr;     // Owned by view hierarchy.
   views::ImageButton* close_button_ = nullptr;  // Owned by view hierarchy.
+
+  const int info_string_id_;
+  const int link_string_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivacyInfoView);
 };

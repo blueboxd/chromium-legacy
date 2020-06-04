@@ -76,6 +76,10 @@ base::Value PageNodeImplDescriber::DescribePageNodeData(
                     page_node_impl->is_holding_indexeddb_lock_.value());
   result.SetBoolKey("had_form_interaction",
                     page_node_impl->had_form_interaction_.value());
+  if (page_node_impl->opened_type_ != PageNode::OpenedType::kInvalid) {
+    result.SetStringKey("opened_type",
+                        PageNode::ToString(page_node_impl->opened_type_));
+  }
 
   return result;
 }

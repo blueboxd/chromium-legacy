@@ -488,17 +488,43 @@ void LogCanCommitOriginAndUrlFailureReason(const std::string& failure_reason) {
   base::debug::SetCrashKeyString(failure_reason_key, failure_reason);
 }
 
-url::Origin GetOriginForURLLoaderFactoryUnchecked(
-    NavigationRequest* navigation_request) {
-  // Return a safe opaque origin when there is no |navigation_request|
-  if (!navigation_request)
-    return url::Origin();
+bool ShouldBypassChecksForErrorPage(
+    RenderFrameHostImpl* frame,
+    NavigationRequest* navigation_request,
+    bool* should_commit_unreachable_url = nullptr) {
+  DCHECK(frame);
 
-  // GetOriginForURLLoaderFactory should only be called at the ready-to-commit
-  // time, when the RFHI to commit the navigation is already known.
-  DCHECK_LE(NavigationRequest::READY_TO_COMMIT, navigation_request->state());
-  RenderFrameHostImpl* target_frame = navigation_request->GetRenderFrameHost();
+  if (should_commit_unreachable_url)
+    *should_commit_unreachable_url = false;
+
+  bool is_main_frame = !frame->GetParent();
+  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(is_main_frame)) {
+    if (frame->GetSiteInstance()->GetSiteURL() ==
+        GURL(content::kUnreachableWebDataURL)) {
+      if (should_commit_unreachable_url)
+        *should_commit_unreachable_url = true;
+
+      // With error page isolation, any URL can commit in an error page process.
+      return true;
+    }
+  } else {
+    // Without error page isolation, a blocked navigation is expected to
+    // commit in the old renderer process.  This may be true for subframe
+    // navigations even when error page isolation is enabled for main frames.
+    if (navigation_request &&
+        navigation_request->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+url::Origin GetOriginForURLLoaderFactoryUnchecked(
+    RenderFrameHostImpl* target_frame,
+    NavigationRequest* navigation_request) {
   DCHECK(target_frame);
+  DCHECK(navigation_request);
 
   // Check if this is loadDataWithBaseUrl (which needs special treatment).
   auto& common_params = navigation_request->common_params();
@@ -547,18 +573,29 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
 
 url::Origin GetOriginForURLLoaderFactory(
     NavigationRequest* navigation_request) {
+  // Return a safe opaque origin when there is no |navigation_request| (e.g.
+  // when RFHI::CommitNavigation is called via RFHI::NavigateToInterstitialURL).
+  if (!navigation_request)
+    return url::Origin();
+
+  // GetOriginForURLLoaderFactory should only be called at the ReadyToCommit
+  // time, when the RFHI to commit the navigation is already known.
+  DCHECK_EQ(NavigationRequest::READY_TO_COMMIT, navigation_request->state());
+  RenderFrameHostImpl* target_frame = navigation_request->GetRenderFrameHost();
+  DCHECK(target_frame);
+
+  // Calculate an approximation (sandbox/csp is ignored) of the origin that will
+  // be committed because of |navigation_request|.
   url::Origin result =
-      GetOriginForURLLoaderFactoryUnchecked(navigation_request);
+      GetOriginForURLLoaderFactoryUnchecked(target_frame, navigation_request);
 
-  // |result| must be an origin that is allowed to be accessed from the process
-  // that is the target of this navigation.
-  if (navigation_request) {
-    int process_id =
-        navigation_request->GetRenderFrameHost()->GetProcess()->GetID();
-    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    CHECK(policy->CanAccessDataForOrigin(process_id, result));
-  }
-
+  // Check that |result| origin is allowed to be accessed from the process that
+  // is the target of this navigation.
+  if (ShouldBypassChecksForErrorPage(target_frame, navigation_request))
+    return result;
+  int process_id = target_frame->GetProcess()->GetID();
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  CHECK(policy->CanAccessDataForOrigin(process_id, result));
   return result;
 }
 
@@ -3162,8 +3199,9 @@ void RenderFrameHostImpl::OnContextMenu(
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
-  validated_params.frame_url = GetLastCommittedURL();
   validated_params.page_url = GetMainFrame()->GetLastCommittedURL();
+  if (GetParent())  // Only populate |frame_url| for subframes.
+    validated_params.frame_url = GetLastCommittedURL();
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
@@ -4724,7 +4762,14 @@ void RenderFrameHostImpl::CreateNewWindow(
   // window.open() will return "window" and navigate it to whatever URL was
   // passed.
   if (!render_view_host_->GetWebkitPreferences().supports_multiple_windows) {
-    std::move(callback).Run(mojom::CreateNewWindowStatus::kReuse, nullptr);
+    // See crbug.com/1083819, we should ignore if the URL is javascript: scheme,
+    // previously we already filtered out javascript: scheme and replace the
+    // URL with |kBlockedURL|, so we check against |kBlockedURL| here.
+    if (params->target_url == GURL(kBlockedURL)) {
+      std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
+    } else {
+      std::move(callback).Run(mojom::CreateNewWindowStatus::kReuse, nullptr);
+    }
     return;
   }
 
@@ -7714,30 +7759,18 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // Error pages may sometimes commit a URL in the wrong process, which requires
   // an exception for the CanCommitOriginAndUrl() checks.  This is ok as long
   // as the origin is opaque.
-  bool bypass_checks_for_error_page = false;
-  if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
-          frame_tree_node_->IsMainFrame())) {
-    if (site_instance_->GetSiteURL() == GURL(content::kUnreachableWebDataURL)) {
-      // Commits in the error page process must only be failures, otherwise
-      // successful navigations could commit documents from origins different
-      // than the chrome-error://chromewebdata/ one and violate expectations.
-      if (!params->url_is_unreachable) {
-        DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, params->origin);
-        bad_message::ReceivedBadMessage(
-            process, bad_message::RFH_ERROR_PROCESS_NON_ERROR_COMMIT);
-        return false;
-      }
-      // With error page isolation, any URL can commit in an error page process.
-      bypass_checks_for_error_page = true;
-    }
-  } else {
-    // Without error page isolation, a blocked navigation is expected to
-    // commit in the old renderer process.  This may be true for subframe
-    // navigations even when error page isolation is enabled for main frames.
-    if (navigation_request &&
-        navigation_request->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT) {
-      bypass_checks_for_error_page = true;
-    }
+  bool should_commit_unreachable_url = false;
+  bool bypass_checks_for_error_page = ShouldBypassChecksForErrorPage(
+      this, navigation_request, &should_commit_unreachable_url);
+
+  // Commits in the error page process must only be failures, otherwise
+  // successful navigations could commit documents from origins different
+  // than the chrome-error://chromewebdata/ one and violate expectations.
+  if (should_commit_unreachable_url && !params->url_is_unreachable) {
+    DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, params->origin);
+    bad_message::ReceivedBadMessage(
+        process, bad_message::RFH_ERROR_PROCESS_NON_ERROR_COMMIT);
+    return false;
   }
 
   // Error pages must commit in a opaque origin. Terminate the renderer

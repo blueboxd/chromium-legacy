@@ -48,6 +48,7 @@ class BaseParameterOptimizer(object):
     self._working_dir = None
     self._expectations = None
     self._gold_url = 'https://%s-gold.skia.org' % args.gold_instance
+    self._pool = multiprocessing.Pool()
     # A map of strings, denoting a resolution or trace, to an iterable of
     # strings, denoting images that are that dimension or belong to that
     # trace.
@@ -356,7 +357,6 @@ class BaseParameterOptimizer(object):
     max_num_pixels = -1
     max_max_delta = -1
 
-    process_pool = multiprocessing.Pool()
     for resolution, digest_list in self._images.iteritems():
       logging.debug('Resolution/trace: %s, digests: %s', resolution,
                     digest_list)
@@ -364,7 +364,7 @@ class BaseParameterOptimizer(object):
           self._GenerateComparisonCmd(l, r, parameters)
           for (l, r) in itertools.combinations(digest_list, 2)
       ]
-      results = process_pool.map(RunCommandAndExtractData, cmds)
+      results = self._pool.map(RunCommandAndExtractData, cmds)
       for (success, num_pixels, max_delta) in results:
         num_attempts += 1
         if success:

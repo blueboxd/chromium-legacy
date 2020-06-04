@@ -287,8 +287,7 @@ void HTMLImageElement::ParseAttribute(
     UseCounter::Count(GetDocument(), WebFeature::kImageDecodingAttribute);
     decoding_mode_ = ParseImageDecodingMode(params.new_value);
   } else if (name == html_names::kLoadingAttr &&
-             EqualIgnoringASCIICase(params.new_value, "eager") &&
-             !GetDocument().IsLazyLoadPolicyEnforced()) {
+             EqualIgnoringASCIICase(params.new_value, "eager")) {
     GetImageLoader().LoadDeferredImage(referrer_policy_);
   } else if (name == html_names::kImportanceAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {

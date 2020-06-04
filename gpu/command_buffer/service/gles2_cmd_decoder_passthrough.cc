@@ -1194,6 +1194,12 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
                         attrib_helper.offscreen_framebuffer_size.height());
   }
 
+  // Initialize the tracked scissor and viewport state and then apply the
+  // surface offsets if needed.
+  api()->glGetIntegervFn(GL_VIEWPORT, viewport_);
+  api()->glGetIntegervFn(GL_SCISSOR_BOX, scissor_);
+  ApplySurfaceDrawOffset();
+
 #if defined(OS_MACOSX)
   // On mac we need the ANGLE_texture_rectangle extension to support IOSurface
   // backbuffers, but we don't want it exposed to WebGL user shaders. This
@@ -2116,6 +2122,24 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
       }
       break;
 
+    case GL_VIEWPORT:
+      // The applied viewport and scissor could be offset by the current
+      // surface, return the tracked values instead
+      if (length < 4) {
+        return error::kInvalidArguments;
+      }
+      std::copy(std::begin(viewport_), std::end(viewport_), params);
+      break;
+
+    case GL_SCISSOR_BOX:
+      // The applied viewport and scissor could be offset by the current
+      // surface, return the tracked values instead
+      if (length < 4) {
+        return error::kInvalidArguments;
+      }
+      std::copy(std::begin(scissor_), std::end(scissor_), params);
+      break;
+
     default:
       break;
   }
@@ -2888,6 +2912,27 @@ GLES2DecoderPassthroughImpl::GLenumToTextureTarget(GLenum target) {
     default:
       return TextureTarget::kUnkown;
   }
+}
+
+gfx::Vector2d GLES2DecoderPassthroughImpl::GetSurfaceDrawOffset() const {
+  if (bound_draw_framebuffer_ != 0 || offscreen_) {
+    return gfx::Vector2d();
+  }
+  return surface_->GetDrawOffset();
+}
+
+void GLES2DecoderPassthroughImpl::ApplySurfaceDrawOffset() {
+  if (offscreen_ || !surface_->SupportsDCLayers()) {
+    return;
+  }
+
+  gfx::Vector2d framebuffer_offset = GetSurfaceDrawOffset();
+  api()->glViewportFn(viewport_[0] + framebuffer_offset.x(),
+                      viewport_[1] + framebuffer_offset.y(), viewport_[2],
+                      viewport_[3]);
+  api()->glScissorFn(scissor_[0] + framebuffer_offset.x(),
+                     scissor_[1] + framebuffer_offset.y(), scissor_[2],
+                     scissor_[3]);
 }
 
 bool GLES2DecoderPassthroughImpl::CheckErrorCallbackState() {

@@ -36,7 +36,7 @@ ComputedEffectTiming* WorkletAnimationEffect::getComputedTiming() const {
     // include that information, we do not need to supply one.
     base::Optional<double> playback_rate = base::nullopt;
     calculated_ = specified_timing_.CalculateTimings(
-        local_time, Timing::AnimationDirection::kForwards, false,
+        local_time, base::nullopt, Timing::AnimationDirection::kForwards, false,
         playback_rate);
   }
 

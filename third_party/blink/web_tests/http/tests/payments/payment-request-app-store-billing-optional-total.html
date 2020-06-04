@@ -5,8 +5,8 @@
 <script src="../serviceworker/resources/test-helpers.js"></script>
 <script>
 test(() => {
-  assert_true(internals.runtimeFlags.paymentRequestOptionalTotalEnabled);
-}, "This test suite assumes that the runtime-enabled-flag PaymentRequestOptionalTotal is enabled.");
+  assert_true(internals.runtimeFlags.digitalGoodsEnabled);
+}, "This test suite assumes that the runtime-enabled-flag DigitalGoods is enabled.");
 
 const onlySupportAppStoreBillingMethod = [{supportedMethods: "https://play.google.com/billing"}];
 const supportBothAppStoreBillingMethodAndNormalMethod = [{supportedMethods: "https://play.google.com/billing"},

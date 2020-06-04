@@ -12,18 +12,23 @@ This can be used e.g. by a presubmit check to prevent developers from making
 breaking changes to stable mojoms."""
 
 import argparse
-import codecs
 import errno
+import io
 import json
 import os
 import os.path
 import shutil
+import six
 import sys
 import tempfile
 
 from mojom.generate import module
 from mojom.generate import translate
 from mojom.parse import parser
+
+
+class ParseError(Exception):
+  pass
 
 
 def _ValidateDelta(root, delta):
@@ -61,10 +66,16 @@ def _ValidateDelta(root, delta):
       modules = override_modules
     else:
       modules = unmodified_modules
-      with codecs.open(os.path.join(root, mojom), encoding='utf-8') as f:
-        contents = ''.join(f.readlines())
+      with io.open(os.path.join(root, mojom), encoding='utf-8') as f:
+        contents = f.read()
 
-    ast = parser.Parse(contents, mojom)
+    try:
+      ast = parser.Parse(contents, mojom)
+    except Exception as e:
+      six.reraise(
+          ParseError,
+          'encountered exception {0} while parsing {1}'.format(e, mojom),
+          sys.exc_info()[2])
     for imp in ast.import_list:
       parseMojom(imp.import_filename, file_overrides, override_modules)
 

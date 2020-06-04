@@ -58,6 +58,12 @@ class BackGestureEventHandler : public display::DisplayObserver,
 
   void SendBackEvent(const gfx::Point& screen_location);
 
+  // Returns true if we should wait for touch press ack to decide whether to
+  // show back gesture. If true, BackGestureEventHandler should not handle touch
+  // press event in OnTouchEvent() but should wait after touch ack has been
+  // received.
+  bool ShouldWaitForTouchPressAck(const gfx::Point& screen_location);
+
   // True if swiping from left edge to go to previous page is in progress.
   bool going_back_started_ = false;
 
@@ -97,6 +103,13 @@ class BackGestureEventHandler : public display::DisplayObserver,
   // window that is underneath to do other things (e.g, highlight a menu item)
   // instead of going back.
   ui::GestureProviderAura gesture_provider_;
+
+  // False if BackGestureEventHandler should not handle touch events directly in
+  // OnTouchEvent(), but should wait after touch ack is received. This is needed
+  // as the window's touch action (if exist) will only be set after it sees the
+  // touch start event and we'll need the touch action information to decide
+  // whether back gesture should be shown.
+  bool should_wait_for_touch_ack_ = false;
 
   // Start scenario type of the back gesture, used for related metrics.
   BackGestureStartScenarioType back_gesture_start_scenario_type_ =

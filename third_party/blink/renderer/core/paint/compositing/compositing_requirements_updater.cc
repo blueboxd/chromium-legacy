@@ -613,7 +613,6 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // At this point we have finished collecting all reasons to composite this
   // layer.
   layer->SetCompositingReasons(reasons_to_composite);
-
   // If we've skipped recursing down to children but children needed an
   // update, remember this on the display lock context, so that we can restore
   // the dirty bit when the lock is unlocked.

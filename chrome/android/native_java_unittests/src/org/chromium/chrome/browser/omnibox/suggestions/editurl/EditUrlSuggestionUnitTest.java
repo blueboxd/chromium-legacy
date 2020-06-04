@@ -19,7 +19,6 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
@@ -56,9 +55,6 @@ public final class EditUrlSuggestionUnitTest {
             new GURL("http://www.example.com?q=" + BARBAZ_SEARCH_TERMS);
     private EditUrlSuggestionProcessor mProcessor;
     private PropertyModel mModel;
-
-    @Mock
-    private ActivityTabProvider mTabProvider;
 
     @Mock
     private ShareDelegate mShareDelegate;
@@ -107,8 +103,6 @@ public final class EditUrlSuggestionUnitTest {
         when(mTab.isNativePage()).thenReturn(false);
         when(mTab.isIncognito()).thenReturn(false);
 
-        when(mTabProvider.get()).thenReturn(mTab);
-
         when(mWhatYouTypedSuggestion.getType())
                 .thenReturn(OmniboxSuggestionType.URL_WHAT_YOU_TYPED);
         when(mWhatYouTypedSuggestion.getUrl()).thenReturn(mTestUrl);
@@ -122,10 +116,8 @@ public final class EditUrlSuggestionUnitTest {
         mModel = new PropertyModel.Builder(SuggestionViewProperties.ALL_KEYS).build();
 
         mProcessor = new EditUrlSuggestionProcessor(ContextUtils.getApplicationContext(),
-                mSuggestionHost, mUrlBarDelegate, () -> mIconBridge);
-
-        mProcessor.setActivityTabProvider(mTabProvider);
-        mProcessor.setShareDelegateSupplier(() -> mShareDelegate);
+                mSuggestionHost, mUrlBarDelegate,
+                () -> mIconBridge, () -> mTab, () -> mShareDelegate);
     }
 
     /** Test that the suggestion is triggered. */
@@ -134,7 +126,7 @@ public final class EditUrlSuggestionUnitTest {
         mProcessor.onUrlFocusChange(true);
 
         Assert.assertTrue("The processor should handle the \"what you typed\" suggestion.",
-                mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion));
+                mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0));
 
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
 
@@ -153,14 +145,14 @@ public final class EditUrlSuggestionUnitTest {
 
         when(mWhatYouTypedSuggestion.getUrl()).thenReturn(mFoobarSearchUrl);
         Assert.assertFalse("The processor should not handle the suggestion.",
-                mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion));
+                mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0));
     }
 
     /** Test the edit button is pressed, the correct method in the URL bar delegate is triggered. */
     @CalledByNativeJavaTest
     public void testEditButtonPress() {
         mProcessor.onUrlFocusChange(true);
-        mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
+        mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
 
         List<Action> actions = mModel.get(BaseSuggestionViewProperties.ACTIONS);
@@ -173,7 +165,7 @@ public final class EditUrlSuggestionUnitTest {
     @CalledByNativeJavaTest
     public void testShareButtonPress() {
         mProcessor.onUrlFocusChange(true);
-        mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
+        mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
 
         List<Action> actions = mModel.get(BaseSuggestionViewProperties.ACTIONS);
@@ -186,7 +178,7 @@ public final class EditUrlSuggestionUnitTest {
     @CalledByNativeJavaTest
     public void testCopyButtonPress() {
         mProcessor.onUrlFocusChange(true);
-        mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion);
+        mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
 
         List<Action> actions = mModel.get(BaseSuggestionViewProperties.ACTIONS);
@@ -210,11 +202,13 @@ public final class EditUrlSuggestionUnitTest {
         when(mTemplateUrlService.getSearchQueryForUrl(mBarbazSearchUrl))
                 .thenReturn(BARBAZ_SEARCH_TERMS);
 
-        Assert.assertTrue(mProcessor.doesProcessSuggestion(mSearchSuggestion));
+        Assert.assertTrue(mProcessor.doesProcessSuggestion(mSearchSuggestion, 0));
+        Assert.assertFalse(mProcessor.doesProcessSuggestion(mSearchSuggestion, 1));
 
         when(mSearchSuggestion.getUrl()).thenReturn(mBarbazSearchUrl);
         when(mSearchSuggestion.getFillIntoEdit()).thenReturn(BARBAZ_SEARCH_TERMS);
 
-        Assert.assertFalse(mProcessor.doesProcessSuggestion(mSearchSuggestion));
+        Assert.assertFalse(mProcessor.doesProcessSuggestion(mSearchSuggestion, 0));
+        Assert.assertFalse(mProcessor.doesProcessSuggestion(mSearchSuggestion, 1));
     }
 }

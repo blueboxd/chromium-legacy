@@ -129,4 +129,9 @@ void PerformanceManagerBrowserTestHarness::WaitForLoad(
   observer.Wait();
 }
 
+void PerformanceManagerBrowserTestHarness::NotifyShellCreated(
+    content::Shell* shell) {
+  helper_->OnWebContentsCreated(shell->web_contents());
+}
+
 }  // namespace performance_manager

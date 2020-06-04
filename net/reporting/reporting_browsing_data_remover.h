@@ -32,13 +32,14 @@ class NET_EXPORT ReportingBrowsingDataRemover {
   // persisted, it will need to be cleared as well.
   static void RemoveBrowsingData(
       ReportingCache* cache,
-      int data_type_mask,
+      uint64_t data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 
   // Like RemoveBrowsingData except removes data for all origins without a
   // filter. Allows slight optimization over passing an always-true filter to
   // RemoveBrowsingData.
-  static void RemoveAllBrowsingData(ReportingCache* cache, int data_type_mask);
+  static void RemoveAllBrowsingData(ReportingCache* cache,
+                                    uint64_t data_type_mask);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ReportingBrowsingDataRemover);

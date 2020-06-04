@@ -101,7 +101,7 @@ PendingAppManagerImpl::CreateInstallationTask(
     ExternalInstallOptions install_options) {
   return std::make_unique<PendingAppInstallTask>(
       profile_, registrar(), shortcut_manager(), file_handler_manager(),
-      ui_manager(), finalizer(), std::move(install_options));
+      ui_manager(), finalizer(), install_manager(), std::move(install_options));
 }
 
 std::unique_ptr<PendingAppRegistrationTaskBase>

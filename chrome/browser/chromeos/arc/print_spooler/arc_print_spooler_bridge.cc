@@ -76,7 +76,7 @@ void ArcPrintSpoolerBridge::StartPrintInCustomTab(
     int32_t task_id,
     int32_t surface_id,
     int32_t top_margin,
-    mojom::PrintSessionInstancePtr instance,
+    mojo::PendingRemote<mojom::PrintSessionInstance> instance,
     StartPrintInCustomTabCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -91,7 +91,7 @@ void ArcPrintSpoolerBridge::OnPrintDocumentSaved(
     int32_t task_id,
     int32_t surface_id,
     int32_t top_margin,
-    mojom::PrintSessionInstancePtr instance,
+    mojo::PendingRemote<mojom::PrintSessionInstance> instance,
     StartPrintInCustomTabCallback callback,
     base::FilePath file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

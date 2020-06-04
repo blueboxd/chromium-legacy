@@ -540,7 +540,7 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
   DCHECK(child_frame_nodes_.empty());
 
   // Sever opener relationships.
-  SeverOpenedPagesAndMaybeReparentPopups();
+  SeverOpenedPagesAndMaybeReparent();
 
   // Leave the page.
   DCHECK(graph()->NodeInGraph(page_node_));
@@ -561,28 +561,31 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
                                     render_frame_id_, this);
 }
 
-void FrameNodeImpl::SeverOpenedPagesAndMaybeReparentPopups() {
+void FrameNodeImpl::SeverOpenedPagesAndMaybeReparent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  using OpenedType = PageNode::OpenedType;
-
-  // Copy |opened_page_nodes_| as we'll be modifying it in this loop.
+  // Copy |opened_page_nodes_| as we'll be modifying it in this loop: when we
+  // call PageNodeImpl::(Set|Clear)OpenerFrameNodeAndOpenedType() this will call
+  // back into this frame node and call RemoveOpenedPage().
   base::flat_set<PageNodeImpl*> opened_nodes = opened_page_nodes_;
   for (auto* opened_node : opened_nodes) {
-    const bool is_popup = opened_node->opened_type() == OpenedType::kPopup;
+    auto opened_type = opened_node->opened_type();
 
-    opened_node->ClearOpenerFrameNodeAndOpenedType();
-
-    // Special case: child popups are reparented to the root of the frame tree.
-    // See WebContentsImpl::SetOpenerForNewContents.
-    if (is_popup) {
-      auto* main_frame = GetFrameTreeRoot();
-      if (main_frame != this) {
-        opened_node->SetOpenerFrameNodeAndOpenedType(main_frame,
-                                                     OpenedType::kPopup);
-      }
+    // Reparent opened pages to this frame's parent to maintain the relationship
+    // between the frame trees for bookkeeping. For the relationship to be
+    // finally severed one of the frame trees must completely disappear, or it
+    // must be explicitly severed (this can happen with portals).
+    if (parent_frame_node_) {
+      opened_node->SetOpenerFrameNodeAndOpenedType(parent_frame_node_,
+                                                   opened_type);
+    } else {
+      // There's no new parent, so simply clear the opener.
+      opened_node->ClearOpenerFrameNodeAndOpenedType();
     }
   }
+
+  // Expect each page node to have called RemoveOpenedPage(), and for this to
+  // now be empty.
   DCHECK(opened_page_nodes_.empty());
 }
 

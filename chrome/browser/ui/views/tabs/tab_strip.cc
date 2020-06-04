@@ -1840,7 +1840,7 @@ void TabStrip::UpdateHoverCard(Tab* tab) {
     hover_card_->FadeOutToHide();
 }
 
-bool TabStrip::ShowDomainInHoverCard(const Tab* tab) const {
+bool TabStrip::ShowDomainInHoverCards() const {
   const auto* app_controller = controller_->GetBrowser()->app_controller();
   return !app_controller || !app_controller->is_for_system_web_app();
 }

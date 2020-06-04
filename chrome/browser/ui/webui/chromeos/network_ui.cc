@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/net/network_health/network_health_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
@@ -22,6 +23,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/network_health_resources.h"
+#include "chrome/grit/network_health_resources_map.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
@@ -35,6 +38,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -347,6 +351,9 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "networkListsLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_LISTS));
   localized_strings->SetString(
+      "networkHealthLabel",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_NETWORK_HEALTH));
+  localized_strings->SetString(
       "visibleNetworksLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_VISIBLE_NETWORKS));
   localized_strings->SetString(
@@ -396,6 +403,10 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->UseStringsJs();
   html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);
   html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
+  html->AddResourcePath("mojo/network_health/network_health.mojom.html",
+                        IDR_NETWORK_HEALTH_MOJOM_HTML);
+  html->AddResourcePath("mojo/network_health/network_health.mojom-lite.js",
+                        IDR_NETWORK_HEALTH_MOJOM_LITE_JS);
   html->SetDefaultResource(IDR_NETWORK_UI_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
@@ -407,6 +418,13 @@ NetworkUI::~NetworkUI() {}
 void NetworkUI::BindInterface(
     mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
   ash::GetNetworkConfigService(std::move(receiver));
+}
+
+void NetworkUI::BindInterface(
+    mojo::PendingReceiver<network_health::mojom::NetworkHealthService>
+        receiver) {
+  network_health::NetworkHealthService::GetInstance()->BindRemote(
+      std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(NetworkUI)

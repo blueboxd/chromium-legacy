@@ -2391,6 +2391,8 @@ void StoragePartitionImpl::InitNetworkContext() {
       kCorsExemptRequestedWithHeaderName);
   variations::UpdateCorsExemptHeaderForVariations(context_params.get());
 
+  cors_exempt_header_list_ = context_params->cors_exempt_header_list;
+
   network_context_.reset();
   GetNetworkService()->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(), std::move(context_params));

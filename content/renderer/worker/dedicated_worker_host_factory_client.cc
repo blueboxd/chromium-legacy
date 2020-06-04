@@ -7,7 +7,9 @@
 #include <utility>
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
+#include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/worker/fetch_client_settings_object_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -97,7 +99,10 @@ DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
           std::move(renderer_preference), std::move(watcher_receiver),
           subresource_loader_factory_bundle_->Clone(),
           subresource_loader_factory_bundle_->CloneWithoutAppCacheFactory(),
-          std::move(pending_subresource_loader_updater_));
+          std::move(pending_subresource_loader_updater_),
+          RenderThreadImpl::current()
+              ->resource_dispatcher()
+              ->cors_exempt_header_list());
   worker_fetch_context->SetResponseOverrideForMainScript(
       std::move(response_override_for_main_script_));
   return worker_fetch_context;

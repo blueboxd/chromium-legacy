@@ -294,6 +294,10 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   auto& dom_storage_receivers_for_testing() { return dom_storage_receivers_; }
 
+  std::vector<std::string> cors_exempt_header_list() const {
+    return cors_exempt_header_list_;
+  }
+
   // When this StoragePartition is for guests (e.g., for a <webview> tag), this
   // is the site URL to use when creating a SiteInstance for a service worker.
   // Typically one would use the script URL of the service worker (e.g.,
@@ -335,6 +339,8 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   mojo::PendingRemote<network::mojom::CookieAccessObserver>
   CreateCookieAccessObserverForServiceWorker();
+
+  std::vector<std::string> GetCorsExemptHeaderList();
 
  private:
   class DataDeletionHelper;
@@ -545,6 +551,10 @@ class CONTENT_EXPORT StoragePartitionImpl
       cookie_manager_for_browser_process_;
   mojo::Remote<network::mojom::OriginPolicyManager>
       origin_policy_manager_for_browser_process_;
+
+  // The list of cors exempt headers that are set on |network_context_|.
+  // Initialized in InitNetworkContext() and never updated after then.
+  std::vector<std::string> cors_exempt_header_list_;
 
   // See comments for site_for_guest_service_worker().
   GURL site_for_guest_service_worker_;

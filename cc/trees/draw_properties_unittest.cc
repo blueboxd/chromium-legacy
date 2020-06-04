@@ -12,6 +12,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
@@ -3573,6 +3574,74 @@ TEST_F(DrawPropertiesTest, OpacityAnimatingOnPendingTree) {
   EXPECT_FALSE(GetEffectNode(active_child)->is_drawn);
   EXPECT_FALSE(active_effect_tree.ContributesToDrawnSurface(
       active_child->effect_tree_index()));
+}
+
+class TransformInteropTest : public DrawPropertiesTestBase,
+                             public testing::Test {
+ public:
+  TransformInteropTest() : DrawPropertiesTestBase(TransformInteropSettings()) {}
+
+ protected:
+  LayerTreeSettings TransformInteropSettings() {
+    LayerListSettings settings;
+
+    settings.enable_transform_interop = true;
+    return settings;
+  }
+};
+
+TEST_F(TransformInteropTest, BackfaceInvisibleTransform) {
+  LayerImpl* root = root_layer();
+  root->SetDrawsContent(true);
+  LayerImpl* back_facing = AddLayer<LayerImpl>();
+  LayerImpl* back_facing_double_sided = AddLayer<LayerImpl>();
+  LayerImpl* front_facing = AddLayer<LayerImpl>();
+  back_facing->SetDrawsContent(true);
+  back_facing_double_sided->SetDrawsContent(true);
+  front_facing->SetDrawsContent(true);
+
+  root->SetBounds(gfx::Size(50, 50));
+  back_facing->SetBounds(gfx::Size(50, 50));
+  back_facing_double_sided->SetBounds(gfx::Size(50, 50));
+  front_facing->SetBounds(gfx::Size(50, 50));
+  CopyProperties(root, back_facing);
+  CopyProperties(root, front_facing);
+
+  back_facing->SetShouldCheckBackfaceVisibility(true);
+  back_facing_double_sided->SetShouldCheckBackfaceVisibility(false);
+  front_facing->SetShouldCheckBackfaceVisibility(true);
+
+  auto& back_facing_transform_node = CreateTransformNode(back_facing);
+  back_facing_transform_node.flattens_inherited_transform = false;
+  back_facing_transform_node.sorting_context_id = 1;
+  gfx::Transform rotate_about_y;
+  rotate_about_y.RotateAboutYAxis(180.0);
+  back_facing_transform_node.local = rotate_about_y;
+
+  CopyProperties(back_facing, back_facing_double_sided);
+
+  UpdateActiveTreeDrawProperties();
+
+  EXPECT_TRUE(draw_property_utils::IsLayerBackFaceVisible(
+      back_facing, back_facing->transform_tree_index(),
+      host_impl()->active_tree()->property_trees()));
+  EXPECT_TRUE(draw_property_utils::IsLayerBackFaceVisible(
+      back_facing, back_facing_double_sided->transform_tree_index(),
+      host_impl()->active_tree()->property_trees()));
+  EXPECT_FALSE(draw_property_utils::IsLayerBackFaceVisible(
+      front_facing, front_facing->transform_tree_index(),
+      host_impl()->active_tree()->property_trees()));
+
+  EXPECT_TRUE(
+      draw_property_utils::LayerShouldBeSkippedForDrawPropertiesComputation(
+          back_facing, host_impl()->active_tree()->property_trees()));
+  EXPECT_FALSE(
+      draw_property_utils::LayerShouldBeSkippedForDrawPropertiesComputation(
+          back_facing_double_sided,
+          host_impl()->active_tree()->property_trees()));
+  EXPECT_FALSE(
+      draw_property_utils::LayerShouldBeSkippedForDrawPropertiesComputation(
+          front_facing, host_impl()->active_tree()->property_trees()));
 }
 
 using LCDTextTestParam = std::tuple<bool, bool>;

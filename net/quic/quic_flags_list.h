@@ -236,9 +236,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, false)
 // If true, disable QUIC version Q050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 
-// If true, enable QUIC version T050.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050_v2, true)
-
 // A testonly reloadable flag that will always default to false.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
 
@@ -452,3 +449,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_willing_and_able_to_write,
           true)
+
+// If true, disable QUIC version h3-T050.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_t050, false)

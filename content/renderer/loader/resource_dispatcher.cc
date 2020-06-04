@@ -407,6 +407,11 @@ void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
                                     transfer_size_diff);
 }
 
+void ResourceDispatcher::SetCorsExemptHeaderList(
+    const std::vector<std::string>& list) {
+  cors_exempt_header_list_ = list;
+}
+
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
     network::mojom::RequestDestination request_destination,
@@ -460,14 +465,14 @@ void ResourceDispatcher::StartSync(
       base::ThreadPool::CreateSingleThreadTaskRunner({});
   task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
-                     std::move(request), routing_id, task_runner,
-                     traffic_annotation, loader_options,
-                     std::move(pending_factory), std::move(throttles),
-                     base::Unretained(response),
-                     base::Unretained(&redirect_or_response_event),
-                     base::Unretained(terminate_sync_load_event_), timeout,
-                     std::move(download_to_blob_registry)));
+      base::BindOnce(
+          &SyncLoadContext::StartAsyncWithWaitableEvent, std::move(request),
+          routing_id, task_runner, traffic_annotation, loader_options,
+          std::move(pending_factory), std::move(throttles),
+          base::Unretained(response),
+          base::Unretained(&redirect_or_response_event),
+          base::Unretained(terminate_sync_load_event_), timeout,
+          std::move(download_to_blob_registry), cors_exempt_header_list_));
 
   // redirect_or_response_event will signal when each redirect completes, and
   // when the final response is complete.
@@ -561,7 +566,8 @@ int ResourceDispatcher::StartAsync(
       blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(url_loader_factory), std::move(throttles), routing_id,
           request_id, loader_options, request.get(), client.get(),
-          traffic_annotation, std::move(loading_task_runner));
+          traffic_annotation, std::move(loading_task_runner),
+          base::make_optional(cors_exempt_header_list_));
   pending_request->url_loader = std::move(url_loader);
   pending_request->url_loader_client = std::move(client);
 

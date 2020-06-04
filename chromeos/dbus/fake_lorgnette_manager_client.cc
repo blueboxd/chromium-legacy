@@ -21,12 +21,9 @@ FakeLorgnetteManagerClient::~FakeLorgnetteManagerClient() = default;
 void FakeLorgnetteManagerClient::Init(dbus::Bus* bus) {}
 
 void FakeLorgnetteManagerClient::ListScanners(
-    DBusMethodCallback<ScannerTable> callback) {
+    DBusMethodCallback<lorgnette::ListScannersResponse> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                scanner_table_.empty()
-                                    ? base::nullopt
-                                    : base::make_optional(scanner_table_)));
+      FROM_HERE, base::BindOnce(std::move(callback), list_scanners_response_));
 }
 
 void FakeLorgnetteManagerClient::ScanImageToString(
@@ -41,17 +38,16 @@ void FakeLorgnetteManagerClient::ScanImageToString(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(data)));
 }
 
-void FakeLorgnetteManagerClient::AddScannerTableEntry(
-    const std::string& device_name,
-    const ScannerTableEntry& entry) {
-  scanner_table_[device_name] = entry;
-}
-
 void FakeLorgnetteManagerClient::AddScanData(const std::string& device_name,
                                              const ScanProperties& properties,
                                              const std::string& data) {
   scan_data_[std::make_tuple(device_name, properties.mode,
                              properties.resolution_dpi)] = data;
+}
+
+void FakeLorgnetteManagerClient::SetListScannersResponse(
+    const lorgnette::ListScannersResponse& list_scanners_response) {
+  list_scanners_response_ = list_scanners_response;
 }
 
 }  // namespace chromeos

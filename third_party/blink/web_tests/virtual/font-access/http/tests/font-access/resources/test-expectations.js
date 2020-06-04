@@ -1,10 +1,20 @@
 'use strict';
 
+const TEST_SIZE_CATEGORY = {
+  // Fonts with file smaller than 1MiB.
+  small: 'small',
+  // Fonts with file between 1 and 20MiB.
+  medium: 'medium',
+  // Fonts with file larger than 20MiB.
+  large: 'large',
+};
+
 const MAC_FONTS = [
   {
     postscriptName: 'Monaco',
     fullName: 'Monaco',
     family: 'Monaco',
+    label: TEST_SIZE_CATEGORY.small,
     expectedTables: [
       // Tables related to TrueType.
       'cvt ', 'glyf', 'loca', 'prep', 'gasp',
@@ -14,6 +24,7 @@ const MAC_FONTS = [
     postscriptName: 'Menlo-Regular',
     fullName: 'Menlo Regular',
     family: 'Menlo',
+    label: TEST_SIZE_CATEGORY.medium,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -22,6 +33,7 @@ const MAC_FONTS = [
     postscriptName: 'Menlo-Bold',
     fullName: 'Menlo Bold',
     family: 'Menlo',
+    label: TEST_SIZE_CATEGORY.medium,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -30,6 +42,7 @@ const MAC_FONTS = [
     postscriptName: 'Menlo-BoldItalic',
     fullName: 'Menlo Bold Italic',
     family: 'Menlo',
+    label: TEST_SIZE_CATEGORY.medium,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -39,6 +52,7 @@ const MAC_FONTS = [
     postscriptName: 'GujaratiMT',
     fullName: 'Gujarati MT',
     family: 'Gujarati MT',
+    label: TEST_SIZE_CATEGORY.small,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -47,6 +61,7 @@ const MAC_FONTS = [
     postscriptName: 'GujaratiMT-Bold',
     fullName: 'Gujarati MT Bold',
     family: 'Gujarati MT',
+    label: TEST_SIZE_CATEGORY.small,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -55,6 +70,7 @@ const MAC_FONTS = [
     postscriptName: 'DevanagariMT',
     fullName: 'Devanagari MT',
     family: 'Devanagari MT',
+    label: TEST_SIZE_CATEGORY.small,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -63,6 +79,7 @@ const MAC_FONTS = [
     postscriptName: 'DevanagariMT-Bold',
     fullName: 'Devanagari MT Bold',
     family: 'Devanagari MT',
+    label: TEST_SIZE_CATEGORY.small,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -72,6 +89,7 @@ const MAC_FONTS = [
     postscriptName: 'HiraMinProN-W3',
     fullName: 'Hiragino Mincho ProN W3',
     family: 'Hiragino Mincho ProN',
+    label: TEST_SIZE_CATEGORY.medium,
     expectedTables: [
       'CFF ', 'VORG',
     ],
@@ -80,6 +98,7 @@ const MAC_FONTS = [
     postscriptName: 'HiraMinProN-W6',
     fullName: 'Hiragino Mincho ProN W6',
     family: 'Hiragino Mincho ProN',
+    label: TEST_SIZE_CATEGORY.medium,
     expectedTables: [
       'CFF ', 'VORG',
     ],
@@ -89,6 +108,7 @@ const MAC_FONTS = [
     postscriptName: 'AppleGothic',
     fullName: 'AppleGothic Regular',
     family: 'AppleGothic',
+    label: TEST_SIZE_CATEGORY.medium,
     expectedTables: [
       'cvt ', 'glyf', 'loca',
     ],
@@ -97,6 +117,7 @@ const MAC_FONTS = [
     postscriptName: 'AppleMyungjo',
     fullName: 'AppleMyungjo Regular',
     family: 'AppleMyungjo',
+    label: TEST_SIZE_CATEGORY.medium,
     expectedTables: [
       'cvt ', 'glyf', 'loca',
     ],
@@ -106,6 +127,7 @@ const MAC_FONTS = [
     postscriptName: 'STHeitiTC-Light',
     fullName: 'Heiti TC Light',
     family: 'Heiti TC',
+    label: TEST_SIZE_CATEGORY.large,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -114,6 +136,7 @@ const MAC_FONTS = [
    postscriptName: 'STHeitiTC-Medium',
     fullName: 'Heiti TC Medium',
     family: 'Heiti TC',
+    label: TEST_SIZE_CATEGORY.large,
     expectedTables: [
       'cvt ', 'glyf', 'loca', 'prep',
     ],
@@ -123,6 +146,7 @@ const MAC_FONTS = [
     postscriptName: 'AppleColorEmoji',
     fullName: 'Apple Color Emoji',
     family: 'Apple Color Emoji',
+    label: TEST_SIZE_CATEGORY.large,
     expectedTables: [
       'glyf', 'loca',
       // Tables related to Bitmap Glyphs.
@@ -145,7 +169,11 @@ const BASE_TABLES = [
   'post',
 ];
 
-function getExpectedFontSet() {
+function getEnumerationTestSet(options) {
+  options = Object.assign({
+    labelFilter: [],
+  }, options);
+
   // Verify (by font family) that some standard fonts have been returned.
   let platform;
   if (navigator.platform.indexOf("Win") !== -1) {
@@ -159,11 +187,18 @@ function getExpectedFontSet() {
   }
 
   assert_not_equals(platform, 'generic', 'Platform must be detected.');
+
+  let output = [];
   if (platform === 'mac') {
-    return MAC_FONTS;
+    output = MAC_FONTS;
   }
 
-  return [];
+  if (options.labelFilter.length && output.length) {
+    const labelFilter = new Set(options.labelFilter);
+    output = output.filter(f => labelFilter.has(f.label));
+  }
+
+  return output;
 }
 
 function getMoreExpectedTables(expectations) {
@@ -176,8 +211,7 @@ function getMoreExpectedTables(expectations) {
   return output;
 }
 
-async function filterFontSet(iterator, expectedFonts) {
-
+async function filterEnumeration(iterator, expectedFonts) {
   const nameSet = new Set();
   for (const e of expectedFonts) {
     nameSet.add(e.postscriptName);
@@ -236,4 +270,74 @@ function assert_font_has_tables(name, tables, expectedTables) {
 function setToString(set) {
   const items = Array.from(set);
   return JSON.stringify(items);
+}
+
+async function parseFontData(fontBlob) {
+  const fontInfo = {
+    errors: [],
+    numTables: 0,
+  };
+  const versionTag = await getTag(fontBlob, 0);
+
+  fontInfo.version = sfntVersionInfo(versionTag);
+  if (fontInfo.version === 'UNKNOWN') {
+    fontInfo.errors.push(`versionTag: "${versionTag}"`);
+  }
+
+  const numTables = await getUint16(fontBlob, 4);
+  [fontInfo.tables, fontInfo.tableMeta] = await getTableData(fontBlob, numTables);
+
+  return fontInfo;
+}
+
+async function getTableData(fontBlob, numTables) {
+  const dataMap = new Map();
+  const metaMap = new Map();
+  let blobOffset = 12;
+
+  for (let i = 0; i < numTables; i++) {
+    const tag = await getTag(fontBlob, blobOffset);
+    const checksum = await getUint32(fontBlob, blobOffset + 4);
+    const offset = await getUint32(fontBlob, blobOffset + 8);
+    const size = await getUint32(fontBlob, blobOffset + 12);
+    const tableBlob = fontBlob.slice(offset, offset + size);
+    dataMap.set(tag, tableBlob);
+    metaMap.set(tag, {checksum, offset, size});
+    blobOffset += 16;
+  }
+
+  return [dataMap, metaMap];
+}
+
+function sfntVersionInfo(version) {
+  // Spec: https://docs.microsoft.com/en-us/typography/opentype/spec/otff#organization-of-an-opentype-font
+  switch (version) {
+  case '\x00\x01\x00\x00':
+  case 'true':
+  case 'typ1':
+    return 'truetype';
+  case 'OTTO':
+    return 'cff';
+  default:
+    return 'UNKNOWN';
+  }
+}
+
+async function getTag(blob, offset) {
+  return (new TextDecoder).decode(
+    await blob.slice(offset, offset + 4).arrayBuffer());
+}
+
+async function getUint16(blob, offset) {
+  const slice = blob.slice(offset, offset + 2);
+  const buf = await slice.arrayBuffer();
+  const dataView = new DataView(buf);
+  return dataView.getUint16(0);
+}
+
+async function getUint32(blob, offset) {
+  const slice = blob.slice(offset, offset + 4);
+  const buf = await slice.arrayBuffer();
+  const dataView = new DataView(buf);
+  return dataView.getUint32(0);
 }

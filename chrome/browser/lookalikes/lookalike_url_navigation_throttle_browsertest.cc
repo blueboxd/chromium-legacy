@@ -183,8 +183,9 @@ class LookalikeUrlNavigationThrottleBrowserTest
                  features::kLookalikeUrlNavigationSuggestionsUI});
         break;
       case FeatureStatus::kEnabledAndTargetEmbeddingEnabled:
-        feature_list_.InitAndEnableFeature(
-            lookalikes::features::kDetectTargetEmbeddingLookalikes);
+        feature_list_.InitAndEnableFeatureWithParameters(
+            lookalikes::features::kDetectTargetEmbeddingLookalikes,
+            {{"enhanced_protection_enabled", "true"}});
         break;
       case FeatureStatus::kEnabled:
         feature_list_.InitAndDisableFeature(
@@ -451,6 +452,12 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        TargetEmbedding_AnotherTLD_Match) {
   const GURL kNavigatedUrl = GetURL("google.br-test.com");
   const GURL kExpectedSuggestedUrl = GetURLWithoutPath("google.com");
+
+  // This test only applies when another-TLD is enabled.
+  if (feature_status() != FeatureStatus::kEnabledAndTargetEmbeddingEnabled) {
+    return;
+  }
+
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   TestInterstitialNotShown(browser(), kNavigatedUrl);
   CheckUkm({kNavigatedUrl}, "MatchType",

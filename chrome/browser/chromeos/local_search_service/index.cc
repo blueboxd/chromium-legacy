@@ -74,7 +74,7 @@ bool IsItemRelevant(
     FuzzyTokenizedStringMatch match;
     if (match.IsRelevant(query, *tag, relevance_threshold, use_prefix_only,
                          use_weighted_ratio, use_edit_distance,
-                         partial_match_penalty_rate)) {
+                         partial_match_penalty_rate, 0.1)) {
       *relevance_score = match.relevance();
       for (const auto& hit : match.hits()) {
         local_search_service::Range range;

@@ -52,7 +52,9 @@ enum class DelayedWarningEvent {
   // The page triggered a desktop capture request ("example.com wants to share
   // the contents of the screen"). It was denied and the warning was shown.
   kWarningShownOnDesktopCaptureRequest = 10,
-  kMaxValue = kWarningShownOnDesktopCaptureRequest,
+  // User pasted something on the page and the warning was shown.
+  kWarningShownOnPaste = 11,
+  kMaxValue = kWarningShownOnPaste,
 };
 
 // Name of the histogram.
@@ -96,6 +98,7 @@ class SafeBrowsingUserInteractionObserver
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
+  void OnPaste() override;
 
   // permissions::PermissionRequestManager::Observer methods:
   void OnBubbleAdded() override;

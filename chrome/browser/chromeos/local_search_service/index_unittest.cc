@@ -133,6 +133,9 @@ TEST_F(IndexTest, SearchTagSplit) {
   std::vector<Data> data = CreateTestData(data_to_register);
   EXPECT_EQ(data.size(), 2u);
 
+  SearchParams search_params;
+  search_params.split_search_tags = true;
+  index_.SetSearchParams(search_params);
   index_.AddOrUpdate(data);
   EXPECT_EQ(index_.GetSize(), 2u);
 

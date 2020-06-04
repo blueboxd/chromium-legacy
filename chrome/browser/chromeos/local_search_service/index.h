@@ -40,7 +40,7 @@ struct SearchParams {
   double partial_match_penalty_rate = 0.9;
   bool use_prefix_only = false;
   bool use_edit_distance = false;
-  bool split_search_tags = true;
+  bool split_search_tags = false;
 };
 
 // A numeric range used to represent the start and end position.

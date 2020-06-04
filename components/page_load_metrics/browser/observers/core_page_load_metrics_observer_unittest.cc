@@ -515,6 +515,9 @@ TEST_F(CorePageLoadMetricsObserverTest, NavigationTiming) {
       internal::kHistogramNavigationTimingNavigationStartToFirstRequestStart,
       internal::kHistogramNavigationTimingNavigationStartToFirstResponseStart,
       internal::kHistogramNavigationTimingNavigationStartToFirstLoaderCallback,
+      internal::kHistogramNavigationTimingNavigationStartToFinalRequestStart,
+      internal::kHistogramNavigationTimingNavigationStartToFinalResponseStart,
+      internal::kHistogramNavigationTimingNavigationStartToFinalLoaderCallback,
       internal::
           kHistogramNavigationTimingNavigationStartToNavigationCommitSent};
   for (const char* metric : metrics_from_navigation_start)
@@ -524,7 +527,12 @@ TEST_F(CorePageLoadMetricsObserverTest, NavigationTiming) {
   std::vector<const char*> metrics_between_milestones = {
       internal::kHistogramNavigationTimingFirstRequestStartToFirstResponseStart,
       internal::
-          kHistogramNavigationTimingFirstResponseStartToFirstLoaderCallback};
+          kHistogramNavigationTimingFirstResponseStartToFirstLoaderCallback,
+      internal::kHistogramNavigationTimingFinalRequestStartToFinalResponseStart,
+      internal::
+          kHistogramNavigationTimingFinalResponseStartToFinalLoaderCallback,
+      internal::
+          kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent};
   for (const char* metric : metrics_between_milestones)
     tester()->histogram_tester().ExpectTotalCount(metric, 1);
 }

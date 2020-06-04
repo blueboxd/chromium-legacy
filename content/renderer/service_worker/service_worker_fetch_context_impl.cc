@@ -36,7 +36,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
         preference_watcher_receiver,
     mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
         pending_subresource_loader_updater,
-    int32_t service_worker_route_id)
+    int32_t service_worker_route_id,
+    const std::vector<std::string>& cors_exempt_header_list)
     : renderer_preferences_(renderer_preferences),
       worker_script_url_(worker_script_url),
       pending_url_loader_factory_(std::move(pending_url_loader_factory)),
@@ -49,7 +50,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
           std::move(preference_watcher_receiver)),
       pending_subresource_loader_updater_(
           std::move(pending_subresource_loader_updater)),
-      service_worker_route_id_(service_worker_route_id) {}
+      service_worker_route_id_(service_worker_route_id),
+      cors_exempt_header_list_(cors_exempt_header_list) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
@@ -62,6 +64,7 @@ void ServiceWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
 void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
     blink::AcceptLanguagesWatcher* watcher) {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
+  resource_dispatcher_->SetCorsExemptHeaderList(cors_exempt_header_list_);
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
   preference_watcher_receiver_.Bind(

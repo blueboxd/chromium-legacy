@@ -91,7 +91,8 @@ double FuzzyTokenizedStringMatch::TokenSetRatio(
     const TokenizedString& text,
     bool partial,
     double partial_match_penalty_rate,
-    bool use_edit_distance) {
+    bool use_edit_distance,
+    double num_matching_blocks_penalty) {
   std::set<base::string16> query_token(query.tokens().begin(),
                                        query.tokens().end());
   std::set<base::string16> text_token(text.tokens().begin(),
@@ -127,21 +128,26 @@ double FuzzyTokenizedStringMatch::TokenSetRatio(
                  base::JoinString(text_diff_query, base::UTF8ToUTF16(" "))});
 
   if (partial) {
-    return std::max(
-        {PartialRatio(intersection_string, query_rewritten,
-                      partial_match_penalty_rate, use_edit_distance),
-         PartialRatio(intersection_string, text_rewritten,
-                      partial_match_penalty_rate, use_edit_distance),
-         PartialRatio(query_rewritten, text_rewritten,
-                      partial_match_penalty_rate, use_edit_distance)});
+    return std::max({PartialRatio(intersection_string, query_rewritten,
+                                  partial_match_penalty_rate, use_edit_distance,
+                                  num_matching_blocks_penalty),
+                     PartialRatio(intersection_string, text_rewritten,
+                                  partial_match_penalty_rate, use_edit_distance,
+                                  num_matching_blocks_penalty),
+                     PartialRatio(query_rewritten, text_rewritten,
+                                  partial_match_penalty_rate, use_edit_distance,
+                                  num_matching_blocks_penalty)});
   }
 
   return std::max(
-      {SequenceMatcher(intersection_string, query_rewritten, use_edit_distance)
+      {SequenceMatcher(intersection_string, query_rewritten, use_edit_distance,
+                       num_matching_blocks_penalty)
            .Ratio(),
-       SequenceMatcher(intersection_string, text_rewritten, use_edit_distance)
+       SequenceMatcher(intersection_string, text_rewritten, use_edit_distance,
+                       num_matching_blocks_penalty)
            .Ratio(),
-       SequenceMatcher(query_rewritten, text_rewritten, use_edit_distance)
+       SequenceMatcher(query_rewritten, text_rewritten, use_edit_distance,
+                       num_matching_blocks_penalty)
            .Ratio()});
 }
 
@@ -150,7 +156,8 @@ double FuzzyTokenizedStringMatch::TokenSortRatio(
     const TokenizedString& text,
     bool partial,
     double partial_match_penalty_rate,
-    bool use_edit_distance) {
+    bool use_edit_distance,
+    double num_matching_blocks_penalty) {
   const base::string16 query_sorted =
       base::JoinString(ProcessAndSort(query), base::UTF8ToUTF16(" "));
   const base::string16 text_sorted =
@@ -158,16 +165,19 @@ double FuzzyTokenizedStringMatch::TokenSortRatio(
 
   if (partial) {
     return PartialRatio(query_sorted, text_sorted, partial_match_penalty_rate,
-                        use_edit_distance);
+                        use_edit_distance, num_matching_blocks_penalty);
   }
-  return SequenceMatcher(query_sorted, text_sorted, use_edit_distance).Ratio();
+  return SequenceMatcher(query_sorted, text_sorted, use_edit_distance,
+                         num_matching_blocks_penalty)
+      .Ratio();
 }
 
 double FuzzyTokenizedStringMatch::PartialRatio(
     const base::string16& query,
     const base::string16& text,
     double partial_match_penalty_rate,
-    bool use_edit_distance) {
+    bool use_edit_distance,
+    double num_matching_blocks_penalty) {
   if (query.empty() || text.empty()) {
     return kMinScore;
   }
@@ -180,7 +190,9 @@ double FuzzyTokenizedStringMatch::PartialRatio(
   }
 
   const auto matching_blocks =
-      SequenceMatcher(shorter, longer, use_edit_distance).GetMatchingBlocks();
+      SequenceMatcher(shorter, longer, use_edit_distance,
+                      num_matching_blocks_penalty)
+          .GetMatchingBlocks();
   double partial_ratio = 0;
 
   for (const auto& block : matching_blocks) {
@@ -203,7 +215,7 @@ double FuzzyTokenizedStringMatch::PartialRatio(
     partial_ratio = std::max(
         partial_ratio,
         SequenceMatcher(shorter, longer.substr(long_start, shorter.size()),
-                        use_edit_distance)
+                        use_edit_distance, num_matching_blocks_penalty)
                 .Ratio() *
             penalty);
 
@@ -218,7 +230,8 @@ double FuzzyTokenizedStringMatch::WeightedRatio(
     const TokenizedString& query,
     const TokenizedString& text,
     double partial_match_penalty_rate,
-    bool use_edit_distance) {
+    bool use_edit_distance,
+    double num_matching_blocks_penalty) {
   const double unbase_scale = 0.95;
   // Since query.text() and text.text() is not normalized, we use query.tokens()
   // and text.tokens() instead.
@@ -227,7 +240,8 @@ double FuzzyTokenizedStringMatch::WeightedRatio(
   const base::string16 text_normalized(
       base::JoinString(text.tokens(), base::UTF8ToUTF16(" ")));
   double weighted_ratio =
-      SequenceMatcher(query_normalized, text_normalized, use_edit_distance)
+      SequenceMatcher(query_normalized, text_normalized, use_edit_distance,
+                      num_matching_blocks_penalty)
           .Ratio();
   const double length_ratio =
       static_cast<double>(
@@ -245,23 +259,25 @@ double FuzzyTokenizedStringMatch::WeightedRatio(
     weighted_ratio =
         std::max(weighted_ratio,
                  PartialRatio(query_normalized, text_normalized,
-                              partial_match_penalty_rate, use_edit_distance) *
+                              partial_match_penalty_rate, use_edit_distance,
+                              num_matching_blocks_penalty) *
                      partial_scale);
   }
   weighted_ratio =
       std::max(weighted_ratio,
                TokenSortRatio(query, text, use_partial /*partial*/,
-                              partial_match_penalty_rate, use_edit_distance) *
+                              partial_match_penalty_rate, use_edit_distance,
+                              num_matching_blocks_penalty) *
                    unbase_scale * partial_scale);
 
   // Do not use partial match for token set because the match between the
   // intersection string and query/text rewrites will always return an extremely
   // high value.
-  weighted_ratio =
-      std::max(weighted_ratio,
-               TokenSetRatio(query, text, false /*partial*/,
-                             partial_match_penalty_rate, use_edit_distance) *
-                   unbase_scale * partial_scale);
+  weighted_ratio = std::max(
+      weighted_ratio,
+      TokenSetRatio(query, text, false /*partial*/, partial_match_penalty_rate,
+                    use_edit_distance, num_matching_blocks_penalty) *
+          unbase_scale * partial_scale);
   return weighted_ratio;
 }
 
@@ -276,7 +292,8 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
                                            bool use_prefix_only,
                                            bool use_weighted_ratio,
                                            bool use_edit_distance,
-                                           double partial_match_penalty_rate) {
+                                           double partial_match_penalty_rate,
+                                           double num_matching_blocks_penalty) {
   // If there is an exact match, relevance will be 1.0 and there is only 1 hit
   // that is the entire text/query.
   const auto& query_text = query.text();
@@ -292,7 +309,8 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
 
   // Find |hits_| using SequenceMatcher on original query and text.
   for (const auto& match :
-       SequenceMatcher(query_text, text_text, use_edit_distance)
+       SequenceMatcher(query_text, text_text, use_edit_distance,
+                       num_matching_blocks_penalty)
            .GetMatchingBlocks()) {
     if (match.length > 0) {
       hits_.push_back(gfx::Range(match.pos_second_string,
@@ -317,15 +335,17 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const TokenizedString& query,
   if (use_weighted_ratio) {
     // If WeightedRatio is used, |relevance_| is the average of WeightedRatio
     // and PrefixMatcher scores.
-    relevance_ = (WeightedRatio(query, text, partial_match_penalty_rate,
-                                use_edit_distance) +
-                  prefix_score) /
-                 2;
+    relevance_ =
+        (WeightedRatio(query, text, partial_match_penalty_rate,
+                       use_edit_distance, num_matching_blocks_penalty) +
+         prefix_score) /
+        2;
   } else {
     // Use simple algorithm to calculate match ratio.
     relevance_ =
         (SequenceMatcher(base::i18n::ToLower(query_text),
-                         base::i18n::ToLower(text_text), use_edit_distance)
+                         base::i18n::ToLower(text_text), use_edit_distance,
+                         num_matching_blocks_penalty)
              .Ratio() +
          prefix_score) /
         2;

@@ -124,8 +124,8 @@ class TabController {
   // will cause the tab hover card to be hidden.
   virtual void UpdateHoverCard(Tab* tab) = 0;
 
-  // Returns whether domain/origin should be shown in the tab hover card.
-  virtual bool ShowDomainInHoverCard(const Tab* tab) const = 0;
+  // Returns whether domain/origin should be shown in tab hover cards.
+  virtual bool ShowDomainInHoverCards() const = 0;
 
   // Returns true if the hover card is showing for the given tab.
   virtual bool HoverCardIsShowingForTab(Tab* tab) = 0;

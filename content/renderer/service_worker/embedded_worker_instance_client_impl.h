@@ -46,6 +46,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
   static void Create(
       scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
+      const std::vector<std::string>& cors_exempt_header_list,
       mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
           receiver);
 
@@ -54,6 +55,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // service_manager::BinderRegistry.
   static void CreateForRequest(
       scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner,
+      const std::vector<std::string>& cors_exempt_header_list,
       mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
           receiver);
 
@@ -72,7 +74,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   EmbeddedWorkerInstanceClientImpl(
       mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
           receiver,
-      scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+      const std::vector<std::string>& cors_exempt_header_list);
 
   // blink::mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
@@ -88,6 +91,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // A copy of this runner is also passed to ServiceWorkerContextClient in
   // StartWorker().
   scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner_;
+
+  std::vector<std::string> cors_exempt_header_list_;
 
   // nullptr means worker is not running.
   std::unique_ptr<ServiceWorkerContextClient> service_worker_context_client_;

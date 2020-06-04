@@ -25,6 +25,11 @@
         top: 0px;
         left: 400px;
       }
+      #txt5 {
+        position: absolute;
+        top: 0px;
+        left: 800px;
+      }
     </style>
     <script>
       function log(text) {
@@ -48,6 +53,21 @@
       function FocusIn4() {
         log('focusin4');
       }
+      function FocusIn5() {
+        navigator.virtualKeyboard.show();
+        const child = document.createElement("iframe");
+        document.body.appendChild(child);
+        const childDocument = child.contentDocument;
+        const textarea = childDocument.createElement('textarea');
+        textarea.setAttribute("virtualKeyboardPolicy", "manual");
+        childDocument.body.appendChild(textarea);
+        textarea.addEventListener("onfocusin", e => {
+        child.remove();
+        });
+        child.contentWindow.focus();
+        textarea.focus();
+        log('focusin5');
+      }
     </script>
   </head>
   <body onload="log('onload')">
@@ -55,5 +75,6 @@
     <textarea id="txt2" virtualkeyboardpolicy="manual" onfocusin="FocusIn2()"></textarea>
     <textarea id="txt3" onfocusin="FocusIn3()"></textarea>
     <textarea id="txt4" onfocusin="FocusIn4()"></textarea>
+    <textarea id="txt5" ontouchstart="FocusIn5()"></textarea>
   </body>
 </html>

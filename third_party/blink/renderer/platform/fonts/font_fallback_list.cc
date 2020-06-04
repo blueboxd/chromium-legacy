@@ -97,7 +97,10 @@ bool FontFallbackList::LoadingCustomFonts() const {
 }
 
 bool FontFallbackList::ShouldSkipDrawing() const {
-  DCHECK(IsValid());
+  // The DCHECK hit will be fixed by the runtime enabled feature below, so we
+  // don't fix it in the legacy code paths.
+  DCHECK(IsValid() || !RuntimeEnabledFeatures::
+                          CSSReducedFontLoadingLayoutInvalidationsEnabled());
 
   if (!has_loading_fallback_)
     return false;

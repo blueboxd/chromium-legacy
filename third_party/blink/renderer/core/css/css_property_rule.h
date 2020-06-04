@@ -31,7 +31,7 @@ class CSSPropertyRule final : public CSSRule {
   void Trace(Visitor*) const override;
 
  private:
-  CSSRule::Type type() const override { return kPropertyRule; }
+  CSSRule::Type GetType() const override { return kPropertyRule; }
 
   Member<StyleRuleProperty> property_rule_;
 };
@@ -39,7 +39,7 @@ class CSSPropertyRule final : public CSSRule {
 template <>
 struct DowncastTraits<CSSPropertyRule> {
   static bool AllowFrom(const CSSRule& rule) {
-    return rule.type() == CSSRule::kPropertyRule;
+    return rule.GetType() == CSSRule::kPropertyRule;
   }
 };
 

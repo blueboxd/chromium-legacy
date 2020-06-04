@@ -23,6 +23,7 @@ class CurrentLocaleView : public TrayItemView, public LocaleModel::Observer {
 
   // views::TrayItemView:
   const char* GetClassName() const override;
+  void HandleLocaleChange() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CurrentLocaleView);

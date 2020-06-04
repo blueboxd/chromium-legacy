@@ -35,9 +35,9 @@ class EmojiSuggester : public Suggester {
 
  private:
   void ShowSuggestion(const std::string& text);
-
   void LoadEmojiMap();
   void OnEmojiDataLoaded(const std::string& emoji_data);
+  void RecordAcceptanceIndex(int index);
 
   InputMethodEngine* const engine_;
 

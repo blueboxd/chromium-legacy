@@ -100,9 +100,11 @@ struct RenderFrameMetadata {
 interface RenderFrameMetadataObserver {
   // When |enabled| is set to true, this will send RenderFrameMetadata to
   // the RenderFrameMetadataObserverClient for any frame in which the root
-  // scroll changes. Used only on Android for accessibility cases.
+  // scroll changes. Used only on Android for acessibility or
+  // GestureListenerManager.
   [EnableIf=is_android]
-  ReportAllRootScrollsForAccessibility(bool enabled);
+  ReportAllRootScrolls(bool enabled);
+
   // When |enabled| is set to true, this will send RenderFrameMetadata to
   // the RenderFrameMetadataObserverClient for all frames. Only used for
   // tests.
@@ -113,7 +115,7 @@ interface RenderFrameMetadataObserver {
 // RenderFrameMetadata. It can be notified of all frame submissions, via
 // RenderFrameMetadataObserver::ReportAllFrameSubmissionsForTesting, or of
 // additional frames with root scroll offset changes via
-// RenderFrameMetadataObserver::ReportAllRootScrollsForAccessibility.
+// RenderFrameMetadataObserver::ReportAllRootScrolls.
 interface RenderFrameMetadataObserverClient {
   // Notified when RenderFrameMetadata has changed.
   OnRenderFrameMetadataChanged(uint32 frame_token, RenderFrameMetadata metadata);

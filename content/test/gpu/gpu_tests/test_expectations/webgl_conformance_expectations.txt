@@ -367,7 +367,6 @@ crbug.com/982294 [ mac passthrough nvidia ] conformance/textures/misc/texture-co
 crbug.com/1059760 [ mac asan ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/1059760 [ mac no-passthrough asan ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
-crbug.com/1087083 [ mac passthrough amd asan ] conformance2/textures/webgl_canvas/tex-3d-rgb8ui-rgb_integer-unsigned_byte.html [ Failure ]
 
 ####################
 # Linux failures   #
@@ -568,6 +567,8 @@ crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/1025790 [ android nvidia ] conformance/textures/misc/tex-image-canvas-corruption.html [ Skip ]
 crbug.com/478572 [ android nvidia ] deqp/data/gles2/shaders/functions.html [ Failure ]
+# Texture tests found to generate intermittent GL errors in the GPU process
+crbug.com/1090407 [ android nvidia ] conformance/textures/* [ RetryOnFailure ]
 
 # Flaky timeout on android_n5x_swarming_rel and
 # android-marshmallow-arm64-rel.

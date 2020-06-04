@@ -416,12 +416,6 @@
              "--disable-blink-features=RestrictAutomaticLazyImageLoadingToDataSaver"]
   },
   {
-    "prefix" : "lazyload-policy",
-    "bases": ["external/wpt/feature-policy/experimental-features/lazyload"],
-    "args": ["--enable-blink-features=LazyFrameLoading,AutomaticLazyFrameLoading,LazyImageLoading,AutomaticLazyImageLoading",
-             "--disable-blink-features=RestrictAutomaticLazyFrameLoadingToDataSaver,RestrictAutomaticLazyImageLoadingToDataSaver"]
-  },
-  {
     "prefix" : "autoupgrade-optionally-blockable-mixed-content",
     "bases": ["http/tests/mixed-autoupgrade/optionally"],
     "args": ["--enable-features=AutoupgradeMixedContent"]
@@ -653,6 +647,11 @@
     "prefix": "css-modules",
     "bases": ["external/wpt/html/semantics/scripting-1/the-script-element/css-module"],
     "args": ["--enable-blink-features=CSSModules"]
+  },
+  {
+    "prefix": "css-scroll-timeline",
+    "bases": ["external/wpt/scroll-animations/css"],
+    "args": ["--enable-blink-features=CSSScrollTimeline"]
   },
   {
     "prefix": "out-of-blink-frame-ancestors-disabled",

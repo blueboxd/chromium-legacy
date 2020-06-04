@@ -320,10 +320,10 @@ class TestReportingService : public ReportingService {
   void ProcessHeader(const GURL& url, const std::string& header_value) override;
 
   void RemoveBrowsingData(
-      int data_type_mask,
+      uint64_t data_type_mask,
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter) override;
 
-  void RemoveAllBrowsingData(int data_type_mask) override;
+  void RemoveAllBrowsingData(uint64_t data_type_mask) override;
 
   void OnShutdown() override;
 

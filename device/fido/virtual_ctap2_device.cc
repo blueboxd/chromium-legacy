@@ -432,6 +432,7 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   if (config.credential_management_support) {
     options_updated = true;
     options.supports_credential_management = true;
+    options.supports_credential_management_preview = true;
   }
 
   if (config.bio_enrollment_support) {
@@ -569,6 +570,7 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
       break;
     }
     case CtapRequestCommand::kAuthenticatorCredentialManagement:
+    case CtapRequestCommand::kAuthenticatorCredentialManagementPreview:
       response_code = OnCredentialManagement(request_bytes, &response_data);
       break;
     case CtapRequestCommand::kAuthenticatorBioEnrollment:

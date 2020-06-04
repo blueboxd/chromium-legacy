@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class CSSStringValue : public CSSValue {
+class CORE_EXPORT CSSStringValue : public CSSValue {
  public:
   CSSStringValue(const String&);
 

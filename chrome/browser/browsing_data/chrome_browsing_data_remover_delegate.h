@@ -56,9 +56,7 @@ class ChromeBrowsingDataRemoverDelegate
  public:
   // This is an extension of content::BrowsingDataRemover::RemoveDataMask which
   // includes all datatypes therefrom and adds additional Chrome-specific ones.
-  // TODO(crbug.com/668114): Extend this to uint64_t to ensure that we won't
-  // run out of space anytime soon.
-  enum DataType {
+  enum DataType : uint64_t {
     // Embedder can start adding datatypes after the last platform datatype.
     DATA_TYPE_EMBEDDER_BEGIN =
         content::BrowsingDataRemover::DATA_TYPE_CONTENT_END << 1,
@@ -128,7 +126,7 @@ class ChromeBrowsingDataRemoverDelegate
   // This is an extension of content::BrowsingDataRemover::OriginType which
   // includes all origin types therefrom and adds additional Chrome-specific
   // ones.
-  enum OriginType {
+  enum OriginType : uint64_t {
     // Embedder can start adding origin types after the last
     // platform origin type.
     ORIGIN_TYPE_EMBEDDER_BEGIN =
@@ -166,9 +164,9 @@ class ChromeBrowsingDataRemoverDelegate
   bool MayRemoveDownloadHistory() override;
   void RemoveEmbedderData(const base::Time& delete_begin,
                           const base::Time& delete_end,
-                          int remove_mask,
+                          uint64_t remove_mask,
                           content::BrowsingDataFilterBuilder* filter_builder,
-                          int origin_type_mask,
+                          uint64_t origin_type_mask,
                           base::OnceClosure callback) override;
 
 #if defined(OS_ANDROID)

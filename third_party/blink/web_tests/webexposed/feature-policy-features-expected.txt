@@ -34,8 +34,6 @@ geolocation
 gyroscope
 hid
 idle-detection
-lazyload
-loading-frame-default-eager
 magnetometer
 microphone
 midi

@@ -29,6 +29,7 @@ class ASH_EXPORT SelectToSpeakTray : public TrayBackgroundView,
   // TrayBackgroundView:
   void Initialize() override;
   base::string16 GetAccessibleNameForTray() override;
+  void HandleLocaleChange() override;
   const char* GetClassName() const override;
   bool PerformAction(const ui::Event& event) override;
   // The SelectToSpeakTray does not have a bubble, so these functions are

@@ -10,7 +10,6 @@ import android.text.TextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
@@ -45,10 +44,10 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     private final Supplier<LargeIconBridge> mIconBridgeSupplier;
 
     /** The delegate for accessing the sharing feature. */
-    private Supplier<ShareDelegate> mShareDelegateSupplier;
+    private final Supplier<ShareDelegate> mShareDelegateSupplier;
 
     /** A means of accessing the activity's tab. */
-    private ActivityTabProvider mTabProvider;
+    private final Supplier<Tab> mTabSupplier;
 
     /** Whether the omnibox has already cleared its content for the focus event. */
     private boolean mHasClearedOmniboxForFocus;
@@ -63,16 +62,21 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
      * @param locationBarDelegate A means of modifying the location bar.
      */
     public EditUrlSuggestionProcessor(Context context, SuggestionHost suggestionHost,
-            UrlBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier) {
+            UrlBarDelegate locationBarDelegate, Supplier<LargeIconBridge> iconBridgeSupplier,
+            Supplier<Tab> tabSupplier, Supplier<ShareDelegate> shareDelegateSupplier) {
         super(context, suggestionHost);
 
         mUrlBarDelegate = locationBarDelegate;
         mIconBridgeSupplier = iconBridgeSupplier;
+        mTabSupplier = tabSupplier;
+        mShareDelegateSupplier = shareDelegateSupplier;
     }
 
     @Override
-    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion) {
-        Tab activeTab = mTabProvider != null ? mTabProvider.get() : null;
+    public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
+        if (position != 0) return false;
+
+        Tab activeTab = mTabSupplier.get();
         // The what-you-typed suggestion can potentially appear as the second suggestion in some
         // cases. If the first suggestion isn't the one we want, ignore all subsequent suggestions.
         if (activeTab == null || activeTab.isNativePage() || activeTab.isIncognito()
@@ -107,7 +111,10 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         super.populateModel(suggestion, model, position);
 
-        if (mOriginalTitle == null) mOriginalTitle = mTabProvider.get().getTitle();
+        if (mOriginalTitle == null) {
+            mOriginalTitle = mTabSupplier.get().getTitle();
+        }
+
         model.set(
                 SuggestionViewProperties.TEXT_LINE_1_TEXT, new SuggestionSpannable(mOriginalTitle));
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
@@ -151,20 +158,6 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
         RecordUserAction.record("Omnibox.EditUrlSuggestion.Tap");
     }
 
-    /**
-     * @param provider A means of accessing the activity's tab.
-     */
-    public void setActivityTabProvider(ActivityTabProvider provider) {
-        mTabProvider = provider;
-    }
-
-    /**
-     * @param shareDelegateSupplier A means of accessing the sharing feature.
-     */
-    public void setShareDelegateSupplier(Supplier<ShareDelegate> shareDelegateSupplier) {
-        mShareDelegateSupplier = shareDelegateSupplier;
-    }
-
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
         if (hasFocus) return;
@@ -177,7 +170,7 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
         RecordUserAction.record("Omnibox.EditUrlSuggestion.Share");
         mUrlBarDelegate.clearOmniboxFocus();
         // TODO(mdjones): This should only share the displayed URL instead of the background tab.
-        Tab activityTab = mTabProvider.get();
+        Tab activityTab = mTabSupplier.get();
         mShareDelegateSupplier.get().share(activityTab, false);
     }
 

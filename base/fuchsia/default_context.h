@@ -16,8 +16,11 @@ class ComponentContext;
 namespace base {
 
 namespace fuchsia {
+
+// TODO(https://crbug.com/1090364): Move this to process_context.h.
 // Returns default sys::ComponentContext for the current process.
 BASE_EXPORT sys::ComponentContext* ComponentContextForCurrentProcess();
+
 }  // namespace fuchsia
 
 // Replaces the default sys::ComponentContext for the current process, and

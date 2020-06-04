@@ -15,6 +15,7 @@ source_set("base") {
     "config_reader.cc",
     "fuchsia_dir_scheme.cc",
     "init_logging.cc",
+    "inspect.cc",
     "mem_buffer_util.cc",
     "string_util.cc",
   ]
@@ -22,12 +23,16 @@ source_set("base") {
     "config_reader.h",
     "fuchsia_dir_scheme.h",
     "init_logging.h",
+    "inspect.h",
     "mem_buffer_util.h",
     "string_util.h",
   ]
   deps = [
     "//base",
+    "//components/version_info",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
+    "//third_party/fuchsia-sdk/sdk/pkg/fdio",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
     "//url",
   ]
 }
@@ -120,6 +125,7 @@ source_set("test_support") {
 test("cr_fuchsia_base_unittests") {
   sources = [
     "agent_impl_unittests.cc",
+    "inspect_unittest.cc",
     "legacymetrics_client_unittest.cc",
     "legacymetrics_histogram_flattener_unittest.cc",
     "legacymetrics_user_event_recorder_unittest.cc",
@@ -132,6 +138,9 @@ test("cr_fuchsia_base_unittests") {
     "//base:testfidl",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//components/version_info",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
   ]
 }

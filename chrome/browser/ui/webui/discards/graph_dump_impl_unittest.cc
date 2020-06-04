@@ -212,8 +212,9 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
 
   task_environment.RunUntilIdle();
 
-  // Validate that the initial graph state dump is complete.
-  EXPECT_EQ(0u, change_stream.num_changes());
+  // Validate that the initial graph state dump is complete. Note that there is
+  // an update for each node as part of the initial state dump.
+  EXPECT_EQ(8u, change_stream.num_changes());
   EXPECT_EQ(8u, change_stream.id_set().size());
 
   EXPECT_EQ(2u, change_stream.process_map().size());
@@ -277,7 +278,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   task_environment.RunUntilIdle();
 
   // Main frame navigation results in a notification for the url.
-  EXPECT_EQ(1u, change_stream.num_changes());
+  EXPECT_EQ(9u, change_stream.num_changes());
   EXPECT_FALSE(base::Contains(change_stream.id_set(), child_frame_id));
 
   const auto main_page_it = change_stream.page_map().find(

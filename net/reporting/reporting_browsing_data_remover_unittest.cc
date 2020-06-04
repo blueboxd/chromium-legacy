@@ -24,7 +24,7 @@ class ReportingBrowsingDataRemoverTest : public ReportingTestBase {
   void RemoveBrowsingData(bool remove_reports,
                           bool remove_clients,
                           std::string host) {
-    int data_type_mask = 0;
+    uint64_t data_type_mask = 0;
     if (remove_reports)
       data_type_mask |= ReportingBrowsingDataRemover::DATA_TYPE_REPORTS;
     if (remove_clients)

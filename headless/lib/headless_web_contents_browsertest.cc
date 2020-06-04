@@ -1188,9 +1188,10 @@ class DontBlockWebContentsOpenTest : public WebContentsOpenTest {
   }
 };
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FUCHSIA)
 // TODO(crbug.com/1045980): Disabled due to flakiness.
 // TODO(crbug.com/1078405): Disabled due to flakiness.
+// TODO(crbug.com/1090936): Disabled due to flakiness.
 DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(DontBlockWebContentsOpenTest);
 #else
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DontBlockWebContentsOpenTest);

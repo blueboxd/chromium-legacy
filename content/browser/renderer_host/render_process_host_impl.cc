@@ -4907,6 +4907,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       GetContentClient()->browser()->GetUserAgent());
   GetRendererInterface()->SetUserAgentMetadata(
       GetContentClient()->browser()->GetUserAgentMetadata());
+  GetRendererInterface()->SetCorsExemptHeaderList(
+      storage_partition_impl_->cors_exempt_header_list());
   NotifyRendererIfLockedToSite();
 
   // Send the initial system color info to the renderer.

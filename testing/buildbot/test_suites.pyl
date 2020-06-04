@@ -1319,6 +1319,12 @@
       'gin_unittests': {},
       'google_apis_unittests': {},
       'gpu_unittests': {},
+      'headless_browsertests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter',
+        ],
+      },
+      'headless_unittests': {},
       'http_service_tests': {},
       'ipc_tests': {},
       'latency_unittests': {},
@@ -1381,7 +1387,7 @@
     'gl_gtests_validating': {
       'gl_tests_validating': {
         'test': 'gl_tests',
-        'args': [ 
+        'args': [
           '--use-cmd-decoder=validating',
         ],
         'linux_args': ['--no-xvfb'],
@@ -2003,6 +2009,17 @@
       },
     },
 
+    # GPU gtests that test only Dawn with backend validation layers
+    'gpu_dawn_extra_gtests': {
+      'dawn_end2end_validation_layers_tests': {
+        'mixins': ['dawn_end2end_gpu_test'],
+        'args': [
+          '--enable-backend-validation',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
+    },
+
     # GPU gtests that test only Dawn
     'gpu_dawn_gtests': {
       'dawn_end2end_no_spvc_tests': {
@@ -2036,13 +2053,6 @@
         'args': [
           '--use-spvc',
           '--no-use-spvc-parser',
-        ],
-        'test': 'dawn_end2end_tests',
-      },
-      'dawn_end2end_validation_layers_tests': {
-        'mixins': ['dawn_end2end_gpu_test'],
-        'args': [
-          '--enable-backend-validation',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -2745,14 +2755,15 @@
       },
     },
 
-    'gpu_webgpu_integration_isolated_scripts': {
-      'webgpu_blink_web_tests': {
-        'name': 'webgpu_blink_web_tests',
+    'gpu_webgpu_integration_extra_isolated_scripts': {
+      'webgpu_blink_web_tests_with_backend_validation': {
+        'name': 'webgpu_blink_web_tests_with_backend_validation',
         'args': [
           '--driver-logging',
           # Disable parallel jobs to work around consistent test timeout flakes.
           # TODO(crbug.com/953991): Solve this and remove the workaround.
           '--jobs=1',
+          '--additional-driver-flag=--enable-dawn-backend-validation',
         ],
         'win_args': [ '--additional-driver-flag=--disable-gpu-sandbox' ],
         'win64_args': [ '--target=Release_x64' ],
@@ -2773,14 +2784,16 @@
         },
         'isolate_name': 'webgpu_blink_web_tests',
       },
-      'webgpu_blink_web_tests_with_backend_validation': {
-        'name': 'webgpu_blink_web_tests_with_backend_validation',
+    },
+
+    'gpu_webgpu_integration_isolated_scripts': {
+      'webgpu_blink_web_tests': {
+        'name': 'webgpu_blink_web_tests',
         'args': [
           '--driver-logging',
           # Disable parallel jobs to work around consistent test timeout flakes.
           # TODO(crbug.com/953991): Solve this and remove the workaround.
           '--jobs=1',
-          '--additional-driver-flag=--enable-dawn-backend-validation',
         ],
         'win_args': [ '--additional-driver-flag=--disable-gpu-sandbox' ],
         'win64_args': [ '--target=Release_x64' ],
@@ -4554,21 +4567,34 @@
       'gpu_gl_renderer_small_telemetry_tests',
     ],
 
+    'gpu_dawn_asan_isolated_scripts': [
+      'gpu_dawn_perf_smoke_isolated_scripts',
+      'gpu_webgpu_integration_isolated_scripts',
+    ],
+
+    'gpu_dawn_integration_asan_gtests_passthrough': [
+      'gpu_dawn_gtests',
+      'gpu_common_gtests_passthrough',
+    ],
+
     # GPU gtests that test Dawn and integration with Chromium
     # These tests are run both on the CI and trybots which test DEPS Dawn.
     'gpu_dawn_integration_gtests_passthrough': [
       'gpu_dawn_gtests',
+      'gpu_dawn_extra_gtests',
       'gpu_common_gtests_passthrough',
     ],
 
     'gpu_dawn_integration_gtests_validating': [
       'gpu_dawn_gtests',
+      'gpu_dawn_extra_gtests',
       'gpu_common_gtests_validating',
     ],
 
     'gpu_dawn_isolated_scripts': [
       'gpu_dawn_perf_smoke_isolated_scripts',
       'gpu_webgpu_integration_isolated_scripts',
+      'gpu_webgpu_integration_extra_isolated_scripts',
     ],
 
     # These tests are run on Linux and Mac

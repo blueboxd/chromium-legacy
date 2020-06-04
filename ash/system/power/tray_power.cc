@@ -77,6 +77,10 @@ const char* PowerTrayView::GetClassName() const {
   return "PowerTrayView";
 }
 
+void PowerTrayView::HandleLocaleChange() {
+  UpdateStatus();
+}
+
 void PowerTrayView::OnPowerStatusChanged() {
   UpdateStatus();
 }

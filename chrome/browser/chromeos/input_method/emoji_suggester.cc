@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,6 +25,8 @@ const char kSpaceChar = ' ';
 const char kDefaultEngine[] = "default_engine";
 const base::FilePath::CharType kEmojiMapFilePath[] =
     FILE_PATH_LITERAL("/emoji/emoji-map.csv");
+const int kMaxSuggestionIndex = 31;
+const int kMaxSuggestionSize = kMaxSuggestionIndex + 1;
 
 std::string ReadEmojiDataFromFile() {
   if (!base::DirectoryExists(base::FilePath(ime::kBundledInputMethodsDirPath)))
@@ -99,7 +102,14 @@ void EmojiSuggester::OnEmojiDataLoaded(const std::string& emoji_data) {
     std::string emojis = line.substr(comma_pos + 1);
     // Build emoji_map_ from splitting the string of emojis.
     emoji_map_[word] = SplitString(emojis, ";");
+    DCHECK_LE(static_cast<int>(emoji_map_[word].size()), kMaxSuggestionSize);
   }
+}
+
+void EmojiSuggester::RecordAcceptanceIndex(int index) {
+  base::UmaHistogramExactLinear(
+      "InputMethod.Assistive.EmojiSuggestAddition.AcceptancePosition", index,
+      kMaxSuggestionIndex);
 }
 
 void EmojiSuggester::OnFocus(int context_id) {
@@ -121,6 +131,7 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
     engine_->CommitText(context_id_, candidates_[candidate_id_].value.c_str(),
                         &error);
     engine_->SetCandidateWindowVisible(false, &error);
+    RecordAcceptanceIndex(candidate_id_);
     status = SuggestionStatus::kAccept;
   } else if (event.key == "Down") {
     candidate_id_ < static_cast<int>(candidates_.size()) - 1

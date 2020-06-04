@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
@@ -55,6 +56,7 @@ class ChromeProvidedSharingOptionsProvider {
     private final BottomSheetController mBottomSheetController;
     private final ShareSheetBottomSheetContent mBottomSheetContent;
     private final PrefServiceBridge mPrefServiceBridge;
+    private final ShareParams mShareParams;
     private final long mShareStartTime;
     private ScreenshotCoordinator mScreenshotCoordinator;
     private Map<Integer, Set<Integer>> mSharingOptionToContentTypes;
@@ -65,21 +67,23 @@ class ChromeProvidedSharingOptionsProvider {
      * @param activity              The current {@link Activity}.
      * @param tabProvider           Supplier for the current activity tab.
      * @param bottomSheetController The {@link BottomSheetController} for the current activity.
-     * @param bottomSheetContent    The {@link ShareSheetBottomSheetContent} for the current
-     *                              activity.
-     * @param prefServiceBridge     The {@link PrefServiceBridge} singleton. This provides printing
-     *                              preferences.
-     * @param shareStartTime        The start time of the current share.
+     * @param bottomSheetContent The {@link ShareSheetBottomSheetContent} for the current
+     * activity.
+     * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides printing
+     * preferences.
+     * @param shareParams The {@link ShareParams} for the current share.
+     * @param shareStartTime The start time of the current share.
      */
     ChromeProvidedSharingOptionsProvider(Activity activity, Supplier<Tab> tabProvider,
             BottomSheetController bottomSheetController,
             ShareSheetBottomSheetContent bottomSheetContent, PrefServiceBridge prefServiceBridge,
-            long shareStartTime) {
+            ShareParams shareParams, long shareStartTime) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mBottomSheetController = bottomSheetController;
         mBottomSheetContent = bottomSheetContent;
         mPrefServiceBridge = prefServiceBridge;
+        mShareParams = shareParams;
         mShareStartTime = shareStartTime;
         mSharingOptionToContentTypes = createSharingOptionToContentTypesMap();
     }
@@ -186,19 +190,10 @@ class ChromeProvidedSharingOptionsProvider {
                             "Sharing.SharingHubAndroid.TimeToShare",
                             System.currentTimeMillis() - mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
-                    Tab tab = mTabProvider.get();
-                    String title = tab.getWebContents()
-                                           .getNavigationController()
-                                           .getVisibleEntry()
-                                           .getTitle();
-                    String url = tab.getWebContents()
-                                         .getNavigationController()
-                                         .getVisibleEntry()
-                                         .getUrl();
                     ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(
                             Context.CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newPlainText(title, url);
-                    clipboard.setPrimaryClip(clip);
+                    clipboard.setPrimaryClip(
+                            ClipData.newPlainText(mShareParams.getTitle(), mShareParams.getUrl()));
                     Toast toast =
                             Toast.makeText(mActivity, R.string.link_copied, Toast.LENGTH_SHORT);
                     toast.show();

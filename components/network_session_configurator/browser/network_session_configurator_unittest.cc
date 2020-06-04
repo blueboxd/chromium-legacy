@@ -603,18 +603,18 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicFlags) {
-  FLAGS_quic_reloadable_flag_quic_enable_version_t050_v2 = false;
+  FLAGS_quic_reloadable_flag_quic_enable_version_draft_28 = false;
   FLAGS_quic_reloadable_flag_quic_enable_version_draft_27 = false;
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["set_quic_flags"] =
-      "FLAGS_quic_reloadable_flag_quic_enable_version_t050_v2=true,"
+      "FLAGS_quic_reloadable_flag_quic_enable_version_draft_28=true,"
       "FLAGS_quic_reloadable_flag_quic_enable_version_draft_27=true";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_t050_v2);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_28);
   EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_27);
 }
 

@@ -23,6 +23,41 @@
 
 namespace device {
 
+namespace {
+
+// Helper method for determining correct bio enrollment version.
+BioEnrollmentRequest::Version GetBioEnrollmentRequestVersion(
+    const AuthenticatorSupportedOptions& options) {
+  // TODO(crbug.com/1087419): return default version for authenticators that
+  // support it regardless of preview availability once we implement
+  // getPinUvAuthTokenUsingPinWithPermissions.
+  DCHECK(options.bio_enrollment_availability_preview !=
+             AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+                 kNotSupported ||
+         options.bio_enrollment_availability !=
+             AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+                 kNotSupported);
+  return options.bio_enrollment_availability_preview !=
+                 AuthenticatorSupportedOptions::BioEnrollmentAvailability::
+                     kNotSupported
+             ? BioEnrollmentRequest::kPreview
+             : BioEnrollmentRequest::kDefault;
+}
+
+CredentialManagementRequest::Version GetCredentialManagementRequestVersion(
+    const AuthenticatorSupportedOptions& options) {
+  // TODO(crbug.com/1087419): return default version for authenticators that
+  // support it regardless of preview availability once we implement
+  // getPinUvAuthTokenUsingPinWithPermissions.
+  DCHECK(options.supports_credential_management_preview ||
+         options.supports_credential_management);
+  return options.supports_credential_management_preview
+             ? CredentialManagementRequest::kPreview
+             : CredentialManagementRequest::kDefault;
+}
+
+}  // namespace
+
 FidoDeviceAuthenticator::FidoDeviceAuthenticator(
     std::unique_ptr<FidoDevice> device)
     : device_(std::move(device)) {}
@@ -326,10 +361,7 @@ void FidoDeviceAuthenticator::GetCredentialsMetadata(
 
   RunOperation<CredentialManagementRequest, CredentialsMetadataResponse>(
       CredentialManagementRequest::ForGetCredsMetadata(
-          Options()->supports_credential_management
-              ? CredentialManagementRequest::kDefault
-              : CredentialManagementRequest::kPreview,
-          pin_token),
+          GetCredentialManagementRequestVersion(*Options()), pin_token),
       std::move(callback), base::BindOnce(&CredentialsMetadataResponse::Parse));
 }
 
@@ -359,10 +391,7 @@ void FidoDeviceAuthenticator::EnumerateCredentials(
   state.callback = std::move(callback);
   RunOperation<CredentialManagementRequest, EnumerateRPsResponse>(
       CredentialManagementRequest::ForEnumerateRPsBegin(
-          Options()->supports_credential_management
-              ? CredentialManagementRequest::kDefault
-              : CredentialManagementRequest::kPreview,
-          pin_token),
+          GetCredentialManagementRequestVersion(*Options()), pin_token),
       base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateRPsDone,
                      weak_factory_.GetWeakPtr(), std::move(state)),
       base::BindOnce(&EnumerateRPsResponse::Parse, /*expect_rp_count=*/true),
@@ -459,10 +488,8 @@ void FidoDeviceAuthenticator::OnEnumerateRPsDone(
   state.responses.emplace_back(std::move(*response->rp));
 
   auto request = CredentialManagementRequest::ForEnumerateCredentialsBegin(
-      Options()->supports_credential_management
-          ? CredentialManagementRequest::kDefault
-          : CredentialManagementRequest::kPreview,
-      state.pin_token, std::move(*response->rp_id_hash));
+      GetCredentialManagementRequestVersion(*Options()), state.pin_token,
+      std::move(*response->rp_id_hash));
   RunOperation<CredentialManagementRequest, EnumerateCredentialsResponse>(
       std::move(request),
       base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
@@ -490,9 +517,7 @@ void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
       state.current_rp_credential_count) {
     RunOperation<CredentialManagementRequest, EnumerateCredentialsResponse>(
         CredentialManagementRequest::ForEnumerateCredentialsGetNext(
-            Options()->supports_credential_management
-                ? CredentialManagementRequest::kDefault
-                : CredentialManagementRequest::kPreview),
+            GetCredentialManagementRequestVersion(*Options())),
         base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateCredentialsDone,
                        weak_factory_.GetWeakPtr(), std::move(state)),
         base::BindOnce(&EnumerateCredentialsResponse::Parse,
@@ -504,9 +529,7 @@ void FidoDeviceAuthenticator::OnEnumerateCredentialsDone(
   if (state.responses.size() < state.rp_count) {
     RunOperation<CredentialManagementRequest, EnumerateRPsResponse>(
         CredentialManagementRequest::ForEnumerateRPsGetNext(
-            Options()->supports_credential_management
-                ? CredentialManagementRequest::kDefault
-                : CredentialManagementRequest::kPreview),
+            GetCredentialManagementRequestVersion(*Options())),
         base::BindOnce(&FidoDeviceAuthenticator::OnEnumerateRPsDone,
                        weak_factory_.GetWeakPtr(), std::move(state)),
         base::BindOnce(&EnumerateRPsResponse::Parse,
@@ -529,22 +552,10 @@ void FidoDeviceAuthenticator::DeleteCredential(
 
   RunOperation<CredentialManagementRequest, DeleteCredentialResponse>(
       CredentialManagementRequest::ForDeleteCredential(
-          Options()->supports_credential_management
-              ? CredentialManagementRequest::kDefault
-              : CredentialManagementRequest::kPreview,
-          pin_token, credential_id),
+          GetCredentialManagementRequestVersion(*Options()), pin_token,
+          credential_id),
       std::move(callback), base::BindOnce(&DeleteCredentialResponse::Parse),
       /*string_fixup_predicate=*/nullptr);
-}
-
-// Helper method for determining correct bio enrollment version.
-static BioEnrollmentRequest::Version GetBioEnrollmentRequestVersion(
-    const AuthenticatorSupportedOptions& options) {
-  return options.bio_enrollment_availability !=
-                 AuthenticatorSupportedOptions::BioEnrollmentAvailability::
-                     kNotSupported
-             ? BioEnrollmentRequest::kDefault
-             : BioEnrollmentRequest::kPreview;
 }
 
 void FidoDeviceAuthenticator::GetModality(BioEnrollmentCallback callback) {

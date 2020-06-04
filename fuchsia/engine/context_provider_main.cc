@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
@@ -17,6 +18,7 @@
 #include "base/task/single_thread_task_executor.h"
 #include "components/version_info/version_info.h"
 #include "fuchsia/base/init_logging.h"
+#include "fuchsia/base/inspect.h"
 #include "fuchsia/base/lifecycle_impl.h"
 #include "fuchsia/engine/context_provider_impl.h"
 
@@ -67,6 +69,9 @@ int ContextProviderMain() {
       directory, &context_provider);
   base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
       directory->debug_dir(), &context_provider);
+
+  // Publish version information for this component to Inspect.
+  cr_fuchsia::PublishVersionInfoToInspect(base::ComponentInspectorForProcess());
 
   // Publish the Lifecycle service, used by the framework to request that the
   // service terminate.

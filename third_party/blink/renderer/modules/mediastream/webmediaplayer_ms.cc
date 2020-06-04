@@ -47,69 +47,6 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
-namespace {
-
-enum class RendererReloadAction {
-  KEEP_RENDERER,
-  REMOVE_RENDERER,
-  NEW_RENDERER
-};
-
-bool IsPlayableTrack(blink::MediaStreamComponent* component) {
-  return component && component->Source() &&
-         component->Source()->GetReadyState() !=
-             blink::MediaStreamSource::kReadyStateEnded;
-}
-
-const char* LoadTypeToString(blink::WebMediaPlayer::LoadType type) {
-  switch (type) {
-    case blink::WebMediaPlayer::kLoadTypeURL:
-      return "URL";
-    case blink::WebMediaPlayer::kLoadTypeMediaSource:
-      return "MediaSource";
-    case blink::WebMediaPlayer::kLoadTypeMediaStream:
-      return "MediaStream";
-  }
-}
-
-const char* ReadyStateToString(blink::WebMediaPlayer::ReadyState state) {
-  switch (state) {
-    case blink::WebMediaPlayer::kReadyStateHaveNothing:
-      return "HaveNothing";
-    case blink::WebMediaPlayer::kReadyStateHaveMetadata:
-      return "HaveMetadata";
-    case blink::WebMediaPlayer::kReadyStateHaveCurrentData:
-      return "HaveCurrentData";
-    case blink::WebMediaPlayer::kReadyStateHaveFutureData:
-      return "HaveFutureData";
-    case blink::WebMediaPlayer::kReadyStateHaveEnoughData:
-      return "HaveEnoughData";
-  }
-}
-
-const char* NetworkStateToString(blink::WebMediaPlayer::NetworkState state) {
-  switch (state) {
-    case blink::WebMediaPlayer::kNetworkStateEmpty:
-      return "Empty";
-    case blink::WebMediaPlayer::kNetworkStateIdle:
-      return "Idle";
-    case blink::WebMediaPlayer::kNetworkStateLoading:
-      return "Loading";
-    case blink::WebMediaPlayer::kNetworkStateLoaded:
-      return "Loaded";
-    case blink::WebMediaPlayer::kNetworkStateFormatError:
-      return "FormatError";
-    case blink::WebMediaPlayer::kNetworkStateNetworkError:
-      return "NetworkError";
-    case blink::WebMediaPlayer::kNetworkStateDecodeError:
-      return "DecodeError";
-  }
-}
-
-constexpr base::TimeDelta kForceBeginFramesTimeout =
-    base::TimeDelta::FromSeconds(1);
-}  // namespace
-
 namespace WTF {
 
 template <>
@@ -127,6 +64,69 @@ struct CrossThreadCopier<media::VideoTransformation>
 }  // namespace WTF
 
 namespace blink {
+
+namespace {
+
+enum class RendererReloadAction {
+  KEEP_RENDERER,
+  REMOVE_RENDERER,
+  NEW_RENDERER
+};
+
+bool IsPlayableTrack(MediaStreamComponent* component) {
+  return component && component->Source() &&
+         component->Source()->GetReadyState() !=
+             MediaStreamSource::kReadyStateEnded;
+}
+
+const char* LoadTypeToString(WebMediaPlayer::LoadType type) {
+  switch (type) {
+    case WebMediaPlayer::kLoadTypeURL:
+      return "URL";
+    case WebMediaPlayer::kLoadTypeMediaSource:
+      return "MediaSource";
+    case WebMediaPlayer::kLoadTypeMediaStream:
+      return "MediaStream";
+  }
+}
+
+const char* ReadyStateToString(WebMediaPlayer::ReadyState state) {
+  switch (state) {
+    case WebMediaPlayer::kReadyStateHaveNothing:
+      return "HaveNothing";
+    case WebMediaPlayer::kReadyStateHaveMetadata:
+      return "HaveMetadata";
+    case WebMediaPlayer::kReadyStateHaveCurrentData:
+      return "HaveCurrentData";
+    case WebMediaPlayer::kReadyStateHaveFutureData:
+      return "HaveFutureData";
+    case WebMediaPlayer::kReadyStateHaveEnoughData:
+      return "HaveEnoughData";
+  }
+}
+
+const char* NetworkStateToString(WebMediaPlayer::NetworkState state) {
+  switch (state) {
+    case WebMediaPlayer::kNetworkStateEmpty:
+      return "Empty";
+    case WebMediaPlayer::kNetworkStateIdle:
+      return "Idle";
+    case WebMediaPlayer::kNetworkStateLoading:
+      return "Loading";
+    case WebMediaPlayer::kNetworkStateLoaded:
+      return "Loaded";
+    case WebMediaPlayer::kNetworkStateFormatError:
+      return "FormatError";
+    case WebMediaPlayer::kNetworkStateNetworkError:
+      return "NetworkError";
+    case WebMediaPlayer::kNetworkStateDecodeError:
+      return "DecodeError";
+  }
+}
+
+constexpr base::TimeDelta kForceBeginFramesTimeout =
+    base::TimeDelta::FromSeconds(1);
+}  // namespace
 
 #if defined(OS_WIN)
 // Since we do not have native GMB support in Windows, using GMBs can cause a
@@ -1336,9 +1336,8 @@ void WebMediaPlayerMS::OnNewFramePresentedCallback() {
 }
 
 void WebMediaPlayerMS::SendLogMessage(const WTF::String& message) const {
-  blink::WebRtcLogMessage(
-      "WMPMS::" + message.Utf8() +
-      String::Format(" [delegate_id=%d]", delegate_id_).Utf8());
+  WebRtcLogMessage("WMPMS::" + message.Utf8() +
+                   String::Format(" [delegate_id=%d]", delegate_id_).Utf8());
 }
 
 std::unique_ptr<WebMediaPlayer::VideoFramePresentationMetadata>

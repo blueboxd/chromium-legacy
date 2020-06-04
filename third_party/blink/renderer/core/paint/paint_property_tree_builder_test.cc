@@ -803,6 +803,30 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeContents) {
                           GetDocument().View()->GetLayoutView());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       BackfaceVisibilityWithPseudoStacking3DChildren) {
+  ScopedTransformInteropForTest enabled(true);
+  // TODO(chrishtr): implement for CAP. This entails computing
+  // has_backface_invisible_ancestor_in_same_3d_context in the pre-paint tree
+  // walk.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div style="backface-visibility: hidden; transform-style: preserve-3d">
+      <div id=child style="isolation: isolate"></div>
+    </div>
+  )HTML");
+
+  // The child needs a transform node to communicate that it is backface
+  // visible to the compositor.
+  EXPECT_NE(nullptr, PaintPropertiesForElement("child")->Transform());
+  EXPECT_EQ(PaintPropertiesForElement("child")
+                ->Transform()
+                ->GetBackfaceVisibilityForTesting(),
+            TransformPaintPropertyNode::BackfaceVisibility::kVisible);
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, NoEffectAndFilterForNonStackingContext) {
   SetBodyInnerHTML(R"HTML(
     <div id="target" style="will-change: right; backface-visibility: hidden">
@@ -2864,10 +2888,100 @@ TEST_P(PaintPropertyTreeBuilderTest, Preserve3DCreatesSharedRenderingContext) {
   EXPECT_NE(a_properties->Transform(), b_properties->Transform());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     EXPECT_TRUE(a_properties->Transform()->HasRenderingContext());
+    EXPECT_FALSE(a_properties->Transform()->FlattensInheritedTransform());
     EXPECT_TRUE(b_properties->Transform()->HasRenderingContext());
+    EXPECT_FALSE(b_properties->Transform()->FlattensInheritedTransform());
     EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
               b_properties->Transform()->RenderingContextId());
   }
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
+                          frame_view->GetLayoutView());
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 48, 20, 10), b,
+                          frame_view->GetLayoutView());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       IntermediateElementPreventsSharedRenderingContext) {
+  ScopedTransformInteropForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='transform-style: preserve-3d'>
+      <div>
+        <div id='a' style='transform: translateZ(0); width: 30px; height: 40px'>
+        </div>
+      </div>
+      <div id='b' style='transform: translateZ(0); width: 20px; height: 10px'>
+      </div>
+    </div>
+  )HTML");
+  LocalFrameView* frame_view = GetDocument().View();
+
+  LayoutObject* a = GetLayoutObjectByElementId("a");
+  const ObjectPaintProperties* a_properties =
+      a->FirstFragment().PaintProperties();
+  LayoutObject* b = GetLayoutObjectByElementId("b");
+  const ObjectPaintProperties* b_properties =
+      b->FirstFragment().PaintProperties();
+  ASSERT_TRUE(a_properties->Transform() && b_properties->Transform());
+  EXPECT_NE(a_properties->Transform(), b_properties->Transform());
+
+  const ObjectPaintProperties* parent_properties =
+      b->FirstFragment().PaintProperties();
+
+  EXPECT_FALSE(a_properties->Transform()->HasRenderingContext());
+  EXPECT_TRUE(a_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_TRUE(b_properties->Transform()->HasRenderingContext());
+  EXPECT_FALSE(b_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_NE(a_properties->Transform()->RenderingContextId(),
+            b_properties->Transform()->RenderingContextId());
+
+  EXPECT_EQ(parent_properties->Transform()->RenderingContextId(),
+            b_properties->Transform()->RenderingContextId());
+
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
+                          frame_view->GetLayoutView());
+  CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 48, 20, 10), b,
+                          frame_view->GetLayoutView());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       IntermediateElementWithPropertiesPreventsSharedRenderingContext) {
+  ScopedTransformInteropForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='transform-style: preserve-3d'>
+      <div style="overflow: hidden">
+        <div id='a' style='transform: translateZ(0); width: 30px; height: 40px'>
+        </div>
+      </div>
+      <div id='b' style='transform: translateZ(0); width: 20px; height: 10px'>
+      </div>
+    </div>
+  )HTML");
+  LocalFrameView* frame_view = GetDocument().View();
+
+  LayoutObject* a = GetLayoutObjectByElementId("a");
+  const ObjectPaintProperties* a_properties =
+      a->FirstFragment().PaintProperties();
+  LayoutObject* b = GetLayoutObjectByElementId("b");
+  const ObjectPaintProperties* b_properties =
+      b->FirstFragment().PaintProperties();
+  ASSERT_TRUE(a_properties->Transform() && b_properties->Transform());
+  EXPECT_NE(a_properties->Transform(), b_properties->Transform());
+
+  const ObjectPaintProperties* parent_properties =
+      b->FirstFragment().PaintProperties();
+
+  EXPECT_FALSE(a_properties->Transform()->HasRenderingContext());
+  EXPECT_TRUE(a_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_TRUE(b_properties->Transform()->HasRenderingContext());
+  EXPECT_FALSE(b_properties->Transform()->FlattensInheritedTransform());
+  EXPECT_NE(a_properties->Transform()->RenderingContextId(),
+            b_properties->Transform()->RenderingContextId());
+
+  EXPECT_EQ(parent_properties->Transform()->RenderingContextId(),
+            b_properties->Transform()->RenderingContextId());
+
   CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 8, 30, 40), a,
                           frame_view->GetLayoutView());
   CHECK_EXACT_VISUAL_RECT(PhysicalRect(8, 48, 20, 10), b,

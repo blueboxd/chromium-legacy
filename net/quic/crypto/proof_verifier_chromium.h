@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/x509_certificate.h"
@@ -74,7 +75,8 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public quic::ProofVerifier {
                         CTPolicyEnforcer* ct_policy_enforcer,
                         TransportSecurityState* transport_security_state,
                         CTVerifier* cert_transparency_verifier,
-                        std::set<std::string> hostnames_to_allow_unknown_roots);
+                        std::set<std::string> hostnames_to_allow_unknown_roots,
+                        const NetworkIsolationKey& network_isolation_key);
   ~ProofVerifierChromium() override;
 
   // quic::ProofVerifier interface
@@ -118,6 +120,8 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public quic::ProofVerifier {
   CTVerifier* const cert_transparency_verifier_;
 
   std::set<std::string> hostnames_to_allow_unknown_roots_;
+
+  const NetworkIsolationKey network_isolation_key_;
 
   DISALLOW_COPY_AND_ASSIGN(ProofVerifierChromium);
 };

@@ -885,6 +885,10 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     wgpu::TextureFormat format = ToDawnFormat(resource_format);
     return GrBackendFormat::MakeDawn(format);
 #endif
+  } else if (dependency_->IsUsingMetal()) {
+#if defined(OS_MACOSX)
+    return GrBackendFormat::MakeMtl(ToMTLPixelFormat(resource_format));
+#endif
   } else {
     DCHECK(!ycbcr_info);
     // Convert internal format from GLES2 to platform GL.

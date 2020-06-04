@@ -6,6 +6,11 @@ source_set("blocked_content") {
   sources = [
     "list_item_position.cc",
     "list_item_position.h",
+    "popup_blocker.cc",
+    "popup_blocker.h",
+    "popup_blocker_tab_helper.cc",
+    "popup_blocker_tab_helper.h",
+    "popup_navigation_delegate.h",
     "popup_opener_tab_helper.cc",
     "popup_opener_tab_helper.h",
     "popup_tracker.cc",
@@ -19,9 +24,12 @@ source_set("blocked_content") {
   ]
   deps = [
     "//base",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
+    "//components/embedder_support",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/safe_browsing/content/triggers:ad_popup_trigger",
     "//components/safe_browsing/core/db:util",
     "//components/subresource_filter/content/browser",
     "//components/ukm/content",
@@ -29,5 +37,25 @@ source_set("blocked_content") {
     "//content/public/browser",
     "//services/metrics/public/cpp:ukm_builders",
     "//third_party/blink/public/common",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "safe_browsing_triggered_popup_blocker_unittest.cc" ]
+  deps = [
+    ":blocked_content",
+    "//base",
+    "//base/test:test_support",
+    "//components/content_settings/browser",
+    "//components/content_settings/core/browser",
+    "//components/subresource_filter/content/browser",
+    "//components/subresource_filter/content/browser:test_support",
+    "//components/subresource_filter/core/browser",
+    "//components/sync_preferences:test_support",
+    "//components/user_prefs",
+    "//content/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
   ]
 }

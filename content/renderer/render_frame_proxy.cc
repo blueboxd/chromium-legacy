@@ -688,9 +688,18 @@ cc::Layer* RenderFrameProxy::GetLayer() {
 void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
                                 bool prevent_contents_opaque_changes,
                                 bool is_surface_layer) {
+  // |ancestor_render_widget_| can be null if this is a proxy for a remote main
+  // frame, or a subframe of that proxy. However, we should not be setting a
+  // layer on such a proxy (the layer is used for embedding a child proxy).
+  DCHECK(ancestor_render_widget_);
+
   if (web_frame()) {
     web_frame()->SetCcLayer(layer.get(), prevent_contents_opaque_changes,
                             is_surface_layer);
+
+    // Schedule an animation so that a new frame is produced with the updated
+    // layer, otherwise this local root's visible content may not be up to date.
+    ancestor_render_widget_->ScheduleAnimation();
   }
   embedded_layer_ = std::move(layer);
 }

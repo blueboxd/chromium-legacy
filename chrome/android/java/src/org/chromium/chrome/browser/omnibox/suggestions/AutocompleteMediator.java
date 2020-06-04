@@ -131,10 +131,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private final PropertyModel mListPropertyModel;
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
-    // TODO(crbug.com/982818): make EditUrlProcessor behave like all other processors and register
-    // it in the mSuggestionProcessors list. The processor currently cannot be combined with
-    // other processors because of its unique requirements.
-    private @Nullable EditUrlSuggestionProcessor mEditUrlProcessor;
     private HeaderProcessor mHeaderProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
     private final List<DropdownItemViewInfo> mViewInfoList;
@@ -152,6 +148,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private int mMaximumSuggestionsListHeight;
     private boolean mEnableDeferredKeyboardPopup;
     private boolean mPendingKeyboardShowDecision;
+
+    private ActivityTabProvider mActivityTabProvider;
+    private Supplier<ShareDelegate> mShareDelegateSupplier;
 
     @IntDef({SuggestionVisibilityState.DISALLOWED, SuggestionVisibilityState.PENDING_ALLOW,
             SuggestionVisibilityState.ALLOWED})
@@ -228,9 +227,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     void initDefaultProcessors(Callback<List<QueryTile>> queryTileSuggestionCallback) {
         final Supplier<ImageFetcher> imageFetcherSupplier = createImageFetcherSupplier();
         final Supplier<LargeIconBridge> iconBridgeSupplier = createIconBridgeSupplier();
+        final Supplier<Tab> tabSupplier =
+                () -> mActivityTabProvider == null ? null : mActivityTabProvider.get();
+        final Supplier<ShareDelegate> shareDelegateSupplier =
+                () -> mShareDelegateSupplier == null ? null : mShareDelegateSupplier.get();
 
-        mEditUrlProcessor =
-                new EditUrlSuggestionProcessor(mContext, this, mDelegate, iconBridgeSupplier);
+        registerSuggestionProcessor(new EditUrlSuggestionProcessor(
+                mContext, this, mDelegate, iconBridgeSupplier, tabSupplier, shareDelegateSupplier));
         registerSuggestionProcessor(new AnswerSuggestionProcessor(
                 mContext, this, mUrlBarEditingTextProvider, imageFetcherSupplier));
         registerSuggestionProcessor(
@@ -506,14 +509,13 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         for (SuggestionProcessor processor : mSuggestionProcessors) {
             processor.onNativeInitialized();
         }
-        if (mEditUrlProcessor != null) mEditUrlProcessor.onNativeInitialized();
     }
 
     /**
      * @param provider A means of accessing the activity tab.
      */
     void setActivityTabProvider(ActivityTabProvider provider) {
-        if (mEditUrlProcessor != null) mEditUrlProcessor.setActivityTabProvider(provider);
+        mActivityTabProvider = provider;
 
         if (mTabObserver != null) {
             mTabObserver.destroy();
@@ -548,7 +550,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     }
 
     void setShareDelegateSupplier(Supplier<ShareDelegate> shareDelegateSupplier) {
-        mEditUrlProcessor.setShareDelegateSupplier(shareDelegateSupplier);
+        mShareDelegateSupplier = shareDelegateSupplier;
     }
 
     /** @see org.chromium.chrome.browser.omnibox.UrlFocusChangeListener#onUrlFocusChange(boolean) */
@@ -586,7 +588,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             if (mImageFetcher != null) mImageFetcher.clear();
         }
 
-        if (mEditUrlProcessor != null) mEditUrlProcessor.onUrlFocusChange(hasFocus);
         for (SuggestionProcessor processor : mSuggestionProcessors) {
             processor.onUrlFocusChange(hasFocus);
         }
@@ -938,15 +939,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @param suggestion The suggestion to be processed.
      * @return The appropriate suggestion processor for the provided suggestion.
      */
-    private SuggestionProcessor getProcessorForSuggestion(
-            OmniboxSuggestion suggestion, boolean isFirst) {
-        if (isFirst && mEditUrlProcessor != null
-                && mEditUrlProcessor.doesProcessSuggestion(suggestion)) {
-            return mEditUrlProcessor;
-        }
-
+    private SuggestionProcessor getProcessorForSuggestion(OmniboxSuggestion suggestion, int index) {
         for (SuggestionProcessor processor : mSuggestionProcessors) {
-            if (processor.doesProcessSuggestion(suggestion)) return processor;
+            if (processor.doesProcessSuggestion(suggestion, index)) return processor;
         }
         assert false : "No default handler for suggestions";
         return null;
@@ -1145,7 +1140,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 mViewInfoList.add(new DropdownItemViewInfo(mHeaderProcessor, model, currentGroup));
             }
 
-            final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index == 0);
+            final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index);
             final PropertyModel model = processor.createModel();
             processor.populateModel(suggestion, model, index);
             mViewInfoList.add(new DropdownItemViewInfo(processor, model, currentGroup));

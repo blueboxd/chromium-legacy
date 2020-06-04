@@ -59,7 +59,8 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
   static void AddDeviceBlocking(
       base::WeakPtr<HidServiceWin> service,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const base::string16& device_path);
+      const base::string16& device_path,
+      const std::string& physical_device_id);
 
   // DeviceMonitorWin::Observer implementation:
   void OnDeviceAdded(const GUID& class_guid,

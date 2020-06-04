@@ -1006,6 +1006,23 @@ Your Google account may have other forms of browsing history like searches and a
         Chrome has saved you <ph name="gigabytes">%1$d<ex>10</ex></ph> GB
       </message>
 
+      <!-- Download later -->
+      <message name="IDS_DOWNLOAD_LATER_DIALOG_TITLE" desc="Title of the download later dialog that let the user to choose the time to download.">
+        Choose when to download
+      </message>
+      <message name="IDS_DOWNLOAD_LATER_DIALOG_SUBTITLE" desc="Subtitle of the download later dialog that let the user to choose the time to download.">
+        You'll see a notification when this file is ready
+      </message>
+      <message name="IDS_DOWNLOAD_LATER_DOWNLOAD_NOW_TEXT" desc="The text for the radio button to trigger the download now in download later dialog.">
+        Now
+      </message>
+      <message name="IDS_DOWNLOAD_LATER_ON_WIFI_TEXT" desc="The text for the radio button to trigger the download on WIFI in download later dialog.">
+        On Wi-Fi
+      </message>
+      <message name="IDS_DOWNLOAD_LATER_PICK_TIME_TEXT" desc="The text for the radio button to select the download time in download later dialog.">
+        Pick date &amp; time
+      </message>
+
       <!-- Downloads location -->
       <message name="IDS_DOWNLOADS_LOCATION_SELECTOR_TITLE" desc="Title of the preference that allows the user to select which of the folders they would like to make the default location to save their downloads.">
         Download location

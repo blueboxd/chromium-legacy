@@ -254,8 +254,8 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   if (!prefs->GetBoolean(prefs::kClearPluginLSODataEnabled))
     site_data_mask &= ~ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PLUGIN_DATA;
 
-  int remove_mask = 0;
-  int origin_mask = 0;
+  uint64_t remove_mask = 0;
+  uint64_t origin_mask = 0;
   std::vector<BrowsingDataType> data_type_vector;
   const base::ListValue* data_type_list = nullptr;
   CHECK(args->GetList(1, &data_type_list));

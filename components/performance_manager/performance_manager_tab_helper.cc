@@ -25,24 +25,73 @@
 
 namespace performance_manager {
 
+namespace {
+
+// Returns true if the opener relationship exists, false otherwise.
+bool ConnectWindowOpenRelationshipIfExists(PerformanceManagerTabHelper* helper,
+                                           content::WebContents* web_contents) {
+  // Prefer to use GetOpener() if available, as it is more specific and points
+  // directly to the frame that actually called window.open.
+  auto* opener_rfh = web_contents->GetOpener();
+  if (!opener_rfh) {
+    // If the child page is opened with "noopener" then the parent document
+    // maintains the ability to close the child, but the child can't reach back
+    // and see it's parent. In this case there will be no "Opener", but there
+    // will be an "OriginalOpener".
+    opener_rfh = web_contents->GetOriginalOpener();
+  }
+
+  if (!opener_rfh)
+    return false;
+
+  // You can't simultaneously be a portal (an embedded child element of a
+  // document loaded via the <portal> tag) and a popup (a child document
+  // loaded in a new window).
+  DCHECK(!web_contents->IsPortal());
+
+  // Connect this new page to its opener.
+  auto* opener_wc = content::WebContents::FromRenderFrameHost(opener_rfh);
+  auto* opener_helper = PerformanceManagerTabHelper::FromWebContents(opener_wc);
+  DCHECK(opener_helper);  // We should already have seen the opener WC.
+
+  // On CrOS the opener can be the ChromeKeyboardWebContents, whose RFHs never
+  // make it to a "created" state, so the PM never learns about them.
+  // https://crbug.com/1090374
+  auto* opener_frame_node = opener_helper->GetFrameNode(opener_rfh);
+  if (!opener_frame_node)
+    return false;
+
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
+                                base::Unretained(helper->page_node()),
+                                base::Unretained(opener_frame_node),
+                                PageNode::OpenedType::kPopup));
+  return true;
+}
+
+}  // namespace
+
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
+  // Create the page node.
   page_node_ = PerformanceManagerImpl::CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
       web_contents->GetBrowserContext()->UniqueId(),
       web_contents->GetVisibleURL(),
       web_contents->GetVisibility() == content::Visibility::VISIBLE,
       web_contents->IsCurrentlyAudible(), web_contents->GetLastActiveTime());
-  // Dispatch creation notifications for any pre-existing frames.
-  std::vector<content::RenderFrameHost*> existing_frames =
-      web_contents->GetAllFrames();
-  for (content::RenderFrameHost* frame : existing_frames) {
-    // Only send notifications for created frames, the others will generate
-    // creation notifications in due course (or not at all).
-    if (frame->IsRenderFrameCreated())
-      RenderFrameCreated(frame);
-  }
+
+  // We have an early WebContents creation hook so should see it when there is
+  // only a single frame, and it is not yet created. We sanity check that here.
+#if DCHECK_IS_ON()
+  DCHECK(!web_contents->GetMainFrame()->IsRenderFrameCreated());
+  std::vector<content::RenderFrameHost*> frames = web_contents->GetAllFrames();
+  DCHECK_EQ(1u, frames.size());
+  DCHECK_EQ(web_contents->GetMainFrame(), frames[0]);
+#endif
+
+  ConnectWindowOpenRelationshipIfExists(this, web_contents);
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
@@ -307,6 +356,68 @@ void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE, base::BindOnce(&PageNodeImpl::OnTitleUpdated,
                                 base::Unretained(page_node_.get())));
+}
+
+void PerformanceManagerTabHelper::InnerWebContentsAttached(
+    content::WebContents* inner_web_contents,
+    content::RenderFrameHost* render_frame_host,
+    bool /* is_full_page */) {
+  // Note that we sometimes learn of contents creation at this point (before
+  // other helpers get a chance to attach), so we need to ensure our helper
+  // exists.
+  CreateForWebContents(inner_web_contents);
+  auto* helper = FromWebContents(inner_web_contents);
+  DCHECK(helper);
+  auto* page = helper->page_node_.get();
+  DCHECK(page);
+  auto* frame = GetFrameNode(render_frame_host);
+
+  // Determine the opened type.
+  auto opened_type = PageNode::OpenedType::kInvalid;
+  if (inner_web_contents->IsPortal()) {
+    // Portals don't have openers.
+    DCHECK(!inner_web_contents->HasOpener() &&
+           !inner_web_contents->HasOriginalOpener());
+    opened_type = PageNode::OpenedType::kPortal;
+
+    // In the case of portals there can be a temporary RFH that is created that
+    // will never actually be committed to the frame tree (for which we'll never
+    // see RenderFrameCreated and RenderFrameDestroyed notifications). Find a
+    // parent that we do know about instead. Note that this is not *always*
+    // true, because portals are reusable.
+    if (!frame)
+      frame = GetFrameNode(render_frame_host->GetParent());
+  } else {
+    opened_type = PageNode::OpenedType::kGuestView;
+    // For a guest view, the RFH should already have been seen.
+
+    // Note that guest views can simultaneously have openers *and* be embedded.
+    // The embedded relationship has higher priority, but we'll fall back to
+    // using the window.open relationship if the embedded relationship is
+    // severed.
+  }
+  DCHECK_NE(PageNode::OpenedType::kInvalid, opened_type);
+  DCHECK(frame);
+
+  PerformanceManagerImpl::CallOnGraphImpl(
+      FROM_HERE, base::BindOnce(&PageNodeImpl::SetOpenerFrameNodeAndOpenedType,
+                                base::Unretained(page), base::Unretained(frame),
+                                opened_type));
+}
+
+void PerformanceManagerTabHelper::InnerWebContentsDetached(
+    content::WebContents* inner_web_contents) {
+  auto* helper = FromWebContents(inner_web_contents);
+  DCHECK(helper);
+
+  // Fall back to using the window.open opener if it exists. If not, simply
+  // clear the opener relationship entirely.
+  if (!ConnectWindowOpenRelationshipIfExists(helper, inner_web_contents)) {
+    PerformanceManagerImpl::CallOnGraphImpl(
+        FROM_HERE,
+        base::BindOnce(&PageNodeImpl::ClearOpenerFrameNodeAndOpenedType,
+                       base::Unretained(helper->page_node())));
+  }
 }
 
 void PerformanceManagerTabHelper::WebContentsDestroyed() {

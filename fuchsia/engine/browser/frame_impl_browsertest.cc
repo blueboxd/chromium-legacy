@@ -24,6 +24,7 @@
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
 #include "fuchsia/engine/browser/frame_impl.h"
+#include "fuchsia/engine/switches.h"
 #include "fuchsia/engine/test/test_data.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -1673,6 +1674,11 @@ class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
 
     ASSERT_TRUE(test_server_handle_ =
                     embedded_test_server()->StartAndReturnHandle());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Needed for UrlRequestRewriteAddHeaders.
+    command_line->AppendSwitchNative(switches::kCorsExemptHeaders, "Test");
   }
 
   std::map<GURL, net::test_server::HttpRequest> accumulated_requests_;

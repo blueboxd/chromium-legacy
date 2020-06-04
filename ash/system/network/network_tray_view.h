@@ -38,6 +38,9 @@ class NetworkTrayView : public TrayItemView,
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   base::string16 GetTooltipText(const gfx::Point& p) const override;
 
+  // TrayItemView:
+  void HandleLocaleChange() override;
+
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
 

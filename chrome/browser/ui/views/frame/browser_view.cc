@@ -579,34 +579,20 @@ BrowserView::~BrowserView() {
   // child views and it is an observer for avatar toolbar button if any.
   autofill_bubble_handler_.reset();
 
-  extensions::ExtensionCommandsGlobalRegistry* global_registry =
+  auto* global_registry =
       extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
   if (global_registry->registry_for_active_window() ==
           extension_keybinding_registry_.get())
     global_registry->set_registry_for_active_window(nullptr);
 
-  // We destroy the download shelf before |browser_| to remove its child
-  // download views from the set of download observers (since the observed
-  // downloads can be destroyed along with |browser_| and the observer
-  // notifications will call back into deleted objects).
-  BrowserViewLayout* browser_view_layout = GetBrowserViewLayout();
-  if (browser_view_layout)
-    browser_view_layout->set_download_shelf(nullptr);
-  download_shelf_.reset();
-
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
-  if (tabstrip_) {
-    tabstrip_->parent()->RemoveChildView(tabstrip_);
-    if (browser_view_layout)
-      browser_view_layout->set_tab_strip(nullptr);
-    delete tabstrip_;
-    tabstrip_ = nullptr;
-  }
+  if (tabstrip_)
+    tabstrip_->parent()->RemoveChildViewT(tabstrip_);
+
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
-  toolbar_ = nullptr;
 }
 
 // static
@@ -1685,16 +1671,16 @@ void BrowserView::SetDownloadShelfVisible(bool visible) {
 }
 
 bool BrowserView::IsDownloadShelfVisible() const {
-  return download_shelf_.get() && download_shelf_->IsShowing();
+  return download_shelf_ && download_shelf_->IsShowing();
 }
 
 DownloadShelf* BrowserView::GetDownloadShelf() {
-  if (!download_shelf_.get()) {
-    download_shelf_ = std::make_unique<DownloadShelfView>(browser_.get(), this);
-    download_shelf_->set_owned_by_client();
-    GetBrowserViewLayout()->set_download_shelf(download_shelf_.get());
+  if (!download_shelf_) {
+    download_shelf_ =
+        AddChildView(std::make_unique<DownloadShelfView>(browser_.get(), this));
+    GetBrowserViewLayout()->set_download_shelf(download_shelf_);
   }
-  return download_shelf_.get();
+  return download_shelf_;
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
@@ -2235,7 +2221,7 @@ void BrowserView::EnsureFocusOrder() {
   // focus order, but makes it easily accessible by using SHIFT-TAB (reverse
   // focus traversal) from the toolbar/omnibox.
   if (download_shelf_ && contents_container_)
-    InsertIntoFocusOrderAfter(contents_container_, download_shelf_.get());
+    InsertIntoFocusOrderAfter(contents_container_, download_shelf_);
 
 #if DCHECK_IS_ON()
   // Make sure we didn't create any cycles in the focus order.
@@ -2550,8 +2536,8 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
     panes->push_back(bookmark_bar_view_.get());
   if (infobar_container_)
     panes->push_back(infobar_container_);
-  if (download_shelf_.get())
-    panes->push_back(download_shelf_.get());
+  if (download_shelf_)
+    panes->push_back(download_shelf_);
 // TODO(crbug.com/1055150): Implement for mac.
 #if !defined(OS_MACOSX)
   // See if there is a caption bubble present.

@@ -11,7 +11,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/notification_permission_ui_selector.h"
@@ -144,7 +144,8 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
           browser(),
           embedded_test_server()->GetURL("/popup_blocker/popup-many-10.html"));
       EXPECT_TRUE(content::ExecuteScript(web_contents, std::string()));
-      auto* helper = PopupBlockerTabHelper::FromWebContents(web_contents);
+      auto* helper =
+          blocked_content::PopupBlockerTabHelper::FromWebContents(web_contents);
       // popup-many-10.html should generate 10 blocked popups.
       EXPECT_EQ(10u, helper->GetBlockedPopupsCount());
       break;

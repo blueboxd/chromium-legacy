@@ -11,7 +11,6 @@ import android.content.pm.PackageManager;
 
 import org.chromium.android_webview.AwLocaleConfig;
 import org.chromium.android_webview.common.CommandLineUtil;
-import org.chromium.android_webview.common.metrics.AwNonembeddedUmaRecorder;
 import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;

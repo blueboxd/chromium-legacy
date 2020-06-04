@@ -139,7 +139,7 @@
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker.h"
+#include "chrome/browser/ui/blocked_content/chrome_popup_navigation_delegate.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -182,6 +182,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/blocked_content/popup_blocker.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/captive_portal/content/captive_portal_service.h"
@@ -3094,9 +3095,12 @@ bool ChromeContentBrowserClient::CanCreateWindow(
       target_url, source_origin, opener->GetSiteInstance(), referrer,
       frame_name, disposition, features, user_gesture, opener_suppressed);
   NavigateParams nav_params = blocked_params.CreateNavigateParams(web_contents);
-  return !MaybeBlockPopup(web_contents, &opener_top_level_frame_url,
-                          &nav_params, nullptr /*=open_url_params*/,
-                          blocked_params.features());
+  return blocked_content::MaybeBlockPopup(
+             web_contents, &opener_top_level_frame_url,
+             std::make_unique<ChromePopupNavigationDelegate>(
+                 std::move(nav_params)),
+             nullptr /*=open_url_params*/, blocked_params.features(),
+             HostContentSettingsMapFactory::GetForProfile(profile)) != nullptr;
 }
 
 content::SpeechRecognitionManagerDelegate*

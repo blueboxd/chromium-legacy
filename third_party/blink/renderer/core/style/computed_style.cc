@@ -1050,6 +1050,17 @@ static bool HasPropertyThatCreatesStackingContext(
   return false;
 }
 
+bool ComputedStyle::HasGroupingProperty() const {
+  if (RuntimeEnabledFeatures::TransformInteropEnabled() &&
+      (HasNonInitialBackdropFilter() || HasBlendMode() ||
+       (!HasAutoClip() && HasOutOfFlowPosition()) || ClipPath() ||
+       HasIsolation() || HasMask()))
+    return true;
+
+  return !IsOverflowVisible() || HasFilterInducingProperty() ||
+         HasNonInitialOpacity();
+}
+
 void ComputedStyle::UpdateIsStackingContextWithoutContainment(
     bool is_document_element,
     bool is_in_top_layer,

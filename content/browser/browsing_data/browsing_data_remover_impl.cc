@@ -70,7 +70,7 @@ base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
 // datatypes, |embedder_matcher| must not be null; the decision for those
 // datatypes will be delegated to it.
 bool DoesOriginMatchMaskAndPredicate(
-    int origin_type_mask,
+    uint64_t origin_type_mask,
     base::OnceCallback<bool(const url::Origin&)> predicate,
     const BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher&
         embedder_matcher,
@@ -112,8 +112,8 @@ bool DoesOriginMatchMaskAndPredicate(
 BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
     BrowserContext* browser_context)
     : browser_context_(browser_context),
-      remove_mask_(-1),
-      origin_type_mask_(-1),
+      remove_mask_(0xffffffffffffffffull),
+      origin_type_mask_(0xffffffffffffffffull),
       is_removing_(false),
       storage_partition_for_testing_(nullptr) {
   DCHECK(browser_context_);
@@ -152,7 +152,7 @@ void BrowsingDataRemoverImpl::SetEmbedderDelegate(
 }
 
 bool BrowsingDataRemoverImpl::DoesOriginMatchMaskForTesting(
-    int origin_type_mask,
+    uint64_t origin_type_mask,
     const url::Origin& origin,
     storage::SpecialStoragePolicy* policy) {
   BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
@@ -166,16 +166,16 @@ bool BrowsingDataRemoverImpl::DoesOriginMatchMaskForTesting(
 
 void BrowsingDataRemoverImpl::Remove(const base::Time& delete_begin,
                                      const base::Time& delete_end,
-                                     int remove_mask,
-                                     int origin_type_mask) {
+                                     uint64_t remove_mask,
+                                     uint64_t origin_type_mask) {
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::unique_ptr<BrowsingDataFilterBuilder>(), nullptr);
 }
 
 void BrowsingDataRemoverImpl::RemoveAndReply(const base::Time& delete_begin,
                                              const base::Time& delete_end,
-                                             int remove_mask,
-                                             int origin_type_mask,
+                                             uint64_t remove_mask,
+                                             uint64_t origin_type_mask,
                                              Observer* observer) {
   DCHECK(observer);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
@@ -185,8 +185,8 @@ void BrowsingDataRemoverImpl::RemoveAndReply(const base::Time& delete_begin,
 void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer) {
   DCHECK(filter_builder);
@@ -198,8 +198,8 @@ void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
 void BrowsingDataRemoverImpl::RemoveInternal(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer) {
   DCHECK(!observer || observer_list_.HasObserver(observer))
@@ -258,9 +258,9 @@ void BrowsingDataRemoverImpl::RunNextTask() {
 void BrowsingDataRemoverImpl::RemoveImpl(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
+    uint64_t remove_mask,
     BrowsingDataFilterBuilder* filter_builder,
-    int origin_type_mask) {
+    uint64_t origin_type_mask) {
   // =============== README before adding more storage backends ===============
   //
   // If you're adding a data storage backend that is included among
@@ -562,19 +562,19 @@ const base::Time& BrowsingDataRemoverImpl::GetLastUsedBeginTimeForTesting() {
   return delete_begin_;
 }
 
-int BrowsingDataRemoverImpl::GetLastUsedRemovalMaskForTesting() {
+uint64_t BrowsingDataRemoverImpl::GetLastUsedRemovalMaskForTesting() {
   return remove_mask_;
 }
 
-int BrowsingDataRemoverImpl::GetLastUsedOriginTypeMaskForTesting() {
+uint64_t BrowsingDataRemoverImpl::GetLastUsedOriginTypeMaskForTesting() {
   return origin_type_mask_;
 }
 
 BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
+    uint64_t remove_mask,
+    uint64_t origin_type_mask,
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder,
     Observer* observer)
     : delete_begin(delete_begin),

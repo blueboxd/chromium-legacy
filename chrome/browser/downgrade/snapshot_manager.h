@@ -53,7 +53,7 @@ class SnapshotManager {
   // indicates the types of data to be cleared from the profile's snapshots.
   void DeleteSnapshotDataForProfile(base::Time delete_begin,
                                     const base::FilePath& profile_base_name,
-                                    int remove_mask);
+                                    uint64_t remove_mask);
 
  private:
   virtual std::vector<SnapshotItemDetails> GetUserSnapshotItemDetails() const;

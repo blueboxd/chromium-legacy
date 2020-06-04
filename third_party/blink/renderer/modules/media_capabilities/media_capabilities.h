@@ -50,7 +50,8 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
   class PendingCallbackState : public GarbageCollected<PendingCallbackState> {
    public:
     PendingCallbackState(ScriptPromiseResolver* resolver,
-                         MediaKeySystemAccess* access);
+                         MediaKeySystemAccess* access,
+                         const base::TimeTicks& request_time);
     virtual void Trace(blink::Visitor* visitor) const;
 
     Member<ScriptPromiseResolver> resolver;
@@ -59,6 +60,7 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
     base::Optional<bool> is_nnr_prediction_smooth;
     base::Optional<bool> db_is_smooth;
     base::Optional<bool> db_is_power_efficient;
+    base::TimeTicks request_time;
   };
 
   // Lazily binds remote LearningTaskControllers for ML smoothness predictions
@@ -73,12 +75,14 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
                               media::VideoCodec,
                               media::VideoCodecProfile,
                               const MediaDecodingConfiguration*,
+                              const base::TimeTicks& request_time,
                               ExceptionState&);
   // Gets perf info from VideoDecodePerrHistory DB. Will optionally kick off
   // parallel request to GetPerfInfo_ML() when learning experiment is enabled.
   void GetPerfInfo(media::VideoCodec,
                    media::VideoCodecProfile,
                    const VideoConfiguration*,
+                   const base::TimeTicks& request_time,
                    ScriptPromiseResolver*,
                    MediaKeySystemAccess*);
 

@@ -304,6 +304,7 @@ crbug.com/1085222 [ win10 intel-0x5912 d3d11 ] deqp/functional/gles3/shaderopera
 crbug.com/1085222 [ win10 intel-0x5912 d3d11 ] deqp/functional/gles3/shaderoperator/binary_operator_01.html [ RetryOnFailure ]
 crbug.com/1085222 [ win10 intel-0x5912 d3d11 ] deqp/functional/gles3/shaderoperator/unary_operator_01.html [ RetryOnFailure ]
 crbug.com/1085222 [ win10 intel-0x5912 d3d11 ] deqp/functional/gles3/shaderoperator/unary_operator_02.html [ RetryOnFailure ]
+crbug.com/1087993 [ win10 intel-0x5912 d3d11 ] conformance2/textures/image_data/tex-2d-rgb8ui-rgb_integer-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/1087993 [ win10 intel-0x5912 d3d11 ] conformance2/textures/image_data/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ RetryOnFailure ]
 
 ####################

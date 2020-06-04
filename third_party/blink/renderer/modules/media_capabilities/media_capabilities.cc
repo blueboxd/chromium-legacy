@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "media/base/media_switches.h"
 #include "media/base/mime_util.h"
@@ -588,8 +589,11 @@ void MediaCapabilities::Trace(blink::Visitor* visitor) const {
 
 MediaCapabilities::PendingCallbackState::PendingCallbackState(
     ScriptPromiseResolver* resolver,
-    MediaKeySystemAccess* access)
-    : resolver(resolver), key_system_access(access) {}
+    MediaKeySystemAccess* access,
+    const base::TimeTicks& request_time)
+    : resolver(resolver),
+      key_system_access(access),
+      request_time(request_time) {}
 
 void MediaCapabilities::PendingCallbackState::Trace(
     blink::Visitor* visitor) const {
@@ -601,6 +605,8 @@ ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
     const MediaDecodingConfiguration* config,
     ExceptionState& exception_state) {
+  const base::TimeTicks request_time = base::TimeTicks::Now();
+
   if (config->hasKeySystemConfiguration()) {
     UseCounter::Count(
         ExecutionContext::From(script_state),
@@ -689,7 +695,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
     // GetEmeSupport() will call the VideoDecodePerfHistory service after
     // receiving info about support for the configuration for encrypted content.
     return GetEmeSupport(script_state, video_codec, video_profile, config,
-                         exception_state);
+                         request_time, exception_state);
   }
 
   bool audio_supported = true;
@@ -724,8 +730,8 @@ ScriptPromise MediaCapabilities::decodingInfo(
   // undefined. See comment above Promise() in script_promise_resolver.h
   ScriptPromise promise = resolver->Promise();
 
-  GetPerfInfo(video_codec, video_profile, config->video(), resolver,
-              nullptr /* access */);
+  GetPerfInfo(video_codec, video_profile, config->video(), request_time,
+              resolver, nullptr /* access */);
 
   return promise;
 }
@@ -861,6 +867,7 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
     media::VideoCodec video_codec,
     media::VideoCodecProfile video_profile,
     const MediaDecodingConfiguration* configuration,
+    const base::TimeTicks& request_time,
     ExceptionState& exception_state) {
   DVLOG(3) << __func__;
   DCHECK(configuration->hasKeySystemConfiguration());
@@ -984,7 +991,7 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
           script_state, key_system_config->keySystem(), config_vector,
           WTF::Bind(&MediaCapabilities::GetPerfInfo, WrapPersistent(this),
                     video_codec, video_profile,
-                    WrapPersistent(configuration->video())));
+                    WrapPersistent(configuration->video()), request_time));
 
   // IMPORTANT: Acquire the promise before potentially synchronously resolving
   // it in the code that follows. Otherwise the promise returned to JS will be
@@ -1002,6 +1009,7 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
 void MediaCapabilities::GetPerfInfo(media::VideoCodec video_codec,
                                     media::VideoCodecProfile video_profile,
                                     const VideoConfiguration* video_config,
+                                    const base::TimeTicks& request_time,
                                     ScriptPromiseResolver* resolver,
                                     MediaKeySystemAccess* access) {
   ExecutionContext* execution_context = resolver->GetExecutionContext();
@@ -1032,8 +1040,8 @@ void MediaCapabilities::GetPerfInfo(media::VideoCodec video_codec,
   const int callback_id = CreateCallbackId();
   pending_cb_map_.insert(
       callback_id,
-      MakeGarbageCollected<MediaCapabilities::PendingCallbackState>(resolver,
-                                                                    access));
+      MakeGarbageCollected<MediaCapabilities::PendingCallbackState>(
+          resolver, access, request_time));
 
   if (base::FeatureList::IsEnabled(media::kMediaLearningSmoothnessExperiment)) {
     GetPerfInfo_ML(execution_context, callback_id, video_codec, video_profile,
@@ -1092,6 +1100,7 @@ void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
 
   if (!pending_cb->db_is_power_efficient.has_value())
     return;
+
   // Both db_* fields should be set simultaneously by the DB callback.
   DCHECK(pending_cb->db_is_smooth.has_value());
 
@@ -1126,6 +1135,21 @@ void MediaCapabilities::ResolveCallbackIfReady(int callback_id) {
   } else {
     // Use DB when ML experiment not running.
     info->setSmooth(*pending_cb->db_is_smooth);
+  }
+
+  const base::TimeDelta process_time =
+      base::TimeTicks::Now() - pending_cb->request_time;
+  UMA_HISTOGRAM_TIMES("Media.Capabilities.DecodingInfo.Time.Video",
+                      process_time);
+
+  // Record another time in the appropriate subset, either clear or encrypted
+  // content.
+  if (pending_cb->key_system_access) {
+    UMA_HISTOGRAM_TIMES("Media.Capabilities.DecodingInfo.Time.Video.Encrypted",
+                        process_time);
+  } else {
+    UMA_HISTOGRAM_TIMES("Media.Capabilities.DecodingInfo.Time.Video.Clear",
+                        process_time);
   }
 
   pending_cb->resolver->Resolve(std::move(info));

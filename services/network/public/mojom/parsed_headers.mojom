@@ -24,7 +24,7 @@ struct ParsedHeaders {
   CrossOriginOpenerPolicy cross_origin_opener_policy;
 
   // The parsed value of the Origin-Isolation header.
-  bool origin_isolation;
+  bool origin_isolation = false;
 
   // The parsed Accept-CH from response headers.
   //

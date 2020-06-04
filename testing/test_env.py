@@ -1,10 +1,11 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Sets environment variables needed to run a chromium unit test."""
 
+from __future__ import print_function
 import io
 import os
 import signal
@@ -12,6 +13,13 @@ import stat
 import subprocess
 import sys
 import time
+
+SIX_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'third_party',
+    'six')
+sys.path.insert(0, SIX_DIR)
+
+import six
 
 # This is hardcoded to be src/ relative to this script.
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -167,12 +175,12 @@ def symbolize_snippets_in_json(cmd, env):
     p = subprocess.Popen(symbolize_command, stderr=subprocess.PIPE, env=env)
     (_, stderr) = p.communicate()
   except OSError as e:
-    print >> sys.stderr, 'Exception while symbolizing snippets: %s' % e
+    print('Exception while symbolizing snippets: %s' % e, file=sys.stderr)
     raise
 
   if p.returncode != 0:
-    print >> sys.stderr, "Error: failed to symbolize snippets in JSON:\n"
-    print >> sys.stderr, stderr
+    print("Error: failed to symbolize snippets in JSON:\n", file=sys.stderr)
+    print(stderr, file=sys.stderr)
     raise subprocess.CalledProcessError(p.returncode, symbolize_command)
 
 
@@ -339,13 +347,13 @@ def run_executable(cmd, env, stdoutfile=None):
   # because you need them to reproduce the task properly.
   env_to_print = extra_env.copy()
   for env_var_name in ('GTEST_SHARD_INDEX', 'GTEST_TOTAL_SHARDS'):
-      if env_var_name in env:
-          env_to_print[env_var_name] = env[env_var_name]
+    if env_var_name in env:
+      env_to_print[env_var_name] = env[env_var_name]
 
   print('Additional test environment:\n%s\n'
         'Command: %s\n' % (
         '\n'.join('    %s=%s' %
-            (k, v) for k, v in sorted(env_to_print.iteritems())),
+            (k, v) for k, v in sorted(six.iteritems(env_to_print))),
         ' '.join(cmd)))
   sys.stdout.flush()
   env.update(extra_env or {})
@@ -371,7 +379,7 @@ def run_executable(cmd, env, stdoutfile=None):
     else:
       return run_command(cmd, env=env, log=False)
   except OSError:
-    print >> sys.stderr, 'Failed to start %s' % cmd
+    print('Failed to start %s' % cmd, file=sys.stderr)
     raise
 
 

@@ -171,7 +171,8 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_fallback_factory,
     mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
-        pending_subresource_loader_updater) {
+        pending_subresource_loader_updater,
+    const std::vector<std::string>& cors_exempt_header_list) {
   mojo::PendingReceiver<blink::mojom::ServiceWorkerWorkerClient>
       service_worker_client_receiver;
   mojo::PendingRemote<blink::mojom::ServiceWorkerWorkerClientRegistry>
@@ -209,7 +210,8 @@ scoped_refptr<WebWorkerFetchContextImpl> WebWorkerFetchContextImpl::Create(
               ->renderer()
               ->CreateWebSocketHandshakeThrottleProvider(),
           ChildThreadImpl::current()->thread_safe_sender(),
-          ChildThreadImpl::current()->child_process_host()));
+          ChildThreadImpl::current()->child_process_host(),
+          cors_exempt_header_list));
   if (provider_context) {
     worker_fetch_context->set_controller_service_worker_mode(
         provider_context->GetControllerServiceWorkerMode());
@@ -241,7 +243,8 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
     ThreadSafeSender* thread_safe_sender,
-    mojo::SharedRemote<mojom::ChildProcessHost> process_host)
+    mojo::SharedRemote<mojom::ChildProcessHost> process_host,
+    const std::vector<std::string>& cors_exempt_header_list)
     : service_worker_client_receiver_(
           std::move(service_worker_client_receiver)),
       pending_service_worker_worker_client_registry_(
@@ -259,7 +262,8 @@ WebWorkerFetchContextImpl::WebWorkerFetchContextImpl(
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
-      process_host_(std::move(process_host)) {}
+      process_host_(std::move(process_host)),
+      cors_exempt_header_list_(cors_exempt_header_list) {}
 
 WebWorkerFetchContextImpl::~WebWorkerFetchContextImpl() {}
 
@@ -373,6 +377,7 @@ void WebWorkerFetchContextImpl::InitializeOnWorkerThread(
   DCHECK(!receiver_.is_bound());
   DCHECK(!preference_watcher_receiver_.is_bound());
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
+  resource_dispatcher_->SetCorsExemptHeaderList(cors_exempt_header_list_);
   resource_dispatcher_->set_terminate_sync_load_event(
       terminate_sync_load_event_);
 
@@ -620,7 +625,7 @@ WebWorkerFetchContextImpl::CloneForNestedWorkerInternal(
           ? websocket_handshake_throttle_provider_->Clone(
                 std::move(task_runner))
           : nullptr,
-      thread_safe_sender_.get(), process_host_));
+      thread_safe_sender_.get(), process_host_, cors_exempt_header_list_));
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->ancestor_frame_id_ = ancestor_frame_id_;
   new_context->frame_request_blocker_ = frame_request_blocker_;

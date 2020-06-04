@@ -113,7 +113,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
         subresource_loader_updater,
     const GURL& script_url_to_skip_throttling,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
-    int32_t service_worker_route_id)
+    int32_t service_worker_route_id,
+    const std::vector<std::string>& cors_exempt_header_list)
     : service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
@@ -129,7 +130,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
           std::move(subresource_loader_updater)),
       owner_(owner),
       start_timing_(std::move(start_timing)),
-      service_worker_route_id_(service_worker_route_id) {
+      service_worker_route_id_(service_worker_route_id),
+      cors_exempt_header_list_(cors_exempt_header_list) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(owner_);
   DCHECK(subresource_loaders);
@@ -389,7 +391,8 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnInitiatorThread() {
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
       std::move(preference_watcher_receiver_),
-      std::move(pending_subresource_loader_updater_), service_worker_route_id_);
+      std::move(pending_subresource_loader_updater_), service_worker_route_id_,
+      cors_exempt_header_list_);
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadResponse(

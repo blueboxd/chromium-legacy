@@ -22,6 +22,7 @@
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_tab_helper.h"
 #include "chrome/browser/file_select_helper.h"
@@ -43,7 +44,7 @@
 #include "chrome/browser/ui/android/sms/sms_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
-#include "chrome/browser/ui/blocked_content/popup_blocker.h"
+#include "chrome/browser/ui/blocked_content/chrome_popup_navigation_delegate.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/blocked_content/popup_blocker.h"
 #include "components/blocked_content/popup_tracker.h"
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/find_in_page/find_notification_details.h"
@@ -355,16 +357,25 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   nav_params.FillNavigateParamsFromOpenURLParams(params);
   nav_params.source_contents = source;
   nav_params.window_action = NavigateParams::SHOW_WINDOW;
-  if (ConsiderForPopupBlocking(params.disposition) &&
-      MaybeBlockPopup(source, nullptr, &nav_params, &params,
-                      blink::mojom::WindowFeatures())) {
-    return nullptr;
+  auto popup_delegate =
+      std::make_unique<ChromePopupNavigationDelegate>(std::move(nav_params));
+  if (blocked_content::ConsiderForPopupBlocking(params.disposition)) {
+    popup_delegate.reset(static_cast<ChromePopupNavigationDelegate*>(
+        blocked_content::MaybeBlockPopup(
+            source, nullptr, std::move(popup_delegate), &params,
+            blink::mojom::WindowFeatures(),
+            HostContentSettingsMapFactory::GetForProfile(
+                source->GetBrowserContext()))
+            .release()));
+    if (!popup_delegate)
+      return nullptr;
   }
 
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     // Only prerender for a current-tab navigation to avoid session storage
     // namespace issues.
-    prerender::PrerenderManager::Params prerender_params(&nav_params, source);
+    prerender::PrerenderManager::Params prerender_params(
+        popup_delegate->nav_params(), source);
     prerender::PrerenderManager* prerender_manager =
         prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
     if (prerender_manager && prerender_manager->MaybeUsePrerenderedPage(
@@ -376,8 +387,8 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
     return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
   }
 
-  nav_params.created_with_opener = true;
-  TabModelList::HandlePopupNavigation(&nav_params);
+  popup_delegate->nav_params()->created_with_opener = true;
+  TabModelList::HandlePopupNavigation(popup_delegate->nav_params());
   return nullptr;
 }
 
@@ -406,7 +417,7 @@ void TabWebContentsDelegateAndroid::AddNewContents(
 
   // At this point the |new_contents| is beyond the popup blocker, but we use
   // the same logic for determining if the popup tracker needs to be attached.
-  if (source && ConsiderForPopupBlocking(disposition)) {
+  if (source && blocked_content::ConsiderForPopupBlocking(disposition)) {
     blocked_content::PopupTracker::CreateForWebContents(new_contents.get(),
                                                         source, disposition);
   }

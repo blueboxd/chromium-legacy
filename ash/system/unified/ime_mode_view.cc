@@ -65,6 +65,10 @@ const char* ImeModeView::GetClassName() const {
   return "ImeModeView";
 }
 
+void ImeModeView::HandleLocaleChange() {
+  Update();
+}
+
 void ImeModeView::Update() {
   // Hide the IME mode icon when the locale is shown, because showing locale and
   // IME together is confusing.

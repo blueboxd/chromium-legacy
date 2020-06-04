@@ -66,9 +66,6 @@ class SubresourceRedirectSimTest
 // This test verifies subresource redirect previews state based on different
 // states of SaveData, LazyLoad, SubresourceRedirect features.
 TEST_P(SubresourceRedirectSimTest, CSSBackgroundImage) {
-  WebView().GetPage()->GetSettings().SetLazyLoadEnabled(
-      is_lazyload_image_enabled());
-
   SimRequest image_resource("https://example.com/img.png", "image/png");
   LoadMainResource(String::Format(R"HTML(
         <style>

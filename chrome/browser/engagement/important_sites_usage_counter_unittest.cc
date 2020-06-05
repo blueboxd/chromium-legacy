@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +55,8 @@ class ImportantSitesUsageCounterTest : public testing::Test {
   void RegisterClient(const std::vector<storage::MockOriginData>& data) {
     auto* client = new storage::MockQuotaClient(
         quota_manager_->proxy(), data, storage::QuotaClientType::kFileSystem);
-    quota_manager_->proxy()->RegisterClient(client);
+    quota_manager_->proxy()->RegisterClient(
+        client, storage::QuotaClientType::kFileSystem);
     client->TouchAllOriginsAndNotify();
   }
 

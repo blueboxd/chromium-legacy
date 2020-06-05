@@ -48,8 +48,6 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
  public:
   UsageTrackerTestQuotaClient() = default;
 
-  QuotaClientType type() const override { return QuotaClientType::kFileSystem; }
-
   void OnQuotaManagerDestroyed() override {}
 
   void GetOriginUsage(const url::Origin& origin,
@@ -132,7 +130,7 @@ class UsageTrackerTest : public testing::Test {
   UsageTrackerTest()
       : storage_policy_(new MockSpecialStoragePolicy()),
         quota_client_(base::MakeRefCounted<UsageTrackerTestQuotaClient>()),
-        usage_tracker_(GetUsageTrackerList(),
+        usage_tracker_(GetQuotaClientMap(),
                        StorageType::kTemporary,
                        storage_policy_.get()) {}
 
@@ -156,7 +154,8 @@ class UsageTrackerTest : public testing::Test {
 
   void UpdateUsage(const url::Origin& origin, int64_t delta) {
     quota_client_->UpdateUsage(origin, delta);
-    usage_tracker_.UpdateUsageCache(quota_client_->type(), origin, delta);
+    usage_tracker_.UpdateUsageCache(QuotaClientType::kFileSystem, origin,
+                                    delta);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -223,14 +222,16 @@ class UsageTrackerTest : public testing::Test {
   }
 
   void SetUsageCacheEnabled(const url::Origin& origin, bool enabled) {
-    usage_tracker_.SetUsageCacheEnabled(quota_client_->type(), origin, enabled);
+    usage_tracker_.SetUsageCacheEnabled(QuotaClientType::kFileSystem, origin,
+                                        enabled);
   }
 
  private:
-  std::vector<scoped_refptr<QuotaClient>> GetUsageTrackerList() {
-    std::vector<scoped_refptr<QuotaClient>> client_list;
-    client_list.push_back(quota_client_);
-    return client_list;
+  base::flat_map<QuotaClient*, QuotaClientType> GetQuotaClientMap() {
+    base::flat_map<QuotaClient*, QuotaClientType> client_map;
+    client_map.insert(
+        std::make_pair(quota_client_.get(), QuotaClientType::kFileSystem));
+    return client_map;
   }
 
   base::test::TaskEnvironment task_environment_;

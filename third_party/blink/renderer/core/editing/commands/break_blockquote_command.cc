@@ -39,11 +39,27 @@
 #include "third_party/blink/renderer/core/html/html_quote_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 namespace {
+
+base::Optional<int> GetListItemNumber(const Node* node) {
+  if (!node)
+    return base::nullopt;
+  // Because of elements with "display:list-item" has list item number,
+  // we use layout object instead of checking |HTMLLIElement|.
+  const LayoutObject* const layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return base::nullopt;
+  if (layout_object->IsLayoutNGListItem())
+    return ToLayoutNGListItem(layout_object)->Value();
+  if (layout_object->IsListItem())
+    return ToLayoutListItem(layout_object)->Value();
+  return base::nullopt;
+}
 
 bool IsFirstVisiblePositionInNode(const VisiblePosition& visible_position,
                                   const ContainerNode* node) {
@@ -234,11 +250,10 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
       // find the first one so that we know where to start numbering.
       while (list_child_node && !IsA<HTMLLIElement>(*list_child_node))
         list_child_node = list_child_node->nextSibling();
-      if (IsListItem(list_child_node))
-        SetNodeAttribute(
-            &cloned_child, html_names::kStartAttr,
-            AtomicString::Number(
-                ToLayoutListItem(list_child_node->GetLayoutObject())->Value()));
+      if (auto list_item_number = GetListItemNumber(list_child_node)) {
+        SetNodeAttribute(&cloned_child, html_names::kStartAttr,
+                         AtomicString::Number(*list_item_number));
+      }
     }
 
     AppendNode(&cloned_child, cloned_ancestor, editing_state);

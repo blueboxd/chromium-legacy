@@ -96,10 +96,6 @@ FileSystemQuotaClient::FileSystemQuotaClient(
 
 FileSystemQuotaClient::~FileSystemQuotaClient() = default;
 
-QuotaClientType FileSystemQuotaClient::type() const {
-  return QuotaClientType::kFileSystem;
-}
-
 void FileSystemQuotaClient::GetOriginUsage(const url::Origin& origin,
                                            StorageType storage_type,
                                            GetUsageCallback callback) {

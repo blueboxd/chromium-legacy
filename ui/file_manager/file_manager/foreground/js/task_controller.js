@@ -37,6 +37,9 @@ class TaskController {
      */
     this.ui_ = ui;
 
+    /** @private {?FileTransferController} */
+    this.fileTransferController_;
+
     /**
      * @private {!MetadataModel}
      * @const
@@ -170,6 +173,13 @@ class TaskController {
         TaskHistory.EventType.UPDATE, this.updateTasks_.bind(this));
     chrome.fileManagerPrivate.onAppsUpdated.addListener(
         this.updateTasks_.bind(this));
+  }
+
+  /**
+   * @param {?FileTransferController} fileTransferController
+   */
+  setFileTransferController(fileTransferController) {
+    this.fileTransferController_ = fileTransferController;
   }
 
   /**
@@ -400,9 +410,9 @@ class TaskController {
       return FileTasks
           .create(
               this.volumeManager_, this.metadataModel_, this.directoryModel_,
-              this.ui_, selection.entries, assert(selection.mimeTypes),
-              this.taskHistory_, this.namingController_, this.crostini_,
-              this.progressCenter_)
+              this.ui_, this.fileTransferController_, selection.entries,
+              assert(selection.mimeTypes), this.taskHistory_,
+              this.namingController_, this.crostini_, this.progressCenter_)
           .then(tasks => {
             if (this.selectionHandler_.selection !== selection) {
               if (util.isSameEntries(this.tasksEntries_, selection.entries)) {
@@ -512,9 +522,9 @@ class TaskController {
     return this.metadataModel_.get([entry], ['contentMimeType']).then(props => {
       return FileTasks.create(
           this.volumeManager_, this.metadataModel_, this.directoryModel_,
-          this.ui_, [entry], [props[0].contentMimeType || null],
-          this.taskHistory_, this.namingController_, this.crostini_,
-          this.progressCenter_);
+          this.ui_, this.fileTransferController_, [entry],
+          [props[0].contentMimeType || null], this.taskHistory_,
+          this.namingController_, this.crostini_, this.progressCenter_);
     });
   }
 

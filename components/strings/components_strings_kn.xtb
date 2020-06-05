@@ -223,7 +223,6 @@
 <translation id="1838374766361614909">ಹುಡುಕಾಟ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="1839551713262164453">ದೋಷಗಳಿರುವ ಕಾರಣ ಕಾರ್ಯನೀತಿಯ ಮೌಲ್ಯಗಳ ಮೌಲ್ಯೀಕರಣವು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="1842969606798536927">ಪಾವತಿಸಿ</translation>
-<translation id="1852694792039666893">ಸದೃಢ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಸೂಚಿಸಲು ನಿಮ್ಮ Google ಖಾತೆಯನ್ನು ಬಳಸಿ</translation>
 <translation id="1871208020102129563">.pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅಲ್ಲದೆ, ನಿಗಧಿತ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸಲು ಪ್ರಾಕ್ಸಿಯನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="1871284979644508959">ಅಗತ್ಯವಿರುವ ಕ್ಷೇತ್ರ</translation>
 <translation id="1875512691959384712">Google ಫಾರ್ಮ್‌ಗಳು</translation>
@@ -408,7 +407,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ಅತ್ಯುತ್ತಮ ಹೊಂದಿಕೆ</translation>
 <translation id="2691924980723297736">ಸುರಕ್ಷತೆಯ ಎಚ್ಚರಿಕೆ</translation>
-<translation id="2696268945573510710">ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹಣೆ ಮಾಡಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="2699302886720511147">ಸ್ವೀಕೃತ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="2701514975700770343">ಮುಖ ಕೆಳಗೆ</translation>
 <translation id="2702801445560668637">ಓದುವ ಪಟ್ಟಿ</translation>
@@ -455,7 +453,6 @@
 <translation id="2915068235268646559">ಕ್ರ್ಯಾಶ್ ಆದ ಸಮಯ <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">ಇತರ ಪ್ರೋಗ್ರಾಂಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="2922350208395188000">ಸರ್ವರ್‌ನ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
-<translation id="2924027812781652774">ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹಣೆ ಮಾಡಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಬಳಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="2925673989565098301">ವಿತರಣೆ ವಿಧಾನ</translation>
 <translation id="2928905813689894207">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸ</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ಇನ್ನಷ್ಟು}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ಇನ್ನಷ್ಟು}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ಇನ್ನಷ್ಟು}}</translation>

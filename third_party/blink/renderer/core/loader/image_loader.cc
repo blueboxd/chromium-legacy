@@ -534,10 +534,8 @@ void ImageLoader::DoUpdateFromElement(
     ConfigureRequest(params, bypass_behavior, *element_,
                      document.GetFrame()->GetClientHintsPreferences());
 
-    if ((update_behavior != kUpdateForcedReload &&
-         lazy_image_load_state_ == LazyImageLoadState::kNone) ||
-        (update_behavior == kUpdateSizeChanged &&
-         lazy_image_load_state_ == LazyImageLoadState::kDeferred)) {
+    if (update_behavior != kUpdateForcedReload &&
+        lazy_image_load_state_ != LazyImageLoadState::kFullImage) {
       const auto* frame = document.GetFrame();
       if (auto* html_image = DynamicTo<HTMLImageElement>(GetElement())) {
         LoadingAttributeValue loading_attr = GetLoadingAttributeValue(

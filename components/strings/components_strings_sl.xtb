@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Čiščenje iskanja</translation>
 <translation id="1839551713262164453">Preverjanje vrednosti pravilnika je bilo neuspešno z napakami</translation>
 <translation id="1842969606798536927">Plačilo</translation>
-<translation id="1852694792039666893">Uporabite račun Google za predlaganje zapletenega gesla</translation>
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
 <translation id="1871284979644508959">Obvezno polje</translation>
 <translation id="1875512691959384712">Google Obrazci</translation>
@@ -409,7 +408,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Najustreznejše</translation>
 <translation id="2691924980723297736">Varnostno opozorilo</translation>
-<translation id="2696268945573510710">Uporabite gesla, shranjena v računu Google</translation>
 <translation id="2699302886720511147">Sprejete kartice</translation>
 <translation id="2701514975700770343">Z licem navzdol</translation>
 <translation id="2702801445560668637">Reading List</translation>
@@ -458,7 +456,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2915068235268646559">Zrušitev: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zaprite druge programe</translation>
 <translation id="2922350208395188000">Potrdila strežnika ni mogoče preveriti.</translation>
-<translation id="2924027812781652774">Prijavite se, če želite uporabljati gesla, shranjena v računu Google.</translation>
 <translation id="2925673989565098301">Način dostave</translation>
 <translation id="2928905813689894207">Naslov za izstavitev računa</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}two{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

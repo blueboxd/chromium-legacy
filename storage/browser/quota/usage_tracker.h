@@ -15,10 +15,12 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -38,9 +40,10 @@ class ClientUsageTracker;
 class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
     : public QuotaTaskObserver {
  public:
-  UsageTracker(const std::vector<scoped_refptr<QuotaClient>>& clients,
-               blink::mojom::StorageType type,
-               SpecialStoragePolicy* special_storage_policy);
+  UsageTracker(
+      const base::flat_map<QuotaClient*, QuotaClientType>& client_types,
+      blink::mojom::StorageType type,
+      SpecialStoragePolicy* special_storage_policy);
   ~UsageTracker() override;
 
   blink::mojom::StorageType type() const {
@@ -87,8 +90,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) UsageTracker
                                          const std::string& host);
 
   const blink::mojom::StorageType type_;
-  std::map<QuotaClientType, std::unique_ptr<ClientUsageTracker>>
+  base::flat_map<QuotaClientType,
+                 std::vector<std::unique_ptr<ClientUsageTracker>>>
       client_tracker_map_;
+  size_t client_count_;
 
   std::vector<UsageCallback> global_limited_usage_callbacks_;
   std::vector<GlobalUsageCallback> global_usage_callbacks_;

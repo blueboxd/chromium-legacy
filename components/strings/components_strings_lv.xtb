@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Notīrīt meklēšanas vaicājumu</translation>
 <translation id="1839551713262164453">Politikas vērtību validēšana neizdevās, tika konstatētas kļūdas</translation>
 <translation id="1842969606798536927">Maksāt</translation>
-<translation id="1852694792039666893">Izmantot Google kontu, lai izveidotu drošu paroli</translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
 <translation id="1871284979644508959">Obligātais lauks</translation>
 <translation id="1875512691959384712">Google veidlapas</translation>
@@ -409,7 +408,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Optimāla ietilpināšana</translation>
 <translation id="2691924980723297736">Drošības brīdinājums</translation>
-<translation id="2696268945573510710">Izmantot jūsu Google kontā saglabātās paroles</translation>
 <translation id="2699302886720511147">Atbalstītās kartes</translation>
 <translation id="2701514975700770343">Virspuse uz leju</translation>
 <translation id="2702801445560668637">Atvērt sarakstu</translation>
@@ -456,7 +454,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2915068235268646559">Avārija no: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Aizveriet citas programmas</translation>
 <translation id="2922350208395188000">Servera sertifikātu nevar pārbaudīt.</translation>
-<translation id="2924027812781652774">Pierakstieties, lai izmantotu savā Google kontā saglabātās paroles</translation>
 <translation id="2925673989565098301">Piegādes veids</translation>
 <translation id="2928905813689894207">Norēķinu adrese</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}zero{<ph name="SHIPPING_ADDRESS_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

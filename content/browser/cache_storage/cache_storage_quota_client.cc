@@ -19,11 +19,6 @@ CacheStorageQuotaClient::CacheStorageQuotaClient(
 
 CacheStorageQuotaClient::~CacheStorageQuotaClient() = default;
 
-storage::QuotaClientType CacheStorageQuotaClient::type() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return GetClientTypeFromOwner(owner_);
-}
-
 void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {}
 
 void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,

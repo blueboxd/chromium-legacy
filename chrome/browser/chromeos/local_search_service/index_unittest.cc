@@ -11,7 +11,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
-#include "chrome/browser/chromeos/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
@@ -182,9 +181,9 @@ TEST_F(IndexTest, MaxResults) {
 }
 
 TEST_F(IndexTest, ResultFound) {
-  // Register search tags but not contents to test backward compatibility.
-  const std::map<std::string, std::vector<std::string>> data_to_register = {
-      {"id1", {"id1", "tag1a", "tag1b"}}, {"xyz", {"xyz"}}};
+  const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
+      {"id1", {{"cid1", "id1"}, {"cid2", "tag1a"}, {"cid3", "tag1b"}}},
+      {"xyz", {{"cid4", "xyz"}}}};
   std::vector<Data> data = CreateTestData(data_to_register);
   EXPECT_EQ(data.size(), 2u);
 
@@ -192,7 +191,7 @@ TEST_F(IndexTest, ResultFound) {
   EXPECT_EQ(index_.GetSize(), 2u);
 
   // Find result with query "id1". It returns an exact match.
-  const std::vector<ResultWithIds> expected_results = {{"id1", {""}}};
+  const std::vector<ResultWithIds> expected_results = {{"id1", {"cid1"}}};
   FindAndCheckResults(&index_, "id1",
                       /*max_results=*/-1, ResponseStatus::kSuccess,
                       expected_results);

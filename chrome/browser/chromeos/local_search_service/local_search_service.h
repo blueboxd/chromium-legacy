@@ -26,10 +26,10 @@ class LocalSearchService : public KeyedService {
   LocalSearchService(const LocalSearchService&) = delete;
   LocalSearchService& operator=(const LocalSearchService&) = delete;
 
-  Index* GetIndex(local_search_service::IndexId index_id);
+  Index* GetIndex(IndexId index_id);
 
  private:
-  std::map<local_search_service::IndexId, std::unique_ptr<Index>> indices_;
+  std::map<IndexId, std::unique_ptr<Index>> indices_;
 };
 
 }  // namespace local_search_service

@@ -121,19 +121,33 @@
           </div>
           <div>$i18n{diskSizeHint}</div>
         </div>
+        <template is="dom-if" if="[[!isLowSpaceAvailable_]]">
+          <cr-radio-group id="diskSizeRadio" selected="recommended"
+              on-selected-changed="onDiskSizeRadioChanged_">
+            <cr-radio-button name="recommended" id="recommended-size">
+              $i18n{recommendedDiskSizeLabel}
+            </cr-radio-button>
+            <cr-radio-button name="custom" id="custom-size">
+              $i18n{customDiskSizeLabel}
+            </cr-radio-button>
+          </cr-radio-group>
+        </template>
         <div id='low-free-space-warning' hidden="[[!isLowSpaceAvailable_]]">
           <iron-icon icon="cr:warning"></iron-icon>
           $i18n{lowSpaceAvailableWarning}
         </div>
-        <div class="outer">
-          <cr-slider id="diskSlider" pin="true" value="[[defaultDiskSizeTick_]]"
-              aria-describedby="disk-size-message" ticks="[[diskSizeTicks_]]">
-          </cr-slider>
-          <div id="labels">
-            <div id="label-begin">[[minDisk_]]</div>
-            <div id="label-end">[[maxDisk_]]</div>
+        <template is="dom-if" if="[[showDiskSlider_]]">
+          <div class="outer">
+            <cr-slider id="diskSlider" pin="true"
+                value="[[defaultDiskSizeTick_]]"
+                aria-describedby="disk-size-message" ticks="[[diskSizeTicks_]]">
+            </cr-slider>
+            <div id="labels">
+              <div id="label-begin">[[minDisk_]]</div>
+              <div id="label-end">[[maxDisk_]]</div>
+            </div>
           </div>
-        </div>
+        </template>
       </div>
     </div>
     <div id="installing-message" hidden="[[!eq_(state_, State.INSTALLING)]]">

@@ -226,7 +226,6 @@
 <translation id="1838374766361614909">ជម្រះការស្វែងរក</translation>
 <translation id="1839551713262164453">មិន​អាច​បញ្ជាក់​តម្លៃត្រឹមត្រូវ​សម្រាប់​គោលការណ៍​បានទេ​ដោយសារ​មានបញ្ហា</translation>
 <translation id="1842969606798536927">ចំណាយ</translation>
-<translation id="1852694792039666893">ប្រើគណនី Google របស់អ្នក ដើម្បីណែនាំពាក្យសម្ងាត់ខ្លាំង</translation>
 <translation id="1871208020102129563">ប្រូកស៊ីត្រូវបានកំណត់ដើម្បីប្រើម៉ាស៊ីនមេប្រូកស៊ីថេរ មិនមែន URL ស្គ្រីបផេកទេ។</translation>
 <translation id="1871284979644508959">ប្រអប់ដែលតម្រូវឲ្យបំពេញ</translation>
 <translation id="1875512691959384712">Google ទម្រង់បែបបទ</translation>
@@ -412,7 +411,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ស័ក្តិសម​បំផុត</translation>
 <translation id="2691924980723297736">ការព្រមាន​អំពីសុវត្ថិភាព</translation>
-<translation id="2696268945573510710">ប្រើពាក្យសម្ងាត់ដែលរក្សាទុកនៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="2699302886720511147">បណ្ណដែលទទួលយក</translation>
 <translation id="2701514975700770343">ផ្កាប់ចុះ</translation>
 <translation id="2702801445560668637">បញ្ជីអាន</translation>
@@ -461,7 +459,6 @@
 <translation id="2915068235268646559">ការគាំងពី <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">បិទកម្មវិធីផ្សេងទៀត</translation>
 <translation id="2922350208395188000">វិញ្ញាបនប័ត្រម៉ាស៊ីនមេមិនអាចត្រូវបានពិនិត្យទេ។</translation>
-<translation id="2924027812781652774">ចូលគណនី ដើម្បីប្រើ​ពាក្យសម្ងាត់​ដែលរក្សាទុក​នៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="2925673989565098301">មធ្យោបាយ​ចែកចាយ​</translation>
 <translation id="2928905813689894207">អាសយដ្ឋានទូទាត់​វិក្កយបត្រ</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}}</translation>

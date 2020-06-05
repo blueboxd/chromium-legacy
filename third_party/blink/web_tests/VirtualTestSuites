@@ -797,5 +797,10 @@
     "prefix": "out-of-blink-cspee",
     "bases": [ "external/wpt/content-security-policy/embedded-enforcement" ],
     "args": [ "--enable-features=OutOfBlinkCSPEE" ]
+  },
+  {
+    "prefix": "subresource-web-bundles",
+    "bases": [ "external/wpt/web-bundle/subresource-loading" ],
+    "args": [ "--enable-blink-features=SubresourceWebBundles" ]
   }
 ]

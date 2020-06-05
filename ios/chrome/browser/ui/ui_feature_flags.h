@@ -17,8 +17,8 @@ extern const base::Feature kSettingsRefresh;
 // Feature flag for embedders to block restore urls.
 extern const base::Feature kEmbedderBlockRestoreUrl;
 
-// Feature flag disabling animation on low battery.
-extern const base::Feature kDisableAnimationOnLowBattery;
+// Feature flag disabling progress bar animation.
+extern const base::Feature kDisableProgressBarAnimation;
 
 // Feature flag to use the unstacked tabstrip when voiceover is enabled.
 extern const base::Feature kVoiceOverUnstackedTabstrip;

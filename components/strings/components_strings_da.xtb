@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Ryd søgning</translation>
 <translation id="1839551713262164453">Validering af politikværdier mislykkedes med fejl</translation>
 <translation id="1842969606798536927">Betal</translation>
-<translation id="1852694792039666893">Brug din Google-konto til at oprette en stærk adgangskode</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
 <translation id="1871284979644508959">Skal udfyldes</translation>
 <translation id="1875512691959384712">Google Analyse</translation>
@@ -409,7 +408,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Bedste format</translation>
 <translation id="2691924980723297736">Sikkerhedsadvarsel</translation>
-<translation id="2696268945573510710">Brug adgangskoder, der er gemt på din Google-konto</translation>
 <translation id="2699302886720511147">Accepterede kort</translation>
 <translation id="2701514975700770343">Forside nedad</translation>
 <translation id="2702801445560668637">Læseliste</translation>
@@ -458,7 +456,6 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2915068235268646559">Nedbrud fra <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Luk andre programmer</translation>
 <translation id="2922350208395188000">Serverens certifikat kan ikke kontrolleres.</translation>
-<translation id="2924027812781652774">Log ind for at bruge de adgangskoder, du har gemt på din Google-konto</translation>
 <translation id="2925673989565098301">Leveringsmetode</translation>
 <translation id="2928905813689894207">Faktureringsadresse</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> anden}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> anden}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> andre}}</translation>

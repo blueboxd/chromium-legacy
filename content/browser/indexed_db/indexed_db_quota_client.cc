@@ -78,10 +78,6 @@ IndexedDBQuotaClient::IndexedDBQuotaClient(
 
 IndexedDBQuotaClient::~IndexedDBQuotaClient() = default;
 
-storage::QuotaClientType IndexedDBQuotaClient::type() const {
-  return storage::QuotaClientType::kIndexedDatabase;
-}
-
 void IndexedDBQuotaClient::OnQuotaManagerDestroyed() {}
 
 void IndexedDBQuotaClient::GetOriginUsage(const url::Origin& origin,

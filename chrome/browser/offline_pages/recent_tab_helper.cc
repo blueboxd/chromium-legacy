@@ -342,9 +342,9 @@ void RecentTabHelper::WebContentsWasHidden() {
   // Remove previously captured pages for this tab.
   page_model_->GetOfflineIdsForClientId(
       GetRecentPagesClientId(),
-      base::Bind(&RecentTabHelper::ContinueSnapshotWithIdsToPurge,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 last_n_ongoing_snapshot_info_.get()));
+      base::BindOnce(&RecentTabHelper::ContinueSnapshotWithIdsToPurge,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     last_n_ongoing_snapshot_info_.get()));
 
   IsSavingSamePageEnum saving_same_page_value = IsSavingSamePageEnum::kNewPage;
   if (last_n_latest_saved_snapshot_info_) {
@@ -480,8 +480,8 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
   page_model_->SavePage(
       save_page_params, delegate_->CreatePageArchiver(web_contents()),
       web_contents(),
-      base::Bind(&RecentTabHelper::SavePageCallback,
-                 weak_ptr_factory_.GetWeakPtr(), snapshot_info));
+      base::BindOnce(&RecentTabHelper::SavePageCallback,
+                     weak_ptr_factory_.GetWeakPtr(), snapshot_info));
 }
 
 void RecentTabHelper::SavePageCallback(SnapshotProgressInfo* snapshot_info,

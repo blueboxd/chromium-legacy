@@ -4311,6 +4311,12 @@
   <message name="IDS_CROSTINI_INSTALLER_USERNAME_NOT_AVAILABLE_ERROR" desc="Text shown in the Crostini installer dialog when the user picks a username that is not available">
     Username "<ph name="USERNAME">$1<ex>root</ex></ph>" is not available
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_RECOMMENDED_DISK_SIZE_LABEL" desc="Label for the radio button in the Crostini installer dialog to pick the recommended disk size">
+    Recommended (<ph name="INSTALL_SIZE">$1<ex>1.3GB</ex></ph>)
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_CUSTOM_DISK_SIZE_LABEL" desc="Label for the radio button in the Crostini installer dialog to pick a custom disk size">
+    Custom
+  </message>
   <message name="IDS_CROSTINI_UNINSTALLER_TITLE" desc="Title of the Crostini uninstaller, a dialog for uninstalling Linux, the associated VM and Linux files.">
     Delete Linux (Beta)
   </message>
@@ -4336,7 +4342,7 @@
     Upgrade Linux (Beta)
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BODY" desc="Description for the Crostini upgrader, a dialog for upgrading Linux.">
-    We recommend you back up your current Linux container prior to upgrading.
+    Backing up files is recommended as part of this upgrade to prevent data loss in case the upgrade cannot be completed. Starting the upgrade will cause Linux (Beta) to shut down. Please save open files before proceeding.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to begin upgrading Linux.">
     Upgrade

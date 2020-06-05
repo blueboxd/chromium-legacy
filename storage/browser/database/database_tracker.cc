@@ -22,6 +22,7 @@
 #include "storage/browser/database/database_quota_client.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/database/databases_table.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/database/database_identifier.h"
@@ -101,7 +102,8 @@ DatabaseTracker::DatabaseTracker(const base::FilePath& profile_path,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(
-        base::MakeRefCounted<DatabaseQuotaClient>(this));
+        base::MakeRefCounted<DatabaseQuotaClient>(this),
+        QuotaClientType::kDatabase);
   }
 }
 

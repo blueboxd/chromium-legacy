@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">จากนี้ไประบบจะแปลหน้าภาษา<ph name="SOURCE_LANGUAGE" />เป็นภาษา<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1676269943528358898">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Google Chrome พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติและไม่ถูกต้องกลับมา เหตุการณ์นี้อาจเกิดขึ้นเมื่อผู้บุกรุกพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi รบกวนการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Google Chrome หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
 <translation id="1682696192498422849">ด้านขอบสั้นก่อน</translation>
+<translation id="168693727862418163">ตรวจสอบค่านโยบายนี้กับสคีมาไม่ได้ ระบบจะเพิกเฉยต่อค่านี้</translation>
 <translation id="168841957122794586">ใบรับรองของเซิร์ฟเวอร์มีคีย์การเข้ารหัสที่ไม่รัดกุม</translation>
 <translation id="1697532407822776718">คุณพร้อมแล้ว!</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -220,7 +221,6 @@
 <translation id="1838374766361614909">ล้างการค้นหา</translation>
 <translation id="1839551713262164453">การตรวจสอบความถูกต้องของค่านโยบายมีข้อผิดพลาดและล้มเหลว</translation>
 <translation id="1842969606798536927">จ่าย</translation>
-<translation id="1852694792039666893">ใช้บัญชี Google ของคุณเพื่อแนะนำรหัสผ่านที่รัดกุม</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
 <translation id="1871284979644508959">ช่องที่ต้องกรอก</translation>
 <translation id="1875512691959384712">Google ฟอร์ม</translation>
@@ -405,7 +405,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ปรับพอดี</translation>
 <translation id="2691924980723297736">คำเตือนด้านความปลอดภัย</translation>
-<translation id="2696268945573510710">ใช้รหัสผ่านที่จัดเก็บในบัญชี Google</translation>
 <translation id="2699302886720511147">บัตรที่ยอมรับ</translation>
 <translation id="2701514975700770343">คว่ำหน้าลง</translation>
 <translation id="2702801445560668637">รายการที่จะอ่าน</translation>
@@ -452,7 +451,6 @@
 <translation id="2915068235268646559">การขัดข้องเมื่อ<ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">ปิดโปรแกรมอื่นๆ</translation>
 <translation id="2922350208395188000">ไม่สามารถตรวจสอบใบรับรองของเซิร์ฟเวอร์</translation>
-<translation id="2924027812781652774">ลงชื่อเข้าใช้เพื่อใช้รหัสผ่านที่จัดเก็บในบัญชี Google</translation>
 <translation id="2925673989565098301">วิธีการนำส่งสินค้า</translation>
 <translation id="2928905813689894207">ที่อยู่สำหรับการเรียกเก็บเงิน</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> รายการ}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> รายการ}}</translation>

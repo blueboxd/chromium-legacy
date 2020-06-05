@@ -116,6 +116,10 @@ void AddUntrustedDataSource(BrowserContext* browser_context,
       untrusted_data_source->OverrideContentSecurityPolicyScriptSrc(
           csp->script_src.value());
     }
+    if (csp->default_src.has_value()) {
+      untrusted_data_source->OverrideContentSecurityPolicyDefaultSrc(
+          csp->default_src.value());
+    }
     if (csp->no_xfo)
       untrusted_data_source->DisableDenyXFrameOptions();
     if (csp->frame_ancestors.has_value()) {

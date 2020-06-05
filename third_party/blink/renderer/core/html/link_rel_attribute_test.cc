@@ -43,7 +43,8 @@ static inline void TestLinkRelAttribute(const String& value,
                                         bool is_link_prerender,
                                         bool is_import = false,
                                         bool is_preconnect = false,
-                                        bool is_canonical = false) {
+                                        bool is_canonical = false,
+                                        bool is_web_bundle = false) {
   SCOPED_TRACE(value.Utf8());
   LinkRelAttribute link_rel_attribute(value);
   ASSERT_EQ(is_style_sheet, link_rel_attribute.IsStyleSheet());
@@ -54,6 +55,7 @@ static inline void TestLinkRelAttribute(const String& value,
   ASSERT_EQ(is_import, link_rel_attribute.IsImport());
   ASSERT_EQ(is_preconnect, link_rel_attribute.IsPreconnect());
   ASSERT_EQ(is_canonical, link_rel_attribute.IsCanonical());
+  ASSERT_EQ(is_web_bundle, link_rel_attribute.IsWebBundle());
 }
 
 TEST(LinkRelAttributeTest, Constructor) {
@@ -140,6 +142,12 @@ TEST(LinkRelAttributeTest, Constructor) {
   TestLinkRelAttribute("caNONiCAL", false,
                        mojom::blink::FaviconIconType::kInvalid, false, false,
                        false, false, false, true);
+  TestLinkRelAttribute("webbundle", false,
+                       mojom::blink::FaviconIconType::kInvalid, false, false,
+                       false, false, false, false, true);
+  TestLinkRelAttribute("wEbBundle", false,
+                       mojom::blink::FaviconIconType::kInvalid, false, false,
+                       false, false, false, false, true);
 }
 
 }  // namespace blink

@@ -54,6 +54,11 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
         token_value == "allowed-alt-sxg") {
       return true;
     }
+    if (RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
+            &GetElement().GetDocument()) &&
+        token_value == "webbundle") {
+      return true;
+    }
   } else if ((GetElement().HasTagName(html_names::kATag) ||
               GetElement().HasTagName(html_names::kAreaTag)) &&
              SupportedTokensAnchorAndArea().Contains(token_value)) {

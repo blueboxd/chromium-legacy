@@ -223,7 +223,6 @@
 <translation id="1838374766361614909">Otsingu kustutamine</translation>
 <translation id="1839551713262164453">Reegli väärtuste valideerimine nurjus ja selle käigus ilmnesid vead</translation>
 <translation id="1842969606798536927">Maksmine</translation>
-<translation id="1852694792039666893">Kasutage tugeva parooli soovitamiseks oma Google'i kontot</translation>
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
 <translation id="1871284979644508959">Kohustuslik väli</translation>
 <translation id="1875512691959384712">Google'i vormid</translation>
@@ -408,7 +407,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Parim sobivus</translation>
 <translation id="2691924980723297736">Ohutusalane hoiatus</translation>
-<translation id="2696268945573510710">Kasutage oma Google'i kontole salvestatud paroole</translation>
 <translation id="2699302886720511147">Aktsepteeritavad kaardid</translation>
 <translation id="2701514975700770343">Esikülg allapoole</translation>
 <translation id="2702801445560668637">Lugemisloend</translation>
@@ -457,7 +455,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="2915068235268646559">Kokkujooksmine – <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Sulgege muud programmid</translation>
 <translation id="2922350208395188000">Serveri sertifikaati ei saa kontrollida.</translation>
-<translation id="2924027812781652774">Logige sisse, et kasutada oma Google'i kontole salvestatud paroole</translation>
 <translation id="2925673989565098301">Kohaletoimetamisviis</translation>
 <translation id="2928905813689894207">Arveldusaadress</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ja veel <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

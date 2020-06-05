@@ -48,8 +48,7 @@ class AssistiveSuggester {
 
   // Called when the user pressed a key.
   // Returns true if suggester handles the event and it should stop propagate.
-  bool OnKeyEvent(
-      const ::input_method::InputMethodEngineBase::KeyboardEvent& event);
+  bool OnKeyEvent(const InputMethodEngineBase::KeyboardEvent& event);
 
  private:
   // Returns if any suggestion text should be displayed according to the

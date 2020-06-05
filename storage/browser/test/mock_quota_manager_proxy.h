@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -17,6 +18,7 @@
 namespace storage {
 
 class MockQuotaManager;
+enum class QuotaClientType;
 
 class MockQuotaManagerProxy : public QuotaManagerProxy {
  public:
@@ -24,7 +26,8 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   MockQuotaManagerProxy(MockQuotaManager* quota_manager,
                         base::SingleThreadTaskRunner* task_runner);
 
-  void RegisterClient(scoped_refptr<QuotaClient> client) override;
+  void RegisterClient(scoped_refptr<QuotaClient> client,
+                      QuotaClientType client_type) override;
 
   virtual void SimulateQuotaManagerDestroyed();
 

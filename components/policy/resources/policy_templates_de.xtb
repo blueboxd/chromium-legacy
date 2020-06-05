@@ -4821,7 +4821,7 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
       Falls die Richtlinie "DeviceIdleLogoutTimeout" konfiguriert ist, wird mithilfe der vorliegenden Richtlinie festgelegt, wie lange das Warnfenster mit Countdown für Nutzer zu sehen sein soll, bevor sie abgemeldet werden.
 
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
-<translation id="8331479227794770304">Sticky Keys aktivieren</translation>
+<translation id="8331479227794770304">Einfingerbedienung aktivieren</translation>
 <translation id="8339420913453596618">Zweiter Authentifizierungsfaktor deaktiviert</translation>
 <translation id="8344454543174932833">Lesezeichen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="8347993687936322631">Diese Richtlinie ist veraltet und wird in Version 85 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".

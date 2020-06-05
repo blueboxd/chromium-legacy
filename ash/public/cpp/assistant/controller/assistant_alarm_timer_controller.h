@@ -10,9 +10,12 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 
 namespace ash {
+
+class AssistantAlarmTimerModel;
 
 // Represents the current state of an Assistant timer.
 enum class AssistantTimerState {
@@ -40,6 +43,7 @@ struct ASH_PUBLIC_EXPORT AssistantTimer {
   std::string id;
   std::string label;
   AssistantTimerState state{AssistantTimerState::kUnknown};
+  base::Optional<base::Time> creation_time;
   base::TimeDelta original_duration;
   base::Time fire_time;
   base::TimeDelta remaining_time;
@@ -58,7 +62,11 @@ class ASH_PUBLIC_EXPORT AssistantAlarmTimerController {
       const AssistantAlarmTimerController&) = delete;
   virtual ~AssistantAlarmTimerController();
 
+  // Returns the singleton instance owned by AssistantController.
   static AssistantAlarmTimerController* Get();
+
+  // Returns a pointer to the underlying model.
+  virtual const AssistantAlarmTimerModel* GetModel() const = 0;
 
   // Invoked when timer state has changed. Note that |timers| may be empty.
   virtual void OnTimerStateChanged(std::vector<AssistantTimerPtr> timers) = 0;

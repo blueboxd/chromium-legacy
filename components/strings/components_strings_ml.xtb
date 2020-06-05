@@ -223,7 +223,6 @@
 <translation id="1838374766361614909">തിരയൽ മായ്ക്കുക</translation>
 <translation id="1839551713262164453">നയ മൂല്യങ്ങളുടെ സാധൂകരണം പിശകുകളോടെ പരാജയപ്പെട്ടു</translation>
 <translation id="1842969606798536927">പണമടയ്‌ക്കുക</translation>
-<translation id="1852694792039666893">ശക്തമായ പാസ്‌വേഡ് നിർദ്ദേശിക്കാൻ നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിക്കുക</translation>
 <translation id="1871208020102129563">സ്ഥിരമായ പ്രോക്‌സി സെർവറുകൾ ഉപയോഗിക്കുന്നതിനായി പ്രോക്‌സി സജ്ജീകരിച്ചിരിക്കുന്നു, ഒരു .pac സ്‌ക്രിപ്റ്റ് URL ഉപയോഗിക്കുന്നതിനല്ല.</translation>
 <translation id="1871284979644508959">ഇത് പൂരിപ്പിക്കേണ്ടതുണ്ട്</translation>
 <translation id="1875512691959384712">Google ഫോം</translation>
@@ -408,7 +407,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ഏറ്റവും അനുയോജ്യമായത്</translation>
 <translation id="2691924980723297736">സുരക്ഷാ മുന്നറിയിപ്പ്</translation>
-<translation id="2696268945573510710">നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംഭരിച്ചിരിക്കുന്ന പാസ്‌വേഡുകൾ ഉപയോഗിക്കുക</translation>
 <translation id="2699302886720511147">സ്വീകരിക്കുന്ന കാർഡുകൾ</translation>
 <translation id="2701514975700770343">ഫേസ് ഡൗൺ</translation>
 <translation id="2702801445560668637">വായനാ ലിസ്റ്റ്</translation>
@@ -455,7 +453,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> മുതൽ ക്രാഷ് ആയി</translation>
 <translation id="2916038427272391327">മറ്റ് പ്രോഗ്രാമുകൾ അടയ്‌ക്കുക</translation>
 <translation id="2922350208395188000">സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് പരിശോധിക്കാനാകുന്നില്ല.</translation>
-<translation id="2924027812781652774">നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംഭരിച്ചിരിക്കുന്ന പാസ്‌വേഡുകൾ ഉപയോഗിക്കാൻ സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="2925673989565098301">ഡെലിവറി രീതി</translation>
 <translation id="2928905813689894207">ബില്ലിംഗ് വിലാസം</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> എണ്ണവും}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> എണ്ണവും}}</translation>

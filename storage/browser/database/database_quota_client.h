@@ -30,7 +30,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
   explicit DatabaseQuotaClient(scoped_refptr<DatabaseTracker> tracker);
 
   // QuotaClient method overrides
-  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

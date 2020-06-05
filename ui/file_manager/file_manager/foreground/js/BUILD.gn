@@ -413,6 +413,7 @@ js_library("file_selection") {
 js_library("file_tasks") {
   deps = [
     ":directory_model",
+    ":file_transfer_controller",
     ":naming_controller",
     ":task_history",
     "metadata:metadata_model",

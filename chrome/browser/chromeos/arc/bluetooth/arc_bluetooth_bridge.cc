@@ -602,6 +602,9 @@ void ArcBluetoothBridge::DevicePairedChanged(BluetoothAdapter* adapter,
 void ArcBluetoothBridge::DeviceMTUChanged(BluetoothAdapter* adapter,
                                           BluetoothDevice* device,
                                           uint16_t mtu) {
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
+    return;
+
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->bluetooth(), OnMTUReceived);
   if (!device->IsConnected() || bluetooth_instance == nullptr)
@@ -615,6 +618,9 @@ void ArcBluetoothBridge::DeviceAdvertisementReceived(
     BluetoothDevice* device,
     int16_t rssi,
     const std::vector<uint8_t>& eir) {
+  if (!arc_bridge_service_->bluetooth()->IsConnected())
+    return;
+
   constexpr int kAndroidPSdkVersion = 28;
   base::Optional<int> sdk_version = SdkVersion();
   mojom::BluetoothAddressPtr addr =

@@ -27,11 +27,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) MockAssistantViewDelegate
       delete;
   ~MockAssistantViewDelegate() override;
 
-  MOCK_METHOD((const AssistantAlarmTimerModel*),
-              GetAlarmTimerModel,
-              (),
-              (const, override));
-
   MOCK_METHOD((const AssistantNotificationModel*),
               GetNotificationModel,
               (),

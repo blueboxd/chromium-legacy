@@ -32,24 +32,18 @@ const currentFiles = [];
 let entryIndex = -1;
 
 /**
- * Token that identifies the file that is currently writable. Incremented each
- * time a new file is given focus.
- * @type {number}
- */
-let fileToken = 0;
-
-/**
- * The file currently writable.
- * @type {?FileDescriptor}
- */
-let currentlyWritableFile = null;
-
-/**
  * Reference to the directory handle that contains the first file in the most
  * recent launch event.
  * @type {?FileSystemDirectoryHandle}
  */
 let currentDirectoryHandle = null;
+
+/**
+ * Map of file tokens. Persists across new launch requests from the file
+ * manager when chrome://media-app has not been closed.
+ * @type {!Map<number, !FileSystemFileHandle>}
+ */
+const tokenMap = new Map();
 
 /** A pipe through which we can send messages to the guest frame. */
 const guestMessagePipe = new MessagePipe('chrome-untrusted://media-app');
@@ -73,24 +67,20 @@ guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
 
 guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
   const overwrite = /** @type {OverwriteFileMessage} */ (message);
-  if (!currentlyWritableFile || overwrite.token !== fileToken) {
-    throw new Error('File not current.');
-  }
-
-  await saveBlobToFile(currentlyWritableFile.handle, overwrite.blob);
+  await saveBlobToFile(fileHandleForToken(overwrite.token), overwrite.blob);
 });
 
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   const deleteMsg = /** @type{DeleteFileMessage} */ (message);
-  const {file, directory} =
+  const {handle, directory} =
       assertFileAndDirectoryMutable(deleteMsg.token, 'Delete');
 
-  if (!(await isCurrentHandleInCurrentDirectory())) {
+  if (!(await isHandleInCurrentDirectory(handle))) {
     return {deleteResult: DeleteResult.FILE_MOVED};
   }
 
   // Get the name from the file reference. Handles file renames.
-  const currentFilename = (await file.handle.getFile()).name;
+  const currentFilename = (await handle.getFile()).name;
 
   await directory.removeEntry(currentFilename);
 
@@ -108,14 +98,14 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
 /** Handler to rename the currently focused file. */
 guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
   const renameMsg = /** @type{RenameFileMessage} */ (message);
-  const {file, directory} =
+  const {handle, directory} =
       assertFileAndDirectoryMutable(renameMsg.token, 'Rename');
 
   if (await filenameExistsInCurrentDirectory(renameMsg.newFilename)) {
     return {renameResult: RenameResult.FILE_EXISTS};
   }
 
-  const originalFile = await file.handle.getFile();
+  const originalFile = await handle.getFile();
   const renamedFileHandle =
       await directory.getFile(renameMsg.newFilename, {create: true});
   // Copy file data over to the new file.
@@ -127,9 +117,9 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
 
   // Remove the old file since the new file has all the data & the new name.
   // Note even though removing an entry that doesn't exist is considered
-  // success, we first check the `currentlyWritableFile.handle` is the same as
-  // the handle for the file with that filename in the `currentDirectoryHandle`.
-  if (await isCurrentHandleInCurrentDirectory()) {
+  // success, we first check `handle` is the same as the handle for the file
+  // with that filename in the `currentDirectoryHandle`.
+  if (await isHandleInCurrentDirectory(handle)) {
     await directory.removeEntry(originalFile.name);
   }
 
@@ -175,14 +165,63 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
   }
 
   const {handle} = await getFileFromHandle(fileSystemHandle);
-  // Note there may be no currently writable file (e.g. save from clipboard).
-  if (currentlyWritableFile &&
-      await handle.isSameEntry(currentlyWritableFile.handle)) {
-    return 'attemptedCurrentlyWritableFileOverwrite';
-  }
-
+  // Note `handle` could be the same as a `FileSystemFileHandle` that exists in
+  // `tokenMap`. Possibly even the `File` currently open. But that's OK. E.g.
+  // the next overwrite-file request will just invoke `saveBlobToFile` in the
+  // same way. Note there may be no currently writable file (e.g. save from
+  // clipboard).
   await saveBlobToFile(handle, blob);
 });
+
+/**
+ * Generator instance for unguessable tokens.
+ * @suppress {reportUnknownTypes} Typing of yield is broken (b/142881197).
+ * @type {!Generator<number>}
+ */
+const tokenGenerator = (function*() {
+  // To use the regular number type, tokens must stay below
+  // Number.MAX_SAFE_INTEGER (2^53). So stick with ~33 bits. Note we can not
+  // request more than 64kBytes from crypto.getRandomValues() at a time.
+  const randomBuffer = new Uint32Array(1000);
+  while (true) {
+    assertCast(crypto).getRandomValues(randomBuffer);
+    for (let i = 0; i < randomBuffer.length; ++i) {
+      const token = randomBuffer[i];
+      if (!tokenMap.has(token)) {
+        yield Number(token);
+      }
+    }
+  }
+})();
+
+/**
+ * Generate a file token, and persist the mapping to `handle`.
+ * @param {!FileSystemFileHandle} handle
+ * @return {number}
+ */
+function generateToken(handle) {
+  const token = tokenGenerator.next().value;
+  tokenMap.set(token, handle);
+  return token;
+}
+
+/**
+ * Returns the `FileSystemFileHandle` for the given `token`. This is
+ * "guaranteed" to succeed: tokens are only generated once a file handle has
+ * been successfully opened at least once (and determined to be "related"). The
+ * handle doesn't expire, but file system operations may fail later on.
+ * One corner case, however, is when the initial file open fails and the token
+ * gets replaced by `-1`. File operations all need to fail in that case.
+ * @param {number} token
+ * @return {!FileSystemFileHandle}
+ */
+function fileHandleForToken(token) {
+  const handle = tokenMap.get(token);
+  if (!handle) {
+    throw new DOMException(`No handle for token(${token})`, 'NotFoundError');
+  }
+  return handle;
+}
 
 /**
  * Saves the provided blob the provided fileHandle. Assumes the handle is
@@ -246,22 +285,10 @@ async function refreshFile(fd) {
 }
 
 /**
- * Loads the current file list into the guest, enabling writes.
+ * Loads the current file list into the guest.
  * @return {!Promise<undefined>}
  */
 async function sendFilesToGuest() {
-  // Before sending to guest ensure writableFileIndex is set to be writable,
-  // also clear the old token.
-  if (currentlyWritableFile) {
-    currentlyWritableFile.token = -1;
-  }
-  if (currentFiles.length) {
-    currentlyWritableFile = currentFiles[entryIndex];
-    currentlyWritableFile.token = ++fileToken;
-  } else {
-    currentlyWritableFile = null;
-  }
-
   return sendSnapshotToGuest([...currentFiles]);  // Shallow copy.
 }
 
@@ -302,33 +329,31 @@ async function sendSnapshotToGuest(snapshot) {
  * the file to be mutated is incorrect.
  * @param {number} editFileToken
  * @param {string} operation
- * @return {{file: !FileDescriptor, directory: !FileSystemDirectoryHandle}}
+ * @return {{handle: !FileSystemFileHandle, directory:
+ *     !FileSystemDirectoryHandle}}
  */
 function assertFileAndDirectoryMutable(editFileToken, operation) {
-  if (!currentlyWritableFile || editFileToken !== fileToken) {
-    throw new Error(`${operation} failed. File not current.`);
-  }
-
   if (!currentDirectoryHandle) {
     throw new Error(`${operation} failed. File without launch directory.`);
   }
-  return {file: currentlyWritableFile, directory: currentDirectoryHandle};
+
+  return {
+    handle: fileHandleForToken(editFileToken),
+    directory: currentDirectoryHandle
+  };
 }
 
 /**
- * Returns whether `currentlyWritableFile.handle` is in`currentDirectoryHandle`.
- * Prevents mutating the wrong file or a file that doesn't exist.
+ * Returns whether `handle` is in `currentDirectoryHandle`. Prevents mutating a
+ * file that doesn't exist.
+ * @param {!FileSystemFileHandle} handle
  * @return {!Promise<!boolean>}
  */
-async function isCurrentHandleInCurrentDirectory() {
-  if (!currentlyWritableFile) {
-    return false;
-  }
+async function isHandleInCurrentDirectory(handle) {
   // Get the name from the file reference. Handles file renames.
-  const currentFilename = (await currentlyWritableFile.handle.getFile()).name;
+  const currentFilename = (await handle.getFile()).name;
   const fileHandle = await getFileHandleFromCurrentDirectory(currentFilename);
-  return fileHandle ? fileHandle.isSameEntry(currentlyWritableFile.handle) :
-                      false;
+  return fileHandle ? fileHandle.isSameEntry(handle) : false;
 }
 
 /**
@@ -415,6 +440,8 @@ async function setCurrentDirectory(directory, focusFile) {
   if (!focusFile || !focusFile.name) {
     return;
   }
+  // TODO(b/158149714): Clear out old tokens as well? Care needs to be taken to
+  // ensure any file currently open with unsaved changes can still be saved.
   currentFiles.length = 0;
   for await (const /** !FileSystemHandle */ handle of directory.getEntries()) {
     if (!handle.isFile) {
@@ -432,7 +459,11 @@ async function setCurrentDirectory(directory, focusFile) {
 
     // Only allow traversal of related file types.
     if (entry && isFileRelated(focusFile, entry.file)) {
-      currentFiles.push({token: -1, file: entry.file, handle: entry.handle});
+      currentFiles.push({
+        token: generateToken(entry.handle),
+        file: entry.file,
+        handle: entry.handle,
+      });
     }
   }
   const name = focusFile.name;

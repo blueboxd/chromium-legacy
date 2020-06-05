@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Effacer la recherche</translation>
 <translation id="1839551713262164453">Échec de la validation des valeurs de règle avec des erreurs</translation>
 <translation id="1842969606798536927">Paiement</translation>
-<translation id="1852694792039666893">Utiliser votre compte Google pour obtenir une suggestion de mot de passe sécurisé</translation>
 <translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
 <translation id="1871284979644508959">Veuillez compléter ce champ.</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -409,7 +408,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Taille optimale</translation>
 <translation id="2691924980723297736">Avertissement de sécurité</translation>
-<translation id="2696268945573510710">Utiliser un mot de passe enregistré dans votre compte Google</translation>
 <translation id="2699302886720511147">Cartes acceptées</translation>
 <translation id="2701514975700770343">Vers le bas</translation>
 <translation id="2702801445560668637">Liste de lecture</translation>
@@ -456,7 +454,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2915068235268646559">Date et heure du plantage : <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Fermez les autres programmes</translation>
 <translation id="2922350208395188000">Impossible de vérifier le certificat du serveur.</translation>
-<translation id="2924027812781652774">Connectez-vous pour utiliser les mots de passe enregistrés dans votre compte Google</translation>
 <translation id="2925673989565098301">Mode de livraison</translation>
 <translation id="2928905813689894207">Adresse de facturation</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> autre}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> autre}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> autres}}</translation>

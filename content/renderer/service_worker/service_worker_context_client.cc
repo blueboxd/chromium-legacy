@@ -198,15 +198,14 @@ blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
 }
 
 void ServiceWorkerContextClient::WorkerReadyForInspectionOnInitiatorThread(
-    mojo::ScopedMessagePipeHandle devtools_agent_remote,
-    mojo::ScopedMessagePipeHandle devtools_agent_host_receiver) {
+    blink::CrossVariantMojoRemote<blink::mojom::DevToolsAgentInterfaceBase>
+        devtools_agent_remote,
+    blink::CrossVariantMojoReceiver<
+        blink::mojom::DevToolsAgentHostInterfaceBase>
+        devtools_agent_host_receiver) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
-  mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote(
-      std::move(devtools_agent_remote), blink::mojom::DevToolsAgent::Version_);
-  mojo::PendingReceiver<blink::mojom::DevToolsAgentHost> receiver(
-      std::move(devtools_agent_host_receiver));
-  instance_host_->OnReadyForInspection(std::move(agent_remote),
-                                       std::move(receiver));
+  instance_host_->OnReadyForInspection(std::move(devtools_agent_remote),
+                                       std::move(devtools_agent_host_receiver));
 }
 
 void ServiceWorkerContextClient::FailedToFetchClassicScript() {
@@ -246,10 +245,10 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   context_ = std::make_unique<WorkerContextData>(this);
 
   DCHECK(pending_service_worker_receiver_.is_valid());
-  proxy_->BindServiceWorker(pending_service_worker_receiver_.PassPipe());
+  proxy_->BindServiceWorker(std::move(pending_service_worker_receiver_));
 
   DCHECK(controller_receiver_.is_valid());
-  proxy_->BindControllerServiceWorker(controller_receiver_.PassPipe());
+  proxy_->BindControllerServiceWorker(std::move(controller_receiver_));
 
   GetContentClient()
       ->renderer()

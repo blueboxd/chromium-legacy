@@ -200,7 +200,8 @@ typedef NS_ENUM(NSInteger, ContextMenuHistogram) {
   ACTION_SEARCH_BY_IMAGE = 7,
   ACTION_OPEN_JAVASCRIPT = 8,
   ACTION_READ_LATER = 9,
-  NUM_ACTIONS = 10,
+  ACTION_OPEN_IN_NEW_WINDOW = 10,
+  NUM_ACTIONS = 11,
 };
 
 void Record(ContextMenuHistogram action, bool is_image, bool is_link) {
@@ -3003,8 +3004,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         title = l10n_util::GetNSStringWithFixup(
             IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
         action = ^{
-          // TODO(crbug.com/1073410): Record this in the
-          //   MobileWebContextMenuOpenInNewTab histogram.
+          base::RecordAction(
+              base::UserMetricsAction("MobileWebContextMenuOpenInNewWindow"));
+          Record(ACTION_OPEN_IN_NEW_WINDOW, isImage, isLink);
           // The "Open In New Window" item in the context menu opens a new tab
           // in a new window. This will be (according to |isOffTheRecord|)
           // incognito if the originating browser is incognito.

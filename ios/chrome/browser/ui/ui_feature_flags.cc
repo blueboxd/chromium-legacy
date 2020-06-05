@@ -16,8 +16,8 @@ const base::Feature kSettingsRefresh{"SettingsRefresh",
 const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDisableAnimationOnLowBattery{
-    "DisableAnimationOnLowBattery", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDisableProgressBarAnimation{
+    "DisableProgressBarAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kVoiceOverUnstackedTabstrip{
     "VoiceOverUnstackedTabstrip", base::FEATURE_ENABLED_BY_DEFAULT};

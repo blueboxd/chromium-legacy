@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Simula ngayon ay ita-translate na sa <ph name="TARGET_LANGUAGE" /> ang mga page na nasa <ph name="SOURCE_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chrome sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Google Chrome ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
 <translation id="1682696192498422849">Short edge muna</translation>
+<translation id="168693727862418163">Hindi na-validate ang value ng patakarang ito sa schema nito at babalewalain ito.</translation>
 <translation id="168841957122794586">Naglalaman ang server certificate ng isang mahinang cryptographic key.</translation>
 <translation id="1697532407822776718">Handa ka na!</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -224,7 +225,6 @@
 <translation id="1838374766361614909">I-clear ang paghahanap</translation>
 <translation id="1839551713262164453">Hindi na-validate ang mga value ng patakaran at may mga error</translation>
 <translation id="1842969606798536927">Magbayad</translation>
-<translation id="1852694792039666893">Gamitin ang iyong Google account para magmungkahi ng mahirap hulaang password</translation>
 <translation id="1871208020102129563">Nakatakda ang proxy upang gumamit ng mga hindi nababagong proxy server, hindi ng isang .pac script URL.</translation>
 <translation id="1871284979644508959">Kinakailangang field</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -409,7 +409,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Pinakakasya</translation>
 <translation id="2691924980723297736">Babala sa kaligtasan</translation>
-<translation id="2696268945573510710">Gamitin ang mga password na naka-store sa iyong Google Account</translation>
 <translation id="2699302886720511147">Mga Tinatanggap na Card</translation>
 <translation id="2701514975700770343">Nakataob</translation>
 <translation id="2702801445560668637">Listahan ng Babasahin</translation>
@@ -458,7 +457,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2915068235268646559">Pag-crash mula noong <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Isara ang iba pang program</translation>
 <translation id="2922350208395188000">Hindi masuri ang certificate ng server.</translation>
-<translation id="2924027812781652774">Mag-sign in para magamit ang mga naka-store na password sa iyong Google Account</translation>
 <translation id="2925673989565098301">Paraan ng Paghahatid</translation>
 <translation id="2928905813689894207">Billing Address</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> pa}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> pa}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> at <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> pa}}</translation>

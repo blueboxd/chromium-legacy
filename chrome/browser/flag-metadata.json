@@ -919,6 +919,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "disable-progress-bar-animation",
+    "owners": [ "eugenebut", "djean" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "disable-threaded-scrolling",
     "owners": [ "bokan", "input-dev" ],
     // This flag is a useful debugging control when investigating scrolling
@@ -3792,6 +3797,12 @@
   {
     "name": "safety-check-android",
     "owners": [ "andzaytsev", "harrisonsean", "msramek",
+      "chrome-friendly-settings@google.com"],
+    "expiry_milestone": 88
+  },
+  {
+    "name": "safety-check-chrome-cleaner-child",
+    "owners": ["rainhard", "msramek",
       "chrome-friendly-settings@google.com"],
     "expiry_milestone": 88
   },

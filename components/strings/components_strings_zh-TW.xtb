@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">清除搜尋</translation>
 <translation id="1839551713262164453">發生錯誤，政策值驗證失敗</translation>
 <translation id="1842969606798536927">支付</translation>
-<translation id="1852694792039666893">使用 Google 帳戶建議高強度密碼</translation>
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
 <translation id="1871284979644508959">必填欄位</translation>
 <translation id="1875512691959384712">Google 表單</translation>
@@ -405,7 +404,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">最適配置</translation>
 <translation id="2691924980723297736">安全警告</translation>
-<translation id="2696268945573510710">使用儲存在 Google 帳戶中的密碼</translation>
 <translation id="2699302886720511147">接受的卡片</translation>
 <translation id="2701514975700770343">正面朝下</translation>
 <translation id="2702801445560668637">閱讀清單</translation>
@@ -452,7 +450,6 @@
 <translation id="2915068235268646559">當機時間：<ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">關閉其他程式</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
-<translation id="2924027812781652774">登入即可使用儲存在 Google 帳戶中的密碼</translation>
 <translation id="2925673989565098301">快遞方式</translation>
 <translation id="2928905813689894207">帳單地址</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{「<ph name="SHIPPING_ADDRESS_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}other{「<ph name="SHIPPING_ADDRESS_PREVIEW" />」和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}}</translation>

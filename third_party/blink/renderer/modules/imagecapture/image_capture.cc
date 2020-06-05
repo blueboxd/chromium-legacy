@@ -459,9 +459,12 @@ void ImageCapture::SetMediaTrackConstraints(
       (constraints->hasSaturation() && !capabilities_->hasSaturation()) ||
       (constraints->hasSharpness() && !capabilities_->hasSharpness()) ||
       (constraints->hasFocusDistance() && !capabilities_->hasFocusDistance()) ||
-      (HasPanTiltZoomPermissionGranted() &&
-       ((constraints->hasPan() && !capabilities_->hasPan()) ||
-        (constraints->hasTilt() && !capabilities_->hasTilt()))) ||
+      (constraints->hasPan() &&
+       !(capabilities_->hasPan() && HasPanTiltZoomPermissionGranted())) ||
+      (constraints->hasTilt() &&
+       !(capabilities_->hasTilt() && HasPanTiltZoomPermissionGranted())) ||
+      // TODO(crbug.com/934063): Check HasPanTiltZoomPermissionGranted() as well
+      // if upcoming metrics show that zoom may be moved under this permission.
       (constraints->hasZoom() && !capabilities_->hasZoom()) ||
       (constraints->hasTorch() && !capabilities_->hasTorch())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -663,12 +666,6 @@ void ImageCapture::SetMediaTrackConstraints(
 
   settings->has_pan = constraints->hasPan() && constraints->pan().IsDouble();
   if (settings->has_pan) {
-    if (!HasPanTiltZoomPermissionGranted()) {
-      resolver->Reject(
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
-                                             "PTZ permission must be granted"));
-      return;
-    }
     const auto pan = constraints->pan().GetAsDouble();
     if (pan < capabilities_->pan()->min() ||
         pan > capabilities_->pan()->max()) {
@@ -682,12 +679,6 @@ void ImageCapture::SetMediaTrackConstraints(
 
   settings->has_tilt = constraints->hasTilt() && constraints->tilt().IsDouble();
   if (settings->has_tilt) {
-    if (!HasPanTiltZoomPermissionGranted()) {
-      resolver->Reject(
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
-                                             "PTZ permission must be granted"));
-      return;
-    }
     const auto tilt = constraints->tilt().GetAsDouble();
     if (tilt < capabilities_->tilt()->min() ||
         tilt > capabilities_->tilt()->max()) {
@@ -701,8 +692,6 @@ void ImageCapture::SetMediaTrackConstraints(
 
   settings->has_zoom = constraints->hasZoom() && constraints->zoom().IsDouble();
   if (settings->has_zoom) {
-    // TODO(crbug.com/934063): Check HasPanTiltZoomPermissionGranted() as well
-    // if upcoming metrics show that zoom may be moved under this permission.
     const auto zoom = constraints->zoom().GetAsDouble();
     if (zoom < capabilities_->zoom()->min() ||
         zoom > capabilities_->zoom()->max()) {

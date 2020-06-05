@@ -84,6 +84,7 @@ void RegisterContentSchemes() {
     url::AddNoAccessScheme(scheme.c_str());
 
   schemes.cors_enabled_schemes.push_back(kChromeUIScheme);
+  schemes.cors_enabled_schemes.push_back(kChromeUIUntrustedScheme);
   for (auto& scheme : schemes.cors_enabled_schemes)
     url::AddCorsEnabledScheme(scheme.c_str());
 

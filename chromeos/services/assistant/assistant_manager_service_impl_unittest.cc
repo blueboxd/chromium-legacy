@@ -104,6 +104,11 @@ class AssistantAlarmTimerControllerMock
   ~AssistantAlarmTimerControllerMock() override = default;
 
   // ash::AssistantAlarmTimerController:
+  MOCK_METHOD((const ash::AssistantAlarmTimerModel*),
+              GetModel,
+              (),
+              (const, override));
+
   MOCK_METHOD(void,
               OnTimerStateChanged,
               (std::vector<ash::AssistantTimerPtr>),

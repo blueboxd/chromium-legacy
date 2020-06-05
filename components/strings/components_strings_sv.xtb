@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Rensa sökning</translation>
 <translation id="1839551713262164453">Valideringen av principvärdena har misslyckats med fel</translation>
 <translation id="1842969606798536927">Betala</translation>
-<translation id="1852694792039666893">Använd Google-kontot till att generera ett starkt lösenord</translation>
 <translation id="1871208020102129563">Proxyn är inställd på att använda fasta proxyservrar, inte en webbadress med PAC-skript.</translation>
 <translation id="1871284979644508959">Obligatoriskt fält</translation>
 <translation id="1875512691959384712">Google Formulär</translation>
@@ -409,7 +408,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Bästa passning</translation>
 <translation id="2691924980723297736">Säkerhetsvarning</translation>
-<translation id="2696268945573510710">Använd lösenord som har sparats i Google-kontot</translation>
 <translation id="2699302886720511147">Godkända kort</translation>
 <translation id="2701514975700770343">Framsidan nedåt</translation>
 <translation id="2702801445560668637">Läslista</translation>
@@ -458,7 +456,6 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2915068235268646559">Krasch från <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Stäng andra program</translation>
 <translation id="2922350208395188000">Servercertifikatet kan inte kontrolleras.</translation>
-<translation id="2924027812781652774">Logga in om du vill använda lösenord som har sparats i Google-kontot</translation>
 <translation id="2925673989565098301">Leveranssätt</translation>
 <translation id="2928905813689894207">Faktureringsadress</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> till}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> till}}</translation>

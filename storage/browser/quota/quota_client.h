@@ -36,8 +36,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient
   using DeletionCallback =
       base::OnceCallback<void(blink::mojom::QuotaStatusCode status)>;
 
-  virtual QuotaClientType type() const = 0;
-
   // Called when the QuotaManager is destroyed.
   virtual void OnQuotaManagerDestroyed() = 0;
 

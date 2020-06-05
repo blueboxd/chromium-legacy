@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">清除搜索字词</translation>
 <translation id="1839551713262164453">由于出现错误，未能成功验证政策值</translation>
 <translation id="1842969606798536927">付款</translation>
-<translation id="1852694792039666893">使用您的 Google 帐号生成一个安全系数高的密码</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
 <translation id="1871284979644508959">必填字段</translation>
 <translation id="1875512691959384712">Google 表单</translation>
@@ -405,7 +404,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">最适合</translation>
 <translation id="2691924980723297736">安全警告</translation>
-<translation id="2696268945573510710">使用您 Google 帐号中存储的密码</translation>
 <translation id="2699302886720511147">接受的银行卡</translation>
 <translation id="2701514975700770343">正面朝下</translation>
 <translation id="2702801445560668637">读取列表</translation>
@@ -452,7 +450,6 @@
 <translation id="2915068235268646559">崩溃时间：<ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">关闭其他程序</translation>
 <translation id="2922350208395188000">无法核实服务器证书。</translation>
-<translation id="2924027812781652774">登录即可使用您 Google 帐号中存储的密码</translation>
 <translation id="2925673989565098301">递送方式</translation>
 <translation id="2928905813689894207">帐单邮寄地址</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}}</translation>

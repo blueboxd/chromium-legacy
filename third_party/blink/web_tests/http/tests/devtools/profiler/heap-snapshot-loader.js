@@ -18,7 +18,7 @@
 
     var profileType = Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType;
 
-    TestRunner.override(TestRunner.HeapProfilerAgent, 'takeHeapSnapshot', takeHeapSnapshotMock);
+    TestRunner.override(TestRunner.HeapProfilerAgent, 'invoke_takeHeapSnapshot', takeHeapSnapshotMock);
     function takeHeapSnapshotMock(reportProgress) {
       if (reportProgress) {
         profileType._reportHeapSnapshotProgress({data: {done: 50, total: 100, finished: false}});

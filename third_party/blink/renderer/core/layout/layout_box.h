@@ -308,10 +308,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutUnit MinimumLogicalHeightForEmptyLine() const {
     return BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight() +
-           LineHeight(
-               true,
-               IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine,
-               kPositionOfInteriorLineBoxes);
+           LogicalHeightForEmptyLine();
+  }
+  LayoutUnit LogicalHeightForEmptyLine() const {
+    return LineHeight(
+        true, IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine,
+        kPositionOfInteriorLineBoxes);
   }
 
   void SetLogicalLeft(LayoutUnit left) {

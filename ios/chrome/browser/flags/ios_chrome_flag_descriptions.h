@@ -147,10 +147,9 @@ extern const char kDefaultToDesktopOnIPadDescription[];
 extern const char kDetectMainThreadFreezeName[];
 extern const char kDetectMainThreadFreezeDescription[];
 
-// Title and description for the flag to disable animations when battery
-// level is below a certain level.
-extern const char kDisableAnimationOnLowBatteryName[];
-extern const char kDisableAnimationOnLowBatteryDescription[];
+// Title and description for the flag to disable progress bar animation.
+extern const char kDisableProgressBarAnimationName[];
+extern const char kDisableProgressBarAnimationDescription[];
 
 // Title and description for the flag to replace the Zine feed with the
 // Discover feed in the Bling NTP.

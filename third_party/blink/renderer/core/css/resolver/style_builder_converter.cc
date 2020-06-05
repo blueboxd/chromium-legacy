@@ -1084,13 +1084,14 @@ LayoutUnit StyleBuilderConverter::ConvertLayoutUnit(StyleResolverState& state,
   return LayoutUnit::Clamp(ConvertComputedLength<float>(state, value));
 }
 
-GapLength StyleBuilderConverter::ConvertGapLength(StyleResolverState& state,
-                                                  const CSSValue& value) {
+base::Optional<Length> StyleBuilderConverter::ConvertGapLength(
+    const StyleResolverState& state,
+    const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNormal)
-    return GapLength();
+    return base::nullopt;
 
-  return GapLength(ConvertLength(state, value));
+  return ConvertLength(state, value);
 }
 
 Length StyleBuilderConverter::ConvertLength(const StyleResolverState& state,

@@ -1813,6 +1813,10 @@ crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-loose-hyphens-
 crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-normal-hyphens-002.html [ Failure ]
 crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-strict-hyphens-002.html [ Failure ]
 
+# Inseparable characters
+crbug.com/1091631 external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
+crbug.com/1091631 external/wpt/css/css-text/line-break/line-break-strict-015a.xht [ Failure ]
+
 # Link event firing
 crbug.com/922618 external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
 crbug.com/922618 external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
@@ -2816,18 +2820,6 @@ crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/operators/mo-ls
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-015a.xht [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-strict-015a.xht [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-strict-015a.xht [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-strict-015a.xht [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-strict-015b.xht [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-strict-015b.xht [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-strict-015b.xht [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-015b.xht [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-015b.xht [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-015b.xht [ Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/preload/onload-event.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/storage/estimate-indexeddb.https.any.worker.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/fetch/origin/assorted.window.html [ Failure Timeout ]
@@ -5441,9 +5433,6 @@ crbug.com/1038139 [ Win ] virtual/gpu-rasterization/images/2-comp.html [ Pass Fa
 # Sheriff 2019-12-30
 crbug.com/1038354 fast/scroll-snap/snaps-after-scrollbar-scrolling.html [ Pass Failure ]
 
-# These tests will pass once the --enable-features=WebBundlesFromNetwork flag is enabled by default.
-crbug.com/1018640 external/wpt/web-bundle/* [ Skip ]
-
 # Sheriff 2020-01-02
 crbug.com/1038656 [ Mac ] http/tests/devtools/coverage/coverage-view-unused.js [ Pass Failure ]
 crbug.com/1038656 [ Win ] http/tests/devtools/coverage/coverage-view-unused.js [ Pass Failure ]
@@ -5666,7 +5655,7 @@ crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/cale
 
 # Upcoming DevTools change
 crbug.com/1006759 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Pass Failure Timeout ]
-crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Failure Timeout ]
+crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Failure ]
 
 # Temporarily disabled to land changes in DevTools, multiple dependent CLs
 # [1] https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2049183
@@ -5793,7 +5782,6 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 
 crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-property-on-main.html [ Pass Failure ]
 
-crbug.com/1086066 external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
 crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Timeout ]
 crbug.com/1013523 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]

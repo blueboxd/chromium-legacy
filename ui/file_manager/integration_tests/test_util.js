@@ -1344,6 +1344,15 @@ const ENTRIES = {
     sizeText: '51 bytes',
     typeText: 'CRDOWNLOAD file'
   }),
+
+  pluginVm: new TestEntryInfo({
+    type: EntryType.DIRECTORY,
+    targetPath: 'PvmDefault',
+    lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+    nameText: 'Plugin VM',
+    sizeText: '--',
+    typeText: 'Folder'
+  }),
 };
 
 /**

@@ -619,6 +619,10 @@ class FileManager extends cr.EventTarget {
         this.appStateController_, this.taskController_);
 
     this.initDataTransferOperations_();
+    fileListPromise.then(() => {
+      this.taskController_.setFileTransferController(
+          this.fileTransferController_);
+    });
 
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();

@@ -14,7 +14,7 @@ const InstallerError = crostini.mojom.InstallerError;
 class FakePageHandler extends TestBrowserProxy {
   constructor() {
     super([
-      'install', 'cancel', 'cancelBeforeStart', 'close',
+      'install', 'cancel', 'cancelBeforeStart', 'onPageClosed',
       'requestAmountOfFreeDiskSpace'
     ]);
   }
@@ -35,8 +35,8 @@ class FakePageHandler extends TestBrowserProxy {
   }
 
   /** @override */
-  close() {
-    this.methodCalled('close');
+  onPageClosed() {
+    this.methodCalled('onPageClosed');
   }
 
   /** @override */
@@ -101,6 +101,21 @@ suite('<crostini-installer-app>', () => {
     await clickButton(getCancelButton());
   };
 
+  const clickCustomSize = async () => {
+    await clickButton(app.$$('#custom-size'));
+  };
+
+  /**
+   * Checks whether a given element is hidden.
+   * @param {!Element} element
+   * @returns {boolean}
+   */
+  function isHidden(element) {
+    return (
+        !element || element.getBoundingClientRect().width <= 0 ||
+        element.hidden);
+  }
+
   const diskTicks = [
     {value: 1000, ariaValue: '1', label: '1'},
     {value: 2000, ariaValue: '2', label: '2'}
@@ -143,10 +158,10 @@ suite('<crostini-installer-app>', () => {
         app.$$('#installing-message > paper-progress').getAttribute('value'),
         '50');
 
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 0);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('onPageClosed'), 0);
     fakeBrowserProxy.page.onInstallFinished(InstallerError.kNone);
     await flushTasks();
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('onPageClosed'), 1);
   });
 
   // We only proceed to the config page if disk info is available. Let's make
@@ -215,6 +230,7 @@ suite('<crostini-installer-app>', () => {
 
       expectFalse(app.$$('#configure-message').hidden);
       expectTrue(app.$$('#low-free-space-warning').hidden);
+      expectTrue(isHidden(app.$$('#diskSlider')));
 
       await clickInstall();
       await fakeBrowserProxy.handler.whenCalled('install').then(
@@ -232,9 +248,12 @@ suite('<crostini-installer-app>', () => {
 
     await clickNext();
     await flushTasks();
+    await clickCustomSize();
+    await flushTasks();
 
     expectFalse(app.$$('#configure-message').hidden);
     expectTrue(app.$$('#low-free-space-warning').hidden);
+    expectFalse(isHidden(app.$$('#diskSlider')));
 
     app.$$('#diskSlider').value = 1;
 
@@ -303,7 +322,7 @@ suite('<crostini-installer-app>', () => {
         'error message should be set');
 
     await clickCancel();
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('onPageClosed'), 1);
     expectEquals(fakeBrowserProxy.handler.getCallCount('cancelBeforeStart'), 0);
     expectEquals(fakeBrowserProxy.handler.getCallCount('cancel'), 0);
   });
@@ -323,27 +342,51 @@ suite('<crostini-installer-app>', () => {
     expectEquals(fakeBrowserProxy.handler.getCallCount('install'), 2);
   });
 
-  test('cancelBeforeStart', async () => {
-    await clickCancel();
+  [clickCancel,
+   () => fakeBrowserProxy.page.requestClose(),
+  ].forEach((canceller, i) => test(`cancelBeforeStart-{i}`, async () => {
+              await canceller();
+              await flushTasks();
+              expectEquals(
+                  fakeBrowserProxy.handler.getCallCount('cancelBeforeStart'),
+                  1);
+              expectEquals(
+                  fakeBrowserProxy.handler.getCallCount('onPageClosed'), 1);
+              expectEquals(fakeBrowserProxy.handler.getCallCount('cancel'), 0);
+            }));
+
+  // This is a special case that requestClose is different from clicking cancel
+  // --- instead of going back to the previous page, requestClose should close
+  // the page immediately.
+  test('requestCloseAtConfigPage', async () => {
+    await clickNext();  // Progress to config page.
+    await fakeBrowserProxy.page.requestClose();
+    await flushTasks();
     expectEquals(fakeBrowserProxy.handler.getCallCount('cancelBeforeStart'), 1);
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('onPageClosed'), 1);
     expectEquals(fakeBrowserProxy.handler.getCallCount('cancel'), 0);
   });
 
-  test('cancelAfterStart', async () => {
-    fakeBrowserProxy.page.onAmountOfFreeDiskSpace(diskTicks, 0, false);
-    await clickNext();
-    await clickInstall();
-    await clickCancel();
-    expectEquals(fakeBrowserProxy.handler.getCallCount('cancel'), 1);
-    expectEquals(
-        fakeBrowserProxy.handler.getCallCount('close'), 0,
-        'should not close until onCanceled is called');
-    expectTrue(getInstallButton().hidden);
-    expectTrue(getCancelButton().disabled);
 
-    fakeBrowserProxy.page.onCanceled();
-    await flushTasks();
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
-  });
+  [clickCancel,
+   () => fakeBrowserProxy.page.requestClose(),
+  ].forEach((canceller, i) => test(`cancelAfterStart-{i}`, async () => {
+              fakeBrowserProxy.page.onAmountOfFreeDiskSpace(
+                  diskTicks, 0, false);
+              await clickNext();
+              await clickInstall();
+              await canceller();
+              await flushTasks();
+              expectEquals(fakeBrowserProxy.handler.getCallCount('cancel'), 1);
+              expectEquals(
+                  fakeBrowserProxy.handler.getCallCount('onPageClosed'), 0,
+                  'should not close until onCanceled is called');
+              expectTrue(getInstallButton().hidden);
+              expectTrue(getCancelButton().disabled);
+
+              fakeBrowserProxy.page.onCanceled();
+              await flushTasks();
+              expectEquals(
+                  fakeBrowserProxy.handler.getCallCount('onPageClosed'), 1);
+            }));
 });

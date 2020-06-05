@@ -48,6 +48,7 @@
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/padding_key.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
@@ -171,7 +172,8 @@ class MockCacheStorageQuotaManagerProxy
                                     base::SingleThreadTaskRunner* task_runner)
       : MockQuotaManagerProxy(quota_manager, task_runner) {}
 
-  void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {
+  void RegisterClient(scoped_refptr<storage::QuotaClient> client,
+                      storage::QuotaClientType client_type) override {
     registered_clients_.push_back(std::move(client));
   }
 
@@ -2518,11 +2520,6 @@ class CacheStorageQuotaClientTestP : public CacheStorageQuotaClientTest,
   }
   TestManager ManagerType() override { return GetParam().manager_; }
 };
-
-TEST_P(CacheStorageQuotaClientTestP, QuotaID) {
-  EXPECT_EQ(storage::QuotaClientType::kServiceWorkerCache,
-            quota_client_->type());
-}
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaGetOriginUsage) {
   EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));

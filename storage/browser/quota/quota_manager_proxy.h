@@ -18,6 +18,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/browser/quota/quota_client.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_database.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_task.h"
@@ -38,7 +39,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
  public:
   using UsageAndQuotaCallback = QuotaManager::UsageAndQuotaCallback;
 
-  virtual void RegisterClient(scoped_refptr<QuotaClient> client);
+  virtual void RegisterClient(scoped_refptr<QuotaClient> client,
+                              QuotaClientType client_type);
   virtual void NotifyStorageAccessed(const url::Origin& origin,
                                      blink::mojom::StorageType type);
   virtual void NotifyStorageModified(QuotaClientType client_id,

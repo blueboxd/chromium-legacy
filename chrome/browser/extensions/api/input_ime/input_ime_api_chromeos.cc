@@ -57,9 +57,9 @@ namespace SetSelectionRange =
     extensions::api::input_method_private::SetSelectionRange;
 namespace FinishComposingText =
     extensions::api::input_method_private::FinishComposingText;
-using ui::IMEEngineHandlerInterface;
-using input_method::InputMethodEngineBase;
 using chromeos::InputMethodEngine;
+using chromeos::InputMethodEngineBase;
+using ui::IMEEngineHandlerInterface;
 
 namespace {
 const char kErrorEngineNotAvailable[] = "The engine is not available.";
@@ -141,7 +141,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
   ~ImeObserverChromeOS() override = default;
 
-  // input_method::InputMethodEngineBase::Observer overrides.
+  // chromeos::InputMethodEngineBase::Observer overrides.
   void OnInputContextUpdate(
       const IMEEngineHandlerInterface::InputContext& context) override {
     if (extension_id_.empty() ||

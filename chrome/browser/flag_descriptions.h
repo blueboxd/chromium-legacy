@@ -1765,6 +1765,9 @@ extern const char kEnableMediaFoundationVideoCaptureDescription[];
 extern const char kRunVideoCaptureServiceInBrowserProcessName[];
 extern const char kRunVideoCaptureServiceInBrowserProcessDescription[];
 
+extern const char kSafetyCheckChromeCleanerChildName[];
+extern const char kSafetyCheckChromeCleanerChildDescription[];
+
 extern const char kUseAngleName[];
 extern const char kUseAngleDescription[];
 

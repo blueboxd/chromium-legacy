@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/url_request/url_request.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -115,7 +116,8 @@ class AppCacheHostTest : public testing::Test {
     MockQuotaManagerProxy() : QuotaManagerProxy(nullptr, nullptr) {}
 
     // Not needed for our tests.
-    void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {}
+    void RegisterClient(scoped_refptr<storage::QuotaClient> client,
+                        storage::QuotaClientType client_type) override {}
     void NotifyStorageAccessed(const url::Origin& origin,
                                blink::mojom::StorageType type) override {}
     void NotifyStorageModified(storage::QuotaClientType client_id,

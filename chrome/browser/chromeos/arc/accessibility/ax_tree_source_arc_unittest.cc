@@ -1571,4 +1571,56 @@ TEST_F(AXTreeSourceArcTest, LiveRegion) {
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLiveRegionChanged));
 }
 
+TEST_F(AXTreeSourceArcTest, StateDescriptionWithRange) {
+  auto event = AXEventData::New();
+  event->source_id = 0;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 10;
+
+  // Populate the tree source with the data.
+  CallNotifyAccessibilityEvent(event.get());
+
+  // No attributes.
+  ui::AXNodeData data;
+  data = GetSerializedNode(root->id);
+  std::string description;
+  ASSERT_FALSE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                       &description));
+  std::string value;
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
+
+  // State Description without Range Value should be stored as kDescription
+  SetProperty(root, AXStringProperty::STATE_DESCRIPTION, "state description");
+
+  CallNotifyAccessibilityEvent(event.get());
+  data = GetSerializedNode(root->id);
+  ASSERT_TRUE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                      &description));
+  EXPECT_EQ("state description", description);
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
+
+  // State Description with Range Value should be stored as kValue
+  root->range_info = AXRangeInfoData::New();
+
+  CallNotifyAccessibilityEvent(event.get());
+  data = GetSerializedNode(root->id);
+  ASSERT_FALSE(data.GetStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                       &description));
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
+  EXPECT_EQ("state description", value);
+}
+
 }  // namespace arc

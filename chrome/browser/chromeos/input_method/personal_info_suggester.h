@@ -71,8 +71,7 @@ class PersonalInfoSuggester : public Suggester {
   void OnFocus(int context_id) override;
   void OnBlur() override;
   SuggestionStatus HandleKeyEvent(
-      const ::input_method::InputMethodEngineBase::KeyboardEvent& event)
-      override;
+      const InputMethodEngineBase::KeyboardEvent& event) override;
   bool Suggest(const base::string16& text) override;
   void DismissSuggestion() override;
   AssistiveType GetProposeActionType() override;

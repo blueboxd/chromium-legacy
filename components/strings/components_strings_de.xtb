@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">Suche löschen</translation>
 <translation id="1839551713262164453">Die Validierung der Richtlinienwerte hat Fehler ergeben und ist fehlgeschlagen</translation>
 <translation id="1842969606798536927">Bezahlen</translation>
-<translation id="1852694792039666893">Google-Konto verwenden, um ein starkes Passwort vorzuschlagen</translation>
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
 <translation id="1871284979644508959">Pflichtfeld</translation>
 <translation id="1875512691959384712">Google Formulare</translation>
@@ -405,7 +404,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Beste Anordnung</translation>
 <translation id="2691924980723297736">Sicherheitswarnung</translation>
-<translation id="2696268945573510710">In meinem Google-Konto gespeicherte Passwörter verwenden</translation>
 <translation id="2699302886720511147">Akzeptierte Karten</translation>
 <translation id="2701514975700770343">Vorderseite nach unten</translation>
 <translation id="2702801445560668637">Leseliste</translation>
@@ -452,7 +450,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2915068235268646559">Absturz vom <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Andere Programme schließen</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
-<translation id="2924027812781652774">Melden Sie sich an, um die in Ihrem Google-Konto gespeicherten Passwörter zu verwenden</translation>
 <translation id="2925673989565098301">Lieferoption</translation>
 <translation id="2928905813689894207">Rechnungsadresse</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> weitere}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> und <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> weitere}}</translation>

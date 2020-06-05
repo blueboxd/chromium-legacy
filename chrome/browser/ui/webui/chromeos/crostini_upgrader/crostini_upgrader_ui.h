@@ -27,7 +27,10 @@ class CrostiniUpgraderUI
   explicit CrostiniUpgraderUI(content::WebUI* web_ui);
   ~CrostiniUpgraderUI() override;
 
-  bool can_close() { return can_close_; }
+  // Send a close request to the web page. Return true if the page is already
+  // closed.
+  bool RequestClosePage();
+
   void set_launch_callback(base::OnceCallback<void(bool)>(launch_callback)) {
     launch_callback_ = std::move(launch_callback);
   }
@@ -47,7 +50,7 @@ class CrostiniUpgraderUI
       mojo::PendingReceiver<chromeos::crostini_upgrader::mojom::PageHandler>
           pending_page_handler) override;
 
-  void OnWebUICloseDialog();
+  void OnPageClosed();
 
   std::unique_ptr<CrostiniUpgraderPageHandler> page_handler_;
   mojo::Receiver<chromeos::crostini_upgrader::mojom::PageHandlerFactory>
@@ -56,7 +59,7 @@ class CrostiniUpgraderUI
   // Not owned. Passed to |page_handler_|
   base::OnceCallback<void(bool)> launch_callback_;
 
-  bool can_close_ = false;
+  bool page_closed_ = false;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

@@ -238,10 +238,10 @@ class CORE_EXPORT ComputedStyleUtils {
                                                 bool allow_visited_style);
   static CSSValue* ScrollCustomizationFlagsToCSSValue(
       scroll_customization::ScrollDirection);
-  static CSSValue* ValueForGapLength(const GapLength&, const ComputedStyle&);
+  static CSSValue* ValueForGapLength(const base::Optional<Length>&,
+                                     const ComputedStyle&);
   static CSSValue* ValueForStyleName(const StyleName&);
   static CSSValue* ValueForStyleNameOrKeyword(const StyleNameOrKeyword&);
-
   static std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromCSSStyleValue(CSSStyleValue* style_value);
 

@@ -174,6 +174,38 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL2) {
       GetItemsAsString(*text.GetLayoutObject()));
 }
 
+// editing/deleting/delete_ws_fixup.html
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteThenNonCollapse) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<div id=target>abc def<b> </b>ghi</div>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(4, 3, ASSERT_NO_EXCEPTION);  // remove "def"
+
+  EXPECT_EQ(
+      "*{'abc ', ShapeResult=0+4}\n"
+      "{''}\n"
+      "{'ghi', ShapeResult=4+3}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
+// editing/deleting/delete_ws_fixup.html
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteThenNonCollapse2) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<div id=target>abc def<b> X </b>ghi</div>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(4, 3, ASSERT_NO_EXCEPTION);  // remove "def"
+
+  EXPECT_EQ(
+      "*{'abc ', ShapeResult=0+4}\n"
+      "{'X ', ShapeResult=4+2}\n"
+      "{'ghi', ShapeResult=6+3}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
 // http://crbug.com/1039143
 TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteWithBidiControl) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())

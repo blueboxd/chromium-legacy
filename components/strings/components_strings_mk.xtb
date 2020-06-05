@@ -206,10 +206,10 @@
 <translation id="1763864636252898013">Серверот не можеше да докаже дека е <ph name="DOMAIN" />; oперативниот систем на уредот не му верува на неговиот безбедносен сертификат. Тоа може да се должи на погрешна конфигурација или на напаѓач што го пресретнува поврзувањето.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Обидете се да извршите дијагностика на мрежата на Windows<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Серверот каде што сте упатени, <ph name="ORIGIN" />, поставил наслов
-    со кој се бара примена на политика за потекло за сите барања до него. Но,
+    со кој се бара примена на правило за потекло за сите барања до него. Но,
     насловот е лошо форматиран, што го спречува прелистувачот да го исполни
-    вашето барање за <ph name="SITE" />. Политиките за потекло може да се користат од страна на
-     операторите на сајтови за конфигурирање на безбедноста и другите својства за сајтот.</translation>
+    вашето барање за <ph name="SITE" />. Операторите на сајтови може да ги користат правилата за потекло
+     за конфигурирање на безбедноста и другите својства за сајтот.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">Ажурирајте ја вашата лозинка за синхронизирање.</translation>
 <translation id="1787142507584202372">Отворените картички се појавуваат тука</translation>
@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Исчисти го пребарувањето</translation>
 <translation id="1839551713262164453">Проверката на вредностите на правилото не успеа поради грешки</translation>
 <translation id="1842969606798536927">Плати</translation>
-<translation id="1852694792039666893">Користете ја сметката на Google за да се предложи силна лозинка</translation>
 <translation id="1871208020102129563">Прокси е поставен да користи фиксни прокси-сервери, а не ПАК-скрипта на URL.</translation>
 <translation id="1871284979644508959">Задолжително поле</translation>
 <translation id="1875512691959384712">Формулари на Google</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Најдобро вклопување</translation>
 <translation id="2691924980723297736">Безбедносно предупредување</translation>
-<translation id="2696268945573510710">Користете лозинки складирани во вашата сметка на Google</translation>
 <translation id="2699302886720511147">Прифатени картички</translation>
 <translation id="2701514975700770343">Со лицето надолу</translation>
 <translation id="2702801445560668637">Список за читање</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559">Пад од <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Затворете ги другите програми</translation>
 <translation id="2922350208395188000">Не може да се провери сертификатот на серверот.</translation>
-<translation id="2924027812781652774">Најавете се за да користите лозинки складирани во вашата сметка на Google</translation>
 <translation id="2925673989565098301">Начин на испорака</translation>
 <translation id="2928905813689894207">Адреса за наплата</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и уште <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
@@ -711,8 +708,8 @@
     Ако сметате дека ова ви се прикажува по грешка, одете на https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
 <translation id="3987940399970879459">Помалку од 1 MB</translation>
 <translation id="3990250421422698716">Офсет превиткување</translation>
-<translation id="3996311196211510766">Сајтот <ph name="ORIGIN" /> побарал да се применува политика за потекло
-     за сите барања до него, но оваа политика не може да се примени во моментов.</translation>
+<translation id="3996311196211510766">Сајтот <ph name="ORIGIN" /> побарал да се применува правило за потекло
+     за сите барања до него, но ова правило не може да се примени во моментов.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница во близина}one{# веб-страница во близина}other{# веб-страници во близина}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-документ со {COUNT} страница}one{PDF-документ со {COUNT} страница}other{PDF-документ со {COUNT} страници}}</translation>
 <translation id="4030383055268325496">&amp;Врати додавање</translation>
@@ -758,9 +755,9 @@
 <translation id="4196861286325780578">&amp;Повтори преместување</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Да ги проверите заштитниот ѕид и антивирусните конфигурации<ph name="END_LINK" /></translation>
 <translation id="4209166701302774460">Серверот каде што сте упатени, <ph name="ORIGIN" />, побарал
-    да се применува политика за потекло за сите барања до него. Но, сега не успеа
-    да испорача политика, што го спречува прелистувачот да го исполни вашето барање
-    за <ph name="SITE" />. Политиките за потекло може да се користат од страна на операторите на сајтови
+    да се применува правило за потекло за сите барања до него. Но, сега не успеа
+    да испорача правило, што го спречува прелистувачот да го исполни вашето барање
+    за <ph name="SITE" />. Операторите на сајтови може да ги користат правилата за потекло
     за конфигурирање на безбедноста и другите својства за сајтот.</translation>
 <translation id="421066178035138955">да ги користи уредите и податоците за виртуелна реалност</translation>
 <translation id="4214357935346142455">профил на екранот за најавување</translation>
@@ -1252,7 +1249,7 @@
 <translation id="6259156558325130047">&amp;Повтори прередување</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> обележувачи</translation>
 <translation id="6264485186158353794">Назад во безбедност</translation>
-<translation id="6265794661083428563">Копирај ја вредноста на политиката <ph name="POLICY_NAME" /></translation>
+<translation id="6265794661083428563">Копирај ја вредноста на правилото <ph name="POLICY_NAME" /></translation>
 <translation id="6266934640124581640">Светла синозелена</translation>
 <translation id="6272383483618007430">Ажурирање на Google</translation>
 <translation id="6276112860590028508">Страниците од списокот за читање се појавуваат тука</translation>

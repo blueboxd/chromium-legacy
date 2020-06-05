@@ -58,6 +58,12 @@ const mockTaskHistory = /** @type {!TaskHistory} */ ({
   recordTaskExecuted: function(id) {},
 });
 
+/**
+ * Mock file transfer controller.
+ * @type {!FileTransferController}
+ */
+const mockFileTransferController = /** @type {!FileTransferController} */ ({});
+
 // Set up test components.
 function setUp() {
   // Mock LoadTimeData strings.
@@ -189,8 +195,9 @@ function showHtmlOfAlertDialogIsCalled(entries, expectedTitle, expectedText) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, entries, [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, entries, [null], mockTaskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
@@ -217,8 +224,9 @@ function openSuggestAppsDialogIsCalled(entries, mimeTypes) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
-            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, entries, mimeTypes, mockTaskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
@@ -246,8 +254,9 @@ function showDefaultTaskDialogCalled(entries, mimeTypes) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, entries, mimeTypes,
-            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, entries, mimeTypes, mockTaskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
@@ -273,8 +282,9 @@ function showImportCrostiniImageDialogIsCalled(entries) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, entries, [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, entries, [null], mockTaskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
@@ -358,8 +368,8 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
                 },
               },
             }),
-            [mockEntry], ['application/rtf'], mockTaskHistory,
-            fileManager.namingController, fileManager.crostini,
+            mockFileTransferController, [mockEntry], ['application/rtf'],
+            mockTaskHistory, fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.openSuggestAppsDialog(() => {}, () => {}, () => {});
@@ -382,8 +392,9 @@ function testOpenSuggestAppsDialogFailure(callback) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, [mockEntry], [null], mockTaskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.openSuggestAppsDialog(() => {}, () => {}, resolve);
@@ -498,8 +509,9 @@ function testOpenWithMostRecentlyExecuted(callback) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            taskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, [mockEntry], [null], taskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
@@ -562,8 +574,9 @@ function testOpenZipWithZipArchiver(callback) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            taskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, [mockEntry], [null], taskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
@@ -613,8 +626,9 @@ function testOpenInstallLinuxPackageDialog(callback) {
     FileTasks
         .create(
             fileManager.volumeManager, fileManager.metadataModel,
-            fileManager.directoryModel, fileManager.ui, [mockEntry], [null],
-            mockTaskHistory, fileManager.namingController, fileManager.crostini,
+            fileManager.directoryModel, fileManager.ui,
+            mockFileTransferController, [mockEntry], [null], mockTaskHistory,
+            fileManager.namingController, fileManager.crostini,
             fileManager.progressCenter)
         .then(tasks => {
           tasks.executeDefault();
@@ -728,8 +742,9 @@ async function testShareWith(done) {
 
   const tasks = await FileTasks.create(
       fileManager.volumeManager, fileManager.metadataModel,
-      fileManager.directoryModel, fileManager.ui, entries, ['application/jpg'],
-      mockTaskHistory, fileManager.namingController, fileManager.crostini,
+      fileManager.directoryModel, fileManager.ui, mockFileTransferController,
+      entries, ['application/jpg'], mockTaskHistory,
+      fileManager.namingController, fileManager.crostini,
       fileManager.progressCenter);
 
   const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({

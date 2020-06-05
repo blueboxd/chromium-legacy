@@ -28,7 +28,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
-namespace input_method {
+namespace chromeos {
 
 namespace {
 
@@ -587,4 +587,4 @@ void InputMethodEngineBase::ConfirmCompositionText(bool reset_engine,
     input_context->ConfirmCompositionText(reset_engine, keep_selection);
 }
 
-}  // namespace input_method
+}  // namespace chromeos

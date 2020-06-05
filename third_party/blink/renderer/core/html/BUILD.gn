@@ -465,6 +465,8 @@ blink_core_sources("html") {
     "link_resource.h",
     "link_style.cc",
     "link_style.h",
+    "link_web_bundle.cc",
+    "link_web_bundle.h",
     "list_item_ordinal.cc",
     "list_item_ordinal.h",
     "loading_attribute.cc",

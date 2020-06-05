@@ -226,7 +226,6 @@
 <translation id="1838374766361614909">శోధనను తీసివేయి</translation>
 <translation id="1839551713262164453">విధాన విలువల క్రమబద్ధీకరణ ఎర్రర్‌లతో విఫలమైంది</translation>
 <translation id="1842969606798536927">చెల్లింపు</translation>
-<translation id="1852694792039666893">శక్తివంతమైన పాస్‌వర్డ్‌ను సూచించడానికి మీ Google ఖాతాను ఉపయోగించండి</translation>
 <translation id="1871208020102129563">.pac స్క్రిప్ట్ URLను కాకుండా, స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించేలా ప్రాక్సీ సెట్ చేయబడింది.</translation>
 <translation id="1871284979644508959">అవసరమైన ఫీల్డ్</translation>
 <translation id="1875512691959384712">Google ఫారమ్‌లు</translation>
@@ -411,7 +410,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">సరిపోయేలా అమర్చు</translation>
 <translation id="2691924980723297736">భద్రతా హెచ్చరిక</translation>
-<translation id="2696268945573510710">మీ Google ఖాతాలో స్టోర్ చేయబడిన పాస్‌వర్డ్‌లను ఉపయోగించండి</translation>
 <translation id="2699302886720511147">ఆమోదించే కార్డ్‌లు</translation>
 <translation id="2701514975700770343">ఫేస్ డౌన్</translation>
 <translation id="2702801445560668637">పఠనా జాబితా</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> సమయంలో ఏర్పడిన క్రాష్</translation>
 <translation id="2916038427272391327">ఇతర ప్రోగ్రామ్‌లను మూసివేయండి</translation>
 <translation id="2922350208395188000">సర్వర్ యొక్క ప్రమాణపత్రం తనిఖీ చెయ్యబడదు.</translation>
-<translation id="2924027812781652774">మీ Google ఖాతాలో స్టోర్ చేయబడిన పాస్‌వర్డ్‌లను ఉపయోగించడానికి సైన్ ఇన్ చేయండి</translation>
 <translation id="2925673989565098301">బట్వాడా పద్ధతి</translation>
 <translation id="2928905813689894207">బిల్లింగ్ చిరునామా</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

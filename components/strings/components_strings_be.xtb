@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Ачысціць поле пошуку</translation>
 <translation id="1839551713262164453">Пра праверцы значэнняў палітыкі адбыліся памылкі</translation>
 <translation id="1842969606798536927">Аплаціць</translation>
-<translation id="1852694792039666893">Стварыць надзейны пароль ва Уліковым запісе Google</translation>
 <translation id="1871208020102129563">Канфігурацыяй проксі зададзена выкарыстоўваць фіксаваныя проксі-серверы, а не URL-адрас сцэнарыя .pac.</translation>
 <translation id="1871284979644508959">Абавязковае поле</translation>
 <translation id="1875512691959384712">Формы Google</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Аптымальны памер</translation>
 <translation id="2691924980723297736">Папярэджанне сістэмы бяспекі</translation>
-<translation id="2696268945573510710">Выкарыстоўваць паролі, захаваныя ва Уліковым запісе Google</translation>
 <translation id="2699302886720511147">Якія карткі прымаюцца</translation>
 <translation id="2701514975700770343">Рабочым бокам уніз</translation>
 <translation id="2702801445560668637">Спіс чытання</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559">Час збою: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Закрыйце іншыя праграмы.</translation>
 <translation id="2922350208395188000">Немагчыма праверыць сертыфікат сервера.</translation>
-<translation id="2924027812781652774">Каб выкарыстоўваць захаваныя ва Уліковым запісе Google паролі, увайдзіце ў яго</translation>
 <translation id="2925673989565098301">Спосаб дастаўкі</translation>
 <translation id="2928905813689894207">Адрас для выстаўлення рахункаў</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

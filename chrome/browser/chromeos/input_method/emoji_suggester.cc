@@ -14,8 +14,6 @@
 #include "base/task/thread_pool.h"
 #include "chromeos/services/ime/constants.h"
 
-using input_method::InputMethodEngineBase;
-
 namespace chromeos {
 
 namespace {

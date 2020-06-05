@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Obrišite pretragu</translation>
 <translation id="1839551713262164453">Validacija vrednosti smernica nije uspela uz greške</translation>
 <translation id="1842969606798536927">Plati</translation>
-<translation id="1852694792039666893">Upotrebite Google nalog za predlaganje jake lozinke</translation>
 <translation id="1871208020102129563">Proksi je podešen da koristi fiksne proksi servere, a ne URL adresu .pac skripte.</translation>
 <translation id="1871284979644508959">Obavezno polje</translation>
 <translation id="1875512691959384712">Google upitnici</translation>
@@ -409,7 +408,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Najbolja veličina</translation>
 <translation id="2691924980723297736">Bezbednosno upozorenje</translation>
-<translation id="2696268945573510710">Koristite lozinke koje se čuvaju na Google nalogu</translation>
 <translation id="2699302886720511147">Kartice koje se prihvataju</translation>
 <translation id="2701514975700770343">Sa odštampanom stranom nadole</translation>
 <translation id="2702801445560668637">Lista za čitanje</translation>
@@ -458,7 +456,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="2915068235268646559">Izveštaj o otkazivanju od <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zatvorite druge programe</translation>
 <translation id="2922350208395188000">Nije moguće proveriti sertifikat servera.</translation>
-<translation id="2924027812781652774">Prijavite se da biste koristili lozinke sačuvane na Google nalogu</translation>
 <translation id="2925673989565098301">Način isporuke</translation>
 <translation id="2928905813689894207">Adresa za obračun</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> i još <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

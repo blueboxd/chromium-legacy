@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">શોધ સાફ કરો</translation>
 <translation id="1839551713262164453">ભૂલના લીધે નીતિ મૂલ્યોની માન્યતા નિષ્ફળ થઈ</translation>
 <translation id="1842969606798536927">ચુકવણી કરો</translation>
-<translation id="1852694792039666893">એક મજબૂત પાસવર્ડ સૂચવવા માટે તમારા Google એકાઉન્ટનો ઉપયોગ કરો</translation>
 <translation id="1871208020102129563">પ્રૉક્સી નક્કી કરેલા પ્રૉક્સી સર્વરનો ઉપયોગ કરવા માટે સેટ કરેલી છે, .pac સ્ક્રિપ્ટ URL નથી.</translation>
 <translation id="1871284979644508959">જરૂરી ફીલ્ડ</translation>
 <translation id="1875512691959384712">Google ફોર્મ્સ</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">શ્રેષ્ઠ ફિટ</translation>
 <translation id="2691924980723297736">સલામતીની ચેતવણી</translation>
-<translation id="2696268945573510710">તમારા Google એકાઉન્ટમાં સ્ટોર કરવામાં આવેલા પાસવર્ડનો ઉપયોગ કરો</translation>
 <translation id="2699302886720511147">સ્વીકૃત કાર્ડ</translation>
 <translation id="2701514975700770343">નીચે તરફ</translation>
 <translation id="2702801445560668637">વાંચન સૂચિ</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> પછીનો ક્રૅશ</translation>
 <translation id="2916038427272391327">અન્ય પ્રોગ્રામ બંધ કરો</translation>
 <translation id="2922350208395188000">સર્વરનું પ્રમાણપત્ર તપાસી શકાતું નથી.</translation>
-<translation id="2924027812781652774">તમારા Google એકાઉન્ટમાં સ્ટોર કરેલા પાસવર્ડનો ઉપયોગ કરવા માટે સાઇન ઇન કરો</translation>
 <translation id="2925673989565098301">વિતરણ પદ્ધતિ</translation>
 <translation id="2928905813689894207">બિલિંગનું સરનામું</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> વધુ}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> વધુ}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> વધુ}}</translation>

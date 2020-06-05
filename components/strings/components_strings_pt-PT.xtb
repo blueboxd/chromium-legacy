@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Limpar pesquisa</translation>
 <translation id="1839551713262164453">A validação dos valores da política falhou devido a erros.</translation>
 <translation id="1842969606798536927">Pagar</translation>
-<translation id="1852694792039666893">Utilizar a sua Conta Google para sugerir uma palavra-passe forte</translation>
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
 <translation id="1871284979644508959">Campo obrigatório</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -409,7 +408,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Tamanho otimizado</translation>
 <translation id="2691924980723297736">Aviso de segurança</translation>
-<translation id="2696268945573510710">Utilizar palavras-passe armazenadas na sua Conta Google</translation>
 <translation id="2699302886720511147">Cartões aceites</translation>
 <translation id="2701514975700770343">Com orientação para baixo</translation>
 <translation id="2702801445560668637">Lista de leitura</translation>
@@ -458,7 +456,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2915068235268646559">Falha de sistema de <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Fechar outros programas</translation>
 <translation id="2922350208395188000">Não é possível verificar o certificado do servidor.</translation>
-<translation id="2924027812781652774">Inicie sessão para utilizar palavras-passe armazenadas na sua Conta Google</translation>
 <translation id="2925673989565098301">Método de fornecimento</translation>
 <translation id="2928905813689894207">Endereço de faturação</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

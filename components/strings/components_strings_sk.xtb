@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">Vymazať vyhľadávanie</translation>
 <translation id="1839551713262164453">Overenie hodnôt pravidiel zlyhalo a obsahuje chyby</translation>
 <translation id="1842969606798536927">Zaplatiť</translation>
-<translation id="1852694792039666893">Vygenerujte si silné heslo pomocou účtu Google</translation>
 <translation id="1871208020102129563">Proxy je nastavené na použitie pevne daných serverov proxy, nie skriptov PAC webovej adresy.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="1875512691959384712">Formuláre Google</translation>
@@ -405,7 +404,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2684561033061424857">11 x 12</translation>
 <translation id="2687555958734450033">Prispôsobená veľkosť</translation>
 <translation id="2691924980723297736">Bezpečnostné upozornenie</translation>
-<translation id="2696268945573510710">Použiť heslá uložené vo vašom účte Google</translation>
 <translation id="2699302886720511147">Akceptované karty</translation>
 <translation id="2701514975700770343">Lícom nadol</translation>
 <translation id="2702801445560668637">Čitateľský zoznam</translation>
@@ -452,7 +450,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2915068235268646559">Zrútenie v čase <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zavrite ostatné programy</translation>
 <translation id="2922350208395188000">Certifikát servera sa nedá overiť.</translation>
-<translation id="2924027812781652774">Prihlásiť sa a používať heslá uložené vo vašom účte Google</translation>
 <translation id="2925673989565098301">Spôsob doručenia</translation>
 <translation id="2928905813689894207">Fakturačná adresa</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalšia}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalšie}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalšej}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ďalších}}</translation>

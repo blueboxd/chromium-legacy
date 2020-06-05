@@ -225,7 +225,6 @@
 <translation id="1838374766361614909">Išvalyti paiešką</translation>
 <translation id="1839551713262164453">Nepavyko patvirtinti politikos verčių (rasta klaidų)</translation>
 <translation id="1842969606798536927">Mokėti</translation>
-<translation id="1852694792039666893">Naudoti „Google“ paskyros siūlomą sudėtingą slaptažodį</translation>
 <translation id="1871208020102129563">Įgaliotasis serveris nustatytas naudoti fiksuotų įgaliotųjų serverių, o ne .pac scenarijaus URL.</translation>
 <translation id="1871284979644508959">Būtinas laukas</translation>
 <translation id="1875512691959384712">„Google“ formos</translation>
@@ -410,7 +409,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="2684561033061424857">11 x 12</translation>
 <translation id="2687555958734450033">Geriausias dydis</translation>
 <translation id="2691924980723297736">Saugos įspėjimas</translation>
-<translation id="2696268945573510710">Naudoti „Google“ paskyroje saugomus slaptažodžius</translation>
 <translation id="2699302886720511147">Tinkamos kortelės</translation>
 <translation id="2701514975700770343">Gerąja puse į apačią</translation>
 <translation id="2702801445560668637">Skait. sąraš.</translation>
@@ -459,7 +457,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="2915068235268646559">Strigtis, įvykusi <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Uždarykite kitas programas</translation>
 <translation id="2922350208395188000">Neįmanoma patikrinti serverio sertifikato.</translation>
-<translation id="2924027812781652774">Prisijunkite, kad galėtumėte naudoti „Google“ paskyroje saugomus slaptažodžius</translation>
 <translation id="2925673989565098301">Pristatymo metodas</translation>
 <translation id="2928905813689894207">Atsiskaitymo adresas</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ir dar <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

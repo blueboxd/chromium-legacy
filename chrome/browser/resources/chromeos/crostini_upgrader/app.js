@@ -190,8 +190,13 @@ Polymer({
           this.state_ = State.ERROR;
           return;
         }
-        this.closeDialog_();
+        this.closePage_();
       }),
+      callbackRouter.requestClose.addListener(() => {
+        if (this.canCancel_(this.state_)) {
+          this.onCancelButtonClick_();
+        }
+      })
     ];
 
     document.addEventListener('keyup', event => {
@@ -223,7 +228,7 @@ Polymer({
       case State.SUCCEEDED:
       case State.RESTORE_SUCCEEDED:
         BrowserProxy.getInstance().handler.launch();
-        this.closeDialog_();
+        this.closePage_();
         break;
       case State.PRECHECKS_FAILED:
         this.precheckThenUpgrade_();
@@ -255,7 +260,7 @@ Polymer({
       case State.ERROR:
       case State.OFFER_RESTORE:
       case State.SUCCEEDED:
-        this.closeDialog_();
+        this.closePage_();
         break;
       case State.CANCELING:
         break;
@@ -298,8 +303,8 @@ Polymer({
   },
 
   /** @private */
-  closeDialog_() {
-    BrowserProxy.getInstance().handler.close();
+  closePage_() {
+    BrowserProxy.getInstance().handler.onPageClosed();
   },
 
   /**

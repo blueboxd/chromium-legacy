@@ -391,8 +391,18 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
 
   std::string state_description;
   if (GetProperty(AXStringProperty::STATE_DESCRIPTION, &state_description)) {
-    out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                 state_description);
+    // kValue (aria-valuetext) is supported on widgets with range_info. In this
+    // case, using kValue over kDescription is closer to the usage of
+    // stateDescription.
+    if (node_ptr_->range_info) {
+      out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue,
+                                   state_description);
+    } else {
+      // TODO(sahok): Append strings anotated as kDescription(which is now
+      // overwritten)
+      out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                   state_description);
+    }
   }
 
   // Int properties.

@@ -25,11 +25,6 @@ AssistantViewDelegateImpl::AssistantViewDelegateImpl(
 
 AssistantViewDelegateImpl::~AssistantViewDelegateImpl() = default;
 
-const AssistantAlarmTimerModel* AssistantViewDelegateImpl::GetAlarmTimerModel()
-    const {
-  return assistant_controller_->alarm_timer_controller()->model();
-}
-
 const AssistantNotificationModel*
 AssistantViewDelegateImpl::GetNotificationModel() const {
   return assistant_controller_->notification_controller()->model();

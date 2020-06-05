@@ -221,7 +221,6 @@
 <translation id="1838374766361614909">Zoekopdracht wissen</translation>
 <translation id="1839551713262164453">De validatie van de beleidswaarden is mislukt doordat er fouten zijn opgetreden</translation>
 <translation id="1842969606798536927">Betalen</translation>
-<translation id="1852694792039666893">Je Google-account gebruiken om een sterk wachtwoord voor te stellen</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
 <translation id="1871284979644508959">Verplicht veld</translation>
 <translation id="1875512691959384712">Google Formulieren</translation>
@@ -406,7 +405,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Best passend</translation>
 <translation id="2691924980723297736">Veiligheidswaarschuwing</translation>
-<translation id="2696268945573510710">Wachtwoorden gebruiken die zijn opgeslagen in je Google-account</translation>
 <translation id="2699302886720511147">Geaccepteerde passen</translation>
 <translation id="2701514975700770343">Bedrukte zijde omlaag</translation>
 <translation id="2702801445560668637">Leeslijst</translation>
@@ -453,7 +451,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2915068235268646559">Crash van <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Andere programma's sluiten</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
-<translation id="2924027812781652774">Inloggen om wachtwoorden te gebruiken die zijn opgeslagen in je Google-account</translation>
 <translation id="2925673989565098301">Bezorgingsmethode</translation>
 <translation id="2928905813689894207">Factuuradres</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> en nog <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

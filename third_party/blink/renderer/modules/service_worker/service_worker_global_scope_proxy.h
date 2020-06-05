@@ -35,7 +35,9 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -75,9 +77,13 @@ class ServiceWorkerGlobalScopeProxy final : public WebServiceWorkerContextProxy,
   ~ServiceWorkerGlobalScopeProxy() override;
 
   // WebServiceWorkerContextProxy overrides:
-  void BindServiceWorker(mojo::ScopedMessagePipeHandle receiver_pipe) override;
+  void BindServiceWorker(
+      CrossVariantMojoReceiver<mojom::blink::ServiceWorkerInterfaceBase>
+          receiver) override;
   void BindControllerServiceWorker(
-      mojo::ScopedMessagePipeHandle receiver_pipe) override;
+      CrossVariantMojoReceiver<
+          mojom::blink::ControllerServiceWorkerInterfaceBase> receiver)
+      override;
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<WebURLResponse>,

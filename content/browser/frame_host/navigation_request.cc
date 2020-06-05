@@ -101,6 +101,7 @@
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
@@ -2063,49 +2064,58 @@ void NavigationRequest::OnResponseStarted(
       response_head_->parsed_headers->cross_origin_embedder_policy;
   if (base::FeatureList::IsEnabled(
           network::features::kCrossOriginEmbedderPolicy)) {
-    // https://mikewest.github.io/corpp/#process-navigation-response
-    if (auto* const parent_frame = GetParentFrame()) {
-      const auto& parent_coep = parent_frame->cross_origin_embedder_policy();
-      const auto& url = common_params_->url;
-      constexpr auto kRequireCorp =
-          network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
-      constexpr auto kNone =
-          network::mojom::CrossOriginEmbedderPolicyValue::kNone;
+    const auto& url = common_params_->url;
+    // https://w3c.github.io/webappsec-secure-contexts/#is-url-trustworthy
+    // returns "Potentially Trustworthy" for data URLs, but
+    // network::IsUrlPotentiallyTrustworthy returns false, so we need this
+    // extra condition.
+    if (network::IsUrlPotentiallyTrustworthy(url) ||
+        url.SchemeIs(url::kDataScheme)) {
+      // https://mikewest.github.io/corpp/#process-navigation-response
+      if (auto* const parent = GetParentFrame()) {
+        const auto& parent_coep = parent->cross_origin_embedder_policy();
+        constexpr auto kRequireCorp =
+            network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
+        constexpr auto kNone =
+            network::mojom::CrossOriginEmbedderPolicyValue::kNone;
 
-      // Some special URLs not loaded using the network are inheriting the
-      // Cross-Origin-Embedder-Policy header from their parent.
-      const bool has_allowed_scheme =
-          url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme) ||
-          GetContentClient()
-              ->browser()
-              ->ShouldInheritCrossOriginEmbedderPolicyImplicitly(url);
-      if (parent_coep.value == kRequireCorp && has_allowed_scheme) {
-        cross_origin_embedder_policy.value = kRequireCorp;
-      }
-
-      auto* const coep_reporter = parent_frame->coep_reporter();
-      if (parent_coep.report_only_value == kRequireCorp &&
-          !has_allowed_scheme && cross_origin_embedder_policy.value == kNone &&
-          coep_reporter) {
-        coep_reporter->QueueNavigationReport(redirect_chain_[0],
-                                             /*report_only=*/true);
-      }
-      if (parent_coep.value == kRequireCorp &&
-          cross_origin_embedder_policy.value == kNone) {
-        if (coep_reporter) {
-          coep_reporter->QueueNavigationReport(redirect_chain_[0],
-                                               /*report_only=*/false);
+        // Some special URLs not loaded using the network are inheriting the
+        // Cross-Origin-Embedder-Policy header from their parent.
+        const bool has_allowed_scheme =
+            url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme) ||
+            GetContentClient()
+                ->browser()
+                ->ShouldInheritCrossOriginEmbedderPolicyImplicitly(url);
+        if (parent_coep.value == kRequireCorp && has_allowed_scheme) {
+          cross_origin_embedder_policy.value = kRequireCorp;
         }
-        OnRequestFailedInternal(network::URLLoaderCompletionStatus(
-                                    network::mojom::BlockedByResponseReason::
-                                        kCoepFrameResourceNeedsCoepHeader),
-                                false /* skip_throttles */,
-                                base::nullopt /* error_page_content */,
-                                false /* collapse_frame */);
-        // DO NOT ADD CODE after this. The previous call to
-        // OnRequestFailedInternal has destroyed the NavigationRequest.
-        return;
+
+        auto* const coep_reporter = parent->coep_reporter();
+        if (parent_coep.report_only_value == kRequireCorp &&
+            !has_allowed_scheme &&
+            cross_origin_embedder_policy.value == kNone && coep_reporter) {
+          coep_reporter->QueueNavigationReport(redirect_chain_[0],
+                                               /*report_only=*/true);
+        }
+        if (parent_coep.value == kRequireCorp &&
+            cross_origin_embedder_policy.value == kNone) {
+          if (coep_reporter) {
+            coep_reporter->QueueNavigationReport(redirect_chain_[0],
+                                                 /*report_only=*/false);
+          }
+          OnRequestFailedInternal(network::URLLoaderCompletionStatus(
+                                      network::mojom::BlockedByResponseReason::
+                                          kCoepFrameResourceNeedsCoepHeader),
+                                  false /* skip_throttles */,
+                                  base::nullopt /* error_page_content */,
+                                  false /* collapse_frame */);
+          // DO NOT ADD CODE after this. The previous call to
+          // OnRequestFailedInternal has destroyed the NavigationRequest.
+          return;
+        }
       }
+    } else {
+      cross_origin_embedder_policy = network::CrossOriginEmbedderPolicy();
     }
   }
 

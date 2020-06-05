@@ -37,8 +37,6 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
-using input_method::InputMethodEngineBase;
-
 namespace chromeos {
 
 namespace {

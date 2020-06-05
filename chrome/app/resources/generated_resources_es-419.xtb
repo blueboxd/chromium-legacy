@@ -499,7 +499,7 @@
 <translation id="1629314197035607094">Caducó la contraseña</translation>
 <translation id="1630768113285622200">Restablecer y continuar</translation>
 <translation id="1630873818549593964">Los datos de tu hijo en Classroom estarán protegidos. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
-<translation id="1632082166874334883">Contraseña almacenada en tu Cuenta de Google</translation>
+<translation id="1632082166874334883">Contraseñas almacenadas en tu Cuenta de Google</translation>
 <translation id="1632803087685957583">Permite ajustar la velocidad de repetición del teclado, la predicción de palabras y más</translation>
 <translation id="1633947793238301227">Inhabilitar el Asistente de Google</translation>
 <translation id="1634783886312010422">¿Ya cambiaste esta contraseña en <ph name="WEBSITE" />?</translation>
@@ -1572,7 +1572,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="296026337010986570">Se quitó el software dañino. Para volver a activar las extensiones, visita la sección &lt;a href="chrome://extensions"&gt;Extensiones&lt;/a&gt;.</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (extensión proporcionada)</translation>
 <translation id="2961695502793809356">Haz clic para continuar o espera para ver el historial</translation>
-<translation id="2962131322798295505">Selector de fondos de pantalla</translation>
+<translation id="2962131322798295505">Wallpaper Picker</translation>
 <translation id="2963151496262057773">El siguiente complemento no responde: <ph name="PLUGIN_NAME" /> ¿Quieres detenerlo?</translation>
 <translation id="2964193600955408481">Desactivar Wi-Fi</translation>
 <translation id="2966937470348689686">Administrar las preferencias de Android</translation>
@@ -2122,6 +2122,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3677106374019847299">Ingresar un proveedor personalizado</translation>
 <translation id="3677657024345889897">Mínimo</translation>
 <translation id="3677911431265050325">Solicitar sitio móvil</translation>
+<translation id="3677959414150797585">Incluye apps, páginas web y mucho más. Envía estadísticas para mejorar las sugerencias solo si elegiste compartir los datos de uso.</translation>
 <translation id="3678156199662914018">Extensión: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">Voz para texto a voz</translation>
 <translation id="3681311097828166361">Gracias por tus comentarios. Tu informe se enviará cuando tengas conexión.</translation>
@@ -3774,6 +3775,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" />: La cámara o el micrófono están grabando</translation>
 <translation id="5841270259333717135">Configurar Ethernet</translation>
 <translation id="5842497610951477805">Activación de Bluetooth</translation>
+<translation id="5844574845205796324">Sugerir nuevo contenido para explorar</translation>
 <translation id="5846200638699387931">Error de sintaxis relacional: <ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">Instala actualizaciones y apps. Si continúas, aceptas que este dispositivo también descargue e instale automáticamente actualizaciones y apps de Google, tu proveedor y el fabricante del dispositivo usando datos móviles. Es posible que algunas de estas apps ofrezcan compras directas desde la aplicación.</translation>
 <translation id="5849212445710944278">Ya se agregó</translation>

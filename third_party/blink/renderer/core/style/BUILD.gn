@@ -40,7 +40,6 @@ blink_core_sources("rendering") {
     "filter_operation.h",
     "filter_operations.cc",
     "filter_operations.h",
-    "gap_length.h",
     "grid_area.h",
     "grid_length.h",
     "grid_position.h",

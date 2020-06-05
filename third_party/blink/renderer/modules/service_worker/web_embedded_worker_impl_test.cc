@@ -145,9 +145,11 @@ class MockServiceWorkerContextClient final
   MockServiceWorkerContextClient() = default;
   ~MockServiceWorkerContextClient() override = default;
 
-  MOCK_METHOD2(WorkerReadyForInspectionOnInitiatorThread,
-               void(mojo::ScopedMessagePipeHandle,
-                    mojo::ScopedMessagePipeHandle));
+  MOCK_METHOD2(
+      WorkerReadyForInspectionOnInitiatorThread,
+      void(CrossVariantMojoRemote<mojom::DevToolsAgentInterfaceBase>
+               devtools_agent_remote,
+           CrossVariantMojoReceiver<mojom::DevToolsAgentHostInterfaceBase>));
 
   void WorkerContextStarted(WebServiceWorkerContextProxy* proxy,
                             scoped_refptr<base::SequencedTaskRunner>) override {
@@ -172,8 +174,7 @@ class MockServiceWorkerContextClient final
     // Simulates calling blink.mojom.ServiceWorker.InitializeGlobalScope() to
     // unblock the service worker script evaluation.
     mojo::Remote<mojom::blink::ServiceWorker> service_worker;
-    proxy->BindServiceWorker(
-        service_worker.BindNewPipeAndPassReceiver().PassPipe());
+    proxy->BindServiceWorker(service_worker.BindNewPipeAndPassReceiver());
     service_worker->InitializeGlobalScope(
         std::move(host_remote),
         mojom::blink::ServiceWorkerRegistrationObjectInfo::New(

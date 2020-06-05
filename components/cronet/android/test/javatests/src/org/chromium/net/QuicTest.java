@@ -42,7 +42,6 @@ public class QuicTest {
     public final CronetTestRule mTestRule = new CronetTestRule();
 
     private static final String TAG = QuicTest.class.getSimpleName();
-    private static final String QUIC_PROTOCOL_STRING_PREFIX = "http/2+quic/";
     private ExperimentalCronetEngine.Builder mBuilder;
 
     @Before
@@ -300,6 +299,7 @@ public class QuicTest {
 
     // Helper method to assert that the request is negotiated over QUIC.
     private void assertIsQuic(UrlResponseInfo responseInfo) {
-        assertTrue(responseInfo.getNegotiatedProtocol().startsWith(QUIC_PROTOCOL_STRING_PREFIX));
+        assertTrue(responseInfo.getNegotiatedProtocol().startsWith("http/2+quic")
+                || responseInfo.getNegotiatedProtocol().startsWith("h3"));
     }
 }

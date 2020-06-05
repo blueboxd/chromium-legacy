@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper_impl.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_client.h"
@@ -68,7 +70,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
     MockQuotaClient* client =
         new MockQuotaClient(quota_manager_->proxy(), origin_data,
                             storage::QuotaClientType::kFileSystem);
-    quota_manager_->proxy()->RegisterClient(client);
+    quota_manager_->proxy()->RegisterClient(
+        client, storage::QuotaClientType::kFileSystem);
     client->TouchAllOriginsAndNotify();
   }
 

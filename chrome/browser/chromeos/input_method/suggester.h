@@ -28,7 +28,7 @@ class Suggester {
   // Called when suggestion is being shown.
   // Returns SuggestionStatus as suggester handles the event.
   virtual SuggestionStatus HandleKeyEvent(
-      const ::input_method::InputMethodEngineBase::KeyboardEvent& event) = 0;
+      const InputMethodEngineBase::KeyboardEvent& event) = 0;
 
   // Check if suggestion should be displayed according to the surrounding text
   // information.

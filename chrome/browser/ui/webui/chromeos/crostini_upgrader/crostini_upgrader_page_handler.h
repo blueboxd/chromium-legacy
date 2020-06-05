@@ -32,9 +32,12 @@ class CrostiniUpgraderPageHandler
           pending_page_handler,
       mojo::PendingRemote<chromeos::crostini_upgrader::mojom::Page>
           pending_page,
-      base::OnceClosure close_dialog_callback,
+      base::OnceClosure on_page_closed,
       base::OnceCallback<void(bool)> launch_callback);
   ~CrostiniUpgraderPageHandler() override;
+
+  // Send a close request to the web page.
+  void RequestClosePage();
 
   // chromeos::crostini_upgrader::mojom::PageHandler:
   void Backup(bool show_file_chooser) override;
@@ -43,7 +46,7 @@ class CrostiniUpgraderPageHandler
   void Restore() override;
   void Cancel() override;
   void CancelBeforeStart() override;
-  void Close() override;
+  void OnPageClosed() override;
   void Launch() override;
 
   // CrostiniUpgraderUIObserver
@@ -68,7 +71,7 @@ class CrostiniUpgraderPageHandler
   crostini::CrostiniUpgraderUIDelegate* upgrader_ui_delegate_;  // Not owned.
   mojo::Receiver<chromeos::crostini_upgrader::mojom::PageHandler> receiver_;
   mojo::Remote<chromeos::crostini_upgrader::mojom::Page> page_;
-  base::OnceClosure close_dialog_callback_;
+  base::OnceClosure on_page_closed_;
   base::OnceCallback<void(bool)> launch_callback_;
   // Will we need to restart the container as part of launch_callback?
   // |restart_required_| is true unless the user cancels before starting the

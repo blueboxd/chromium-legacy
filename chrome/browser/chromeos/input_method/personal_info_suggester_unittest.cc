@@ -109,7 +109,7 @@ class PersonalInfoSuggesterTest : public testing::Test {
   }
 
   void SendKeyboardEvent(std::string key) {
-    ::input_method::InputMethodEngineBase::KeyboardEvent event;
+    InputMethodEngineBase::KeyboardEvent event;
     event.key = key;
     suggester_->HandleKeyEvent(event);
   }

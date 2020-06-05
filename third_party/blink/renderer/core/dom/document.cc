@@ -3525,14 +3525,24 @@ void Document::SetPrinting(PrintingState state) {
   printing_ = state;
   bool is_printing = Printing();
 
-  if ((was_printing != is_printing) && documentElement() && GetFrame() &&
-      !GetFrame()->IsMainFrame() && GetFrame()->Owner() &&
-      GetFrame()->Owner()->IsDisplayNone()) {
-    // In non-printing mode we do not generate style or layout objects for
-    // display:none iframes, yet we do when printing (see
-    // LayoutView::CanHaveChildren). Trigger a style recalc on the root element
-    // to create a layout tree for printing.
-    DisplayNoneChangedForFrame();
+  if (was_printing != is_printing) {
+    // We force the color-scheme to light for printing.
+    ColorSchemeChanged();
+    // StyleResolver::InitialStyleForElement uses different zoom for printing.
+    GetStyleEngine().MarkViewportStyleDirty();
+    // Separate UA sheet for printing.
+    GetStyleEngine().MarkAllElementsForStyleRecalc(
+        StyleChangeReasonForTracing::Create(
+            style_change_reason::kStyleSheetChange));
+
+    if (documentElement() && GetFrame() && !GetFrame()->IsMainFrame() &&
+        GetFrame()->Owner() && GetFrame()->Owner()->IsDisplayNone()) {
+      // In non-printing mode we do not generate style or layout objects for
+      // display:none iframes, yet we do when printing (see
+      // LayoutView::CanHaveChildren). Trigger a style recalc on the root
+      // element to create a layout tree for printing.
+      DisplayNoneChangedForFrame();
+    }
   }
 }
 

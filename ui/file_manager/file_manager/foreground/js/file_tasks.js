@@ -12,6 +12,7 @@ class FileTasks {
    * @param {!MetadataModel} metadataModel
    * @param {!DirectoryModel} directoryModel
    * @param {!FileManagerUI} ui
+   * @param {?FileTransferController} fileTransferController
    * @param {!Array<!Entry>} entries
    * @param {!Array<?string>} mimeTypes
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
@@ -22,9 +23,9 @@ class FileTasks {
    * @param {!ProgressCenter} progressCenter
    */
   constructor(
-      volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-      tasks, defaultTask, taskHistory, namingController, crostini,
-      progressCenter) {
+      volumeManager, metadataModel, directoryModel, ui, fileTransferController,
+      entries, mimeTypes, tasks, defaultTask, taskHistory, namingController,
+      crostini, progressCenter) {
     /** @private @const {!VolumeManager} */
     this.volumeManager_ = volumeManager;
 
@@ -36,6 +37,9 @@ class FileTasks {
 
     /** @private @const {!FileManagerUI} */
     this.ui_ = ui;
+
+    /** @private @const {?FileTransferController} */
+    this.fileTransferController_ = fileTransferController;
 
     /** @private @const {!Array<!Entry>} */
     this.entries_ = entries;
@@ -77,6 +81,7 @@ class FileTasks {
    * @param {!MetadataModel} metadataModel
    * @param {!DirectoryModel} directoryModel
    * @param {!FileManagerUI} ui
+   * @param {?FileTransferController} fileTransferController
    * @param {!Array<!Entry>} entries
    * @param {!Array<?string>} mimeTypes
    * @param {!TaskHistory} taskHistory
@@ -86,8 +91,9 @@ class FileTasks {
    * @return {!Promise<!FileTasks>}
    */
   static async create(
-      volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-      taskHistory, namingController, crostini, progressCenter) {
+      volumeManager, metadataModel, directoryModel, ui, fileTransferController,
+      entries, mimeTypes, taskHistory, namingController, crostini,
+      progressCenter) {
     let tasks = [];
 
     // getFileTasks supports only native entries.
@@ -134,9 +140,9 @@ class FileTasks {
     const defaultTask = FileTasks.getDefaultTask(tasks, taskHistory);
 
     return new FileTasks(
-        volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
-        tasks, defaultTask, taskHistory, namingController, crostini,
-        progressCenter);
+        volumeManager, metadataModel, directoryModel, ui,
+        fileTransferController, entries, mimeTypes, tasks, defaultTask,
+        taskHistory, namingController, crostini, progressCenter);
   }
 
   /**
@@ -475,8 +481,9 @@ class FileTasks {
    * @return {boolean} True if the entry is from crostini.
    */
   static isCrostiniEntry(entry, volumeManager) {
-    return volumeManager.getLocationInfo(entry).rootType ===
-        VolumeManagerCommon.RootType.CROSTINI;
+    const location = volumeManager.getLocationInfo(entry);
+    return !!location &&
+        location.rootType === VolumeManagerCommon.RootType.CROSTINI;
   }
 
   /**
@@ -573,7 +580,8 @@ class FileTasks {
             FileTasks
                 .create(
                     this.volumeManager_, this.metadataModel_,
-                    this.directoryModel_, this.ui_, this.entries_,
+                    this.directoryModel_, this.ui_,
+                    this.fileTransferController_, this.entries_,
                     this.mimeTypes_, this.taskHistory_, this.namingController_,
                     this.crostini_, this.progressCenter_)
                 .then(
@@ -650,7 +658,7 @@ class FileTasks {
   executeInternal_(task) {
     const onFileManagerPrivateExecuteTask = result => {
       if (chrome.runtime.lastError) {
-        console.warn(
+        console.error(
             'Unable to execute task: ' + chrome.runtime.lastError.message);
         return;
       }
@@ -665,17 +673,42 @@ class FileTasks {
           break;
         case taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
         case taskResult.FAILED_PLUGIN_VM_TASK_EXTERNAL_DRIVE:
-          const messageId =
+          const [messageId, buttonId, toMove] =
               result == taskResult.FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED ?
-              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE' :
-              'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE';
-          this.ui_.alertDialog.showHtml(
+              [
+                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE',
+                'CONFIRM_MOVE_BUTTON_LABEL',
+                true,
+              ] :
+              [
+                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_EXTERNAL_DRIVE_MESSAGE',
+                'CONFIRM_COPY_BUTTON_LABEL',
+                false,
+              ];
+          const dialog = new FilesConfirmDialog(this.ui_.element);
+          dialog.setOkLabel(strf(buttonId));
+          dialog.showHtml(
               strf(
                   'UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE',
                   strf('PLUGIN_VM_APP_NAME')),
               strf(
                   messageId, task.title, strf('PLUGIN_VM_APP_NAME'),
-                  strf('PLUGIN_VM_DIRECTORY_LABEL')));
+                  strf('PLUGIN_VM_DIRECTORY_LABEL')),
+              async () => {
+                if (!this.fileTransferController_) {
+                  console.error('FileTransferController not set');
+                  return;
+                }
+
+                const pvmDir = await this.getPvmSharedDir_();
+
+                this.fileTransferController_.executePaste(
+                    new FileTransferController.PastePlan(
+                        this.entries_.map(e => e.toURL()), pvmDir,
+                        assert(this.volumeManager_.getLocationInfo(pvmDir)),
+                        toMove));
+                this.directoryModel_.changeDirectoryEntry(pvmDir);
+              });
           break;
       }
     };
@@ -1174,6 +1207,21 @@ class FileTasks {
     }
 
     return null;
+  }
+
+  async getPvmSharedDir_() {
+    return new Promise((resolve, reject) => {
+      this.volumeManager_
+          .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
+          .fileSystem.root.getDirectory(
+              'PvmDefault', {create: false},
+              (dir) => {
+                resolve(dir);
+              },
+              (...args) => {
+                reject(new Error(`Error getting PvmDefault dir: ${args}`));
+              });
+    });
   }
 }
 

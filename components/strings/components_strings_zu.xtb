@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Amakhasi akusi-<ph name="SOURCE_LANGUAGE" /> azohunyushelwa kusi-<ph name="TARGET_LANGUAGE" /> kusukela manje.</translation>
 <translation id="1676269943528358898">I-<ph name="SITE" /> ngokuvamile isebenzisa ukubethela ukuvikela ulwazi lwakho. Uma i-Google Chrome izame ukuxhuma ku-<ph name="SITE" /> ngalesi sikhathi, iwebhusayithi ithumele emuva imininingwane engavamile nengalungile. Lokhu kungenzeka uma umhlaseli ezama ukuzenza i-<ph name="SITE" />, noma isikrini sokungena se-Wi-Fi siphazamise uxhumo. Ulwazi lwakho lusaphephile ngoba i-Google Chrome imise uxhumo ngaphambi kokuthi idatha ishintshwe.</translation>
 <translation id="1682696192498422849">Umkhawulo omfushane kuqala</translation>
+<translation id="168693727862418163">Ukubaluleka kwale nqubomgomo kuhlulekile ukuqinisekisa ngokumelene ne-schema sayo futhi ngeke inakwe.</translation>
 <translation id="168841957122794586">Isitifiketi seseva siqukethe ukhiye we-cryptographic obuthaka.</translation>
 <translation id="1697532407822776718">Senisethiwe nonke!</translation>
 <translation id="1703835215927279855">Incwadi</translation>
@@ -224,7 +225,6 @@
 <translation id="1838374766361614909">Sula usesho</translation>
 <translation id="1839551713262164453">Ukuqinisekiswa kwamanani enqubomgomo kuhluleke namaphutha</translation>
 <translation id="1842969606798536927">Khokha</translation>
-<translation id="1852694792039666893">Sebenzisa i-akhawunti ye-Google ukuphakamisa iphasiwedi eqinile</translation>
 <translation id="1871208020102129563">Ummeleli usethelwe ukusebenzisa amaseva alibamba agxilile, hhayi i-URL yesikripthi se-.pac</translation>
 <translation id="1871284979644508959">Inkambu edingekayo</translation>
 <translation id="1875512691959384712">Google Amafomu</translation>
@@ -409,7 +409,6 @@ Lokhu uma kungenjalo kuzovinjelwa izilungiselelo zakho zobumfihlo. Lokhu kuzovum
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Kulingana kahle kakhulu</translation>
 <translation id="2691924980723297736">Isexwayiso sezokuphepha</translation>
-<translation id="2696268945573510710">Sebenzisa amaphasiwedi agcinwe ku-akhawunti yakho ye-Google</translation>
 <translation id="2699302886720511147">Amakhadi amukelwayo</translation>
 <translation id="2701514975700770343">Bheke phansi</translation>
 <translation id="2702801445560668637">Uhlu lokufunda</translation>
@@ -458,7 +457,6 @@ Lokhu uma kungenjalo kuzovinjelwa izilungiselelo zakho zobumfihlo. Lokhu kuzovum
 <translation id="2915068235268646559">Ukukhubazeka okuvela ku-<ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Vala ezinye izinhlelo</translation>
 <translation id="2922350208395188000">Isitifiketi seseva asikwazi ukuhlolwa.</translation>
-<translation id="2924027812781652774">Ngena ngemvume ukuze usebenzise amaphasiwedi alondolozwe ku-akhawunti yakho ye-Google</translation>
 <translation id="2925673989565098301">Indlela yokulethwa</translation>
 <translation id="2928905813689894207">Ikheli lokukhokha</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> nongu-<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ngaphezulu}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> nongu-<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ngaphezulu}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> nongu-<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ngaphezulu}}</translation>

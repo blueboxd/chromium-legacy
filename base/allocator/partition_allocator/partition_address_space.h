@@ -20,6 +20,8 @@ namespace internal {
 // The address space reservation is supported only on 64-bit architecture.
 #if defined(ARCH_CPU_64_BITS)
 
+static_assert(sizeof(size_t) >= 8, "Need 64-bit address space");
+
 // Reserves address space for PartitionAllocator.
 class BASE_EXPORT PartitionAddressSpace {
  public:
@@ -58,11 +60,9 @@ class BASE_EXPORT PartitionAddressSpace {
   // | (unused)       |
   // +----------------+ reserved address end
 
-  static constexpr size_t kGigaBytes = static_cast<size_t>(1024 * 1024 * 1024);
-  static constexpr size_t kDirectMapPoolSize =
-      static_cast<size_t>(16 * kGigaBytes);
-  static constexpr size_t kNormalBucketPoolSize =
-      static_cast<size_t>(16 * kGigaBytes);
+  static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
+  static constexpr size_t kDirectMapPoolSize = 16 * kGigaBytes;
+  static constexpr size_t kNormalBucketPoolSize = 16 * kGigaBytes;
   // kSuperPageSize padding is added to be able to align to kSuperPageSize
   // boundary.
   static constexpr size_t kReservedAddressSpaceSize =

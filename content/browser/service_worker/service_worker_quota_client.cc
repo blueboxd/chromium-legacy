@@ -53,10 +53,6 @@ ServiceWorkerQuotaClient::ServiceWorkerQuotaClient(
 ServiceWorkerQuotaClient::~ServiceWorkerQuotaClient() {
 }
 
-storage::QuotaClientType ServiceWorkerQuotaClient::type() const {
-  return storage::QuotaClientType::kServiceWorker;
-}
-
 void ServiceWorkerQuotaClient::GetOriginUsage(const url::Origin& origin,
                                               StorageType type,
                                               GetUsageCallback callback) {

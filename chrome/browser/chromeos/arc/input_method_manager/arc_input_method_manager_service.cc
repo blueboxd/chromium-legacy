@@ -132,13 +132,13 @@ class ArcInputMethodManagerService::ArcInputMethodBoundsObserver
 };
 
 class ArcInputMethodManagerService::InputMethodEngineObserver
-    : public input_method::InputMethodEngineBase::Observer {
+    : public chromeos::InputMethodEngineBase::Observer {
  public:
   explicit InputMethodEngineObserver(ArcInputMethodManagerService* owner)
       : owner_(owner) {}
   ~InputMethodEngineObserver() override = default;
 
-  // input_method::InputMethodEngineBase::Observer overrides:
+  // chromeos::InputMethodEngineBase::Observer overrides:
   void OnActivate(const std::string& engine_id) override {
     owner_->is_arc_ime_active_ = true;
     // TODO(yhanada): Remove this line after we migrate to SPM completely.
@@ -151,7 +151,7 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   void OnBlur(int context_id) override { owner_->Blur(); }
   void OnKeyEvent(
       const std::string& engine_id,
-      const input_method::InputMethodEngineBase::KeyboardEvent& event,
+      const chromeos::InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {
     if (event.key_code == ui::VKEY_BROWSER_BACK &&
         owner_->IsVirtualKeyboardShown()) {
@@ -184,7 +184,7 @@ class ArcInputMethodManagerService::InputMethodEngineObserver
   void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
-      input_method::InputMethodEngineBase::MouseButtonEvent button) override {}
+      chromeos::InputMethodEngineBase::MouseButtonEvent button) override {}
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override {}
   void OnScreenProjectionChanged(bool is_projected) override {}

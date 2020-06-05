@@ -22,7 +22,7 @@ class InputImeEventRouterBase {
   virtual ~InputImeEventRouterBase();
 
   // Gets the input method engine if the extension is active.
-  virtual input_method::InputMethodEngineBase* GetEngineIfActive(
+  virtual chromeos::InputMethodEngineBase* GetEngineIfActive(
       const std::string& extension_id,
       std::string* error) = 0;
 

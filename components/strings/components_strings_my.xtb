@@ -226,7 +226,6 @@
 <translation id="1838374766361614909">ရှာဖွေမှုကို ရှင်းပါ</translation>
 <translation id="1839551713262164453">မူဝါဒတန်ဖိုးများကို အတည်ပြုရာတွင် အမှားအယွင်းရှိနေသည်</translation>
 <translation id="1842969606798536927">ငွေပေးချေရန်</translation>
-<translation id="1852694792039666893">လုံခြုံမှုမြင့်သည့် စကားဝှက် အကြံပြုရန်အတွက် သင့် Google Account ကို အသုံးပြုရန်</translation>
 <translation id="1871208020102129563">ပရောက်စီအား တိကျသည့် ပရောက်ဟီဆာဗာများ သတ်မှတ်ထားသည်၊ .pac script URL မဟုတ်ပါ။</translation>
 <translation id="1871284979644508959">ဖြည့်ရန်လိုအပ်သည့်အကွက်</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -411,7 +410,6 @@
 <translation id="2684561033061424857">၁၁x၁၂</translation>
 <translation id="2687555958734450033">အကောင်းဆုံး အံကိုက်ညှိရန်</translation>
 <translation id="2691924980723297736">ဘေးကင်းလုံခြုံမှုဆိုင်ရာ သတိပေးချက်</translation>
-<translation id="2696268945573510710">သင့် Google Account တွင် သိမ်းထားသောစကားဝှက်များ အသုံးပြုရန်</translation>
 <translation id="2699302886720511147">အသုံးပြုနိုင်သည့် ကတ်များ</translation>
 <translation id="2701514975700770343">မှောက်ထားရန်</translation>
 <translation id="2702801445560668637">ဖတ်ရန် စာရင်း</translation>
@@ -460,7 +458,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> မှ ရပ်တန့်သွားမှု</translation>
 <translation id="2916038427272391327">အခြား ပရိုဂရမ်များကို ပိတ်ပါ</translation>
 <translation id="2922350208395188000">ဆာဗာ၏ လက်မှတ် စစ်၍မရပါ။</translation>
-<translation id="2924027812781652774">သင့် Google Account တွင် သိမ်းထားသောစကားဝှက်များ အသုံးပြုရန် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="2925673989565098301">ပို့ရန် နည်းလမ်း</translation>
 <translation id="2928905813689894207">ငွေတောင်းခံလွှာပို့ရန် လိပ်စာ</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

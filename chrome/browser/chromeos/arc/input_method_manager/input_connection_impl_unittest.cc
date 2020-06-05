@@ -21,7 +21,7 @@ namespace arc {
 namespace {
 
 class DummyInputMethodEngineObserver
-    : public input_method::InputMethodEngineBase::Observer {
+    : public chromeos::InputMethodEngineBase::Observer {
  public:
   DummyInputMethodEngineObserver() = default;
   ~DummyInputMethodEngineObserver() override = default;
@@ -32,7 +32,7 @@ class DummyInputMethodEngineObserver
   void OnBlur(int context_id) override {}
   void OnKeyEvent(
       const std::string& engine_id,
-      const input_method::InputMethodEngineBase::KeyboardEvent& event,
+      const chromeos::InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override {}
   void OnReset(const std::string& engine_id) override {}
   void OnDeactivated(const std::string& engine_id) override {}
@@ -48,7 +48,7 @@ class DummyInputMethodEngineObserver
   void OnCandidateClicked(
       const std::string& component_id,
       int candidate_id,
-      input_method::InputMethodEngineBase::MouseButtonEvent button) override {}
+      chromeos::InputMethodEngineBase::MouseButtonEvent button) override {}
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override {}
   void OnScreenProjectionChanged(bool is_projected) override {}

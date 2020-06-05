@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace storage {
@@ -36,16 +37,17 @@ void DidGetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
 
 }  // namespace
 
-void QuotaManagerProxy::RegisterClient(scoped_refptr<QuotaClient> client) {
+void QuotaManagerProxy::RegisterClient(scoped_refptr<QuotaClient> client,
+                                       QuotaClientType client_type) {
   if (!io_thread_->BelongsToCurrentThread() &&
       io_thread_->PostTask(
           FROM_HERE, base::BindOnce(&QuotaManagerProxy::RegisterClient, this,
-                                    std::move(client)))) {
+                                    std::move(client), client_type))) {
     return;
   }
 
   if (manager_)
-    manager_->RegisterClient(std::move(client));
+    manager_->RegisterClient(std::move(client), client_type);
   else
     client->OnQuotaManagerDestroyed();
 }

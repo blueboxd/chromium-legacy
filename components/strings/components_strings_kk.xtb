@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Іздеуді тазарту</translation>
 <translation id="1839551713262164453">Қателерге байланысты саясат мәндері тексерілмеді</translation>
 <translation id="1842969606798536927">Төлем</translation>
-<translation id="1852694792039666893">Күрделі құпия сөз жасау үшін Google есептік жазбаңызды пайдалану</translation>
 <translation id="1871208020102129563">Прокси .pac сценарий URL мекенжайын емес, бекітілген прокси серверлерін пайдалануға орнатылған.</translation>
 <translation id="1871284979644508959">Міндетті өріс</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Ең оңтайлы</translation>
 <translation id="2691924980723297736">Қауіпсіздік туралы ескерту</translation>
-<translation id="2696268945573510710">Google есептік жазбаңызда сақталған құпия сөздерді пайдалану</translation>
 <translation id="2699302886720511147">Қабылданатын карталар</translation>
 <translation id="2701514975700770343">Төмен қарату</translation>
 <translation id="2702801445560668637">Оқу тізімі</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559">Бұзылу уақыты: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Басқа бағдарламаларды жабу</translation>
 <translation id="2922350208395188000">Сервердің сертификатын тексеру мүмкін емес.</translation>
-<translation id="2924027812781652774">Google есептік жазбаңызда сақталған құпия сөздерді пайдалану үшін кіру</translation>
 <translation id="2925673989565098301">Жеткізу әдісі</translation>
 <translation id="2928905813689894207">Төлем мекенжайы</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> және тағы <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> және тағы <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

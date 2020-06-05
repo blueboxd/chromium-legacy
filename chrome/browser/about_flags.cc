@@ -5671,6 +5671,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableCardNicknameUpstream)},
 
+#if defined(OS_WIN)
+    {"safety-check-chrome-cleaner-child",
+     flag_descriptions::kSafetyCheckChromeCleanerChildName,
+     flag_descriptions::kSafetyCheckChromeCleanerChildDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kSafetyCheckChromeCleanerChild)},
+#endif  // !defined(OS_WIN)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

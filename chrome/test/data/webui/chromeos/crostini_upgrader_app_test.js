@@ -12,7 +12,7 @@ class FakePageHandler extends TestBrowserProxy {
   constructor() {
     super([
       'backup', 'startPrechecks', 'upgrade', 'restore', 'cancel',
-      'cancelBeforeStart', 'close', 'launch'
+      'cancelBeforeStart', 'onPageClosed', 'launch'
     ]);
   }
 
@@ -47,8 +47,8 @@ class FakePageHandler extends TestBrowserProxy {
   }
 
   /** @override */
-  close() {
-    this.methodCalled('close');
+  onPageClosed() {
+    this.methodCalled('onPageClosed');
   }
 
   /** @override */
@@ -169,12 +169,12 @@ suite('<crostini-upgrader-app>', () => {
     fakeBrowserProxy.page.onUpgradeSucceeded();
     await flushTasks();
 
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 0);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('onPageClosed'), 0);
     expectTrue(getRestoreProgressBar().hidden);
 
     await clickAction();
     expectEquals(fakeBrowserProxy.handler.getCallCount('launch'), 1);
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('onPageClosed'), 1);
   });
 
   test('upgradeFlowFailureOffersRestore', async () => {
@@ -223,6 +223,6 @@ suite('<crostini-upgrader-app>', () => {
 
     await clickAction();
     expectEquals(fakeBrowserProxy.handler.getCallCount('launch'), 1);
-    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('onPageClosed'), 1);
   });
 });

@@ -981,6 +981,14 @@ HTMLBRElement* CompositeEditCommand::InsertBlockPlaceholder(
   return placeholder;
 }
 
+static bool IsEmptyListItem(const LayoutBlockFlow& block_flow) {
+  if (block_flow.IsLayoutNGListItem())
+    return !block_flow.FirstChild();
+  if (block_flow.IsListItem())
+    return ToLayoutListItem(block_flow).IsEmpty();
+  return false;
+}
+
 HTMLBRElement* CompositeEditCommand::AddBlockPlaceholderIfNeeded(
     Element* container,
     EditingState* editing_state) {
@@ -995,8 +1003,7 @@ HTMLBRElement* CompositeEditCommand::AddBlockPlaceholderIfNeeded(
 
   // append the placeholder to make sure it follows
   // any unrendered blocks
-  if (block->Size().Height() == 0 ||
-      (block->IsListItem() && ToLayoutListItem(block)->IsEmpty()))
+  if (block->Size().Height() == 0 || IsEmptyListItem(*block))
     return AppendBlockPlaceholder(container, editing_state);
 
   return nullptr;

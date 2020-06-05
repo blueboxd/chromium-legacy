@@ -781,9 +781,9 @@ LayoutUnit ResolveUsedColumnInlineSize(LayoutUnit available_size,
 
 LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
                                 const ComputedStyle& style) {
-  if (style.ColumnGap().IsNormal())
-    return LayoutUnit(style.GetFontDescription().ComputedPixelSize());
-  return ValueForLength(style.ColumnGap().GetLength(), available_size);
+  if (const base::Optional<Length>& column_gap = style.ColumnGap())
+    return ValueForLength(*column_gap, available_size);
+  return LayoutUnit(style.GetFontDescription().ComputedPixelSize());
 }
 
 NGPhysicalBoxStrut ComputePhysicalMargins(

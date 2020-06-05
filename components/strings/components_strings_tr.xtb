@@ -221,7 +221,6 @@
 <translation id="1838374766361614909">Aramayı temizle</translation>
 <translation id="1839551713262164453">Politika değerlerini doğrulama işlemi hatalarla başarısız oldu</translation>
 <translation id="1842969606798536927">Ödeme</translation>
-<translation id="1852694792039666893">Güçlü bir şifre oluşturmak için Google Hesabınızı kullanın</translation>
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
 <translation id="1871284979644508959">Zorunlu alan</translation>
 <translation id="1875512691959384712">Google Formlar</translation>
@@ -406,7 +405,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">En uygun</translation>
 <translation id="2691924980723297736">Güvenlik uyarısı</translation>
-<translation id="2696268945573510710">Google Hesabınızda kayıtlı şifreleri kullanın</translation>
 <translation id="2699302886720511147">Kabul Edilen Kartlar</translation>
 <translation id="2701514975700770343">Aşağı dönük</translation>
 <translation id="2702801445560668637">Okuma Listesi</translation>
@@ -453,7 +451,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="2915068235268646559">Kilitlenme zamanı: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Diğer programları kapatın</translation>
 <translation id="2922350208395188000">Sunucunun sertifikası kontrol edilemiyor.</translation>
-<translation id="2924027812781652774">Google Hesabınızda kayıtlı şifreleri kullanmak için oturum açın</translation>
 <translation id="2925673989565098301">Teslimat Yöntemi</translation>
 <translation id="2928905813689894207">Fatura Adresi</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> adres daha}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ve <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> adres daha}}</translation>

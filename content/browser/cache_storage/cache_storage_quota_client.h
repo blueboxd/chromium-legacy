@@ -27,7 +27,6 @@ class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
                           CacheStorageOwner owner);
 
   // QuotaClient.
-  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

@@ -491,15 +491,15 @@ void BackgroundLoaderOffliner::StartSnapshot() {
 
   offline_page_model_->SavePage(
       params, std::move(archiver), web_contents,
-      base::Bind(&BackgroundLoaderOffliner::OnPageSaved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BackgroundLoaderOffliner::OnPageSaved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundLoaderOffliner::RunRenovations() {
   if (page_renovator_) {
     page_renovator_->RunRenovations(
-        base::Bind(&BackgroundLoaderOffliner::RenovationsCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BackgroundLoaderOffliner::RenovationsCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -518,8 +518,8 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
     criteria.offline_ids = std::vector<int64_t>{offline_id};
     offline_page_model_->DeletePagesWithCriteria(
         criteria,
-        base::Bind(&BackgroundLoaderOffliner::DeleteOfflinePageCallback,
-                   weak_ptr_factory_.GetWeakPtr(), request));
+        base::BindOnce(&BackgroundLoaderOffliner::DeleteOfflinePageCallback,
+                       weak_ptr_factory_.GetWeakPtr(), request));
     save_state_ = NONE;
     return;
   }

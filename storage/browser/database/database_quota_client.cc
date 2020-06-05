@@ -98,10 +98,6 @@ DatabaseQuotaClient::~DatabaseQuotaClient() {
   }
 }
 
-storage::QuotaClientType DatabaseQuotaClient::type() const {
-  return storage::QuotaClientType::kDatabase;
-}
-
 void DatabaseQuotaClient::OnQuotaManagerDestroyed() {}
 
 void DatabaseQuotaClient::GetOriginUsage(const url::Origin& origin,

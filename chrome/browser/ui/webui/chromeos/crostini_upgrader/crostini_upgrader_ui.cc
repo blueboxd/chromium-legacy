@@ -122,6 +122,15 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
 
 CrostiniUpgraderUI::~CrostiniUpgraderUI() = default;
 
+bool CrostiniUpgraderUI::RequestClosePage() {
+  if (page_closed_ || !page_handler_) {
+    return true;
+  }
+
+  page_handler_->RequestClosePage();
+  return false;
+}
+
 void CrostiniUpgraderUI::BindInterface(
     mojo::PendingReceiver<
         chromeos::crostini_upgrader::mojom::PageHandlerFactory>
@@ -145,13 +154,12 @@ void CrostiniUpgraderUI::CreatePageHandler(
       std::move(pending_page_handler), std::move(pending_page),
       // Using Unretained(this) because |page_handler_| will not out-live
       // |this|.
-      base::BindOnce(&CrostiniUpgraderUI::OnWebUICloseDialog,
-                     base::Unretained(this)),
+      base::BindOnce(&CrostiniUpgraderUI::OnPageClosed, base::Unretained(this)),
       std::move(launch_callback_));
 }
 
-void CrostiniUpgraderUI::OnWebUICloseDialog() {
-  can_close_ = true;
+void CrostiniUpgraderUI::OnPageClosed() {
+  page_closed_ = true;
   // CloseDialog() is a no-op if we are not in a dialog (e.g. user
   // access the page using the URL directly, which is not supported).
   ui::MojoWebDialogUI::CloseDialog(nullptr);

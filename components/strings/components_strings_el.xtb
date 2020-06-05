@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Διαγραφή αναζητήσεων</translation>
 <translation id="1839551713262164453">Η επικύρωση των τιμών πολιτικής απέτυχε αφού παρουσίασε σφάλματα</translation>
 <translation id="1842969606798536927">Πληρωμή</translation>
-<translation id="1852694792039666893">Χρησιμοποιήστε τον Λογαριασμό σας Google για προτάσεις ισχυρών κωδικών πρόσβασης</translation>
 <translation id="1871208020102129563">Ο διακομιστής μεσολάβησης έχει ρυθμιστεί να χρησιμοποιεί διακομιστές μεσολάβησης και όχι μια διεύθυνση URL σεναρίου .pac.</translation>
 <translation id="1871284979644508959">Απαιτούμενο πεδίο</translation>
 <translation id="1875512691959384712">Φόρμες Google</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Βέλτιστη προσαρμογή</translation>
 <translation id="2691924980723297736">Προειδοποίηση ασφαλείας</translation>
-<translation id="2696268945573510710">Χρησιμοποιήστε τους κωδικούς πρόσβασης που είναι αποθηκευμένοι στον Λογαριασμό σας Google</translation>
 <translation id="2699302886720511147">Αποδεκτές κάρτες</translation>
 <translation id="2701514975700770343">Πρόσοψη προς τα κάτω</translation>
 <translation id="2702801445560668637">Λίστα ανάγνωσης</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559">Σφάλμα από τις <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Κλείστε τα άλλα προγράμματα</translation>
 <translation id="2922350208395188000">Δεν είναι δυνατός ο έλεγχος του πιστοποιητικού του διακομιστή.</translation>
-<translation id="2924027812781652774">Συνδεθείτε, για να χρησιμοποιήσετε κωδικούς πρόσβασης που είναι αποθηκευμένοι στον Λογαριασμό σας Google.</translation>
 <translation id="2925673989565098301">Τρόπος προβολής</translation>
 <translation id="2928905813689894207">Διεύθυνση χρέωσης</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ακόμη}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ακόμη}}</translation>

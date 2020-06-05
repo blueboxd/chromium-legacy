@@ -223,7 +223,6 @@
 <translation id="1838374766361614909">Borrar busca</translation>
 <translation id="1839551713262164453">Producíronse erros na validación dos valores da política</translation>
 <translation id="1842969606798536927">Pagar</translation>
-<translation id="1852694792039666893">Utilizar a túa Conta de Google para suxerir un contrasinal seguro</translation>
 <translation id="1871208020102129563">O proxy está configurado para utilizar servidores proxy fixos, non un URL de script .pac.</translation>
 <translation id="1871284979644508959">O campo é obrigatorio</translation>
 <translation id="1875512691959384712">Formularios de Google</translation>
@@ -408,7 +407,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Tamaño predeterminado</translation>
 <translation id="2691924980723297736">Advertencia de seguranza</translation>
-<translation id="2696268945573510710">Utilizar contrasinais almacenados na túa Conta de Google</translation>
 <translation id="2699302886720511147">Acéptanse tarxetas</translation>
 <translation id="2701514975700770343">Cara abaixo</translation>
 <translation id="2702801445560668637">Lista de lectura</translation>
@@ -455,7 +453,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2915068235268646559">Fallo (<ph name="CRASH_TIME" />)</translation>
 <translation id="2916038427272391327">Pecha outros programas</translation>
 <translation id="2922350208395188000">Non se pode comprobar o certificado do servidor.</translation>
-<translation id="2924027812781652774">Iniciar sesión para utilizar contrasinais almacenados na túa Conta de Google</translation>
 <translation id="2925673989565098301">Método de entrega</translation>
 <translation id="2928905813689894207">Enderezo de facturación</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> máis}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> máis}}</translation>

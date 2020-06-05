@@ -2705,11 +2705,12 @@ CSSValue* ComputedStyleUtils::ScrollCustomizationFlagsToCSSValue(
   return list;
 }
 
-CSSValue* ComputedStyleUtils::ValueForGapLength(const GapLength& gap_length,
-                                                const ComputedStyle& style) {
-  if (gap_length.IsNormal())
+CSSValue* ComputedStyleUtils::ValueForGapLength(
+    const base::Optional<Length>& gap_length,
+    const ComputedStyle& style) {
+  if (!gap_length)
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
-  return ZoomAdjustedPixelValueForLength(gap_length.GetLength(), style);
+  return ZoomAdjustedPixelValueForLength(*gap_length, style);
 }
 
 CSSValue* ComputedStyleUtils::ValueForStyleName(const StyleName& name) {

@@ -29,7 +29,7 @@ enum class AssistiveWindowType;
 }  // namespace ime
 }  // namespace ui
 
-namespace input_method {
+namespace chromeos {
 
 class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
  public:
@@ -62,13 +62,11 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     SegmentStyle style;
   };
 
-#if defined(OS_CHROMEOS)
   enum MouseButtonEvent {
     MOUSE_BUTTON_LEFT,
     MOUSE_BUTTON_RIGHT,
     MOUSE_BUTTON_MIDDLE,
   };
-#endif
 
   class Observer {
    public:
@@ -107,8 +105,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                                           int anchor_pos,
                                           int offset_pos) = 0;
 
-#if defined(OS_CHROMEOS)
-
     // Called when an InputContext's properties change while it is focused.
     virtual void OnInputContextUpdate(
         const IMEEngineHandlerInterface::InputContext& context) = 0;
@@ -129,7 +125,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                                      const std::string& menu_id) = 0;
 
     virtual void OnScreenProjectionChanged(bool is_projected) = 0;
-#endif  // defined(OS_CHROMEOS)
   };
 
   InputMethodEngineBase();
@@ -323,6 +318,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   ui::KeyEvent ConvertKeyboardEventToUIKeyEvent(const KeyboardEvent& event);
 };
 
-}  // namespace input_method
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_

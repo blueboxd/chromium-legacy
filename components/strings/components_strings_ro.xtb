@@ -225,7 +225,6 @@
 <translation id="1838374766361614909">Șterge căutarea</translation>
 <translation id="1839551713262164453">Validarea valorilor de politică a returnat erori</translation>
 <translation id="1842969606798536927">Plătește</translation>
-<translation id="1852694792039666893">Folosește Contul Google ca să sugerezi o parolă puternică</translation>
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
 <translation id="1871284979644508959">Câmp obligatoriu</translation>
 <translation id="1875512691959384712">Formulare Google</translation>
@@ -410,7 +409,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Potrivire optimă</translation>
 <translation id="2691924980723297736">Avertisment de siguranță</translation>
-<translation id="2696268945573510710">Folosește parolele stocate în Contul Google</translation>
 <translation id="2699302886720511147">Carduri acceptate</translation>
 <translation id="2701514975700770343">Cu fața în jos</translation>
 <translation id="2702801445560668637">Listă de lectură</translation>
@@ -457,7 +455,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2915068235268646559">Blocare survenită <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">închide celelalte programe;</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
-<translation id="2924027812781652774">Conectează-te pentru a folosi parolele stocate în Contul Google</translation>
 <translation id="2925673989565098301">Metodă de livrare</translation>
 <translation id="2928905813689894207">Adresă de facturare</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> și încă <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

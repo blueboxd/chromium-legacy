@@ -4,6 +4,8 @@
 
 #include "ash/assistant/assistant_notification_controller.h"
 
+#include <map>
+
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "ash/shell.h"
@@ -22,7 +24,9 @@ namespace {
 using chromeos::assistant::mojom::AssistantNotification;
 using chromeos::assistant::mojom::AssistantNotificationButton;
 using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
+using chromeos::assistant::mojom::AssistantNotificationPriority;
 using chromeos::assistant::mojom::AssistantNotificationPtr;
+
 using testing::_;
 using testing::Eq;
 using testing::Field;
@@ -78,6 +82,12 @@ class AssistantNotificationBuilder {
     } else {
       notification_->buttons.push_back(std::move(button));
     }
+    return *this;
+  }
+
+  AssistantNotificationBuilder& WithPriority(
+      AssistantNotificationPriority priority) {
+    notification_->priority = priority;
     return *this;
   }
 
@@ -187,11 +197,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
     return *observer_;
   }
 
-  void AddNotification(AssistantNotificationPtr notification) {
-    controller().AddOrUpdateNotification(std::move(notification));
-  }
-
-  void UpdateNotification(AssistantNotificationPtr notification) {
+  void AddOrUpdateNotification(AssistantNotificationPtr notification) {
     controller().AddOrUpdateNotification(std::move(notification));
   }
 
@@ -265,10 +271,10 @@ TEST_F(AssistantNotificationControllerTest,
        ShouldRemoveNotificationWhenItExpires) {
   constexpr int kTimeoutMs = 1000;
 
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("id")
-                      .WithTimeoutMs((kTimeoutMs))
-                      .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("id")
+                              .WithTimeoutMs((kTimeoutMs))
+                              .Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -280,10 +286,10 @@ TEST_F(AssistantNotificationControllerTest,
        ShouldNotRemoveNotificationsTooSoon) {
   constexpr int kTimeoutMs = 1000;
 
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("id")
-                      .WithTimeoutMs(kTimeoutMs)
-                      .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("id")
+                              .WithTimeoutMs(kTimeoutMs)
+                              .Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -295,10 +301,10 @@ TEST_F(AssistantNotificationControllerTest,
        ShouldUseFromServerFalseWhenNotificationExpires) {
   constexpr int kTimeoutMs = 1000;
 
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("id")
-                      .WithTimeoutMs(kTimeoutMs)
-                      .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("id")
+                              .WithTimeoutMs(kTimeoutMs)
+                              .Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -311,14 +317,14 @@ TEST_F(AssistantNotificationControllerTest,
   constexpr int kFirstTimeoutMs = 1000;
   constexpr int kSecondTimeoutMs = 1500;
 
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("first")
-                      .WithTimeoutMs(kFirstTimeoutMs)
-                      .Build());
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("second")
-                      .WithTimeoutMs(kSecondTimeoutMs)
-                      .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("first")
+                              .WithTimeoutMs(kFirstTimeoutMs)
+                              .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("second")
+                              .WithTimeoutMs(kSecondTimeoutMs)
+                              .Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -333,14 +339,14 @@ TEST_F(AssistantNotificationControllerTest,
        ShouldSupport2NotificationsThatExpireAtTheSameTime) {
   constexpr int kTimeoutMs = 1000;
 
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("first")
-                      .WithTimeoutMs(kTimeoutMs)
-                      .Build());
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("at-same-time")
-                      .WithTimeoutMs(kTimeoutMs)
-                      .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("first")
+                              .WithTimeoutMs(kTimeoutMs)
+                              .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("at-same-time")
+                              .WithTimeoutMs(kTimeoutMs)
+                              .Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -353,10 +359,10 @@ TEST_F(AssistantNotificationControllerTest,
        ShouldImmediateRemoveNotificationsThatAlreadyExpired) {
   constexpr int kNegativeTimeoutMs = -1000;
 
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("expired")
-                      .WithTimeoutMs(kNegativeTimeoutMs)
-                      .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("expired")
+                              .WithTimeoutMs(kNegativeTimeoutMs)
+                              .Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -367,10 +373,10 @@ TEST_F(AssistantNotificationControllerTest,
        ShouldNotRemoveNotificationsThatWereManuallyRemoved) {
   constexpr int kTimeoutMs = 1000;
 
-  AddNotification(AssistantNotificationBuilder()
-                      .WithId("id")
-                      .WithTimeoutMs(kTimeoutMs)
-                      .Build());
+  AddOrUpdateNotification(AssistantNotificationBuilder()
+                              .WithId("id")
+                              .WithTimeoutMs(kTimeoutMs)
+                              .Build());
   RemoveNotification("id");
 
   auto& observer = AddStrictObserverMock();
@@ -385,8 +391,8 @@ TEST_F(AssistantNotificationControllerTest,
 
   auto notification_bldr = AssistantNotificationBuilder().WithId("id");
 
-  AddNotification(notification_bldr.Build());
-  UpdateNotification(notification_bldr.WithTimeoutMs(kTimeoutMs).Build());
+  AddOrUpdateNotification(notification_bldr.Build());
+  AddOrUpdateNotification(notification_bldr.WithTimeoutMs(kTimeoutMs).Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -400,8 +406,8 @@ TEST_F(AssistantNotificationControllerTest,
 
   auto notification_bldr = AssistantNotificationBuilder().WithId("id");
 
-  AddNotification(notification_bldr.WithTimeoutMs(kTimeoutMs).Build());
-  UpdateNotification(notification_bldr.WithTimeout(base::nullopt).Build());
+  AddOrUpdateNotification(notification_bldr.WithTimeoutMs(kTimeoutMs).Build());
+  AddOrUpdateNotification(notification_bldr.WithTimeout(base::nullopt).Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -417,7 +423,7 @@ TEST_F(AssistantNotificationControllerTest,
       AssistantNotificationBuilder().WithId(kId).WithActionUrl(
           GURL("https://g.co/"));
 
-  AddNotification(notification_bldr.WithRemoveOnClick(false).Build());
+  AddOrUpdateNotification(notification_bldr.WithRemoveOnClick(false).Build());
 
   auto& observer = AddStrictObserverMock();
 
@@ -429,7 +435,7 @@ TEST_F(AssistantNotificationControllerTest,
   Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer, OnNotificationUpdated(IdIs(kId)));
-  UpdateNotification(notification_bldr.WithRemoveOnClick(true).Build());
+  AddOrUpdateNotification(notification_bldr.WithRemoveOnClick(true).Build());
 
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs(kId), _));
   message_center->ClickOnNotification(kId);
@@ -443,7 +449,7 @@ TEST_F(AssistantNotificationControllerTest,
   auto button_bldr =
       AssistantNotificationButtonBuilder().WithActionUrl(GURL("https://g.co/"));
 
-  AddNotification(
+  AddOrUpdateNotification(
       notification_bldr
           .WithButton(button_bldr.WithRemoveNotificationOnClick(false).Build())
           .Build());
@@ -458,7 +464,7 @@ TEST_F(AssistantNotificationControllerTest,
   Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer, OnNotificationUpdated(IdIs(kId)));
-  UpdateNotification(
+  AddOrUpdateNotification(
       notification_bldr
           .WithButton(button_bldr.WithRemoveNotificationOnClick(true).Build(),
                       /*index=*/0)
@@ -466,6 +472,35 @@ TEST_F(AssistantNotificationControllerTest,
 
   EXPECT_CALL(observer, OnNotificationRemoved(IdIs(kId), _));
   message_center->ClickOnNotificationButton(kId, /*index=*/0);
+}
+
+TEST_F(AssistantNotificationControllerTest,
+       ShouldCorrectlyMapNotificationPriority) {
+  constexpr char kId[] = "id";
+
+  // Map of Assistant notification priorities to system notification priorities.
+  const std::map<AssistantNotificationPriority,
+                 message_center::NotificationPriority>
+      priority_map = {{AssistantNotificationPriority::kLow,
+                       message_center::NotificationPriority::LOW_PRIORITY},
+                      {AssistantNotificationPriority::kDefault,
+                       message_center::NotificationPriority::DEFAULT_PRIORITY},
+                      {AssistantNotificationPriority::kHigh,
+                       message_center::NotificationPriority::HIGH_PRIORITY}};
+
+  for (const auto& priority_pair : priority_map) {
+    // Create an Assistant notification.
+    AddOrUpdateNotification(AssistantNotificationBuilder()
+                                .WithId(kId)
+                                .WithPriority(priority_pair.first)
+                                .Build());
+
+    // Verify expected system notification.
+    auto* system_notification =
+        message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
+    ASSERT_NE(nullptr, system_notification);
+    EXPECT_EQ(priority_pair.second, system_notification->priority());
+  }
 }
 
 }  // namespace ash

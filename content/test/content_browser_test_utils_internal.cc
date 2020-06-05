@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/containers/stack.h"
+#include "base/json/json_reader.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
@@ -560,6 +561,68 @@ bool BeforeUnloadBlockingDelegate::HandleJavaScriptDialog(
     const base::string16* prompt_override) {
   NOTREACHED();
   return true;
+}
+
+namespace {
+static constexpr int kEnableLogMessageId = 0;
+static constexpr char kEnableLogMessage[] = R"({"id":0,"method":"Log.enable"})";
+static constexpr int kDisableLogMessageId = 1;
+static constexpr char kDisableLogMessage[] =
+    R"({"id":1,"method":"Log.disable"})";
+}  // namespace
+
+DevToolsInspectorLogWatcher::DevToolsInspectorLogWatcher(
+    WebContents* web_contents) {
+  host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
+  host_->AttachClient(this);
+
+  host_->DispatchProtocolMessage(
+      this, base::as_bytes(
+                base::make_span(kEnableLogMessage, strlen(kEnableLogMessage))));
+
+  run_loop_enable_log_.Run();
+}
+
+DevToolsInspectorLogWatcher::~DevToolsInspectorLogWatcher() {
+  host_->DetachClient(this);
+}
+
+void DevToolsInspectorLogWatcher::DispatchProtocolMessage(
+    DevToolsAgentHost* host,
+    base::span<const uint8_t> message) {
+  base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
+                                message.size());
+  auto parsed_message = base::JSONReader::Read(message_str);
+  base::Optional<int> command_id = parsed_message->FindIntPath("id");
+  if (command_id.has_value()) {
+    switch (command_id.value()) {
+      case kEnableLogMessageId:
+        run_loop_enable_log_.Quit();
+        break;
+      case kDisableLogMessageId:
+        run_loop_disable_log_.Quit();
+        break;
+      default:
+        NOTREACHED();
+    }
+    return;
+  }
+
+  std::string* notification = parsed_message->FindStringPath("method");
+  if (notification && *notification == "Log.entryAdded") {
+    std::string* text = parsed_message->FindStringPath("params.entry.text");
+    DCHECK(text);
+    last_message_ = *text;
+  }
+}
+
+void DevToolsInspectorLogWatcher::AgentHostClosed(DevToolsAgentHost* host) {}
+
+void DevToolsInspectorLogWatcher::FlushAndStopWatching() {
+  host_->DispatchProtocolMessage(
+      this, base::as_bytes(base::make_span(kDisableLogMessage,
+                                           strlen(kDisableLogMessage))));
+  run_loop_disable_log_.Run();
 }
 
 }  // namespace content

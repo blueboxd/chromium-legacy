@@ -28,9 +28,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModelObserver
   // Invoked when the specified timer has been removed.
   virtual void OnTimerRemoved(const AssistantTimer& timer) {}
 
-  // Invoked when all timers have been removed.
-  virtual void OnAllTimersRemoved() {}
-
  protected:
   ~AssistantAlarmTimerModelObserver() override = default;
 };

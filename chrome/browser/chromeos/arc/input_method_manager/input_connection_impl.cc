@@ -223,7 +223,7 @@ void InputConnectionImpl::SetComposingText(
   if (!ime_engine_->SetComposition(
           input_context_id_, base::UTF16ToUTF8(text).c_str(), selection_start,
           selection_end, new_cursor_pos,
-          std::vector<input_method::InputMethodEngineBase::SegmentInfo>(),
+          std::vector<chromeos::InputMethodEngineBase::SegmentInfo>(),
           &error)) {
     LOG(ERROR) << "SetComposingText failed: pos=" << new_cursor_pos
                << ", error=\"" << error << "\"";
@@ -293,14 +293,13 @@ void InputConnectionImpl::SetCompositionRange(
 
   const int before = selection_range.start() - new_composition_range.start();
   const int after = new_composition_range.end() - selection_range.end();
-  input_method::InputMethodEngineBase::SegmentInfo segment_info;
+  chromeos::InputMethodEngineBase::SegmentInfo segment_info;
   segment_info.start = 0;
   segment_info.end = new_composition_range.length();
-  segment_info.style =
-      input_method::InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
+  segment_info.style = chromeos::InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
 
   std::string error;
-  if (!ime_engine_->input_method::InputMethodEngineBase::SetCompositionRange(
+  if (!ime_engine_->chromeos::InputMethodEngineBase::SetCompositionRange(
           input_context_id_, before, after, {segment_info}, &error)) {
     LOG(ERROR) << "SetCompositionRange failed: range="
                << new_composition_range.ToString() << ", error=\"" << error

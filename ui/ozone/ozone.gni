@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")
+import("//build/toolchain/kythe.gni")
 import("//build/toolchain/toolchain.gni")
 
 declare_args() {
@@ -45,6 +46,9 @@ declare_args() {
     # Use headless as the default platform unless modified below.
     ozone_platform = "headless"
     ozone_platform_headless = true
+
+    # Enable the Ozone Wayland platform for codesearch-gen bots so we get cross-references in codesearch.
+    ozone_platform_wayland = enable_kythe_annotations
 
     if (is_cast_audio_only) {
       # Just use headless for audio-only Cast platforms.

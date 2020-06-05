@@ -358,6 +358,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kSafetyCheckAndroid;
 #endif
 
+#if defined(OS_WIN)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSafetyCheckChromeCleanerChild;
+#endif
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kFlashDeprecationWarning;

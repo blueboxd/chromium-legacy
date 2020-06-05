@@ -37,12 +37,8 @@ struct Data {
   std::string id;
 
   // Data item will be matched between its search tags and query term.
-  // TODO(jiameng): this will be deprecated in the next cl.
-  std::vector<base::string16> search_tags;
   std::vector<Content> contents;
 
-  // TODO(jiameng): this will be deprecated in the next cl.
-  Data(const std::string& id, const std::vector<base::string16>& search_tags);
   Data(const std::string& id, const std::vector<Content>& contents);
   Data();
   Data(const Data& data);
@@ -70,6 +66,11 @@ struct Result {
   // Id of the data.
   std::string id;
   // Relevance score.
+  // Currently only linear map is implemented with fuzzy matching and score will
+  // always be in [0,1]. In the future, when an inverted index is implemented,
+  // the score will not be in this range any more. Client will be able to select
+  // a search backend to use (linear map vs inverted index) and hence client
+  // will be able to expect the range of the scores.
   double score;
   // Position of the matching text.
   // We currently use linear map, which will return one matching content, hence
@@ -110,7 +111,7 @@ class Index {
 
   // Adds or updates data.
   // IDs of data should not be empty.
-  void AddOrUpdate(const std::vector<local_search_service::Data>& data);
+  void AddOrUpdate(const std::vector<Data>& data);
 
   // Deletes data with |ids| and returns number of items deleted.
   // If an id doesn't exist in the Index, no operation will be done.
@@ -122,20 +123,18 @@ class Index {
   // For each data in the index, we return the 1st search tag that matches
   // the query (i.e. above the threshold). Client should put the most
   // important search tag first when registering the data in the index.
-  local_search_service::ResponseStatus Find(
-      const base::string16& query,
-      uint32_t max_results,
-      std::vector<local_search_service::Result>* results);
+  ResponseStatus Find(const base::string16& query,
+                      uint32_t max_results,
+                      std::vector<Result>* results);
 
-  void SetSearchParams(const local_search_service::SearchParams& search_params);
+  void SetSearchParams(const SearchParams& search_params);
 
   SearchParams GetSearchParamsForTesting();
 
  private:
   // Returns all search results for a given query.
-  std::vector<local_search_service::Result> GetSearchResults(
-      const base::string16& query,
-      uint32_t max_results) const;
+  std::vector<Result> GetSearchResults(const base::string16& query,
+                                       uint32_t max_results) const;
 
   // A map from key to a vector of (tag-id, tokenized tag).
   std::map<
@@ -144,7 +143,7 @@ class Index {
       data_;
 
   // Search parameters.
-  local_search_service::SearchParams search_params_;
+  SearchParams search_params_;
 
   base::WeakPtrFactory<Index> weak_ptr_factory_{this};
 };

@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">ସନ୍ଧାନ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="1839551713262164453">ତ୍ରୁଟିଗୁଡ଼ିକ ସହିତ ନୀତିଗତ ମୂଲ୍ୟଗୁଡ଼ିକର ବୈଧକରଣ ବିଫଳ ହୋଇଛି</translation>
 <translation id="1842969606798536927">ପେମେଣ୍ଟ କରନ୍ତୁ</translation>
-<translation id="1852694792039666893">ଏକ ଜଟିଳ ପାସୱାର୍ଡର ପ୍ରସ୍ତାବ ଦେବାକୁ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="1871208020102129563">ପ୍ରକ୍ସି ନିର୍ଦ୍ଦିଷ୍ଟ କରାଯାଇଥିବା ପ୍ରକ୍ସି ସର୍ଭର୍‌ଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବାକୁ ସେଟ୍ କରାଯାଇଛି, ଏକ .pac ସ୍କ୍ରିପ୍ଟ URLକୁ ନୁହେଁ।</translation>
 <translation id="1871284979644508959">ଆବଶ୍ୟକୀୟ ଫିଲ୍ଡ</translation>
 <translation id="1875512691959384712">Google ଫର୍ମ</translation>
@@ -405,7 +404,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ଉତ୍ତମ ଫିଟ୍</translation>
 <translation id="2691924980723297736">ସୁରକ୍ଷା ଚେତାବନୀ</translation>
-<translation id="2696268945573510710">ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ପାସୱାର୍ଡଗୁଡ଼ିକ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="2699302886720511147">ସ୍ୱୀକାର କରାଯାଇଥିବା କାର୍ଡ</translation>
 <translation id="2701514975700770343">ଫେସ୍ ଡାଉନ୍</translation>
 <translation id="2702801445560668637">ପଢ଼ିବା ତାଲିକା</translation>
@@ -452,7 +450,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" />ରେ କ୍ରାସ୍ ହୋଇଛି</translation>
 <translation id="2916038427272391327">ଅନ୍ୟ ପ୍ରୋଗ୍ରାମ୍‌ଗୁଡ଼ିକ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="2922350208395188000">ସର୍ଭରର ସାର୍ଟିଫିକେଟ୍‌ ଯାଞ୍ଚ କରିହେବ ନାହିଁ</translation>
-<translation id="2924027812781652774">ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ପାସୱାର୍ଡଗୁଡ଼ିକ ବ୍ୟବହାର କରିବାକୁ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ</translation>
 <translation id="2925673989565098301">ବିତରଣ ପଦ୍ଧତି</translation>
 <translation id="2928905813689894207">ବିଲିଂ ଠିକଣା</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ଏବଂ ଅଧିକ<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />ଟି}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ଏବଂ ଅଧିକ <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />ଟି}}</translation>

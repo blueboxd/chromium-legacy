@@ -2124,6 +2124,7 @@
 <translation id="3677106374019847299">輸入自訂供應商</translation>
 <translation id="3677657024345889897">最小</translation>
 <translation id="3677911431265050325">切換為行動版網站</translation>
+<translation id="3677959414150797585">包括應用程式、網頁等。只有當你選擇提供使用資料時，系統才會傳送統計資料以改善建議項目。</translation>
 <translation id="3678156199662914018">擴充功能：<ph name="EXTENSION_NAME" /></translation>
 <translation id="3680683624079082902">文字轉語音的聲音</translation>
 <translation id="3681311097828166361">感謝你提供意見！你目前處於離線狀態，重新上線後系統就會傳送你的意見回饋報告。</translation>
@@ -3775,6 +3776,7 @@
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - 攝影機或麥克風錄影/錄音中</translation>
 <translation id="5841270259333717135">設定乙太網路</translation>
 <translation id="5842497610951477805">啟用藍牙</translation>
+<translation id="5844574845205796324">建議新的探索內容</translation>
 <translation id="5846200638699387931">關聯語法錯誤：<ph name="ERROR_LINE" /></translation>
 <translation id="5846807460505171493">安裝更新內容和應用程式。如果您選擇繼續，即表示您允許這部裝置自動下載及安裝來自 Google、您的電信業者和裝置製造商的更新內容和應用程式，且可能會使用行動數據進行下載。部分應用程式可能會提供內購項目。</translation>
 <translation id="5849212445710944278">已加入過了</translation>

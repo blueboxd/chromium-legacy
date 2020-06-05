@@ -4,8 +4,7 @@
  * found in the LICENSE file.
  */
 
-const methodName = window.location.origin +
-    '/components/test/data/payments/maxpay.com/payment_method.json';
+const methodName = window.location.origin + '/pay';
 const swSrcUrl = './payment_handler_sw.js';
 let resultPromise;
 

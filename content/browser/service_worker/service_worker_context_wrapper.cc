@@ -45,6 +45,7 @@
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/url_util.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -1534,7 +1535,8 @@ void ServiceWorkerContextWrapper::InitOnCoreThread(
 
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(
-        base::MakeRefCounted<ServiceWorkerQuotaClient>(this));
+        base::MakeRefCounted<ServiceWorkerQuotaClient>(this),
+        storage::QuotaClientType::kServiceWorker);
   }
 
   context_core_ = std::make_unique<ServiceWorkerContextCore>(

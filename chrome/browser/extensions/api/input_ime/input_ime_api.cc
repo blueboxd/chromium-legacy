@@ -17,7 +17,7 @@ namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
 namespace CommitText = extensions::api::input_ime::CommitText;
 namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
-using input_method::InputMethodEngineBase;
+using chromeos::InputMethodEngineBase;
 
 namespace {
 const char kErrorRouterNotAvailable[] = "The router is not available.";

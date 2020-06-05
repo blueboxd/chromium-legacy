@@ -256,9 +256,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Hander for the startup tasks, deferred or not.
   StartupTasks* _startupTasks;
-
-  // If the animations were disabled.
-  BOOL _animationDisabled;
 }
 
 // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
@@ -759,34 +756,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
            object:nil];
 }
 
-- (void)registerBatteryMonitoringNotifications {
-  if (base::FeatureList::IsEnabled(kDisableAnimationOnLowBattery)) {
-    [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(batteryLevelDidChange:)
-               name:UIDeviceBatteryLevelDidChangeNotification
-             object:nil];
-    [self batteryLevelDidChange:nil];
-  }
-}
-
-- (void)batteryLevelDidChange:(NSNotification*)notification {
-  if (![[UIDevice currentDevice] isBatteryMonitoringEnabled]) {
-    return;
-  }
-  CGFloat level = [UIDevice currentDevice].batteryLevel;
-  if (level < web::features::kLowBatteryLevelThreshold) {
-    if (!_animationDisabled) {
-      _animationDisabled = YES;
-      [UIView setAnimationsEnabled:NO];
-    }
-  } else if (_animationDisabled) {
-    _animationDisabled = NO;
-    [UIView setAnimationsEnabled:YES];
-  }
-}
-
 - (void)schedulePrefObserverInitialization {
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kPrefObserverInit
@@ -978,8 +947,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleLowPriorityStartupTasks {
   [_startupTasks initializeOmaha];
   [_startupTasks donateIntents];
-
-  [self registerBatteryMonitoringNotifications];
 
   // Deferred tasks.
   [self schedulePrefObserverInitialization];

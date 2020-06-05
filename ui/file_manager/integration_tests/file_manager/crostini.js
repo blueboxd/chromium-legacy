@@ -117,13 +117,16 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
   await remoteCall.waitUntilTaskExecutes(
       appId, 'plugin-vm-app-id|pluginvm|open-with',
       ['failed_plugin_vm_task_directory_not_shared']);
-  await remoteCall.waitForElement(appId, '.files-alert-dialog:not([hidden])');
+  await remoteCall.waitForElement(
+      appId, '.cr-dialog-frame:not(#default-task-dialog):not([hidden])');
 
   // Validate error messages.
   const dialogTitles = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, ['.files-alert-dialog .cr-dialog-title']);
+      'queryAllElements', appId,
+      ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-title']);
   const dialogTexts = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, ['.files-alert-dialog .cr-dialog-text']);
+      'queryAllElements', appId,
+      ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-text']);
 
   chrome.test.assertEq(
       ['Unable to open with Plugin VM'], dialogTitles.map(el => el.text));
@@ -131,6 +134,9 @@ testcase.pluginVmDirectoryNotSharedErrorDialog = async () => {
       ['To open files with Plugin VM App (Plugin VM), ' +
        'first move them to the Plugin VM folder.'],
       dialogTexts.map(el => el.text));
+
+  // TODO(crbug.com/1049453): Test file is moved. This can only be tested when
+  // tests allow creating /MyFiles/PvmDefault.
 };
 
 testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
@@ -178,13 +184,16 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
   await remoteCall.waitUntilTaskExecutes(
       appId, 'plugin-vm-app-id|pluginvm|open-with',
       ['failed_plugin_vm_task_external_drive']);
-  await remoteCall.waitForElement(appId, '.files-alert-dialog:not([hidden])');
+  await remoteCall.waitForElement(
+      appId, '.cr-dialog-frame:not(#default-task-dialog):not([hidden])');
 
   // Validate error messages.
   const dialogTitles = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, ['.files-alert-dialog .cr-dialog-title']);
+      'queryAllElements', appId,
+      ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-title']);
   const dialogTexts = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, ['.files-alert-dialog .cr-dialog-text']);
+      'queryAllElements', appId,
+      ['.cr-dialog-frame:not(#default-task-dialog) .cr-dialog-text']);
 
   chrome.test.assertEq(
       ['Unable to open with Plugin VM'], dialogTitles.map(el => el.text));
@@ -192,4 +201,7 @@ testcase.pluginVmFileOnExternalDriveErrorDialog = async () => {
       ['To open files with Plugin VM App (Plugin VM), ' +
        'first copy them to the Plugin VM folder.'],
       dialogTexts.map(el => el.text));
+
+  // TODO(crbug.com/1049453): Test file is moved. This can only be tested when
+  // tests allow creating /MyFiles/PvmDefault.
 };

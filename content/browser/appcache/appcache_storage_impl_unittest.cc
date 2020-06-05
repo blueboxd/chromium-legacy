@@ -51,6 +51,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/network/test/test_utils.h"
 #include "sql/test/test_helpers.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -197,7 +198,8 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     // Not needed for our tests.
-    void RegisterClient(scoped_refptr<storage::QuotaClient> client) override {}
+    void RegisterClient(scoped_refptr<storage::QuotaClient> client,
+                        storage::QuotaClientType quota_client_type) override {}
     void NotifyOriginInUse(const url::Origin& origin) override {}
     void NotifyOriginNoLongerInUse(const url::Origin& origin) override {}
     void SetUsageCacheEnabled(storage::QuotaClientType client_id,

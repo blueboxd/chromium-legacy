@@ -20,23 +20,9 @@ using Positions = std::vector<local_search_service::Position>;
 using TokenizedStringWithId =
     std::pair<std::string, std::unique_ptr<TokenizedString>>;
 
-// TODO(jiameng): |search_tags| will be removed in the next cl.
-void TokenizeSearchTags(const std::vector<base::string16>& search_tags,
-                        const std::vector<Content>& contents,
+void TokenizeSearchTags(const std::vector<Content>& contents,
                         std::vector<TokenizedStringWithId>* tokenized) {
   DCHECK(tokenized);
-
-  // Only one of them may be non-empty.
-  DCHECK(search_tags.empty() || contents.empty());
-
-  if (!search_tags.empty()) {
-    const std::string empty_content_id;
-    for (const auto& tag : search_tags) {
-      tokenized->push_back(std::make_pair(
-          empty_content_id, std::make_unique<TokenizedString>(tag)));
-    }
-    return;
-  }
 
   for (const auto& content : contents) {
     tokenized->push_back(std::make_pair(
@@ -90,9 +76,6 @@ local_search_service::Content::Content() = default;
 local_search_service::Content::Content(const Content& content) = default;
 local_search_service::Content::~Content() = default;
 
-local_search_service::Data::Data(const std::string& id,
-                                 const std::vector<base::string16>& search_tags)
-    : id(id), search_tags(search_tags) {}
 local_search_service::Data::Data(
     const std::string& id,
     const std::vector<local_search_service::Content>& contents)
@@ -119,7 +102,7 @@ void Index::AddOrUpdate(const std::vector<local_search_service::Data>& data) {
 
     // If a key already exists, it will overwrite earlier data.
     data_[id] = std::vector<TokenizedStringWithId>();
-    TokenizeSearchTags(item.search_tags, item.contents, &data_[id]);
+    TokenizeSearchTags(item.contents, &data_[id]);
   }
 }
 
@@ -138,25 +121,23 @@ uint32_t Index::Delete(const std::vector<std::string>& ids) {
   return num_deleted;
 }
 
-local_search_service::ResponseStatus Index::Find(
-    const base::string16& query,
-    uint32_t max_results,
-    std::vector<local_search_service::Result>* results) {
+ResponseStatus Index::Find(const base::string16& query,
+                           uint32_t max_results,
+                           std::vector<Result>* results) {
   DCHECK(results);
   results->clear();
   if (query.empty()) {
-    return local_search_service::ResponseStatus::kEmptyQuery;
+    return ResponseStatus::kEmptyQuery;
   }
   if (data_.empty()) {
-    return local_search_service::ResponseStatus::kEmptyIndex;
+    return ResponseStatus::kEmptyIndex;
   }
 
   *results = GetSearchResults(query, max_results);
-  return local_search_service::ResponseStatus::kSuccess;
+  return ResponseStatus::kSuccess;
 }
 
-void Index::SetSearchParams(
-    const local_search_service::SearchParams& search_params) {
+void Index::SetSearchParams(const SearchParams& search_params) {
   search_params_ = search_params;
 }
 
@@ -164,10 +145,9 @@ SearchParams Index::GetSearchParamsForTesting() {
   return search_params_;
 }
 
-std::vector<local_search_service::Result> Index::GetSearchResults(
-    const base::string16& query,
-    uint32_t max_results) const {
-  std::vector<local_search_service::Result> results;
+std::vector<Result> Index::GetSearchResults(const base::string16& query,
+                                            uint32_t max_results) const {
+  std::vector<Result> results;
   const TokenizedString tokenized_query(query);
 
   for (const auto& item : data_) {
@@ -178,7 +158,7 @@ std::vector<local_search_service::Result> Index::GetSearchResults(
             search_params_.use_prefix_only, search_params_.use_edit_distance,
             search_params_.partial_match_penalty_rate, &relevance_score,
             &positions)) {
-      local_search_service::Result result;
+      Result result;
       result.id = item.first;
       result.score = relevance_score;
       result.positions = positions;

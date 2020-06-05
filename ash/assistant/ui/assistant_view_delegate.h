@@ -17,7 +17,6 @@
 
 namespace ash {
 
-class AssistantAlarmTimerModel;
 class AssistantNotificationModel;
 enum class AssistantButtonId;
 
@@ -56,9 +55,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 
   virtual ~AssistantViewDelegate() {}
-
-  // Gets the alarm/timer model.
-  virtual const AssistantAlarmTimerModel* GetAlarmTimerModel() const = 0;
 
   // Gets the notification model.
   virtual const AssistantNotificationModel* GetNotificationModel() const = 0;

@@ -64,6 +64,9 @@ class FakeWritableFileStream {
   constructor(/** !Blob= */ data = new Blob()) {
     this.data = data;
 
+    /** @type {!Array<!{position: number, size: (number|undefined)}>} */
+    this.writes = [];
+
     /** @type {function(!Blob)} */
     this.resolveClose;
 
@@ -74,6 +77,7 @@ class FakeWritableFileStream {
   /** @override */
   async write(data) {
     const position = 0;  // Assume no seeks.
+    this.writes.push({position, size: data.size});
     this.data = new Blob([
       this.data.slice(0, position),
       data,
@@ -129,6 +133,9 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
 
     /** @type {!string} */
     this.type = type;
+
+    /** @type {?DOMException} */
+    this.nextCreateWritableError;
   }
   /** @override */
   createWriter(options) {
@@ -136,6 +143,9 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
   }
   /** @override */
   async createWritable(options) {
+    if (this.nextCreateWritableError) {
+      throw this.nextCreateWritableError;
+    }
     this.lastWritable = new FakeWritableFileStream();
     return this.lastWritable;
   }
@@ -181,7 +191,7 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
    * Helper to get all entries as File.
    * @return {!Array<!File>}
    */
-  getFilesSync(index) {
+  getFilesSync() {
     return this.files.map(f => f.getFileSync());
   }
   /** @override */
@@ -352,4 +362,13 @@ async function getLoadedFiles() {
     return response.fileList.files;
   }
   return null;
+}
+
+/**
+ * Puts the app into valid but "unexpected" state for it to be in after handling
+ * a launch. Currently this restores part of the app state to what it would be
+ * on a launch from the icon (i.e. no launch files).
+ */
+function simulateLosingAccessToDirectory() {
+  currentDirectoryHandle = null;
 }

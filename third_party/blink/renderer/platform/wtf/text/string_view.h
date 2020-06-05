@@ -70,7 +70,7 @@ class WTF_EXPORT StringView {
 
   // From a literal string or LChar buffer:
   StringView(const LChar* chars, unsigned length)
-      : impl_(StringImpl::empty_), characters8_(chars), length_(length) {}
+      : impl_(StringImpl::empty_), bytes_(chars), length_(length) {}
   StringView(const char* chars, unsigned length)
       : StringView(reinterpret_cast<const LChar*>(chars), length) {}
   StringView(const LChar* chars)
@@ -83,9 +83,7 @@ class WTF_EXPORT StringView {
 
   // From a wide literal string or UChar buffer.
   StringView(const UChar* chars, unsigned length)
-      : impl_(StringImpl::empty16_bit_),
-        characters16_(chars),
-        length_(length) {}
+      : impl_(StringImpl::empty16_bit_), bytes_(chars), length_(length) {}
   StringView(const UChar* chars);
   StringView(const char16_t* chars)
       : StringView(reinterpret_cast<const UChar*>(chars)) {}
@@ -115,22 +113,22 @@ class WTF_EXPORT StringView {
 
   const LChar* Characters8() const {
     DCHECK(Is8Bit());
-    return characters8_;
+    return static_cast<const LChar*>(bytes_);
   }
 
   const UChar* Characters16() const {
     DCHECK(!Is8Bit());
-    return characters16_;
+    return static_cast<const UChar*>(bytes_);
   }
 
   base::span<const LChar> Span8() const {
     DCHECK(Is8Bit());
-    return {characters8_, length_};
+    return {static_cast<const LChar*>(bytes_), length_};
   }
 
   base::span<const UChar> Span16() const {
     DCHECK(!Is8Bit());
-    return {characters16_, length_};
+    return {static_cast<const UChar*>(bytes_), length_};
   }
 
   UChar32 CodepointAt(unsigned i) const {
@@ -174,11 +172,7 @@ class WTF_EXPORT StringView {
 #else
   StringImpl* impl_;
 #endif
-  union {
-    const LChar* characters8_;
-    const UChar* characters16_;
-    const void* bytes_;
-  };
+  const void* bytes_;
   unsigned length_;
 };
 
@@ -188,9 +182,9 @@ inline StringView::StringView(const StringView& view,
     : impl_(view.impl_), length_(length) {
   SECURITY_DCHECK(offset + length <= view.length());
   if (Is8Bit())
-    characters8_ = view.Characters8() + offset;
+    bytes_ = view.Characters8() + offset;
   else
-    characters16_ = view.Characters16() + offset;
+    bytes_ = view.Characters16() + offset;
 }
 
 inline StringView::StringView(const StringImpl* impl) {
@@ -236,9 +230,9 @@ inline void StringView::Set(const StringImpl& impl,
   length_ = length;
   impl_ = const_cast<StringImpl*>(&impl);
   if (impl.Is8Bit())
-    characters8_ = impl.Characters8() + offset;
+    bytes_ = impl.Characters8() + offset;
   else
-    characters16_ = impl.Characters16() + offset;
+    bytes_ = impl.Characters16() + offset;
 }
 
 // Unicode aware case insensitive string matching. Non-ASCII characters might

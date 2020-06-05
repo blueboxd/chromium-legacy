@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">ፍለጋን ያፅዱ</translation>
 <translation id="1839551713262164453">የመመሪያ እሴቶችን ማረጋገጥ ከስህተቶች ጋር አልተሳካም</translation>
 <translation id="1842969606798536927">ይክፈሉ</translation>
-<translation id="1852694792039666893">ጠንካራ የይለፍ ቃል ለመጠቆም የGoogle መለያዎን ይጠቀሙ</translation>
 <translation id="1871208020102129563">የ.pac ስክሪፕት ዩአርኤል ሳይሆን ተኪ አገልጋዮችን እንዲጠቀም ነው ተኪ የተዋቀረው።</translation>
 <translation id="1871284979644508959">የሚያስፈልግ መስክ</translation>
 <translation id="1875512691959384712">Google ቅጾች</translation>
@@ -405,7 +404,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">ምርጥ መገጣጠም</translation>
 <translation id="2691924980723297736">የደህንነት ማስጠንቀቂያ</translation>
-<translation id="2696268945573510710">በGoogle መለያዎ ላይ የተከማቹ የይለፍ ቃላትን ይጠቀሙ</translation>
 <translation id="2699302886720511147">ተቀባይነት ያላቸው ካርዶች</translation>
 <translation id="2701514975700770343">ፊት ወደ ታች</translation>
 <translation id="2702801445560668637">የንባብ ዝርዝር</translation>
@@ -452,7 +450,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> ላይ ስንክል</translation>
 <translation id="2916038427272391327">ሌሎች ፕሮግራሞችን ይዝጉ</translation>
 <translation id="2922350208395188000">የአገልጋይ እውቅና ማረጋገጫ ሊረጋገጥ አልቻለም።</translation>
-<translation id="2924027812781652774">በእርስዎ Google መለያ ውስጥ የተከማቹ የይለፍ ቃላትን ለመጠቀም ይግቡ</translation>
 <translation id="2925673989565098301">የማድረሻ ስልት</translation>
 <translation id="2928905813689894207">ክፍያ የሚጠየቅበት አድራሻ</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ተጨማሪ}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ተጨማሪ}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> እና <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ተጨማሪ}}</translation>

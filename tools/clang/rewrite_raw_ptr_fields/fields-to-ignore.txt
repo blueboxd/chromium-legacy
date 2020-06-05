@@ -99,6 +99,10 @@ net::(anonymous namespace)::SettingGetterImplGSettings::socks_client_
 ui::AXPlatformNodeAuraLinux::atk_hyperlink_
 PrintDialogGtk::dialog_
 
+# Populated manually - using nmap or base::AllocPages directly
+blink::GCInfoTable::table_
+disk_cache::MappedFile::buffer_
+
 # Populated manually, because of in-out-arg usage.
 # (not sure why it wasn't caught by the rewriter when populating the list below).
 ui::AXPlatformNodeAuraLinux::document_parent_

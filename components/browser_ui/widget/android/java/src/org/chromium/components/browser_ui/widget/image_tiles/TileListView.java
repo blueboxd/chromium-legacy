@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.view.View;
 import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +32,7 @@ class TileListView {
     private final RecyclerView mView;
     private final RecyclerViewAdapter<TileViewHolder, Void> mAdapter;
     private final LinearLayoutManager mLayoutManager;
+    private final LayoutAnimationController mLayoutAnimationController;
     private final TileSizeSupplier mTileSizeSupplier;
 
     /** Constructor. */
@@ -54,8 +56,8 @@ class TileListView {
         mView.setLayoutManager(mLayoutManager);
         mView.addItemDecoration(new ItemDecorationImpl(context));
         mView.setItemAnimator(null);
-        mView.setLayoutAnimation(
-                AnimationUtils.loadLayoutAnimation(context, R.anim.image_grid_enter));
+        mLayoutAnimationController =
+                AnimationUtils.loadLayoutAnimation(context, R.anim.image_grid_enter);
 
         mTileSizeSupplier = new TileSizeSupplier(context);
 
@@ -73,10 +75,23 @@ class TileListView {
         return mView;
     }
 
-    /** Scrolls the recycler view to the given {@code position}. */
-    public void scrollToPosition(int position) {
-        mView.getLayoutManager().scrollToPosition(0);
-        mView.scheduleLayoutAnimation();
+    /** Scrolls to the beginning of the list if possible. */
+    void scrollToBeginning() {
+        if (mView.computeHorizontalScrollOffset() != 0) {
+            mView.getLayoutManager().scrollToPosition(0);
+        }
+    }
+
+    /**
+     * Called to show enter animation for the list items.
+     */
+    void showAnimation(boolean animate) {
+        if (animate) {
+            mView.setLayoutAnimation(mLayoutAnimationController);
+            mView.scheduleLayoutAnimation();
+        } else {
+            mView.setLayoutAnimation(null);
+        }
     }
 
     private class ItemDecorationImpl extends ItemDecoration {

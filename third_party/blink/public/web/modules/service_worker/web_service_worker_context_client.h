@@ -35,9 +35,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
@@ -79,8 +79,10 @@ class WebServiceWorkerContextClient {
   // ServiceWorker has prepared everything for script loading and is now ready
   // for DevTools inspection. Called on the initiator thread.
   virtual void WorkerReadyForInspectionOnInitiatorThread(
-      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
-      mojo::ScopedMessagePipeHandle devtools_agent_host_request) {}
+      CrossVariantMojoRemote<mojom::DevToolsAgentInterfaceBase>
+          devtools_agent_remote,
+      CrossVariantMojoReceiver<mojom::DevToolsAgentHostInterfaceBase>
+          devtools_agent_host_receiver) {}
 
   // The worker started but it could not execute because fetching the classic
   // script failed on the worker thread.

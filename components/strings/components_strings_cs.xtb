@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Stránky v jazyce <ph name="SOURCE_LANGUAGE" /> se od teď budou překládat do jazyka <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chrome k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Google Chrome připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="1682696192498422849">Krátkou hranou napřed</translation>
+<translation id="168693727862418163">Hodnotu zásady se nepodařilo ověřit proti schématu a bude ignorována.</translation>
 <translation id="168841957122794586">Certifikát serveru obsahuje slabý kryptografický klíč.</translation>
 <translation id="1697532407822776718">Vše je nastaveno!</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -220,7 +221,6 @@
 <translation id="1838374766361614909">Vymazat vyhledávání</translation>
 <translation id="1839551713262164453">Ověření hodnot zásad selhalo s chybami</translation>
 <translation id="1842969606798536927">Zaplatit</translation>
-<translation id="1852694792039666893">Navrhnout silné heslo pomocí účtu Google</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="1875512691959384712">Formuláře Google</translation>
@@ -405,7 +405,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Přizpůsobit</translation>
 <translation id="2691924980723297736">Bezpečnostní upozornění</translation>
-<translation id="2696268945573510710">Použít hesla uložená v účtu Google</translation>
 <translation id="2699302886720511147">Přijímané karty</translation>
 <translation id="2701514975700770343">Lícem dolů</translation>
 <translation id="2702801445560668637">Seznam četby</translation>
@@ -452,7 +451,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2915068235268646559">Selhání z: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Zavřete ostatní programy</translation>
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
-<translation id="2924027812781652774">Chcete-li používat hesla uložená v účtu Google, přihlaste se</translation>
 <translation id="2925673989565098301">Způsob doručení</translation>
 <translation id="2928905813689894207">Fakturační adresa</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> další}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> další}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> další}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> dalších}}</translation>

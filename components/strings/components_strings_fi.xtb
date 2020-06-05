@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Tyhjennä haku</translation>
 <translation id="1839551713262164453">Käytäntöarvojen vahvistus epäonnistui sisältäen virheitä</translation>
 <translation id="1842969606798536927">Maksa</translation>
-<translation id="1852694792039666893">Ehdota vahvaa salasanaa käyttämällä Google-tiliä</translation>
 <translation id="1871208020102129563">Välityspalvelin on asetettu käyttämään kiinteitä välityspalvelimia, ei .pac-URL-osoitetta.</translation>
 <translation id="1871284979644508959">Pakollinen tieto</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -409,7 +408,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Sopivin koko</translation>
 <translation id="2691924980723297736">Turvallisuusvaroitus</translation>
-<translation id="2696268945573510710">Käytä Google-tilillesi tallennettuja salasanoja</translation>
 <translation id="2699302886720511147">Hyväksytyt kortit</translation>
 <translation id="2701514975700770343">Tulostuspuoli alaspäin</translation>
 <translation id="2702801445560668637">Lukulista</translation>
@@ -458,7 +456,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="2915068235268646559">Kaatuminen <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Sulje muita ohjelmia.</translation>
 <translation id="2922350208395188000">Palvelimen varmennetta ei voi tarkistaa.</translation>
-<translation id="2924027812781652774">Kirjaudu sisään käyttääksesi Google-tilillesi tallennettuja salasanoja</translation>
 <translation id="2925673989565098301">Toimitustapa</translation>
 <translation id="2928905813689894207">Laskutusosoite</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" /><ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{ ja <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> toinen}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> ja <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> muuta}}</translation>

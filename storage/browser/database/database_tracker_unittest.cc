@@ -22,6 +22,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "storage/browser/database/database_tracker.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/common/database/database_identifier.h"
@@ -100,7 +101,8 @@ class TestQuotaManagerProxy : public QuotaManagerProxy {
   TestQuotaManagerProxy()
       : QuotaManagerProxy(nullptr, nullptr), registered_client_(nullptr) {}
 
-  void RegisterClient(scoped_refptr<QuotaClient> client) override {
+  void RegisterClient(scoped_refptr<QuotaClient> client,
+                      QuotaClientType client_type) override {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }

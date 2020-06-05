@@ -53,10 +53,6 @@ extern const base::Feature kPreserveScrollViewProperties;
 // When enabled, display an interstitial on lookalike URL navigations.
 extern const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI;
 
-// Level at which battery power is considered low, and some cosmetic features
-// can be turned off.
-const float kLowBatteryLevelThreshold = 0.2;
-
 // When true, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is false, the mobile version
 // is requested by default.

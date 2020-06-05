@@ -205,10 +205,10 @@
 <translation id="1753706481035618306">رقم الصفحة</translation>
 <translation id="1763864636252898013">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من خلال نظام تشغيل جهازك. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />تجربة تشغيل بيانات التشخيص لشبكة Windows<ph name="END_LINK" />.</translation>
-<translation id="1772163372082567643">لقد أعَدّ الخادم الذي تنتقل إليه، <ph name="ORIGIN" />، عنوانًا يتطلب فيه
-    أن يتم تطبيق سياسة المصدر على جميع الطلبات المقدَّمة إليه. ولكن
-    العنوان غير صالح، وبالتالي يُمنع المتصفِّح من توصيل
-    طلبك إلى الموقع الإلكتروني <ph name="SITE" />. ويمكن استخدام سياسات المصدر من خلال
+<translation id="1772163372082567643">إنّ خادم <ph name="ORIGIN" /> الذي تنتقل إليه أعدّ عنوانًا يتطلّب
+    تطبيق سياسة المصدر على جميع الطلبات المقدّمة إليه، ولكن
+    العنوان غير صالح، مما يمنع المتصفِّح من إكمال
+    طلبك ذي الصلة بالموقع الإلكتروني <ph name="SITE" />. ويمكن استخدام سياسات المصدر من خلال
     عوامل تشغيل المواقع الإلكترونية لضبط الأمان والخصائص الأخرى لموقع إلكتروني.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1783075131180517613">يُرجى تحديث عبارة مرور المزامنة.</translation>
@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">محو البحث</translation>
 <translation id="1839551713262164453">لقد تعذّر التحقق من قيم السياسة مع ظهور أخطاء.</translation>
 <translation id="1842969606798536927">الدفع</translation>
-<translation id="1852694792039666893">‏استخدام حسابك على Google لاقتراح كلمة مرور قوية</translation>
 <translation id="1871208020102129563">‏تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
 <translation id="1871284979644508959">حقل مطلوب</translation>
 <translation id="1875512691959384712">‏نماذج Google</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">أفضل حجم</translation>
 <translation id="2691924980723297736">تحذير متعلق بالأمان</translation>
-<translation id="2696268945573510710">‏استخدِم كلمات المرور المُخزّنة في حسابك على Google</translation>
 <translation id="2699302886720511147">البطاقات المقبولة</translation>
 <translation id="2701514975700770343">الوجه للأسفل</translation>
 <translation id="2702801445560668637">قائمة القراءة</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559">مُعطّل منذ <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">إغلاق البرامج الأخرى</translation>
 <translation id="2922350208395188000">لا يمكن التحقق من شهادة الخادم.</translation>
-<translation id="2924027812781652774">‏يُرجى تسجيل الدخول لاستخدام كلمات المرور المُخزّنة في حسابك على Google.</translation>
 <translation id="2925673989565098301">طريقة التسليم</translation>
 <translation id="2928905813689894207">عنوان إرسال الفواتير</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> وعنوان <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> آخر}two{<ph name="SHIPPING_ADDRESS_PREVIEW" /> وعنوانان (<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />) آخران}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عناوين أخرى}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوانًا آخر}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> عنوان آخر}}</translation>
@@ -757,11 +754,11 @@
 <translation id="4194250254487269611">يتعذّر حفظ بطاقتك الآن.</translation>
 <translation id="4196861286325780578">إ&amp;عادة النقل</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />التحقق من عمليات تهيئة الجدار الناري وبرامج مكافحة الفيروسات<ph name="END_LINK" /></translation>
-<translation id="4209166701302774460">لقد طلب الخادم الذي تنتقل إليه، <ph name="ORIGIN" />، تطبيق
-    سياسة المصدر على جميع الطلبات المقدَّمة إليه. ولكن تعذّر الآن
-    عرض سياسة تمنع المتصفِّح من توصيل طلبك
-    إلى الموقع الإلكتروني <ph name="SITE" />. ويمكن استخدام سياسات المصدر من خلال
-    عوامل تشغيل الموقع الإلكتروني لضبط الأمان والخصائص الأخرى للموقع الإلكتروني.</translation>
+<translation id="4209166701302774460">إن خادم <ph name="ORIGIN" /> الذي تنتقل إليه قد طلب تطبيق
+    سياسة المصدر على جميع الطلبات المقدَّمة إليه، ولكن تعذّر الآن
+    عرض سياسة، مما يمنع المتصفِّح من إكمال طلبك
+    ذي الصلة بالموقع الإلكتروني <ph name="SITE" />. ويمكن استخدام سياسات المصدر من خلال
+    عوامل تشغيل الموقع الإلكتروني لضبط الأمان والخصائص الأخرى لموقع إلكتروني.</translation>
 <translation id="421066178035138955">استخدام أجهزة الواقع الافتراضي وبياناتها</translation>
 <translation id="4214357935346142455">الملف الشخصي في شاشة تسجيل الدخول</translation>
 <translation id="4215751373031079683">‏7x9 (مغلف)</translation>

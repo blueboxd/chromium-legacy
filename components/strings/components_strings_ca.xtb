@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">Esborra la cerca</translation>
 <translation id="1839551713262164453">S'han produït errors a la validació dels valors de la política</translation>
 <translation id="1842969606798536927">Paga</translation>
-<translation id="1852694792039666893">Utilitza el teu Compte de Google per suggerir una contrasenya segura</translation>
 <translation id="1871208020102129563">El servidor intermediari està configurat perquè utilitzi servidors intermediaris fixos, en lloc d'un URL d'script .pac.</translation>
 <translation id="1871284979644508959">Camp obligatori</translation>
 <translation id="1875512691959384712">Formularis de Google</translation>
@@ -405,7 +404,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Mida òptima</translation>
 <translation id="2691924980723297736">Advertiment de seguretat</translation>
-<translation id="2696268945573510710">Utilitza les contrasenyes emmagatzemades al teu Compte de Google</translation>
 <translation id="2699302886720511147">Targetes acceptades</translation>
 <translation id="2701514975700770343">Cara avall</translation>
 <translation id="2702801445560668637">Llista de lectura</translation>
@@ -452,7 +450,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2915068235268646559">Inici del bloqueig: <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Tanca altres programes</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
-<translation id="2924027812781652774">Inicia la sessió per utilitzar les contrasenyes emmagatzemades al teu Compte de Google</translation>
 <translation id="2925673989565098301">Mètode d'entrega</translation>
 <translation id="2928905813689894207">Adreça de facturació</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> més}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> i <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> més}}</translation>

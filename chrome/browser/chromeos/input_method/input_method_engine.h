@@ -32,14 +32,11 @@ struct InputMethodMenuItem;
 }  // namespace ime
 }  // namespace ui
 
-namespace input_method {
-class InputMethodEngineBase;
-}  // namespace input_method
-
 namespace chromeos {
+
 struct AssistiveWindowProperties;
 
-class InputMethodEngine : public ::input_method::InputMethodEngineBase,
+class InputMethodEngine : public InputMethodEngineBase,
                           public SuggestionHandlerInterface {
  public:
   enum {
@@ -170,7 +167,7 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase,
   bool IsValidKeyEvent(const ui::KeyEvent* ui_event) override;
 
  private:
-  // input_method::InputMethodEngineBase:
+  // InputMethodEngineBase:
   void UpdateComposition(const ui::CompositionText& composition_text,
                          uint32_t cursor_pos,
                          bool is_visible) override;

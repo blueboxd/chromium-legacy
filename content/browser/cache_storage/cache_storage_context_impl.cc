@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/origin.h"
@@ -318,10 +319,12 @@ void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(
     return;
   quota_manager_proxy->RegisterClient(
       base::MakeRefCounted<CacheStorageQuotaClient>(
-          manager, CacheStorageOwner::kCacheAPI));
+          manager, CacheStorageOwner::kCacheAPI),
+      storage::QuotaClientType::kServiceWorkerCache);
   quota_manager_proxy->RegisterClient(
       base::MakeRefCounted<CacheStorageQuotaClient>(
-          manager, CacheStorageOwner::kBackgroundFetch));
+          manager, CacheStorageOwner::kBackgroundFetch),
+      storage::QuotaClientType::kBackgroundFetch);
 }
 
 }  // namespace content

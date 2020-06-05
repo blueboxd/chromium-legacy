@@ -270,6 +270,16 @@ def expr_from_exposure(exposure,
         feature_selector_names.extend(
             exposure.context_dependent_runtime_enabled_features)
 
+    # [ContextEnabled]
+    if exposure.context_enabled_features:
+        terms = map(
+            lambda feature: _Expr(
+                "${{context_feature_settings}}->is{}Enabled()".format(
+                    feature)), exposure.context_enabled_features)
+        feature_enabled_terms.append(
+            expr_and([_Expr("${context_feature_settings}"),
+                      expr_or(terms)]))
+
     # Build an expression.
     top_level_terms = []
     top_level_terms.append(secure_context_term)

@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Fjern søket</translation>
 <translation id="1839551713262164453">Validering av regelverdier mislyktes med feil</translation>
 <translation id="1842969606798536927">Betal</translation>
-<translation id="1852694792039666893">Bruk Google-kontoen din til å foreslå et sterkt passord</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
 <translation id="1871284979644508959">Obligatorisk felt</translation>
 <translation id="1875512691959384712">Google Skjemaer</translation>
@@ -409,7 +408,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Beste tilpassing</translation>
 <translation id="2691924980723297736">Sikkerhetsadvarsel</translation>
-<translation id="2696268945573510710">Bruk passord som er lagret i Google-kontoen din</translation>
 <translation id="2699302886720511147">Godkjente kort</translation>
 <translation id="2701514975700770343">Forsiden ned</translation>
 <translation id="2702801445560668637">Leseliste</translation>
@@ -458,7 +456,6 @@ brukere av denne nettleseren.</translation>
 <translation id="2915068235268646559">Krasj fra <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Lukk andre programmer</translation>
 <translation id="2922350208395188000">Tjenerens sertifikat kan ikke kontrolleres.</translation>
-<translation id="2924027812781652774">Logg på for å bruke passord som er lagret i Google-kontoen din</translation>
 <translation id="2925673989565098301">Leveringsmåte</translation>
 <translation id="2928905813689894207">Faktureringsadresse</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> til}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> til}}</translation>

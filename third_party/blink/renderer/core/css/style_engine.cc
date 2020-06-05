@@ -2199,13 +2199,6 @@ void StyleEngine::PropagateWritingModeAndDirectionToHTMLRoot() {
     root_element->PropagateWritingModeAndDirectionFromBody();
 }
 
-void StyleEngine::PrintingStateChanged() {
-  ColorSchemeChanged();
-  MarkViewportStyleDirty();
-  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
-      style_change_reason::kStyleSheetChange));
-}
-
 void StyleEngine::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(injected_user_style_sheets_);

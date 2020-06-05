@@ -56,7 +56,6 @@ class MockQuotaClient : public QuotaClient {
   base::Time IncrementMockTime();
 
   // QuotaClient.
-  QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

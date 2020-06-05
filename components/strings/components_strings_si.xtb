@@ -225,7 +225,6 @@
 <translation id="1838374766361614909">සෙවීම හිස් කරන්න</translation>
 <translation id="1839551713262164453">ප්‍රතිපත්ති අගයන්ගේ වලංගු කිරීම දෝෂ සමග අසමත් වී ඇත</translation>
 <translation id="1842969606798536927">ගෙවන්න</translation>
-<translation id="1852694792039666893">ප්‍රබල මුරපදයක් යෝජනා කිරීමට ඔබේ Google ගිණුම භාවිත කරන්න</translation>
 <translation id="1871208020102129563">.pac ස්ක්‍රිප්ට URL එතත් නොව, ස්ථාවර ප්‍රොක්සි සේවාදයක භාවිතා කිරීමට ප්‍රොක්සි සකසා ඇත,</translation>
 <translation id="1871284979644508959">අවශ්‍ය ක්ෂේත්‍රය</translation>
 <translation id="1875512691959384712">Google පෝරම</translation>
@@ -410,7 +409,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">හොඳින්ම ගැළපේ</translation>
 <translation id="2691924980723297736">ආරක්‍ෂක අවවාදය</translation>
-<translation id="2696268945573510710">ඔබේ Google ගිණුම තුළ ගබඩා කර ඇති මුරපද භාවිත කරන්න</translation>
 <translation id="2699302886720511147">පිළිගත් කාඩ්පත්</translation>
 <translation id="2701514975700770343">මුහුණ පහළට</translation>
 <translation id="2702801445560668637">කියවීම් ලැයිස්තුව</translation>
@@ -457,7 +455,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> වෙතින් බිඳ වැටීම්</translation>
 <translation id="2916038427272391327">අනෙකුත් වැඩසටහන් වසන්න</translation>
 <translation id="2922350208395188000">සේවාදායකයේ සහතිකය සහතික කළ නොහැක</translation>
-<translation id="2924027812781652774">ඔබේ Google ගිණුම තුළ ගබඩා කර ඇති මුරපද භාවිත කිරීමට පුරන්න</translation>
 <translation id="2925673989565098301">බෙදා හැරීමේ ක්‍රමය</translation>
 <translation id="2928905813689894207">බිල්පත් ලිපිනය</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> සහ තව <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> සහ තව <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> සහ තව <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

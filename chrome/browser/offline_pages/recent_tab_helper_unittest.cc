@@ -262,8 +262,8 @@ void RecentTabHelperTest::FailLoad(const GURL& url) {
 
 const std::vector<OfflinePageItem>& RecentTabHelperTest::GetAllPages() {
   if (all_pages_needs_updating_) {
-    model()->GetAllPages(base::Bind(&RecentTabHelperTest::OnGetAllPagesDone,
-                                    weak_ptr_factory_.GetWeakPtr()));
+    model()->GetAllPages(base::BindOnce(&RecentTabHelperTest::OnGetAllPagesDone,
+                                        weak_ptr_factory_.GetWeakPtr()));
     RunUntilIdle();
     all_pages_needs_updating_ = false;
   }

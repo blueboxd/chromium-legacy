@@ -189,7 +189,8 @@ FileSystemContext::FileSystemContext(
   if (quota_manager_proxy) {
     // Quota client assumes all backends have registered.
     quota_manager_proxy->RegisterClient(
-        base::MakeRefCounted<FileSystemQuotaClient>(this));
+        base::MakeRefCounted<FileSystemQuotaClient>(this),
+        QuotaClientType::kFileSystem);
   }
 
   sandbox_backend_->Initialize(this);

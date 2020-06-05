@@ -36,6 +36,7 @@ using chromeos::assistant::features::IsTimersV2Enabled;
 using chromeos::assistant::mojom::AssistantNotification;
 using chromeos::assistant::mojom::AssistantNotificationButton;
 using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
+using chromeos::assistant::mojom::AssistantNotificationPriority;
 using chromeos::assistant::mojom::AssistantNotificationPtr;
 
 // Grouping key and ID prefix for timer notifications.
@@ -238,6 +239,32 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
   return buttons;
 }
 
+// Creates a timer notification priority for the given |timer|.
+AssistantNotificationPriority CreateTimerNotificationPriority(
+    const AssistantTimer& timer) {
+  // In timers v1, all notifications are |kHigh| priority.
+  if (!IsTimersV2Enabled())
+    return AssistantNotificationPriority::kHigh;
+
+  // In timers v2, a notification for a |kFired| timer is |kHigh| priority.
+  // This will cause the notification to pop up to the user.
+  if (timer.state == AssistantTimerState::kFired)
+    return AssistantNotificationPriority::kHigh;
+
+  // If the notification has lived for at least |kPopupThreshold|, drop the
+  // priority to |kLow| so that the notification will not pop up to the user.
+  constexpr base::TimeDelta kPopupThreshold = base::TimeDelta::FromSeconds(6);
+  const base::TimeDelta lifetime =
+      base::Time::Now() - timer.creation_time.value_or(base::Time::Now());
+  if (lifetime >= kPopupThreshold)
+    return AssistantNotificationPriority::kLow;
+
+  // Otherwise, the notification is |kDefault| priority. This means that it
+  // may or may not pop up to the user, depending on the presence of other
+  // notifications.
+  return AssistantNotificationPriority::kDefault;
+}
+
 // Creates a notification for the given |timer|.
 AssistantNotificationPtr CreateTimerNotification(const AssistantTimer& timer) {
   AssistantNotificationPtr notification = AssistantNotification::New();
@@ -247,10 +274,7 @@ AssistantNotificationPtr CreateTimerNotification(const AssistantTimer& timer) {
   notification->buttons = CreateTimerNotificationButtons(timer);
   notification->client_id = CreateTimerNotificationId(timer);
   notification->grouping_key = kTimerNotificationGroupingKey;
-
-  // This notification should be able to wake up the display if it was off.
-  notification->is_high_priority = true;
-
+  notification->priority = CreateTimerNotificationPriority(timer);
   return notification;
 }
 
@@ -272,6 +296,28 @@ AssistantAlarmTimerControllerImpl::~AssistantAlarmTimerControllerImpl() {
 void AssistantAlarmTimerControllerImpl::SetAssistant(
     chromeos::assistant::mojom::Assistant* assistant) {
   assistant_ = assistant;
+}
+
+const AssistantAlarmTimerModel* AssistantAlarmTimerControllerImpl::GetModel()
+    const {
+  return &model_;
+}
+
+void AssistantAlarmTimerControllerImpl::OnTimerStateChanged(
+    std::vector<AssistantTimerPtr> new_or_updated_timers) {
+  // First we remove all old timers that no longer exist.
+  for (const auto* old_timer : model_.GetAllTimers()) {
+    if (std::none_of(new_or_updated_timers.begin(), new_or_updated_timers.end(),
+                     [&old_timer](const auto& new_or_updated_timer) {
+                       return old_timer->id == new_or_updated_timer->id;
+                     })) {
+      model_.RemoveTimer(old_timer->id);
+    }
+  }
+
+  // Then we add any new timers and update existing ones.
+  for (auto& new_or_updated_timer : new_or_updated_timers)
+    model_.AddOrUpdateTimer(std::move(new_or_updated_timer));
 }
 
 void AssistantAlarmTimerControllerImpl::OnAssistantControllerConstructed() {
@@ -317,28 +363,6 @@ void AssistantAlarmTimerControllerImpl::OnAssistantStatusChanged(
     model_.RemoveAllTimers();
 }
 
-void AssistantAlarmTimerControllerImpl::OnTimerStateChanged(
-    std::vector<AssistantTimerPtr> timers) {
-  if (timers.empty()) {
-    model_.RemoveAllTimers();
-    return;
-  }
-
-  // First we remove all old timers that no longer exist.
-  for (const auto* old_timer : model_.GetAllTimers()) {
-    if (std::none_of(timers.begin(), timers.end(),
-                     [&old_timer](const auto& new_or_updated_timer) {
-                       return old_timer->id == new_or_updated_timer->id;
-                     })) {
-      model_.RemoveTimer(old_timer->id);
-    }
-  }
-
-  // Then we add any new timers and update existing ones.
-  for (auto& new_or_updated_timer : timers)
-    model_.AddOrUpdateTimer(std::move(new_or_updated_timer));
-}
-
 void AssistantAlarmTimerControllerImpl::OnTimerAdded(
     const AssistantTimer& timer) {
   // Schedule a repeating timer to tick the tracked timers.
@@ -374,16 +398,6 @@ void AssistantAlarmTimerControllerImpl::OnTimerRemoved(
   // Remove any notification associated w/ |timer|.
   assistant_controller_->notification_controller()->RemoveNotificationById(
       CreateTimerNotificationId(timer), /*from_server=*/false);
-}
-
-void AssistantAlarmTimerControllerImpl::OnAllTimersRemoved() {
-  // We can stop our timer from ticking when all timers are removed.
-  ticker_.Stop();
-
-  // Remove any notifications associated w/ timers.
-  assistant_controller_->notification_controller()
-      ->RemoveNotificationByGroupingKey(kTimerNotificationGroupingKey,
-                                        /*from_server=*/false);
 }
 
 void AssistantAlarmTimerControllerImpl::PerformAlarmTimerAction(

@@ -83,7 +83,14 @@ bool CrostiniUpgraderDialog::CanCloseDialog() const {
     return true;
   }
   // Disallow closing without WebUI consent.
-  return upgrader_ui_ == nullptr || upgrader_ui_->can_close();
+  //
+  // Note that while the function name |CanCloseDialog| does not indicate the
+  // intend to close the dialog, but it is indeed only called when we are
+  // closing it, so requesting closing the page here is appropriate. One might
+  // think we should actually do all of this in |OnDialogCloseRequested|
+  // instead, but unfortunately that function is called after the web content is
+  // closed.
+  return upgrader_ui_ == nullptr || upgrader_ui_->RequestClosePage();
 }
 
 namespace {

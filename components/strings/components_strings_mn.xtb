@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Хайлтыг арилгах</translation>
 <translation id="1839551713262164453">Удирдамжийн утгыг баталгаажуулахад алдаа гарч, амжилтгүй боллоо</translation>
 <translation id="1842969606798536927">Төлөх</translation>
-<translation id="1852694792039666893">Сайн нууц үг санал болгохын тулд Google Бүртгэлээ ашиглах</translation>
 <translation id="1871208020102129563">Төлөөлөх сервер нь a .pac script URL биш харин тухайлан сонгосон төлөөлөх сервер ашиглах тохиргоотой байдаг.</translation>
 <translation id="1871284979644508959">Заавал бөглөх хэсэг</translation>
 <translation id="1875512691959384712">Google Маягт</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Хамгийн оновтой тохирол</translation>
 <translation id="2691924980723297736">Аюулгүй байдлын анхааруулга</translation>
-<translation id="2696268945573510710">Google Бүртгэлдээ хадгалсан нууц үгийг ашиглах</translation>
 <translation id="2699302886720511147">Зөвшөөрсөн карт</translation>
 <translation id="2701514975700770343">Нүүрээр нь доош харуулсан</translation>
 <translation id="2702801445560668637">Унших жагсаалт</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" />-н гэмтэл</translation>
 <translation id="2916038427272391327">Бусад хөтөлбөрийг хаах</translation>
 <translation id="2922350208395188000">Серверийн гэрчилгээг шалгаж болохгүй байна.</translation>
-<translation id="2924027812781652774">Google Бүртгэлдээ хадгалсан нууц үгийг ашиглахын тулд нэвтэрнэ үү</translation>
 <translation id="2925673989565098301">Хүргэлтийн төрөл</translation>
 <translation id="2928905813689894207">Тооцооны хаяг</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> болон бусад <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> болон бусад <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

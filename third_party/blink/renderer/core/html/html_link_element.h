@@ -169,6 +169,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String media_;
   String integrity_;
   String importance_;
+  String resources_;
   network::mojom::ReferrerPolicy referrer_policy_;
   Member<DOMTokenList> sizes_;
   Vector<gfx::Size> icon_sizes_;

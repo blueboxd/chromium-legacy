@@ -22,7 +22,6 @@ class ServiceWorkerQuotaClient : public storage::QuotaClient {
       ServiceWorkerContextWrapper* context);
 
   // QuotaClient method overrides
-  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,
@@ -38,6 +37,9 @@ class ServiceWorkerQuotaClient : public storage::QuotaClient {
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
   bool DoesSupport(blink::mojom::StorageType type) const override;
+
+  static constexpr storage::QuotaClientType kType =
+      storage::QuotaClientType::kServiceWorker;
 
  private:
   friend class ServiceWorkerContextWrapper;

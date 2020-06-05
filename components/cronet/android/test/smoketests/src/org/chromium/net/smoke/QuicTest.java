@@ -72,7 +72,8 @@ public class QuicTest {
             requestBuilder.build().start();
             callback.blockForDone();
             NativeCronetTestRule.assertSuccessfulNonEmptyResponse(callback, urlString);
-            if (callback.getResponseInfo().getNegotiatedProtocol().startsWith("http/2+quic/")) {
+            if (callback.getResponseInfo().getNegotiatedProtocol().startsWith("http/2+quic")
+                    || callback.getResponseInfo().getNegotiatedProtocol().startsWith("h3")) {
                 quicNegotiated = true;
                 break;
             }

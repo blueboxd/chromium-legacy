@@ -378,8 +378,8 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     LayoutGridItems();
     track_sizing_algorithm_.Reset();
 
-    if (NumTracks(kForRows, *grid_) > 1u && !StyleRef().RowGap().IsNormal() &&
-        StyleRef().RowGap().GetLength().IsPercentOrCalc()) {
+    if (NumTracks(kForRows, *grid_) > 1u && StyleRef().RowGap() &&
+        StyleRef().RowGap()->IsPercentOrCalc()) {
       UseCounter::Count(GetDocument(), WebFeature::kGridRowGapPercent);
       if (!CachedHasDefiniteLogicalHeight()) {
         UseCounter::Count(GetDocument(),
@@ -406,31 +406,31 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
 LayoutUnit LayoutGrid::GridGap(
     GridTrackSizingDirection direction,
     base::Optional<LayoutUnit> available_size) const {
-  const GapLength& gap =
+  const base::Optional<Length>& gap =
       direction == kForColumns ? StyleRef().ColumnGap() : StyleRef().RowGap();
-  if (gap.IsNormal())
+  if (!gap)
     return LayoutUnit();
 
-  return ValueForLength(gap.GetLength(), available_size.value_or(LayoutUnit()));
+  return ValueForLength(*gap, available_size.value_or(LayoutUnit()));
 }
 
 LayoutUnit LayoutGrid::GridGap(GridTrackSizingDirection direction) const {
   LayoutUnit available_size;
   bool is_row_axis = direction == kForColumns;
 
-  const GapLength& gap =
+  const base::Optional<Length>& gap =
       is_row_axis ? StyleRef().ColumnGap() : StyleRef().RowGap();
-  if (gap.IsNormal())
+  if (!gap)
     return LayoutUnit();
 
-  if (gap.GetLength().IsPercentOrCalc()) {
+  if (gap->IsPercentOrCalc()) {
     available_size =
         is_row_axis ? AvailableLogicalWidth() : ContentLogicalHeight();
   }
 
   // TODO(rego): Maybe we could cache the computed percentage as a performance
   // improvement.
-  return ValueForLength(gap.GetLength(), available_size);
+  return ValueForLength(*gap, available_size);
 }
 
 LayoutUnit LayoutGrid::GuttersSize(

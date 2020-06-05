@@ -33,6 +33,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
@@ -387,7 +388,8 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       partition_(std::move(partition)) {
   if (quota_manager_proxy_.get()) {
     quota_client_ = base::MakeRefCounted<AppCacheQuotaClient>(AsWeakPtr());
-    quota_manager_proxy_->RegisterClient(quota_client_);
+    quota_manager_proxy_->RegisterClient(quota_client_,
+                                         storage::QuotaClientType::kAppcache);
   }
 }
 

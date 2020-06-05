@@ -57,10 +57,6 @@ AppCacheQuotaClient::~AppCacheQuotaClient() {
   DCHECK(current_delete_request_callback_.is_null());
 }
 
-storage::QuotaClientType AppCacheQuotaClient::type() const {
-  return storage::QuotaClientType::kAppcache;
-}
-
 void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DeletePendingRequests();

@@ -70,9 +70,7 @@ absl_source_set("commandlineflag_internal") {
   public = [ "internal/commandlineflag.h" ]
   deps = [
     "//third_party/abseil-cpp/absl/base:config",
-    "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/base:fast_type_id",
-    "//third_party/abseil-cpp/absl/strings",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -84,6 +82,9 @@ absl_source_set("commandlineflag") {
   public = [ "commandlineflag.h" ]
   deps = [
     ":commandlineflag_internal",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:fast_type_id",
+    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
@@ -93,7 +94,10 @@ absl_source_set("private_handle_accessor") {
   sources = [ "internal/private_handle_accessor.cc" ]
   public = [ "internal/private_handle_accessor.h" ]
   deps = [
-      ":commandlineflag",
+    ":commandlineflag",
+    ":commandlineflag_internal",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/strings",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -130,6 +134,7 @@ absl_source_set("flag_internal") {
   public = [ "internal/flag.h" ]
   deps = [
     ":commandlineflag",
+    ":commandlineflag_internal",
     ":config",
     ":marshalling",
     ":registry",
@@ -140,6 +145,7 @@ absl_source_set("flag_internal") {
     "//third_party/abseil-cpp/absl/meta:type_traits",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/synchronization",
+    "//third_party/abseil-cpp/absl/utility",
   ]
   visibility = []
   visibility += [
@@ -158,7 +164,6 @@ absl_source_set("flag") {
   deps = [
     ":config",
     ":flag_internal",
-    ":marshalling",
     ":registry",
     "//third_party/abseil-cpp/absl/base",
     "//third_party/abseil-cpp/absl/base:config",
@@ -210,6 +215,7 @@ absl_source_set("parse") {
   ]
   deps = [
     ":commandlineflag",
+    ":commandlineflag_internal",
     ":config",
     ":flag",
     ":flag_internal",

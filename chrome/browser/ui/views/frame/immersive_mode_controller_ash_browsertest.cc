@@ -211,8 +211,10 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeControllerAshWebAppBrowserTest, Layout) {
 
 // Verify the immersive mode status is as expected in tablet mode (titlebars are
 // autohidden in tablet mode).
+
+// Crashes on Linux Chromium OS ASan LSan Tests.  http://crbug.com/1091606
 IN_PROC_BROWSER_TEST_P(ImmersiveModeControllerAshWebAppBrowserTest,
-                       ImmersiveModeStatusTabletMode) {
+                       DISABLED_ImmersiveModeStatusTabletMode) {
   LaunchAppBrowser();
   ASSERT_FALSE(controller()->IsEnabled());
 

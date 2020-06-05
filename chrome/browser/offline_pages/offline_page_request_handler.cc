@@ -378,8 +378,9 @@ void GetPagesToServeURL(
         return;
       }
       offline_page_model->GetPageByOfflineId(
-          offline_id, base::Bind(&GetPageByOfflineIdDone, url, offline_header,
-                                 network_state, web_contents_getter, job));
+          offline_id,
+          base::BindOnce(&GetPageByOfflineIdDone, url, offline_header,
+                         network_state, web_contents_getter, job));
       return;
     }
   }
@@ -553,8 +554,9 @@ int OfflinePageRequestHandler::ReadRawData(net::IOBuffer* dest, int dest_size) {
 
   return stream_->Read(
       dest, dest_size,
-      base::Bind(&OfflinePageRequestHandler::DidReadForServing,
-                 weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(dest)));
+      base::BindOnce(&OfflinePageRequestHandler::DidReadForServing,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(dest)));
 }
 
 void OfflinePageRequestHandler::OnOfflinePagesAvailable(
@@ -847,10 +849,10 @@ void OfflinePageRequestHandler::DidOpenForValidation(int result) {
 }
 
 void OfflinePageRequestHandler::ReadForValidation() {
-  int result =
-      stream_->Read(buffer_.get(), kMaxBufferSizeForValidation,
-                    base::Bind(&OfflinePageRequestHandler::DidReadForValidation,
-                               weak_ptr_factory_.GetWeakPtr()));
+  int result = stream_->Read(
+      buffer_.get(), kMaxBufferSizeForValidation,
+      base::BindOnce(&OfflinePageRequestHandler::DidReadForValidation,
+                     weak_ptr_factory_.GetWeakPtr()));
   if (result != net::ERR_IO_PENDING)
     DidReadForValidation(result);
 }
@@ -931,9 +933,9 @@ void OfflinePageRequestHandler::DidOpenForServing(int result) {
 
   // Note that we always seek to the beginning of the file because the file may
   // have already been read for validation purpose.
-  int seek_result =
-      stream_->Seek(0, base::Bind(&OfflinePageRequestHandler::DidSeekForServing,
-                                  weak_ptr_factory_.GetWeakPtr()));
+  int seek_result = stream_->Seek(
+      0, base::BindOnce(&OfflinePageRequestHandler::DidSeekForServing,
+                        weak_ptr_factory_.GetWeakPtr()));
   if (seek_result != net::ERR_IO_PENDING)
     DidSeekForServing(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
 }

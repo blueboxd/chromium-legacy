@@ -22,13 +22,13 @@ CrostiniUpgraderPageHandler::CrostiniUpgraderPageHandler(
     mojo::PendingReceiver<chromeos::crostini_upgrader::mojom::PageHandler>
         pending_page_handler,
     mojo::PendingRemote<chromeos::crostini_upgrader::mojom::Page> pending_page,
-    base::OnceClosure close_dialog_callback,
+    base::OnceClosure on_page_closed,
     base::OnceCallback<void(bool)> launch_callback)
     : web_contents_{web_contents},
       upgrader_ui_delegate_{upgrader_ui_delegate},
       receiver_{this, std::move(pending_page_handler)},
       page_{std::move(pending_page)},
-      close_dialog_callback_{std::move(close_dialog_callback)},
+      on_page_closed_{std::move(on_page_closed)},
       launch_callback_{std::move(launch_callback)} {
   upgrader_ui_delegate_->AddObserver(this);
 }
@@ -47,6 +47,11 @@ void Redisplay() {
 
 void CrostiniUpgraderPageHandler::OnBackupMaybeStarted(bool did_start) {
   Redisplay();
+}
+
+// Send a close request to the web page.
+void CrostiniUpgraderPageHandler::RequestClosePage() {
+  page_->RequestClose();
 }
 
 void CrostiniUpgraderPageHandler::Backup(bool show_file_chooser) {
@@ -95,12 +100,12 @@ void CrostiniUpgraderPageHandler::CancelBeforeStart() {
   }
 }
 
-void CrostiniUpgraderPageHandler::Close() {
+void CrostiniUpgraderPageHandler::OnPageClosed() {
   if (launch_callback_) {
     Launch();
   }
-  if (close_dialog_callback_) {
-    std::move(close_dialog_callback_).Run();
+  if (on_page_closed_) {
+    std::move(on_page_closed_).Run();
   }
 }
 

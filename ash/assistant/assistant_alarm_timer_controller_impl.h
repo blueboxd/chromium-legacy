@@ -46,11 +46,12 @@ class AssistantAlarmTimerControllerImpl
       AssistantControllerImpl* assistant_controller);
   ~AssistantAlarmTimerControllerImpl() override;
 
-  // Returns the underlying model.
-  const AssistantAlarmTimerModel* model() const { return &model_; }
-
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
+
+  // AssistantAlarmTimerController:
+  const AssistantAlarmTimerModel* GetModel() const override;
+  void OnTimerStateChanged(std::vector<AssistantTimerPtr> timers) override;
 
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
@@ -63,14 +64,10 @@ class AssistantAlarmTimerControllerImpl
   void OnAssistantStatusChanged(
       chromeos::assistant::AssistantStatus status) override;
 
-  // AssistantAlarmTimerController:
-  void OnTimerStateChanged(std::vector<AssistantTimerPtr> timers) override;
-
   // AssistantAlarmTimerModelObserver:
   void OnTimerAdded(const AssistantTimer& timer) override;
   void OnTimerUpdated(const AssistantTimer& timer) override;
   void OnTimerRemoved(const AssistantTimer& timer) override;
-  void OnAllTimersRemoved() override;
 
  private:
   void PerformAlarmTimerAction(const assistant::util::AlarmTimerAction& action,

@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Xóa tìm kiếm</translation>
 <translation id="1839551713262164453">Không xác thực được các giá trị của chính sách do xảy ra lỗi</translation>
 <translation id="1842969606798536927">Thanh toán</translation>
-<translation id="1852694792039666893">Sử dụng Tài khoản Google của bạn để tạo mật khẩu mạnh</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
 <translation id="1871284979644508959">Trường bắt buộc</translation>
 <translation id="1875512691959384712">Google Biểu mẫu</translation>
@@ -409,7 +408,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Phù hợp nhất</translation>
 <translation id="2691924980723297736">Cảnh báo an toàn</translation>
-<translation id="2696268945573510710">Sử dụng mật khẩu lưu trữ trong Tài khoản Google của bạn</translation>
 <translation id="2699302886720511147">Thẻ được chấp nhận</translation>
 <translation id="2701514975700770343">Hướng xuống</translation>
 <translation id="2702801445560668637">Danh sách đọc</translation>
@@ -458,7 +456,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2915068235268646559">Sự cố từ <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Đóng các chương trình khác</translation>
 <translation id="2922350208395188000">Không thể kiểm tra chứng chỉ của máy chủ.</translation>
-<translation id="2924027812781652774">Đăng nhập để sử dụng mật khẩu lưu trữ trong Tài khoản Google của bạn</translation>
 <translation id="2925673989565098301">Phương thức giao hàng</translation>
 <translation id="2928905813689894207">Ðịa chỉ thanh toán</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> địa chỉ giao hàng khác}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> địa chỉ giao hàng khác}}</translation>

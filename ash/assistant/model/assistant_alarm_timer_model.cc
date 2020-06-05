@@ -31,10 +31,16 @@ void AssistantAlarmTimerModel::AddOrUpdateTimer(AssistantTimerPtr timer) {
 
   auto it = timers_.find(timer->id);
   if (it == timers_.end()) {
+    timer->creation_time = timer->creation_time.value_or(base::Time::Now());
     timers_[ptr->id] = std::move(timer);
     NotifyTimerAdded(*ptr);
     return;
   }
+
+  // If not explicitly provided, carry forward |creation_time|. This allows us
+  // to track the lifetime of |timer| across updates.
+  timer->creation_time =
+      timer->creation_time.value_or(timers_[ptr->id]->creation_time.value());
 
   timers_[ptr->id] = std::move(timer);
   NotifyTimerUpdated(*ptr);
@@ -52,11 +58,8 @@ void AssistantAlarmTimerModel::RemoveTimer(const std::string& id) {
 }
 
 void AssistantAlarmTimerModel::RemoveAllTimers() {
-  if (timers_.empty())
-    return;
-
-  timers_.clear();
-  NotifyAllTimersRemoved();
+  while (!timers_.empty())
+    RemoveTimer(timers_.begin()->second->id);
 }
 
 std::vector<const AssistantTimer*> AssistantAlarmTimerModel::GetAllTimers()
@@ -100,11 +103,6 @@ void AssistantAlarmTimerModel::NotifyTimerUpdated(const AssistantTimer& timer) {
 void AssistantAlarmTimerModel::NotifyTimerRemoved(const AssistantTimer& timer) {
   for (auto& observer : observers_)
     observer.OnTimerRemoved(timer);
-}
-
-void AssistantAlarmTimerModel::NotifyAllTimersRemoved() {
-  for (auto& observer : observers_)
-    observer.OnAllTimersRemoved();
 }
 
 }  // namespace ash

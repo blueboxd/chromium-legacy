@@ -3056,6 +3056,11 @@ const char kRunVideoCaptureServiceInBrowserProcessName[] =
 const char kRunVideoCaptureServiceInBrowserProcessDescription[] =
     "Run the video capture service in the browser process.";
 
+const char kSafetyCheckChromeCleanerChildName[] =
+    "Chrome Cleanup Tool in safety check";
+const char kSafetyCheckChromeCleanerChildDescription[] =
+    "Enables the Chrome Cleanup Tool child in safety check.";
+
 const char kUseAngleName[] = "Choose ANGLE graphics backend";
 const char kUseAngleDescription[] =
     "Choose the graphics backend for ANGLE. D3D11 is used on most Windows "

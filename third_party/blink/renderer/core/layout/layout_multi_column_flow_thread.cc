@@ -778,11 +778,11 @@ void LayoutMultiColumnFlowThread::CalculateColumnCountAndWidth(
 
 LayoutUnit LayoutMultiColumnFlowThread::ColumnGap(const ComputedStyle& style,
                                                   LayoutUnit available_width) {
-  if (style.ColumnGap().IsNormal()) {
-    // "1em" is recommended as the normal gap setting. Matches <p> margins.
-    return LayoutUnit(style.GetFontDescription().ComputedSize());
-  }
-  return ValueForLength(style.ColumnGap().GetLength(), available_width);
+  if (const base::Optional<Length>& column_gap = style.ColumnGap())
+    return ValueForLength(*column_gap, available_width);
+
+  // "1em" is recommended as the normal gap setting. Matches <p> margins.
+  return LayoutUnit(style.GetFontDescription().ComputedSize());
 }
 
 void LayoutMultiColumnFlowThread::CreateAndInsertMultiColumnSet(

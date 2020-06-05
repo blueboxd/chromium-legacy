@@ -285,6 +285,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "syncSetupFriendlySettings",
       base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings));
 
+#if defined(OS_WIN)
+  html_source->AddBoolean(
+      "safetyCheckChromeCleanerChildEnabled",
+      base::FeatureList::IsEnabled(features::kSafetyCheckChromeCleanerChild));
+#endif
+
 #if defined(OS_CHROMEOS)
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());

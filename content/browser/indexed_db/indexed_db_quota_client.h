@@ -30,7 +30,6 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
       scoped_refptr<IndexedDBContextImpl> indexed_db_context);
 
   // QuotaClient implementation:
-  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

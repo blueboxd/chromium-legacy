@@ -256,14 +256,14 @@ bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
       result = Length::Fixed(style.VerticalBorderSpacing());
       return true;
     case CSSPropertyID::kRowGap:
-      if (style.RowGap().IsNormal())
+      if (!style.RowGap())
         return false;
-      result = style.RowGap().GetLength();
+      result = *style.RowGap();
       return true;
     case CSSPropertyID::kColumnGap:
-      if (style.ColumnGap().IsNormal())
+      if (!style.ColumnGap())
         return false;
-      result = style.ColumnGap().GetLength();
+      result = *style.ColumnGap();
       return true;
     case CSSPropertyID::kColumnRuleWidth:
       result = Length::Fixed(style.ColumnRuleWidth());

@@ -102,7 +102,7 @@ void CheckDuplicateOngoingDownloads(
         }
       };
 
-  request_coordinator->GetAllRequests(base::Bind(
+  request_coordinator->GetAllRequests(base::BindOnce(
       request_coordinator_continuation, browser_context, url, callback));
 }
 
@@ -309,8 +309,8 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
   // going to be placed in the public directory.
   AcquireFileAccessPermission(
       web_contents,
-      base::Bind(&AcquireFileAccessPermissionDoneForScheduleDownload,
-                 web_contents, name_space, url, ui_action, request_origin));
+      base::BindOnce(&AcquireFileAccessPermissionDoneForScheduleDownload,
+                     web_contents, name_space, url, ui_action, request_origin));
 }
 
 // static

@@ -551,11 +551,13 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
     error_count_ = 0;
     remaining_clients_ = manager()->clients_.size();
     for (const auto& client : manager()->clients_) {
-      if (quota_client_types_.contains(client->type())) {
+      DCHECK(manager()->client_types_.contains(client.get()));
+      QuotaClientType client_type = manager()->client_types_[client.get()];
+      if (quota_client_types_.contains(client_type)) {
         static int tracing_id = 0;
         TRACE_EVENT_ASYNC_BEGIN2(
             "browsing_data", "QuotaManager::OriginDataDeleter", ++tracing_id,
-            "client_type", client->type(), "origin", origin_.Serialize());
+            "client_type", client_type, "origin", origin_.Serialize());
         client->DeleteOriginData(
             origin_, type_,
             base::BindOnce(&OriginDataDeleter::DidDeleteOriginData,
@@ -734,7 +736,9 @@ class QuotaManager::StorageCleanupHelper : public QuotaTask {
     // This may synchronously trigger |callback_| at the end of the for loop,
     // make sure we do nothing after this block.
     for (const auto& client : manager()->clients_) {
-      if (quota_client_types_.contains(client->type())) {
+      DCHECK(manager()->client_types_.contains(client.get()));
+      QuotaClientType client_type = manager()->client_types_[client.get()];
+      if (quota_client_types_.contains(client_type)) {
         client->PerformStorageCleanup(type_, barrier);
       } else {
         barrier.Run();
@@ -1215,16 +1219,18 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
     return false;
   switch (type) {
     case StorageType::kTemporary:
-      temporary_usage_tracker_ = std::make_unique<UsageTracker>(
-          clients_, StorageType::kTemporary, special_storage_policy_.get());
+      temporary_usage_tracker_ =
+          std::make_unique<UsageTracker>(client_types_, StorageType::kTemporary,
+                                         special_storage_policy_.get());
       return true;
     case StorageType::kPersistent:
       persistent_usage_tracker_ = std::make_unique<UsageTracker>(
-          clients_, StorageType::kPersistent, special_storage_policy_.get());
+          client_types_, StorageType::kPersistent,
+          special_storage_policy_.get());
       return true;
     case StorageType::kSyncable:
       syncable_usage_tracker_ = std::make_unique<UsageTracker>(
-          clients_, StorageType::kSyncable, special_storage_policy_.get());
+          client_types_, StorageType::kSyncable, special_storage_policy_.get());
       return true;
     default:
       NOTREACHED();
@@ -1259,11 +1265,11 @@ void QuotaManager::LazyInitialize() {
                     : profile_path_.AppendASCII(kDatabaseName));
 
   temporary_usage_tracker_ = std::make_unique<UsageTracker>(
-      clients_, StorageType::kTemporary, special_storage_policy_.get());
+      client_types_, StorageType::kTemporary, special_storage_policy_.get());
   persistent_usage_tracker_ = std::make_unique<UsageTracker>(
-      clients_, StorageType::kPersistent, special_storage_policy_.get());
+      client_types_, StorageType::kPersistent, special_storage_policy_.get());
   syncable_usage_tracker_ = std::make_unique<UsageTracker>(
-      clients_, StorageType::kSyncable, special_storage_policy_.get());
+      client_types_, StorageType::kSyncable, special_storage_policy_.get());
 
   if (!is_incognito_) {
     histogram_timer_.Start(
@@ -1310,9 +1316,14 @@ void QuotaManager::DidBootstrapDatabase(
   GetLRUOrigin(StorageType::kTemporary, std::move(did_get_origin_callback));
 }
 
-void QuotaManager::RegisterClient(scoped_refptr<QuotaClient> client) {
+void QuotaManager::RegisterClient(scoped_refptr<QuotaClient> client,
+                                  QuotaClientType client_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!database_.get());
+  DCHECK(!database_.get())
+      << "All clients must be registered before the database is initialized";
+  DCHECK(client.get());
+
+  client_types_.insert({client.get(), client_type});
   clients_.push_back(std::move(client));
 }
 

@@ -92,8 +92,8 @@ std::string PrefetchInstanceIDProxyTest::GetToken() {
   result_ = InstanceID::UNKNOWN_ERROR;
 
   GetGCMToken(&profile_, kAppIdForTest,
-              base::Bind(&PrefetchInstanceIDProxyTest::GetTokenCompleted,
-                         base::Unretained(this)));
+              base::BindOnce(&PrefetchInstanceIDProxyTest::GetTokenCompleted,
+                             base::Unretained(this)));
   WaitForAsyncOperation();
   return token_;
 }

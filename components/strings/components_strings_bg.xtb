@@ -222,7 +222,6 @@
 <translation id="1838374766361614909">Изчистване на търсенето</translation>
 <translation id="1839551713262164453">Проверката на стойностите на правилата не бе успешна – възникнаха грешки</translation>
 <translation id="1842969606798536927">Плащане</translation>
-<translation id="1852694792039666893">Използване на профила ви в Google за предлагане на надеждна парола</translation>
 <translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
 <translation id="1871284979644508959">Задължително поле</translation>
 <translation id="1875512691959384712">Google Формуляри</translation>
@@ -407,7 +406,6 @@
 <translation id="2684561033061424857">11 x 12</translation>
 <translation id="2687555958734450033">Напасване</translation>
 <translation id="2691924980723297736">Предупреждение за безопасност</translation>
-<translation id="2696268945573510710">Използване на паролите, съхранявани в профила ви в Google</translation>
 <translation id="2699302886720511147">Приемани карти</translation>
 <translation id="2701514975700770343">С отпечатаната страна надолу</translation>
 <translation id="2702801445560668637">Списък за четене</translation>
@@ -454,7 +452,6 @@
 <translation id="2915068235268646559">Срив от <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Затворете другите програми.</translation>
 <translation id="2922350208395188000">Сертификатът на сървъра не може да бъде проверен.</translation>
-<translation id="2924027812781652774">Влезте в профила си в Google, за да използвате съхраняваните в него пароли</translation>
 <translation id="2925673989565098301">Начин на бърза доставка</translation>
 <translation id="2928905813689894207">Адрес за фактуриране</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

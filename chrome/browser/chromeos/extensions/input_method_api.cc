@@ -73,7 +73,7 @@ namespace SetSelectionRange =
 namespace OnSettingsChanged =
     extensions::api::input_method_private::OnSettingsChanged;
 
-using input_method::InputMethodEngineBase;
+using chromeos::InputMethodEngineBase;
 
 namespace {
 

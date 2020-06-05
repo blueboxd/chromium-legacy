@@ -77,6 +77,7 @@ absl_source_set("dynamic_annotations") {
   # their usage is deprecated in Chromium (see README.chromium for more info).
   visibility = []
   visibility = [ "//third_party/abseil-cpp/absl/*" ]
+  deps = [ ":config" ]
 }
 
 absl_source_set("core_headers") {

@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Faqet në <ph name="SOURCE_LANGUAGE" /> do të përkthehen në <ph name="TARGET_LANGUAGE" /> nga tani e në vazhdim.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> përdor zakonisht enkriptimin për mbrojtjen e informacioneve të tua. Kur Google Chrome u përpoq të lidhej me <ph name="SITE" /> këtë herë, sajti i uebit dërgoi prapa kredenciale të pazakonta dhe të pasakta. Kjo mund të ndodhë kur një sulmues pretendon se është <ph name="SITE" /> ose kur lidhja është ndërprerë nga një ekran i identifikimit të Wi-Fi. Informacionet e tua janë ende të sigurta sepse Google Chrome e ndaloi lidhjen para se të shkëmbeheshin të dhënat.</translation>
 <translation id="1682696192498422849">Ana e shkurtër në fillim</translation>
+<translation id="168693727862418163">Vërtetimi i kësaj vlere të politikës kundrejt skemës së saj dështoi dhe do të shpërfillet.</translation>
 <translation id="168841957122794586">Certifikata e serverit përmban një çelës të dobët kriptografik.</translation>
 <translation id="1697532407822776718">Je gati!</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -206,7 +207,7 @@
 <translation id="1763864636252898013">Ky server nuk mundi të dëshmonte se ky është <ph name="DOMAIN" />; certifikata e tij e sigurisë nuk është e besueshme nga Chromium. Kjo mund të shkaktohet nga keqkonfigurimi ose ndonjë sulmues që po kap lidhjen tënde.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Provo të ekzekutosh diagnostikimin e rrjetit të Windows<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Serveri ku po shkon, <ph name="ORIGIN" />, ka vendosur një titull
-    që kërkon që të aplikohet një politikë origjine për të gjitha kërkesat për të. Por
+    që kërkon që të aplikohet një politikë origjine për të gjitha kërkesat drejtuar atij. Por
     titulli është formuar gabimisht, gjë që e parandalon përmbushjen e
     kërkesës sate për <ph name="SITE" />. Politikat e origjinës mund të përdoren nga operatorët e sajtit për të konfiguruar karakteristikat e sigurisë dhe karakteristika të tjera për një sajt.</translation>
 <translation id="1778646502362731194">JIS B0</translation>
@@ -223,7 +224,6 @@
 <translation id="1838374766361614909">Fshi kërkimin</translation>
 <translation id="1839551713262164453">Vërtetimi i vlerave të politikës ka dështuar me gabime</translation>
 <translation id="1842969606798536927">Paguaj</translation>
-<translation id="1852694792039666893">Përdor "Llogarinë tënde të Google" për të sugjeruar një fjalëkalim të fortë</translation>
 <translation id="1871208020102129563">Përfaqësuesi është caktuar të përdorë serverë përfaqësues fiksë, jo një shkrim URL-je .pac.</translation>
 <translation id="1871284979644508959">Fushë e detyrueshme</translation>
 <translation id="1875512691959384712">Formularët e Google</translation>
@@ -408,7 +408,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Përshtatja më e mirë</translation>
 <translation id="2691924980723297736">Paralajmërimi i sigurisë</translation>
-<translation id="2696268945573510710">Përdor fjalëkalimet e ruajtura në "Llogarinë tënde të Google"</translation>
 <translation id="2699302886720511147">Kartat e pranuara</translation>
 <translation id="2701514975700770343">E kthyer poshtë</translation>
 <translation id="2702801445560668637">Lista e leximit</translation>
@@ -455,7 +454,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2915068235268646559">Ndërprerje aksidentale nga <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Mbyll programet e tjera</translation>
 <translation id="2922350208395188000">Certifikata e serverit nuk mund të kontrollohet.</translation>
-<translation id="2924027812781652774">Identifikohu për të përdorur fjalëkalimet e ruajtura në "Llogarinë tënde të Google"</translation>
 <translation id="2925673989565098301">Mënyra e dorëzimit</translation>
 <translation id="2928905813689894207">Adresa e faturimit</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tjetër}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> dhe <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> të tjera}}</translation>
@@ -709,7 +707,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="3987940399970879459">Më pak se 1 MB</translation>
 <translation id="3990250421422698716">Zhvendosja e bordurës</translation>
 <translation id="3996311196211510766">Sajti <ph name="ORIGIN" /> ka kërkuar që të zbatohet një politikë e origjinës
-    për të gjitha kërkesat e tij, por kjo politikë nuk mund të zbatohet aktualisht.</translation>
+    për të gjitha kërkesat drejtuar atij, por kjo politikë nuk mund të zbatohet aktualisht.</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 faqe uebi në afërsi}other{# faqe uebi në afërsi}}</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokumenti PDF me {COUNT} faqe}other{Dokumenti PDF me {COUNT} faqe}}</translation>
 <translation id="4030383055268325496">&amp;Zhbëje shtimin</translation>
@@ -754,7 +752,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4194250254487269611">Karta jote nuk mund të ruhet për momentin</translation>
 <translation id="4196861286325780578">&amp;Bëje përsëri zhvendosjen</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Të kontrollosh konfigurimet e murit mbrojtës dhe antivirusit<ph name="END_LINK" /></translation>
-<translation id="4209166701302774460">Serveri ku po shkon, <ph name="ORIGIN" />, ka kërkuar që të zbatohet një politikë e origjinës për të gjitha kërkesat për të. Por tani nuk ka arritur
+<translation id="4209166701302774460">Serveri ku po shkon, <ph name="ORIGIN" />, ka kërkuar që të zbatohet një politikë e origjinës për të gjitha kërkesat drejtuar atij Por tani nuk ka arritur
     të dorëzojë një politikë, gjë që parandalon që shfletuesi të përmbushë kërkesën tënde për <ph name="SITE" />. Politikat e origjinës mund të përdoren nga operatorët
     e sajtit për të konfiguruar karakteristikat e sigurisë dhe karakteristika të tjera për një sajt.</translation>
 <translation id="421066178035138955">Përdor pajisjet dhe të dhënat e "Realitetit virtual"</translation>

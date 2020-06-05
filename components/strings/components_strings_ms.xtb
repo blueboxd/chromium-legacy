@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">Kosongkan carian</translation>
 <translation id="1839551713262164453">Pengesahan nilai dasar gagal dengan ralat</translation>
 <translation id="1842969606798536927">Bayar</translation>
-<translation id="1852694792039666893">Gunakan Akaun Google anda untuk mencadangkan kata laluan kukuh</translation>
 <translation id="1871208020102129563">Proksi ditetapkan untuk menggunakan pelayan proksi tetap, bukannya URL skrip .pac.</translation>
 <translation id="1871284979644508959">Medan yang diperlukan</translation>
 <translation id="1875512691959384712">Borang Google</translation>
@@ -409,7 +408,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Paling sesuai</translation>
 <translation id="2691924980723297736">Amaran keselamatan</translation>
-<translation id="2696268945573510710">Gunakan kata laluan yang disimpan dalam Akaun Google anda</translation>
 <translation id="2699302886720511147">Kad yang Diterima</translation>
 <translation id="2701514975700770343">Menghadap ke bawah</translation>
 <translation id="2702801445560668637">Senarai Bacaan</translation>
@@ -458,7 +456,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2915068235268646559">Ranap sistem dari <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Tutup atur cara lain</translation>
 <translation id="2922350208395188000">Sijil pelayan tidak boleh diperiksa.</translation>
-<translation id="2924027812781652774">Log masuk untuk menggunakan kata laluan yang disimpan dalam Akaun Google anda</translation>
 <translation id="2925673989565098301">Kaedah Penghantaran</translation>
 <translation id="2928905813689894207">Alamat Pengebilan</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> lagi}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> lagi}}</translation>

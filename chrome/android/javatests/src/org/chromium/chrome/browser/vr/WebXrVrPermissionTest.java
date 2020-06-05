@@ -22,6 +22,7 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
@@ -89,7 +90,11 @@ public class WebXrVrPermissionTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testVrPermissionPersistance() {
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1091482, https://crbug.com/1091465, https://crbug.com/1091433")
+    public void
+    testVrPermissionPersistance() {
         mWebXrVrPermissionTestFramework.loadFileAndAwaitInitialization(
                 "generic_webxr_page", PAGE_LOAD_TIMEOUT_S);
         mWebXrVrPermissionTestFramework.enterSessionWithUserGestureOrFail();
@@ -126,7 +131,11 @@ public class WebXrVrPermissionTest {
     @Test
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    public void testPermissionPersistsAfterReload() {
+    @DisabledTest(
+            message =
+                    "https://crbug.com/1091483, https://crbug.com/1091476, https://crbug.com/1091463")
+    public void
+    testPermissionPersistsAfterReload() {
         mWebXrVrPermissionTestFramework.loadFileAndAwaitInitialization(
                 "generic_webxr_page", PAGE_LOAD_TIMEOUT_S);
 

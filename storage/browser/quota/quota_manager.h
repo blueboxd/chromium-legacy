@@ -150,36 +150,40 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
       blink::mojom::StorageType type,
       UsageAndQuotaWithBreakdownCallback callback);
 
-  // Called by StorageClients.
-  // This method is declared as virtual to allow test code to override it.
+  // Called by storage backends.
   //
   // For UnlimitedStorage origins, this version skips usage and quota handling
-  // to avoid extra query cost.
-  // Do not call this method for apps/user-facing code.
+  // to avoid extra query cost. Do not call this method for apps/user-facing
+  // code.
+  //
+  // This method is declared as virtual to allow test code to override it.
   virtual void GetUsageAndQuota(const url::Origin& origin,
                                 blink::mojom::StorageType type,
                                 UsageAndQuotaCallback callback);
 
-  // Called by clients via proxy.
-  // Client storage should call this method when storage is accessed.
-  // Used to maintain LRU ordering.
+  // Called by storage backends via proxy.
+  //
+  // Quota-managed storage backends should call this method when storage is
+  // accessed. Used to maintain LRU ordering.
   void NotifyStorageAccessed(const url::Origin& origin,
                              blink::mojom::StorageType type);
 
-  // Called by clients via proxy.
-  // Client storage must call this method whenever they have made any
-  // modifications that change the amount of data stored in their storage.
+  // Called by storage backends via proxy.
+  //
+  // Quota-managed storage backends must call this method when they have made
+  // any modifications that change the amount of data stored in their storage.
   void NotifyStorageModified(QuotaClientType client_id,
                              const url::Origin& origin,
                              blink::mojom::StorageType type,
                              int64_t delta);
 
-  // Called by clients via proxy.
-  // This method is declared as virtual to allow test code to override it.
+  // Called by storage backends via proxy.
   //
   // Client storage must call this method whenever they run into disk
   // write errors. Used as a hint to determine if the storage partition is out
   // of space, and trigger actions if deemed appropriate.
+  //
+  // This method is declared as virtual to allow test code to override it.
   virtual void NotifyWriteFailed(const url::Origin& origin);
 
   // Used to avoid evicting origins with open pages.
@@ -315,10 +319,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
     StatusCallback evict_origin_data_callback;
   };
 
-  // This initialization method is lazily called on the IO thread
-  // when the first quota manager API is called.
-  // Initialize must be called after all quota clients are added to the
-  // manager by RegisterStorage.
+  // Lazily called on the IO thread when the first quota manager API is called.
+  //
+  // Initialize() must be called after all quota clients are added to the
+  // manager by RegisterClient.
   void LazyInitialize();
   void FinishLazyInitialize(bool is_database_bootstraped);
   void BootstrapDatabaseForEviction(GetOriginCallback did_get_origin_callback,
@@ -329,7 +333,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   // Called by clients via proxy.
   // Registers a quota client to the manager.
-  void RegisterClient(scoped_refptr<QuotaClient> client);
+  void RegisterClient(scoped_refptr<QuotaClient> client,
+                      QuotaClientType client_type);
 
   UsageTracker* GetUsageTracker(blink::mojom::StorageType type) const;
 
@@ -455,7 +460,13 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   GetOriginCallback lru_origin_callback_;
   std::set<url::Origin> access_notified_origins_;
 
+  // Owns the QuotaClient instances registered via RegisterClient().
   std::vector<scoped_refptr<QuotaClient>> clients_;
+  // Maps QuotaClient instances to client types.
+  //
+  // The QuotaClient instances pointed to by the map keys are guaranteed to be
+  // alive, because they are owned by |clients_|.
+  base::flat_map<QuotaClient*, QuotaClientType> client_types_;
 
   std::unique_ptr<UsageTracker> temporary_usage_tracker_;
   std::unique_ptr<UsageTracker> persistent_usage_tracker_;

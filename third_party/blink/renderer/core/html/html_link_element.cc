@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/imports/link_import.h"
 #include "third_party/blink/renderer/core/html/link_manifest.h"
+#include "third_party/blink/renderer/core/html/link_web_bundle.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/link_loader.h"
@@ -141,6 +142,11 @@ void HTMLLinkElement::ParseAttribute(
              RuntimeEnabledFeatures::PriorityHintsEnabled(&GetDocument())) {
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
     importance_ = value;
+  } else if (name == html_names::kResourcesAttr &&
+             RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
+                 &GetDocument())) {
+    resources_ = value;
+    Process();
   } else if (name == html_names::kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
     if (params.reason == AttributeModificationReason::kByParser)
@@ -223,6 +229,11 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
       if (!RuntimeEnabledFeatures::HTMLImportsEnabled(&GetDocument()))
         return nullptr;
       link_ = MakeGarbageCollected<LinkImport>(this);
+    } else if (rel_attribute_.IsWebBundle()) {
+      // Only create a webbundle link when SubresourceWebBundles are enabled.
+      if (!RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(&GetDocument()))
+        return nullptr;
+      link_ = MakeGarbageCollected<LinkWebBundle>(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = MakeGarbageCollected<LinkManifest>(this);
     } else {

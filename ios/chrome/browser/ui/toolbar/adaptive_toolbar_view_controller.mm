@@ -57,9 +57,7 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
 #pragma mark - Public
 
 - (BOOL)areAnimationsEnabled {
-  return base::FeatureList::IsEnabled(kDisableAnimationOnLowBattery)
-             ? [UIView areAnimationsEnabled]
-             : YES;
+  return !base::FeatureList::IsEnabled(kDisableProgressBarAnimation);
 }
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {

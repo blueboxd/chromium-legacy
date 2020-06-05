@@ -1426,7 +1426,7 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 
         UYARI: Deneysel politikalar desteklenmez ve tarayıcının gelecekteki sürümünde bildirimde bulunmaksızın değiştirilebilir veya kaldırılabilir.
 
-        Deneysel bir politika tamamlanmamış olabilir veya hâlâ bilinen ya da bilinmeyen kusurlar içerebilir. Herhangi bir bildirimde bulunulmadan değiştirilebilir veya hatta kaldırılabilir. Deneysel politikaları etkinleştirdiğinizde tarayıcı verileri kaybolabilir ya da güvenliğiniz veya gizliliğiniz ihlal edilebilir.
+        Deneysel bir politika tamamlanmamış olabilir veya hâlâ bilinen ya da bilinmeyen kusurlar içerebilir. Herhangi bir bildirimde bulunulmadan değiştirilebilir, hatta kaldırılabilir. Deneysel politikaları etkinleştirdiğinizde tarayıcı verileri kaybolabilir ya da güvenliğiniz veya gizliliğiniz ihlal edilebilir.
 
         Listede olmayan bir politika resmi olarak yayınlanmadıysa Chrome'un Beta ve Kararlı sürümlerinde politikanın değeri göz ardı edilir.
 

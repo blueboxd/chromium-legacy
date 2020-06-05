@@ -220,7 +220,6 @@
 <translation id="1838374766361614909">ძიების გასუფთავება</translation>
 <translation id="1839551713262164453">წესების მნიშვნელობების დადასტურება ვერ მოხერხდა შეცდომების გამო</translation>
 <translation id="1842969606798536927">გადახდა</translation>
-<translation id="1852694792039666893">ძლიერი პაროლის შემოსათავაზებლად გამოიყენეთ თქვენი Google ანგარიში</translation>
 <translation id="1871208020102129563">პროქსი შექმნილია ფიქსირებული პროქსის სერვერების გამოსაყენებლად, არა .pac script URL-ის.</translation>
 <translation id="1871284979644508959">აუცილებელი ველი</translation>
 <translation id="1875512691959384712">Google Forms</translation>
@@ -405,7 +404,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">საუკეთესოდ მორგება</translation>
 <translation id="2691924980723297736">გაფრთხილება უსაფრთხოების შესახებ</translation>
-<translation id="2696268945573510710">Google ანგარიშში შენახული პაროლების გამოყენება</translation>
 <translation id="2699302886720511147">მისაღები ბარათები</translation>
 <translation id="2701514975700770343">ნაბეჭდი მხარით დაღმა</translation>
 <translation id="2702801445560668637">საკითხავი სია</translation>
@@ -452,7 +450,6 @@
 <translation id="2915068235268646559">ავარიულად გათიშვა (<ph name="CRASH_TIME" />)</translation>
 <translation id="2916038427272391327">სხვა პროგრამების დახურვა</translation>
 <translation id="2922350208395188000">სერვერის სერთიფიკატი ვერ მოწმდება.</translation>
-<translation id="2924027812781652774">თქვენს Google ანგარიშში შენახული პაროლების გამოსაყენებლად შედით სისტემაში</translation>
 <translation id="2925673989565098301">მიწოდების მეთოდი</translation>
 <translation id="2928905813689894207">ბილინგის მისამართი</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> და <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> სხვა}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> და <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> სხვა}}</translation>

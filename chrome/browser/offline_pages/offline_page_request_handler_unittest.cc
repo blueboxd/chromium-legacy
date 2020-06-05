@@ -850,8 +850,8 @@ int64_t OfflinePageRequestHandlerTest::SavePage(const GURL& url,
   save_page_params.original_url = original_url;
   OfflinePageModelFactory::GetForBrowserContext(profile())->SavePage(
       save_page_params, std::move(archiver), nullptr,
-      base::Bind(&OfflinePageRequestHandlerTest::OnSavePageDone,
-                 base::Unretained(this)));
+      base::BindOnce(&OfflinePageRequestHandlerTest::OnSavePageDone,
+                     base::Unretained(this)));
   WaitForAsyncOperation();
   return last_offline_id_;
 }
@@ -901,8 +901,8 @@ void OfflinePageRequestHandlerTest::OnSavePageDone(SavePageResult result,
 OfflinePageItem OfflinePageRequestHandlerTest::GetPage(int64_t offline_id) {
   OfflinePageModelFactory::GetForBrowserContext(profile())->GetPageByOfflineId(
       offline_id,
-      base::Bind(&OfflinePageRequestHandlerTest::OnGetPageByOfflineIdDone,
-                 base::Unretained(this)));
+      base::BindOnce(&OfflinePageRequestHandlerTest::OnGetPageByOfflineIdDone,
+                     base::Unretained(this)));
   RunUntilIdle();
   return page_;
 }

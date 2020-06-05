@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">शोध साफ करा</translation>
 <translation id="1839551713262164453">धोरण मूल्यांची वैधता एररसह अयशस्वी झाली आहे</translation>
 <translation id="1842969606798536927">पेमेंट करा</translation>
-<translation id="1852694792039666893">क्लिष्ट पासवर्ड सुचवण्यासाठी तुमचे Google खाते वापरा</translation>
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
 <translation id="1871284979644508959">या जागा भरणे आवश्यक</translation>
 <translation id="1875512691959384712">Google फॉर्म</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">सर्वोत्तम फिट</translation>
 <translation id="2691924980723297736">सुरक्षा चेतावणी</translation>
-<translation id="2696268945573510710">तुमच्या Google खाते मध्ये स्टोअर केलेले पासवर्ड वापरा</translation>
 <translation id="2699302886720511147">स्वीकारली जाणारी कार्डे</translation>
 <translation id="2701514975700770343">फेस डाउन</translation>
 <translation id="2702801445560668637">वाचन सूची</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> पासून क्रॅश</translation>
 <translation id="2916038427272391327">अन्य प्रोग्राम बंद करा</translation>
 <translation id="2922350208395188000">सर्व्हरचे सर्टिफिकेट तपासणे शक्य नाही.</translation>
-<translation id="2924027812781652774">तुमच्या Google खाते मध्ये स्टोअर केलेले पासवर्ड वापरण्यासाठी साइन इन करा</translation>
 <translation id="2925673989565098301">वितरण पद्धत</translation>
 <translation id="2928905813689894207">बिलिंग पत्ता</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> आणखी}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> आणखी}}</translation>

@@ -19,6 +19,14 @@ struct AssistantNotificationButton {
   bool remove_notification_on_click = true;
 };
 
+// Enumeration of possible notification priorities.
+// NOTE: This enum maps to a subset of message_center::NotificationPriority.
+enum AssistantNotificationPriority {
+  kLow,     // See message_center::NotificationPriority::LOW_PRIORITY.
+  kDefault, // See message_center::NotificationPriority::DEFAULT_PRIORITY.
+  kHigh,    // See message_center::NotificationPriority::HIGH_PRIORITY.
+};
+
 // Models an Assistant notification.
 struct AssistantNotification {
   // Title of the notification.
@@ -50,8 +58,9 @@ struct AssistantNotification {
   // Obfuscated Gaia id of the intended recipient of the user.
   string obfuscated_gaia_id;
 
-  // Whether this notification can turn on the display if it was off.
-  bool is_high_priority = false;
+  // Priority for the notification. This affects whether or not the notification
+  // will pop up and/or have the capability to wake the display if it was off.
+  AssistantNotificationPriority priority = kDefault;
 
   // When the notification should expire.
   // Expressed as milliseconds since Unix Epoch.

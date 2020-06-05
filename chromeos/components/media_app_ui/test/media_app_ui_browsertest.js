@@ -155,6 +155,22 @@ TEST_F('MediaAppUIBrowserTest', 'LaunchFile', async () => {
   testDone();
 });
 
+// Tests that a regular launch for multiple images succeeds, and the files get
+// distinct token mappings.
+TEST_F('MediaAppUIBrowserTest', 'MultipleFileHaveTokens', async () => {
+  const directory = await launchWithFiles(
+      [await createTestImageFile(), await createTestImageFile()]);
+
+  assertEquals(currentFiles.length, 2);
+  assertGE(currentFiles[0].token, 0);
+  assertGE(currentFiles[1].token, 0);
+  assertNotEquals(currentFiles[0].token, currentFiles[1].token);
+  assertEquals(fileHandleForToken(currentFiles[0].token), directory.files[0]);
+  assertEquals(fileHandleForToken(currentFiles[1].token), directory.files[1]);
+
+  testDone();
+});
+
 // Tests that we show error UX when trying to launch an unopenable file.
 TEST_F('MediaAppUIBrowserTest', 'LaunchUnopenableFile', async () => {
   const mockFileHandle =
@@ -375,11 +391,11 @@ TEST_F('MediaAppUIBrowserTest', 'ReceivesProxiedError', async () => {
 // in the untrusted context. Ensures it correctly updates the file handle owned
 // by the privileged context.
 TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
-  const handle = new FakeFileSystemFileHandle();
-  await loadFile(await createTestImageFile(), handle);
+  const directory = await launchWithFiles([await createTestImageFile()]);
+  const handle = directory.files[0];
 
   // Write should not be called initially.
-  assertEquals(0, handle.lastWritable.data.size);
+  assertEquals(handle.lastWritable.writes.length, 0);
 
   const message = {overwriteLastFile: 'Foo'};
   const testResponse = await guestMessagePipe.sendMessage('test', message);
@@ -387,6 +403,9 @@ TEST_F('MediaAppUIBrowserTest', 'OverwriteOriginalIPC', async () => {
 
   assertEquals(testResponse.testQueryResult, 'overwriteOriginal resolved');
   assertEquals(await writeResult.text(), 'Foo');
+  assertEquals(handle.lastWritable.writes.length, 1);
+  assertDeepEquals(
+      handle.lastWritable.writes[0], {position: 0, size: 'Foo'.length});
   testDone();
 });
 
@@ -397,10 +416,15 @@ TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
   guestMessagePipe.rethrowErrors = false;
 
-  const handle = new FakeFileSystemFileHandle();
-  await loadFile(await createTestImageFile(), handle);
-  // Force Error by forcing `fileToken` in launch.js to be out of sync.
-  fileToken = -1;
+  const directory = await launchWithFiles([await createTestImageFile()]);
+
+  // Note createWritable() throws DOMException, which does not have a stack, but
+  // in this test we want to test capture of stacks in the trusted context, so
+  // throw an error (made "here", so MediaAppUIBrowserTest is in the stack).
+  const error = new Error('Fake NotAllowedError for CrossContextErrors test.');
+  error.name = 'NotAllowedError';
+  directory.files[0].nextCreateWritableError = error;
+
   let caughtError = {};
 
   try {
@@ -410,8 +434,8 @@ TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
     caughtError = e;
   }
 
-  assertEquals(caughtError.name, 'Error');
-  assertEquals(caughtError.message, 'test: overwrite-file: File not current.');
+  assertEquals(caughtError.name, 'NotAllowedError');
+  assertEquals(caughtError.message, `test: overwrite-file: ${error.message}`);
   assertMatchErrorStack(caughtError.stack, [
     // Error stack of the untrusted & test context.
     'at MessagePipe.sendMessage \\(chrome-untrusted:',
@@ -420,10 +444,8 @@ TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
     'at async MessagePipe.callHandlerForMessageType_ \\(chrome-untrusted:',
     // Error stack of the trusted context is appended.
     'Error from chrome:',
-    'Error: File not current.\\n    at chrome:',
-    'at MessagePipe.callHandlerForMessageType_ \\(chrome:',
-    'at MessagePipe.receiveMessage_ \\(chrome:',
-    'at MessagePipe.messageListener_ \\(chrome:',
+    'NotAllowedError: Fake NotAllowedError for CrossContextErrors test.',
+    'at MediaAppUIBrowserTest',
   ]);
   testDone();
 });
@@ -574,13 +596,10 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
 // Tests the IPC behind the implementation of ReceivedFile.renameOriginalFile()
 // in the untrusted context.
 TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
-  const firstFile = await createTestImageFile();
-  const directory = await createMockTestDirectory([firstFile]);
-  // Simulate steps taken to load a file via a launch event.
+  const directory = await launchWithFiles([await createTestImageFile()]);
   const firstFileHandle = directory.files[0];
-  await loadFile(firstFile, firstFileHandle);
-  // Set `currentDirectoryHandle` in launch.js.
-  currentDirectoryHandle = directory;
+  const firstFile = firstFileHandle.getFileSync();
+
   let testResponse;
 
   // Nothing should be deleted initially.
@@ -617,8 +636,8 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   // Prevent the trusted context throwing errors resulting JS errors.
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
   guestMessagePipe.rethrowErrors = false;
-  // Test UNKNOWN_ERROR case by making files out of sync.
-  fileToken = -1;
+  // Test UNKNOWN_ERROR case by simulating a failed directory change.
+  simulateLosingAccessToDirectory();
 
   const messageRenameNoOp = {renameLastFile: 'new_file_name_2.png'};
   testResponse = await guestMessagePipe.sendMessage('test', messageRenameNoOp);

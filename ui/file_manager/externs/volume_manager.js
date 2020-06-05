@@ -71,7 +71,7 @@ class VolumeManager {
    *
    * @param {!Entry|!FilesAppEntry} entry File or directory entry. It
    *     can be a fake entry.
-   * @return {EntryLocation} Location information.
+   * @return {?EntryLocation} Location information.
    */
   getLocationInfo(entry) {}
 

@@ -52,20 +52,17 @@
 
       :host(:focus-within) cr-toolbar-search-field {
         --cr-toolbar-search-field-background: var(--cr-card-background-color);
+        box-shadow: var(--cr-menu-shadow);
+      }
+
+      :host(:not(:focus-within)) cr-toolbar-search-field {
+        --cr-toolbar-search-field-cursor: pointer;
       }
 
       :host(:focus-within[should-show-dropdown_]) cr-toolbar-search-field {
         --cr-toolbar-search-field-border-radius: 20px 20px 0 0;
         height: 56px;
         margin-top: var(--separator-height);
-      }
-
-      :host(:not([should-show-dropdown_])) cr-toolbar-search-field {
-        --cr-toolbar-search-field-cursor: pointer;
-      };
-
-      :host(:focus-within) cr-toolbar-search-field {
-        box-shadow: var(--cr-menu-shadow);
       }
 
       :host([narrow]) iron-dropdown {

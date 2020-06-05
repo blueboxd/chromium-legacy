@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos données personnelles. Lors de la dernière tentative de connexion de Google Chrome au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Cela peut arriver lorsqu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi a interrompu la connexion. Vos données restent sécurisées, car nous avons interrompu la connexion avant l'échange des données.</translation>
 <translation id="1682696192498422849">Bord court en premier</translation>
+<translation id="168693727862418163">La validation de la valeur de cette politique par rapport à son schéma a échoué. La politique sera ignorée.</translation>
 <translation id="168841957122794586">Le certificat du serveur contient une clé de chiffrement faible.</translation>
 <translation id="1697532407822776718">Vous êtes prêt!</translation>
 <translation id="1703835215927279855">Lettre</translation>
@@ -220,7 +221,6 @@
 <translation id="1838374766361614909">Effacer les termes de recherche</translation>
 <translation id="1839551713262164453">La validation des valeurs de politique a échoué avec des erreurs</translation>
 <translation id="1842969606798536927">Paiement</translation>
-<translation id="1852694792039666893">Utiliser votre compte Google pour suggérer un mot de passe fort</translation>
 <translation id="1871208020102129563">Le mandataire est configuré pour utiliser des serveurs mandataires fixes et non une adresse URL de script .pac.</translation>
 <translation id="1871284979644508959">Champ obligatoire</translation>
 <translation id="1875512691959384712">Google Formulaires</translation>
@@ -405,7 +405,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="2684561033061424857">11 po x 12 po</translation>
 <translation id="2687555958734450033">Ajustement optimal</translation>
 <translation id="2691924980723297736">Avertissement de sécurité</translation>
-<translation id="2696268945573510710">Utiliser les mots de passe stockés dans votre compte Google</translation>
 <translation id="2699302886720511147">Cartes acceptées</translation>
 <translation id="2701514975700770343">Face vers le bas</translation>
 <translation id="2702801445560668637">Liste de lecture</translation>
@@ -452,7 +451,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="2915068235268646559">Plantage à <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Fermer les autres programmes</translation>
 <translation id="2922350208395188000">Impossible de vérifier le certificat du serveur.</translation>
-<translation id="2924027812781652774">Connectez-vous pour utiliser les mots de passe stockés dans votre compte Google</translation>
 <translation id="2925673989565098301">Mode de livraison rapide</translation>
 <translation id="2928905813689894207">Adresse de facturation</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> autre adresse}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> autre adresse}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> et <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> autres adresses}}</translation>

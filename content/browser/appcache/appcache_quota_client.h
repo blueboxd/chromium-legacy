@@ -40,7 +40,6 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   explicit AppCacheQuotaClient(base::WeakPtr<AppCacheServiceImpl> service);
 
   // QuotaClient method overrides
-  storage::QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

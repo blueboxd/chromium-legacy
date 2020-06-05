@@ -30,15 +30,18 @@ class CrostiniInstallerPageHandler
           pending_page_handler,
       mojo::PendingRemote<chromeos::crostini_installer::mojom::Page>
           pending_page,
-      base::OnceClosure close_dialog_callback);
+      base::OnceClosure on_page_closed);
   ~CrostiniInstallerPageHandler() override;
 
   // chromeos::crostini_installer::mojom::PageHandler:
   void Install(int64_t disk_size_bytes, const std::string& username) override;
   void Cancel() override;
   void CancelBeforeStart() override;
-  void Close() override;
+  void OnPageClosed() override;
   void RequestAmountOfFreeDiskSpace() override;
+
+  // Send a close request to the web page.
+  void RequestClosePage();
 
  private:
   void OnProgressUpdate(crostini::mojom::InstallerState installer_state,
@@ -50,7 +53,7 @@ class CrostiniInstallerPageHandler
   crostini::CrostiniInstallerUIDelegate* installer_ui_delegate_;
   mojo::Receiver<chromeos::crostini_installer::mojom::PageHandler> receiver_;
   mojo::Remote<chromeos::crostini_installer::mojom::Page> page_;
-  base::OnceClosure close_dialog_callback_;
+  base::OnceClosure on_page_closed_;
 
   base::WeakPtrFactory<CrostiniInstallerPageHandler> weak_ptr_factory_{this};
 

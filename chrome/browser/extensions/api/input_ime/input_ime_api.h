@@ -38,19 +38,21 @@ class Profile;
 namespace ui {
 class IMEEngineHandlerInterface;
 
-class ImeObserver : public input_method::InputMethodEngineBase::Observer {
+using chromeos::InputMethodEngineBase;
+
+class ImeObserver : public InputMethodEngineBase::Observer {
  public:
   ImeObserver(const std::string& extension_id, Profile* profile);
 
   ~ImeObserver() override = default;
 
-  // input_method::InputMethodEngineBase::Observer overrides.
+  // InputMethodEngineBase::Observer overrides.
   void OnActivate(const std::string& component_id) override;
   void OnFocus(const IMEEngineHandlerInterface::InputContext& context) override;
   void OnBlur(int context_id) override;
   void OnKeyEvent(
       const std::string& component_id,
-      const input_method::InputMethodEngineBase::KeyboardEvent& event,
+      const InputMethodEngineBase::KeyboardEvent& event,
       IMEEngineHandlerInterface::KeyEventDoneCallback key_data) override;
   void OnReset(const std::string& component_id) override;
   void OnDeactivated(const std::string& component_id) override;

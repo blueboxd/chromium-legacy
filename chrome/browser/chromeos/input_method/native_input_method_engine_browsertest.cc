@@ -37,9 +37,9 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
-namespace {
+using chromeos::InputMethodEngineBase;
 
-using input_method::InputMethodEngineBase;
+namespace {
 
 class TestObserver : public InputMethodEngineBase::Observer {
  public:

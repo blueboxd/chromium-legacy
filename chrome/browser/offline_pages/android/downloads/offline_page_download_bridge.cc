@@ -394,8 +394,8 @@ void JNI_OfflinePageDownloadBridge_StartDownload(
       GetWebContentsGetter(web_contents);
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
       web_contents_getter,
-      base::Bind(&OnOfflinePageAcquireFileAccessPermissionDone,
-                 web_contents_getter, j_tab_ref, origin));
+      base::BindOnce(&OnOfflinePageAcquireFileAccessPermissionDone,
+                     web_contents_getter, j_tab_ref, origin));
 }
 
 static jlong JNI_OfflinePageDownloadBridge_Init(

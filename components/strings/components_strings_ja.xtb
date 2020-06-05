@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Google Chrome から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Google Chrome によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="1682696192498422849">短辺から</translation>
+<translation id="168693727862418163">このポリシーの値は、スキーマの検証でエラーとなったため無視されます。</translation>
 <translation id="168841957122794586">サーバー証明書に脆弱な暗号鍵が含まれています。</translation>
 <translation id="1697532407822776718">設定が完了しました。</translation>
 <translation id="1703835215927279855">Letter</translation>
@@ -220,7 +221,6 @@
 <translation id="1838374766361614909">検索をクリア</translation>
 <translation id="1839551713262164453">ポリシーの値を検証できませんでした（エラーが発生しました）</translation>
 <translation id="1842969606798536927">お支払い</translation>
-<translation id="1852694792039666893">Google アカウントを使用して安全なパスワードを提示する</translation>
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
 <translation id="1871284979644508959">必須フィールド</translation>
 <translation id="1875512691959384712">Google フォーム</translation>
@@ -405,7 +405,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">最適サイズ</translation>
 <translation id="2691924980723297736">安全性に関する警告</translation>
-<translation id="2696268945573510710">Google アカウントに保存したパスワードを使用する</translation>
 <translation id="2699302886720511147">利用可能なカード</translation>
 <translation id="2701514975700770343">下向き</translation>
 <translation id="2702801445560668637">リーディング リスト</translation>
@@ -452,7 +451,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> のクラッシュ</translation>
 <translation id="2916038427272391327">他のプログラムを終了する</translation>
 <translation id="2922350208395188000">サーバーの証明書を確認できません。</translation>
-<translation id="2924027812781652774">Google アカウントに保存したパスワードを使用するには、ログインしてください</translation>
 <translation id="2925673989565098301">配達方法</translation>
 <translation id="2928905813689894207">請求先住所</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件）}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />（他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件）}}</translation>

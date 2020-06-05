@@ -14856,6 +14856,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileWebContextMenuOpenInNewWindow">
+  <owner>marq@chromium.org</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    Recorded when user taps Open In New Window in context menu. iOS only.
+  </description>
+</action>
+
 <action name="MobileWebContextMenuOpenJS">
   <owner>eugenebut@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>

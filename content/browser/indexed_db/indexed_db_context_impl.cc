@@ -41,6 +41,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/mock_browsertest_indexed_db_class_factory.h"
 #include "storage/browser/database/database_util.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
@@ -132,7 +133,8 @@ IndexedDBContextImpl::IndexedDBContextImpl(
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
   quota_manager_proxy->RegisterClient(
-      base::MakeRefCounted<IndexedDBQuotaClient>(this));
+      base::MakeRefCounted<IndexedDBQuotaClient>(this),
+      storage::QuotaClientType::kIndexedDatabase);
 
   // This is safe because the IndexedDBContextImpl must be destructed on the
   // IDBTaskRunner, and this task will always happen before that.

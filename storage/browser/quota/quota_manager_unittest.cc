@@ -117,7 +117,7 @@ class QuotaManagerTest : public testing::Test {
       QuotaClientType client_type) {
     MockQuotaClient* client =
         new MockQuotaClient(quota_manager_->proxy(), mock_data, client_type);
-    quota_manager_->proxy()->RegisterClient(client);
+    quota_manager_->proxy()->RegisterClient(client, client_type);
     return client;
   }
 

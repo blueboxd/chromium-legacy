@@ -133,8 +133,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
 
   // WebServiceWorkerContextClient overrides.
   void WorkerReadyForInspectionOnInitiatorThread(
-      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
-      mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
+      blink::CrossVariantMojoRemote<blink::mojom::DevToolsAgentInterfaceBase>
+          devtools_agent_remote,
+      blink::CrossVariantMojoReceiver<
+          blink::mojom::DevToolsAgentHostInterfaceBase>
+          devtools_agent_host_receiver) override;
   void FailedToFetchClassicScript() override;
   void FailedToFetchModuleScript() override;
   void WorkerScriptLoadedOnWorkerThread() override;

@@ -34,6 +34,7 @@ namespace chromeos {
 namespace {
 
 const char kAndroidDownloadDirPrefix[] = "/storage/emulated/0/Download/";
+const char kAndroidMyFilesDirPrefix[] = "/storage/MyFiles/";
 
 const char kMediaDocumentsProviderAuthority[] =
     "com.android.providers.media.documents";
@@ -54,6 +55,18 @@ base::FilePath GetRelativeMountPath(const std::string& root_id) {
   base::FilePath(arc::kDocumentsProviderMountPointPath)
       .AppendRelativePath(mount_path, &relative_mount_path);
   return relative_mount_path;
+}
+
+bool IsInsideDownloadsOrMyFiles(const std::string& path) {
+  if (base::StartsWith(path, kAndroidDownloadDirPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    return true;
+  }
+  if (base::StartsWith(path, kAndroidMyFilesDirPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -170,14 +183,13 @@ void RecentArcMediaSource::MediaRoot::OnGetRecentDocuments(
   // Initialize |document_id_to_file_| with recent document IDs returned.
   if (maybe_documents.has_value()) {
     for (const auto& document : maybe_documents.value()) {
-      // Exclude media files under Downloads directory since they are covered
-      // by RecentDownloadSource.
+      // Exclude media files under Downloads or MyFiles directory since they are
+      // covered by RecentDiskSource.
       if (document->android_file_system_path.has_value() &&
-          base::StartsWith(document->android_file_system_path.value(),
-                           kAndroidDownloadDirPrefix,
-                           base::CompareCase::SENSITIVE))
+          IsInsideDownloadsOrMyFiles(
+              document->android_file_system_path.value())) {
         continue;
-
+      }
       document_id_to_file_.emplace(document->document_id, base::nullopt);
     }
   }

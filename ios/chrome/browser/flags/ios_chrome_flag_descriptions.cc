@@ -179,10 +179,10 @@ const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
     "the time specified by this flag.";
 
-const char kDisableAnimationOnLowBatteryName[] =
-    "Disable animations on low battery";
-const char kDisableAnimationOnLowBatteryDescription[] =
-    "Disable animations when battery level goes below 20%";
+const char kDisableProgressBarAnimationName[] =
+    "Disable page load progress bar animation";
+const char kDisableProgressBarAnimationDescription[] =
+    "Disable progress bar animation when a page loads.";
 
 const char kDiscoverFeedInNtpName[] = "Enable Discover feed in new tab page";
 const char kDiscoverFeedInNtpDescription[] =

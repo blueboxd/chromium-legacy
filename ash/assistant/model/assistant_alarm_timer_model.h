@@ -55,7 +55,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
   void NotifyTimerAdded(const AssistantTimer& timer);
   void NotifyTimerUpdated(const AssistantTimer& timer);
   void NotifyTimerRemoved(const AssistantTimer& timer);
-  void NotifyAllTimersRemoved();
 
   std::map<std::string, AssistantTimerPtr> timers_;
 

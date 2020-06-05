@@ -225,7 +225,6 @@ og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir a�
 <translation id="1838374766361614909">Hreinsa leit</translation>
 <translation id="1839551713262164453">Prófun á reglugildum mistókst og skilaði villum</translation>
 <translation id="1842969606798536927">Greiða</translation>
-<translation id="1852694792039666893">Nota Google reikninginn þinn til að fá tillögu um traust aðgangsorð</translation>
 <translation id="1871208020102129563">Proxy er stillt á að nota fasta proxy-þjóna en ekki vefslóð á .pac-skriftu.</translation>
 <translation id="1871284979644508959">Nauðsynlegur reitur</translation>
 <translation id="1875512691959384712">Google eyðublöð</translation>
@@ -410,7 +409,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Kjörstærð</translation>
 <translation id="2691924980723297736">Öryggisviðvörun</translation>
-<translation id="2696268945573510710">Nota aðgangsorð sem eru vistuð á Google reikningnum</translation>
 <translation id="2699302886720511147">Greiðslukort sem tekið er við</translation>
 <translation id="2701514975700770343">Snýr niður</translation>
 <translation id="2702801445560668637">Leslisti</translation>
@@ -459,7 +457,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2915068235268646559">Hrun frá <ph name="CRASH_TIME" /></translation>
 <translation id="2916038427272391327">Lokaðu öðrum forritum</translation>
 <translation id="2922350208395188000">Ekki er hægt að kanna vottorð þjónsins.</translation>
-<translation id="2924027812781652774">Skráðu þig inn til að nota aðgangsorð sem eru vistuð á Google reikningnum</translation>
 <translation id="2925673989565098301">Afhendingarmáti</translation>
 <translation id="2928905813689894207">Heimilisfang greiðanda</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> í viðbót}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> í viðbót}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> í viðbót}}</translation>

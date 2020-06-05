@@ -52,6 +52,7 @@ def _blink_member_name(member):
             blink_name = (member.code_generator_info.property_implemented_as
                           or member.identifier)
             self.get_api = name_style.api_func(blink_name)
+            self.get_or_api = name_style.api_func(blink_name, "or")
             self.set_api = name_style.api_func("set", blink_name)
             self.has_api = name_style.api_func("has", blink_name)
             # C++ data member that shows the presence of the IDL member.
@@ -290,15 +291,16 @@ def make_dict_member_get(cg_context):
     blink_member_name = _blink_member_name(member)
     name = blink_member_name.get_api
     blink_type = blink_type_info(member.idl_type)
+    const_ref_t = blink_type.const_ref_t
+    ref_t = blink_type.ref_t
 
     decls = ListNode()
     defs = ListNode()
 
-    func_def = CxxFuncDefNode(
-        name=name,
-        arg_decls=[],
-        return_type=blink_type.const_ref_t,
-        const=True)
+    func_def = CxxFuncDefNode(name=name,
+                              arg_decls=[],
+                              return_type=const_ref_t,
+                              const=True)
     decls.append(func_def)
     func_def.set_base_template_vars(cg_context.template_bindings())
     func_def.body.extend([
@@ -306,15 +308,32 @@ def make_dict_member_get(cg_context):
         TextNode(_format("return {};", blink_member_name.value_var)),
     ])
 
-    if blink_type.ref_t != blink_type.const_ref_t:
-        func_def = CxxFuncDefNode(
-            name=name, arg_decls=[], return_type=blink_type.ref_t)
+    if ref_t != const_ref_t:
+        func_def = CxxFuncDefNode(name=name, arg_decls=[], return_type=ref_t)
         decls.append(func_def)
         func_def.set_base_template_vars(cg_context.template_bindings())
         func_def.body.extend([
             TextNode(_format("DCHECK({}());", blink_member_name.has_api)),
             TextNode(_format("return {};", blink_member_name.value_var)),
         ])
+
+    if not _is_member_always_present(member):
+        func_def = CxxFuncDefNode(
+            name=blink_member_name.get_or_api,
+            arg_decls=[_format("{} fallback_value", blink_type.value_t)],
+            return_type=blink_type.value_t,
+            const=True)
+        decls.append(func_def)
+        func_def.set_base_template_vars(cg_context.template_bindings())
+        body_node = TextNode(
+            _format("""\
+if ({has}()) {{
+  return {get}();
+}}
+return std::move(fallback_value);""",
+                    has=blink_member_name.has_api,
+                    get=blink_member_name.get_api))
+        func_def.body.append(body_node)
 
     return decls, defs
 

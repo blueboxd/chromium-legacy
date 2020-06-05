@@ -53,8 +53,17 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
           /*delegate=*/nullptr, kNotificationAssistantIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
-  if (notification->is_high_priority)
-    system_notification->set_priority(message_center::HIGH_PRIORITY);
+  switch (notification->priority) {
+    case chromeos::assistant::mojom::AssistantNotificationPriority::kLow:
+      system_notification->set_priority(message_center::LOW_PRIORITY);
+      break;
+    case chromeos::assistant::mojom::AssistantNotificationPriority::kDefault:
+      system_notification->set_priority(message_center::DEFAULT_PRIORITY);
+      break;
+    case chromeos::assistant::mojom::AssistantNotificationPriority::kHigh:
+      system_notification->set_priority(message_center::HIGH_PRIORITY);
+      break;
+  }
 
   return system_notification;
 }

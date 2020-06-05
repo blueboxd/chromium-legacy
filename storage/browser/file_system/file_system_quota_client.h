@@ -37,7 +37,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemQuotaClient
   explicit FileSystemQuotaClient(FileSystemContext* file_system_context);
 
   // QuotaClient methods.
-  QuotaClientType type() const override;
   void OnQuotaManagerDestroyed() override {}
   void GetOriginUsage(const url::Origin& origin,
                       blink::mojom::StorageType type,

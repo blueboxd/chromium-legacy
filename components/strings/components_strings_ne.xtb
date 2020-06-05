@@ -224,7 +224,6 @@
 <translation id="1838374766361614909">खोजी खाली गर्नुहोस्</translation>
 <translation id="1839551713262164453">त्रुटिले गर्दा नीतिका मानहरू प्रमाणीकरण गर्न सकिएन</translation>
 <translation id="1842969606798536927">भुक्तानी गर्नुहोस्</translation>
-<translation id="1852694792039666893">एउटा भरपर्दो पासवर्ड सिफारिस गर्न आफ्नो Google खाता प्रयोग गर्नुहोस्</translation>
 <translation id="1871208020102129563">प्रोक्सी निश्चित प्रोक्सी सर्भर प्रयोग गर्न सेट गरिएको छ, .pac स्क्रिप्ट युआरएल होइन।</translation>
 <translation id="1871284979644508959">आवश्यक क्षेत्र</translation>
 <translation id="1875512691959384712">Google फारम</translation>
@@ -409,7 +408,6 @@
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">सबैभन्दा मिल्ने</translation>
 <translation id="2691924980723297736">सुरक्षासम्बन्धी चेतावनी</translation>
-<translation id="2696268945573510710">आफ्नो Google खातामा भण्डारण गरिएका पासवर्डहरू प्रयोग गर्नुहोस्</translation>
 <translation id="2699302886720511147">स्वीकार गरिने कार्डहरू</translation>
 <translation id="2701514975700770343">तलतिर फर्केको</translation>
 <translation id="2702801445560668637">पाठ्य सूची</translation>
@@ -458,7 +456,6 @@
 <translation id="2915068235268646559"><ph name="CRASH_TIME" /> मा भएको क्र्यास</translation>
 <translation id="2916038427272391327">अन्य प्रोग्रामहरू बन्द गर्नुहोस्</translation>
 <translation id="2922350208395188000">सर्भरको प्रमाणपत्र जाँच गर्न सकिँदैन।</translation>
-<translation id="2924027812781652774">आफ्नो Google खातामा भण्डारण गरिएका पासवर्डहरू प्रयोग गर्न साइन इन गर्नुहोस्</translation>
 <translation id="2925673989565098301">डेलिभरीको विधि</translation>
 <translation id="2928905813689894207">बिलिङ ठेगाना</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>

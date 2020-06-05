@@ -516,16 +516,19 @@ class NGInlineNodeDataEditor final {
     // Skip items in replaced range.
     while (it->end_offset_ < end_offset)
       ++it;
-    DCHECK_EQ(it->layout_object_, layout_text_);
 
     // Inserted text
-    if (inserted_text_length > 0) {
-      const unsigned inserted_start_offset =
-          items.IsEmpty() ? 0 : items.back().end_offset_;
-      const unsigned inserted_end_offset =
-          inserted_start_offset + inserted_text_length;
-      items.push_back(NGInlineItem(*it, inserted_start_offset,
-                                   inserted_end_offset, nullptr));
+    if (it->layout_object_ == layout_text_) {
+      if (inserted_text_length > 0) {
+        const unsigned inserted_start_offset =
+            items.IsEmpty() ? 0 : items.back().end_offset_;
+        const unsigned inserted_end_offset =
+            inserted_start_offset + inserted_text_length;
+        items.push_back(NGInlineItem(*it, inserted_start_offset,
+                                     inserted_end_offset, nullptr));
+      }
+    } else {
+      DCHECK_LE(inserted_text_length, 0);
     }
 
     // Copy part of item after replaced range.
@@ -571,7 +574,6 @@ class NGInlineNodeDataEditor final {
                              unsigned start_offset) const {
     DCHECK_LE(item.start_offset_, start_offset);
     DCHECK_LT(start_offset, item.end_offset_);
-    DCHECK_EQ(item.layout_object_, layout_text_);
     if (item.start_offset_ == start_offset)
       return item;
     const unsigned end_offset = item.end_offset_;

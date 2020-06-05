@@ -67,19 +67,17 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
 }
 
 void ServiceWorkerGlobalScopeProxy::BindServiceWorker(
-    mojo::ScopedMessagePipeHandle receiver_pipe) {
+    CrossVariantMojoReceiver<mojom::blink::ServiceWorkerInterfaceBase>
+        receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  WorkerGlobalScope()->BindServiceWorker(
-      mojo::PendingReceiver<mojom::blink::ServiceWorker>(
-          std::move(receiver_pipe)));
+  WorkerGlobalScope()->BindServiceWorker(std::move(receiver));
 }
 
 void ServiceWorkerGlobalScopeProxy::BindControllerServiceWorker(
-    mojo::ScopedMessagePipeHandle receiver_pipe) {
+    CrossVariantMojoReceiver<mojom::blink::ControllerServiceWorkerInterfaceBase>
+        receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-  WorkerGlobalScope()->BindControllerServiceWorker(
-      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>(
-          std::move(receiver_pipe)));
+  WorkerGlobalScope()->BindControllerServiceWorker(std::move(receiver));
 }
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(

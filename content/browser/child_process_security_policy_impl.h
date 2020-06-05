@@ -111,7 +111,14 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
    private:
     friend class ChildProcessSecurityPolicyImpl;
-    explicit Handle(int child_id);
+    // |child_id| - The ID of the process that this Handle is being created
+    // for, or ChildProcessHost::kInvalidUniqueID if an invalid handle is being
+    // created.
+    // |duplicating_handle| - True if the handle is being created by a
+    // Duplicate() call. Otherwise false. This is used to trigger special
+    // behavior for handle duplication that is not allowed for Handles created
+    // by other means.
+    Handle(int child_id, bool duplicating_handle);
 
     // The ID of the child process that this handle is associated with or
     // ChildProcessHost::kInvalidUniqueID if the handle is no longer valid.
@@ -659,8 +666,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                           IsolatedOriginSource source,
                           BrowserContext* browser_context = nullptr);
 
-  bool AddProcessReference(int child_id);
-  bool AddProcessReferenceLocked(int child_id) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  bool AddProcessReference(int child_id, bool duplicating_handle);
+  bool AddProcessReferenceLocked(int child_id, bool duplicating_handle)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
   void RemoveProcessReference(int child_id);
   void RemoveProcessReferenceLocked(int child_id)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);

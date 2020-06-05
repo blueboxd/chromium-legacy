@@ -69,6 +69,7 @@ class CORE_EXPORT FilterOperations {
 
   bool HasFilterThatAffectsOpacity() const;
   bool HasFilterThatMovesPixels() const;
+  bool HasReferenceFilter() const;
 
   void AddClient(SVGResourceClient&) const;
   void RemoveClient(SVGResourceClient&) const;

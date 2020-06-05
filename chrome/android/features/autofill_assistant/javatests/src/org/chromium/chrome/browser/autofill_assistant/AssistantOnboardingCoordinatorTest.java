@@ -180,13 +180,11 @@ public class AssistantOnboardingCoordinatorTest {
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
-        TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
-                R.id.onboarding_subtitle);
+        TextView termsView = mActivity.findViewById(R.id.onboarding_subtitle);
         assertEquals(
                 mActivity.getResources().getText(R.string.autofill_assistant_init_message_short),
                 termsView.getText());
-        TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
-                R.id.onboarding_try_assistant);
+        TextView titleView = mActivity.findViewById(R.id.onboarding_try_assistant);
         assertEquals(
                 mActivity.getResources().getText(R.string.autofill_assistant_init_message_rent_car),
                 titleView.getText());
@@ -205,13 +203,11 @@ public class AssistantOnboardingCoordinatorTest {
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
-        TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
-                R.id.onboarding_subtitle);
+        TextView termsView = mActivity.findViewById(R.id.onboarding_subtitle);
         assertEquals(
                 mActivity.getResources().getText(R.string.autofill_assistant_init_message_short),
                 termsView.getText());
-        TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
-                R.id.onboarding_try_assistant);
+        TextView titleView = mActivity.findViewById(R.id.onboarding_try_assistant);
         assertEquals(mActivity.getResources().getText(
                              R.string.autofill_assistant_init_message_buy_movie_tickets),
                 titleView.getText());
@@ -229,13 +225,11 @@ public class AssistantOnboardingCoordinatorTest {
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
-        TextView termsView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
-                R.id.onboarding_subtitle);
+        TextView termsView = mActivity.findViewById(R.id.onboarding_subtitle);
         assertEquals(View.VISIBLE, termsView.getVisibility());
         assertEquals(mActivity.getResources().getText(R.string.autofill_assistant_init_message),
                 termsView.getText());
-        TextView titleView = mBottomSheetController.getBottomSheetViewForTesting().findViewById(
-                R.id.onboarding_try_assistant);
+        TextView titleView = mActivity.findViewById(R.id.onboarding_try_assistant);
         assertEquals(mActivity.getResources().getText(R.string.autofill_assistant_init_title),
                 titleView.getText());
     }

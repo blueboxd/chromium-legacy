@@ -12,7 +12,6 @@
 
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -38,7 +37,6 @@
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/browser_renderer.h"
 #include "chrome/browser/vr/location_bar_helper.h"
-#include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
@@ -183,7 +181,6 @@ VrShell::VrShell(JNIEnv* env,
 
   AssetsLoader::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
       &VrShell::OnAssetsComponentReady, weak_ptr_factory_.GetWeakPtr()));
-  AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVr);
 
   UpdateVrAssetsComponent(g_browser_process->component_updater());
 
@@ -450,13 +447,6 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   // permissions.
   CreatePageInfo();
   ui_->SetWebVrMode(enabled);
-
-  if (webvr_mode_) {
-    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
-        Mode::kWebXrVrPresentation);
-  } else {
-    AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(Mode::kVrBrowsing);
-  }
 }
 
 bool VrShell::GetWebVrMode(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -641,8 +631,8 @@ void VrShell::DialogSurfaceCreated(jobject surface,
   Java_VrShell_dialogSurfaceCreated(env, j_vr_shell_, ref);
 }
 
-void VrShell::GvrDelegateReady(gvr::ViewerType viewer_type) {
-  delegate_provider_->SetDelegate(this, viewer_type);
+void VrShell::GvrDelegateReady() {
+  delegate_provider_->SetDelegate(this);
 }
 
 void VrShell::SendRequestPresentReply(device::mojom::XRSessionPtr session) {
@@ -704,12 +694,6 @@ void VrShell::ExitFullscreen() {
   }
 }
 
-void VrShell::LogUnsupportedModeUserMetric(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj,
-                                           int mode) {
-  LogUnsupportedModeUserMetric((UiUnsupportedMode)mode);
-}
-
 void VrShell::ShowSoftInput(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             bool show) {
@@ -727,11 +711,6 @@ void VrShell::UpdateWebInputIndices(
                                            base::Unretained(gl_thread_.get()),
                                            selection_start, selection_end,
                                            composition_start, composition_end));
-}
-
-void VrShell::LogUnsupportedModeUserMetric(UiUnsupportedMode mode) {
-  UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
-                            UiUnsupportedMode::kCount);
 }
 
 content::WebContents* VrShell::GetNonNativePageWebContents() const {
@@ -785,19 +764,9 @@ void VrShell::OnExitVrPromptResult(UiUnsupportedMode reason,
   }
 
   DCHECK_NE(reason, UiUnsupportedMode::kCount);
-  if (reason == UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission) {
-    // Note that we already measure the number of times the user exits VR
-    // because of the record audio permission through
-    // VR.Shell.EncounteredUnsupportedMode histogram. This histogram measures
-    // whether the user chose to proceed to grant the OS record audio permission
-    // through the reported Boolean.
-    UMA_HISTOGRAM_BOOLEAN("VR.VoiceSearch.RecordAudioOsPermissionPromptChoice",
-                          choice == ExitVrPromptChoice::CHOICE_EXIT);
-  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_VrShell_onExitVrRequestResult(env, j_vr_shell_, static_cast<int>(reason),
-                                     should_exit);
+  Java_VrShell_onExitVrRequestResult(env, j_vr_shell_, should_exit);
 }
 
 void VrShell::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
@@ -1045,8 +1014,6 @@ void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
     VLOG(1) << "Failed to load VR assets component";
   }
 
-  AssetsLoader::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
-      status, component_version);
   ui_finished_loading_ = true;
 }
 

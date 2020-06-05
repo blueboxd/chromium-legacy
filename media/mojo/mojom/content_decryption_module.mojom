@@ -5,7 +5,6 @@
 module media.mojom;
 
 import "media/mojo/mojom/decryptor.mojom";
-import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 // See media::EmeInitDataType.
@@ -79,9 +78,7 @@ interface ContentDecryptionModule {
   // will be zero. Upon success, |cdm_id| will be non-zero and will later be
   // used to locate the CDM at the remote side. |decryptor| is the remote
   // Decryptor.
-  Initialize(string key_system,
-             url.mojom.Origin security_origin,
-             CdmConfig cdm_config)
+  Initialize(string key_system, CdmConfig cdm_config)
       => (CdmPromiseResult result, int32 cdm_id,
           pending_remote<Decryptor>? decryptor);
 

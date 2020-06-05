@@ -107,7 +107,7 @@ void WebContentDecryptionModuleImpl::Create(
   // |web_cdm_created_cb|), it will keep a reference to |adapter|. Otherwise,
   // |adapter| will be destructed.
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
-  adapter->CreateCdm(cdm_factory, key_system_ascii, security_origin, cdm_config,
+  adapter->CreateCdm(cdm_factory, key_system_ascii, cdm_config,
                      std::move(web_cdm_created_cb));
 }
 

@@ -172,13 +172,17 @@ class PinTokenRequest : public TokenRequest {
 
 class UvTokenRequest : public TokenRequest {
  public:
-  explicit UvTokenRequest(const KeyAgreementResponse& peer_key);
+  UvTokenRequest(const KeyAgreementResponse& peer_key,
+                 base::Optional<std::string> rp_id);
   UvTokenRequest(UvTokenRequest&&);
   UvTokenRequest(const UvTokenRequest&) = delete;
   virtual ~UvTokenRequest();
 
   friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
   AsCTAPRequestValuePair(const UvTokenRequest&);
+
+ private:
+  base::Optional<std::string> rp_id_;
 };
 
 // TokenResponse represents the response to a pin-token request. In order to

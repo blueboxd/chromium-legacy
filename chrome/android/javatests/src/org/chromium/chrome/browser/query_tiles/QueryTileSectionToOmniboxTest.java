@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -43,6 +44,7 @@ import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.query_tiles.QueryTile;
+import org.chromium.components.query_tiles.TestTileProvider;
 
 /**
  * Provides a set of tests to validate that QueryTiles works properly in the NTP given the following
@@ -129,6 +131,7 @@ public class QueryTileSectionToOmniboxTest {
     /** Test that clicking on a tile to open the omnibox and pressing back shows the right tiles. */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1091225")
     public void testBackOutOfOmniboxRestoresTilePosition() throws Exception {
         setUp(1 /* levels */);
         Matcher<View> recyclerViewMatcher = withParent(withId(R.id.query_tiles));

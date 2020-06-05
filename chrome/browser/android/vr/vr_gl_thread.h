@@ -22,7 +22,6 @@
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_test_input.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace base {
 class Version;
@@ -67,7 +66,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
                              gl::SurfaceTexture* texture) override;
   void ContentOverlaySurfaceCreated(jobject surface,
                                     gl::SurfaceTexture* texture) override;
-  void GvrDelegateReady(gvr::ViewerType viewer_type) override;
+  void GvrDelegateReady() override;
   void SendRequestPresentReply(device::mojom::XRSessionPtr) override;
   void DialogSurfaceCreated(jobject surface,
                             gl::SurfaceTexture* texture) override;

@@ -21,6 +21,7 @@ import org.chromium.base.ChildBindingState;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.CpuFeatures;
+import org.chromium.base.JavaExceptionReporter;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -33,11 +34,13 @@ import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.ChildProcessConstants;
 import org.chromium.base.process_launcher.ChildProcessLauncher;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
+import org.chromium.base.task.PostTask;
 import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitchUtils;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.ContentFeatureList;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentSwitches;
 
 import java.io.IOException;
@@ -113,6 +116,9 @@ public final class ChildProcessLauncherHelperImpl {
 
     // Whether the process can use warmed up connection.
     private final boolean mCanUseWarmUpConnection;
+
+    // Tracks reporting exception from child process to avoid reporting it more than once.
+    private boolean mReportedException;
 
     private final ChildProcessLauncher.Delegate mLauncherDelegate =
             new ChildProcessLauncher.Delegate() {
@@ -503,11 +509,17 @@ public final class ChildProcessLauncherHelperImpl {
         // is not thread safe, so this is the best we can do.
         int reverseRank = getReverseRankWhenConnectionLost();
         int bindingCounts[] = connection.remainingBindingStateCountsCurrentOrWhenDied();
+        String exceptionString = connection.getExceptionDuringInit();
+        if (exceptionString != null && !mReportedException) {
+            mReportedException = true;
+            PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT,
+                    () -> JavaExceptionReporter.reportStackTrace(exceptionString));
+        }
         ChildProcessLauncherHelperImplJni.get().setTerminationInfo(terminationInfoPtr,
                 connection.bindingStateCurrentOrWhenDied(), connection.isKilledByUs(),
-                connection.hasCleanExit(), bindingCounts[ChildBindingState.STRONG],
-                bindingCounts[ChildBindingState.MODERATE], bindingCounts[ChildBindingState.WAIVED],
-                reverseRank);
+                connection.hasCleanExit(), exceptionString != null,
+                bindingCounts[ChildBindingState.STRONG], bindingCounts[ChildBindingState.MODERATE],
+                bindingCounts[ChildBindingState.WAIVED], reverseRank);
         LauncherThread.post(() -> mLauncher.stop());
     }
 
@@ -752,7 +764,7 @@ public final class ChildProcessLauncherHelperImpl {
         void onChildProcessStarted(long nativeChildProcessLauncherHelper, int pid);
 
         void setTerminationInfo(long termiantionInfoPtr, @ChildBindingState int bindingState,
-                boolean killedByUs, boolean cleanExit, int remainingStrong, int remainingModerate,
-                int remainingWaived, int reverseRank);
+                boolean killedByUs, boolean cleanExit, boolean exceptionDuringInit,
+                int remainingStrong, int remainingModerate, int remainingWaived, int reverseRank);
     }
 }

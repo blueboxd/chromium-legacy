@@ -40,7 +40,7 @@ class PLATFORM_EXPORT DarkModeFilter {
   // invert shadows, but we may need to do some other kind of processing for
   // them.
   enum class ElementRole { kText, kListSymbol, kBackground, kSVG };
-  Color InvertColorIfNeeded(const Color& color, ElementRole element_role);
+  SkColor InvertColorIfNeeded(SkColor color, ElementRole element_role);
   base::Optional<cc::PaintFlags> ApplyToFlagsIfNeeded(
       const cc::PaintFlags& flags,
       ElementRole element_role);
@@ -59,7 +59,7 @@ class PLATFORM_EXPORT DarkModeFilter {
 
   DarkModeSettings settings_;
 
-  bool ShouldApplyToColor(const Color& color, ElementRole role);
+  bool ShouldApplyToColor(SkColor color, ElementRole role);
 
   std::unique_ptr<DarkModeColorClassifier> text_classifier_;
   std::unique_ptr<DarkModeColorClassifier> background_classifier_;

@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
 
   // Validate the body message, since it has a bit of formatting applied.
   EXPECT_EQ(
-      "The Search Override Extension extension changed search to use "
+      "The \"Search Override Extension\" extension changed search to use "
       "example.com",
       base::UTF16ToUTF8(params->dialog_message));
 }

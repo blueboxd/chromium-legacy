@@ -198,11 +198,13 @@ void QuickAnswersClient::IntentGeneratorCallback(
 
   delegate_->OnRequestPreprocessFinished(processed_request);
 
-  if (features::IsQuickAnswersTextAnnotatorEnabled() &&
-      processed_request.preprocessed_output.intent_type ==
-          IntentType::kUnknown) {
-    // Don't fetch answer if no intent is generated.
-    return;
+  if (features::IsQuickAnswersTextAnnotatorEnabled()) {
+    RecordIntentType(processed_request.preprocessed_output.intent_type);
+    if (processed_request.preprocessed_output.intent_type ==
+        IntentType::kUnknown) {
+      // Don't fetch answer if no intent is generated.
+      return;
+    }
   }
 
   result_loader_ = CreateResultLoader(intent_type);

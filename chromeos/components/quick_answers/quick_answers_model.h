@@ -51,11 +51,15 @@ enum class ResultType {
 };
 
 // The predicted intent of the request.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Note: Enums labels are at |QuickAnswersIntentType|.
 enum class IntentType {
   kUnknown = 0,
   kUnit = 1,
   kDictionary = 2,
-  kTranslation = 3
+  kTranslation = 3,
+  kMaxValue = kTranslation
 };
 
 enum class QuickAnswerUiElementType {

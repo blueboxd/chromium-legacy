@@ -33,6 +33,7 @@ void VirtualKeyboardModel::RemoveInputMethodBoundsTrackerObserver(
 
 void VirtualKeyboardModel::OnArcInputMethodBoundsChanged(
     const gfx::Rect& bounds) {
+  arc_keyboard_bounds_ = bounds;
   const bool new_visible = !bounds.IsEmpty();
   if (visible_ == new_visible)
     return;

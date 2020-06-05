@@ -332,7 +332,8 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testShowSnackbar() {
-        mFeedStreamSurface.showSnackbar("message", "Undo", 50, mSnackbarController);
+        mFeedStreamSurface.showSnackbar(
+                "message", "Undo", FeedActionsHandler.SnackbarDuration.SHORT, mSnackbarController);
         verify(mSnackbarManager).showSnackbar(any());
     }
 

@@ -8,6 +8,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_advertising_event.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -63,6 +64,9 @@ class Bluetooth final : public EventTargetWithInlineData,
 
   void CancelScan(mojo::ReceiverId);
   bool IsScanActive(mojo::ReceiverId) const;
+
+  BluetoothAdvertisingEvent* CreateBluetoothAdvertisingEvent(
+      mojom::blink::WebBluetoothAdvertisingEventPtr advertising_event);
 
  private:
   BluetoothDevice* GetBluetoothDeviceRepresentingDevice(

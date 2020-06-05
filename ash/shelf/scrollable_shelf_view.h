@@ -137,6 +137,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   const gfx::Rect& visible_space() const { return visible_space_; }
 
+  const gfx::Insets& extra_padding_insets() const {
+    return extra_padding_insets_;
+  }
+
   // Size of the arrow button.
   static int GetArrowButtonSize();
 

@@ -16,8 +16,6 @@ class PLATFORM_EXPORT CompositorAnimationDelegate {
  public:
   virtual ~CompositorAnimationDelegate() = default;
 
-  // TODO(yigu): The Notify* methods should be called from cc once per
-  // animation.
   virtual void NotifyAnimationStarted(double monotonic_time, int group) = 0;
   virtual void NotifyAnimationFinished(double monotonic_time, int group) = 0;
   virtual void NotifyAnimationAborted(double monotonic_time, int group) = 0;

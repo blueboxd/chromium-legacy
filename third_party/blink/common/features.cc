@@ -278,7 +278,7 @@ const base::Feature kAudioWorkletRealtimeThread{
     "AudioWorkletRealtimeThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // A feature to reduce the set of resources fetched by No-State Prefetch.
-const base::Feature kLightweightNoStatePrefetch{
+const base::Feature kLightweightNoStatePrefetch {
   "LightweightNoStatePrefetch",
 #if defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -286,10 +286,6 @@ const base::Feature kLightweightNoStatePrefetch{
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// A feature to enable web fonts to be fetched by No-State Prefetch.
-const base::Feature kLightweightNoStatePrefetch_FetchFonts{
-    "LightweightNoStatePrefetch_FetchFonts", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Automatically convert light-themed pages to use a Blink-generated dark theme
 const base::Feature kForceWebContentsDarkMode{

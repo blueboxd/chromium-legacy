@@ -28,9 +28,6 @@ class MetricsUtils {
    */
   static recordStartEvent(method, prefsManager) {
     chrome.metricsPrivate.recordUserAction(MetricsUtils.START_SPEECH_METRIC);
-    chrome.metricsPrivate.recordBoolean(
-        MetricsUtils.WORD_HIGHLIGHTING_METRIC,
-        prefsManager.wordHighlightingEnabled());
     chrome.metricsPrivate.recordEnumerationValue(
         MetricsUtils.START_SPEECH_METHOD_METRIC.METRIC_NAME, method,
         MetricsUtils.START_SPEECH_METHOD_METRIC.EVENT_COUNT);
@@ -122,13 +119,6 @@ MetricsUtils.START_SPEECH_METRIC =
  */
 MetricsUtils.CANCEL_SPEECH_METRIC =
     'Accessibility.CrosSelectToSpeak.CancelSpeech';
-
-/**
- * The word highlighting metric name.
- * @type {string}
- */
-MetricsUtils.WORD_HIGHLIGHTING_METRIC =
-    'Accessibility.CrosSelectToSpeak.WordHighlighting';
 
 /**
  * The background shading metric name.

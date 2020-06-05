@@ -477,7 +477,7 @@ TEST_F(DragWindowFromShelfControllerTest, DragOrFlingInSplitView) {
   Drag(gfx::Point(100, 200), 0.f, 1.f);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EndDrag(gfx::Point(100, 350),
+  EndDrag(gfx::Point(100, 150),
           base::make_optional(
               -DragWindowFromShelfController::kVelocityToOverviewThreshold));
   EXPECT_TRUE(overview_controller->InOverviewSession());

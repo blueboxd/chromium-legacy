@@ -25,7 +25,6 @@ FuchsiaCdmFactory::~FuchsiaCdmFactory() = default;
 
 void FuchsiaCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -34,11 +33,6 @@ void FuchsiaCdmFactory::Create(
     CdmCreatedCB cdm_created_cb) {
   CdmCreatedCB bound_cdm_created_cb =
       BindToCurrentLoop(std::move(cdm_created_cb));
-
-  if (security_origin.opaque()) {
-    std::move(bound_cdm_created_cb).Run(nullptr, "Invalid origin.");
-    return;
-  }
 
   if (CanUseAesDecryptor(key_system)) {
     auto cdm = base::MakeRefCounted<AesDecryptor>(

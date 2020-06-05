@@ -27618,6 +27618,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3309" label="PluginInstanceAccessSuccessful"/>
   <int value="3310" label="StorageAccessAPI_HasStorageAccess_Method"/>
   <int value="3311" label="StorageAccessAPI_requestStorageAccess_Method"/>
+  <int value="3312" label="WebBluetoothWatchAdvertisements"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -50708,11 +50709,247 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="TokenDisabled"/>
 </enum>
 
+<enum name="OsSetting">
+  <int value="0" label="Configure Ethernet"/>
+  <int value="1" label="Ethernet: Automatically Configure IP Address"/>
+  <int value="2" label="Ethernet: DNS"/>
+  <int value="3" label="Ethernet: Proxy"/>
+  <int value="4" label="Wi-Fi: On/Off"/>
+  <int value="5" label="Disconnect Wi-Fi Network"/>
+  <int value="6" label="Prefer Wi-Fi Network"/>
+  <int value="7" label="Forget Wi-Fi Network"/>
+  <int value="8" label="Configure Wi-Fi"/>
+  <int value="9" label="Wi-Fi: Automatically Configure IP Address"/>
+  <int value="10" label="Wi-Fi: DNS"/>
+  <int value="11" label="Wi-Fi: Proxy"/>
+  <int value="12" label="Wi-Fi: Auto Connect To Network"/>
+  <int value="13" label="Mobile: On/Off"/>
+  <int value="14" label="Cellular: Sim Lock"/>
+  <int value="15" label="Cellular: Roaming"/>
+  <int value="16" label="Cellular: Apn"/>
+  <int value="17" label="Disconnect Cellular Network"/>
+  <int value="18" label="Cellular: Automatically Configure IP Address"/>
+  <int value="19" label="Cellular: DNS"/>
+  <int value="20" label="Cellular: Proxy"/>
+  <int value="21" label="Cellular: Automatically Connect To Network"/>
+  <int value="22" label="Instant Tethering: On/Off"/>
+  <int value="23" label="Disconnect Tether Network"/>
+  <int value="100" label="Bluetooth: On/Off"/>
+  <int value="101" label="Bluetooth: Connect To Device"/>
+  <int value="102" label="Bluetooth: Disconnect From Device"/>
+  <int value="103" label="Bluetooth: Pair Device"/>
+  <int value="104" label="Bluetooth: Unpair Device"/>
+  <int value="200" label="Set Up MultiDevice"/>
+  <int value="201" label="Verify MultiDevice Setup"/>
+  <int value="202" label="MultiDevice On/Off"/>
+  <int value="203" label="Smart Lock: On/Off"/>
+  <int value="204" label="Smart Lock: Unlock Or Sign In"/>
+  <int value="205" label="Messages: Set Up"/>
+  <int value="206" label="Messages: On/Off"/>
+  <int value="207" label="Forget Phone"/>
+  <int value="300" label="Add Account"/>
+  <int value="301" label="Remove Account"/>
+  <int value="302" label="Sync On/Off"/>
+  <int value="303" label="Lock Screen"/>
+  <int value="304" label="Change Auth Pin"/>
+  <int value="305" label="Guest Browsing"/>
+  <int value="306" label="Show Usernames And Photos At Sign In"/>
+  <int value="307" label="Restrict Sign In"/>
+  <int value="308" label="Add To User Whitelist"/>
+  <int value="309" label="Remove From User Whitelist"/>
+  <int value="310" label="Add Kerberos Ticket"/>
+  <int value="311" label="Remove Kerberos Ticket"/>
+  <int value="312" label="Set Active Kerberos Ticket"/>
+  <int value="313" label="Add Fingerprint"/>
+  <int value="314" label="Remove Fingerprint"/>
+  <int value="315" label="Set Up Parental Controls"/>
+  <int value="400" label="Touchpad: Tap-To-Click"/>
+  <int value="401" label="Touchpad: Tap Dragging"/>
+  <int value="402" label="Touchpad: Reverse Scrolling"/>
+  <int value="403" label="Touchpad: Acceleration"/>
+  <int value="404" label="Touchpad: Scroll Acceleration"/>
+  <int value="405" label="Touchpad: Speed"/>
+  <int value="406" label="Mouse: Swap Primary Buttons"/>
+  <int value="407" label="Mouse: Reverse Scrolling"/>
+  <int value="408" label="Mouse: Acceleration"/>
+  <int value="409" label="Mouse: Scroll Acceleration"/>
+  <int value="410" label="Mouse: Speed"/>
+  <int value="411" label="Keyboard: Function Keys"/>
+  <int value="412" label="Keyboard: Auto Repeat"/>
+  <int value="413" label="Keyboard: Shortcuts"/>
+  <int value="414" label="Display: Size"/>
+  <int value="415" label="Night Light"/>
+  <int value="416" label="Stylus: Tools In Shelf"/>
+  <int value="417" label="Stylus: Note Taking App"/>
+  <int value="418" label="Stylus: Note Taking From Lock Screen"/>
+  <int value="419" label="Stylus: Latest Note On Lock Screen"/>
+  <int value="420" label="Display: Orientation"/>
+  <int value="421" label="Display: Arrangement"/>
+  <int value="422" label="Power: Idle Behavior While Charging"/>
+  <int value="423" label="Power: Source"/>
+  <int value="424" label="Sleep When Laptop Lid is Closed"/>
+  <int value="425" label="Display: Resolution"/>
+  <int value="426" label="Display: Refresh Rate"/>
+  <int value="427" label="Remove DLC"/>
+  <int value="428" label="Display: Mirroring"/>
+  <int value="429" label="Allow Windows To Span Displays"/>
+  <int value="430" label="Ambient Colors"/>
+  <int value="431" label="Touchscreen Calibration"/>
+  <int value="432" label="Night Light Color Temperature"/>
+  <int value="433" label="Power Idle Behavior While On Battery"/>
+  <int value="500" label="Open Wallpaper"/>
+  <int value="501" label="Ambient Mode On/Off"/>
+  <int value="502" label="Ambient Mode Source"/>
+  <int value="503" label="Change Device Account Image"/>
+  <int value="600" label="Preferred Search Engine"/>
+  <int value="601" label="Assistant: On/Off"/>
+  <int value="602" label="Assistant: Related Info"/>
+  <int value="603" label="Assistant: Quick Answers"/>
+  <int value="604" label="Assistant: Ok Google"/>
+  <int value="605" label="Assistant: Notifications"/>
+  <int value="606" label="Assistant: Voice Input"/>
+  <int value="700" label="Manage Android Preferences"/>
+  <int value="701" label="Remove Play Store"/>
+  <int value="702" label="Turn On Play Store"/>
+  <int value="800" label="Set Up Crostini"/>
+  <int value="801" label="Uninstall Crostini"/>
+  <int value="802" label="Backup Linux Apps And Files"/>
+  <int value="803" label="Restore Linux Apps And Files"/>
+  <int value="804" label="Crostini: Adb Debugging"/>
+  <int value="805" label="Crostini: Disk Resize"/>
+  <int value="806" label="Crostini: Mic Access"/>
+  <int value="807" label="Crostini: Container Upgrade"/>
+  <int value="1000" label="24Hour Clock"/>
+  <int value="1001" label="Change Time Zone"/>
+  <int value="1101" label="Verified Access"/>
+  <int value="1102" label="Keep Wi-Fi On During Sleep"/>
+  <int value="1103" label="Usage Stats And Crash Reports"/>
+  <int value="1200" label="Add Language"/>
+  <int value="1201" label="Show Input Options In Shelf"/>
+  <int value="1202" label="Show Personal Information Suggestions"/>
+  <int value="1300" label="Google Drive Connection"/>
+  <int value="1400" label="Add Printer"/>
+  <int value="1401" label="Saved Printers"/>
+  <int value="1402" label="Print Jobs"/>
+  <int value="1500" label="A11y Quick Settings"/>
+  <int value="1501" label="Chrome Vox"/>
+  <int value="1502" label="Select To Speak"/>
+  <int value="1503" label="Text-To-Speech: Rate"/>
+  <int value="1504" label="Text-To-Speech: Pitch"/>
+  <int value="1505" label="Text-To-Speech: Volume"/>
+  <int value="1506" label="Text-To-Speech: Voice"/>
+  <int value="1507" label="Text-To-Speech: Engines"/>
+  <int value="1508" label="High Contrast Mode"/>
+  <int value="1509" label="Fullscreen Magnifier"/>
+  <int value="1510" label="Docked Magnifier"/>
+  <int value="1511" label="Sticky Keys"/>
+  <int value="1512" label="On Screen Keyboard"/>
+  <int value="1513" label="Dictation"/>
+  <int value="1514" label="Speak-To-Type"/>
+  <int value="1515" label="Highlight Text Caret"/>
+  <int value="1516" label="Auto-Click When Cursor Stops"/>
+  <int value="1517" label="Large Cursor"/>
+  <int value="1518" label="Highlight Cursor While Moving"/>
+  <int value="1519" label="Tablet Navigation Buttons"/>
+  <int value="1520" label="Mono Audio"/>
+  <int value="1521" label="Startup Sound"/>
+  <int value="1522" label="Enable Switch Access"/>
+  <int value="1523" label="Switch Action: Assignment"/>
+  <int value="1524" label="Switch Action: Auto Scan"/>
+  <int value="1525" label="Switch Action: Auto Scan Keyboard"/>
+  <int value="1526" label="Get Image Descriptions From Google"/>
+  <int value="1527" label="Live Captions"/>
+  <int value="1600" label="Powerwash"/>
+  <int value="1700" label="Change Chrome Channel"/>
+  <int value="1701" label="Copy Detailed Build Info"/>
+</enum>
+
 <enum name="OsSettingsProviderError">
   <int value="0" label="Ok"/>
   <int value="1" label="App service unavailable"/>
   <int value="2" label="No settings icon"/>
   <int value="3" label="Search handler unavailable"/>
+</enum>
+
+<enum name="OsSettingsSearchResultType">
+  <int value="0" label="kSection"/>
+  <int value="1" label="kSubpage"/>
+  <int value="2" label="kSetting"/>
+</enum>
+
+<enum name="OsSettingsSection">
+  <int value="0" label="Network"/>
+  <int value="1" label="Bluetooth"/>
+  <int value="2" label="Multi Device"/>
+  <int value="3" label="People"/>
+  <int value="4" label="Device"/>
+  <int value="5" label="Personalization"/>
+  <int value="6" label="Search And Assistant"/>
+  <int value="7" label="Apps"/>
+  <int value="8" label="Crostini"/>
+  <int value="10" label="Date And Time"/>
+  <int value="11" label="Privacy And Security"/>
+  <int value="12" label="Languages And Input"/>
+  <int value="13" label="Files"/>
+  <int value="14" label="Printing"/>
+  <int value="15" label="Accessibility"/>
+  <int value="16" label="Reset"/>
+  <int value="17" label="About Chrome OS"/>
+</enum>
+
+<enum name="OsSettingsSubpage">
+  <int value="0" label="Ethernet Details"/>
+  <int value="1" label="Wifi Networks"/>
+  <int value="2" label="Wifi Details"/>
+  <int value="3" label="Known Networks"/>
+  <int value="4" label="Mobile Data Networks"/>
+  <int value="5" label="Cellular Details"/>
+  <int value="6" label="Tether Details"/>
+  <int value="7" label="Vpn Details"/>
+  <int value="100" label="Bluetooth Devices"/>
+  <int value="200" label="Multi Device Features"/>
+  <int value="201" label="Smart Lock"/>
+  <int value="300" label="My Accounts"/>
+  <int value="301" label="Sync"/>
+  <int value="302" label="Sync (Deprecated)"/>
+  <int value="303" label="Sync Advanced (Deprecated)"/>
+  <int value="304" label="Security And Sign In"/>
+  <int value="305" label="Fingerprint"/>
+  <int value="306" label="Manage Other People"/>
+  <int value="307" label="Kerberos"/>
+  <int value="400" label="Pointers"/>
+  <int value="401" label="Keyboard"/>
+  <int value="402" label="Stylus"/>
+  <int value="403" label="Display"/>
+  <int value="404" label="Storage"/>
+  <int value="405" label="External Storage"/>
+  <int value="406" label="DLC"/>
+  <int value="407" label="Power"/>
+  <int value="500" label="Change Picture"/>
+  <int value="501" label="Ambient Mode"/>
+  <int value="600" label="Assistant"/>
+  <int value="700" label="App Management"/>
+  <int value="701" label="App Details"/>
+  <int value="702" label="Google Play Store"/>
+  <int value="703" label="Plugin Vm Shared Paths"/>
+  <int value="800" label="Crostini Details"/>
+  <int value="801" label="Crostini Manage Shared Folders"/>
+  <int value="802" label="Crostini Usb Preferences"/>
+  <int value="803" label="Crostini Backup And Restore"/>
+  <int value="804" label="Crostini Develop Android Apps"/>
+  <int value="805" label="Crostini Port Forwarding"/>
+  <int value="1000" label="Time Zone"/>
+  <int value="1200" label="Languages And Input Details"/>
+  <int value="1201" label="Manage Input Methods"/>
+  <int value="1202" label="Smart Inputs"/>
+  <int value="1300" label="Network File Shares"/>
+  <int value="1400" label="Printing Details"/>
+  <int value="1500" label="Manage Accessibility"/>
+  <int value="1502" label="Text-To-Speech"/>
+  <int value="1503" label="Switch Access Options"/>
+  <int value="1504" label="Captions"/>
+  <int value="1700" label="About Chrome OS Details"/>
+  <int value="1701" label="Detailed Build Info"/>
 </enum>
 
 <enum name="OsSuite">
@@ -54758,6 +54995,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="ORIGIN_LINK_REL_NEXT"/>
   <int value="13" label="ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER"/>
   <int value="15" label="ORIGIN_NAVIGATION_PREDICTOR"/>
+  <int value="16" label="ORIGIN_ISOLATED_PRERENDER"/>
 </enum>
 
 <enum name="PrerenderPageviewEvents">
@@ -56807,6 +57045,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="19" label="QUIC_STREAM_ACKED_UNSENT_FIN"/>
   <int value="20" label="QUIC_STREAM_SEQUENCER_BUFFER"/>
   <int value="21" label="QUIC_CHROMIUM_CLIENT_SESSION_CLOSE_SESSION_ON_ERROR"/>
+</enum>
+
+<enum name="QuickAnswersIntentType">
+  <int value="0" label="kUnknown"/>
+  <int value="1" label="kUnit"/>
+  <int value="2" label="kDictionary"/>
+  <int value="3" label="kTranslation"/>
 </enum>
 
 <enum name="QuickAnswersLoadStatus">
@@ -70012,6 +70257,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRAssetsComponentUpdateStatus">
+  <obsolete>
+    Removed 06/2020.
+  </obsolete>
   <int value="1"
       label="Failed to verify component (component version not known)."/>
   <int value="2"
@@ -70026,6 +70274,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRAssetsLoadStatus">
+  <obsolete>
+    Removed 06/2020.
+  </obsolete>
   <int value="1000"
       label="Successfully loaded assets (component version 0.1)."/>
   <int value="1001"
@@ -70037,6 +70288,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRComponentStatus">
+  <obsolete>
+    Removed 06/2020.
+  </obsolete>
   <int value="0" label="Component is ready to use"/>
   <int value="1" label="Component is not ready to use. Reason unknown."/>
 </enum>
@@ -70062,6 +70316,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRPresentationStartAction">
+  <obsolete>
+    Removed as of 06/2020.
+  </obsolete>
   <int value="0" label="Other">
     A catch all for presentation sources that are unknown or cannot be specified
     for other reasons.
@@ -70085,6 +70342,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRSessionStartAction">
+  <obsolete>
+    Removed as of 06/2020.
+  </obsolete>
   <int value="1" label="Headset Activation">
     The user activated a headset. For example, inserted phone in Daydream, or
     put on an Occulus or Vive.
@@ -70103,6 +70363,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRStartReason">
+  <obsolete>
+    Removed as of 06/2020.
+  </obsolete>
   <int value="1" label="Headset Activation"/>
   <int value="2" label="Presentation Requset"/>
   <int value="3" label="(obsolete) Deep linked app"/>
@@ -70110,6 +70373,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRSuppressedElement">
+  <obsolete>
+    Removed 06/2020.
+  </obsolete>
   <int value="0" label="File chooser was suppressed in VR"/>
   <int value="1" label="Bluetooth picker was suppressed in VR"/>
   <int value="2" label="JS dialog was suppressed in VR (obsolete in M71)"/>
@@ -70135,6 +70401,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRUnsupportedMode">
+  <obsolete>
+    Removed 06/2020.
+  </obsolete>
   <int value="0" label="Unhandled code point in URL"/>
   <int value="1" label="Could not elide URL (obsolete)"/>
   <int value="2" label="Unhandled PageInfo"/>
@@ -70163,6 +70432,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VRVoiceSearchEndState">
+  <obsolete>
+    Removed 06/2020.
+  </obsolete>
   <int value="0" label="Voice search in VR opened a search page"/>
   <int value="1" label="Voice search in VR cancelled"/>
   <int value="2" label="Voice search in VR didn't catch phrase or timed out"/>
@@ -74137,6 +74409,9 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="XRSessionRequestDialogAction">
+  <obsolete>
+    Removed as of 06/2020.
+  </obsolete>
   <int value="0" label="UserConsented"/>
   <int value="1" label="UserDenied"/>
   <int value="2" label="UserAbortedConsentFlow"/>

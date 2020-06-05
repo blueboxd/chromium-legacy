@@ -2698,6 +2698,80 @@ TEST_F(ScrollbarsTest, CheckScrollCornerIfThereIsNoScrollbar) {
   EXPECT_FALSE(scrollable_container->ScrollCorner());
 }
 
+TEST_F(ScrollbarsTest, NoNeedsBeginFrameForCustomScrollbarAfterBeginFrame) {
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      ::-webkit-scrollbar { height: 20px; }
+      ::-webkit-scrollbar-thumb { background-color: blue; }
+      #target { width: 200px; height: 200px; overflow: scroll; }
+    </style>
+    <div id="target">
+      <div style="width: 500px; height: 500px"></div>
+    </div>
+  )HTML");
+
+  while (Compositor().NeedsBeginFrame())
+    Compositor().BeginFrame();
+
+  auto* target = GetDocument().getElementById("target");
+  auto* scrollbar = To<CustomScrollbar>(
+      target->GetLayoutBox()->GetScrollableArea()->HorizontalScrollbar());
+  LayoutCustomScrollbarPart* thumb = scrollbar->GetPart(kThumbPart);
+  auto thumb_size = thumb->Size();
+  EXPECT_FALSE(thumb->ShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
+
+  WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
+      DocumentUpdateReason::kTest);
+  EXPECT_FALSE(thumb->ShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
+
+  target->setAttribute(html_names::kStyleAttr, "width: 400px");
+  EXPECT_TRUE(Compositor().NeedsBeginFrame());
+  Compositor().BeginFrame();
+  EXPECT_FALSE(thumb->ShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_NE(thumb_size, thumb->Size());
+}
+
+TEST_F(ScrollbarsTest, CustomScrollbarHypotheticalThickness) {
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      #target1::-webkit-scrollbar { width: 22px; height: 33px; }
+      #target2::-webkit-scrollbar:horizontal { height: 13px; }
+      ::-webkit-scrollbar:vertical { width: 21px; }
+    </style>
+    <div id="target1" style="width: 60px; height: 70px; overflow: scroll"></div>
+    <div id="target2" style="width: 80px; height: 90px; overflow: scroll"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* target1 = GetDocument().getElementById("target1");
+  auto* scrollable_area1 = target1->GetLayoutBox()->GetScrollableArea();
+  EXPECT_EQ(33, CustomScrollbar::HypotheticalScrollbarThickness(
+                    scrollable_area1, kHorizontalScrollbar, target1));
+  EXPECT_EQ(22, CustomScrollbar::HypotheticalScrollbarThickness(
+                    scrollable_area1, kVerticalScrollbar, target1));
+
+  auto* target2 = GetDocument().getElementById("target2");
+  auto* scrollable_area2 = target2->GetLayoutBox()->GetScrollableArea();
+  EXPECT_EQ(13, CustomScrollbar::HypotheticalScrollbarThickness(
+                    scrollable_area2, kHorizontalScrollbar, target2));
+  EXPECT_EQ(21, CustomScrollbar::HypotheticalScrollbarThickness(
+                    scrollable_area2, kVerticalScrollbar, target2));
+}
+
 // For infinite scrolling page (load more content when scroll to bottom), user
 // press on scrollbar button should keep scrolling after content loaded.
 // Disable on Android since VirtualTime not work for Android.

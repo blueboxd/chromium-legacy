@@ -557,9 +557,12 @@ gfx::Rect ShelfAppButton::CalculateSmallRippleArea() const {
   if (TabletModeController::Get()->InTabletMode() && padding > 0) {
     const int current_index = shelf_view_->view_model()->GetIndexOfView(this);
     int left_padding =
-        (shelf_view_->first_visible_index() == current_index) ? padding : 0;
+        (shelf_view_->visible_views_indices().front() == current_index)
+            ? padding
+            : 0;
     int right_padding =
-        (shelf_view_->last_visible_index() == current_index) ? padding : 0;
+        (shelf_view_->visible_views_indices().back() == current_index) ? padding
+                                                                       : 0;
 
     if (base::i18n::IsRTL())
       std::swap(left_padding, right_padding);

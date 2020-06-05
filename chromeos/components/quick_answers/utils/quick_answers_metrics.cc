@@ -16,6 +16,7 @@ namespace {
 const char kQuickAnswerActiveImpression[] = "QuickAnswers.ActiveImpression";
 const char kQuickAnswerClick[] = "QuickAnswers.Click";
 const char kQuickAnswerResult[] = "QuickAnswers.Result";
+const char kQuickAnswerIntent[] = "QuickAnswers.Intent";
 const char kQuickAnswerLoadingStatus[] = "QuickAnswers.Loading.Status";
 const char kQuickAnswerLoadingDuration[] = "QuickAnswers.Loading.Duration";
 const char kQuickAnswerSelectedContentLength[] =
@@ -121,6 +122,10 @@ void RecordConsentImpression(int nth_impression) {
   // Record every impression event.
   base::UmaHistogramExactLinear(kQuickAnswersConsent, nth_impression,
                                 kConsentImpressionCap);
+}
+
+void RecordIntentType(IntentType intent_type) {
+  base::UmaHistogramEnumeration(kQuickAnswerIntent, intent_type);
 }
 }  // namespace quick_answers
 }  // namespace chromeos

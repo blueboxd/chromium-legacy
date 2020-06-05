@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/security_state/core/security_state.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -49,7 +50,9 @@ class TabSpecificContentSettingsTest
     settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(
         &prefs_, false, false, false, false);
     TabSpecificContentSettings::CreateForWebContents(
-        web_contents(), std::make_unique<TestDelegate>(this));
+        web_contents(),
+        std::make_unique<TestTabSpecificContentSettingsDelegate>(
+            &prefs_, settings_map_.get()));
   }
 
   void TearDown() override {
@@ -60,56 +63,6 @@ class TabSpecificContentSettingsTest
   HostContentSettingsMap* settings_map() { return settings_map_.get(); }
 
  private:
-  class TestDelegate : public TabSpecificContentSettings::Delegate {
-   public:
-    explicit TestDelegate(TabSpecificContentSettingsTest* test) : test_(test) {}
-
-    void UpdateLocationBar() override {}
-
-    void SetContentSettingRules(
-        content::RenderProcessHost* process,
-        const RendererContentSettingRules& rules) override {}
-
-    PrefService* GetPrefs() override { return &test_->prefs_; }
-
-    HostContentSettingsMap* GetSettingsMap() override {
-      return test_->settings_map_.get();
-    }
-
-    ContentSetting GetEmbargoSetting(const GURL& request_origin,
-                                     ContentSettingsType permission) override {
-      return ContentSetting::CONTENT_SETTING_ASK;
-    }
-
-    std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes()
-        override {
-      return {};
-    }
-
-    browsing_data::CookieHelper::IsDeletionDisabledCallback
-    GetIsDeletionDisabledCallback() override {
-      return base::NullCallback();
-    }
-
-    bool IsMicrophoneCameraStateChanged(
-        TabSpecificContentSettings::MicrophoneCameraState
-            microphone_camera_state,
-        const std::string& media_stream_selected_audio_device,
-        const std::string& media_stream_selected_video_device) override {
-      return false;
-    }
-
-    TabSpecificContentSettings::MicrophoneCameraState GetMicrophoneCameraState()
-        override {
-      return TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED;
-    }
-
-    void OnContentBlocked(ContentSettingsType type) override {}
-
-   private:
-    TabSpecificContentSettingsTest* test_;
-  };
-
   sync_preferences::TestingPrefServiceSyncable prefs_;
   scoped_refptr<HostContentSettingsMap> settings_map_;
 };

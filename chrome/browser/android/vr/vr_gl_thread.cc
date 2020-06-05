@@ -104,11 +104,10 @@ void VrGLThread::DialogSurfaceCreated(jobject surface,
                                 surface, base::Unretained(texture)));
 }
 
-void VrGLThread::GvrDelegateReady(gvr::ViewerType viewer_type) {
+void VrGLThread::GvrDelegateReady() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::GvrDelegateReady, weak_vr_shell_, viewer_type));
+      FROM_HERE, base::BindOnce(&VrShell::GvrDelegateReady, weak_vr_shell_));
 }
 
 void VrGLThread::SendRequestPresentReply(device::mojom::XRSessionPtr session) {

@@ -4,12 +4,12 @@
 
 package org.chromium.android_webview;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Provides Android WebView debugging entrypoints.
@@ -20,39 +20,18 @@ import java.io.IOException;
 @JNINamespace("android_webview")
 @UsedByReflection("")
 public class AwDebug {
+    private static final String TAG = "AwDebug";
+
     /**
-     * Dump webview state (predominantly a minidump for all threads,
-     * but including other information) to the file descriptor fd.
+     * Previously requested to dump WebView state as a minidump.
      *
-     * It is expected that this method is found by reflection, as it
-     * is not currently exposed by the android framework, and thus it
-     * needs to be protected from the unwanted attention of ProGuard.
-     *
-     * The File argument must refer to a pre-existing file, which must
-     * be able to be re-opened for reading and writing via its
-     * canonical path. The file will be truncated upon re-opening.
+     * This is no longer supported as it doesn't include renderer state in
+     * multiprocess mode, significantly limiting its usefulness.
      */
     @UsedByReflection("")
     public static boolean dumpWithoutCrashing(File dumpFile) {
-        String dumpPath;
-        try {
-            dumpPath = dumpFile.getCanonicalPath();
-        } catch (IOException e) {
-            return false;
-        }
-        return AwDebugJni.get().dumpWithoutCrashing(dumpPath);
-    }
-
-    public static void initCrashKeysForTesting() {
-        AwDebugJni.get().initCrashKeysForWebViewTesting();
-    }
-
-    public static void setAllowedKeyForTesting() {
-        AwDebugJni.get().setAllowedKeyForTesting();
-    }
-
-    public static void setDeniedKeyForTesting() {
-        AwDebugJni.get().setDeniedKeyForTesting();
+        Log.e(TAG, "AwDebug.dumpWithoutCrashing is no longer supported.");
+        return false;
     }
 
     public static void setSupportLibraryWebkitVersionCrashKey(String version) {
@@ -61,10 +40,6 @@ public class AwDebug {
 
     @NativeMethods
     interface Natives {
-        boolean dumpWithoutCrashing(String dumpPath);
-        void initCrashKeysForWebViewTesting();
-        void setAllowedKeyForTesting();
-        void setDeniedKeyForTesting();
         void setSupportLibraryWebkitVersionCrashKey(String version);
     }
 }

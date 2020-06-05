@@ -515,4 +515,23 @@ TEST_F(DialogDelegateCloseTest, OldClosePathDoesNotDoubleClose) {
   EXPECT_FALSE(cancelled);
 }
 
+TEST_F(DialogDelegateCloseTest, CloseParentWidgetDoesNotInvokeCloseCallback) {
+  auto* dialog = new DialogDelegateView();
+  std::unique_ptr<Widget> parent = CreateTestWidget();
+  Widget* widget = DialogDelegate::CreateDialogWidget(dialog, GetContext(),
+                                                      parent->GetNativeView());
+
+  bool closed = false;
+  dialog->SetCloseCallback(
+      base::BindLambdaForTesting([&closed]() { closed = true; }));
+
+  views::test::WidgetDestroyedWaiter parent_waiter(parent.get());
+  views::test::WidgetDestroyedWaiter dialog_waiter(widget);
+  parent->Close();
+  parent_waiter.Wait();
+  dialog_waiter.Wait();
+
+  EXPECT_FALSE(closed);
+}
+
 }  // namespace views

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.firstrun.DisableFirstRun;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -56,6 +57,7 @@ public class PreviewTabTest {
     private static final String NEAR_BOTTOM_DOM_ID = "nearBottom";
 
     private EphemeralTabCoordinator mEphemeralTabCoordinator;
+    private BottomSheetTestSupport mSheetTestSupport;
 
     @Before
     public void setUp() {
@@ -67,13 +69,13 @@ public class PreviewTabTest {
             mEphemeralTabCoordinator =
                     tabbedRootUiCoordinator.getEphemeralTabCoordinatorForTesting();
         });
+        mSheetTestSupport = new BottomSheetTestSupport(mActivityTestRule.getActivity()
+                                                               .getRootUiCoordinatorForTesting()
+                                                               .getBottomSheetController());
     }
 
     private void endAnimations() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                mActivityTestRule.getActivity()
-                        .getRootUiCoordinatorForTesting()
-                        .getBottomSheetController()::endAnimationsForTesting);
+        TestThreadUtils.runOnUiThreadBlocking(mSheetTestSupport::endAllAnimations);
     }
 
     private void closePreviewTab() {

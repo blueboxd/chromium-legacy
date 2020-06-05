@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -17,7 +16,7 @@ namespace blink {
 class PLATFORM_EXPORT DarkModeColorClassifier {
  public:
   // Determine perceived brightness of a color.
-  static int CalculateColorBrightness(const Color& color);
+  static int CalculateColorBrightness(SkColor color);
 
   static std::unique_ptr<DarkModeColorClassifier> MakeTextColorClassifier(
       const DarkModeSettings& settings);
@@ -30,7 +29,7 @@ class PLATFORM_EXPORT DarkModeColorClassifier {
   // whether to invert a color. The background is likely to be dark, so a lower
   // opacity will usually decrease the effective brightness of both the original
   // and the inverted colors.
-  virtual DarkModeClassification ShouldInvertColor(const Color& color) = 0;
+  virtual DarkModeClassification ShouldInvertColor(SkColor color) = 0;
 };
 
 }  // namespace blink

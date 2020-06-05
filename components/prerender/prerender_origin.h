@@ -31,7 +31,8 @@ enum Origin {
   ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER = 13,
   // Obsolete: ORIGIN_OFFLINE = 14,
   ORIGIN_NAVIGATION_PREDICTOR = 15,
-  ORIGIN_MAX = 16,
+  ORIGIN_ISOLATED_PRERENDER = 16,
+  ORIGIN_MAX = 17,
 };
 
 // Return a human-readable name for |origin|.

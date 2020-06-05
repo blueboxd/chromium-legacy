@@ -75,8 +75,8 @@ public class WebLayerSiteSettingsClient
     public boolean isCategoryVisible(@Type int type) {
         return type == Type.ALL_SITES || type == Type.AUTOMATIC_DOWNLOADS || type == Type.CAMERA
                 || type == Type.COOKIES || type == Type.DEVICE_LOCATION || type == Type.JAVASCRIPT
-                || type == Type.MICROPHONE || type == Type.PROTECTED_MEDIA || type == Type.SOUND
-                || type == Type.USE_STORAGE;
+                || type == Type.MICROPHONE || type == Type.POPUPS || type == Type.PROTECTED_MEDIA
+                || type == Type.SOUND || type == Type.USE_STORAGE;
     }
 
     @Override

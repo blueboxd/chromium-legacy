@@ -218,9 +218,9 @@ void AnimationWorkletGlobalScope::registerAnimator(
   // TODO(https://crbug.com/923063): Ensure worklet definitions are compatible
   // across global scopes.
   animator_definitions_.Set(name, definition);
-  // TODO(yigu): Currently one animator name is synced back per registration.
-  // Eventually all registered names should be synced in batch once a module
-  // completes its loading in the worklet scope. https://crbug.com/920722.
+  // TODO(crbug.com/920722): Currently one animator name is synced back per
+  // registration. Eventually all registered names should be synced in batch
+  // once a module completes its loading in the worklet scope.
   if (AnimationWorkletProxyClient* proxy_client =
           AnimationWorkletProxyClient::From(Clients())) {
     proxy_client->SynchronizeAnimatorName(name);
@@ -295,8 +295,8 @@ void AnimationWorkletGlobalScope::MigrateAnimatorsTo(
                                      "Animator", "state");
       // If an animator state function throws or the state is not
       // serializable, the animator will be removed from the global scope.
-      // TODO(yigu): We should post an error message to console in case of
-      // exceptions.
+      // TODO(crbug.com/1090522): We should post an error message to console in
+      // case of exceptions.
       v8::Local<v8::Value> state = animator->State(isolate, exception_state);
       if (exception_state.HadException()) {
         exception_state.ClearException();

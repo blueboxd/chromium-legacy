@@ -76,6 +76,8 @@ class CORE_EXPORT PointerLockController final
                               FloatPoint* lock_screen_position);
   void Trace(Visitor*) const;
 
+  static Element* GetPointerLockedElement(LocalFrame* frame);
+
  private:
   void ClearElement();
   void EnqueueEvent(const AtomicString& type, Element*);

@@ -1938,6 +1938,10 @@
       status: "experimental",
     },
     {
+      name: "WebBluetoothWatchAdvertisements",
+      status: "experimental",
+    },
+    {
       name: "WebCodecs",
       status: "test",
     },
@@ -2021,6 +2025,11 @@
       status: "stable",
     },
     {
+      name: "WebXRCameraAccess",
+      depends_on: ["WebXRARModule"],
+      status: "experimental",
+    },
+    {
       name: "WebXRHitTest",
       depends_on: ["WebXRARModule"],
       status: "stable",
@@ -2031,12 +2040,12 @@
       status: "experimental"
     },
     {
-      name: "WebXRIncubations",
+      name: "WebXRLightEstimation",
       depends_on: ["WebXRARModule"],
       status: "experimental",
     },
     {
-      name: "WebXRLightEstimation",
+      name: "WebXRPlaneDetection",
       depends_on: ["WebXRARModule"],
       status: "experimental",
     },

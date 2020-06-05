@@ -136,6 +136,14 @@ class PerformanceManager {
     return static_cast<DerivedType*>(object);
   }
 
+  // Returns the performance manager graph task runner. This is safe to call
+  // from any thread at any time between the creation of the thread pool and its
+  // destruction.
+  //
+  // NOTE: Tasks posted to this sequence from any thread but the UI thread, or
+  // on the UI thread after IsAvailable() returns false, cannot safely access
+  // the graph, graphowned objects or other performance manager related objects.
+  // In practice it's preferable to use CallOnGraph() whenever possible.
   static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
 
  protected:

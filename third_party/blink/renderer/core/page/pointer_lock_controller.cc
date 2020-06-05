@@ -340,4 +340,13 @@ void PointerLockController::Trace(Visitor* visitor) const {
   visitor->Trace(document_of_removed_element_while_waiting_for_unlock_);
 }
 
+// static
+Element* PointerLockController::GetPointerLockedElement(LocalFrame* frame) {
+  if (Page* p = frame->GetPage()) {
+    if (!p->GetPointerLockController().LockPending())
+      return p->GetPointerLockController().GetElement();
+  }
+  return nullptr;
+}
+
 }  // namespace blink

@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_types.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -145,13 +146,14 @@ class ASH_EXPORT ScopedOverviewTransformWindow
  private:
   friend class OverviewHighlightControllerTest;
   friend class OverviewSessionTest;
+  FRIEND_TEST_ALL_PREFIXES(OverviewSessionTest, CloseAnimationShadow);
   class LayerCachingAndFilteringObserver;
+
+  // If true, makes Close() execute synchronously when used in tests.
+  static void SetImmediateCloseForTests(bool immediate);
 
   // Closes the window managed by |this|.
   void CloseWidget();
-
-  // Makes Close() execute synchronously when used in tests.
-  static void SetImmediateCloseForTests();
 
   // A weak pointer to the overview item that owns |this|. Guaranteed to be not
   // null for the lifetime of |this|.

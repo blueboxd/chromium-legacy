@@ -23,7 +23,6 @@
 #include "media/mojo/mojom/decryptor.mojom.h"
 #include "services/service_manager/public/cpp/connect.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -39,7 +38,6 @@ void RecordConnectionError(bool connection_error_happened) {
 // static
 void MojoCdm::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
     const SessionMessageCB& session_message_cb,
@@ -55,8 +53,7 @@ void MojoCdm::Create(
   auto promise = std::make_unique<CdmInitializedPromise>(
       std::move(cdm_created_cb), mojo_cdm);
 
-  mojo_cdm->InitializeCdm(key_system, security_origin, cdm_config,
-                          std::move(promise));
+  mojo_cdm->InitializeCdm(key_system, cdm_config, std::move(promise));
 }
 
 MojoCdm::MojoCdm(mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
@@ -103,7 +100,6 @@ MojoCdm::~MojoCdm() {
 // error handler can't be invoked and callbacks won't be dispatched.
 
 void MojoCdm::InitializeCdm(const std::string& key_system,
-                            const url::Origin& security_origin,
                             const CdmConfig& cdm_config,
                             std::unique_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __func__ << ": " << key_system;
@@ -127,7 +123,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   pending_init_promise_ = std::move(promise);
 
   remote_cdm_->Initialize(
-      key_system, security_origin, cdm_config,
+      key_system, cdm_config,
       base::BindOnce(&MojoCdm::OnCdmInitialized, base::Unretained(this)));
 }
 

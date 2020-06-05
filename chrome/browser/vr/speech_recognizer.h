@@ -50,14 +50,6 @@ enum SpeechRecognitionState {
   SPEECH_RECOGNITION_NETWORK_ERROR,
 };
 
-// These enums are used for histogram. Do NOT renumber or delete these enums.
-enum VoiceSearchEndState {
-  VOICE_SEARCH_OPEN_SEARCH_PAGE = 0,
-  VOICE_SEARCH_CANCEL = 1,
-  VOICE_SEARCH_TRY_AGAIN = 2,
-  COUNT,
-};
-
 class VoiceResultDelegate {
  public:
   virtual ~VoiceResultDelegate() {}

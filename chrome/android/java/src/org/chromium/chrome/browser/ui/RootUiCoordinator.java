@@ -65,6 +65,8 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerImpl;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerInternal;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
@@ -124,7 +126,7 @@ public class RootUiCoordinator
     private VrModeObserver mVrModeObserver;
 
     private BottomSheetManager mBottomSheetManager;
-    private BottomSheetController mBottomSheetController;
+    private BottomSheetControllerImpl mBottomSheetController;
     private SnackbarManager mBottomSheetSnackbarManager;
 
     private ScrimView mScrimView;
@@ -629,12 +631,10 @@ public class RootUiCoordinator
         Supplier<OverlayPanelManager> panelManagerSupplier = ()
                 -> mActivity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
 
-        mBottomSheetController =
-                new BottomSheetController(mActivity.getLifecycleDispatcher(), mActivityTabProvider,
-                        () -> mScrimCoordinator, sheetViewSupplier, panelManagerSupplier,
-                        mActivity.getFullscreenManager(), mActivity.getWindow(),
-                        mActivity.getWindowAndroid().getKeyboardDelegate(),
-                        mOmniboxFocusStateSupplier);
+        mBottomSheetController = new BottomSheetControllerImpl(mActivityTabProvider,
+                () -> mScrimCoordinator, sheetViewSupplier, panelManagerSupplier,
+                mActivity.getFullscreenManager(), mActivity.getWindow(),
+                mActivity.getWindowAndroid().getKeyboardDelegate(), mOmniboxFocusStateSupplier);
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
                 mActivity::getModalDialogManager, this::getBottomSheetSnackbarManager,
@@ -650,7 +650,7 @@ public class RootUiCoordinator
     }
 
     /** @return The {@link BottomSheetController} for this activity. */
-    public BottomSheetController getBottomSheetController() {
+    public BottomSheetControllerInternal getBottomSheetController() {
         return mBottomSheetController;
     }
 

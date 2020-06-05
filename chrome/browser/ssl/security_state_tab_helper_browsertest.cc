@@ -1809,9 +1809,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithHttpDangerous,
 
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,
 // and test that the observed security style matches.
-// TODO(https://crbug.com/638576) disabled due to flakiness.
 IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
-                       DISABLED_DidChangeVisibleSecurityStateObserverGoBack) {
+                       DidChangeVisibleSecurityStateObserverGoBack) {
   ASSERT_TRUE(https_server_.Start());
 
   net::EmbeddedTestServer https_test_server_expired(

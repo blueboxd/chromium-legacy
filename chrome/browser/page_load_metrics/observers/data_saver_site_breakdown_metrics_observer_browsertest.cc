@@ -361,8 +361,9 @@ INSTANTIATE_TEST_SUITE_P(SaveDataSavingsEstimateBrowserTest,
                          SaveDataSavingsEstimateBrowserTest,
                          ::testing::ValuesIn(kSaveDataTestCases));
 
+// Flaky on LINUX.  http://crbug.com/1091573
 IN_PROC_BROWSER_TEST_P(SaveDataSavingsEstimateBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMEOS(NavigateToSimplePage)) {
+                       DISABLED_NavigateToSimplePage) {
   WaitForDBToInitialize();
 
   for (const auto& test : GetParam().tests) {

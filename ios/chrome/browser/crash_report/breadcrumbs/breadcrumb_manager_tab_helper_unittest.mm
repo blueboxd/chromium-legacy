@@ -123,6 +123,36 @@ TEST_F(BreadcrumbManagerTabHelperTest, UniqueEvents) {
       << events.back();
 }
 
+// Tests metadata for www.google.com navigation.
+TEST_F(BreadcrumbManagerTabHelperTest, GoogleNavigationStart) {
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  web::FakeNavigationContext context;
+  context.SetUrl(GURL("https://www.google.com"));
+  first_web_state_.OnNavigationStarted(&context);
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+
+  EXPECT_NE(std::string::npos, events.front().find(kBreadcrumbGoogleNavigation))
+      << events.front();
+}
+
+// Tests metadata for https://play.google.com/ navigation.
+TEST_F(BreadcrumbManagerTabHelperTest, GooglePlayNavigationStart) {
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  web::FakeNavigationContext context;
+  context.SetUrl(GURL("https://play.google.com/"));
+  first_web_state_.OnNavigationStarted(&context);
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+
+  // #google is useful to indicate SRP. There is no need to know URLs of other
+  // visited google properties.
+  EXPECT_EQ(std::string::npos, events.front().find(kBreadcrumbGoogleNavigation))
+      << events.front();
+}
+
 // Tests metadata for chrome://newtab NTP navigation.
 TEST_F(BreadcrumbManagerTabHelperTest, ChromeNewTabNavigationStart) {
   ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
@@ -286,6 +316,21 @@ TEST_F(BreadcrumbManagerTabHelperTest, Download) {
             events.back().find(kBreadcrumbDidFinishNavigation))
       << events.back();
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbDownload))
+      << events.back();
+}
+
+// Tests PDF load.
+TEST_F(BreadcrumbManagerTabHelperTest, PdfLoad) {
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  first_web_state_.SetContentsMimeType("application/pdf");
+  first_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+
+  EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbPageLoaded))
+      << events.back();
+  EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbPdfLoad))
       << events.back();
 }
 

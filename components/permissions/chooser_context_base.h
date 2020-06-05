@@ -105,14 +105,14 @@ class ChooserContextBase : public KeyedService {
   // |host_content_settings_map_|.
   void UpdateObjectPermission(const url::Origin& requesting_origin,
                               const url::Origin& embedding_origin,
-                              base::Value& old_object,
+                              const base::Value& old_object,
                               base::Value new_object);
 
   // Revokes |requesting_origin|'s permission to access |object| when embedded
   // within |embedding_origin|.
   //
   // This method may be extended by a subclass to revoke permission to access
-  // objects returned by GetPreviouslyChosenObjects but not stored in
+  // objects returned by GetGrantedObjects but not stored in
   // |host_content_settings_map_|.
   virtual void RevokeObjectPermission(const url::Origin& requesting_origin,
                                       const url::Origin& embedding_origin,

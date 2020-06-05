@@ -17,7 +17,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -33,7 +32,6 @@ MATCHER_P(MatchesResult, success, "") {
 
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kInvalidKeySystem[] = "invalid.key.system";
-const char kSecurityOrigin[] = "https://foo.com";
 
 class MockCdmServiceClient : public media::CdmService::Client {
  public:
@@ -99,10 +97,9 @@ class CdmServiceTest : public testing::Test {
         &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
     EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    cdm_remote_->Initialize(
-        key_system, url::Origin::Create(GURL(kSecurityOrigin)), CdmConfig(),
-        base::BindOnce(&CdmServiceTest::OnCdmInitialized,
-                       base::Unretained(this)));
+    cdm_remote_->Initialize(key_system, CdmConfig(),
+                            base::BindOnce(&CdmServiceTest::OnCdmInitialized,
+                                           base::Unretained(this)));
     run_loop.Run();
   }
 

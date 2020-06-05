@@ -471,10 +471,8 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
     std::vector<views::View*> focusable_views;
     ShelfView* shelf_view = scrollable_shelf_view_->shelf_view();
 
-    for (int i = shelf_view->first_visible_index();
-         i <= shelf_view->last_visible_index(); ++i) {
+    for (int i : shelf_view->visible_views_indices())
       focusable_views.push_back(shelf_view->view_model()->view_at(i));
-    }
 
     int start_index = 0;
     for (size_t i = 0; i < focusable_views.size(); ++i) {
@@ -1939,15 +1937,14 @@ void ScrollableShelfView::UpdateTappableIconIndices() {
 std::pair<int, int> ScrollableShelfView::CalculateTappableIconIndices(
     ScrollableShelfView::LayoutStrategy layout_strategy,
     int scroll_distance_on_main_axis) const {
-  std::pair<int, int> tappable_icon_indices;
+  const auto& visible_views_indices = shelf_view_->visible_views_indices();
 
-  int& first_tappable_app_index = tappable_icon_indices.first;
-  int& last_tappable_app_index = tappable_icon_indices.second;
+  if (visible_views_indices.empty() || visible_space_.IsEmpty())
+    return std::pair<int, int>(-1, -1);
 
   if (layout_strategy == ScrollableShelfView::kNotShowArrowButtons) {
-    first_tappable_app_index = shelf_view_->first_visible_index();
-    last_tappable_app_index = shelf_view_->last_visible_index();
-    return tappable_icon_indices;
+    return std::pair<int, int>(visible_views_indices.front(),
+                               visible_views_indices.back());
   }
 
   const int visible_size = GetShelf()->IsHorizontalAlignment()
@@ -1956,41 +1953,49 @@ std::pair<int, int> ScrollableShelfView::CalculateTappableIconIndices(
 
   const int space_needed_for_button = GetSumOfButtonSizeAndSpacing();
 
+  // Note that some apps may have their |ShelfAppButton| views hidden, when they
+  // are on an inactive desk. Therefore, the indices of tappable apps may not be
+  // contiguous, so we need to map from a visible view index back to an app
+  // index. The below are indices into the |visible_views_indices| vector.
+  int first_visible_view_index = -1;
+  int last_visible_view_index = -1;
   if (layout_strategy == kShowRightArrowButton ||
       layout_strategy == kShowButtons) {
-    first_tappable_app_index =
+    first_visible_view_index =
         scroll_distance_on_main_axis / space_needed_for_button +
         (layout_strategy == kShowButtons ? 1 : 0);
-    last_tappable_app_index =
-        first_tappable_app_index + visible_size / space_needed_for_button;
+    last_visible_view_index =
+        first_visible_view_index + visible_size / space_needed_for_button;
 
-    const int end_of_last_tappable_app =
-        last_tappable_app_index * space_needed_for_button +
+    const int end_of_last_visible_view =
+        last_visible_view_index * space_needed_for_button +
         shelf_view_->GetButtonSize() - scroll_distance_on_main_axis;
-    if (end_of_last_tappable_app > visible_size)
-      last_tappable_app_index--;
+    if (end_of_last_visible_view > visible_size)
+      last_visible_view_index--;
   } else {
     DCHECK_EQ(layout_strategy, kShowLeftArrowButton);
-    last_tappable_app_index = shelf_view_->last_visible_index();
-    first_tappable_app_index =
-        last_tappable_app_index - visible_size / space_needed_for_button + 1;
+    last_visible_view_index = visible_views_indices.size() - 1;
+    first_visible_view_index =
+        last_visible_view_index - visible_size / space_needed_for_button + 1;
   }
 
-  return tappable_icon_indices;
+  DCHECK_GE(first_visible_view_index, 0);
+  DCHECK_LT(first_visible_view_index,
+            static_cast<int>(visible_views_indices.size()));
+  DCHECK_GE(last_visible_view_index, 0);
+  DCHECK_LT(last_visible_view_index,
+            static_cast<int>(visible_views_indices.size()));
+
+  return std::pair<int, int>(visible_views_indices[first_visible_view_index],
+                             visible_views_indices[last_visible_view_index]);
 }
 
 views::View* ScrollableShelfView::FindFirstFocusableChild() {
-  if (shelf_view_->view_model()->view_size() == 0)
-    return nullptr;
-
-  return shelf_view_->view_model()->view_at(shelf_view_->first_visible_index());
+  return shelf_view_->FindFirstFocusableChild();
 }
 
 views::View* ScrollableShelfView::FindLastFocusableChild() {
-  if (shelf_view_->view_model()->view_size() == 0)
-    return nullptr;
-
-  return shelf_view_->view_model()->view_at(shelf_view_->last_visible_index());
+  return shelf_view_->FindLastFocusableChild();
 }
 
 int ScrollableShelfView::GetSpaceForIcons() const {
@@ -2096,17 +2101,6 @@ void ScrollableShelfView::UpdateAvailableSpace() {
     GetShelf()->hotseat_widget()->SetTranslucentBackground(
         GetHotseatBackgroundBounds());
   }
-
-  // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
-  // bounds are not changed by adding/removing the shelf icon under the same
-  // layout strategy.
-  const int horizontal_inset = ShouldAdaptToRTL()
-                                   ? extra_padding_insets_.right()
-                                   : extra_padding_insets_.left();
-
-  shelf_view_->set_app_icons_layout_offset(GetShelf()->IsHorizontalAlignment()
-                                               ? horizontal_inset
-                                               : extra_padding_insets_.top());
 }
 
 gfx::Rect ScrollableShelfView::CalculateVisibleSpace(

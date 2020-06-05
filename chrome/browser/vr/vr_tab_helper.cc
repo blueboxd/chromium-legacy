@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/vr_tab_helper.h"
 
-#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/xr_runtime_manager.h"
@@ -111,7 +110,6 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
   if (!IsInVr(contents))
     return false;
 
-  bool suppress = false;
   switch (element) {
     // The following are suppressed if in VR.
     case UiSuppressedElement::kHttpAuth:
@@ -131,19 +129,12 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
     // suppression.
     case UiSuppressedElement::kFileAccessPermission:
     case UiSuppressedElement::kContextMenu:
-      suppress = true;
-      break;
+      return true;
     case UiSuppressedElement::kPlaceholderForPreviousHighValue:
     case UiSuppressedElement::kCount:
-      suppress = false;
       NOTREACHED();
-      break;
+      return false;
   }
-  if (suppress) {
-    UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredSuppressedUI", element,
-                              UiSuppressedElement::kCount);
-  }
-  return suppress;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(VrTabHelper)

@@ -110,9 +110,9 @@ WorkletAnimationController::EnsureMainThreadMutatorDispatcher(
   return mutator_dispatcher;
 }
 
-// TODO(yigu): Currently one animator name is synced back per registration.
-// Eventually all registered names should be synced in batch once a module
-// completes its loading in the worklet scope. https://crbug.com/920722.
+// TODO(crbug.com/920722): Currently one animator name is synced back per
+// registration. Eventually all registered names should be synced in batch once
+// a module completes its loading in the worklet scope.
 void WorkletAnimationController::SynchronizeAnimatorName(
     const String& animator_name) {
   animator_names_.insert(animator_name);

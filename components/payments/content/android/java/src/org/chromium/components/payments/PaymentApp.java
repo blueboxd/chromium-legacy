@@ -242,11 +242,9 @@ public abstract class PaymentApp extends EditableOption {
 
     /**
      * Abort invocation of the payment app.
-     *
-     * @param id       The unique identifier of the PaymentRequest.
      * @param callback The callback to return abort result.
      */
-    public void abortPaymentApp(String id, AbortCallback callback) {
+    public void abortPaymentApp(AbortCallback callback) {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
@@ -258,19 +256,10 @@ public abstract class PaymentApp extends EditableOption {
     /** Cleans up any resources held by the payment app. For example, closes server connections. */
     public abstract void dismissInstrument();
 
-    /** @param readyForMnimalUI Whether the payment app is ready for minimal UI flow. */
-    public void setIsReadyForMinimalUI(boolean isReadyForMinimalUI) {}
-
     /** @return Whether the payment app is ready for a minimal UI flow. */
     public boolean isReadyForMinimalUI() {
         return false;
     }
-
-    /**
-     * @param accountBalance The account balance of the payment handler that is ready for a minimal
-     * UI flow.
-     */
-    public void setAccountBalance(@Nullable String accountBalance) {}
 
     /** @return Account balance for minimal UI flow. */
     @Nullable

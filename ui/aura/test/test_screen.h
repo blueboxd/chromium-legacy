@@ -33,7 +33,7 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
 
   WindowTreeHost* CreateHostForPrimaryDisplay();
 
-  void SetDeviceScaleFactor(float device_scale_fator);
+  void SetDeviceScaleFactor(float device_scale_factor, bool resize_host = true);
   void SetColorSpace(
       const gfx::ColorSpace& color_space,
       float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);

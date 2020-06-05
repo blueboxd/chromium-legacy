@@ -4,10 +4,11 @@
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 
-#include "stdint.h"
-
+#include <cstdint>
+#include <limits>
 #include <vector>
 
+#include "base/strings/string_piece_forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -61,7 +62,7 @@ TEST(IdentifiabilityMetricsTest, PassUint16) {
   EXPECT_EQ(UINT64_C(5), IdentifiabilityDigestHelper(static_cast<uint16_t>(5)));
 }
 
-TEST(IdentifiabilityMetricsTest, PassSizet) {
+TEST(IdentifiabilityMetricsTest, PassSizeT) {
   EXPECT_EQ(UINT64_C(1), IdentifiabilityDigestHelper(sizeof(char)));
 }
 
@@ -80,23 +81,29 @@ TEST(IdentifiabilityMetricsTest, PassEnum) {
   EXPECT_EQ(UINT64_C(2730421), IdentifiabilityDigestHelper(kSimpleValue));
 }
 
+namespace {
+
 // Use an arbitrary, large number to make accidental matches unlikely.
 enum Simple64Enum : uint64_t { kSimple64Value = 4983422 };
+
+// Use an arbitrary, large number to make accidental matches unlikely.
+enum class SimpleEnumClass { kSimpleValue = 3498249 };
+
+// Use an arbitrary, large number to make accidental matches unlikely.
+enum class SimpleEnumClass64 : uint64_t { kSimple64Value = 4398372 };
+
+constexpr uint64_t kExpectedCombinationResult = UINT64_C(0xa5e30a57547cd49b);
+
+}  // namespace
 
 TEST(IdentifiabilityMetricsTest, PassEnum64) {
   EXPECT_EQ(UINT64_C(4983422), IdentifiabilityDigestHelper(kSimple64Value));
 }
 
-// Use an arbitrary, large number to make accidental matches unlikely.
-enum class SimpleEnumClass { kSimpleValue = 3498249 };
-
 TEST(IdentifiabilityMetricsTest, PassEnumClass) {
   EXPECT_EQ(UINT64_C(3498249),
             IdentifiabilityDigestHelper(SimpleEnumClass::kSimpleValue));
 }
-
-// Use an arbitrary, large number to make accidental matches unlikely.
-enum class SimpleEnumClass64 : uint64_t { kSimple64Value = 4398372 };
 
 TEST(IdentifiabilityMetricsTest, PassEnumClass64) {
   EXPECT_EQ(UINT64_C(4398372),
@@ -114,8 +121,6 @@ TEST(IdentifiabilityMetricsTest, PassSpanDouble) {
   EXPECT_EQ(UINT64_C(0x95f52e9784f9582a),
             IdentifiabilityDigestHelper(base::make_span(data)));
 }
-
-constexpr uint64_t kExpectedCombinationResult = UINT64_C(0xa5e30a57547cd49b);
 
 TEST(IdentifiabilityMetricsTest, Combination) {
   const int data[] = {1, 2, 3};

@@ -35,7 +35,7 @@ bool HasLightBackground(const LayoutView& root) {
   if (color.Alpha() < kAlphaThreshold)
     return true;
 
-  return DarkModeColorClassifier::CalculateColorBrightness(color) >
+  return DarkModeColorClassifier::CalculateColorBrightness(color.Rgb()) >
          kBrightnessThreshold;
 }
 

@@ -82,8 +82,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kAudioWorkletRealtimeThread;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLightweightNoStatePrefetch;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kLightweightNoStatePrefetch_FetchFonts;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSaveDataImgSrcset;
 

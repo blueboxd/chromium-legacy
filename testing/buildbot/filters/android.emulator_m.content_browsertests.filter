@@ -19,7 +19,8 @@
 # crbug.com/1065184
 -RenderFrameHostImplBrowserTest.CheckIsCurrentBeforeAndAfterUnload
 
-# crbug.com/1081969
+# This is a known issue in AudioMixer and there's no fix until O
+# See crbug.com/1081969 for more detail
 -*/MediaTest.AudioBearFlac*
 -*/MediaTest.AudioBearOpus*
 -*/MediaTest.VideoBearMovPcm*

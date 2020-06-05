@@ -22,7 +22,6 @@ CdmAdapterFactory::~CdmAdapterFactory() = default;
 
 void CdmAdapterFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -30,14 +29,6 @@ void CdmAdapterFactory::Create(
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     CdmCreatedCB cdm_created_cb) {
   DVLOG(1) << __func__ << ": key_system=" << key_system;
-
-  if (security_origin.opaque()) {
-    LOG(ERROR) << "Invalid Origin: " << security_origin;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(cdm_created_cb), nullptr, "Invalid origin."));
-    return;
-  }
 
   CdmAdapter::CreateCdmFunc create_cdm_func =
       CdmModule::GetInstance()->GetCreateCdmFunc();

@@ -20,7 +20,7 @@
       </div>
       <div id="entry-text" class="content">
         <div id="active-text" active$="[[active]]">
-          <content select=".entry-content"></content>
+          <slot name="entry-content"></slot>
         </div>
         <div id="completed-text" completed$="[[completed]]">
           [[i18nDynamic(locale, 'assistantVoiceMatchComplete')]]

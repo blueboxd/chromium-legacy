@@ -30,10 +30,14 @@ const OverlayRequestSupport* OverlayPresenterObserverBridge::GetRequestSupport(
 
 void OverlayPresenterObserverBridge::WillShowOverlay(
     OverlayPresenter* presenter,
-    OverlayRequest* request) {
-  if ([observer_ respondsToSelector:@selector(overlayPresenter:
-                                        willShowOverlayForRequest:)]) {
-    [observer_ overlayPresenter:presenter willShowOverlayForRequest:request];
+    OverlayRequest* request,
+    bool initial_presentation) {
+  if ([observer_ respondsToSelector:@selector
+                 (overlayPresenter:
+                     willShowOverlayForRequest:initialPresentation:)]) {
+    [observer_ overlayPresenter:presenter
+        willShowOverlayForRequest:request
+              initialPresentation:initial_presentation];
   }
 }
 

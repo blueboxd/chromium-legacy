@@ -35,7 +35,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -58,8 +57,6 @@ MATCHER_P(MatchesResult, success, "") {
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kInvalidKeySystem[] = "invalid.key.system";
 #endif
-
-const char kSecurityOrigin[] = "https://foo.com";
 
 class MockRendererClient : public mojom::RendererClient {
  public:
@@ -140,8 +137,7 @@ class MediaServiceTest : public testing::Test {
     // cdm_id" out and then call DoAll.
     EXPECT_CALL(*this, OnCdmInitialized(MatchesResult(expected_result), _, _))
         .WillOnce(WithArg<1>(DoAll(SaveArg<0>(&cdm_id), QuitLoop(&run_loop))));
-    cdm_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
-                     CdmConfig(),
+    cdm_->Initialize(key_system, CdmConfig(),
                      base::BindOnce(&MediaServiceTest::OnCdmInitialized,
                                     base::Unretained(this)));
     run_loop.Run();

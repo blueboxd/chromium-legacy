@@ -6,11 +6,14 @@ package org.chromium.chrome.browser.feed.library.testing.conformance.storage;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.Build;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.junit.Test;
 
 import org.chromium.base.Consumer;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalMutation;
 import org.chromium.chrome.browser.feed.library.api.host.storage.JournalStorage;
@@ -26,7 +29,11 @@ import java.util.List;
  * Conformance test for {@link JournalStorage}. Hosts who wish to test against this should extend
  * this class and set {@code storage} to the Host implementation.
  */
+// clang-format off
+@DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1,
+    sdk_is_less_than = Build.VERSION_CODES.P, message = "https://crbug.com/1091301")
 public abstract class JournalStorageConformanceTest {
+    //clank-format on
     private static final String JOURNAL_NAME = "journal name";
     private static final String JOURNAL_COPY_NAME = "journal copy name";
     private static final byte[] DATA_0 = "data 0".getBytes(Charset.forName("UTF-8"));

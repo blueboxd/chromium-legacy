@@ -595,8 +595,8 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
   gfx::Size size = web_contents()->GetContainerBounds().size();
 
   std::unique_ptr<prerender::PrerenderHandle> handle =
-      prerender_manager->AddPrerenderFromNavigationPredictor(
-          url, session_storage_namespace, size);
+      prerender_manager->AddIsolatedPrerender(url, session_storage_namespace,
+                                              size);
 
   if (!handle) {
     // Clean up the prefetch response in |service| since it wasn't used.

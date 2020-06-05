@@ -3,9 +3,8 @@
  * found in the LICENSE file. */
 
 #logo {
-  height: calc(var(--logo-height) + var(--logo-margin-bottom));
   margin-top: var(--logo-margin-top);
-  min-height: fit-content;
+  min-height: calc(var(--logo-height) + var(--logo-margin-bottom));
   position: relative;
 }
 

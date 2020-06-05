@@ -106,6 +106,7 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
               })));
   ash::ShelfModel shelf_model;
   ChromeLauncherController chrome_launcher_controller(&profile_, &shelf_model);
+  chrome_launcher_controller.Init();
 
   // Ensure that Plugin VM is allowed.
   test_helper.AllowPluginVm();

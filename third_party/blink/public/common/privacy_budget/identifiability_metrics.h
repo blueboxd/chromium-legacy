@@ -5,8 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_PRIVACY_BUDGET_IDENTIFIABILITY_METRICS_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_PRIVACY_BUDGET_IDENTIFIABILITY_METRICS_H_
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <cstring>
 #include <type_traits>
 
@@ -15,9 +14,9 @@
 
 namespace blink {
 
-// DigestForMetrics, which is NOT a cryptographic hash function, takes a span of
-// bytes as input and calculates a digest that can be used with identifiability
-// metric reporting functions.
+// IdentifiabilityDigestOfBytes, which is NOT a cryptographic hash function,
+// takes a span of bytes as input and calculates a digest that can be used with
+// identifiability metric reporting functions.
 //
 // The returned digest ...:
 //
@@ -46,6 +45,9 @@ IdentifiabilityDigestOfBytes(base::span<const uint8_t> in);
 // IdentifiabilityDigestHelper(); such declarations should be made in a header
 // included before this header so that they can be used by the span and
 // parameter pack overloads of IdentifiabilityDigestHelper.
+//
+// TODO(asanka): Remove once callers have been migrated to
+// IdentifiabilityToken().
 
 // Integer version.
 template <typename T,

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 
+#include "base/logging.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 
 namespace blink {
@@ -21,7 +22,7 @@ class SimpleColorClassifier : public DarkModeColorClassifier {
         new SimpleColorClassifier(DarkModeClassification::kApplyFilter));
   }
 
-  DarkModeClassification ShouldInvertColor(const Color& color) override {
+  DarkModeClassification ShouldInvertColor(SkColor color) override {
     return value_;
   }
 
@@ -39,7 +40,7 @@ class InvertLowBrightnessColorsClassifier : public DarkModeColorClassifier {
     DCHECK_LT(brightness_threshold_, 256);
   }
 
-  DarkModeClassification ShouldInvertColor(const Color& color) override {
+  DarkModeClassification ShouldInvertColor(SkColor color) override {
     if (CalculateColorBrightness(color) < brightness_threshold_)
       return DarkModeClassification::kApplyFilter;
     return DarkModeClassification::kDoNotApplyFilter;
@@ -57,7 +58,7 @@ class InvertHighBrightnessColorsClassifier : public DarkModeColorClassifier {
     DCHECK_LT(brightness_threshold_, 256);
   }
 
-  DarkModeClassification ShouldInvertColor(const Color& color) override {
+  DarkModeClassification ShouldInvertColor(SkColor color) override {
     if (CalculateColorBrightness(color) > brightness_threshold_)
       return DarkModeClassification::kApplyFilter;
     return DarkModeClassification::kDoNotApplyFilter;
@@ -74,10 +75,10 @@ class InvertHighBrightnessColorsClassifier : public DarkModeColorClassifier {
 //
 // We don't use HSL or HSV here because perceived brightness is a function of
 // hue as well as lightness/value.
-int DarkModeColorClassifier::CalculateColorBrightness(const Color& color) {
-  int weighted_red = color.Red() * 299;
-  int weighted_green = color.Green() * 587;
-  int weighted_blue = color.Blue() * 114;
+int DarkModeColorClassifier::CalculateColorBrightness(SkColor color) {
+  int weighted_red = SkColorGetR(color) * 299;
+  int weighted_green = SkColorGetG(color) * 587;
+  int weighted_blue = SkColorGetB(color) * 114;
   return (weighted_red + weighted_green + weighted_blue) / 1000;
 }
 

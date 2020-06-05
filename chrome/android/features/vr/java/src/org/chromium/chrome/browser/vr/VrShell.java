@@ -1048,18 +1048,12 @@ public class VrShell extends GvrLayout
         if (showExitPromptBeforeDoff) {
             VrShellJni.get().requestToExitVr(mNativeVrShell, VrShell.this, reason);
         } else {
-            VrShellJni.get().logUnsupportedModeUserMetric(mNativeVrShell, VrShell.this, reason);
             mDelegate.onExitVrRequestResult(true);
         }
     }
 
     @CalledByNative
-    private void onExitVrRequestResult(@UiUnsupportedMode int reason, boolean shouldExit) {
-        if (shouldExit) {
-            if (mNativeVrShell != 0) {
-                VrShellJni.get().logUnsupportedModeUserMetric(mNativeVrShell, VrShell.this, reason);
-            }
-        }
+    private void onExitVrRequestResult(boolean shouldExit) {
         mDelegate.onExitVrRequestResult(shouldExit);
     }
 
@@ -1381,8 +1375,6 @@ public class VrShell extends GvrLayout
         void setHistoryButtonsEnabled(
                 long nativeVrShell, VrShell caller, boolean canGoBack, boolean canGoForward);
         void requestToExitVr(long nativeVrShell, VrShell caller, @UiUnsupportedMode int reason);
-        void logUnsupportedModeUserMetric(
-                long nativeVrShell, VrShell caller, @UiUnsupportedMode int mode);
         void showSoftInput(long nativeVrShell, VrShell caller, boolean show);
         void updateWebInputIndices(long nativeVrShell, VrShell caller, int selectionStart,
                 int selectionEnd, int compositionStart, int compositionEnd);

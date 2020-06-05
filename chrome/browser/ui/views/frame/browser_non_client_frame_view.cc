@@ -72,6 +72,11 @@ bool BrowserNonClientFrameView::CaptionButtonsOnLeadingEdge() const {
   return false;
 }
 
+CaptionButtonContainer* BrowserNonClientFrameView::GetCaptionButtonContainer()
+    const {
+  return nullptr;
+}
+
 void BrowserNonClientFrameView::UpdateFullscreenTopUI() {
   if (frame_->IsFullscreen())
     browser_view_->HideDownloadShelf();

@@ -15,6 +15,8 @@
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -85,12 +87,18 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
   bool has_phase_info = event.phase != WebMouseWheelEvent::kPhaseNone ||
                         event.momentum_phase != WebMouseWheelEvent::kPhaseNone;
 
-  // Find and save the wheel_target_, this target will be used for the rest
-  // of the current scrolling sequence. In the absence of phase info, send the
-  // event to the target under the cursor.
-  if (event.phase == WebMouseWheelEvent::kPhaseBegan || !wheel_target_ ||
-      !has_phase_info) {
-    wheel_target_ = FindTargetNode(event, doc, view);
+  Element* pointer_locked_element =
+      PointerLockController::GetPointerLockedElement(frame_);
+  if (pointer_locked_element) {
+    wheel_target_ = pointer_locked_element;
+  } else {
+    // Find and save the wheel_target_, this target will be used for the rest
+    // of the current scrolling sequence. In the absence of phase info, send the
+    // event to the target under the cursor.
+    if (event.phase == WebMouseWheelEvent::kPhaseBegan || !wheel_target_ ||
+        !has_phase_info) {
+      wheel_target_ = FindTargetNode(event, doc, view);
+    }
   }
 
   LocalFrame* subframe =

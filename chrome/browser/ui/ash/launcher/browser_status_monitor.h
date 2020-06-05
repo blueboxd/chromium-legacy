@@ -86,7 +86,8 @@ class BrowserStatusMonitor : public BrowserListObserver,
   void OnTabReplaced(TabStripModel* tab_strip_model,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents);
-  void OnTabInserted(content::WebContents* contents);
+  void OnTabInserted(TabStripModel* tab_strip_model,
+                     content::WebContents* contents);
   void OnTabClosing(content::WebContents* contents);
 
   // Create LocalWebContentsObserver for |contents|.

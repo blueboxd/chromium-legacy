@@ -8,10 +8,14 @@
 
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_init.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_factories.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace blink {
@@ -124,8 +128,63 @@ VideoFrame* VideoFrame::Create(VideoFrameInit* init,
                                       "ARGB to YUV420 conversion error");
     return nullptr;
   }
+  // TODO(jie.a.chen@intel.com): Figure out the right colorspace and conversion
+  // according to source ImageBitmap.
+  // libyuv::ABGRToI420 seems to assume Bt.601.
+  frame->set_color_space(gfx::ColorSpace::CreateREC601());
   auto* result = MakeGarbageCollected<VideoFrame>(std::move(frame));
   return result;
+}
+
+ScriptPromise VideoFrame::createImageBitmap(ScriptState* script_state,
+                                            const ImageBitmapOptions* options,
+                                            ExceptionState& exception_state) {
+  return ImageBitmapFactories::CreateImageBitmap(
+      script_state, this, base::Optional<IntRect>(), options, exception_state);
+}
+
+IntSize VideoFrame::BitmapSourceSize() const {
+  return IntSize(visibleWidth(), visibleHeight());
+}
+
+ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
+                                            base::Optional<IntRect> crop_rect,
+                                            const ImageBitmapOptions* options,
+                                            ExceptionState& exception_state) {
+  if (frame_->IsMappable() && !frame_->HasTextures()) {
+    size_t bytes_per_row = sizeof(SkColor) * visibleWidth();
+    size_t image_pixels_size = bytes_per_row * visibleHeight();
+
+    sk_sp<SkData> image_pixels = TryAllocateSkData(image_pixels_size);
+    if (!image_pixels) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kBufferOverrunError,
+                                        "Out of memory.");
+      return ScriptPromise();
+    }
+    media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+        frame_.get(), image_pixels->writable_data(), bytes_per_row);
+
+    // TODO(jie.a.chen@intel.com): Figure the correct SkColorSpace.
+    sk_sp<SkColorSpace> skColorSpace = SkColorSpace::MakeSRGB();
+    SkImageInfo info =
+        SkImageInfo::Make(visibleWidth(), visibleHeight(), kN32_SkColorType,
+                          kUnpremul_SkAlphaType, std::move(skColorSpace));
+    sk_sp<SkImage> skImage =
+        SkImage::MakeRasterData(info, image_pixels, bytes_per_row);
+    scoped_refptr<StaticBitmapImage> image =
+        UnacceleratedStaticBitmapImage::Create(std::move(skImage));
+    return ImageBitmapSource::FulfillImageBitmap(
+        script_state,
+        MakeGarbageCollected<ImageBitmap>(std::move(image), crop_rect, options),
+        exception_state);
+  }
+
+  // TODO(jie.a.chen@intel.com): AcceleratedStaticImageBitmap for hardware
+  // video frames.
+  exception_state.ThrowDOMException(
+      DOMExceptionCode::kNotSupportedError,
+      "Hardware accelerated video not supported.");
+  return ScriptPromise();
 }
 
 }  // namespace blink

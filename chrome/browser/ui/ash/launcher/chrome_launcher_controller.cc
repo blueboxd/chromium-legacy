@@ -260,12 +260,10 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
       // version of status monitor.
       browser_status_monitor_ =
           std::make_unique<MultiProfileBrowserStatusMonitor>(this);
-      browser_status_monitor_->Initialize();
     } else {
       // Create our v1/v2 application / browser monitors which will inform the
       // launcher of status changes.
       browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
-      browser_status_monitor_->Initialize();
     }
     return;
   }
@@ -278,14 +276,12 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     // of status monitor.
     browser_status_monitor_ =
         std::make_unique<MultiProfileBrowserStatusMonitor>(this);
-    browser_status_monitor_->Initialize();
     extension_app_window_controller.reset(
         new MultiProfileAppWindowLauncherController(this));
   } else {
     // Create our v1/v2 application / browser monitors which will inform the
     // launcher of status changes.
     browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
-    browser_status_monitor_->Initialize();
     extension_app_window_controller.reset(
         new ExtensionAppWindowLauncherController(this));
   }
@@ -335,6 +331,7 @@ ChromeLauncherController::~ChromeLauncherController() {
 void ChromeLauncherController::Init() {
   CreateBrowserShortcutLauncherItem();
   UpdateAppLaunchersFromSync();
+  browser_status_monitor_->Initialize();
 }
 
 ash::ShelfID ChromeLauncherController::CreateAppLauncherItem(

@@ -104,6 +104,7 @@ class MergeXmlTest(unittest.TestCase):
      bits. This gets populated by the GetEnumsNodes function in merge_xml.py
      when producing the merged XML file. -->
 
+<int label="AbusiveExperienceHeuristic.WindowOpen" value="324605288"/>\
 <int label="AbusiveExperienceHeuristic.TabUnder" value="1621538456"/>\
 <int label="Autofill.SelectedMaskedServerCard (Obsolete)" value="1913876024"/>\
 </enum>

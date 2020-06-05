@@ -45,7 +45,9 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
     TerminationInfo(const TerminationInfo& other);
     TerminationInfo& operator=(const TerminationInfo& other);
 
-    bool is_crashed() const { return crash_signo != kInvalidSigno; }
+    bool is_crashed() const {
+      return crash_signo != kInvalidSigno || threw_exception_during_init;
+    }
 
     int process_host_id = content::ChildProcessHost::kInvalidUniqueID;
     // |pid| may not be valid if termination happens before the process has
@@ -67,6 +69,7 @@ class ChildExitObserver : public content::BrowserChildProcessObserver,
     // because those fields hold no useful information on Android.
     base::android::ChildBindingState binding_state =
         base::android::ChildBindingState::UNBOUND;
+    bool threw_exception_during_init = false;
     bool was_killed_intentionally_by_browser = false;
     int remaining_process_with_strong_binding = 0;
     int remaining_process_with_moderate_binding = 0;

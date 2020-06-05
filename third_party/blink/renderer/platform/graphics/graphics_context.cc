@@ -355,9 +355,8 @@ void GraphicsContext::DrawFocusRingPath(const SkPath& path,
                                         float border_radius) {
   DrawPlatformFocusRing(
       path, canvas_,
-      dark_mode_filter_
-          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
-          .Rgb(),
+      dark_mode_filter_.InvertColorIfNeeded(
+          color.Rgb(), DarkModeFilter::ElementRole::kBackground),
       width, border_radius);
 }
 
@@ -367,9 +366,8 @@ void GraphicsContext::DrawFocusRingRect(const SkRect& rect,
                                         float border_radius) {
   DrawPlatformFocusRing(
       rect, canvas_,
-      dark_mode_filter_
-          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
-          .Rgb(),
+      dark_mode_filter_.InvertColorIfNeeded(
+          color.Rgb(), DarkModeFilter::ElementRole::kBackground),
       width, border_radius);
 }
 
@@ -468,14 +466,14 @@ void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
                                       float shadow_blur,
                                       float shadow_spread,
                                       Edges clipped_edges) {
-  Color shadow_color = dark_mode_filter_.InvertColorIfNeeded(
-      orig_shadow_color, DarkModeFilter::ElementRole::kBackground);
+  SkColor shadow_color = dark_mode_filter_.InvertColorIfNeeded(
+      orig_shadow_color.Rgb(), DarkModeFilter::ElementRole::kBackground);
 
   FloatRect hole_rect(rect.Rect());
   hole_rect.Inflate(-shadow_spread);
 
   if (hole_rect.IsEmpty()) {
-    FillRoundedRect(rect, shadow_color);
+    FillRoundedRect(rect, Color(shadow_color));
     return;
   }
 
@@ -496,8 +494,8 @@ void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
     hole_rect.SetHeight(hole_rect.Height() -
                         std::min(shadow_offset.Height(), 0.0f) + shadow_blur);
 
-  Color fill_color(shadow_color.Red(), shadow_color.Green(),
-                   shadow_color.Blue(), 255);
+  Color fill_color(SkColorGetR(shadow_color), SkColorGetG(shadow_color),
+                   SkColorGetB(shadow_color), 255);
 
   FloatRect outer_rect = AreaCastingShadowInHole(rect.Rect(), shadow_blur,
                                                  shadow_spread, shadow_offset);
@@ -1102,10 +1100,8 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
       canvas_->drawDRRect(outer, inner, ImmutableState()->FillFlags());
     } else {
       PaintFlags flags(ImmutableState()->FillFlags());
-      flags.setColor(dark_mode_filter_
-                         .InvertColorIfNeeded(
-                             color, DarkModeFilter::ElementRole::kBackground)
-                         .Rgb());
+      flags.setColor(dark_mode_filter_.InvertColorIfNeeded(
+          color.Rgb(), DarkModeFilter::ElementRole::kBackground));
       canvas_->drawDRRect(outer, inner, flags);
     }
 
@@ -1118,10 +1114,8 @@ void GraphicsContext::FillDRRect(const FloatRoundedRect& outer,
   stroke_r_rect.inset(stroke_width / 2, stroke_width / 2);
 
   PaintFlags stroke_flags(ImmutableState()->FillFlags());
-  stroke_flags.setColor(
-      dark_mode_filter_
-          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
-          .Rgb());
+  stroke_flags.setColor(dark_mode_filter_.InvertColorIfNeeded(
+      color.Rgb(), DarkModeFilter::ElementRole::kBackground));
   stroke_flags.setStyle(PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(stroke_width);
 
@@ -1284,10 +1278,8 @@ void GraphicsContext::FillRectWithRoundedHole(
     const FloatRoundedRect& rounded_hole_rect,
     const Color& color) {
   PaintFlags flags(ImmutableState()->FillFlags());
-  flags.setColor(
-      dark_mode_filter_
-          .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
-          .Rgb());
+  flags.setColor(dark_mode_filter_.InvertColorIfNeeded(
+      color.Rgb(), DarkModeFilter::ElementRole::kBackground));
   canvas_->drawDRRect(SkRRect::MakeRect(rect), rounded_hole_rect, flags);
 }
 

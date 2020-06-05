@@ -134,10 +134,6 @@ const FilterOperations& RenderSurfaceImpl::Filters() const {
   return OwningEffectNode()->filters;
 }
 
-gfx::PointF RenderSurfaceImpl::FiltersOrigin() const {
-  return OwningEffectNode()->filters_origin;
-}
-
 gfx::Transform RenderSurfaceImpl::SurfaceScale() const {
   gfx::Transform surface_scale;
   surface_scale.Scale(OwningEffectNode()->surface_contents_scale.x(),
@@ -456,7 +452,7 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::RenderPassDrawQuad>();
   quad->SetAll(shared_quad_state, content_rect(), unoccluded_content_rect,
                /*needs_blending=*/true, id(), mask_resource_id, mask_uv_rect,
-               mask_texture_size, surface_contents_scale, FiltersOrigin(),
+               mask_texture_size, surface_contents_scale, gfx::PointF(),
                tex_coord_rect,
                !layer_tree_impl_->settings().enable_edge_anti_aliasing,
                OwningEffectNode()->backdrop_filter_quality,

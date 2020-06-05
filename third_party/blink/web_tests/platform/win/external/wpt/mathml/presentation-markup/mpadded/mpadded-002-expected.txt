@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+FAIL mpadded with no attributes assert_approx_equals: content height expected 150 +/- 1 but got -5
+FAIL Different widths assert_approx_equals: width 0 expected 25 +/- 1 but got 100
+FAIL Different heights assert_approx_equals: height0 expected 25 +/- 1 but got -5
+FAIL Different depths assert_approx_equals: height0 expected 150 +/- 1 but got -5
+FAIL Various combinations of height, depth and width. assert_approx_equals: width0 expected 25 +/- 1 but got 100
+PASS Preferred width
+PASS dynamic attributes (remove)
+FAIL dynamic attributes (attach) assert_approx_equals: expected 50 +/- 1 but got 100
+FAIL dynamic attributes (modify) assert_approx_equals: expected 50 +/- 1 but got 100
+Harness: the test ran to completion.
+

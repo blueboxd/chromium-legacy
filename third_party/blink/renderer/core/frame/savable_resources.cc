@@ -6,24 +6,25 @@
 
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_element_collection.h"
-#include "third_party/blink/public/web/web_input_element.h"
-#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/html_all_collection.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace {
 
-// Returns |true| if |web_frame| contains (or should be assumed to contain)
+// Returns |true| if |frame| contains (or should be assumed to contain)
 // a html document.
-bool DoesFrameContainHtmlDocument(WebFrame* web_frame,
-                                  const WebElement& element) {
-  if (web_frame->IsWebLocalFrame()) {
-    WebDocument doc = web_frame->ToWebLocalFrame()->GetDocument();
-    return doc.IsHTMLDocument() || doc.IsXHTMLDocument();
+bool DoesFrameContainHtmlDocument(Frame* frame, Element* element) {
+  if (frame->IsLocalFrame()) {
+    Document* document =
+        LocalFrame::FromFrameToken(frame->GetFrameToken())->GetDocument();
+    return document->IsHTMLDocument() || document->IsXHTMLDocument();
   }
 
   // Cannot inspect contents of a remote frame, so we use a heuristic:
@@ -34,28 +35,31 @@ bool DoesFrameContainHtmlDocument(WebFrame* web_frame,
   // following caveats: 1) original frame content will be saved and 2) links
   // in frame's html doc will not be rewritten to point to locally saved
   // files.
-  return element.HasHTMLTagName("iframe") || element.HasHTMLTagName("frame");
+  return element->HasTagName(html_names::kIFrameTag) ||
+         element->HasTagName(html_names::kFrameTag);
 }
 
 // If present and valid, then push the link associated with |element|
-// into either WebSavableResources::ResultImpl::subframes or
-// WebSavableResources::ResultImpl::resources_list.
-void GetSavableResourceLinkForElement(const WebElement& element,
-                                      const WebDocument& current_doc,
+// into either SavableResources::Result::subframes_ or
+// SavableResources::Result::resources_list_.
+void GetSavableResourceLinkForElement(Element* element,
+                                      const Document& current_document,
                                       SavableResources::Result* result) {
   // Get absolute URL.
   String link_attribute_value =
       SavableResources::GetSubResourceLinkFromElement(element);
-  KURL element_url = current_doc.CompleteURL(link_attribute_value);
+  KURL element_url = current_document.CompleteURL(link_attribute_value);
 
   // See whether to report this element as a subframe.
-  WebFrame* web_frame = WebFrame::FromFrameOwnerElement(element);
-  if (web_frame && DoesFrameContainHtmlDocument(web_frame, element)) {
-    mojom::blink::SavableSubframePtr subframe =
-        mojom::blink::SavableSubframe::New(element_url,
-                                           web_frame->GetFrameToken());
-    result->AppendSubframe(std::move(subframe));
-    return;
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(element)) {
+    Frame* content_frame = frame_owner->ContentFrame();
+    if (content_frame && DoesFrameContainHtmlDocument(content_frame, element)) {
+      mojom::blink::SavableSubframePtr subframe =
+          mojom::blink::SavableSubframe::New(element_url,
+                                             content_frame->GetFrameToken());
+      result->AppendSubframe(std::move(subframe));
+      return;
+    }
   }
 
   // Check whether the node has sub resource URL or not.
@@ -94,44 +98,50 @@ bool SavableResources::GetSavableResourceLinksForFrame(
     return false;
 
   // Get current using document.
-  WebDocument current_doc = current_frame->GetDocument();
+  Document* current_document = current_frame->GetDocument();
+  DCHECK(current_document);
+
   // Go through all descent nodes.
-  WebElementCollection all = current_doc.All();
+  HTMLAllCollection* collection = current_document->all();
+
   // Go through all elements in this frame.
-  for (WebElement element = all.FirstItem(); !element.IsNull();
-       element = all.NextItem()) {
-    GetSavableResourceLinkForElement(element, current_doc, result);
+  for (unsigned i = 0; i < collection->length(); ++i) {
+    GetSavableResourceLinkForElement(collection->item(i), *current_document,
+                                     result);
   }
 
   return true;
 }
 
 // static
-String SavableResources::GetSubResourceLinkFromElement(
-    const WebElement& element) {
+String SavableResources::GetSubResourceLinkFromElement(Element* element) {
   const char* attribute_name = nullptr;
-  if (element.HasHTMLTagName("img") || element.HasHTMLTagName("frame") ||
-      element.HasHTMLTagName("iframe") || element.HasHTMLTagName("script")) {
+  if (element->HasTagName(html_names::kImgTag) ||
+      element->HasTagName(html_names::kFrameTag) ||
+      element->HasTagName(html_names::kIFrameTag) ||
+      element->HasTagName(html_names::kScriptTag)) {
     attribute_name = "src";
-  } else if (element.HasHTMLTagName("input")) {
-    const WebInputElement input = element.ToConst<WebInputElement>();
-    if (input.IsImageButton()) {
+  } else if (element->HasTagName(html_names::kInputTag)) {
+    HTMLInputElement* input = To<HTMLInputElement>(element);
+    if (input->type() == input_type_names::kImage) {
       attribute_name = "src";
     }
-  } else if (element.HasHTMLTagName("body") ||
-             element.HasHTMLTagName("table") || element.HasHTMLTagName("tr") ||
-             element.HasHTMLTagName("td")) {
+  } else if (element->HasTagName(html_names::kBodyTag) ||
+             element->HasTagName(html_names::kTableTag) ||
+             element->HasTagName(html_names::kTrTag) ||
+             element->HasTagName(html_names::kTdTag)) {
     attribute_name = "background";
-  } else if (element.HasHTMLTagName("blockquote") ||
-             element.HasHTMLTagName("q") || element.HasHTMLTagName("del") ||
-             element.HasHTMLTagName("ins")) {
+  } else if (element->HasTagName(html_names::kBlockquoteTag) ||
+             element->HasTagName(html_names::kQTag) ||
+             element->HasTagName(html_names::kDelTag) ||
+             element->HasTagName(html_names::kInsTag)) {
     attribute_name = "cite";
-  } else if (element.HasHTMLTagName("object")) {
+  } else if (element->HasTagName(html_names::kObjectTag)) {
     attribute_name = "data";
-  } else if (element.HasHTMLTagName("link")) {
+  } else if (element->HasTagName(html_names::kLinkTag)) {
     // If the link element is not linked to css, ignore it.
-    String type = element.GetAttribute("type");
-    String rel = element.GetAttribute("rel");
+    String type = element->getAttribute("type");
+    String rel = element->getAttribute("rel");
     if ((type.ContainsOnlyASCIIOrEmpty() && type.LowerASCII() == "text/css") ||
         (rel.ContainsOnlyASCIIOrEmpty() && rel.LowerASCII() == "stylesheet")) {
       // TODO(jnd): Add support for extracting links of sub-resources which
@@ -142,7 +152,7 @@ String SavableResources::GetSubResourceLinkFromElement(
   }
   if (!attribute_name)
     return String();
-  String value = element.GetAttribute(String::FromUTF8(attribute_name));
+  String value = element->getAttribute(attribute_name);
   // If value has content and not start with "javascript:" then return it,
   // otherwise return an empty string.
   if (!value.IsNull() && !value.IsEmpty() &&

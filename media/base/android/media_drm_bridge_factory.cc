@@ -9,7 +9,6 @@
 #include "media/base/cdm_config.h"
 #include "media/base/content_decryption_module.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -28,7 +27,6 @@ MediaDrmBridgeFactory::~MediaDrmBridgeFactory() {
 
 void MediaDrmBridgeFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -37,7 +35,6 @@ void MediaDrmBridgeFactory::Create(
     CdmCreatedCB cdm_created_cb) {
   DCHECK(MediaDrmBridge::IsKeySystemSupported(key_system));
   DCHECK(MediaDrmBridge::IsAvailable());
-  DCHECK(!security_origin.opaque());
   DCHECK(scheme_uuid_.empty()) << "This factory can only be used once.";
 
   scheme_uuid_ = MediaDrmBridge::GetUUID(key_system);

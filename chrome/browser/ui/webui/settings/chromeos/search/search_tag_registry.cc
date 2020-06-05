@@ -16,29 +16,38 @@ namespace chromeos {
 namespace settings {
 namespace {
 
+std::vector<int> GetMessageIds(const SearchConcept& concept) {
+  // Start with only the canonical ID.
+  std::vector<int> alt_tag_message_ids{concept.canonical_message_id};
+
+  // Add alternate IDs, if they exist.
+  for (size_t i = 0; i < SearchConcept::kMaxAltTagsPerConcept; ++i) {
+    int curr_alt_tag_message_id = concept.alt_tag_ids[i];
+    if (curr_alt_tag_message_id == SearchConcept::kAltTagEnd)
+      break;
+    alt_tag_message_ids.push_back(curr_alt_tag_message_id);
+  }
+
+  return alt_tag_message_ids;
+}
+
 std::vector<local_search_service::Data> ConceptVectorToDataVector(
     const std::vector<SearchConcept>& search_tags) {
   std::vector<local_search_service::Data> data_list;
 
   for (const auto& concept : search_tags) {
-    std::vector<base::string16> search_tags;
-
-    // Add the canonical tag.
-    search_tags.push_back(
-        l10n_util::GetStringUTF16(concept.canonical_message_id));
-
-    // Add all alternate tags.
-    for (size_t i = 0; i < SearchConcept::kMaxAltTagsPerConcept; ++i) {
-      int curr_alt_tag = concept.alt_tag_ids[i];
-      if (curr_alt_tag == SearchConcept::kAltTagEnd)
-        break;
-      search_tags.push_back(l10n_util::GetStringUTF16(curr_alt_tag));
+    // Create a list of Content objects, which use the stringified version of
+    // message IDs as identifiers.
+    std::vector<local_search_service::Content> content_list;
+    for (int message_id : GetMessageIds(concept)) {
+      content_list.emplace_back(
+          /*id=*/base::NumberToString(message_id),
+          /*content=*/l10n_util::GetStringUTF16(message_id));
     }
 
-    // Note: A stringified version of the canonical tag message ID is used as
-    // the identifier for this search data.
+    // Use the stringified version of the canonical message ID as an identifier.
     data_list.emplace_back(base::NumberToString(concept.canonical_message_id),
-                           search_tags);
+                           content_list);
   }
 
   return data_list;
@@ -63,8 +72,10 @@ void SearchTagRegistry::AddSearchTags(
   // Add each concept to the map. Note that it is safe to take the address of
   // each concept because all concepts are allocated via static
   // base::NoDestructor objects in the Get*SearchConcepts() helper functions.
-  for (const auto& concept : search_tags)
-    canonical_id_to_metadata_map_[concept.canonical_message_id] = &concept;
+  for (const auto& concept : search_tags) {
+    for (int message_id : GetMessageIds(concept))
+      message_id_to_metadata_map_[message_id] = &concept;
+  }
 }
 
 void SearchTagRegistry::RemoveSearchTags(
@@ -74,17 +85,18 @@ void SearchTagRegistry::RemoveSearchTags(
 
   std::vector<std::string> ids;
   for (const auto& concept : search_tags) {
-    canonical_id_to_metadata_map_.erase(concept.canonical_message_id);
+    for (int message_id : GetMessageIds(concept))
+      message_id_to_metadata_map_.erase(message_id);
     ids.push_back(base::NumberToString(concept.canonical_message_id));
   }
 
   index_->Delete(ids);
 }
 
-const SearchConcept* SearchTagRegistry::GetCanonicalTagMetadata(
+const SearchConcept* SearchTagRegistry::GetTagMetadata(
     int canonical_message_id) const {
-  const auto it = canonical_id_to_metadata_map_.find(canonical_message_id);
-  if (it == canonical_id_to_metadata_map_.end())
+  const auto it = message_id_to_metadata_map_.find(canonical_message_id);
+  if (it == message_id_to_metadata_map_.end())
     return nullptr;
   return it->second;
 }

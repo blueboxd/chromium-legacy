@@ -101,15 +101,16 @@ public class BottomSheetObserverTest {
     public ChromeTabbedActivityTestRule mTestRule = new ChromeTabbedActivityTestRule();
     private TestSheetObserver mObserver;
     private TestBottomSheetContent mSheetContent;
-    private BottomSheetController mBottomSheetController;
+    private BottomSheetControllerImpl mBottomSheetController;
     private BottomSheet mSheetView;
 
     @Before
     public void setUp() throws Exception {
         BottomSheet.setSmallScreenForTesting(false);
         mTestRule.startMainActivityOnBlankPage();
-        mBottomSheetController =
-                mTestRule.getActivity().getRootUiCoordinatorForTesting().getBottomSheetController();
+        mBottomSheetController = (BottomSheetControllerImpl) mTestRule.getActivity()
+                                         .getRootUiCoordinatorForTesting()
+                                         .getBottomSheetController();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mSheetContent = new TestBottomSheetContent(
                     mTestRule.getActivity(), BottomSheetContent.ContentPriority.HIGH, false);

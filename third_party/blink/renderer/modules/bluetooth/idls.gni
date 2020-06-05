@@ -22,6 +22,7 @@ modules_dictionary_idl_files = [
   "bluetooth_le_scan_filter_init.idl",
   "bluetooth_le_scan_options.idl",
   "request_device_options.idl",
+  "watch_advertisements_options.idl",
 ]
 
 modules_dependency_idl_files = [ "navigator_bluetooth.idl" ]

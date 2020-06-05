@@ -344,6 +344,7 @@ void GetAssertionRequestHandler::DispatchRequest(
         FIDO_LOG(DEBUG) << "Getting UV token from "
                         << authenticator->GetDisplayName();
         authenticator->GetUvToken(
+            request_.rp_id,
             base::BindOnce(&GetAssertionRequestHandler::OnHaveUvToken,
                            weak_factory_.GetWeakPtr(), authenticator));
         return;
@@ -727,6 +728,7 @@ void GetAssertionRequestHandler::OnUvRetriesResponse(
   }
   observer()->OnRetryUserVerification(response->retries);
   authenticator_->GetUvToken(
+      request_.rp_id,
       base::BindOnce(&GetAssertionRequestHandler::OnHaveUvToken,
                      weak_factory_.GetWeakPtr(), authenticator_));
 }

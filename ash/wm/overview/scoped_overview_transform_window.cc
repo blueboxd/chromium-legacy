@@ -467,15 +467,15 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   event_targeting_blocker_map_.erase(transient_child);
 }
 
+// static
+void ScopedOverviewTransformWindow::SetImmediateCloseForTests(bool immediate) {
+  immediate_close_for_tests = immediate;
+}
+
 void ScopedOverviewTransformWindow::CloseWidget() {
   aura::Window* parent_window = ::wm::GetTransientRoot(window_);
   if (parent_window)
     window_util::CloseWidgetForWindow(parent_window);
-}
-
-// static
-void ScopedOverviewTransformWindow::SetImmediateCloseForTests() {
-  immediate_close_for_tests = true;
 }
 
 }  // namespace ash

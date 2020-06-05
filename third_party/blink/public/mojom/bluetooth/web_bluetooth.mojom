@@ -46,6 +46,7 @@ import "device/bluetooth/public/mojom/uuid.mojom";
 enum WebBluetoothResult {
   SUCCESS,
   // AbortError:
+  WATCH_ADVERTISEMENTS_ABORTED,
   // InvalidModificationError:
   GATT_INVALID_ATTRIBUTE_LENGTH,
   // InvalidStateError:
@@ -302,6 +303,15 @@ interface WebBluetoothService {
     pending_associated_remote<WebBluetoothAdvertisementClient> client,
     WebBluetoothRequestLEScanOptions options) => (
     WebBluetoothResult result);
+
+  // Starts scanning for advertisements packets from the device associated with
+  // |device_id|. |client| will be notified when advertisement packets are
+  // detected for the device. The scan will be terminated if |client| is
+  // disconnected.
+  WatchAdvertisementsForDevice(
+    WebBluetoothDeviceId device_id,
+    pending_associated_remote<WebBluetoothAdvertisementClient> client)
+    => (WebBluetoothResult result);
 };
 
 // Classes that implement this interface will be notified of device events.

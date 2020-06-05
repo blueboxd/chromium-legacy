@@ -15,6 +15,7 @@
 
 class BrowserFrame;
 class BrowserView;
+class CaptionButtonContainer;
 class WebAppFrameToolbarView;
 
 // Type used for functions whose return values depend on the active state of
@@ -50,6 +51,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Returns whether the caption buttons are drawn at the leading edge (i.e. the
   // left in LTR mode, or the right in RTL mode).
   virtual bool CaptionButtonsOnLeadingEdge() const;
+
+  // Returns the caption button container associated with the frame, if any.
+  // The caption buttons may be "borrowed" from the frame and returned to it.
+  virtual CaptionButtonContainer* GetCaptionButtonContainer() const;
 
   // Retrieves the bounds in non-client view coordinates within which the
   // TabStrip should be laid out.

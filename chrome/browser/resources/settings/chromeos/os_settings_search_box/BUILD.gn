@@ -34,6 +34,7 @@ js_library("os_search_result_row") {
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js/cr/ui:focus_row_behavior",
   ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 # TODO: Uncomment as the Polymer3 migration makes progress.
@@ -51,6 +52,7 @@ js_library("os_search_result_row.m") {
     # TODO: Fill those in.
   ]
   extra_deps = [ ":os_search_result_row_module" ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("os_settings_search_box.m") {

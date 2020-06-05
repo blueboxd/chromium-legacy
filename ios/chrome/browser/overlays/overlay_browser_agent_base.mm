@@ -94,7 +94,10 @@ OverlayBrowserAgentBase::CallbackInstallationDriver::GetRequestSupport(
 
 void OverlayBrowserAgentBase::CallbackInstallationDriver::WillShowOverlay(
     OverlayPresenter* presenter,
-    OverlayRequest* request) {
+    OverlayRequest* request,
+    bool initial_presentation) {
+  if (!initial_presentation)
+    return;
   browser_agent_->InstallOverlayRequestCallbacks(request,
                                                  presenter->GetModality());
 }

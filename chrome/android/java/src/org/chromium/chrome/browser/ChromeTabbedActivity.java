@@ -1825,7 +1825,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             return true;
         }
 
-        if (getBottomSheetController().handleBackPress()) return true;
+        // TODO(1091411): Find a better mechanism for back-press handling for features.
+        if (mRootUiCoordinator.getBottomSheetController().handleBackPress()) return true;
 
         if (mTabModalHandler.handleBackPress()) return true;
 

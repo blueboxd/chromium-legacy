@@ -146,8 +146,7 @@ public class PaymentRequestTestBridge {
             for (int i = 0; i < apps.size(); i++) {
                 EditableOption app = apps.get(i);
                 appLabels[i] = ensureNotNull(app.getLabel());
-                // Service workers don't set sublabel.
-                appSublabels[i] = ensureNotNull(app.getTertiaryLabel());
+                appSublabels[i] = ensureNotNull(app.getSublabel());
                 if (!TextUtils.isEmpty(app.getPromoMessage())) {
                     appTotals[i] = app.getPromoMessage();
                 } else {

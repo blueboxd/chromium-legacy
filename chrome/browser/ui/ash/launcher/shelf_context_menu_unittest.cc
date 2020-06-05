@@ -101,6 +101,7 @@ class ShelfContextMenuTest
     model_ = std::make_unique<ash::ShelfModel>();
     launcher_controller_ =
         std::make_unique<ChromeLauncherController>(&profile_, model_.get());
+    launcher_controller_->Init();
 
     // Disable safe icon decoding to ensure ArcAppShortcutRequests returns in
     // the test environment.

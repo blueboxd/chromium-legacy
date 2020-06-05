@@ -566,9 +566,16 @@ doesn't support rebaselining flag-specific expectations.
 cd src/third_party/blink
 python tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
 ```
+*** promo
+You can use `--flag-specific=config` as a shorthand of
+`--additional-driver-flag=--enable-flag` if `config` is defined in
+`web_tests/FlagSpecificConfig`.
+***
 
 New baselines will be created in the flag-specific baselines directory, e.g.
-`web_tests/flag-specific/enable-flag/foo/bar/test-expected.{txt,png}`.
+`web_tests/flag-specific/enable-flag/foo/bar/test-expected.{txt,png}`
+or
+`web_tests/flag-specific/config/foo/bar/test-expected.{txt,png}`
 
 Then you can commit the new baselines and upload the patch for review.
 

@@ -16,7 +16,7 @@ namespace {
 
 gfx::Rect AdjustSubsurfaceBounds(const gfx::Rect& bounds_px,
                                  const gfx::Rect& parent_bounds_px,
-                                 int32_t ui_scale,
+                                 float ui_scale,
                                  int32_t buffer_scale) {
   const auto parent_bounds_dip =
       gfx::ScaleToRoundedRect(parent_bounds_px, 1.0 / ui_scale);

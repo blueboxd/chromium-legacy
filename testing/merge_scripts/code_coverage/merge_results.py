@@ -72,6 +72,15 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       action='store_true',
       dest='sparse',
       help='run llvm-profdata with the sparse flag.')
+  # (crbug.com/1091310) - IR PGO is incompatible with the initial conversion
+  # of .profraw -> .profdata that's run to detect validation errors.
+  # Introducing a bypass flag that'll merge all .profraw directly to .profdata
+  parser.add_argument(
+      '--skip-validation',
+      action='store_true',
+      help='skip validation for good raw profile data. this will pass all '
+           'raw profiles found to llvm-profdata to be merged. only applicable '
+           'when input extension is .profraw.')
   return parser
 
 
@@ -106,7 +115,8 @@ def main():
       params.task_output_dir,
       os.path.join(params.profdata_dir, output_prodata_filename), '.profraw',
       params.llvm_profdata,
-      sparse=params.sparse)
+      sparse=params.sparse,
+      skip_validation=params.skip_validation)
 
   # At the moment counter overflows overlap with invalid profiles, but this is
   # not guaranteed to remain the case indefinitely. To avoid future conflicts

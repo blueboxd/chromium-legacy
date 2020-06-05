@@ -212,12 +212,18 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
     return nullptr;
 
   const SearchConcept* concept =
-      search_tag_registry_->GetCanonicalTagMetadata(message_id);
+      search_tag_registry_->GetTagMetadata(message_id);
 
   // If the concept was not registered, no metadata is available. This can occur
   // if the search tag was dynamically unregistered during the asynchronous
   // Find() call.
   if (!concept)
+    return nullptr;
+
+  // |result| is expected to have one position, whose ID is a stringified int.
+  DCHECK_EQ(1u, result.positions.size());
+  int content_id;
+  if (!base::StringToInt(result.positions[0].content_id, &content_id))
     return nullptr;
 
   std::string url;
@@ -250,10 +256,11 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
     }
   }
 
-  return mojom::SearchResult::New(l10n_util::GetStringUTF16(message_id), url,
-                                  concept->icon, result.score,
-                                  hierarchy_strings, concept->default_rank,
-                                  concept->type, std::move(result_id));
+  return mojom::SearchResult::New(
+      /*result_text=*/l10n_util::GetStringUTF16(content_id),
+      /*canonical_result_text=*/l10n_util::GetStringUTF16(message_id), url,
+      concept->icon, result.score, hierarchy_strings, concept->default_rank,
+      concept->type, std::move(result_id));
 }
 
 std::string SearchHandler::GetModifiedUrl(const SearchConcept& concept,
@@ -289,7 +296,7 @@ bool SearchHandler::CompareSearchResults(const mojom::SearchResultPtr& first,
   // declared before kSetting, so follow the same pattern from default ranks
   // above. Note that if the types are equal, this will return false, which
   // induces a strict weak ordering.
-  return static_cast<int32_t>(first->type) - static_cast<int32_t>(second->type);
+  return static_cast<int32_t>(first->type) < static_cast<int32_t>(second->type);
 }
 
 }  // namespace settings

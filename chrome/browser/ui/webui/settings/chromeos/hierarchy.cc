@@ -202,7 +202,8 @@ Hierarchy::SubpageMetadata::~SubpageMetadata() = default;
 mojom::SearchResultPtr Hierarchy::SubpageMetadata::ToSearchResult(
     double relevance_score) const {
   return mojom::SearchResult::New(
-      l10n_util::GetStringUTF16(name_message_id_),
+      /*result_text=*/l10n_util::GetStringUTF16(name_message_id_),
+      /*canonical_result_text=*/l10n_util::GetStringUTF16(name_message_id_),
       hierarchy_->ModifySearchResultUrl(
           section, mojom::SearchResultType::kSubpage, {.subpage = subpage_},
           unmodified_url_path_with_parameters_),

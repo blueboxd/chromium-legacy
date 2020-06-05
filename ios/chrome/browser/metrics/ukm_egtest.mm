@@ -226,13 +226,8 @@ using chrome_test_util::TurnSyncSwitchOn;
 //
 // Corresponds to IncognitoPlusRegularCheck in //chrome/browser/metrics/
 // ukm_browsertest.cc.
-#if defined(CHROME_EARL_GREY_1)
-// TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
-#define MAYBE_testIncognitoPlusRegular DISABLED_testIncognitoPlusRegular
-#else
-#define MAYBE_testIncognitoPlusRegular testIncognitoPlusRegular
-#endif
-- (void)MAYBE_testIncognitoPlusRegular {
+// TODO(crbug.com/1033726): This test is flaky on iOS 12 and 13.
+- (void)DISABLED_testIncognitoPlusRegular {
   const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
   [ChromeEarlGrey closeAllTabs];
   [ChromeEarlGrey waitForMainTabCount:0];

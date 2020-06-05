@@ -156,7 +156,7 @@ void KeyframeModel::SetRunState(RunState run_state,
 
 void KeyframeModel::Pause(base::TimeDelta pause_offset) {
   // Convert pause offset which is in local time to monotonic time.
-  // TODO(yigu): This should be scaled by playbackrate. http://crbug.com/912407
+  // TODO(crbug.com/912407): This should be scaled by playbackrate.
   base::TimeTicks monotonic_time =
       pause_offset + start_time_ + total_paused_duration_;
   SetRunState(PAUSED, monotonic_time);
@@ -246,8 +246,7 @@ bool KeyframeModel::InEffect(base::TimeTicks monotonic_time) const {
   return CalculateActiveTime(monotonic_time).has_value();
 }
 
-// TODO(yigu): Local time should be scaled by playback rate by spec.
-// https://crbug.com/912407.
+// TODO(crbug.com/912407): Local time should be scaled by playback rate by spec.
 base::TimeDelta KeyframeModel::ConvertMonotonicTimeToLocalTime(
     base::TimeTicks monotonic_time) const {
   // When waiting on receiving a start time, then our global clock is 'stuck' at

@@ -31,6 +31,8 @@ class LegacyMetricsClient {
 
   using ReportAdditionalMetricsCallback = base::RepeatingCallback<void(
       base::OnceCallback<void(std::vector<fuchsia::legacymetrics::Event>)>)>;
+  using NotifyFlushCallback =
+      base::OnceCallback<void(base::OnceClosure completion_cb)>;
 
   LegacyMetricsClient();
   ~LegacyMetricsClient();
@@ -50,18 +52,27 @@ class LegacyMetricsClient {
   void SetReportAdditionalMetricsCallback(
       ReportAdditionalMetricsCallback callback);
 
+  // Sets a |callback| which is invoked to warn that the connection to the
+  // remote MetricsRecorder will be terminated. The completion closure passed to
+  // |callback| should be invoked to signal flush completion.
+  void SetNotifyFlushCallback(NotifyFlushCallback callback);
+
  private:
   void ScheduleNextReport();
   void StartReport();
   void Report(std::vector<fuchsia::legacymetrics::Event> additional_metrics);
   void OnMetricsRecorderDisconnected(zx_status_t status);
+  void OnCloseSoon();
 
-  // Incrementally sends the contents of |buffer| to |metrics_recorder|, and
-  // invokes |done_cb| when finished.
-  void DrainBuffer(std::vector<fuchsia::legacymetrics::Event> buffer);
+  // Incrementally sends the contents of |to_send_| to |metrics_recorder_|.
+  void DrainBuffer();
 
   base::TimeDelta report_interval_;
   ReportAdditionalMetricsCallback report_additional_callback_;
+  NotifyFlushCallback notify_flush_callback_;
+  bool is_flushing_ = false;
+  bool record_ack_pending_ = false;
+  std::vector<fuchsia::legacymetrics::Event> to_send_;
   std::unique_ptr<LegacyMetricsUserActionRecorder> user_events_recorder_;
 
   fuchsia::legacymetrics::MetricsRecorderPtr metrics_recorder_;

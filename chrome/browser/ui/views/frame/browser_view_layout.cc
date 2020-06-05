@@ -20,7 +20,9 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
+#include "chrome/browser/ui/views/frame/caption_button_container.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
@@ -227,6 +229,20 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   gfx::Point point_in_browser_view_coords(point);
   views::View::ConvertPointToTarget(
       parent, browser_view_, &point_in_browser_view_coords);
+
+  // In some configurations, the caption button container may be part of the
+  // browser top area instead of the frame, but we still have to treat it as
+  // part of the frame for hit testing purposes.
+  auto* const container =
+      browser_view_->frame()->GetFrameView()->GetCaptionButtonContainer();
+  if (container) {
+    gfx::Point test_point = point;
+    if (ConvertedHitTest(parent, container, &test_point)) {
+      const int result = container->NonClientHitTest(test_point);
+      if (result != HTNOWHERE)
+        return result;
+    }
+  }
 
   // Determine if the TabStrip exists and is capable of being clicked on. We
   // might be a popup window without a TabStrip.

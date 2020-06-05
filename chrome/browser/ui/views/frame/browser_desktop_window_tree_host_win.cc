@@ -9,9 +9,15 @@
 #include <dwmapi.h>
 #include <uxtheme.h>
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -36,6 +42,173 @@
 #include "ui/gfx/image/image_family.h"
 #include "ui/views/controls/menu/native_menu_win.h"
 
+class VirtualDesktopHelper
+    : public base::RefCountedDeleteOnSequence<VirtualDesktopHelper> {
+ public:
+  using WorkspaceChangedCallback = base::OnceCallback<void()>;
+
+  explicit VirtualDesktopHelper(const std::string& initial_workspace);
+  VirtualDesktopHelper(const VirtualDesktopHelper&) = delete;
+  VirtualDesktopHelper& operator=(const VirtualDesktopHelper&) = delete;
+
+  // public methods are all called on the UI thread.
+  void Init(HWND hwnd);
+
+  std::string GetWorkspace();
+
+  // |callback| is called when the task to get the desktop id of |hwnd|
+  // completes, if the workspace has changed.
+  void UpdateWindowDesktopId(HWND hwnd, WorkspaceChangedCallback callback);
+
+  bool GetInitialWorkspaceRemembered() const;
+
+  void SetInitialWorkspaceRemembered(bool remembered);
+
+  base::WeakPtr<VirtualDesktopHelper> AsWeakPtr();
+
+ private:
+  friend class base::RefCountedDeleteOnSequence<VirtualDesktopHelper>;
+  friend class base::DeleteHelper<VirtualDesktopHelper>;
+
+  ~VirtualDesktopHelper();
+
+  // Called on the UI thread as a task reply.
+  void SetWorkspace(WorkspaceChangedCallback callback,
+                    const std::string& workspace);
+
+  void InitImpl(HWND hwnd, const std::string& initial_workspace);
+
+  static std::string GetWindowDesktopIdImpl(
+      HWND hwnd,
+      Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager);
+
+  // All member variables, except where noted, are only accessed on the ui
+  // thead.
+
+  // Workspace browser window was opened on. This is used to tell the
+  // BrowserWindowState about the initial workspace, which has to happen after
+  // |this| is fully set up.
+  const std::string initial_workspace_;
+
+  // On Windows10, this is the virtual desktop the browser window was on,
+  // last we checked. This is used to tell if the window has moved to a
+  // different desktop, and notify listeners. It will only be set if
+  // we created |virtual_desktop_helper_|.
+  base::Optional<std::string> workspace_;
+
+  bool initial_workspace_remembered_ = false;
+
+  // Only set on Windows 10. This is created and accessed on a separate
+  // COMSTAT thread. It will be null if creation failed.
+  Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager_;
+
+  base::WeakPtrFactory<VirtualDesktopHelper> weak_factory_{this};
+};
+
+VirtualDesktopHelper::VirtualDesktopHelper(const std::string& initial_workspace)
+    : base::RefCountedDeleteOnSequence<VirtualDesktopHelper>(
+          base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})),
+      initial_workspace_(initial_workspace) {}
+
+void VirtualDesktopHelper::Init(HWND hwnd) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  owning_task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VirtualDesktopHelper::InitImpl, this, hwnd,
+                                initial_workspace_));
+}
+
+VirtualDesktopHelper::~VirtualDesktopHelper() {}
+
+std::string VirtualDesktopHelper::GetWorkspace() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!workspace_.has_value())
+    workspace_ = initial_workspace_;
+
+  return workspace_.value_or(std::string());
+}
+
+void VirtualDesktopHelper::UpdateWindowDesktopId(
+    HWND hwnd,
+    WorkspaceChangedCallback callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  owning_task_runner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&VirtualDesktopHelper::GetWindowDesktopIdImpl, hwnd,
+                     virtual_desktop_manager_),
+      base::BindOnce(&VirtualDesktopHelper::SetWorkspace, AsWeakPtr(),
+                     base::Passed(std::move(callback))));
+}
+
+bool VirtualDesktopHelper::GetInitialWorkspaceRemembered() const {
+  return initial_workspace_remembered_;
+}
+
+void VirtualDesktopHelper::SetInitialWorkspaceRemembered(bool remembered) {
+  initial_workspace_remembered_ = remembered;
+}
+
+base::WeakPtr<VirtualDesktopHelper> VirtualDesktopHelper::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void VirtualDesktopHelper::SetWorkspace(WorkspaceChangedCallback callback,
+                                        const std::string& workspace) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // If GetWindowDesktopId() fails, |workspace| will be empty, and it's most
+  // likely that the current value of |workspace_| is still correct, so don't
+  // overwrite it.
+  if (workspace.empty())
+    return;
+
+  bool workspace_changed = workspace != workspace_.value_or(std::string());
+  workspace_ = workspace;
+  if (workspace_changed)
+    std::move(callback).Run();
+}
+
+void VirtualDesktopHelper::InitImpl(HWND hwnd,
+                                    const std::string& initial_workspace) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // Virtual Desktops on Windows are best-effort and may not always be
+  // available.
+  if (FAILED(::CoCreateInstance(__uuidof(::VirtualDesktopManager), nullptr,
+                                CLSCTX_ALL,
+                                IID_PPV_ARGS(&virtual_desktop_manager_))) ||
+      initial_workspace.empty()) {
+    return;
+  }
+  GUID guid = GUID_NULL;
+  HRESULT hr =
+      CLSIDFromString(base::UTF8ToUTF16(initial_workspace).c_str(), &guid);
+  if (SUCCEEDED(hr)) {
+    // There are valid reasons MoveWindowToDesktop can fail, e.g.,
+    // the desktop was deleted. If it fails, the window will open on the
+    // current desktop.
+    virtual_desktop_manager_->MoveWindowToDesktop(hwnd, guid);
+  }
+}
+
+// static
+std::string VirtualDesktopHelper::GetWindowDesktopIdImpl(
+    HWND hwnd,
+    Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  if (!virtual_desktop_manager)
+    return std::string();
+
+  GUID workspace_guid;
+  HRESULT hr =
+      virtual_desktop_manager->GetWindowDesktopId(hwnd, &workspace_guid);
+  if (FAILED(hr) || workspace_guid == GUID_NULL)
+    return std::string();
+
+  LPOLESTR workspace_widestr;
+  StringFromCLSID(workspace_guid, &workspace_widestr);
+  std::string workspace_id = base::WideToUTF8(workspace_widestr);
+  CoTaskMemFree(workspace_widestr);
+  return workspace_id;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserDesktopWindowTreeHostWin, public:
 
@@ -47,7 +220,8 @@ BrowserDesktopWindowTreeHostWin::BrowserDesktopWindowTreeHostWin(
     : DesktopWindowTreeHostWin(native_widget_delegate,
                                desktop_native_widget_aura),
       browser_view_(browser_view),
-      browser_frame_(browser_frame) {
+      browser_frame_(browser_frame),
+      virtual_desktop_helper_(nullptr) {
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
 
@@ -95,45 +269,28 @@ void BrowserDesktopWindowTreeHostWin::Init(
     const views::Widget::InitParams& params) {
   DesktopWindowTreeHostWin::Init(params);
   if (base::win::GetVersion() < base::win::Version::WIN10)
-    return;  // VirtualDesktopManager isn't support pre Win-10.
+    return;  // VirtualDesktopManager isn't supported pre Win-10.
 
-  // Virtual Desktops on Windows are best-effort and may not always be
-  // available.
-  if (FAILED(::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr,
-                                CLSCTX_ALL,
-                                IID_PPV_ARGS(&virtual_desktop_manager_)))) {
-    return;
-  }
+  virtual_desktop_helper_ = new VirtualDesktopHelper(params.workspace);
+  virtual_desktop_helper_->Init(GetHWND());
+}
 
-  if (!params.workspace.empty()) {
-    GUID guid = GUID_NULL;
-    HRESULT hr =
-        CLSIDFromString(base::UTF8ToUTF16(params.workspace).c_str(), &guid);
-    if (SUCCEEDED(hr)) {
-      // There are valid reasons MoveWindowToDesktop can fail, e.g.,
-      // the desktop was deleted. If it fails, the window will open on the
-      // current desktop.
-      virtual_desktop_manager_->MoveWindowToDesktop(GetHWND(), guid);
-    }
+void BrowserDesktopWindowTreeHostWin::Show(ui::WindowShowState show_state,
+                                           const gfx::Rect& restore_bounds) {
+  // This will make BrowserWindowState remember the initial workspace.
+  // It has to be called after DesktopNativeWidgetAura is observing the host
+  // and the session service is tracking the window.
+  if (virtual_desktop_helper_ &&
+      !virtual_desktop_helper_->GetInitialWorkspaceRemembered()) {
+    OnHostWorkspaceChanged();
+    virtual_desktop_helper_->SetInitialWorkspaceRemembered(true);
   }
+  DesktopWindowTreeHostWin::Show(show_state, restore_bounds);
 }
 
 std::string BrowserDesktopWindowTreeHostWin::GetWorkspace() const {
-  std::string workspace_id;
-  if (virtual_desktop_manager_) {
-    GUID workspace_guid;
-    HRESULT hr = virtual_desktop_manager_->GetWindowDesktopId(GetHWND(),
-                                                              &workspace_guid);
-    if (FAILED(hr) || workspace_guid == GUID_NULL)
-      return workspace_.value_or("");
-
-    LPOLESTR workspace_widestr;
-    StringFromCLSID(workspace_guid, &workspace_widestr);
-    workspace_id = base::WideToUTF8(workspace_widestr);
-    workspace_ = workspace_id;
-    CoTaskMemFree(workspace_widestr);
-  }
-  return workspace_id;
+  return virtual_desktop_helper_ ? virtual_desktop_helper_->GetWorkspace()
+                                 : std::string();
 }
 
 int BrowserDesktopWindowTreeHostWin::GetInitialShowState() const {
@@ -225,11 +382,6 @@ void BrowserDesktopWindowTreeHostWin::HandleCreate() {
 }
 
 void BrowserDesktopWindowTreeHostWin::HandleDestroying() {
-  // TODO(crbug/976176): Move all access to |virtual_desktop_manager_| off of
-  // the ui thread to prevent reentrancy bugs due to COM objects pumping
-  // messages. For now, Reset() so COM object destructor is called before
-  // |this| is in the process of being deleted.
-  virtual_desktop_manager_.Reset();
   browser_window_property_manager_.reset();
   DesktopWindowTreeHostWin::HandleDestroying();
 }
@@ -272,10 +424,13 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                                     LPARAM l_param) {
   switch (message) {
     case WM_SETFOCUS: {
-      // GetWorkspace sets |workspace_|, so stash prev value.
-      std::string prev_workspace = workspace_.value_or("");
-      if (prev_workspace != GetWorkspace())
-        OnHostWorkspaceChanged();
+      if (virtual_desktop_helper_) {
+        virtual_desktop_helper_->UpdateWindowDesktopId(
+            GetHWND(),
+            base::BindOnce(
+                &BrowserDesktopWindowTreeHostWin::OnHostWorkspaceChanged,
+                weak_factory_.GetWeakPtr()));
+      }
       break;
     }
     case WM_CREATE:

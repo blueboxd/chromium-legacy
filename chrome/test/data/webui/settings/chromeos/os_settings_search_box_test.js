@@ -5,6 +5,18 @@
 /** @fileoverview Runs tests for the OS settings search box. */
 
 suite('OSSettingsSearchBox', () => {
+  // TODO(hsuregan): Keep count and add getters for metrics.
+  class MockMetricsPrivate {
+    // Used by <os-search-result-row>
+    recordEnumerationValue(metricName, value, enumSize) {}
+
+    // Used by <os-search-result-row>
+    recordSparseValue(metricName, value) {}
+
+    // Required to use recordSparsValue()
+    recordSparseHashable(metricName, value) {}
+  }
+
   /** @const {number} */
   const DEFAULT_RELEVANCE_SCORE = 0.5;
 
@@ -63,12 +75,19 @@ suite('OSSettingsSearchBox', () => {
       },
       urlPathWithParameters: urlPathWithParameters,
       icon: icon ? icon : chromeos.settings.mojom.SearchResultIcon.MIN_VALUE,
+      id: {
+        section: chromeos.settings.mojom.Section.MIN_VALUE,
+        subpage: chromeos.settings.mojom.Subpage.MIN_VALUE,
+        setting: chromeos.settings.mojom.Setting.MIN_VALUE,
+      },
+      type: chromeos.settings.mojom.SearchResultType.MIN_VALUE,
       relevanceScore: DEFAULT_RELEVANCE_SCORE,
       settingsPageHierarchy: DEFAULT_PAGE_HIERARCHY,
     });
   }
 
   setup(function() {
+    chrome.metricsPrivate = new MockMetricsPrivate();
     toolbar = document.querySelector('os-settings-ui').$$('os-toolbar');
     assertTrue(!!toolbar);
     searchBox = toolbar.$$('os-settings-search-box');

@@ -283,6 +283,18 @@ PrerenderManager::AddPrerenderFromNavigationPredictor(
       gfx::Rect(size), session_storage_namespace);
 }
 
+std::unique_ptr<PrerenderHandle> PrerenderManager::AddIsolatedPrerender(
+    const GURL& url,
+    SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  DCHECK(IsNoStatePrefetchEnabled());
+
+  // The preconnect fallback won't happen.
+  return AddPrerenderWithPreconnectFallback(
+      ORIGIN_ISOLATED_PRERENDER, url, content::Referrer(), base::nullopt,
+      gfx::Rect(size), session_storage_namespace);
+}
+
 std::unique_ptr<PrerenderHandle>
 PrerenderManager::AddPrerenderFromExternalRequest(
     const GURL& url,
@@ -1189,6 +1201,12 @@ void PrerenderManager::SkipPrerenderContentsAndMaybePreconnect(
   PrerenderHistory::Entry entry(url, final_status, origin, base::Time::Now());
   prerender_history_->AddEntry(entry);
   histograms_->RecordFinalStatus(origin, final_status);
+
+  if (origin == ORIGIN_ISOLATED_PRERENDER) {
+    // Isolated Prerenders should not preconnect since that can't be done in a
+    // fully isolated way.
+    return;
+  }
 
   if (final_status == FINAL_STATUS_LOW_END_DEVICE ||
       final_status == FINAL_STATUS_CELLULAR_NETWORK ||

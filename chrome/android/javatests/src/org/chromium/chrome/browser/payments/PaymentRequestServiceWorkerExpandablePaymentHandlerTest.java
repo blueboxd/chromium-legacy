@@ -145,7 +145,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, true, true);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
         // Payment sheet skips to the app since it is the only available app.
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
     }
@@ -162,7 +162,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
         // Sets setCanMakePaymentForTesting(false) to return false for CanMakePayment since there is
         // no real sw payment app, so if CanMakePayment is called then no payment apps will be
         // available, otherwise CanMakePayment is not called.
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(false);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(false);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
@@ -175,7 +175,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, true, true);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         // Payment sheet skips to the app since it is the only available app.
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
@@ -188,7 +188,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, false, true);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
@@ -201,7 +201,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
         String[] supportedMethodNames = {"https://bobpay.com"};
         installMockServiceWorkerPaymentApp("https://bobpay.com", supportedMethodNames, true, false);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
@@ -215,7 +215,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
         installMockServiceWorkerPaymentApp(
                 "https://bobpay.com", supportedMethodNames, false, false);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
@@ -236,7 +236,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
                 true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "shippingSupported2" /*name */);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_shipping_requested", mPaymentRequestTestRule.getReadyForInput());
@@ -265,7 +265,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
                 false /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "contactSupported2" /*name */);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_contact_requested", mPaymentRequestTestRule.getReadyForInput());
@@ -299,7 +299,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
                 true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "shippingAndContactSupported2" /*name*/);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait("buy_with_shipping_and_contact_requested",
                 mPaymentRequestTestRule.getReadyForInput());
@@ -325,7 +325,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
                 true /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 false /*payerEmail*/, "shippingSupported" /*name */);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "buy_with_shipping_requested", mPaymentRequestTestRule.getDismissed());
     }
@@ -344,7 +344,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
                 false /*shippingAddress*/, false /*payerName*/, false /*payerPhone*/,
                 true /*payerEmail*/, "emailOnlySupported" /*name */);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "buy_with_contact_requested", mPaymentRequestTestRule.getDismissed());
     }
@@ -363,7 +363,7 @@ public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
                 true /*shippingAddress*/, true /*payerName*/, true /*payerPhone*/,
                 true /*payerEmail*/, "shippingAndContactSupported" /*name*/);
 
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
+        PaymentAppServiceBridge.setCanMakePaymentForTesting(true);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "buy_with_shipping_and_contact_requested", mPaymentRequestTestRule.getDismissed());
     }

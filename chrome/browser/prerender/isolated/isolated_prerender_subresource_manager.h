@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_SUBRESOURCE_MANAGER_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "content/public/browser/content_browser_client.h"
@@ -23,6 +26,7 @@ class PrerenderHandle;
 }
 
 class PrefetchedMainframeResponseContainer;
+class IsolatedPrerenderProxyingURLLoaderFactory;
 
 // This class manages the isolated prerender of a page and its subresources.
 class IsolatedPrerenderSubresourceManager
@@ -48,6 +52,16 @@ class IsolatedPrerenderSubresourceManager
   void SetIsolatedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> isolated_loader_factory);
 
+  // Called on commit to allow |this| to setup an intermediary (AKA: proxy, not
+  // to be confused with a proxy server) URLLoaderFactory between the renderer
+  // and network stack. Returns true when |factory_receiver| is proxied.
+  bool MaybeProxyURLLoaderFactory(
+      int render_process_id,
+      int frame_tree_node_id,
+      content::ContentBrowserClient::URLLoaderFactoryType type,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+          factory_receiver);
+
   // prerender::PrerenderHandle::Observer:
   void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
   void OnPrerenderStopLoading(prerender::PrerenderHandle* handle) override {}
@@ -63,6 +77,11 @@ class IsolatedPrerenderSubresourceManager
       const IsolatedPrerenderSubresourceManager&) = delete;
 
  private:
+  // Called when the given factory is done serving all requests and can be
+  // destroyed.
+  void RemoveProxiedURLLoaderFactory(
+      IsolatedPrerenderProxyingURLLoaderFactory* factory);
+
   // The page that is being prerendered.
   const GURL url_;
 
@@ -75,8 +94,15 @@ class IsolatedPrerenderSubresourceManager
   std::unique_ptr<prerender::PrerenderHandle> nsp_handle_;
   base::OnceClosure on_nsp_done_callback_;
 
+  // All owned proxying URL Loader Factories.
+  std::set<std::unique_ptr<IsolatedPrerenderProxyingURLLoaderFactory>,
+           base::UniquePtrComparator>
+      proxied_loader_factories_;
+
   // The isolated URL Loader Factory (with proxy) to use during NSP.
   scoped_refptr<network::SharedURLLoaderFactory> isolated_loader_factory_;
+
+  base::WeakPtrFactory<IsolatedPrerenderSubresourceManager> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_SUBRESOURCE_MANAGER_H_

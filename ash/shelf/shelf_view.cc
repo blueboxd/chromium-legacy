@@ -44,6 +44,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -160,10 +161,8 @@ class ShelfFocusSearch : public views::FocusSearch {
     // Build a list of all the views that we are able to focus.
     std::vector<views::View*> focusable_views;
 
-    for (int i = shelf_view_->first_visible_index();
-         i <= shelf_view_->last_visible_index(); ++i) {
+    for (int i : shelf_view_->visible_views_indices())
       focusable_views.push_back(shelf_view_->view_model()->view_at(i));
-    }
 
     // Where are we starting from?
     int start_index = 0;
@@ -397,7 +396,7 @@ void ShelfView::Init() {
 
 gfx::Rect ShelfView::GetIdealBoundsOfItemIcon(const ShelfID& id) {
   int index = model_->ItemIndexByID(id);
-  if (index < 0 || last_visible_index_ < 0 || index >= view_model_->view_size())
+  if (!base::Contains(visible_views_indices_, index))
     return gfx::Rect();
 
   const gfx::Rect& ideal_bounds(view_model_->ideal_bounds(index));
@@ -416,8 +415,7 @@ bool ShelfView::IsShowingMenu() const {
 
 void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
   visible_shelf_item_bounds_union_.SetRect(0, 0, 0, 0);
-  for (int i = std::max(0, first_visible_index_); i <= last_visible_index_;
-       ++i) {
+  for (const int i : visible_views_indices_) {
     const views::View* child = view_model_->view_at(i);
     if (ShouldShowTooltipForChildView(child))
       visible_shelf_item_bounds_union_.Union(child->GetMirroredBounds());
@@ -470,6 +468,11 @@ int ShelfView::GetButtonIconSize() const {
 int ShelfView::GetShelfItemRippleSize() const {
   return GetButtonSize() +
          2 * ShelfConfig::Get()->scrollable_shelf_ripple_padding();
+}
+
+void ShelfView::LayoutIfAppIconsOffsetUpdates() {
+  if (app_icons_layout_offset_ != CalculateAppIconsLayoutOffset())
+    LayoutToIdealBounds();
 }
 
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
@@ -527,18 +530,14 @@ gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
 
 gfx::Size ShelfView::CalculatePreferredSize() const {
   const int hotseat_size = shelf_->hotseat_widget()->GetHotseatSize();
-  if (model_->item_count() == 0) {
-    // There are no apps.
+  if (visible_views_indices_.empty()) {
+    // There are no visible shelf items.
     return shelf_->IsHorizontalAlignment() ? gfx::Size(0, hotseat_size)
                                            : gfx::Size(hotseat_size, 0);
   }
 
-  int last_button_index = last_visible_index_;
-
   const gfx::Rect last_button_bounds =
-      last_button_index >= first_visible_index_
-          ? view_model_->ideal_bounds(last_button_index)
-          : gfx::Rect(gfx::Size(hotseat_size, hotseat_size));
+      view_model_->ideal_bounds(visible_views_indices_.back());
 
   if (shelf_->IsHorizontalAlignment())
     return gfx::Size(last_button_bounds.right(), hotseat_size);
@@ -880,15 +879,15 @@ bool ShelfView::IsDraggedView(const views::View* view) const {
 }
 
 views::View* ShelfView::FindFirstFocusableChild() {
-  if (view_model_->view_size() == 0)
+  if (visible_views_indices_.empty())
     return nullptr;
-  return view_model_->view_at(first_visible_index());
+  return view_model_->view_at(visible_views_indices_.front());
 }
 
 views::View* ShelfView::FindLastFocusableChild() {
-  if (view_model_->view_size() == 0)
+  if (visible_views_indices_.empty())
     return nullptr;
-  return view_model_->view_at(last_visible_index());
+  return view_model_->view_at(visible_views_indices_.back());
 }
 
 views::View* ShelfView::FindFirstOrLastFocusableChild(bool last) {
@@ -941,8 +940,9 @@ void ShelfView::CalculateIdealBounds() {
   // Don't show the separator if it isn't needed, or would appear after all
   // visible items.
   separator_->SetVisible(separator_index != -1 &&
-                         separator_index < last_visible_index());
+                         separator_index < visible_views_indices_.back());
 
+  app_icons_layout_offset_ = CalculateAppIconsLayoutOffset();
   int x = shelf()->PrimaryAxisValue(app_icons_layout_offset_, 0);
   int y = shelf()->PrimaryAxisValue(0, app_icons_layout_offset_);
 
@@ -971,20 +971,6 @@ void ShelfView::CalculateIdealBounds() {
       x += shelf()->PrimaryAxisValue(half_space, 0);
       y += shelf()->PrimaryAxisValue(0, half_space);
     }
-  }
-
-  // In the main shelf, the first visible index is either the first app, or -1
-  // if there are no apps.
-  first_visible_index_ = view_model()->view_size() == 0 ? -1 : 0;
-
-  for (int i = 0; i < view_model()->view_size(); ++i) {
-    // To receive drag event continuously from |drag_view_| during the dragging
-    // off from the shelf, don't make |drag_view_| invisible. It will be
-    // eventually invisible and removed from the |view_model_| by
-    // FinalizeRipOffDrag().
-    if (dragged_off_shelf_ && view_model()->view_at(i) == drag_view())
-      continue;
-    view_model()->view_at(i)->SetVisible(i <= last_visible_index());
   }
 }
 
@@ -1584,20 +1570,26 @@ bool ShelfView::ShouldFocusOut(bool reverse, views::View* button) {
 }
 
 std::pair<int, int> ShelfView::GetDragRange(int index) {
+  DCHECK(base::Contains(visible_views_indices_, index));
   const ShelfItemType type = model_->items()[index].type;
-  const auto same_drag_type = [this, type](const ShelfItem& item) {
-    return SameDragType(item.type, type);
-  };
-  const auto begin_iter = model_->items().cbegin();
-  const auto end_iter = model_->items().cend();
-  const auto min_iter = std::find_if(begin_iter, end_iter, same_drag_type);
-  DCHECK(min_iter != end_iter);
-  const auto max_iter = std::prev(
-      std::find_if_not(std::next(min_iter), end_iter, same_drag_type));
-  DCHECK(max_iter != end_iter);
-  return std::make_pair(
-      static_cast<int>(min_iter - begin_iter),
-      std::min(static_cast<int>(max_iter - begin_iter), last_visible_index_));
+
+  int first = -1;
+  int last = -1;
+  for (int i : visible_views_indices_) {
+    if (SameDragType(model_->items()[i].type, type)) {
+      if (first == -1)
+        first = i;
+      last = i;
+    } else if (first != -1) {
+      break;
+    }
+  }
+  DCHECK_NE(first, -1);
+  DCHECK_NE(last, -1);
+
+  // TODO(afakhry): Consider changing this when taking into account inactive
+  // desks.
+  return std::make_pair(first, last);
 }
 
 void ShelfView::OnFadeInAnimationEnded() {
@@ -1769,6 +1761,9 @@ void ShelfView::ShelfItemAdded(int model_index) {
   view_model_->Add(view, model_index);
 
   // Add child view so it has the same ordering as in the |view_model_|.
+  // Note: No need to call UpdateVisibleIndices() here directly, since it will
+  // be called by ScrollableShelfView::ViewHierarchyChanged() as a result of the
+  // below call.
   AddChildViewAt(view, model_index);
 
   // Give the button its ideal bounds. That way if we end up animating the
@@ -1785,14 +1780,10 @@ void ShelfView::ShelfItemAdded(int model_index) {
   // is hidden, so it visually appears as though we are providing space for
   // it. When done we'll fade the view in.
   AnimateToIdealBounds();
-  if (model_index <= last_visible_index_) {
-    bounds_animator_->SetAnimationDelegate(
-        view, std::unique_ptr<gfx::AnimationDelegate>(
-                  new StartFadeAnimationDelegate(this, view)));
-  } else {
-    // Undo the hiding if animation does not run.
-    view->layer()->SetOpacity(1.0f);
-  }
+  DCHECK_LE(model_index, visible_views_indices_.back());
+  bounds_animator_->SetAnimationDelegate(
+      view, std::unique_ptr<gfx::AnimationDelegate>(
+                new StartFadeAnimationDelegate(this, view)));
 
   if (model_->is_current_mutation_user_triggered() &&
       item.type == TYPE_PINNED_APP) {
@@ -1969,10 +1960,8 @@ void ShelfView::ShelfItemReturnedFromRipOff(int index) {
 void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window,
                                         ShelfAlignment old_alignment) {
   LayoutToIdealBounds();
-  for (int i = 0; i < view_model_->view_size(); ++i) {
-    if (i >= first_visible_index_ && i <= last_visible_index_)
-      view_model_->view_at(i)->Layout();
-  }
+  for (const auto& visible_index : visible_views_indices_)
+    view_model_->view_at(visible_index)->Layout();
 
   AnnounceShelfAlignment();
 }
@@ -2195,14 +2184,33 @@ base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
 }
 
 void ShelfView::UpdateVisibleIndices() {
-  // When the scrollable shelf is enabled, ShelfView's |last_visible_index_| is
-  // always the index to the last shelf item.
-  first_visible_index_ = view_model()->view_size() == 0 ? -1 : 0;
-  last_visible_index_ = model_->item_count() - 1;
+  visible_views_indices_.clear();
+  for (int i = 0; i < view_model_->view_size(); ++i) {
+    // TODO(afakhry): For now all views are visible. Change this once we take
+    // inactive desks into account.
+    visible_views_indices_.push_back(i);
+  }
 }
 
 void ShelfView::DestroyScopedDisplay() {
   scoped_display_for_new_windows_.reset();
+}
+
+int ShelfView::CalculateAppIconsLayoutOffset() const {
+  const ScrollableShelfView* scrollable_shelf_view =
+      shelf_->hotseat_widget()->scrollable_shelf_view();
+  const gfx::Insets& extra_padding_insets =
+      scrollable_shelf_view->extra_padding_insets();
+
+  // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
+  // bounds are not changed by adding/removing the shelf icon under the same
+  // layout strategy.
+  const int horizontal_inset = scrollable_shelf_view->ShouldAdaptToRTL()
+                                   ? extra_padding_insets.right()
+                                   : extra_padding_insets.left();
+
+  return shelf_->IsHorizontalAlignment() ? horizontal_inset
+                                         : extra_padding_insets.top();
 }
 
 }  // namespace ash

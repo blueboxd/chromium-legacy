@@ -40,16 +40,12 @@ void NodeBase::JoinGraph(GraphImpl* graph) {
   DCHECK(graph->NodeInGraph(this));
 
   graph_ = graph;
-
-  OnJoiningGraph();
 }
 
 void NodeBase::LeaveGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(graph_);
   DCHECK(graph_->NodeInGraph(this));
-
-  OnBeforeLeavingGraph();
 
   graph_ = nullptr;
 }

@@ -197,10 +197,24 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   void SetButtons(int buttons);
   void SetButtonLabel(ui::DialogButton button, base::string16 label);
   void SetButtonEnabled(ui::DialogButton button, bool enabled);
-  void SetAcceptCallback(base::OnceClosure callback);
-  void SetCancelCallback(base::OnceClosure callback);
-  void SetCloseCallback(base::OnceClosure callback);
   void SetInitiallyFocusedView(View* view);
+
+  // Called when the user presses the dialog's "OK" button or presses the dialog
+  // accept accelerator, if there is one.
+  void SetAcceptCallback(base::OnceClosure callback);
+
+  // Called when the user presses the dialog's "Cancel" button or presses the
+  // dialog close accelerator (which is always VKEY_ESCAPE).
+  void SetCancelCallback(base::OnceClosure callback);
+
+  // Called when:
+  // * The user presses the dialog's close button, if it has one
+  // * The dialog's widget is closed via Widget::Close()
+  // NOT called when the dialog's widget is closed via Widget::CloseNow() - in
+  // that case, the normal widget close path is skipped, so no orderly teardown
+  // of the dialog's widget happens. The main way that can happen in production
+  // use is if the dialog's parent widget is closed.
+  void SetCloseCallback(base::OnceClosure callback);
 
   // Returns ownership of the extra view for this dialog, if one was provided
   // via SetExtraView(). This is only for use by DialogClientView; don't call

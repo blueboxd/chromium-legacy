@@ -63,7 +63,8 @@ class OverlayBrowserAgentBase {
     const OverlayRequestSupport* GetRequestSupport(
         OverlayPresenter* presenter) const override;
     void WillShowOverlay(OverlayPresenter* presenter,
-                         OverlayRequest* request) override;
+                         OverlayRequest* request,
+                         bool initial_presentation) override;
     void OverlayPresenterDestroyed(OverlayPresenter* presenter) override;
 
     Browser* browser_ = nullptr;

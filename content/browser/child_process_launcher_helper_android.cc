@@ -193,6 +193,7 @@ static void JNI_ChildProcessLauncherHelperImpl_SetTerminationInfo(
     jint binding_state,
     jboolean killed_by_us,
     jboolean clean_exit,
+    jboolean exception_during_init,
     jint remaining_process_with_strong_binding,
     jint remaining_process_with_moderate_binding,
     jint remaining_process_with_waived_binding,
@@ -202,6 +203,7 @@ static void JNI_ChildProcessLauncherHelperImpl_SetTerminationInfo(
   info->binding_state =
       static_cast<base::android::ChildBindingState>(binding_state);
   info->was_killed_intentionally_by_browser = killed_by_us;
+  info->threw_exception_during_init = exception_during_init;
   info->clean_exit = clean_exit;
   info->remaining_process_with_strong_binding =
       remaining_process_with_strong_binding;

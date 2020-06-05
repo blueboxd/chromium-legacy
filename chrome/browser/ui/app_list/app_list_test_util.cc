@@ -4,9 +4,16 @@
 
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/web_applications/pending_app_manager_impl.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 
@@ -37,9 +44,32 @@ void AppListTestBase::SetUp() {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   service_->Init();
 
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
+    ConfigureWebAppProvider();
+
   // Let any async services complete their set-up.
   base::RunLoop().RunUntilIdle();
 
   // There should be 4 extensions in the test profile.
   ASSERT_EQ(4U, registry()->enabled_extensions().size());
+}
+
+void AppListTestBase::ConfigureWebAppProvider() {
+  Profile* const profile = testing_profile();
+
+  auto url_loader = std::make_unique<web_app::TestWebAppUrlLoader>();
+  url_loader_ = url_loader.get();
+
+  auto pending_app_manager =
+      std::make_unique<web_app::PendingAppManagerImpl>(profile);
+  pending_app_manager->SetUrlLoaderForTesting(std::move(url_loader));
+
+  auto system_web_app_manager =
+      std::make_unique<web_app::TestSystemWebAppManager>(profile);
+
+  auto* const provider = web_app::TestWebAppProvider::Get(profile);
+  provider->SetPendingAppManager(std::move(pending_app_manager));
+  provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+  provider->SetRunSubsystemStartupTasks(true);
+  provider->Start();
 }

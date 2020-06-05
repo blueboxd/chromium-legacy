@@ -33,7 +33,8 @@
 }
 
 - (void)overlayPresenter:(OverlayPresenter*)presenter
-    willShowOverlayForRequest:(OverlayRequest*)request {
+    willShowOverlayForRequest:(OverlayRequest*)request
+          initialPresentation:(BOOL)initialPresentation {
   _willShowCalled = YES;
 }
 
@@ -71,14 +72,15 @@ TEST_F(OverlayPresenterObserverBridgeTest, GetRequestSupport) {
   std::unique_ptr<OverlayRequestSupport> support =
       std::make_unique<SupportsOverlayRequest<FakeOverlayUserData>>();
   observer_.support = support.get();
-  EXPECT_EQ(support.get(), bridge_.GetRequestSupport(nullptr));
+  EXPECT_EQ(support.get(), bridge_.GetRequestSupport(/*request=*/nullptr));
 }
 
 // Tests that OverlayPresenterObserver::WillShowOverlay() is correctly
 // forwarded.
 TEST_F(OverlayPresenterObserverBridgeTest, WillShowCalled) {
   ASSERT_FALSE(observer_.willShowCalled);
-  bridge_.WillShowOverlay(nullptr, nullptr);
+  bridge_.WillShowOverlay(/*presenter=*/nullptr, /*request=*/nullptr,
+                          /*initial_presentation=*/true);
   EXPECT_TRUE(observer_.willShowCalled);
 }
 
@@ -86,7 +88,7 @@ TEST_F(OverlayPresenterObserverBridgeTest, WillShowCalled) {
 // forwarded.
 TEST_F(OverlayPresenterObserverBridgeTest, DidShowCalled) {
   ASSERT_FALSE(observer_.didShowCalled);
-  bridge_.DidShowOverlay(nullptr, nullptr);
+  bridge_.DidShowOverlay(/*presenter=*/nullptr, /*request=*/nullptr);
   EXPECT_TRUE(observer_.didShowCalled);
 }
 
@@ -94,7 +96,7 @@ TEST_F(OverlayPresenterObserverBridgeTest, DidShowCalled) {
 // forwarded.
 TEST_F(OverlayPresenterObserverBridgeTest, DidHideCalled) {
   ASSERT_FALSE(observer_.didHideCalled);
-  bridge_.DidHideOverlay(nullptr, nullptr);
+  bridge_.DidHideOverlay(/*presenter=*/nullptr, /*request=*/nullptr);
   EXPECT_TRUE(observer_.didHideCalled);
 }
 
@@ -102,6 +104,6 @@ TEST_F(OverlayPresenterObserverBridgeTest, DidHideCalled) {
 // forwarded.
 TEST_F(OverlayPresenterObserverBridgeTest, DestroyedCalled) {
   ASSERT_FALSE(observer_.destroyedCalled);
-  bridge_.OverlayPresenterDestroyed(nullptr);
+  bridge_.OverlayPresenterDestroyed(/*presenter=*/nullptr);
   EXPECT_TRUE(observer_.destroyedCalled);
 }

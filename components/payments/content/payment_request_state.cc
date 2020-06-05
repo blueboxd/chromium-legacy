@@ -181,13 +181,6 @@ bool PaymentRequestState::SkipCreatingNativePaymentApps() const {
   return false;
 }
 
-void PaymentRequestState::OnCreatingNativePaymentAppsSkipped(
-    content::PaymentAppProvider::PaymentApps unused_apps,
-    ServiceWorkerPaymentAppFinder::InstallablePaymentApps
-        unused_installable_apps) {
-  NOTREACHED();
-}
-
 void PaymentRequestState::OnDoneCreatingPaymentApps() {
   DCHECK_NE(0U, number_of_payment_app_factories_);
   if (--number_of_payment_app_factories_ > 0U)

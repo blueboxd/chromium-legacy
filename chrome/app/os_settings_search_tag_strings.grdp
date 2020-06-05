@@ -659,6 +659,9 @@
   <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with an option to turn functionality on. Alternate phrase for: 'Turn on Google Assistant'">
     Enable Google Assistant
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_ASSISTANT_TRAIN_VOICE_MODEL" desc="Text for search result item which, when clicked, navigates the user to Google Assistant settings, with an option to train a voice model to listen for commands such as 'Okay Google' or 'Hey Google'">
+    Train Google Assistant voice model
+  </message>
 
   <!-- Apps section. -->
   <message name="IDS_OS_SETTINGS_TAG_APPS" desc="Text for search result item which, when clicked, navigates the user to apps settings.">

@@ -1559,6 +1559,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool HasNonCompositedScrollbars() const final;
 
   void EnsureIsReadyForPaintInvalidation() override;
+  void ClearPaintFlags() override;
 
   bool HasControlClip() const;
 

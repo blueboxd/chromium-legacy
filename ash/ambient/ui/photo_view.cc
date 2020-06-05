@@ -17,7 +17,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -86,12 +86,11 @@ const char* PhotoView::GetClassName() const {
 }
 
 void PhotoView::AddedToWidget() {
-  // Set the bounds to show |image_view_current_| for the first time.
   // TODO(b/140066694): Handle display configuration changes, e.g. resolution,
   // rotation, etc.
   const gfx::Size widget_size = GetWidget()->GetRootView()->size();
-  image_view_current_->SetImageSize(widget_size);
-  image_view_next_->SetImageSize(widget_size);
+  image_views_[0]->SetImageSize(widget_size);
+  image_views_[1]->SetImageSize(widget_size);
   SetBoundsRect(gfx::Rect(GetPreferredSize()));
 }
 
@@ -110,55 +109,72 @@ void PhotoView::OnImagesChanged() {
 void PhotoView::Init() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal));
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStart);
-
-  image_view_current_ =
+  image_views_[0] =
       AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
-  image_view_next_ =
+  image_views_[1] =
       AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
+  image_views_[0]->SetPaintToLayer();
+  image_views_[0]->layer()->SetFillsBoundsOpaquely(false);
+  image_views_[1]->SetPaintToLayer();
+  image_views_[1]->layer()->SetFillsBoundsOpaquely(false);
+  image_views_[1]->layer()->SetOpacity(0.0f);
 
   delegate_->GetAmbientBackendModel()->AddObserver(this);
 }
 
 void PhotoView::UpdateImages() {
-  // TODO(b/140193766): Investigate a more efficient way to update images and do
-  // layer animation.
   auto* model = delegate_->GetAmbientBackendModel();
-  image_view_current_->SetImage(model->GetCurrentImage());
-  image_view_next_->SetImage(model->GetNextImage());
+  // Update the first two images to prepare for transition animation.
+  if (image_views_[1]->GetImage().isNull()) {
+    image_views_[0]->SetImage(model->GetCurrentImage());
+    image_views_[1]->SetImage(model->GetNextImage());
+    return;
+  }
+
+  // Afterwards, only need to update one image with opacity of 0.0f.
+  image_views_[image_index_]->SetImage(model->GetNextImage());
+  image_index_ = 1 - image_index_;
 }
 
 void PhotoView::StartTransitionAnimation() {
-  ui::Layer* layer = this->layer();
-  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
-  animation.SetTransitionDuration(kAnimationDuration);
-  animation.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
-  animation.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-  animation.SetAnimationMetricsReporter(metrics_reporter_.get());
-  animation.AddObserver(this);
+  ui::Layer* visible_layer = image_views_[image_index_]->layer();
+  {
+    ui::ScopedLayerAnimationSettings animation(visible_layer->GetAnimator());
+    animation.SetTransitionDuration(kAnimationDuration);
+    animation.SetTweenType(gfx::Tween::LINEAR);
+    animation.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+    animation.SetAnimationMetricsReporter(metrics_reporter_.get());
+    animation.CacheRenderSurface();
+    visible_layer->SetOpacity(0.0f);
+  }
 
-  const int x_offset = image_view_current_->GetPreferredSize().width();
-  gfx::Transform transform;
-  transform.Translate(-x_offset, 0);
-  layer->SetTransform(transform);
+  ui::Layer* invisible_layer = image_views_[1 - image_index_]->layer();
+  {
+    ui::ScopedLayerAnimationSettings animation(invisible_layer->GetAnimator());
+    animation.SetTransitionDuration(kAnimationDuration);
+    animation.SetTweenType(gfx::Tween::LINEAR);
+    animation.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+    animation.SetAnimationMetricsReporter(metrics_reporter_.get());
+    animation.CacheRenderSurface();
+    // For simplicity, only observe one animation.
+    animation.AddObserver(this);
+    invisible_layer->SetOpacity(1.0f);
+  }
 }
 
 void PhotoView::OnImplicitAnimationsCompleted() {
-  // Layer transform and images update will be applied on the next frame at the
-  // same time.
-  this->layer()->SetTransform(gfx::Transform());
   UpdateImages();
   delegate_->OnPhotoTransitionAnimationCompleted();
 }
 
 bool PhotoView::NeedToAnimateTransition() const {
-  // Can do transition animation from current to next image.
-  return !image_view_next_->GetImage().isNull();
+  // Can do transition animation if both two images in |image_views_| are not
+  // nullptr. Check the image index 1 is enough.
+  return !image_views_[1]->GetImage().isNull();
 }
 
 }  // namespace ash

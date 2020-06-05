@@ -122,8 +122,7 @@ bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
     case ResourceType::kCSSStyleSheet:
       return true;
     case ResourceType::kFont:
-      return base::FeatureList::IsEnabled(
-          features::kLightweightNoStatePrefetch_FetchFonts);
+      return false;
     case ResourceType::kScript:
       // We might skip all script.
       if (GetFieldTrialParamByFeatureAsBool(

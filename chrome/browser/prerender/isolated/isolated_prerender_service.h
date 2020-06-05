@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/content_browser_client.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -35,6 +36,15 @@ class IsolatedPrerenderService
   IsolatedPrerenderServiceWorkersObserver* service_workers_observer() {
     return service_workers_observer_.get();
   }
+
+  // This call is forwarded to all |IsolatedPrerenderSubresourceManager| in
+  // |subresource_managers_| see documentation there for more detail.
+  bool MaybeProxyURLLoaderFactory(
+      int render_process_id,
+      int frame_tree_node_id,
+      content::ContentBrowserClient::URLLoaderFactoryType type,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
+          factory_receiver);
 
   // Creates an |IsolatedPrerenderSubresourceManager| for the given |url|.
   IsolatedPrerenderSubresourceManager* OnAboutToNoStatePrefetch(

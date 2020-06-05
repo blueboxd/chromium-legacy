@@ -57,7 +57,6 @@ bool EffectNode::operator==(const EffectNode& other) const {
          backdrop_filters == other.backdrop_filters &&
          backdrop_filter_bounds == other.backdrop_filter_bounds &&
          backdrop_mask_element_id == other.backdrop_mask_element_id &&
-         filters_origin == other.filters_origin &&
          rounded_corner_bounds == other.rounded_corner_bounds &&
          is_fast_rounded_corner == other.is_fast_rounded_corner &&
          // The specific reason is just for tracing/testing/debugging, so just

@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_PRESENTER_IMPL_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_PRESENTER_IMPL_H_
 
+#include <set>
+
 #include "base/memory/weak_ptr.h"
 #import "ios/chrome/browser/main/browser_observer.h"
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
@@ -14,6 +16,8 @@
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_user_data.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
+
+class OverlayResponse;
 
 // Implementation of OverlayPresenter.  The presenter:
 // - observes OverlayRequestQueue modifications for the active WebState and
@@ -98,6 +102,10 @@ class OverlayPresenterImpl : public BrowserObserver,
                            base::WeakPtr<OverlayRequestQueueImpl> queue,
                            OverlayDismissalReason reason);
 
+  // Used as a completion callback for |request|.  Cleans up state associated
+  // with |request|.
+  void OverlayWasCompleted(OverlayRequest* request, OverlayResponse* response);
+
   // Cancels all overlays for |request|.
   void CancelOverlayUIForRequest(OverlayRequest* request);
 
@@ -178,6 +186,9 @@ class OverlayPresenterImpl : public BrowserObserver,
   // Used to extend the lifetime of an OverlayRequest after being removed from
   // a queue until the completion of its dismissal flow.
   std::unique_ptr<OverlayRequest> removed_request_awaiting_dismissal_;
+  // A set of all OverlayRequests that have been shown by the presenter.
+  // Requests are removed when they are completed.
+  std::set<OverlayRequest*> previously_presented_requests_;
 
   OverlayModality modality_;
   WebStateList* web_state_list_ = nullptr;

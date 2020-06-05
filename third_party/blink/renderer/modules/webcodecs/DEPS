@@ -4,6 +4,7 @@ include_rules = [
     "+media/base",
     "+media/filters",
     "+media/media_buildflags.h",
+    "+media/renderers",
     "+media/video",
 
     "+third_party/libyuv",

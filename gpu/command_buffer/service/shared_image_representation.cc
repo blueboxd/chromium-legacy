@@ -117,6 +117,8 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
   if (!surface)
     return nullptr;
 
+  backing()->OnWriteSucceeded();
+
   return std::make_unique<ScopedWriteAccess>(
       util::PassKey<SharedImageRepresentationSkia>(), this, std::move(surface));
 }
@@ -157,6 +159,8 @@ SharedImageRepresentationSkia::BeginScopedReadAccess(
   if (!promise_image_texture)
     return nullptr;
 
+  backing()->OnReadSucceeded();
+
   return std::make_unique<ScopedReadAccess>(
       util::PassKey<SharedImageRepresentationSkia>(), this,
       std::move(promise_image_texture));
@@ -177,6 +181,8 @@ SharedImageRepresentationOverlay::BeginScopedReadAccess(bool needs_gl_image) {
 
   if (!BeginReadAccess())
     return nullptr;
+
+  backing()->OnReadSucceeded();
 
   return std::make_unique<ScopedReadAccess>(
       util::PassKey<SharedImageRepresentationOverlay>(), this,
@@ -205,6 +211,16 @@ SharedImageRepresentationDawn::BeginScopedAccess(
   WGPUTexture texture = BeginAccess(usage);
   if (!texture)
     return nullptr;
+
+  constexpr auto kWriteUsage =
+      WGPUTextureUsage_CopyDst | WGPUTextureUsage_OutputAttachment;
+
+  if (usage & kWriteUsage) {
+    backing()->OnWriteSucceeded();
+  } else {
+    backing()->OnReadSucceeded();
+  }
+
   return std::make_unique<ScopedAccess>(
       util::PassKey<SharedImageRepresentationDawn>(), this, texture);
 }

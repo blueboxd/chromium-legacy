@@ -90,6 +90,7 @@
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
+#include "chrome/browser/ui/views/frame/caption_button_container.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
@@ -2834,8 +2835,33 @@ void BrowserView::MaybeInitializeWebUITabStrip() {
       loading_bar_ = top_container_->AddChildView(
           std::make_unique<TopContainerLoadingBar>(browser_.get()));
       loading_bar_->SetWebContents(GetActiveWebContents());
+
+      // If possible, borrow the caption buttons from the frame to put on the
+      // tab strip (so that they are visible only when the tab strip is open).
+      // If the platform does not support this, GetCaptionButtonContainer() will
+      // return null.
+      auto* const frame_view = frame()->GetFrameView();
+      auto* const caption_button_container =
+          frame_view->GetCaptionButtonContainer();
+      if (caption_button_container) {
+        webui_tab_strip_->AddChildViewAt(
+            frame_view->RemoveChildViewT(caption_button_container), 0);
+      }
     }
   } else if (webui_tab_strip_) {
+    // If we borrowed the caption buttons from the frame to put on the tab strip
+    // (see above) then we need to return them to the frame *before* we dispose
+    // the tab strip else the buttons will be destroyed.
+    // If GetCaptionButtonContainer() returns null, we were not able to borrow
+    // the caption buttons in the first place.
+    auto* const frame_view = frame()->GetFrameView();
+    auto* const caption_button_container =
+        frame_view->GetCaptionButtonContainer();
+    if (caption_button_container) {
+      frame_view->AddChildView(
+          webui_tab_strip_->RemoveChildViewT(caption_button_container));
+    }
+
     top_container_->RemoveChildView(webui_tab_strip_);
     delete webui_tab_strip_;
     webui_tab_strip_ = nullptr;

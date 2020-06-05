@@ -31,6 +31,10 @@ bool IsNptUrl(const GURL& url) {
          (url.SchemeIs(url::kAboutScheme) &&
           (url.path() == "//newtab" || url.path() == "//newtab/"));
 }
+// Returns true if navigation URL host is google.com or www.google.com.
+bool IsGoogleUrl(const GURL& url) {
+  return url.host() == "google.com" || url.host() == "www.google.com";
+}
 }
 
 const char kBreadcrumbDidStartNavigation[] = "StartNav";
@@ -47,6 +51,8 @@ const char kBreadcrumbDownload[] = "#download";
 const char kBreadcrumbMixedContent[] = "#mixed";
 const char kBreadcrumbInfobarNotAnimated[] = "#not-animated";
 const char kBreadcrumbNtpNavigation[] = "#ntp";
+const char kBreadcrumbGoogleNavigation[] = "#google";
+const char kBreadcrumbPdfLoad[] = "#pdf";
 const char kBreadcrumbPageLoadFailure[] = "#failure";
 const char kBreadcrumbRendererInitiatedByUser[] = "#renderer-user";
 const char kBreadcrumbRendererInitiatedByScript[] = "#renderer-script";
@@ -85,6 +91,8 @@ void BreadcrumbManagerTabHelper::DidStartNavigation(
 
   if (IsNptUrl(navigation_context->GetUrl())) {
     event.push_back(kBreadcrumbNtpNavigation);
+  } else if (IsGoogleUrl(navigation_context->GetUrl())) {
+    event.push_back(kBreadcrumbGoogleNavigation);
   }
 
   if (navigation_context->IsRendererInitiated()) {
@@ -137,8 +145,15 @@ void BreadcrumbManagerTabHelper::PageLoaded(
     // NTP load can't fail, so there is no need to report success/failure.
     event.push_back(kBreadcrumbNtpNavigation);
   } else {
+    if (IsGoogleUrl(web_state->GetLastCommittedURL())) {
+      event.push_back(kBreadcrumbGoogleNavigation);
+    }
+
     switch (load_completion_status) {
       case web::PageLoadCompletionStatus::SUCCESS:
+        if (web_state->GetContentsMimeType() == "application/pdf") {
+          event.push_back(kBreadcrumbPdfLoad);
+        }
         break;
       case web::PageLoadCompletionStatus::FAILURE:
         event.push_back(kBreadcrumbPageLoadFailure);

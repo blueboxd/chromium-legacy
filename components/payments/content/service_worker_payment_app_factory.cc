@@ -55,14 +55,6 @@ class ServiceWorkerPaymentAppCreator {
       FinishAndCleanup();
       return;
     }
-
-    if (delegate_->SkipCreatingNativePaymentApps()) {
-      delegate_->OnCreatingNativePaymentAppsSkipped(
-          std::move(apps), std::move(installable_apps));
-      FinishAndCleanup();
-      return;
-    }
-
     base::RepeatingClosure show_processing_spinner = base::BindRepeating(
         &PaymentAppFactory::Delegate::ShowProcessingSpinner, delegate_);
 

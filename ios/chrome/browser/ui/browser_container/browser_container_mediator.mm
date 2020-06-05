@@ -110,7 +110,8 @@ bool IsActiveOverlayRequestForNonCommittedHttpAuthentication(
 #pragma mark - OverlayPresenterObserving
 
 - (void)overlayPresenter:(OverlayPresenter*)presenter
-    willShowOverlayForRequest:(OverlayRequest*)request {
+    willShowOverlayForRequest:(OverlayRequest*)request
+          initialPresentation:(BOOL)initialPresentation {
   self.showingAuthDialogForNonCommittedURL =
       IsActiveOverlayRequestForNonCommittedHttpAuthentication(
           self.webStateList);

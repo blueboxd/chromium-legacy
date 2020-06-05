@@ -309,55 +309,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurOutsets) {
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur_outsets.png")));
 }
 
-class LayerTreeHostImageFiltersPixelTestLayerList
-    : public LayerTreeHostFiltersPixelTest {
- public:
-  LayerTreeHostImageFiltersPixelTestLayerList() { SetUseLayerLists(); }
-
-  void SetupTree() override {
-    SetInitialRootBounds(gfx::Size(200, 200));
-    LayerTreePixelTest::SetupTree();
-
-    Layer* root = layer_tree_host()->root_layer();
-    scoped_refptr<SolidColorLayer> background =
-        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorYELLOW);
-    CopyProperties(root, background.get());
-    root->AddChild(background);
-
-    scoped_refptr<SolidColorLayer> foreground =
-        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorRED);
-    CopyProperties(root, foreground.get());
-    root->AddChild(foreground);
-
-    EffectNode& effect_node = CreateEffectNode(foreground.get());
-    float matrix[20] = {0};
-    // This filter does a red-blue swap, so the foreground becomes blue.
-    matrix[2] = matrix[6] = matrix[10] = matrix[18] = 1.0f;
-    // Set up a crop rect to filter the bottom 200x100 pixels of the foreground.
-    SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
-    FilterOperations filters;
-    filters.Append(FilterOperation::CreateReferenceFilter(
-        sk_make_sp<ColorFilterPaintFilter>(SkColorFilters::Matrix(matrix),
-                                           nullptr, &crop_rect)));
-
-    effect_node.filters = filters;
-    effect_node.render_surface_reason = RenderSurfaceReason::kFilter;
-
-    // Move the filters origin up by 100 pixels so the crop rect is applied
-    // only to the top 100 pixels, not the bottom.
-    effect_node.filters_origin = gfx::PointF(0.0f, -100.0f);
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         LayerTreeHostImageFiltersPixelTestLayerList,
-                         ::testing::ValuesIn(kRendererTypes));
-
-TEST_P(LayerTreeHostImageFiltersPixelTestLayerList, NonZeroOrigin) {
-  RunPixelTestWithLayerList(
-      base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")));
-}
-
 class LayerTreeHostBlurFiltersPixelTestGPULayerList
     : public LayerTreeHostFiltersPixelTest {
  public:

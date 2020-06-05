@@ -1474,7 +1474,7 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
       style_source.StyleRef().HasPseudoElementStyle(kPseudoIdScrollbar);
   if (has_custom_scrollbar_style) {
     return CustomScrollbar::HypotheticalScrollbarThickness(
-        orientation, *GetLayoutBox(), style_source);
+        this, orientation, To<Element>(style_source.GetNode()));
   }
 
   ScrollbarControlSize scrollbar_size = kRegularScrollbar;
@@ -1864,17 +1864,36 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   if (!HasOverflowControls())
     return;
 
-  if (Scrollbar* vertical_scrollbar = VerticalScrollbar())
+  if (Scrollbar* vertical_scrollbar = VerticalScrollbar()) {
     vertical_scrollbar->SetFrameRect(RectForVerticalScrollbar());
+    if (auto* custom_scrollbar = DynamicTo<CustomScrollbar>(vertical_scrollbar))
+      custom_scrollbar->PositionScrollbarParts();
+  }
 
-  if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar())
+  if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar()) {
     horizontal_scrollbar->SetFrameRect(RectForHorizontalScrollbar());
+    if (auto* custom_scrollbar =
+            DynamicTo<CustomScrollbar>(horizontal_scrollbar))
+      custom_scrollbar->PositionScrollbarParts();
+  }
 
-  if (scroll_corner_)
-    scroll_corner_->SetFrameRect(LayoutRect(ScrollCornerRect()));
+  if (scroll_corner_) {
+    LayoutRect rect(ScrollCornerRect());
+    scroll_corner_->SetFrameRect(rect);
+    // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
+    // when we support subpixel layout of overflow controls.
+    scroll_corner_->GetMutableForPainting().FirstFragment().SetPaintOffset(
+        PhysicalOffset(rect.Location()));
+  }
 
-  if (resizer_)
-    resizer_->SetFrameRect(LayoutRect(ResizerCornerRect(kResizerForPointer)));
+  if (resizer_) {
+    LayoutRect rect(ResizerCornerRect(kResizerForPointer));
+    resizer_->SetFrameRect(rect);
+    // TODO(crbug.com/1020913): This should be part of PaintPropertyTreeBuilder
+    // when we support subpixel layout of overflow controls.
+    resizer_->GetMutableForPainting().FirstFragment().SetPaintOffset(
+        PhysicalOffset(rect.Location()));
+  }
 
   // FIXME, this should eventually be removed, once we are certain that
   // composited controls get correctly positioned on a compositor update. For

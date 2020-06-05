@@ -30,7 +30,8 @@ gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
   // TODO(bsep): The sizes in this function are for 1x device scale and don't
   // match Windows button sizes at hidpi.
   int height = WindowFrameUtil::kWindows10GlassCaptionButtonHeightRestored;
-  if (frame_view_->IsMaximized()) {
+  if (!frame_view_->browser_view()->webui_tab_strip() &&
+      frame_view_->IsMaximized()) {
     int maximized_height =
         frame_view_->browser_view()->IsTabStripVisible()
             ? frame_view_->browser_view()->GetTabStripHeight()

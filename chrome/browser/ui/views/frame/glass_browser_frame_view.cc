@@ -14,6 +14,8 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/glass_browser_caption_button_container.h"
+#include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -82,10 +84,6 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     : BrowserNonClientFrameView(frame, browser_view),
       window_icon_(nullptr),
       window_title_(nullptr),
-      minimize_button_(nullptr),
-      maximize_button_(nullptr),
-      restore_button_(nullptr),
-      close_button_(nullptr),
       throbber_running_(false),
       throbber_frame_(0) {
   // We initialize all fields despite some of them being unused in some modes,
@@ -125,14 +123,8 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  minimize_button_ =
-      CreateCaptionButton(VIEW_ID_MINIMIZE_BUTTON, IDS_APP_ACCNAME_MINIMIZE);
-  maximize_button_ =
-      CreateCaptionButton(VIEW_ID_MAXIMIZE_BUTTON, IDS_APP_ACCNAME_MAXIMIZE);
-  restore_button_ =
-      CreateCaptionButton(VIEW_ID_RESTORE_BUTTON, IDS_APP_ACCNAME_RESTORE);
-  close_button_ =
-      CreateCaptionButton(VIEW_ID_CLOSE_BUTTON, IDS_APP_ACCNAME_CLOSE);
+  caption_button_container_ =
+      AddChildView(std::make_unique<GlassBrowserCaptionButtonContainer>(this));
 
   // Because currently focus mode uses a vertically-expanded titlebar, there is
   // no need to add extra space for a grab handle. However, traditional PWA and
@@ -168,7 +160,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStripRegion(
 }
 
 int GlassBrowserFrameView::GetTopInset(bool restored) const {
-  if (browser_view()->IsTabStripVisible())
+  if (browser_view()->IsTabStripVisible() || IsWebUITabStrip())
     return TopAreaHeight(restored);
   return ShouldCustomDrawSystemTitlebar() ? TitlebarHeight(restored) : 0;
 }
@@ -240,6 +232,11 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   return min_size;
 }
 
+CaptionButtonContainer* GlassBrowserFrameView::GetCaptionButtonContainer()
+    const {
+  return caption_button_container_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::NonClientFrameView implementation:
 
@@ -266,16 +263,6 @@ gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
                    std::max(0, client_bounds.y() - top_inset),
                    client_bounds.width(), client_bounds.height() + top_inset);
 }
-
-namespace {
-
-bool HitTestCaptionButton(Windows10CaptionButton* button,
-                          const gfx::Point& point) {
-  return button && button->GetVisible() &&
-         button->GetMirroredBounds().Contains(point);
-}
-
-}  // namespace
 
 int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   int super_component = BrowserNonClientFrameView::NonClientHitTest(point);
@@ -310,14 +297,15 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return frame_component;
 
   // Then see if the point is within any of the window controls.
-  if (HitTestCaptionButton(minimize_button_, point))
-    return HTMINBUTTON;
-  if (HitTestCaptionButton(maximize_button_, point))
-    return HTMAXBUTTON;
-  if (HitTestCaptionButton(restore_button_, point))
-    return HTMAXBUTTON;
-  if (HitTestCaptionButton(close_button_, point))
-    return HTCLOSE;
+  if (OwnsCaptionButtons()) {
+    gfx::Point local_point = point;
+    DCHECK_EQ(origin(), gfx::Point());
+    ConvertPointToTarget(parent(), caption_button_container_, &local_point);
+    const int hit_test_result =
+        caption_button_container_->NonClientHitTest(local_point);
+    if (hit_test_result != HTNOWHERE)
+      return hit_test_result;
+  }
 
   // On Windows 8+, the caption buttons are almost butted up to the top right
   // corner of the window. This code ensures the mouse isn't set to a size
@@ -374,22 +362,14 @@ void GlassBrowserFrameView::UpdateWindowTitle() {
 
 void GlassBrowserFrameView::ResetWindowControls() {
   BrowserNonClientFrameView::ResetWindowControls();
-  minimize_button_->SetState(views::Button::STATE_NORMAL);
-  maximize_button_->SetState(views::Button::STATE_NORMAL);
-  restore_button_->SetState(views::Button::STATE_NORMAL);
-  close_button_->SetState(views::Button::STATE_NORMAL);
+  if (caption_button_container_)
+    caption_button_container_->ResetWindowControls();
 }
 
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
-  if (sender == minimize_button_)
-    frame()->Minimize();
-  else if (sender == maximize_button_)
-    frame()->Maximize();
-  else if (sender == restore_button_)
-    frame()->Restore();
-  else if (sender == close_button_)
-    frame()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  if (caption_button_container_)
+    caption_button_container_->ButtonPressed(sender);
 }
 
 bool GlassBrowserFrameView::ShouldTabIconViewAnimate() const {
@@ -441,12 +421,19 @@ int GlassBrowserFrameView::FrameBorderThickness() const {
 }
 
 int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
-  // Restored windows have a smaller top resize handle than the system default.
-  // When maximized, the OS sizes the window such that the border extends beyond
-  // the screen edges. In that case, we must return the default value.
-  if (browser_view()->IsTabStripVisible() &&
-      ((!frame()->IsFullscreen() && !IsMaximized()) || restored)) {
-    return drag_handle_padding_;
+  constexpr int kRestoredWebUITopBorder = 1;
+
+  const bool is_fullscreen =
+      (frame()->IsFullscreen() || IsMaximized()) && !restored;
+  if (!is_fullscreen) {
+    // Restored windows have a smaller top resize handle than the system
+    // default. When maximized, the OS sizes the window such that the border
+    // extends beyond the screen edges. In that case, we must return the default
+    // value.
+    if (browser_view()->IsTabStripVisible())
+      return drag_handle_padding_;
+    if (IsWebUITabStrip())
+      return kRestoredWebUITopBorder;
   }
 
   // Mouse and touch locations are floored but GetSystemMetricsInDIP is rounded,
@@ -480,8 +467,10 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
   if (frame()->IsFullscreen() && !restored)
     return 0;
 
+  // Return only the top border thickness (no extra drag handle) if maximized or
+  // in WebUI tab strip (tablet) mode.
   int top = FrameTopBorderThickness(restored);
-  if (IsMaximized() && !restored)
+  if ((IsMaximized() && !restored) || IsWebUITabStrip())
     return top;
 
   // Besides the frame border, there's empty space atop the window in restored
@@ -535,8 +524,9 @@ int GlassBrowserFrameView::MinimizeButtonX() const {
   // need to ask Windows where the minimize button is.
   // TODO(bsep): Ideally these would always be the same. When we're always
   // custom drawing the caption buttons, remove GetMinimizeButtonOffset().
-  return ShouldCustomDrawSystemTitlebar() ? minimize_button_->x()
-                                          : frame()->GetMinimizeButtonOffset();
+  return ShouldCustomDrawSystemTitlebar() && caption_button_container_
+             ? caption_button_container_->x()
+             : frame()->GetMinimizeButtonOffset();
 }
 
 bool GlassBrowserFrameView::IsToolbarVisible() const {
@@ -560,18 +550,17 @@ bool GlassBrowserFrameView::ShowSystemIcon() const {
          browser_view()->ShouldShowWindowIcon();
 }
 
-SkColor GlassBrowserFrameView::GetTitlebarColor() const {
-  return GetFrameColor();
+bool GlassBrowserFrameView::IsWebUITabStrip() const {
+  return WebUITabStripContainerView::UseTouchableTabStrip();
 }
 
-Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
-    ViewID button_type,
-    int accessible_name_resource_id) {
-  Windows10CaptionButton* button = new Windows10CaptionButton(
-      this, button_type,
-      l10n_util::GetStringUTF16(accessible_name_resource_id));
-  AddChildView(button);
-  return button;
+bool GlassBrowserFrameView::OwnsCaptionButtons() const {
+  return caption_button_container_ &&
+         caption_button_container_->parent() == this;
+}
+
+SkColor GlassBrowserFrameView::GetTitlebarColor() const {
+  return GetFrameColor();
 }
 
 void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
@@ -697,25 +686,16 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   }
 }
 
-void GlassBrowserFrameView::LayoutCaptionButton(Windows10CaptionButton* button,
-                                                int previous_button_x) {
-  TRACE_EVENT0("views.frame", "GlassBrowserFrameView::LayoutCaptionButton");
-  gfx::Size button_size = button->GetPreferredSize();
-  button->SetBounds(previous_button_x - button_size.width(), WindowTopY(),
-                    button_size.width(), button_size.height());
-}
-
 void GlassBrowserFrameView::LayoutCaptionButtons() {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::LayoutCaptionButtons");
-  LayoutCaptionButton(close_button_, width());
+  if (!OwnsCaptionButtons())
+    return;
 
-  LayoutCaptionButton(restore_button_, close_button_->x());
-  restore_button_->SetVisible(IsMaximized());
-
-  LayoutCaptionButton(maximize_button_, close_button_->x());
-  maximize_button_->SetVisible(!IsMaximized());
-
-  LayoutCaptionButton(minimize_button_, maximize_button_->x());
+  const gfx::Size preferred_size =
+      caption_button_container_->GetPreferredSize();
+  caption_button_container_->SetBounds(width() - preferred_size.width(),
+                                       WindowTopY(), preferred_size.width(),
+                                       preferred_size.height());
 }
 
 void GlassBrowserFrameView::LayoutClientView() {

@@ -18,6 +18,7 @@
 #include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/blocked_content/popup_navigation_delegate.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
@@ -63,49 +64,6 @@ class TestPopupNavigationDelegate : public PopupNavigationDelegate {
   const GURL url_;
 };
 
-// TODO(cduvall): Make a common test delegate to use here and other places that
-// need it.
-class TestTabSpecificContentSettingsDelegate
-    : public content_settings::TabSpecificContentSettings::Delegate {
- public:
-  explicit TestTabSpecificContentSettingsDelegate(
-      HostContentSettingsMap* settings_map)
-      : settings_map_(settings_map) {}
-  void UpdateLocationBar() override {}
-  void SetContentSettingRules(
-      content::RenderProcessHost* process,
-      const RendererContentSettingRules& rules) override {}
-  PrefService* GetPrefs() override { return nullptr; }
-  HostContentSettingsMap* GetSettingsMap() override { return settings_map_; }
-  ContentSetting GetEmbargoSetting(const GURL& request_origin,
-                                   ContentSettingsType permission) override {
-    return ContentSetting::CONTENT_SETTING_ASK;
-  }
-  std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override {
-    return {};
-  }
-  browsing_data::CookieHelper::IsDeletionDisabledCallback
-  GetIsDeletionDisabledCallback() override {
-    return base::NullCallback();
-  }
-  bool IsMicrophoneCameraStateChanged(
-      content_settings::TabSpecificContentSettings::MicrophoneCameraState
-          microphone_camera_state,
-      const std::string& media_stream_selected_audio_device,
-      const std::string& media_stream_selected_video_device) override {
-    return false;
-  }
-  content_settings::TabSpecificContentSettings::MicrophoneCameraState
-  GetMicrophoneCameraState() override {
-    return content_settings::TabSpecificContentSettings::
-        MICROPHONE_CAMERA_NOT_ACCESSED;
-  }
-  void OnContentBlocked(ContentSettingsType type) override {}
-
- private:
-  HostContentSettingsMap* settings_map_;
-};
-
 class SafeBrowsingTriggeredPopupBlockerTest
     : public content::RenderViewHostTestHarness,
       public subresource_filter::SubresourceFilterClient {
@@ -144,8 +102,9 @@ class SafeBrowsingTriggeredPopupBlockerTest
     PopupBlockerTabHelper::CreateForWebContents(web_contents());
     content_settings::TabSpecificContentSettings::CreateForWebContents(
         web_contents(),
-        std::make_unique<TestTabSpecificContentSettingsDelegate>(
-            settings_map_.get()));
+        std::make_unique<
+            content_settings::TestTabSpecificContentSettingsDelegate>(
+            /*prefs=*/nullptr, settings_map_.get()));
     popup_blocker_ =
         SafeBrowsingTriggeredPopupBlocker::FromWebContents(web_contents());
 

@@ -35,8 +35,8 @@ class SkColorFilterWrapper : public DarkModeColorFilter {
         new SkColorFilterWrapper(SkHighContrastFilter::Make(config)));
   }
 
-  Color InvertColor(const Color& color) const override {
-    return Color(filter_->filterColor(color.Rgb()));
+  SkColor InvertColor(SkColor color) const override {
+    return filter_->filterColor(color);
   }
 
   sk_sp<SkColorFilter> ToSkColorFilter() const override { return filter_; }
@@ -59,20 +59,20 @@ class LabColorFilter : public DarkModeColorFilter {
     filter_ = SkHighContrastFilter::Make(config);
   }
 
-  Color InvertColor(const Color& color) const override {
-    blink::FloatPoint3D rgb = {color.Red() / 255.0f, color.Green() / 255.0f,
-                               color.Blue() / 255.0f};
+  SkColor InvertColor(SkColor color) const override {
+    blink::FloatPoint3D rgb = {SkColorGetR(color) / 255.0f,
+                               SkColorGetG(color) / 255.0f,
+                               SkColorGetB(color) / 255.0f};
     blink::FloatPoint3D lab = transformer_.sRGBToLab(rgb);
     float invertedL = std::min(110.0f - lab.X(), 100.0f);
     lab.SetX(invertedL);
     rgb = transformer_.LabToSRGB(lab);
 
-    Color inverted_color(Color(static_cast<unsigned int>(rgb.X() * 255 + 0.5),
-                               static_cast<unsigned int>(rgb.Y() * 255 + 0.5),
-                               static_cast<unsigned int>(rgb.Z() * 255 + 0.5),
-                               color.Alpha()));
-    AdjustGray(&inverted_color);
-    return inverted_color;
+    SkColor inverted_color = SkColorSetARGB(
+        SkColorGetA(color), static_cast<unsigned int>(rgb.X() * 255 + 0.5),
+        static_cast<unsigned int>(rgb.Y() * 255 + 0.5),
+        static_cast<unsigned int>(rgb.Z() * 255 + 0.5));
+    return AdjustGray(inverted_color);
   }
 
   sk_sp<SkColorFilter> ToSkColorFilter() const override { return filter_; }
@@ -84,17 +84,21 @@ class LabColorFilter : public DarkModeColorFilter {
   //
   // TODO(gilmanmh): Consider adding a more general way to adjust colors after
   // applying the main filter.
-  void AdjustGray(Color* color) const {
-    DCHECK(color);
-    static const int kBrightnessThreshold = 32;
-    static const int kAdjustedBrightness = 18;
+  SkColor AdjustGray(SkColor color) const {
+    static const uint8_t kBrightnessThreshold = 32;
+    static const uint8_t kAdjustedBrightness = 18;
 
-    if (color->Red() == color->Blue() && color->Red() == color->Green() &&
-        color->Red() < kBrightnessThreshold &&
-        color->Red() > kAdjustedBrightness) {
-      color->SetRGB(kAdjustedBrightness, kAdjustedBrightness,
-                    kAdjustedBrightness);
+    uint8_t r = SkColorGetR(color);
+    uint8_t g = SkColorGetG(color);
+    uint8_t b = SkColorGetB(color);
+
+    if (r == b && r == g && r < kBrightnessThreshold &&
+        r > kAdjustedBrightness) {
+      return SkColorSetRGB(kAdjustedBrightness, kAdjustedBrightness,
+                           kAdjustedBrightness);
     }
+
+    return color;
   }
 
   const LabColorSpace::RGBLABTransformer transformer_;

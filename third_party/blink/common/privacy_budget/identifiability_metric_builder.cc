@@ -18,8 +18,8 @@ IdentifiabilityMetricBuilder::~IdentifiabilityMetricBuilder() = default;
 
 IdentifiabilityMetricBuilder& IdentifiabilityMetricBuilder::Set(
     IdentifiableSurface surface,
-    int64_t value) {
-  SetMetricInternal(surface.ToUkmMetricHash(), value);
+    IdentifiableToken value) {
+  SetMetricInternal(surface.ToUkmMetricHash(), value.value_);
   return *this;
 }
 

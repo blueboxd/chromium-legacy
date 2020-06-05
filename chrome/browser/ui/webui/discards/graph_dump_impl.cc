@@ -295,11 +295,7 @@ void DiscardsGraphDumpImpl::OnOpenerFrameNodeChanged(
     const performance_manager::PageNode* page_node,
     const performance_manager::FrameNode*,
     OpenedType) {
-  // This notification can arrive for a page node that has already been
-  // removed, because it fires as part of the |page_node| destructor. If that's
-  // the case then ignore this silently.
-  if (!HasNode(page_node))
-    return;
+  DCHECK(HasNode(page_node));
   SendPageNotification(page_node, false);
 }
 

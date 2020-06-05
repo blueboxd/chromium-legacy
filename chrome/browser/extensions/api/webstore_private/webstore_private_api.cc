@@ -697,12 +697,13 @@ void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallAbort(
   // The web store install histograms are a subset of the install histograms.
   // We need to record both histograms here since CrxInstaller::InstallUIAbort
   // is never called for web store install cancellations.
-  std::string histogram_name = user_initiated ? "WebStoreInstallCancel"
-                                              : "WebStoreInstallAbort";
-  ExtensionService::RecordPermissionMessagesHistogram(dummy_extension_.get(),
-                                                      histogram_name.c_str());
+  if (user_initiated) {
+    ExtensionService::RecordPermissionMessagesHistogram(
+        dummy_extension_.get(), "WebStoreInstallCancel");
+  }
 
-  histogram_name = user_initiated ? "InstallCancel" : "InstallAbort";
+  std::string histogram_name =
+      user_initiated ? "InstallCancel" : "InstallAbort";
   ExtensionService::RecordPermissionMessagesHistogram(dummy_extension_.get(),
                                                       histogram_name.c_str());
 

@@ -412,6 +412,13 @@ static bool NeedsPaintOffsetTranslation(
   if (NeedsReplacedContentTransform(object))
     return true;
 
+  // Reference filter and reflection (which creates a reference filter) requires
+  // zero paint offset.
+  if (box_model.HasLayer() &&
+      (object.StyleRef().Filter().HasReferenceFilter() ||
+       object.HasReflection()))
+    return true;
+
   // Don't let paint offset cross composited layer boundaries, to avoid
   // unnecessary full layer paint/raster invalidation when paint offset in
   // ancestor transform node changes which should not affect the descendants
@@ -1231,7 +1238,6 @@ static bool NeedsFilter(const LayoutObject& object,
   if (!object.IsBoxModelObject() || !ToLayoutBoxModelObject(object).Layer())
     return false;
 
-  // TODO(trchen): SVG caches filters in SVGResources. Implement it.
   if (object.StyleRef().HasFilter() || object.HasReflection())
     return true;
 
@@ -1244,7 +1250,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
     if (NeedsFilter(object_, full_context_.direct_compositing_reasons)) {
       EffectPaintPropertyNode::State state;
       state.local_transform_space = context_.current.transform;
-      state.filters_origin = FloatPoint(context_.current.paint_offset);
 
       if (auto* layer = ToLayoutBoxModelObject(object_).Layer()) {
         // Try to use the cached filter.
@@ -2528,7 +2533,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     fragment_data_.InvalidateClipPathCache();
 
     if (object_.IsBox()) {
-      // See PaintLayerScrollableArea::PixelSnappedBorderBoxRect() for the
+      // See PaintLayerScrollableArea::PixelSnappedBorderBoxSize() for the
       // reason of this.
       if (auto* scrollable_area = ToLayoutBox(object_).GetScrollableArea())
         scrollable_area->PositionOverflowControls();

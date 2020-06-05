@@ -21,7 +21,7 @@ namespace settings {
 struct SearchConcept;
 
 // Processes all registered search tags by adding/removing them from
-// LocalSearchService and providing metadata via GetCanonicalTagMetadata().
+// LocalSearchService and providing metadata via GetTagMetadata().
 class SearchTagRegistry {
  public:
   SearchTagRegistry(
@@ -33,15 +33,14 @@ class SearchTagRegistry {
   void AddSearchTags(const std::vector<SearchConcept>& search_tags);
   void RemoveSearchTags(const std::vector<SearchConcept>& search_tags);
 
-  // Returns the tag metadata associated with |canonical_message_id|, which must
-  // be one of the canonical IDS_OS_SETTINGS_TAG_* identifiers used for a search
-  // tag. If no metadata is available or if |canonical_message_id| instead
-  // refers to an alternate tag's ID, null is returned.
-  const SearchConcept* GetCanonicalTagMetadata(int canonical_message_id) const;
+  // Returns the tag metadata associated with |message_id|, which must be one of
+  // the IDS_OS_SETTINGS_TAG_* identifiers used for a search tag. If no metadata
+  // is available, null is returned.
+  const SearchConcept* GetTagMetadata(int message_id) const;
 
  private:
   local_search_service::Index* index_;
-  std::unordered_map<int, const SearchConcept*> canonical_id_to_metadata_map_;
+  std::unordered_map<int, const SearchConcept*> message_id_to_metadata_map_;
 };
 
 }  // namespace settings

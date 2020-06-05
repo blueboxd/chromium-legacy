@@ -11,6 +11,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/home_screen/home_screen_controller.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
@@ -584,6 +585,70 @@ TEST_F(BackGestureEventHandlerTest, BackGestureWithCrosKeyboardTest) {
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }
 
+// Tests when back performs on the split view divider bar inside or outside of
+// virtual keyboard.
+TEST_F(BackGestureEventHandlerTest,
+       BackGestureWithCrosKeyboardInSplitViewTest) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  std::unique_ptr<aura::Window> left_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> right_window = CreateTestWindow();
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(left_window.get(),
+                                    SplitViewController::LEFT);
+  split_view_controller->SnapWindow(right_window.get(),
+                                    SplitViewController::RIGHT);
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+
+  KeyboardController* keyboard_controller = KeyboardController::Get();
+  keyboard_controller->SetEnableFlag(
+      keyboard::KeyboardEnableFlag::kExtensionEnabled);
+  // The keyboard needs to be in a loaded state before being shown.
+  ASSERT_TRUE(keyboard::test::WaitUntilLoaded());
+  keyboard_controller->ShowKeyboard();
+  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
+
+  // Get the keyboard bounds:
+  keyboard::KeyboardUIController* keyboard_ui_controller =
+      keyboard::KeyboardUIController::Get();
+  EXPECT_TRUE(keyboard_ui_controller->IsKeyboardVisible());
+  gfx::Rect keyboard_bounds = keyboard_ui_controller->GetVisualBoundsInScreen();
+
+  // Start drag from splitview divider bar position outside VK bounds.
+  gfx::Rect divider_bounds =
+      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+          false);
+  gfx::Point start = gfx::Point(divider_bounds.CenterPoint().x(), 10);
+  gfx::Point end =
+      gfx::Point(start.x() + kSwipingDistanceForGoingBack + 10, start.y());
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 3);
+  // Virtual keyboard should be closed.
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+  EXPECT_FALSE(keyboard_controller->IsKeyboardVisible());
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  // Start drag from splitview divider bar position inside VK bounds.
+  keyboard_controller->ShowKeyboard();
+  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
+  start = gfx::Point(divider_bounds.CenterPoint().x(),
+                     keyboard_bounds.CenterPoint().y());
+  end = gfx::Point(start.x() + kSwipingDistanceForGoingBack + 10, start.y());
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 3);
+  // Nothing should happen.
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+  EXPECT_TRUE(keyboard_controller->IsKeyboardVisible());
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+}
+
 // Tests the back gesture behavior when an Android IME is visible. Due to the
 // way the Android IME is implemented, a lot of this test is fake behavior, but
 // it will help catch regressions.
@@ -608,6 +673,72 @@ TEST_F(BackGestureEventHandlerTest, BackGestureWithAndroidKeyboardTest) {
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
   EXPECT_FALSE(window_state->IsMinimized());
+}
+
+// Tests when back performs on the split view divider bar inside or outside of
+// android virtual keyboard.
+TEST_F(BackGestureEventHandlerTest,
+       BackGestureWithAndroidKeyboardInSplitViewTest) {
+  UpdateDisplay("800x600");
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  std::unique_ptr<aura::Window> left_window = CreateTestWindow();
+  std::unique_ptr<aura::Window> right_window = CreateTestWindow();
+  auto* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(left_window.get(),
+                                    SplitViewController::LEFT);
+  split_view_controller->SnapWindow(right_window.get(),
+                                    SplitViewController::RIGHT);
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+
+  VirtualKeyboardModel* keyboard =
+      Shell::Get()->system_tray_model()->virtual_keyboard();
+  ASSERT_TRUE(keyboard);
+  // Fakes showing the keyboard.
+  gfx::Rect keyboard_bounds =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          left_window.get());
+  keyboard_bounds.set_y(keyboard_bounds.bottom() - 200);
+  keyboard_bounds.set_height(200);
+  keyboard->OnArcInputMethodBoundsChanged(keyboard_bounds);
+  EXPECT_TRUE(keyboard->visible());
+
+  // Start drag from splitview divider bar position outside VK bounds.
+  gfx::Rect divider_bounds =
+      split_view_controller->split_view_divider()->GetDividerBoundsInScreen(
+          false);
+  gfx::Point start = gfx::Point(divider_bounds.CenterPoint().x(), 10);
+  gfx::Point end =
+      gfx::Point(start.x() + kSwipingDistanceForGoingBack + 10, start.y());
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 3);
+  // Virtual keyboard should be closed. But Unfortunately we cannot hook
+  // this all the wall up to see if the Android IME is hidden, but we can check
+  // that back key events are generated and we're still in both snapped split
+  // view state.
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+
+  // Start drag from splitview divider bar position inside VK bounds.
+  target_back_press.ResetCounts();
+  target_back_release.ResetCounts();
+  keyboard->OnArcInputMethodBoundsChanged(keyboard_bounds);
+  EXPECT_TRUE(keyboard->visible());
+  start = gfx::Point(divider_bounds.CenterPoint().x(),
+                     keyboard_bounds.CenterPoint().y());
+  end = gfx::Point(start.x() + kSwipingDistanceForGoingBack + 10, start.y());
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 3);
+  // Nothing should happen.
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
 }
 
 // Tests that swiping on the backdrop to minimize a non-resizable app will not

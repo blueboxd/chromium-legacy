@@ -55,7 +55,8 @@ class MergeProfilesTest(unittest.TestCase):
         self.assertEqual(
             mock_merge.call_args,
             mock.call(task_output_dir, profdata_file, '.profraw',
-                      'llvm-profdata', sparse=True), None)
+                      'llvm-profdata', sparse=True,
+                      skip_validation=False), None)
 
   def test_merge_steps_parameters(self):
     """Test the build-level merge front-end."""
@@ -122,6 +123,45 @@ class MergeProfilesTest(unittest.TestCase):
               ), mock_exec_cmd.call_args)
 
     self.assertTrue(mock_validate_and_convert_profraws.called)
+
+  @mock.patch.object(merger, '_validate_and_convert_profraws')
+  def test_profraw_skip_validation(self, mock_validate_and_convert_profraws):
+    mock_input_dir_walk = [
+        ('/b/some/path', ['0', '1', '2', '3'], ['summary.json']),
+        ('/b/some/path/0', [],
+         ['output.json', 'default-1.profraw', 'default-2.profraw']),
+        ('/b/some/path/1', [],
+         ['output.json', 'default-1.profraw', 'default-2.profraw']),
+    ]
+
+    with mock.patch.object(os, 'walk') as mock_walk:
+      with mock.patch.object(os, 'remove'):
+        mock_walk.return_value = mock_input_dir_walk
+        with mock.patch.object(subprocess, 'check_output') as mock_exec_cmd:
+          merger.merge_profiles('/b/some/path',
+                                'output/dir/default.profdata',
+                                '.profraw',
+                                'llvm-profdata',
+                                skip_validation=True)
+          self.assertEqual(
+              mock.call(
+                  [
+                      'llvm-profdata',
+                      'merge',
+                      '-o',
+                      'output/dir/default.profdata',
+                      '-sparse=true',
+                      '/b/some/path/0/default-1.profraw',
+                      '/b/some/path/0/default-2.profraw',
+                      '/b/some/path/1/default-1.profraw',
+                      '/b/some/path/1/default-2.profraw'
+                  ],
+                  stderr=-2,
+              ), mock_exec_cmd.call_args)
+
+    # Skip validation should've passed all profraw files directly, and
+    # this validate call should not have been invoked.
+    self.assertFalse(mock_validate_and_convert_profraws.called)
 
 
   def test_merge_profraw_skip_if_there_is_no_file(self):
@@ -380,7 +420,8 @@ class MergeProfilesTest(unittest.TestCase):
           self.assertEqual(
               mock_merge.call_args,
               mock.call(task_output_dir, profdata_file, '.profraw',
-                        'llvm-profdata', sparse=expected_outcome), None)
+                        'llvm-profdata', sparse=expected_outcome,
+                        skip_validation=False), None)
 
 
 if __name__ == '__main__':

@@ -6,10 +6,13 @@ package org.chromium.chrome.browser.feed.library.testing.conformance.storage;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.Build;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import org.chromium.base.Consumer;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentMutation;
 import org.chromium.chrome.browser.feed.library.api.host.storage.ContentStorage;
@@ -26,7 +29,11 @@ import java.util.Map;
  * Conformance test for {@link ContentStorage}. Hosts who wish to test against this should extend
  * this class and set {@code storage} to the Host implementation.
  */
+// clang-format off
+@DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.N_MR1,
+    sdk_is_less_than = Build.VERSION_CODES.P, message = "https://crbug.com/1091301")
 public abstract class ContentStorageConformanceTest {
+    //clang-format on
     private static final String KEY = "key";
     private static final String KEY_0 = KEY + " 0";
     private static final String KEY_1 = KEY + " 1";

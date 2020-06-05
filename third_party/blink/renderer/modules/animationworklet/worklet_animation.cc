@@ -327,11 +327,11 @@ void WorkletAnimation::play(ExceptionState& exception_state) {
     if (!target)
       continue;
 
-    // TODO(yigu): Currently we have to keep a set of worklet animations in
-    // ElementAnimations so that the compositor knows that there are active
-    // worklet animations running. Ideally, this should be done via the regular
-    // Animation path, i.e., unify the logic between the two Animations.
-    // https://crbug.com/896249.
+    // TODO(crbug.com/896249): Currently we have to keep a set of worklet
+    // animations in ElementAnimations so that the compositor knows that there
+    // are active worklet animations running. Ideally, this should be done via
+    // the regular Animation path, i.e., unify the logic between the two
+    // Animations.
     target->EnsureElementAnimations().GetWorkletAnimations().insert(this);
     target->SetNeedsAnimationStyleRecalc();
   }
@@ -386,10 +386,10 @@ void WorkletAnimation::cancel() {
   has_started_ = false;
   local_times_.Fill(base::nullopt);
   running_on_main_thread_ = false;
-  // TODO(yigu): Because this animation has been detached and will not receive
-  // updates anymore, we have to update its value upon cancel. Similar to
-  // regular animations, we should not detach them immediately and update the
-  // value in the next frame. See https://crbug.com/883312.
+  // TODO(crbug.com/883312): Because this animation has been detached and will
+  // not receive updates anymore, we have to update its value upon cancel.
+  // Similar to regular animations, we should not detach them immediately and
+  // update the value in the next frame.
   if (IsActive(play_state_)) {
     for (auto& effect : effects_) {
       effect->UpdateInheritedTime(base::nullopt, base::nullopt,
@@ -403,11 +403,11 @@ void WorkletAnimation::cancel() {
     Element* target = effect->EffectTarget();
     if (!target)
       continue;
-    // TODO(yigu): Currently we have to keep a set of worklet animations in
-    // ElementAnimations so that the compositor knows that there are active
-    // worklet animations running. Ideally, this should be done via the regular
-    // Animation path, i.e., unify the logic between the two Animations.
-    // https://crbug.com/896249.
+    // TODO(crbug.com/896249): Currently we have to keep a set of worklet
+    // animations in ElementAnimations so that the compositor knows that there
+    // are active worklet animations running. Ideally, this should be done via
+    // the regular Animation path, i.e., unify the logic between the two
+    // Animations.
     target->EnsureElementAnimations().GetWorkletAnimations().erase(this);
     target->SetNeedsAnimationStyleRecalc();
   }
@@ -621,8 +621,8 @@ bool WorkletAnimation::StartOnCompositor() {
     // update the compositor to have the correct orientation and start/end
     // offset information.
     compositor_animation_ = CompositorAnimation::CreateWorkletAnimation(
-        id_, animator_name_, playback_rate_,
-        std::move(options_), std::move(effect_timings_));
+        id_, animator_name_, playback_rate_, std::move(options_),
+        std::move(effect_timings_));
     compositor_animation_->SetAnimationDelegate(this);
   }
 

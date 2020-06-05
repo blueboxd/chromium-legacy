@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_status_code.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -82,6 +83,19 @@ void ReportCompletionStatusMetric(bool fetch_cors_flag,
 }
 
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
+
+bool IsBodyNotNullAndSourceNull(const ResourceRequestBody* request_body) {
+  if (!request_body)
+    return false;
+  const std::vector<DataElement>* elements = request_body->elements();
+  if (elements->size() == 0u)
+    return false;
+  // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
+  // Body's source is null means the body is not extracted from ReadableStream.
+  if (elements->size() > 1u)
+    return false;
+  return elements->at(0).type() == mojom::DataElementType::kChunkedDataPipe;
+}
 
 }  // namespace
 
@@ -358,10 +372,13 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
     return;
   }
 
-  // TODO(yhirano): Implement the following (Note: this is needed when upload
-  // streaming is implemented):
   // If |actualResponse|’s status is not 303, |request|’s body is non-null, and
   // |request|’s body’s source is null, then return a network error.
+  if (redirect_info.status_code != net::HTTP_SEE_OTHER &&
+      IsBodyNotNullAndSourceNull(request_.request_body.get())) {
+    HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+    return;
+  }
 
   // If |actualResponse|’s location URL’s origin is not same origin with
   // |request|’s current url’s origin and |request|’s origin is not same origin

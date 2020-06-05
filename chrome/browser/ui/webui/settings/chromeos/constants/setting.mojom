@@ -31,7 +31,7 @@ enum Setting {
   kCellularProxy = 20,
   kCellularAutoConnectToNetwork = 21,
   kInstantTetheringOnOff = 22,
-  kDisconnectTetherNetwork = 22,
+  kDisconnectTetherNetwork = 23,
 
   // Bluetooth section.
   kBluetoothOnOff = 100,
@@ -118,6 +118,7 @@ enum Setting {
   kAssistantOkGoogle = 604,
   kAssistantNotifications = 605,
   kAssistantVoiceInput = 606,
+  kTrainAssistantVoiceModel = 607,
 
   // Apps section.
   kManageAndroidPreferences = 700,

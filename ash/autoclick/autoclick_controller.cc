@@ -176,11 +176,6 @@ bool AutoclickController::IsEnabled() const {
 void AutoclickController::SetAutoclickDelay(base::TimeDelta delay) {
   delay_ = delay;
   InitClickTimers();
-  if (enabled_) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Accessibility.CrosAutoclickDelay", delay,
-                               base::TimeDelta::FromMilliseconds(1),
-                               base::TimeDelta::FromMilliseconds(3000), 50);
-  }
 }
 
 void AutoclickController::SetAutoclickEventType(AutoclickEventType type) {

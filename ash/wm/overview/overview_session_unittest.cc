@@ -47,6 +47,7 @@
 #include "ash/wm/overview/overview_wallpaper_controller.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/rounded_label_widget.h"
+#include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/multi_display_overview_and_split_view_test.h"
@@ -168,7 +169,8 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
         GetPrimaryShelf()->GetShelfViewForTesting());
     shelf_view_test_api_->SetAnimationDuration(
         base::TimeDelta::FromMilliseconds(1));
-    ScopedOverviewTransformWindow::SetImmediateCloseForTests();
+    ScopedOverviewTransformWindow::SetImmediateCloseForTests(
+        /*immediate=*/true);
     OverviewWallpaperController::SetDoNotChangeWallpaperForTests();
     FpsCounter::SetForceReportZeroAnimationForTest(true);
     PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
@@ -732,6 +734,32 @@ TEST_P(OverviewSessionTest, CloseButton) {
   // All minimized windows are closed, so it should exit overview mode.
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(InOverviewSession());
+}
+
+// Tests that the shadow disappears before the close animation starts.
+// Regression test for https://crbug.com/981509.
+TEST_P(OverviewSessionTest, CloseAnimationShadow) {
+  // Give us some time to check if the shadow has disappeared.
+  ScopedOverviewTransformWindow::SetImmediateCloseForTests(/*immediate=*/false);
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+
+  ToggleOverview();
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
+  // Click the close button.
+  OverviewItem* item = GetOverviewItemForWindow(widget->GetNativeWindow());
+  const gfx::Point point =
+      GetCloseButton(item)->GetBoundsInScreen().CenterPoint();
+  GetEventGenerator()->set_current_screen_location(point);
+  GetEventGenerator()->ClickLeftButton();
+  ASSERT_FALSE(widget->IsClosed());
+  ASSERT_TRUE(InOverviewSession());
+
+  // The shadow bounds are empty, which means its not visible.
+  EXPECT_EQ(gfx::Rect(), item->GetShadowBoundsForTesting());
 }
 
 // Tests minimizing/unminimizing in overview mode.

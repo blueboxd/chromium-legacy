@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "build/build_config.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "components/payments/content/service_worker_payment_app_finder.h"
 #include "content/public/test/browser_test.h"
@@ -92,14 +91,7 @@ IN_PROC_BROWSER_TEST_F(IgnorePaymentMethodTest,
                        JITInstallablePHHasNoEnrolledInstruments) {
   NavigateTo("b.com", "/has_enrolled_instrument_checker.html");
   VerifyFunctionOutput(
-#if defined(OS_ANDROID)
-      // TODO(crbug.com/994799#c2): Android should return "false" for
-      // hasEnrolledInstrument() of a JIT installable service worker payment
-      // handler.
-      "true",
-#else
       "false",
-#endif
       "hasEnrolledInstrument($1)");
 
   ServiceWorkerPaymentAppFinder::GetInstance()->IgnorePaymentMethodForTest(

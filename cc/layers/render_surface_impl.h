@@ -168,7 +168,6 @@ class CC_EXPORT RenderSurfaceImpl {
   const FilterOperations& BackdropFilters() const;
   base::Optional<gfx::RRectF> BackdropFilterBounds() const;
   LayerImpl* BackdropMaskLayer() const;
-  gfx::PointF FiltersOrigin() const;
   gfx::Transform SurfaceScale() const;
 
   bool TrilinearFiltering() const;

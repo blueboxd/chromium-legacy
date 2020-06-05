@@ -33,7 +33,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 using ::base::test::RunCallback;
 using ::base::test::RunOnceCallback;
@@ -184,7 +183,6 @@ class MojoRendererTest : public ::testing::Test {
   void CreateCdm() {
     cdm_receiver_.Bind(cdm_remote_.BindNewPipeAndPassReceiver());
     cdm_remote_->Initialize(kClearKeyKeySystem,
-                            url::Origin::Create(GURL("https://www.test.com")),
                             CdmConfig(),
                             base::BindOnce(&MojoRendererTest::OnCdmCreated,
                                            base::Unretained(this)));

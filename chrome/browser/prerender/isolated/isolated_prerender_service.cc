@@ -37,6 +37,20 @@ void IsolatedPrerenderService::Shutdown() {
     drp_settings->RemoveDataReductionProxySettingsObserver(this);
 }
 
+bool IsolatedPrerenderService::MaybeProxyURLLoaderFactory(
+    int render_process_id,
+    int frame_tree_node_id,
+    content::ContentBrowserClient::URLLoaderFactoryType type,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
+  for (const auto& manager_pair : subresource_managers_) {
+    if (manager_pair.second->MaybeProxyURLLoaderFactory(
+            render_process_id, frame_tree_node_id, type, factory_receiver)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 IsolatedPrerenderSubresourceManager*
 IsolatedPrerenderService::OnAboutToNoStatePrefetch(
     const GURL& url,

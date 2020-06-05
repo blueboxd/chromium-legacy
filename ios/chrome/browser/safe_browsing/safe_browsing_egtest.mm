@@ -141,4 +141,22 @@
   [ChromeEarlGrey waitForWebStateContainingText:_malwareContent];
 }
 
+// Tests displaying a warning for an unsafe page in incognito mode, and
+// proceeding past the warning.
+- (void)testWarningInIncognito {
+  [ChromeEarlGrey openNewIncognitoTab];
+  [ChromeEarlGrey loadURL:_safeURL];
+  [ChromeEarlGrey waitForWebStateContainingText:_safeContent];
+
+  [ChromeEarlGrey loadURL:_phishingURL];
+  [ChromeEarlGrey waitForWebStateContainingText:"Deceptive site ahead"];
+
+  [ChromeEarlGrey tapWebStateElementWithID:@"details-button"];
+  [ChromeEarlGrey waitForWebStateContainingText:
+                      "Google Safe Browsing recently detected phishing"];
+
+  [ChromeEarlGrey tapWebStateElementWithID:@"proceed-link"];
+  [ChromeEarlGrey waitForWebStateContainingText:_phishingContent];
+}
+
 @end

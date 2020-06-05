@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -32,9 +33,12 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -154,11 +158,6 @@ class AppServiceAppModelBuilderTest
   AppServiceAppModelBuilderTest& operator=(
       const AppServiceAppModelBuilderTest&) = delete;
 
-  void SetUp() override {
-    AppListTestBase::SetUp();
-    web_app::TestWebAppProvider::Get(testing_profile())->Start();
-  }
-
   void TearDown() override {
     ResetBuilder();
     AppListTestBase::TearDown();
@@ -204,7 +203,7 @@ class BuiltInAppTest : public AppServiceAppModelBuilderTest {
 class ExtensionAppTest : public AppServiceAppModelBuilderTest {
  public:
   void SetUp() override {
-    AppListTestBase::SetUp();
+    AppServiceAppModelBuilderTest::SetUp();
 
     default_apps_ = {"Hosted App", "Packaged App 1", "Packaged App 2"};
     CreateBuilder();
@@ -219,6 +218,31 @@ class ExtensionAppTest : public AppServiceAppModelBuilderTest {
   }
 
   std::vector<std::string> default_apps_;
+};
+
+using BookmarkAppBuilderTest = ExtensionAppTest;
+
+class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
+ public:
+  void SetUp() override {
+    AppServiceAppModelBuilderTest::SetUp();
+
+    base::RunLoop run_loop;
+    web_app::WebAppProvider::Get(testing_profile())
+        ->on_registry_ready()
+        .Post(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+
+    CreateBuilder();
+  }
+
+ protected:
+  // Creates a new builder, destroying any existing one.
+  void CreateBuilder() {
+    AppServiceAppModelBuilderTest::CreateBuilder(false /*guest_mode*/);
+    RemoveApps(apps::mojom::AppType::kWeb, testing_profile(),
+               model_updater_.get());
+  }
 };
 
 TEST_P(BuiltInAppTest, Build) {
@@ -411,7 +435,7 @@ TEST_P(ExtensionAppTest, InvalidOrdinal) {
 }
 
 // This test adds a bookmark app to the app list.
-TEST_P(ExtensionAppTest, BookmarkApp) {
+TEST_P(BookmarkAppBuilderTest, BookmarkAppList) {
   const std::string kAppName = "Bookmark App";
   const std::string kAppVersion = "2014.1.24.19748";
   const std::string kAppUrl = "http://google.com";
@@ -432,6 +456,29 @@ TEST_P(ExtensionAppTest, BookmarkApp) {
   service_->AddExtension(bookmark_app.get());
   app_service_test_.SetUp(profile_.get());
   RemoveApps(apps::mojom::AppType::kWeb, profile_.get(), model_updater_.get());
+  EXPECT_EQ(1u, model_updater_->ItemCount());
+  EXPECT_EQ((std::vector<std::string>{kAppName}),
+            GetModelContent(model_updater_.get()));
+}
+
+// This test adds a web app to the app list.
+TEST_P(WebAppBuilderTest, WebAppList) {
+  Profile* const profile = profile_.get();
+
+  const std::string kAppName = "Web App";
+  const GURL kAppUrl("https://example.com/");
+
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->title = base::UTF8ToUTF16(kAppName);
+  web_app_info->app_url = kAppUrl;
+  web_app_info->scope = kAppUrl;
+  web_app_info->open_as_window = true;
+
+  const web_app::AppId app_id =
+      web_app::InstallWebApp(profile, std::move(web_app_info));
+
+  app_service_test_.SetUp(profile_.get());
+  RemoveApps(apps::mojom::AppType::kWeb, profile, model_updater_.get());
   EXPECT_EQ(1u, model_updater_->ItemCount());
   EXPECT_EQ((std::vector<std::string>{kAppName}),
             GetModelContent(model_updater_.get()));
@@ -773,7 +820,18 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionAppTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         BookmarkAppBuilderTest,
                          ::testing::Values(ProviderType::kBookmarkApps),
+                         web_app::ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppBuilderTest,
+                         ::testing::Values(ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(All,

@@ -1082,8 +1082,11 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
                                            aura::Window* gained_active,
                                            aura::Window* lost_active) {
-  if (!IsShelfWindow(gained_active))
+  if (!IsShelfWindow(gained_active) &&
+      !(window_drag_controller_ &&
+        window_drag_controller_->during_window_restoration_callback())) {
     shelf_->hotseat_widget()->set_manually_extended(/*value=*/false);
+  }
 
   UpdateAutoHideStateNow();
 }
@@ -1370,10 +1373,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
           if (shelf_->hotseat_widget()->IsShowingShelfMenu())
             return HotseatState::kExtended;
 
-          if (in_split_view)
-            return HotseatState::kHidden;
-
-          if (in_overview)
+          if (in_overview && !in_split_view)
             return HotseatState::kExtended;
 
           if (state_forced_by_back_gesture_)
@@ -2467,9 +2467,13 @@ void ShelfLayoutManager::CancelDrag(
     shelf_->hotseat_widget()->set_manually_extended(
         hotseat_state() == HotseatState::kExtended &&
         (!Shell::Get()->overview_controller()->InOverviewSession() ||
+         SplitViewController::Get(shelf_widget_->GetNativeWindow())
+             ->InSplitViewMode() ||
          (window_drag_result.has_value() &&
-          window_drag_result.value() ==
-              ShelfWindowDragResult::kRestoreToOriginalBounds)));
+          (window_drag_result.value() ==
+               ShelfWindowDragResult::kRestoreToOriginalBounds ||
+           window_drag_result.value() ==
+               ShelfWindowDragResult::kGoToSplitviewMode))));
 
     hotseat_presentation_time_recorder_.reset();
   }

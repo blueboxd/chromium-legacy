@@ -297,6 +297,11 @@ public class ChildProcessConnection {
 
     private MemoryPressureCallback mMemoryPressureCallback;
 
+    // If the process threw an exception before entering the main loop, the exception
+    // string is reported here.
+    @GuardedBy("sBindingStateLock")
+    private String mExceptionInServiceDuringInit;
+
     // Whether the process exited cleanly or not.
     @GuardedBy("sBindingStateLock")
     private boolean mCleanExit;
@@ -652,16 +657,28 @@ public class ChildProcessConnection {
                 }
 
                 @Override
+                public void reportExceptionInInit(String exception) {
+                    synchronized (sBindingStateLock) {
+                        mExceptionInServiceDuringInit = exception;
+                    }
+                    mLauncherHandler.post(createUnbindRunnable());
+                }
+
+                @Override
                 public void reportCleanExit() {
                     synchronized (sBindingStateLock) {
                         mCleanExit = true;
                     }
-                    mLauncherHandler.post(new Runnable() {
+                    mLauncherHandler.post(createUnbindRunnable());
+                }
+
+                private Runnable createUnbindRunnable() {
+                    return new Runnable() {
                         @Override
                         public void run() {
                             unbind();
                         }
-                    });
+                    };
                 }
             };
             try {
@@ -833,6 +850,16 @@ public class ChildProcessConnection {
     public boolean hasCleanExit() {
         synchronized (sBindingStateLock) {
             return mCleanExit;
+        }
+    }
+
+    /**
+     * @return the exception string if service threw an exception during init.
+     *         null otherwise.
+     */
+    public @Nullable String getExceptionDuringInit() {
+        synchronized (sBindingStateLock) {
+            return mExceptionInServiceDuringInit;
         }
     }
 

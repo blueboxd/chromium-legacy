@@ -29,7 +29,6 @@ constexpr uint32_t kTargetMajorVrAssetsComponentVersion = 2;
 // set of features.
 constexpr uint32_t kMinMajorVrAssetsComponentVersion = 1;
 
-class MetricsHelper;
 struct AssetsLoaderSingletonTrait;
 struct Assets;
 
@@ -64,8 +63,6 @@ class VR_BASE_EXPORT AssetsLoader {
   // when calling this function.
   void Load(OnAssetsLoadedCallback on_loaded);
 
-  MetricsHelper* GetMetricsHelper();
-
   // Returns true if the component is ready.
   // Must be called on the main thread.
   bool ComponentReady();
@@ -93,7 +90,6 @@ class VR_BASE_EXPORT AssetsLoader {
   base::Version component_version_;
   base::FilePath component_install_dir_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  std::unique_ptr<MetricsHelper> metrics_helper_;
   OnComponentReadyCallback on_component_ready_callback_;
 
   base::WeakPtrFactory<AssetsLoader> weak_ptr_factory_{this};

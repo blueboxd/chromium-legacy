@@ -994,22 +994,29 @@ void TargetHandler::CreateBrowserContext(
         Response::ServerError("Browser context management is not supported."));
     return;
   }
+
+  if (in_proxyServer.isJust()) {
+    pending_proxy_config_ = net::ProxyConfig();
+    pending_proxy_config_->proxy_rules().ParseFromString(
+        in_proxyServer.fromJust());
+    if (in_proxyBypassList.isJust()) {
+      pending_proxy_config_->proxy_rules().bypass_rules.ParseFromString(
+          in_proxyBypassList.fromJust());
+    }
+  }
+
   BrowserContext* context = delegate->CreateBrowserContext();
   if (!context) {
     callback->sendFailure(
         Response::ServerError("Failed to create browser context."));
+    pending_proxy_config_.reset();
     return;
   }
 
-  if (in_proxyServer.isJust()) {
-    net::ProxyConfig proxy_config;
-    proxy_config.proxy_rules().ParseFromString(in_proxyServer.fromJust());
-    if (in_proxyBypassList.isJust()) {
-      proxy_config.proxy_rules().bypass_rules.ParseFromString(
-          in_proxyBypassList.fromJust());
-    }
+  if (pending_proxy_config_) {
     contexts_with_overridden_proxy_[context->UniqueId()] =
-        std::move(proxy_config);
+        std::move(*pending_proxy_config_);
+    pending_proxy_config_.reset();
   }
 
   if (in_disposeOnDetach.fromMaybe(false))
@@ -1077,11 +1084,21 @@ void TargetHandler::DisposeBrowserContext(
 void TargetHandler::ApplyNetworkContextParamsOverrides(
     BrowserContext* browser_context,
     network::mojom::NetworkContextParams* context_params) {
-  auto it = contexts_with_overridden_proxy_.find(browser_context->UniqueId());
-  if (it == contexts_with_overridden_proxy_.end())
+  // Under certain conditions, storage partition is created synchronously for
+  // the browser context. Account for this use case.
+  if (pending_proxy_config_) {
+    context_params->initial_proxy_config =
+        net::ProxyConfigWithAnnotation(std::move(*pending_proxy_config_),
+                                       kSettingsProxyConfigTrafficAnnotation);
+    pending_proxy_config_.reset();
     return;
-  context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
-      it->second, kSettingsProxyConfigTrafficAnnotation);
+  }
+  auto it = contexts_with_overridden_proxy_.find(browser_context->UniqueId());
+  if (it != contexts_with_overridden_proxy_.end()) {
+    context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
+        std::move(it->second), kSettingsProxyConfigTrafficAnnotation);
+    contexts_with_overridden_proxy_.erase(browser_context->UniqueId());
+  }
 }
 
 }  // namespace protocol

@@ -92,10 +92,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   friend class DesktopWindowTreeHostX11Test;
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
 
-  // Overridden from display::DisplayObserver via aura::WindowTreeHost:
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t changed_metrics) override;
-
   // DesktopWindowTreeHostPlatform overrides:
   void AddAdditionalInitProperties(
       const Widget::InitParams& params,

@@ -8,12 +8,15 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/keyboard_util.h"
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_affordance.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -42,6 +45,25 @@ constexpr int kDistanceForSplitViewResize = 49;
 bool CanStartGoingBackFromSplitViewDivider(const gfx::Point& screen_location) {
   if (!IsCurrentScreenOrientationLandscape())
     return false;
+
+  // If virtual keyboard is visible when we swipe from the splitview divider
+  // area, do not allow go back if the location is inside of the virtual
+  // keyboard bounds.
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  if (keyboard_controller->IsEnabled() &&
+      keyboard_controller->GetVisualBoundsInScreen().Contains(
+          screen_location)) {
+    return false;
+  }
+  // Same thing for ARC virtual keyboard as well.
+  SystemTrayModel* system_tray_model = Shell::Get()->system_tray_model();
+  if (system_tray_model) {
+    auto* arc_keyboard = system_tray_model->virtual_keyboard();
+    if (arc_keyboard->visible() &&
+        arc_keyboard->arc_keyboard_bounds().Contains(screen_location)) {
+      return false;
+    }
+  }
 
   auto* root_window = window_util::GetRootWindowAt(screen_location);
   auto* split_view_controller = SplitViewController::Get(root_window);

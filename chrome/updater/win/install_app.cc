@@ -547,7 +547,6 @@ void InstallAppController::DoInstallApp() {
 void InstallAppController::InstallComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   FlushPrefs();
-  install_progress_observer_ipc_ = nullptr;
   update_client_ = nullptr;
 }
 

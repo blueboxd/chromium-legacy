@@ -504,13 +504,18 @@ void WindowTreeHost::OnHostLostWindowCapture() {
 
 void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {
-  if (metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE) {
-    display::Screen* screen = display::Screen::GetScreen();
-    if (compositor_ &&
-        display.id() == screen->GetDisplayNearestView(window()).id()) {
-      compositor_->SetDisplayColorSpaces(display.color_spaces());
-    }
-  }
+  if (metrics & DisplayObserver::DISPLAY_METRIC_COLOR_SPACE && compositor_ &&
+      display.id() == GetDisplayId())
+    compositor_->SetDisplayColorSpaces(display.color_spaces());
+
+// Chrome OS is handled in WindowTreeHostManager::OnDisplayMetricsChanged.
+// Chrome OS requires additional handling for the bounds that we do not need to
+// do for other OSes.
+#if !defined(OS_CHROMEOS)
+  if (metrics & DISPLAY_METRIC_DEVICE_SCALE_FACTOR &&
+      display.id() == GetDisplayId())
+    OnHostResizedInPixels(GetBoundsInPixels().size());
+#endif
 }
 
 gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(

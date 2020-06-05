@@ -61,14 +61,6 @@ const AtomicString& MouseEventNameForPointerEventInputType(
   }
 }
 
-Element* GetPointerLockedElement(LocalFrame* frame) {
-  if (Page* p = frame->GetPage()) {
-    if (!p->GetPointerLockController().LockPending())
-      return p->GetPointerLockController().GetElement();
-  }
-  return nullptr;
-}
-
 }  // namespace
 
 PointerEventManager::PointerEventManager(LocalFrame& frame,
@@ -549,7 +541,8 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
     // not quite possible as we haven't merged the locked event
     // dispatch with this path.
     Node* target;
-    Element* pointer_locked_element = GetPointerLockedElement(frame_);
+    Element* pointer_locked_element =
+        PointerLockController::GetPointerLockedElement(frame_);
     if (pointer_locked_element &&
         event.pointer_type == WebPointerProperties::PointerType::kMouse) {
       // The locked element could be in another frame. So we need to delegate

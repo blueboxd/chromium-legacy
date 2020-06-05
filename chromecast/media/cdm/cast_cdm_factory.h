@@ -9,6 +9,7 @@
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/cdm_factory.h"
+#include "url/origin.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -27,13 +28,13 @@ class CastCdmFactory : public ::media::CdmFactory {
  public:
   // CDM factory will use |task_runner| to initialize the CDM.
   CastCdmFactory(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                 const url::Origin& cdm_origin,
                  MediaResourceTracker* media_resource_tracker);
   ~CastCdmFactory() override;
 
   // ::media::CdmFactory implementation:
   void Create(
       const std::string& key_system,
-      const url::Origin& security_origin,
       const ::media::CdmConfig& cdm_config,
       const ::media::SessionMessageCB& session_message_cb,
       const ::media::SessionClosedCB& session_closed_cb,
@@ -44,7 +45,7 @@ class CastCdmFactory : public ::media::CdmFactory {
   // Provides a platform-specific BrowserCdm instance.
   virtual scoped_refptr<CastCdm> CreatePlatformBrowserCdm(
       const CastKeySystem& cast_key_system,
-      const url::Origin& security_origin,
+      const url::Origin& cdm_origin,
       const ::media::CdmConfig& cdm_config);
 
  protected:
@@ -52,6 +53,8 @@ class CastCdmFactory : public ::media::CdmFactory {
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const url::Origin cdm_origin_;
+
   DISALLOW_COPY_AND_ASSIGN(CastCdmFactory);
 };
 

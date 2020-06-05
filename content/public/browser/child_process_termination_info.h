@@ -46,6 +46,9 @@ struct CONTENT_EXPORT ChildProcessTerminationInfo {
   // True if child service was explicitly killed by browser.
   bool was_killed_intentionally_by_browser = false;
 
+  // True if child process threw an exception before calling into main.
+  bool threw_exception_during_init = false;
+
   // True if the child shut itself down cleanly by quitting the main runloop.
   bool clean_exit = false;
 

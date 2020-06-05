@@ -562,22 +562,24 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest, FrameDepth) {
 }
 
 // Test that an ad frame with visible resource gets a FCP.
-//
-// This test is flaky on multiple platforms https://crbug.com/1090976
-// TODO(https://crbug.com/1090976): Wait until the histogram is recorded instead
-// of until 4 resources are complete.
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
-                       DISABLED_FirstContentfulPaintRecorded) {
+                       FirstContentfulPaintRecorded) {
   SetRulesetWithRules(
       {subresource_filter::testing::CreateSuffixRule("pixel.png")});
   base::HistogramTester histogram_tester;
   auto waiter = CreatePageLoadMetricsTestWaiter();
+  waiter->AddSubFrameExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
+                                     TimingField::kFirstContentfulPaint);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(
                                    "/ads_observer/display_block_adframe.html"));
-  waiter->AddMinimumCompleteResourcesExpectation(4);
+
+  // Wait for FirstContentfulPaint in a subframe.
   waiter->Wait();
+
+  // Navigate away so that it records the metric.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
   histogram_tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.AdPaintTiming.NavigationToFirstContentfulPaint", 1);
   histogram_tester.ExpectTotalCount(

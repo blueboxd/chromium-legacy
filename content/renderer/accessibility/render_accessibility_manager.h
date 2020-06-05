@@ -60,9 +60,7 @@ class CONTENT_EXPORT RenderAccessibilityManager
   // mojom::RenderAccessibility implementation.
   void SetMode(uint32_t ax_mode) override;
   void FatalError() override;
-  void HitTest(const gfx::Point& point,
-               ax::mojom::Event event_to_fire,
-               int request_id,
+  void HitTest(const ui::AXActionData& action_data,
                mojom::RenderAccessibility::HitTestCallback callback) override;
   void PerformAction(const ui::AXActionData& data) override;
   void Reset(int32_t reset_token) override;

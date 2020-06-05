@@ -320,7 +320,6 @@ component("vr_common") {
 # vr_ui must not depend on vr_common.
 component("vr_base") {
   sources = [
-    "assets_component_update_status.h",
     "assets_load_status.h",
     "assets_loader.cc",
     "assets_loader.h",
@@ -337,9 +336,6 @@ component("vr_base") {
     "keyboard_delegate.h",
     "keyboard_ui_interface.h",
     "macros.h",
-    "metrics/metrics_helper.cc",
-    "metrics/metrics_helper.h",
-    "mode.h",
     "model/assets.cc",
     "model/assets.h",
     "model/camera_model.h",

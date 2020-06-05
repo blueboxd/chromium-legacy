@@ -134,6 +134,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/content_settings/browser",
+    "//components/content_settings/browser:test_support",
     "//components/content_settings/core/browser",
     "//components/keyed_service/content",
     "//components/prefs:test_support",

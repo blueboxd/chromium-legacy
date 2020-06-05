@@ -4796,15 +4796,22 @@ void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
 
 void WebContentsImpl::OnDidRunContentWithCertificateErrors(
     RenderFrameHostImpl* source) {
-  // TODO(nick, estark): Do we need to consider |source| here somehow?
-  NavigationEntry* entry = controller_.GetVisibleEntry();
-  if (!entry)
+  // For RenderFrameHosts that are inactive and going to be discarded, we can
+  // disregard this message; there's no need to update the UI if the UI will
+  // never be shown again.
+  //
+  // We still process this message for speculative RenderFrameHosts. This can
+  // happen when a subframe's main resource has a certificate error. The
+  // currently committed navigation entry will get marked as having run insecure
+  // content and that will carry over to the navigation entry for the
+  // speculative RFH when it commits.
+  if (source->lifecycle_state() !=
+          RenderFrameHostImpl::LifecycleState::kSpeculative &&
+      source->IsInactiveAndDisallowReactivation()) {
     return;
-
-  // TODO(estark): check that this does something reasonable for
-  // about:blank and sandboxed origins. https://crbug.com/609527
+  }
   controller_.ssl_manager()->DidRunContentWithCertErrors(
-      entry->GetURL().GetOrigin());
+      source->GetMainFrame()->GetLastCommittedOrigin().GetURL());
 }
 
 void WebContentsImpl::DOMContentLoaded(RenderFrameHost* render_frame_host) {

@@ -19,9 +19,11 @@ namespace media {
 
 CastCdmFactory::CastCdmFactory(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const url::Origin& cdm_origin,
     MediaResourceTracker* media_resource_tracker)
     : media_resource_tracker_(media_resource_tracker),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      cdm_origin_(cdm_origin) {
   DCHECK(media_resource_tracker_);
   DCHECK(task_runner_);
 }
@@ -30,7 +32,6 @@ CastCdmFactory::~CastCdmFactory() {}
 
 void CastCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const ::media::CdmConfig& cdm_config,
     const ::media::SessionMessageCB& session_message_cb,
     const ::media::SessionClosedCB& session_closed_cb,
@@ -47,7 +48,7 @@ void CastCdmFactory::Create(
          (cast_key_system == chromecast::media::KEY_SYSTEM_WIDEVINE));
 
   scoped_refptr<chromecast::media::CastCdm> cast_cdm =
-      CreatePlatformBrowserCdm(cast_key_system, security_origin, cdm_config);
+      CreatePlatformBrowserCdm(cast_key_system, cdm_origin_, cdm_config);
 
   if (!cast_cdm) {
     LOG(INFO) << "No matching key system found: " << cast_key_system;
@@ -74,7 +75,7 @@ void CastCdmFactory::Create(
 
 scoped_refptr<CastCdm> CastCdmFactory::CreatePlatformBrowserCdm(
     const CastKeySystem& cast_key_system,
-    const url::Origin& security_origin,
+    const url::Origin& cdm_origin,
     const ::media::CdmConfig& cdm_config) {
   return nullptr;
 }

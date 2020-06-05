@@ -14,8 +14,8 @@
 
 namespace blink {
 
+class Element;
 class LocalFrame;
-class WebElement;
 
 class SavableResources {
   STATIC_ONLY(SavableResources);
@@ -54,8 +54,8 @@ class SavableResources {
   // INPUT TYPE=image, returns the value in "src". For LINK TYPE=text/css,
   // returns the value in "href". For BODY, TABLE, TR, TD, returns the value in
   // "background". For BLOCKQUOTE, Q, DEL, INS, returns the value in "cite"
-  // attribute. Otherwise returns a null WebString.
-  static String GetSubResourceLinkFromElement(const WebElement& element);
+  // attribute. Otherwise returns an empty String.
+  static String GetSubResourceLinkFromElement(Element* element);
 };
 
 }  // namespace blink

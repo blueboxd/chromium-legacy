@@ -32,7 +32,6 @@ chrome.chromeosInfoPrivate.PropertyName = {
   A11Y_SELECT_TO_SPEAK_ENABLED: 'a11ySelectToSpeakEnabled',
   A11Y_SWITCH_ACCESS_ENABLED: 'a11ySwitchAccessEnabled',
   SEND_FUNCTION_KEYS: 'sendFunctionKeys',
-  CAMERA_MEDIA_CONSOLIDATED: 'cameraMediaConsolidated',
 };
 
 /**
@@ -116,7 +115,6 @@ chrome.chromeosInfoPrivate.AssistantStatus = {
  *   a11yAutoClickEnabled: (boolean|undefined),
  *   a11yVirtualKeyboardEnabled: (boolean|undefined),
  *   sendFunctionKeys: (boolean|undefined),
- *   cameraMediaConsolidated: (boolean|undefined),
  *   supportedTimezones: (!Array<!Array<string>>|undefined)
  * }): void} callback
  */

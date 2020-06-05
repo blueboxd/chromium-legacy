@@ -12,7 +12,8 @@
 namespace blink {
 
 WebString GetSubResourceLinkFromElementForTesting(const WebElement& element) {
-  return WebString(SavableResources::GetSubResourceLinkFromElement(element));
+  return WebString(SavableResources::GetSubResourceLinkFromElement(
+      static_cast<Element*>(element)));
 }
 
 }  // namespace blink

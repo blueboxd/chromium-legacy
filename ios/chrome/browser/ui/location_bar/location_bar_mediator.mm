@@ -144,7 +144,8 @@
 #pragma mark - OverlayPresenterObserving
 
 - (void)overlayPresenter:(OverlayPresenter*)presenter
-    willShowOverlayForRequest:(OverlayRequest*)request {
+    willShowOverlayForRequest:(OverlayRequest*)request
+          initialPresentation:(BOOL)initialPresentation {
   self.webContentAreaShowingOverlay = YES;
   self.webContentAreaShowingHTTPAuthDialog =
       !!request->GetConfig<HTTPAuthOverlayRequestConfig>();

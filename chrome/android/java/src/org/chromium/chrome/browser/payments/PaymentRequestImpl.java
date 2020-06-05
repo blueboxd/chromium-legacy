@@ -1337,9 +1337,6 @@ public class PaymentRequestImpl
             GURL url, PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver) {
         assert mInvokedPaymentApp != null;
         assert mInvokedPaymentApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP;
-        assert org.chromium.components.embedder_support.util.Origin.create(url.getSpec())
-                .equals(org.chromium.components.embedder_support.util.Origin.create(
-                        ((ServiceWorkerPaymentApp) mInvokedPaymentApp).getScope().getSpec()));
 
         if (mPaymentHandlerUi != null) return false;
         mPaymentHandlerUi = new PaymentHandlerCoordinator();
@@ -2204,7 +2201,7 @@ public class PaymentRequestImpl
         if (mClient == null) return;
 
         if (mInvokedPaymentApp != null) {
-            mInvokedPaymentApp.abortPaymentApp(mId, this);
+            mInvokedPaymentApp.abortPaymentApp(/*callback=*/this);
             return;
         }
         onInstrumentAbortResult(true);

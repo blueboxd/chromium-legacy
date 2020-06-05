@@ -406,7 +406,7 @@ class ShelfViewTest : public AshTestBase {
   }
 
   void VerifyShelfItemBoundsAreValid() {
-    for (int i = 0; i <= shelf_view_->last_visible_index(); ++i) {
+    for (int i : shelf_view_->visible_views_indices()) {
       if (test_api_->GetButton(i)) {
         gfx::Rect shelf_view_bounds = shelf_view_->GetLocalBounds();
         gfx::Rect item_bounds = test_api_->GetBoundsByIndex(i);
@@ -792,7 +792,7 @@ TEST_F(ShelfViewTest, ClickAndMoveSlightly) {
 // Confirm that item status changes are reflected in the buttons.
 TEST_F(ShelfViewTest, ShelfItemStatus) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->number_of_visible_apps());
 
   // Add platform app button.
   ShelfID last_added = AddApp();
@@ -871,7 +871,7 @@ TEST_F(ShelfViewTest, DragAndDropPinnedRunningApp) {
 // for platform apps.
 TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
   // All buttons should be visible.
-  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->last_visible_index() + 1);
+  ASSERT_EQ(test_api_->GetButtonCount(), shelf_view_->number_of_visible_apps());
 
   // Add platform app button.
   ShelfID last_added = AddApp();
@@ -896,7 +896,7 @@ TEST_F(ShelfViewTest, ShelfItemBoundsCheck) {
 }
 
 TEST_F(ShelfViewTest, ShelfTooltipTest) {
-  ASSERT_EQ(shelf_view_->last_visible_index() + 1, test_api_->GetButtonCount());
+  ASSERT_EQ(shelf_view_->number_of_visible_apps(), test_api_->GetButtonCount());
 
   // Prepare some items to the shelf.
   ShelfID app_button_id = AddAppShortcut();
@@ -1690,17 +1690,17 @@ TEST_F(ShelfViewTest, IconCenteringTest) {
 TEST_F(ShelfViewTest, FirstAndLastVisibleIndex) {
   // At the start, the only visible app on the shelf is the browser app button
   // (index 0).
-  EXPECT_EQ(0, shelf_view_->first_visible_index());
-  EXPECT_EQ(0, shelf_view_->last_visible_index());
+  ASSERT_EQ(1u, shelf_view_->visible_views_indices().size());
+  EXPECT_EQ(0, shelf_view_->visible_views_indices()[0]);
   // By enabling tablet mode, the back button (index 0) should become visible,
   // but that does not change the first and last visible indices.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  EXPECT_EQ(0, shelf_view_->first_visible_index());
-  EXPECT_EQ(0, shelf_view_->last_visible_index());
+  ASSERT_EQ(1u, shelf_view_->visible_views_indices().size());
+  EXPECT_EQ(0, shelf_view_->visible_views_indices()[0]);
   // Turn tablet mode off again.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_EQ(0, shelf_view_->first_visible_index());
-  EXPECT_EQ(0, shelf_view_->last_visible_index());
+  ASSERT_EQ(1u, shelf_view_->visible_views_indices().size());
+  EXPECT_EQ(0, shelf_view_->visible_views_indices()[0]);
 }
 
 TEST_F(ShelfViewTest, ReplacingDelegateCancelsContextMenu) {

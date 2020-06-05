@@ -25,7 +25,6 @@
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -68,7 +67,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/view_tracker.h"
@@ -384,7 +383,17 @@ WebUITabStripContainerView::WebUITabStripContainerView(
 
   web_view_->set_allow_accelerators(true);
 
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  // Use a vertical flex layout with cross-axis set to stretch. This allows us
+  // to add e.g. a hidden title bar, header, footer, etc. by just adding child
+  // views.
+  auto* const layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetOrientation(views::LayoutOrientation::kVertical);
+  layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  web_view_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(base::BindRepeating(
+          &WebUITabStripContainerView::FlexRule, base::Unretained(this))));
+
   web_view_->LoadInitialURL(GURL(chrome::kChromeUITabStripURL));
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_view_->web_contents());
@@ -393,9 +402,6 @@ WebUITabStripContainerView::WebUITabStripContainerView(
 
   DCHECK(tab_contents_container);
   view_observer_.Add(tab_contents_container_);
-  desired_height_ = TabStripUILayout::CalculateForWebViewportSize(
-                        tab_contents_container_->size())
-                        .CalculateContainerHeight();
 
   TabStripUI* const tab_strip_ui = static_cast<TabStripUI*>(
       web_view_->GetWebContents()->GetWebUI()->GetController());
@@ -503,7 +509,7 @@ void WebUITabStripContainerView::UpdateHeightForDragToOpen(float height_delta) {
 
   current_drag_height_ =
       base::ClampToRange(*current_drag_height_ + height_delta, 0.0f,
-                         static_cast<float>(desired_height_));
+                         static_cast<float>(GetPreferredSize().height()));
   PreferredSizeChanged();
 }
 
@@ -518,7 +524,7 @@ void WebUITabStripContainerView::EndDragToOpen(
   // If this wasn't a fling, determine whether to open or close based on
   // final height.
   const double open_proportion =
-      static_cast<double>(final_drag_height) / desired_height_;
+      static_cast<double>(final_drag_height) / GetPreferredSize().height();
   bool opening = open_proportion >= 0.5;
   if (fling_direction) {
     // If this was a fling, ignore the final height and use the fling
@@ -682,14 +688,29 @@ void WebUITabStripContainerView::RemovedFromWidget() {
 
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {
   DCHECK(!(animation_.is_animating() && current_drag_height_));
+
+  // Note that preferred size is automatically calculated by the layout.
   if (animation_.is_animating()) {
     return gfx::Tween::LinearIntValueBetween(animation_.GetCurrentValue(), 0,
-                                             desired_height_);
+                                             GetPreferredSize().height());
   }
   if (current_drag_height_)
     return std::round(*current_drag_height_);
 
-  return GetVisible() ? desired_height_ : 0;
+  return GetVisible() ? GetPreferredSize().height() : 0;
+}
+
+gfx::Size WebUITabStripContainerView::FlexRule(
+    const views::View* view,
+    const views::SizeBounds& bounds) const {
+  DCHECK_EQ(view, web_view_);
+  const int width =
+      bounds.width() ? *bounds.width() : tab_contents_container_->width();
+  const int height = TabStripUILayout::CalculateForWebViewportSize(
+                         tab_contents_container_->size())
+                         .CalculateContainerHeight();
+
+  return gfx::Size(width, height);
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,
@@ -717,9 +738,6 @@ void WebUITabStripContainerView::OnViewBoundsChanged(View* observed_view) {
   if (observed_view != tab_contents_container_)
     return;
 
-  desired_height_ =
-      TabStripUILayout::CalculateForWebViewportSize(observed_view->size())
-          .CalculateContainerHeight();
   // TODO(pbos): PreferredSizeChanged seems to cause infinite recursion with
   // BrowserView::ChildPreferredSizeChanged. InvalidateLayout here should be
   // replaceable with PreferredSizeChanged.

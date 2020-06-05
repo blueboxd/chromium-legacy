@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/modules/bluetooth/bluetooth_advertising_event.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_le_scan.h"
@@ -396,40 +395,11 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
 
 void Bluetooth::AdvertisingEvent(
     mojom::blink::WebBluetoothAdvertisingEventPtr advertising_event) {
-  // client_receivers_ would not be able to send an AdvertisingEvent if the
-  // context was destroyed because it inherits ContextLifecycleObserver.
-  DCHECK(!window_->IsContextDestroyed());
-  BluetoothDevice* bluetooth_device = GetBluetoothDeviceRepresentingDevice(
-      std::move(advertising_event->device), window_);
-
-  HeapVector<blink::StringOrUnsignedLong> uuids;
-  for (const String& uuid : advertising_event->uuids) {
-    StringOrUnsignedLong value;
-    value.SetString(uuid);
-    uuids.push_back(value);
-  }
-
-  auto* manufacturer_data = MakeGarbageCollected<BluetoothManufacturerDataMap>(
-      advertising_event->manufacturer_data);
-  auto* service_data = MakeGarbageCollected<BluetoothServiceDataMap>(
-      advertising_event->service_data);
-
-  base::Optional<int8_t> rssi;
-  if (advertising_event->rssi_is_set)
-    rssi = advertising_event->rssi;
-
-  base::Optional<int8_t> tx_power;
-  if (advertising_event->tx_power_is_set)
-    tx_power = advertising_event->tx_power;
-
-  base::Optional<uint16_t> appearance;
-  if (advertising_event->appearance_is_set)
-    appearance = advertising_event->appearance;
-
   auto* event = MakeGarbageCollected<BluetoothAdvertisingEvent>(
-      event_type_names::kAdvertisementreceived, bluetooth_device,
-      advertising_event->name, uuids, appearance, tx_power, rssi,
-      manufacturer_data, service_data);
+      event_type_names::kAdvertisementreceived,
+      GetBluetoothDeviceRepresentingDevice(std::move(advertising_event->device),
+                                           window_),
+      std::move(advertising_event));
   DispatchEvent(*event);
 }
 

@@ -252,7 +252,8 @@ def merge_profiles(input_dir,
                    input_extension,
                    profdata_tool_path,
                    input_filename_pattern='.*',
-                   sparse=True):
+                   sparse=True,
+                   skip_validation=False):
   """Merges the profiles produced by the shards using llvm-profdata.
 
   Args:
@@ -265,6 +266,8 @@ def merge_profiles(input_dir,
         a valid regex pattern if present.
     sparse (bool): flag to indicate whether to run llvm-profdata with --sparse.
       Doc: https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
+    skip_validation (bool): flag to skip the _validate_and_convert_profraws
+        invocation. only applicable when input_extension is .profraw.
 
   Returns:
     The list of profiles that had to be excluded to get the merge to
@@ -275,7 +278,12 @@ def merge_profiles(input_dir,
                                                 input_filename_pattern)
   invalid_profraw_files = []
   counter_overflows = []
-  if input_extension == '.profraw':
+
+  if skip_validation:
+    logging.warning('--skip-validation has been enabled. Skipping conversion '
+                    'to ensure that profiles are valid.')
+
+  if input_extension == '.profraw' and not skip_validation:
     profile_input_file_paths, invalid_profraw_files, counter_overflows = (
         _validate_and_convert_profraws(profile_input_file_paths,
                                        profdata_tool_path,

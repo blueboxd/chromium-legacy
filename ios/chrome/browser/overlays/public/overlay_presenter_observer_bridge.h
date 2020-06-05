@@ -23,7 +23,8 @@
 
 // Invoked by OverlayPresenterObserver::WillShowOverlay().
 - (void)overlayPresenter:(OverlayPresenter*)presenter
-    willShowOverlayForRequest:(OverlayRequest*)request;
+    willShowOverlayForRequest:(OverlayRequest*)request
+          initialPresentation:(BOOL)initialPresentation;
 
 // Invoked by OverlayPresenterObserver::DidShowOverlay().
 - (void)overlayPresenter:(OverlayPresenter*)presenter
@@ -51,7 +52,8 @@ class OverlayPresenterObserverBridge : public OverlayPresenterObserver {
   const OverlayRequestSupport* GetRequestSupport(
       OverlayPresenter* presenter) const override;
   void WillShowOverlay(OverlayPresenter* presenter,
-                       OverlayRequest* request) override;
+                       OverlayRequest* request,
+                       bool initial_presentation) override;
   void DidShowOverlay(OverlayPresenter* presenter,
                       OverlayRequest* request) override;
   void DidHideOverlay(OverlayPresenter* presenter,

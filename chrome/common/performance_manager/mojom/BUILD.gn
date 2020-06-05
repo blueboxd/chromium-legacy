@@ -1,10 +1,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "tcmalloc.mojom",
-    "v8_per_frame_memory.mojom",
-  ]
+  sources = [ "tcmalloc.mojom" ]
 
   cpp_only = true
   disable_variants = true

@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/main/browser.h"
+#include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
@@ -100,6 +101,7 @@ void OverlayPresenterImpl::SetPresentationContext(
   // delegate's presentation context.
   presenting_ = false;
   presented_request_ = nullptr;
+  previously_presented_requests_.clear();
 
   if (presentation_context_) {
     presentation_context_->AddObserver(this);
@@ -217,10 +219,19 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
   presented_request_ = request;
 
   // Notify the observers that the overlay UI is about to be shown.
+  bool initial_presentation = previously_presented_requests_.find(request) ==
+                              previously_presented_requests_.end();
   for (auto& observer : observers_) {
     if (observer.GetRequestSupport(this)->IsRequestSupported(request))
-      observer.WillShowOverlay(this, request);
+      observer.WillShowOverlay(this, request, initial_presentation);
   }
+
+  // Record that the request was shown, and add the completion callback to
+  // remove the request from the set.
+  previously_presented_requests_.insert(request);
+  request->GetCallbackManager()->AddCompletionCallback(
+      base::BindOnce(&OverlayPresenterImpl::OverlayWasCompleted,
+                     weak_factory_.GetWeakPtr(), request));
 
   // Present the overlay UI via the UI delegate.
   OverlayPresentationCallback presentation_callback = base::BindOnce(
@@ -311,6 +322,11 @@ void OverlayPresenterImpl::OverlayWasDismissed(
   // changed.
   if (GetActiveRequest() != request)
     PresentOverlayForActiveRequest();
+}
+
+void OverlayPresenterImpl::OverlayWasCompleted(OverlayRequest* request,
+                                               OverlayResponse* response) {
+  previously_presented_requests_.erase(request);
 }
 
 #pragma mark UI Cancellation helpers

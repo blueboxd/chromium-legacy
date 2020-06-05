@@ -38,7 +38,7 @@ class OverviewHighlightControllerTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    ScopedOverviewTransformWindow::SetImmediateCloseForTests();
+    ScopedOverviewTransformWindow::SetImmediateCloseForTests(true);
   }
 
   OverviewHighlightController* GetHighlightController() {

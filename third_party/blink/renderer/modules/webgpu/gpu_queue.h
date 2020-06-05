@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_QUEUE_H_
 
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -12,7 +13,6 @@ namespace blink {
 
 class CanvasColorParams;
 class DawnTextureFromImageBitmap;
-class DOMArrayBuffer;
 class ExceptionState;
 class GPUBuffer;
 class GPUCommandBuffer;
@@ -35,21 +35,34 @@ class GPUQueue : public DawnObject<WGPUQueue> {
   void signal(GPUFence* fence, uint64_t signal_value);
   GPUFence* createFence(const GPUFenceDescriptor* descriptor);
   void writeBuffer(GPUBuffer* buffer,
-                   uint64_t bufferOffset,
-                   const DOMArrayBuffer* data,
-                   uint64_t dataOffset,
+                   uint64_t buffer_offset,
+                   const MaybeShared<DOMArrayBufferView>& data,
+                   uint64_t data_byte_offset,
                    ExceptionState& exception_state);
   void writeBuffer(GPUBuffer* buffer,
-                   uint64_t bufferOffset,
-                   const DOMArrayBuffer* data,
-                   uint64_t dataOffset,
-                   uint64_t size,
+                   uint64_t buffer_offset,
+                   const MaybeShared<DOMArrayBufferView>& data,
+                   uint64_t data_byte_offset,
+                   uint64_t byte_size,
+                   ExceptionState& exception_state);
+  void writeBuffer(GPUBuffer* buffer,
+                   uint64_t buffer_offset,
+                   const DOMArrayBufferBase* data,
+                   uint64_t data_byte_offset,
+                   ExceptionState& exception_state);
+  void writeBuffer(GPUBuffer* buffer,
+                   uint64_t buffer_offset,
+                   const DOMArrayBufferBase* data,
+                   uint64_t data_byte_offset,
+                   uint64_t byte_size,
                    ExceptionState& exception_state);
   void WriteBufferImpl(GPUBuffer* buffer,
                        uint64_t buffer_offset,
-                       const DOMArrayBuffer* data,
-                       uint64_t data_offset,
-                       base::Optional<uint64_t> size,
+                       uint64_t data_byte_length,
+                       const void* data_base_ptr,
+                       unsigned data_bytes_per_element,
+                       uint64_t data_byte_offset,
+                       base::Optional<uint64_t> byte_size,
                        ExceptionState& exception_state);
   void copyImageBitmapToTexture(
       GPUImageBitmapCopyView* source,

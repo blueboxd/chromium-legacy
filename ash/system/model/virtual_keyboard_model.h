@@ -41,12 +41,15 @@ class ASH_EXPORT VirtualKeyboardModel
   void OnArcInputMethodBoundsChanged(const gfx::Rect& bounds) override;
 
   bool visible() const { return visible_; }
+  const gfx::Rect& arc_keyboard_bounds() const { return arc_keyboard_bounds_; }
 
  private:
   void NotifyChanged();
 
   // The visibility of virtual keyboard.
   bool visible_ = false;
+
+  gfx::Rect arc_keyboard_bounds_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

@@ -21,7 +21,9 @@ namespace aura {
 using WindowTreeHostTest = test::AuraTestBase;
 
 TEST_F(WindowTreeHostTest, DPIWindowSize) {
-  gfx::Rect starting_bounds(0, 0, 800, 600);
+  constexpr gfx::Rect starting_bounds(
+      aura::test::AuraTestHelper::kDefaultHostSize);
+
   EXPECT_EQ(starting_bounds.size(), host()->compositor()->size());
   EXPECT_EQ(starting_bounds, host()->GetBoundsInPixels());
   EXPECT_EQ(starting_bounds, root_window()->bounds());
@@ -110,6 +112,30 @@ TEST_F(WindowTreeHostTest, HoldPointerMovesOnChildResizing) {
 
   // Pointer moves should be routed normally after commit.
   EXPECT_FALSE(dispatcher_api.HoldingPointerMoves());
+}
+#endif
+
+#if !defined(OS_CHROMEOS)
+// Tests if scale factor changes take effect. Previously a scale factor change
+// wouldn't take effect without a bounds change. For context see
+// https://crbug.com/1087626
+TEST_F(WindowTreeHostTest, ShouldHandleTextScale) {
+  constexpr gfx::Rect starting_bounds(
+      aura::test::AuraTestHelper::kDefaultHostSize);
+  auto asserter = [&](float test_scale_factor) {
+    test_screen()->SetDeviceScaleFactor(test_scale_factor, false);
+
+    EXPECT_EQ(starting_bounds, host()->GetBoundsInPixels());
+    // Size should be rounded up after scaling.
+    EXPECT_EQ(
+        gfx::ScaleToEnclosingRect(starting_bounds, 1.0f / test_scale_factor),
+        root_window()->bounds());
+    EXPECT_EQ(test_scale_factor, host()->device_scale_factor());
+  };
+
+  asserter(1.0f);
+  asserter(1.05f);
+  asserter(1.5f);
 }
 #endif
 

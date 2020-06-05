@@ -3009,6 +3009,90 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingHomeInSplitModeWithOverview) {
                                      InAppShelfGestures::kSwipeUpToShow, 0);
 }
 
+// Tests that the hotseat ends up in manually extended state after swiping up
+// a window in split screen to overview (the final state is a split screen with
+// one side in overview).
+TEST_F(ShelfLayoutManagerWindowDraggingTest, FlingInSplitView) {
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+
+  base::HistogramTester histogram_tester;
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  // Longer fling, one that significantly exceeds the distance required to show
+  // the hotseat (by 2 hotseat heights).
+  StartScroll(shelf_widget_bounds.bottom_left());
+  UpdateScroll(-shelf_size - 3 * hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+
+  watcher.CheckEqual({HotseatState::kExtended});
+  EXPECT_TRUE(GetPrimaryShelf()->hotseat_widget()->is_manually_extended());
+
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kFlingUpToShowHomeScreen, 0);
+  histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
+                                     InAppShelfGestures::kSwipeUpToShow, 1);
+}
+
+// Tests that the hotseat ends up in manually extended state after swiping up
+// hotseat when window drag from shelf in split view ends up restoring original
+// window bounds.
+TEST_F(ShelfLayoutManagerWindowDraggingTest, ShortFlingInSplitView) {
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = GetHotseatWidget()->GetHotseatSize();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  std::unique_ptr<aura::Window> window1 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  std::unique_ptr<aura::Window> window2 =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+
+  SplitViewController* split_view_controller =
+      SplitViewController::Get(Shell::GetPrimaryRootWindow());
+  split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
+
+  base::HistogramTester histogram_tester;
+  HotseatStateWatcher watcher(GetShelfLayoutManager());
+
+  StartScroll(shelf_widget_bounds.bottom_left());
+  UpdateScroll(-shelf_size - 1.5f * hotseat_size - hotseat_padding_size);
+  EndScroll(
+      true /* is_fling */,
+      -(DragWindowFromShelfController::kVelocityToHomeScreenThreshold + 10));
+
+  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+
+  watcher.CheckEqual({HotseatState::kExtended});
+  EXPECT_TRUE(GetPrimaryShelf()->hotseat_widget()->is_manually_extended());
+
+  histogram_tester.ExpectBucketCount(
+      kHotseatGestureHistogramName,
+      InAppShelfGestures::kFlingUpToShowHomeScreen, 0);
+  histogram_tester.ExpectBucketCount(kHotseatGestureHistogramName,
+                                     InAppShelfGestures::kSwipeUpToShow, 1);
+}
+
 // Tests that hotseat transition animation is not delayed (i.e. that it happens
 // as soon as shelf opaque background changes) when virtual keyboard is hidden,
 // and the user swipes from shelf to home.

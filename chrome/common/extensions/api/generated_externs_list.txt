@@ -4,12 +4,14 @@ accessibility_private.json
 activity_log_private.json
 autofill_private.idl
 bookmark_manager_private.json
+chromeos_info_private.json
 command_line_private.json
 developer_private.idl
 file_manager_private.idl
 file_system_provider.idl
 input_method_private.json
 language_settings_private.idl
+login_state.idl
 media_player_private.json
 passwords_private.idl
 quick_unlock_private.idl
@@ -19,3 +21,4 @@ settings_private.idl
 system_private.json
 terminal_private.json
 users_private.idl
+webview_tag.json

@@ -157,6 +157,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   base::Optional<CtapDeviceResponseCode> CheckUserVerification(
       bool is_make_credential,
       const AuthenticatorSupportedOptions& options,
+      const std::string& rp_id,
       const base::Optional<std::vector<uint8_t>>& pin_auth,
       const base::Optional<uint8_t>& pin_protocol,
       base::span<const uint8_t> pin_token,

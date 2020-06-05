@@ -156,7 +156,7 @@ void ChooserContextBase::GrantObjectPermission(
 void ChooserContextBase::UpdateObjectPermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
-    base::Value& old_object,
+    const base::Value& old_object,
     base::Value new_object) {
   base::Value setting =
       GetWebsiteSetting(requesting_origin, embedding_origin, /*info=*/nullptr);

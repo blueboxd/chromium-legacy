@@ -26,6 +26,8 @@ class GomaLinkUnix(goma_link.GomaLinkBase):
   WL = '-Wl,'
   TLTO = '-plugin-opt=thinlto'
   SEP = '='
+  DATA_SECTIONS = '-fdata-sections'
+  FUNCTION_SECTIONS = '-ffunction-sections'
   GROUP_RE = re.compile(WL + '--(?:end|start)-group')
   MACHINE_RE = re.compile('-m([0-9]+)')
   OBJ_PATH = '-plugin-opt=obj-path' + SEP

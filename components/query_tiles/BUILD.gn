@@ -99,6 +99,29 @@ if (is_android) {
       "android/java/src/org/chromium/components/query_tiles/bridges/TileProviderBridge.java",
     ]
   }
+
+  android_library("test_support_java") {
+    sources = [ "android/java/src/org/chromium/components/query_tiles/TestTileProvider.java" ]
+
+    deps = [
+      ":public_java",
+      "//base:base_java",
+    ]
+  }
+
+  android_library("query_tiles_junit_tests") {
+    bypass_platform_checks = true
+    testonly = true
+    sources = [ "android/java/src/org/chromium/components/query_tiles/TileUmaLoggerTest.java" ]
+
+    deps = [
+      ":public_java",
+      ":test_support_java",
+      "//base:base_java",
+      "//base:base_junit_test_support",
+      "//third_party/junit",
+    ]
+  }
 }
 
 group("unit_tests") {

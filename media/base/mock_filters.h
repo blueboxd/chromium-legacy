@@ -575,7 +575,6 @@ class MockCdmSessionPromise : public NewSessionCdmPromise {
 class MockCdm : public ContentDecryptionModule {
  public:
   MockCdm(const std::string& key_system,
-          const url::Origin& security_origin,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
           const SessionKeysChangeCB& session_keys_change_cb,
@@ -646,7 +645,6 @@ class MockCdmFactory : public CdmFactory {
   // created CDM is passed to |cdm_created_cb|, a copy is kept (and available
   // using Cdm()). If |key_system| is empty, no CDM will be created.
   void Create(const std::string& key_system,
-              const url::Origin& security_origin,
               const CdmConfig& cdm_config,
               const SessionMessageCB& session_message_cb,
               const SessionClosedCB& session_closed_cb,

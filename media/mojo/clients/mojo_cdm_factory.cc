@@ -15,7 +15,6 @@
 #include "media/mojo/clients/mojo_cdm.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "url/origin.h"
 
 namespace media {
 
@@ -29,7 +28,6 @@ MojoCdmFactory::~MojoCdmFactory() = default;
 
 void MojoCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& cdm_config,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -37,13 +35,6 @@ void MojoCdmFactory::Create(
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     CdmCreatedCB cdm_created_cb) {
   DVLOG(2) << __func__ << ": " << key_system;
-
-  if (security_origin.opaque()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(cdm_created_cb), nullptr, "Invalid origin."));
-    return;
-  }
 
   // If AesDecryptor can be used, always use it here in the local process.
   // Note: We should not run AesDecryptor in the browser process except for
@@ -63,9 +54,8 @@ void MojoCdmFactory::Create(
   interface_factory_->CreateCdm(
       key_system, cdm_pending_remote.InitWithNewPipeAndPassReceiver());
 
-  MojoCdm::Create(key_system, security_origin, cdm_config,
-                  std::move(cdm_pending_remote), session_message_cb,
-                  session_closed_cb, session_keys_change_cb,
+  MojoCdm::Create(key_system, cdm_config, std::move(cdm_pending_remote),
+                  session_message_cb, session_closed_cb, session_keys_change_cb,
                   session_expiration_update_cb, std::move(cdm_created_cb));
 }
 

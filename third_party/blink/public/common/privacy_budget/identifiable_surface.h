@@ -32,7 +32,8 @@ class IdentifiableSurface {
   // Bitmask for extracting Type value from a surface hash.
   static constexpr uint64_t kTypeMask = (1 << kTypeBits) - 1;
 
-  // Indicator for an uninitialized IdentifiableSurface.
+  // Indicator for an uninitialized IdentifiableSurface. Maps to
+  // {Type::kReservedInternal, 0} which is not possible for a valid surface.
   static constexpr uint64_t kInvalidHash = 0;
 
   // Type of identifiable surface.
@@ -72,6 +73,11 @@ class IdentifiableSurface {
   static constexpr IdentifiableSurface FromTypeAndInput(Type type,
                                                         uint64_t input) {
     return IdentifiableSurface(KeyFromSurfaceTypeAndInput(type, input));
+  }
+
+  // Construct an invalid identifiable surface.
+  static constexpr IdentifiableSurface Invalid() {
+    return IdentifiableSurface(kInvalidHash);
   }
 
   // Returns the UKM metric hash corresponding to this IdentifiableSurface.

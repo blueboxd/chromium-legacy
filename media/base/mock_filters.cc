@@ -172,13 +172,11 @@ MockCdmSessionPromise::~MockCdmSessionPromise() {
 }
 
 MockCdm::MockCdm(const std::string& key_system,
-                 const url::Origin& security_origin,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : key_system_(key_system),
-      security_origin_(security_origin),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
@@ -214,7 +212,6 @@ MockCdmFactory::~MockCdmFactory() = default;
 
 void MockCdmFactory::Create(
     const std::string& key_system,
-    const url::Origin& security_origin,
     const CdmConfig& /* cdm_config */,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
@@ -236,8 +233,8 @@ void MockCdmFactory::Create(
   // get the MockCdm via MockCdmFactory::GetCreatedCdm() and explicitly specify
   // expectations using EXPECT_CALL.
   scoped_refptr<MockCdm> cdm = new NiceMock<MockCdm>(
-      key_system, security_origin, session_message_cb, session_closed_cb,
-      session_keys_change_cb, session_expiration_update_cb);
+      key_system, session_message_cb, session_closed_cb, session_keys_change_cb,
+      session_expiration_update_cb);
   created_cdm_ = cdm.get();
   std::move(cdm_created_cb).Run(std::move(cdm), "");
 }

@@ -78,8 +78,7 @@ class PrerenderContents::WebContentsDelegateImpl
     : public content::WebContentsDelegate {
  public:
   explicit WebContentsDelegateImpl(PrerenderContents* prerender_contents)
-      : prerender_contents_(prerender_contents) {
-  }
+      : prerender_contents_(prerender_contents) {}
 
   // content::WebContentsDelegate implementation:
   WebContents* OpenURLFromTab(WebContents* source,
@@ -157,6 +156,7 @@ PrerenderContents::PrerenderContents(
     case ORIGIN_EXTERNAL_REQUEST:
     case ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER:
     case ORIGIN_NAVIGATION_PREDICTOR:
+    case ORIGIN_ISOLATED_PRERENDER:
       DCHECK(!initiator_origin_.has_value());
       break;
 
@@ -253,15 +253,13 @@ void PrerenderContents::StartPrerendering(
       this, content::NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       content::Source<WebContents>(prerender_contents_.get()));
 
-  content::NavigationController::LoadURLParams load_url_params(
-      prerender_url_);
+  content::NavigationController::LoadURLParams load_url_params(prerender_url_);
   load_url_params.referrer = referrer_;
   load_url_params.initiator_origin = initiator_origin_;
   load_url_params.transition_type = ui::PAGE_TRANSITION_LINK;
   if (origin_ == ORIGIN_OMNIBOX) {
     load_url_params.transition_type = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_TYPED |
-        ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   } else if (origin_ == ORIGIN_NAVIGATION_PREDICTOR) {
     load_url_params.transition_type =
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_GENERATED);
@@ -294,8 +292,8 @@ void PrerenderContents::SetFinalStatus(FinalStatus final_status) {
 
 PrerenderContents::~PrerenderContents() {
   DCHECK_NE(FINAL_STATUS_UNKNOWN, final_status());
-  DCHECK(
-      prerendering_has_been_cancelled() || final_status() == FINAL_STATUS_USED);
+  DCHECK(prerendering_has_been_cancelled() ||
+         final_status() == FINAL_STATUS_USED);
   DCHECK_NE(ORIGIN_MAX, origin());
 
   prerender_manager_->RecordFinalStatus(origin(), final_status());
@@ -355,8 +353,7 @@ void PrerenderContents::Observe(int type,
 }
 
 void PrerenderContents::OnRenderViewHostCreated(
-    RenderViewHost* new_render_view_host) {
-}
+    RenderViewHost* new_render_view_host) {}
 
 std::unique_ptr<WebContents> PrerenderContents::CreateWebContents(
     SessionStorageNamespace* session_storage_namespace) {
@@ -492,8 +489,7 @@ void PrerenderContents::DidFinishLoad(
 void PrerenderContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      navigation_handle->IsErrorPage()) {
+      !navigation_handle->HasCommitted() || navigation_handle->IsErrorPage()) {
     return;
   }
 
@@ -627,8 +623,8 @@ std::unique_ptr<base::DictionaryValue> PrerenderContents::GetAsValue() const {
   base::TimeTicks current_time = base::TimeTicks::Now();
   base::TimeDelta duration = current_time - load_start_time_;
   dict_value->SetInteger("duration", duration.InSeconds());
-  dict_value->SetBoolean("is_loaded", prerender_contents_ &&
-                                      !prerender_contents_->IsLoading());
+  dict_value->SetBoolean(
+      "is_loaded", prerender_contents_ && !prerender_contents_->IsLoading());
   return dict_value;
 }
 

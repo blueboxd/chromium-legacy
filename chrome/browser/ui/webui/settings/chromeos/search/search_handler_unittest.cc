@@ -58,7 +58,8 @@ const std::vector<SearchConcept>& GetPrintingSearchConcepts() {
 // Creates a result with some default values.
 mojom::SearchResultPtr CreateDummyResult() {
   return mojom::SearchResult::New(
-      /*result_text=*/base::string16(), /*url=*/"",
+      /*result_text=*/base::string16(),
+      /*canonical_result_text=*/base::string16(), /*url=*/"",
       mojom::SearchResultIcon::kPrinter, /*relevance_score=*/0.5,
       /*hierarchy_strings=*/std::vector<base::string16>(),
       mojom::SearchResultDefaultRank::kMedium,
@@ -166,6 +167,28 @@ TEST_F(SearchHandlerTest, UrlModification) {
       search_results[0]->url_path_with_parameters);
 }
 
+TEST_F(SearchHandlerTest, AltTagMatch) {
+  // Add printing search tags to registry.
+  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  std::vector<mojom::SearchResultPtr> search_results;
+
+  // Search for "CUPS". The IDS_OS_SETTINGS_TAG_PRINTING result has an alternate
+  // tag "CUPS" (referring to the Unix printing protocol), so we should receive
+  // one match.
+  mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
+      .Search(base::ASCIIToUTF16("CUPS"),
+              /*max_num_results=*/3u,
+              mojom::ParentResultBehavior::kDoNotIncludeParentResults,
+              &search_results);
+  EXPECT_EQ(search_results.size(), 1u);
+
+  // Verify the result text and canonical restult text.
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_OS_SETTINGS_TAG_PRINTING_ALT2),
+            search_results[0]->result_text);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_OS_SETTINGS_TAG_PRINTING),
+            search_results[0]->canonical_result_text);
+}
+
 TEST_F(SearchHandlerTest, AllowParentResult) {
   // Add printing search tags to registry.
   search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
@@ -205,7 +228,7 @@ TEST_F(SearchHandlerTest, DefaultRank) {
 }
 
 // Regression test for https://crbug.com/1090184.
-TEST_F(SearchHandlerTest, CompareIdenticalResults) {
+TEST_F(SearchHandlerTest, CompareSearchResults) {
   // Create two equal dummy results.
   mojom::SearchResultPtr a = CreateDummyResult();
   mojom::SearchResultPtr b = CreateDummyResult();
@@ -214,6 +237,36 @@ TEST_F(SearchHandlerTest, CompareIdenticalResults) {
   // should return false regardless of the order of parameters.
   EXPECT_FALSE(SearchHandler::CompareSearchResults(a, b));
   EXPECT_FALSE(SearchHandler::CompareSearchResults(b, a));
+
+  // Differ only on default rank.
+  a = CreateDummyResult();
+  a->default_rank = mojom::SearchResultDefaultRank::kLow;
+  b = CreateDummyResult();
+  b->default_rank = mojom::SearchResultDefaultRank::kHigh;
+
+  // Comparison value should differ.
+  EXPECT_NE(SearchHandler::CompareSearchResults(b, a),
+            SearchHandler::CompareSearchResults(a, b));
+
+  // Differ only on relevance score.
+  a = CreateDummyResult();
+  a->relevance_score = 0;
+  b = CreateDummyResult();
+  b->relevance_score = 1;
+
+  // Comparison value should differ.
+  EXPECT_NE(SearchHandler::CompareSearchResults(b, a),
+            SearchHandler::CompareSearchResults(a, b));
+
+  // Differ only on type.
+  a = CreateDummyResult();
+  a->type = mojom::SearchResultType::kSection;
+  b = CreateDummyResult();
+  b->type = mojom::SearchResultType::kSubpage;
+
+  // Comparison value should differ.
+  EXPECT_NE(SearchHandler::CompareSearchResults(b, a),
+            SearchHandler::CompareSearchResults(a, b));
 }
 
 }  // namespace settings

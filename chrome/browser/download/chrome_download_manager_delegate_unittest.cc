@@ -1688,29 +1688,22 @@ class AndroidDownloadInfobarCounter
 
 class TestDownloadDialogBridge : public DownloadDialogBridge {
  public:
-  TestDownloadDialogBridge() {}
+  TestDownloadDialogBridge() = default;
 
   // DownloadDialogBridge implementation.
   void ShowDialog(gfx::NativeWindow native_window,
                   int64_t total_bytes,
                   DownloadLocationDialogType dialog_type,
                   const base::FilePath& suggested_path,
-                  DownloadDialogBridge::LocationCallback callback) override {
+                  DownloadDialogBridge::DialogCallback callback) override {
     dialog_shown_count_++;
     dialog_type_ = dialog_type;
     if (callback) {
-      std::move(callback).Run(DownloadLocationDialogResult::USER_CANCELED,
-                              base::FilePath());
+      DownloadDialogResult result;
+      result.location_result = DownloadLocationDialogResult::USER_CANCELED;
+      std::move(callback).Run(std::move(result));
     }
   }
-
-  void OnComplete(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& returned_path) override {}
-
-  void OnCanceled(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj) override {}
 
   // Returns the number of times ShowDialog has been called.
   int GetDialogShownCount() { return dialog_shown_count_; }

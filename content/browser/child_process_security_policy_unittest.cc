@@ -1337,6 +1337,45 @@ TEST_F(ChildProcessSecurityPolicyTest, HandleExtendsSecurityStateLifetime) {
   EXPECT_FALSE(ui_after_handle_invalidation);
 }
 
+TEST_F(ChildProcessSecurityPolicyTest, HandleDuplicate) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  GURL url("file:///etc/passwd");
+
+  p->Add(kRendererID, browser_context());
+  LockProcessIfNeeded(kRendererID, browser_context(), url);
+
+  auto handle = p->CreateHandle(kRendererID);
+
+  EXPECT_TRUE(handle.CanAccessDataForOrigin(url));
+
+  // Verify that a valid duplicate can be created and allows access.
+  auto duplicate_handle = handle.Duplicate();
+  EXPECT_TRUE(duplicate_handle.is_valid());
+  EXPECT_TRUE(duplicate_handle.CanAccessDataForOrigin(url));
+
+  p->Remove(kRendererID);
+
+  // Verify that both handles still work even after Remove() has been called.
+  EXPECT_TRUE(handle.CanAccessDataForOrigin(url));
+  EXPECT_TRUE(duplicate_handle.CanAccessDataForOrigin(url));
+
+  // Verify that a new duplicate can be created after Remove().
+  auto duplicate_handle2 = handle.Duplicate();
+  EXPECT_TRUE(duplicate_handle2.is_valid());
+  EXPECT_TRUE(duplicate_handle2.CanAccessDataForOrigin(url));
+
+  // Verify that a new valid Handle cannot be created after Remove().
+  EXPECT_FALSE(p->CreateHandle(kRendererID).is_valid());
+
+  // Invalidate the original Handle and verify that the duplicates still work.
+  handle = ChildProcessSecurityPolicyImpl::Handle();
+  EXPECT_FALSE(handle.CanAccessDataForOrigin(url));
+  EXPECT_TRUE(duplicate_handle.CanAccessDataForOrigin(url));
+  EXPECT_TRUE(duplicate_handle2.CanAccessDataForOrigin(url));
+}
+
 TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_URL) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();

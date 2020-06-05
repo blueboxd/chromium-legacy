@@ -394,20 +394,6 @@ Polymer({
   onPreviewTtsClick_() {
     chrome.send(
         'previewTtsVoice', [this.previewText_, this.$.previewVoice.value]);
-    chrome.metricsPrivate.recordSparseHashable(
-        'TextToSpeech.Settings.PreviewVoiceClicked', this.$.previewVoice.value);
-  },
-
-  /** @private */
-  onDefaultTtsVoicePicked_: function(event) {
-    // Log the default voice the user selected. Each voice has at most one
-    // language, so there's no need to log language as well.
-    // The event target is the settings-dropdown-menu.
-    const target = /** @type {{prefStringValue_: function():string}} */
-        (event.target);
-    const newDefault = target.prefStringValue_();
-    chrome.metricsPrivate.recordSparseHashable(
-        'TextToSpeech.Settings.DefaultVoicePicked', newDefault);
   },
 
   /**

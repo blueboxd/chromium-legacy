@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_result.h"
@@ -16,50 +17,22 @@
 namespace {
 
 class TestDelegate
-    : public content_settings::TabSpecificContentSettings::Delegate {
+    : public content_settings::TestTabSpecificContentSettingsDelegate {
  public:
   explicit TestDelegate(
       HostContentSettingsMap* map,
       permissions::PermissionDecisionAutoBlocker* auto_blocker)
-      : content_settings_map_(map), auto_blocker_(auto_blocker) {}
+      : TestTabSpecificContentSettingsDelegate(/*prefs=*/nullptr, map),
+        auto_blocker_(auto_blocker) {}
 
  private:
   // content_settings::TabSpecificContentSettings::Delegate:
-  void UpdateLocationBar() override {}
-  void SetContentSettingRules(
-      content::RenderProcessHost* process,
-      const RendererContentSettingRules& rules) override {}
-  PrefService* GetPrefs() override { return nullptr; }
-  HostContentSettingsMap* GetSettingsMap() override {
-    return content_settings_map_;
-  }
   ContentSetting GetEmbargoSetting(const GURL& request_origin,
                                    ContentSettingsType permission) override {
     return auto_blocker_->GetEmbargoResult(request_origin, permission)
         .content_setting;
   }
-  std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override {
-    return {};
-  }
-  browsing_data::CookieHelper::IsDeletionDisabledCallback
-  GetIsDeletionDisabledCallback() override {
-    return base::NullCallback();
-  }
-  bool IsMicrophoneCameraStateChanged(
-      content_settings::TabSpecificContentSettings::MicrophoneCameraState
-          microphone_camera_state,
-      const std::string& media_stream_selected_audio_device,
-      const std::string& media_stream_selected_video_device) override {
-    return false;
-  }
-  content_settings::TabSpecificContentSettings::MicrophoneCameraState
-  GetMicrophoneCameraState() override {
-    return content_settings::TabSpecificContentSettings::
-        MICROPHONE_CAMERA_NOT_ACCESSED;
-  }
-  void OnContentBlocked(ContentSettingsType type) override {}
 
-  HostContentSettingsMap* content_settings_map_;
   permissions::PermissionDecisionAutoBlocker* auto_blocker_;
 };
 

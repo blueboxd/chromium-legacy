@@ -42,6 +42,9 @@ void RecordConsentInteraction(ConsentInteractionType type,
 // Record consent impression with how many times the user has seen the consent.
 void RecordConsentImpression(int nth_impression);
 
+// Record the intent generated on-device.
+void RecordIntentType(IntentType intent_type);
+
 }  // namespace quick_answers
 }  // namespace chromeos
 

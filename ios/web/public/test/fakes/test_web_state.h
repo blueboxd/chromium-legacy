@@ -97,6 +97,7 @@ class TestWebState : public WebState {
   void SetJSInjectionReceiver(CRWJSInjectionReceiver* injection_receiver);
   void SetTitle(const base::string16& title);
   void SetContentIsHTML(bool content_is_html);
+  void SetContentsMimeType(const std::string& mime_type);
   void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);
   void SetVisibleURL(const GURL& url);

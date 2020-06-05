@@ -150,12 +150,12 @@ class MockSnippetsAvailableCallback {
 void ParseJson(const std::string& json,
                SuccessCallback success_callback,
                ErrorCallback error_callback) {
-  base::JSONReader json_reader;
-  base::Optional<base::Value> value = json_reader.ReadToValue(json);
-  if (value) {
-    std::move(success_callback).Run(std::move(*value));
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(json);
+  if (parsed_json.value) {
+    std::move(success_callback).Run(std::move(*parsed_json.value));
   } else {
-    std::move(error_callback).Run(json_reader.GetErrorMessage());
+    std::move(error_callback).Run(std::move(parsed_json.error_message));
   }
 }
 

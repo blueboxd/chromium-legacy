@@ -14,7 +14,7 @@ namespace net {
 
 // Default QUIC version used in absence of any external configuration.
 constexpr quic::ParsedQuicVersion kDefaultSupportedQuicVersion =
-    quic::ParsedQuicVersion::Q046();
+    quic::ParsedQuicVersion::Q050();
 
 // Returns a list containing only the current default version.
 inline NET_EXPORT_PRIVATE quic::ParsedQuicVersionVector

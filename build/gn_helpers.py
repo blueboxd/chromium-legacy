@@ -284,6 +284,7 @@ class GNValueParser(object):
       val = self._ParseAllowTrailing()
       self.ConsumeWhitespace()
       self.ConsumeComment()
+      self.ConsumeWhitespace()
       d[ident] = val
 
     return d

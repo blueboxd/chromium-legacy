@@ -64,11 +64,11 @@ class ChromeDownloadManagerDelegate
   void SetDownloadManager(content::DownloadManager* dm);
 
 #if defined(OS_ANDROID)
-  void ChooseDownloadLocation(gfx::NativeWindow native_window,
-                              int64_t total_bytes,
-                              DownloadLocationDialogType dialog_type,
-                              const base::FilePath& suggested_path,
-                              DownloadDialogBridge::LocationCallback callback);
+  void ShowDownloadDialog(gfx::NativeWindow native_window,
+                          int64_t total_bytes,
+                          DownloadLocationDialogType dialog_type,
+                          const base::FilePath& suggested_path,
+                          DownloadDialogBridge::DialogCallback callback);
 
   void SetDownloadDialogBridgeForTesting(DownloadDialogBridge* bridge);
 #endif

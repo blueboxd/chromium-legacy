@@ -10,12 +10,10 @@
 #include "base/bind.h"
 #include "chrome/android/features/vr/jni_headers/VrShellDelegate_jni.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_device_provider.h"
-#include "chrome/browser/android/vr/metrics_util_android.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/vr/assets_loader.h"
-#include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
@@ -92,8 +90,7 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(
       Java_VrShellDelegate_getNativePointer(env, jdelegate));
 }
 
-void VrShellDelegate::SetDelegate(VrShell* vr_shell,
-                                  gvr::ViewerType viewer_type) {
+void VrShellDelegate::SetDelegate(VrShell* vr_shell) {
   vr_shell_ = vr_shell;
 
   // When VrShell is created, we disable magic window mode as the user is inside
@@ -112,10 +109,6 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
     pending_successful_present_request_ = false;
     std::move(on_present_result_callback_).Run(true);
   }
-
-  JNIEnv* env = AttachCurrentThread();
-  std::unique_ptr<VrCoreInfo> vr_core_info = MakeVrCoreInfo(env);
-  MetricsUtilAndroid::LogGvrVersionForVrViewerType(viewer_type, *vr_core_info);
 }
 
 void VrShellDelegate::RemoveDelegate() {

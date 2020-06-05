@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/payments/content/android/byte_buffer_helper.h"
+#include "components/payments/content/android/jni_payment_app.h"
 #include "components/payments/content/android/payment_request_spec.h"
 #include "components/payments/content/payment_app_service.h"
 #include "components/payments/content/payment_app_service_factory.h"
@@ -40,10 +41,6 @@ using ::base::android::ConvertUTF8ToJavaString;
 using ::base::android::JavaParamRef;
 using ::base::android::JavaRef;
 using ::base::android::ScopedJavaGlobalRef;
-using ::base::android::ScopedJavaLocalRef;
-using ::base::android::ToJavaArrayOfStrings;
-using ::base::android::ToJavaIntArray;
-using ::payments::android::DeserializeFromJavaByteBufferArray;
 using ::payments::mojom::PaymentMethodDataPtr;
 
 // Helper to get the PaymentAppService associated with |render_frame_host|'s
@@ -56,84 +53,18 @@ payments::PaymentAppService* GetPaymentAppService(
       web_contents ? web_contents->GetBrowserContext() : nullptr);
 }
 
-void OnPaymentAppsCreated(
-    const JavaRef<jobject>& jcallback,
-    const content::PaymentAppProvider::PaymentApps& apps,
-    const payments::ServiceWorkerPaymentAppFinder::InstallablePaymentApps&
-        installable_apps) {
+void OnCanMakePaymentCalculated(const JavaRef<jobject>& jcallback,
+                                bool can_make_payment) {
+  Java_PaymentAppServiceCallback_onCanMakePaymentCalculated(
+      AttachCurrentThread(), jcallback, can_make_payment);
+}
+
+void OnPaymentAppCreated(const JavaRef<jobject>& jcallback,
+                         std::unique_ptr<payments::PaymentApp> payment_app) {
   JNIEnv* env = AttachCurrentThread();
-
-  for (const auto& app_info : apps) {
-    // Sends related application Ids to java side if the app prefers related
-    // applications.
-    std::vector<std::string> preferred_related_application_ids;
-    if (app_info.second->prefer_related_applications) {
-      for (const auto& related_application :
-           app_info.second->related_applications) {
-        // Only consider related applications on Google play for Android.
-        if (related_application.platform == "play")
-          preferred_related_application_ids.emplace_back(
-              related_application.id);
-      }
-    }
-
-    base::android::ScopedJavaLocalRef<jobjectArray> jcapabilities =
-        Java_PaymentAppServiceBridge_createCapabilities(
-            env, app_info.second->capabilities.size());
-    for (size_t i = 0; i < app_info.second->capabilities.size(); i++) {
-      Java_PaymentAppServiceBridge_addCapabilities(
-          env, jcapabilities, base::checked_cast<int>(i),
-          ToJavaIntArray(
-              env, app_info.second->capabilities[i].supported_card_networks));
-    }
-
-    base::android::ScopedJavaLocalRef<jobject> jsupported_delegations =
-        Java_PaymentAppServiceBridge_createSupportedDelegations(
-            env, app_info.second->supported_delegations.shipping_address,
-            app_info.second->supported_delegations.payer_name,
-            app_info.second->supported_delegations.payer_phone,
-            app_info.second->supported_delegations.payer_email);
-
-    // TODO(crbug.com/846077): Find a proper way to make use of user hint.
-    Java_PaymentAppServiceCallback_onInstalledPaymentHandlerFound(
-        env, jcallback, app_info.second->registration_id,
-        url::GURLAndroid::FromNativeGURL(env, app_info.second->scope),
-        app_info.second->name.empty()
-            ? nullptr
-            : ConvertUTF8ToJavaString(env, app_info.second->name),
-        nullptr,
-        app_info.second->icon == nullptr
-            ? nullptr
-            : gfx::ConvertToJavaBitmap(app_info.second->icon.get()),
-        ToJavaArrayOfStrings(env, app_info.second->enabled_methods),
-        app_info.second->has_explicitly_verified_methods, jcapabilities,
-        ToJavaArrayOfStrings(env, preferred_related_application_ids),
-        jsupported_delegations);
-  }
-
-  for (const auto& installable_app : installable_apps) {
-    base::android::ScopedJavaLocalRef<jobject> jsupported_delegations =
-        Java_PaymentAppServiceBridge_createSupportedDelegations(
-            env, installable_app.second->supported_delegations.shipping_address,
-            installable_app.second->supported_delegations.payer_name,
-            installable_app.second->supported_delegations.payer_phone,
-            installable_app.second->supported_delegations.payer_email);
-
-    Java_PaymentAppServiceCallback_onInstallablePaymentHandlerFound(
-        env, jcallback,
-        ConvertUTF8ToJavaString(env, installable_app.second->name),
-        url::GURLAndroid::FromNativeGURL(
-            env, GURL(installable_app.second->sw_js_url)),
-        url::GURLAndroid::FromNativeGURL(
-            env, GURL(installable_app.second->sw_scope)),
-        installable_app.second->sw_use_cache,
-        installable_app.second->icon == nullptr
-            ? nullptr
-            : gfx::ConvertToJavaBitmap(installable_app.second->icon.get()),
-        ConvertUTF8ToJavaString(env, installable_app.first.spec()),
-        ToJavaArrayOfStrings(env, installable_app.second->preferred_app_ids),
-        jsupported_delegations);
-  }
+  Java_PaymentAppServiceCallback_onPaymentAppCreated(
+      env, jcallback,
+      payments::JniPaymentApp::Create(env, std::move(payment_app)));
 }
 
 void OnPaymentAppCreationError(const JavaRef<jobject>& jcallback,
@@ -178,7 +109,9 @@ void JNI_PaymentAppServiceBridge_Create(
       payments::android::PaymentRequestSpec::FromJavaPaymentRequestSpec(
           env, jpayment_request_spec),
       web_data_service, jmay_crawl_for_installable_payment_apps,
-      base::BindRepeating(&OnPaymentAppsCreated,
+      base::BindOnce(&OnCanMakePaymentCalculated,
+                     ScopedJavaGlobalRef<jobject>(env, jcallback)),
+      base::BindRepeating(&OnPaymentAppCreated,
                           ScopedJavaGlobalRef<jobject>(env, jcallback)),
       base::BindRepeating(&OnPaymentAppCreationError,
                           ScopedJavaGlobalRef<jobject>(env, jcallback)),
@@ -230,13 +163,15 @@ PaymentAppServiceBridge* PaymentAppServiceBridge::Create(
     PaymentRequestSpec* spec,
     scoped_refptr<PaymentManifestWebDataService> web_data_service,
     bool may_crawl_for_installable_payment_apps,
-    PaymentAppsCreatedCallback payment_apps_created_callback,
+    CanMakePaymentCalculatedCallback can_make_payment_calculated_callback,
+    PaymentAppCreatedCallback payment_app_created_callback,
     PaymentAppCreationErrorCallback payment_app_creation_error_callback,
     base::OnceClosure done_creating_payment_apps_callback) {
   std::unique_ptr<PaymentAppServiceBridge> bridge(new PaymentAppServiceBridge(
       number_of_factories, render_frame_host, top_origin, spec,
       std::move(web_data_service), may_crawl_for_installable_payment_apps,
-      std::move(payment_apps_created_callback),
+      std::move(can_make_payment_calculated_callback),
+      std::move(payment_app_created_callback),
       std::move(payment_app_creation_error_callback),
       std::move(done_creating_payment_apps_callback)));
   return PaymentAppServiceBridgeStorage::GetInstance()->Add(std::move(bridge));
@@ -249,7 +184,8 @@ PaymentAppServiceBridge::PaymentAppServiceBridge(
     PaymentRequestSpec* spec,
     scoped_refptr<PaymentManifestWebDataService> web_data_service,
     bool may_crawl_for_installable_payment_apps,
-    PaymentAppsCreatedCallback payment_apps_created_callback,
+    CanMakePaymentCalculatedCallback can_make_payment_calculated_callback,
+    PaymentAppCreatedCallback payment_app_created_callback,
     PaymentAppCreationErrorCallback payment_app_creation_error_callback,
     base::OnceClosure done_creating_payment_apps_callback)
     : number_of_pending_factories_(number_of_factories),
@@ -264,7 +200,9 @@ PaymentAppServiceBridge::PaymentAppServiceBridge(
       payment_manifest_web_data_service_(web_data_service),
       may_crawl_for_installable_payment_apps_(
           may_crawl_for_installable_payment_apps),
-      payment_apps_created_callback_(std::move(payment_apps_created_callback)),
+      can_make_payment_calculated_callback_(
+          std::move(can_make_payment_calculated_callback)),
+      payment_app_created_callback_(std::move(payment_app_created_callback)),
       payment_app_creation_error_callback_(
           std::move(payment_app_creation_error_callback)),
       done_creating_payment_apps_callback_(
@@ -296,7 +234,7 @@ content::RenderFrameHost* PaymentAppServiceBridge::GetInitiatorRenderFrameHost()
   return render_frame_host_;
 }
 
-const std::vector<mojom::PaymentMethodDataPtr>&
+const std::vector<PaymentMethodDataPtr>&
 PaymentAppServiceBridge::GetMethodData() const {
   return spec_->method_data();
 }
@@ -318,6 +256,7 @@ bool PaymentAppServiceBridge::IsOffTheRecord() const {
 
 const std::vector<autofill::AutofillProfile*>&
 PaymentAppServiceBridge::GetBillingProfiles() {
+  // PaymentAppService flow should have short-circuited before this point.
   NOTREACHED();
   return dummy_profiles_;
 }
@@ -330,6 +269,7 @@ bool PaymentAppServiceBridge::IsRequestedAutofillDataAvailable() {
 
 ContentPaymentRequestDelegate*
 PaymentAppServiceBridge::GetPaymentRequestDelegate() const {
+  // PaymentAppService flow should have short-circuited before this point.
   NOTREACHED();
   return nullptr;
 }
@@ -344,18 +284,14 @@ PaymentRequestSpec* PaymentAppServiceBridge::GetSpec() const {
 
 void PaymentAppServiceBridge::OnPaymentAppCreated(
     std::unique_ptr<PaymentApp> app) {
-  // PaymentAppService flow should have short-circuited before this point.
-  NOTREACHED();
+  if (can_make_payment_calculated_callback_)
+    std::move(can_make_payment_calculated_callback_).Run(true);
+
+  payment_app_created_callback_.Run(std::move(app));
 }
 
 bool PaymentAppServiceBridge::SkipCreatingNativePaymentApps() const {
   return true;
-}
-
-void PaymentAppServiceBridge::OnCreatingNativePaymentAppsSkipped(
-    content::PaymentAppProvider::PaymentApps apps,
-    ServiceWorkerPaymentAppFinder::InstallablePaymentApps installable_apps) {
-  payment_apps_created_callback_.Run(apps, installable_apps);
 }
 
 void PaymentAppServiceBridge::OnPaymentAppCreationError(
@@ -370,6 +306,10 @@ void PaymentAppServiceBridge::OnDoneCreatingPaymentApps() {
   }
 
   DCHECK_EQ(1U, number_of_pending_factories_);
+
+  if (can_make_payment_calculated_callback_)
+    std::move(can_make_payment_calculated_callback_).Run(false);
+
   std::move(done_creating_payment_apps_callback_).Run();
   PaymentAppServiceBridgeStorage::GetInstance()->Remove(this);
 }

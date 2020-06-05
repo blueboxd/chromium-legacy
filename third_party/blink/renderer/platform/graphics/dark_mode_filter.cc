@@ -104,7 +104,7 @@ class DarkModeInvertedColorCache {
     if (cached_value)
       return *cached_value;
 
-    SkColor inverted_color = filter->InvertColor(Color(color)).Rgb();
+    SkColor inverted_color = filter->InvertColor(color);
     cache_.Put(key, std::move(inverted_color));
     return inverted_color;
   }
@@ -161,8 +161,7 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
       DarkModeColorClassifier::MakeBackgroundColorClassifier(settings_);
 }
 
-Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
-                                          ElementRole role) {
+SkColor DarkModeFilter::InvertColorIfNeeded(SkColor color, ElementRole role) {
   if (!IsDarkModeActive())
     return color;
 
@@ -170,8 +169,7 @@ Color DarkModeFilter::InvertColorIfNeeded(const Color& color,
     role = role_override_.value();
 
   if (ShouldApplyToColor(color, role)) {
-    return Color(inverted_color_cache_->GetInvertedColor(color_filter_.get(),
-                                                         color.Rgb()));
+    return inverted_color_cache_->GetInvertedColor(color_filter_.get(), color);
   }
 
   return color;
@@ -215,7 +213,7 @@ bool DarkModeFilter::IsDarkModeActive() const {
 // already done so. This allows the caller to exit earlier if it needs to
 // perform some other logic in between confirming dark mode is active and
 // checking the color classifiers.
-bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
+bool DarkModeFilter::ShouldApplyToColor(SkColor color, ElementRole role) {
   switch (role) {
     case ElementRole::kText:
       DCHECK(text_classifier_);

@@ -6,13 +6,23 @@
 -org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallback
 -org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackAndShortTimeout
 -org.chromium.chrome.browser.externalnav.UrlOverridingTest.testNavigationFromXHRCallbackInSubFrame
+-org.chromium.chrome.browser.externalnav.UrlOverridingTest.testRedirectionFromIntent
 
 # vr tests do not apply to emulator
 -org.chromium.chrome.browser.hardware_acceleration.ManifestHWATest.testAccelerationDisabled
 
+# This is a known issue in AudioMixer and there's no fix until O
+# See crbug.com/1081969 for more detail
+-org.chromium.chrome.browser.video.VideoTest.testLoadMediaUrl
+
 # crbug/1036571
--org.chromium.chrome.browser.shape_detection.ShapeDetectionTest.testBarcodeDetection
+-org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithHint
+-org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithoutHint
+-org.chromium.shape_detection.FaceDetectionImplTest.testDetectFacesInProfileWithGmsCore
+-org.chromium.shape_detection.FaceDetectionImplTest.testDetectRotatedFaceWithGmsCore
+-org.chromium.shape_detection.FaceDetectionImplTest.testDetectValidImageWithGmsCore
 -org.chromium.shape_detection.TextDetectionImplTest.testDetectSucceedsOnValidBitmap
+-org.chromium.chrome.browser.shape_detection.ShapeDetectionTest.testBarcodeDetection
 
 # crbug.com/1059046
 -org.chromium.chrome.browser.customtabs.CustomTabFromChromeExternalNavigationTest.testIntentWithRedirectToApp
@@ -47,3 +57,6 @@
 
 # crbug.com/1077316
 -org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoTest.testChangeHomepageAndUndo_*
+
+# crbug.com/1090942
+-org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragmentTest.*

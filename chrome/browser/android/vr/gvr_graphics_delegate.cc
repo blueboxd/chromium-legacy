@@ -361,7 +361,7 @@ void GvrGraphicsDelegate::InitializeRenderer(bool start_in_webxr_mode) {
 
   UpdateViewports();
 
-  browser_->GvrDelegateReady(gvr_api_->GetViewerType());
+  browser_->GvrDelegateReady();
 }
 
 void GvrGraphicsDelegate::UpdateViewports() {

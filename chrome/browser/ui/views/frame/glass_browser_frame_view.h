@@ -45,6 +45,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   SkColor GetCaptionColor(BrowserFrameActiveState active_state) const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
+  CaptionButtonContainer* GetCaptionButtonContainer() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -81,6 +82,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void Layout() override;
 
  private:
+  friend class GlassBrowserCaptionButtonContainer;
+
   // Returns the thickness of the window border for the left, right, and bottom
   // edges of the frame. On Windows 10 this is a mostly-transparent handle that
   // allows you to resize the window.
@@ -119,9 +122,13 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   bool ShowCustomIcon() const;
   bool ShowCustomTitle() const;
   bool ShowSystemIcon() const;
+  bool IsWebUITabStrip() const;
 
-  Windows10CaptionButton* CreateCaptionButton(ViewID button_type,
-                                              int accessible_name_resource_id);
+  // Returns true if caption buttons are present on the frame (as opposed to
+  // somewhere else, or not present at all). In some modes, the frame can "lend"
+  // the caption buttons to another view which needs to display them - e.g. in
+  // tablet mode on Windows.
+  bool OwnsCaptionButtons() const;
 
   // Paint various sub-components of this view.
   void PaintTitlebar(gfx::Canvas* canvas) const;
@@ -129,8 +136,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // Layout various sub-components of this view.
   void LayoutTitleBar();
   void LayoutCaptionButtons();
-  void LayoutCaptionButton(Windows10CaptionButton* button,
-                           int previous_button_x);
   void LayoutClientView();
 
   // Returns the insets of the client area. If |restored| is true, this is
@@ -157,11 +162,15 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   TabIconView* window_icon_;
   views::Label* window_title_;
 
-  // Custom-drawn caption buttons. Only used when custom-drawing the titlebar.
-  Windows10CaptionButton* minimize_button_;
-  Windows10CaptionButton* maximize_button_;
-  Windows10CaptionButton* restore_button_;
-  Windows10CaptionButton* close_button_;
+  // The container holding the caption buttons (minimize, maximize, close, etc.)
+  //
+  // This is normally parented to the frame view, but in some modes (e.g. tablet
+  // mode on Windows) it is handed off to the browser view to be displayed in
+  // the client area.
+  //
+  // May be null if the caption button container is destroyed before the frame
+  // view. Always check for validity before using!
+  GlassBrowserCaptionButtonContainer* caption_button_container_;
 
   // Whether or not the window throbber is currently animating.
   bool throbber_running_;

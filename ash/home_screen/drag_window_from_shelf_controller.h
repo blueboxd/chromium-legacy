@@ -182,6 +182,9 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   gfx::PointF previous_location_in_screen_;
   bool drag_started_ = false;
 
+  // Whether overview was active when the drag started.
+  bool started_in_overview_ = false;
+
   // Hide all eligible windows during window dragging. Depends on different
   // scenarios, we may or may not reshow there windows when drag ends.
   std::unique_ptr<WindowsHider> windows_hider_;

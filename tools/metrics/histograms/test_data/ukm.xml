@@ -9,6 +9,23 @@
   </metric>
 </event>
 
+<event name="AbusiveExperienceHeuristic.WindowOpen">
+  <owner>yaoxia@chromium.org</owner>
+  <summary>
+    Recorded whenever window.open() is called when AdTagging is enabled.
+  </summary>
+  <metric name="FromAdScript">
+    <summary>
+      True if the page called window.open() with an ad script in the stack.
+    </summary>
+  </metric>
+  <metric name="FromAdSubframe">
+    <summary>
+      True if the page called window.open() from an ad subframe.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.SelectedMaskedServerCard">
   <obsolete>
     Deprecated 2/2019

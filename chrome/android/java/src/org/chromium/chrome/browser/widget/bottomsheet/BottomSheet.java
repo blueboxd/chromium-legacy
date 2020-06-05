@@ -46,6 +46,12 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
 class BottomSheet extends FrameLayout
         implements BottomSheetSwipeDetector.SwipeableBottomSheet, View.OnLayoutChangeListener {
     /**
+     * The base duration of the settling animation of the sheet. 218 ms is a spec for material
+     * design (this is the minimum time a user is guaranteed to pay attention to something).
+     */
+    private static final int BASE_ANIMATION_DURATION_MS = 218;
+
+    /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
      * released. This is the value used when there are 3 active states. A smaller value here means
      * a smaller swipe is needed to move the sheet around.
@@ -559,7 +565,7 @@ class BottomSheet extends FrameLayout
         mTargetState = targetState;
         mSettleAnimator =
                 ValueAnimator.ofFloat(getCurrentOffsetPx(), getSheetHeightForState(targetState));
-        mSettleAnimator.setDuration(BottomSheetController.BASE_ANIMATION_DURATION_MS);
+        mSettleAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
         mSettleAnimator.setInterpolator(mInterpolator);
 
         // When the animation is canceled or ends, reset the handle to null.
@@ -661,16 +667,6 @@ class BottomSheet extends FrameLayout
             setInternalCurrentState(SheetState.SCROLLING, StateChangeReason.SWIPE);
             setSheetOffsetFromBottom(offset, StateChangeReason.SWIPE);
         }
-    }
-
-    /**
-     * This is the same as {@link #setSheetOffsetFromBottom(float, int)} but exclusively for
-     * testing.
-     * @param offset The offset to set the sheet to.
-     */
-    @VisibleForTesting
-    public void setSheetOffsetFromBottomForTesting(float offset) {
-        setSheetOffsetFromBottom(offset, StateChangeReason.NONE);
     }
 
     /**

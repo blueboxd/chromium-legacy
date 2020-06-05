@@ -55,11 +55,12 @@ constexpr char kPSTTimeZoneID[] = "America/Los_Angeles";
 
 void DecodeJsonStringAndNormalize(const std::string& json_string,
                                   base::Value* value) {
-  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-  base::Optional<base::Value> read_value = reader.ReadToValue(json_string);
-  ASSERT_EQ(reader.GetErrorMessage(), "");
-  ASSERT_TRUE(read_value.has_value());
-  *value = std::move(read_value.value());
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json_string, base::JSON_ALLOW_TRAILING_COMMAS);
+  ASSERT_EQ(parsed_json.error_message, "");
+  ASSERT_TRUE(parsed_json.value);
+  *value = std::move(*parsed_json.value);
 }
 
 // Creates a JSON policy for daily device scheduled update checks.

@@ -29,10 +29,10 @@
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "chrome/browser/download/download_dialog_types.h"
 #include "chrome/browser/download/download_file_picker.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_location_dialog_type.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_stats.h"
@@ -86,7 +86,7 @@
 #include "base/android/path_utils.h"
 #include "chrome/browser/download/android/chrome_duplicate_download_infobar_delegate.h"
 #include "chrome/browser/download/android/download_controller.h"
-#include "chrome/browser/download/android/download_dialog_bridge_impl.h"
+#include "chrome/browser/download/android/download_dialog_bridge.h"
 #include "chrome/browser/download/android/download_manager_service.h"
 #include "chrome/browser/download/android/download_open_source.h"
 #include "chrome/browser/download/android/download_utils.h"
@@ -248,13 +248,13 @@ void OnDownloadAcquireFileAccessPermissionDone(
 }
 
 // Overlays download location dialog result to target determiner.
-void OnDownloadLocationDetermined(
+void OnDownloadDialogClosed(
     const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
-    DownloadLocationDialogResult result,
-    const base::FilePath& path) {
-  switch (result) {
+    DownloadDialogResult result) {
+  switch (result.location_result) {
     case DownloadLocationDialogResult::USER_CONFIRMED:
-      callback.Run(DownloadConfirmationResult::CONFIRMED_WITH_DIALOG, path);
+      callback.Run(DownloadConfirmationResult::CONFIRMED_WITH_DIALOG,
+                   result.file_path);
       break;
     case DownloadLocationDialogResult::USER_CANCELED:
       callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
@@ -264,7 +264,7 @@ void OnDownloadLocationDetermined(
       // Currently we just let other downloads continue, which doesn't make
       // sense.
       callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-                   path);
+                   result.file_path);
       break;
   }
 }
@@ -319,7 +319,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
       download_prefs_(new DownloadPrefs(profile)),
       is_file_picker_showing_(false) {
 #if defined(OS_ANDROID)
-  download_dialog_bridge_.reset(new DownloadDialogBridgeImpl);
+  download_dialog_bridge_.reset(new DownloadDialogBridge);
 #endif
 }
 
@@ -340,12 +340,12 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
 }
 
 #if defined(OS_ANDROID)
-void ChromeDownloadManagerDelegate::ChooseDownloadLocation(
+void ChromeDownloadManagerDelegate::ShowDownloadDialog(
     gfx::NativeWindow native_window,
     int64_t total_bytes,
     DownloadLocationDialogType dialog_type,
     const base::FilePath& suggested_path,
-    DownloadDialogBridge::LocationCallback callback) {
+    DownloadDialogBridge::DialogCallback callback) {
   DCHECK(download_dialog_bridge_);
   download_dialog_bridge_->ShowDialog(native_window, total_bytes, dialog_type,
                                       suggested_path, std::move(callback));
@@ -929,9 +929,9 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       }
 
       gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
-      ChooseDownloadLocation(
-          native_window, download->GetTotalBytes(), dialog_type, suggested_path,
-          base::BindOnce(&OnDownloadLocationDetermined, callback));
+      ShowDownloadDialog(native_window, download->GetTotalBytes(), dialog_type,
+                         suggested_path,
+                         base::BindOnce(&OnDownloadDialogClosed, callback));
     }
   } else {
     switch (reason) {
@@ -1046,10 +1046,9 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (result == PathValidationResult::SUCCESS) {
     if (download_prefs_->PromptForDownload()) {
-      ChooseDownloadLocation(
-          native_window, 0 /* total_bytes */,
-          DownloadLocationDialogType::NAME_CONFLICT, target_path,
-          base::BindOnce(&OnDownloadLocationDetermined, callback));
+      ShowDownloadDialog(native_window, 0 /* total_bytes */,
+                         DownloadLocationDialogType::NAME_CONFLICT, target_path,
+                         base::BindOnce(&OnDownloadDialogClosed, callback));
       return;
     }
 

@@ -19,7 +19,6 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/assets_loader.h"
-#include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/vr_buildflags.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
@@ -104,7 +103,6 @@ void VrAssetsComponentInstallerPolicy::UpdateComponent(
 // static
 void VrAssetsComponentInstallerPolicy::OnRegisteredComponent(
     ComponentUpdateService* cus) {
-  vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnRegisteredComponent();
   VLOG(1) << "Registered VR assets component";
   registration_pending_ = false;
   registered_component_ = true;
@@ -137,8 +135,6 @@ bool VrAssetsComponentInstallerPolicy::VerifyInstallation(
     const base::FilePath& install_dir) const {
   auto* version_value = manifest.FindKey("version");
   if (!version_value || !version_value->is_string()) {
-    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnComponentUpdated(
-        vr::AssetsComponentUpdateStatus::kInvalid, base::nullopt);
     return false;
   }
 
@@ -146,16 +142,12 @@ bool VrAssetsComponentInstallerPolicy::VerifyInstallation(
   base::Version version(version_string);
   if (!version.IsValid() || version.components().size() != 2 ||
       !base::PathExists(install_dir)) {
-    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnComponentUpdated(
-        vr::AssetsComponentUpdateStatus::kInvalid, base::nullopt);
     return false;
   }
 
   if (version.components()[0] > vr::kTargetMajorVrAssetsComponentVersion) {
     // Component needs to be downgraded. Differential downgrades are not
     // supported. Just delete this component version.
-    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnComponentUpdated(
-        vr::AssetsComponentUpdateStatus::kIncompatible, version);
     return false;
   }
 
@@ -169,8 +161,6 @@ void VrAssetsComponentInstallerPolicy::ComponentReady(
   if (version.components()[0] < vr::kMinMajorVrAssetsComponentVersion) {
     // Don't propagate component readiness and wait until differential update
     // delivers compatible component version.
-    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnComponentUpdated(
-        vr::AssetsComponentUpdateStatus::kIncompatible, version);
     return;
   }
   vr::AssetsLoader::GetInstance()->OnComponentReady(version, install_dir,

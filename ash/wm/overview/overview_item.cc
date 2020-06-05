@@ -468,6 +468,8 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
 }
 
 void OverviewItem::CloseWindow() {
+  SetShadowBounds(base::nullopt);
+
   gfx::RectF inset_bounds(target_bounds_);
   inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
                      target_bounds_.height() * kPreCloseScale);
@@ -479,6 +481,9 @@ void OverviewItem::CloseWindow() {
 
   // Fade out the window and the label, effectively hiding them.
   AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
+
+  // |transform_window_| will delete |this| by deleting the widget associated
+  // with |this|.
   transform_window_.Close();
 }
 

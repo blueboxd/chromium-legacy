@@ -48,14 +48,15 @@ public class BottomSheetTest {
     public ChromeTabbedActivityTestRule mTestRule = new ChromeTabbedActivityTestRule();
     private TestBottomSheetContent mLowPriorityContent;
     private TestBottomSheetContent mHighPriorityContent;
-    private BottomSheetController mSheetController;
+    private BottomSheetControllerImpl mSheetController;
 
     @Before
     public void setUp() throws Exception {
         BottomSheet.setSmallScreenForTesting(false);
         mTestRule.startMainActivityOnBlankPage();
-        mSheetController =
-                mTestRule.getActivity().getRootUiCoordinatorForTesting().getBottomSheetController();
+        mSheetController = (BottomSheetControllerImpl) mTestRule.getActivity()
+                                   .getRootUiCoordinatorForTesting()
+                                   .getBottomSheetController();
         runOnUiThreadBlocking(() -> {
             mLowPriorityContent = new TestBottomSheetContent(
                     mTestRule.getActivity(), BottomSheetContent.ContentPriority.LOW, false);

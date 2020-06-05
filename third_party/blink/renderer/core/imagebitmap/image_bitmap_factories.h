@@ -57,7 +57,7 @@ class Blob;
 class ExecutionContext;
 class ImageBitmapSource;
 
-class ImageBitmapFactories final
+class CORE_EXPORT ImageBitmapFactories final
     : public GarbageCollected<ImageBitmapFactories>,
       public Supplement<ExecutionContext>,
       public NameClient {
@@ -76,6 +76,11 @@ class ImageBitmapFactories final
                                          int sy,
                                          int sw,
                                          int sh,
+                                         const ImageBitmapOptions*,
+                                         ExceptionState&);
+  static ScriptPromise CreateImageBitmap(ScriptState*,
+                                         ImageBitmapSource*,
+                                         base::Optional<IntRect> crop_rect,
                                          const ImageBitmapOptions*,
                                          ExceptionState&);
 
@@ -144,11 +149,6 @@ class ImageBitmapFactories final
   };
 
   static ImageBitmapFactories& From(ExecutionContext&);
-  static ScriptPromise CreateImageBitmap(ScriptState*,
-                                         ImageBitmapSource*,
-                                         base::Optional<IntRect> crop_rect,
-                                         const ImageBitmapOptions*,
-                                         ExceptionState&);
   static ScriptPromise CreateImageBitmapFromBlob(
       ScriptState*,
       ImageBitmapSource*,

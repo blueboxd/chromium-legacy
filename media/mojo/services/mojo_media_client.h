@@ -42,6 +42,10 @@ using SupportedVideoDecoderConfigMap =
     base::flat_map<VideoDecoderImplementation,
                    std::vector<SupportedVideoDecoderConfig>>;
 
+// Provides a way for MediaService to create concrete (e.g. platform specific)
+// media components’ implementations. When MediaService is created, a
+// MojoMediaClient must be passed in so that MediaService knows how to create
+// the media components.
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
   // Called before the host application is scheduled to quit.

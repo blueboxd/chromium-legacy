@@ -29,10 +29,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace media {
 
 class MojoDecryptor;
@@ -48,7 +44,6 @@ class MojoCdm : public ContentDecryptionModule,
 
   static void Create(
       const std::string& key_system,
-      const url::Origin& security_origin,
       const CdmConfig& cdm_config,
       mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm,
       const SessionMessageCB& session_message_cb,
@@ -94,7 +89,6 @@ class MojoCdm : public ContentDecryptionModule,
   ~MojoCdm() final;
 
   void InitializeCdm(const std::string& key_system,
-                     const url::Origin& security_origin,
                      const CdmConfig& cdm_config,
                      std::unique_ptr<CdmInitializedPromise> promise);
 

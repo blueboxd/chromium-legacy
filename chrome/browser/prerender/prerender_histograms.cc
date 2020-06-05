@@ -55,7 +55,9 @@ std::string PrerenderHistograms::GetHistogramPrefix(Origin origin) {
       return "externalrequestforced";
     case ORIGIN_NAVIGATION_PREDICTOR:
       return "navigationpredictor";
-    default:
+    case ORIGIN_ISOLATED_PRERENDER:
+      return "isolatedprerender";
+    case ORIGIN_MAX:
       NOTREACHED();
       break;
   }
@@ -64,9 +66,8 @@ std::string PrerenderHistograms::GetHistogramPrefix(Origin origin) {
   return "none";
 }
 
-void PrerenderHistograms::RecordFinalStatus(
-    Origin origin,
-    FinalStatus final_status) const {
+void PrerenderHistograms::RecordFinalStatus(Origin origin,
+                                            FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
   base::UmaHistogramEnumeration(GetHistogramName(origin, "FinalStatus"),
                                 final_status, FINAL_STATUS_MAX);
@@ -83,8 +84,7 @@ void PrerenderHistograms::RecordNetworkBytesConsumed(
   const int kBucketCount = 50;
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("Prerender.NetworkBytesTotalForProfile",
-                              profile_bytes,
-                              kHistogramMin,
+                              profile_bytes, kHistogramMin,
                               1000000000,  // 1G
                               kBucketCount);
 

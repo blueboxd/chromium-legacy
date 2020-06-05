@@ -34,7 +34,7 @@ namespace blink {
 class CustomScrollbar;
 class ScrollableArea;
 
-class LayoutCustomScrollbarPart final : public LayoutReplaced {
+class CORE_EXPORT LayoutCustomScrollbarPart final : public LayoutReplaced {
  public:
   static LayoutCustomScrollbarPart* CreateAnonymous(Document*,
                                                     ScrollableArea*,
@@ -45,28 +45,23 @@ class LayoutCustomScrollbarPart final : public LayoutReplaced {
 
   PaintLayerType LayerTypeRequired() const override { return kNoPaintLayer; }
 
-  void UpdateLayout() override;
+  // Computes thickness of the scrollbar (which defines thickness of all parts).
+  // For kScrollbarBGPart only. This can be called during style update.
+  // Percentage size will be ignored.
+  int ComputeThickness() const;
 
-  static int ComputeScrollbarWidth(int visible_size, const ComputedStyle*);
-  static int ComputeScrollbarHeight(int visible_size, const ComputedStyle*);
+  // Computes size of the part in the direction of the scrollbar orientation.
+  // This doesn't apply to kScrollbarBGPart because its length is not determined
+  // by the style of the part of itself. For kThumbPart this returns the
+  // minimum length of the thumb. The length may depend on the size of the
+  // containing box, so this function can only be called after the size is
+  // available.
+  int ComputeLength() const;
 
-  // Scrollbar parts needs to be rendered at device pixel boundaries.
-  LayoutUnit MarginTop() const override {
-    DCHECK(IsIntegerValue(LayoutReplaced::MarginTop()));
-    return LayoutReplaced::MarginTop();
-  }
-  LayoutUnit MarginBottom() const override {
-    DCHECK(IsIntegerValue(LayoutReplaced::MarginBottom()));
-    return LayoutReplaced::MarginBottom();
-  }
-  LayoutUnit MarginLeft() const override {
-    DCHECK(IsIntegerValue(LayoutReplaced::MarginLeft()));
-    return LayoutReplaced::MarginLeft();
-  }
-  LayoutUnit MarginRight() const override {
-    DCHECK(IsIntegerValue(LayoutReplaced::MarginRight()));
-    return LayoutReplaced::MarginRight();
-  }
+  LayoutUnit MarginTop() const override;
+  LayoutUnit MarginBottom() const override;
+  LayoutUnit MarginLeft() const override;
+  LayoutUnit MarginRight() const override;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutCustomScrollbarPart ||
@@ -81,6 +76,16 @@ class LayoutCustomScrollbarPart final : public LayoutReplaced {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void ImageChanged(WrappedImagePtr, CanDeferInvalidation) override;
 
+  // A scrollbar part's Location() and PhysicalLocation() are relative to the
+  // scrollbar (instead of relative to any LayoutBox ancestor), and both are
+  // in physical coordinates.
+  LayoutBox* LocationContainer() const override { return nullptr; }
+
+  // A scrollbar part is not in the layout tree and is not laid out like other
+  // layout objects. CustomScrollbar will call scrollbar parts' SetFrameRect()
+  // from its SetFrameRect() when needed.
+  void UpdateLayout() override { NOTREACHED(); }
+
   // Have all padding getters return 0. The important point here is to avoid
   // resolving percents against the containing block, since scroll bar corners
   // don't always have one (so it would crash). Scroll bar corners are not
@@ -91,18 +96,13 @@ class LayoutCustomScrollbarPart final : public LayoutReplaced {
   LayoutUnit PaddingLeft() const override { return LayoutUnit(); }
   LayoutUnit PaddingRight() const override { return LayoutUnit(); }
 
-  void LayoutHorizontalPart();
-  void LayoutVerticalPart();
-
-  void UpdateScrollbarWidth();
-  void UpdateScrollbarHeight();
-
   void SetNeedsPaintInvalidation();
 
   void RecordPercentLengthStats() const;
 
   UntracedMember<ScrollableArea> scrollable_area_;
   UntracedMember<CustomScrollbar> scrollbar_;
+
   ScrollbarPart part_;
 };
 

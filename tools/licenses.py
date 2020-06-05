@@ -750,11 +750,11 @@ def GenerateLicenseFile(output_file, gn_out_dir, gn_target, target_os):
   # Add necessary third_party.
   for directory in sorted(third_party_dirs):
     metadata = ParseDir(directory, _REPOSITORY_ROOT, require_license_file=True)
-    content.append('-' * 20)
-    content.append(directory.split(os.sep)[-1])
-    content.append('-' * 20)
     license_file = metadata['License File']
     if license_file and license_file != NOT_SHIPPED:
+      content.append('-' * 20)
+      content.append(directory.split(os.sep)[-1])
+      content.append('-' * 20)
       content.append(_ReadFile(license_file))
 
   content_text = '\n'.join(content)

@@ -1452,7 +1452,7 @@ if (is_android) {
 
   java_cpp_enum("download_enum_javagen") {
     sources = [
-      "browser/download/download_location_dialog_type.h",
+      "browser/download/download_dialog_types.h",
       "browser/download/download_prompt_status.h",
     ]
   }

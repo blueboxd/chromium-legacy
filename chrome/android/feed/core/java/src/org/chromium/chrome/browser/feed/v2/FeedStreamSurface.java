@@ -49,6 +49,10 @@ import java.util.List;
 @JNINamespace("feed")
 public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHandler {
     private static final String TAG = "FeedStreamSurface";
+
+    private static final int SNACKBAR_DURATION_MS_SHORT = 4000;
+    private static final int SNACKBAR_DURATION_MS_LONG = 10000;
+
     private final long mNativeFeedStreamSurface;
     private final FeedListContentManager mContentManager;
     private final TabModelSelector mTabModelSelector;
@@ -335,8 +339,14 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     @Override
-    public void showSnackbar(String text, String actionLabel, int durationMs,
+    public void showSnackbar(String text, String actionLabel,
+            FeedActionsHandler.SnackbarDuration duration,
             FeedActionsHandler.SnackbarController controller) {
+        int durationMs = SNACKBAR_DURATION_MS_SHORT;
+        if (duration == FeedActionsHandler.SnackbarDuration.LONG) {
+            durationMs = SNACKBAR_DURATION_MS_LONG;
+        }
+
         mSnackbarManager.showSnackbar(
                 Snackbar.make(text,
                                 new SnackbarManager.SnackbarController() {

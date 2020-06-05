@@ -109,7 +109,7 @@ AuraTestHelper* AuraTestHelper::GetInstance() {
 void AuraTestHelper::SetUp() {
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Size host_size(screen ? screen->GetPrimaryDisplay().GetSizeInPixel()
-                             : gfx::Size(800, 600));
+                             : kDefaultHostSize);
   test_screen_.reset(TestScreen::Create(host_size));
   // TODO(pkasting): Seems like we should either always set the screen instance,
   // or not create the screen/host if the test already has one; it doesn't make
@@ -197,6 +197,8 @@ client::FocusClient* AuraTestHelper::GetFocusClient() {
 client::CaptureClient* AuraTestHelper::GetCaptureClient() {
   return capture_client_.get();
 }
+
+constexpr gfx::Size AuraTestHelper::kDefaultHostSize;
 
 Env* AuraTestHelper::GetEnv() {
   if (env_)

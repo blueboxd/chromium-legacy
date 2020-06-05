@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_context_base.h"
@@ -114,59 +115,6 @@ class TestGeolocationPermissionContextDelegate
  private:
   TestingPrefServiceSimple prefs_;
   base::Optional<url::Origin> dse_origin_;
-};
-
-class TestTabSpecificContentSettingsDelegate
-    : public content_settings::TabSpecificContentSettings::Delegate {
- public:
-  explicit TestTabSpecificContentSettingsDelegate(
-      content::BrowserContext* browser_context)
-      : browser_context_(browser_context) {}
-
-  void UpdateLocationBar() override {}
-
-  void SetContentSettingRules(
-      content::RenderProcessHost* process,
-      const RendererContentSettingRules& rules) override {}
-
-  PrefService* GetPrefs() override { return nullptr; }
-
-  HostContentSettingsMap* GetSettingsMap() override {
-    return PermissionsClient::Get()->GetSettingsMap(browser_context_);
-  }
-
-  ContentSetting GetEmbargoSetting(const GURL& request_origin,
-                                   ContentSettingsType permission) override {
-    return ContentSetting::CONTENT_SETTING_ASK;
-  }
-
-  std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override {
-    return {};
-  }
-
-  browsing_data::CookieHelper::IsDeletionDisabledCallback
-  GetIsDeletionDisabledCallback() override {
-    return base::NullCallback();
-  }
-
-  bool IsMicrophoneCameraStateChanged(
-      content_settings::TabSpecificContentSettings::MicrophoneCameraState
-          microphone_camera_state,
-      const std::string& media_stream_selected_audio_device,
-      const std::string& media_stream_selected_video_device) override {
-    return false;
-  }
-
-  content_settings::TabSpecificContentSettings::MicrophoneCameraState
-  GetMicrophoneCameraState() override {
-    return content_settings::TabSpecificContentSettings::
-        MICROPHONE_CAMERA_NOT_ACCESSED;
-  }
-
-  void OnContentBlocked(ContentSettingsType type) override {}
-
- private:
-  content::BrowserContext* browser_context_;
 };
 }  // namespace
 
@@ -321,8 +269,11 @@ void GeolocationPermissionContextTests::SetUp() {
   RenderViewHostTestHarness::SetUp();
 
   content_settings::TabSpecificContentSettings::CreateForWebContents(
-      web_contents(), std::make_unique<TestTabSpecificContentSettingsDelegate>(
-                          browser_context()));
+      web_contents(),
+      std::make_unique<
+          content_settings::TestTabSpecificContentSettingsDelegate>(
+          /*prefs=*/nullptr,
+          PermissionsClient::Get()->GetSettingsMap(browser_context())));
 
   auto delegate = std::make_unique<TestGeolocationPermissionContextDelegate>(
       browser_context());

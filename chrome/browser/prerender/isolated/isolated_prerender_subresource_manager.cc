@@ -4,9 +4,12 @@
 
 #include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 
+#include "chrome/browser/prerender/isolated/isolated_prerender_proxying_url_loader_factory.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 
 IsolatedPrerenderSubresourceManager::IsolatedPrerenderSubresourceManager(
     const GURL& url,
@@ -49,4 +52,64 @@ void IsolatedPrerenderSubresourceManager::OnPrerenderStop(
   // The handle must be canceled before it can be destroyed.
   nsp_handle_->OnCancel();
   nsp_handle_.reset();
+}
+
+bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
+    int render_process_id,
+    int frame_tree_node_id,
+    content::ContentBrowserClient::URLLoaderFactoryType type,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
+  if (type != content::ContentBrowserClient::URLLoaderFactoryType::
+                  kDocumentSubResource) {
+    return false;
+  }
+
+  if (!nsp_handle_) {
+    return false;
+  }
+
+  content::WebContents* web_contents =
+      nsp_handle_->contents()->prerender_contents();
+  if (!web_contents) {
+    // This shouldn't happen, so abort the prerender just to be safe.
+    OnPrerenderStop(nsp_handle_.get());
+    NOTREACHED();
+    return false;
+  }
+
+  int prerender_process_id =
+      web_contents->GetMainFrame()->GetProcess()->GetID();
+  if (prerender_process_id != render_process_id) {
+    return false;
+  }
+
+  if (!isolated_loader_factory_) {
+    // This also shouldn't happen, and would imply that there is a bug in the
+    // code where a prerender was triggered without having an ioslated URL
+    // Loader Factory to use. Abort the prerender just to be safe.
+    OnPrerenderStop(nsp_handle_.get());
+    NOTREACHED();
+    return false;
+  }
+
+  auto proxied_receiver = std::move(*factory_receiver);
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote;
+  *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
+
+  auto proxy = std::make_unique<IsolatedPrerenderProxyingURLLoaderFactory>(
+      frame_tree_node_id, std::move(proxied_receiver),
+      std::move(target_factory_remote),
+      base::BindOnce(
+          &IsolatedPrerenderSubresourceManager::RemoveProxiedURLLoaderFactory,
+          weak_factory_.GetWeakPtr()));
+  proxied_loader_factories_.emplace(std::move(proxy));
+
+  return true;
+}
+
+void IsolatedPrerenderSubresourceManager::RemoveProxiedURLLoaderFactory(
+    IsolatedPrerenderProxyingURLLoaderFactory* factory) {
+  auto it = proxied_loader_factories_.find(factory);
+  DCHECK(it != proxied_loader_factories_.end());
+  proxied_loader_factories_.erase(it);
 }

@@ -9,6 +9,12 @@ interface IParentProcess {
     // third-party code is loaded, and will be a no-op after the first call.
     oneway void sendPid(int pid);
 
+    // Report exception before calling into native main method. This is before
+    // crash reporting is initialized, which means this exception would
+    // otherwise not be reported.
+    // Not oneway to ensure the browser receives the message before child exits.
+    void reportExceptionInInit(in String exception);
+
     // Tells the parent proces the child exited cleanly. Not oneway to ensure
     // the browser receives the message before child exits.
     void reportCleanExit();

@@ -25,8 +25,7 @@ ScriptPromise DOMWindowDigitalGoods::GetDigitalGoodsService(
         ExecutionContext::From(script_state));
   }
 
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto promise = resolver->Promise();
 
   resolver->Resolve(digital_goods_service_);
@@ -35,7 +34,6 @@ ScriptPromise DOMWindowDigitalGoods::GetDigitalGoodsService(
 
 void DOMWindowDigitalGoods::Trace(Visitor* visitor) const {
   Supplement<LocalDOMWindow>::Trace(visitor);
-
   visitor->Trace(digital_goods_service_);
 }
 

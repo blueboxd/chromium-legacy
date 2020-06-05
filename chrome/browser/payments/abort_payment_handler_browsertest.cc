@@ -35,20 +35,8 @@ IN_PROC_BROWSER_TEST_F(AbortPaymentHandlerTest,
                                          /*abortResponse=*/true)));
 }
 
-// TODO(crbug.com/1083242): Andorid implementation of
-// ServiceWorkerPaymentApp.java is unable to abort payments for invoked
-// just-in-time installed payment handlers. When ServiceWorkerPaymentApp.java is
-// replaced with JniPaymentApp.java that owns an instance of the correctly
-// working service_worker_payment_app.cc, this test should be enabled on
-// Android.
-#if defined(OS_ANDROID)
-#define MAYBE_CanAbortInvokedJitPaymentHandler \
-  DISABLED_CanAbortInvokedJitPaymentHandler
-#else
-#define MAYBE_CanAbortInvokedJitPaymentHandler CanAbortInvokedJitPaymentHandler
-#endif  // OS_ANDROID
 IN_PROC_BROWSER_TEST_F(AbortPaymentHandlerTest,
-                       MAYBE_CanAbortInvokedJitPaymentHandler) {
+                       CanAbortInvokedJitPaymentHandler) {
   std::string method_name =
       https_server()->GetURL("a.com", "/abort_responder_app.json").spec();
   ASSERT_NE('/', method_name[method_name.length() - 1]);

@@ -218,6 +218,10 @@ class GomaLinkBase(object):
   jobs = None
 
   # These constants should work across platforms.
+  DATA_SECTIONS_RE = re.compile('-f(no-)?data-sections|[-/]Gw(-)?',
+                                re.IGNORECASE)
+  FUNCTION_SECTIONS_RE = re.compile('-f(no-)?function-sections|[-/]Gy(-)?',
+                                    re.IGNORECASE)
   LIB_RE = re.compile('.*\\.(?:a|lib)', re.IGNORECASE)
   LTO_RE = re.compile('|'.join((
       '-fsanitize=cfi.*',
@@ -227,7 +231,35 @@ class GomaLinkBase(object):
       '-Wl,--lto.*',
       '-Wl,--thin.*',
   )))
+  MLLVM_RE = re.compile('(?:-Wl,)?([-/]mllvm)[:=]?(.*)', re.IGNORECASE)
   OBJ_RE = re.compile('(.*)\\.(o(?:bj)?)', re.IGNORECASE)
+
+  def transform_codegen_param(self, param):
+    return self.transform_codegen_param_common(param)
+
+  def transform_codegen_param_common(self, param):
+    """
+    If param is a parameter relevant to code generation, returns the
+    parameter in a form that is suitable to pass to clang.  For values
+    of param that are not relevant to code generation, returns None.
+    """
+    match = self.MACHINE_RE.match(param)
+    if match and match.group(1).lower() in ['x86', 'i386', 'arm', '32']:
+      return ['-m32']
+    match = self.MLLVM_RE.match(param)
+    if match:
+      if match.group(2):
+        return ['-mllvm', match.group(2)]
+      else:
+        return ['-mllvm']
+    if (param.startswith('-f') and not param.startswith('-flto')
+        and not param.startswith('-fsanitize')
+        and not param.startswith('-fthinlto')
+        and not param.startswith('-fwhole-program')):
+      return [param]
+    if param.startswith('-g'):
+      return [param]
+    return None
 
   def output_path(self, args):
     """
@@ -354,33 +386,11 @@ class GomaLinkBase(object):
     ]
     final_params = []
     in_mllvm = [False]
+
+    # Defaults that match those for local linking.
     optlevel = [2]
-
-    MLLVM_RE = re.compile('(?:-Wl,)?([-/]mllvm)[:=]?(.*)', re.IGNORECASE)
-
-    def transform_codegen_param(param):
-      """
-      If param is a parameter relevant to code generation, returns the
-      parameter in a form that is suitable to pass to clang.  For values
-      of param that are not relevant to code generation, returns None.
-      """
-      match = self.MACHINE_RE.match(param)
-      if match and match.group(1).lower() in ['x86', 'i386', 'arm', '32']:
-        return ['-m32']
-      match = MLLVM_RE.match(param)
-      if match:
-        if match.group(2):
-          return ['-mllvm', match.group(2)]
-        else:
-          return ['-mllvm']
-      if (param.startswith('-f') and not param.startswith('-flto')
-          and not param.startswith('-fsanitize')
-          and not param.startswith('-fthinlto')
-          and not param.startswith('-fwhole-program')):
-        return [param]
-      if param.startswith('-g'):
-        return [param]
-      return None
+    data_sections = [True]
+    function_sections = [True]
 
     def extract_opt_level(param):
       """
@@ -422,16 +432,23 @@ class GomaLinkBase(object):
           return
 
         # Check for params that affect code generation.
-        cg_param = transform_codegen_param(param)
+        cg_param = self.transform_codegen_param(param)
         if cg_param:
           codegen_params.extend(cg_param)
           # No return here, we still want to check for -mllvm.
 
         # Check for -mllvm.
-        match = MLLVM_RE.match(param)
+        match = self.MLLVM_RE.match(param)
         if match and not match.group(2):
           # Next parameter will be the thing to pass to LLVM.
           in_mllvm[0] = True
+
+      # Parameters that override defaults disable the defaults; the
+      # final value is set by passing through the parameter.
+      if self.DATA_SECTIONS_RE.match(param):
+        data_sections[0] = False
+      if self.FUNCTION_SECTIONS_RE.match(param):
+        function_sections[0] = False
 
       helper()
       if self.GROUP_RE.match(param):
@@ -471,6 +488,10 @@ class GomaLinkBase(object):
       return None
 
     codegen_params.append('-O' + str(optlevel[0]))
+    if data_sections[0]:
+      codegen_params.append(self.DATA_SECTIONS)
+    if function_sections[0]:
+      codegen_params.append(self.FUNCTION_SECTIONS)
 
     if use_common_objects:
       splitfile = None
@@ -623,6 +644,8 @@ class GomaLinkWindows(GomaLinkBase):
   WL = ''
   TLTO = '-thinlto'
   SEP = ':'
+  DATA_SECTIONS = '-Gw'
+  FUNCTION_SECTIONS = '-Gy'
   GROUP_RE = re.compile(WL + '--(?:end|start)-group')
   MACHINE_RE = re.compile('[-/]machine:(.*)', re.IGNORECASE)
   OBJ_PATH = '-lto-obj-path' + SEP
@@ -640,6 +663,14 @@ class GomaLinkWindows(GomaLinkBase):
       # be fixed, after which they can be removed from the whitelist.
       'tls_edit.exe',
   }
+
+  def transform_codegen_param(self, param):
+    # In addition to parameters handled by transform_codegen_param_common,
+    # we pass on parameters that start in 'G' or 'Q', which are
+    # MSVC-style parameters that affect code generation.
+    if len(param) >= 2 and param[0] in ['-', '/'] and param[1] in ['G', 'Q']:
+      return [param]
+    return self.transform_codegen_param_common(param)
 
   def process_output_param(self, args, i):
     """

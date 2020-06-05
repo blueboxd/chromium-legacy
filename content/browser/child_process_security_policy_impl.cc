@@ -166,10 +166,11 @@ void LogCanAccessDataForOriginCrashKeys(
 ChildProcessSecurityPolicyImpl::Handle::Handle()
     : child_id_(ChildProcessHost::kInvalidUniqueID) {}
 
-ChildProcessSecurityPolicyImpl::Handle::Handle(int child_id)
+ChildProcessSecurityPolicyImpl::Handle::Handle(int child_id,
+                                               bool duplicating_handle)
     : child_id_(child_id) {
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->AddProcessReference(child_id_))
+  if (!policy->AddProcessReference(child_id_, duplicating_handle))
     child_id_ = ChildProcessHost::kInvalidUniqueID;
 }
 
@@ -180,7 +181,7 @@ ChildProcessSecurityPolicyImpl::Handle::Handle(Handle&& rhs)
 
 ChildProcessSecurityPolicyImpl::Handle
 ChildProcessSecurityPolicyImpl::Handle::Duplicate() {
-  return Handle(child_id_);
+  return Handle(child_id_, /* duplicating_handle */ true);
 }
 
 ChildProcessSecurityPolicyImpl::Handle::~Handle() {
@@ -664,6 +665,7 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id,
                                          BrowserContext* browser_context) {
   DCHECK(browser_context);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_NE(child_id, ChildProcessHost::kInvalidUniqueID);
   base::AutoLock lock(lock_);
   if (security_state_.find(child_id) != security_state_.end()) {
     NOTREACHED() << "Add child process at most once.";
@@ -671,11 +673,12 @@ void ChildProcessSecurityPolicyImpl::Add(int child_id,
   }
 
   security_state_[child_id] = std::make_unique<SecurityState>(browser_context);
-  CHECK(AddProcessReferenceLocked(child_id));
+  CHECK(AddProcessReferenceLocked(child_id, /* duplicating_handle */ false));
 }
 
 void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_NE(child_id, ChildProcessHost::kInvalidUniqueID);
   base::AutoLock lock(lock_);
 
   auto state = security_state_.find(child_id);
@@ -2191,7 +2194,7 @@ void ChildProcessSecurityPolicyImpl::LogKilledProcessOriginLock(int child_id) {
 
 ChildProcessSecurityPolicyImpl::Handle
 ChildProcessSecurityPolicyImpl::CreateHandle(int child_id) {
-  return Handle(child_id);
+  return Handle(child_id, /* duplicating_handle */ false);
 }
 
 // static
@@ -2221,16 +2224,35 @@ ChildProcessSecurityPolicyImpl::ScopedOriginIsolationOptInRequest::
   instance->scoped_isolation_request_origin_ = base::nullopt;
 }
 
-bool ChildProcessSecurityPolicyImpl::AddProcessReference(int child_id) {
+bool ChildProcessSecurityPolicyImpl::AddProcessReference(
+    int child_id,
+    bool duplicating_handle) {
   base::AutoLock lock(lock_);
-  return AddProcessReferenceLocked(child_id);
+  return AddProcessReferenceLocked(child_id, duplicating_handle);
 }
 
-bool ChildProcessSecurityPolicyImpl::AddProcessReferenceLocked(int child_id) {
-  // Make sure that we aren't trying to add references after the process has
-  // been destroyed.
-  if (security_state_.find(child_id) == security_state_.end())
+bool ChildProcessSecurityPolicyImpl::AddProcessReferenceLocked(
+    int child_id,
+    bool duplicating_handle) {
+  if (child_id == ChildProcessHost::kInvalidUniqueID)
     return false;
+
+  // Check to see if the SecurityState has been removed from |security_state_|
+  // via a Remove() call. This corresponds to the process being destroyed.
+  if (security_state_.find(child_id) == security_state_.end()) {
+    if (!duplicating_handle) {
+      // Do not allow Handles to be created after the process has been
+      // destroyed, unless they are being duplicated.
+      return false;
+    }
+
+    // The process has been destroyed but we are allowing an existing Handle
+    // to be duplicated. Verify that the process reference count is available
+    // and indicates another Handle has a reference.
+    auto itr = process_reference_counts_.find(child_id);
+    CHECK(itr != process_reference_counts_.end());
+    CHECK_GT(itr->second, 0);
+  }
 
   ++process_reference_counts_[child_id];
   return true;

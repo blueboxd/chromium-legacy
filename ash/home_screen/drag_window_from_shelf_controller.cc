@@ -311,8 +311,10 @@ bool DragWindowFromShelfController::IsDraggedWindowAnimating() const {
 }
 
 void DragWindowFromShelfController::FinalizeDraggedWindow() {
-  if (!window_drag_result_.has_value())
+  if (!window_drag_result_.has_value()) {
+    started_in_overview_ = false;
     return;
+  }
 
   DCHECK(!drag_started_);
   DCHECK(window_);
@@ -332,6 +334,7 @@ void DragWindowFromShelfController::FinalizeDraggedWindow() {
   }
 
   window_drag_result_.reset();
+  started_in_overview_ = false;
 }
 
 void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {
@@ -355,6 +358,8 @@ void DragWindowFromShelfController::RemoveObserver(
 void DragWindowFromShelfController::OnDragStarted(
     const gfx::PointF& location_in_screen) {
   drag_started_ = true;
+  started_in_overview_ =
+      Shell::Get()->overview_controller()->InOverviewSession();
   initial_location_in_screen_ = location_in_screen;
   previous_location_in_screen_ = location_in_screen;
   WindowState::Get(window_)->CreateDragDetails(
@@ -658,17 +663,14 @@ void DragWindowFromShelfController::OnWindowScaledDownAfterDrag() {
 }
 
 void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
-  const bool should_end_overview =
-      Shell::Get()->overview_controller()->InOverviewSession() &&
-      !SplitViewController::Get(Shell::GetPrimaryRootWindow())
-           ->InSplitViewMode();
   // Do the scale up transform for the entire transient tee.
   for (auto* window : GetTransientTreeIterator(window_)) {
     new WindowScaleAnimation(
         window, WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
         base::BindOnce(
             &DragWindowFromShelfController::OnWindowRestoredToOrignalBounds,
-            weak_ptr_factory_.GetWeakPtr(), should_end_overview));
+            weak_ptr_factory_.GetWeakPtr(),
+            /*should_end_overview=*/!started_in_overview_));
   }
 }
 

@@ -45,7 +45,8 @@ OverlayContainerFullscreenDisabler::FullscreenDisabler::~FullscreenDisabler() =
 
 void OverlayContainerFullscreenDisabler::FullscreenDisabler::WillShowOverlay(
     OverlayPresenter* presenter,
-    OverlayRequest* request) {
+    OverlayRequest* request,
+    bool initial_presentation) {
   disabler_ = std::make_unique<AnimatedScopedFullscreenDisabler>(
       fullscreen_controller_);
   disabler_->StartAnimation();

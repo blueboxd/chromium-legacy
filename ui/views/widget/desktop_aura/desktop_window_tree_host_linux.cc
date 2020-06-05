@@ -184,23 +184,6 @@ Widget::MoveLoopResult DesktopWindowTreeHostLinux::RunMoveLoop(
                                                     escape_behavior);
 }
 
-void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t changed_metrics) {
-  aura::WindowTreeHost::OnDisplayMetricsChanged(display, changed_metrics);
-
-  if ((changed_metrics & DISPLAY_METRIC_DEVICE_SCALE_FACTOR) &&
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window()).id() ==
-          display.id()) {
-    // When the scale factor changes, also pretend that a resize
-    // occurred so that the window layout will be refreshed and a
-    // compositor redraw will be scheduled.  This is weird, but works.
-    // TODO(thomasanderson): Figure out a more direct way of doing
-    // this.
-    OnHostResizedInPixels(GetBoundsInPixels().size());
-  }
-}
-
 void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
   // The input can be disabled and the widget marked as non-active in case of
   // opened file-dialogs.

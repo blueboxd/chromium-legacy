@@ -2,6 +2,8 @@ if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }
 
+var {BASE_ORIGIN, OTHER_ORIGIN} = get_fetch_test_options();
+
 function fetch_echo(stream) {
   return fetch(
       '/serviceworker/resources/fetch-echo-body.php',
@@ -23,19 +25,17 @@ function create_stream(contents) {
   });
 }
 
-promise_test(() => {
+promise_test(async () => {
   const stream =
       create_stream(['Foo', 'Bar']).pipeThrough(new TextEncoderStream());
-  return fetch_echo_body(stream).then(function(text) {
-    assert_equals(text, 'FooBar');
-  });
+  const text = await fetch_echo_body(stream);
+  assert_equals(text, 'FooBar');
 }, 'Fetch with ReadableStream body with Uint8Array');
 
-promise_test(() => {
+promise_test(async () => {
   const stream = create_stream([new Uint8Array(0)]);
-  return fetch_echo_body(stream).then(function(text) {
-    assert_equals(text, '');
-  });
+  const text = await fetch_echo_body(stream);
+  assert_equals(text, '');
 }, 'Fetch with ReadableStream body with empty Uint8Array');
 
 function random_values_array(length) {
@@ -93,5 +93,24 @@ promise_test(async (t) => {
   const stream = create_stream([42]);
   await promise_rejects_js(t, TypeError, fetch_echo(stream));
 }, 'Fetch with ReadableStream body containing number should fail');
+
+function fetch_redirect(status) {
+  const redirect_target_url =
+      BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
+  const redirect_original_url = BASE_ORIGIN +
+      '/serviceworker/resources/redirect.php?Redirect=' + redirect_target_url;
+  const stream = create_stream(['Foo']).pipeThrough(new TextEncoderStream());
+  return fetch(
+      redirect_original_url + `&Status=${status}`,
+      {method: 'POST', body: stream});
+}
+
+promise_test(async (t) => {
+  await fetch_redirect(303);
+}, 'Fetch upload stream should success on 303(See Other) code');
+
+promise_test(async (t) => {
+  await promise_rejects_js(t, TypeError, fetch_redirect(307));
+}, 'Fetch upload stream should fail on non-303 redirect code');
 
 done();

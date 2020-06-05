@@ -34,7 +34,7 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class TickClock;
-}
+}  // namespace base
 
 struct NavigateParams;
 
@@ -49,7 +49,7 @@ class WebContents;
 namespace gfx {
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace prerender {
 
@@ -156,6 +156,16 @@ class PrerenderManager : public content::RenderProcessHostObserver,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
+  // Adds a prerender for the prefetch url from IsolatedPrerender on
+  // page load, if NoStatePrefetch and prefetch_after_preconnect are true.
+  // Uses the NavigationPredictor's browser context and the default
+  // SessionStorageNamespace. Returns a PrerenderHandle or nullptr. Does not
+  // fallback to preconnecting if the prerender isn't triggered.
+  std::unique_ptr<PrerenderHandle> AddIsolatedPrerender(
+      const GURL& url,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size);
+
   std::unique_ptr<PrerenderHandle> AddPrerenderFromExternalRequest(
       const GURL& url,
       const content::Referrer& referrer,
@@ -256,8 +266,8 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // Returns the PrerenderContents object for a given child_id, route_id pair,
   // otherwise returns NULL. Note that the PrerenderContents may have been
   // Destroy()ed, but not yet deleted.
-  virtual PrerenderContents* GetPrerenderContentsForRoute(
-      int child_id, int route_id) const;
+  virtual PrerenderContents* GetPrerenderContentsForRoute(int child_id,
+                                                          int route_id) const;
 
   // Returns the PrerenderContents object that is found in active prerenders to
   // match the |render_process_id|. Otherwise returns a nullptr.

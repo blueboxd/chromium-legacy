@@ -1429,8 +1429,17 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
   if (selected_tabs_.active() != new_selection.active()) {
     if (selected_tabs_.active() >= 0)
       tab_at(selected_tabs_.active())->ActiveStateChanged();
-    if (new_selection.active() >= 0)
-      tab_at(new_selection.active())->ActiveStateChanged();
+    if (new_selection.active() >= 0) {
+      Tab* new_active_tab = tab_at(new_selection.active());
+
+      // If the tab that is about to be activated is in a collapsed group,
+      // automatically expand the group.
+      base::Optional<tab_groups::TabGroupId> group = new_active_tab->group();
+      if (group.has_value() && controller()->IsGroupCollapsed(group.value()))
+        controller()->ToggleTabGroupCollapsedState(group.value());
+
+      new_active_tab->ActiveStateChanged();
+    }
     layout_helper_->SetActiveTab(selected_tabs_.active(),
                                  new_selection.active());
   }

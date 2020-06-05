@@ -4,6 +4,7 @@
 
 """Functions for populating enums with ukm events."""
 
+from collections import namedtuple
 import os
 import sys
 import xml.dom.minidom
@@ -14,6 +15,27 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'ukm'))
 import codegen
 
 
+EventDetails = namedtuple("EventDetails", "name hash is_obsolete")
+
+
+def _GetEventDetails(event):
+  """Returns a simple struct containing the event details.
+
+  Args:
+    event: An event.
+
+  Returns:
+    A struct containing the event name, name hash, and whether the event is
+    obsolete.
+  """
+  name = event.getAttribute('name')
+  # The value is UKM event name hash truncated to 31 bits. This is recorded in
+  # https://cs.chromium.org/chromium/src/components/ukm/ukm_recorder_impl.cc?rcl=728ad079d8e52ada4e321fb4f53713e4f0588072&l=114
+  hash = codegen.HashName(name) & 0x7fffffff
+  is_obsolete = event.getElementsByTagName('obsolete')
+  return EventDetails(name=name, hash=hash, is_obsolete=is_obsolete)
+
+
 def PopulateEnumWithUkmEvents(doc, enum, ukm_events):
   """Populates the enum node with a list of ukm events.
 
@@ -22,15 +44,15 @@ def PopulateEnumWithUkmEvents(doc, enum, ukm_events):
     enum: The enum node needed to be populated.
     ukm_events: A list of ukm event nodes.
   """
-  for event in ukm_events:
+  event_details = [_GetEventDetails(event) for event in ukm_events]
+  event_details.sort(key=lambda event: event.hash)
+
+  for event in event_details:
     node = doc.createElement('int')
-    event_name = event.getAttribute('name')
-    # The value is UKM event name hash truncated to 31 bits. This is recorded in
-    # https://cs.chromium.org/chromium/src/components/ukm/ukm_recorder_impl.cc?rcl=728ad079d8e52ada4e321fb4f53713e4f0588072&l=114
-    node.attributes['value'] = str(codegen.HashName(event_name) & 0x7fffffff)
-    label = event_name
+    node.attributes['value'] = str(event.hash)
+    label = event.name
     # If the event is obsolete, mark it in the int's label.
-    if event.getElementsByTagName('obsolete'):
+    if event.is_obsolete:
       label += ' (Obsolete)'
     node.attributes['label'] = label
     enum.appendChild(node)

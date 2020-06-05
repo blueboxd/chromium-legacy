@@ -884,17 +884,17 @@ TEST_P(GeometryMapperTest,
   CheckMappings();
 }
 
-TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
+TEST_P(GeometryMapperTest, Reflection) {
   CompositorFilterOperations filters;
   filters.AppendReferenceFilter(paint_filter_builder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
-  auto effect = CreateFilterEffect(e0(), filters, FloatPoint(100, 100));
+  auto effect = CreateFilterEffect(e0(), filters);
   local_state.SetEffect(*effect);
 
   input_rect = FloatRect(100, 100, 50, 50);
   expected_transformed_rect = input_rect;
   // Reflection is at (50, 100, 50, 50).
-  expected_visual_rect = FloatClipRect(FloatRect(50, 100, 100, 50));
+  expected_visual_rect = FloatClipRect(FloatRect(-150, 100, 300, 50));
   expected_visual_rect.ClearIsTight();
 
   CheckMappings();

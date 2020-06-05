@@ -41,9 +41,11 @@ void HandleBlockingPageRequestOnUIThread(
   }
 
   // Send do-not-proceed signal if the WebState is for a prerender tab.
-  if (PrerenderServiceFactory::GetForBrowserState(
-          ChromeBrowserState::FromBrowserState(web_state->GetBrowserState()))
-          ->IsWebStatePrerendered(web_state)) {
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state->GetBrowserState()));
+  if (prerender_service &&
+      prerender_service->IsWebStatePrerendered(web_state)) {
     RunUnsafeResourceCallback(resource, /*proceed=*/false,
                               /*showed_interstitial=*/false);
     return;

@@ -51,27 +51,12 @@ const std::vector<SearchConcept>& GetAssistantSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kAssistant}},
-      {IDS_OS_SETTINGS_TAG_ASSISTANT_QUICK_ANSWERS,
-       mojom::kAssistantSubpagePath,
-       mojom::SearchResultIcon::kAssistant,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kAssistantQuickAnswers}},
       {IDS_OS_SETTINGS_TAG_ASSISTANT_PREFERRED_INPUT,
        mojom::kAssistantSubpagePath,
        mojom::SearchResultIcon::kAssistant,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kAssistantVoiceInput}},
-      {IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE,
-       mojom::kAssistantSubpagePath,
-       mojom::SearchResultIcon::kAssistant,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kAssistantOkGoogle},
-       {IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT1,
-        IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT2,
-        SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_ASSISTANT_NOTIFICATIONS,
        mojom::kAssistantSubpagePath,
        mojom::SearchResultIcon::kAssistant,
@@ -117,21 +102,39 @@ const std::vector<SearchConcept>& GetAssistantOffSearchConcepts() {
 
 const std::vector<SearchConcept>& GetAssistantQuickAnswersSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Assistant Quick Answers" search concepts.
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_QUICK_ANSWERS,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantQuickAnswers}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAssistantHotwordDspSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Assistant hotword DSP" search concepts.
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAssistantOkGoogle},
+       {IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT1,
+        IDS_OS_SETTINGS_TAG_ASSISTANT_OK_GOOGLE_ALT2,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
 const std::vector<SearchConcept>& GetAssistantVoiceMatchSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      // TODO(khorimoto): Add "Assistant hotword DSP" search concepts.
+      {IDS_OS_SETTINGS_TAG_ASSISTANT_TRAIN_VOICE_MODEL,
+       mojom::kAssistantSubpagePath,
+       mojom::SearchResultIcon::kAssistant,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kTrainAssistantVoiceModel}},
   });
   return *tags;
 }
@@ -280,6 +283,7 @@ void SearchSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Setting::kAssistantOkGoogle,
       mojom::Setting::kAssistantNotifications,
       mojom::Setting::kAssistantVoiceInput,
+      mojom::Setting::kTrainAssistantVoiceModel,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kAssistant, kAssistantSettings,
                             generator);

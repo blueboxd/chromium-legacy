@@ -17,6 +17,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/frame.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_usage_reporter.mojom.h"
@@ -31,6 +32,10 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "v8/include/v8.h"
+
+#if !defined(OS_ANDROID)
+#include "content/renderer/performance_manager/v8_per_frame_memory_reporter_impl.h"
+#endif
 
 namespace content {
 
@@ -219,6 +224,14 @@ void ExposeRendererInterfacesToBrowser(
 
   binders->Add(base::BindRepeating(&CreateFrameFactory),
                base::ThreadTaskRunnerHandle::Get());
+
+#if !defined(OS_ANDROID)
+  // Currently nothing on Android samples V8PerFrameMemory, so only initialize
+  // the reporter on desktop to save memory.
+  binders->Add(base::BindRepeating(
+                   &performance_manager::V8PerFrameMemoryReporterImpl::Create),
+               base::SequencedTaskRunnerHandle::Get());
+#endif
 
   GetContentClient()->renderer()->ExposeInterfacesToBrowser(binders);
 }

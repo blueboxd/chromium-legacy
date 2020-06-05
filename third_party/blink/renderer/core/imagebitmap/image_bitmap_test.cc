@@ -372,7 +372,8 @@ TEST_F(ImageBitmapTest, ImageBitmapPixelFormat) {
 
 // This test is failing on asan-clang-phone because memory allocation is
 // declined. See <http://crbug.com/782286>.
-#if defined(OS_ANDROID)
+// See <http://crbug.com/1090252>, test is flaky in fuchsia.
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
 #define MAYBE_CreateImageBitmapFromTooBigImageDataDoesNotCrash \
   DISABLED_CreateImageBitmapFromTooBigImageDataDoesNotCrash
 #else

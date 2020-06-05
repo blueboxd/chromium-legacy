@@ -38,7 +38,8 @@ class OverlayContainerFullscreenDisabler {
    private:
     // OverlayPresenterObserver:
     void WillShowOverlay(OverlayPresenter* presenter,
-                         OverlayRequest* request) override;
+                         OverlayRequest* request,
+                         bool initial_presentation) override;
     void DidHideOverlay(OverlayPresenter* presenter,
                         OverlayRequest* request) override;
     void OverlayPresenterDestroyed(OverlayPresenter* presenter) override;

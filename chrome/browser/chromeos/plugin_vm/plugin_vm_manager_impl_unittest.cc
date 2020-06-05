@@ -54,6 +54,7 @@ class PluginVmManagerImplTest : public testing::Test {
     shelf_model_ = std::make_unique<ash::ShelfModel>();
     chrome_launcher_controller_ = std::make_unique<ChromeLauncherController>(
         testing_profile_.get(), shelf_model_.get());
+    chrome_launcher_controller_->Init();
     histogram_tester_ = std::make_unique<base::HistogramTester>();
     chromeos::DlcserviceClient::InitializeFake();
   }

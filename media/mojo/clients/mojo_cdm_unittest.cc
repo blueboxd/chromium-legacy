@@ -24,7 +24,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -48,7 +47,6 @@ namespace media {
 namespace {
 
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
-const char kTestSecurityOrigin[] = "https://www.test.com";
 
 // Random key ID used to create a session.
 const uint8_t kKeyId[] = {
@@ -97,8 +95,8 @@ class MojoCdmTest : public ::testing::Test {
       }
     }
 
-    MojoCdm::Create(key_system, url::Origin::Create(GURL(kTestSecurityOrigin)),
-                    CdmConfig(), cdm_receiver_.BindNewPipeAndPassRemote(),
+    MojoCdm::Create(key_system, CdmConfig(),
+                    cdm_receiver_.BindNewPipeAndPassRemote(),
                     base::Bind(&MockCdmClient::OnSessionMessage,
                                base::Unretained(&cdm_client_)),
                     base::Bind(&MockCdmClient::OnSessionClosed,
@@ -125,8 +123,6 @@ class MojoCdmTest : public ::testing::Test {
     mojo_cdm_ = cdm;
     remote_cdm_ = cdm_factory_.GetCreatedCdm();
     EXPECT_EQ(kClearKeyKeySystem, remote_cdm_->GetKeySystem());
-    EXPECT_EQ(kTestSecurityOrigin,
-              remote_cdm_->GetSecurityOrigin().Serialize());
   }
 
   void ForceConnectionError() {

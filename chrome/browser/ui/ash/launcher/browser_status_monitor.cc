@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -195,7 +196,8 @@ void BrowserStatusMonitor::OnTabStripModelChanged(
 
   if (change.type() == TabStripModelChange::kInserted) {
     for (const auto& contents : change.GetInsert()->contents)
-      OnTabInserted(contents.contents);
+      OnTabInserted(tab_strip_model, contents.contents);
+    UpdateBrowserItemState();
   } else if (change.type() == TabStripModelChange::kRemoved) {
     auto* remove = change.GetRemove();
     if (remove->will_be_deleted) {
@@ -313,8 +315,18 @@ void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
     app_service_instance_helper_->OnTabReplaced(old_contents, new_contents);
 }
 
-void BrowserStatusMonitor::OnTabInserted(content::WebContents* contents) {
+void BrowserStatusMonitor::OnTabInserted(TabStripModel* tab_strip_model,
+                                         content::WebContents* contents) {
   UpdateAppItemState(contents, false /*remove*/);
+  // If the contents does not have a visible navigation entry, wait until a
+  // navigation status changes before setting the browser window Shelf ID
+  // (done by the web contents observer added by AddWebContentsObserver()).
+  if (tab_strip_model->GetActiveWebContents() == contents &&
+      contents->GetController().GetVisibleEntry()) {
+    Browser* browser = chrome::FindBrowserWithWebContents(contents);
+    SetShelfIDForBrowserWindowContents(browser, contents);
+  }
+
   AddWebContentsObserver(contents);
   if (app_service_instance_helper_)
     app_service_instance_helper_->OnTabInserted(contents);

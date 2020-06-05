@@ -12,7 +12,7 @@ enum XRPlaneOrientation {
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXRIncubations
+    RuntimeEnabled=WebXRPlaneDetection
 ]
 interface XRPlane {
     readonly attribute XRSpace planeSpace;

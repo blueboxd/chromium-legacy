@@ -90,8 +90,10 @@ import java.util.concurrent.TimeUnit;
  * TODO(https://crbug.com/906151): Add new goldens and enable ExploreSites.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-@Features.DisableFeatures(ChromeFeatureList.EXPLORE_SITES)
+@CommandLineFlags.
+Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
+@Features.
+DisableFeatures({ChromeFeatureList.EXPLORE_SITES, ChromeFeatureList.REPORT_FEED_USER_ACTIONS})
 public class NewTabPageTest {
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
     private static final int SIGNIN_PROMO_POSITION = 2;

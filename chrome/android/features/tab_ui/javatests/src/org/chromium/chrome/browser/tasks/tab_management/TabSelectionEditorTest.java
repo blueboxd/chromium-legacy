@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -287,7 +289,11 @@ public class TabSelectionEditorTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1, supported_abis_includes = "x86",
+        message = "https://crbug.com/1075548")
     public void testShowTabsWithPreSelectedTabs_10Tabs() {
+        // clang-format on
         prepareBlankTab(11, false);
         int preSelectedTabCount = 10;
         List<Tab> tabs = getTabsInCurrentTabModel();

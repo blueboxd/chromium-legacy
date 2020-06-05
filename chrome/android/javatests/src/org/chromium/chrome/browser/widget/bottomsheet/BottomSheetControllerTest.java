@@ -58,7 +58,7 @@ public class BottomSheetControllerTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    private BottomSheetController mSheetController;
+    private BottomSheetControllerImpl mSheetController;
     private TestBottomSheetContent mLowPriorityContent;
     private TestBottomSheetContent mHighPriorityContent;
     private TestBottomSheetContent mPeekableContent;
@@ -80,7 +80,8 @@ public class BottomSheetControllerTest {
                                         .getScrimCoordinatorForTesting();
             mScrimCoordinator.disableAnimationForTesting(true);
 
-            mSheetController = activity.getBottomSheetController();
+            mSheetController = (BottomSheetControllerImpl) activity.getRootUiCoordinatorForTesting()
+                                       .getBottomSheetController();
 
             mLowPriorityContent = new TestBottomSheetContent(
                     mActivityTestRule.getActivity(), BottomSheetContent.ContentPriority.LOW, false);

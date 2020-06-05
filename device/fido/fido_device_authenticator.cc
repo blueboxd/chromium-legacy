@@ -251,7 +251,6 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
   if (Options()->user_verification_availability ==
       AuthenticatorSupportedOptions::UserVerificationAvailability::
           kSupportedAndConfigured) {
-    // TODO(crbug.com/1056317): implement inline bioenrollment.
     return device_support == ClientPinAvailability::kSupportedAndPinSet &&
                    can_collect_pin
                ? MakeCredentialPINDisposition::kUsePINForFallback
@@ -706,13 +705,15 @@ void FidoDeviceAuthenticator::GetUvRetries(GetRetriesCallback callback) {
       base::BindOnce(&pin::RetriesResponse::ParseUvRetries));
 }
 
-void FidoDeviceAuthenticator::GetUvToken(GetTokenCallback callback) {
-  GetEphemeralKey(
-      base::BindOnce(&FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+void FidoDeviceAuthenticator::GetUvToken(base::Optional<std::string> rp_id,
+                                         GetTokenCallback callback) {
+  GetEphemeralKey(base::BindOnce(
+      &FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken,
+      weak_factory_.GetWeakPtr(), std::move(rp_id), std::move(callback)));
 }
 
 void FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken(
+    base::Optional<std::string> rp_id,
     GetTokenCallback callback,
     CtapDeviceResponseCode status,
     base::Optional<pin::KeyAgreementResponse> key) {
@@ -723,7 +724,7 @@ void FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken(
 
   DCHECK(key);
 
-  pin::UvTokenRequest request(*key);
+  pin::UvTokenRequest request(*key, std::move(rp_id));
   std::array<uint8_t, 32> shared_key = request.shared_key();
   RunOperation<pin::UvTokenRequest, pin::TokenResponse>(
       std::move(request), std::move(callback),

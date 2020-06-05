@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+  'use strict';
+  function testCanvas_0f0(ctx, assert_compares) {
+    let colorData = ctx.getImageData(50, 50, 1, 1).data;
+    assert_compares(colorData[0], 0);
+    assert_compares(colorData[1], 255);
+    assert_compares(colorData[2], 0);
+    assert_compares(colorData[3], 255);
+  }
+
+  promise_test(() => {
+    let canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 100;
+    let ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f0';
+    ctx.fillRect(0, 0, 100, 100);
+    testCanvas_0f0(ctx, assert_equals);
+
+    return createImageBitmap(canvas).then((fromImageBitmap) => {
+      let videoFrame = new VideoFrame({ timestamp: 0 }, fromImageBitmap);
+      videoFrame.createImageBitmap().then((toImageBitmap) => {
+        let myCanvas = document.createElement('canvas');
+        myCanvas.width = myCanvas.height = 100;
+        let myCtx = myCanvas.getContext('2d');
+        myCtx.drawImage(toImageBitmap, 0, 0);
+        testCanvas_0f0(myCtx, (actual, expected) => {
+          assert_approx_equals(actual, expected, 1);
+        });
+      });
+    });
+  }, 'Test should not return any error');
+
+</script>

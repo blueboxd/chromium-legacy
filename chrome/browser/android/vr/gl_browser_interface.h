@@ -11,7 +11,6 @@
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/transform.h"
 
 namespace gl {
@@ -30,7 +29,7 @@ class GlBrowserInterface {
                                      gl::SurfaceTexture* texture) = 0;
   virtual void ContentOverlaySurfaceCreated(jobject surface,
                                             gl::SurfaceTexture* texture) = 0;
-  virtual void GvrDelegateReady(gvr::ViewerType viewer_type) = 0;
+  virtual void GvrDelegateReady() = 0;
   // XRSessionPtr is optional, if null, the request failed.
   virtual void SendRequestPresentReply(device::mojom::XRSessionPtr) = 0;
   virtual void DialogSurfaceCreated(jobject surface,

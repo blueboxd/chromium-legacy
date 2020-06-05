@@ -7,6 +7,10 @@
 
 #include "chrome/browser/extensions/extension_service_test_base.h"
 
+namespace web_app {
+class TestWebAppUrlLoader;
+}  // namespace web_app
+
 // Base class for app list unit tests that use the "app_list" test profile.
 class AppListTestBase : public extensions::ExtensionServiceTestBase {
  public:
@@ -18,6 +22,13 @@ class AppListTestBase : public extensions::ExtensionServiceTestBase {
   ~AppListTestBase() override;
 
   void SetUp() override;
+
+  web_app::TestWebAppUrlLoader& url_loader() { return *url_loader_; }
+
+ private:
+  void ConfigureWebAppProvider();
+
+  web_app::TestWebAppUrlLoader* url_loader_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_TEST_UTIL_H_

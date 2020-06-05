@@ -158,10 +158,9 @@ class ConversionContext {
                                                          *current_transform_);
   }
 
-  void AppendRestore(wtf_size_t n) {
+  void AppendRestore() {
     cc_list_.StartPaint();
-    while (n--)
-      cc_list_.push<cc::RestoreOp>();
+    cc_list_.push<cc::RestoreOp>();
     cc_list_.EndPaintOfPairedEnd();
   }
 
@@ -195,7 +194,6 @@ class ConversionContext {
     // Remembers the type of paired begin that caused a state to be saved.
     // This is for checking integrity of the algorithm.
     enum PairedType { kClip, kEffect } type;
-    int saved_count;
 
     // These fields are neve nullptr.
     const TransformPaintPropertyNode* transform;
@@ -207,7 +205,7 @@ class ConversionContext {
     bool has_pre_cap_effect_hierarchy_issue = false;
 #endif
   };
-  void PushState(StateEntry::PairedType, int saved_count);
+  void PushState(StateEntry::PairedType);
   void PopState();
   Vector<StateEntry> state_stack_;
 
@@ -262,7 +260,7 @@ ConversionContext::~ConversionContext() {
   }
   EndTransform();
   if (translated_for_layer_offset_)
-    AppendRestore(1);
+    AppendRestore();
 }
 
 void ConversionContext::TranslateForLayerOffsetOnce() {
@@ -429,7 +427,7 @@ void ConversionContext::StartClip(
   }
   cc_list_.EndPaintOfPairedBegin();
 
-  PushState(StateEntry::kClip, 1);
+  PushState(StateEntry::kClip);
   current_clip_ = &lowest_combined_clip_node;
   current_transform_ = &local_transform;
 }
@@ -523,7 +521,6 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   else
     EndClips();
 
-  int saved_count = 0;
   size_t save_layer_id = kNotFound;
 
   // Adjust transform first. Though a non-filter effect itself doesn't depend on
@@ -562,15 +559,8 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
     } else {
       save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(nullptr, alpha);
     }
-    saved_count++;
   } else {
     // Handle filter effect.
-    FloatPoint filter_origin = effect.FiltersOrigin();
-    if (filter_origin != FloatPoint()) {
-      cc_list_.push<cc::SaveOp>();
-      cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
-      saved_count++;
-    }
     // The size parameter is only used to computed the origin of zoom
     // operation, which we never generate.
     gfx::SizeF empty;
@@ -578,20 +568,15 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         effect.Filter().AsCcFilterOperations(), empty));
     save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
-    saved_count++;
-    if (filter_origin != FloatPoint())
-      cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
   }
   cc_list_.EndPaintOfPairedBegin();
 
-  DCHECK_GT(saved_count, 0);
-  DCHECK_LE(saved_count, 2);
   DCHECK_NE(save_layer_id, kNotFound);
 
   // Adjust state and push previous state onto effect stack.
   // TODO(trchen): Change input clip to expansion hint once implemented.
   const ClipPaintPropertyNode* input_clip = current_clip_;
-  PushState(StateEntry::kEffect, saved_count);
+  PushState(StateEntry::kEffect);
   effect_bounds_stack_.emplace_back(
       EffectBoundsInfo{save_layer_id, current_transform_});
   current_clip_ = input_clip;
@@ -599,7 +584,6 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
 
   if (effect.Filter().HasReferenceFilter()) {
     auto reference_box = effect.Filter().ReferenceBox();
-    reference_box.MoveBy(effect.FiltersOrigin());
     effect_bounds_stack_.back().bounds = reference_box;
     if (current_effect_->Filter().HasReferenceFilter()) {
       // Emit an empty paint operation to add the filter's source bounds (mapped
@@ -640,14 +624,9 @@ void ConversionContext::EndEffect() {
     if (!bounds.IsEmpty())
       cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id, bounds);
   } else {
-    // The bounds for the SaveLayer[Alpha]Op should be the source bounds
-    // before the filter is applied, in the space of the TranslateOp which was
-    // emitted before the SaveLayer[Alpha]Op.
-    auto save_layer_bounds = bounds;
-    if (!save_layer_bounds.IsEmpty())
-      save_layer_bounds.MoveBy(-current_effect_->FiltersOrigin());
-    cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id,
-                                   save_layer_bounds);
+    // We need an empty bounds for empty filter to avoid performance issue of
+    // PDF renderer. See crbug.com/740824.
+    cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id, bounds);
     // We need to propagate the filtered bounds to the parent.
     bounds = current_effect_->MapRect(bounds);
   }
@@ -671,11 +650,9 @@ void ConversionContext::EndClip() {
   PopState();
 }
 
-void ConversionContext::PushState(StateEntry::PairedType type,
-                                  int saved_count) {
-  state_stack_.emplace_back(StateEntry{type, saved_count, current_transform_,
-                                       current_clip_, current_effect_,
-                                       previous_transform_});
+void ConversionContext::PushState(StateEntry::PairedType type) {
+  state_stack_.emplace_back(StateEntry{type, current_transform_, current_clip_,
+                                       current_effect_, previous_transform_});
   previous_transform_ = nullptr;
 }
 
@@ -683,7 +660,7 @@ void ConversionContext::PopState() {
   DCHECK_EQ(nullptr, previous_transform_);
 
   const auto& previous_state = state_stack_.back();
-  AppendRestore(previous_state.saved_count);
+  AppendRestore();
   current_transform_ = previous_state.transform;
   previous_transform_ = previous_state.previous_transform;
   current_clip_ = previous_state.clip;

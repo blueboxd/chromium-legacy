@@ -62,6 +62,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.idl",
           "//third_party/blink/renderer/modules/bluetooth/navigator_bluetooth.idl",
           "//third_party/blink/renderer/modules/bluetooth/request_device_options.idl",
+          "//third_party/blink/renderer/modules/bluetooth/watch_advertisements_options.idl",
           "//third_party/blink/renderer/modules/broadcastchannel/broadcast_channel.idl",
           "//third_party/blink/renderer/modules/cache_storage/cache.idl",
           "//third_party/blink/renderer/modules/cache_storage/cache_query_options.idl",

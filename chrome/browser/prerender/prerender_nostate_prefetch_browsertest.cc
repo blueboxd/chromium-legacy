@@ -495,14 +495,11 @@ class HTMLCSSSyncScriptFontNoStatePrefetchBrowserTest
     parameters["skip_async_script"] = "true";
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
-    fonts_feature_list_.InitAndEnableFeature(
-        blink::features::kLightweightNoStatePrefetch_FetchFonts);
     NoStatePrefetchBrowserTest::SetUp();
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  base::test::ScopedFeatureList fonts_feature_list_;
 };
 
 // Checks that the expected resource types are fetched via NoState Prefetch.
@@ -520,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(HTMLCSSSyncScriptFontNoStatePrefetchBrowserTest,
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
-  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
 }
 
 // Test and Test Class for lightweight prefetch under the HTML+CSS+Script

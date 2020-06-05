@@ -58,8 +58,8 @@ enum XRInteractionMode {
   void cancelAnimationFrame(long handle);
 
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
-  [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldTrackingState worldTrackingState;
-  [RuntimeEnabled=WebXRIncubations, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state = {});
+  [RuntimeEnabled=WebXRPlaneDetection] readonly attribute XRWorldTrackingState worldTrackingState;
+  [RuntimeEnabled=WebXRPlaneDetection, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state = {});
 
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> end();
 

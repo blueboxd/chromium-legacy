@@ -53,9 +53,11 @@ import java.util.List;
  */
 // clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "disable-features=IPH_FeedHeaderMenu"})
 @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS,
     ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO})
+@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
 public class FeedNewTabPageCardRenderTest {
     //clang-format on
     private static final String TEST_FEED_DATA_BASE_PATH = "/chrome/test/data/android/feed/";

@@ -364,6 +364,7 @@ jumbo_source_set("unit_tests") {
     "payments/abort_test.cc",
     "payments/can_make_payment_test.cc",
     "payments/complete_test.cc",
+    "payments/goods/digital_goods_type_converters_unittest.cc",
     "payments/merchant_validation_event_test.cc",
     "payments/on_payment_response_test.cc",
     "payments/payment_address_test.cc",

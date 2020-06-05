@@ -125,6 +125,84 @@ class GomaLinkUnitTest(unittest.TestCase):
 
       self.assertNotIn('-flto=thin', result.final_params)
 
+  def test_codegen_params_default(self):
+    with FakeFs(bitcode_files=['foo.o'], other_files=['bar.o']):
+      result = goma_ld.GomaLinkUnix().analyze_expanded_args(
+          ['clang', 'foo.o', 'bar.o', '-o', 'foo'], 'foo', 'clang', 'lto.foo',
+          'common', False)
+      # Codegen optimization level should default to 2.
+      self.assertIn('-O2', result.codegen_params)
+      # -fdata-sections and -ffunction-sections default to on to match the
+      # behavior of local linking.
+      self.assertIn('-fdata-sections', result.codegen_params)
+      self.assertIn('-ffunction-sections', result.codegen_params)
+
+  def test_codegen_params_default_cl(self):
+    with FakeFs(bitcode_files=['foo.obj'], other_files=['bar.obj']):
+      result = goma_link.GomaLinkWindows().analyze_expanded_args(
+          ['clang-cl', 'foo.obj', 'bar.obj', '-Fefoo.exe'], 'foo.exe',
+          'clang-cl', 'lto.foo', 'common', False)
+      # Codegen optimization level should default to 2.
+      self.assertIn('-O2', result.codegen_params)
+      # -Gw and -Gy default to on to match the behavior of local linking.
+      self.assertIn('-Gw', result.codegen_params)
+      self.assertIn('-Gy', result.codegen_params)
+
+  def test_codegen_params_no_data_sections(self):
+    with FakeFs(bitcode_files=['foo.o'], other_files=['bar.o']):
+      result = goma_ld.GomaLinkUnix().analyze_expanded_args(
+          ['clang', '-fno-data-sections', 'foo.o', 'bar.o', '-o', 'foo'], 'foo',
+          'clang', 'lto.foo', 'common', False)
+      self.assertNotIn('-fdata-sections', result.codegen_params)
+      self.assertIn('-ffunction-sections', result.codegen_params)
+
+  def test_codegen_params_no_function_sections(self):
+    with FakeFs(bitcode_files=['foo.o'], other_files=['bar.o']):
+      result = goma_ld.GomaLinkUnix().analyze_expanded_args(
+          ['clang', '-fno-function-sections', 'foo.o', 'bar.o', '-o', 'foo'],
+          'foo', 'clang', 'lto.foo', 'common', False)
+      self.assertIn('-fdata-sections', result.codegen_params)
+      self.assertNotIn('-ffunction-sections', result.codegen_params)
+
+  def test_codegen_params_no_data_sections_cl(self):
+    with FakeFs(bitcode_files=['foo.obj'], other_files=['bar.obj']):
+      result = goma_link.GomaLinkWindows().analyze_expanded_args(
+          ['clang-cl', '/Gw-', 'foo.obj', 'bar.obj', '/Fefoo.exe'], 'foo.exe',
+          'clang-cl', 'lto.foo', 'common', False)
+      self.assertNotIn('-fdata-sections', result.codegen_params)
+      self.assertNotIn('-Gw', result.codegen_params)
+      self.assertNotIn('/Gw', result.codegen_params)
+      self.assertIn('-Gy', result.codegen_params)
+
+  def test_codegen_params_no_function_sections_cl(self):
+    with FakeFs(bitcode_files=['foo.obj'], other_files=['bar.obj']):
+      result = goma_link.GomaLinkWindows().analyze_expanded_args(
+          ['clang-cl', '/Gy-', 'foo.obj', 'bar.obj', '/Fefoo.exe'], 'foo.exe',
+          'clang-cl', 'lto.foo', 'common', False)
+      self.assertIn('-Gw', result.codegen_params)
+      self.assertNotIn('-ffunction-sections', result.codegen_params)
+      self.assertNotIn('-Gy', result.codegen_params)
+      self.assertNotIn('/Gy', result.codegen_params)
+
+  def test_codegen_params_explicit_data_and_function_sections(self):
+    with FakeFs(bitcode_files=['foo.o'], other_files=['bar.o']):
+      result = goma_ld.GomaLinkUnix().analyze_expanded_args([
+          'clang', '-ffunction-sections', '-fdata-sections', 'foo.o', 'bar.o',
+          '-o', 'foo'
+      ], 'foo', 'clang', 'lto.foo', 'common', False)
+      self.assertIn('-fdata-sections', result.codegen_params)
+      self.assertIn('-ffunction-sections', result.codegen_params)
+
+  def test_codegen_params_explicit_data_and_function_sections_cl(self):
+    with FakeFs(bitcode_files=['foo.obj'], other_files=['bar.obj']):
+      result = goma_link.GomaLinkWindows().analyze_expanded_args(
+          ['clang-cl', '/Gy', '-Gw', 'foo.obj', 'bar.obj', '/Fefoo.exe'],
+          'foo.exe', 'clang-cl', 'lto.foo', 'common', False)
+      self.assertIn('-Gw', result.codegen_params)
+      self.assertIn('/Gy', result.codegen_params)
+      self.assertNotIn('-fdata-sections', result.codegen_params)
+      self.assertNotIn('-ffunction-sections', result.codegen_params)
+
   def test_ensure_file_no_dir(self):
     with named_directory() as d, working_directory(d):
       self.assertFalse(os.path.exists('test'))

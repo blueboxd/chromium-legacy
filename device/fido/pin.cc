@@ -508,8 +508,9 @@ AsCTAPRequestValuePair(const PinTokenRequest& request) {
       });
 }
 
-UvTokenRequest::UvTokenRequest(const KeyAgreementResponse& peer_key)
-    : TokenRequest(peer_key) {}
+UvTokenRequest::UvTokenRequest(const KeyAgreementResponse& peer_key,
+                               base::Optional<std::string> rp_id)
+    : TokenRequest(peer_key), rp_id_(rp_id) {}
 
 UvTokenRequest::~UvTokenRequest() = default;
 
@@ -524,6 +525,10 @@ AsCTAPRequestValuePair(const UvTokenRequest& request) {
         map->emplace(static_cast<int>(RequestKey::kPermissions),
                      static_cast<uint8_t>(Permissions::kMakeCredential) |
                          static_cast<uint8_t>(Permissions::kGetAssertion));
+        if (request.rp_id_) {
+          map->emplace(static_cast<int>(RequestKey::kPermissionsRPID),
+                       *request.rp_id_);
+        }
       });
 }
 

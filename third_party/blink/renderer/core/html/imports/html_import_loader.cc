@@ -103,6 +103,9 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
           .WithExecutionContext(master->GetExecutionContext())
           .WithRegistrationContext(master->RegistrationContext())
           .WithURL(response.CurrentRequestUrl()));
+  // imports expect to be able to log CSP errors, which requires binding the CSP
+  // to a CSP delegate.
+  document_->BindContentSecurityPolicy();
   document_->OpenForNavigation(
       RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled()
           ? kAllowDeferredParsing

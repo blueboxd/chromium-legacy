@@ -29,6 +29,7 @@ void PopulateTerminationInfo(
     const content::ChildProcessTerminationInfo& content_info,
     ChildExitObserver::TerminationInfo* info) {
   info->binding_state = content_info.binding_state;
+  info->threw_exception_during_init = content_info.threw_exception_during_init;
   info->was_killed_intentionally_by_browser =
       content_info.was_killed_intentionally_by_browser;
   info->remaining_process_with_strong_binding =

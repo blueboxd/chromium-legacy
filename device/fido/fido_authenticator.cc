@@ -36,6 +36,7 @@ void FidoAuthenticator::GetUvRetries(
 }
 
 void FidoAuthenticator::GetUvToken(
+    base::Optional<std::string> rp_id,
     FidoAuthenticator::GetTokenCallback callback) {
   NOTREACHED();
 }

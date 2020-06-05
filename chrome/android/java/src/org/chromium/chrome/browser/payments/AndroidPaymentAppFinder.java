@@ -637,7 +637,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 return;
             }
 
-            // Dedupe corresponding ServiceWorkerPaymentApp which is registered with the default
+            // Dedupe corresponding payment handler which is registered with the default
             // payment method name as the scope and the scope is used as the app Id.
             String webAppIdCanDeduped = resolveInfo.activityInfo.metaData == null
                     ? null

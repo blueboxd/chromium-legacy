@@ -24,6 +24,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -118,8 +119,7 @@ public class NavigationHandlerTest {
 
     @Test
     @SmallTest
-    @DisableIf.
-    Build(sdk_is_greater_than = Build.VERSION_CODES.O_MR1, message = "Flaky on P crbug.com/1041233")
+    @DisabledTest(message = "Flaky, see https://crbug.com/1041233 and https://crbug.com/1091417")
     public void testSwipeNavigateOnNativePage() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
         mActivityTestRule.loadUrl(UrlConstants.RECENT_TABS_URL);

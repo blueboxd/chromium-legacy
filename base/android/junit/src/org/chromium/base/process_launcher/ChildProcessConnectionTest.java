@@ -478,4 +478,25 @@ public class ChildProcessConnectionTest {
         assertEquals(1, mock.getGroup());
         assertEquals(2, mock.getImportanceInGroup());
     }
+
+    @Test
+    public void testExceptionDuringInit() throws RemoteException {
+        ChildProcessConnection connection = createDefaultTestConnection();
+        assertNotNull(mFirstServiceConnection);
+        connection.start(false /* useStrongBinding */, null /* serviceCallback */);
+        mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
+        connection.setupConnection(
+                null /* connectionBundle */, null /* callback */, mConnectionCallback);
+        verify(mConnectionCallback, never()).onConnected(any());
+        ShadowLooper.runUiThreadTasks();
+        assertNotNull(mConnectionParentProcess);
+        mConnectionParentProcess.sendPid(34);
+        verify(mConnectionCallback, times(1)).onConnected(connection);
+
+        String exceptionString = "test exception string";
+        mConnectionParentProcess.reportExceptionInInit(exceptionString);
+        ShadowLooper.runUiThreadTasks();
+        Assert.assertEquals(exceptionString, connection.getExceptionDuringInit());
+        Assert.assertFalse(mFirstServiceConnection.isBound());
+    }
 }

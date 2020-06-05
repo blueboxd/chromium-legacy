@@ -67,6 +67,8 @@ class AuraTestHelper {
   virtual client::FocusClient* GetFocusClient();
   virtual client::CaptureClient* GetCaptureClient();
 
+  static constexpr gfx::Size kDefaultHostSize{800, 600};
+
   Env* GetEnv();
 
  protected:

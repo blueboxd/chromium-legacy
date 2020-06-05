@@ -319,8 +319,44 @@ cr.define('settings', function() {
       }
     },
 
+    /** @private */
+    recordSearchResultMetrics_() {
+      const SearchResultType = chromeos.settings.mojom.SearchResultType;
+
+      chrome.metricsPrivate.recordEnumerationValue(
+          'ChromeOS.Settings.SearchResultTypeSelected', this.searchResult.type,
+          SearchResultType.MAX_VALUE);
+
+      const metricArgs = (type, id) => {
+        switch (type) {
+          case SearchResultType.kSection:
+            return {
+              metricName: 'ChromeOS.Settings.SearchResultSectionSelected',
+              value: id.section,
+            };
+          case SearchResultType.kSubpage:
+            return {
+              metricName: 'ChromeOS.Settings.SearchResultSubpageSelected',
+              value: id.subpage,
+            };
+          case SearchResultType.kSetting:
+            return {
+              metricName: 'ChromeOS.Settings.SearchResultSettingSelected',
+              value: id.setting,
+            };
+          default:
+            assertNotReached('Search Result Type not specified.');
+            return null;
+        }
+      };
+
+      const args = metricArgs(this.searchResult.type, this.searchResult.id);
+      chrome.metricsPrivate.recordSparseValue(args.metricName, args.value);
+    },
+
     navigateToSearchResultRoute() {
       assert(this.searchResult.urlPathWithParameters, 'Url path is empty.');
+      this.recordSearchResultMetrics_();
 
       // |this.searchResult.urlPathWithParameters| separates the path and params
       // by a '?' char.

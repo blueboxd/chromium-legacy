@@ -49,7 +49,7 @@ class VrShellDelegate : public device::GvrDelegateProvider,
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jdelegate);
 
-  void SetDelegate(VrShell* vr_shell, gvr::ViewerType viewer_type);
+  void SetDelegate(VrShell* vr_shell);
   void RemoveDelegate();
 
   void SetPresentResult(JNIEnv* env,

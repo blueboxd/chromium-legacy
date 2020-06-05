@@ -66,8 +66,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     bool has_active_opacity_animation = false;
     bool has_active_filter_animation = false;
     bool has_active_backdrop_filter_animation = false;
-    // The offset of the origin of filters in local_transform_space.
-    FloatPoint filters_origin;
 
     PaintPropertyChangeType ComputeChange(
         const State& other,
@@ -76,8 +74,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
           output_clip != other.output_clip ||
           color_filter != other.color_filter ||
           backdrop_filter_bounds != other.backdrop_filter_bounds ||
-          blend_mode != other.blend_mode ||
-          filters_origin != other.filters_origin) {
+          blend_mode != other.blend_mode) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
       bool opacity_changed = opacity != other.opacity;
@@ -200,11 +197,6 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   bool HasFilterThatMovesPixels() const {
     DCHECK(!Parent() || !IsParentAlias());
     return state_.filter.HasFilterThatMovesPixels();
-  }
-
-  FloatPoint FiltersOrigin() const {
-    DCHECK(!Parent() || !IsParentAlias());
-    return state_.filters_origin;
   }
 
   bool HasRealEffects() const {

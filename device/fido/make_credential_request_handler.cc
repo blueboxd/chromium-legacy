@@ -413,6 +413,7 @@ void MakeCredentialRequestHandler::DispatchRequest(
             FidoTransportProtocol::kInternal) {
       if (authenticator->Options()->supports_uv_token) {
         authenticator->GetUvToken(
+            request_.rp.id,
             base::BindOnce(&MakeCredentialRequestHandler::OnHaveUvToken,
                            weak_factory_.GetWeakPtr(), authenticator));
         return;
@@ -818,6 +819,7 @@ void MakeCredentialRequestHandler::OnUvRetriesResponse(
   }
   observer()->OnRetryUserVerification(response->retries);
   authenticator_->GetUvToken(
+      request_.rp.id,
       base::BindOnce(&MakeCredentialRequestHandler::OnHaveUvToken,
                      weak_factory_.GetWeakPtr(), authenticator_));
 }

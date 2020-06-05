@@ -375,6 +375,10 @@ void GraphImpl::OnNodeAdded(NodeBase* node) {
 void GraphImpl::OnBeforeNodeRemoved(NodeBase* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Clear any node-specific state and issue the relevant notifications before
+  // sending the last-gasp removal notification for this node.
+  node->OnBeforeLeavingGraph();
+
   // This handles the strongly typed observer notifications.
   switch (node->type()) {
     case NodeTypeEnum::kFrame: {
@@ -503,8 +507,9 @@ void GraphImpl::AddNewNode(NodeBase* new_node) {
   auto it = nodes_.insert(new_node);
   DCHECK(it.second);  // Inserted successfully
 
-  // Allow the node to initialize itself now that it's been added.
+  // Add the node to the graph and allow it to initialize itself.
   new_node->JoinGraph(this);
+  new_node->OnJoiningGraph();
 
   // Then notify observers.
   OnNodeAdded(new_node);

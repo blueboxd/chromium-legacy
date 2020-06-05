@@ -122,6 +122,9 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   void RemovedFromWidget() override;
   int GetHeightForWidth(int w) const override;
 
+  gfx::Size FlexRule(const views::View* view,
+                     const views::SizeBounds& bounds) const;
+
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -141,7 +144,6 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   views::View* tab_contents_container_;
   views::View* tab_counter_ = nullptr;
 
-  int desired_height_ = 0;
   base::Optional<float> current_drag_height_;
 
   // When opened, if currently open. Used to calculate metric for how

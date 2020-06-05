@@ -413,6 +413,13 @@ const std::vector<mojom::Setting>& GetCellularDetailsSettings() {
   return *settings;
 }
 
+const std::vector<mojom::Setting>& GetTetherDetailsSettings() {
+  static const base::NoDestructor<std::vector<mojom::Setting>> settings({
+      mojom::Setting::kDisconnectTetherNetwork,
+  });
+  return *settings;
+}
+
 bool IsConnected(network_config::mojom::ConnectionStateType connection_state) {
   return connection_state ==
              network_config::mojom::ConnectionStateType::kOnline ||
@@ -440,6 +447,8 @@ bool IsPartOfDetailsSubpage(mojom::SearchResultType type,
           return base::Contains(GetWifiDetailsSettings(), setting);
         case mojom::Subpage::kCellularDetails:
           return base::Contains(GetCellularDetailsSettings(), setting);
+        case mojom::Subpage::kTetherDetails:
+          return base::Contains(GetTetherDetailsSettings(), setting);
         default:
           return false;
       }
@@ -702,8 +711,12 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                      mojom::SearchResultIcon::kCellular,
                                      mojom::SearchResultDefaultRank::kMedium,
                                      mojom::kMobileDataNetworksSubpagePath);
-  generator->RegisterNestedSetting(mojom::Setting::kMobileOnOff,
-                                   mojom::Subpage::kMobileDataNetworks);
+  static constexpr mojom::Setting kMobileDataNetworksSettings[] = {
+      mojom::Setting::kMobileOnOff,
+      mojom::Setting::kInstantTetheringOnOff,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kMobileDataNetworks,
+                            kMobileDataNetworksSettings, generator);
   generator->RegisterTopLevelAltSetting(mojom::Setting::kMobileOnOff);
 
   // Cellular details. Cellular details are considered a child of the mobile
@@ -726,8 +739,8 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kInstantTethering,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kTetherDetailsSubpagePath);
-  generator->RegisterNestedSetting(mojom::Setting::kInstantTetheringOnOff,
-                                   mojom::Subpage::kMobileDataNetworks);
+  RegisterNestedSettingBulk(mojom::Subpage::kTetherDetails,
+                            GetTetherDetailsSettings(), generator);
 
   // VPN.
   generator->RegisterTopLevelSubpage(

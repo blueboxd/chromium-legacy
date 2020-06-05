@@ -56,12 +56,26 @@ public interface FeedActionsHandler {
     }
 
     /**
+     * Snackbar dismissal timeout.
+     */
+    public enum SnackbarDuration {
+        /**
+         * SHORT should be used with simple one-line snackbars.
+         */
+        SHORT,
+        /**
+         * LONG should be used with multi-line snackbars that take longer to read.
+         */
+        LONG
+    }
+
+    /**
      * Show a snackbar.
      * @param text Text to display.
      * @param actionLabel Text for the button (e.g. "Undo").
-     * @param durationMs Timeout in milliseconds after which the snackbar is removed.
+     * @param duration Whether to remove the snackbar after a short or long delay.
      * @param controller Handlers for snackbar actions.
      */
-    default void showSnackbar(
-            String text, String actionLabel, int durationMs, SnackbarController controller) {}
+    default void showSnackbar(String text, String actionLabel, SnackbarDuration duration,
+            SnackbarController controller) {}
 }

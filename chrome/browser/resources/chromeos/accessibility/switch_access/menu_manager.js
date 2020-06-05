@@ -135,20 +135,21 @@ class MenuManager {
         chrome.accessibilityPrivate.SwitchAccessBubble.MENU, true /* show */,
         location, actions);
 
-    this.findMenuAutomationNode_();
     this.isMenuOpen_ = true;
+    this.findAndJumpToMenuAutomationNode_();
     this.displayedActions_ = actions;
     this.displayedLocation_ = location;
   }
 
   /**
    * Searches the automation tree to find the node for the Switch Access menu.
-   * If we've already found a node, and it's still valid, then we do nothing.
+   * If we've already found a node, and it's still valid, then jump to that
+   * node.
    * @private
    */
-  findMenuAutomationNode_() {
-    if (this.hasValidMenuAutomationNode_()) {
-      return;
+  findAndJumpToMenuAutomationNode_() {
+    if (this.hasValidMenuAutomationNode_() && this.menuAutomationNode_) {
+      this.jumpToMenuAutomationNode_(this.menuAutomationNode_);
     }
     SwitchAccess.findNodeMatchingPredicate(
         MenuManager.isSwitchAccessMenuNode_,
@@ -186,16 +187,24 @@ class MenuManager {
    * @private
    */
   jumpToMenuAutomationNode_(node) {
-    // If the menu hasn't loaded, wait for that before jumping.
+    if (!this.isMenuOpen_) {
+      return;
+    }
+
+    // If the menu hasn't fully loaded, wait for that before jumping.
     if (node.children.length < 1 ||
         node.firstChild.state[chrome.automation.StateType.OFFSCREEN]) {
       const callback = () => {
         node.removeEventListener(
             chrome.automation.EventType.CHILDREN_CHANGED, callback, false);
+        node.removeEventListener(
+            chrome.automation.EventType.LOCATION_CHANGED, callback, false);
         this.jumpToMenuAutomationNode_(node);
       };
       node.addEventListener(
           chrome.automation.EventType.CHILDREN_CHANGED, callback, false);
+      node.addEventListener(
+          chrome.automation.EventType.LOCATION_CHANGED, callback, false);
       return;
     }
 

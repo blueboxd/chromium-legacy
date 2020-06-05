@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.NavigationController;
@@ -137,9 +138,12 @@ import org.chromium.ui.util.TokenHolder;
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContentsRef);
         assert activity != null;
 
-        ScrimView.ScrimParams params = activity.getBottomSheetController().createScrimParams(
-                new ScrimView.EmptyScrimObserver());
-        ScrimView scrim = activity.getScrim();
+        // TODO(1002277): Use the proper scrim API when available.
+        BottomSheetControllerImpl controller =
+                (BottomSheetControllerImpl) activity.getBottomSheetController();
+        ScrimView.ScrimParams params =
+                controller.createScrimParams(new ScrimView.EmptyScrimObserver());
+        ScrimView scrim = ChromeActivity.fromWebContents(mWebContentsRef).getScrim();
         scrim.showScrim(params);
         scrim.setViewAlpha(0);
 

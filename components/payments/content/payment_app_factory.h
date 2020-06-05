@@ -78,15 +78,9 @@ class PaymentAppFactory {
 
     // Whether the factory should early exit before creating platform-specific
     // PaymentApp objects. This is used by PaymentAppServiceBridge to skip
-    // creating native PaymentApps, which currently cannot be used over JNI.
+    // creating native AutofillPaymentApp, which currently cannot be used over
+    // JNI.
     virtual bool SkipCreatingNativePaymentApps() const = 0;
-
-    // When SkipCreatingNativePaymentApps() is true, this callback is called
-    // when service-worker payment app info is available.
-    virtual void OnCreatingNativePaymentAppsSkipped(
-        content::PaymentAppProvider::PaymentApps apps,
-        ServiceWorkerPaymentAppFinder::InstallablePaymentApps
-            installable_apps) = 0;
 
     // Called when all apps of this factory have been created.
     virtual void OnDoneCreatingPaymentApps() = 0;

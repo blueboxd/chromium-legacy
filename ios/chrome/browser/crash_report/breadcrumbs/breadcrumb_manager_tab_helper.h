@@ -65,6 +65,15 @@ extern const char kBreadcrumbPageLoadFailure[];
 // Page.
 extern const char kBreadcrumbNtpNavigation[];
 
+// Appended to |kBreadcrumbDidStartNavigation| and
+// |kBreadcrumbPageLoaded| events if the navigation url had google.com host.
+// Users tend to search and then navigate back and forth between search results
+// page and landing page. And these back-forward navigations can cause crashes.
+extern const char kBreadcrumbGoogleNavigation[];
+
+// Appended to |kBreadcrumbPageLoaded| event if content is PDF.
+extern const char kBreadcrumbPdfLoad[];
+
 // Appended to |kBreadcrumbDidStartNavigation| event if navigation
 // was a client side redirect (f.e. window.open without user gesture).
 extern const char kBreadcrumbRendererInitiatedByScript[];

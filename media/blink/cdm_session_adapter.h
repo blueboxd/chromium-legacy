@@ -21,10 +21,6 @@
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_session.h"
 
-namespace url {
-class Origin;
-}
-
 namespace media {
 
 struct CdmConfig;
@@ -44,7 +40,6 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // via |result|.
   void CreateCdm(CdmFactory* cdm_factory,
                  const std::string& key_system,
-                 const url::Origin& security_origin,
                  const CdmConfig& cdm_config,
                  WebCdmCreatedCB web_cdm_created_cb);
 

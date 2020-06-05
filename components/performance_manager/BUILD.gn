@@ -15,6 +15,8 @@ static_library("performance_manager") {
     "decorators/page_load_tracker_decorator.h",
     "decorators/page_load_tracker_decorator_helper.cc",
     "decorators/tab_properties_decorator.cc",
+    "decorators/v8_per_frame_memory_decorator.cc",
+    "decorators/v8_per_frame_memory_decorator.h",
     "embedder/binders.cc",
     "embedder/binders.h",
     "embedder/performance_manager_lifetime.h",
@@ -129,6 +131,7 @@ static_library("performance_manager") {
     "worker_watcher.cc",
     "worker_watcher.h",
   ]
+
   public_deps = [
     "//base",
     "//base/allocator:buildflags",
@@ -180,6 +183,7 @@ source_set("unit_tests") {
     "decorators/page_live_state_decorator_unittest.cc",
     "decorators/page_load_tracker_decorator_unittest.cc",
     "decorators/tab_properties_decorator_unittest.cc",
+    "decorators/v8_per_frame_memory_decorator_unittest.cc",
     "frame_priority/boosting_vote_aggregator_unittest.cc",
     "frame_priority/frame_priority_unittest.cc",
     "frame_priority/max_vote_aggregator_unittest.cc",

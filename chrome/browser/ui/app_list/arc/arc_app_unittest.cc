@@ -315,6 +315,7 @@ class ArcAppModelBuilderTest
   ChromeLauncherController* CreateLauncherController() {
     launcher_controller_ = std::make_unique<ChromeLauncherController>(
         profile_.get(), model_.get());
+    launcher_controller_->Init();
     return launcher_controller_.get();
   }
 

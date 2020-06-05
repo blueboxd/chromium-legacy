@@ -1145,12 +1145,10 @@ void PropertyTreeManager::PopulateCcEffectNode(
       effect_node.backdrop_filters =
           effect.BackdropFilter().AsCcFilterOperations();
       effect_node.backdrop_filter_bounds = effect.BackdropFilterBounds();
-      effect_node.filters_origin = effect.FiltersOrigin();
       effect_node.blend_mode = effect.BlendMode();
       effect_node.backdrop_mask_element_id = effect.BackdropMaskElementId();
     } else {
       effect_node.filters = effect.Filter().AsCcFilterOperations();
-      effect_node.filters_origin = effect.FiltersOrigin();
     }
   }
   effect_node.double_sided = !effect.LocalTransformSpace().IsBackfaceHidden();

@@ -22,7 +22,6 @@ extern const char kWeblayerWebViewCompatMode[] =
 
 // clang-format off
 const char* const kWebViewCrashKeyAllowList[] = {
-    "AW_ALLOWED_DEBUG_KEY",
     kAppPackageName,
     kAppPackageVersionCode,
     kAndroidSdkInt,

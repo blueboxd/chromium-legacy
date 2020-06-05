@@ -7,36 +7,60 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/browser/download/download_location_dialog_result.h"
-#include "chrome/browser/download/download_location_dialog_type.h"
+#include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/optional.h"
+#include "chrome/browser/download/download_dialog_types.h"
+#include "components/download/public/common/download_schedule.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
+// Contains all the user selection from download dialogs.
+struct DownloadDialogResult {
+  DownloadDialogResult();
+  DownloadDialogResult(const DownloadDialogResult&);
+  ~DownloadDialogResult();
 
+  // Results from download later dialog.
+  base::Optional<download::DownloadSchedule> download_schedule;
+
+  // Results from download location dialog.
+  DownloadLocationDialogResult location_result =
+      DownloadLocationDialogResult::USER_CONFIRMED;
+  base::FilePath file_path;
+};
+
+// Used to show a dialog for the user to select download details, such as file
+// location, file name. and download start time.
 class DownloadDialogBridge {
  public:
-  using LocationCallback = base::OnceCallback<void(DownloadLocationDialogResult,
-                                                   const base::FilePath&)>;
+  using DialogCallback = base::OnceCallback<void(DownloadDialogResult)>;
 
-  virtual ~DownloadDialogBridge() = default;
+  DownloadDialogBridge();
+  DownloadDialogBridge(const DownloadDialogBridge&) = delete;
+  DownloadDialogBridge& operator=(const DownloadDialogBridge&) = delete;
 
-  // Show a download location picker dialog to determine the download path.
-  // The path selected by the user will be returned in |location_callback|.
+  virtual ~DownloadDialogBridge();
+
+  // Shows the download dialog.
   virtual void ShowDialog(gfx::NativeWindow native_window,
                           int64_t total_bytes,
                           DownloadLocationDialogType dialog_type,
                           const base::FilePath& suggested_path,
-                          LocationCallback location_callback) = 0;
+                          DialogCallback dialog_callback);
 
-  virtual void OnComplete(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& returned_path) = 0;
+  void OnComplete(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& obj,
+                  const base::android::JavaParamRef<jstring>& returned_path);
 
-  virtual void OnCanceled(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj) = 0;
+  void OnCanceled(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+
+ private:
+  // Called when the user finished the selections from download dialog.
+  void CompleteSelection(DownloadDialogResult result);
+
+  bool is_dialog_showing_;
+  base::android::ScopedJavaGlobalRef<jobject> java_obj_;
+  DialogCallback dialog_callback_;
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_ANDROID_DOWNLOAD_DIALOG_BRIDGE_H_

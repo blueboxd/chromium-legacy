@@ -8797,6 +8797,7 @@ interface VideoFrame
     getter visibleHeight
     getter visibleWidth
     method constructor
+    method createImageBitmap
     method release
 interface VideoPlaybackQuality
     attribute @@toStringTag

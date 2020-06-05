@@ -91,6 +91,13 @@ bool FilterOperations::HasFilterThatMovesPixels() const {
       [](const auto& operation) { return operation->MovesPixels(); });
 }
 
+bool FilterOperations::HasReferenceFilter() const {
+  return std::any_of(
+      operations_.begin(), operations_.end(), [](const auto& operation) {
+        return operation->GetType() == FilterOperation::REFERENCE;
+      });
+}
+
 void FilterOperations::AddClient(SVGResourceClient& client) const {
   for (FilterOperation* operation : operations_) {
     if (operation->GetType() == FilterOperation::REFERENCE)

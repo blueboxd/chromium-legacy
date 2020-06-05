@@ -12,6 +12,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
 
 namespace blink {
@@ -112,16 +113,21 @@ class BLINK_COMMON_EXPORT IdentifiabilityMetricBuilder
 
   // Set the metric using a previously constructed |IdentifiableSurface|.
   IdentifiabilityMetricBuilder& Set(IdentifiableSurface surface,
-                                    int64_t result);
+                                    IdentifiableToken sample);
+
+  // Set the metric using and IdentifiableSurface::Type and an |input|.
+  IdentifiabilityMetricBuilder& Set(IdentifiableSurface::Type type,
+                                    uint64_t input,
+                                    IdentifiableToken sample);
 
   // Convenience method for recording the result of invoking a simple API
-  // surface with a UseCounter.
+  // surface with a |UseCounter|.
   IdentifiabilityMetricBuilder& SetWebfeature(mojom::WebFeature feature,
-                                              int64_t result) {
+                                              IdentifiableToken sample) {
     return Set(IdentifiableSurface::FromTypeAndInput(
                    IdentifiableSurface::Type::kWebFeature,
                    static_cast<uint64_t>(feature)),
-               result);
+               sample);
   }
 
   // Shadow the underlying Record() implementation until the upstream pipeline

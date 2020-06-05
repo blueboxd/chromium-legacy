@@ -25,8 +25,11 @@ class OverlayPresenterObserver : public base::CheckedObserver {
       OverlayPresenter* presenter) const;
 
   // Called when |presenter| is about to show the overlay UI for |request|.
+  // |initial_presentation| is true if this is the first time the UI for
+  // |request| is being shown in the current OverlayPresentationContext.
   virtual void WillShowOverlay(OverlayPresenter* presenter,
-                               OverlayRequest* request) {}
+                               OverlayRequest* request,
+                               bool initial_presentation) {}
 
   // Called when |presenter| has finished showing the overlay UI for
   // |request|.

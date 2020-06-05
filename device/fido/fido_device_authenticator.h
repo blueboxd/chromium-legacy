@@ -47,7 +47,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void GetPinRetries(GetRetriesCallback callback) override;
   void GetPINToken(std::string pin, GetTokenCallback callback) override;
   void GetUvRetries(GetRetriesCallback callback) override;
-  void GetUvToken(GetTokenCallback callback) override;
+  void GetUvToken(base::Optional<std::string> rp_id,
+                  GetTokenCallback callback) override;
   void SetPIN(const std::string& pin,
               SetPINCallback callback) override;
   void ChangePIN(const std::string& old_pin,
@@ -139,6 +140,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
       CtapDeviceResponseCode status,
       base::Optional<pin::KeyAgreementResponse> key);
   void OnHaveEphemeralKeyForUvToken(
+      base::Optional<std::string> rp_id,
       GetTokenCallback callback,
       CtapDeviceResponseCode status,
       base::Optional<pin::KeyAgreementResponse> key);

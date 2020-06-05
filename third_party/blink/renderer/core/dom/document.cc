@@ -857,12 +857,6 @@ Document::Document(const DocumentInit& initializer,
   PoliciesInitialized(initializer);
   InitDNSPrefetch();
 
-  // Documents associated with a dom_window_ need to BindContentSecurityPolicy()
-  // later, because they depend on state that isn't fully initialized until this
-  // constructor exits.
-  if (!dom_window_ && GetExecutionContext())
-    BindContentSecurityPolicy();
-
   InstanceCounters::IncrementCounter(InstanceCounters::kDocumentCounter);
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInactive);
@@ -5059,6 +5053,9 @@ bool Document::CanAcceptChild(const Node& new_child,
 Node* Document::Clone(Document& factory, CloneChildrenFlag flag) const {
   DCHECK_EQ(this, &factory)
       << "Document::Clone() doesn't support importNode mode.";
+
+  if (!execution_context_)
+    return nullptr;
   Document* clone = CloneDocumentWithoutChildren();
   clone->CloneDataFromDocument(*this);
   if (flag != CloneChildrenFlag::kSkip)

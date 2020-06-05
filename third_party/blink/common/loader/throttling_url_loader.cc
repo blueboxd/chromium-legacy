@@ -941,8 +941,10 @@ void ThrottlingURLLoader::InterceptResponse(
         original_client_receiver) {
   response_intercepted_ = true;
 
-  if (original_loader)
+  if (original_loader) {
+    url_loader_->ResumeReadingBodyFromNet();
     *original_loader = url_loader_.Unbind();
+  }
   url_loader_.Bind(std::move(new_loader));
 
   if (original_client_receiver)

@@ -23,7 +23,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
@@ -39,6 +38,12 @@ import org.chromium.url.GURL;
  * Represents ephemeral tab content and the toolbar, which can be included inside the bottom sheet.
  */
 public class EphemeralTabSheetContent implements BottomSheetContent {
+    /**
+     * The base duration of the settling animation of the sheet. 218 ms is a spec for material
+     * design (this is the minimum time a user is guaranteed to pay attention to something).
+     */
+    private static final int BASE_ANIMATION_DURATION_MS = 218;
+
     private static final float PEEK_TOOLBAR_HEIGHT_MULTIPLE = 2.f;
 
     private final Context mContext;
@@ -159,7 +164,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
             TransitionDrawable transitionDrawable = ApiCompatibilityUtils.createTransitionDrawable(
                     new Drawable[] {mCurrentFavicon, favicon});
             transitionDrawable.setCrossFadeEnabled(true);
-            transitionDrawable.startTransition(BottomSheetController.BASE_ANIMATION_DURATION_MS);
+            transitionDrawable.startTransition(BASE_ANIMATION_DURATION_MS);
             presentedDrawable = transitionDrawable;
         }
 

@@ -61,7 +61,7 @@ class SearchHandler : public mojom::SearchHandler {
               SearchCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SearchHandlerTest, CompareIdenticalResults);
+  FRIEND_TEST_ALL_PREFIXES(SearchHandlerTest, CompareSearchResults);
 
   std::vector<mojom::SearchResultPtr> GenerateSearchResultsArray(
       const std::vector<local_search_service::Result>&

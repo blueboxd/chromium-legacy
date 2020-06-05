@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/timing/performance_server_timing.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -151,8 +150,7 @@ class CORE_EXPORT PerformanceResourceTiming
   // PerformanceResourceTiming#workerTiming. Null when no service worker handles
   // a request for the resource.
   HeapMojoReceiver<mojom::blink::WorkerTimingContainer,
-                   PerformanceResourceTiming,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+                   PerformanceResourceTiming>
       worker_timing_receiver_;
 };
 

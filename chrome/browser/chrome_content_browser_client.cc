@@ -90,6 +90,8 @@
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -4676,6 +4678,15 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   use_proxy |= signin::ProxyingURLLoaderFactory::MaybeProxyRequest(
       frame, type == URLLoaderFactoryType::kNavigation, request_initiator,
       factory_receiver);
+
+  auto* isolated_prerender_service =
+      IsolatedPrerenderServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+  // |frame| is null when |type| is service worker.
+  if (frame && isolated_prerender_service) {
+    use_proxy |= isolated_prerender_service->MaybeProxyURLLoaderFactory(
+        render_process_id, frame->GetFrameTreeNodeId(), type, factory_receiver);
+  }
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   if (disable_secure_dns) {

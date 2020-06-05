@@ -57,8 +57,10 @@ class ASH_EXPORT PhotoView : public views::View,
   std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
 
   // Image containers used for animation. Owned by view hierarchy.
-  AmbientBackgroundImageView* image_view_current_ = nullptr;
-  AmbientBackgroundImageView* image_view_next_ = nullptr;
+  AmbientBackgroundImageView* image_views_[2]{nullptr, nullptr};
+
+  // The index of |image_views_| to update the next image.
+  int image_index_ = 0;
 };
 
 }  // namespace ash

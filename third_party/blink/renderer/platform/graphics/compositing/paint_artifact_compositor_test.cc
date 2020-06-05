@@ -3702,7 +3702,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
 
   CompositorFilterOperations non_trivial_filter;
   non_trivial_filter.AppendBlurFilter(5);
-  auto e1 = CreateFilterEffect(e0(), non_trivial_filter, FloatPoint(),
+  auto e1 = CreateFilterEffect(e0(), non_trivial_filter,
                                CompositingReason::kActiveFilterAnimation);
 
   TestPaintArtifact artifact;
@@ -4407,9 +4407,9 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithFilterChildren) {
   auto opacity = CreateOpacityEffect(e0(), 0.1f);
   CompositorFilterOperations filter;
   filter.AppendBlurFilter(5);
-  auto filter1 = CreateFilterEffect(*opacity, filter, FloatPoint(),
+  auto filter1 = CreateFilterEffect(*opacity, filter,
                                     CompositingReason::kActiveFilterAnimation);
-  auto filter2 = CreateFilterEffect(*opacity, filter, FloatPoint(),
+  auto filter2 = CreateFilterEffect(*opacity, filter,
                                     CompositingReason::kActiveFilterAnimation);
 
   IntRect r(150, 150, 100, 100);
@@ -4501,7 +4501,7 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
   auto a = CreateOpacityEffect(*e, 0.5f);
   CompositorFilterOperations blur_filter;
   blur_filter.AppendBlurFilter(5);
-  auto bd = CreateBackdropFilterEffect(*a, blur_filter, FloatPoint());
+  auto bd = CreateBackdropFilterEffect(*a, blur_filter);
 
   TestPaintArtifact artifact;
   IntRect r(150, 150, 100, 100);
@@ -4632,7 +4632,7 @@ TEST_P(PaintArtifactCompositorTest,
 TEST_P(PaintArtifactCompositorTest, FilterCreatesRenderSurface) {
   CompositorFilterOperations filter;
   filter.AppendBlurFilter(5);
-  auto e1 = CreateFilterEffect(e0(), filter, FloatPoint(),
+  auto e1 = CreateFilterEffect(e0(), filter,
                                CompositingReason::kActiveFilterAnimation);
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
@@ -4655,7 +4655,7 @@ TEST_P(PaintArtifactCompositorTest, FilterAnimationCreatesRenderSurface) {
 TEST_P(PaintArtifactCompositorTest, BackdropFilterCreatesRenderSurface) {
   CompositorFilterOperations filter;
   filter.AppendBlurFilter(5);
-  auto e1 = CreateBackdropFilterEffect(e0(), filter, FloatPoint());
+  auto e1 = CreateBackdropFilterEffect(e0(), filter);
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
              .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite)

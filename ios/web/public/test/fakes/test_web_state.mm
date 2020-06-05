@@ -254,6 +254,10 @@ void TestWebState::SetContentIsHTML(bool content_is_html) {
   content_is_html_ = content_is_html;
 }
 
+void TestWebState::SetContentsMimeType(const std::string& mime_type) {
+  mime_type_ = mime_type;
+}
+
 void TestWebState::SetTitle(const base::string16& title) {
   title_ = title;
 }

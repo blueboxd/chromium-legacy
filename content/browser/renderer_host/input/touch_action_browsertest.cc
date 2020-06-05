@@ -346,11 +346,10 @@ class TouchActionBrowserTest : public ContentBrowserTest {
                 { "name": "pointerUp"}]}]
         )HTML";
 
-    base::JSONReader json_reader;
-    base::Optional<base::Value> params =
-        json_reader.ReadToValue(pointer_actions_json);
-    ASSERT_TRUE(params.has_value()) << json_reader.GetErrorMessage();
-    ActionsParser actions_parser(std::move(params.value()));
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(pointer_actions_json);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
+    ActionsParser actions_parser(std::move(*parsed_json.value));
 
     ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
 
@@ -385,11 +384,10 @@ class TouchActionBrowserTest : public ContentBrowserTest {
         }]
         )HTML";
 
-    base::JSONReader json_reader;
-    base::Optional<base::Value> params =
-        json_reader.ReadToValue(pointer_actions_json);
-    ASSERT_TRUE(params.has_value()) << json_reader.GetErrorMessage();
-    ActionsParser actions_parser(std::move(params.value()));
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(pointer_actions_json);
+    ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
+    ActionsParser actions_parser(std::move(*parsed_json.value));
 
     ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
 

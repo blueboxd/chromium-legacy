@@ -4,6 +4,9 @@
 
 package org.chromium.components.signin.test;
 
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accounts.Account;
@@ -31,7 +34,6 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChildAccountStatus;
-import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.testing.local.CustomShadowUserManager;
@@ -49,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         shadows = {CustomShadowAsyncTask.class, CustomShadowUserManager.class})
 public class AccountManagerFacadeRobolectricTest {
     @Rule
-    public UiThreadTestRule mRule = new UiThreadTestRule();
+    public final UiThreadTestRule mRule = new UiThreadTestRule();
 
     private CustomShadowUserManager mShadowUserManager;
     private FakeAccountManagerDelegate mDelegate;
@@ -60,12 +62,8 @@ public class AccountManagerFacadeRobolectricTest {
         Context context = RuntimeEnvironment.application;
         UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
         mShadowUserManager = (CustomShadowUserManager) shadowOf(userManager);
-
-        mDelegate = new FakeAccountManagerDelegate(
-                FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
-        Assert.assertFalse(mDelegate.isRegisterObserversCalled());
+        mDelegate = new FakeAccountManagerDelegate();
         mFacade = new AccountManagerFacadeImpl(mDelegate);
-        Assert.assertTrue(mDelegate.isRegisterObserversCalled());
     }
 
     private void setAccountRestrictionPatterns(String... patterns) {
@@ -83,6 +81,15 @@ public class AccountManagerFacadeRobolectricTest {
                 RuntimeEnvironment.application.getPackageName(), new Bundle());
         RuntimeEnvironment.application.sendBroadcast(
                 new Intent(Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED));
+    }
+
+    @Test
+    @SmallTest
+    public void testRegisterObserversCalledInConstructor() {
+        FakeAccountManagerDelegate delegate = spy(new FakeAccountManagerDelegate());
+        verify(delegate, never()).registerObservers();
+        AccountManagerFacade accountManagerFacade = new AccountManagerFacadeImpl(delegate);
+        verify(delegate).registerObservers();
     }
 
     @Test
@@ -109,28 +116,6 @@ public class AccountManagerFacadeRobolectricTest {
         Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "testme@gmail.com"));
         Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "Testme@gmail.com"));
         Assert.assertNotNull(AccountUtils.findAccountByName(accounts, "te.st.me@gmail.com"));
-    }
-
-    @Test
-    @SmallTest
-    public void testProfileDataSource() throws Throwable {
-        String accountName = "test@gmail.com";
-        addTestAccount(accountName);
-
-        mRule.runOnUiThread(() -> {
-            ProfileDataSource.ProfileData profileData = new ProfileDataSource.ProfileData(
-                    accountName, null, "Test Full Name", "Test Given Name");
-
-            ProfileDataSource profileDataSource = mDelegate.getProfileDataSource();
-            Assert.assertNotNull(profileDataSource);
-            mDelegate.setProfileData(accountName, profileData);
-            Assert.assertArrayEquals(profileDataSource.getProfileDataMap().values().toArray(),
-                    new ProfileDataSource.ProfileData[] {profileData});
-
-            mDelegate.setProfileData(accountName, null);
-            Assert.assertArrayEquals(profileDataSource.getProfileDataMap().values().toArray(),
-                    new ProfileDataSource.ProfileData[0]);
-        });
     }
 
     @Test

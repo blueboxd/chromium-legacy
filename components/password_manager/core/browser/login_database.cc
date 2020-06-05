@@ -1876,6 +1876,8 @@ bool LoginDatabase::HasUnsyncedDeletions() {
   TRACE_EVENT0("passwords", "LoginDatabase::HasUnsyncedDeletions");
 
   std::unique_ptr<syncer::MetadataBatch> batch = GetAllSyncEntityMetadata();
+  if (!batch)
+    return false;
   for (const auto& metadata_entry : batch->GetAllMetadata()) {
     // Note: No need for an explicit "is unsynced" check: Once the deletion is
     // committed, the metadata entry is removed.

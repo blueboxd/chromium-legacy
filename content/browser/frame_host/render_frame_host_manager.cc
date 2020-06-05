@@ -35,6 +35,7 @@
 #include "content/browser/frame_host/render_frame_host_factory.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -883,7 +884,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         navigation_rfh->SwapIn();
       navigation_rfh->OnCommittedSpeculativeBeforeNavigationCommit();
       CommitPending(std::move(speculative_render_frame_host_), nullptr,
-                    request->require_coop_browsing_instance_swap());
+                    request->coop_status().require_browsing_instance_swap);
     }
   }
   DCHECK(navigation_rfh &&
@@ -2476,8 +2477,21 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
           !render_frame_host_->has_committed_any_navigation(), coop, coep,
           url::Origin::Create(request->common_params().url));
 
-  if (cross_origin_policy_swap)
-    request->set_require_coop_browsing_instance_swap();
+  if (cross_origin_policy_swap) {
+    request->coop_status().require_browsing_instance_swap = true;
+    if (frame_tree_node_->opener()) {
+      request->coop_status().had_opener_before_browsing_instance_swap = true;
+      // TODO(ahemery): Redirects should be able to report.
+      if (render_frame_host_->coop_reporter() &&
+          request->state() >
+              NavigationRequest::NavigationState::WILL_REDIRECT_REQUEST) {
+        render_frame_host_->coop_reporter()->QueueOpenerBreakageReport(
+            render_frame_host_->coop_reporter()->GetNextDocumentUrlForReporting(
+                request->GetRedirectChain(), request->GetInitiatorRoutingId()),
+            true /* is_reported_from_document */, false /* is_report_only */);
+      }
+    }
+  }
 
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->common_params().url, request->GetSourceSiteInstance(),
@@ -2486,7 +2500,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->state() >= NavigationRequest::CANCELING, is_reload,
       request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
       request->WasServerRedirect(),
-      request->require_coop_browsing_instance_swap());
+      request->coop_status().require_browsing_instance_swap);
 
   // If the NavigationRequest's dest_site_instance was present but incorrect,
   // then ensure no sensitive state is kept on the request. This can happen for

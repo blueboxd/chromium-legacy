@@ -46,6 +46,7 @@
 #include "content/browser/loader/cached_navigation_url_loader.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/net/cross_origin_embedder_policy_reporter.h"
+#include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/network_service_instance_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -1554,6 +1555,37 @@ NavigationRequest::TakeCoepReporter() {
   return std::move(coep_reporter_);
 }
 
+void NavigationRequest::CreateCoopReporter(
+    StoragePartition* storage_partition) {
+  // If the flag for reporting is off, we simply don't create anything.
+  // Since this is the only place we create COOP reporters this ensure reporting
+  // is completely off.
+  // Note that "popup inheritance" also instantiate a reporter, but only if we
+  // created one here first.
+  if (!base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicyReporting)) {
+    return;
+  }
+
+  // If the page does not have any reporting endpoints, skip creating a
+  // reporter.
+  if (!render_frame_host_->cross_origin_opener_policy().reporting_endpoint &&
+      !render_frame_host_->cross_origin_opener_policy()
+           .report_only_reporting_endpoint) {
+    return;
+  }
+
+  coop_reporter_ = std::make_unique<CrossOriginOpenerPolicyReporter>(
+      storage_partition, frame_tree_node_->current_frame_host(),
+      common_params_->url, render_frame_host_->cross_origin_opener_policy(),
+      render_frame_host_->cross_origin_embedder_policy());
+}
+
+std::unique_ptr<CrossOriginOpenerPolicyReporter>
+NavigationRequest::TakeCoopReporter() {
+  return std::move(coop_reporter_);
+}
+
 ukm::SourceId NavigationRequest::GetPreviousPageUkmSourceId() {
   return previous_page_load_ukm_source_id_;
 }
@@ -2986,6 +3018,7 @@ void NavigationRequest::CommitNavigation() {
 
   sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
   CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
+  CreateCoopReporter(render_frame_host_->GetProcess()->GetStoragePartition());
 
   blink::mojom::ServiceWorkerContainerInfoForClientPtr
       service_worker_container_info;
@@ -3817,7 +3850,7 @@ void NavigationRequest::DidCommitNavigation(
   // The renderer already knows locally about it because we sent an empty name
   // at frame creation time. The renderer has now committed the page and we can
   // safely enforce the empty name on the browser side.
-  if (require_coop_browsing_instance_swap()) {
+  if (coop_status().require_browsing_instance_swap) {
     std::string name, unique_name;
     // "COOP swaps" only affect main frames, that have an empty unique name.
     DCHECK(frame_tree_node_->unique_name().empty());
@@ -4595,6 +4628,10 @@ NavigationRequest::ComputeSandboxFlagsToCommit() {
   }
 
   return out;
+}
+
+CrossOriginOpenerPolicyStatus& NavigationRequest::coop_status() {
+  return coop_status_;
 }
 
 }  // namespace content

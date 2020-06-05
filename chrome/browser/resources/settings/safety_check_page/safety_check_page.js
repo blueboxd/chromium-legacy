@@ -17,6 +17,7 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared_css.m.js';
 import './safety_check_extensions_child.js';
+import './safety_check_chrome_cleaner_child.js';
 import './safety_check_passwords_child.js';
 import './safety_check_safe_browsing_child.js';
 import './safety_check_updates_child.js';
@@ -179,5 +180,14 @@ Polymer({
    */
   shouldShowChildren_: function() {
     return this.parentStatus_ != SafetyCheckParentStatus.BEFORE;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showChromeCleanerChild_: function() {
+    return loadTimeData.valueExists('privacySettingsRedesignEnabled') &&
+        loadTimeData.getBoolean('privacySettingsRedesignEnabled');
   },
 });

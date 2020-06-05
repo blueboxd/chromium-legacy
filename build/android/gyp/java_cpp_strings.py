@@ -114,6 +114,8 @@ class StringFileParser(object):
       if string_line.groups()[1]:
         self._current_value = string_line.groups()[1]
         self._AppendString()
+      else:
+        self._in_string = True
       return True
     else:
       self._in_string = False
@@ -141,19 +143,19 @@ class StringFileParser(object):
     return self._strings
 
 
-def _GenerateOutput(template, source_path, template_path, strings):
+def _GenerateOutput(template, source_paths, template_path, strings):
   description_template = """
     // This following string constants were inserted by
     //     {SCRIPT_NAME}
     // From
-    //     {SOURCE_PATH}
+    //     {SOURCE_PATHS}
     // Into
     //     {TEMPLATE_PATH}
 
 """
   values = {
       'SCRIPT_NAME': java_cpp_utils.GetScriptName(),
-      'SOURCE_PATH': source_path,
+      'SOURCE_PATHS': ',\n    //     '.join(source_paths),
       'TEMPLATE_PATH': template_path,
   }
   description = description_template.format(**values)
@@ -173,15 +175,18 @@ def _ParseStringFile(path):
 def _Generate(source_paths, template_path):
   with open(template_path) as f:
     lines = f.readlines()
-    template = ''.join(lines)
-    for source_path in source_paths:
-      strings = _ParseStringFile(source_path)
-      package, class_name = ParseTemplateFile(lines)
-      package_path = package.replace('.', os.path.sep)
-      file_name = class_name + '.java'
-      output_path = os.path.join(package_path, file_name)
-      output = _GenerateOutput(template, source_path, template_path, strings)
-      yield output, output_path
+
+  template = ''.join(lines)
+  package, class_name = ParseTemplateFile(lines)
+  package_path = package.replace('.', os.path.sep)
+  file_name = class_name + '.java'
+  output_path = os.path.join(package_path, file_name)
+  strings = []
+  for source_path in source_paths:
+    strings.extend(_ParseStringFile(source_path))
+
+  output = _GenerateOutput(template, source_paths, template_path, strings)
+  return output, output_path
 
 
 def _Main(argv):
@@ -205,8 +210,8 @@ def _Main(argv):
 
   with build_utils.AtomicOutput(args.srcjar) as f:
     with zipfile.ZipFile(f, 'w', zipfile.ZIP_STORED) as srcjar:
-      for data, path in _Generate(args.inputs, args.template):
-        build_utils.AddToZipHermetic(srcjar, path, data=data)
+      data, path = _Generate(args.inputs, args.template)
+      build_utils.AddToZipHermetic(srcjar, path, data=data)
 
 
 if __name__ == '__main__':

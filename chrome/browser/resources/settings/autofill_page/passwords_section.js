@@ -24,12 +24,17 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {getImage} from 'chrome://resources/js/icon.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+
+// <if expr="chromeos">
+import {convertImageSequenceToPng} from 'chrome://resources/cr_elements/chromeos/cr_picture/png.m.js';
+// </if>
 import '../controls/extension_controlled_indicator.m.js';
 import '../controls/settings_toggle_button.m.js';
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
@@ -48,6 +53,7 @@ import './passwords_list_handler.js';
 import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import './passwords_export_dialog.js';
 import './passwords_shared_css.js';
+import {ProfileInfo, ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_proxy.m.js';
 // <if expr="chromeos">
 import '../controls/password_prompt_dialog.m.js';
 import {BlockingRequestManager} from './blocking_request_manager.js';
@@ -203,6 +209,26 @@ Polymer({
     },
 
     /** @private */
+    accountStorageToggleBody_: {
+      type: String,
+      value: '',
+      computed: 'computeAccountStorageToggleBody(isOptedInForAccountStorage_)',
+    },
+
+    /** @private */
+    profileEmail_: {
+      type: String,
+      value: '',
+      computed: 'getFirstStoredAccountEmail_(storedAccounts_)',
+    },
+
+    /**
+     * The currently selected profile icon as CSS image set.
+     * @private
+     */
+    profileIcon_: String,
+
+    /** @private */
     isOptedInForAccountStorage_: Boolean,
 
     /** @private {SyncPrefs} */
@@ -317,6 +343,13 @@ Polymer({
     const syncPrefsChanged = syncPrefs => this.syncPrefs_ = syncPrefs;
     syncBrowserProxy.sendSyncPrefsChanged();
     this.addWebUIListener('sync-prefs-changed', syncPrefsChanged);
+
+    /** @type {!ProfileInfoBrowserProxy} */ (
+        ProfileInfoBrowserProxyImpl.getInstance())
+        .getProfileInfo()
+        .then(this.extractImageFromProfileInfo_.bind(this));
+    this.addWebUIListener(
+        'profile-info-changed', this.extractImageFromProfileInfo_.bind(this));
 
     // For non-ChromeOS, also check whether accounts are available.
     // <if expr="not chromeos">
@@ -546,6 +579,27 @@ Polymer({
   },
 
   /**
+   * Updates the profile icon used in the opt-in/opt-out element based on the
+   * given profile info.
+   * @private
+   * @param {!ProfileInfo} info
+   */
+  extractImageFromProfileInfo_(info) {
+    /**
+     * Extract first frame from image by creating a single frame PNG using
+     * url as input if base64 encoded and potentially animated.
+     */
+    // <if expr="chromeos">
+    if (info.iconUrl.startsWith('data:image/png;base64')) {
+      this.profileIcon_ = getImage(convertImageSequenceToPng([info.iconUrl]));
+      return;
+    }
+    // </if>
+
+    this.profileIcon_ = getImage(info.iconUrl);
+  },
+
+  /**
    * @private
    * @return {boolean}
    */
@@ -567,5 +621,29 @@ Polymer({
    */
   computeHasNeverCheckedPasswords_() {
     return !this.status.elapsedTimeSinceLastCheck;
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  computeAccountStorageToggleBody() {
+    return this.isOptedInForAccountStorage_ ?
+        this.i18n('optOutAccountStorageBody') :
+        this.i18n('optInAccountStorageBody');
+  },
+
+  /**
+   * Return the first available stored account. This is useful when trying to
+   * figure out the account logged into the content area which seems to always
+   * be first even if multiple accounts are available.
+   * @return {string} The email address of the first stored account or an empty
+   *     string.
+   * @private
+   */
+  getFirstStoredAccountEmail_() {
+    return !!this.storedAccounts_ && this.storedAccounts_.length > 0 ?
+        this.storedAccounts_[0].email :
+        '';
   },
 });

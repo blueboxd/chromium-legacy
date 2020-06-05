@@ -51,20 +51,10 @@ import java.util.concurrent.CountDownLatch;
 public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     private static final String TAG = "FakeAccountManager";
 
-    /** Controls whether FakeAccountManagerDelegate should provide a ProfileDataSource. */
-    @IntDef({DISABLE_PROFILE_DATA_SOURCE, ENABLE_PROFILE_DATA_SOURCE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ProfileDataSourceFlag {}
-
-    /** Disables ProfileDataSource: {@link #getProfileDataSource} will return null. */
-    public static final int DISABLE_PROFILE_DATA_SOURCE = 0;
-    /** Use {@link FakeProfileDataSource}. */
-    public static final int ENABLE_PROFILE_DATA_SOURCE = 1;
-
     /** Controls whether FakeAccountManagerDelegate should block get accounts. */
     @IntDef({ENABLE_BLOCK_GET_ACCOUNTS, DISABLE_BLOCK_GET_ACCOUNTS})
     @Retention(RetentionPolicy.SOURCE)
-    public @interface BlockGetAccountsFlag {}
+    @interface BlockGetAccountsFlag {}
 
     /** Disables block get accounts: {@link #getAccountsSync()} will return immediately. */
     public static final int DISABLE_BLOCK_GET_ACCOUNTS = 0;
@@ -73,34 +63,22 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
 
     private final Set<AccountHolder> mAccounts = new LinkedHashSet<>();
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
-    private boolean mRegisterObserversCalled;
-    private FakeProfileDataSource mFakeProfileDataSource;
     private final CountDownLatch mBlockGetAccounts = new CountDownLatch(1);
 
-    public FakeAccountManagerDelegate(@ProfileDataSourceFlag int profileDataSourceFlag) {
-        this(profileDataSourceFlag, DISABLE_BLOCK_GET_ACCOUNTS);
+    public FakeAccountManagerDelegate() {
+        this(DISABLE_BLOCK_GET_ACCOUNTS);
     }
 
-    public FakeAccountManagerDelegate(@ProfileDataSourceFlag int profileDataSourceFlag,
-            @BlockGetAccountsFlag int blockGetAccountsFlag) {
-        if (profileDataSourceFlag == ENABLE_PROFILE_DATA_SOURCE) {
-            mFakeProfileDataSource = new FakeProfileDataSource();
-        }
+    public FakeAccountManagerDelegate(@BlockGetAccountsFlag int blockGetAccountsFlag) {
         if (blockGetAccountsFlag == DISABLE_BLOCK_GET_ACCOUNTS) {
             mBlockGetAccounts.countDown();
         }
     }
 
-    public void setProfileData(
-            String accountId, @Nullable ProfileDataSource.ProfileData profileData) {
-        assert mFakeProfileDataSource != null : "ProfileDataSource was disabled!";
-        mFakeProfileDataSource.setProfileData(accountId, profileData);
-    }
-
     @Nullable
     @Override
     public ProfileDataSource getProfileDataSource() {
-        return mFakeProfileDataSource;
+        return null;
     }
 
     @Nullable
@@ -115,13 +93,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public void registerObservers() {
-        mRegisterObserversCalled = true;
-    }
-
-    public boolean isRegisterObserversCalled() {
-        return mRegisterObserversCalled;
-    }
+    public void registerObservers() {}
 
     @Override
     public void addObserver(AccountsChangeObserver observer) {
@@ -145,7 +117,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         return getAccountsSyncNoThrow();
     }
 
-    public Account[] getAccountsSyncNoThrow() {
+    private Account[] getAccountsSyncNoThrow() {
         ArrayList<Account> result = new ArrayList<>();
         synchronized (mAccounts) {
             for (AccountHolder ah : mAccounts) {
@@ -341,13 +313,5 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             }
         }
         return null;
-    }
-
-    private AccountHolder getAccountHolder(Account account) {
-        AccountHolder ah = tryGetAccountHolder(account);
-        if (ah == null) {
-            throw new IllegalArgumentException("Can not find AccountHolder for account " + account);
-        }
-        return ah;
     }
 }

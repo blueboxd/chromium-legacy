@@ -17,6 +17,7 @@ extern const char kPluginVmPrintersAllowed[];
 extern const char kPluginVmCameraSharing[];
 extern const char kPluginVmUserId[];
 extern const char kEngagementPrefsPrefix[];
+extern const char kPluginVmDataCollectionAllowed[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

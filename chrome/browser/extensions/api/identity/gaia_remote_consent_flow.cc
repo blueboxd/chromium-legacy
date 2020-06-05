@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/identity/gaia_remote_consent_flow.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +24,15 @@
 #include "url/url_constants.h"
 
 namespace extensions {
+
+namespace {
+
+void RecordResultHistogram(GaiaRemoteConsentFlow::Failure failure) {
+  base::UmaHistogramEnumeration("Signin.Extensions.GaiaRemoteConsentFlowResult",
+                                failure);
+}
+
+}  // namespace
 
 GaiaRemoteConsentFlow::Delegate::~Delegate() = default;
 
@@ -61,7 +71,7 @@ void GaiaRemoteConsentFlow::OnSetAccountsComplete(
   }
 
   if (result != signin::SetAccountsInCookieResult::kSuccess) {
-    delegate_->OnGaiaRemoteConsentFlowFailed(
+    GaiaRemoteConsentFlowFailed(
         GaiaRemoteConsentFlow::Failure::SET_ACCOUNTS_IN_COOKIE_FAILED);
     return;
   }
@@ -100,16 +110,16 @@ void GaiaRemoteConsentFlow::OnConsentResultSet(
   std::string gaia_id;
   if (!gaia::ParseOAuth2MintTokenConsentResult(consent_result,
                                                &consent_approved, &gaia_id)) {
-    delegate_->OnGaiaRemoteConsentFlowFailed(
-        GaiaRemoteConsentFlow::INVALID_CONSENT_RESULT);
+    GaiaRemoteConsentFlowFailed(GaiaRemoteConsentFlow::INVALID_CONSENT_RESULT);
     return;
   }
 
   if (!consent_approved) {
-    delegate_->OnGaiaRemoteConsentFlowFailed(GaiaRemoteConsentFlow::NO_GRANT);
+    GaiaRemoteConsentFlowFailed(GaiaRemoteConsentFlow::NO_GRANT);
     return;
   }
 
+  RecordResultHistogram(GaiaRemoteConsentFlow::NONE);
   delegate_->OnGaiaRemoteConsentFlowApproved(consent_result, gaia_id);
 }
 
@@ -129,7 +139,7 @@ void GaiaRemoteConsentFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
       break;
   }
 
-  delegate_->OnGaiaRemoteConsentFlowFailed(gaia_failure);
+  GaiaRemoteConsentFlowFailed(gaia_failure);
 }
 
 std::unique_ptr<GaiaAuthFetcher>
@@ -194,6 +204,11 @@ void GaiaRemoteConsentFlow::SetAccountsInCookie() {
                accounts},
               base::BindOnce(&GaiaRemoteConsentFlow::OnSetAccountsComplete,
                              base::Unretained(this)));
+}
+
+void GaiaRemoteConsentFlow::GaiaRemoteConsentFlowFailed(Failure failure) {
+  RecordResultHistogram(failure);
+  delegate_->OnGaiaRemoteConsentFlowFailed(failure);
 }
 
 }  // namespace extensions

@@ -9,11 +9,12 @@ import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getToastManager} from 'chrome://settings/lazy_load.js';
-import {MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
+import {MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, ProfileInfoBrowserProxyImpl, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
 import {createExceptionEntry, createMultiStorePasswordEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {runCancelExportTest, runExportFlowErrorRetryTest, runExportFlowErrorTest, runExportFlowFastTest, runExportFlowSlowTest, runFireCloseEventAfterExportCompleteTest,runStartExportTest} from 'chrome://test/settings/passwords_export_test.js';
 import {getSyncAllPrefs, simulateStoredAccounts, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
+import {TestProfileInfoBrowserProxy} from 'chrome://test/settings/test_profile_info_browser_proxy.m.js';
 import {TestPluralStringProxy} from 'chrome://test/test_plural_string_proxy.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
 
@@ -990,7 +991,9 @@ suite('PasswordsSection', function() {
           exportDialog, passwordManager);
     });
 
-    test('signOutHidesAccountStorageOptInButtons', function() {
+    // Tests that the opt-in/opt-out buttons appear for signed-in (non-sync)
+    // users and that the description changes accordingly.
+    test('changeOptInButtonsBasedOnSignInAndAccountStorageOptIn', function() {
       // Feature flag enabled.
       loadTimeData.overrideValues({enableAccountStorage: true});
 
@@ -1014,6 +1017,9 @@ suite('PasswordsSection', function() {
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
       assertTrue(isDisplayed(passwordsSection.$.optInToAccountStorageButton));
       assertFalse(isDisplayed(passwordsSection.$.optOutOfAccountStorageButton));
+      assertEquals(
+          passwordsSection.i18n('optInAccountStorageBody'),
+          passwordsSection.$.accountStorageBody.innerText);
 
       // Opt in.
       passwordManager.setIsOptedInForAccountStorageAndNotify(true);
@@ -1021,11 +1027,51 @@ suite('PasswordsSection', function() {
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
       assertFalse(isDisplayed(passwordsSection.$.optInToAccountStorageButton));
       assertTrue(isDisplayed(passwordsSection.$.optOutOfAccountStorageButton));
+      assertEquals(
+          passwordsSection.i18n('optOutAccountStorageBody'),
+          passwordsSection.$.accountStorageBody.innerText);
 
       // Sign out
       simulateStoredAccounts([]);
       assertFalse(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+    });
+
+    // Tests that profile picture and account mail address are shown for the
+    // opt-in buttons.
+    test('showAccountImageAndEmailOnOptInButtons', function() {
+      // Create fake profile data.
+      const profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+      ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
+      const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
+          'LAAAAAABAAEAAAICTAEAOw==';
+
+      // Feature flag enabled.
+      loadTimeData.overrideValues({enableAccountStorage: true});
+
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+
+      // Sync is disabled and the user is initially signed out.
+      simulateSyncStatus({signedIn: false});
+      const isDisplayed = element => !!element && !element.hidden;
+      assertFalse(
+          isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+
+      // User signs in which updates the profile info.
+      simulateStoredAccounts([{
+        fullName: 'john doe',
+        givenName: 'john',
+        email: 'john@gmail.com',
+      }]);
+      webUIListenerCallback(
+          'profile-info-changed', {name: 'john doe', iconUrl: iconDataUrl});
+      flush();
+
+      passwordManager.setIsOptedInForAccountStorageAndNotify(false);
+      assertEquals('john@gmail.com', passwordsSection.$.accountEmail.innerText);
+      const bg = passwordsSection.$.profileIcon.style.backgroundImage;
+      assertTrue(bg.includes(iconDataUrl));
     });
 
     test('enablingSyncHidesAccountStorageOptInButtons', function() {

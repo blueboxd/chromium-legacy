@@ -13,12 +13,14 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#import "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/first_run/first_run_configuration.h"
 #include "ios/chrome/browser/first_run/first_run_metrics.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
+#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -74,11 +76,14 @@ void RecordFirstRunMetricsInternal(ChromeBrowserState* browserState,
                             first_run::SIGNIN_SIZE);
 }
 
+bool kFirstRunSentinelCreated = false;
+
 }  // namespace
 
 void WriteFirstRunSentinelAndRecordMetrics(ChromeBrowserState* browserState,
                                            BOOL sign_in_attempted,
                                            BOOL has_sso_account) {
+  kFirstRunSentinelCreated = true;
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CreateSentinel));
@@ -104,4 +109,17 @@ void FirstRunDismissed() {
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kChromeFirstRunUIDidFinishNotification
                     object:nil];
+}
+
+bool ShouldPresentFirstRunExperience() {
+  if (tests_hook::DisableFirstRun())
+    return false;
+
+  if (experimental_flags::AlwaysDisplayFirstRun())
+    return true;
+
+  if (kFirstRunSentinelCreated)
+    return false;
+
+  return FirstRun::IsChromeFirstRun();
 }

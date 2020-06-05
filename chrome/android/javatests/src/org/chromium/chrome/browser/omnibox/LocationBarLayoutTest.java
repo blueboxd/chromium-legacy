@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.Restriction;
@@ -208,6 +209,7 @@ public class LocationBarLayoutTest {
     @Test
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+    @DisabledTest(message = "Flaky. See https://crbug.com/1091646")
     public void testShowingVoiceSearchButtonIfUrlBarIsEmpty() throws ExecutionException {
         // When there's no text, the mic button should be visible.
         setUrlBarTextAndFocus("");

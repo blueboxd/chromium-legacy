@@ -88,7 +88,6 @@ import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto.RequiredField;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ValueProto;
-import org.chromium.chrome.browser.autofill_assistant.proto.VisibilityRequirement;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -157,24 +156,30 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         RequiredField fallbackTextField =
                 (RequiredField) RequiredField.newBuilder()
                         .setValueExpression("57")
-                        .setElement(SelectorProto.newBuilder().addSelectors("#fallback_entry"))
+                        .setElement(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#fallback_entry")))
                         .setFillStrategy(KeyboardValueFillStrategy.SIMULATE_KEY_PRESSES)
                         .build();
         RequiredField fallbackJsDropdownField =
                 (RequiredField) RequiredField.newBuilder()
                         .setValueExpression("55")
-                        .setElement(SelectorProto.newBuilder().addSelectors("#js_dropdown_value"))
-                        .setOptionElementToClick(
-                                SelectorProto.newBuilder().addSelectors("#js_dropdown_options li"))
+                        .setElement(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#js_dropdown_value")))
+                        .setOptionElementToClick(SelectorProto.newBuilder().addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                        "#js_dropdown_options li")))
                         .setClickType(ClickType.TAP)
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
-                         .setUseCard(UseCreditCardProto.newBuilder()
-                                             .setFormFieldElement(
-                                                     SelectorProto.newBuilder().addSelectors(
-                                                             "#card_number"))
-                                             .addRequiredFields(fallbackTextField)
-                                             .addRequiredFields(fallbackJsDropdownField))
+                         .setUseCard(
+                                 UseCreditCardProto.newBuilder()
+                                         .setFormFieldElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#card_number")))
+                                         .addRequiredFields(fallbackTextField)
+                                         .addRequiredFields(fallbackJsDropdownField))
                          .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
@@ -223,18 +228,20 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
         mHelper.addDummyCreditCard(profileId);
 
         ArrayList<ActionProto> list = new ArrayList<>();
-        list.add((ActionProto) ActionProto.newBuilder()
-                         .setFocusElement(
-                                 FocusElementProto.newBuilder()
-                                         .setElement(SelectorProto.newBuilder().addSelectors(
-                                                 "div.terms"))
-                                         .setTouchableElementArea(
-                                                 ElementAreaProto.newBuilder().addTouchable(
-                                                         Rectangle.newBuilder().addElements(
-                                                                 SelectorProto.newBuilder()
-                                                                         .addSelectors(
-                                                                                 "div.terms")))))
-                         .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(
+                                FocusElementProto.newBuilder()
+                                        .setElement(SelectorProto.newBuilder().addFilters(
+                                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                                        "div.terms")))
+                                        .setTouchableElementArea(ElementAreaProto.newBuilder().addTouchable(
+                                                Rectangle.newBuilder().addElements(
+                                                        SelectorProto.newBuilder().addFilters(
+                                                                SelectorProto.Filter.newBuilder()
+                                                                        .setCssSelector(
+                                                                                "div.terms"))))))
+                        .build());
         list.add(
                 (ActionProto) ActionProto.newBuilder()
                         .setCollectUserData(CollectUserDataProto.newBuilder()
@@ -253,9 +260,13 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                         .setChip(ChipProto.newBuilder().setText("Toggle"))
                         .setShowOnlyWhen(ElementConditionProto.newBuilder().setMatch(
                                 SelectorProto.newBuilder()
-                                        .addSelectors("div#toggle_on")
-                                        .setVisibilityRequirement(
-                                                VisibilityRequirement.MUST_BE_VISIBLE)))
+                                        .addFilters(
+                                                SelectorProto.Filter.newBuilder().setCssSelector(
+                                                        "div#toggle_on"))
+                                        .addFilters(
+                                                SelectorProto.Filter.newBuilder().setBoundingBox(
+                                                        SelectorProto.EmptyFilter
+                                                                .getDefaultInstance()))))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setPrompt(PromptProto.newBuilder()

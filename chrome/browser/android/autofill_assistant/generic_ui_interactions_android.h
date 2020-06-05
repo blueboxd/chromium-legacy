@@ -93,6 +93,18 @@ void SetToggleButtonChecked(
     const std::string& model_identifier,
     std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
 
+// Removes all child views from |view_identifier|.
+void ClearViewContainer(
+    const std::string& view_identifier,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+    base::android::ScopedJavaGlobalRef<jobject> jdelegate);
+
+// Attaches |jview| to a parent view.
+bool AttachViewToParent(
+    base::android::ScopedJavaGlobalRef<jobject> jview,
+    const std::string& parent_view_identifier,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+
 }  // namespace android_interactions
 }  // namespace autofill_assistant
 

@@ -125,11 +125,13 @@ ProfilerGroup::~ProfilerGroup() {
 }
 
 void ProfilerGroup::WillBeDestroyed() {
-  for (auto& profiler : profilers_) {
+  while (!profilers_.IsEmpty()) {
+    Profiler* profiler = profilers_.begin()->Get();
     DCHECK(profiler);
     CancelProfiler(profiler);
     profiler->RemovedFromProfilerGroup();
     DCHECK(profiler->stopped());
+    DCHECK(!profilers_.Contains(profiler));
   }
 
   if (cpu_profiler_)
@@ -179,6 +181,8 @@ void ProfilerGroup::StopProfiler(ScriptState* script_state,
   if (profile)
     profile->Delete();
 
+  profilers_.erase(profiler);
+
   if (--num_active_profilers_ == 0)
     TeardownV8Profiler();
 }
@@ -186,6 +190,7 @@ void ProfilerGroup::StopProfiler(ScriptState* script_state,
 void ProfilerGroup::CancelProfiler(Profiler* profiler) {
   DCHECK(cpu_profiler_);
   DCHECK(!profiler->stopped());
+  profilers_.erase(profiler);
   CancelProfilerImpl(profiler->ProfilerId());
 }
 
@@ -193,6 +198,7 @@ void ProfilerGroup::CancelProfilerAsync(ScriptState* script_state,
                                         Profiler* profiler) {
   DCHECK(cpu_profiler_);
   DCHECK(!profiler->stopped());
+  profilers_.erase(profiler);
   ExecutionContext::From(script_state)
       ->GetTaskRunner(TaskType::kInternalDefault)
       ->PostTask(FROM_HERE,

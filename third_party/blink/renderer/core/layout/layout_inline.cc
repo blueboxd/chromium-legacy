@@ -470,8 +470,16 @@ LayoutRect LayoutInline::LocalCaretRect(
   LayoutRect caret_rect =
       LocalCaretRectForEmptyElement(BorderAndPaddingWidth(), LayoutUnit());
 
-  if (InlineBox* first_box = FirstLineBox())
+  if (InlineBox* first_box = FirstLineBox()) {
     caret_rect.MoveBy(first_box->Location());
+  } else if (IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    if (cursor) {
+      caret_rect.MoveBy(
+          cursor.Current().OffsetInContainerBlock().ToLayoutPoint());
+    }
+  }
 
   return caret_rect;
 }

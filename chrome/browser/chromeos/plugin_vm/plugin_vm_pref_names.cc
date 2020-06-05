@@ -40,6 +40,11 @@ const char kPluginVmUserId[] = "plugin_vm.user_id";
 // GuestOsEngagementMetrics.
 const char kEngagementPrefsPrefix[] = "plugin_vm.metrics";
 
+// A boolean preference indicating whether data collection performed by PluginVm
+// is allowed by the corresponding boolean user policy.
+const char kPluginVmDataCollectionAllowed[] =
+    "plugin_vm.data_collection_allowed";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPluginVmAllowed, false);
   registry->RegisterDictionaryPref(kPluginVmImage);
@@ -50,6 +55,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPluginVmPrintersAllowed, true);
   registry->RegisterBooleanPref(kPluginVmCameraSharing, false);
   registry->RegisterStringPref(kPluginVmUserId, std::string());
+  registry->RegisterBooleanPref(kPluginVmDataCollectionAllowed, false);
 
   guest_os::prefs::RegisterEngagementProfilePrefs(registry,
                                                   kEngagementPrefsPrefix);

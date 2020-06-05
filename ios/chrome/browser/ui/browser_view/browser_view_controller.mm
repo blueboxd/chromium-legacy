@@ -26,7 +26,6 @@
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
@@ -61,7 +60,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -82,6 +80,7 @@
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
+#import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
@@ -1667,9 +1666,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // presented, to show a temporary view of the launch screen and then remove it
   // when the controller for the FRE has been presented. This fix should be
   // removed when the FRE startup code is rewritten.
-  BOOL firstRunLaunch = (FirstRun::IsChromeFirstRun() ||
-                         experimental_flags::AlwaysDisplayFirstRun()) &&
-                        !tests_hook::DisableFirstRun();
+  const bool firstRunLaunch = ShouldPresentFirstRunExperience();
   // These if statements check that |presentViewController| is being called for
   // the FRE case.
   if (firstRunLaunch &&

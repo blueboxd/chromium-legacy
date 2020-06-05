@@ -273,8 +273,6 @@ sync_pb::NigoriSpecifics NigoriState::ToSpecificsProto() const {
     specifics.set_custom_passphrase_time(
         TimeToProtoTime(custom_passphrase_time));
   }
-  // TODO(crbug.com/922900): add other fields support.
-  NOTIMPLEMENTED();
   return specifics;
 }
 

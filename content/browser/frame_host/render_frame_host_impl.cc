@@ -82,6 +82,7 @@
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/net/cross_origin_embedder_policy_reporter.h"
+#include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
@@ -2115,7 +2116,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   NavigationRequest* navigation_request =
       frame_tree_node()->navigation_request();
   if (navigation_request &&
-      navigation_request->require_coop_browsing_instance_swap()) {
+      navigation_request->coop_status().require_browsing_instance_swap) {
     params->replication_state.name = "";
     // "COOP swaps" only affect main frames, that have an empty unique name.
     DCHECK(params->replication_state.unique_name.empty());
@@ -4861,6 +4862,16 @@ void RenderFrameHostImpl::CreateNewWindow(
   main_frame->SetOriginAndIsolationInfoOfNewFrame(GetLastCommittedOrigin());
   main_frame->cross_origin_opener_policy_ = popup_coop;
   main_frame->cross_origin_embedder_policy_ = popup_coep;
+
+  // If inheriting coop (checking this via |opener_suppressed|) and the original
+  // coop page has a reporter we make sure the the newly created popup also has
+  // a reporter.
+  if (!params->opener_suppressed && GetMainFrame()->coop_reporter()) {
+    main_frame->set_coop_reporter(
+        std::make_unique<CrossOriginOpenerPolicyReporter>(
+            GetProcess()->GetStoragePartition(), this, GetLastCommittedURL(),
+            popup_coop, popup_coep));
+  }
 
   if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow
@@ -8075,6 +8086,21 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
                        weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
   }
 
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter =
+      navigation_request->TakeCoopReporter();
+
+  // If this navigation had a COOP BrowsingInstance swap that severed an opener,
+  // and we have a reporter on the page we're going to, report it here.
+  if (navigation_request->coop_status()
+          .had_opener_before_browsing_instance_swap &&
+      coop_reporter) {
+    coop_reporter->QueueOpenerBreakageReport(
+        coop_reporter->GetPreviousDocumentUrlForReporting(
+            navigation_request->GetRedirectChain(),
+            navigation_request->common_params().referrer->url),
+        false /* is_reported_from_document */, false /* is_report_only */);
+  }
+
   frame_tree_node()->navigator().DidNavigate(this, *params,
                                              std::move(navigation_request),
                                              is_same_document_navigation);
@@ -8095,6 +8121,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     browser_reported_scheduler_tracked_features_ = 0;
     last_committed_client_security_state_ = std::move(client_security_state);
     coep_reporter_ = std::move(coep_reporter);
+    coop_reporter_ = std::move(coop_reporter);
   }
 
   RecordCrossOriginIsolationMetrics(this);

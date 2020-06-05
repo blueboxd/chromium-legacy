@@ -324,7 +324,10 @@ public class AutofillAssistantChromeTabIntegrationTest {
                 mTestRule.getActivity().getActivityTab(), getURL(TEST_PAGE_B));
 
         SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder().addSelectors("#profile_name").build();
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#profile_name"))
+                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(

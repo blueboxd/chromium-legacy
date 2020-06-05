@@ -148,6 +148,73 @@ public class ManageSyncSettingsTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testUnsettingAllDataTypesStopsSync() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        SyncTestUtil.waitForSyncActive();
+
+        ManageSyncSettings fragment = startManageSyncPreferences();
+        assertSyncOnState(fragment);
+        mSyncTestRule.togglePreference(getSyncEverything(fragment));
+
+        for (CheckBoxPreference dataType : getDataTypes(fragment).values()) {
+            mSyncTestRule.togglePreference(dataType);
+        }
+        // All data types have been unchecked. Sync should stop.
+        Assert.assertFalse(SyncTestUtil.isSyncRequested());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testSettingAnyDataTypeStartsSync() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        mSyncTestRule.setChosenDataTypes(false, new HashSet<>());
+        mSyncTestRule.stopSync();
+        ManageSyncSettings fragment = startManageSyncPreferences();
+
+        CheckBoxPreference syncAutofill =
+                (CheckBoxPreference) fragment.findPreference(ManageSyncSettings.PREF_SYNC_AUTOFILL);
+        mSyncTestRule.togglePreference(syncAutofill);
+        // Sync should start after any data type is checked.
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testTogglingSyncEverythingStartsSync() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        mSyncTestRule.setChosenDataTypes(false, new HashSet<>());
+        mSyncTestRule.stopSync();
+        ManageSyncSettings fragment = startManageSyncPreferences();
+
+        mSyncTestRule.togglePreference(getSyncEverything(fragment));
+        // Sync should start after setting sync everything toggle.
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
+    @Features.EnableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testTogglingSyncEverythingDoesNotStopSync() {
+        mSyncTestRule.setUpAccountAndSignInForTesting();
+        mSyncTestRule.setChosenDataTypes(false, new HashSet<>());
+        mSyncTestRule.startSync();
+        ManageSyncSettings fragment = startManageSyncPreferences();
+
+        // Sync is requested to start. Toggling SyncEverything will call setChosenDataTypes with
+        // empty set in the backend. But sync stop request should not be called.
+        mSyncTestRule.togglePreference(getSyncEverything(fragment));
+        Assert.assertTrue(SyncTestUtil.isSyncRequested());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Sync"})
     public void testPaymentsIntegrationChecked() {
         mSyncTestRule.setUpAccountAndSignInForTesting();
         mSyncTestRule.setPaymentsIntegrationEnabled(true);

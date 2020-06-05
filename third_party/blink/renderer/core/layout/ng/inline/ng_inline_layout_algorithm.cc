@@ -381,7 +381,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   }
 
   NGLineHeightMetrics annotation_metrics = NGLineHeightMetrics::Zero();
-  if (box_states_->LineBoxState().has_annotation_overflow &&
+  if (Node().HasRuby() &&
       !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     annotation_metrics = ComputeAnnotationOverflow(
         line_box_metrics, -line_box_metrics.ascent, line_info->LineStyle());
@@ -415,7 +415,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // the line box to the line top.
   line_box_.MoveInBlockDirection(line_box_metrics.ascent);
 
-  if (box_states_->LineBoxState().has_annotation_overflow &&
+  if (Node().HasRuby() &&
       RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     annotation_metrics = ComputeAnnotationOverflow(
         line_box_metrics, LayoutUnit(), line_info->LineStyle());
@@ -436,7 +436,7 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
     const NGLineHeightMetrics& line_box_metrics,
     LayoutUnit line_block_start,
     const ComputedStyle& line_style) {
-  DCHECK(box_states_->LineBoxState().has_annotation_overflow);
+  DCHECK(Node().HasRuby());
   DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
   LayoutUnit annotatin_block_start = line_block_start;
   const LayoutUnit line_block_end =
@@ -567,12 +567,8 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
                     To<NGPhysicalBoxFragment>(
                         item_result->layout_result->PhysicalFragment()))
           .BaselineMetrics(item_result->margins, baseline_type_);
-  if (box) {
+  if (box)
     box->metrics.Unite(metrics);
-    box->has_annotation_overflow =
-        box->has_annotation_overflow ||
-        item_result->layout_result->AnnotationOverflow() != LayoutUnit();
-  }
 
   LayoutUnit line_top = item_result->margins.line_over - metrics.ascent;
   line_box_.AddChild(std::move(item_result->layout_result),

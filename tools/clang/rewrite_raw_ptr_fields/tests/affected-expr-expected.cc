@@ -5,7 +5,6 @@
 #include <stdint.h>  // for uintptr_t
 
 #include "base/memory/checked_ptr.h"
-#include "gen/generated_header.h"
 
 class SomeClass {};
 class DerivedClass : public SomeClass {};
@@ -169,17 +168,3 @@ void foo(int x) {
 }
 
 }  // namespace ternary_operator_tests
-
-namespace generated_code_tests {
-
-void MyPrintf(const char* fmt, ...) {}
-
-void foo() {
-  GeneratedStruct s;
-
-  // No rewrite expected below (i.e. no |.get()| appended), because the field
-  // dereferenced below comes from (simulated) generated code.
-  MyPrintf("%p", s.ptr_field);
-}
-
-}  // namespace generated_code_tests

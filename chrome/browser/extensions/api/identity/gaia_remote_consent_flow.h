@@ -25,12 +25,16 @@ class GaiaRemoteConsentFlow
       public signin::AccountsCookieMutator::PartitionDelegate,
       public signin::IdentityManager::Observer {
  public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum Failure {
-    WINDOW_CLOSED,
-    LOAD_FAILED,
-    SET_ACCOUNTS_IN_COOKIE_FAILED,
-    INVALID_CONSENT_RESULT,
-    NO_GRANT
+    NONE = 0,
+    WINDOW_CLOSED = 1,
+    LOAD_FAILED = 2,
+    SET_ACCOUNTS_IN_COOKIE_FAILED = 3,
+    INVALID_CONSENT_RESULT = 4,
+    NO_GRANT = 5,
+    kMaxValue = NO_GRANT
   };
 
   class Delegate {
@@ -79,6 +83,8 @@ class GaiaRemoteConsentFlow
 
  private:
   void SetAccountsInCookie();
+
+  void GaiaRemoteConsentFlowFailed(Failure failure);
 
   Delegate* delegate_;
   Profile* profile_;

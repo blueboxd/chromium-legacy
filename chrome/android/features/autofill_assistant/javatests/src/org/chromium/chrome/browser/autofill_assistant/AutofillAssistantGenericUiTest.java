@@ -36,9 +36,11 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isImportantForAccessibility;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withMinimumSize;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withTextGravity;
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 
 import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
@@ -66,11 +68,13 @@ import org.chromium.chrome.browser.autofill_assistant.proto.BooleanNotProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CallbackProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
+import org.chromium.chrome.browser.autofill_assistant.proto.ClearViewContainerProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ClientDimensionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataResultProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ColorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ComputeValueProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.CreateNestedGenericUiProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateFormatProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateList;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateProto;
@@ -2486,5 +2490,104 @@ public class AutofillAssistantGenericUiTest {
         onView(withText("default-aligned text"))
                 .check(matches(withTextGravity(Gravity.START | Gravity.TOP)));
         onView(withText("center-aligned text")).check(matches(withTextGravity(Gravity.CENTER)));
+    }
+
+    private ViewProto createSimpleTextView(String identifier, String text) {
+        return (ViewProto) ViewProto.newBuilder()
+                .setIdentifier(identifier)
+                .setTextView(TextViewProto.newBuilder().setText(text))
+                .build();
+    }
+
+    /**
+     * Creates and deletes nested UIs.
+     */
+    @Test
+    @MediumTest
+    public void testCreateNestedUi() {
+        GenericUserInterfaceProto nestedUi =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(createSimpleTextView(
+                                /*identifier = */ "nested_text_view", /*text = */ "nested view"))
+                        .build();
+
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                                 "text_view_create_nested_on_click")))
+                                 .addCallbacks(CallbackProto.newBuilder().setCreateNestedUi(
+                                         CreateNestedGenericUiProto.newBuilder()
+                                                 .setGenericUiIdentifier("nested_ui_identifier")
+                                                 .setGenericUi(nestedUi)
+                                                 .setParentViewIdentifier("nested_ui_container")))
+                                 .build());
+        interactions.add((InteractionProto) InteractionProto.newBuilder()
+                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                                 "text_view_delete_nested_on_click")))
+                                 .addCallbacks(CallbackProto.newBuilder().setClearViewContainer(
+                                         ClearViewContainerProto.newBuilder().setViewIdentifier(
+                                                 "nested_ui_container")))
+                                 .build());
+
+        ViewProto nestedUiContainer =
+                (ViewProto) ViewProto.newBuilder()
+                        .setIdentifier("nested_ui_container")
+                        .setViewContainer(ViewContainerProto.newBuilder().setLinearLayout(
+                                LinearLayoutProto.newBuilder().setOrientation(
+                                        LinearLayoutProto.Orientation.VERTICAL)))
+                        .build();
+        ViewProto rootView =
+                (ViewProto) ViewProto.newBuilder()
+                        .setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addViews(createSimpleTextView(/*identifier = */
+                                                "text_view_create_nested_on_click",
+                                                /*text = */ "click me to create nested UI"))
+                                        .addViews(createSimpleTextView(/*identifier = */
+                                                "text_view_delete_nested_on_click",
+                                                /*text = */ "click me to delete nested UI"))
+                                        .addViews(nestedUiContainer))
+                        .build();
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(rootView)
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setShowGenericUi(ShowGenericUiProto.newBuilder().setGenericUserInterface(
+                                 genericUserInterface))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        // Create/delete UI multiple times, to ensure that everything is cleaned up properly.
+        for (int i = 0; i < 2; ++i) {
+            waitUntilViewMatchesCondition(
+                    withText("click me to create nested UI"), isCompletelyDisplayed());
+            onView(withText("click me to create nested UI")).perform(click());
+
+            waitUntilViewMatchesCondition(withText("nested view"), isCompletelyDisplayed());
+            onView(withText("click me to delete nested UI")).perform(click());
+            waitUntilViewAssertionTrue(
+                    withText("nested view"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
+        }
     }
 }

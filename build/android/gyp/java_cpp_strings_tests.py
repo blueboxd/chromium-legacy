@@ -51,6 +51,10 @@ const char kAnotherSwitch[] = "another-value";
 const char kAString[] = "a-value";
 const char kNoComment[] = "no-comment";
 
+namespace myfeature {
+const char kMyFeatureNoComment[] = "myfeature.no-comment";
+}
+
 // Single line switch with a big space.
 const char kAStringWithSpace[]                      = "a-value";
 
@@ -58,23 +62,34 @@ const char kAStringWithSpace[]                      = "a-value";
 const char kAStringWithAVeryLongNameThatWillHaveToWrap[] =
     "a-string-with-a-very-long-name-that-will-have-to-wrap";
 
+// This one has no comment before it.
+
+const char kAStringWithAVeryLongNameThatWillHaveToWrap2[] =
+    "a-string-with-a-very-long-name-that-will-have-to-wrap2";
+
 // This is erroneous and should be ignored.
 const char kInvalidLineBreak[] =
 
     "invalid-line-break";
 """.split('\n')
     strings = java_cpp_strings.StringFileParser(test_data).Parse()
-    self.assertEqual(4, len(strings))
+    self.assertEqual(5, len(strings))
     self.assertEqual('A_STRING', strings[0].name)
     self.assertEqual('"a-value"', strings[0].value)
     self.assertEqual('NO_COMMENT', strings[1].name)
     self.assertEqual('"no-comment"', strings[1].value)
-    self.assertEqual('A_STRING_WITH_SPACE', strings[2].name)
-    self.assertEqual('"a-value"', strings[2].value)
+    self.assertEqual('MY_FEATURE_NO_COMMENT', strings[2].name)
+    self.assertEqual('"myfeature.no-comment"', strings[2].value)
+    self.assertEqual('A_STRING_WITH_SPACE', strings[3].name)
+    self.assertEqual('"a-value"', strings[3].value)
     self.assertEqual('A_STRING_WITH_A_VERY_LONG_NAME_THAT_WILL_HAVE_TO_WRAP',
-                     strings[3].name)
+                     strings[4].name)
     self.assertEqual('"a-string-with-a-very-long-name-that-will-have-to-wrap"',
-                     strings[3].value)
+                     strings[4].value)
+    self.assertEqual('A_STRING_WITH_A_VERY_LONG_NAME_THAT_WILL_HAVE_TO_WRAP2',
+                     strings[5].name)
+    self.assertEqual('"a-string-with-a-very-long-name-that-will-have-to-wrap2"',
+                     strings[5].value)
 
   def testTemplateParsing(self):
     test_data = """

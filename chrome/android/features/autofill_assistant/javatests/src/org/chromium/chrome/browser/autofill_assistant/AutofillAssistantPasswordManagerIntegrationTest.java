@@ -106,8 +106,9 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
                                  SetFormFieldValueProto.newBuilder()
                                          .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
                                                            .setUseUsername(true))
-                                         .setElement(SelectorProto.newBuilder().addSelectors(
-                                                 "#username")))
+                                         .setElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#username"))))
                          .build());
         // TODO(crbug.com/1057608): Implement Android wrapper for PasswordStore to add a
         // step and
@@ -116,8 +117,9 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
                          .setGeneratePasswordForFormField(
                                  GeneratePasswordForFormFieldProto.newBuilder()
                                          .setMemoryKey("memory-key")
-                                         .setElement(SelectorProto.newBuilder().addSelectors(
-                                                 "#new-password")))
+                                         .setElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#new-password"))))
                          .build());
 
         list.add((ActionProto) ActionProto.newBuilder()
@@ -125,16 +127,18 @@ public class AutofillAssistantPasswordManagerIntegrationTest {
                                  SetFormFieldValueProto.newBuilder()
                                          .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
                                                            .setClientMemoryKey("memory-key"))
-                                         .setElement(SelectorProto.newBuilder().addSelectors(
-                                                 "#new-password")))
+                                         .setElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#new-password"))))
                          .build());
         list.add((ActionProto) ActionProto.newBuilder()
                          .setSetFormValue(
                                  SetFormFieldValueProto.newBuilder()
                                          .addValue(SetFormFieldValueProto.KeyPress.newBuilder()
                                                            .setClientMemoryKey("memory-key"))
-                                         .setElement(SelectorProto.newBuilder().addSelectors(
-                                                 "#password-conf")))
+                                         .setElement(SelectorProto.newBuilder().addFilters(
+                                                 SelectorProto.Filter.newBuilder().setCssSelector(
+                                                         "#password-conf"))))
                          .build());
 
         list.add((ActionProto) ActionProto.newBuilder()

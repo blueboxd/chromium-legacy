@@ -1065,11 +1065,8 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     base::span<const uint8_t> pixel_data) {
-  auto backing =
-      MakeBacking(mailbox, format, size, color_space, usage, false, pixel_data);
-  if (backing)
-    backing->OnWriteSucceeded();
-  return backing;
+  return MakeBacking(mailbox, format, size, color_space, usage, false,
+                     pixel_data);
 }
 
 bool SharedImageBackingFactoryAHB::CanImportGpuMemoryBuffer(

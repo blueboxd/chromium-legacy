@@ -2091,6 +2091,7 @@ static_library("browser") {
     "//components/history/content/browser",
     "//components/history/core/browser",
     "//components/history/core/common",
+    "//components/infobars/content",
     "//components/infobars/core",
     "//components/invalidation/impl",
     "//components/javascript_dialogs",

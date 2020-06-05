@@ -49,6 +49,8 @@ message CallbackProto {
     SetViewVisibilityProto set_view_visibility = 11;
     SetViewEnabledProto set_view_enabled = 12;
     ShowGenericUiPopupProto show_generic_popup = 13;
+    CreateNestedGenericUiProto create_nested_ui = 14;
+    ClearViewContainerProto clear_view_container = 15;
   }
   // Optional model identifier pointing to a single boolean. If set, the
   // callback will only be invoked if the condition is true.
@@ -62,6 +64,7 @@ message EventProto {
     OnUserActionCalled on_user_action_called = 3;
     OnTextLinkClickedProto on_text_link_clicked = 4;
     OnPopupDismissedProto on_popup_dismissed = 5;
+    OnViewContainerClearedProto on_view_container_cleared = 6;
   }
 }
 
@@ -94,6 +97,13 @@ message OnTextLinkClickedProto {
 message OnPopupDismissedProto {
   // The identifier of the popup to observe.
   optional string popup_identifier = 1;
+}
+
+// Event which is called whenever |view_identifier| was cleared with a
+// |ClearViewContainer| interaction.
+message OnViewContainerClearedProto {
+  // The view container that was cleared.
+  optional string view_identifier = 1;
 }
 
 // Callback that writes the specified value to |model_identifier|.
@@ -357,4 +367,28 @@ message SetViewEnabledProto {
 
   // Whether the view should be enabled or not. Must point to a single boolean.
   optional ValueReferenceProto enabled = 2;
+}
+
+// Creates new UI and interactions, i.e., a nested instance and attaches it to
+// |parent_view_identifier|. Nested UI instances have their own view layout and
+// interactions, but share the same model with their parent. All interactions
+// between ancestor and descendant UIs must pass through the user model, as
+// neither can directly reference views or interactions of the other.
+//
+// Use |ClearViewContainerProto| on a nested UI's view parent to detach and
+// destroy the nested UI.
+message CreateNestedGenericUiProto {
+  // Identifier for the newly created instance.
+  optional string generic_ui_identifier = 1;
+  // The UI to create.
+  optional GenericUserInterfaceProto generic_ui = 2;
+  // The view identifier of the parent to attach (=append) this UI to.
+  optional string parent_view_identifier = 3;
+}
+
+// Removes all views from the target view container. Nested UI instances
+// attached to |view_identifier| will be destroyed.
+message ClearViewContainerProto {
+  // The view container to clear.
+  optional string view_identifier = 1;
 }

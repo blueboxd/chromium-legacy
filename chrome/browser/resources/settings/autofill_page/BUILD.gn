@@ -236,6 +236,7 @@ js_library("passwords_section") {
     ":passwords_list_handler",
     "..:global_scroll_target_behavior.m",
     "..:route",
+    "../people_page:profile_info_browser_proxy.m",
     "../people_page:sync_browser_proxy.m",
     "../prefs:prefs_behavior.m",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer",

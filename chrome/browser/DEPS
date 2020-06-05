@@ -131,6 +131,7 @@ include_rules = [
   "+components/history/core/common",
   "+components/history/core/test",
   "+components/image_fetcher/core",
+  "+components/infobars/content",
   "+components/infobars/core",
   "+components/invalidation/impl",
   "+components/invalidation/public",

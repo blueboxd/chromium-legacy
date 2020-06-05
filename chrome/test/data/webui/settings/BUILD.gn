@@ -132,6 +132,7 @@ js_type_check("closure_compile") {
     #":reset_page_test",
     #":reset_profile_banner_test",
     #":route_tests",
+    ":safety_check_chrome_cleaner_test",
     ":safety_check_page_test",
 
     #":search_engines_page_test",
@@ -242,6 +243,15 @@ js_library("passwords_and_autofill_fake_data") {
     "$externs_path/autofill_private.js",
     "$externs_path/passwords_private.js",
   ]
+}
+
+js_library("safety_check_chrome_cleaner_test") {
+  deps = [
+    ":test_metrics_browser_proxy",
+    "..:chai_assert",
+    "//chrome/browser/resources/settings:settings",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("safety_check_page_test") {

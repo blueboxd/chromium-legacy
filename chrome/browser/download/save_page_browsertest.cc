@@ -1442,7 +1442,14 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, BrokenImage) {
 }
 
 // Test for saving a page with a cross-site <object> element.
-IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, CrossSiteObject) {
+// Disabled on Windows due to flakiness. crbug.com/1070597.
+#if defined(OS_WIN)
+#define MAYBE_CrossSiteObject DISABLED_CrossSiteObject
+#else
+#define MAYBE_CrossSiteObject CrossSiteObject
+#endif
+IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
+                       MAYBE_CrossSiteObject) {
   content::SavePageType save_page_type = GetParam();
 
   std::vector<std::string> expected_substrings = {

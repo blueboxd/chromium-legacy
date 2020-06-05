@@ -23,6 +23,7 @@ export const SafetyCheckCallbackConstants = {
   PASSWORDS_CHANGED: 'safety-check-passwords-status-changed',
   SAFE_BROWSING_CHANGED: 'safety-check-safe-browsing-status-changed',
   EXTENSIONS_CHANGED: 'safety-check-extensions-status-changed',
+  CHROME_CLEANER_CHANGED: 'safety-check-chrome-cleaner-status-changed',
 };
 
 /**
@@ -103,6 +104,32 @@ export const SafetyCheckExtensionsStatus = {
   BLOCKLISTED_REENABLED_ALL_BY_USER: 4,
   BLOCKLISTED_REENABLED_SOME_BY_USER: 5,
   BLOCKLISTED_REENABLED_ALL_BY_ADMIN: 6,
+};
+
+/**
+ * States of the safety check Chrome cleaner element.
+ * Needs to be kept in sync with ChromeCleanerStatus in
+ * chrome/browser/ui/webui/settings/safety_check_handler.h
+ * @enum {number}
+ */
+export const SafetyCheckChromeCleanerStatus = {
+  CHECKING: 0,
+  INITIAL: 1,
+  REPORTER_FOUND_NOTHING: 2,
+  REPORTER_FAILED: 3,
+  SCANNING_FOUND_NOTHING: 4,
+  SCANNING_FAILED: 5,
+  CONNECTION_LOST: 6,
+  USER_DECLINED_CLEANUP: 7,
+  CLEANING_FAILED: 8,
+  CLEANING_SUCCEEDED: 9,
+  CLEANER_DOWNLOAD_FAILED: 10,
+  REPORTER_RUNNING: 11,
+  SCANNING: 12,
+  INFECTED: 13,
+  CLEANING: 14,
+  REBOOT_REQUIRED: 15,
+  DISABLED_BY_ADMIN: 16,
 };
 
 /** @interface */

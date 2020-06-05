@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import androidx.annotation.IntDef;
 
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -133,4 +135,25 @@ public interface BottomSheetController {
 
     /** @return The height of the shadow above the bottom sheet in px. */
     int getTopShadowHeight();
+
+    /**
+     * @return The srcim's coordinator. This can be used to customize the bottom sheet's interaction
+     *         with the scrim if the default behavior is not desired -- fading in behind the sheet
+     *         as the sheet is expanded.
+     */
+    ScrimCoordinator getScrimCoordinator();
+
+    /**
+     * This method provides a property model that can be used to show the scrim behind the bottom
+     * sheet. This can be used in conjunction with {@link #getScrimCoordinator()} to customize the
+     * scrim's behavior. While this method is not required to show the scrim, this method returns
+     * a model set up to appear behnind the sheet. Common usage is the following:
+     *
+     * PropertyModel params = controller.createScrimParams();
+     * // further modify params
+     * controller.getScrimCoordinator().showScrim(params);
+     *
+     * @return A property model used to show the scrim behind the bottom sheet.
+     */
+    PropertyModel createScrimParams();
 }

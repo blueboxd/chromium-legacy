@@ -19,9 +19,6 @@
 
 namespace plugin_vm {
 
-const char kBaseDriveUrl[] = "https://drive.google.com/open?id=";
-const char kDriveFileId[] = "Yxhi5BDTxsEl9onT8AunH4o_tkKviFGjY";
-const char kDriveExtraParam[] = "&foobar=barfoo";
 
 class PluginVmUtilTest : public testing::Test {
  public:
@@ -123,30 +120,48 @@ TEST_F(PluginVmUtilTest, AddPluginVmPolicyObserver) {
                                            false);
 }
 
-TEST_F(PluginVmUtilTest, DriveLinkDetection) {
-  std::string base_url(kBaseDriveUrl);
-  std::string file_id(kDriveFileId);
-
-  EXPECT_TRUE(IsDriveUrl(GURL(base_url + file_id)));
-  EXPECT_TRUE(IsDriveUrl(
-      GURL(base_url + file_id + kDriveExtraParam + kDriveExtraParam)));
-
-  EXPECT_FALSE(IsDriveUrl(GURL("https://othersite.com?id=" + file_id)));
-  EXPECT_FALSE(
-      IsDriveUrl(GURL("https://drive.google.com.othersite.com?id=" + file_id)));
-  EXPECT_FALSE(IsDriveUrl(GURL(base_url)));
+TEST_F(PluginVmUtilTest, DriveUrlNonMatches) {
+  EXPECT_EQ(base::nullopt,
+            GetIdFromDriveUrl(GURL(
+                "http://192.168.0.2?id=Yxhi5BDTxsEl9onT8AunH4o_tkKviFGjY")));
+  EXPECT_EQ(base::nullopt,
+            GetIdFromDriveUrl(
+                GURL("https://drive.notgoogle.com/open?id=someSortOfId123")));
+  EXPECT_EQ(base::nullopt,
+            GetIdFromDriveUrl(GURL(
+                "https://site.com/a/site.com/file/d/definitelyNotDrive/view")));
+  EXPECT_EQ(
+      base::nullopt,
+      GetIdFromDriveUrl(GURL("file:///home/chronos/user/Downloads/file.zip")));
+  EXPECT_EQ(base::nullopt,
+            GetIdFromDriveUrl(GURL("http://drive.google.com/open?id=fancyId")));
 }
 
-TEST_F(PluginVmUtilTest, DriveLinkIdExtraction) {
-  std::string base_url(kBaseDriveUrl);
-  std::string file_id(kDriveFileId);
+TEST_F(PluginVmUtilTest, DriveUrlPatternWithOpen) {
+  EXPECT_EQ("fancyId", GetIdFromDriveUrl(
+                           GURL("https://drive.google.com/open?id=fancyId")));
+  EXPECT_EQ("fancyId2",
+            GetIdFromDriveUrl(
+                GURL("https://drive.google.com/open?id=fancyId2&foo=bar")));
+  EXPECT_EQ(
+      "SomeCoolId000",
+      GetIdFromDriveUrl(GURL(
+          "https://drive.google.com/open?bar=foo&id=SomeCoolId000&foo=bar")));
+}
 
-  EXPECT_EQ(GetIdFromDriveUrl(GURL(base_url + file_id)), file_id);
-  EXPECT_EQ(GetIdFromDriveUrl(GURL(base_url + file_id + kDriveExtraParam)),
-            file_id);
-  EXPECT_EQ(GetIdFromDriveUrl(
-                GURL(base_url + file_id + kDriveExtraParam + kDriveExtraParam)),
-            file_id);
+TEST_F(PluginVmUtilTest, DriveUrlPatternWithView) {
+  EXPECT_EQ("Id123",
+            GetIdFromDriveUrl(GURL("https://drive.google.com/a/google.com/file/"
+                                   "d/Id123/view?usp=sharing")));
+  EXPECT_EQ("PluginVmIsCool",
+            GetIdFromDriveUrl(GURL("https://drive.google.com/a/fancydomain.org/"
+                                   "file/d/PluginVmIsCool/view")));
+
+  EXPECT_EQ("hello",
+            GetIdFromDriveUrl(GURL(
+                "https://drive.google.com/file/d/hello/view?usp=sharing")));
+  EXPECT_EQ("w-r-d", GetIdFromDriveUrl(
+                         GURL("https://drive.google.com/file/d/w-r-d/view")));
 }
 
 }  // namespace plugin_vm

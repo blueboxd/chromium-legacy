@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
+#include "base/trace_event/trace_event.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/unique_position.h"
@@ -96,6 +97,9 @@ void TraverseAndAppendChildren(
 size_t ComputeChildNodeIndex(const bookmarks::BookmarkNode* parent,
                              const sync_pb::UniquePosition& unique_position,
                              const SyncedBookmarkTracker* bookmark_tracker) {
+  // TODO(crbug.com/1084150): remove after investigations are completed.
+  TRACE_EVENT0("sync", "ComputeChildNodeIndex");
+
   const syncer::UniquePosition position =
       syncer::UniquePosition::FromProto(unique_position);
   for (size_t i = 0; i < parent->children().size(); ++i) {
@@ -191,6 +195,8 @@ BookmarkRemoteUpdatesHandler::BookmarkRemoteUpdatesHandler(
 void BookmarkRemoteUpdatesHandler::Process(
     const syncer::UpdateResponseDataList& updates,
     bool got_new_encryption_requirements) {
+  TRACE_EVENT0("sync", "BookmarkRemoteUpdatesHandler::Process");
+
   bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
   // If new encryption requirements come from the server, the entities that are
   // in |updates| will be recorded here so they can be ignored during the

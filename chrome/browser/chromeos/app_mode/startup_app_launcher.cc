@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/crx_file/id_util.h"
 #include "components/session_manager/core/session_manager.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -59,7 +60,10 @@ StartupAppLauncher::StartupAppLauncher(Profile* profile,
   kiosk_app_manager_observer_.Add(KioskAppManager::Get());
 }
 
-StartupAppLauncher::~StartupAppLauncher() = default;
+StartupAppLauncher::~StartupAppLauncher() {
+  if (waiting_for_window_)
+    window_registry_->RemoveObserver(this);
+}
 
 void StartupAppLauncher::Initialize() {
   MaybeInitializeNetwork();
@@ -436,6 +440,24 @@ void StartupAppLauncher::LaunchApp() {
 
 void StartupAppLauncher::OnLaunchSuccess() {
   delegate_->OnLaunchSucceeded();
+
+  window_registry_ = extensions::AppWindowRegistry::Get(profile_);
+  // Start waiting for app window.
+  if (!window_registry_->GetAppWindowsForApp(app_id_).empty()) {
+    delegate_->OnAppWindowCreated();
+    return;
+  } else {
+    waiting_for_window_ = true;
+    window_registry_->AddObserver(this);
+  }
+}
+
+void StartupAppLauncher::OnAppWindowAdded(extensions::AppWindow* app_window) {
+  if (app_window->extension_id() == app_id_) {
+    waiting_for_window_ = false;
+    window_registry_->RemoveObserver(this);
+    delegate_->OnAppWindowCreated();
+  }
 }
 
 void StartupAppLauncher::OnLaunchFailure(KioskAppLaunchError::Error error) {

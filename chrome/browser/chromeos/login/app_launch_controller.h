@@ -70,15 +70,9 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   static void SetBlockAppLaunchForTesting(bool block);
 
  private:
-  // A class to watch app window creation.
-  class AppWindowWatcher;
-
   void ClearNetworkWaitTimer();
   void CleanUp();
   void OnNetworkWaitTimedout();
-
-  // Callback of AppWindowWatcher to notify an app window is created.
-  void OnAppWindowCreated();
 
   // Whether the network could be configured during launching.
   bool CanConfigureNetwork();
@@ -107,6 +101,7 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   void OnReadyToLaunch() override;
   void OnLaunchSucceeded() override;
   void OnLaunchFailed(KioskAppLaunchError::Error error) override;
+  void OnAppWindowCreated() override;
   bool IsShowingNetworkConfigScreen() override;
 
   // AppLaunchSigninScreen::Delegate overrides:
@@ -120,7 +115,6 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;
   std::unique_ptr<StartupAppLauncher> startup_app_launcher_;
   std::unique_ptr<AppLaunchSigninScreen> signin_screen_;
-  std::unique_ptr<AppWindowWatcher> app_window_watcher_;
 
   bool launcher_ready_ = false;
   bool cleaned_up_ = false;

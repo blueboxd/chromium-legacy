@@ -50,7 +50,6 @@ public class FirstRunUtilsTest {
         private final String mAccountType;
 
         FakeAuthenticationAccountManager(String accountType) {
-            super(FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
             mAccountType = accountType;
         }
 

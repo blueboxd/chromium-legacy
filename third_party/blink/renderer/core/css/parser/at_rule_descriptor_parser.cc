@@ -31,13 +31,13 @@ CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
       // 'all' is only allowed in @font-face and with no other values.
       if (values->length())
         return nullptr;
-      return css_property_parser_helpers::ConsumeIdent(range);
+      return css_parsing_utils::ConsumeIdent(range);
     }
     CSSIdentifierValue* font_variant =
         css_parsing_utils::ConsumeFontVariantCSS21(range);
     if (font_variant)
       values->Append(*font_variant);
-  } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
+  } while (css_parsing_utils::ConsumeCommaIncludingWhitespace(range));
 
   if (values->length())
     return values;
@@ -46,7 +46,7 @@ CSSValue* ConsumeFontVariantList(CSSParserTokenRange& range) {
 }
 
 CSSIdentifierValue* ConsumeFontDisplay(CSSParserTokenRange& range) {
-  return css_property_parser_helpers::ConsumeIdent<
+  return css_parsing_utils::ConsumeIdent<
       CSSValueID::kAuto, CSSValueID::kBlock, CSSValueID::kSwap,
       CSSValueID::kFallback, CSSValueID::kOptional>(range);
 }
@@ -65,7 +65,7 @@ CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
       return nullptr;
     values->Append(
         *MakeGarbageCollected<cssvalue::CSSUnicodeRangeValue>(start, end));
-  } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
+  } while (css_parsing_utils::ConsumeCommaIncludingWhitespace(range));
 
   return values;
 }
@@ -73,8 +73,7 @@ CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
 CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
   String url =
-      css_property_parser_helpers::ConsumeUrlAsStringView(range, context)
-          .ToString();
+      css_parsing_utils::ConsumeUrlAsStringView(range, context).ToString();
   if (url.IsNull())
     return nullptr;
   CSSFontFaceSrcValue* uri_value(CSSFontFaceSrcValue::Create(
@@ -89,8 +88,7 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
   // FIXME: https://drafts.csswg.org/css-fonts says that format() contains a
   // comma-separated list of strings, but CSSFontFaceSrcValue stores only one
   // format. Allowing one format for now.
-  CSSParserTokenRange args =
-      css_property_parser_helpers::ConsumeFunction(range);
+  CSSParserTokenRange args = css_parsing_utils::ConsumeFunction(range);
   const CSSParserToken& arg = args.ConsumeIncludingWhitespace();
   if ((arg.GetType() != kStringToken) || !args.AtEnd())
     return nullptr;
@@ -100,8 +98,7 @@ CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
 
 CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
                                   const CSSParserContext& context) {
-  CSSParserTokenRange args =
-      css_property_parser_helpers::ConsumeFunction(range);
+  CSSParserTokenRange args = css_parsing_utils::ConsumeFunction(range);
   network::mojom::CSPDisposition should_check_content_security_policy =
       context.ShouldCheckContentSecurityPolicy();
   if (args.Peek().GetType() == kStringToken) {
@@ -140,7 +137,7 @@ CSSValueList* ConsumeFontFaceSrc(CSSParserTokenRange& range,
     if (!parsed_value)
       return nullptr;
     values->Append(*parsed_value);
-  } while (css_property_parser_helpers::ConsumeCommaIncludingWhitespace(range));
+  } while (css_parsing_utils::ConsumeCommaIncludingWhitespace(range));
   return values;
 }
 
@@ -234,7 +231,7 @@ CSSValue* AtRuleDescriptorParser::ParseAtPropertyDescriptor(
   switch (id) {
     case AtRuleDescriptorID::Syntax:
       range.ConsumeWhitespace();
-      parsed_value = css_property_parser_helpers::ConsumeString(range);
+      parsed_value = css_parsing_utils::ConsumeString(range);
       break;
     case AtRuleDescriptorID::InitialValue: {
       // Note that we must retain leading whitespace here.
@@ -243,9 +240,8 @@ CSSValue* AtRuleDescriptorParser::ParseAtPropertyDescriptor(
     }
     case AtRuleDescriptorID::Inherits:
       range.ConsumeWhitespace();
-      parsed_value =
-          css_property_parser_helpers::ConsumeIdent<CSSValueID::kTrue,
-                                                    CSSValueID::kFalse>(range);
+      parsed_value = css_parsing_utils::ConsumeIdent<CSSValueID::kTrue,
+                                                     CSSValueID::kFalse>(range);
       break;
     default:
       break;

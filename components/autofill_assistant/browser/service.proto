@@ -694,61 +694,70 @@ enum PseudoType {
   INPUT_LIST_BUTTON = 15;
 }
 
-// A reference to an unique element on the page, possibly nested in frames.
+// A reference to one or more elements on the page, possibly nested in frames.
 message SelectorProto {
-  // A sequence of CSS selectors. Any non-final CSS selector is expected to
-  // arrive at a frame or an iframe, i.e. an element that contains another
-  // document.
-  // APIs are free to reject element references that do not refer to unique
-  // elements (i.e. resolve to more than one element on the page).
-  repeated string selectors = 2;
+  // Filters for the element on the page. Filter are applied sequentially, using
+  // the output of the previous filter as input. The root of these filters is
+  // the main frame's document.
+  repeated Filter filters = 9;
 
-  // If non-empty, only take into accounts the elements matched by selector
-  // whose inner text matches the given JavaScript regex. This does a search,
-  // not a full match. Add ^ and $ as necessary.
-  //
-  // This is used to filter the elements matching the last selector, before
-  // trying to get the pseudo_type, if any was set.
-  optional string inner_text_pattern = 4;
+  // A filter that starts with one or more elements and returns one on more
+  // elements. Filters are meant to be applied sequentially.
+  message Filter {
+    oneof filter {
+      // Enter the document of an iframe or shadow root. The next filters apply
+      // to the document inside of the iframe(s) or on the shadow element.
+      //
+      // Fails if there are more than one match.
+      EmptyFilter enter_frame = 1;
 
-  // If true, the |inner_text_pattern| will be checked case sensitively.
-  // Default is case insensitive.
-  optional bool inner_text_pattern_case_sensitive = 7;
+      // Evaluate the given CSS selector on all start elements and use
+      // the result as end elements.
+      string css_selector = 2;
 
-  // If non-empty, only take into accounts the elements matched by selector
-  // whose value matches the given JavaScript regex. This does a search,
-  // not a full match. Add ^ and $ as necessary.
-  //
-  // This is used to filter the elements matching the last selector, before
-  // trying to get the pseudo_type, if any was set.
-  optional string value_pattern = 6;
+      // Check the inner text of all start elements, using the Javascript
+      // innerText property. Keep only the element whose innerText match the
+      // given regular expression.
+      TextFilter inner_text = 3;
 
-  // If true, the |value_pattern| will be checked case sensitively. Default is
-  // case insensitive.
-  optional bool value_pattern_case_sensitive = 8;
+      // Check the value of all start elements, using the Javascript value
+      // property. Keep only the element whose value property match the given
+      // regular expression.
+      TextFilter value = 4;
 
-  // Specifies whether the matched element(s) must be visible.
-  //
-  // Visibility applies to the element matched in selectors; the pseudo type is
-  // checked afterwards.
-  optional VisibilityRequirement visibility_requirement = 5;
+      // Select the pseudo-element of the given type associated with the current
+      // elements.
+      PseudoType pseudo_type = 5;
 
-  // An optional pseudo type. This pseudo type is associated to the final
-  // element matched, which means that we currently don't handle matching an
-  // element inside a pseudo element.
-  optional PseudoType pseudo_type = 3;
-}
+      // Only keep elements that have a box model, even if it is empty.
+      //
+      // This is the equivalent of the old MUST_BE_VISIBLE flag. It's been
+      // renamed as having a bounding box is not enough to imply visibility.
+      EmptyFilter bounding_box = 6;
 
-enum VisibilityRequirement {
-  UNSPECIFIED_VISIBILITY = 0;
+      // Pick just one match and continue. Ignore all other matches.
+      //
+      // For backward-compatibility with older element references, pick_one can
+      // be put before enter_frame.
+      EmptyFilter pick_one = 7;
+    }
+  }
 
-  // Element must be visible. Visible elements are elements that have a box
-  // model. The box model is not checked at all, so an element with a zero size
-  // bounding box is considered visible.
-  MUST_BE_VISIBLE = 1;
+  // A way of filtering elements by their text.
+  message TextFilter {
+    // Javascript RE2 regular expression to apply to the text. This is evaluated
+    // with Regexp.test, so it's a "find" and will be satisfied whenever the
+    // text contains at least one substring that matches the given regular
+    // expression.
+    optional string re2 = 1;
 
-  // It's enough for the element to exist in the DOM tree for it to match.
-  MUST_EXIST = 2;
+    // If true, the regular expression is case-sensitive.
+    optional bool case_sensitive = 2;
+  }
+
+  message EmptyFilter {}
+
+  reserved 1 to 8;
 }
 
 // Contain all arguments to perform a click.

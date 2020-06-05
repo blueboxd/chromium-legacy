@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/decimal.h"
@@ -281,22 +281,21 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   CSSParserContext::ParserModeOverridingScope scope(context, kHTMLStandardMode);
 
   CSSPrimitiveValue* value =
-      css_property_parser_helpers::ConsumeInteger(range, context, 0);
+      css_parsing_utils::ConsumeInteger(range, context, 0);
   if (!value && !FeatureExpectingPositiveInteger(lower_media_feature) &&
       !FeatureWithAspectRatio(lower_media_feature)) {
-    value = css_property_parser_helpers::ConsumeNumber(range, context,
-                                                       kValueRangeNonNegative);
+    value = css_parsing_utils::ConsumeNumber(range, context,
+                                             kValueRangeNonNegative);
   }
   if (!value) {
-    value = css_property_parser_helpers::ConsumeLength(range, context,
-                                                       kValueRangeNonNegative);
+    value = css_parsing_utils::ConsumeLength(range, context,
+                                             kValueRangeNonNegative);
   }
   if (!value)
-    value = css_property_parser_helpers::ConsumeResolution(range);
+    value = css_parsing_utils::ConsumeResolution(range);
 
   if (!value) {
-    if (CSSIdentifierValue* ident =
-            css_property_parser_helpers::ConsumeIdent(range)) {
+    if (CSSIdentifierValue* ident = css_parsing_utils::ConsumeIdent(range)) {
       CSSValueID ident_id = ident->GetValueID();
       if (!FeatureWithValidIdent(lower_media_feature, ident_id))
         return Invalid();
@@ -316,10 +315,10 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   if (FeatureWithAspectRatio(lower_media_feature)) {
     if (!value->IsInteger() || value->GetDoubleValue() == 0)
       return Invalid();
-    if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
+    if (!css_parsing_utils::ConsumeSlashIncludingWhitespace(range))
       return Invalid();
     CSSPrimitiveValue* denominator =
-        css_property_parser_helpers::ConsumePositiveInteger(range, context);
+        css_parsing_utils::ConsumePositiveInteger(range, context);
     if (!denominator)
       return Invalid();
 

@@ -1131,6 +1131,10 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
   NotifyObservers();
 }
 
+void ProfileSyncService::OnBackedOffTypesChanged() {
+  NotifyObservers();
+}
+
 void ProfileSyncService::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1347,6 +1351,14 @@ ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   return data_type_manager_->GetActiveDataTypes();
 }
 
+ModelTypeSet ProfileSyncService::GetBackedOffDataTypes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (engine_ && engine_->IsInitialized()) {
+    return engine_->GetDetailedStatus().backed_off_types;
+  }
+  return ModelTypeSet();
+}
+
 void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1511,7 +1523,7 @@ ProfileSyncService::GetTypeStatusMapForDebugging() {
     return std::move(result);
   }
 
-  SyncStatus detailed_status = engine_->GetDetailedStatus();
+  const SyncStatus& detailed_status = engine_->GetDetailedStatus();
   const ModelTypeSet& throttled_types(detailed_status.throttled_types);
   const ModelTypeSet& backed_off_types(detailed_status.backed_off_types);
 

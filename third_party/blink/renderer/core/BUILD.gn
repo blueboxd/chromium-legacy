@@ -1337,7 +1337,6 @@ jumbo_source_set("unit_tests") {
     "page/validation_message_overlay_delegate_test.cc",
     "page/viewport_test.cc",
     "page/window_features_test.cc",
-    "page/zoom_test.cc",
     "paint/block_painter_test.cc",
     "paint/box_paint_invalidator_test.cc",
     "paint/box_painter_test.cc",

@@ -29,6 +29,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_utils.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -162,21 +163,27 @@ const struct ProcessIsolationTestCase {
   const char* end_url;
   bool end_in_instant_process;
   bool same_site_instance;
+  bool same_process;
 } kProcessIsolationTestCases[] = {
     {"Local NTP -> SRP", "chrome-search://local-ntp", true,
-     "https://foo.com/url", false, false},
+     "https://foo.com/url", false, false, false},
     {"Local NTP -> Regular", "chrome-search://local-ntp", true,
-     "https://foo.com/other", false, false},
+     "https://foo.com/other", false, false, false},
     {"Remote NTP -> SRP", "https://foo.com/newtab", true, "https://foo.com/url",
-     false, false},
+     false, false, false},
     {"Remote NTP -> Regular", "https://foo.com/newtab", true,
-     "https://foo.com/other", false, false},
+     "https://foo.com/other", false, false, false},
     {"SRP -> SRP", "https://foo.com/url", false, "https://foo.com/url", false,
-     true},
+     true, true},
+    // Same-site (but not same URL) navigations might switch site instances but
+    // keep the same process when ProactivelySwapBrowsingInstance is enabled on
+    // same-site navigations.
     {"SRP -> Regular", "https://foo.com/url", false, "https://foo.com/other",
-     false, true},
+     false, !content::CanSameSiteMainFrameNavigationsChangeSiteInstances(),
+     true},
     {"Regular -> SRP", "https://foo.com/other", false, "https://foo.com/url",
-     false, true},
+     false, !content::CanSameSiteMainFrameNavigationsChangeSiteInstances(),
+     true},
 };
 
 TEST_F(SearchTest, ProcessIsolation) {
@@ -210,7 +217,7 @@ TEST_F(SearchTest, ProcessIsolation) {
     EXPECT_EQ(test.same_site_instance,
               start_rvh == contents->GetRenderViewHost())
         << test.description;
-    EXPECT_EQ(test.same_site_instance,
+    EXPECT_EQ(test.same_process,
               start_rph == contents->GetMainFrame()->GetProcess())
         << test.description;
   }
@@ -249,7 +256,7 @@ TEST_F(SearchTest, ProcessIsolation_RendererInitiated) {
     EXPECT_EQ(test.same_site_instance,
               start_rvh == contents->GetRenderViewHost())
         << test.description;
-    EXPECT_EQ(test.same_site_instance,
+    EXPECT_EQ(test.same_process,
               start_rph == contents->GetMainFrame()->GetProcess())
         << test.description;
   }

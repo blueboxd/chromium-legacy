@@ -36,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(TopFramePopulationBrowsertest, FromTopFrame) {
               bool unused_is_for_isolated_world) {
             ASSERT_TRUE(params);
 
-            ASSERT_THAT(params->top_frame_origin,
+            ASSERT_THAT(params->isolation_info.top_frame_origin(),
                         Optional(url::Origin::Create(GURL("http://main.com"))));
             ++number_of_frame_loaders;
           }));
@@ -82,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(TopFramePopulationBrowsertest, FromNestedFrame) {
               bool unused_is_for_isolated_world) {
             ASSERT_TRUE(params);
 
-            ASSERT_THAT(params->top_frame_origin,
+            ASSERT_THAT(params->isolation_info.top_frame_origin(),
                         Optional(url::Origin::Create(GURL("http://main.com"))));
             ++number_of_frame_loaders;
           }));

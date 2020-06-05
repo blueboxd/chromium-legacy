@@ -73,6 +73,9 @@ LoginDisplayHostMojo::LoginDisplayHostMojo()
   // Preload webui-based OOBE for add user, kiosk apps, etc.
   LoadOobeDialog();
 
+  // Should be created after OobeUI loaded with the dialog.
+  wizard_controller_ = std::make_unique<WizardController>();
+
   GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
       &security_token_pin_dialog_host_ash_impl_);
 }
@@ -107,7 +110,8 @@ void LoginDisplayHostMojo::SetUserCount(int user_count) {
   // Hide Gaia dialog in case empty list of users switched to a non-empty one.
   // And if the dialog shows login screen.
   if (was_zero_users && user_count_ != 0 && dialog_ && dialog_->IsVisible() &&
-      (!wizard_controller_ || wizard_controller_->login_screen_started())) {
+      (!wizard_controller_->is_initialized() ||
+       wizard_controller_->login_screen_started())) {
     HideOobeDialog();
   }
 }
@@ -191,8 +195,11 @@ void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
   // screens to show.
   ObserveOobeUI();
 
-  if (features::IsOobeScreensPriorityEnabled() && wizard_controller_) {
-    wizard_controller_->AdvanceToScreen(first_screen);
+  if (features::IsOobeScreensPriorityEnabled()) {
+    if (wizard_controller_->is_initialized())
+      wizard_controller_->AdvanceToScreen(first_screen);
+    else
+      wizard_controller_->Init(first_screen);
   } else {
     wizard_controller_ = std::make_unique<WizardController>();
     wizard_controller_->Init(first_screen);

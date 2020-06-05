@@ -53,8 +53,7 @@ public final class SigninTestUtil {
      */
     @WorkerThread
     public static void setUpAuthForTesting() {
-        sAccountManager = new FakeAccountManagerDelegate(
-                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
+        sAccountManager = new FakeAccountManagerDelegate();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccountManagerFacadeProvider.setInstanceForTests(
                     new AccountManagerFacadeImpl(sAccountManager));

@@ -26,7 +26,7 @@ AutofillErrorInfoProto::AutofillFieldError* AddAutofillError(
   auto* field_error = client_status->mutable_details()
                           ->mutable_autofill_error_info()
                           ->add_autofill_field_error();
-  *field_error->mutable_field() = required_field.selector.ToProto();
+  *field_error->mutable_field() = required_field.selector.proto;
   field_error->set_value_expression(required_field.value_expression);
   return field_error;
 }

@@ -41,4 +41,7 @@ void FinishFirstRun(ChromeBrowserState* browserState,
 // Posts a notification that First Run did finish.
 void FirstRunDismissed();
 
+// Returns whether the First Run Experience should be presented.
+bool ShouldPresentFirstRunExperience();
+
 #endif  // IOS_CHROME_BROWSER_UI_FIRST_RUN_FIRST_RUN_UTIL_H_

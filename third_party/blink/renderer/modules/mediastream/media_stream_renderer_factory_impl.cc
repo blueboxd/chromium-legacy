@@ -11,6 +11,7 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/renderer/modules/mediastream/track_audio_renderer.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
@@ -130,7 +131,11 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
         "%s => (creating TrackAudioRenderer for %s audio track)", __func__,
         audio_track->is_local_track() ? "local" : "remote"));
 
-    return new TrackAudioRenderer(audio_components[0].Get(), web_frame,
+    auto* frame =
+        web_frame
+            ? static_cast<LocalFrame*>(WebLocalFrame::ToCoreFrame(*web_frame))
+            : nullptr;
+    return new TrackAudioRenderer(audio_components[0].Get(), frame,
                                   /*session_id=*/base::UnguessableToken(),
                                   String(device_id),
                                   std::move(on_render_error_callback));

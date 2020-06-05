@@ -184,6 +184,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(source);
   web_app->SetIsInSyncInstall(false);
+  const bool is_synced = web_app->IsSynced();
 
   UpdateIntWebAppPref(profile_->GetPrefs(), app_id, kLatestWebAppInstallSource,
                       static_cast<int>(options.install_source));
@@ -208,7 +209,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   // We should install shadow bookmark app only for kSync source (we sync only
   // user-installed apps). System, Policy, WebAppStore, Default apps should not
   // get a shadow bookmark app.
-  if (legacy_finalizer_ && source == Source::kSync) {
+  if (legacy_finalizer_ && is_synced) {
     legacy_finalizer_->FinalizeInstall(web_app_info, options,
                                        base::DoNothing());
   }
@@ -326,6 +327,7 @@ void WebAppInstallFinalizer::UninstallExternalAppByUser(
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   DCHECK(app);
   DCHECK(app->CanUserUninstallExternalApp());
+  const bool is_synced = app->IsSynced();
 
   if (app->IsDefaultApp()) {
     UpdateBoolWebAppPref(profile_->GetPrefs(), app_id,
@@ -342,7 +344,7 @@ void WebAppInstallFinalizer::UninstallExternalAppByUser(
   UninstallWebApp(app_id, std::move(callback));
 
   // Uninstall shadow bookmark app from this device and from the sync server.
-  if (legacy_finalizer_)
+  if (legacy_finalizer_ && is_synced)
     legacy_finalizer_->UninstallExternalAppByUser(app_id, base::DoNothing());
 }
 
@@ -370,6 +372,7 @@ void WebAppInstallFinalizer::FinalizeUpdate(
 
   // Prepare copy-on-write to update existing app.
   auto web_app = std::make_unique<WebApp>(*existing_web_app);
+  const bool is_synced = web_app->IsSynced();
 
   CommitCallback commit_callback = base::BindOnce(
       &WebAppInstallFinalizer::OnDatabaseCommitCompletedForUpdate,
@@ -379,7 +382,8 @@ void WebAppInstallFinalizer::FinalizeUpdate(
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       std::move(commit_callback));
 
-  // TODO(crbug.com/1020037): Update shadow bookmark app in extensions.
+  if (legacy_finalizer_ && is_synced)
+    legacy_finalizer_->FinalizeUpdate(web_app_info, base::DoNothing());
 }
 
 void WebAppInstallFinalizer::Start() {

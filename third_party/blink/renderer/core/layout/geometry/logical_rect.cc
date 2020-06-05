@@ -40,21 +40,12 @@ void LogicalRect::Unite(const LogicalRect& other) {
 
 PhysicalRect LogicalRect::ConvertToPhysical(
     WritingMode writing_mode,
+    TextDirection direction,
     const PhysicalSize& outer_size) const {
-  if (IsHorizontalWritingMode(writing_mode)) {
-    return {offset.inline_offset, offset.block_offset, size.inline_size,
-            size.block_size};
-  }
-
-  // Vertical, clock-wise rotation.
-  if (writing_mode != WritingMode::kSidewaysLr) {
-    return {outer_size.width - BlockEndOffset(), offset.inline_offset,
-            size.block_size, size.inline_size};
-  }
-
-  // Vertical, counter-clock-wise rotation.
-  return {offset.block_offset, outer_size.height - InlineEndOffset(),
-          size.block_size, size.inline_size};
+  const PhysicalSize physical_size = ToPhysicalSize(size, writing_mode);
+  const PhysicalOffset physical_offset = offset.ConvertToPhysical(
+      writing_mode, direction, outer_size, physical_size);
+  return {physical_offset, physical_size};
 }
 
 String LogicalRect::ToString() const {

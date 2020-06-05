@@ -129,7 +129,8 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
                                    size_t* pending_number_of_checks_output,
                                    bool expected_result,
                                    const ClientStatus& result) {
-    EXPECT_EQ(expected_result, result.ok()) << "selector: " << selector;
+    EXPECT_EQ(expected_result, result.ok())
+        << "selector: " << selector << " status: " << result;
     *pending_number_of_checks_output -= 1;
     if (*pending_number_of_checks_output == 0) {
       std::move(done_callback).Run();
@@ -548,15 +549,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExistenceCheck) {
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, PseudoElementChecks) {
   // A pseudo-element
-  RunLaxElementCheck(Selector({"#terms-and-conditions"}, BEFORE), true);
+  RunLaxElementCheck(Selector({"#terms-and-conditions"}).SetPseudoType(BEFORE),
+                     true);
 
   // An invisible pseudo-element
   //
   // TODO(b/129461999): This is wrong; it should exist. Fix it.
-  RunLaxElementCheck(Selector({"#button"}, BEFORE), false);
+  RunLaxElementCheck(Selector({"#button"}).SetPseudoType(BEFORE), false);
 
   // A non-existent pseudo-element
-  RunLaxElementCheck(Selector({"#button"}, AFTER), false);
+  RunLaxElementCheck(Selector({"#button"}).SetPseudoType(AFTER), false);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementInFrameChecks) {
@@ -593,13 +595,16 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, VisibilityRequirementCheck) {
 
   // A pseudo-element
   RunLaxElementCheck(
-      Selector({"#terms-and-conditions"}, BEFORE).MustBeVisible(), true);
+      Selector({"#terms-and-conditions"}).MustBeVisible().SetPseudoType(BEFORE),
+      true);
 
   // An invisible pseudo-element
-  RunLaxElementCheck(Selector({"#button"}, BEFORE).MustBeVisible(), false);
+  RunLaxElementCheck(
+      Selector({"#button"}).MustBeVisible().SetPseudoType(BEFORE), false);
 
   // A non-existent pseudo-element
-  RunLaxElementCheck(Selector({"#button"}, AFTER).MustBeVisible(), false);
+  RunLaxElementCheck(Selector({"#button"}).MustBeVisible().SetPseudoType(AFTER),
+                     false);
 
   // An iFrame.
   RunLaxElementCheck(Selector({"#iframe"}).MustBeVisible(), true);
@@ -633,6 +638,19 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, MultipleVisibleElementCheck) {
                      false);
   RunStrictElementCheck(Selector({"#doesnotexist,#hidden"}).MustBeVisible(),
                         false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SearchMultipleIframes) {
+  // There are two "iframe" elements in the document so the selector would need
+  // to search in both iframes, which isn't supported.
+  SelectorProto proto;
+  proto.add_filters()->set_css_selector("iframe");
+  proto.add_filters()->mutable_enter_frame();
+  proto.add_filters()->set_css_selector("#element_in_iframe_two");
+
+  ClientStatus status;
+  FindElement(Selector(proto), &status, nullptr);
+  EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
@@ -684,15 +702,81 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextCondition) {
   selector.MustBeVisible();
   RunLaxElementCheck(selector, true);
   RunStrictElementCheck(selector, true);
+}
 
-  // Inner text conditions are applied before looking for the pseudo-type.
-  selector = Selector({"#with_inner_text span"}, PseudoType::BEFORE);
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, PseudoTypeAndInnerText) {
+  // Inner text conditions then pseudo type vs pseudo type then inner text
+  // condition.
+  Selector selector({"#with_inner_text span"});
   selector.MatchingInnerText("world");
+  selector.SetPseudoType(PseudoType::BEFORE);
   RunLaxElementCheck(selector, true);
 
-  selector = Selector({"#with_inner_text span"}, PseudoType::BEFORE);
-  selector.MatchingInnerText("before");  // matches :before content
+  // "before" is the content of the :before, checking the text of pseudo-types
+  // doesn't work.
+  selector = Selector({"#with_inner_text span"});
+  selector.SetPseudoType(PseudoType::BEFORE);
+  selector.MatchingInnerText("before");
   RunLaxElementCheck(selector, false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, MultipleBefore) {
+  Selector selector({"span"});
+  selector.SetPseudoType(PseudoType::BEFORE);
+
+  // There's more than one "span" with a before, so only a lax check can
+  // succeed.
+  RunLaxElementCheck(selector, true);
+  RunStrictElementCheck(selector, false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, PseudoTypeThenBoundingBox) {
+  Selector selector({"span"});
+  selector.SetPseudoType(PseudoType::BEFORE);
+  selector.proto.add_filters()->mutable_bounding_box();
+
+  RunLaxElementCheck(selector, true);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, PseudoTypeThenPickOne) {
+  Selector selector({"span"});
+  selector.SetPseudoType(PseudoType::BEFORE);
+  selector.proto.add_filters()->mutable_pick_one();
+
+  RunStrictElementCheck(selector, true);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, PseudoTypeThenCss) {
+  Selector selector({"span"});
+  selector.SetPseudoType(PseudoType::BEFORE);
+  selector.proto.add_filters()->set_css_selector("div");
+
+  // This makes no sense, but shouldn't return an unexpected error.
+  ClientStatus status;
+  ElementFinder::Result result;
+  FindElement(selector, &status, &result);
+  EXPECT_EQ(ELEMENT_RESOLUTION_FAILED, status.proto_status());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, PseudoTypeThenInnerText) {
+  Selector selector({"span"});
+  selector.SetPseudoType(PseudoType::BEFORE);
+  selector.proto.add_filters()->mutable_inner_text()->set_re2("before");
+
+  // This isn't supported yet.
+  RunLaxElementCheck(selector, false);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, InnerTextThenCss) {
+  // There are two divs containing "Section with text", but only one has a
+  // button, which removes #button.
+  SelectorProto proto;
+  proto.add_filters()->set_css_selector("div");
+  proto.add_filters()->mutable_inner_text()->set_re2("Section with text");
+  proto.add_filters()->set_css_selector("button");
+
+  ClickOrTapElement(Selector(proto), ClickType::CLICK);
+  WaitForElementRemove(Selector({"#button"}));
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ValueCondition) {
@@ -838,13 +922,15 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {
   WaitForElementRemove(area_one);
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementMovingOutOfView) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       DISABLED_TapElementMovingOutOfView) {
   Selector selector({"#touch_area_three"});
   ClickOrTapElement(selector, ClickType::TAP);
   WaitForElementRemove(selector);
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementAfterPageIsIdle) {
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       DISABLED_TapElementAfterPageIsIdle) {
   // Set a very long timeout to make sure either the page is idle or the test
   // timeout.
   WaitTillPageIsIdle(base::TimeDelta::FromHours(1));
@@ -864,7 +950,7 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, DISABLED_TapElementInIFrame) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
-                       TapRandomMovingElementRepeatedly) {
+                       DISABLED_TapRandomMovingElementRepeatedly) {
   Selector button_selector({"#random_moving_button"});
   int num_clicks = 100;
   for (int i = 0; i < num_clicks; ++i) {
@@ -915,8 +1001,8 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
     document.querySelector("#terms-and-conditions").checked;
   )";
   EXPECT_FALSE(content::EvalJs(shell(), javascript).ExtractBool());
-  Selector selector({R"(label[for="terms-and-conditions"])"},
-                    PseudoType::BEFORE);
+  Selector selector({R"(label[for="terms-and-conditions"])"});
+  selector.SetPseudoType(PseudoType::BEFORE);
   ClickOrTapElement(selector, ClickType::CLICK);
   EXPECT_TRUE(content::EvalJs(shell(), javascript).ExtractBool());
 }

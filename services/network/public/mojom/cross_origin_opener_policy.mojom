@@ -4,6 +4,29 @@
 
 module network.mojom;
 
+import "url/mojom/url.mojom";
+
+// Reports potential COOP violations. Implemented in the browser process.
+// TODO(ahemery, pmeuleman): Add extra coop breakage cases as listed in
+// https://docs.google.com/document/d/1zWqwI8PFrezwQpBSejIMUfdtsIYl9-h8epasdrDXVIM/edit
+interface CrossOriginOpenerPolicyReporter {
+
+  // When COOP triggers a browsing context group swap during a navigation, we
+  // lose the existing opener, which can create page breakage. We report such
+  // cases using this function.
+  // |is_reported_from_document| is true if the report is coming from the
+  // document begin navigated from. It is false if the report originates from
+  // the document we are navigating to.
+  // |is_report_only| is true if we are reporting a breakage that would have
+  // occurred if we enforced the reporting only values of COOP.
+  QueueOpenerBreakageReport(url.mojom.Url other_url,
+                            bool is_reported_from_document,
+                            bool is_report_only);
+
+  // Connects a new pipe to this instance.
+  Clone(pending_receiver<CrossOriginOpenerPolicyReporter> receiver);
+};
+
 // Cross-Origin-Opener-Policy enum representing parsed values.
 enum CrossOriginOpenerPolicyValue {
   // Severs the opener relationship with openers/opened documents that are not

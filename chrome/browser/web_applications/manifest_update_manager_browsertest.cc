@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
@@ -33,6 +36,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -893,6 +898,54 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerSystemAppBrowserTest,
   EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorGREEN);
 }
 
+using ManifestUpdateManagerWebAppsBrowserTest =
+    ManifestUpdateManagerBrowserTest;
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerWebAppsBrowserTest,
+                       CheckFindsThemeColorChangeForShadowBookmarkApp) {
+  auto* extensions_registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  extensions::TestExtensionRegistryObserver extensions_registry_observer(
+      extensions_registry);
+
+  extensions::BookmarkAppRegistrar bookmark_app_registrar{browser()->profile()};
+
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $1,
+      "theme_color": "$2"
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {kInstallableIconList, "blue"});
+  AppId app_id = InstallWebApp();
+  EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorBLUE);
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions_registry_observer.WaitForExtensionInstalled();
+  EXPECT_EQ(extension->id(), app_id);
+  EXPECT_EQ(bookmark_app_registrar.GetAppThemeColor(app_id).value(),
+            SK_ColorBLUE);
+
+  OverrideManifest(kManifestTemplate, {kInstallableIconList, "red"});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
+  EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorRED);
+
+  // Wait for all update events sequentially. Otherwise the test is flaky.
+  extensions_registry_observer.WaitForExtensionUnloaded();
+  extensions_registry_observer.WaitForExtensionLoaded();
+  extension = extensions_registry_observer.WaitForExtensionReady();
+
+  EXPECT_EQ(extension->id(), app_id);
+  EXPECT_EQ(bookmark_app_registrar.GetAppThemeColor(app_id).value(),
+            SK_ColorRED);
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          ManifestUpdateManagerBrowserTest,
                          ::testing::Values(ProviderType::kBookmarkApps,
@@ -903,6 +956,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ManifestUpdateManagerSystemAppBrowserTest,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ManifestUpdateManagerWebAppsBrowserTest,
+                         ::testing::Values(ProviderType::kWebApps),
                          ProviderTypeParamToString);
 
 }  // namespace web_app

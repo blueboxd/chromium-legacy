@@ -27,6 +27,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/base/escape.h"
@@ -110,11 +111,14 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed to
+    // load pages from other hosts without an interstitial.
+    command_line->AppendSwitch("ignore-certificate-errors");
     command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url().spec());
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
 
     https_server()->ServeFilesFromSourceDirectory("chrome/test/data");
     https_server()->RegisterRequestHandler(
@@ -129,6 +133,7 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
                       .account_id;
 
     reauth_result_loop_ = std::make_unique<base::RunLoop>();
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
   void ShowReauthPrompt() {
@@ -260,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  const GURL& target_url = https_server()->GetURL("/link_with_target.html");
+  const GURL target_url = https_server()->GetURL("/link_with_target.html");
   content::TestNavigationObserver target_content_observer(target_url);
   target_content_observer.StartWatchingNewWebContents();
   ShowReauthPrompt();
@@ -285,4 +290,61 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   EXPECT_NE(new_contents, original_contents);
   EXPECT_NE(new_contents, dialog_contents);
   EXPECT_EQ(new_contents->GetURL(), https_server()->GetURL("/title1.html"));
+}
+
+// Tests that the authentication flow that goes outside of the reauth host is
+// shown in a new tab.
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       CompleteSAMLInNewTab) {
+  content::WebContents* original_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // The URL contains a link that navigates to the reauth success URL.
+  const std::string target_path = net::test_server::GetFilePathWithReplacements(
+      "/signin/link_with_replacements.html",
+      {{"REPLACE_WITH_URL", https_server()->GetURL(kReauthDonePath).spec()}});
+  const GURL target_url =
+      https_server()->GetURL("3p-identity-provider.com", target_path);
+
+  content::TestNavigationObserver target_content_observer(target_url);
+  target_content_observer.StartWatchingNewWebContents();
+  ShowReauthPrompt();
+  RedirectGaiaChallengeTo(target_url);
+
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser());
+  ReauthTestObserver reauth_observer(signin_reauth_view_controller());
+  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
+      browser(), kReauthDialogTimeout));
+  reauth_observer.WaitUntilGaiaReauthPageIsShown();
+  tab_added_waiter.Wait();
+  target_content_observer.Wait();
+
+  content::WebContents* target_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(target_contents, original_contents);
+  EXPECT_EQ(target_contents, signin_reauth_view_controller()->GetWebContents());
+  EXPECT_EQ(target_contents->GetURL(), target_url);
+
+  ASSERT_TRUE(content::ExecuteScript(
+      target_contents, "document.getElementsByTagName('a')[0].click();"));
+  EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kSuccess);
+}
+
+// Tests that closing of the SAML tab aborts the reauth flow.
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest, CloseSAMLTab) {
+  const GURL target_url =
+      https_server()->GetURL("3p-identity-provider.com", "/title1.html");
+  ShowReauthPrompt();
+  RedirectGaiaChallengeTo(target_url);
+
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser());
+  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
+      browser(), kReauthDialogTimeout));
+  tab_added_waiter.Wait();
+
+  auto* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(tab_strip_model->GetActiveWebContents()->GetURL(), target_url);
+  tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(),
+                                      TabStripModel::CLOSE_USER_GESTURE);
+  EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kDismissedByUser);
 }

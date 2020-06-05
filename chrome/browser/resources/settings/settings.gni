@@ -97,6 +97,7 @@ settings_namespace_rewrites = [
   "settings.MetricsReporting|MetricsReporting",
   "settings.SafetyCheckBrowserProxy|SafetyCheckBrowserProxy",
   "settings.SafetyCheckCallbackConstants|SafetyCheckCallbackConstants",
+  "settings.SafetyCheckChromeCleanerStatus|SafetyCheckChromeCleanerStatus",
   "settings.SafetyCheckExtensionsStatus|SafetyCheckExtensionsStatus",
   "settings.SafetyCheckIconStatus|SafetyCheckIconStatus",
   "settings.SafetyCheckParentStatus|SafetyCheckParentStatus",

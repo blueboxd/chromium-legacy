@@ -40,14 +40,16 @@ input {
 
 body.tab-navigation button:focus::after,
 body.tab-navigation input:focus::after {
+  --focus-ring-size: 3px;
+
   border: 2px solid rgba(37, 129, 223, 0.7);
   border-radius: 4px;
-  bottom: -3px;
+  bottom: calc(0px - var(--focus-ring-size));
   content: '';
-  left: -3px;
+  left: calc(0px - var(--focus-ring-size));
   position: absolute;
-  right: -3px;
-  top: -3px;
+  right: calc(0px - var(--focus-ring-size));
+  top: calc(0px - var(--focus-ring-size));
 }
 
 .cancel-animate {
@@ -159,7 +161,7 @@ body.taking.video .left-stripe {
 }
 
 #shutters-group {
-  bottom: calc((var(--modes-bottom) + var(--modes-height)) + 16px);
+  bottom: calc((var(--modes-bottom) + var(--modes-height)) + 22px);
 }
 
 body.review-result #shutters-group {
@@ -299,9 +301,13 @@ body.tab-navigation .mode-item>input:focus + span::after {
 
 button.shutter {
   display: none;
-  height: 72px;
-  width: 72px;
+  height: 60px;
+  width: 60px;
   z-index: 1;  /* On top of transforming switch-mode buttons. */
+}
+
+body.tab-navigation button.shutter:focus::after {
+  --focus-ring-size: 9px;
 }
 
 body.video #recordvideo,
@@ -344,8 +350,6 @@ body.taking.timer:not(.video) #stop-takephoto {
   background: var(--white);
   border-radius: 50%;
   height: var(--size);
-  /* match the position of photo shutter button */
-  margin: calc((72px - var(--size)) / 2);
   position: relative;
   width: var(--size);
 }
@@ -359,12 +363,10 @@ body.taking.video #recordvideo:hover {
   --red: #d93025;
 }
 
-/* red dot */
-#recordvideo::before {
+#recordvideo .red-dot {
   background: var(--red);
   border-radius: 50%;
   box-sizing: border-box;
-  content: '';
   height: var(--dot-size);
   left: calc(50% - var(--dot-size) / 2);
   position: absolute;
@@ -373,18 +375,16 @@ body.taking.video #recordvideo:hover {
   width: var(--dot-size);
 }
 
-body.taking.video #recordvideo::before {
+body.taking.video #recordvideo .red-dot {
   height: var(--size);
   left: 0;
   top: 0;
   width: var(--size);
 }
 
-/* white square */
-#recordvideo::after {
+#recordvideo .white-square {
   background: var(--white);
   border-radius: 2px;
-  content: '';
   height: 0;
   left: 50%;
   opacity: 0;
@@ -394,7 +394,7 @@ body.taking.video #recordvideo::before {
   width: 0;
 }
 
-body.taking.video #recordvideo::after {
+body.taking.video #recordvideo .white-square {
   height: var(--square-size);
   left: calc(50% - var(--square-size) / 2);
   opacity: 1;
@@ -464,10 +464,7 @@ body.mode-switching:not(.streaming) #camera-mode {
 }
 
 body.tab-navigation #switch-device:focus::after {
-  bottom: -8px;
-  left: -8px;
-  right: -8px;
-  top: -8px;
+  --focus-ring-size: 8px;
 }
 
 #gallery-enter {
@@ -1122,7 +1119,7 @@ body._10sec .description span[i18n-content=label_timer_10s],
   transition: border-width 100ms ease-in;
 }
 
-body.tab-navigation .menu-item:focus::after {
+body.tab-navigation button.menu-item:focus::after {
   left: 2px;
   right: 2px;
 }

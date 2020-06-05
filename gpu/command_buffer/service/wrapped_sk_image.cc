@@ -219,7 +219,6 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
         return false;
 
       SetCleared();
-      OnWriteSucceeded();
     } else {
       // Initializing to bright green makes it obvious if the pixels are not
       // properly set before they are displayed (e.g. https://crbug.com/956555).

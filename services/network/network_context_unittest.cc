@@ -6603,15 +6603,11 @@ TEST_F(NetworkContextTest,
   my_request.trust_token_params =
       OptionalTrustTokenParams(mojom::TrustTokenParams::New());
 
-  auto factory_params = mojom::URLLoaderFactoryParams::New();
-  factory_params->top_frame_origin =
-      url::Origin::Create(GURL("https://topframe.com/"));
-
   // Since the request doesn't have a destination URL suitable for use as a
   // Trust Tokens issuer, it should fail.
-  std::unique_ptr<TestURLLoaderClient> client =
-      FetchRequest(my_request, network_context.get(), mojom::kURLLoadOptionNone,
-                   mojom::kBrowserProcessId, std::move(factory_params));
+  std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
+      my_request, network_context.get(), mojom::kURLLoadOptionNone,
+      mojom::kBrowserProcessId, mojom::URLLoaderFactoryParams::New());
   EXPECT_EQ(client->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
   EXPECT_EQ(client->completion_status().trust_token_operation_status,
@@ -6639,13 +6635,9 @@ TEST_F(NetworkContextTest,
   my_request.trust_token_params =
       OptionalTrustTokenParams(mojom::TrustTokenParams::New());
 
-  auto factory_params = mojom::URLLoaderFactoryParams::New();
-  factory_params->top_frame_origin =
-      url::Origin::Create(GURL("https://topframe.com/"));
-
-  std::unique_ptr<TestURLLoaderClient> client =
-      FetchRequest(my_request, network_context.get(), mojom::kURLLoadOptionNone,
-                   mojom::kBrowserProcessId, std::move(factory_params));
+  std::unique_ptr<TestURLLoaderClient> client = FetchRequest(
+      my_request, network_context.get(), mojom::kURLLoadOptionNone,
+      mojom::kBrowserProcessId, mojom::URLLoaderFactoryParams::New());
   EXPECT_EQ(client->completion_status().error_code,
             net::ERR_TRUST_TOKEN_OPERATION_FAILED);
   EXPECT_EQ(client->completion_status().trust_token_operation_status,

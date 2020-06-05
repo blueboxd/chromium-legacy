@@ -17,8 +17,13 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 
 class Profile;
+
+namespace extensions {
+class AppWindowRegistry;
+}
 
 namespace chromeos {
 
@@ -32,7 +37,8 @@ class StartupAppLauncherUpdateChecker;
 // Report OnLauncherInitialized() or OnLaunchFailed() to observers:
 // - If all goes good, launches the app and finish the flow;
 class StartupAppLauncher : public extensions::InstallObserver,
-                           public KioskAppManagerObserver {
+                           public KioskAppManagerObserver,
+                           public extensions::AppWindowRegistry::Observer {
  public:
   class Delegate {
    public:
@@ -51,6 +57,7 @@ class StartupAppLauncher : public extensions::InstallObserver,
     virtual void OnReadyToLaunch() = 0;
     virtual void OnLaunchSucceeded() = 0;
     virtual void OnLaunchFailed(KioskAppLaunchError::Error error) = 0;
+    virtual void OnAppWindowCreated() {}
     virtual bool IsShowingNetworkConfigScreen() = 0;
 
    protected:
@@ -76,6 +83,9 @@ class StartupAppLauncher : public extensions::InstallObserver,
   void RestartLauncher();
 
  private:
+  // Class used to watch for app window creation.
+  class AppWindowWatcher;
+
   void OnLaunchSuccess();
   void OnLaunchFailure(KioskAppLaunchError::Error error);
 
@@ -92,6 +102,9 @@ class StartupAppLauncher : public extensions::InstallObserver,
   void OnExtensionUpdateCheckFinished(bool update_found);
 
   void OnKioskAppDataLoadStatusChanged(const std::string& app_id);
+
+  // AppWindowRegistry::Observer:
+  void OnAppWindowAdded(extensions::AppWindow* app_window) override;
 
   // Returns true if any secondary app is pending.
   bool IsAnySecondaryAppPending() const;
@@ -128,10 +141,13 @@ class StartupAppLauncher : public extensions::InstallObserver,
   bool ready_to_launch_ = false;
   bool wait_for_crx_update_ = false;
   bool secondary_apps_installed_ = false;
+  bool waiting_for_window_ = false;
 
   // Used to run extension update checks for primary app's imports and
   // secondary extensions.
   std::unique_ptr<StartupAppLauncherUpdateChecker> update_checker_;
+
+  extensions::AppWindowRegistry* window_registry_;
 
   ScopedObserver<KioskAppManagerBase, KioskAppManagerObserver>
       kiosk_app_manager_observer_{this};

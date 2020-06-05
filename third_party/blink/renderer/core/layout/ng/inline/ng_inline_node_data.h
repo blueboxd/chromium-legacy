@@ -22,6 +22,8 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
     return static_cast<TextDirection>(base_direction_);
   }
 
+  bool HasRuby() const { return has_ruby_; }
+
   bool IsEmptyInline() const { return is_empty_inline_; }
 
   bool IsBlockLevel() const { return is_block_level_; }
@@ -55,6 +57,9 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
 
   unsigned is_bidi_enabled_ : 1;
   unsigned base_direction_ : 1;  // TextDirection
+
+  // The node contains <ruby>.
+  unsigned has_ruby_ : 1;
 
   // We use this flag to determine if the inline node is empty, and will
   // produce a single zero block-size line box. If the node has text, atomic

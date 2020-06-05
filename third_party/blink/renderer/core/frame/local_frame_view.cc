@@ -1061,14 +1061,9 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
 }
 
 FloatSize LocalFrameView::ViewportSizeForMediaQueries() const {
-  FloatSize viewport_size(layout_size_);
-  if (!frame_->GetDocument()->Printing()) {
-    float zoom = GetFrame().PageZoomFactor();
-    viewport_size.SetWidth(
-        AdjustForAbsoluteZoom::AdjustInt(layout_size_.Width(), zoom));
-    viewport_size.SetHeight(
-        AdjustForAbsoluteZoom::AdjustInt(layout_size_.Height(), zoom));
-  }
+  FloatSize viewport_size(GetLayoutSize());
+  if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
+    viewport_size.Scale(1 / GetFrame().PageZoomFactor());
   return viewport_size;
 }
 

@@ -16,7 +16,6 @@ namespace autofill_assistant {
 SetAttributeAction::SetAttributeAction(ActionDelegate* delegate,
                                        const ActionProto& proto)
     : Action(delegate, proto) {
-  DCHECK_GT(proto_.set_attribute().element().selectors_size(), 0);
   DCHECK_GT(proto_.set_attribute().attribute_size(), 0);
 }
 

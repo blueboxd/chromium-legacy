@@ -27,6 +27,7 @@ source_set("first_run") {
     "//components/metrics",
     "//components/prefs",
     "//components/signin/public/identity_manager",
+    "//ios/chrome/app:tests_hook",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

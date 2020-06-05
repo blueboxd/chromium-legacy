@@ -104,7 +104,10 @@ public class AutofillAssistantKeyboardIntegrationTest {
     @MediumTest
     public void keyboardDoesNotShowOnElementClick() throws Exception {
         SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder().addSelectors("#profile_name").build();
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#profile_name"))
+                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
@@ -159,7 +162,10 @@ public class AutofillAssistantKeyboardIntegrationTest {
     @MediumTest
     public void keyboardDoesNotShowOnKeyStrokes() throws Exception {
         SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder().addSelectors("#profile_name").build();
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#profile_name"))
+                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
@@ -239,10 +245,15 @@ public class AutofillAssistantKeyboardIntegrationTest {
     @Test
     @MediumTest
     public void keyboardDoesNotShowOnElementClickInIFrame() throws Exception {
-        SelectorProto element = (SelectorProto) SelectorProto.newBuilder()
-                                        .addSelectors("#iframe")
-                                        .addSelectors("#name")
-                                        .build();
+        SelectorProto element =
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(SelectorProto.Filter.newBuilder().setCssSelector("#iframe"))
+                        .addFilters(SelectorProto.Filter.newBuilder().setPickOne(
+                                SelectorProto.EmptyFilter.getDefaultInstance()))
+                        .addFilters(SelectorProto.Filter.newBuilder().setEnterFrame(
+                                SelectorProto.EmptyFilter.getDefaultInstance()))
+                        .addFilters(SelectorProto.Filter.newBuilder().setCssSelector("#name"))
+                        .build();
 
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()

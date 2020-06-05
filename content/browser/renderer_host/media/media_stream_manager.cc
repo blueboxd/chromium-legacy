@@ -1334,8 +1334,6 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
 
   // Actual audio parameters are required only for
   // MEDIA_GUM_TAB_AUDIO_CAPTURE.
-  // TODO(guidou): MEDIA_GUM_TAB_AUDIO_CAPTURE should not be a special
-  // case. See https://crbug.com/584287.
   if (request->audio_type() == MediaStreamType::GUM_TAB_AUDIO_CAPTURE) {
     // Using base::Unretained is safe: |audio_system_| will post
     // PostRequestToUI() to IO thread, and MediaStreamManager is deleted on the

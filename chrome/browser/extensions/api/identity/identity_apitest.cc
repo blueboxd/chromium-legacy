@@ -657,9 +657,9 @@ IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest, NoPrimaryAccount) {
 }
 
 IN_PROC_BROWSER_TEST_F(IdentityGetAccountsFunctionTest,
-                       PrimaryAccountHasNoRefreshToken) {
+                       PrimaryAccountHasInvalidRefreshToken) {
   CoreAccountId primary_account_id = SignIn("primary@example.com");
-  identity_test_env()->RemoveRefreshTokenForAccount(primary_account_id);
+  identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
   EXPECT_TRUE(ExpectGetAccounts({}));
 }
 
@@ -2679,19 +2679,19 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest, FireOnPrimaryAccountSignOut) {
 #endif  // !defined(OS_CHROMEOS)
 
 // Test that an event is fired when the primary account has a refresh token
-// revoked.
+// invalidated.
 IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
-                       FireOnPrimaryAccountRefreshTokenRevoked) {
+                       FireOnPrimaryAccountRefreshTokenInvalidated) {
   api::identity::AccountInfo account_info;
   account_info.id = "gaia_id_for_primary_example.com";
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
 
   CoreAccountId primary_account_id = SignIn("primary@example.com");
 
-  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
+  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
 
   // Revoke the refresh token and verify that the callback fires.
-  identity_test_env()->RemoveRefreshTokenForAccount(primary_account_id);
+  identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
 
   EXPECT_FALSE(HasExpectedEvent());
 }
@@ -2706,14 +2706,14 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest,
 
   CoreAccountId primary_account_id = SignIn("primary@example.com");
 
-  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, false));
-  identity_test_env()->RemoveRefreshTokenForAccount(primary_account_id);
+  AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
+  identity_test_env()->SetInvalidRefreshTokenForPrimaryAccount();
 
   account_info.id = "gaia_id_for_primary_example.com";
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
 
   // Make the primary account available again and check that the callback fires.
-  identity_test_env()->MakeAccountAvailable("primary@example.com");
+  identity_test_env()->SetRefreshTokenForPrimaryAccount();
   EXPECT_FALSE(HasExpectedEvent());
 }
 

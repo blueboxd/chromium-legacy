@@ -355,5 +355,48 @@ void SetToggleButtonChecked(
   }
 }
 
+void ClearViewContainer(
+    const std::string& view_identifier,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+    base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
+  auto jview = views->find(view_identifier);
+  if (jview == views->end()) {
+    DVLOG(2) << "Failed to clear view container " << view_identifier
+             << ": view not found";
+    return;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!Java_AssistantViewInteractions_clearViewContainer(
+          env, jview->second,
+          base::android::ConvertUTF8ToJavaString(env, view_identifier),
+          jdelegate)) {
+    DVLOG(2) << "Failed to clear view container " << view_identifier
+             << ": JNI call failed";
+    return;
+  }
+}
+
+bool AttachViewToParent(
+    base::android::ScopedJavaGlobalRef<jobject> jview,
+    const std::string& parent_view_identifier,
+    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views) {
+  auto jparent_view = views->find(parent_view_identifier);
+  if (jparent_view == views->end()) {
+    DVLOG(2) << "Failed to attach view to " << parent_view_identifier
+             << ": parent not found";
+    return false;
+  }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!Java_AssistantViewInteractions_attachViewToParent(
+          env, jparent_view->second, jview)) {
+    DVLOG(2) << "Failed to attach view to " << parent_view_identifier
+             << ": JNI call failed";
+    return false;
+  }
+  return true;
+}
+
 }  // namespace android_interactions
 }  // namespace autofill_assistant

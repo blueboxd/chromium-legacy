@@ -156,8 +156,8 @@ class SyncEngine : public ModelTypeConfigurer {
   // OnBackendInitialized().
   virtual UserShare* GetUserShare() const = 0;
 
-  // Called from any thread to obtain current detailed status information.
-  virtual SyncStatus GetDetailedStatus() = 0;
+  // Returns current detailed status information.
+  virtual const SyncStatus& GetDetailedStatus() const = 0;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.

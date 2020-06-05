@@ -60,6 +60,7 @@ class PLATFORM_EXPORT ImageDataBuffer {
   const IntSize& size() const { return size_; }
   int Height() const { return size_.Height(); }
   int Width() const { return size_.Width(); }
+  size_t ComputeByteSize() const { return pixmap_.computeByteSize(); }
 
  private:
   ImageDataBuffer(const IntSize&,

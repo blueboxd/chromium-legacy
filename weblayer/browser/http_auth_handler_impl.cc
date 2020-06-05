@@ -28,7 +28,8 @@ HttpAuthHandlerImpl::HttpAuthHandlerImpl(
 HttpAuthHandlerImpl::~HttpAuthHandlerImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* tab = TabImpl::FromWebContents(web_contents());
-  tab->CloseHttpAuthPrompt();
+  if (tab)
+    tab->CloseHttpAuthPrompt();
 }
 
 void HttpAuthHandlerImpl::Proceed(const base::string16& user,

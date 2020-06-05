@@ -556,7 +556,7 @@ class PolicyTemplateChecker(object):
       supported_on = self._CheckContains(policy,
                                          'supported_on',
                                          list,
-                                         optional=True)
+                                         optional=False)
       supported_platforms = []
       if supported_on:
         for s in supported_on:
@@ -592,14 +592,8 @@ class PolicyTemplateChecker(object):
                           policy.get('name'))
       self._CheckPlatform(future_on, 'future_on', policy.get('name'))
 
-      if not supported_platforms and not future_on:
-        self._Error(
-            'The policy needs to be supported now or in the future on at '
-            'least one platform.', 'policy', policy.get('name'))
-
-      if supported_on == []:
-        self._Warning("Policy %s: supported_on' is empty." %
-                      (policy.get('name')))
+      #TODO(crbug.com/1091432): Make supported_on optional and check if it's
+      # empty. Also check if both supported_on and future_on are empty.
 
       if future_on == []:
         self._Warning("Policy %s: 'future_on' is empty." % (policy.get('name')))

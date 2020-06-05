@@ -75,34 +75,6 @@ LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
                                item.ResolvedDirection(), item.Size());
 }
 
-PhysicalRect ComputePhysicalRectFor(const LogicalRect& logical_rect,
-                                    WritingMode writing_mode,
-                                    TextDirection text_direction,
-                                    const PhysicalSize& outer_size) {
-  const PhysicalSize physical_size =
-      ToPhysicalSize(logical_rect.size, writing_mode);
-  const PhysicalOffset physical_offset = logical_rect.offset.ConvertToPhysical(
-      writing_mode, text_direction, outer_size, physical_size);
-
-  return {physical_offset, physical_size};
-}
-PhysicalRect ComputePhysicalRectFor(const LogicalRect& logical_rect,
-                                    const NGPaintFragment& paint_fragment) {
-  return ComputePhysicalRectFor(
-      logical_rect, paint_fragment.Style().GetWritingMode(),
-      paint_fragment.PhysicalFragment().ResolvedDirection(),
-      paint_fragment.Size());
-}
-
-PhysicalRect ComputePhysicalRectFor(const LogicalRect& logical_rect,
-                                    const NGInlineCursor& cursor) {
-  if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment())
-    return ComputePhysicalRectFor(logical_rect, *paint_fragment);
-  const NGFragmentItem& item = *cursor.CurrentItem();
-  return ComputePhysicalRectFor(logical_rect, item.GetWritingMode(),
-                                item.ResolvedDirection(), item.Size());
-}
-
 LogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
     const LogicalRect& rect,
     const NGInlineCursor& cursor,
@@ -819,7 +791,7 @@ PhysicalRect ComputeLocalSelectionRectForText(
   const LogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(line_break_extended_rect, cursor);
   const PhysicalRect physical_rect =
-      ComputePhysicalRectFor(line_height_expanded_rect, cursor);
+      cursor.Current().ConvertToPhysical(line_height_expanded_rect);
   return physical_rect;
 }
 
@@ -833,7 +805,7 @@ PhysicalRect ComputeLocalSelectionRectForReplaced(
   const LogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(logical_rect, cursor);
   const PhysicalRect physical_rect =
-      ComputePhysicalRectFor(line_height_expanded_rect, cursor);
+      cursor.Current().ConvertToPhysical(line_height_expanded_rect);
   return physical_rect;
 }
 

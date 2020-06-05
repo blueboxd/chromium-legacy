@@ -7,7 +7,7 @@
 #include <utility>
 #include "third_party/blink/renderer/core/css/css_syntax_component.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -151,9 +151,9 @@ bool CSSSyntaxStringParser::ConsumeDataTypeName(CSSSyntaxType& type) {
 bool CSSSyntaxStringParser::ConsumeIdent(String& ident) {
   ident = ConsumeName(input_);
   // TODO(crbug.com/882285): Make 'default' invalid as <custom-ident>.
-  return !css_property_parser_helpers::IsCSSWideKeyword(ident) &&
-         !css_property_parser_helpers::IsRevertKeyword(ident) &&
-         !css_property_parser_helpers::IsDefaultKeyword(ident);
+  return !css_parsing_utils::IsCSSWideKeyword(ident) &&
+         !css_parsing_utils::IsRevertKeyword(ident) &&
+         !css_parsing_utils::IsDefaultKeyword(ident);
 }
 
 }  // namespace blink

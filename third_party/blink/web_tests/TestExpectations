@@ -2691,6 +2691,12 @@ crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failu
 crbug.com/1086855 external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-2.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-2.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-2.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_match-print.html [ Failure ]
@@ -5353,7 +5359,7 @@ crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failu
 
 # Sheriff 2019-11-29
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
-crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
+crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Failure Timeout ]
 
 # Sheriff 2019-12-02
 crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass Failure ]
@@ -5876,8 +5882,6 @@ crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-re
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
-crbug.com/1082963 http/tests/devtools/console/console-revoke-error.js [ Pass Failure ]
-crbug.com/1082963 http/tests/devtools/console/console-timestamp.js [ Pass Failure ]
 
 # Fails when test moved to use full compositor pipe.
 crbug.com/1085832 [ Fuchsia ] images/size-failure.html [ Timeout ]
@@ -5929,5 +5933,4 @@ crbug.com/1083293 [ Linux ] media/video-aspect-ratio.html [ Pass Failure ]
 
 # Sheriff 2020-06-04
 crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Pass Failure Timeout ]
-crbug.com/1090087 transforms/2d/transform-2d.html [ Pass Timeout ]
 crbug.com/1057060 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]

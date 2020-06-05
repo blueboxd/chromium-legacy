@@ -39,8 +39,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/common/features/feature_session_type.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "ui/base/ui_base_features.h"
 
@@ -98,48 +97,6 @@ void RecordKioskLaunchUMA(bool is_auto_launch) {
 }
 
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-// AppLaunchController::AppWindowWatcher
-
-class AppLaunchController::AppWindowWatcher
-    : public extensions::AppWindowRegistry::Observer {
- public:
-  explicit AppWindowWatcher(AppLaunchController* controller,
-                            const std::string& app_id)
-      : controller_(controller),
-        app_id_(app_id),
-        window_registry_(
-            extensions::AppWindowRegistry::Get(controller->profile_)) {
-    if (!window_registry_->GetAppWindowsForApp(app_id).empty()) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&AppWindowWatcher::NotifyAppWindowCreated,
-                                    weak_factory_.GetWeakPtr()));
-      return;
-    } else {
-      window_registry_->AddObserver(this);
-    }
-  }
-  ~AppWindowWatcher() override { window_registry_->RemoveObserver(this); }
-
- private:
-  // extensions::AppWindowRegistry::Observer overrides:
-  void OnAppWindowAdded(extensions::AppWindow* app_window) override {
-    if (app_window->extension_id() == app_id_) {
-      window_registry_->RemoveObserver(this);
-      NotifyAppWindowCreated();
-    }
-  }
-
-  void NotifyAppWindowCreated() { controller_->OnAppWindowCreated(); }
-
-  AppLaunchController* controller_;
-  std::string app_id_;
-  extensions::AppWindowRegistry* window_registry_;
-  base::WeakPtrFactory<AppWindowWatcher> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppWindowWatcher);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppLaunchController
@@ -511,9 +468,6 @@ void AppLaunchController::OnLaunchSucceeded() {
     app_launch_splash_screen_view_->UpdateAppLaunchState(
         AppLaunchSplashScreenView::APP_LAUNCH_STATE_WAITING_APP_WINDOW);
   }
-
-  DCHECK(!app_window_watcher_);
-  app_window_watcher_.reset(new AppWindowWatcher(this, app_id_));
 }
 
 void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {

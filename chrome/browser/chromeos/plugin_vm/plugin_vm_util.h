@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -95,8 +96,9 @@ bool FakeUserIdIsSet();
 // Used to clean up the Plugin VM Drive download directory if it did not get
 // removed when it should have, perhaps due to a crash.
 void RemoveDriveDownloadDirectoryIfExists();
-bool IsDriveUrl(const GURL& url);
-std::string GetIdFromDriveUrl(const GURL& url);
+
+// Returns nullopt if not a drive URL.
+base::Optional<std::string> GetIdFromDriveUrl(const GURL& url);
 
 // A subscription for changes to PluginVm policy that may affect
 // IsPluginVmAllowedForProfile.

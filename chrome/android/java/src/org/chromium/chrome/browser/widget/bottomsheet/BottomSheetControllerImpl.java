@@ -24,8 +24,6 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
-import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
@@ -112,6 +110,9 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
     /** The content being shown prior to the sheet being suppressed. */
     private BottomSheetContent mContentWhenSuppressed;
 
+    /** A means of accessing the ScrimCoordinator. */
+    private Supplier<ScrimCoordinator> mScrimCoordinatorSupplier;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param activityTabProvider The provider of the activity's current tab.
@@ -131,6 +132,7 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
         mOverlayPanelManager = overlayManager;
         mBrowserControlsStateProvider = fullscreenManager;
         mFullscreenManager = fullscreenManager;
+        mScrimCoordinatorSupplier = scrim;
         mPendingSheetObservers = new ArrayList<>();
 
         mPendingSheetObservers.add(new EmptyBottomSheetObserver() {
@@ -206,17 +208,17 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
         };
 
         mSheetInitializer = () -> {
-            initializeSheet(scrim, bottomSheetViewSupplier, window, keyboardDelegate);
+            initializeSheet(bottomSheetViewSupplier, window, keyboardDelegate);
         };
     }
 
     /**
      * Do the actual initialization of the bottom sheet.
-     * @param scrim The scrim to show behind the sheet.
      * @param bottomSheetViewSupplier A means of creating the bottom sheet.
+     * @param window A means of accessing the screen size.
+     * @param keyboardDelegate A means of hiding the keyboard.
      */
-    private void initializeSheet(final Supplier<ScrimCoordinator> scrim,
-            Supplier<View> bottomSheetViewSupplier, Window window,
+    private void initializeSheet(Supplier<View> bottomSheetViewSupplier, Window window,
             KeyboardVisibilityDelegate keyboardDelegate) {
         mBottomSheet = (BottomSheet) bottomSheetViewSupplier.get();
         mBottomSheet.init(window, keyboardDelegate);
@@ -310,7 +312,7 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
                     return;
                 }
 
-                scrim.get().showScrim(scrimProperties);
+                mScrimCoordinatorSupplier.get().showScrim(scrimProperties);
                 mScrimShown = true;
             }
 
@@ -318,7 +320,7 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
             public void onSheetClosed(@StateChangeReason int reason) {
                 // Hide the scrim if the current content doesn't have a custom scrim lifecycle.
                 if (mScrimShown) {
-                    scrim.get().hideScrim(true);
+                    mScrimCoordinatorSupplier.get().hideScrim(true);
                     mScrimShown = false;
                 }
 
@@ -361,13 +363,25 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
         mSheetInitializer = null;
     }
 
-    /**
-     * Create a ScrimParams anchoring on the bottom-sheet view.
-     * @param scrimObserver The scrimObserver to set for the ScrimParams.
-     */
-    public ScrimParams createScrimParams(ScrimObserver scrimObserver) {
-        return new ScrimParams(/*anchorView=*/mBottomSheet, /*showInFrontOfAnchorView=*/false,
-                /*affectsStatusBar=*/true, /*topMargin=*/0, /*observer*/ scrimObserver);
+    @Override
+    public ScrimCoordinator getScrimCoordinator() {
+        return mScrimCoordinatorSupplier.get();
+    }
+
+    @Override
+    public PropertyModel createScrimParams() {
+        return new PropertyModel.Builder(ScrimProperties.REQUIRED_KEYS)
+                .with(ScrimProperties.TOP_MARGIN, 0)
+                .with(ScrimProperties.AFFECTS_STATUS_BAR, true)
+                .with(ScrimProperties.ANCHOR_VIEW, mBottomSheet)
+                .with(ScrimProperties.SHOW_IN_FRONT_OF_ANCHOR_VIEW, false)
+                .with(ScrimProperties.CLICK_DELEGATE,
+                        () -> {
+                            if (!mBottomSheet.isSheetOpen()) return;
+                            mBottomSheet.setSheetState(mBottomSheet.getMinSwipableSheetState(),
+                                    true, StateChangeReason.TAP_SCRIM);
+                        })
+                .build();
     }
 
     // Destroyable implementation.

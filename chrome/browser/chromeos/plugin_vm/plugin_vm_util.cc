@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/observer_list.h"
+#include "base/strings/pattern.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_drive_image_download_service.h"
@@ -28,6 +30,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "google_apis/drive/drive_api_error_codes.h"
+#include "net/base/url_util.h"
 
 namespace plugin_vm {
 
@@ -184,25 +187,34 @@ void RemoveDriveDownloadDirectoryIfExists() {
       base::BindOnce(std::move(log_file_deletion_if_failed)));
 }
 
-// TODO(muhamedp): Update if a different url format is ultimately chosen.
-bool IsDriveUrl(const GURL& url) {
-  const std::string url_base = "https://drive.google.com/open";
-  const std::string& spec = url.spec();
-  return spec.find(url_base) == 0 && spec.find("id=") < (spec.length() - 3);
-}
-
-// TODO(muhamedp): Update if a different url format is ultimately chosen.
-std::string GetIdFromDriveUrl(const GURL& url) {
+base::Optional<std::string> GetIdFromDriveUrl(const GURL& url) {
   const std::string& spec = url.spec();
 
-  const size_t id_start = spec.find("id=") + 3;
-  // In case there are other GET parameters after the id.
-  const size_t first_ampersand = spec.find('&', id_start);
+  const std::string kOpenUrlBase = "https://drive.google.com/open?";
+  if (base::StartsWith(spec, kOpenUrlBase,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+    // e.g. https://drive.google.com/open?id=[ID]
+    std::string id;
+    if (!net::GetValueForKeyInQuery(url, "id", &id))
+      return base::nullopt;
+    return id;
+  }
 
-  if (first_ampersand == std::string::npos)
-    return spec.substr(id_start);
-  else
-    return spec.substr(id_start, first_ampersand - id_start);
+  // These will match some invalid URLs, which is fine.
+  const std::string kViewUrlPatternWithDomain =
+      "https://drive.google.com/a/*/file/d/*/view*";
+  const std::string kViewUrlPatternWithoutDomain =
+      "https://drive.google.com/file/d/*/view*";
+  if (base::MatchPattern(spec, kViewUrlPatternWithDomain) ||
+      base::MatchPattern(spec, kViewUrlPatternWithoutDomain)) {
+    // e.g. https://drive.google.com/a/example.org/file/d/[ID]/view?usp=sharing
+    // or https://drive.google.com/file/d/[ID]/view?usp=sharing
+    size_t id_end = spec.find("/view");
+    size_t id_start = spec.rfind('/', id_end - 1) + 1;
+    return spec.substr(id_start, id_end - id_start);
+  }
+
+  return base::nullopt;
 }
 
 PluginVmPolicySubscription::PluginVmPolicySubscription(

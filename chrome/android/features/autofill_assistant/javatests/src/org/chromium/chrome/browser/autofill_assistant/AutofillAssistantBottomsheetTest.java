@@ -139,7 +139,9 @@ public class AutofillAssistantBottomsheetTest {
         // Focus on the bottom element.
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder().setElement(
-                                 SelectorProto.newBuilder().addSelectors("p.bottom")))
+                                 SelectorProto.newBuilder().addFilters(
+                                         SelectorProto.Filter.newBuilder().setCssSelector(
+                                                 "p.bottom"))))
                          .build());
         if (withDetails) {
             // ShowDetails.
@@ -416,7 +418,9 @@ public class AutofillAssistantBottomsheetTest {
         // Focus on the bottom element.
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder().setElement(
-                                 SelectorProto.newBuilder().addSelectors("p.bottom")))
+                                 SelectorProto.newBuilder().addFilters(
+                                         SelectorProto.Filter.newBuilder().setCssSelector(
+                                                 "p.bottom"))))
                          .build());
         // Set handle and header peek mode and auto collapse to that state.
         list.add((ActionProto) ActionProto.newBuilder()

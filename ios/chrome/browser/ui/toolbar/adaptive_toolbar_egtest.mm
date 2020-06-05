@@ -303,7 +303,6 @@ void CheckButtonsVisibilityIPad() {
   CheckVisibilityInToolbar(BackButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(ForwardButton(), ButtonVisibilityPrimary);
   CheckVisibilityInToolbar(NewTabButton(), ButtonVisibilityNone);
-  CheckVisibilityInToolbar(TabGridButton(), ButtonVisibilityNone);
   CheckVisibilityInToolbar(ToolsMenuButton(), ButtonVisibilityPrimary);
 
   // The secondary toolbar is not visible.

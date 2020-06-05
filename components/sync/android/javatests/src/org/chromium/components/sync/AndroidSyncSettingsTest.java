@@ -139,8 +139,7 @@ public class AndroidSyncSettingsTest {
     }
 
     private void setupTestAccounts() {
-        mAccountManager = new FakeAccountManagerDelegate(
-                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
+        mAccountManager = new FakeAccountManagerDelegate();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             AccountManagerFacadeProvider.setInstanceForTests(
                     new AccountManagerFacadeImpl(mAccountManager));

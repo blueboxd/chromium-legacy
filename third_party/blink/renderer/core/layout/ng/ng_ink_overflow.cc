@@ -58,7 +58,8 @@ void NGInkOverflow::ComputeTextInkOverflow(
   }
 
   PhysicalRect local_ink_overflow =
-      LogicalRect(ink_overflow).ConvertToPhysical(writing_mode, size);
+      LogicalRect(ink_overflow)
+          .ConvertToPhysical(writing_mode, TextDirection::kLtr, size);
 
   // Uniting the frame rect ensures that non-ink spaces such side bearings, or
   // even space characters, are included in the visual rect for decorations.

@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/css/hash_tools.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -24,9 +23,9 @@
 
 namespace blink {
 
-using css_property_parser_helpers::ConsumeIdent;
-using css_property_parser_helpers::IsImplicitProperty;
-using css_property_parser_helpers::ParseLonghand;
+using css_parsing_utils::ConsumeIdent;
+using css_parsing_utils::IsImplicitProperty;
+using css_parsing_utils::ParseLonghand;
 
 class CSSIdentifierValue;
 
@@ -161,7 +160,7 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
       const cssvalue::CSSPendingSubstitutionValue& pending_value =
           *MakeGarbageCollected<cssvalue::CSSPendingSubstitutionValue>(
               property_id, variable);
-      css_property_parser_helpers::AddExpandedPropertyForValue(
+      css_parsing_utils::AddExpandedPropertyForValue(
           property_id, pending_value, important, *parsed_properties_);
     } else {
       AddProperty(property_id, CSSPropertyID::kInvalid, *variable, important,
@@ -281,8 +280,8 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
     AddProperty(property, CSSPropertyID::kInvalid, *value, important,
                 IsImplicitProperty::kNotImplicit, *parsed_properties_);
   } else {
-    css_property_parser_helpers::AddExpandedPropertyForValue(
-        property, *value, important, *parsed_properties_);
+    css_parsing_utils::AddExpandedPropertyForValue(property, *value, important,
+                                                   *parsed_properties_);
   }
   range_ = range_copy;
   return true;
@@ -300,19 +299,19 @@ static CSSValue* ConsumeSingleViewportDescriptor(
     case CSSPropertyID::kMaxHeight:
       if (id == CSSValueID::kAuto || id == CSSValueID::kInternalExtendToZoom)
         return ConsumeIdent(range);
-      return css_property_parser_helpers::ConsumeLengthOrPercent(
-          range, context, kValueRangeNonNegative);
+      return css_parsing_utils::ConsumeLengthOrPercent(range, context,
+                                                       kValueRangeNonNegative);
     case CSSPropertyID::kMinZoom:
     case CSSPropertyID::kMaxZoom:
     case CSSPropertyID::kZoom: {
       if (id == CSSValueID::kAuto)
         return ConsumeIdent(range);
-      CSSValue* parsed_value = css_property_parser_helpers::ConsumeNumber(
+      CSSValue* parsed_value = css_parsing_utils::ConsumeNumber(
           range, context, kValueRangeNonNegative);
       if (parsed_value)
         return parsed_value;
-      return css_property_parser_helpers::ConsumePercent(
-          range, context, kValueRangeNonNegative);
+      return css_parsing_utils::ConsumePercent(range, context,
+                                               kValueRangeNonNegative);
     }
     case CSSPropertyID::kUserZoom:
       return ConsumeIdent<CSSValueID::kZoom, CSSValueID::kFixed>(range);

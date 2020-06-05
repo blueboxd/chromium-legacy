@@ -11,66 +11,54 @@
 namespace autofill_assistant {
 namespace {
 
-TEST(SelectorTest, FromProto) {
-  SelectorProto proto;
-  proto.add_selectors("a");
-  proto.add_selectors("b");
-  proto.set_inner_text_pattern("c");
-  proto.set_inner_text_pattern_case_sensitive(true);
-  proto.set_value_pattern("d");
-  proto.set_value_pattern_case_sensitive(true);
-  proto.set_visibility_requirement(MUST_BE_VISIBLE);
-  proto.set_pseudo_type(PseudoType::BEFORE);
-
-  Selector selector(proto);
-  EXPECT_THAT(selector.selectors, testing::ElementsAre("a", "b"));
-  EXPECT_TRUE(selector.must_be_visible);
-  EXPECT_EQ("c", selector.inner_text_pattern);
-  EXPECT_TRUE(selector.inner_text_pattern_case_sensitive);
-  EXPECT_EQ("d", selector.value_pattern);
-  EXPECT_TRUE(selector.value_pattern_case_sensitive);
-  EXPECT_EQ(PseudoType::BEFORE, selector.pseudo_type);
+TEST(SelectorTest, Constructor_Simple) {
+  Selector selector({"#test"});
+  ASSERT_EQ(1, selector.proto.filters().size());
+  EXPECT_EQ("#test", selector.proto.filters(0).css_selector());
 }
 
-TEST(SelectorTest, ToProto) {
-  Selector selector;
-  selector.selectors.emplace_back("a");
-  selector.selectors.emplace_back("b");
-  selector.inner_text_pattern = "c";
-  selector.inner_text_pattern_case_sensitive = true;
-  selector.value_pattern = "d";
-  selector.value_pattern_case_sensitive = true;
-  selector.must_be_visible = true;
-  selector.pseudo_type = PseudoType::BEFORE;
+TEST(SelectorTest, Constructor_WithIframe) {
+  Selector selector({"#frame", "#test"});
+  ASSERT_EQ(4, selector.proto.filters().size());
+  EXPECT_EQ("#frame", selector.proto.filters(0).css_selector());
+  EXPECT_EQ(selector.proto.filters(1).filter_case(),
+            SelectorProto::Filter::kPickOne);
+  EXPECT_EQ(selector.proto.filters(2).filter_case(),
+            SelectorProto::Filter::kEnterFrame);
+  EXPECT_EQ("#test", selector.proto.filters(3).css_selector());
+}
 
-  SelectorProto proto = selector.ToProto();
-  EXPECT_THAT(proto.selectors(), testing::ElementsAre("a", "b"));
-  EXPECT_EQ("c", proto.inner_text_pattern());
-  EXPECT_TRUE(proto.inner_text_pattern_case_sensitive());
-  EXPECT_EQ("d", proto.value_pattern());
-  EXPECT_TRUE(proto.value_pattern_case_sensitive());
-  EXPECT_EQ(MUST_BE_VISIBLE, proto.visibility_requirement());
-  EXPECT_EQ(PseudoType::BEFORE, proto.pseudo_type());
+TEST(SelectorTest, FromProto) {
+  SelectorProto proto;
+  proto.add_filters()->set_css_selector("#test");
+
+  EXPECT_EQ(Selector({"#test"}), Selector(proto));
 }
 
 TEST(SelectorTest, Comparison) {
   EXPECT_FALSE(Selector({"a"}) == Selector({"b"}));
   EXPECT_LT(Selector({"a"}), Selector({"b"}));
   EXPECT_TRUE(Selector({"a"}) == Selector({"a"}));
+}
 
-  EXPECT_FALSE(Selector({"a"}, PseudoType::BEFORE) ==
-               Selector({"a"}, PseudoType::AFTER));
-  EXPECT_LT(Selector({"a"}, PseudoType::BEFORE),
-            Selector({"a"}, PseudoType::AFTER));
-  EXPECT_LT(Selector({"a"}, PseudoType::BEFORE), Selector({"b"}));
-  EXPECT_TRUE(Selector({"a"}, PseudoType::BEFORE) ==
-              Selector({"a"}, PseudoType::BEFORE));
+TEST(SelectorTest, Comparison_PseudoType) {
+  EXPECT_FALSE(Selector({"a"}).SetPseudoType(PseudoType::BEFORE) ==
+               Selector({"a"}).SetPseudoType(PseudoType::AFTER));
+  EXPECT_LT(Selector({"a"}).SetPseudoType(PseudoType::BEFORE),
+            Selector({"a"}).SetPseudoType(PseudoType::AFTER));
+  EXPECT_LT(Selector({"b"}), Selector({"a"}).SetPseudoType(PseudoType::BEFORE));
+  EXPECT_TRUE(Selector({"a"}).SetPseudoType(PseudoType::BEFORE) ==
+              Selector({"a"}).SetPseudoType(PseudoType::BEFORE));
+}
 
+TEST(SelectorTest, Comparison_Visibility) {
   EXPECT_FALSE(Selector({"a"}) == Selector({"a"}).MustBeVisible());
   EXPECT_LT(Selector({"a"}), Selector({"a"}).MustBeVisible());
   EXPECT_TRUE(Selector({"a"}).MustBeVisible() ==
               Selector({"a"}).MustBeVisible());
+}
 
+TEST(SelectorTest, Comparison_InnerText) {
   EXPECT_FALSE(Selector({"a"}).MatchingInnerText("a") ==
                Selector({"a"}).MatchingInnerText("b"));
   EXPECT_LT(Selector({"a"}).MatchingInnerText("a"),
@@ -84,7 +72,9 @@ TEST(SelectorTest, Comparison) {
             Selector({"a"}).MatchingInnerText("a", true));
   EXPECT_TRUE(Selector({"a"}).MatchingInnerText("a", true) ==
               Selector({"a"}).MatchingInnerText("a", true));
+}
 
+TEST(SelectorTest, Comparison_Value) {
   EXPECT_FALSE(Selector({"a"}).MatchingValue("a") ==
                Selector({"a"}).MatchingValue("b"));
   EXPECT_LT(Selector({"a"}).MatchingValue("a"),
@@ -98,6 +88,47 @@ TEST(SelectorTest, Comparison) {
             Selector({"a"}).MatchingValue("a", true));
   EXPECT_TRUE(Selector({"a"}).MatchingValue("a", true) ==
               Selector({"a"}).MatchingValue("a", true));
+}
+
+TEST(SelectorTest, Comparison_Frames) {
+  Selector ab({"a", "b"});
+  EXPECT_EQ(ab, ab);
+
+  Selector cb({"c", "b"});
+  EXPECT_FALSE(ab == cb);
+  EXPECT_TRUE(ab < cb);
+  EXPECT_FALSE(cb < ab);
+
+  Selector b({"b"});
+  EXPECT_FALSE(ab == b);
+  EXPECT_TRUE(b < ab);
+  EXPECT_FALSE(ab < b);
+}
+
+TEST(SelectorTest, Comparison_MultipleFilters) {
+  Selector abcdef;
+  abcdef.proto.add_filters()->set_css_selector("abc");
+  abcdef.proto.add_filters()->set_css_selector("def");
+
+  Selector abcdef2;
+  abcdef2.proto.add_filters()->set_css_selector("abc");
+  abcdef2.proto.add_filters()->set_css_selector("def");
+  EXPECT_EQ(abcdef, abcdef2);
+  EXPECT_FALSE(abcdef < abcdef2);
+  EXPECT_FALSE(abcdef2 < abcdef);
+
+  Selector defabc;
+  defabc.proto.add_filters()->set_css_selector("def");
+  defabc.proto.add_filters()->set_css_selector("abc");
+  EXPECT_FALSE(abcdef == defabc);
+  EXPECT_TRUE(abcdef < defabc);
+  EXPECT_FALSE(defabc < abcdef);
+
+  Selector abc;
+  abc.proto.add_filters()->set_css_selector("abc");
+  EXPECT_FALSE(abcdef == abc);
+  EXPECT_TRUE(abc < abcdef);
+  EXPECT_FALSE(abcdef < abc);
 }
 
 }  // namespace

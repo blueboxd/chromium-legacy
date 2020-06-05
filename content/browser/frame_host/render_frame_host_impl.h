@@ -39,6 +39,7 @@
 #include "content/browser/feature_observer.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/frame_host/should_swap_browsing_instance.h"
+#include "content/browser/net/cross_origin_opener_policy_reporter.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/site_instance_impl.h"
@@ -1420,6 +1421,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   CrossOriginEmbedderPolicyReporter* coep_reporter() {
     return coep_reporter_.get();
   }
+  void set_coop_reporter(
+      std::unique_ptr<CrossOriginOpenerPolicyReporter>&& reporter) {
+    coop_reporter_ = std::move(reporter);
+  }
 
   // Semi-formal definition of COOP:
   // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
@@ -1428,6 +1433,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   }
   void set_cross_origin_opener_policy(network::CrossOriginOpenerPolicy policy) {
     cross_origin_opener_policy_ = policy;
+  }
+  CrossOriginOpenerPolicyReporter* coop_reporter() {
+    return coop_reporter_.get();
   }
 
   const network::mojom::ClientSecurityStatePtr&
@@ -3032,6 +3040,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   base::TimeTicks last_xr_overlay_setup_time_;
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter_;
 
   // Navigation ID for the last committed cross-document non-bfcached navigation
   // in this RenderFrameHost.

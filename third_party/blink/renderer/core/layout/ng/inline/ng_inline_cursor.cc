@@ -655,6 +655,13 @@ PhysicalOffset NGInlineCursorPosition::LineEndPoint() const {
                                        pixel_size);
 }
 
+PhysicalRect NGInlineCursorPosition::ConvertToPhysical(
+    const LogicalRect& logical_rect) const {
+  return logical_rect.ConvertToPhysical(
+      Style().GetWritingMode(),
+      IsLineBox() ? BaseDirection() : ResolvedDirection(), Size());
+}
+
 PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
     const PhysicalOffset& point,
     const NGPhysicalBoxFragment& container) {

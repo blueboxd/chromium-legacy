@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -729,6 +730,10 @@ void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowFailed(
 
     case GaiaRemoteConsentFlow::NO_GRANT:
       error = identity_constants::kNoGrant;
+      break;
+
+    case GaiaRemoteConsentFlow::NONE:
+      NOTREACHED();
       break;
   }
 

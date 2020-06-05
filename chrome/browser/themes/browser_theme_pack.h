@@ -301,7 +301,8 @@ class BrowserThemePack : public CustomThemeSupplier {
 
     // theme_id without NULL terminator.
     uint8_t theme_id[16];
-  }* header_ = nullptr;
+  };
+  BrowserThemePackHeader* header_ = nullptr;
 
   // The remaining structs represent individual entries in an array. For the
   // following three structs, BrowserThemePack will either allocate an array or
@@ -311,17 +312,20 @@ class BrowserThemePack : public CustomThemeSupplier {
     double h;
     double s;
     double l;
-  }* tints_ = nullptr;
+  };
+  TintEntry* tints_ = nullptr;
 
   struct ColorPair {
     int32_t id;
     SkColor color;
-  }* colors_ = nullptr;
+  };
+  ColorPair* colors_ = nullptr;
 
   struct DisplayPropertyPair {
     int32_t id;
     int32_t property;
-  }* display_properties_ = nullptr;
+  };
+  DisplayPropertyPair* display_properties_ = nullptr;
 
   // A list of included source images. A pointer to a -1 terminated array of
   // our persistent IDs.

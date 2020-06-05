@@ -20459,6 +20459,7 @@ Called by update_document_policy_enum.py.-->
   <int value="709" label="ReportDeviceFanInfo"/>
   <int value="710" label="ReportDeviceVpdInfo"/>
   <int value="711" label="EnableExperimentalPolicies"/>
+  <int value="712" label="PluginVmDataCollectionAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -29575,6 +29576,15 @@ Called by update_feature_policy_enum.py.-->
   <int value="5" label="Credential Not Set"/>
   <int value="6" label="Network Error"/>
   <int value="7" label="Unknown Error"/>
+</enum>
+
+<enum name="GaiaRemoteConsentFlowResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Window was closed"/>
+  <int value="2" label="Failed to load the consent page"/>
+  <int value="3" label="Failed to set accounts in cookies"/>
+  <int value="4" label="Failed to parse the consent result"/>
+  <int value="5" label="Consent wasn't granted"/>
 </enum>
 
 <enum name="GaiaServiceType">
@@ -57057,9 +57067,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="QuickAnswersLoadStatus">
-  <int value="0" label="kNetworkError"/>
-  <int value="1" label="kNoResult"/>
-  <int value="2" label="kSuccess"/>
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kNetworkError"/>
+  <int value="2" label="kNoResult"/>
 </enum>
 
 <enum name="QuickAnswersResultType">
@@ -66116,6 +66126,25 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Use local"/>
   <int value="2" label="Use remote"/>
   <int value="3" label="Use new"/>
+</enum>
+
+<enum name="SyncConsentBehavior">
+  <summary>
+    Behavior of the out-of-box experience (OOBE) sync consent screen.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Show"/>
+  <int value="2" label="Skip"/>
+  <int value="3" label="Skip and enable sync"/>
+</enum>
+
+<enum name="SyncConsentUserChoice">
+  <summary>
+    Which button the user clicked in the out-of-box experience (OOBE) sync
+    consent screen.
+  </summary>
+  <int value="0" label="Declined"/>
+  <int value="1" label="Accepted"/>
 </enum>
 
 <enum name="SyncCryptographerPendingKeysState">

@@ -63,6 +63,7 @@ namespace content {
 
 class AppCacheNavigationHandle;
 class CrossOriginEmbedderPolicyReporter;
+class CrossOriginOpenerPolicyReporter;
 class WebBundleHandleTracker;
 class WebBundleNavigationInfo;
 class FrameNavigationEntry;
@@ -74,6 +75,26 @@ class PrefetchedSignedExchangeCache;
 class ServiceWorkerMainResourceHandle;
 class SiteInstanceImpl;
 struct SubresourceLoaderParams;
+
+// A structure that groups information about how COOP has interacted with the
+// navigation. These are used to trigger a number of mechanisms such as name
+// clearing or reporting.
+struct CrossOriginOpenerPolicyStatus {
+  // Set to true whenever the Cross-Origin-Opener-Policy spec requires a
+  // "BrowsingContext group" swap:
+  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
+  // This forces the new RenderFrameHost to use a different BrowsingInstance
+  // than the current one. If other pages had JavaScript references to the
+  // Window object for the frame (via window.opener, window.open(), et cetera),
+  // those references will be broken; window.name will also be reset to an empty
+  // string.
+  bool require_browsing_instance_swap = false;
+
+  // When a page has a reachable opener and COOP triggers a browsing instance
+  // swap we potentially break the page. This is one of the case that can be
+  // reported using the COOP reporting API.
+  bool had_opener_before_browsing_instance_swap = false;
+};
 
 // A UI thread object that owns a navigation request until it commits. It
 // ensures the UI thread can start a navigation request in the
@@ -596,20 +617,17 @@ class CONTENT_EXPORT NavigationRequest
   }
   network::mojom::ClientSecurityStatePtr TakeClientSecurityState();
 
-  bool require_coop_browsing_instance_swap() const {
-    return require_coop_browsing_instance_swap_;
-  }
-
   bool ua_change_requires_reload() const { return ua_change_requires_reload_; }
 
-  void set_require_coop_browsing_instance_swap() {
-    require_coop_browsing_instance_swap_ = true;
-  }
   CrossOriginEmbedderPolicyReporter* coep_reporter() {
     return coep_reporter_.get();
   }
+  CrossOriginOpenerPolicyReporter* coop_reporter() {
+    return coop_reporter_.get();
+  }
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> TakeCoepReporter();
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> TakeCoopReporter();
 
   // Returns UKM SourceId for the page we are navigating away from.
   // Equal to GetRenderFrameHost()->GetPageUkmSourceId() for subframe
@@ -637,6 +655,9 @@ class CONTENT_EXPORT NavigationRequest
   // TODO(arthursonzogni): After RenderDocument, this can be computed and stored
   // directly into the RenderDocumentHost.
   base::Optional<network::mojom::WebSandboxFlags> SandboxFlagsToCommit();
+
+  // Returns the coop status information relevant to the current navigation.
+  CrossOriginOpenerPolicyStatus& coop_status();
 
  private:
   friend class NavigationRequestTest;
@@ -959,6 +980,7 @@ class CONTENT_EXPORT NavigationRequest
   void ForceEnableOriginTrials(const std::vector<std::string>& trials) override;
 
   void CreateCoepReporter(StoragePartition* storage_partition);
+  void CreateCoopReporter(StoragePartition* storage_partition);
 
   base::Optional<network::mojom::BlockedByResponseReason> IsBlockedByCorp();
 
@@ -1306,22 +1328,13 @@ class CONTENT_EXPORT NavigationRequest
   network::mojom::ClientSecurityStatePtr client_security_state_;
 
   std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
+  std::unique_ptr<CrossOriginOpenerPolicyReporter> coop_reporter_;
 
   std::unique_ptr<PeakGpuMemoryTracker> loading_mem_tracker_ = nullptr;
 
-  // Set to true whenever we the Cross-Origin-Opener-Policy spec requires us to
-  // do a "BrowsingContext group" swap:
-  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-  // This forces a new BrowsingInstance to be used for the RenderFrameHost the
-  // navigation will commit in. If other pages had JavaScript references to the
-  // Window object for the frame (via window.opener, window.open(), et cetera),
-  // those references will be broken; window.name will also be reset to an empty
-  // string.
-  // TODO(ahemery): COOP requires that any page during the redirect chain
-  // having an incompatible COOP triggers a BrowsingInstance swap. Even if the
-  // end document could be put in the same BrowsingInstance as the starting
-  // one. Implement the behavior.
-  bool require_coop_browsing_instance_swap_ = false;
+  // Structure tracking the effects of the CrossOriginOpenerPolicy on this
+  // navigation.
+  CrossOriginOpenerPolicyStatus coop_status_;
 
 #if DCHECK_IS_ON()
   bool is_safe_to_delete_ = true;

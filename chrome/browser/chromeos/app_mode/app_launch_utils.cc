@@ -64,7 +64,8 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
   }
   void OnInstallingApp() override {}
   void OnReadyToLaunch() override { startup_app_launcher_->LaunchApp(); }
-  void OnLaunchSucceeded() override { Cleanup(); }
+  void OnLaunchSucceeded() override {}
+  void OnAppWindowCreated() override { Cleanup(); }
   void OnLaunchFailed(KioskAppLaunchError::Error error) override {
     KioskAppLaunchError::Save(error);
     chrome::AttemptUserExit();

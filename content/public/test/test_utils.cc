@@ -216,6 +216,10 @@ bool CanSameSiteMainFrameNavigationsChangeRenderFrameHosts() {
   return IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
 }
 
+bool CanSameSiteMainFrameNavigationsChangeSiteInstances() {
+  return IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled();
+}
+
 GURL GetWebUIURL(const std::string& host) {
   return GURL(GetWebUIURLString(host));
 }

@@ -14,12 +14,11 @@ import org.chromium.chrome.browser.payments.SslValidityChecker;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -138,14 +137,10 @@ import org.chromium.ui.util.TokenHolder;
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContentsRef);
         assert activity != null;
 
-        // TODO(1002277): Use the proper scrim API when available.
-        BottomSheetControllerImpl controller =
-                (BottomSheetControllerImpl) activity.getBottomSheetController();
-        ScrimView.ScrimParams params =
-                controller.createScrimParams(new ScrimView.EmptyScrimObserver());
-        ScrimView scrim = ChromeActivity.fromWebContents(mWebContentsRef).getScrim();
-        scrim.showScrim(params);
-        scrim.setViewAlpha(0);
+        BottomSheetController controller = activity.getBottomSheetController();
+        PropertyModel params = controller.createScrimParams();
+        ScrimCoordinator coordinator = controller.getScrimCoordinator();
+        coordinator.showScrim(params);
 
         setIsObscuringAllTabs(activity, true);
     }
@@ -180,7 +175,9 @@ import org.chromium.ui.util.TokenHolder;
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContentsRef);
         assert activity != null;
 
-        activity.getScrim().hideScrim(true);
+        ScrimCoordinator coordinator = activity.getBottomSheetController().getScrimCoordinator();
+        coordinator.hideScrim(true);
+
         setIsObscuringAllTabs(activity, false);
     }
 

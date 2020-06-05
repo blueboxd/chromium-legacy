@@ -14,7 +14,6 @@
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_deliverer.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_processor_options.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -28,6 +27,7 @@ namespace blink {
 PLATFORM_EXPORT extern const int kFallbackAudioLatencyMs;
 
 class MediaStreamAudioTrack;
+class MediaStreamComponent;
 
 // Represents a source of audio, and manages the delivery of audio data between
 // the source implementation and one or more MediaStreamAudioTracks. This is a
@@ -48,18 +48,18 @@ class MediaStreamAudioTrack;
 //
 //   class MyAudioSource : public MediaStreamAudioSource { ... };
 //
-//   WebMediaStreamSource blink_source = ...;
-//   WebMediaStreamTrack blink_track = ...;
-//   blink_source.setExtraData(new MyAudioSource());  // Takes ownership.
-//   if (MediaStreamAudioSource::From(blink_source)
-//           ->ConnectToTrack(blink_track)) {
+//   MediaStreamSource* media_stream_source = ...;
+//   MediaStreamComponent* media_stream_track = ...;
+//   source->setExtraData(new MyAudioSource());  // Takes ownership.
+//   if (MediaStreamAudioSource::From(media_stream_source)
+//           ->ConnectToTrack(media_stream_track)) {
 //     LOG(INFO) << "Success!";
 //   } else {
 //     LOG(ERROR) << "Failed!";
 //   }
 //   // Regardless of whether ConnectToTrack() succeeds, there will always be a
 //   // MediaStreamAudioTrack instance created.
-//   CHECK(MediaStreamAudioTrack::From(blink_track));
+//   CHECK(MediaStreamAudioTrack::From(media_stream_track));
 class PLATFORM_EXPORT MediaStreamAudioSource
     : public WebPlatformMediaStreamSource {
  public:
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT MediaStreamAudioSource
   // implementation of the content::MediaStreamAudioTrack interface, which
   // becomes associated with and owned by |track|. Returns true if the source
   // was successfully started.
-  bool ConnectToTrack(const WebMediaStreamTrack& track);
+  bool ConnectToTrack(MediaStreamComponent* component);
 
   // Returns the current format of the audio passing through this source to the
   // sinks. This can return invalid parameters if the source has not yet been

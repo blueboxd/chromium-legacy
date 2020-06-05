@@ -16,6 +16,7 @@ import argparse
 import collections
 import copy
 import filecmp
+import functools
 import json
 import hashlib
 import os
@@ -37,7 +38,7 @@ class XcodeProject(object):
     while True:
       self.counter += 1
       str_id = "%s %s %d" % (parent_name, obj['isa'], self.counter)
-      new_id = hashlib.sha1(str_id).hexdigest()[:24].upper()
+      new_id = hashlib.sha1(str_id.encode("utf-8")).hexdigest()[:24].upper()
 
       # Make sure ID is unique. It's possible there could be an id conflict
       # since this is run after GN runs.
@@ -65,7 +66,7 @@ def LoadXcodeProjectAsJSON(path):
 def WriteXcodeProject(output_path, json_string):
   """Save Xcode project to |output_path| as XML."""
   with tempfile.NamedTemporaryFile() as temp_file:
-    temp_file.write(json_string)
+    temp_file.write(json_string.encode("utf-8"))
     temp_file.flush()
     subprocess.check_call(['plutil', '-convert', 'xml1', temp_file.name])
     CopyFileIfChanged(temp_file.name, output_path)
@@ -85,7 +86,7 @@ def UpdateProductsProject(file_input, file_output, configurations, root_dir):
   project = XcodeProject(json_data['objects'])
 
   objects_to_remove = []
-  for value in project.objects.values():
+  for value in list(project.objects.values()):
     isa = value['isa']
 
     # Teach build shell script to look for the configuration and platform.
@@ -118,7 +119,7 @@ def UpdateProductsProject(file_input, file_output, configurations, root_dir):
   AddMarkdownToProject(project, root_dir, source)
   SortFileReferencesByName(project, source)
 
-  objects = collections.OrderedDict(sorted(project.objects.iteritems()))
+  objects = collections.OrderedDict(sorted(project.objects.items()))
   WriteXcodeProject(file_output, json.dumps(json_data))
 
 
@@ -151,6 +152,11 @@ def GetNameOrPath(object):
     return object['name']
   return object['path']
 
+try:
+  cmp
+except NameError:
+  def cmp(a, b):
+    return (a > b) - (a < b)
 
 def ObjectComparatorFactory(objects):
   def CompareObjects(ref1, ref2):
@@ -168,7 +174,7 @@ def SortFileReferencesByName(project, group_object):
 
 
 def SortFileReferencesByNameWithComparator(project, group_object, comparator):
-  group_object['children'].sort(comparator)
+  group_object['children'].sort(key=functools.cmp_to_key(comparator))
   for key in group_object['children']:
     child = project.objects[key]
     if child['isa'] == 'PBXGroup':
@@ -177,7 +183,7 @@ def SortFileReferencesByNameWithComparator(project, group_object, comparator):
 
 def AddMarkdownToProject(project, root_dir, group_object):
   list_files_cmd = ['git', '-C', root_dir, 'ls-files', '*.md']
-  paths = subprocess.check_output(list_files_cmd).splitlines()
+  paths = subprocess.check_output(list_files_cmd).decode("utf-8").splitlines()
   ios_internal_dir = os.path.join(root_dir, 'ios_internal')
   if os.path.exists(ios_internal_dir):
     list_files_cmd = ['git', '-C', ios_internal_dir, 'ls-files', '*.md']

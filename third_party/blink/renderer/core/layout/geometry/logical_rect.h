@@ -69,7 +69,11 @@ struct CORE_EXPORT LogicalRect {
   void Unite(const LogicalRect&);
 
   // Convert logical coordinate to local physical coordinate.
+  // Note: When |LogicalRect| is constructed from |LayoutRect|, we should
+  // be careful about |direction|, because of |LayoutRect| may or may not
+  // ignore |TextDirection|.
   PhysicalRect ConvertToPhysical(WritingMode writing_mode,
+                                 TextDirection direction,
                                  const PhysicalSize& outer_size) const;
 
   String ToString() const;

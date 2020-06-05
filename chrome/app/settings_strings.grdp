@@ -503,13 +503,17 @@
   <message name="IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS" desc="Shown in the passwords section of settings. Descriptive text to inform that passwords can be accessed online. Has a link.">
     View and manage saved passwords in your <ph name="BEGIN_LINK">&lt;a is="action-link" href="$1" target="_blank"&gt;</ph>Google Account<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and use definitive label once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_LABEL" desc="Label for a button in the passwords section of settings triggering opt in to passwords account storage.">
-    Opt-in to account storage
+  <message name="IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_BODY" desc="Description before a button in the passwords section of settings which triggers opt in to passwords account storage.">
+    You can also show passwords from your Google Account here
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and use definitive label once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORDS_OPT_OUT_ACCOUNT_STORAGE_LABEL" desc="Label for a button in the passwords section of settings triggering opt out of passwords account storage.">
-    Opt-out of account storage
+  <message name="IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_LABEL" desc="Label for a button in the passwords section of settings which triggers opt in to passwords account storage.">
+    Show
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_OPT_OUT_ACCOUNT_STORAGE_BODY" desc="Description before a button in the passwords section of settings which triggers opt out of passwords account storage.">
+    Showing passwords from your Google Account
+  </message>
+  <message name="IDS_SETTINGS_PASSWORDS_OPT_OUT_ACCOUNT_STORAGE_LABEL" desc="Label for a button in the passwords section of settings which triggers opt out of passwords account storage.">
+    Remove from device
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_EXPORT_MENU_ITEM" desc="A menu item in the More Actions menu above the password list in Chrome's settings. Selecting this action will open a dialog, through which the user can export their passwords outside of Chrome.">
     Export passwords...
@@ -1190,6 +1194,13 @@
   <message name="IDS_SETTINGS_SAFETY_CHECK_EXTENSIONS_BUTTON_ARIA_LABEL" desc="Accessibility text for the button that allows users to review their extensions settings.">
     Review extensions
   </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_PRIMARY_LABEL" desc="'Unwanted software protection' is an element in safety check that finds harmful software installed on the computer and allows users to remove it.">
+    Unwanted software protection
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_CHROME_CLEANER_BUTTON_ARIA_LABEL" desc="Accessiblity text for the button that allows users to review and remove harmful software found on their computer.">
+    Review unwanted software
+  </message>
+
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Preload pages for faster browsing and searching
   </message>

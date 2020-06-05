@@ -199,4 +199,6 @@ jumbo_source_set("test_support") {
     "//third_party/blink/renderer/platform",
     "//third_party/webrtc_overrides:webrtc_component",
   ]
+
+  configs += [ "//third_party/blink/renderer:inside_blink" ]
 }

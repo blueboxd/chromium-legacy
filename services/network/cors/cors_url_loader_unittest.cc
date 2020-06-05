@@ -333,13 +333,15 @@ class CorsURLLoaderTest : public testing::Test {
       base::StringPiece method,
       const GURL& url,
       base::StringPiece referrer = base::StringPiece(),
-      ReferrerPolicy referrer_policy = net::URLRequest::NO_REFERRER) {
+      ReferrerPolicy referrer_policy = net::URLRequest::NO_REFERRER,
+      net::SiteForCookies site_for_cookies = net::SiteForCookies()) {
     net::RedirectInfo redirect_info;
     redirect_info.status_code = status_code;
     redirect_info.new_method = method.as_string();
     redirect_info.new_url = url;
     redirect_info.new_referrer = referrer.as_string();
     redirect_info.new_referrer_policy = referrer_policy;
+    redirect_info.new_site_for_cookies = site_for_cookies;
     return redirect_info;
   }
 
@@ -1161,9 +1163,11 @@ TEST_F(CorsURLLoaderTest, RedirectInfoShouldBeUsed) {
   RunUntilCreateLoaderAndStartCalled();
 
   EXPECT_EQ(1, num_created_loaders());
-  EXPECT_EQ(GetRequest().url, url);
-  EXPECT_EQ(GetRequest().method, "POST");
-  EXPECT_EQ(GetRequest().referrer, url);
+  EXPECT_EQ(url, GetRequest().url);
+  EXPECT_EQ("POST", GetRequest().method);
+  EXPECT_EQ(url, GetRequest().referrer);
+  EXPECT_EQ(net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+            GetRequest().referrer_policy);
 
   NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(
       303, "GET", new_url, "https://other.example.com",
@@ -1180,9 +1184,86 @@ TEST_F(CorsURLLoaderTest, RedirectInfoShouldBeUsed) {
   RunUntilCreateLoaderAndStartCalled();
 
   EXPECT_EQ(2, num_created_loaders());
-  EXPECT_EQ(GetRequest().url, new_url);
-  EXPECT_EQ(GetRequest().referrer, GURL("https://other.example.com"));
-  EXPECT_EQ(GetRequest().method, "GET");
+  EXPECT_EQ(new_url, GetRequest().url);
+  EXPECT_EQ("GET", GetRequest().method);
+  EXPECT_EQ(GURL("https://other.example.com"), GetRequest().referrer);
+  EXPECT_EQ(net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
+            GetRequest().referrer_policy);
+
+  NotifyLoaderClientOnReceiveResponse(
+      {{"Access-Control-Allow-Origin", "https://example.com"}});
+  NotifyLoaderClientOnComplete(net::OK);
+  RunUntilComplete();
+
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_TRUE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::OK, client().completion_status().error_code);
+}
+
+// Makes sure that if an intercepted redirect updates the IsolationInfo and the
+// SiteForCookies values, the CorsURLLoader respects those changes. The former
+// only happens for frames, and the latter for subframes, but should make
+// assumptions about whether these need to be updated in CorsURLLoader.
+TEST_F(CorsURLLoaderTest,
+       InterceptedRedirectChangesIsolationInfoAndSiteForCookies) {
+  auto params = network::mojom::URLLoaderFactoryParams::New();
+  ResetFactory(base::nullopt, kRendererProcessId, true /* is_trusted */,
+               params->ignore_isolated_world_origin,
+               false /* skip_cors_enabled_scheme_check */);
+
+  const GURL url("https://example.com/foo.png");
+  const url::Origin url_origin = url::Origin::Create(url);
+  const net::SiteForCookies url_site_for_cookies =
+      net::SiteForCookies::FromOrigin(url_origin);
+
+  const GURL new_url("https://other.example.com/foo.png");
+  const url::Origin new_url_origin = url::Origin::Create(new_url);
+  const net::SiteForCookies new_url_site_for_cookies =
+      net::SiteForCookies::FromOrigin(new_url_origin);
+
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.url = url;
+  request.request_initiator = url_origin;
+  request.site_for_cookies = url_site_for_cookies;
+  request.update_first_party_url_on_redirect = true;
+  request.trusted_params = ResourceRequest::TrustedParams();
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateTopFrame,
+      url_origin /* top_frame_origin */, url_origin /* frame_origin */,
+      url_site_for_cookies);
+  CreateLoaderAndStart(request);
+  RunUntilCreateLoaderAndStartCalled();
+
+  EXPECT_EQ(1, num_created_loaders());
+  EXPECT_EQ(url, GetRequest().url);
+
+  NotifyLoaderClientOnReceiveRedirect(CreateRedirectInfo(
+      303, "GET", new_url, "" /* referrer */, net::URLRequest::NO_REFERRER,
+      new_url_site_for_cookies));
+  RunUntilRedirectReceived();
+
+  EXPECT_TRUE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_completion());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_redirect());
+
+  ClearHasReceivedRedirect();
+  FollowRedirect();
+  RunUntilCreateLoaderAndStartCalled();
+
+  EXPECT_EQ(2, num_created_loaders());
+  EXPECT_EQ(new_url, GetRequest().url);
+  EXPECT_EQ("GET", GetRequest().method);
+  EXPECT_TRUE(
+      GetRequest().site_for_cookies.IsEquivalent(new_url_site_for_cookies));
+  EXPECT_TRUE(GetRequest().trusted_params->isolation_info.IsEqualForTesting(
+      net::IsolationInfo::Create(
+          net::IsolationInfo::RedirectMode::kUpdateTopFrame,
+          new_url_origin /* top_frame_origin */,
+          new_url_origin /* frame_origin */, new_url_site_for_cookies)));
 
   NotifyLoaderClientOnReceiveResponse(
       {{"Access-Control-Allow-Origin", "https://example.com"}});

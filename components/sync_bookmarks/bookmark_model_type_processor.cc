@@ -447,6 +447,8 @@ void BookmarkModelTypeProcessor::OnInitialUpdateReceived(
     syncer::UpdateResponseDataList updates) {
   DCHECK(!bookmark_tracker_);
 
+  TRACE_EVENT0("sync", "BookmarkModelTypeProcessor::OnInitialUpdateReceived");
+
   bookmark_tracker_ = SyncedBookmarkTracker::CreateEmpty(model_type_state);
   StartTrackingMetadata();
 

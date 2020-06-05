@@ -26,15 +26,17 @@ namespace chromeos {
 // sign-in flow.
 class SyncConsentScreen : public BaseScreen,
                           public syncer::SyncServiceObserver {
- private:
+ public:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Public for testing.
   enum class SyncScreenBehavior {
-    kUnknown,            // Not yet known.
-    kShow,               // Screen should be shown.
-    kSkip,               // Skip screen, don't change sync state.
-    kSkipAndEnableSync,  // Skip screen and enable sync.
+    kUnknown = 0,            // Not yet known.
+    kShow = 1,               // Screen should be shown.
+    kSkip = 2,               // Skip screen, don't change sync state.
+    kSkipAndEnableSync = 3,  // Skip screen and enable sync.
+    kMaxValue = kSkipAndEnableSync
   };
 
- public:
   enum ConsentGiven { CONSENT_NOT_GIVEN, CONSENT_GIVEN };
 
   enum class Result { NEXT, NOT_APPLICABLE };
@@ -87,9 +89,9 @@ class SyncConsentScreen : public BaseScreen,
                               const int consent_confirmation);
 
   // Reacts to "Yes, I'm in" and "No, thanks".
-  void OnAcceptAndContinue(const std::vector<int>& consent_description,
-                           int consent_confirmation,
-                           bool enable_sync);
+  void OnContinue(const std::vector<int>& consent_description,
+                  int consent_confirmation,
+                  SyncConsentScreenHandler::UserChoice choice);
 
   // Configures OS sync and browser sync.
   void UpdateSyncSettings(bool enable_sync);

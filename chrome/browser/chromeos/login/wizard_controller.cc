@@ -353,6 +353,10 @@ WizardController::WizardController()
         base::Bind(&WizardController::OnAccessibilityStatusChanged,
                    weak_factory_.GetWeakPtr()));
   }
+  if (GetOobeUI()) {
+    // could be null in unit tests.
+    screen_manager_->Init(CreateScreens());
+  }
 }
 
 WizardController::~WizardController() {
@@ -360,7 +364,8 @@ WizardController::~WizardController() {
 }
 
 void WizardController::Init(OobeScreenId first_screen) {
-  screen_manager_->Init(CreateScreens());
+  DCHECK(!is_initialized());
+  is_initialized_ = true;
 
   prescribed_enrollment_config_ = g_browser_process->platform_part()
                                       ->browser_policy_connector_chromeos()

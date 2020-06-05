@@ -45,4 +45,11 @@
       </settings-safety-check-safe-browsing-child>
       <settings-safety-check-extensions-child>
       </settings-safety-check-extensions-child>
+<if expr="_google_chrome and is_win">
+      <template is="dom-if" if="[[showChromeCleanerChild_(parentStatus_)]]"
+          restamp>
+        <settings-safety-check-chrome-cleaner-child>
+        </settings-safety-check-chrome-cleaner-child>
+      </template>
+</if>
     </iron-collapse>

@@ -177,6 +177,7 @@ class NGInlineItemsBuilderTemplate {
   Vector<BidiContext> bidi_context_;
 
   bool has_bidi_controls_ = false;
+  bool has_ruby_ = false;
   bool is_empty_inline_ = true;
   bool is_block_level_ = true;
   bool changes_may_affect_earlier_lines_ = false;

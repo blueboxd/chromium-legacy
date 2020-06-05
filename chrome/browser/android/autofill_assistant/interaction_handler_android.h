@@ -91,6 +91,7 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
       const GenericUserInterfaceProto& proto,
       const std::string& identifier);
 
+  void CreateAndAttachNestedGenericUi(const CreateNestedGenericUiProto& proto);
   void CreateAndShowGenericPopup(const ShowGenericUiPopupProto& proto);
 
   // Maps event keys to the corresponding list of callbacks to execute.

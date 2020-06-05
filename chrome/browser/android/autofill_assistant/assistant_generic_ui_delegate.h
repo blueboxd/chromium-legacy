@@ -16,30 +16,30 @@ class AssistantGenericUiDelegate {
   explicit AssistantGenericUiDelegate(UiControllerAndroid* ui_controller);
   ~AssistantGenericUiDelegate();
 
-  // A view was clicked in the UI. |jview_identifier| is the corresponding view
-  // identifier.
   void OnViewClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jview_identifier);
 
-  // A value was changed on the Java side. Native should update the model.
   void OnValueChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jmodel_identifier,
       const base::android::JavaParamRef<jobject>& jvalue);
 
-  // A text link was clicked.
   void OnTextLinkClicked(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jcaller,
                          jint jlink);
 
-  // A generic popup was dismissed.
   void OnGenericPopupDismissed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jpopup_identifier);
+
+  void OnViewContainerCleared(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jview_identifier);
 
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 

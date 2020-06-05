@@ -68,6 +68,15 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
       }
       return base::Optional<EventHandler::EventKey>(
           {proto.kind_case(), proto.on_popup_dismissed().popup_identifier()});
+    case EventProto::kOnViewContainerCleared:
+      if (proto.on_view_container_cleared().view_identifier().empty()) {
+        VLOG(1) << "Invalid OnViewContainerClearedProto: no view_identifier "
+                   "specified";
+        return base::nullopt;
+      }
+      return base::Optional<EventHandler::EventKey>(
+          {proto.kind_case(),
+           proto.on_view_container_cleared().view_identifier()});
     case EventProto::KIND_NOT_SET:
       VLOG(1) << "Error creating event: kind not set";
       return base::nullopt;
@@ -313,6 +322,24 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
       return base::Optional<InteractionCallback>(base::BindRepeating(
           &InteractionHandlerAndroid::CreateAndShowGenericPopup, GetWeakPtr(),
           proto.show_generic_popup()));
+    case CallbackProto::kCreateNestedUi:
+      if (proto.create_nested_ui().generic_ui_identifier().empty()) {
+        VLOG(1) << "Error creating CreateNestedGenericUi interaction: "
+                   "generic_ui_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &InteractionHandlerAndroid::CreateAndAttachNestedGenericUi,
+          GetWeakPtr(), proto.create_nested_ui()));
+    case CallbackProto::kClearViewContainer:
+      if (proto.clear_view_container().view_identifier().empty()) {
+        VLOG(1) << "Error creating ClearViewContainer interaction: "
+                   "view_identifier not set";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionCallback>(base::BindRepeating(
+          &android_interactions::ClearViewContainer,
+          proto.clear_view_container().view_identifier(), views_, jdelegate_));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
@@ -329,16 +356,43 @@ void InteractionHandlerAndroid::DeleteNestedUi(const std::string& identifier) {
 const GenericUiControllerAndroid* InteractionHandlerAndroid::CreateNestedUi(
     const GenericUserInterfaceProto& proto,
     const std::string& identifier) {
+  if (nested_ui_controllers_.find(identifier) != nested_ui_controllers_.end()) {
+    VLOG(2) << "Error creating nested UI: " << identifier
+            << " already exixsts (did you forget to clear the previous "
+               "instance with ClearViewContainerProto?)";
+    return nullptr;
+  }
   auto nested_ui = GenericUiControllerAndroid::CreateFromProto(
       proto, jcontext_, jdelegate_, event_handler_, user_model_,
       basic_interactions_);
   const auto* nested_ui_ptr = nested_ui.get();
   if (nested_ui) {
-    DCHECK(nested_ui_controllers_.find(identifier) ==
-           nested_ui_controllers_.end());
     nested_ui_controllers_.emplace(identifier, std::move(nested_ui));
+  } else {
+    VLOG(2) << "Error creating nested UI " << identifier
+            << ": view inflation failed";
   }
   return nested_ui_ptr;
+}
+
+void InteractionHandlerAndroid::CreateAndAttachNestedGenericUi(
+    const CreateNestedGenericUiProto& proto) {
+  auto* nested_ui =
+      CreateNestedUi(proto.generic_ui(), proto.generic_ui_identifier());
+  if (!nested_ui) {
+    return;
+  }
+
+  if (!android_interactions::AttachViewToParent(
+          nested_ui->GetRootView(), proto.parent_view_identifier(), views_)) {
+    DeleteNestedUi(proto.generic_ui_identifier());
+    return;
+  }
+
+  AddInteraction(
+      {EventProto::kOnViewContainerCleared, proto.parent_view_identifier()},
+      base::BindRepeating(&InteractionHandlerAndroid::DeleteNestedUi,
+                          GetWeakPtr(), proto.generic_ui_identifier()));
 }
 
 void InteractionHandlerAndroid::CreateAndShowGenericPopup(
@@ -346,7 +400,6 @@ void InteractionHandlerAndroid::CreateAndShowGenericPopup(
   auto* nested_ui =
       CreateNestedUi(proto.generic_ui(), proto.popup_identifier());
   if (!nested_ui) {
-    DVLOG(2) << "Error showing popup: error creating generic UI";
     return;
   }
   AddInteraction({EventProto::kOnPopupDismissed, proto.popup_identifier()},

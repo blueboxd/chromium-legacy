@@ -117,12 +117,17 @@ public class AutofillAssistantAccessibilityIntegrationTest {
 
         // Show an element on top that should not be covered by the bottom sheet.
         SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder().addSelectors("#touch_area_one").build();
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
+                        .build();
         ElementAreaProto elementArea =
                 (ElementAreaProto) ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                SelectorProto.newBuilder().addSelectors("#touch_area_four")))
+                                SelectorProto.newBuilder().addFilters(
+                                        SelectorProto.Filter.newBuilder().setCssSelector(
+                                                "#touch_area_four"))))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder()
@@ -188,12 +193,17 @@ public class AutofillAssistantAccessibilityIntegrationTest {
 
         // Show an element on top that may or may not be covered by the bottom sheet.
         SelectorProto element =
-                (SelectorProto) SelectorProto.newBuilder().addSelectors("#touch_area_one").build();
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
+                        .build();
         ElementAreaProto elementArea =
                 (ElementAreaProto) ElementAreaProto.newBuilder()
                         .addTouchable(Rectangle.newBuilder().addElements(element))
                         .addTouchable(Rectangle.newBuilder().addElements(
-                                SelectorProto.newBuilder().addSelectors("#touch_area_four")))
+                                SelectorProto.newBuilder().addFilters(
+                                        SelectorProto.Filter.newBuilder().setCssSelector(
+                                                "#touch_area_four"))))
                         .build();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setFocusElement(FocusElementProto.newBuilder()

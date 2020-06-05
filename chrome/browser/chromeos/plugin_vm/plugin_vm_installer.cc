@@ -283,7 +283,8 @@ void PluginVmInstaller::StartDownload() {
     return;
   }
 
-  using_drive_download_service_ = IsDriveUrl(url);
+  base::Optional<std::string> drive_id = GetIdFromDriveUrl(url);
+  using_drive_download_service_ = drive_id.has_value();
 
   if (using_drive_download_service_) {
     if (!drive_download_service_) {
@@ -293,7 +294,7 @@ void PluginVmInstaller::StartDownload() {
       drive_download_service_->ResetState();
     }
 
-    drive_download_service_->StartDownload(GetIdFromDriveUrl(url));
+    drive_download_service_->StartDownload(drive_id.value());
   } else {
     download_service_->StartDownload(GetDownloadParams(url));
   }

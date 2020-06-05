@@ -3,7 +3,9 @@ Tests the console timestamp setting.
 Console messages with timestamps disabled:
 <Before> First Command
 "<Before> First Result"
-3<Before>
+<Before>
+<Before>
+<Before>
 <Before> Command
 "<Before> Result"
 Console messages with timestamps enabled:

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "chrome/browser/media/media_access_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,7 +74,8 @@ class MediaCaptureDevicesDispatcherTest
   MediaCaptureDevicesDispatcher* dispatcher_;
 };
 
-TEST_F(MediaCaptureDevicesDispatcherTest, LoopsAllMediaAccessHandlers) {
+TEST_F(MediaCaptureDevicesDispatcherTest,
+       DISABLED_LoopsAllMediaAccessHandlers) {
   media_access_handlers().clear();
 
   // Add two handlers.

@@ -26,11 +26,13 @@ TEST(CSSParsingUtilsTest, Revert) {
   {
     ScopedCSSRevertForTest scoped_revert(true);
     EXPECT_TRUE(css_parsing_utils::IsCSSWideKeyword(CSSValueID::kRevert));
+    EXPECT_TRUE(css_parsing_utils::IsCSSWideKeyword("revert"));
   }
 
   {
     ScopedCSSRevertForTest scoped_revert(false);
     EXPECT_FALSE(css_parsing_utils::IsCSSWideKeyword(CSSValueID::kRevert));
+    EXPECT_FALSE(css_parsing_utils::IsCSSWideKeyword("revert"));
   }
 }
 

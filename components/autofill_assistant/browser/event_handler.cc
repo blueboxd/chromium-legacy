@@ -46,6 +46,9 @@ std::ostream& operator<<(std::ostream& out,
     case EventProto::kOnPopupDismissed:
       out << "kOnPopupDismissed";
       break;
+    case EventProto::kOnViewContainerCleared:
+      out << "kOnViewContainerCleared";
+      break;
     case EventProto::KIND_NOT_SET:
       break;
   }

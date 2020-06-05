@@ -37,6 +37,7 @@ class SyncEngineHostStub : public SyncEngineHost {
   void OnConnectionStatusChange(ConnectionStatus status) override;
   void OnMigrationNeededForTypes(ModelTypeSet types) override;
   void OnActionableError(const SyncProtocolError& error) override;
+  void OnBackedOffTypesChanged() override;
 };
 
 }  // namespace syncer

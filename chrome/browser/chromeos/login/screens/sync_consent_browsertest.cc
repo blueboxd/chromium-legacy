@@ -314,6 +314,9 @@ IN_PROC_BROWSER_TEST_F(SyncConsentRecorderTest, SyncConsentRecorder) {
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Sync-consent.Next", 1);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Sync-consent", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.Behavior",
+      SyncConsentScreen::SyncScreenBehavior::kShow, 1);
 }
 
 class SyncConsentTestWithParams
@@ -473,6 +476,12 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Sync-consent.Next", 1);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Sync-consent", 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.Behavior",
+      SyncConsentScreen::SyncScreenBehavior::kShow, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.UserChoice",
+      SyncConsentScreenHandler::UserChoice::kAccepted, 1);
 
   // Dialog is completed.
   EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
@@ -512,6 +521,13 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DisableSync) {
   EXPECT_TRUE(settings->IsFirstSetupComplete());
   EXPECT_FALSE(settings->IsSyncEverythingEnabled());
   EXPECT_TRUE(settings->GetSelectedTypes().Empty());
+
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.Behavior",
+      SyncConsentScreen::SyncScreenBehavior::kShow, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.UserChoice",
+      SyncConsentScreenHandler::UserChoice::kDeclined, 1);
 
   // Dialog is completed.
   EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
@@ -575,6 +591,10 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
   // Dialog is completed.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.Behavior",
+      SyncConsentScreen::SyncScreenBehavior::kSkipAndEnableSync, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
@@ -596,6 +616,10 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
   // Dialog is completed.
   PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.Behavior",
+      SyncConsentScreen::SyncScreenBehavior::kSkip, 1);
 }
 
 // Tests for Active Directory accounts, which skip the dialog because they do
@@ -619,7 +643,7 @@ class SyncConsentActiveDirectoryTest : public OobeBaseTest {
 
 IN_PROC_BROWSER_TEST_F(SyncConsentActiveDirectoryTest, LoginDoesNotStartSync) {
   // Sign in Active Directory user.
-  OobeBaseTest::WaitForSigninScreen();
+  ad_login_.TestLoginVisible();
   ad_login_.SubmitActiveDirectoryCredentials(
       "test-user@locally-managed.localhost", "password");
   test::WaitForLastScreenAndTapGetStarted();
@@ -640,6 +664,9 @@ IN_PROC_BROWSER_TEST_F(SyncConsentActiveDirectoryTest, LoginDoesNotStartSync) {
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Sync-consent.Next", 0);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Sync-consent", 0);
+  histogram_tester_.ExpectUniqueSample(
+      "OOBE.SyncConsentScreen.Behavior",
+      SyncConsentScreen::SyncScreenBehavior::kSkip, 1);
 }
 
 // Tests that the SyncConsent screen performs a timezone request so that

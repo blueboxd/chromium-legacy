@@ -894,6 +894,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendAtomicInline(
   RestoreTrailingCollapsibleSpaceIfRemoved();
   Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter,
          layout_object);
+  has_ruby_ = layout_object->IsRubyRun();
 
   // When this atomic inline is inside of an inline box, the height of the
   // inline box can be different from the height of the atomic inline. Ensure
@@ -1226,6 +1227,7 @@ void NGInlineItemsBuilderTemplate<
   // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if it
   // doesn't contain any RTL characters.
   data->is_bidi_enabled_ = MayBeBidiEnabled();
+  data->has_ruby_ = has_ruby_;
   data->is_empty_inline_ = IsEmptyInline();
   data->is_block_level_ = IsBlockLevel();
   data->changes_may_affect_earlier_lines_ = ChangesMayAffectEarlierLines();

@@ -289,12 +289,10 @@ bool DedicatedWorker::HasPendingActivity() const {
 }
 
 void DedicatedWorker::OnWorkerHostCreated(
-    mojo::ScopedMessagePipeHandle browser_interface_broker) {
+    CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
+        browser_interface_broker) {
   DCHECK(!browser_interface_broker_);
-  browser_interface_broker_ =
-      mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>(
-          std::move(browser_interface_broker),
-          mojom::blink::BrowserInterfaceBroker::Version_);
+  browser_interface_broker_ = std::move(browser_interface_broker);
 }
 
 void DedicatedWorker::OnScriptLoadStarted() {

@@ -373,6 +373,9 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_TWO_PERMS_MORE" desc="The label that is read by a screen reader to describe the permissions prompt bubble. This will be followed by the short names of two permissions, then an &quot;and more&quot; descriptive text indicating that the dialog's body contains the entire list of requested permissions.">
         <ph name="SITE_NAME">$1<ex>google.com</ex></ph> wants to: <ph name="FIRST_PERMISSION">$2<ex>use your microphone</ex></ph>, <ph name="SECOND_PERMISSION">$3<ex>use your location</ex></ph>, and more
       </message>
+      <message name="IDS_PERMISSIONS_BUBBLE_PROMPT_THIS_FILE" desc="The text to be displayed instead of the origin when a local file requests permissions. This string will be inserted into Message ID 2121121439878997796, the full sentence will read: [This file] wants to request a permission.">
+        This file
+      </message>
       <message name="IDS_PERMISSION_CUSTOMIZE" desc="Label on text button to allow the user to customize a permissions request.">
         Customize
       </message>

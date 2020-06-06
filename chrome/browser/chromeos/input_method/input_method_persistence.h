@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-class PrefService;
+class AccountId;
 
 namespace chromeos {
 namespace input_method {
@@ -42,9 +42,9 @@ class InputMethodPersistence : public InputMethodManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(InputMethodPersistence);
 };
 
-void SetUserLastInputMethodPreferenceForTesting(const std::string& username,
-                                                const std::string& input_method,
-                                                PrefService* local_state);
+void SetUserLastInputMethodPreferenceForTesting(
+    const AccountId& account_id,
+    const std::string& input_method);
 
 }  // namespace input_method
 }  // namespace chromeos

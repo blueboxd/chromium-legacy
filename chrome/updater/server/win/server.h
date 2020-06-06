@@ -39,6 +39,9 @@ scoped_refptr<App> AppServerInstance();
 //
 // This class is responsible for the lifetime of the COM server, as well as
 // class factory registration.
+//
+// The instance of the this class is managed by a singleton and it leaks at
+// runtime.
 class ComServerApp : public App {
  public:
   ComServerApp();
@@ -74,7 +77,8 @@ class ComServerApp : public App {
   // Creates an out-of-process WRL Module.
   void CreateWRLModule();
 
-  // Handles object unregistration then triggers program shutdown.
+  // Handles object unregistration then triggers program shutdown. This
+  // function runs on a COM RPC thread when the WRL module is destroyed.
   void Stop();
 
   // Identifier of registered class objects used for unregistration.

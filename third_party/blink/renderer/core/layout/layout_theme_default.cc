@@ -241,7 +241,7 @@ void LayoutThemeDefault::AdjustInnerSpinButtonStyle(
 }
 
 bool LayoutThemeDefault::PopsMenuByReturnKey() const {
-  return !features::IsFormControlsRefreshEnabled();
+  return true;
 }
 
 bool LayoutThemeDefault::ShouldOpenPickerWithF4Key() const {

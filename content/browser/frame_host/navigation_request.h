@@ -676,7 +676,8 @@ class CONTENT_EXPORT NavigationRequest
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>
           navigation_initiator,
-      RenderFrameHostImpl* rfh_restored_from_back_forward_cache);
+      RenderFrameHostImpl* rfh_restored_from_back_forward_cache,
+      GlobalFrameRoutingId initiator_routing_id);
 
   // Checks if the response requests an isolated origin (using either origin
   // policy or the Origin-Isolation header), and if so opts in the origin to be
@@ -1008,7 +1009,7 @@ class CONTENT_EXPORT NavigationRequest
   // reaching the 'ReadyToCommit' stage.
   network::mojom::WebSandboxFlags ComputeSandboxFlagsToCommit();
 
-  FrameTreeNode* frame_tree_node_;
+  FrameTreeNode* const frame_tree_node_;
 
   // Value of |is_for_commit| supplied to the constructor.
   const bool is_for_commit_;
@@ -1058,11 +1059,11 @@ class CONTENT_EXPORT NavigationRequest
   // creation time.
   scoped_refptr<SiteInstanceImpl> source_site_instance_;
   scoped_refptr<SiteInstanceImpl> dest_site_instance_;
-  RestoreType restore_type_ = RestoreType::NONE;
-  ReloadType reload_type_ = ReloadType::NONE;
+  const RestoreType restore_type_;
+  const ReloadType reload_type_;
+  const int nav_entry_id_;
   bool is_view_source_;
   int bindings_;
-  int nav_entry_id_ = 0;
   bool entry_overrides_ua_ = false;
 
   // Set to true if SetIsOverridingUserAgent() is called.
@@ -1087,7 +1088,7 @@ class CONTENT_EXPORT NavigationRequest
   // IPC. When true, main frame navigations should not commit in a different
   // process (unless asked by the content/ embedder). When true, the renderer
   // process expects to be notified if the navigation is aborted.
-  bool from_begin_navigation_;
+  const bool from_begin_navigation_;
 
   // Holds objects received from OnResponseStarted while the WillProcessResponse
   // checks are performed by the NavigationHandle. Once the checks have been
@@ -1119,7 +1120,7 @@ class CONTENT_EXPORT NavigationRequest
   // The site URL of this navigation, as obtained from SiteInstance::GetSiteURL.
   GURL site_url_;
 
-  std::unique_ptr<InitiatorCSPContext> initiator_csp_context_;
+  const std::unique_ptr<InitiatorCSPContext> initiator_csp_context_;
 
   base::OnceClosure on_start_checks_complete_closure_;
 
@@ -1287,7 +1288,7 @@ class CONTENT_EXPORT NavigationRequest
   // The RenderFrameHost that was restored from the back-forward cache. This
   // will be null except for navigations that are restoring a page from the
   // back-forward cache.
-  RenderFrameHostImpl* rfh_restored_from_back_forward_cache_;
+  RenderFrameHostImpl* const rfh_restored_from_back_forward_cache_;
 
   // These are set to the values from the FrameNavigationEntry this
   // NavigationRequest is associated with (if any).
@@ -1299,14 +1300,14 @@ class CONTENT_EXPORT NavigationRequest
   base::Optional<net::IsolationInfo> isolation_info_;
 
   // This is used to store the current_frame_host id at request creation time.
-  GlobalFrameRoutingId previous_render_frame_host_id_;
+  const GlobalFrameRoutingId previous_render_frame_host_id_;
 
   // Routing id of the frame host that initiated the navigation, derived from
   // |begin_params()->initiator_routing_id|. This is best effort: it is only
   // defined for some renderer-initiated navigations (e.g., not drag and drop).
   // The frame with the corresponding routing ID may have been deleted before
   // the navigation begins.
-  GlobalFrameRoutingId initiator_routing_id_;
+  const GlobalFrameRoutingId initiator_routing_id_;
 
   // This tracks a connection between the current pending entry and this
   // request, such that the pending entry can be discarded if no requests are
@@ -1341,7 +1342,7 @@ class CONTENT_EXPORT NavigationRequest
 #endif
 
   // UKM source associated with the page we are navigated away from.
-  ukm::SourceId previous_page_load_ukm_source_id_ = ukm::kInvalidSourceId;
+  const ukm::SourceId previous_page_load_ukm_source_id_;
 
   // If true, changes to the user-agent override require a reload. If false, a
   // reload is not necessary.

@@ -63,15 +63,19 @@ function assertSafetyCheckChild({
 suite('SafetyCheckChromeCleanerUiTests', function() {
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
-
   /** @type {!SettingsSafetyCheckExtensionsChildElement} */
   let page;
+  /** @type {!SettingsUiElement} */
+  let ui;
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
     document.body.innerHTML = '';
+    ui = /** @type {!SettingsUiElement} */ (
+        document.createElement('settings-ui'));
+    document.body.appendChild(ui);
     page = /** @type {!SettingsSafetyCheckExtensionsChildElement} */ (
         document.createElement('settings-safety-check-chrome-cleaner-child'));
     document.body.appendChild(page);
@@ -84,11 +88,19 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
 
   /** @return {!Promise} */
   async function expectChromeCleanerRouteButtonClickActions() {
+    // Put some search term into the Settings search.
+    const toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+    const searchField =
+        /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
+    searchField.setValue('GOOG');
+
     // User clicks review extensions button.
     page.$$('#safetyCheckChild').$$('#button').click();
     // // TODO(crbug.com/1087263): Ensure UMA is logged.
     // Ensure the correct Settings page is shown.
     assertEquals(routes.CHROME_CLEANUP, Router.getInstance().getCurrentRoute());
+    // Ensure the search term got cleared
+    assertEquals('', searchField.getSearchInput().value);
   }
 
   test('chromeCleanerCheckingUiTest', function() {

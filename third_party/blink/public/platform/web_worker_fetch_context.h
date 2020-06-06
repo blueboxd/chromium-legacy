@@ -10,8 +10,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-shared.h"
 #include "third_party/blink/public/platform/code_cache_loader.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -74,7 +77,8 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // Returns a new WebURLLoaderFactory that wraps the given
   // network::mojom::URLLoaderFactory.
   virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
-      mojo::ScopedMessagePipeHandle url_loader_factory_handle) = 0;
+      CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+          url_loader_factory) = 0;
 
   // Returns a CodeCacheLoader that fetches data from code caches. If
   // a nullptr is returned then data would not be fetched from the code
@@ -148,11 +152,11 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // Returns the current list of user prefered languages.
   virtual blink::WebString GetAcceptLanguages() const = 0;
 
-  // Returns mojo::PendingReceiver<blink::mojom::blink::WorkerTimingContainer>
-  // for the blink::ResourceResponse with the given |request_id|. Null if the
+  // Returns the blink::mojom::WorkerTimingContainer receiver for the
+  // blink::ResourceResponse with the given |request_id|. Null if the
   // request has not been intercepted by a service worker.
-  virtual mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
-      int request_id) = 0;
+  virtual CrossVariantMojoReceiver<mojom::WorkerTimingContainerInterfaceBase>
+  TakePendingWorkerTimingReceiver(int request_id) = 0;
 
   // This flag is set to disallow all network accesses in the context. Used for
   // offline capability detection in service workers.

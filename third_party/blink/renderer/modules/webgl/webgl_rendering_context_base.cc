@@ -103,6 +103,8 @@
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_oes.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_video_texture_enum.h"
+#include "third_party/blink/renderer/modules/xr/navigator_xr.h"
+#include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -808,26 +810,106 @@ ScriptPromise WebGLRenderingContextBase::makeXRCompatible(
     return ScriptPromise();
   }
 
-  if (xr_compatible_) {
-    // Returns a script promise resolved with undefined.
+  // Return a resolved promise if we're already xr compatible. Once we're
+  // compatible, we should always be compatible unless a context lost occurs.
+  // DispatchContextLostEvent() resets this flag to false.
+  if (xr_compatible_)
     return ScriptPromise::CastUndefined(script_state);
-  }
 
-  if (ContextCreatedOnXRCompatibleAdapter()) {
+  if (!base::FeatureList::IsEnabled(features::kWebXrMultiGpu)) {
     xr_compatible_ = true;
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  // TODO(http://crbug.com/876140) Trigger context loss and recreate on
-  // compatible GPU.
-  exception_state.ThrowDOMException(
-      DOMExceptionCode::kNotSupportedError,
-      "Context is not compatible. Switching not yet implemented.");
-  return ScriptPromise();
+  // If there's a request currently in progress, return the same promise.
+  if (make_xr_compatible_resolver_)
+    return make_xr_compatible_resolver_->Promise();
+
+  make_xr_compatible_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = make_xr_compatible_resolver_->Promise();
+
+  MakeXrCompatibleAsync();
+
+  return promise;
 }
 
-bool WebGLRenderingContextBase::IsXRCompatible() {
+bool WebGLRenderingContextBase::IsXRCompatible() const {
   return xr_compatible_;
+}
+
+bool WebGLRenderingContextBase::IsXrCompatibleFromResult(
+    device::mojom::blink::XrCompatibleResult result) {
+  return result ==
+             device::mojom::blink::XrCompatibleResult::kAlreadyCompatible ||
+         result ==
+             device::mojom::blink::XrCompatibleResult::kCompatibleAfterRestart;
+}
+
+bool WebGLRenderingContextBase::DidGpuRestart(
+    device::mojom::blink::XrCompatibleResult result) {
+  return result == device::mojom::blink::XrCompatibleResult::
+                       kCompatibleAfterRestart ||
+         result == device::mojom::blink::XrCompatibleResult::
+                       kNotCompatibleAfterRestart;
+}
+
+bool WebGLRenderingContextBase::MakeXrCompatibleSync(
+    CanvasRenderingContextHost* host) {
+  if (!base::FeatureList::IsEnabled(features::kWebXrMultiGpu))
+    return true;
+
+  device::mojom::blink::XrCompatibleResult xr_compatible_result =
+      device::mojom::blink::XrCompatibleResult::kNotCompatible;
+  HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(host);
+  NavigatorXR* navigator_xr = NavigatorXR::From(canvas->GetDocument());
+  if (navigator_xr)
+    navigator_xr->xr()->MakeXrCompatibleSync(&xr_compatible_result);
+
+  return IsXrCompatibleFromResult(xr_compatible_result);
+}
+
+void WebGLRenderingContextBase::MakeXrCompatibleAsync() {
+  if (!canvas()) {
+    xr_compatible_ = false;
+    CompleteXrCompatiblePromiseIfPending();
+    return;
+  }
+
+  NavigatorXR* navigator_xr = NavigatorXR::From(canvas()->GetDocument());
+  if (!navigator_xr) {
+    xr_compatible_ = false;
+    CompleteXrCompatiblePromiseIfPending();
+    return;
+  }
+
+  // The promise will be completed on the callback.
+  navigator_xr->xr()->MakeXrCompatibleAsync(
+      WTF::Bind(&WebGLRenderingContextBase::OnMakeXrCompatibleFinished,
+                WrapWeakPersistent(this)));
+}
+
+void WebGLRenderingContextBase::OnMakeXrCompatibleFinished(
+    device::mojom::blink::XrCompatibleResult xr_compatible_result) {
+  xr_compatible_ = IsXrCompatibleFromResult(xr_compatible_result);
+
+  // If the gpu is restarted, MaybeRestoreContext will resolve the promise on
+  // the subsequent restore.
+  if (!DidGpuRestart(xr_compatible_result))
+    CompleteXrCompatiblePromiseIfPending();
+}
+
+void WebGLRenderingContextBase::CompleteXrCompatiblePromiseIfPending() {
+  if (make_xr_compatible_resolver_) {
+    if (xr_compatible_) {
+      make_xr_compatible_resolver_->Resolve();
+    } else {
+      make_xr_compatible_resolver_->Reject(
+          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
+    }
+
+    make_xr_compatible_resolver_ = nullptr;
+  }
 }
 
 void WebGLRenderingContextBase::
@@ -1036,8 +1118,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       number_of_user_allocated_multisampled_renderbuffers_(0) {
   DCHECK(context_provider);
 
-  // TODO(http://crbug.com/876140) Make sure this is being created on a
-  // compatible adapter.
   xr_compatible_ = requested_attributes.xr_compatible;
 
   context_group_->AddContext(this);
@@ -1136,9 +1216,6 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
 void WebGLRenderingContextBase::InitializeNewContext() {
   DCHECK(!isContextLost());
   DCHECK(GetDrawingBuffer());
-
-  // TODO(http://crbug.com/876140) Does compatible_xr_device needs to be taken
-  // into account here?
 
   marked_canvas_dirty_ = false;
   must_paint_to_canvas_ = false;
@@ -1634,12 +1711,6 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
     NOTREACHED();
     return false;
   }
-  return true;
-}
-
-bool WebGLRenderingContextBase::ContextCreatedOnXRCompatibleAdapter() {
-  // TODO(http://crbug.com/876140) Determine if device is compatible with
-  // current context.
   return true;
 }
 
@@ -7987,6 +8058,10 @@ void WebGLRenderingContextBase::OnBeforeDrawCall() {
 }
 
 void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
+  // WebXR spec: When the WebGL context is lost, set the xr compatible boolean
+  // to false prior to firing the webglcontextlost event.
+  xr_compatible_ = false;
+
   WebGLContextEvent* event =
       WebGLContextEvent::Create(event_type_names::kWebglcontextlost, "");
   Host()->HostDispatchEvent(event);
@@ -7994,6 +8069,14 @@ void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
   if (restore_allowed_ && !is_hidden_) {
     if (auto_recovery_method_ == kAuto)
       restore_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
+  }
+
+  if (!restore_allowed_) {
+    // Per WebXR spec, reject the promise with an AbortError if the default
+    // behavior wasn't prevented. CompleteXrCompatiblePromiseIfPending rejects
+    // the promise if xr_compatible_ is false, which was set at the beginning of
+    // this method.
+    CompleteXrCompatiblePromiseIfPending();
   }
 }
 
@@ -8086,6 +8169,8 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   WebGLContextEvent* event =
       WebGLContextEvent::Create(event_type_names::kWebglcontextrestored, "");
   Host()->HostDispatchEvent(event);
+
+  CompleteXrCompatiblePromiseIfPending();
 }
 
 String WebGLRenderingContextBase::EnsureNotNull(const String& text) const {
@@ -8309,6 +8394,7 @@ void WebGLRenderingContextBase::Trace(Visitor* visitor) const {
   visitor->Trace(renderbuffer_binding_);
   visitor->Trace(texture_units_);
   visitor->Trace(extensions_);
+  visitor->Trace(make_xr_compatible_resolver_);
   CanvasRenderingContext::Trace(visitor);
 }
 

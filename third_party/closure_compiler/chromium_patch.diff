@@ -1,0 +1,110 @@
+diff --git a/third_party/closure_compiler/externs/chrome.js b/third_party/closure_compiler/externs/chrome.js
+index 6559fbeb3f21..d30f339ccdc4 100644
+--- a/third_party/closure_compiler/externs/chrome.js
++++ b/third_party/closure_compiler/externs/chrome.js
+@@ -558,51 +558,6 @@ chrome.webstore.onInstallStageChanged;
+ chrome.webstore.onDownloadProgress;
+ 
+ 
+-/**
+- * @see https://developer.chrome.com/extensions/runtime.html
+- * @const
+- */
+-chrome.runtime = {};
+-
+-
+-/** @type {{message:(string|undefined)}|undefined} */
+-chrome.runtime.lastError;
+-
+-
+-/**
+- * @param {string|!Object=} opt_extensionIdOrConnectInfo Either the
+- *     extensionId to connect to, in which case connectInfo params can be
+- *     passed in the next optional argument, or the connectInfo params.
+- * @param {!Object=} opt_connectInfo The connectInfo object,
+- *     if arg1 was the extensionId to connect to.
+- * @return {!Port} New port.
+- */
+-chrome.runtime.connect = function(
+-    opt_extensionIdOrConnectInfo, opt_connectInfo) {};
+-
+-
+-/**
+- * @param {string|*} extensionIdOrMessage Either the extensionId to send the
+- *     message to, in which case the message is passed as the next arg, or the
+- *     message itself.
+- * @param {(*|!Object|function(*): void)=} opt_messageOrOptsOrCallback
+- *     One of:
+- *     The message, if arg1 was the extensionId.
+- *     The options for message sending, if arg1 was the message and this
+- *     argument is not a function.
+- *     The callback, if arg1 was the message and this argument is a function.
+- * @param {(!Object|function(*): void)=} opt_optsOrCallback
+- *     Either the options for message sending, if arg2 was the message,
+- *     or the callback.
+- * @param {function(*): void=} opt_callback The callback function which
+- *     takes a JSON response object sent by the handler of the request.
+- * @return {undefined}
+- */
+-chrome.runtime.sendMessage = function(
+-    extensionIdOrMessage, opt_messageOrOptsOrCallback, opt_optsOrCallback,
+-    opt_callback) {};
+-
+-
+ /**
+  * Returns an object representing current load times. Note that the properties
+  * on the object do not change and the function must be called again to get
+diff --git a/third_party/closure_compiler/externs/chrome_extensions.js b/third_party/closure_compiler/externs/chrome_extensions.js
+index c0fb4e1c9e17..f2bd83291aec 100644
+--- a/third_party/closure_compiler/externs/chrome_extensions.js
++++ b/third_party/closure_compiler/externs/chrome_extensions.js
+@@ -2528,6 +2528,49 @@ chrome.extension.onRequest;
+ /** @type {!ChromeEvent} */
+ chrome.extension.onRequestExternal;
+ 
++/**
++ * @see https://developer.chrome.com/extensions/runtime.html
++ * @const
++ */
++chrome.runtime = {};
++
++
++/** @type {{message:(string|undefined)}|undefined} */
++chrome.runtime.lastError;
++
++
++/**
++ * @param {string|!Object=} opt_extensionIdOrConnectInfo Either the
++ *     extensionId to connect to, in which case connectInfo params can be
++ *     passed in the next optional argument, or the connectInfo params.
++ * @param {!Object=} opt_connectInfo The connectInfo object,
++ *     if arg1 was the extensionId to connect to.
++ * @return {!Port} New port.
++ */
++chrome.runtime.connect = function(
++    opt_extensionIdOrConnectInfo, opt_connectInfo) {};
++
++
++/**
++ * @param {string|*} extensionIdOrMessage Either the extensionId to send the
++ *     message to, in which case the message is passed as the next arg, or the
++ *     message itself.
++ * @param {(*|!Object|function(*): void)=} opt_messageOrOptsOrCallback
++ *     One of:
++ *     The message, if arg1 was the extensionId.
++ *     The options for message sending, if arg1 was the message and this
++ *     argument is not a function.
++ *     The callback, if arg1 was the message and this argument is a function.
++ * @param {(!Object|function(*): void)=} opt_optsOrCallback
++ *     Either the options for message sending, if arg2 was the message,
++ *     or the callback.
++ * @param {function(*): void=} opt_callback The callback function which
++ *     takes a JSON response object sent by the handler of the request.
++ * @return {undefined}
++ */
++chrome.runtime.sendMessage = function(
++    extensionIdOrMessage, opt_messageOrOptsOrCallback, opt_optsOrCallback,
++    opt_callback) {};
+ 
+ 
+ /** @type {string} */

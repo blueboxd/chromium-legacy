@@ -14,6 +14,8 @@ namespace updater {
 
 // Creates a ref-counted singleton instance of the type T. Use this function
 // to get instances of classes derived from updater::App.
+// TODO(crbug.com/1064498) - provide non-leaky creation for callers where
+// a singleton is not needed.
 template <typename T>
 scoped_refptr<T> AppInstance() {
   static base::NoDestructor<scoped_refptr<T>> instance{

@@ -402,6 +402,9 @@ bool AwContentBrowserClient::ForceSniffingFileUrlsForHtml() {
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
+  // AppCache should always be enabled for WebView until it is removed.
+  command_line->AppendSwitch(switches::kAppCacheForceEnabled);
+
   if (!command_line->HasSwitch(switches::kSingleProcess)) {
     // The only kind of a child process WebView can have is renderer or utility.
     std::string process_type =

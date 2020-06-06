@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Bekijk populaire websites door op de knop Topsites te tikken</translation>
 <translation id="1173894706177603556">Naam wijzigen</translation>
 <translation id="1178581264944972037">Onderbreken</translation>
-<translation id="1188239144602654184">AR starten</translation>
 <translation id="1197267115302279827">Bladwijzers verplaatsen</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1204037785786432551">Link downloaden</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">sms</translation>
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Synchronisatie en personalisatie op meerdere apparaten</translation>
-<translation id="2099625543891475722">je fysieke kenmerken, zoals je lengte</translation>
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="2100314319871056947">Verdeel de tekst in kleinere stukken en deel in meerdere keren.</translation>
 <translation id="2109711654079915747">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
@@ -341,11 +339,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="3810973564298564668">Beheren</translation>
 <translation id="381841723434055211">Telefoonnummers</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads verwijderd</translation>
-<translation id="3849365399446680203">Deze site kan mogelijk het volgende doen als AR actief is:
-• Een 3D-kaart van je omgeving maken
-• De beweging van de camera volgen
-
-Alleen jij kunt zien wat je camera ziet. De site kan de beelden van je camera niet zien.</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
 <translation id="388596076286380598">Krijg artikelen, video's en andere content van sites die je leuk vindt, ook als je offline bent of je een slechte verbinding hebt.</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
@@ -399,7 +392,6 @@ Alleen jij kunt zien wat je camera ziet. De site kan de beelden van je camera ni
 <translation id="4320177379694898372">Geen internetverbinding</translation>
 <translation id="4321739720395210191">Kan de camera niet openen. Start het apparaat opnieuw op en probeer het nogmaals.</translation>
 <translation id="4351244548802238354">Dialoogvenster sluiten</translation>
-<translation id="4353114845960720315">Als VR actief is, kan deze site mogelijk informatie verzamelen over het volgende:</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="4384468725000734951">Sogou wordt gebruikt om te zoeken</translation>
 <translation id="4404568932422911380">Geen bladwijzers</translation>
@@ -427,7 +419,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4561979708150884304">Geen verbinding</translation>
 <translation id="4565377596337484307">Wachtwoord verbergen</translation>
 <translation id="4572422548854449519">Inloggen bij een beheerd account</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuut geleden}other{# minuten geleden}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Deze offline pagina is van <ph name="CREATION_TIME" /> en kan afwijken van de online versie.</translation>
@@ -435,7 +426,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> openen</translation>
 <translation id="4634124774493850572">Wachtwoord gebruiken</translation>
 <translation id="4650364565596261010">Systeemstandaard</translation>
-<translation id="4660838440047236328">de indeling van je kamer</translation>
 <translation id="4662373422909645029">Cijfers niet toegestaan</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bladwijzers verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
@@ -459,7 +449,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 
 <ph name="BEGIN_LINK" />Reset de synchronisatie<ph name="END_LINK" /> als je deze instelling wilt wijzigen.</translation>
 <translation id="4807098396393229769">Naam op pas</translation>
-<translation id="4808319664292298116">Wil je VR van <ph name="DOMAIN" /> starten?</translation>
 <translation id="4824958205181053313">Synchronisatie annuleren?</translation>
 <translation id="4835385943915508971">Chrome heeft geen toegang tot de gevraagde bron.</translation>
 <translation id="4837753911714442426">Afdrukopties voor de pagina openen</translation>
@@ -659,7 +648,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
-<translation id="6410973561433500075">Wil je AR vanaf <ph name="DOMAIN" /> starten?</translation>
 <translation id="641643625718530986">Afdrukken…</translation>
 <translation id="6427112570124116297">Laat webpagina's vertalen</translation>
 <translation id="6433501201775827830">Je zoekmachine kiezen</translation>

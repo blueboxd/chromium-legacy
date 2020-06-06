@@ -31,19 +31,9 @@ namespace reporting {
 // |ReportQueueConfiguration|. |ReportQueue| handles scheduling encryption,
 // storage, and delivery.
 //
-// TODO(b/156099331): |ReportQueue|s should not be created or managed directly,
-// they should instead be created with the |ReportingClientLibrary| which does
-// not exist at this time.
-//
-// Example Usage:
-// Status SendMessage(google::protobuf::ImportantMessage important_message,
-//                    base::OnceCallback<void(Status)> callback) {
-//   ASSIGN_OR_RETURN(std::unique_ptr<ReportQueueConfiguration> config,
-//                  ReportQueueConfiguration::Create(...));
-//   ASSIGN_OR_RETURN(std::unique_ptr<ReportQueue> report_queue,
-//                  ReportingClientLibrary::CreateReportQueue(config));
-//   return report_queue->Enqueue(important_message, callback);
-// }
+// ReportQueues are not meant to be created directly, instead use the
+// reporting::ReportingClient::CreateReportQueue(...) function. See the comments
+// for reporting::ReportingClient for example usage.
 //
 // Enqueue can also be used with a |base::Value| or |std::string|.
 class ReportQueue {

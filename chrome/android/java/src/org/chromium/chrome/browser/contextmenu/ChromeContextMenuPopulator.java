@@ -650,8 +650,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             recordContextMenuSelection(params, ContextMenuUma.Action.SHARE_LINK);
             ShareParams linkShareParams =
                     new ShareParams.Builder(getWindow(), params.getUrl(), params.getUrl()).build();
-            mShareDelegateSupplier.get().share(linkShareParams,
-                    new ChromeShareExtras(/*saveLastUsed=*/true, /*shareDirectly=*/false));
+            mShareDelegateSupplier.get().share(
+                    linkShareParams, new ChromeShareExtras.Builder().setSaveLastUsed(true).build());
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             recordContextMenuSelection(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
             searchWithGoogleLens(params, renderFrameHost, mDelegate.isIncognito());

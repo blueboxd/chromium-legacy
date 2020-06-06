@@ -460,7 +460,7 @@ TEST_F(CreditCardAccessManagerTest, LocalCardGetDeletionConfirmationText) {
       card, &title, &body));
 
   // |title| and |body| should be updated appropriately.
-  EXPECT_EQ(title, card->NetworkAndLastFourDigits());
+  EXPECT_EQ(title, card->CardIdentifierStringForAutofillDisplay());
   EXPECT_EQ(body,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY));

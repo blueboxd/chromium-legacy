@@ -111,7 +111,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   void InitializeOnWorkerThread(blink::AcceptLanguagesWatcher*) override;
   blink::WebURLLoaderFactory* GetURLLoaderFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
-      mojo::ScopedMessagePipeHandle url_loader_factory_handle) override;
+      blink::CrossVariantMojoRemote<
+          network::mojom::URLLoaderFactoryInterfaceBase> url_loader_factory)
+      override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
   void WillSendRequest(blink::WebURLRequest&) override;
   blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
@@ -131,8 +133,9 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
   std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
-  mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
-      int request_id) override;
+  blink::CrossVariantMojoReceiver<
+      blink::mojom::WorkerTimingContainerInterfaceBase>
+  TakePendingWorkerTimingReceiver(int request_id) override;
   void SetIsOfflineMode(bool is_offline_mode) override;
 
   // blink::mojom::ServiceWorkerWorkerClient implementation:

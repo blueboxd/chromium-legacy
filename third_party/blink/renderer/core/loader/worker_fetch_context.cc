@@ -263,10 +263,8 @@ void WorkerFetchContext::PopulateResourceRequest(
 
 mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
 WorkerFetchContext::TakePendingWorkerTimingReceiver(int request_id) {
-  mojo::ScopedMessagePipeHandle pipe =
-      GetWebWorkerFetchContext()->TakePendingWorkerTimingReceiver(request_id);
-  return mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>(
-      std::move(pipe));
+  return GetWebWorkerFetchContext()->TakePendingWorkerTimingReceiver(
+      request_id);
 }
 
 void WorkerFetchContext::SetFirstPartyCookie(ResourceRequest& out_request) {

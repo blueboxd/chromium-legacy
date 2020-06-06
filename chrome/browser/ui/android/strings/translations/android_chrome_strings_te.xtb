@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"టాప్ సైట్‌లు" బటన్‌పై నొక్కడం ద్వారా ప్రసిద్ధ వెబ్‌సైట్‌లను చూడండి</translation>
 <translation id="1173894706177603556">పేరుమార్చు</translation>
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
-<translation id="1188239144602654184">ARలోకి ప్రవేశించు</translation>
 <translation id="1197267115302279827">బుక్‌మార్క్‌లను తరలించు</translation>
 <translation id="1201402288615127009">తరువాత</translation>
 <translation id="1204037785786432551">లింక్‌ను డౌన్‌లోడ్ చేయి</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">వచనం</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" />లో <ph name="RESULT_NUMBER" />వ ఫలితం</translation>
 <translation id="2096012225669085171">అన్ని పరికరాలలో సింక్ చేయండి మరియు వ్యక్తిగతీకరించండి</translation>
-<translation id="2099625543891475722">మీ ఎత్తు వంటి భౌతిక లక్షణాలు</translation>
 <translation id="2100273922101894616">స్వీయ సైన్-ఇన్</translation>
 <translation id="2100314319871056947">వచనాన్ని చిన్న భాగాలుగా చేసి షేర్ చేయడానికి ప్రయత్నించండి</translation>
 <translation id="2109711654079915747">పేజీ వదిలిపెట్టకుండానే వెబ్‌సైట్‌లలోని అంశాల గురించి తెలుసుకోండి. 'వెతకడానికి తాకండి' అనే ఫీచర్ ద్వారా, ఏదైనా ఒక పదాన్ని, దానికి సంబంధించిన సందర్భాన్ని Google శోధనకు పంపవచ్చు. దీని వల్ల, ఆ పదానికి సంబంధించిన నిర్వచనాలు, ఫోటోలు, శోధన ఫలితాలు, ఇతర వివరాలు పొందవచ్చు.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">నిర్వహించు</translation>
 <translation id="381841723434055211">ఫోన్ నంబర్‌లు</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> డౌన్‌లోడ్‌లు తొలగించబడ్డాయి</translation>
-<translation id="3849365399446680203">మీరు AR మోడ్‌లో ఉన్నప్పుడు, ఈ సైట్ వీటిని చేయగలదు:
-• మీ పరిసరాలకు సంబంధించిన 3D మ్యాప్‌ను సృష్టించడం
-• కెమెరా చలనాన్ని ట్రాక్ చేయడం
-
-మీ కెమెరాలో కనిపించే దృశ్యాన్ని మీరు మాత్రమే చూడగలరు. మీ కెమెరా ఇమేజ్‌లను సైట్ చూడలేదు.</translation>
 <translation id="3859306556332390985">ముందుకు జరుపు</translation>
 <translation id="388596076286380598">మీరు ఆఫ్‌లైన్‌లో ఉన్నప్పటికీ, మీ కనెక్షన్ బలహీనంగా ఉన్నప్పటికీ మీరు ఇష్టపడే సైట్‌ల నుండి కథనాలు, వీడియోలు, ఇతర కంటెంట్‌ను పొందండి.</translation>
 <translation id="3894427358181296146">ఫోల్డర్‌ను జోడించండి</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">ఇంటర్నెట్ కనెక్షన్ లేదు</translation>
 <translation id="4321739720395210191">మీ కెమెరాను తెరవడం సాధ్యపడలేదు. మీ పరికరాన్ని పునఃప్రారంభించి, ఆపై మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4351244548802238354">డైలాగ్‌ను మూసివేయి</translation>
-<translation id="4353114845960720315">మీరు VRలో ఉన్నప్పుడు, ఈ సైట్ కింది వాటిని గురించి తెలుసుకునే అవకాశం ఉంది:</translation>
 <translation id="4378154925671717803">ఫోన్</translation>
 <translation id="4384468725000734951">శోధన కోసం Sogouను ఉపయోగిస్తుంది</translation>
 <translation id="4404568932422911380">బుక్‌మార్క్‌లు లేవు</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">కనెక్షన్ లేదు</translation>
 <translation id="4565377596337484307">పాస్‌వర్డ్‌ను దాచిపెట్టు</translation>
 <translation id="4572422548854449519">నిర్వాహిత ఖాతాకు సైన్ ఇన్ చేయండి</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# నిమిషం క్రితం}other{# నిమిషాల క్రితం}}</translation>
 <translation id="4587589328781138893">సైట్‌లు</translation>
 <translation id="4594952190837476234">ఈ ఆఫ్‌లైన్ పేజీ <ph name="CREATION_TIME" />కి చెందినది మరియు ఆన్‌లైన్ వెర్షన్ వేరుగా ఉండవచ్చు.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />ని తెరువు</translation>
 <translation id="4634124774493850572">పాస్‌వర్డ్‌ను ఉపయోగించు</translation>
 <translation id="4650364565596261010">సిస్టమ్ డిఫాల్ట్</translation>
-<translation id="4660838440047236328">మీ గది యొక్క లేఅవుట్</translation>
 <translation id="4662373422909645029">మారుపేరులో అంకెలు ఉండరాదు</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> బుక్‌మార్క్‌లు తొలగించబడ్డాయి</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> మీ హోమ్ స్క్రీన్‌కు జోడించబడింది</translation>
@@ -459,7 +449,6 @@
 
 ఈ సెట్టింగ్‌ని మార్చడం కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">కార్డ్‌పై పేరు</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> నుండి VR మోడ్‌లోకి ప్రవేశించాలా?</translation>
 <translation id="4824958205181053313">సింక్‌ను రద్దు చేయాలా?</translation>
 <translation id="4835385943915508971">Chrome అభ్యర్థించిన వనరుకు యాక్సెస్ కలిగి లేదు.</translation>
 <translation id="4837753911714442426">పేజీని ముద్రించడానికి ఎంపికలను తెరవండి</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">పూర్తి స్క్రీన్ నుండి నిష్క్రమించు</translation>
 <translation id="6404511346730675251">బుక్‌మార్క్‌ను సవరించు</translation>
 <translation id="6406506848690869874">Sync</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" /> నుండి AR మోడ్‌లోకి ప్రవేశించాలా?</translation>
 <translation id="641643625718530986">ముద్రించు…</translation>
 <translation id="6427112570124116297">వెబ్‌ను అనువదించండి</translation>
 <translation id="6433501201775827830">మీ శోధన ఇంజిన్‌ను ఎంచుకోండి</translation>

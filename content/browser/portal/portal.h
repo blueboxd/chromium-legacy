@@ -105,6 +105,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   WebContents* GetResponsibleWebContents(WebContents* web_contents) override;
   void NavigationStateChanged(WebContents* source,
                               InvalidateTypes changed_flags) override;
+  void CanDownload(const GURL& url,
+                   const std::string& request_method,
+                   base::OnceCallback<void(bool)> callback) override;
 
   // Returns the token which uniquely identifies this Portal.
   const base::UnguessableToken& portal_token() const { return portal_token_; }

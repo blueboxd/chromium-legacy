@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -131,6 +132,24 @@ public class UndoBarControllerTest {
 
         Assert.assertNull(getCurrentSnackbar());
         Assert.assertEquals(0, mTabModel.getCount());
+    }
+
+    @Test
+    @SmallTest
+    public void testUndoSnackbarDisabled_AccessibilityEnabled() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(true));
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+
+        Assert.assertNull("Snack bar should be null initially", getCurrentSnackbar());
+        Assert.assertEquals(2, mTabModel.getCount());
+
+        ChromeTabUtils.closeCurrentTab(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+
+        Assert.assertNull(
+                "Undo snack bar should not be showing in accessibility mode", getCurrentSnackbar());
     }
 
     private void clickSnackbar() {

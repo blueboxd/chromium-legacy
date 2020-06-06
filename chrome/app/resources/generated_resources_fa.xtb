@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">امضا کننده گواهی</translation>
 <translation id="1145292499998999162">افزایه مسدود شد</translation>
 <translation id="1145593918056169051">چاپگر متوقف شده است</translation>
-<translation id="1146678959555564648">‏VR را وارد کنید</translation>
 <translation id="114721135501989771">‏هوشمندی‌های Google را در Chrome دریافت کنید</translation>
 <translation id="1147991416141538220">برای درخواست دسترسی، با سرپرست این دستگاه تماس بگیرید.</translation>
 <translation id="1149401351239820326">ماه انقضا</translation>
@@ -863,7 +862,6 @@
 <translation id="2096715839409389970">پاک کردن کوکی‌های شخص ثالث</translation>
 <translation id="2097372108957554726">‏برای ثبت دستگاه‌های جدید باید به سیستم Chrome وارد شوید</translation>
 <translation id="2099172618127234427">‏ویژگی‌های رفع اشکال سیستم عامل Chrome را فعال می‌کنید که sshd daemon را تنظیم خواهد کرد و راه‌اندازی از درایوهای USB را فعال می‌کند.</translation>
-<translation id="2099625543891475722">ویژگی‌های ظاهری شما، مانند قد</translation>
 <translation id="2099686503067610784">مجوز سرور "<ph name="CERTIFICATE_NAME" />" حذف شود؟</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
 <translation id="2101225219012730419">نسخه:</translation>
@@ -2182,6 +2180,7 @@
 <translation id="3732857534841813090">‏اطلاعات مربوط به «دستیار Google»</translation>
 <translation id="3733127536501031542">‏سرور SSL با ارتقا</translation>
 <translation id="3735740477244556633">مرتب کردن براساس</translation>
+<translation id="3738213647660363521">رنگ نشانگر سفارشی</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> باز شود؟</translation>
 <translation id="3742055079367172538">نماگرفت گرفته شد</translation>
@@ -2654,7 +2653,6 @@
 <translation id="4350019051035968019">این دستگاه نمی‌تواند در دامنه‌ای که حسابتان متعلق به آن است، ثبت‌نام کند زیرا دستگاه برای مدیریت توسط دامنه دیگری علامت‌گذاری شده است.</translation>
 <translation id="4350782034419308508">Hey Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> می‌خواهد دستگاه‌های «بلوتوث» اطراف را جستجو کند. دستگاه‌های زیر پیدا شدند:</translation>
-<translation id="4353114845960720315">‏وقتی در حالت VR هستید، این سایت می‌تواند به این موارد پی ببرد:</translation>
 <translation id="4354073718307267720">وقتی سایتی می‌خواهد نقشه سه‌بعدی از محیط ایجاد کند یا موقعیت دوربین را ردیابی کند سؤال شود</translation>
 <translation id="4354344420232759511">سایت‌هایی که بازدید می‌کنید اینجا نشان داده می‌شود</translation>
 <translation id="435527878592612277">انتخاب عکس</translation>
@@ -2889,7 +2887,6 @@
 <translation id="4659077111144409915">حساب اصلی</translation>
 <translation id="4660476621274971848">نسخه موردانتظار «<ph name="EXPECTED_VERSION" />» است، اما نسخه «<ph name="NEW_ID" />» بود</translation>
 <translation id="4660540330091848931">درحال تغییر اندازه</translation>
-<translation id="4660838440047236328">چیدمان اتاق شما</translation>
 <translation id="4661407454952063730">داده‌های برنامه می‌توانند هر داده‌ای باشند که برنامه (براساس تنظیمات برنامه‌نویس) ذخیره کرده است، ازجمله داده‌هایی مانند مخاطبین، پیام‌ها، و عکس‌ها.</translation>
 <translation id="4662373422909645029">نام مستعار نباید حاوی عدد باشد</translation>
 <translation id="4662788913887017617">‏این نشانک را با iPhone خود به اشتراک بگذارید</translation>
@@ -2978,9 +2975,7 @@
 <translation id="4801512016965057443">اجازه دادن فراگردی داده تلفن همراه</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
 <translation id="4804827417948292437">آووکادو</translation>
-<translation id="4805077164141082536">‏توصیه می‌کنیم قبل از ارتقا دادن، از محتوی کنونی Linux خود پشتیبان‌گیری کنید.</translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
-<translation id="4808319664292298116">‏VR از <ph name="DOMAIN" /> وارد شود؟</translation>
 <translation id="4808667324955055115">پنجره‌های بازشو مسدود هستند:</translation>
 <translation id="480990236307250886">باز کردن صفحه اصلی</translation>
 <translation id="4811212958317149293">اسکن خودکار صفحه‌کلید دسترسی کلیدی</translation>
@@ -3294,6 +3289,7 @@
 <translation id="52232769093306234">بسته‌بندی نشد.</translation>
 <translation id="5225324770654022472">نمایش میان‌بر برنامه‌ها</translation>
 <translation id="5227679487546032910">چهره‌نمای پیش‌فرض آبی سیر</translation>
+<translation id="5228088094491423618">زیرنویس ناشنوایان زنده</translation>
 <translation id="5228579091201413441">فعال کردن همگام‌سازی</translation>
 <translation id="5229189185761556138">مدیریت روش‌های ورودی</translation>
 <translation id="5230516054153933099">پنجره</translation>
@@ -3707,7 +3703,6 @@
 <translation id="5739235828260127894">در انتظار تأیید. <ph name="LINK_BEGIN" />بیشتر بدانید.<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">خیلی بزرگ</translation>
 <translation id="574209121243317957">زیروبمی صدا</translation>
-<translation id="5745136023067925867">نکته‌ها، پیشنهادها، و به‌روزرسانی‌های مربوط به <ph name="DEVICE_TYPE" /> را دریافت کنید و بازخورد ارائه دهید</translation>
 <translation id="5746169159649715125">‏ذخیره به‌عنوان PDF</translation>
 <translation id="5747552184818312860">تاریخ انقضا</translation>
 <translation id="5747785204778348146">برنامه‌نویس - ناپایدار</translation>
@@ -4830,7 +4825,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{خروج از صفحه}one{خروج از صفحه‌ها}other{خروج از صفحه‌ها}}</translation>
 <translation id="7207457272187520234">‏داده‌های استفاده و عیب‌یابی را ارسال کنید. این دستگاه درحال‌حاضر به‌صورت‌ خودکار داده‌های عیب‌یابی و داده‌های استفاده از دستگاه و برنامه را برای Google ارسال می‌کند. این داده‌ها به بهبود پایداری سیستم و برنامه و موارد دیگر کمک خواهد کرد. بعضی داده‌های انبوهشی نیز به برنامه‌ها و شرکای Google (مانند «برنامه‌نویس‌های Android») کمک می‌کند. این تنظیم را مالک اعمال می‌کند. اگر تنظیم «فعالیت وب و برنامه» تکمیلی روشن باشد، ممکن است این داده‌ها در «حساب Google» شما ذخیره شود.</translation>
 <translation id="7207631048330366454">جستجوی برنامه‌ها</translation>
-<translation id="7210171324714276060">افزونه <ph name="EXTENSION_NAME" /> دامنه ارائه‌دهنده جستجو را به <ph name="SEARCH_PROVIDER_DOMAIN" /> تغییر داده است.</translation>
 <translation id="7210499381659830293">چاپگرهای افزونه</translation>
 <translation id="7212097698621322584">پین کنونی‌تان را برای تغییر پین وارد کنید. اگر پین‌ خود را نمی‌دانید، باید کلید امنیتی را بازنشانی کنید و سپس پین جدیدی ایجاد کنید.</translation>
 <translation id="7216409898977639127">ارائه‌دهنده شبکه تلفن همراه</translation>
@@ -5230,7 +5224,6 @@
 <translation id="7737115349420013392">درحال مرتبط‌سازی با «<ph name="DEVICE_NAME" />» …</translation>
 <translation id="7737238973539693982">‏حذف Linux (بتا)</translation>
 <translation id="7740996059027112821">استاندارد</translation>
-<translation id="7743128043742060936">افزونه <ph name="EXTENSION_NAME" /> این صفحه را تغییر داده است</translation>
 <translation id="7744047395460924128">مشاهده سابقه چاپ کردن</translation>
 <translation id="7744192722284567281">در نقض داده پیدا شد</translation>
 <translation id="7750228210027921155">تصویردرتصویر</translation>
@@ -6348,6 +6341,7 @@
 <translation id="9121814364785106365">باز کردن به‌عنوان برگه الصاق شده</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> متوقف شده است</translation>
 <translation id="9124003689441359348">گذرواژه‌های ذخیره‌شده در اینجا ظاهر خواهند شد</translation>
+<translation id="9126149354162942022">رنگ نشانگر</translation>
 <translation id="9128317794749765148">راه‌اندازی تکمیل نشد</translation>
 <translation id="9128870381267983090">اتصال به شبکه</translation>
 <translation id="9130015405878219958">حالت نامعتبر وارد شده است.</translation>

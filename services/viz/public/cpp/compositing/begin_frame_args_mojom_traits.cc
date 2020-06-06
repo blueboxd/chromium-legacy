@@ -5,6 +5,7 @@
 #include "services/viz/public/cpp/compositing/begin_frame_args_mojom_traits.h"
 
 #include "mojo/public/cpp/base/time_mojom_traits.h"
+#include "services/viz/public/cpp/crash_keys.h"
 
 namespace mojo {
 
@@ -64,8 +65,11 @@ bool StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs>::
 bool StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck>::Read(
     viz::mojom::BeginFrameAckDataView data,
     viz::BeginFrameAck* out) {
-  if (data.sequence_number() < viz::BeginFrameArgs::kStartingFrameNumber)
+  if (data.sequence_number() < viz::BeginFrameArgs::kStartingFrameNumber) {
+    viz::SetDeserializationCrashKeyString(
+        "Invalid begin frame ack sequence number");
     return false;
+  }
   out->frame_id.source_id = data.source_id();
   out->frame_id.sequence_number = data.sequence_number();
   out->trace_id = data.trace_id();

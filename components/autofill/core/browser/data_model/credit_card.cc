@@ -904,6 +904,10 @@ bool CreditCard::HasValidNickname() const {
   return true;
 }
 
+base::string16 CreditCard::NicknameAndLastFourDigitsForTesting() const {
+  return NicknameAndLastFourDigits();
+}
+
 base::string16 CreditCard::Expiration2DigitYearAsString() const {
   return data_util::Expiration2DigitYearAsString(expiration_year_);
 }

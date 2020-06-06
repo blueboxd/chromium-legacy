@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Strani v jeziku <ph name="SOURCE_LANGUAGE" /> bodo odslej prevedene v jezik <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Google Chrome tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to vrnilo nenavadne in nepravilne poverilnice. Do tega lahko pride, če se napadalec lažno predstavlja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Google Chrome pred izmenjavo podatkov prekinil povezavo.</translation>
 <translation id="1682696192498422849">Najprej kratki rob</translation>
+<translation id="168693727862418163">Preverjanje vrednosti tega pravilnika v skladu z njegovo shemo ni uspelo in bo prezrta.</translation>
 <translation id="168841957122794586">Potrdilo strežnika vsebuje šibek šifrirni ključ.</translation>
 <translation id="1697532407822776718">Pripravljeni ste.</translation>
 <translation id="1703835215927279855">Letter</translation>

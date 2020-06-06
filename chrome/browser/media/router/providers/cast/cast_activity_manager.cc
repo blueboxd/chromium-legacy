@@ -160,9 +160,7 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   const MediaRoute::Id& route_id = route.media_route_id();
   const MediaSinkInternal& sink = params.sink;
 
-  // TODO(crbug.com/904995): In the case of multiple app IDs (e.g. mirroring),
-  // we need to choose an appropriate app ID to launch based on capabilities.
-  std::string app_id = cast_source.GetAppIds()[0];
+  std::string app_id = ChooseAppId(cast_source, params.sink);
 
   DVLOG(2) << "Launching session with route ID = " << route_id
            << ", source ID = " << cast_source.source_id()
@@ -777,6 +775,20 @@ base::Optional<MediaSinkInternal> CastActivityManager::ConvertMirrorToCast(
   }
 
   return base::nullopt;
+}
+
+std::string CastActivityManager::ChooseAppId(
+    const CastMediaSource& source,
+    const MediaSinkInternal& sink) const {
+  const auto sink_capabilities =
+      BitwiseOr<cast_channel::CastDeviceCapability>::FromBits(
+          sink.cast_data().capabilities);
+  for (const auto& info : source.app_infos()) {
+    if (sink_capabilities.HasAll(info.required_capabilities))
+      return info.app_id;
+  }
+  NOTREACHED() << "Can't determine app ID from capabilities.";
+  return source.app_infos()[0].app_id;
 }
 
 CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(

@@ -9,14 +9,14 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/public/identity_manager/consent_level.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/user_manager/known_user.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace chromeos {
@@ -32,47 +32,19 @@ void PersistSystemInputMethod(const std::string& input_method) {
 }
 
 // Returns the user email, whether or not they have consented to browser sync.
-std::string GetUserName(Profile* profile) {
-  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  if (!identity_manager)
-    return std::string();
-  return identity_manager
-      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-      .email;
+AccountId GetUserAccount(Profile* profile) {
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user)
+    return EmptyAccountId();
+  return user->GetAccountId();
 }
 
-static void SetUserLastInputMethodPreference(const std::string& username,
-                                             const std::string& input_method,
-                                             PrefService* local_state) {
-  if (!username.empty() && !local_state->ReadOnly()) {
-    bool update_succeed = false;
-    {
-      // Updater may have side-effects, therefore we do not replace
-      // entry while updater exists.
-      DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
-      base::DictionaryValue* const users_last_input_methods = updater.Get();
-      if (users_last_input_methods) {
-        users_last_input_methods->SetKey(username, base::Value(input_method));
-        update_succeed = true;
-      }
-    }
-    if (!update_succeed) {
-      // Somehow key kUsersLastInputMethod has value of invalid type.
-      // Replace and retry.
-      local_state->Set(prefs::kUsersLastInputMethod, base::DictionaryValue());
-
-      DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
-      base::DictionaryValue* const users_last_input_methods = updater.Get();
-      if (users_last_input_methods) {
-        users_last_input_methods->SetKey(username, base::Value(input_method));
-        update_succeed = true;
-      }
-    }
-    if (!update_succeed) {
-      DVLOG(1) << "Failed to replace local_state.kUsersLastInputMethod: '"
-               << prefs::kUsersLastInputMethod << "' for '" << username << "'";
-    }
-  }
+static void SetUserLastInputMethodPreference(const AccountId& account_id,
+                                             const std::string& input_method) {
+  if (!account_id.is_valid())
+    return;
+  user_manager::known_user::SetUserLastInputMethod(account_id, input_method);
 }
 
 // Update user Last keyboard layout for login screen
@@ -88,10 +60,7 @@ static void SetUserLastInputMethod(
   if (profile == NULL)
     return;
 
-  PrefService* const local_state = g_browser_process->local_state();
-
-  SetUserLastInputMethodPreference(GetUserName(profile), input_method,
-                                   local_state);
+  SetUserLastInputMethodPreference(GetUserAccount(profile), input_method);
 }
 
 void PersistUserInputMethod(const std::string& input_method,
@@ -184,10 +153,9 @@ void InputMethodPersistence::OnSessionStateChange(
 }
 
 void SetUserLastInputMethodPreferenceForTesting(
-    const std::string& username,
-    const std::string& input_method,
-    PrefService* const local_state) {
-  SetUserLastInputMethodPreference(username, input_method, local_state);
+    const AccountId& account_id,
+    const std::string& input_method) {
+  SetUserLastInputMethodPreference(account_id, input_method);
 }
 
 }  // namespace input_method

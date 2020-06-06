@@ -62,12 +62,13 @@ UkmReportingService::UkmReportingService(metrics::MetricsServiceClient* client,
                                          PrefService* local_state)
     : ReportingService(client, local_state, kMaxLogRetransmitSize),
       unsent_log_store_(std::make_unique<ukm::UnsentLogStoreMetricsImpl>(),
-                      local_state,
-                      prefs::kUkmUnsentLogStore,
-                      kMinUnsentLogCount,
-                      kMinUnsentLogBytes,
-                      kMaxLogRetransmitSize,
-                      client->GetUploadSigningKey()) {}
+                        local_state,
+                        prefs::kUkmUnsentLogStore,
+                        nullptr,
+                        kMinUnsentLogCount,
+                        kMinUnsentLogBytes,
+                        kMaxLogRetransmitSize,
+                        client->GetUploadSigningKey()) {}
 
 UkmReportingService::~UkmReportingService() {}
 

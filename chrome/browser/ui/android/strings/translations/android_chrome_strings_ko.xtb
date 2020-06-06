@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">'인기 사이트' 버튼을 탭하여 인기 웹사이트를 확인하세요.</translation>
 <translation id="1173894706177603556">이름 바꾸기</translation>
 <translation id="1178581264944972037">일시중지</translation>
-<translation id="1188239144602654184">AR 입력</translation>
 <translation id="1197267115302279827">북마크 이동</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1204037785786432551">링크 다운로드</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">텍스트</translation>
 <translation id="2082238445998314030">전체 결과 <ph name="TOTAL_RESULTS" />개 중 <ph name="RESULT_NUMBER" />개</translation>
 <translation id="2096012225669085171">모든 기기 동기화 및 맞춤설정</translation>
-<translation id="2099625543891475722">키와 같은 신체적 특징</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="2100314319871056947">좀 더 짧은 길이로 텍스트를 줄인 다음 공유해 보세요.</translation>
 <translation id="2109711654079915747">페이지에서 나가지 않고도 웹사이트의 주제에 관해 알아봅니다. 터치하여 검색 기능은 단어와 관련 맥락을 Google 검색으로 전송하여 정의, 사진, 검색결과 등의 세부정보를 제공합니다.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">관리</translation>
 <translation id="381841723434055211">전화번호</translation>
 <translation id="3819178904835489326">다운로드 <ph name="NUMBER_OF_DOWNLOADS" />개 삭제됨</translation>
-<translation id="3849365399446680203">AR을 사용 중일 때 사이트에서 다음을 할 수 있습니다.
-• 사용자 환경을 3D 지도로 작성
-• 카메라 움직임 추적
-
-카메라 영상은 사용자 본인만 확인 가능합니다. 사이트에는 카메라 이미지가 공유되지 않습니다.</translation>
 <translation id="3859306556332390985">앞으로 탐색</translation>
 <translation id="388596076286380598">오프라인 상태이거나 연결 상태가 좋지 못할 때도 좋아하는 사이트의 기사, 동영상 및 기타 콘텐츠를 볼 수 있습니다.</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">인터넷에 연결되지 않음</translation>
 <translation id="4321739720395210191">카메라를 열 수 없습니다. 기기를 다시 시작한 후 시도해 보세요.</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
-<translation id="4353114845960720315">VR 사용 중 이 사이트가 다음 정보를 학습할 수 있습니다.</translation>
 <translation id="4378154925671717803">전화기</translation>
 <translation id="4384468725000734951">검색할 때 Sogou 사용</translation>
 <translation id="4404568932422911380">북마크 없음</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">연결되지 않음</translation>
 <translation id="4565377596337484307">비밀번호 숨김</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>
 <translation id="4587589328781138893">사이트</translation>
 <translation id="4594952190837476234">이 오프라인 페이지는 <ph name="CREATION_TIME" />에 생성되었으며 온라인 버전과 다를 수 있습니다.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> 열기</translation>
 <translation id="4634124774493850572">비밀번호 사용</translation>
 <translation id="4650364565596261010">시스템 기본값</translation>
-<translation id="4660838440047236328">방의 구조</translation>
 <translation id="4662373422909645029">닉네임에 숫자를 포함할 수 없음</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
 <translation id="4665282149850138822"><ph name="NAME" />이(가) 홈 화면에 추가됨</translation>
@@ -459,7 +449,6 @@
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
 <translation id="4807098396393229769">카드 명의</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" />에서 VR을 시작하시겠습니까?</translation>
 <translation id="4824958205181053313">동기화를 취소하시겠습니까?</translation>
 <translation id="4835385943915508971">Chrome에서 요청된 리소스에 액세스할 권한이 없습니다.</translation>
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">전체화면 닫기</translation>
 <translation id="6404511346730675251">북마크 수정</translation>
 <translation id="6406506848690869874">동기화</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" />에서 AR을 시작하시겠습니까?</translation>
 <translation id="641643625718530986">인쇄…</translation>
 <translation id="6427112570124116297">웹 번역</translation>
 <translation id="6433501201775827830">검색엔진 선택</translation>

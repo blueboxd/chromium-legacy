@@ -101,10 +101,18 @@ bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
       std::move(target_factory_remote),
       base::BindOnce(
           &IsolatedPrerenderSubresourceManager::RemoveProxiedURLLoaderFactory,
+          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(
+          &IsolatedPrerenderSubresourceManager::OnSubresourceLoadSuccessful,
           weak_factory_.GetWeakPtr()));
   proxied_loader_factories_.emplace(std::move(proxy));
 
   return true;
+}
+
+void IsolatedPrerenderSubresourceManager::OnSubresourceLoadSuccessful(
+    const GURL& url) {
+  successfully_loaded_subresources_.emplace(url);
 }
 
 void IsolatedPrerenderSubresourceManager::RemoveProxiedURLLoaderFactory(

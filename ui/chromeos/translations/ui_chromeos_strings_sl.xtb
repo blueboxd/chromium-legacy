@@ -164,6 +164,7 @@
 <translation id="2924296707677495905">Prečrkovanje (namaskaram → ನಮಸ್ಕಾರ)</translation>
 <translation id="2925966894897775835">Preglednice</translation>
 <translation id="2938685643439809023">mongolščina</translation>
+<translation id="2939410873710774399">Če želite odpreti datoteke z aplikacijo <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), jih najprej premaknite v mapo <ph name="FOLDER_NAME" />.</translation>
 <translation id="2942290791863759244">Tipkovnica za nemščino NEO 2</translation>
 <translation id="2943400156390503548">Predstavitve</translation>
 <translation id="2943503720238418293">Uporabite krajše ime</translation>
@@ -324,6 +325,7 @@
 <translation id="4839847978919684242">Št. izbranih elementov: <ph name="SELCTED_FILES_COUNT" /></translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="485316830061041779">nemščina</translation>
+<translation id="4859297381873413734">Če želite odpreti datoteke z aplikacijo <ph name="APP_NAME" /> (<ph name="VM_SOFTWARE_NAME" />), jih najprej kopirajte v mapo <ph name="FOLDER_NAME" />.</translation>
 <translation id="4867079195717347957">Kliknite, če želite razvrstiti elemente stolpca v padajočem vrstnem redu.</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> B</translation>
 <translation id="4880214202172289027">Drsnik za glasnost</translation>

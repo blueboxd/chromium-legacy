@@ -28,9 +28,11 @@
 #include "chrome/updater/server/win/com_classes.h"
 #include "chrome/updater/server/win/com_classes_legacy.h"
 #include "chrome/updater/update_service_in_process.h"
+#include "components/prefs/pref_service.h"
 
 namespace updater {
 
+// Returns a leaky singleton of the App instance.
 scoped_refptr<App> AppServerInstance() {
   return AppInstance<ComServerApp>();
 }
@@ -128,7 +130,14 @@ void ComServerApp::CreateWRLModule() {
 void ComServerApp::Stop() {
   VLOG(2) << __func__ << ": COM server is shutting down.";
   UnregisterClassObjects();
-  Shutdown(0);
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        auto this_server = ComServerApp::Instance();
+        this_server->config_->GetPrefService()->CommitPendingWrite();
+        this_server->service_ = nullptr;
+        this_server->config_ = nullptr;
+        this_server->Shutdown(0);
+      }));
 }
 
 void ComServerApp::Initialize() {

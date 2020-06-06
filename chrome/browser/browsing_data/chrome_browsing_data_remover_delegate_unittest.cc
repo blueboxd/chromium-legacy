@@ -93,6 +93,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
+#include "components/site_isolation/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -1485,18 +1486,24 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
   // Add foo.com to the list of stored isolated origins.
   base::ListValue list;
   list.AppendString("http://foo.com");
-  prefs->Set(prefs::kUserTriggeredIsolatedOrigins, list);
-  EXPECT_FALSE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
+  EXPECT_FALSE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 
   // Clear history and ensure the stored isolated origins are cleared.
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY, false);
-  EXPECT_TRUE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  EXPECT_TRUE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 
   // Re-add foo.com to stored isolated origins.
-  prefs->Set(prefs::kUserTriggeredIsolatedOrigins, list);
-  EXPECT_FALSE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
+  EXPECT_FALSE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 
   // Now clear cookies and other site data, and ensure foo.com is cleared.
   // Note that this uses a short time period to document that time ranges are
@@ -1504,21 +1511,29 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
   BlockUntilBrowsingDataRemoved(
       AnHourAgo(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA, false);
-  EXPECT_TRUE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  EXPECT_TRUE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 
   // Re-add foo.com.
-  prefs->Set(prefs::kUserTriggeredIsolatedOrigins, list);
-  EXPECT_FALSE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
+  EXPECT_FALSE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 
   // Clear the isolated origins data type.
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(),
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_ISOLATED_ORIGINS, false);
-  EXPECT_TRUE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  EXPECT_TRUE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 
   // Re-add foo.com.
-  prefs->Set(prefs::kUserTriggeredIsolatedOrigins, list);
-  EXPECT_FALSE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  prefs->Set(site_isolation::prefs::kUserTriggeredIsolatedOrigins, list);
+  EXPECT_FALSE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 
   // Clear both history and site data, and ensure the stored isolated origins
   // are cleared.
@@ -1527,7 +1542,9 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePersistentIsolatedOrigins) {
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
           ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
       false);
-  EXPECT_TRUE(prefs->GetList(prefs::kUserTriggeredIsolatedOrigins)->empty());
+  EXPECT_TRUE(
+      prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins)
+          ->empty());
 }
 
 // Test that clearing history deletes favicons not associated with bookmarks.

@@ -80,6 +80,10 @@ const char kOfflineSigninLimit[] = "offline_signin_limit";
 // Key of the boolean flag telling if user is managed.
 const char kIsManaged[] = "is_managed";
 
+// Key of the last input method user used which is suitable for login/lock
+// screen.
+const char kLastInputMethod[] = "last_input_method";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
@@ -96,7 +100,9 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kIsEphemeral,
                                kChallengeResponseKeys,
                                kLastOnlineSignin,
-                               kOfflineSigninLimit};
+                               kOfflineSigninLimit,
+                               kIsManaged,
+                               kLastInputMethod};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -657,6 +663,16 @@ bool GetIsManaged(const AccountId& account_id) {
   if (GetBooleanPref(account_id, kIsManaged, &is_managed))
     return is_managed;
   return false;
+}
+
+void SetUserLastInputMethod(const AccountId& account_id,
+                            const std::string& input_method) {
+  SetStringPref(account_id, kLastInputMethod, input_method);
+}
+
+bool GetUserLastInputMethod(const AccountId& account_id,
+                            std::string* input_method) {
+  return GetStringPref(account_id, kLastInputMethod, input_method);
 }
 
 void RemovePrefs(const AccountId& account_id) {

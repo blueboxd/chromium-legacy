@@ -100,6 +100,7 @@
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_ui_service.h"
+#include "components/site_isolation/pref_names.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
@@ -1152,7 +1153,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // TODO(alexmos): Support finer-grained filtering based on time ranges and
   // |filter|. For now, conservatively delete all saved isolated origins.
   if (remove_mask & (DATA_TYPE_ISOLATED_ORIGINS | DATA_TYPE_HISTORY)) {
-    prefs->ClearPref(prefs::kUserTriggeredIsolatedOrigins);
+    prefs->ClearPref(site_isolation::prefs::kUserTriggeredIsolatedOrigins);
     // Note that this does not clear these sites from the in-memory map in
     // ChildProcessSecurityPolicy, since that is not supported at runtime. That
     // list of isolated sites is not directly exposed to users, though, and

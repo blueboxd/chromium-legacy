@@ -7,10 +7,15 @@
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/test/test_search_result.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/accessibility/spoken_feedback_browsertest.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -18,6 +23,8 @@
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/display.h"
+#include "ui/display/manager/display_manager.h"
 
 namespace chromeos {
 
@@ -95,6 +102,104 @@ INSTANTIATE_TEST_SUITE_P(TestAsNormalAndGuestUser,
                          SpokenFeedbackAppListTest,
                          ::testing::Values(kTestAsNormalUser,
                                            kTestAsGuestUser));
+
+class TabletModeSpokenFeedbackAppListTest : public SpokenFeedbackAppListTest {
+ protected:
+  TabletModeSpokenFeedbackAppListTest() = default;
+  ~TabletModeSpokenFeedbackAppListTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SpokenFeedbackAppListTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
+  }
+
+  void SetTabletMode(bool enabled) {
+    ash::ShellTestApi().SetTabletModeEnabledForTest(enabled);
+  }
+
+  bool IsTabletModeEnabled() const {
+    return ash::TabletMode::Get()->InTabletMode();
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(TestAsNormalAndGuestUser,
+                         TabletModeSpokenFeedbackAppListTest,
+                         ::testing::Values(kTestAsNormalUser,
+                                           kTestAsGuestUser));
+
+// Checks that entering and exiting tablet mode with a browser window open does
+// not generate an accessibility event.
+IN_PROC_BROWSER_TEST_P(
+    TabletModeSpokenFeedbackAppListTest,
+    HiddenAppListDoesNotCreateAccessibilityEventWhenTransitioningToTabletMode) {
+  EnableChromeVox();
+
+  sm_.Call([this]() { EXPECT_FALSE(IsTabletModeEnabled()); });
+  sm_.Call([this]() { SetTabletMode(true); });
+  sm_.Call([this]() { EXPECT_TRUE(IsTabletModeEnabled()); });
+  sm_.ExpectNextSpeechIsNot("Launcher, all apps");
+  sm_.Call([this]() { SetTabletMode(false); });
+  sm_.Call([this]() { EXPECT_FALSE(IsTabletModeEnabled()); });
+  sm_.ExpectNextSpeechIsNot("Launcher, all apps");
+  sm_.Replay();
+}
+
+// Checks that rotating the display in tablet mode does not generate an
+// accessibility event.
+IN_PROC_BROWSER_TEST_P(
+    TabletModeSpokenFeedbackAppListTest,
+    LauncherAppListScreenRotationDoesNotCreateAccessibilityEvent) {
+  display::DisplayManager* display_manager =
+      ash::Shell::Get()->display_manager();
+  const int display_id = display_manager->GetDisplayAt(0).id();
+  EnableChromeVox();
+
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
+
+  sm_.Call(
+      [this]() { EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF)); });
+  sm_.ExpectSpeech("Shelf");
+
+  // Press space on the launcher button in shelf, this opens peeking launcher.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech("Launcher, partial view");
+
+  // Send a key press to enable keyboard traversal
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
+
+  // Move focus to expand all apps button.
+  sm_.Call([this]() { SendKeyPressWithSearchAndShift(ui::VKEY_TAB); });
+  sm_.ExpectSpeech("Expand to all apps");
+
+  // Press space on expand arrow to go to fullscreen launcher.
+  sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
+  sm_.ExpectSpeech("Launcher, all apps");
+
+  sm_.Call([this]() { EXPECT_FALSE(IsTabletModeEnabled()); });
+  sm_.Call([this]() { SetTabletMode(true); });
+  sm_.Call([this]() { EXPECT_TRUE(IsTabletModeEnabled()); });
+
+  sm_.Call([this]() { browser()->window()->Minimize(); });
+  // Set screen rotation to 90 degrees. No ChromeVox event should be created.
+  sm_.Call([&, display_manager, display_id]() {
+    display_manager->SetDisplayRotation(display_id, display::Display::ROTATE_90,
+                                        display::Display::RotationSource::USER);
+  });
+  sm_.ExpectNextSpeechIsNot("Launcher, all apps");
+
+  // Set screen rotation to 0 degrees. No ChromeVox event should be created.
+  sm_.Call([&, display_manager, display_id]() {
+    display_manager->SetDisplayRotation(display_id, display::Display::ROTATE_0,
+                                        display::Display::RotationSource::USER);
+  });
+  sm_.ExpectNextSpeechIsNot("Launcher, all apps");
+
+  sm_.Call([this]() { EXPECT_TRUE(IsTabletModeEnabled()); });
+  sm_.Call([this]() { SetTabletMode(false); });
+  sm_.Call([this]() { EXPECT_FALSE(IsTabletModeEnabled()); });
+  sm_.Replay();
+}
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
   EnableChromeVox();
@@ -241,8 +346,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
   // Move focus to app list window;
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
   sm_.ExpectSpeech(
-      "Search your device, apps, and web. Use the arrow keys to navigate "
-      "your "
+      "Search your device, apps, and web. Use the arrow keys to navigate your "
       "apps.");
   // Move focus to search box;
   sm_.ExpectSpeech("Edit text");

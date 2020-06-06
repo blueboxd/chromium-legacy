@@ -159,7 +159,7 @@ class WifiConfigurationBridgeTest : public testing::Test {
         /*network_configuration_handler=*/nullptr,
         /*network_connection_handler=*/nullptr,
         /*network_state_handler=*/nullptr, user_prefs_.get(),
-        device_prefs_.get());
+        device_prefs_.get(), /*is_enterprise_enrolled=*/false);
 
     bridge_ = std::make_unique<WifiConfigurationBridge>(
         synced_network_updater(), local_network_collector(),
@@ -420,7 +420,7 @@ TEST_F(WifiConfigurationBridgeTest, LocalConfigured) {
   EXPECT_CALL(*processor(), Put(_, _, _))
       .WillOnce(testing::SaveArg<0>(&storage_key));
   std::string guid = meow_network_id().SerializeToString();
-  bridge()->OnConfigurationCreated("service_path", guid);
+  bridge()->OnNetworkCreated(guid);
   base::RunLoop().RunUntilIdle();
 
   timer_factory()->FireAll();
@@ -435,7 +435,7 @@ TEST_F(WifiConfigurationBridgeTest, LocalConfigured_BadPassword) {
   EXPECT_CALL(*processor(), Put(_, _, _)).Times(testing::Exactly(0));
 
   std::string guid = meow_network_id().SerializeToString();
-  bridge()->OnConfigurationCreated("service_path", guid);
+  bridge()->OnNetworkCreated(guid);
   base::RunLoop().RunUntilIdle();
 
   timer_factory()->FireAll();

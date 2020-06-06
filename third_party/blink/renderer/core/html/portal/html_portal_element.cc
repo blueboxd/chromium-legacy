@@ -169,6 +169,13 @@ HTMLPortalElement::GetGuestContentsEligibility() const {
   if (!is_top_level)
     return GuestContentsEligibility::kNotTopLevel;
 
+  // TODO(crbug.com/1051639): We need to find a long term solution to when/how
+  // portals should work in sandboxed documents.
+  if (GetDocument().GetSandboxFlags() !=
+      network::mojom::blink::WebSandboxFlags::kNone) {
+    return GuestContentsEligibility::kSandboxed;
+  }
+
   if (!GetDocument().Url().ProtocolIsInHTTPFamily())
     return GuestContentsEligibility::kNotHTTPFamily;
 
@@ -363,6 +370,13 @@ Node::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
           mojom::ConsoleMessageSource::kRendering,
           mojom::ConsoleMessageLevel::kWarning,
           "Cannot use <portal> in a nested browsing context."));
+      return result;
+
+    case GuestContentsEligibility::kSandboxed:
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kRendering,
+          mojom::ConsoleMessageLevel::kWarning,
+          "Cannot use <portal> in a sandboxed browsing context."));
       return result;
 
     case GuestContentsEligibility::kNotHTTPFamily:

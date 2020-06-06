@@ -30,6 +30,8 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
+#include "components/site_isolation/features.h"
+#include "components/site_isolation/pref_names.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/active_field_trials.h"
@@ -1700,8 +1702,9 @@ class SiteIsolationForPasswordSitesBrowserTest
     : public ChromeNavigationBrowserTest {
  public:
   SiteIsolationForPasswordSitesBrowserTest() {
-    feature_list_.InitWithFeatures({features::kSiteIsolationForPasswordSites},
-                                   {features::kSitePerProcess});
+    feature_list_.InitWithFeatures(
+        {site_isolation::features::kSiteIsolationForPasswordSites},
+        {features::kSitePerProcess});
   }
 
   std::vector<std::string> GetSavedIsolatedSites() {
@@ -1710,7 +1713,8 @@ class SiteIsolationForPasswordSitesBrowserTest
 
   std::vector<std::string> GetSavedIsolatedSites(Profile* profile) {
     PrefService* prefs = profile->GetPrefs();
-    auto* list = prefs->GetList(prefs::kUserTriggeredIsolatedOrigins);
+    auto* list =
+        prefs->GetList(site_isolation::prefs::kUserTriggeredIsolatedOrigins);
     std::vector<std::string> sites;
     for (const base::Value& value : list->GetList())
       sites.push_back(value.GetString());

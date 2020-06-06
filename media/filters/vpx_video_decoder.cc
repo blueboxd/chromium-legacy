@@ -242,6 +242,14 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
                   << vpx_codec_error(vpx_codec_.get());
       return false;
     }
+
+    vpx_codec_err_t status =
+        vpx_codec_control(vpx_codec_.get(), VP9D_SET_LOOP_FILTER_OPT, 1);
+    if (status != VPX_CODEC_OK) {
+      DLOG(ERROR) << "Failed to enable VP9D_SET_LOOP_FILTER_OPT. "
+                  << vpx_codec_error(vpx_codec_.get());
+      return false;
+    }
   }
 
   if (config.alpha_mode() == VideoDecoderConfig::AlphaMode::kIsOpaque)

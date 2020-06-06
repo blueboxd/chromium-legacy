@@ -1898,8 +1898,6 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   // Only add this menu entry if SendTabToSelf feature is enabled.
   if (send_tab_to_self::ShouldOfferFeature(
           location_bar_view_->GetWebContents())) {
-    send_tab_to_self::RecordSendTabToSelfClickResult(
-        send_tab_to_self::kOmniboxMenu, SendTabToSelfClickResult::kShowItem);
     int index = menu_contents->GetIndexOfCommandId(Textfield::kUndo);
     // Add a separator if this is not the first item.
     if (index)
@@ -1913,11 +1911,6 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
               send_tab_to_self::GetSingleTargetDeviceName(
                   location_bar_view_->profile())));
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kOmniboxMenu,
-          SendTabToSelfClickResult::kShowDeviceList);
-      send_tab_to_self::RecordSendTabToSelfDeviceCount(
-          send_tab_to_self::kOmniboxMenu, 1);
     } else {
       send_tab_to_self_sub_menu_model_ =
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(

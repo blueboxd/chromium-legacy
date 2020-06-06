@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitetut sivut käännetään tästä lähtien kielelle <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chrome yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Google Chrome katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="1682696192498422849">Lyhyt reuna ensin</translation>
+<translation id="168693727862418163">Tämän käytännön arvon ei onnistunut vahvistamaan kaavaa ja se ohitetaan.</translation>
 <translation id="168841957122794586">Palvelinvarmenne sisältää heikon salausavaimen.</translation>
 <translation id="1697532407822776718">Kaikki on valmista.</translation>
 <translation id="1703835215927279855">Kirje</translation>

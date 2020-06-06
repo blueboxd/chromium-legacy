@@ -305,20 +305,22 @@ bool VulkanInstance::CollectInfo() {
     // API version instead of just testing to see if
     // vkGetPhysicalDeviceFeatures2 is non-null.
     static_assert(kVulkanRequiredApiVersion >= VK_API_VERSION_1_1, "");
-    VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_conversion_features = {
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
-    VkPhysicalDeviceProtectedMemoryFeatures protected_memory_feature = {
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
-    VkPhysicalDeviceFeatures2 features_2 = {
-        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-    features_2.pNext = &ycbcr_conversion_features;
-    ycbcr_conversion_features.pNext = &protected_memory_feature;
+    if (info.properties.apiVersion >= kVulkanRequiredApiVersion) {
+      VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_conversion_features =
+          {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
+      VkPhysicalDeviceProtectedMemoryFeatures protected_memory_feature = {
+          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
+      VkPhysicalDeviceFeatures2 features_2 = {
+          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+      features_2.pNext = &ycbcr_conversion_features;
+      ycbcr_conversion_features.pNext = &protected_memory_feature;
 
-    vkGetPhysicalDeviceFeatures2(device, &features_2);
-    info.features = features_2.features;
-    info.feature_sampler_ycbcr_conversion =
-        ycbcr_conversion_features.samplerYcbcrConversion;
-    info.feature_protected_memory = protected_memory_feature.protectedMemory;
+      vkGetPhysicalDeviceFeatures2(device, &features_2);
+      info.features = features_2.features;
+      info.feature_sampler_ycbcr_conversion =
+          ycbcr_conversion_features.samplerYcbcrConversion;
+      info.feature_protected_memory = protected_memory_feature.protectedMemory;
+    }
 
     count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);

@@ -3147,9 +3147,6 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Ist die Richtlinie auf "0" gesetzt, ist die Speicherung der Authentifikationsdaten deaktiviert. Dadurch kann sich die Anmeldung von Nutzern deutlich verlangsamen, da bei jeder Anmeldung bereichsspezifische Daten abgerufen werden müssen.
 
       Auch für vorübergehende Nutzer werden Bereichsdaten im Cache gespeichert. Wenn die Bereiche vorübergehender Nutzer nicht verfolgt werden sollen, sollte der Cache deaktiviert werden.</translation>
-<translation id="5700097087679928356">Wenn die Richtlinie auf "0" gesetzt ist (Standardeinstellung), kann generell auf die Entwicklertools und die JavaScript-Konsole zugegriffen werden. Für Erweiterungen, die über die Unternehmensrichtlinie installiert wurden, ist der Zugriff aber nicht möglich. Ist die Richtlinie auf "1" gesetzt, können die Entwicklertools und die JavaScript-Konsole in allen Kontexten aufgerufen und verwendet werden, also auch von Erweiterungen, die über die Unternehmensrichtlinie installiert wurden. Wenn die Richtlinie auf "2" gesetzt ist, kann nicht auf die Entwicklertools zugegriffen werden und Websiteelemente können nicht mehr geprüft werden.
-
-      Alle Tastenkombinationen und Einträge im Menü oder Kontextmenü, mit denen die Entwicklertools oder die JavaScript-Konsole aufgerufen werden, werden deaktiviert.</translation>
 <translation id="570062449808736508">Wenn für diese Richtlinie kein leerer String angegeben ist, wird WebView URL-Einschränkungen des Contentanbieters des angegebenen Befugnisnamens erkennen.</translation>
 <translation id="5708969689202733975">Zulässige Modi für das schnelle Entsperren konfigurieren</translation>
 <translation id="5711016543513883877">

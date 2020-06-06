@@ -1185,10 +1185,7 @@ void LocationBarView::OnOmniboxFocused() {
   // the omnibox is intentional, snapping is better than transitioning here.
   hover_animation_.Reset();
 
-  if (UpdateSendTabToSelfIcon()) {
-    send_tab_to_self::RecordSendTabToSelfClickResult(
-        send_tab_to_self::kOmniboxIcon, SendTabToSelfClickResult::kShowItem);
-  }
+  UpdateSendTabToSelfIcon();
   UpdateQRCodeGeneratorIcon();
   RefreshBackground();
 }

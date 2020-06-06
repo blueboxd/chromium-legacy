@@ -89,7 +89,7 @@
                     jsvalues="title: is_default ? '' : '$i18n{experiment-enabled}';
                         id:internal_name + '_name'"></h3>
                 <p>
-                  <span jsvalues=".innerHTML:description"></span> –
+                  <span jsvalues=".textContent:description"></span> –
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
                 <div jsdisplay="origin_list_value!==null">
@@ -136,7 +136,7 @@
                     jsvalues="title: is_default ? '' : '$i18n{experiment-enabled}';
                         id:internal_name + '_name'"></h3>
                 <p>
-                  <span jsvalues=".innerHTML:description"></span> –
+                  <span jsvalues=".textContent:description"></span> –
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
                 <div jsdisplay="origin_list_value!==null">
@@ -193,7 +193,7 @@
                 <h3 class="experiment-name"
                     jscontent="name"></h3>
                 <p>
-                  <span jsvalues=".innerHTML:description"></span>
+                  <span jsvalues=".textContent:description"></span>
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
                 <a class="permalink"

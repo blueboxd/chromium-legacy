@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Nënshkruesi i certifikatës</translation>
 <translation id="1145292499998999162">Përbërësi shtesë u bllokua</translation>
 <translation id="1145593918056169051">Printeri ka ndaluar</translation>
-<translation id="1146678959555564648">Hyr në VR</translation>
 <translation id="114721135501989771">Merr funksionet inteligjente të Google në Chrome</translation>
 <translation id="1147991416141538220">Për të kërkuar qasjen, kontakto me administratorin e kësaj pajisjeje.</translation>
 <translation id="1149401351239820326">Muaji i skadimit</translation>
@@ -863,7 +862,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2096715839409389970">Pastro kukit e palëve të treta</translation>
 <translation id="2097372108957554726">Duhet të identifikohesh te Chrome për të regjistruar pajisjet e tua</translation>
 <translation id="2099172618127234427">Po aktivizon funksionet e korrigjimit të sistemit operativ Chrome që do të konfigurojnë sshd daemon dhe do të aktivizojnë fillimin nga disqet USB.</translation>
-<translation id="2099625543891475722">karakteristikat e tua fizike, si gjatësia</translation>
 <translation id="2099686503067610784">Dëshiron ta fshish certifikatën "<ph name="CERTIFICATE_NAME" />" të serverit?</translation>
 <translation id="2100273922101894616">Identifikohu automatikisht</translation>
 <translation id="2101225219012730419">Versioni:</translation>
@@ -2655,7 +2653,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4350019051035968019">Kjo pajisje nuk mund të regjistrohet në domenin të cilit i përket llogaria jote sepse pajisja është e shënuar për menaxhim nga një domen tjetër.</translation>
 <translation id="4350782034419308508">Ok Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> dëshiron të skanojë për pajisje Bluetooth në afërsi. Janë gjetur pajisjet e mëposhtme:</translation>
-<translation id="4353114845960720315">Kur je në VR, ky sajt mund të arrijë të mësojë për:</translation>
 <translation id="4354073718307267720">Pyet kur një sajt kërkon të krijojë një hartë 3D të ambientit tënd rrethues ose të gjurmojë pozicionin e kamerës</translation>
 <translation id="4354344420232759511">Sajtet që viziton do të shfaqen këtu</translation>
 <translation id="435527878592612277">Zgjidh foton tënde</translation>
@@ -2890,7 +2887,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4659077111144409915">Llogaria parësore</translation>
 <translation id="4660476621274971848">Versioni i pritur ishte "<ph name="EXPECTED_VERSION" />", por versioni rezultoi "<ph name="NEW_ID" />".</translation>
 <translation id="4660540330091848931">Po ndryshon madhësinë</translation>
-<translation id="4660838440047236328">struktura e dhomës</translation>
 <translation id="4661407454952063730">E dhënë aplikacioni mund të jetë çdo e dhënë që një aplikacion ka ruajtur (bazuar në cilësimet e zhvilluesit), duke përfshirë të dhënat si kontaktet, mesazhet dhe fotografitë.</translation>
 <translation id="4662373422909645029">Pseudonimi nuk mund të përmbajë numra</translation>
 <translation id="4662788913887017617">Ndaje këtë faqeshënues me telefonin tënd iPhone</translation>
@@ -2979,9 +2975,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4801512016965057443">Lejo roaming-un për të dhënat celulare</translation>
 <translation id="4804818685124855865">Shkëputu</translation>
 <translation id="4804827417948292437">Avokado</translation>
-<translation id="4805077164141082536">Rekomandojmë që të rezervosh kontejnerin aktual të Linux përpara përmirësimit.</translation>
 <translation id="4807098396393229769">Emri në kartë</translation>
-<translation id="4808319664292298116">Do të hysh në VR nga <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Dritaret kërcyese u bllokuan:</translation>
 <translation id="480990236307250886">Hap faqen bazë</translation>
 <translation id="4811212958317149293">Skanimi automatik i tastierës së qasjes me çelës</translation>
@@ -3709,7 +3703,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5739235828260127894">Në pritje të verifikimit. <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Shumë të mëdha</translation>
 <translation id="574209121243317957">Tonaliteti</translation>
-<translation id="5745136023067925867">Merr këshilla, oferta dhe përditësime për <ph name="DEVICE_TYPE" /> dhe ndaj komentet e tua</translation>
 <translation id="5746169159649715125">Ruaj si PDF</translation>
 <translation id="5747552184818312860">Skadon</translation>
 <translation id="5747785204778348146">Programimi - i paqëndrueshëm</translation>
@@ -4832,7 +4825,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Dil nga faqja}other{Dil nga faqet}}</translation>
 <translation id="7207457272187520234">Dërgo të dhënat e përdorimit dhe të diagnostikimit. Aktualisht kjo pajisje po dërgon automatikisht te Google të dhënat e diagnostikimit dhe të përdorimit të pajisjes dhe të aplikacioneve. Këto do të ndihmojnë për qëndrueshmërinë e sistemit dhe të aplikacioneve dhe për përmirësime të tjera. Disa të dhëna të përmbledhura do të ndihmojnë po ashtu aplikacionet dhe partnerët e Google, si p.sh. zhvilluesit e Android. Ky cilësim zbatohet nga zotëruesi. Nëse cilësimi i "Aktivitetit shtesë të uebit dhe të aplikacioneve" është i aktivizuar, këto të dhëna mund të ruhen në "Llogarinë tënde të Google".</translation>
 <translation id="7207631048330366454">Kërko për aplikacione</translation>
-<translation id="7210171324714276060">Shtesa <ph name="EXTENSION_NAME" /> ndryshoi kërkimin për të përdorur <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Printerët e shtesës</translation>
 <translation id="7212097698621322584">Fut kodin PIN aktual për ta ndryshuar. Nëse nuk e di kodin PIN, duhet të rivendosësh çelësin e sigurisë, dhe më pas të krijosh një kod të ri PIN.</translation>
 <translation id="7216409898977639127">Operatori celular</translation>
@@ -5232,7 +5224,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7737115349420013392">Po çiftohet me "<ph name="DEVICE_NAME" />" ...</translation>
 <translation id="7737238973539693982">Fshi Linux (Beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
-<translation id="7743128043742060936">Kjo faqe është ndryshuar nga shtesa "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="7744047395460924128">Shiko historikun tënd të printimit</translation>
 <translation id="7744192722284567281">U gjet në një nxjerrje të paautorizuar të të dhënave</translation>
 <translation id="7750228210027921155">Figurë brenda figurës</translation>

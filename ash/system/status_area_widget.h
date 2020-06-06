@@ -156,6 +156,12 @@ class ASH_EXPORT StatusAreaWidget : public SessionObserver,
     // Each bit keep track of one child's visibility.
     unsigned int child_visibility_bitmask = 0;
 
+    // Indicates whether animation is allowed.
+    bool should_animate = true;
+
+    // |should_animate| does not affect the status area widget's target
+    // layout. So it is not taken into consideration when comparing LayoutInputs
+    // instances.
     bool operator==(const LayoutInputs& other) const {
       return bounds == other.bounds && collapse_state == other.collapse_state &&
              opacity == other.opacity &&

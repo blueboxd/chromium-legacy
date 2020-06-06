@@ -94,12 +94,6 @@ void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                 state);
 }
 
-void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
-                                    const int& device_count) {
-  base::UmaHistogramCounts100("SendTabToSelf." + entry_point + ".DeviceCount",
-                              device_count);
-}
-
 size_t GetValidDeviceCount(Profile* profile) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile);

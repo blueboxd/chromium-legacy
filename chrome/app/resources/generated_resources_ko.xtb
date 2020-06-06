@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">인증서 서명자</translation>
 <translation id="1145292499998999162">플러그인 차단됨</translation>
 <translation id="1145593918056169051">프린터가 중지됨</translation>
-<translation id="1146678959555564648">VR 시작</translation>
 <translation id="114721135501989771">Google로 Chrome을 더욱 스마트하게</translation>
 <translation id="1147991416141538220">액세스 권한을 요청하려면 기기 관리자에게 문의하세요.</translation>
 <translation id="1149401351239820326">유효기간 월</translation>
@@ -866,7 +865,6 @@
 <translation id="2096715839409389970">타사 쿠키 삭제</translation>
 <translation id="2097372108957554726">새 기기를 등록하려면 Chrome에 로그인하세요.</translation>
 <translation id="2099172618127234427">sshd 데몬을 설정하고 USB 드라이브에서 부팅하도록 사용 설정하는 Chrome OS 디버깅 기능을 사용 설정 중입니다.</translation>
-<translation id="2099625543891475722">키와 같은 신체적 특징</translation>
 <translation id="2099686503067610784">서버 인증서 '<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="2101225219012730419">버전:</translation>
@@ -2185,6 +2183,7 @@
 <translation id="3732857534841813090">Google 어시스턴트 관련 정보</translation>
 <translation id="3733127536501031542">SSL 서버(Step-up 사용)</translation>
 <translation id="3735740477244556633">정렬 기준</translation>
+<translation id="3738213647660363521">맞춤 커서 색상</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" />을(를) 여시겠습니까?</translation>
 <translation id="3742055079367172538">찍은 스크린샷</translation>
@@ -2655,7 +2654,6 @@
 <translation id="4350019051035968019">이 기기는 다른 도메인에서 관리하는 것으로 표시되어 있기 때문에 사용자의 계정이 속한 도메인에 등록할 수 없습니다.</translation>
 <translation id="4350782034419308508">Hey Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" />에서 주변 블루투스 기기를 검색하려고 합니다. 다음 기기가 발견되었습니다.</translation>
-<translation id="4353114845960720315">VR 사용 중 이 사이트가 다음 정보를 학습할 수 있습니다.</translation>
 <translation id="4354073718307267720">사이트에서 주변 환경의 3D 지도를 생성하거나 카메라 위치를 추적하려고 할 때 확인</translation>
 <translation id="4354344420232759511">내가 방문한 사이트가 여기에 표시됩니다.</translation>
 <translation id="435527878592612277">사진 선택</translation>
@@ -2890,7 +2888,6 @@
 <translation id="4659077111144409915">기본 계정</translation>
 <translation id="4660476621274971848">'<ph name="EXPECTED_VERSION" />' 버전을 예상했으나 '<ph name="NEW_ID" />' 버전이 표시되었습니다</translation>
 <translation id="4660540330091848931">크기 조정 중</translation>
-<translation id="4660838440047236328">방의 구조</translation>
 <translation id="4661407454952063730">앱 데이터에는 연락처, 메시지, 사진을 비롯하여 앱에서 개발자 설정에 따라 저장한 모든 데이터가 포함될 수 있습니다.</translation>
 <translation id="4662373422909645029">닉네임에 숫자를 포함할 수 없음</translation>
 <translation id="4662788913887017617">이 북마크를 내 iPhone과 공유</translation>
@@ -2979,9 +2976,7 @@
 <translation id="4801512016965057443">모바일 데이터 로밍 허용</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="4804827417948292437">아보카도</translation>
-<translation id="4805077164141082536">업그레이드하기 전에 현재 Linux 컨테이너를 백업하는 것이 좋습니다.</translation>
 <translation id="4807098396393229769">카드 명의</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" />에서 VR을 시작하시겠습니까?</translation>
 <translation id="4808667324955055115">팝업 차단됨</translation>
 <translation id="480990236307250886">홈페이지 열기</translation>
 <translation id="4811212958317149293">스위치 제어 키보드 자동 스캔</translation>
@@ -3295,6 +3290,7 @@
 <translation id="52232769093306234">압축에 실패했습니다.</translation>
 <translation id="5225324770654022472">앱 단축키 표시</translation>
 <translation id="5227679487546032910">기본 청록색 아바타</translation>
+<translation id="5228088094491423618">실시간 자막</translation>
 <translation id="5228579091201413441">동기화 사용</translation>
 <translation id="5229189185761556138">입력 방법 관리</translation>
 <translation id="5230516054153933099">창</translation>
@@ -3708,7 +3704,6 @@
 <translation id="5739235828260127894">확인을 기다리는 중입니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">아주 크게</translation>
 <translation id="574209121243317957">높낮이</translation>
-<translation id="5745136023067925867"><ph name="DEVICE_TYPE" />에 관한 도움말, 혜택 및 소식을 받아 보고 의견을 공유하세요.</translation>
 <translation id="5746169159649715125">PDF로 저장</translation>
 <translation id="5747552184818312860">만료</translation>
 <translation id="5747785204778348146">개발자 - 불안정</translation>
@@ -4831,7 +4826,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{페이지 나가기}other{페이지 나가기}}</translation>
 <translation id="7207457272187520234">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 데이터는 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 설정은 소유자가 지정합니다. 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 Google 계정에 저장될 수 있습니다.</translation>
 <translation id="7207631048330366454">앱 검색</translation>
-<translation id="7210171324714276060"><ph name="EXTENSION_NAME" /> 확장 프로그램이 검색에 <ph name="SEARCH_PROVIDER_DOMAIN" /> 서비스를 사용하도록 변경되었습니다.</translation>
 <translation id="7210499381659830293">확장 프로그램 프린터</translation>
 <translation id="7212097698621322584">PIN을 변경하려면 현재 PIN을 입력하세요. PIN을 모르는 경우 보안 키를 재설정한 다음 새 PIN을 만들어야 합니다.</translation>
 <translation id="7216409898977639127">이동통신사</translation>
@@ -5231,7 +5225,6 @@
 <translation id="7737115349420013392">‘<ph name="DEVICE_NAME" />’ 페어링 중...</translation>
 <translation id="7737238973539693982">Linux(베타) 삭제</translation>
 <translation id="7740996059027112821">표준</translation>
-<translation id="7743128043742060936"><ph name="EXTENSION_NAME" /> 확장 프로그램에서 이 페이지를 변경했습니다.</translation>
 <translation id="7744047395460924128">인쇄 기록 보기</translation>
 <translation id="7744192722284567281">정보 유출에 포함됨</translation>
 <translation id="7750228210027921155">PIP 모드</translation>
@@ -6349,6 +6342,7 @@
 <translation id="9121814364785106365">고정 탭으로 열기</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" />이(가) 일시중지됨</translation>
 <translation id="9124003689441359348">저장한 비밀번호가 여기에 표시됩니다.</translation>
+<translation id="9126149354162942022">커서 색상</translation>
 <translation id="9128317794749765148">설정을 완료할 수 없음</translation>
 <translation id="9128870381267983090">네트워크에 연결</translation>
 <translation id="9130015405878219958">잘못된 모드를 입력했습니다.</translation>

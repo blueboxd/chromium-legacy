@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Pagina's in het <ph name="SOURCE_LANGUAGE" /> worden vanaf nu vertaald naar het <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Google Chrome deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit kan gebeuren als een aanvaller probeert zich als <ph name="SITE" /> voor te doen of als een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds beveiligd omdat Google Chrome de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="1682696192498422849">Korte zijde eerst</translation>
+<translation id="168693727862418163">Deze beleidswaarde kan niet worden gevalideerd op basis van het bijbehorende schema en wordt genegeerd.</translation>
 <translation id="168841957122794586">Het servercertificaat bevat een zwakke cryptografische sleutel.</translation>
 <translation id="1697532407822776718">Je bent nu klaar!</translation>
 <translation id="1703835215927279855">Letter</translation>

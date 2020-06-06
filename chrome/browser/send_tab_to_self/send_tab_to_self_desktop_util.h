@@ -55,10 +55,6 @@ void ShareToSingleTarget(content::WebContents* tab,
 void RecordSendTabToSelfClickResult(const std::string& entry_point,
                                     SendTabToSelfClickResult state);
 
-// Records the count of valid devices when user sees the device list.
-void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
-                                    const int& device_count);
-
 // Gets the count of valid device number.
 size_t GetValidDeviceCount(Profile* profile);
 

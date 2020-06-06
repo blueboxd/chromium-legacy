@@ -131,6 +131,9 @@ base::Optional<device::mojom::XRSessionFeature> StringToXRSessionFeature(
   } else if (RuntimeEnabledFeatures::WebXRLightEstimationEnabled(doc) &&
              feature_string == "light-estimation") {
     return device::mojom::XRSessionFeature::LIGHT_ESTIMATION;
+  } else if (RuntimeEnabledFeatures::WebXRCameraAccessEnabled(doc) &&
+             feature_string == "camera-access") {
+    return device::mojom::XRSessionFeature::CAMERA_ACCESS;
   }
 
   return base::nullopt;
@@ -164,6 +167,7 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
       }
       return true;
     case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
+    case device::mojom::XRSessionFeature::CAMERA_ACCESS:
       return mode == device::mojom::blink::XRSessionMode::kImmersiveAr;
   }
 }
@@ -184,6 +188,7 @@ bool HasRequiredFeaturePolicy(const ExecutionContext* context,
     case device::mojom::XRSessionFeature::HIT_TEST:
     case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
     case device::mojom::XRSessionFeature::ANCHORS:
+    case device::mojom::XRSessionFeature::CAMERA_ACCESS:
       return context->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kWebXr,
           ReportOptions::kReportOnFailure);
@@ -1186,6 +1191,29 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   }
 
   return promise;
+}
+
+void XRSystem::MakeXrCompatibleAsync(
+    device::mojom::blink::VRService::MakeXrCompatibleCallback callback) {
+  TryEnsureService();
+  if (service_.is_bound()) {
+    service_->MakeXrCompatible(std::move(callback));
+  } else {
+    // If the service cannot be created, any sessions that can be supported will
+    // be managed entirely in Blink and thus cannot have an incompatible context
+    std::move(callback).Run(
+        device::mojom::XrCompatibleResult::kAlreadyCompatible);
+  }
+}
+
+void XRSystem::MakeXrCompatibleSync(
+    device::mojom::XrCompatibleResult* xr_compatible_result) {
+  // See the comment in MakeXrCompatibleAsync().
+  *xr_compatible_result = device::mojom::XrCompatibleResult::kAlreadyCompatible;
+
+  TryEnsureService();
+  if (service_.is_bound())
+    service_->MakeXrCompatible(xr_compatible_result);
 }
 
 // This will be called when the XR hardware or capabilities have potentially

@@ -23,7 +23,8 @@ bool Scheduling::isInputPending(ScriptState* script_state,
     return false;
 
   auto* scheduler = ThreadScheduler::Current();
-  auto info = scheduler->GetPendingUserInputInfo(options->includeContinuous());
+  auto info = scheduler->GetPendingUserInputInfo(
+      options ? options->includeContinuous() : false);
 
   // TODO(acomminos): Attribution first requires a reverse mapping between
   // cc::ElementId instances and their underlying Document* objects.

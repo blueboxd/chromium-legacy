@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Scopri i siti web più visitati toccando il pulsante "Siti principali"</translation>
 <translation id="1173894706177603556">Rinomina</translation>
 <translation id="1178581264944972037">Pausa</translation>
-<translation id="1188239144602654184">Entra in AR</translation>
 <translation id="1197267115302279827">Sposta i Preferiti</translation>
 <translation id="1201402288615127009">Avanti</translation>
 <translation id="1204037785786432551">Link di download</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">testo</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Sincronizza e personalizza su tutti i dispositivi</translation>
-<translation id="2099625543891475722">Dati sulle tue caratteristiche fisiche, come l'altezza</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="2100314319871056947">Prova a condividere il testo in parti più piccole</translation>
 <translation id="2109711654079915747">Scopri di più sugli argomenti dei siti web senza lasciare la pagina. La funzionalità Tocca per cercare consente di inviare una parola e il relativo contesto alla Ricerca Google; vengono restituiti risultati di ricerca, immagini, definizioni e altri dettagli.
@@ -341,11 +339,6 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3810973564298564668">Gestisci</translation>
 <translation id="381841723434055211">Numeri di telefono</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download eliminati</translation>
-<translation id="3849365399446680203">Mentre sei in AR, questo sito potrebbe essere in grado di:
-• Creare una mappa 3D del tuo ambiente.
-• Monitorare il movimento della videocamera.
-
-Soltanto tu puoi vedere cosa sta inquadrando la videocamera. Il sito non può vedere le immagini della videocamera.</translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
 <translation id="388596076286380598">Accedi ad articoli, video e altri contenuti dai siti che ti piacciono anche quando sei offline o se la connessione è insufficiente.</translation>
 <translation id="3894427358181296146">Aggiungi cartella</translation>
@@ -399,7 +392,6 @@ Soltanto tu puoi vedere cosa sta inquadrando la videocamera. Il sito non può ve
 <translation id="4320177379694898372">Nessuna connessione Internet</translation>
 <translation id="4321739720395210191">Impossibile aprire la fotocamera. Riavvia il dispositivo e riprova.</translation>
 <translation id="4351244548802238354">Chiudi finestra di dialogo</translation>
-<translation id="4353114845960720315">Mentre ti trovi nella VR, il sito potrebbe riuscire ad acquisire:</translation>
 <translation id="4378154925671717803">Telefono</translation>
 <translation id="4384468725000734951">Sogou in uso per la ricerca</translation>
 <translation id="4404568932422911380">Nessun segnalibro</translation>
@@ -427,7 +419,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4561979708150884304">Nessuna connessione</translation>
 <translation id="4565377596337484307">Nascondi password</translation>
 <translation id="4572422548854449519">Accedi all'account gestito</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuto fa}other{# minuti fa}}</translation>
 <translation id="4587589328781138893">Siti</translation>
 <translation id="4594952190837476234">Questa pagina offline risale al giorno <ph name="CREATION_TIME" /> e potrebbe essere diversa dalla versione online.</translation>
@@ -435,7 +426,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4616150815774728855">Apri <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Utilizza password</translation>
 <translation id="4650364565596261010">Predefinito</translation>
-<translation id="4660838440047236328">Dati sulla struttura della tua stanza</translation>
 <translation id="4662373422909645029">Il nickname non può includere numeri</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Preferiti eliminati</translation>
 <translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
@@ -459,7 +449,6 @@ Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, a
 
 Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Nome sulla carta di credito</translation>
-<translation id="4808319664292298116">Entrare nella VR da <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Vuoi annullare la sincronizzazione?</translation>
 <translation id="4835385943915508971">Chrome non ha accesso alla risorsa richiesta.</translation>
 <translation id="4837753911714442426">Apri la pagina delle opzioni di stampa</translation>
@@ -659,7 +648,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6398765197997659313">Esci da schermo intero</translation>
 <translation id="6404511346730675251">Modifica preferito</translation>
 <translation id="6406506848690869874">Sincronizzazione</translation>
-<translation id="6410973561433500075">Vuoi entrare nella AR da <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Stampa…</translation>
 <translation id="6427112570124116297">Traduci il Web</translation>
 <translation id="6433501201775827830">Scegli il motore di ricerca</translation>

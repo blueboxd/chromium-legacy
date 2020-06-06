@@ -516,20 +516,19 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
             ->BeginMainFrameQueueDurationNotCriticalEstimate();
   }
 
-  // We defer the invalidation if we expect the main thread to respond within
-  // this frame, and our prediction in the last frame was correct. That
-  // is, if we predicted the main thread to be fast and it fails to respond
-  // before the deadline in the previous frame, we don't defer the invalidation
-  // in the next frame.
-  const bool main_thread_response_expected_before_deadline =
-      bmf_sent_to_ready_to_commit_estimate - time_since_main_frame_sent <
-      bmf_to_activate_threshold;
-  const bool previous_invalidation_maybe_skipped_for_main_frame =
-      state_machine_.should_defer_invalidation_for_fast_main_frame() &&
-      state_machine_.main_thread_failed_to_respond_last_deadline();
+  bool main_thread_response_expected_before_deadline;
+  if (time_since_main_frame_sent > bmf_to_activate_threshold) {
+    // If the response to a main frame is pending past the desired duration
+    // then proactively assume that the main thread is slow instead of late
+    // correction through the frame history.
+    main_thread_response_expected_before_deadline = false;
+  } else {
+    main_thread_response_expected_before_deadline =
+        bmf_sent_to_ready_to_commit_estimate - time_since_main_frame_sent <
+        bmf_to_activate_threshold;
+  }
   state_machine_.set_should_defer_invalidation_for_fast_main_frame(
-      main_thread_response_expected_before_deadline &&
-      !previous_invalidation_maybe_skipped_for_main_frame);
+      main_thread_response_expected_before_deadline);
 
   base::TimeDelta bmf_to_activate_estimate = bmf_to_activate_estimate_critical;
   if (!begin_main_frame_args_.on_critical_path) {

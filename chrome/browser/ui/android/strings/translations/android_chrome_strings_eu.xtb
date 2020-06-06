@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Sakatu "Webgune nagusiak" botoia webgune ezagunak ikusteko</translation>
 <translation id="1173894706177603556">Aldatu izena</translation>
 <translation id="1178581264944972037">Pausatu</translation>
-<translation id="1188239144602654184">Sartu errealitate areagotuan</translation>
 <translation id="1197267115302279827">Mugitu laster-markak</translation>
 <translation id="1201402288615127009">Hurrengoa</translation>
 <translation id="1204037785786432551">Deskargatu estekako edukia</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">testua</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /> emaitza</translation>
 <translation id="2096012225669085171">Sinkronizatu eta pertsonalizatu gailu guztiak</translation>
-<translation id="2099625543891475722">zure ezaugarri fisikoak (esaterako, altuera)</translation>
 <translation id="2100273922101894616">Saio-hasiera automatikoa</translation>
 <translation id="2100314319871056947">Saiatu testua zati txikiagotan partekatzen</translation>
 <translation id="2109711654079915747">Lortu informazio gehiago beste webgune batzuetan, uneko orritik irten gabe. "Sakatu bilatzeko" eginbideak hitz bat eta haren testuingurua Google Bilaketa zerbitzura bidaltzen ditu, eta definizioak, irudiak, bilaketa-emaitzak eta beste zenbait xehetasun eskaintzen.
@@ -341,11 +339,6 @@ Eduki sakatuta bilatu nahi duzun hitza. Bilaketa mugatzeko, hautatu hitz gehiago
 <translation id="3810973564298564668">Kudeatu</translation>
 <translation id="381841723434055211">Telefono-zenbakiak</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> deskarga ezabatu dira</translation>
-<translation id="3849365399446680203">Errealitate areagotuan erabiltzen ari zarenean, baliteke webgune hau honako hauek egiteko gai izatea:
-• Zure ingurunearen hiru dimentsioko mapa eraiki.
-• Kameraren mugimenduen jarraipena egin.
-
-Zuk bakarrik ikus dezakezu kamera zeri begira dagoen. Webgune honek ezin ditu ikusi zure kamerako irudiak.</translation>
 <translation id="3859306556332390985">Aurreratu</translation>
 <translation id="388596076286380598">Eskuratu gustuko dituzun webguneetako artikuluak, bideoak edo bestelako edukia, baita konexiorik ez baduzu edo konexioa txarra baldin bada ere.</translation>
 <translation id="3894427358181296146">Gehitu karpeta</translation>
@@ -399,7 +392,6 @@ Zuk bakarrik ikus dezakezu kamera zeri begira dagoen. Webgune honek ezin ditu ik
 <translation id="4320177379694898372">Ez zaude konektatuta Internetera</translation>
 <translation id="4321739720395210191">Ezin da ireki kamera. Berrabiarazi gailua eta saiatu berriro.</translation>
 <translation id="4351244548802238354">Itxi leihoa</translation>
-<translation id="4353114845960720315">Errealitate birtualean zauden bitartean, baliteke webgune honek hauei buruzko informazioa lortzea:</translation>
 <translation id="4378154925671717803">Telefonoa</translation>
 <translation id="4384468725000734951">Sogou erabiliko da bilatzaile gisa</translation>
 <translation id="4404568932422911380">Ez dago laster-markarik</translation>
@@ -427,7 +419,6 @@ Baliteke Google kontuak arakatze-historiako bestelako datu batzuk (adibidez, bil
 <translation id="4561979708150884304">Ez zaude konektatuta Internetera</translation>
 <translation id="4565377596337484307">Ezkutatu pasahitza</translation>
 <translation id="4572422548854449519">Hasi saioa kontu kudeatuan</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Duela # minutu}other{Duela # minutu}}</translation>
 <translation id="4587589328781138893">Webguneak</translation>
 <translation id="4594952190837476234">Konexiorik gabe erabiltzeko orri hau <ph name="CREATION_TIME" /> datan sortu zen. Ondorioz, baliteke sareko bertsioarekin bat ez etortzea.</translation>
@@ -435,7 +426,6 @@ Baliteke Google kontuak arakatze-historiako bestelako datu batzuk (adibidez, bil
 <translation id="4616150815774728855">Ireki <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Erabili pasahitza</translation>
 <translation id="4650364565596261010">Sistemaren balio lehenetsia</translation>
-<translation id="4660838440047236328">gelaren diseinua</translation>
 <translation id="4662373422909645029">Goitizenak ezin du eduki zenbakirik</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> laster-marka ezabatu dira</translation>
 <translation id="4665282149850138822">Hasierako pantailan gehitu da <ph name="NAME" /></translation>
@@ -459,7 +449,6 @@ Baliteke Google kontuak arakatze-historiako bestelako datu batzuk (adibidez, bil
 
 Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Txartelean ageri den izena</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> domeinutik atzitu nahi duzu errealitate areagotuko aurkezpena?</translation>
 <translation id="4824958205181053313">Sinkronizazioa bertan behera utzi nahi duzu?</translation>
 <translation id="4835385943915508971">Chrome-k ez du eskatutako baliabiderako sarbiderik.</translation>
 <translation id="4837753911714442426">Ireki orria inprimatzeko aukerak</translation>
@@ -659,7 +648,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="6398765197997659313">Irten pantaila osotik</translation>
 <translation id="6404511346730675251">Editatu laster-marka</translation>
 <translation id="6406506848690869874">Sinkronizazioa</translation>
-<translation id="6410973561433500075">Errealitate areagotuan sartu nahi duzu <ph name="DOMAIN" /> webgunearen bidez?</translation>
 <translation id="641643625718530986">Inprimatu…</translation>
 <translation id="6427112570124116297">Itzuli web-orria</translation>
 <translation id="6433501201775827830">Aukeratu bilatzailea</translation>

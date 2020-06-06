@@ -137,6 +137,18 @@ std::string GetError(ParseResult error_reason, const int* rule_id) {
     case ParseResult::ERROR_INVALID_HEADER_NAME:
       return ErrorUtils::FormatErrorMessage(kErrorInvalidHeaderName,
                                             base::NumberToString(*rule_id));
+    case ParseResult::ERROR_INVALID_HEADER_VALUE:
+      return ErrorUtils::FormatErrorMessage(kErrorInvalidHeaderValue,
+                                            base::NumberToString(*rule_id));
+    case ParseResult::ERROR_HEADER_VALUE_NOT_SPECIFIED:
+      return ErrorUtils::FormatErrorMessage(kErrorNoHeaderValueSpecified,
+                                            base::NumberToString(*rule_id));
+    case ParseResult::ERROR_HEADER_VALUE_PRESENT:
+      return ErrorUtils::FormatErrorMessage(kErrorHeaderValuePresent,
+                                            base::NumberToString(*rule_id));
+    case ParseResult::ERROR_APPEND_REQUEST_HEADER_UNSUPPORTED:
+      return ErrorUtils::FormatErrorMessage(kErrorCannotAppendRequestHeader,
+                                            base::NumberToString(*rule_id));
     case ParseResult::ERROR_REGEX_TOO_LARGE:
       // These rules are ignored while indexing and so won't cause an error.
       break;

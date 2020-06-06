@@ -115,8 +115,13 @@ static inline void Insert(HTMLConstructionSiteTask& task) {
   // 3. If the adjusted insertion location is inside a template element, let it
   // instead be inside the template element's template contents, after its last
   // child (if any).
-  if (auto* template_element = DynamicTo<HTMLTemplateElement>(*task.parent))
+  if (auto* template_element = DynamicTo<HTMLTemplateElement>(*task.parent)) {
     task.parent = template_element->TemplateContentForHTMLConstructionSite();
+    // If the Document was detached in the middle of parsing, The template
+    // element won't be able to initialize its contents, so bail out.
+    if (!task.parent)
+      return;
+  }
 
   // https://html.spec.whatwg.org/C/#insert-a-foreign-element
   // 3.1, (3) Push (pop) an element queue
@@ -799,8 +804,12 @@ void HTMLConstructionSite::InsertTextNode(const StringView& string,
   // handled in Insert().
   if (auto* template_element =
           DynamicTo<HTMLTemplateElement>(*dummy_task.parent)) {
-    dummy_task.parent =
-        template_element->TemplateContentForHTMLConstructionSite();
+    // If the Document was detached in the middle of parsing, the template
+    // element won't be able to initialize its contents.
+    if (auto* content =
+            template_element->TemplateContentForHTMLConstructionSite()) {
+      dummy_task.parent = content;
+    }
   }
 
   // Unclear when parent != case occurs. Somehow we insert text into two

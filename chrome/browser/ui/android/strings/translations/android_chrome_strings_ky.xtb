@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"Мыкты шаарлар" баскычын басып, таанымал вебсайттарды көрүңүз</translation>
 <translation id="1173894706177603556">Атын өзгөртүү</translation>
 <translation id="1178581264944972037">Бир азга токтотуу</translation>
-<translation id="1188239144602654184">AR режимине кирүү</translation>
 <translation id="1197267115302279827">Кыстармаларды жылдыруу</translation>
 <translation id="1201402288615127009">Кийинки</translation>
 <translation id="1204037785786432551">Жүктөп алуу шилтемеси</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">текст</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> ичинен <ph name="RESULT_NUMBER" /> натыйжа</translation>
 <translation id="2096012225669085171">Бардык түзмөктөрдө шайкештирүү жана жекечелештирүү</translation>
-<translation id="2099625543891475722">боюңуз сыяктуу физикалык мүнөздөмөлөрүңүз</translation>
 <translation id="2100273922101894616">Авто кирүү</translation>
 <translation id="2100314319871056947">Текстти бир нече бөлүккө бөлүп анан бөлүшүп көрүңүз</translation>
 <translation id="2109711654079915747">Ачылып турган баракчадан кетпестен, сүрөттөрдү, аныктамаларды жана башка маалыматты тапканга жардам берет. Жөн гана бир сөз тандасаңыз, ал контексти менен кошо Google Издөөгө жөнөтүлөт.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">Башкаруу</translation>
 <translation id="381841723434055211">Телефон номерлери</translation>
 <translation id="3819178904835489326">Жүктөлүп алынган <ph name="NUMBER_OF_DOWNLOADS" /> нерсе өчүрүлдү</translation>
-<translation id="3849365399446680203">AR режимин колдонуп жатканыңызда бул сайт төмөнкүлөрдү аткара алат:
-• айланаңыздын 3D картасын түзөт
-• камеранын кыймылына көз салат
-
-Камераңыз кайда карап турганын сиз гана көрөсүз. Сайт камерадагы сүрөттөрдү көрбөйт.</translation>
 <translation id="3859306556332390985">Алдыга түрдүрүү</translation>
 <translation id="388596076286380598">Интернет байланышы болбосо же начар болсо да, сүйүктүү сайттарыңыздагы макалаларды, видеолорду жана башка мазмунду көрүп туруңуз.</translation>
 <translation id="3894427358181296146">Куржун кошуу</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">Интернет жок</translation>
 <translation id="4321739720395210191">Камераңыз ачылбай жатат. Түзмөктү өчүрүп күйгүзүп, кайталап көрүңүз.</translation>
 <translation id="4351244548802238354">Диалогду жабуу</translation>
-<translation id="4353114845960720315">VR режиминде бул сайт төмөнкүнү көрүшү мүмкүн:</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4384468725000734951">Издөө үчүн Sogou колдонулууда</translation>
 <translation id="4404568932422911380">Кыстармалар жок</translation>
@@ -427,7 +419,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4561979708150884304">Интернет жок</translation>
 <translation id="4565377596337484307">Сырсөздү жашыруу</translation>
 <translation id="4572422548854449519">Башкарылган аккаунтка кириңиз</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# мүнөт мурун}other{# мүнөт мурун}}</translation>
 <translation id="4587589328781138893">Сайттар</translation>
 <translation id="4594952190837476234">Бул оффлайн режиминдеги баракча <ph name="CREATION_TIME" /> сакталган жана онлайн версиясынан айырмаланышы мүмкүн.</translation>
@@ -435,7 +426,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> колдонмосун ачуу</translation>
 <translation id="4634124774493850572">Сырсөздү колдонуу</translation>
 <translation id="4650364565596261010">Демейки тутум</translation>
-<translation id="4660838440047236328">бөлмөңүздүн көрүнүшү</translation>
 <translation id="4662373422909645029">Ылакап атта сан болбошу керек</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> кыстарма өчүрүлдү</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> Башкы экраныңызга кошулду</translation>
@@ -459,7 +449,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 
 Бул жөндөөнү өзгөртүү үчүн <ph name="BEGIN_LINK" />шайкештирүүнү баштапкы абалга келтириңиз<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Картадагы ысым</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> сайтынын VR режимине өтөсүзбү?</translation>
 <translation id="4824958205181053313">Шайкештештирүү жокко чыгарылсынбы?</translation>
 <translation id="4835385943915508971">Суралган булакка Chrome’дун кирүү мүмкүнчүлүгү жок.</translation>
 <translation id="4837753911714442426">Баракты басып чыгаруу параметрлерин ачуу</translation>
@@ -659,7 +648,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6398765197997659313">Толук экран режиминен чыгуу</translation>
 <translation id="6404511346730675251">Кыстарманы түзөтүү</translation>
 <translation id="6406506848690869874">Шайкештирүү</translation>
-<translation id="6410973561433500075">AR режимине <ph name="DOMAIN" /> доменинен киресизби?</translation>
 <translation id="641643625718530986">Басып чыгаруу…</translation>
 <translation id="6427112570124116297">Вебди которуу</translation>
 <translation id="6433501201775827830">Издөө каражатыңызды тандаңыз</translation>

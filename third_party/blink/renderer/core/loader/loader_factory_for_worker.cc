@@ -49,7 +49,7 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForWorker::CreateURLLoader(
   }
 
   if (url_loader_factory) {
-    return web_context_->WrapURLLoaderFactory(url_loader_factory.PassPipe())
+    return web_context_->WrapURLLoaderFactory(std::move(url_loader_factory))
         ->CreateURLLoader(wrapped, CreateTaskRunnerHandle(task_runner));
   }
 

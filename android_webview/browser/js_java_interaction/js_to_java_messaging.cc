@@ -4,7 +4,6 @@
 
 #include "android_webview/browser/js_java_interaction/js_to_java_messaging.h"
 
-#include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser_jni_headers/WebMessageListenerHolder_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"

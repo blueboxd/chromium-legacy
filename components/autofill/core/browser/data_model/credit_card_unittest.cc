@@ -219,7 +219,7 @@ TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2020",
                           "1");
   credit_card1.SetNickname(valid_nickname);
-  EXPECT_EQ(valid_nickname, credit_card1.NicknameAndLastFourDigits());
+  EXPECT_EQ(valid_nickname, credit_card1.NicknameAndLastFourDigitsForTesting());
 
   // Case 2: Have everything.
   CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
@@ -229,7 +229,7 @@ TEST(CreditCardTest, NicknameAndLastFourDigitsStrings) {
   EXPECT_EQ(
       valid_nickname + UTF8ToUTF16(std::string("  ") +
                                    test::ObfuscatedCardDigitsAsUTF8("5100")),
-      credit_card2.NicknameAndLastFourDigits());
+      credit_card2.NicknameAndLastFourDigitsForTesting());
 }
 
 TEST(CreditCardTest, CardIdentifierStringsForAutofillDisplay) {

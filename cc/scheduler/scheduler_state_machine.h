@@ -344,10 +344,6 @@ class CC_EXPORT SchedulerStateMachine {
     return should_defer_invalidation_for_fast_main_frame_;
   }
 
-  bool main_thread_failed_to_respond_last_deadline() const {
-    return main_thread_failed_to_respond_last_deadline_;
-  }
-
  protected:
   bool BeginFrameRequiredForAction() const;
   bool BeginFrameNeededForVideo() const;
@@ -470,10 +466,6 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates if asychronous paint worklet painting is ongoing for the pending
   // tree. During this time we should not activate the pending tree.
   bool processing_paint_worklets_for_pending_tree_ = false;
-
-  // Set to true if the main thread fails to respond with a commit or abort the
-  // main frame before the draw deadline on the previous impl frame.
-  bool main_thread_failed_to_respond_last_deadline_ = false;
 
   bool previous_pending_tree_was_impl_side_ = false;
   bool current_pending_tree_is_impl_side_ = false;

@@ -33,6 +33,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.engagement.SiteEngagementService;
@@ -52,6 +53,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -487,20 +489,44 @@ public class PortalsTest {
         Assert.assertEquals(mainTitle, history.get(1).getTitle());
     }
 
+    interface NotificationPredicate {
+        boolean test(StatusBarNotification notification);
+    }
+
+    private NotificationPredicate mMediaCaptureNotificationPred = notification
+            -> TextUtils.equals(notification.getTag(), "MediaCaptureNotificationService");
+    private NotificationPredicate mMediaPlaybackNotificationPred =
+            notification -> notification.getId() == R.id.media_playback_notification;
+
     @TargetApi(Build.VERSION_CODES.M)
-    private void waitForMediaCaptureNotification() {
+    private void waitForNotification(NotificationPredicate pred) {
         CriteriaHelper.pollInstrumentationThread(() -> {
             StatusBarNotification notifications[] =
                     ((NotificationManager) ContextUtils.getApplicationContext().getSystemService(
                              Context.NOTIFICATION_SERVICE))
                             .getActiveNotifications();
             for (StatusBarNotification statusBarNotification : notifications) {
-                if (TextUtils.equals(
-                            statusBarNotification.getTag(), "MediaCaptureNotificationService")) {
+                if (pred.test(statusBarNotification)) {
                     return true;
                 }
             }
             return false;
+        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void waitForNoNotifications(NotificationPredicate pred) {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            StatusBarNotification notifications[] =
+                    ((NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                             Context.NOTIFICATION_SERVICE))
+                            .getActiveNotifications();
+            for (StatusBarNotification statusBarNotification : notifications) {
+                if (pred.test(statusBarNotification)) {
+                    return false;
+                }
+            }
+            return true;
         });
     }
 
@@ -529,13 +555,39 @@ public class PortalsTest {
                     ModalDialogProperties.ButtonType.POSITIVE);
         });
         // Wait for video capture notification.
-        waitForMediaCaptureNotification();
+        waitForNotification(mMediaCaptureNotificationPred);
         // Activate portal.
         executeScriptAndAwaitSwap(tab, "activate()");
         // Wait for adoption to complete.
         JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
         // Check if notification is still shown.
-        waitForMediaCaptureNotification();
+        waitForNotification(mMediaCaptureNotificationPred);
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testMediaNotificationDisappearsAfterActivation() throws Exception {
+        String mainUrl =
+                mTestServer.getURL("/chrome/test/data/android/portals/media-notification.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        // Start video playback.
+        DOMUtils.clickNode(tab.getWebContents(), "video");
+        // Wait for media notification.
+        waitForNotification(mMediaPlaybackNotificationPred);
+        // Activate portal.
+        executeScriptAndAwaitSwap(tab, "activate()");
+        // Wait for adoption to complete.
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
+        // Notification should disappear.
+        waitForNoNotifications(mMediaPlaybackNotificationPred);
+        // Activate predecessor.
+        executeScriptAndAwaitSwap(tab, "activate()");
+        // Media notification should show again.
+        waitForNotification(mMediaPlaybackNotificationPred);
     }
 
     @Test

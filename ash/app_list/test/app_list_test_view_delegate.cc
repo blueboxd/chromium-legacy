@@ -207,6 +207,10 @@ int AppListTestViewDelegate::GetShelfSize() {
   return 56;
 }
 
+bool AppListTestViewDelegate::AppListTargetVisibility() const {
+  return true;
+}
+
 bool AppListTestViewDelegate::IsInTabletMode() {
   return is_tablet_mode_;
 }

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -21,19 +22,24 @@
 // This class is an intermediary URLLoaderFactory between the renderer and
 // network process, AKA proxy which should not be confused with a proxy server.
 //
-// Currently, this class doesn't do anything but forward all messages directly
-// to the normal network process and is only boilerplate for future changes.
+// Currently, this class only monitors when resource loads complete successfully
+// and reports those to the |IsolatedPrerenderSubresourceManager| which owns
+// |this|.
 class IsolatedPrerenderProxyingURLLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
   using DisconnectCallback =
       base::OnceCallback<void(IsolatedPrerenderProxyingURLLoaderFactory*)>;
 
+  using ResourceLoadSuccessfulCallback =
+      base::RepeatingCallback<void(const GURL& url)>;
+
   IsolatedPrerenderProxyingURLLoaderFactory(
       int frame_tree_node_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
-      DisconnectCallback on_disconnect);
+      DisconnectCallback on_disconnect,
+      ResourceLoadSuccessfulCallback on_resource_load_successful);
   ~IsolatedPrerenderProxyingURLLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -55,6 +61,7 @@ class IsolatedPrerenderProxyingURLLoaderFactory
    public:
     InProgressRequest(
         IsolatedPrerenderProxyingURLLoaderFactory* factory,
+        ResourceLoadSuccessfulCallback on_resource_load_successful,
         mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
         int32_t routing_id,
         int32_t request_id,
@@ -91,11 +98,26 @@ class IsolatedPrerenderProxyingURLLoaderFactory
    private:
     void OnBindingsClosed();
 
+    // Runs |on_resource_load_successful_| for each url in |redirect_chain_| if
+    // the resource was successfully loaded.
+    void MaybeReportResourceLoadSuccess(int net_error);
+
     // Back pointer to the factory which owns this class.
     IsolatedPrerenderProxyingURLLoaderFactory* const factory_;
 
     // This should be run on destruction of |this|.
     base::OnceClosure destruction_callback_;
+
+    // Records the HTTP response code in |OnReceiveResponse|.
+    base::Optional<int> http_response_code_;
+
+    // All urls loaded by |this| in order of redirects. The first element is the
+    // requested url and the last element is the final loaded url. Always has
+    // length of at least 1.
+    std::vector<GURL> redirect_chain_;
+
+    // Used to report successfully loaded urls in the redirect chain.
+    ResourceLoadSuccessfulCallback on_resource_load_successful_;
 
     // There are the mojo pipe endpoints between this proxy and the renderer.
     // Messages received by |client_receiver_| are forwarded to
@@ -118,6 +140,10 @@ class IsolatedPrerenderProxyingURLLoaderFactory
   void MaybeDestroySelf();
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
+
+  // Passed to each InProgressRequest so they can report successfully loaded
+  // urls in their redirect chain.
+  ResourceLoadSuccessfulCallback on_resource_load_successful_;
 
   // All active network requests handled by this factory.
   std::set<std::unique_ptr<InProgressRequest>, base::UniquePtrComparator>

@@ -124,6 +124,7 @@ jumbo_static_library("metrics") {
     "ukm_demographic_metrics_provider.h",
     "unsent_log_store.cc",
     "unsent_log_store.h",
+    "unsent_log_store_metrics.cc",
     "unsent_log_store_metrics.h",
     "unsent_log_store_metrics_impl.cc",
     "unsent_log_store_metrics_impl.h",

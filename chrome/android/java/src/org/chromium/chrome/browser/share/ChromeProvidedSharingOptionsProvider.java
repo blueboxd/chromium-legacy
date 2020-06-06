@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
-import org.chromium.chrome.browser.share.ShareSheetCoordinator.ContentType;
+import org.chromium.chrome.browser.share.ShareSheetPropertyModelBuilder.ContentType;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
 import org.chromium.chrome.browser.tab.Tab;

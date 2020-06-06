@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Sien gewilde webwerwe deur op die "Topwerwe"-knoppie te tik</translation>
 <translation id="1173894706177603556">Hernoem</translation>
 <translation id="1178581264944972037">Laat wag</translation>
-<translation id="1188239144602654184">Gaan by AR in</translation>
 <translation id="1197267115302279827">Skuif boekmerke</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1204037785786432551">Laai skakel af</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">teks</translation>
 <translation id="2082238445998314030">Resultaat <ph name="RESULT_NUMBER" /> van <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Sinkroniseer en personaliseer oor toestelle heen</translation>
-<translation id="2099625543891475722">jou fisieke kenmerke, soos lengte</translation>
 <translation id="2100273922101894616">Outomatiese aanmelding</translation>
 <translation id="2100314319871056947">Probeer die teks in kleiner stukkies deel</translation>
 <translation id="2109711654079915747">Kom meer te wete oor onderwerpe op webwerwe sonder om die bladsy te verlaat. Raak om te Soek stuur 'n woord en sy omringende konteks na Google Search toe en wys definisies, prente, soekresultate en ander besonderhede.
@@ -341,11 +339,6 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="3810973564298564668">Bestuur</translation>
 <translation id="381841723434055211">Foonnommers</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> aflaaie is uitgevee</translation>
-<translation id="3849365399446680203">Terwyl jy in AR is, kan hierdie werf dalk:
-• 'n 3D-kaart van jou omgewing skep
-• kamerabeweging naspoor
-
-Net jy kan sien waarna jou kamera kyk. Hierdie werf kan nie jou kamera se prente sien nie.</translation>
 <translation id="3859306556332390985">Soek vorentoe</translation>
 <translation id="388596076286380598">Kry artikels, video's en ander inhoud vanaf werwe waarvan jy hou, selfs as jy vanlyn is of as jou verbinding swak is.</translation>
 <translation id="3894427358181296146">Voeg vouer by</translation>
@@ -399,7 +392,6 @@ Net jy kan sien waarna jou kamera kyk. Hierdie werf kan nie jou kamera se prente
 <translation id="4320177379694898372">Geen internetverbinding nie</translation>
 <translation id="4321739720395210191">Kan nie jou kamera oopmaak nie. Herbegin jou toestel en probeer weer.</translation>
 <translation id="4351244548802238354">Maak dialoog toe</translation>
-<translation id="4353114845960720315">Terwyl jy in VR is, sal hierdie werf dalk meer te wete kom oor:</translation>
 <translation id="4378154925671717803">Foon</translation>
 <translation id="4384468725000734951">Gebruik Sogou om te soek</translation>
 <translation id="4404568932422911380">Geen boekmerke nie</translation>
@@ -427,7 +419,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4561979708150884304">Geen verbinding nie</translation>
 <translation id="4565377596337484307">Versteek wagwoord</translation>
 <translation id="4572422548854449519">Meld by 'n bestuurde rekening aan</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuut gelede}other{# minute gelede}}</translation>
 <translation id="4587589328781138893">Werwe</translation>
 <translation id="4594952190837476234">Hierdie vanlyn bladsy is van <ph name="CREATION_TIME" /> af en kan van die aanlyn weergawe verskil.</translation>
@@ -435,7 +426,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4616150815774728855">Maak <ph name="WEBAPK_NAME" /> oop</translation>
 <translation id="4634124774493850572">Gebruik wagwoord</translation>
 <translation id="4650364565596261010">Stelsel se verstek</translation>
-<translation id="4660838440047236328">die uitleg van jou vertrek</translation>
 <translation id="4662373422909645029">Laat syfers uit bynaam</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> boekmerke is uitgevee</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is by jou tuisskerm gevoeg</translation>
@@ -459,7 +449,6 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 
 <ph name="BEGIN_LINK" />Stel sinkronisering terug<ph name="END_LINK" /> om hierdie instelling te verander</translation>
 <translation id="4807098396393229769">Naam op kaart</translation>
-<translation id="4808319664292298116">Gaan by VR in vanaf <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Kanselleer sinkronisering?</translation>
 <translation id="4835385943915508971">Chrome het nie toegang tot die hulpbron wat versoek is nie.</translation>
 <translation id="4837753911714442426">Maak opsies oop om bladsy te druk</translation>
@@ -659,7 +648,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6398765197997659313">Gaan by volskerm uit</translation>
 <translation id="6404511346730675251">Wysig boekmerk</translation>
 <translation id="6406506848690869874">Sinkronisering</translation>
-<translation id="6410973561433500075">Voer AR van <ph name="DOMAIN" /> af in?</translation>
 <translation id="641643625718530986">Druk tans uit …</translation>
 <translation id="6427112570124116297">Vertaal die Web</translation>
 <translation id="6433501201775827830">Kies jou soekenjin</translation>

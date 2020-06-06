@@ -514,7 +514,7 @@
     Switch focus between: Status area (where your account picture appears), Launcher, Address bar, Bookmarks bar (if visible), The webpage that's open, and Downloads bar (if visible).
   </message>
   <message name="IDS_KSV_SHORTCUT_SWITCH_FOCUS" desc="Human readable version of the keyboard shortcut.">
-    <ph name="ctrl1">$1<ex>Ctrl</ex></ph><ph name="separator1">$2<ex>+</ex></ph><ph name="left">$3<ex>v</ex></ph> or <ph name="ctrl2">$4<ex>Ctrl</ex></ph><ph name="separator2">$5<ex>+</ex></ph><ph name="right">$6<ex>v</ex></ph>
+    <ph name="ctrl1">$1<ex>Ctrl</ex></ph><ph name="separator1">$2<ex>+</ex></ph><ph name="back1">$3<ex>v</ex></ph> or <ph name="ctrl2">$4<ex>Ctrl</ex></ph><ph name="separator2">$5<ex>+</ex></ph><ph name="shift">$6<ex>Shift</ex></ph><ph name="separator3">$7<ex>+</ex></ph><ph name="back2">$8<ex>v</ex></ph>
   </message>
   <message name="IDS_KSV_DESCRIPTION_OPEN_RIGHT_CLICK_MENU_FOR_HIGHLIGHTED_ITEM" desc="Description of the command in keyboard shortcut viewer.">
     Open right-click menu for highlighted item

@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">点按“热门网站”按钮可查看热门网站</translation>
 <translation id="1173894706177603556">重命名</translation>
 <translation id="1178581264944972037">暂停</translation>
-<translation id="1188239144602654184">进入 AR 会话</translation>
 <translation id="1197267115302279827">移动书签</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1204037785786432551">下载链接</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">文本</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 条结果，共 <ph name="TOTAL_RESULTS" /> 条</translation>
 <translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
-<translation id="2099625543891475722">您的身体特征，例如身高</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2100314319871056947">请尝试使用较小的文本块进行分享</translation>
 <translation id="2109711654079915747">无需离开所在页面，便可了解网站上的主题。“触摸搜索”功能会将被触摸的字词及上下文一起发送给 Google 搜索，后者随即会据此返回相应的定义、图片、搜索结果及其他详情。
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="381841723434055211">电话号码</translation>
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
-<translation id="3849365399446680203">当您进入 AR 环境后，此网站或许能够：
-• 为您的环境创建 3D 地图
-• 跟踪相机运动
-
-只有您可以看到该相机捕捉的图像。此网站无法看到这些图像。</translation>
 <translation id="3859306556332390985">前进</translation>
 <translation id="388596076286380598">畅享您喜爱的网站上的文章、视频和其他内容，即使离线或网络连接状况不佳也不受影响。</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">未连接到互联网</translation>
 <translation id="4321739720395210191">无法打开您的摄像头。请重启设备，然后重试。</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
-<translation id="4353114845960720315">当您处于 VR 环境时，此网站或许能够得知：</translation>
 <translation id="4378154925671717803">电话机</translation>
 <translation id="4384468725000734951">目前使用的搜索引擎是搜狗</translation>
 <translation id="4404568932422911380">没有书签</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">无网络连接</translation>
 <translation id="4565377596337484307">隐藏密码</translation>
 <translation id="4572422548854449519">请登录受管理的帐号</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
 <translation id="4587589328781138893">网站</translation>
 <translation id="4594952190837476234">此离线网页是在 <ph name="CREATION_TIME" />创建的，可能与在线版本有所不同。</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">打开<ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">使用密码</translation>
 <translation id="4650364565596261010">系统默认设置</translation>
-<translation id="4660838440047236328">您房间的布局</translation>
 <translation id="4662373422909645029">昵称不能包含数字</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
 <translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
@@ -459,7 +449,6 @@
 
 要更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
-<translation id="4808319664292298116">从 <ph name="DOMAIN" /> 进入 VR 环境？</translation>
 <translation id="4824958205181053313">取消同步？</translation>
 <translation id="4835385943915508971">Chrome 无权访问请求的资源。</translation>
 <translation id="4837753911714442426">打开选项以打印网页</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">退出全屏模式</translation>
 <translation id="6404511346730675251">修改书签</translation>
 <translation id="6406506848690869874">同步</translation>
-<translation id="6410973561433500075">从 <ph name="DOMAIN" /> 进入 AR 环境？</translation>
 <translation id="641643625718530986">打印…</translation>
 <translation id="6427112570124116297">翻译网页</translation>
 <translation id="6433501201775827830">选择您的搜索引擎</translation>

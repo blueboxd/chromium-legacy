@@ -53,12 +53,16 @@ namespace {
 void MaybeOverrideDlpScanResult(DownloadCheckResultReason reason,
                                 CheckDownloadRepeatingCallback callback,
                                 DownloadCheckResult deep_scan_result) {
-  if (reason == REASON_DOWNLOAD_DANGEROUS) {
+  if (reason == REASON_DOWNLOAD_DANGEROUS ||
+      reason == REASON_DOWNLOAD_DANGEROUS_HOST) {
     switch (deep_scan_result) {
       case DownloadCheckResult::UNKNOWN:
       case DownloadCheckResult::SENSITIVE_CONTENT_WARNING:
       case DownloadCheckResult::DEEP_SCANNED_SAFE:
-        callback.Run(DownloadCheckResult::DANGEROUS);
+        if (reason == REASON_DOWNLOAD_DANGEROUS)
+          callback.Run(DownloadCheckResult::DANGEROUS);
+        else
+          callback.Run(DownloadCheckResult::DANGEROUS_HOST);
         return;
 
       case DownloadCheckResult::ASYNC_SCANNING:
@@ -272,7 +276,9 @@ CheckClientDownloadRequest::ShouldUploadBinary(
 void CheckClientDownloadRequest::UploadBinary(
     DownloadCheckResultReason reason,
     enterprise_connectors::AnalysisSettings settings) {
-  if (reason == REASON_DOWNLOAD_DANGEROUS || reason == REASON_WHITELISTED_URL) {
+  if (reason == REASON_DOWNLOAD_DANGEROUS ||
+      reason == REASON_DOWNLOAD_DANGEROUS_HOST ||
+      reason == REASON_WHITELISTED_URL) {
     settings.tags.erase("malware");
     service()->UploadForDeepScanning(
         item_,

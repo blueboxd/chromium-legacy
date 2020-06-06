@@ -643,7 +643,7 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
     }
 
     @VisibleForTesting
-    View getCloseButtonForTests() {
+    public View getCloseButtonForTests() {
         return mCloseButton;
     }
 }

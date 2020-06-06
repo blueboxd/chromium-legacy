@@ -216,6 +216,10 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // space. This prevents 1px gaps on displays with non-integer scale factors.
   virtual gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) = 0;
 
+  // Returns whether the app list is visible on the display. This checks that
+  // the app list windows is open and not obstructed by another window.
+  virtual bool AppListTargetVisibility() const = 0;
+
   // Gets the current shelf height (or width for side-shelf) from the
   // ShelfConfig.
   virtual int GetShelfSize() = 0;

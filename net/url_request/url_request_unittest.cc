@@ -5468,8 +5468,8 @@ TEST_F(URLRequestTestHTTP, ExpectCTHeader) {
   d.RunUntilComplete();
 
   TransportSecurityState::ExpectCTState state;
-  ASSERT_TRUE(
-      transport_security_state.GetDynamicExpectCTState(url.host(), &state));
+  ASSERT_TRUE(transport_security_state.GetDynamicExpectCTState(
+      url.host(), NetworkIsolationKey(), &state));
   EXPECT_TRUE(state.enforce);
   EXPECT_EQ(GURL("https://example.test"), state.report_uri);
 }
@@ -5530,8 +5530,8 @@ TEST_F(URLRequestTestHTTP, MultipleExpectCTHeaders) {
   d.RunUntilComplete();
 
   TransportSecurityState::ExpectCTState state;
-  ASSERT_TRUE(
-      transport_security_state.GetDynamicExpectCTState(url.host(), &state));
+  ASSERT_TRUE(transport_security_state.GetDynamicExpectCTState(
+      url.host(), NetworkIsolationKey(), &state));
   EXPECT_TRUE(state.enforce);
   EXPECT_EQ(GURL("https://example.test"), state.report_uri);
 }

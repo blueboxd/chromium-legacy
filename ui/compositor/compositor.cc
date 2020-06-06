@@ -450,6 +450,16 @@ void Compositor::SetDisplayColorSpaces(
   if (display_color_spaces_ == display_color_spaces)
     return;
   display_color_spaces_ = display_color_spaces;
+  // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
+  // supported on ChromeOS.
+#if defined(OS_CHROMEOS)
+  if (display_color_spaces_.SupportsHDR() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUseHDRTransferFunction)) {
+    display_color_spaces_ =
+        gfx::DisplayColorSpaces(gfx::ColorSpace::CreateSRGB());
+  }
+#endif
 
   host_->SetRasterColorSpace(display_color_spaces_.GetRasterColorSpace());
   // Always force the ui::Compositor to re-draw all layers, because damage

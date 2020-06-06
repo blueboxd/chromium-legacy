@@ -728,15 +728,15 @@ TEST_P(URLRequestQuicTest, ExpectCT) {
   Init();
 
   GURL report_uri("https://report.test/");
+  IsolationInfo isolation_info = IsolationInfo::CreateTransient();
   transport_security_state()->AddExpectCT(
       kTestServerHost, base::Time::Now() + base::TimeDelta::FromDays(1),
-      true /* enforce */, report_uri);
+      true /* enforce */, report_uri, isolation_info.network_isolation_key());
 
   base::RunLoop run_loop;
   TestDelegate delegate;
   std::unique_ptr<URLRequest> request =
       CreateRequest(GURL(UrlFromPath(kHelloPath)), DEFAULT_PRIORITY, &delegate);
-  IsolationInfo isolation_info = IsolationInfo::CreateTransient();
   request->set_isolation_info(isolation_info);
   request->Start();
   delegate.RunUntilComplete();

@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">从现在开始，<ph name="SOURCE_LANGUAGE" />网页一律会被翻译成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Google Chrome 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Google Chrome 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="1682696192498422849">短边先入</translation>
+<translation id="168693727862418163">此政策值未能根据其架构进行验证，因此会被忽略。</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
 <translation id="1697532407822776718">搞定了！</translation>
 <translation id="1703835215927279855">Letter</translation>

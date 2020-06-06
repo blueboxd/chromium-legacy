@@ -42,6 +42,16 @@ import java.util.concurrent.FutureTask;
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class MetricsBridgeServiceTest {
+    private static final HistogramRecord PARSING_LOG_RESULT_SUCCESS_RECORD =
+            HistogramRecord.newBuilder()
+                    .setRecordType(RecordType.HISTOGRAM_LINEAR)
+                    .setHistogramName("Android.WebView.NonEmbeddedMetrics.ParsingLogResult")
+                    .setSample(MetricsBridgeService.ParsingLogResult.SUCCESS)
+                    .setMin(1)
+                    .setMax(MetricsBridgeService.ParsingLogResult.COUNT)
+                    .setNumBuckets(MetricsBridgeService.ParsingLogResult.COUNT + 1)
+                    .build();
+
     private File mTempFile;
 
     @Before
@@ -131,9 +141,9 @@ public class MetricsBridgeServiceTest {
         stub.recordMetrics(recordBooleanProto.toByteArray());
         List<byte[]> retrievedDataList = stub.retrieveNonembeddedMetrics();
 
-        byte[][] expectedData =
-                new byte[][] {recordBooleanProto.toByteArray(), recordLinearProto.toByteArray(),
-                        recordBooleanProto.toByteArray(), recordBooleanProto.toByteArray()};
+        byte[][] expectedData = new byte[][] {recordBooleanProto.toByteArray(),
+                recordLinearProto.toByteArray(), recordBooleanProto.toByteArray(),
+                PARSING_LOG_RESULT_SUCCESS_RECORD.toByteArray(), recordBooleanProto.toByteArray()};
 
         // Assert file is deleted after the retrieve call
         Assert.assertFalse(

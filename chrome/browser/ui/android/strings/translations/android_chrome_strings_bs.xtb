@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Dodirnite dugme "Popularno" i pristupite popularnim web lokacijama</translation>
 <translation id="1173894706177603556">Promijeni naziv</translation>
 <translation id="1178581264944972037">Pauziraj</translation>
-<translation id="1188239144602654184">Pristupi AR-u</translation>
 <translation id="1197267115302279827">Premjesti oznake</translation>
 <translation id="1201402288615127009">Naprijed</translation>
 <translation id="1204037785786432551">Link za preuzimanje</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">tekst</translation>
 <translation id="2082238445998314030">Rezultat <ph name="RESULT_NUMBER" /> od <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Sinhronizirajte i personalizirajte na svim uređajima</translation>
-<translation id="2099625543891475722">vaše fizičke osobine, kao što je visina</translation>
 <translation id="2100273922101894616">Automatsko prijavljivanje</translation>
 <translation id="2100314319871056947">Pokušajte dijeliti tekst u manjim segmentima</translation>
 <translation id="2109711654079915747">Saznajte više o temama na web lokacijama bez napuštanja stranice. Kada dodirnete Pretraživanje, poslat ćete riječ i njen kontekst u Google Pretraživanje, a dobit ćete definicije, slike, rezultate pretraživanja i druge detalje.
@@ -341,11 +339,6 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3810973564298564668">Upravljaj</translation>
 <translation id="381841723434055211">Brojevi telefona</translation>
 <translation id="3819178904835489326">Broj izbrisanih preuzimanja: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3849365399446680203">Dok ste u AR-u, ova web lokacija može:
-• kreirati 3D mapu vašeg okruženja
-• pratiti kretanje kamere
-
-Samo vi možete vidjeti prikaz kamere. Web lokacija ne može vidjeti slike kamere.</translation>
 <translation id="3859306556332390985">Pomakni naprijed</translation>
 <translation id="388596076286380598">Preuzmite članke, videozapise i drugi sadržaj s web lokacija koje vam se sviđaju, čak i kada ste van mreže ili kada vam je veza slaba.</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
@@ -399,7 +392,6 @@ Samo vi možete vidjeti prikaz kamere. Web lokacija ne može vidjeti slike kamer
 <translation id="4320177379694898372">Nema internetske veze</translation>
 <translation id="4321739720395210191">Nije moguće otvoriti kameru. Ponovo pokrenite uređaj i pokušajte ponovo.</translation>
 <translation id="4351244548802238354">Zatvori dijalog</translation>
-<translation id="4353114845960720315">Dok ste u VR-u, ova web lokacija može saznati sljedeće:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Za pretraživanje se koristi Sogou</translation>
 <translation id="4404568932422911380">Nema oznaka</translation>
@@ -427,7 +419,6 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4561979708150884304">Niste povezani na mrežu</translation>
 <translation id="4565377596337484307">Sakrij lozinku</translation>
 <translation id="4572422548854449519">Prijava na upravljani račun</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{prije # minute}one{prije # minute}few{prije # minute}other{prije # minuta}}</translation>
 <translation id="4587589328781138893">Web lokacije</translation>
 <translation id="4594952190837476234">Stranica van mreže je od <ph name="CREATION_TIME" /> i može se razlikovati od verzije koja je na mreži.</translation>
@@ -435,7 +426,6 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 <translation id="4616150815774728855">Otvori <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Koristi lozinku</translation>
 <translation id="4650364565596261010">Zadana postavka sustava</translation>
-<translation id="4660838440047236328">raspored stvari u vašoj sobi</translation>
 <translation id="4662373422909645029">Nadimak ne može imati brojeve</translation>
 <translation id="4663756553811254707">Broj izbrisanih oznaka: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Web lokacija <ph name="NAME" /> je dodana na vaš Početni ekran</translation>
@@ -459,7 +449,6 @@ Vaš Google račun može imati druge oblike historije pregledanja kao što su pr
 
 Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Ime i prezime na kartici</translation>
-<translation id="4808319664292298116">Pristupiti VR-u s domene <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Otkazati sinhroniziranje?</translation>
 <translation id="4835385943915508971">Chrome nema pristup traženom resursu.</translation>
 <translation id="4837753911714442426">Otvorite opcije za štampanje stranice</translation>
@@ -659,7 +648,6 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="6398765197997659313">Napusti prikaz preko cijelog ekrana</translation>
 <translation id="6404511346730675251">Uredite oznaku</translation>
 <translation id="6406506848690869874">Sinhronizacija</translation>
-<translation id="6410973561433500075">Pokrenuti AR s domene <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Štampaj…</translation>
 <translation id="6427112570124116297">Prevedite web</translation>
 <translation id="6433501201775827830">Odaberite pretraživač</translation>

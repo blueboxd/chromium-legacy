@@ -27,6 +27,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/OnTabRemovedTabListCallbackImpl.java",
     "src/org/chromium/weblayer/test/ProfileTest.java",
     "src/org/chromium/weblayer/test/RenderingTest.java",
+    "src/org/chromium/weblayer/test/SiteSettingsTest.java",
     "src/org/chromium/weblayer/test/SmokeTest.java",
     "src/org/chromium/weblayer/test/TabCallbackTest.java",
     "src/org/chromium/weblayer/test/TabListCallbackTest.java",
@@ -49,6 +50,7 @@ android_library("weblayer_java_tests") {
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/espresso:espresso_all_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//weblayer/browser/java:interfaces_java",
@@ -93,6 +95,8 @@ android_library("weblayer_java_test_support") {
     "src/org/chromium/weblayer/test/MinWebLayerVersionSkipCheck.java",
     "src/org/chromium/weblayer/test/NavigationWaiter.java",
     "src/org/chromium/weblayer/test/ResourceUtil.java",
+    "src/org/chromium/weblayer/test/SiteSettingsActivityTestRule.java",
+    "src/org/chromium/weblayer/test/WebLayerActivityTestRule.java",
     "src/org/chromium/weblayer/test/WebLayerJUnit4ClassRunner.java",
   ]
   deps = [

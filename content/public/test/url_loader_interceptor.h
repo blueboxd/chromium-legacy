@@ -103,6 +103,14 @@ class URLLoaderInterceptor {
 
   ~URLLoaderInterceptor();
 
+  // Serves static data, similar to net::test::EmbeddedTestServer, for
+  // cases where you need a static origin, such as tests with origin trials.
+  // Optional callback will notify callers for any accessed urls.
+  static std::unique_ptr<URLLoaderInterceptor> ServeFilesFromDirectoryAtOrigin(
+      const std::string& relative_base_path,
+      const GURL& origin,
+      base::RepeatingCallback<void(const GURL&)> callback = base::DoNothing());
+
   // Helper methods for use when intercepting.
   // Writes the given response body, header, and SSL Info to |client|.
   static void WriteResponse(

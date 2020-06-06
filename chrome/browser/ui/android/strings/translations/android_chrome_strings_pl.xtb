@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Zobacz najpopularniejsze strony, klikając przycisk „Popularne”</translation>
 <translation id="1173894706177603556">Zmień nazwę</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
-<translation id="1188239144602654184">Włącz AR</translation>
 <translation id="1197267115302279827">Przenieś zakładki</translation>
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="1204037785786432551">Pobierz link</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">Tekst</translation>
 <translation id="2082238445998314030">Wynik <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Synchronizacja i personalizacja na urządzeniach</translation>
-<translation id="2099625543891475722">Twoje cechy fizyczne, np. wzrost;</translation>
 <translation id="2100273922101894616">Automatyczne logowanie</translation>
 <translation id="2100314319871056947">Spróbuj udostępnić mniejsze fragmenty tekstu</translation>
 <translation id="2109711654079915747">Poznaj tematy omawiane w witrynach, nie opuszczając strony. Funkcja „Dotknij, by wyszukać” wysyła słowo i najbliższy kontekst do wyszukiwarki Google, a następnie zwraca definicje, zdjęcia, wyniki wyszukiwania i inne informacje.
@@ -341,11 +339,6 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3810973564298564668">Zarządzaj</translation>
 <translation id="381841723434055211">Numery telefonów</translation>
 <translation id="3819178904835489326">Usunięte pobrane pliki: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3849365399446680203">Gdy włączysz tryb AR, ta strona będzie mogła:
-• tworzyć mapę 3D Twojego otoczenia,
-• śledzić ruch kamery.
-
-Obraz z kamery będziesz widzieć tylko Ty. Strona nie będzie mieć do niego dostępu.</translation>
 <translation id="3859306556332390985">Przewiń do przodu</translation>
 <translation id="388596076286380598">Możesz czytać artykuły i oglądać filmy oraz inne treści ze swoich ulubionych stron nawet wtedy, gdy jesteś offline lub masz słabe połączenie.</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
@@ -399,7 +392,6 @@ Obraz z kamery będziesz widzieć tylko Ty. Strona nie będzie mieć do niego d
 <translation id="4320177379694898372">Brak połączenia z internetem</translation>
 <translation id="4321739720395210191">Nie udało się otworzyć aparatu. Ponownie uruchom urządzenie i spróbuj jeszcze raz.</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
-<translation id="4353114845960720315">Gdy używasz VR, strona może poznać te informacje:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Korzystam z wyszukiwarki Sogou</translation>
 <translation id="4404568932422911380">Brak zakładek</translation>
@@ -427,7 +419,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4561979708150884304">Brak połączenia</translation>
 <translation id="4565377596337484307">Ukryj hasło</translation>
 <translation id="4572422548854449519">Zaloguj się na konto zarządzane</translation>
-<translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minutę temu}few{# minuty temu}many{# minut temu}other{# minuty temu}}</translation>
 <translation id="4587589328781138893">Witryny</translation>
 <translation id="4594952190837476234">Ta strona offline jest z <ph name="CREATION_TIME" /> i może różnić się od wersji online.</translation>
@@ -435,7 +426,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4616150815774728855">Otwórz <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Użyj hasła</translation>
 <translation id="4650364565596261010">Ustawienie domyślne</translation>
-<translation id="4660838440047236328">układ Twojego pokoju.</translation>
 <translation id="4662373422909645029">Pseudonim tylko bez cyfr</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
@@ -459,7 +449,6 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 
 Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" />.</translation>
 <translation id="4807098396393229769">Imię i nazwisko na karcie</translation>
-<translation id="4808319664292298116">Włączyć tryb VR z domeny <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Anulować synchronizację?</translation>
 <translation id="4835385943915508971">Chrome nie ma dostępu do żądanego zasobu.</translation>
 <translation id="4837753911714442426">Otwórz opcje drukowania strony</translation>
@@ -659,7 +648,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6398765197997659313">Zamknij pełny ekran</translation>
 <translation id="6404511346730675251">Edytuj zakładkę</translation>
 <translation id="6406506848690869874">Synchronizacja</translation>
-<translation id="6410973561433500075">Włączyć tryb AR z domeny <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Drukuj…</translation>
 <translation id="6427112570124116297">Tłumacz internet</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>

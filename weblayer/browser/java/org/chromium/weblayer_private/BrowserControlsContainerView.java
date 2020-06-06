@@ -371,10 +371,10 @@ class BrowserControlsContainerView extends FrameLayout {
         }
         if (mIsTop) {
             BrowserControlsContainerViewJni.get().setTopControlsOffset(
-                    mNativeBrowserControlsContainerView, mControlsOffset, mContentOffset);
+                    mNativeBrowserControlsContainerView, mContentOffset);
         } else {
             BrowserControlsContainerViewJni.get().setBottomControlsOffset(
-                    mNativeBrowserControlsContainerView, mControlsOffset);
+                    mNativeBrowserControlsContainerView);
         }
     }
 
@@ -393,6 +393,11 @@ class BrowserControlsContainerView extends FrameLayout {
 
     private void showControls() {
         if (mView != null) mView.setVisibility(View.VISIBLE);
+    }
+
+    @CalledByNative
+    private int getControlsOffset() {
+        return mControlsOffset;
     }
 
     @CalledByNative
@@ -435,9 +440,8 @@ class BrowserControlsContainerView extends FrameLayout {
         void deleteBrowserControlsContainerView(long nativeBrowserControlsContainerView);
         void createControlsLayer(long nativeBrowserControlsContainerView, int id);
         void deleteControlsLayer(long nativeBrowserControlsContainerView);
-        void setTopControlsOffset(
-                long nativeBrowserControlsContainerView, int controlsOffsetY, int contentOffsetY);
-        void setBottomControlsOffset(long nativeBrowserControlsContainerView, int controlsOffsetY);
+        void setTopControlsOffset(long nativeBrowserControlsContainerView, int contentOffsetY);
+        void setBottomControlsOffset(long nativeBrowserControlsContainerView);
         void setControlsSize(long nativeBrowserControlsContainerView, int width, int height);
         void updateControlsResource(long nativeBrowserControlsContainerView);
         void setWebContents(long nativeBrowserControlsContainerView, WebContents webContents);

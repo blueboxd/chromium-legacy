@@ -275,3 +275,13 @@ template("js_type_check") {
     }
   }
 }
+
+# These externs files depend on each other (often in a cyclical way), and
+# therefore makes more sense to add all of them as a dependency together.
+chrome_extension_public_externs = [
+  "$externs_path/events.js",
+  "$externs_path/extension_types.js",
+  "$externs_path/runtime.js",
+  "$externs_path/tabs.js",
+  "$externs_path/windows.js",
+]

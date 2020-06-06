@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Sider på <ph name="SOURCE_LANGUAGE" /> oversættes fremover til <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Google Chrome forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte legitimationsoplysninger. Dette kan skyldes, at en hacker forsøger at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Google Chrome afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="1682696192498422849">Kort kant først</translation>
+<translation id="168693727862418163">Politikkens værdi blev ikke bekræftet i forhold til dens skema, og den ignoreres derfor.</translation>
 <translation id="168841957122794586">Servercertifikatet indeholder en svag kryptografisk nøgle.</translation>
 <translation id="1697532407822776718">Fuldført</translation>
 <translation id="1703835215927279855">Letter</translation>

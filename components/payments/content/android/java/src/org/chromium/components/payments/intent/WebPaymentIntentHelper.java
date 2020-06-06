@@ -16,7 +16,6 @@ import androidx.annotation.Nullable;
 import org.chromium.components.payments.Address;
 import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.PayerData;
-import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentCurrencyAmount;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentDetailsModifier;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentItem;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentMethodData;
@@ -26,7 +25,6 @@ import org.chromium.components.payments.intent.WebPaymentIntentHelperType.Paymen
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,11 +54,6 @@ public class WebPaymentIntentHelper {
     public static final String EXTRA_PAYMENT_OPTIONS_REQUEST_SHIPPING = "requestShipping";
     public static final String EXTRA_PAYMENT_OPTIONS_SHIPPING_TYPE = "shippingType";
     public static final String EXTRA_SHIPPING_OPTIONS = "shippingOptions";
-    public static final String EXTRA_SHIPPING_OPTION_ID = "shippingOptionId";
-    public static final String EXTRA_SHIPPING_OPTION_LABEL = "label";
-    public static final String EXTRA_SHIPPING_OPTION_SELECTED = "selected";
-    public static final String EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY = "amountCurrency";
-    public static final String EXTRA_SHIPPING_OPTION_AMOUNT_VALUE = "amountValue";
 
     // Deprecated parameters sent to the payment app for backward compatibility.
     public static final String EXTRA_DEPRECATED_CERTIFICATE_CHAIN = "certificateChain";
@@ -190,7 +183,7 @@ public class WebPaymentIntentHelper {
         }
 
         String selectedShippingOptionId = requestedPaymentOptions.requestShipping
-                ? getStringOrEmpty(data, EXTRA_SHIPPING_OPTION_ID)
+                ? getStringOrEmpty(data, PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID)
                 : "";
         if (requestedPaymentOptions.requestShipping
                 && TextUtils.isEmpty(selectedShippingOptionId)) {
@@ -376,11 +369,12 @@ public class WebPaymentIntentHelper {
         extras.putParcelable(EXTRA_METHOD_DATA, methodDataBundle);
 
         if (modifiers != null) {
-            extras.putString(EXTRA_MODIFIERS, serializeModifiers(modifiers.values()));
+            extras.putString(
+                    EXTRA_MODIFIERS, PaymentDetailsModifier.serializeModifiers(modifiers.values()));
         }
 
         if (total != null) {
-            String serializedTotalAmount = serializeTotalAmount(total.amount);
+            String serializedTotalAmount = total.amount.serialize();
             extras.putString(EXTRA_TOTAL,
                     serializedTotalAmount == null ? EMPTY_JSON_DATA : serializedTotalAmount);
         }
@@ -391,7 +385,8 @@ public class WebPaymentIntentHelper {
 
         // ShippingOptions are populated only when shipping is requested.
         if (paymentOptions != null && paymentOptions.requestShipping) {
-            Parcelable[] serializedShippingOptionList = buildShippingOptionList(shippingOptions);
+            Parcelable[] serializedShippingOptionList =
+                    PaymentShippingOption.buildPaymentShippingOptionList(shippingOptions);
             extras.putParcelableArray(EXTRA_SHIPPING_OPTIONS, serializedShippingOptionList);
         }
 
@@ -441,22 +436,6 @@ public class WebPaymentIntentHelper {
         return result;
     }
 
-    private static Parcelable[] buildShippingOptionList(
-            List<PaymentShippingOption> shippingOptions) {
-        Parcelable[] result = new Parcelable[shippingOptions.size()];
-        int index = 0;
-        for (PaymentShippingOption option : shippingOptions) {
-            Bundle bundle = new Bundle();
-            bundle.putString(EXTRA_SHIPPING_OPTION_ID, option.id);
-            bundle.putString(EXTRA_SHIPPING_OPTION_LABEL, option.label);
-            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY, option.amountCurrency);
-            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_VALUE, option.amountValue);
-            bundle.putBoolean(EXTRA_SHIPPING_OPTION_SELECTED, option.selected);
-            result[index++] = bundle;
-        }
-        return result;
-    }
-
     private static Bundle buildPaymentOptionsBundle(PaymentOptions paymentOptions) {
         Bundle bundle = new Bundle();
         bundle.putBoolean(
@@ -483,7 +462,7 @@ public class WebPaymentIntentHelper {
             if (total != null) {
                 // total {{{
                 json.name("total");
-                serializeTotal(total, json);
+                total.serializeAndRedact(json);
                 // }}} total
             }
 
@@ -502,87 +481,6 @@ public class WebPaymentIntentHelper {
         }
 
         return stringWriter.toString();
-    }
-
-    private static String serializeTotalAmount(PaymentCurrencyAmount totalAmount) {
-        StringWriter stringWriter = new StringWriter();
-        JsonWriter json = new JsonWriter(stringWriter);
-        try {
-            // {{{
-            json.beginObject();
-            json.name("currency").value(totalAmount.currency);
-            json.name("value").value(totalAmount.value);
-            json.endObject();
-            // }}}
-        } catch (IOException e) {
-            return null;
-        }
-        return stringWriter.toString();
-    }
-
-    private static void serializeTotal(PaymentItem item, JsonWriter json) throws IOException {
-        // item {{{
-        json.beginObject();
-        // Sanitize the total name, because the payment app does not need it to complete the
-        // transaction. Matches the behavior of:
-        // https://w3c.github.io/payment-handler/#total-attribute
-        json.name("label").value("");
-
-        // amount {{{
-        json.name("amount").beginObject();
-        json.name("currency").value(item.amount.currency);
-        json.name("value").value(item.amount.value);
-        json.endObject();
-        // }}} amount
-
-        json.endObject();
-        // }}} item
-    }
-
-    private static String serializeModifiers(Collection<PaymentDetailsModifier> modifiers) {
-        StringWriter stringWriter = new StringWriter();
-        JsonWriter json = new JsonWriter(stringWriter);
-        try {
-            json.beginArray();
-            for (PaymentDetailsModifier modifier : modifiers) {
-                checkNotNull(modifier, "PaymentDetailsModifier");
-                serializeModifier(modifier, json);
-            }
-            json.endArray();
-        } catch (IOException e) {
-            return EMPTY_JSON_DATA;
-        }
-        return stringWriter.toString();
-    }
-
-    private static void serializeModifier(PaymentDetailsModifier modifier, JsonWriter json)
-            throws IOException {
-        // {{{
-        json.beginObject();
-
-        // total {{{
-        if (modifier.total != null) {
-            json.name("total");
-            serializeTotal(modifier.total, json);
-        } else {
-            json.name("total").nullValue();
-        }
-        // }}} total
-
-        // TODO(https://crbug.com/754779): The supportedMethods field was already changed from array
-        // to string but we should keep backward-compatibility for now.
-        // supportedMethods {{{
-        json.name("supportedMethods").beginArray();
-        json.value(modifier.methodData.supportedMethod);
-        json.endArray();
-        // }}} supportedMethods
-
-        // data {{{
-        json.name("data").value(modifier.methodData.stringifiedData);
-        // }}}
-
-        json.endObject();
-        // }}}
     }
 
     private static String getStringOrEmpty(Intent data, String key) {

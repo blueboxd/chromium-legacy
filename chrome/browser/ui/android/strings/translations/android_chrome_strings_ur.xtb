@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"سر فہرست سائٹس" بٹن پر تھپتھپا کر مقبول ویب سائٹس دیکھیں</translation>
 <translation id="1173894706177603556">نام بدلیں</translation>
 <translation id="1178581264944972037">موقوف کریں</translation>
-<translation id="1188239144602654184">‏AR میں داخل ہوں</translation>
 <translation id="1197267115302279827">بُک مارکس منتقل کریں</translation>
 <translation id="1201402288615127009">اگلا</translation>
 <translation id="1204037785786432551">ڈاؤن لوڈ کا لنک</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">متن</translation>
 <translation id="2082238445998314030">نتیجہ <ph name="RESULT_NUMBER" /> از <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">سبھی آلات پر مطابقت پذیری اور ذاتی نوعیت سازی کریں</translation>
-<translation id="2099625543891475722">آپ کی جسمانی خصوصیات، جیسے کہ قد</translation>
 <translation id="2100273922101894616">خودکار سائن ان</translation>
 <translation id="2100314319871056947">چھوٹے ٹکڑوں میں متن کا اشتراک کرنے کی کوشش کریں</translation>
 <translation id="2109711654079915747">‏صفحہ کو چھوڑے بغیر ویب سائٹس پر موجود عنوانات کے بارے میں جانیں۔ 'تلاش کرنے کے لیے ٹچ کریں' کسی لفظ اور اس کے آس پاس کا سیاق و سباق Google تلاش کو بھیجتا ہے، جس کے نتیجے میں تعریفات، تصاویر، تلاش کے نتائج اور دیگر تفصیلات موصول ہوتی ہیں۔
@@ -341,10 +339,6 @@
 <translation id="3810973564298564668">نظم کریں</translation>
 <translation id="381841723434055211">فون نمبرز</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ڈاؤن لوڈز کو حذف کر دیا گیا</translation>
-<translation id="3849365399446680203">‏آپ کے AR ہونے کے دوران، یہ سائٹ درج ذیل چیزیں کر سکے گی:
-• آپ کے ماحول کا ایک 3D نقشہ تخلیق کر سکے گی
-• کیمرے کی حرکت کو ٹریک کر سکے گی
-صرف آپ ہی دیکھ سکتے ہیں کہ آپ کا کیمرا کیا دیکھ رہا ہے۔ سائٹ آپ کے کیمرا کی تصاویر نہیں دیکھ سکتی۔</translation>
 <translation id="3859306556332390985">آگے لے جائیں</translation>
 <translation id="388596076286380598">آف لائن ہونے یا آپ کا کنکشن خراب ہونے کے باوجود اپنی پسندیدہ سائٹس سے مضامین، ویڈیوز اور دیگر مواد حاصل کریں۔</translation>
 <translation id="3894427358181296146">فولڈر کا اضافہ کریں</translation>
@@ -398,7 +392,6 @@
 <translation id="4320177379694898372">کوئی انٹرنیٹ کنکشن نہیں ہے</translation>
 <translation id="4321739720395210191">اپنا کیمرا نہیں کھول سکتے۔ اپنا آلہ ری سٹارٹ کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="4351244548802238354">ڈائیلاگ بند کریں</translation>
-<translation id="4353114845960720315">‏آپ کے VR میں ہونے کے دوران یہ سائٹ درج ذیل چیزیں جاننے کے قابل ہو سکتی ہے:</translation>
 <translation id="4378154925671717803">فون</translation>
 <translation id="4384468725000734951">‏تلاش کیلئے Sogou کا استعمال کیا جا رہا ہے</translation>
 <translation id="4404568932422911380">کوئی بُک مارک نہیں</translation>
@@ -426,7 +419,6 @@
 <translation id="4561979708150884304">کوئی کنکشن نہیں</translation>
 <translation id="4565377596337484307">پاس ورڈ چھپائیں</translation>
 <translation id="4572422548854449519">نظم کردہ اکاؤنٹ میں سائن ان کریں</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# منٹ پہلے}other{# منٹ پہلے}}</translation>
 <translation id="4587589328781138893">سائٹیں</translation>
 <translation id="4594952190837476234">یہ آف لائن صفحہ <ph name="CREATION_TIME" /> کا ہے اور آن لائن ورژن سے مختلف ہو سکتا ہے۔</translation>
@@ -434,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> کو کھولیں</translation>
 <translation id="4634124774493850572">پاس ورڈ استعمال کریں</translation>
 <translation id="4650364565596261010">سسٹم ڈیفالٹ</translation>
-<translation id="4660838440047236328">آپ کے کمرے کا لے آؤٹ</translation>
 <translation id="4662373422909645029">عرفی نام میں نمبرز شامل نہیں ہو سکتے</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> بُک مارکس حذف کر دیے گئے</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> کو آپ کی ہوم اسکرین میں شامل کر دیا گیا تھا</translation>
@@ -458,7 +449,6 @@
 
 اس ترتیب کو تبدیل کرنے کیلئے، <ph name="BEGIN_LINK" />مطابقت پذیری کو دوبارہ ترتیب دیں<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">کارڈ پر نام</translation>
-<translation id="4808319664292298116">‏<ph name="DOMAIN" /> سے VR داخل کریں؟</translation>
 <translation id="4824958205181053313">مطابقت پذیری منسوخ کریں؟</translation>
 <translation id="4835385943915508971">‏Chrome کو درخواست کردہ وسیلہ تک رسائی حاصل نہیں ہے۔</translation>
 <translation id="4837753911714442426">صفحہ پرنٹ کرنے کیلئے اختیارات کھولیں</translation>
@@ -658,7 +648,6 @@
 <translation id="6398765197997659313">پوری سکرین سے خارج ہوں</translation>
 <translation id="6404511346730675251">بک مارک میں ترمیم کریں</translation>
 <translation id="6406506848690869874">مطابقت پذیر بنائیں</translation>
-<translation id="6410973561433500075">‏<ph name="DOMAIN" /> سے AR میں داخل ہوں؟</translation>
 <translation id="641643625718530986">پرنٹ کریں…</translation>
 <translation id="6427112570124116297">ویب کا ترجمہ کریں</translation>
 <translation id="6433501201775827830">اپنے تلاش انجن کا انتخاب کریں</translation>

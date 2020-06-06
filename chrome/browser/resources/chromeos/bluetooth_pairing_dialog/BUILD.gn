@@ -26,10 +26,10 @@ js_library("bluetooth_pairing_dialog") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
   ]
-  externs_list = [
-    "$externs_path/bluetooth.js",
-    "$externs_path/bluetooth_private.js",
-  ]
+  externs_list = chrome_extension_public_externs + [
+                   "$externs_path/bluetooth.js",
+                   "$externs_path/bluetooth_private.js",
+                 ]
   extra_sources = [
     "$interfaces_path/bluetooth_interface.js",
     "$interfaces_path/bluetooth_private_interface.js",

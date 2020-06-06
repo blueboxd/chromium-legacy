@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">지금부터 <ph name="SOURCE_LANGUAGE" />로 된 페이지가 <ph name="TARGET_LANGUAGE" />로 번역됩니다.</translation>
 <translation id="1676269943528358898"><ph name="SITE" />에서는 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. 이번에 Chrome에서 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 이는 공격자가 <ph name="SITE" />인 것처럼 가장하려고 하거나 Wi-Fi 로그인 화면이 연결을 방해했기 때문일 수 있습니다. 데이터 교환이 발생하기 전에 Chrome에서 연결을 중단했기 때문에 사용자 정보는 안전합니다.</translation>
 <translation id="1682696192498422849">짧은 쪽 먼저</translation>
+<translation id="168693727862418163">이 정책 값은 스키마에 대해 유효성이 확인되지 않았으므로 무시됩니다.</translation>
 <translation id="168841957122794586">서버 인증서에 안전성이 낮은 암호화 키가 포함되어 있습니다.</translation>
 <translation id="1697532407822776718">설정 완료</translation>
 <translation id="1703835215927279855">Letter</translation>

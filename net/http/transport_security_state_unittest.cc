@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "crypto/openssl_util.h"
 #include "crypto/sha2.h"
+#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
@@ -750,21 +751,24 @@ TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
 
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example.com"));
   EXPECT_FALSE(state.HasPublicKeyPins("example.com"));
-  EXPECT_FALSE(state.GetDynamicExpectCTState("example.com", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example.com", NetworkIsolationKey(), &expect_ct_state));
   bool include_subdomains = false;
   state.AddHSTS("example.com", expiry, include_subdomains);
   state.AddHPKP("example.com", expiry, include_subdomains,
                 GetSampleSPKIHashes(), GURL());
-  state.AddExpectCT("example.com", expiry, true, GURL());
+  state.AddExpectCT("example.com", expiry, true, GURL(), NetworkIsolationKey());
 
   state.DeleteAllDynamicDataSince(expiry, base::DoNothing());
   EXPECT_TRUE(state.ShouldUpgradeToSSL("example.com"));
   EXPECT_TRUE(state.HasPublicKeyPins("example.com"));
-  EXPECT_TRUE(state.GetDynamicExpectCTState("example.com", &expect_ct_state));
+  EXPECT_TRUE(state.GetDynamicExpectCTState(
+      "example.com", NetworkIsolationKey(), &expect_ct_state));
   state.DeleteAllDynamicDataSince(older, base::DoNothing());
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example.com"));
   EXPECT_FALSE(state.HasPublicKeyPins("example.com"));
-  EXPECT_FALSE(state.GetDynamicExpectCTState("example.com", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example.com", NetworkIsolationKey(), &expect_ct_state));
 
   // Dynamic data in |state| should be empty now.
   EXPECT_FALSE(TransportSecurityState::STSStateIterator(state).HasNext());
@@ -774,32 +778,48 @@ TEST_F(TransportSecurityStateTest, DeleteAllDynamicDataSince) {
 
 TEST_F(TransportSecurityStateTest, DeleteDynamicDataForHost) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      TransportSecurityState::kDynamicExpectCTFeature);
+  feature_list.InitWithFeatures(
+      /* enabled_features */
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey},
+      /* disabled_features */
+      {});
   TransportSecurityState state;
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
   bool include_subdomains = false;
 
+  NetworkIsolationKey network_isolation_key =
+      NetworkIsolationKey::CreateTransient();
   state.AddHSTS("example1.test", expiry, include_subdomains);
   state.AddHPKP("example1.test", expiry, include_subdomains,
                 GetSampleSPKIHashes(), GURL());
-  state.AddExpectCT("example1.test", expiry, true, GURL());
+  state.AddExpectCT("example1.test", expiry, true, GURL(),
+                    NetworkIsolationKey());
 
   EXPECT_TRUE(state.ShouldUpgradeToSSL("example1.test"));
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example2.test"));
   EXPECT_TRUE(state.HasPublicKeyPins("example1.test"));
   EXPECT_FALSE(state.HasPublicKeyPins("example2.test"));
   TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_TRUE(state.GetDynamicExpectCTState("example1.test", &expect_ct_state));
-  EXPECT_FALSE(
-      state.GetDynamicExpectCTState("example2.test", &expect_ct_state));
+  EXPECT_TRUE(state.GetDynamicExpectCTState(
+      "example1.test", NetworkIsolationKey(), &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example2.test", NetworkIsolationKey(), &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example1.test", network_isolation_key, &expect_ct_state));
+  state.AddExpectCT("example1.test", expiry, true, GURL(),
+                    network_isolation_key);
+  EXPECT_TRUE(state.GetDynamicExpectCTState(
+      "example1.test", network_isolation_key, &expect_ct_state));
 
   EXPECT_TRUE(state.DeleteDynamicDataForHost("example1.test"));
   EXPECT_FALSE(state.ShouldUpgradeToSSL("example1.test"));
   EXPECT_FALSE(state.HasPublicKeyPins("example1.test"));
-  EXPECT_FALSE(
-      state.GetDynamicExpectCTState("example1.test", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example1.test", NetworkIsolationKey(), &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example1.test", network_isolation_key, &expect_ct_state));
 }
 
 TEST_F(TransportSecurityStateTest, LongNames) {
@@ -1155,7 +1175,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTBuildNotTimely) {
   // No report should have been sent and the state should not have been saved.
   EXPECT_EQ(0u, reporter.num_failures());
   TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example.test", NetworkIsolationKey(), &expect_ct_state));
 
   // Sanity-check that the reporter is notified if the build is timely and the
   // connection is not compliant.
@@ -1507,7 +1528,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
   using CTRequirementLevel =
       TransportSecurityState::RequireCTDelegate::CTRequirementLevel;
 
-  // Dummy cert to use as the validate chain. The contents do not matter.
+  // Dummy cert to use as the validation chain. The contents do not matter.
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
   ASSERT_TRUE(cert);
@@ -1953,14 +1974,16 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTStateCleared) {
   const base::Time current_time = base::Time::Now();
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
-  state.AddExpectCT(host, expiry, true, GURL());
-  EXPECT_TRUE(state.GetDynamicExpectCTState(host, &expect_ct_state));
+  state.AddExpectCT(host, expiry, true, GURL(), NetworkIsolationKey());
+  EXPECT_TRUE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
+                                            &expect_ct_state));
   EXPECT_TRUE(expect_ct_state.enforce);
   EXPECT_TRUE(expect_ct_state.report_uri.is_empty());
   EXPECT_EQ(expiry, expect_ct_state.expiry);
 
   state.ClearDynamicData();
-  EXPECT_FALSE(state.GetDynamicExpectCTState(host, &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
+                                             &expect_ct_state));
 }
 
 // Tests that dynamic Expect-CT state can be added and retrieved.
@@ -1975,8 +1998,9 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTState) {
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
   // Test that Expect-CT state can be added and retrieved.
-  state.AddExpectCT(host, expiry, true, GURL());
-  EXPECT_TRUE(state.GetDynamicExpectCTState(host, &expect_ct_state));
+  state.AddExpectCT(host, expiry, true, GURL(), NetworkIsolationKey());
+  EXPECT_TRUE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
+                                            &expect_ct_state));
   EXPECT_TRUE(expect_ct_state.enforce);
   EXPECT_TRUE(expect_ct_state.report_uri.is_empty());
   EXPECT_EQ(expiry, expect_ct_state.expiry);
@@ -1984,16 +2008,18 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTState) {
   // Test that Expect-CT can be updated (e.g. by changing |enforce| to false and
   // adding a report-uri).
   const GURL report_uri("https://example-report.test");
-  state.AddExpectCT(host, expiry, false, report_uri);
-  EXPECT_TRUE(state.GetDynamicExpectCTState(host, &expect_ct_state));
+  state.AddExpectCT(host, expiry, false, report_uri, NetworkIsolationKey());
+  EXPECT_TRUE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
+                                            &expect_ct_state));
   EXPECT_FALSE(expect_ct_state.enforce);
   EXPECT_EQ(report_uri, expect_ct_state.report_uri);
   EXPECT_EQ(expiry, expect_ct_state.expiry);
 
   // Test that Expect-CT state is discarded when expired.
   state.AddExpectCT(host, current_time - base::TimeDelta::FromSeconds(1000),
-                    true, report_uri);
-  EXPECT_FALSE(state.GetDynamicExpectCTState(host, &expect_ct_state));
+                    true, report_uri, NetworkIsolationKey());
+  EXPECT_FALSE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
+                                             &expect_ct_state));
 }
 
 // Tests that the Expect-CT reporter is not notified for repeated dynamic
@@ -2024,7 +2050,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTDeduping) {
   state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
                               NetworkIsolationKey());
   TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_TRUE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_TRUE(state.GetDynamicExpectCTState(
+      "example.test", NetworkIsolationKey(), &expect_ct_state));
   EXPECT_EQ(GURL("http://foo.test"), expect_ct_state.report_uri);
   EXPECT_TRUE(expect_ct_state.enforce);
   EXPECT_LT(now, expect_ct_state.expiry);
@@ -2112,7 +2139,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTHeaderProcessingDeduping) {
   state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
                               NetworkIsolationKey());
   TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example.test", NetworkIsolationKey(), &expect_ct_state));
   // The first time the header was received over a connection that failed to
   // meet CT requirements, a report should be sent.
   EXPECT_EQ(1u, reporter.num_failures());
@@ -2135,8 +2163,9 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTStateDisabled) {
   const base::Time current_time = base::Time::Now();
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
 
-  state.AddExpectCT(host, expiry, true, GURL());
-  EXPECT_FALSE(state.GetDynamicExpectCTState(host, &expect_ct_state));
+  state.AddExpectCT(host, expiry, true, GURL(), NetworkIsolationKey());
+  EXPECT_FALSE(state.GetDynamicExpectCTState(host, NetworkIsolationKey(),
+                                             &expect_ct_state));
 }
 
 // Tests that dynamic Expect-CT opt-ins are processed correctly (when the
@@ -2157,8 +2186,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCT) {
     state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
                                 NetworkIsolationKey());
     TransportSecurityState::ExpectCTState expect_ct_state;
-    EXPECT_FALSE(
-        state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+    EXPECT_FALSE(state.GetDynamicExpectCTState(
+        "example.test", NetworkIsolationKey(), &expect_ct_state));
   }
 
   // Now test that the header is processed when the feature is enabled.
@@ -2173,8 +2202,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCT) {
     state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
                                 NetworkIsolationKey());
     TransportSecurityState::ExpectCTState expect_ct_state;
-    EXPECT_TRUE(
-        state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+    EXPECT_TRUE(state.GetDynamicExpectCTState(
+        "example.test", NetworkIsolationKey(), &expect_ct_state));
     EXPECT_EQ(GURL("http://foo.test"), expect_ct_state.report_uri);
     EXPECT_TRUE(expect_ct_state.enforce);
     EXPECT_LT(now, expect_ct_state.expiry);
@@ -2200,7 +2229,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTPrivateRoot) {
   state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
                               NetworkIsolationKey());
   TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example.test", NetworkIsolationKey(), &expect_ct_state));
   EXPECT_EQ(0u, reporter.num_failures());
 }
 
@@ -2231,7 +2261,8 @@ TEST_F(TransportSecurityStateTest, DynamicExpectCTNoComplianceDetails) {
   state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
                               NetworkIsolationKey());
   TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example.test", NetworkIsolationKey(), &expect_ct_state));
   EXPECT_EQ(0u, reporter.num_failures());
 }
 
@@ -2269,7 +2300,8 @@ TEST_F(TransportSecurityStateTest,
   state.ProcessExpectCTHeader(kHeader, HostPortPair("example.test", 443), ssl,
                               network_isolation_key);
   TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_FALSE(state.GetDynamicExpectCTState("example.test", &expect_ct_state));
+  EXPECT_FALSE(state.GetDynamicExpectCTState(
+      "example.test", NetworkIsolationKey(), &expect_ct_state));
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ("example.test", reporter.host_port_pair().host());
   EXPECT_TRUE(reporter.expiration().is_null());
@@ -2310,11 +2342,11 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   MockExpectCTReporter reporter;
   state.SetExpectCTReporter(&reporter);
   state.AddExpectCT("example.test", expiry, true /* enforce */,
-                    GURL("https://example-report.test"));
+                    GURL("https://example-report.test"), network_isolation_key);
   state.AddExpectCT("example-report-only.test", expiry, false /* enforce */,
-                    GURL("https://example-report.test"));
+                    GURL("https://example-report.test"), network_isolation_key);
   state.AddExpectCT("example-enforce-only.test", expiry, true /* enforce */,
-                    GURL());
+                    GURL(), network_isolation_key);
 
   // Test that a connection to an unrelated host is not affected.
   EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
@@ -2330,7 +2362,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
                 ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS,
-                NetworkIsolationKey()));
+                network_isolation_key));
   EXPECT_EQ(0u, reporter.num_failures());
 
   // A connection to an Expect-CT host should be closed and reported.
@@ -2361,7 +2393,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
                 ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS,
-                NetworkIsolationKey()));
+                network_isolation_key));
   EXPECT_EQ(1u, reporter.num_failures());
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
             state.CheckCTRequirements(
@@ -2373,15 +2405,13 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   EXPECT_EQ(1u, reporter.num_failures());
 
   // A connection to a report-only host should be reported only.
-  NetworkIsolationKey network_isolation_key2 =
-      NetworkIsolationKey::CreateTransient();
   EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("example-report-only.test", 443), true,
                 HashValueVector(), cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
                 ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS,
-                network_isolation_key2));
+                network_isolation_key));
   EXPECT_EQ(2u, reporter.num_failures());
   EXPECT_EQ("example-report-only.test", reporter.host_port_pair().host());
   EXPECT_EQ(443, reporter.host_port_pair().port());
@@ -2391,7 +2421,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   EXPECT_EQ(sct_list[0].status,
             reporter.signed_certificate_timestamps()[0].status);
   EXPECT_EQ(sct_list[0].sct, reporter.signed_certificate_timestamps()[0].sct);
-  EXPECT_EQ(network_isolation_key2, reporter.network_isolation_key());
+  EXPECT_EQ(network_isolation_key, reporter.network_isolation_key());
 
   // A connection to an enforce-only host should be closed but not reported.
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
@@ -2455,7 +2485,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCTAndDelegate) {
   MockExpectCTReporter reporter;
   state.SetExpectCTReporter(&reporter);
   state.AddExpectCT("example.test", expiry, false /* enforce */,
-                    GURL("https://example-report.test"));
+                    GURL("https://example-report.test"), network_isolation_key);
 
   // A connection to an Expect-CT host, which also requires CT by the delegate,
   // should be closed and reported.
@@ -2515,7 +2545,7 @@ TEST_F(TransportSecurityStateTest,
   MockExpectCTReporter reporter;
   state.SetExpectCTReporter(&reporter);
   state.AddExpectCT("example.test", expiry, false /* enforce */,
-                    GURL("https://example-report.test"));
+                    GURL("https://example-report.test"), network_isolation_key);
 
   // A connection to an Expect-CT host, which is exempted from the CT
   // requirements by the delegate, should be reported but not closed.
@@ -3330,5 +3360,96 @@ TEST_F(TransportSecurityStateTest, DecodeSizeFour) {
 }
 
 #endif  // BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
+
+TEST_F(TransportSecurityStateTest,
+       PartitionExpectCTStateByNetworkIsolationKey) {
+  const char kDomain[] = "example.test";
+  HostPortPair host_port_pair(kDomain, 443);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+
+  // Dummy cert to use as the validation chain. The contents do not matter.
+  scoped_refptr<X509Certificate> cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "expired_cert.pem");
+  ASSERT_TRUE(cert);
+  HashValueVector hashes;
+  hashes.push_back(
+      HashValue(X509Certificate::CalculateFingerprint256(cert->cert_buffer())));
+
+  // An ExpectCT entry is set using network_isolation_key1, and then accessed
+  // using both keys. It should only be accessible using the other key when
+  // kPartitionExpectCTStateByNetworkIsolationKey is disabled.
+  NetworkIsolationKey network_isolation_key1 =
+      NetworkIsolationKey::CreateTransient();
+  NetworkIsolationKey network_isolation_key2 =
+      NetworkIsolationKey::CreateTransient();
+
+  for (bool partition_expect_ct_state : {false, true}) {
+    base::test::ScopedFeatureList feature_list2;
+    if (partition_expect_ct_state) {
+      feature_list2.InitAndEnableFeature(
+          features::kPartitionExpectCTStateByNetworkIsolationKey);
+    } else {
+      feature_list2.InitAndDisableFeature(
+          features::kPartitionExpectCTStateByNetworkIsolationKey);
+    }
+
+    // Add Expect-CT entry.
+    TransportSecurityState state;
+    state.AddExpectCT(kDomain, expiry, true, GURL(), network_isolation_key1);
+    TransportSecurityState::ExpectCTState expect_ct_state;
+    EXPECT_TRUE(state.GetDynamicExpectCTState(kDomain, network_isolation_key1,
+                                              &expect_ct_state));
+
+    // The Expect-CT entry should only be respected with
+    // |network_isolation_key2| when
+    // kPartitionExpectCTStateByNetworkIsolationKey is disabled.
+    EXPECT_EQ(!partition_expect_ct_state,
+              state.GetDynamicExpectCTState(kDomain, network_isolation_key2,
+                                            &expect_ct_state));
+    EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
+              state.CheckCTRequirements(
+                  host_port_pair, true, hashes, cert.get(), cert.get(),
+                  SignedCertificateTimestampAndStatusList(),
+                  TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                  ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
+                  network_isolation_key1));
+    EXPECT_EQ(!partition_expect_ct_state,
+              TransportSecurityState::CT_REQUIREMENTS_NOT_MET ==
+                  state.CheckCTRequirements(
+                      host_port_pair, true, hashes, cert.get(), cert.get(),
+                      SignedCertificateTimestampAndStatusList(),
+                      TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+                      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
+                      network_isolation_key2));
+
+    // An Expect-CT header with |network_isolation_key2| should only overwrite
+    // the entry when |partition_expect_ct_state| is false.
+    SSLInfo ssl_info;
+    ssl_info.ct_policy_compliance =
+        ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
+    ssl_info.is_issued_by_known_root = true;
+    MockExpectCTReporter reporter;
+    state.SetExpectCTReporter(&reporter);
+    const char kHeader[] = "max-age=0";
+    state.ProcessExpectCTHeader(kHeader, host_port_pair, ssl_info,
+                                network_isolation_key2);
+    EXPECT_EQ(partition_expect_ct_state,
+              state.GetDynamicExpectCTState(kDomain, network_isolation_key1,
+                                            &expect_ct_state));
+
+    // An Expect-CT header with |network_isolation_key1| should always overwrite
+    // the added entry.
+    state.ProcessExpectCTHeader(kHeader, host_port_pair, ssl_info,
+                                network_isolation_key1);
+    EXPECT_FALSE(state.GetDynamicExpectCTState(kDomain, network_isolation_key1,
+                                               &expect_ct_state));
+  }
+}
 
 }  // namespace net

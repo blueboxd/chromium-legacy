@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">प्रमाणपत्र हस्ताक्षरकर्ता</translation>
 <translation id="1145292499998999162">प्लग इन अवरोधित</translation>
 <translation id="1145593918056169051">प्रिंटर बंद हो गया है</translation>
-<translation id="1146678959555564648">VR डालें</translation>
 <translation id="114721135501989771">Chrome में Google स्मार्ट पाएं</translation>
 <translation id="1147991416141538220">ऐक्सेस मांगने के लिए, इस डिवाइस के एडमिन से संपर्क करें.</translation>
 <translation id="1149401351239820326">समाप्ति माह</translation>
@@ -866,7 +865,6 @@
 <translation id="2096715839409389970">तीसरे पक्ष की कुकी मिटाएं</translation>
 <translation id="2097372108957554726">नए डिवाइस रजिस्टर करने के लिए आपको Chrome में साइन इन करना होगा.</translation>
 <translation id="2099172618127234427">आप Chrome OS की डीबग करने वाली सुविधाएं चालू कर रहे हैं जिससे sshd daemon सेट हो जाएगा और यूएसबी डिवाइस से बूट करना चालू हो जाएगा.</translation>
-<translation id="2099625543891475722">आपकी शारीरिक विशेषता, जैसे कि लंबाई</translation>
 <translation id="2099686503067610784">सर्वर प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" मिटाएं?</translation>
 <translation id="2100273922101894616">अपने आप साइन इन करने की सुविधा</translation>
 <translation id="2101225219012730419">वर्शन:</translation>
@@ -2185,6 +2183,7 @@
 <translation id="3732857534841813090">Google Assistant से जुड़ी जानकारी</translation>
 <translation id="3733127536501031542">स्टेप-अप वाला SSL सर्वर</translation>
 <translation id="3735740477244556633">इसके अनुसार क्रम से लगाएं</translation>
+<translation id="3738213647660363521">मनमुताबिक कर्सर का रंग</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094"><ph name="APPLICATION" /> खोलना चाहते हैं?</translation>
 <translation id="3742055079367172538">स्क्रीनशॉट लिया गया</translation>
@@ -2656,7 +2655,6 @@
 <translation id="4350019051035968019">इस डिवाइस को उस डोमेन पर नामांकित नहीं किया जा सकता जिससे आपका खाता संबंधित है क्योंकि डिवाइस को भिन्न डोमेन द्वारा प्रबंधित करने के लिए चिह्नित किया गया है.</translation>
 <translation id="4350782034419308508">Hey Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> आस-पास मौजूद ब्लूटूथ वाले डिवाइस स्कैन करना चाहती है. ये डिवाइस मिले हैं:</translation>
-<translation id="4353114845960720315">जब आप वीआर इस्तेमाल करते हैं, तो साइट ये बातें जान सकती है:</translation>
 <translation id="4354073718307267720">जब कोई साइट आपके आस-पास की जगह का 3D मैप बनाना या कैमरे की स्थिति ट्रैक करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="4354344420232759511">आपकी देखी गई साइटें यहां दिखाई देंगी</translation>
 <translation id="435527878592612277">अपनी फ़ोटो चुनें</translation>
@@ -2891,7 +2889,6 @@
 <translation id="4659077111144409915">प्राथमिक खाता</translation>
 <translation id="4660476621274971848">अपेक्षित वर्शन "<ph name="EXPECTED_VERSION" />" है, लेकिन वर्शन "<ph name="NEW_ID" />" था</translation>
 <translation id="4660540330091848931">साइज़ बदला जा रहा है</translation>
-<translation id="4660838440047236328">आपके कमरे का लेआउट</translation>
 <translation id="4661407454952063730">ऐप्लिकेशन से जुड़े डेटा में ऐसा कोई भी डेटा शामिल हो सकता है जिसे किसी ऐप्लिकेशन ने (डेवलपर सेटिंग के आधार पर) सेव किया है. इसमें संपर्क, मैसेज (एसएमएस) और फ़ोटो जैसा डेटा भी शामिल है.</translation>
 <translation id="4662373422909645029">प्रचलित नाम में अंक शामिल नहीं कर सकते</translation>
 <translation id="4662788913887017617">इस बुकमार्क को अपने iPhone से शेयर करें</translation>
@@ -2980,9 +2977,7 @@
 <translation id="4801512016965057443">मोबाइल डेटा रोमिंग की अनुमति दें</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4804827417948292437">एवोकैडो</translation>
-<translation id="4805077164141082536">हमारा सुझाव है कि आप बेहतर बनाने से पहले, अपने मौजूदा Linux कंटेनर का बैक अप लेकर रखें.</translation>
 <translation id="4807098396393229769">कार्ड पर नाम</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> से वीआर डालें?</translation>
 <translation id="4808667324955055115">पॉप-अप ब्लॉक किए गए हैं:</translation>
 <translation id="480990236307250886">होम पेज खोलें</translation>
 <translation id="4811212958317149293">कीबोर्ड में अपने-आप स्कैन करने की सुविधा को ऐक्सेस करने का तरीका बदलें</translation>
@@ -3296,6 +3291,7 @@
 <translation id="52232769093306234">पैक नहीं किया जा सका.</translation>
 <translation id="5225324770654022472">ऐप्स  शॉर्टकट दिखाएं</translation>
 <translation id="5227679487546032910">डिफ़ॉल्ट नीला-हरा अवतार</translation>
+<translation id="5228088094491423618">लाइव कैप्शन</translation>
 <translation id="5228579091201413441">सिंक चालू करें</translation>
 <translation id="5229189185761556138">इनपुट विधियां प्रबंधित करें</translation>
 <translation id="5230516054153933099">विंडो</translation>
@@ -3709,7 +3705,6 @@
 <translation id="5739235828260127894">पुष्टि होने का इंतज़ार किया जा रहा है. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">बहुत बड़ा</translation>
 <translation id="574209121243317957">पिच</translation>
-<translation id="5745136023067925867"><ph name="DEVICE_TYPE" /> के इस्तेमाल से जुड़ी सलाह, ऑफ़र, और अपडेट पाएं. साथ ही, सुझाव/शिकायत/राय शेयर करें</translation>
 <translation id="5746169159649715125">PDF के रूप में सेव करें</translation>
 <translation id="5747552184818312860">समय सीमा समाप्ति तारीख</translation>
 <translation id="5747785204778348146">डेवलपर - अस्थिर</translation>
@@ -4832,7 +4827,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{पेज से बाहर निकलें}one{पेज से बाहर निकलें}other{पेज से बाहर निकलें}}</translation>
 <translation id="7207457272187520234">इस्तेमाल और गड़बड़ी की जानकारी से जुड़ा डेटा भेजें. यह डिवाइस फ़िलहाल Google को गड़बड़ी की जानकारी, डिवाइस, और ऐप्लिकेशन के इस्तेमाल से जुड़ा डेटा अपने-आप भेज रहा है. यह सिस्टम और ऐप्लिकेशन की स्थिरता बढ़ाने और दूसरे सुधार करने में मदद करेगा. इकट्ठा किया गया कुछ डेटा, Google ऐप्लिकेशन और पार्टनर की भी मदद करेगा. जैसे, Android डेवलपर. यह सेटिंग, डिवाइस के मालिक ने लागू की है. अगर आपकी दूसरी 'वेब और ऐप्लिकेशन गतिविधि' सेटिंग चालू है, तो यह डेटा आपके Google खाते में सेव किया जा सकता है.</translation>
 <translation id="7207631048330366454">ऐप्लिकेशन खोजें</translation>
-<translation id="7210171324714276060"><ph name="EXTENSION_NAME" /> एक्सटेंशन ने <ph name="SEARCH_PROVIDER_DOMAIN" /> का इस्तेमाल करने के लिए खोज में बदलाव किया है</translation>
 <translation id="7210499381659830293">एक्सटेंशन प्रिंटर</translation>
 <translation id="7212097698621322584">अपना मौजूदा पिन डालकर उसे बदलें. अगर आप पिन नहीं जानते हैं, तो आपको सुरक्षा कुंजी रीसेट करनी होगी, फिर एक नया पिन बनाना होगा.</translation>
 <translation id="7216409898977639127">सेल्युलर सेवा देने वाली कंपनी</translation>
@@ -5232,7 +5226,6 @@
 <translation id="7737115349420013392">"<ph name="DEVICE_NAME" />" से जोड़ा जा रहा है ...</translation>
 <translation id="7737238973539693982">Linux (बीटा) मिटाएं</translation>
 <translation id="7740996059027112821">मानक</translation>
-<translation id="7743128043742060936"><ph name="EXTENSION_NAME" /> एक्सटेंशन ने इस पेज में बदलाव किए हैं</translation>
 <translation id="7744047395460924128">अपना प्रिंटिंग इतिहास देखें</translation>
 <translation id="7744192722284567281">यह पासवर्ड आपके हैक हो चुके डेटा में शामिल है</translation>
 <translation id="7750228210027921155">पिक्चर में पिक्चर</translation>
@@ -6349,6 +6342,7 @@
 <translation id="9121814364785106365">छोटे टैब के रूप में खोलें</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> को रोका गया</translation>
 <translation id="9124003689441359348">सहेजे गए पासवर्ड यहां दिखाई देंगे</translation>
+<translation id="9126149354162942022">कर्सर का रंग</translation>
 <translation id="9128317794749765148">सेटअप पूरा नहीं हो सका</translation>
 <translation id="9128870381267983090">नेटवर्क से कनेक्ट करें</translation>
 <translation id="9130015405878219958">गलत मोड डाला गया.</translation>

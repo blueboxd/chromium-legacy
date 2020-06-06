@@ -29,6 +29,7 @@ import java.util.ArrayList;
  * Helper class to handle communication between download location dialog and native.
  */
 public class DownloadDialogBridge implements ModalDialogProperties.Controller {
+    private static final long INVALID_START_TIME = -1;
     private long mNativeDownloadDialogBridge;
     private PropertyModel mDialogModel;
     private DownloadLocationCustomView mCustomView;
@@ -119,8 +120,9 @@ public class DownloadDialogBridge implements ModalDialogProperties.Controller {
             if (dir.type == DirectoryOption.DownloadLocationDirectoryType.DEFAULT) {
                 assert (!TextUtils.isEmpty(dir.location));
                 setDownloadAndSaveFileDefaultDirectory(dir.location);
-                DownloadDialogBridgeJni.get().onComplete(
-                        mNativeDownloadDialogBridge, DownloadDialogBridge.this, mSuggestedPath);
+                DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
+                        DownloadDialogBridge.this, mSuggestedPath, false /*onWifi*/,
+                        INVALID_START_TIME);
             }
             return;
         }
@@ -202,8 +204,9 @@ public class DownloadDialogBridge implements ModalDialogProperties.Controller {
                     DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
 
             File file = new File(directoryOption.location, fileName);
-            DownloadDialogBridgeJni.get().onComplete(
-                    mNativeDownloadDialogBridge, DownloadDialogBridge.this, file.getAbsolutePath());
+            DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
+                    DownloadDialogBridge.this, file.getAbsolutePath(), false /*onWifi*/,
+                    INVALID_START_TIME);
         }
 
         // Update preference to show prompt based on whether checkbox is checked only when the user
@@ -253,8 +256,8 @@ public class DownloadDialogBridge implements ModalDialogProperties.Controller {
 
     @NativeMethods
     interface Natives {
-        void onComplete(
-                long nativeDownloadDialogBridge, DownloadDialogBridge caller, String returnedPath);
+        void onComplete(long nativeDownloadDialogBridge, DownloadDialogBridge caller,
+                String returnedPath, boolean onWifi, long startTime);
         void onCanceled(long nativeDownloadDialogBridge, DownloadDialogBridge caller);
         String getDownloadDefaultDirectory();
         void setDownloadAndSaveFileDefaultDirectory(String directory);

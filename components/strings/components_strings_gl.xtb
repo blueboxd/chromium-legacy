@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">As páxinas en <ph name="SOURCE_LANGUAGE" /> traduciranse ao <ph name="TARGET_LANGUAGE" /> a partir de agora.</translation>
 <translation id="1676269943528358898">Normalmente, <ph name="SITE" /> encripta a túa información para protexela. Nesta ocasión, cando Google Chrome tentou conectar con <ph name="SITE" />, o sitio web devolveu credenciais estrañas e incorrectas. É posible que un atacante tentase facerse pasar por <ph name="SITE" /> ou que a pantalla de inicio de sesión de wifi interrompese a conexión. Non obstante, a túa información segue a salvo porque Google Chrome detivo a conexión antes de intercambiar datos.</translation>
 <translation id="1682696192498422849">Co bordo curto primeiro</translation>
+<translation id="168693727862418163">Non puido cotexarse o valor desta política co seu esquema para levar a cabo a súa validación, así que se ignorará.</translation>
 <translation id="168841957122794586">O certificado do servidor contén unha clave criptográfica non segura.</translation>
 <translation id="1697532407822776718">Listo!</translation>
 <translation id="1703835215927279855">Letter</translation>

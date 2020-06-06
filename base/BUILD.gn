@@ -2750,6 +2750,7 @@ test("base_unittests") {
     "sequenced_task_runner_unittest.cc",
     "stl_util_unittest.cc",
     "strings/char_traits_unittest.cc",
+    "strings/no_trigraphs_unittest.cc",
     "strings/nullable_string16_unittest.cc",
     "strings/pattern_unittest.cc",
     "strings/safe_sprintf_unittest.cc",

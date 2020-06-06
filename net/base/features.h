@@ -111,6 +111,16 @@ NET_EXPORT extern const base::Feature
 NET_EXPORT extern const base::Feature
     kPartitionSSLSessionsByNetworkIsolationKey;
 
+// Partitions Expect-CT data by NetworkIsolationKey. This only affects the
+// Expect-CT data itself. Regardless of this value, reports will be uploaded
+// using the associated NetworkIsolationKey, when one's available.
+//
+// This feature requires kPartitionConnectionsByNetworkIsolationKey,
+// kPartitionHttpServerPropertiesByNetworkIsolationKey, and
+// kPartitionConnectionsByNetworkIsolationKey to all be enabled to work.
+NET_EXPORT extern const base::Feature
+    kPartitionExpectCTStateByNetworkIsolationKey;
+
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
 // disabled by default because we discovered incompatibilities with some

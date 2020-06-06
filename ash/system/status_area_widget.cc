@@ -211,10 +211,7 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   if (layout_inputs_ == new_layout_inputs)
     return;
 
-  // Do not animate size changes, as they only really occur when tray items are
-  // added and removed. See crbug.com/1067199.
-  if (layout_inputs_ &&
-      layout_inputs_->bounds.size() != new_layout_inputs.bounds.size())
+  if (!new_layout_inputs.should_animate)
     animate = false;
 
   for (TrayBackgroundView* tray_button : tray_buttons_)
@@ -467,9 +464,25 @@ StatusAreaWidget::LayoutInputs StatusAreaWidget::GetLayoutInputs() const {
     if (tray_buttons_[i]->GetVisible())
       child_visibility_bitmask |= 1 << i;
   }
+
+  bool should_animate = true;
+
+  // Do not animate when tray items are added and removed (See
+  // crbug.com/1067199).
+  if (layout_inputs_) {
+    const bool is_horizontal_alignment = shelf_->IsHorizontalAlignment();
+    const gfx::Rect current_bounds = layout_inputs_->bounds;
+    if ((is_horizontal_alignment &&
+         current_bounds.width() != target_bounds_.width()) ||
+        (!is_horizontal_alignment &&
+         current_bounds.height() != target_bounds_.height())) {
+      should_animate = false;
+    }
+  }
+
   return {target_bounds_, CalculateCollapseState(),
           shelf_->shelf_layout_manager()->GetOpacity(),
-          child_visibility_bitmask};
+          child_visibility_bitmask, should_animate};
 }
 
 }  // namespace ash

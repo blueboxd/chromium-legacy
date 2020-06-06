@@ -215,15 +215,12 @@ uint32_t GetCurrentCursorPositionInFrame(LocalFrame* local_frame) {
 
 // Convert a data url to a message pipe handle that corresponds to a remote
 // blob, so that it can be passed across processes.
-mojo::ScopedMessagePipeHandle DataURLToMessagePipeHandle(
-    const String& data_url) {
+mojo::PendingRemote<mojom::blink::Blob> DataURLToBlob(const String& data_url) {
   auto blob_data = std::make_unique<BlobData>();
   blob_data->AppendBytes(data_url.Utf8().data(), data_url.length());
   scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create(std::move(blob_data), data_url.length());
-  mojo::PendingRemote<mojom::blink::Blob> data_url_blob =
-      blob_data_handle->CloneBlobRemote();
-  return data_url_blob.PassPipe();
+  return blob_data_handle->CloneBlobRemote();
 }
 
 HitTestResult HitTestResultForRootFramePos(
@@ -2465,7 +2462,7 @@ void LocalFrame::SaveImageAt(const gfx::Point& window_point) {
     return;
 
   auto params = mojom::blink::DownloadURLParams::New();
-  params->data_url_blob = DataURLToMessagePipeHandle(url);
+  params->data_url_blob = DataURLToBlob(url);
   GetLocalFrameHostRemote().DownloadURL(std::move(params));
 }
 
@@ -2571,7 +2568,7 @@ void LocalFrame::DownloadURL(
   // Pass data URL through blob.
   if (url.ProtocolIs("data")) {
     params->url = KURL();
-    params->data_url_blob = DataURLToMessagePipeHandle(url.GetString());
+    params->data_url_blob = DataURLToBlob(url.GetString());
   } else {
     params->url = url;
   }

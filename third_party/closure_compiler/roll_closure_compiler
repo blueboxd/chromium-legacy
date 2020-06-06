@@ -69,6 +69,10 @@ EOT
 (echo "${WARNING}" && cat polymer-1.0.js) > "${EXTERNS_DIR}/polymer-1.0.js"
 (echo "${WARNING}" && cat mocha-2.5.js) > "${EXTERNS_DIR}/mocha-2.5.js"
 
+# Apply local Chromium patch.
+cd "${SCRIPT_DIR}"
+git apply chromium_patch.diff
+
 new_chrome_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome.js")
 if [[ "${new_chrome_sha1}" != "${old_chrome_sha1}" ]]; then
   chrome_range="chrome.js: ${old_chrome_sha1} -> ${new_chrome_sha1}"

@@ -156,7 +156,8 @@ void PurgeExtensionDataFromUnsentLogStore(
 
     // Replace the compressed log in the store by its filtered version.
     const std::string old_compressed_log_data =
-        ukm_log_store->ReplaceLogAtIndex(index, reserialized_log_data);
+        ukm_log_store->ReplaceLogAtIndex(index, reserialized_log_data,
+                                         base::nullopt);
 
     // Reached here only if extensions were found in the log, so data should now
     // be different after filtering.
@@ -395,7 +396,7 @@ void UkmService::BuildAndStoreLog() {
 
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
-  reporting_service_.ukm_log_store()->StoreLog(serialized_log);
+  reporting_service_.ukm_log_store()->StoreLog(serialized_log, base::nullopt);
 }
 
 bool UkmService::ShouldRestrictToWhitelistedEntries() const {

@@ -165,6 +165,9 @@ FlatVectorOffset<flat::ModifyHeaderInfo> BuildModifyHeaderInfoOffset(
 
     switch (header_info.operation) {
       case dnr_api::HeaderOperation::HEADER_OPERATION_NONE:
+      case dnr_api::HEADER_OPERATION_APPEND:
+      case dnr_api::HEADER_OPERATION_SET:
+        // TODO(crbug.com/1081544): Add indexing for append/set operations.
         NOTREACHED();
         break;
       case dnr_api::HEADER_OPERATION_REMOVE:

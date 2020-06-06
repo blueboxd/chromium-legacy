@@ -378,12 +378,12 @@ js_library("service") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
   ]
-  externs_list = [
-    "$externs_path/activity_log_private.js",
-    "$externs_path/developer_private.js",
-    "$externs_path/management.js",
-    "$externs_path/metrics_private.js",
-  ]
+  externs_list = chrome_extension_public_externs + [
+                   "$externs_path/activity_log_private.js",
+                   "$externs_path/developer_private.js",
+                   "$externs_path/management.js",
+                   "$externs_path/metrics_private.js",
+                 ]
 }
 
 js_library("shortcut_input") {

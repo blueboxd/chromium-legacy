@@ -146,7 +146,7 @@ input[type="date" i]::-webkit-calendar-picker-indicator,
 input[type="datetime-local" i]::-webkit-calendar-picker-indicator,
 input[type="month" i]::-webkit-calendar-picker-indicator,
 input[type="week" i]::-webkit-calendar-picker-indicator {
-  background-image: -webkit-image-set(url(images/calendar_icon.svg) 1x);
+  background-image: -internal-light-dark(-webkit-image-set(url(images/calendar_icon.svg) 1x), -webkit-image-set(url(images/calendar_icon_white.svg) 1x));
   background-origin: content-box;
   background-repeat: no-repeat;
   background-size: contain;

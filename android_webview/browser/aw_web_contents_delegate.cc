@@ -111,16 +111,6 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
       request_id, number_of_matches, active_match_ordinal, final_update);
 }
 
-void AwWebContentsDelegate::CanDownload(
-    const GURL& url,
-    const std::string& request_method,
-    base::OnceCallback<void(bool)> callback) {
-  // Android webview intercepts download in its resource dispatcher host
-  // delegate, so should not reach here.
-  NOTREACHED();
-  std::move(callback).Run(false);
-}
-
 void AwWebContentsDelegate::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     std::unique_ptr<content::FileSelectListener> listener,

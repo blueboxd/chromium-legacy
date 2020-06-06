@@ -31,6 +31,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -289,12 +290,24 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 
-  // Hidden windows will be removed by window_util::ShouldExcludeForOverview so
-  // we must copy them out first.
+  // Hidden windows are a subset of the window excluded from overview in
+  // window_util::ShouldExcludeForOverview. Excluded window won't be on the grid
+  // but their visibility will remain untouched. Hidden windows will be also
+  // excluded and their visibility will be set to false for the duration of
+  // overview mode.
+  auto should_hide_for_overview = [](aura::Window* w) -> bool {
+    // Explicity hidden windows always get hidden.
+    if (w->GetProperty(kHideInOverviewKey))
+      return true;
+    // Since overview allows moving windows, don't show window that can't be
+    // moved. If they are a transient ancestor of a postionable window then they
+    // can be shown and movied with their transient root.
+    return w == wm::GetTransientRoot(w) &&
+           !WindowState::Get(w)->IsUserPositionable();
+  };
   std::vector<aura::Window*> hide_windows(windows.size());
-  auto end = std::copy_if(
-      windows.begin(), windows.end(), hide_windows.begin(),
-      [](aura::Window* w) { return w->GetProperty(kHideInOverviewKey); });
+  auto end = std::copy_if(windows.begin(), windows.end(), hide_windows.begin(),
+                          should_hide_for_overview);
   hide_windows.resize(end - hide_windows.begin());
   base::EraseIf(windows, window_util::ShouldExcludeForOverview);
   // Overview windows will handle showing their transient related windows, so if

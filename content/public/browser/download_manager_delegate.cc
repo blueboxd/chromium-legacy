@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/public/common/download_item.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
 
@@ -69,11 +70,33 @@ void DownloadManagerDelegate::CheckDownloadAllowed(
     bool from_download_cross_origin_redirect,
     bool content_initiated,
     CheckDownloadAllowedCallback check_download_allowed_cb) {
-  // TODO: once hook up delegate callback, make sure sync run of it doesn't
-  // crash and test it
+  // TODO: Do this directly, if it doesn't crash.
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(check_download_allowed_cb), true));
+      FROM_HERE,
+      base::BindOnce(
+          [](const WebContents::Getter& web_contents_getter, const GURL& url,
+             const std::string& request_method,
+             CheckDownloadAllowedCallback check_download_allowed_cb) {
+            WebContents* contents = web_contents_getter.Run();
+            if (!contents) {
+              // The contents was closed.
+              std::move(check_download_allowed_cb).Run(false);
+              return;
+            }
+
+            WebContentsDelegate* delegate = contents->GetDelegate();
+            if (!delegate) {
+              // The default behavior is to allow it.
+              std::move(check_download_allowed_cb).Run(true);
+              return;
+            }
+
+            delegate->CanDownload(url, request_method,
+                                  std::move(check_download_allowed_cb));
+          },
+          web_contents_getter, url, request_method,
+          std::move(check_download_allowed_cb)));
 }
 
 download::QuarantineConnectionCallback

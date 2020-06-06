@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Stranice na jeziku <ph name="SOURCE_LANGUAGE" /> od sada će se prevoditi na jezik <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Web lokacija <ph name="SITE" /> obično koristi šifriranje za zaštitu vaših informacija. Kada se ovog puta Google Chrome pokušao povezati na web lokaciju <ph name="SITE" />, web lokacija je vratila neobične i netačne akreditive. To se može dogoditi kada se napadač pokušava predstaviti kao web lokacija <ph name="SITE" />, ili je vezu omeo ekran za prijavu na WiFi. Vaši podaci su i dalje sigurni jer je Google Chrome obustavio vezu prije bilo kakve razmjene podataka.</translation>
 <translation id="1682696192498422849">Najprije kratka strana</translation>
+<translation id="168693727862418163">Vrijednost ovog pravila u odnosu na njegovu šemu nije potvrđena pa će biti zanemareno.</translation>
 <translation id="168841957122794586">Potvrda servera sadrži slab kriptografski ključ.</translation>
 <translation id="1697532407822776718">Sve je spremno!</translation>
 <translation id="1703835215927279855">Letter</translation>

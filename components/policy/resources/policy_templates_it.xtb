@@ -3119,9 +3119,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se la norma viene impostata su 0, la memorizzazione nella cache dei dati di autenticazione viene disattivata. Ciò può rallentare significativamente l'accesso degli utenti affiliati, poiché i dati specifici dell'area di autenticazione devono essere recuperati a ogni accesso.
 
       Tieni presente che i dati relativi all'area di autenticazione vengono memorizzati nella cache anche per gli utenti temporanei. Per impedire che i dati di autenticazione degli utenti temporanei vengano tracciati è necessario disattivare la cache.</translation>
-<translation id="5700097087679928356">Se il criterio è impostato su 0 (valore predefinito), è possibile accedere agli strumenti per sviluppatori e alla console JavaScript, ma non se ci sono estensioni installate in base alle norme aziendali. Se il criterio è impostato su 1, è possibile accedere agli strumenti per sviluppatori e alla console JavaScript in ogni caso, anche se ci sono estensioni installate in base alle norme aziendali. Se il criterio è impostato su 2, non è possibile accedere agli strumenti per sviluppatori e non è possibile esaminare gli elementi del sito web.
-
-      Questa impostazione disattiva anche le scorciatoie da tastiera e le voci dei menu o dei menu contestuali per aprire gli strumenti per sviluppatori o la console JavaScript.</translation>
 <translation id="570062449808736508">Se per questa norma viene impostata una stringa, WebView legge le limitazioni relative agli URL del fornitore di contenuti con il nome dell'autorità indicato.</translation>
 <translation id="5708969689202733975">Configura le modalità di sblocco rapido consentite</translation>
 <translation id="5711016543513883877">

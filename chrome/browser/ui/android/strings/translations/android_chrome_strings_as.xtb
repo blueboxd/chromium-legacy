@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"শীর্ষ ছাইটসমূহ" বুটামটো টিপি জনপ্ৰিয় ৱেবছাইটসমূহ চাওক</translation>
 <translation id="1173894706177603556">নতুন নাম দিয়ক</translation>
 <translation id="1178581264944972037">পজ কৰক</translation>
-<translation id="1188239144602654184">AR আৰম্ভ কৰক</translation>
 <translation id="1197267115302279827">বুকমার্কসমূহ আঁতৰাওক</translation>
 <translation id="1201402288615127009">পৰৱৰ্তী</translation>
 <translation id="1204037785786432551">ডাউনল‘ড লিংক</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">পাঠ</translation>
 <translation id="2082238445998314030">ফলাফল <ph name="TOTAL_RESULTS" />ৰ ভিতৰত <ph name="RESULT_NUMBER" /></translation>
 <translation id="2096012225669085171">সকলো ডিভাইচতে ছিংক আৰু ব্যক্তিগতকৰণ কৰক</translation>
-<translation id="2099625543891475722">আপোনাৰ শাৰীৰিক বৈশিষ্ট্যসমূহ, যেনে উচ্চতা</translation>
 <translation id="2100273922101894616">স্বয়ংক্ৰিয়ভাৱে ছাইন ইন কৰক</translation>
 <translation id="2100314319871056947">পাঠখিনি সৰু সৰুকৈ ভাগ কৰি শ্বেয়াৰ কৰিবলৈ চেষ্টা কৰক</translation>
 <translation id="2109711654079915747">পৃষ্ঠাখন এৰি নোযোৱাকৈ ৱেবছাইটত থকা বিষয়বস্তুসমূহৰ বিষয়ে জানক। সন্ধান কৰিবলৈ স্পৰ্শ কৰক সুবিধাটোৱে এটা শব্দ আৰু ইয়াৰ প্ৰসংগ Google Searchলৈ পঠিয়ায় আৰু সংজ্ঞা, চিত্ৰ, সন্ধানৰ ফলাফলসমূহ আৰু অন্য সবিশেষ উভতাই দিয়ে।
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">পৰিচালনা কৰক</translation>
 <translation id="381841723434055211">ফ’ন নম্বৰসমূহ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টা ডাউনল'ড মচা হ'ল</translation>
-<translation id="3849365399446680203">আপুনি ARত থাকোঁতে এই ছাইটটোৱে এইবোৰ কার্য কৰিবলৈ সক্ষম হ'ব পাৰে:
-• আপোনাৰ পৰিৱেশৰ বাবে এখন 3D মেপ সৃষ্টি কৰা
-• কেমেৰাৰ ম’শ্বন ট্রেক কৰা
-
-আপোনাৰ কেমেৰাটোৱে কিহৰ প্ৰতি দৃষ্টি দি আছে সেয়া কেৱল আপুনি দেখা পায়। ছাইটটোৱে আপোনাৰ কেমেৰাৰ প্ৰতিচ্ছবিসমূহ চাব নোৱাৰে।</translation>
 <translation id="3859306556332390985">আগলৈ যাওক</translation>
 <translation id="388596076286380598">আপুনি অফলাইন হৈ থাকিলে অথবা আপোনাৰ সংযোগটো বেয়া হৈ থাকিলেও আপুনি পচন্দ কৰা ছাইটসমূহৰ পৰা প্ৰবন্ধ, ভিডিঅ’ আৰু অন্য সমল পাওক।</translation>
 <translation id="3894427358181296146">ফ’ল্ডাৰ যোগ কৰক</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">ইণ্টাৰনেট সংযোগ নাই</translation>
 <translation id="4321739720395210191">আপোনাৰ কেমেৰাটো খুলিব নোৱাৰি। আপোনাৰ ডিভাইচটো ৰিষ্টাৰ্ট কৰক আৰু পুনৰ চেষ্টা কৰক।</translation>
 <translation id="4351244548802238354">ডায়ল'গ বন্ধ কৰক</translation>
-<translation id="4353114845960720315">আপুনি VRত থাকোঁতে এই ছাইটটোৱে এইবোৰৰ বিষয়ে জানিবলৈ সক্ষম হ'ব পাৰে:</translation>
 <translation id="4378154925671717803">ফ'ন</translation>
 <translation id="4384468725000734951">সন্ধান কৰিবলৈ Sogou ব্যৱহাৰ কৰি থকা হৈছে</translation>
 <translation id="4404568932422911380">কোনো বুকমাৰ্ক নাই</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">ইণ্টাৰনেট নাই</translation>
 <translation id="4565377596337484307">পাছৱৰ্ড লুকুৱাওক</translation>
 <translation id="4572422548854449519">পৰিচালিত একাউণ্টত ছাইন ইন কৰক</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# মিনিট পূর্বে}one{# মিনিট পূর্বে}other{# মিনিট পূর্বে}}</translation>
 <translation id="4587589328781138893">ছাইটবোৰ</translation>
 <translation id="4594952190837476234">এই অফলাইন পৃষ্ঠাটো <ph name="CREATION_TIME" />ৰ আৰু এই পৃষ্ঠাটো অনলাইন সংস্কৰণতকৈ বেলেগ হ’ব পাৰে।</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> খোলক</translation>
 <translation id="4634124774493850572">পাছৱৰ্ড দিয়ক</translation>
 <translation id="4650364565596261010">ছিষ্টেম ডিফ’ল্ট</translation>
-<translation id="4660838440047236328">আপোনাৰ কোঠাটোৰ লে’আউট</translation>
 <translation id="4662373422909645029">উপনামত সংখ্যা থাকিব নোৱাৰে</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" />টা বুকমাৰ্ক মচা হ’ল</translation>
 <translation id="4665282149850138822">আপোনাৰ গৃহ স্ক্ৰীণত <ph name="NAME" />ক যোগ দিয়া হৈছে</translation>
@@ -459,7 +449,6 @@
 
 এই ছেটিংটো সলনি কৰিবলৈ <ph name="BEGIN_LINK" />ছিংক ৰিছেট কৰক<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">কার্ডত থকা নাম</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" />ৰ পৰা VR আৰম্ভ কৰিবনে?</translation>
 <translation id="4824958205181053313">ছিংক বাতিল কৰিবনে?</translation>
 <translation id="4835385943915508971">অনুৰোধ জনোৱা সমললৈ Chromeৰ এক্সেছ নাই।</translation>
 <translation id="4837753911714442426">পৃষ্ঠা প্ৰিণ্ট কৰিবলৈ বিকল্প খোলক</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">সম্পূর্ণ স্ক্ৰীণ ম’ডৰ পৰা বাহিৰ হওক</translation>
 <translation id="6404511346730675251">বুকমার্ক সম্পাদনা কৰক</translation>
 <translation id="6406506848690869874">ছিংক কৰক</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" />ৰ পৰা ARত প্ৰৱেশ কৰিবনে?</translation>
 <translation id="641643625718530986">প্ৰিণ্ট কৰক…</translation>
 <translation id="6427112570124116297">ৱেবটো অনুবাদ কৰক</translation>
 <translation id="6433501201775827830">আপোনাৰ সন্ধানৰ ইঞ্জিন বাছনি কৰক</translation>

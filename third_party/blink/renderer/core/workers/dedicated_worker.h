@@ -86,7 +86,8 @@ class CORE_EXPORT DedicatedWorker final
   // Implements WebDedicatedWorker.
   // Called only when PlzDedicatedWorker is enabled.
   void OnWorkerHostCreated(
-      mojo::ScopedMessagePipeHandle browser_interface_broker) override;
+      CrossVariantMojoRemote<mojom::blink::BrowserInterfaceBrokerInterfaceBase>
+          browser_interface_broker) override;
   void OnScriptLoadStarted() override;
   void OnScriptLoadStartFailed() override;
 

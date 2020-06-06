@@ -11,8 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_base.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "components/metrics/log_store.h"
 
@@ -26,9 +29,13 @@ class UnsentLogStoreMetrics;
 class UnsentLogStore : public LogStore {
  public:
   // Constructs an UnsentLogStore that stores data in |local_state| under the
-  // preference |pref_name|.
+  // preference |log_data_pref_name|.
   // Calling code is responsible for ensuring that the lifetime of |local_state|
   // is longer than the lifetime of UnsentLogStore.
+  //
+  // The optional |metadata_pref_name| is the preference that is used to store
+  // the unsent logs info while the unset logs are persisted. That info will be
+  // recorded as UMA metrics in next browser startup.
   //
   // When saving logs to disk, stores either the first |min_log_count| logs, or
   // at least |min_log_bytes| bytes of logs, whichever is greater.
@@ -40,12 +47,13 @@ class UnsentLogStore : public LogStore {
   // data, which will be uploaded with the log and used to validate data
   // integrity.
   UnsentLogStore(std::unique_ptr<UnsentLogStoreMetrics> metrics,
-                PrefService* local_state,
-                const char* pref_name,
-                size_t min_log_count,
-                size_t min_log_bytes,
-                size_t max_log_size,
-                const std::string& signing_key);
+                 PrefService* local_state,
+                 const char* log_data_pref_name,
+                 const char* metadata_pref_name,
+                 size_t min_log_count,
+                 size_t min_log_bytes,
+                 size_t max_log_size,
+                 const std::string& signing_key);
   ~UnsentLogStore();
 
   // LogStore:
@@ -56,18 +64,24 @@ class UnsentLogStore : public LogStore {
   const std::string& staged_log_signature() const override;
   void StageNextLog() override;
   void DiscardStagedLog() override;
+  void MarkStagedLogAsSent() override;
   void PersistUnsentLogs() const override;
   void LoadPersistedUnsentLogs() override;
 
-  // Adds a log to the list.
-  void StoreLog(const std::string& log_data);
+  // Adds a UMA log to the list, |samples_count| is the total number of samples
+  // in the log (if available).
+  void StoreLog(const std::string& log_data,
+                base::Optional<base::HistogramBase::Count> samples_count);
 
   // Gets log data at the given index in the list.
   const std::string& GetLogAtIndex(size_t index);
 
   // Replaces the compressed log at |index| in the store with given log data
   // reusing the same timestamp from the original log, and returns old log data.
-  std::string ReplaceLogAtIndex(size_t index, const std::string& new_log_data);
+  std::string ReplaceLogAtIndex(
+      size_t index,
+      const std::string& new_log_data,
+      base::Optional<base::HistogramBase::Count> samples_count);
 
   // Deletes all logs, in memory and on disk.
   void Purge();
@@ -79,11 +93,21 @@ class UnsentLogStore : public LogStore {
   size_t size() const { return list_.size(); }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(UnsentLogStoreTest, UnsentLogMetadataMetrics);
+
   // Writes the list to the ListValue.
   void WriteLogsToPrefList(base::ListValue* list) const;
 
   // Reads the list from the ListValue.
   void ReadLogsFromPrefList(const base::ListValue& list);
+
+  // Writes the unsent log info to the |metadata_pref_name_| preference.
+  void WriteToMetricsPref(base::HistogramBase::Count unsent_samples_count,
+                          base::HistogramBase::Count sent_samples_count,
+                          size_t persisted_size) const;
+
+  // Records the info in |metadata_pref_name_| as UMA metrics.
+  void RecordMetaDataMertics();
 
   // An object for recording UMA metrics.
   std::unique_ptr<UnsentLogStoreMetrics> metrics_;
@@ -94,7 +118,11 @@ class UnsentLogStore : public LogStore {
   PrefService* local_state_;
 
   // The name of the preference to serialize logs to/from.
-  const char* pref_name_;
+  const char* log_data_pref_name_;
+
+  // The name of the preference to store the unsent logs info, it could be
+  // nullptr if the metadata isn't desired.
+  const char* metadata_pref_name_;
 
   // We will keep at least this |min_log_count_| logs or |min_log_bytes_| bytes
   // of logs, whichever is greater, when writing to disk.  These apply after
@@ -124,7 +152,8 @@ class UnsentLogStore : public LogStore {
     void Init(UnsentLogStoreMetrics* metrics,
               const std::string& log_data,
               const std::string& log_timestamp,
-              const std::string& signing_key);
+              const std::string& signing_key,
+              base::Optional<base::HistogramBase::Count> samples_count);
 
     // Compressed log data - a serialized protobuf that's been gzipped.
     std::string compressed_log_data;
@@ -140,6 +169,9 @@ class UnsentLogStore : public LogStore {
 
     // The timestamp of when the log was created as a time_t value.
     std::string timestamp;
+
+    // The total number of samples in this log if applicable.
+    base::Optional<base::HistogramBase::Count> samples_count;
   };
   // A list of all of the stored logs, stored with SHA1 hashes to check for
   // corruption while they are stored in memory.
@@ -148,6 +180,9 @@ class UnsentLogStore : public LogStore {
   // The index and type of the log staged for upload. If nothing has been
   // staged, the index will be -1.
   int staged_log_index_;
+
+  // The total number of samples that have been sent from this LogStore.
+  base::HistogramBase::Count total_samples_sent_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UnsentLogStore);
 };

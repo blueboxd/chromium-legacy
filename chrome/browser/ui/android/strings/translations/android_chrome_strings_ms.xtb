@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Lihat tapak web popular dengan mengetik butang "Tapak popular"</translation>
 <translation id="1173894706177603556">Namakan semula</translation>
 <translation id="1178581264944972037">Jeda</translation>
-<translation id="1188239144602654184">Masuk ke AR</translation>
 <translation id="1197267115302279827">Alihkan penanda halaman</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1204037785786432551">Muat turun pautan</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">teks</translation>
 <translation id="2082238445998314030">Hasil carian <ph name="RESULT_NUMBER" /> daripada <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Segerakkan dan peribadikan pada semua peranti</translation>
-<translation id="2099625543891475722">ciri fizikal anda, seperti ketinggian</translation>
 <translation id="2100273922101894616">Auto Log masuk</translation>
 <translation id="2100314319871056947">Cuba kongsikan teks itu dalam bahagian yang lebih kecil</translation>
 <translation id="2109711654079915747">Ketahui tentang topik pada tapak web tanpa meninggalkan halaman. Sentuh untuk Cari akan menghantar perkataan dan konteks sekitar perkataan itu kepada Carian Google, mengembalikan takrif, gambar, hasil carian dan butiran lain.
@@ -341,11 +339,6 @@ Sentuh &amp; tahan mana-mana perkataan untuk mencari. Untuk memperhalus carian a
 <translation id="3810973564298564668">Urus</translation>
 <translation id="381841723434055211">Nombor telefon</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> muat turun dipadamkan</translation>
-<translation id="3849365399446680203">Semasa anda dalam AR, tapak ini boleh:
-• membuat peta 3D persekitaran anda
-• menjejak pergerakan kamera
-
-Anda sahaja yang boleh melihat perkara yang dilihat oleh kamera anda. Tapak tersebut tidak dapat melihat imej kamera anda.</translation>
 <translation id="3859306556332390985">Cari ke hadapan</translation>
 <translation id="388596076286380598">Dapatkan artikel, video dan kandungan lain daripada tapak yang anda sukai, walaupun anda di luar talian atau sambungan anda lemah.</translation>
 <translation id="3894427358181296146">Tambah folder</translation>
@@ -399,7 +392,6 @@ Anda sahaja yang boleh melihat perkara yang dilihat oleh kamera anda. Tapak ters
 <translation id="4320177379694898372">Tiada sambungan Internet</translation>
 <translation id="4321739720395210191">Tidak dapat membuka kamera anda. Mulakan semula peranti anda dan cuba lagi.</translation>
 <translation id="4351244548802238354">Tutup dialog</translation>
-<translation id="4353114845960720315">Semasa anda dalam VR, tapak ini boleh mendapatkan maklumat tentang:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Menggunakan Sogou untuk carian</translation>
 <translation id="4404568932422911380">Tiada penanda halaman</translation>
@@ -427,7 +419,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4561979708150884304">Tiada sambungan</translation>
 <translation id="4565377596337484307">Sembunyikan kata laluan</translation>
 <translation id="4572422548854449519">Log masuk ke akaun terurus</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minit yang lalu}other{# minit yang lalu}}</translation>
 <translation id="4587589328781138893">Tapak</translation>
 <translation id="4594952190837476234">Halaman luar talian ini dari <ph name="CREATION_TIME" /> dan mungkin berbeza daripada versi dalam talian.</translation>
@@ -435,7 +426,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 <translation id="4616150815774728855">Buka <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Gunakan kata laluan</translation>
 <translation id="4650364565596261010">Lalai sistem</translation>
-<translation id="4660838440047236328">reka letak bilik anda</translation>
 <translation id="4662373422909645029">Nama panggilan tidak boleh mengandungi nombor</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> penanda halaman dipadamkan</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke skrin Utama anda</translation>
@@ -459,7 +449,6 @@ Akaun Google anda mungkin mempunyai sejarah penyemakan imbas dalam bentuk lain s
 
 Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Nama pada kad</translation>
-<translation id="4808319664292298116">Masukkan VR daripada <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Batalkan penyegerakan?</translation>
 <translation id="4835385943915508971">Chrome tidak boleh mengakses sumber yang diminta.</translation>
 <translation id="4837753911714442426">Buka pilihan untuk mencetak halaman</translation>
@@ -659,7 +648,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
 <translation id="6404511346730675251">Edit penanda halaman</translation>
 <translation id="6406506848690869874">Segerak</translation>
-<translation id="6410973561433500075">Masuki AR daripada <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Cetak…</translation>
 <translation id="6427112570124116297">Terjemah Web</translation>
 <translation id="6433501201775827830">Pilih enjin carian anda</translation>

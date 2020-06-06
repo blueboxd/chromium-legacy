@@ -33,7 +33,6 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -72,6 +71,7 @@
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -866,7 +866,8 @@ bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   // TODO(crbug.com/862989): Move the following function (and the feature) to
   // the password component. Then remove IsIsolationForPasswordsSitesEnabled()
   // from the PasswordManagerClient interface.
-  return SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled();
+  return site_isolation::SiteIsolationPolicy::
+      IsIsolationForPasswordSitesEnabled();
 }
 
 bool ChromePasswordManagerClient::IsNewTabPage() const {

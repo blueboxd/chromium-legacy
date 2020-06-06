@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"टॉप साइट" बटणावर टॅप करून लोकप्रिय वेबसाइट पाहा</translation>
 <translation id="1173894706177603556">नाव बदला</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
-<translation id="1188239144602654184">AR सुरू करा</translation>
 <translation id="1197267115302279827">बुकर्माक हलवा</translation>
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1204037785786432551">लिंक डाउनलोड करा</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">मजकूर</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> पैकी <ph name="RESULT_NUMBER" /> परिणाम</translation>
 <translation id="2096012225669085171">डिव्हाइसवर सिंक आणि पर्सनलाइझ करा</translation>
-<translation id="2099625543891475722">तुमची शारीरिक वैशिष्‍ट्ये जसे की, उंची</translation>
 <translation id="2100273922101894616">ऑटो साइन इन करा</translation>
 <translation id="2100314319871056947">मजकूर लहान भागांमध्ये शेअर करून पाहा</translation>
 <translation id="2109711654079915747">पेज न सोडता वेबसाइटवरील विषयांबद्दल जाणून घ्या. शोधण्यासाठी स्पर्श करा हे शब्द आणि त्याच्या आसपासचा संदर्भ Google Search ला पाठवते आणि व्याख्या, पिक्चर, शोध परिणाम आणि इतर तपशील मिळवते.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">व्यवस्थापित करा</translation>
 <translation id="381841723434055211">फोन नंबर</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटविले</translation>
-<translation id="3849365399446680203">तुम्ही AR वापरत असताना ही साइट पुढील गोष्टी करू शकते:
-• तुमच्या परिसराचा 3D नकाशा तयार करणे
-• कॅमेरा मोशनचा मागोवा घेणे
-
-तुमच्या कॅमेऱ्यामधून जे दिसते ते फक्त तुम्ही पाहू शकता. तुमच्या कॅमेऱ्यामधील इमेज साइट पाहू शकत नाही.</translation>
 <translation id="3859306556332390985">पुढे शोधा</translation>
 <translation id="388596076286380598">तुम्ही ऑफलाइन असलात किंवा तुमचे कनेक्शन खराब असले तरीही, तुमच्या आवडीच्या साइटवरून लेख, व्हिडिओ आणि इतर आशय मिळवा.</translation>
 <translation id="3894427358181296146">फोल्डर जोडा</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">कोणतेही इंटरनेट कनेक्शन नाही</translation>
 <translation id="4321739720395210191">तुमचा कॅमेरा उघडू शकत नाही. तुमचे डिव्हाइस रीस्टार्ट करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="4351244548802238354">डायलॉग बंद करा</translation>
-<translation id="4353114845960720315">तुम्ही VR वापरत असताना ही साइट कदाचित पुढील गोष्टींबद्दल अधिक माहिती मिळवू शकेल:</translation>
 <translation id="4378154925671717803">फोन</translation>
 <translation id="4384468725000734951">शोध करण्‍यासाठी Sogou वापरत आहे</translation>
 <translation id="4404568932422911380">कोणतेही बुकमार्क नाहीत</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">कनेक्शन नाही</translation>
 <translation id="4565377596337484307">पासवर्ड लपवा</translation>
 <translation id="4572422548854449519">व्यवस्थापित केलेल्या खात्यामध्ये साइन इन करा</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# मिनिटापूर्वी}other{# मिनिटांपूर्वी}}</translation>
 <translation id="4587589328781138893">साइट</translation>
 <translation id="4594952190837476234">हे <ph name="CREATION_TIME" /> पासूनचे ऑफलाइन पेज आहे आणि ऑनलाइन आवृत्तीपेक्षा वेगळे असू शकते.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> उघडा</translation>
 <translation id="4634124774493850572">पासवर्ड वापरा</translation>
 <translation id="4650364565596261010">सिस्टम डीफॉल्ट</translation>
-<translation id="4660838440047236328">तुमच्या रूमचा लेआउट</translation>
 <translation id="4662373422909645029">टोपणनावामध्ये अंकांचा समावेश असू शकत नाही</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> बुकमार्क हटविले</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ला तुमच्या होम स्क्रीनवर पेअरिंग आले</translation>
@@ -459,7 +449,6 @@
 
 हे सेटिंग बदलण्यासाठी, <ph name="BEGIN_LINK" />सिंक रीसेट करा<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">कार्डवरील नाव</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> मधून VR मध्ये एंटर करायचे आहे का?</translation>
 <translation id="4824958205181053313">सिंक रद्द करायचे?</translation>
 <translation id="4835385943915508971">Chrome ला विनंती केलेल्या संसाधनांचा ॲक्सेस नाही.</translation>
 <translation id="4837753911714442426">पेज प्रिंट करण्‍यासाठी पर्याय उघडा</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">पूर्ण स्क्रीनमधून निर्गमन करा</translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करा</translation>
 <translation id="6406506848690869874">Sync</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" /> मधून AR एंटर करायचे आहे का?</translation>
 <translation id="641643625718530986">प्रिंट करा...</translation>
 <translation id="6427112570124116297">वेबचे भाषांतर करा</translation>
 <translation id="6433501201775827830">तुमचे शोध इंजिन निवडा</translation>

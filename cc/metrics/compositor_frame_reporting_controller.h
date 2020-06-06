@@ -98,6 +98,9 @@ class CC_EXPORT CompositorFrameReportingController {
   base::TimeTicks Now() const;
 
   bool HasReporterAt(PipelineStage stage) const;
+  bool next_activate_has_invalidation() const {
+    return next_activate_has_invalidation_;
+  }
 
  private:
   void AdvanceReporterStage(PipelineStage start, PipelineStage target);

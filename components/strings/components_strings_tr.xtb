@@ -178,6 +178,7 @@
 <translation id="1671391448414634642"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfalar artık <ph name="TARGET_LANGUAGE" /> diline çevrilecek</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Google Chrome bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Google Chrome herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="1682696192498422849">Önce kısa kenar</translation>
+<translation id="168693727862418163">Bu politika değeri, şemasına göre doğrulanamadı, yok sayılacak.</translation>
 <translation id="168841957122794586">Sunucu sertifikasında zayıf bir şifreleme anahtarı var.</translation>
 <translation id="1697532407822776718">Artık hazırsınız!</translation>
 <translation id="1703835215927279855">Letter</translation>

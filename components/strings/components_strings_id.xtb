@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Mulai sekarang, halaman dalam bahasa <ph name="SOURCE_LANGUAGE" /> akan diterjemahkan ke dalam bahasa <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Google Chrome mencoba menyambung ke <ph name="SITE" /> kali ini, situs web mengembalikan kredensial yang salah dan tidak biasa. Hal ini dapat terjadi jika ada penyerang yang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Google Chrome menghentikan sambungan sebelum terjadi pertukaran data apa pun.</translation>
 <translation id="1682696192498422849">Tepi pendek lebih dulu</translation>
+<translation id="168693727862418163">Nilai kebijakan ini gagal memvalidasi skemanya dan akan diabaikan.</translation>
 <translation id="168841957122794586">Sertifikat server berisi kunci kriptografis yang lemah.</translation>
 <translation id="1697532407822776718">Anda sudah siap!</translation>
 <translation id="1703835215927279855">Letter</translation>

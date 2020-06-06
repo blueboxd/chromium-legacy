@@ -44,10 +44,10 @@ js_library("bluetooth_subpage") {
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:list_property_update_behavior",
   ]
-  externs_list = [
-    "$externs_path/bluetooth.js",
-    "$externs_path/bluetooth_private.js",
-  ]
+  externs_list = chrome_extension_public_externs + [
+                   "$externs_path/bluetooth.js",
+                   "$externs_path/bluetooth_private.js",
+                 ]
   extra_sources = [
     "$interfaces_path/bluetooth_interface.js",
     "$interfaces_path/bluetooth_private_interface.js",

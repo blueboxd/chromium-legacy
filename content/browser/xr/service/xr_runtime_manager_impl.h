@@ -73,6 +73,8 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
       device::mojom::XRSessionOptionsPtr options,
       device::mojom::VRService::SupportsSessionCallback callback);
 
+  void MakeXrCompatible();
+
   // XRRuntimeManager implementation
   BrowserXRRuntimeImpl* GetRuntime(device::mojom::XRDeviceId id) override;
   void ForEachRuntime(

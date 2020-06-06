@@ -71,7 +71,7 @@ public class WebPaymentIntentHelperTest {
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME, "John Smith");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE, "4169158200");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL, "JohnSmith@google.com");
-        extras.putString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID, "shippingId");
+        extras.putString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID, "shippingId");
 
         // Redact the entry with missingField key.
         extras.remove(missingField);
@@ -177,17 +177,16 @@ public class WebPaymentIntentHelperTest {
         Assert.assertEquals(1, expectedShippingOptions.length);
         Bundle shippingOption = (Bundle) expectedShippingOptions[0];
         Assert.assertEquals("shippingId",
-                shippingOption.getString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID));
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID));
         Assert.assertEquals("Free shipping",
-                shippingOption.getString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_LABEL));
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_LABEL));
         Assert.assertEquals("USD",
                 shippingOption.getString(
-                        WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY));
+                        PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY));
         Assert.assertEquals("0",
-                shippingOption.getString(
-                        WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_AMOUNT_VALUE));
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT_VALUE));
         Assert.assertTrue(
-                shippingOption.getBoolean(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_SELECTED));
+                shippingOption.getBoolean(PaymentShippingOption.EXTRA_SHIPPING_OPTION_SELECTED));
     }
 
     // Test the happy path of createPayIntent and verify the deprecated extras.
@@ -682,7 +681,7 @@ public class WebPaymentIntentHelperTest {
     @Feature({"Payments"})
     public void parsePaymentResponseMissingShippingOptionTest() throws Throwable {
         Intent intent = createPaymentResponseWithMissingField(
-                WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID);
+                PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID);
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,
                 new PaymentOptions(/*requestPayerName=*/false, /*requestPayerEmail=*/false,
@@ -766,7 +765,7 @@ public class WebPaymentIntentHelperTest {
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_NAME, "John Smith");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_PHONE, "4169158200");
         extras.putString(WebPaymentIntentHelper.EXTRA_RESPONSE_PAYER_EMAIL, "JohnSmith@google.com");
-        extras.putString(WebPaymentIntentHelper.EXTRA_SHIPPING_OPTION_ID, "shippingId");
+        extras.putString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID, "shippingId");
         intent.putExtras(extras);
         mErrorString = null;
         WebPaymentIntentHelper.parsePaymentResponse(Activity.RESULT_OK, intent,

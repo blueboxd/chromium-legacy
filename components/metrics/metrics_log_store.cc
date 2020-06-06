@@ -38,6 +38,8 @@ const size_t kStorageByteLimitPerLogType = 300 * 1000;  // ~300kB
 void MetricsLogStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kMetricsInitialLogs);
   registry->RegisterListPref(prefs::kMetricsOngoingLogs);
+  registry->RegisterDictionaryPref(prefs::kMetricsInitialLogsMetadata);
+  registry->RegisterDictionaryPref(prefs::kMetricsOngoingLogsMetadata);
 }
 
 MetricsLogStore::MetricsLogStore(PrefService* local_state,
@@ -47,6 +49,7 @@ MetricsLogStore::MetricsLogStore(PrefService* local_state,
       initial_log_queue_(std::make_unique<UnsentLogStoreMetricsImpl>(),
                          local_state,
                          prefs::kMetricsInitialLogs,
+                         prefs::kMetricsInitialLogsMetadata,
                          kInitialLogsSaveLimit,
                          kStorageByteLimitPerLogType,
                          0,
@@ -54,6 +57,7 @@ MetricsLogStore::MetricsLogStore(PrefService* local_state,
       ongoing_log_queue_(std::make_unique<UnsentLogStoreMetricsImpl>(),
                          local_state,
                          prefs::kMetricsOngoingLogs,
+                         prefs::kMetricsOngoingLogsMetadata,
                          kOngoingLogsSaveLimit,
                          kStorageByteLimitPerLogType,
                          max_ongoing_log_size,
@@ -71,11 +75,13 @@ void MetricsLogStore::StoreLog(const std::string& log_data,
                                MetricsLog::LogType log_type) {
   switch (log_type) {
     case MetricsLog::INITIAL_STABILITY_LOG:
-      initial_log_queue_.StoreLog(log_data);
+      // TODO(crbug.com/1076564): Pass the log's sample count.
+      initial_log_queue_.StoreLog(log_data, base::nullopt);
       break;
     case MetricsLog::ONGOING_LOG:
     case MetricsLog::INDEPENDENT_LOG:
-      ongoing_log_queue_.StoreLog(log_data);
+      // TODO(crbug.com/1076564): Pass the log's sample count.
+      ongoing_log_queue_.StoreLog(log_data, base::nullopt);
       break;
   }
 }
@@ -122,6 +128,14 @@ void MetricsLogStore::DiscardStagedLog() {
   else
     ongoing_log_queue_.DiscardStagedLog();
   DCHECK(!has_staged_log());
+}
+
+void MetricsLogStore::MarkStagedLogAsSent() {
+  DCHECK(has_staged_log());
+  if (initial_log_queue_.has_staged_log())
+    initial_log_queue_.MarkStagedLogAsSent();
+  else
+    ongoing_log_queue_.MarkStagedLogAsSent();
 }
 
 void MetricsLogStore::PersistUnsentLogs() const {

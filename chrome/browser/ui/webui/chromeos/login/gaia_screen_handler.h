@@ -254,9 +254,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
                        bool using_saml,
                        const SamlPasswordAttributes& password_attributes);
 
-  // Fill GAIA user name.
-  void set_populated_email(const std::string& populated_email) {
-    populated_email_ = populated_email;
+  // Fill GAIA account.
+  void set_populated_account(const AccountId& populated_account_id) {
+    populated_account_id_ = populated_account_id;
   }
 
   // Kick off cookie / local storage cleanup.
@@ -359,8 +359,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   ActiveDirectoryPasswordChangeScreenHandler*
       active_directory_password_change_screen_handler_ = nullptr;
 
-  // Email to pre-populate with.
-  std::string populated_email_;
+  // Account to pre-populate with.
+  AccountId populated_account_id_;
 
   // Whether the handler has been initialized.
   bool initialized_ = false;

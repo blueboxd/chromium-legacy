@@ -37,6 +37,10 @@ namespace declarativeNetRequest {
   // TODO(crbug.com/947591): Add documentation once implementation is complete.
   [nodoc]
   enum HeaderOperation {
+    // Adds a new entry for the specified header. This operation is not
+    // supported for request headers.
+    append,
+    set,
     remove
   };
 
@@ -234,6 +238,7 @@ namespace declarativeNetRequest {
   dictionary ModifyHeaderInfo {
     DOMString header;
     HeaderOperation operation;
+    DOMString? value;
   };
 
   [noinline_doc]

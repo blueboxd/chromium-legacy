@@ -68,7 +68,10 @@ public class ApplicationTestUtils {
 
     public static void tearDown(Context context) {
         Assert.assertNotNull("Uninitialized wake lock", sWakeLock);
-        sWakeLock.release();
+        if (sWakeLock.isHeld()) {
+            // Make sure that sWakeLock is only released from being held state
+            sWakeLock.release();
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             try {
                 finishAllChromeTasks(context);

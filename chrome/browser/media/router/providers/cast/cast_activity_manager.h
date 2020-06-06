@@ -270,6 +270,9 @@ class CastActivityManager : public CastActivityManagerBase,
   // If no conversion should occur, returns base::nullopt.
   base::Optional<MediaSinkInternal> ConvertMirrorToCast(int tab_id);
 
+  std::string ChooseAppId(const CastMediaSource& source,
+                          const MediaSinkInternal& sink) const;
+
   static ActivityRecordFactoryForTest* activity_record_factory_;
 
   base::flat_set<MediaSource::Id> route_queries_;

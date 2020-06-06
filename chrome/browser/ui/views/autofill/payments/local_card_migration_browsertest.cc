@@ -293,7 +293,8 @@ class LocalCardMigrationBrowserTest
   }
 
   CreditCard SaveLocalCard(std::string card_number,
-                           bool set_as_expired_card = false) {
+                           bool set_as_expired_card = false,
+                           bool set_nickname = false) {
     CreditCard local_card;
     test::SetCreditCardInfo(&local_card, "John Smith", card_number.c_str(),
                             "12",
@@ -302,6 +303,9 @@ class LocalCardMigrationBrowserTest
                             "1");
     local_card.set_guid("00000000-0000-0000-0000-" + card_number.substr(0, 12));
     local_card.set_record_type(CreditCard::LOCAL_CARD);
+    if (set_nickname)
+      local_card.SetNickname(base::ASCIIToUTF16("card nickname"));
+
     AddTestCreditCard(browser(), local_card);
     return local_card;
   }
@@ -790,11 +794,11 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   ASSERT_EQ(2u, card_list_view->children().size());
   // Cards will be added to database in a reversed order.
   EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[0])
-                ->GetNetworkAndLastFourDigits(),
-            second_card.NetworkAndLastFourDigits());
+                ->GetCardIdentifierString(),
+            second_card.CardIdentifierStringForAutofillDisplay());
   EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[1])
-                ->GetNetworkAndLastFourDigits(),
-            first_card.NetworkAndLastFourDigits());
+                ->GetCardIdentifierString(),
+            first_card.CardIdentifierStringForAutofillDisplay());
 }
 
 // Ensures that rejecting the main migration dialog closes the dialog.
@@ -1226,6 +1230,53 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForFixedLogging,
   histogram_tester.ExpectUniqueSample(
       "Autofill.LocalCardMigrationBubbleResult.FirstShow",
       AutofillMetrics::LOCAL_CARD_MIGRATION_BUBBLE_LOST_FOCUS, 1);
+}
+
+// Tests to ensure the card nickname is shown correctly in the local card
+// migration dialog. The param indicates whether the nickname experiment is
+// enabled.
+class LocalCardMigrationBrowserTestForNickname
+    : public LocalCardMigrationBrowserTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  LocalCardMigrationBrowserTestForNickname() {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillEnableSurfacingServerCardNickname, GetParam());
+  }
+
+  ~LocalCardMigrationBrowserTestForNickname() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         LocalCardMigrationBrowserTestForNickname,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(LocalCardMigrationBrowserTestForNickname,
+                       CardIdentifierString) {
+  base::HistogramTester histogram_tester;
+
+  CreditCard first_card = SaveLocalCard(
+      kFirstCardNumber, /*set_as_expired_card=*/false, /*set_nickname=*/true);
+  CreditCard second_card = SaveLocalCard(
+      kSecondCardNumber, /*set_as_expired_card=*/false, /*set_nickname=*/false);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  // Click the [Continue] button.
+  ClickOnOkButton(GetLocalCardMigrationOfferBubbleViews());
+
+  views::View* card_list_view = GetCardListView();
+  EXPECT_TRUE(card_list_view->GetVisible());
+  ASSERT_EQ(2u, card_list_view->children().size());
+  // Cards will be added to database in a reversed order.
+  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[0])
+                ->GetCardIdentifierString(),
+            second_card.NetworkAndLastFourDigits());
+  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[1])
+                ->GetCardIdentifierString(),
+            GetParam() ? first_card.NicknameAndLastFourDigitsForTesting()
+                       : first_card.NetworkAndLastFourDigits());
 }
 
 // TODO(crbug.com/897998):

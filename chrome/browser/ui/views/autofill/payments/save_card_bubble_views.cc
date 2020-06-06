@@ -137,6 +137,10 @@ views::View* SaveCardBubbleViews::GetFootnoteViewForTesting() {
   return footnote_view_;
 }
 
+const base::string16 SaveCardBubbleViews::GetCardIdentifierString() const {
+  return controller_->GetCard().CardIdentifierStringForAutofillDisplay();
+}
+
 SaveCardBubbleViews::~SaveCardBubbleViews() = default;
 
 // Overridden
@@ -177,9 +181,9 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   card_network_icon->set_tooltip_text(card.NetworkForDisplay());
   description_view->AddChildView(card_network_icon);
 
-  description_view->AddChildView(
-      new views::Label(card.NetworkAndLastFourDigits(), CONTEXT_BODY_TEXT_LARGE,
-                       views::style::STYLE_PRIMARY));
+  description_view->AddChildView(new views::Label(GetCardIdentifierString(),
+                                                  CONTEXT_BODY_TEXT_LARGE,
+                                                  views::style::STYLE_PRIMARY));
 
   if (!card.IsExpired(base::Time::Now())) {
     // The spacer will stretch to use the available horizontal space in the

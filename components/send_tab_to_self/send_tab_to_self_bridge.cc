@@ -11,7 +11,6 @@
 #include "base/check_op.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/time/clock.h"

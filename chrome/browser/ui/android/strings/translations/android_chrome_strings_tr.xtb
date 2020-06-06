@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"Popüler siteler" düğmesine dokunarak popüler web sitelerini görün</translation>
 <translation id="1173894706177603556">Yeniden adlandır</translation>
 <translation id="1178581264944972037">Duraklat</translation>
-<translation id="1188239144602654184">AR'ye gir</translation>
 <translation id="1197267115302279827">Yer işaretlerini taşı</translation>
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1204037785786432551">Bağlantıyı indir</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">Kısa mesaj</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> sonuçtan <ph name="RESULT_NUMBER" /> numaralı sonuç</translation>
 <translation id="2096012225669085171">Cihazlar arasında senkronizasyon ve kişiselleştirme</translation>
-<translation id="2099625543891475722">boyunuz gibi fiziksel özellikleriniz</translation>
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
 <translation id="2100314319871056947">Metni daha küçük parçalar halinde paylaşmayı deneyin</translation>
 <translation id="2109711654079915747">Sayfadan ayrılmadan web sitelerindeki konular hakkında bilgi edinin. Dokun ve Ara özelliği, seçilen kelimeyi, çevresindeki içerikle birlikte Google Arama'ya gönderip karşılığında ilgili tanımlar, resimler, arama sonuçları ve diğer ayrıntıları döndürür.
@@ -341,11 +339,6 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="3810973564298564668">Yönet</translation>
 <translation id="381841723434055211">Telefon numaraları</translation>
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
-<translation id="3849365399446680203">Bu site, siz artırılmış gerçeklik (AR) kullanırken şunları yapabilir:
-• çevrenizin 3D haritasını oluşturabilir
-• kamera hareketini takip edebilir
-
-Kameranızın neye baktığını yalnızca siz görebilirsiniz. Site, kameranızın çektiği resimleri göremez.</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
 <translation id="388596076286380598">Çevrimdışıyken veya bağlantınız kötü olduğunda bile beğendiğiniz sitelerdeki makalelere, videolara ve diğer içeriklere ulaşabilirsiniz.</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
@@ -399,7 +392,6 @@ Kameranızın neye baktığını yalnızca siz görebilirsiniz. Site, kameranız
 <translation id="4320177379694898372">İnternet bağlantısı yok</translation>
 <translation id="4321739720395210191">Kameranız açılamıyor. Cihazınızı yeniden başlatıp işlemi tekrar deneyin.</translation>
 <translation id="4351244548802238354">İletişim kutusunu kapat</translation>
-<translation id="4353114845960720315">Bu site, siz VR'deyken aşağıdakileri öğrenebilir:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Arama için Sogou kullanılıyor</translation>
 <translation id="4404568932422911380">Yer işareti yok</translation>
@@ -427,7 +419,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4561979708150884304">Bağlantı yok</translation>
 <translation id="4565377596337484307">Şifreyi gizle</translation>
 <translation id="4572422548854449519">Yönetilen hesapta oturum açın</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# dakika önce}other{# dakika önce}}</translation>
 <translation id="4587589328781138893">Siteler</translation>
 <translation id="4594952190837476234">Bu çevrimdışı sayfa <ph name="CREATION_TIME" /> tarihli olup web'deki sürümden farklı olabilir.</translation>
@@ -435,7 +426,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> APK'sını aç</translation>
 <translation id="4634124774493850572">Şifre kullan</translation>
 <translation id="4650364565596261010">Sistem varsayılanı</translation>
-<translation id="4660838440047236328">odanızın düzeni</translation>
 <translation id="4662373422909645029">Takma ad sayı içeremez</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
@@ -459,7 +449,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Kartın üzerindeki ad</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> adresinden VR'ye girilsin mi?</translation>
 <translation id="4824958205181053313">Senkronizasyon iptal edilsin mi?</translation>
 <translation id="4835385943915508971">Chrome, istenen kaynağa erişemiyor.</translation>
 <translation id="4837753911714442426">Sayfayı yazdırma seçeneklerini açar</translation>
@@ -659,7 +648,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6398765197997659313">Tam ekrandan çık</translation>
 <translation id="6404511346730675251">Yer işaretini düzenle</translation>
 <translation id="6406506848690869874">Senkronizasyon</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" /> üzerinden artırılmış gerçekliğe (AR) girilsin mi?</translation>
 <translation id="641643625718530986">Yazdır…</translation>
 <translation id="6427112570124116297">Web'i çevir</translation>
 <translation id="6433501201775827830">Arama motorunuzu seçin</translation>

@@ -3231,9 +3231,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Si cette règle est définie sur 0, la mise en cache des données d'authentification est désactivée. Cela peut considérablement ralentir la connexion des utilisateurs affiliés, car les données spécifiques à un domaine doivent être récupérées à chaque connexion.
 
       Notez que les données de domaine sont mises en cache même pour les utilisateurs éphémères. Le cache doit être désactivé si le suivi du domaine des utilisateurs éphémères doit être empêché.</translation>
-<translation id="5700097087679928356">Si cette règle est définie sur 0 (valeur par défaut), vous pouvez accéder aux outils pour les développeurs et à la Console JavaScript, sauf si des extensions ont été installées dans le cadre des règles de l'entreprise. Si cette règle est définie sur 1, vous pouvez accéder à ces outils et à cette console dans tous les cas, y compris si des extensions ont été installées dans le cadre des règles de l'entreprise. Si cette règle est définie sur 2, vous ne pouvez pas accéder à ces outils ni examiner des éléments de sites Web.
-
-      En outre, les raccourcis clavier, ainsi que les options de menu ou de menu contextuel permettant d'ouvrir ces outils ou cette console sont désactivées.</translation>
 <translation id="570062449808736508">Lorsque ce règlement est défini sur une chaîne non vide, WebView lit les restrictions d'URL depuis le fournisseur de contenu portant le nom de l'autorité indiquée.</translation>
 <translation id="5708969689202733975">Configurer les modes de déverrouillage rapide autorisés</translation>
 <translation id="5711016543513883877">

@@ -34,8 +34,9 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-shared.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 
@@ -78,11 +79,11 @@ class WebServiceWorkerNetworkProvider {
   // idle signal.
   virtual void DispatchNetworkQuiet() = 0;
 
-  // Returns mojo::PendingReceiver<blink::mojom::blink::WorkerTimingContainer>
-  // for the blink::ResourceResponse with the given |request_id|. Null if the
-  // request has not been intercepted by a service worker.
-  virtual mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
-      int request_id) = 0;
+  // Returns the blink::mojom::WorkerTimingContainer receiver for the
+  // blink::ResourceResponse with the given |request_id|. Null if the request
+  // has not been intercepted by a service worker.
+  virtual CrossVariantMojoReceiver<mojom::WorkerTimingContainerInterfaceBase>
+  TakePendingWorkerTimingReceiver(int request_id) = 0;
 };
 
 }  // namespace blink

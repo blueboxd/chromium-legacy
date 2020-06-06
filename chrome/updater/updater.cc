@@ -35,7 +35,7 @@
 // Instructions For Windows.
 // - To install only the updater, run "updatersetup.exe" from the build out dir.
 // - To install Chrome and the updater, do the same but use the --appid:
-//    updatersetup.exe --appid={8A69D345-D564-463C-AFF1-A69D9E530F96}
+//    updatersetup.exe --appid={8A69D345-D564-463c-AFF1-A69D9E530F96}
 // - To uninstall, run "updater.exe --uninstall" from its install directory,
 // which is under %LOCALAPPDATA%\Google\GoogleUpdater, or from the |out|
 // directory of the build.

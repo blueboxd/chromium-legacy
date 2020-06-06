@@ -98,6 +98,20 @@ static bool ShouldCreateContext(
 CanvasRenderingContext* WebGLRenderingContext::Factory::Create(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs) {
+  // The xr_compatible attribute needs to be handled before creating the context
+  // because the GPU process may potentially be restarted in order to be XR
+  // compatible. This scenario occurs if the GPU process is not using the GPU
+  // that the VR headset is plugged into. If the GPU process is restarted, the
+  // WebGraphicsContext3DProvider must be created using the new one.
+  if (attrs.xr_compatible &&
+      !WebGLRenderingContextBase::MakeXrCompatibleSync(host)) {
+    // If the xr_compatible attribute is requested and we're not able to be xr
+    // compatible, fail and don't create the context.
+    // TODO(http://crbug.com/1086697): Create a WebGL context with xrCompatible
+    // set to false
+    return nullptr;
+  }
+
   bool using_gpu_compositing;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider(
       CreateWebGraphicsContext3DProvider(

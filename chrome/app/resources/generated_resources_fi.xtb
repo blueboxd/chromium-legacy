@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Varmenteen allekirjoittaja</translation>
 <translation id="1145292499998999162">Laajennus estettiin</translation>
 <translation id="1145593918056169051">Tulostin on pysähtynyt</translation>
-<translation id="1146678959555564648">Siirry VR-tilaan</translation>
 <translation id="114721135501989771">Googlen älykkäitä ratkaisuja Chromeen</translation>
 <translation id="1147991416141538220">Jos haluat pyytää käyttöoikeutta, ota yhteyttä laitteen järjestelmänvalvojaan.</translation>
 <translation id="1149401351239820326">Viimeinen voimassaolokuukausi</translation>
@@ -866,7 +865,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2096715839409389970">Poista kolmannen osapuolen evästeet</translation>
 <translation id="2097372108957554726">Sinun on kirjauduttava sisään Chromeen, jos haluat rekisteröidä uusia laitteita</translation>
 <translation id="2099172618127234427">Olet ottamassa käyttöön Chrome-käyttöjärjestelmän viankorjausominaisuudet, jotka määrittävät sshd daemon -toiminnon ja ottavat käyttöön USB-muistitikulta käynnistyksen.</translation>
-<translation id="2099625543891475722">fyysiset piirteesi, kuten pituutesi</translation>
 <translation id="2099686503067610784">Poistetaanko palvelimen varmenne <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Automaattinen kirjautuminen</translation>
 <translation id="2101225219012730419">Versio:</translation>
@@ -2185,6 +2183,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3732857534841813090">Google Assistantiin liittyvät tiedot</translation>
 <translation id="3733127536501031542">SSL-palvelin ja Step-up</translation>
 <translation id="3735740477244556633">Lajitteluperuste</translation>
+<translation id="3738213647660363521">Muokattu kohdistimen väri</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Avataanko <ph name="APPLICATION" />?</translation>
 <translation id="3742055079367172538">Kuvakaappaus otettu</translation>
@@ -2654,7 +2653,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4350019051035968019">Tätä laitetta ei voi rekisteröidä verkkotunnukselle, johon tilisi kuuluu, koska laite on merkitty eri verkkotunnuksen hallinnoitavaksi.</translation>
 <translation id="4350782034419308508">Hei Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> haluaa etsiä lähellä olevia Bluetooth-laitteita. Seuraavat laitteet löydettiin:</translation>
-<translation id="4353114845960720315">Kun olet VR-tilassa, sivusto voi saada tietää</translation>
 <translation id="4354073718307267720">Kysy aina, kun sivusto pyytää lupaa luoda 3D-kartan ympäristöstäsi tai seurata kameran asentoa</translation>
 <translation id="4354344420232759511">Käyttämäsi sivustot tulevat näkyviin tähän</translation>
 <translation id="435527878592612277">Valitse valokuva</translation>
@@ -2889,7 +2887,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4659077111144409915">Ensisijainen tili</translation>
 <translation id="4660476621274971848">Versiota <ph name="EXPECTED_VERSION" /> odotettiin, mutta versio oli <ph name="NEW_ID" />.</translation>
 <translation id="4660540330091848931">Muutetaan kokoa</translation>
-<translation id="4660838440047236328">huoneesi asettelun</translation>
 <translation id="4661407454952063730">Sovellusdata voi olla mitä tahansa dataa, jota sovellus on tallentanut (kehittäjän asetusten perusteella), mukaan lukien yhteystietoja, viestejä ja valokuvia.</translation>
 <translation id="4662373422909645029">Ei saa sisältää numeroita</translation>
 <translation id="4662788913887017617">Jaa tämä kirjanmerkki iPhonellesi</translation>
@@ -2978,9 +2975,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4801512016965057443">Salli mobiilitiedonsiirto roaming-tilassa</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="4804827417948292437">Avokado</translation>
-<translation id="4805077164141082536">Suosittelemme, että varmuuskopioit nykyisen Linux-säilösi ennen päivitystä.</translation>
 <translation id="4807098396393229769">Kortissa oleva nimi</translation>
-<translation id="4808319664292298116">Siirrytäänkö VR-tilaan (<ph name="DOMAIN" />)?</translation>
 <translation id="4808667324955055115">Ponnahdusikkunat estetty:</translation>
 <translation id="480990236307250886">Avaa oma etusivu</translation>
 <translation id="4811212958317149293">Kytkimen käyttö: näppäimistön automaattinen skannaus</translation>
@@ -3294,6 +3289,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="52232769093306234">Pakkaus epäonnistui.</translation>
 <translation id="5225324770654022472">Näytä sovellusten oikopolku</translation>
 <translation id="5227679487546032910">Sinivihreä oletusavatar</translation>
+<translation id="5228088094491423618">Livetekstitys</translation>
 <translation id="5228579091201413441">Ota synkronointi käyttöön</translation>
 <translation id="5229189185761556138">Hallitse syöttötapoja</translation>
 <translation id="5230516054153933099">Ikkuna</translation>
@@ -3707,7 +3703,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5739235828260127894">Odotetaan vahvistusta. <ph name="LINK_BEGIN" />Lisätietoja<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Hyvin suuri</translation>
 <translation id="574209121243317957">Äänenkorkeus</translation>
-<translation id="5745136023067925867">Tilaa vinkkejä, tarjouksia ja päivityksiä (<ph name="DEVICE_TYPE" />) ja anna palautetta</translation>
 <translation id="5746169159649715125">Tallenna PDF-muodossa</translation>
 <translation id="5747552184818312860">Vanhenee</translation>
 <translation id="5747785204778348146">Kehittäjä – epävakaa</translation>
@@ -4832,7 +4827,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Sulje sivu}other{Sulje sivut}}</translation>
 <translation id="7207457272187520234">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Jos olet laittanut päälle muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi.</translation>
 <translation id="7207631048330366454">Hae sovelluksia</translation>
-<translation id="7210171324714276060"><ph name="EXTENSION_NAME" /> muutti hakupalvelua, se on nyt <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Laajennustulostimet</translation>
 <translation id="7212097698621322584">Lisää nykyinen PIN-koodisi muuttaaksesi sen. Jos et tiedä PIN-koodiasi, sinun on nollattava suojausavaimesi ja luotava uusi PIN-koodi.</translation>
 <translation id="7216409898977639127">Mobiilioperaattori</translation>
@@ -5232,7 +5226,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7737115349420013392"><ph name="DEVICE_NAME" /> lisätään laitepariksi…</translation>
 <translation id="7737238973539693982">Poista Linux (beta)</translation>
 <translation id="7740996059027112821">Vakio</translation>
-<translation id="7743128043742060936">Laajennus <ph name="EXTENSION_NAME" /> muutti tätä sivua</translation>
 <translation id="7744047395460924128">Näytä tulostushistoria</translation>
 <translation id="7744192722284567281">Kuului tietosuojaloukkaukseen</translation>
 <translation id="7750228210027921155">Kuva kuvassa</translation>
@@ -6349,6 +6342,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9121814364785106365">Avaa kiinnitetyllä välilehdellä</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> on keskeytetty</translation>
 <translation id="9124003689441359348">Tässä näytetään tallennetut salasanasi.</translation>
+<translation id="9126149354162942022">Kohdistimen väri</translation>
 <translation id="9128317794749765148">Määritystä ei voitu suorittaa loppuun</translation>
 <translation id="9128870381267983090">Yhdistä verkkoon</translation>
 <translation id="9130015405878219958">Annoit virheellisen tilan.</translation>

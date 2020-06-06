@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
+#include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
@@ -198,15 +199,12 @@ base::Value SerializeExpectCTData(TransportSecurityState* state) {
 
     base::DictionaryValue ct_entry;
 
-    // Write an empty NetworkIsolationKey value. Not used yet, but writing one
-    // now means no format change when a corresponding field is added to
-    // ExpectCTState data.
-    //
-    // TODO(mmenke): Add NetworkIsolationKey field to ExpectCTState and add
-    // support for it to TransportSecurityPersister.
     base::Value network_isolation_key_value;
-    bool result = NetworkIsolationKey().ToValue(&network_isolation_key_value);
-    DCHECK(result);
+    // Don't serialize entries with transient NetworkIsolationKeys.
+    if (!expect_ct_iterator.network_isolation_key().ToValue(
+            &network_isolation_key_value)) {
+      continue;
+    }
     ct_entry.SetKey(kNetworkIsolationKey,
                     std::move(network_isolation_key_value));
 
@@ -230,6 +228,8 @@ void DeserializeExpectCTData(const base::Value& ct_list,
                              TransportSecurityState* state) {
   if (!ct_list.is_list())
     return;
+  bool partition_by_nik = base::FeatureList::IsEnabled(
+      features::kPartitionExpectCTStateByNetworkIsolationKey);
 
   const base::Time current_time(base::Time::Now());
 
@@ -238,6 +238,8 @@ void DeserializeExpectCTData(const base::Value& ct_list,
       continue;
 
     const std::string* hostname = ct_entry.FindStringKey(kHostname);
+    const base::Value* network_isolation_key_value =
+        ct_entry.FindKey(kNetworkIsolationKey);
     base::Optional<double> expect_ct_last_observed =
         ct_entry.FindDoubleKey(kExpectCTObserved);
     base::Optional<double> expect_ct_expiry =
@@ -247,9 +249,9 @@ void DeserializeExpectCTData(const base::Value& ct_list,
     const std::string* expect_ct_report_uri =
         ct_entry.FindStringKey(kExpectCTReportUri);
 
-    if (!hostname || !expect_ct_last_observed.has_value() ||
-        !expect_ct_expiry.has_value() || !expect_ct_enforce.has_value() ||
-        !expect_ct_report_uri) {
+    if (!hostname || !network_isolation_key_value ||
+        !expect_ct_last_observed.has_value() || !expect_ct_expiry.has_value() ||
+        !expect_ct_enforce.has_value() || !expect_ct_report_uri) {
       continue;
     }
 
@@ -272,7 +274,20 @@ void DeserializeExpectCTData(const base::Value& ct_list,
     if (hashed.empty())
       continue;
 
-    state->AddOrUpdateEnabledExpectCTHosts(hashed, expect_ct_state);
+    NetworkIsolationKey network_isolation_key;
+    if (!NetworkIsolationKey::FromValue(*network_isolation_key_value,
+                                        &network_isolation_key)) {
+      continue;
+    }
+
+    // If Expect-CT is not being partitioned by NetworkIsolationKey, but
+    // |network_isolation_key| is not empty, drop the entry, to avoid ambiguity
+    // and favor entries that were saved with an empty NetworkIsolationKey.
+    if (!partition_by_nik && !network_isolation_key.IsEmpty())
+      continue;
+
+    state->AddOrUpdateEnabledExpectCTHosts(hashed, network_isolation_key,
+                                           expect_ct_state);
   }
 }
 
@@ -536,8 +551,11 @@ bool TransportSecurityPersister::DeserializeObsoleteData(
     // We only register entries that have actual state.
     if (has_sts)
       state->AddOrUpdateEnabledSTSHosts(hashed, sts_state);
-    if (has_expect_ct)
-      state->AddOrUpdateEnabledExpectCTHosts(hashed, expect_ct_state);
+    if (has_expect_ct) {
+      // Use empty NetworkIsolationKeys for old data.
+      state->AddOrUpdateEnabledExpectCTHosts(hashed, NetworkIsolationKey(),
+                                             expect_ct_state);
+    }
   }
 
   *dirty = dirtied;

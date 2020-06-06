@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Klepnutím na tlačidlo Hlavné weby zobrazíte obľúbené webové stránky</translation>
 <translation id="1173894706177603556">Premenovať</translation>
 <translation id="1178581264944972037">Pozastaviť</translation>
-<translation id="1188239144602654184">Spustiť VR</translation>
 <translation id="1197267115302279827">Presunúť záložky</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1204037785786432551">Stiahnuť obsah odkazu</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">text</translation>
 <translation id="2082238445998314030">Výsledok <ph name="RESULT_NUMBER" /> z <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Synchronizovať a prispôsobiť v rôznych zariadeniach</translation>
-<translation id="2099625543891475722">vašich fyzických vlastnostiach, napríklad výške;</translation>
 <translation id="2100273922101894616">Automaticky prihlasovať</translation>
 <translation id="2100314319871056947">Skúste text zdieľať po menších častiach</translation>
 <translation id="2109711654079915747">Zistite viac o témach na weboch bez toho, aby ste museli opustiť stránku. Funkcia Vyhľadávanie klepnutím odošle slovo a súvisiaci kontext do Vyhľadávania Google a vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.
@@ -341,11 +339,6 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="3810973564298564668">Spravovať</translation>
 <translation id="381841723434055211">Telefónne čísla</translation>
 <translation id="3819178904835489326">Počet odstránených stiahnutých súborov: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3849365399446680203">Keď ste v RR, tento web môže:
-• vytvoriť 3D mapu vášho prostredia;
-• sledovať pohyb fotoaparátu.
-
-Iba vy vidíte, čo je v zábere fotoaparátu. Tomuto webu sa nezobrazujú obrázky vášho fotoaparátu.</translation>
 <translation id="3859306556332390985">Pretočiť dopredu</translation>
 <translation id="388596076286380598">Dostávajte články, videá a ďalší obsah z webov, ktoré sa vám páčia, aj keď ste offline alebo máte slabé pripojenie.</translation>
 <translation id="3894427358181296146">Pridanie priečinka</translation>
@@ -399,7 +392,6 @@ Iba vy vidíte, čo je v zábere fotoaparátu. Tomuto webu sa nezobrazujú obr�
 <translation id="4320177379694898372">Žiadne internetové pripojenie</translation>
 <translation id="4321739720395210191">Vaša kamera sa nedá otvoriť. Reštartujte zariadenie a skúste to znova.</translation>
 <translation id="4351244548802238354">Zavrieť dialógové okno</translation>
-<translation id="4353114845960720315">Keď budete vo VR, tento web môže získať informácie o:</translation>
 <translation id="4378154925671717803">Telefón</translation>
 <translation id="4384468725000734951">Na vyhľadávanie sa používa Sogou</translation>
 <translation id="4404568932422911380">Žiadne záložky</translation>
@@ -427,7 +419,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4561979708150884304">Bez pripojenia</translation>
 <translation id="4565377596337484307">Skryť heslo</translation>
 <translation id="4572422548854449519">Prihlásenie do spravovaného účtu</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{pred # minútou}few{pred # minútami}many{pred # minútou}other{pred # minútami}}</translation>
 <translation id="4587589328781138893">Weby</translation>
 <translation id="4594952190837476234">Táto offline stránka je z <ph name="CREATION_TIME" /> a líši sa od online verzie.</translation>
@@ -435,7 +426,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4616150815774728855">Otvoriť <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Použiť heslo</translation>
 <translation id="4650364565596261010">Predvolené</translation>
-<translation id="4660838440047236328">rozložení vašej miestnosti.</translation>
 <translation id="4662373422909645029">Prezývka nemôže mať čísla</translation>
 <translation id="4663756553811254707">Počet odstránených záložiek: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Stránky <ph name="NAME" /> boli pridané na plochu</translation>
@@ -459,7 +449,6 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />myactivity.goo
 
 Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Meno na karte</translation>
-<translation id="4808319664292298116">Chcete prejsť do VR z domény <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Chcete zrušiť synchronizáciu?</translation>
 <translation id="4835385943915508971">Chrome nemá prístup k požadovanému zdroju.</translation>
 <translation id="4837753911714442426">Otvorenie možností tlače stránky</translation>
@@ -659,7 +648,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
 <translation id="6404511346730675251">Upraviť záložku</translation>
 <translation id="6406506848690869874">Synchronizácia</translation>
-<translation id="6410973561433500075">Chcete prejsť do RR z domény <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Tlačiť...</translation>
 <translation id="6427112570124116297">Preklad webu</translation>
 <translation id="6433501201775827830">Výber vyhľadávača</translation>

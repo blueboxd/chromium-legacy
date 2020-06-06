@@ -1273,6 +1273,14 @@ void TabStrip::AddTabToGroup(base::Optional<tab_groups::TabGroupId> group,
                              int model_index) {
   tab_at(model_index)->set_group(std::move(group));
 
+  // Expand the group if the tab that is getting grouped is the active tab. This
+  // can result in the group expanding in a series of actions where the final
+  // active tab is not in the group.
+  if (model_index == selected_tabs_.active() && group.has_value() &&
+      controller()->IsGroupCollapsed(group.value())) {
+    controller()->ToggleTabGroupCollapsedState(group.value());
+  }
+
   ExitTabClosingMode();
 }
 

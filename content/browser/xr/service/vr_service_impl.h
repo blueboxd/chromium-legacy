@@ -62,6 +62,8 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
       device::mojom::VRService::SupportsSessionCallback callback) override;
   void ExitPresent(ExitPresentCallback on_exited) override;
   void SetFramesThrottled(bool throttled) override;
+  void MakeXrCompatible(
+      device::mojom::VRService::MakeXrCompatibleCallback callback) override;
 
   void InitializationComplete();
 
@@ -76,6 +78,7 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
       device::mojom::XRVisibilityState visibility_state);
   void OnDisplayInfoChanged();
   void RuntimesChanged();
+  void OnMakeXrCompatibleComplete(device::mojom::XrCompatibleResult result);
 
   base::WeakPtr<VRServiceImpl> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -101,6 +104,18 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
    private:
     SessionRequestData(const SessionRequestData&) = delete;
     SessionRequestData& operator=(const SessionRequestData&) = delete;
+  };
+
+  // Wrapper around MakeXrCompatibleCallback so that the callback gets executed
+  // on destruction if it hasn't already. Otherwise, mojom throws a DCHECK if
+  // the callback is not executed before being destroyed.
+  struct XrCompatibleCallback {
+    device::mojom::VRService::MakeXrCompatibleCallback callback;
+
+    explicit XrCompatibleCallback(
+        device::mojom::VRService::MakeXrCompatibleCallback callback);
+    XrCompatibleCallback(XrCompatibleCallback&& wrapper);
+    ~XrCompatibleCallback();
   };
 
   // content::WebContentsObserver implementation
@@ -163,6 +178,8 @@ class CONTENT_EXPORT VRServiceImpl : public device::mojom::VRService,
   bool initialization_complete_ = false;
   bool in_focused_frame_ = false;
   bool frames_throttled_ = false;
+
+  std::vector<XrCompatibleCallback> xr_compatible_callbacks_;
 
   base::WeakPtrFactory<VRServiceImpl> weak_ptr_factory_{this};
 

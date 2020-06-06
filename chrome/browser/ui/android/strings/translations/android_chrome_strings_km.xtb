@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">មើល​គេហទំព័រ​ពេញនិយម ដោយ​ចុច​ប៊ូតុង "គេហទំព័រ​ពេញនិយម"</translation>
 <translation id="1173894706177603556">ប្តូរឈ្មោះ</translation>
 <translation id="1178581264944972037">ផ្អាក</translation>
-<translation id="1188239144602654184">ចូល AR</translation>
 <translation id="1197267115302279827">ផ្លាស់ទីចំណាំ</translation>
 <translation id="1201402288615127009">បន្ទាប់</translation>
 <translation id="1204037785786432551">ទាញយកតំណ</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">អត្ថបទ</translation>
 <translation id="2082238445998314030">លទ្ធផល <ph name="RESULT_NUMBER" /> នៃ <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">ធ្វើសមកាលកម្ម និង​កំណត់​ផ្ទាល់​ខ្លួន​នៅលើ​ឧបករណ៍​ផ្សេងៗ</translation>
-<translation id="2099625543891475722">លក្ខណសម្បត្តិនៃរាងកាយ​របស់អ្នក ដូចជា​កម្ពស់​ជាដើម</translation>
 <translation id="2100273922101894616">ចូលស្វ័យប្រវត្តិ</translation>
 <translation id="2100314319871056947">សាកល្បង​ចែករំលែកអត្ថបទ​ជាផ្នែកតូចៗជាងនេះ</translation>
 <translation id="2109711654079915747">ស្វែងយល់​អំពី​ប្រធានបទ​នៅលើ​គេហទំព័រ​ដោយមិន​ចាំបាច់​ចាកចេញ​ពីទំព័រ។ មុខងារប៉ះដើម្បីស្វែងរកផ្ញើពាក្យ និងបរិបទនៅជុំវិញ​ពាក្យនោះទៅ​កម្មវិធីស្វែងរកនៅលើ Google ដែលបញ្ជូន​ត្រឡប់មកវិញនូវ​និយមន័យ រូបភាព លទ្ធផល​ស្វែងរក និងព័ត៌មាន​លម្អិតផ្សេងទៀត។
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">គ្រប់គ្រង</translation>
 <translation id="381841723434055211">លេខទូរសព្ទ</translation>
 <translation id="3819178904835489326">បានលុបការទាញយក <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3849365399446680203">នៅពេលអ្នកកំពុងប្រើ AR គេហទំព័រនេះប្រហែលជាអាច៖
-• បង្កើតផែនទី 3D នៃមជ្ឈដ្ឋានរបស់អ្នក
-• តាមដាន​ចលនារបស់កាមេរ៉ា
-
-មានតែអ្នកប៉ុណ្ណោះដែលអាចមើលឃើញថាកាមេរ៉ារបស់អ្នកកំពុងមើលអ្វី។ គេហទំព័រនេះ​មិន​អាចមើលឃើញរូបភាពរបស់កាមេរ៉ាអ្នកទេ។</translation>
 <translation id="3859306556332390985">ស្វែងរក​ទៅ​មុខ</translation>
 <translation id="388596076286380598">ទទួលបាន​អត្ថបទ វីដេអូ និង​ខ្លឹមសារ​ផ្សេងទៀតពី​គេហទំព័រ​ដែលអ្នក​ចូលចិត្ត ទោះបីជា​អ្នកគ្មានអ៊ីនធឺណិត ឬការតភ្ជាប់​របស់អ្នក​ខ្សោយក៏ដោយ។</translation>
 <translation id="3894427358181296146">បន្ថែមថតឯកសារ</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">គ្មានការភ្ជាប់អ៊ីនធឺណិតទេ</translation>
 <translation id="4321739720395210191">មិនអាចបើក​កាមេរ៉ា​របស់អ្នក​បានទេ។ សូម​ចាប់ផ្ដើម​ឧបករណ៍​របស់អ្នក​ឡើងវិញ រួច​ព្យាយាម​ម្ដងទៀត។</translation>
 <translation id="4351244548802238354">បិទប្រអប់</translation>
-<translation id="4353114845960720315">នៅពេល​អ្នកនៅក្នុង VR គេហទំព័រនេះ​ប្រហែលជាអាច​ដឹងអំពី៖</translation>
 <translation id="4378154925671717803">ទូរស័ព្ទ</translation>
 <translation id="4384468725000734951">ប្រើ Sogou ដើម្បីធ្វើការស្វែងរក</translation>
 <translation id="4404568932422911380">មិនមាន​ចំណាំ​ទេ</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">មិន​មាន​ការ​តភ្ជាប់</translation>
 <translation id="4565377596337484307">លាក់​ពាក្យ​សម្ងាត់</translation>
 <translation id="4572422548854449519">ចូលទៅគណនីដែលបានគ្រប់គ្រង</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# នាទីមុន}other{# នាទីមុន}}</translation>
 <translation id="4587589328781138893">ទំព័រ</translation>
 <translation id="4594952190837476234">ទំព័រ​សម្រាប់​ប្រើពេលគ្មានអ៊ីនធឺណិតនេះ​បង្កើតឡើងនៅថ្ងៃទី <ph name="CREATION_TIME" /> ហើយ​វាអាច​ខុស​ពី​កំណែ​សម្រាប់​ប្រើពេលមានអ៊ីនធឺណិត។</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">បើក <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">ប្រើពាក្យសម្ងាត់​</translation>
 <translation id="4650364565596261010">លំនាំដើម​របស់ប្រព័ន្ធ</translation>
-<translation id="4660838440047236328">ប្លង់​បន្ទប់​របស់អ្នក</translation>
 <translation id="4662373422909645029">ឈ្មោះហៅក្រៅមិនអាចមានលេខបានទេ</translation>
 <translation id="4663756553811254707">បានលុបចំណាំ <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ត្រូវបានបន្ថែមទៅអេក្រង់ដើមរបស់អ្នក</translation>
@@ -459,7 +449,6 @@
 
 ដើម្បី​ផ្លាស់ប្ដូរ​ការកំណត់នេះ <ph name="BEGIN_LINK" />សូមកំណត់​សមកាលកម្មឡើងវិញ<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">ឈ្មោះនៅលើកាត</translation>
-<translation id="4808319664292298116">ចូលក្នុង VR ពី <ph name="DOMAIN" /> ដែរទេ?</translation>
 <translation id="4824958205181053313">បោះបង់​ការ​ធ្វើ​សម​កាលកម្ម?</translation>
 <translation id="4835385943915508971">Chrome មិន​អាច​ចូល​ប្រើ​ធនធាន​ដែល​បាន​ស្នើ​នេះ​ទេ​។​</translation>
 <translation id="4837753911714442426">បើកជម្រើសដើម្បីបោះពុម្ពទំព័រ</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">ចាកចេញពីអេក្រង់ពេញ</translation>
 <translation id="6404511346730675251">កែប្រែចំណាំ</translation>
 <translation id="6406506848690869874">សមកាលកម្ម</translation>
-<translation id="6410973561433500075">ចូល AR ពី <ph name="DOMAIN" /> ឬ?</translation>
 <translation id="641643625718530986">បោះពុម្ព…</translation>
 <translation id="6427112570124116297">បកប្រែ​គេហទំព័រ</translation>
 <translation id="6433501201775827830">ជ្រើសរើស​ម៉ាស៊ីន​ស្វែងរករបស់អ្នក</translation>

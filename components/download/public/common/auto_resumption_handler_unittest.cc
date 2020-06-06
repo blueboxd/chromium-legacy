@@ -58,7 +58,8 @@ class AutoResumptionHandlerTest : public testing::Test {
   void SetDownloadState(MockDownloadItem* download,
                         DownloadItem::DownloadState state,
                         bool paused,
-                        bool metered) {
+                        bool metered,
+                        bool has_target_file_path = true) {
     ON_CALL(*download, GetGuid())
         .WillByDefault(ReturnRefOfCopy(base::GenerateGUID()));
     ON_CALL(*download, GetURL())
@@ -66,6 +67,10 @@ class AutoResumptionHandlerTest : public testing::Test {
     ON_CALL(*download, GetState()).WillByDefault(Return(state));
     ON_CALL(*download, IsPaused()).WillByDefault(Return(paused));
     ON_CALL(*download, AllowMetered()).WillByDefault(Return(metered));
+    ON_CALL(*download, GetTargetFilePath())
+        .WillByDefault(ReturnRefOfCopy(
+            has_target_file_path ? base::FilePath(FILE_PATH_LITERAL("a.txt"))
+                                 : base::FilePath()));
     auto last_reason =
         state == DownloadItem::INTERRUPTED
             ? download::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED
@@ -220,6 +225,19 @@ TEST_F(AutoResumptionHandlerTest,
 
   // Start the task. It should resume all downloads.
   EXPECT_CALL(*item.get(), Resume(_)).Times(1);
+  TaskFinishedCallback callback;
+  auto_resumption_handler_->OnStartScheduledTask(std::move(callback));
+  task_runner_->FastForwardUntilNoTasksRemain();
+}
+
+TEST_F(AutoResumptionHandlerTest, DownloadWithoutTargetPathNotAutoResumed) {
+  SetNetworkConnectionType(ConnectionType::CONNECTION_WIFI);
+  auto item = std::make_unique<NiceMock<MockDownloadItem>>();
+  SetDownloadState(item.get(), DownloadItem::INTERRUPTED, false, false, false);
+  auto_resumption_handler_->OnDownloadStarted(item.get());
+  task_runner_->FastForwardUntilNoTasksRemain();
+
+  EXPECT_CALL(*item.get(), Resume(_)).Times(0);
   TaskFinishedCallback callback;
   auto_resumption_handler_->OnStartScheduledTask(std::move(callback));
   task_runner_->FastForwardUntilNoTasksRemain();

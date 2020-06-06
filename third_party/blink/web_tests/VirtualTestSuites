@@ -254,6 +254,12 @@
     "args": ["--enable-blink-features=LayoutNGFieldset,LayoutNGBlockFragmentation"]
   },
   {
+    "prefix": "layout-ng-grid",
+    "bases": ["fast/css-grid-layout",
+              "external/wpt/css/css-grid"],
+    "args": ["--enable-blink-features=LayoutNGGrid"]
+  },
+  {
     "prefix": "dark-mode-grayscale-images",
     "bases": [],
     "args": ["--blink-settings=forceDarkModeEnabled=true,forceDarkModeInversionAlgorithm=3,forceDarkModeImagePolicy=0,forceDarkModeImageStyle=1,forceDarkModeTextBrightnessThreshold=256,forceDarkModeBackgroundBrightnessThreshold=0"]
@@ -803,5 +809,10 @@
     "prefix": "subresource-web-bundles",
     "bases": [ "external/wpt/web-bundle/subresource-loading" ],
     "args": [ "--enable-blink-features=SubresourceWebBundles" ]
+  },
+  {
+    "prefix": "transform-interop",
+    "bases": [ "external/wpt/css/css-transforms" ],
+    "args": [ "--enable-features=TransformInterop" ]
   }
 ]

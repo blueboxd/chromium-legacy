@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -20,12 +19,9 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Coordinator for displaying the share sheet.
@@ -41,11 +37,11 @@ class ShareSheetCoordinator {
     /**
      * Constructs a new ShareSheetCoordinator.
      *
-     * @param controller        The {@link BottomSheetController} for the current activity.
-     * @param tabProvider       Supplier for the current activity tab.
-     * @param modelBuilder      The {@link ShareSheetPropertyModelBuilder} for the share sheet.
+     * @param controller The {@link BottomSheetController} for the current activity.
+     * @param tabProvider Supplier for the current activity tab.
+     * @param modelBuilder The {@link ShareSheetPropertyModelBuilder} for the share sheet.
      * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides preferences
-     *                          for the Chrome-provided property models.
+     * for the Chrome-provided property models.
      */
     ShareSheetCoordinator(BottomSheetController controller, Supplier<Tab> tabProvider,
             ShareSheetPropertyModelBuilder modelBuilder, PrefServiceBridge prefServiceBridge) {
@@ -56,7 +52,8 @@ class ShareSheetCoordinator {
         mPrefServiceBridge = prefServiceBridge;
     }
 
-    void showShareSheet(ShareParams params, boolean saveLastUsed, long shareStartTime) {
+    void showShareSheet(
+            ShareParams params, ChromeShareExtras chromeShareExtras, long shareStartTime) {
         Activity activity = params.getWindow().getActivity().get();
         if (activity == null) {
             return;
@@ -66,9 +63,11 @@ class ShareSheetCoordinator {
 
         mShareStartTime = shareStartTime;
         List<PropertyModel> chromeFeatures =
-                createTopRowPropertyModels(bottomSheet, activity, params);
-        List<PropertyModel> thirdPartyApps =
-                createBottomRowPropertyModels(bottomSheet, activity, params, saveLastUsed);
+                createTopRowPropertyModels(bottomSheet, activity, params,
+                        ShareSheetPropertyModelBuilder.getContentTypes(
+                                params, chromeShareExtras.isUrlOfVisiblePage()));
+        List<PropertyModel> thirdPartyApps = createBottomRowPropertyModels(
+                bottomSheet, activity, params, chromeShareExtras.saveLastUsed());
 
         bottomSheet.createRecyclerViews(chromeFeatures, thirdPartyApps);
 
@@ -82,13 +81,13 @@ class ShareSheetCoordinator {
 
     // Used by first party features to share with only non-chrome apps.
     protected void showThirdPartyShareSheet(
-            ShareParams params, boolean saveLastUsed, long shareStartTime) {
+            ShareParams params, ChromeShareExtras chromeShareExtras, long shareStartTime) {
         mExcludeFirstParty = true;
-        showShareSheet(params, saveLastUsed, shareStartTime);
+        showShareSheet(params, chromeShareExtras, shareStartTime);
     }
 
-    List<PropertyModel> createTopRowPropertyModels(
-            ShareSheetBottomSheetContent bottomSheet, Activity activity, ShareParams shareParams) {
+    List<PropertyModel> createTopRowPropertyModels(ShareSheetBottomSheetContent bottomSheet,
+            Activity activity, ShareParams shareParams, Set<Integer> contentTypes) {
         if (mExcludeFirstParty) {
             return new ArrayList<>();
         }
@@ -96,9 +95,8 @@ class ShareSheetCoordinator {
                 new ChromeProvidedSharingOptionsProvider(activity, mTabProvider,
                         mBottomSheetController, bottomSheet, mPrefServiceBridge, shareParams,
                         mShareStartTime);
-        return chromeProvidedSharingOptionsProvider.createPropertyModels(new HashSet<>(
-                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
-                        ContentType.TEXT, ContentType.IMAGE, ContentType.OTHER_FILE_TYPE)));
+
+        return chromeProvidedSharingOptionsProvider.createPropertyModels(contentTypes);
     }
 
     @VisibleForTesting
@@ -125,16 +123,5 @@ class ShareSheetCoordinator {
     @VisibleForTesting
     protected void disableFirstPartyFeaturesForTesting() {
         mExcludeFirstParty = true;
-    }
-
-    @IntDef({ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.TEXT,
-            ContentType.IMAGE, ContentType.OTHER_FILE_TYPE})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface ContentType {
-        int LINK_PAGE_VISIBLE = 0;
-        int LINK_PAGE_NOT_VISIBLE = 1;
-        int TEXT = 2;
-        int IMAGE = 3;
-        int OTHER_FILE_TYPE = 4;
     }
 }

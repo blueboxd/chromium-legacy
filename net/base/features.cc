@@ -100,6 +100,10 @@ const base::Feature kPartitionSSLSessionsByNetworkIsolationKey{
     "PartitionSSLSessionsByNetworkIsolationKey",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPartitionExpectCTStateByNetworkIsolationKey{
+    "PartitionExpectCTStateByNetworkIsolationKey",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kTLS13KeyUpdate{"TLS13KeyUpdate",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 

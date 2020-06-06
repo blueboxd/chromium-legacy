@@ -28,6 +28,12 @@ const char kMetricsDefaultOptIn[] = "user_experience_metrics.default_opt_in";
 // count info, etc.
 const char kMetricsInitialLogs[] = "user_experience_metrics.initial_logs2";
 
+// An dictionary of information about the unsent initial logs, it was
+// recorded when the unsent log is persisted and will be written into the
+// metrics at the next browser starts up.
+const char kMetricsInitialLogsMetadata[] =
+    "user_experience_metrics.unsent_log_metadata.initial_logs";
+
 // Low entropy source values. The new source (with suffix "3") was created
 // because the old source (with suffix "2") is biased in the wild. Clients which
 // have an old source still incorporate it into the high entropy source, to
@@ -49,6 +55,11 @@ const char kMetricsMachineId[] = "user_experience_metrics.machine_id";
 // logs typically include histograms and memory reports, as well as ongoing
 // user activities.
 const char kMetricsOngoingLogs[] = "user_experience_metrics.ongoing_logs2";
+
+// An dictionary that is same as kUnsentLogMetkMetricsInitialLogsMetadata,
+// but for the ongoing logs.
+const char kMetricsOngoingLogsMetadata[] =
+    "user_experience_metrics.unsent_log_metadata.ongoing_logs";
 
 // Boolean that indicates a cloned install has been detected and the metrics
 // client id and low entropy source should be reset.

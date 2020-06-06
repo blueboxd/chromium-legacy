@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Odsad će se <ph name="SOURCE_LANGUAGE" /> prevoditi na <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja Google Chromea s web-lokacijom <ph name="SITE" /> ta je web-lokacija vratila neuobičajene i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Google Chrome zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="1682696192498422849">Najprije kratki rub</translation>
+<translation id="168693727862418163">Ova vrijednost pravila nije uspjela potvrditi valjanost sheme i zanemarit će se.</translation>
 <translation id="168841957122794586">Certifikat poslužitelja sadrži slab kriptografski ključ!</translation>
 <translation id="1697532407822776718">Potpuno ste spremni!</translation>
 <translation id="1703835215927279855">Letter</translation>

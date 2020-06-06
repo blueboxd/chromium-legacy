@@ -58,7 +58,7 @@ ArcMidisBridge::~ArcMidisBridge() {
 
 void ArcMidisBridge::OnBootstrapMojoConnection(
     mojo::PendingReceiver<mojom::MidisServer> receiver,
-    mojom::MidisClientPtr client_ptr,
+    mojo::PendingRemote<mojom::MidisClient> client_remote,
     bool result) {
   if (!result) {
     LOG(ERROR) << "ArcMidisBridge had a failure in D-Bus with the daemon.";
@@ -70,14 +70,15 @@ void ArcMidisBridge::OnBootstrapMojoConnection(
     return;
   }
   DVLOG(1) << "ArcMidisBridge succeeded with Mojo bootstrapping.";
-  midis_host_remote_->Connect(std::move(receiver), std::move(client_ptr));
+  midis_host_remote_->Connect(std::move(receiver), std::move(client_remote));
 }
 
-void ArcMidisBridge::Connect(mojo::PendingReceiver<mojom::MidisServer> receiver,
-                             mojom::MidisClientPtr client_ptr) {
+void ArcMidisBridge::Connect(
+    mojo::PendingReceiver<mojom::MidisServer> receiver,
+    mojo::PendingRemote<mojom::MidisClient> client_remote) {
   if (midis_host_remote_.is_bound()) {
     DVLOG(1) << "Re-using bootstrap connection for MidisServer Connect.";
-    midis_host_remote_->Connect(std::move(receiver), std::move(client_ptr));
+    midis_host_remote_->Connect(std::move(receiver), std::move(client_remote));
     return;
   }
   DVLOG(1) << "Bootstrapping the Midis connection via D-Bus.";
@@ -102,7 +103,7 @@ void ArcMidisBridge::Connect(mojo::PendingReceiver<mojom::MidisServer> receiver,
           channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
           base::BindOnce(&ArcMidisBridge::OnBootstrapMojoConnection,
                          weak_factory_.GetWeakPtr(), std::move(receiver),
-                         std::move(client_ptr)));
+                         std::move(client_remote)));
 }
 
 void ArcMidisBridge::OnMojoConnectionError() {

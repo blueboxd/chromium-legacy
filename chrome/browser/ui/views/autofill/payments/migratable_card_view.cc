@@ -81,8 +81,9 @@ std::string MigratableCardView::GetGuid() {
   return migratable_credit_card_.credit_card().guid();
 }
 
-const base::string16 MigratableCardView::GetNetworkAndLastFourDigits() const {
-  return migratable_credit_card_.credit_card().NetworkAndLastFourDigits();
+base::string16 MigratableCardView::GetCardIdentifierString() const {
+  return migratable_credit_card_.credit_card()
+      .CardIdentifierStringForAutofillDisplay();
 }
 
 std::unique_ptr<views::View>
@@ -100,9 +101,8 @@ MigratableCardView::GetMigratableCardDescriptionView(
               views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   std::unique_ptr<views::Label> card_description =
-      std::make_unique<views::Label>(
-          migratable_credit_card.credit_card().NetworkAndLastFourDigits(),
-          views::style::CONTEXT_LABEL);
+      std::make_unique<views::Label>(GetCardIdentifierString(),
+                                     views::style::CONTEXT_LABEL);
 
   constexpr int kMigrationResultImageSize = 16;
   switch (migratable_credit_card.migration_status()) {

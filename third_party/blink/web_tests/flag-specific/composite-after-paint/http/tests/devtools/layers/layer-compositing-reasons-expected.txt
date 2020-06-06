@@ -7,7 +7,7 @@ Compositing reason ids for div#animation-individual: activeTransformAnimation
 Compositing reason ids for div#transformWithCompositedDescendants: overlap
 Compositing reason ids for div#transformWithCompositedDescendants-individual: overlap
 Compositing reason ids for div#opacityWithCompositedDescendants: overflowScrolling,rootScroller
-Compositing reason ids for div#reflectionWithCompositedDescendants: overflowScrolling,rootScroller
+Compositing reason ids for div#reflectionWithCompositedDescendants: filterWithCompositedDescendants
 Compositing reason ids for div#perspective: perspectiveWith3DDescendants
 Compositing reason ids for div#preserve3d: preserve3DWith3DDescendants
 

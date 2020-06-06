@@ -50,9 +50,6 @@ void SendTabToSelfBubbleController::ShowBubble() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   send_tab_to_self_bubble_view_ =
       browser->window()->ShowSendTabToSelfBubble(web_contents_, this, true);
-  RecordSendTabToSelfClickResult(kOmniboxIcon,
-                                 SendTabToSelfClickResult::kShowDeviceList);
-  RecordSendTabToSelfDeviceCount(kOmniboxIcon, GetValidDevices().size());
 }
 
 SendTabToSelfBubbleView*

@@ -89,6 +89,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   UIProxyConfigService* ui_proxy_config_service();
   bool has_ui_proxy_config_service() { return ui_proxy_config_service_.get(); }
 
+  void set_is_enterprise_managed(bool is_enterprise_managed) {
+    is_enterprise_managed_ = is_enterprise_managed;
+  }
+
  private:
   NetworkHandler();
   virtual ~NetworkHandler();
@@ -116,6 +120,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
       prohibited_technologies_handler_;
   std::unique_ptr<UIProxyConfigService> ui_proxy_config_service_;
   std::unique_ptr<CellularMetricsLogger> cellular_metrics_logger_;
+
+  // True when the device is managed by policy.
+  bool is_enterprise_managed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };

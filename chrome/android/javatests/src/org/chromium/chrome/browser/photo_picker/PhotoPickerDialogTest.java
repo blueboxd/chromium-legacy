@@ -19,12 +19,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import org.chromium.base.MathUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
@@ -62,9 +62,8 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
                                               DecoderServiceHost.DecoderStatusCallback,
                                               PickerVideoPlayer.VideoPlaybackStatusCallback,
                                               AnimationListener {
-    @ClassRule
-    public static DisableAnimationsTestRule mDisableAnimationsTestRule =
-            new DisableAnimationsTestRule();
+    @Rule
+    public DisableAnimationsTestRule mDisableAnimationsTestRule = new DisableAnimationsTestRule();
 
     // The timeout (in seconds) to wait for the decoder service to be ready.
     private static final long WAIT_TIMEOUT_SECONDS = 30L;
@@ -93,6 +92,13 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     // nothing was selected.
     private Uri[] mLastSelectedPhotos;
 
+    // A list of view IDs we receive from an animating event in the order the events occurred.
+    private List<Long> mLastViewAnimatingIds = new ArrayList();
+
+    // A list of view alpha values we receive from an animating event in the order the events
+    // occurred.
+    private List<Float> mLastViewAnimatingAlphas = new ArrayList();
+
     // The list of currently selected photos (built piecemeal).
     private List<PickerBitmap> mCurrentPhotoSelection;
 
@@ -116,6 +122,9 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
     // A callback that fires when playback ends for a video.
     public final CallbackHelper mOnVideoEndedCallback = new CallbackHelper();
+
+    // A callback that fires when overlay controls finish animating.
+    public final CallbackHelper mOnVideoAnimationEndCallback = new CallbackHelper();
 
     @Before
     public void setUp() throws Exception {
@@ -195,6 +204,26 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Override
     public void onVideoEnded() {
         mOnVideoEndedCallback.notifyCalled();
+    }
+
+    @Override
+    public void onAnimationStart(long viewId, float currentAlpha) {
+        mLastViewAnimatingIds.add(viewId);
+        mLastViewAnimatingAlphas.add(currentAlpha);
+    }
+
+    @Override
+    public void onAnimationCancel(long viewId, float currentAlpha) {
+        mLastViewAnimatingIds.add(viewId);
+        mLastViewAnimatingAlphas.add(currentAlpha);
+    }
+
+    @Override
+    public void onAnimationEnd(long viewId, float currentAlpha) {
+        mLastViewAnimatingIds.add(viewId);
+        mLastViewAnimatingAlphas.add(currentAlpha);
+
+        mOnVideoAnimationEndCallback.notifyCalled();
     }
 
     // SelectionObserver:
@@ -462,6 +491,109 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
             });
 
             mOnVideoEndedCallback.waitForCallback(callCount, 1);
+
+            dismissDialog();
+        } finally {
+            TestThreadUtils.runOnUiThreadBlocking(() -> { StrictMode.setThreadPolicy(oldPolicy); });
+        }
+    }
+
+    private void verifyVisible(int viewId, int eventId) {
+        Assert.assertEquals("Unexpected view ID for event " + eventId, viewId,
+                (long) mLastViewAnimatingIds.get(eventId));
+        Assert.assertEquals("Unexpected alpha value for event " + eventId, 1.0f,
+                (double) mLastViewAnimatingAlphas.get(eventId), MathUtils.EPSILON);
+    }
+
+    private void verifyHidden(int viewId, int eventId) {
+        Assert.assertEquals("Unexpected view ID for event " + eventId, viewId,
+                (long) mLastViewAnimatingIds.get(eventId));
+        Assert.assertEquals("Unexpected alpha value for event " + eventId, 0.0f,
+                (double) mLastViewAnimatingAlphas.get(eventId), MathUtils.EPSILON);
+    }
+
+    @Test
+    @LargeTest
+    @DisableAnimationsTestRule.EnsureAnimationsOn
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N) // Video is only supported on N+.
+    public void testVideoPlayerAnimations() throws Throwable {
+        PickerVideoPlayer.setShortAnimationTimesForTesting(true);
+
+        // Requesting to play a video is not a case of an accidental disk read on the UI thread.
+        StrictMode.ThreadPolicy oldPolicy = TestThreadUtils.runOnUiThreadBlocking(
+                () -> { return StrictMode.allowThreadDiskReads(); });
+
+        try {
+            setupTestFiles();
+            createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
+            Assert.assertTrue(mDialog.isShowing());
+            waitForDecoder();
+
+            PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
+
+            View container = categoryView.findViewById(R.id.playback_container);
+            Assert.assertTrue(container.getVisibility() == View.GONE);
+
+            String fileName = "chrome/test/data/android/photo_picker/noogler_1sec.mp4";
+            File file = new File(UrlUtils.getIsolatedTestFilePath(fileName));
+
+            int callCount = mOnVideoAnimationEndCallback.getCallCount();
+
+            playVideo(Uri.fromFile(file));
+            Assert.assertTrue(container.getVisibility() == View.VISIBLE);
+
+            // This keeps track of event ordering.
+            int i = 0;
+
+            // Wait for two animation sets (until the controls and play button have animated away).
+            mOnVideoAnimationEndCallback.waitForCallback(callCount, 2);
+
+            // All controls start off showing when the video starts playing, and animations will
+            // start to fade them away: one animation for the video controls and a separate one for
+            // the Play/Pause button. Play button is the first button to disappear (shortest start
+            // time and duration) and shortly thereafter the video controls start disappearing.
+            verifyVisible(R.id.video_player_play_button, i++);
+            verifyHidden(R.id.video_player_play_button, i++);
+            verifyVisible(R.id.video_controls, i++);
+            verifyHidden(R.id.video_controls, i++);
+
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                // Single-tapping should make the controls visible again and then fade away.
+                categoryView.getVideoPlayerForTesting().singleTapForTesting();
+            });
+
+            // Animation-end has been called twice now, expect four more calls after single-tapping
+            // because controls fade in and then fade out again.
+            callCount += 2;
+            mOnVideoAnimationEndCallback.waitForCallback(callCount, 4);
+
+            // The controls and the Play button start animating into view at the same time but the
+            // Play button is quicker to appear.
+            verifyHidden(R.id.video_controls, i++);
+            verifyHidden(R.id.video_player_play_button, i++);
+            verifyVisible(R.id.video_player_play_button, i++);
+            verifyVisible(R.id.video_controls, i++);
+
+            // After a short while, the controls disappear again (with same delay and duration).
+            verifyVisible(R.id.video_controls, i++);
+            verifyVisible(R.id.video_player_play_button, i++);
+            verifyHidden(R.id.video_controls, i++);
+            verifyHidden(R.id.video_player_play_button, i++);
+
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                // Double-tapping left of screen will cause the video to roll back to the beginning
+                // and controls to be shown immediately (no fade-in) and then gradually fade out.
+                categoryView.getVideoPlayerForTesting().doubleTapForTesting(/*x=*/0f);
+            });
+
+            callCount += 4;
+            mOnVideoAnimationEndCallback.waitForCallback(callCount, 2);
+
+            // Controls will show without animation, but should fade away (play fades out first).
+            verifyVisible(R.id.video_player_play_button, i++);
+            verifyHidden(R.id.video_player_play_button, i++);
+            verifyVisible(R.id.video_controls, i++);
+            verifyHidden(R.id.video_controls, i++);
 
             dismissDialog();
         } finally {

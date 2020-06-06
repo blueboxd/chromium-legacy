@@ -75,6 +75,9 @@ bool VulkanDeviceQueue::Initialize(
   for (size_t i = 0; i < info.physical_devices.size(); ++i) {
     const auto& device_info = info.physical_devices[i];
     const auto& device_properties = device_info.properties;
+    if (device_properties.apiVersion < info.used_api_version)
+      continue;
+
     const VkPhysicalDevice& device = device_info.device;
     for (size_t n = 0; n < device_info.queue_families.size(); ++n) {
       if ((device_info.queue_families[n].queueFlags & queue_flags) !=
@@ -170,12 +173,6 @@ bool VulkanDeviceQueue::Initialize(
     } else {
       enabled_extensions.push_back(extension);
     }
-  }
-
-  if (vk_physical_device_properties_.apiVersion < info.used_api_version) {
-    LOG(ERROR) << "Physical device doesn't support version."
-               << info.used_api_version;
-    return false;
   }
 
   crash_keys::vulkan_device_api_version.Set(

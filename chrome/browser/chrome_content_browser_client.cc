@@ -128,7 +128,6 @@
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
 #include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
@@ -253,7 +252,9 @@
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/site_isolation/pref_names.h"
 #include "components/site_isolation/preloaded_isolated_origins.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/ukm/app_source_url_recorder.h"
@@ -1268,7 +1269,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   // used for mapping the command-line flags).
   registry->RegisterStringPref(prefs::kIsolateOrigins, std::string());
   registry->RegisterBooleanPref(prefs::kSitePerProcess, false);
-  registry->RegisterListPref(prefs::kUserTriggeredIsolatedOrigins);
+  registry->RegisterListPref(
+      site_isolation::prefs::kUserTriggeredIsolatedOrigins);
   registry->RegisterDictionaryPref(
       prefs::kDevToolsBackgroundServicesExpirationDict);
   registry->RegisterBooleanPref(prefs::kSignedHTTPExchangeEnabled, true);
@@ -2009,12 +2011,13 @@ bool ChromeContentBrowserClient::ShouldEnableStrictSiteIsolation() {
 }
 
 bool ChromeContentBrowserClient::ShouldDisableSiteIsolation() {
-  return SiteIsolationPolicy::ShouldDisableSiteIsolationDueToMemoryThreshold();
+  return site_isolation::SiteIsolationPolicy::
+      ShouldDisableSiteIsolationDueToMemoryThreshold();
 }
 
 std::vector<std::string>
 ChromeContentBrowserClient::GetAdditionalSiteIsolationModes() {
-  if (SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled())
+  if (site_isolation::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled())
     return {"Isolate Password Sites"};
   else
     return {};
@@ -2026,7 +2029,7 @@ void ChromeContentBrowserClient::PersistIsolatedOrigin(
   DCHECK(!context->IsOffTheRecord());
   Profile* profile = Profile::FromBrowserContext(context);
   ListPrefUpdate update(profile->GetPrefs(),
-                        prefs::kUserTriggeredIsolatedOrigins);
+                        site_isolation::prefs::kUserTriggeredIsolatedOrigins);
   base::ListValue* list = update.Get();
   base::Value value(origin.Serialize());
   if (!base::Contains(list->GetList(), value))

@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Sertifikat-signatar</translation>
 <translation id="1145292499998999162">Et programtillegg ble blokkert</translation>
 <translation id="1145593918056169051">Skriveren har stoppet</translation>
-<translation id="1146678959555564648">Slå på VR-modus</translation>
 <translation id="114721135501989771">Få Googles smarte funksjoner i Chrome</translation>
 <translation id="1147991416141538220">For å be om tilgang, kontakt administratoren for denne enheten.</translation>
 <translation id="1149401351239820326">Utløpsmåned</translation>
@@ -863,7 +862,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2096715839409389970">Slett informasjonskapsler fra tredjeparter</translation>
 <translation id="2097372108957554726">Du må logge på Chrome for å registrere nye enheter</translation>
 <translation id="2099172618127234427">Du er i ferd med å slå på Chrome OS-feilsøkingsfunksjoner som kommer til å konfigurere sshd daemon og muliggjøre oppstart fra USB-stasjoner.</translation>
-<translation id="2099625543891475722">fysiske kjennetegn, for eksempel hvor høy du er</translation>
 <translation id="2099686503067610784">Slette tjenersertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="2101225219012730419">Versjon:</translation>
@@ -2182,6 +2180,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3732857534841813090">Beslektet informasjon for Google Assistent</translation>
 <translation id="3733127536501031542">SSL-tjener med oppgradering </translation>
 <translation id="3735740477244556633">Sortér etter</translation>
+<translation id="3738213647660363521">Egendefinert markørfarge</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Vil du åpne <ph name="APPLICATION" />?</translation>
 <translation id="3742055079367172538">Skjermdump tatt</translation>
@@ -2652,7 +2651,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4350019051035968019">Denne enheten kan ikke registreres for domenet kontoen din tilhører. Enheten er merket for administrering av et annet domene.</translation>
 <translation id="4350782034419308508">Hey Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> vil søke etter Bluetooth-enheter i nærheten. Fant disse enhetene:</translation>
-<translation id="4353114845960720315">Når du er i VR, kan dette nettstedet finne ut mer om følgende:</translation>
 <translation id="4354073718307267720">Spør når nettsteder vil lage 3D-kart av omgivelsene dine eller spore kameraposisjonen</translation>
 <translation id="4354344420232759511">Nettsteder du besøker, vises her</translation>
 <translation id="435527878592612277">Velg bilde</translation>
@@ -2887,7 +2885,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4659077111144409915">Primærkonto</translation>
 <translation id="4660476621274971848">Den forventede versjonen var «<ph name="EXPECTED_VERSION" />», men den faktiske versjonen var «<ph name="NEW_ID" />»</translation>
 <translation id="4660540330091848931">Endrer størrelsen</translation>
-<translation id="4660838440047236328">hvordan rommet ditt ser ut</translation>
 <translation id="4661407454952063730">Appdata kan være alle slags data som er lagret i en app (basert på utviklerinnstillingene), inkludert data som kontakter, meldinger og bilder.</translation>
 <translation id="4662373422909645029">Kallenavnet kan ikke inneholde tall</translation>
 <translation id="4662788913887017617">Del dette bokmerket med iPhone</translation>
@@ -2976,9 +2973,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4801512016965057443">Tillat mobildatabruk på andre nettverk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
 <translation id="4804827417948292437">Avokado</translation>
-<translation id="4805077164141082536">Vi anbefaler at du sikkerhetskopierer den nåværende Linux-beholderen før du oppgraderer.</translation>
 <translation id="4807098396393229769">Navn som er oppført på kortet</translation>
-<translation id="4808319664292298116">Vil du starte VR fra <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Blokkerte forgrunnsvinduer:</translation>
 <translation id="480990236307250886">Åpne startsiden</translation>
 <translation id="4811212958317149293">Automatisk skanning av brytertilgangstastaturet</translation>
@@ -3292,6 +3287,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="52232769093306234">Pakkingen mislyktes.</translation>
 <translation id="5225324770654022472">Vis appsnarveien</translation>
 <translation id="5227679487546032910">Blågrønt standardbrukerbilde</translation>
+<translation id="5228088094491423618">Direkteteksting</translation>
 <translation id="5228579091201413441">Slå på synkronisering</translation>
 <translation id="5229189185761556138">Administrer inndatametoder</translation>
 <translation id="5230516054153933099">Vindu</translation>
@@ -3705,7 +3701,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5739235828260127894">Venter på bekreftelse. <ph name="LINK_BEGIN" />Finn ut mer<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Veldig stor</translation>
 <translation id="574209121243317957">Stemmeleie</translation>
-<translation id="5745136023067925867">Få både tips om, tilbud på og oppdateringer for <ph name="DEVICE_TYPE" />, og gi tilbakemeldinger</translation>
 <translation id="5746169159649715125">Lagre som PDF</translation>
 <translation id="5747552184818312860">Utløper</translation>
 <translation id="5747785204778348146">Utvikler – ustabil</translation>
@@ -4828,7 +4823,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Lukk siden}other{Lukk sidene}}</translation>
 <translation id="7207457272187520234">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Dette bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Hvis du har slått på innstillingen for annen nett- og appaktivitet, kan disse dataene bli lagret i Google-kontoen din.</translation>
 <translation id="7207631048330366454">Søk etter apper</translation>
-<translation id="7210171324714276060">Utvidelsen <ph name="EXTENSION_NAME" /> endret søkemotoren til <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Utvidelsesskrivere</translation>
 <translation id="7212097698621322584">Skriv inn den nåværende PIN-koden for å endre den. Hvis du ikke kan PIN-koden, må du tilbakestille sikkerhetsnøkkelen og deretter opprette en ny PIN-kode.</translation>
 <translation id="7216409898977639127">Mobiloperatør</translation>
@@ -5228,7 +5222,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7737115349420013392">Sammenkobler med «<ph name="DEVICE_NAME" />» …</translation>
 <translation id="7737238973539693982">Slett Linux (beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
-<translation id="7743128043742060936">Denne siden ble endret av <ph name="EXTENSION_NAME" />-utvidelsen</translation>
 <translation id="7744047395460924128">Se utskriftsloggen</translation>
 <translation id="7744192722284567281">Funnet i databrudd</translation>
 <translation id="7750228210027921155">Bilde i bilde</translation>
@@ -6346,6 +6339,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9121814364785106365">Åpne som festet fane</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" /> er satt på pause</translation>
 <translation id="9124003689441359348">Lagrede passord vises her</translation>
+<translation id="9126149354162942022">Markørfarge</translation>
 <translation id="9128317794749765148">Kunne ikke fullføre konfigureringen</translation>
 <translation id="9128870381267983090">Koble til nettverk</translation>
 <translation id="9130015405878219958">Ugyldig modus angitt.</translation>

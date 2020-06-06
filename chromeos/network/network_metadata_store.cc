@@ -61,17 +61,22 @@ NetworkMetadataStore::NetworkMetadataStore(
     NetworkConnectionHandler* network_connection_handler,
     NetworkStateHandler* network_state_handler,
     PrefService* profile_pref_service,
-    PrefService* device_pref_service)
+    PrefService* device_pref_service,
+    bool is_enterprise_managed)
     : network_configuration_handler_(network_configuration_handler),
       network_connection_handler_(network_connection_handler),
       network_state_handler_(network_state_handler),
       profile_pref_service_(profile_pref_service),
-      device_pref_service_(device_pref_service) {
+      device_pref_service_(device_pref_service),
+      is_enterprise_managed_(is_enterprise_managed) {
   if (network_connection_handler_) {
     network_connection_handler_->AddObserver(this);
   }
   if (network_configuration_handler_) {
     network_configuration_handler_->AddObserver(this);
+  }
+  if (LoginState::IsInitialized()) {
+    LoginState::Get()->AddObserver(this);
   }
 }
 
@@ -81,6 +86,40 @@ NetworkMetadataStore::~NetworkMetadataStore() {
   }
   if (network_configuration_handler_) {
     network_configuration_handler_->RemoveObserver(this);
+  }
+  if (LoginState::IsInitialized()) {
+    LoginState::Get()->RemoveObserver(this);
+  }
+}
+
+void NetworkMetadataStore::LoggedInStateChanged() {
+  OwnSharedNetworksOnFirstUserLogin();
+}
+
+void NetworkMetadataStore::OwnSharedNetworksOnFirstUserLogin() {
+  if (is_enterprise_managed_ || !network_state_handler_ ||
+      !user_manager::UserManager::IsInitialized()) {
+    return;
+  }
+
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+
+  if (!user_manager->IsCurrentUserNew() ||
+      !user_manager->IsCurrentUserOwner()) {
+    return;
+  }
+
+  NET_LOG(EVENT) << "Taking ownership of shared networks.";
+  NetworkStateHandler::NetworkStateList networks;
+  network_state_handler_->GetNetworkListByType(NetworkTypePattern::WiFi(), true,
+                                               false, 0, &networks);
+  for (const chromeos::NetworkState* network : networks) {
+    if (network->IsPrivate()) {
+      continue;
+    }
+
+    SetIsCreatedByUser(network->guid());
   }
 }
 
@@ -126,6 +165,10 @@ void NetworkMetadataStore::ConnectFailed(const std::string& service_path,
 void NetworkMetadataStore::OnConfigurationCreated(
     const std::string& service_path,
     const std::string& guid) {
+  SetIsCreatedByUser(guid);
+}
+
+void NetworkMetadataStore::SetIsCreatedByUser(const std::string& network_guid) {
   if (!user_manager::UserManager::IsInitialized())
     return;
 
@@ -137,7 +180,11 @@ void NetworkMetadataStore::OnConfigurationCreated(
     return;
   }
 
-  SetPref(guid, kOwner, base::Value(user->username_hash()));
+  SetPref(network_guid, kOwner, base::Value(user->username_hash()));
+
+  for (auto& observer : observers_) {
+    observer.OnNetworkCreated(network_guid);
+  }
 }
 
 void NetworkMetadataStore::UpdateExternalModifications(

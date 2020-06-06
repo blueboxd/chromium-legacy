@@ -74,8 +74,8 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   void AdjustInnerSpinButtonStyle(ComputedStyle&) const override;
   void AdjustButtonStyle(ComputedStyle&) const override;
 
-  bool PopsMenuBySpaceKey() const final { return true; }
-  bool PopsMenuByReturnKey() const final;
+  bool PopsMenuBySpaceKey() const override { return true; }
+  bool PopsMenuByReturnKey() const override;
   bool PopsMenuByAltDownUpOrF4Key() const override { return true; }
 
   bool ShouldOpenPickerWithF4Key() const override;

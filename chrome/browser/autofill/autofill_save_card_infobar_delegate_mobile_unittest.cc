@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -17,6 +18,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/prefs/pref_service.h"
@@ -37,16 +39,19 @@ class AutofillSaveCardInfoBarDelegateMobileTest
   void TearDown() override;
 
  protected:
-  std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegate(
+  std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> CreateDelegate(
       bool is_uploading,
       prefs::PreviousSaveCreditCardPromptUserDecision
           previous_save_credit_card_prompt_user_decision =
-              prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
-  std::unique_ptr<ConfirmInfoBarDelegate> CreateDelegateWithLegalMessage(
+              prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE,
+      CreditCard credit_card = CreditCard());
+  std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
+  CreateDelegateWithLegalMessage(
       bool is_uploading,
       std::string legal_message_string,
       prefs::PreviousSaveCreditCardPromptUserDecision
-          previous_save_credit_card_prompt_user_decision);
+          previous_save_credit_card_prompt_user_decision,
+      CreditCard credit_card = CreditCard());
 
   std::unique_ptr<TestPersonalDataManager> personal_data_;
 
@@ -93,22 +98,24 @@ void AutofillSaveCardInfoBarDelegateMobileTest::TearDown() {
   ChromeRenderViewHostTestHarness::TearDown();
 }
 
-std::unique_ptr<ConfirmInfoBarDelegate>
+std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
 AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegate(
     bool is_uploading,
     prefs::PreviousSaveCreditCardPromptUserDecision
-        previous_save_credit_card_prompt_user_decision) {
+        previous_save_credit_card_prompt_user_decision,
+    CreditCard credit_card) {
   return CreateDelegateWithLegalMessage(
-      is_uploading, "", previous_save_credit_card_prompt_user_decision);
+      is_uploading, "", previous_save_credit_card_prompt_user_decision,
+      credit_card);
 }
 
-std::unique_ptr<ConfirmInfoBarDelegate>
+std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
 AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
     bool is_uploading,
     std::string legal_message_string,
     prefs::PreviousSaveCreditCardPromptUserDecision
-        previous_save_credit_card_prompt_user_decision) {
-  CreditCard credit_card;
+        previous_save_credit_card_prompt_user_decision,
+    CreditCard credit_card) {
   LegalMessageLines legal_message_lines;
   if (!legal_message_string.empty()) {
     std::unique_ptr<base::Value> value(
@@ -123,7 +130,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
   if (is_uploading) {
     // Upload save infobar delegate:
     credit_card_to_save_ = credit_card;
-    std::unique_ptr<ConfirmInfoBarDelegate> delegate(
+    std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate(
         new AutofillSaveCardInfoBarDelegateMobile(
             is_uploading, AutofillClient::SaveCreditCardOptions(), credit_card,
             legal_message_lines,
@@ -136,7 +143,7 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
   }
   // Local save infobar delegate:
   credit_card_to_save_ = credit_card;
-  std::unique_ptr<ConfirmInfoBarDelegate> delegate(
+  std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
           is_uploading, AutofillClient::SaveCreditCardOptions(), credit_card,
           legal_message_lines,
@@ -386,6 +393,50 @@ TEST_F(AutofillSaveCardInfoBarDelegateMobileTest,
         "Autofill.CreditCardInfoBar.Server.PreviouslyDenied",
         AutofillMetrics::INFOBAR_ACCEPTED, 1);
   }
+}
+
+// Tests to ensure the card nickname is correctly shown in the Upstream infobar.
+// The param here indicates whether the nickname experiment is enabled.
+class AutofillSaveCardInfoBarDelegateMobileTestForNickname
+    : public AutofillSaveCardInfoBarDelegateMobileTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kAutofillEnableSurfacingServerCardNickname, GetParam());
+
+    AutofillSaveCardInfoBarDelegateMobileTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         AutofillSaveCardInfoBarDelegateMobileTestForNickname,
+                         testing::Bool());
+
+TEST_P(AutofillSaveCardInfoBarDelegateMobileTestForNickname,
+       LocalCardHasNickname) {
+  CreditCard card = test::GetCreditCard();
+  card.SetNickname(base::ASCIIToUTF16("Nickname"));
+  std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate =
+      CreateDelegate(/*is_uploading=*/true,
+                     prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE,
+                     card);
+  EXPECT_EQ(delegate->card_label(),
+            GetParam() ? card.NicknameAndLastFourDigitsForTesting()
+                       : card.NetworkAndLastFourDigits());
+}
+
+TEST_P(AutofillSaveCardInfoBarDelegateMobileTestForNickname,
+       LocalCardHasNoNickname) {
+  CreditCard card = test::GetCreditCard();
+  std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile> delegate =
+      CreateDelegate(/*is_uploading=*/true,
+                     prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE,
+                     card);
+  EXPECT_EQ(delegate->card_label(), card.NetworkAndLastFourDigits());
 }
 
 }  // namespace autofill

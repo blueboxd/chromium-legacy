@@ -280,10 +280,14 @@ void FrameHeader::LayoutHeaderInternal() {
   const gfx::VectorIcon& maximize_icon =
       use_zoom_icons ? kWindowControlZoomIcon
                      : views::kWindowControlMaximizeIcon;
-  const gfx::VectorIcon& icon =
-      ash::ShouldUseRestoreFrame(target_widget_) ? maximize_icon : restore_icon;
+  // TODO(crbug.com/1092005): Investigate if we can move this to
+  // CaptionButtonModel and just check the model in
+  // FrameCaptionButtonContainerView.
+  const bool use_restore_frame = ash::ShouldUseRestoreFrame(target_widget_);
   caption_button_container()->SetButtonImage(
-      views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon);
+      views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+      use_restore_frame ? maximize_icon : restore_icon);
+  caption_button_container()->UpdateSizeButtonTooltip(use_restore_frame);
 
   caption_button_container()->SetButtonSize(
       views::GetCaptionButtonLayoutSize(GetButtonLayoutSize()));

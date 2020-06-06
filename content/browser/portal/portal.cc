@@ -556,6 +556,17 @@ void Portal::NavigationStateChanged(WebContents* source,
   outer_contents->GetDelegate()->NavigationStateChanged(source, changed_flags);
 }
 
+void Portal::CanDownload(const GURL& url,
+                         const std::string& request_method,
+                         base::OnceCallback<void(bool)> callback) {
+  // Downloads are not allowed in portals.
+  owner_render_frame_host()->AddMessageToConsole(
+      blink::mojom::ConsoleMessageLevel::kWarning,
+      base::StringPrintf("Download in a portal (from %s) was blocked.",
+                         url.spec().c_str()));
+  std::move(callback).Run(false);
+}
+
 base::UnguessableToken Portal::GetDevToolsFrameToken() const {
   return portal_contents_->GetMainFrame()->GetDevToolsFrameToken();
 }

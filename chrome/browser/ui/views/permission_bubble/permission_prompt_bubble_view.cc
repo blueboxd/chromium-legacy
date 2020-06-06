@@ -261,6 +261,12 @@ PermissionPromptBubbleView::GetDisplayNameOrOrigin() {
       return {extension_name, false /* is_origin */};
   }
 
+  // File URLs should be displayed as "This file".
+  if (origin_url.SchemeIsFile()) {
+    return {l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT_THIS_FILE),
+            false /* is_origin */};
+  }
+
   // Web URLs should be displayed as the origin in the URL.
   return {url_formatter::FormatUrlForSecurityDisplay(
               origin_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),

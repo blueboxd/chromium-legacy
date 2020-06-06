@@ -21,11 +21,10 @@ ScopedOverviewHideWindows::ScopedOverviewHideWindows(
 }
 
 ScopedOverviewHideWindows::~ScopedOverviewHideWindows() {
-  for (auto iter = window_visibility_.begin(); iter != window_visibility_.end();
-       iter++) {
-    iter->first->RemoveObserver(this);
-    if (iter->second)
-      iter->first->Show();
+  for (const auto& element : window_visibility_) {
+    element.first->RemoveObserver(this);
+    if (element.second)
+      element.first->Show();
   }
 }
 

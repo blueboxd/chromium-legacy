@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Tippen Sie auf die Schaltfläche "Top-Websites", um beliebte Websites zu sehen</translation>
 <translation id="1173894706177603556">Umbenennen</translation>
 <translation id="1178581264944972037">Anhalten</translation>
-<translation id="1188239144602654184">AR-Sitzung starten</translation>
 <translation id="1197267115302279827">Lesezeichen verschieben</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1204037785786432551">Link herunterladen</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">Text</translation>
 <translation id="2082238445998314030">Ergebnis <ph name="RESULT_NUMBER" /> von <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Geräteübergreifend synchronisieren und personalisieren</translation>
-<translation id="2099625543891475722">physische Merkmale wie Ihre Größe</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
 <translation id="2100314319871056947">Teilen Sie den Text am besten in mehreren Abschnitten</translation>
 <translation id="2109711654079915747">Erfahren Sie mehr über Website-Themen, ohne die Seite zu verlassen. Mit der Option "Zum Suchen tippen" werden ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
@@ -341,11 +339,6 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3810973564298564668">Verwalten</translation>
 <translation id="381841723434055211">Telefonnummern</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
-<translation id="3849365399446680203">Während Sie im AR-Modus sind, kann die Website möglicherweise:
-• eine dreidimensionale Karte Ihrer Umgebung erstellen
-• die Bewegung der Kamera verfolgen
-
-Nur Sie können sehen, auf was Ihre Kamera gerichtet ist. Die Website kann die Bilder Ihrer Kamera nicht sehen.</translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="388596076286380598">Erhalten Sie Artikel, Videos und weitere Inhalte von Websites, die Ihnen gefallen – auch offline oder bei schlechter Internetverbindung.</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
@@ -399,7 +392,6 @@ Nur Sie können sehen, auf was Ihre Kamera gerichtet ist. Die Website kann die B
 <translation id="4320177379694898372">Keine Internetverbindung</translation>
 <translation id="4321739720395210191">Die Kamera kann nicht geöffnet werden. Starten Sie das Gerät neu und versuchen Sie es noch einmal.</translation>
 <translation id="4351244548802238354">Dialogfeld schließen</translation>
-<translation id="4353114845960720315">Während Sie im VR-Modus sind, erhält die Website möglicherweise bestimmte Informationen über Sie. Dazu gehören:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Suche erfolgt mit Sogou</translation>
 <translation id="4404568932422911380">Keine Lesezeichen</translation>
@@ -427,7 +419,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4561979708150884304">Keine Verbindung</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
 <translation id="4572422548854449519">In verwaltetem Konto anmelden</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{vor # Minute}other{vor # Minuten}}</translation>
 <translation id="4587589328781138893">Websites</translation>
 <translation id="4594952190837476234">Diese Offlineseite ist vom <ph name="CREATION_TIME" /> und unterscheidet sich gegebenenfalls von der Onlineversion.</translation>
@@ -435,7 +426,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> öffnen</translation>
 <translation id="4634124774493850572">Passwort verwenden</translation>
 <translation id="4650364565596261010">Systemstandardeinstellung</translation>
-<translation id="4660838440047236328">der Grundriss Ihres Zimmers</translation>
 <translation id="4662373422909645029">Der Alias darf keine Zahlen enthalten</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> wurde Ihrem Startbildschirm hinzugefügt.</translation>
@@ -459,7 +449,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 
 Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Name auf Karte</translation>
-<translation id="4808319664292298116">VR von <ph name="DOMAIN" /> aus aktivieren?</translation>
 <translation id="4824958205181053313">Synchronisierung abbrechen?</translation>
 <translation id="4835385943915508971">Chrome hat keinen Zugriff auf die angeforderte Ressource.</translation>
 <translation id="4837753911714442426">Optionen zum Drucken einer Seite öffnen</translation>
@@ -659,7 +648,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6398765197997659313">Vollbildmodus beenden</translation>
 <translation id="6404511346730675251">Lesezeichen bearbeiten</translation>
 <translation id="6406506848690869874">Synchronisierung</translation>
-<translation id="6410973561433500075">AR-Modus über <ph name="DOMAIN" /> aktivieren?</translation>
 <translation id="641643625718530986">Drucken...</translation>
 <translation id="6427112570124116297">Das Web übersetzen</translation>
 <translation id="6433501201775827830">Suchmaschine auswählen</translation>

@@ -85,6 +85,11 @@ class AssistantNotificationBuilder {
     return *this;
   }
 
+  AssistantNotificationBuilder& WithIsPinned(bool is_pinned) {
+    notification_->is_pinned = is_pinned;
+    return *this;
+  }
+
   AssistantNotificationBuilder& WithPriority(
       AssistantNotificationPriority priority) {
     notification_->priority = priority;
@@ -501,6 +506,39 @@ TEST_F(AssistantNotificationControllerTest,
     ASSERT_NE(nullptr, system_notification);
     EXPECT_EQ(priority_pair.second, system_notification->priority());
   }
+}
+
+TEST_F(AssistantNotificationControllerTest, ShouldPropagateIsPinned) {
+  constexpr char kId[] = "id";
+
+  // Create an Assistant notification w/ default pin behavior.
+  AddOrUpdateNotification(AssistantNotificationBuilder().WithId(kId).Build());
+
+  // Verify expected system notification.
+  auto* system_notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
+  ASSERT_NE(nullptr, system_notification);
+  EXPECT_FALSE(system_notification->pinned());
+
+  // Create an Assistant notification w/ explicitly disabled pin behavior.
+  AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId(kId).WithIsPinned(false).Build());
+
+  // Verify expected system notification.
+  system_notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
+  ASSERT_NE(nullptr, system_notification);
+  EXPECT_FALSE(system_notification->pinned());
+
+  // Create an Assistant notification w/ explicitly enabled pin behavior.
+  AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId(kId).WithIsPinned(true).Build());
+
+  // Verify expected system notification.
+  system_notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
+  ASSERT_NE(nullptr, system_notification);
+  EXPECT_TRUE(system_notification->pinned());
 }
 
 }  // namespace ash

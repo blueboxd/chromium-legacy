@@ -12,6 +12,7 @@
 #include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_metadata_store.h"
+#include "chromeos/tpm/install_attributes.h"
 #include "content/public/browser/notification_service.h"
 
 namespace chromeos {
@@ -41,6 +42,8 @@ void NetworkPrefStateObserver::Observe(
   // in. Other profiles are ignored because only the primary user's network
   // configuration is used on Chrome OS.
   if (ProfileHelper::IsPrimaryProfile(profile)) {
+    NetworkHandler::Get()->set_is_enterprise_managed(
+        InstallAttributes::Get()->IsEnterpriseManaged());
     InitializeNetworkPrefServices(profile);
     notification_registrar_.RemoveAll();
 

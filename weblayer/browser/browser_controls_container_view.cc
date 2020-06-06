@@ -5,6 +5,7 @@
 #include "weblayer/browser/browser_controls_container_view.h"
 
 #include "base/android/jni_string.h"
+#include "base/bind.h"
 #include "base/feature_list.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
@@ -33,9 +34,19 @@ BrowserControlsContainerView::BrowserControlsContainerView(
       content_view_render_view_(content_view_render_view),
       is_top_(is_top) {
   DCHECK(content_view_render_view_);
+  if (!is_top_) {
+    content_view_render_view_->SetHeightChangedListener(
+        base::BindRepeating(&BrowserControlsContainerView::ContentHeightChanged,
+                            base::Unretained(this)));
+  }
 }
 
-BrowserControlsContainerView::~BrowserControlsContainerView() = default;
+BrowserControlsContainerView::~BrowserControlsContainerView() {
+  if (!is_top_) {
+    content_view_render_view_->SetHeightChangedListener(
+        base::RepeatingClosure());
+  }
+}
 
 int BrowserControlsContainerView::GetControlsHeight() {
   return controls_layer_ ? controls_layer_->bounds().height() : 0;
@@ -82,28 +93,20 @@ void BrowserControlsContainerView::DeleteControlsLayer(JNIEnv* env) {
 }
 
 void BrowserControlsContainerView::SetTopControlsOffset(JNIEnv* env,
-                                                        int controls_offset_y,
                                                         int content_offset_y) {
   DCHECK(is_top_);
   // |controls_layer_| may not be created if the controls view has 0 height.
   if (controls_layer_)
-    controls_layer_->SetPosition(gfx::PointF(0, controls_offset_y));
+    controls_layer_->SetPosition(gfx::PointF(0, GetControlsOffset()));
   if (web_contents()) {
     web_contents()->GetNativeView()->GetLayer()->SetPosition(
         gfx::PointF(0, content_offset_y));
   }
 }
 
-void BrowserControlsContainerView::SetBottomControlsOffset(
-    JNIEnv* env,
-    int controls_offset_y) {
+void BrowserControlsContainerView::SetBottomControlsOffset(JNIEnv* env) {
   DCHECK(!is_top_);
-  // |controls_layer_| may not be created if the controls view has 0 height.
-  if (controls_layer_) {
-    controls_layer_->SetPosition(
-        gfx::PointF(0, content_view_render_view_->height() -
-                           GetControlsHeight() + controls_offset_y));
-  }
+  DoSetBottomControlsOffset();
 }
 
 void BrowserControlsContainerView::SetControlsSize(
@@ -141,6 +144,26 @@ void BrowserControlsContainerView::DidToggleFullscreenModeForTab(
   Java_BrowserControlsContainerView_didToggleFullscreenModeForTab(
       AttachCurrentThread(), java_browser_controls_container_view_,
       entered_fullscreen);
+}
+
+void BrowserControlsContainerView::ContentHeightChanged() {
+  DCHECK(!is_top_);
+  DoSetBottomControlsOffset();
+}
+
+int BrowserControlsContainerView::GetControlsOffset() {
+  return Java_BrowserControlsContainerView_getControlsOffset(
+      AttachCurrentThread(), java_browser_controls_container_view_);
+}
+
+void BrowserControlsContainerView::DoSetBottomControlsOffset() {
+  DCHECK(!is_top_);
+  // |controls_layer_| may not be created if the controls view has 0 height.
+  if (!controls_layer_)
+    return;
+  controls_layer_->SetPosition(
+      gfx::PointF(0, content_view_render_view_->height() - GetControlsHeight() +
+                         GetControlsOffset()));
 }
 
 static jlong

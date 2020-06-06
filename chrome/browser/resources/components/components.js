@@ -26,7 +26,7 @@ function renderTemplate(componentsData) {
   // This is the javascript code that processes the template:
   const input = new JsEvalContext(componentsData);
   const output = $('component-template').cloneNode(true);
-  $('component-placeholder').innerHTML = '';
+  $('component-placeholder').innerHTML = trustedTypes.emptyHTML;
   $('component-placeholder').appendChild(output);
   jstProcess(input, output);
   output.removeAttribute('hidden');

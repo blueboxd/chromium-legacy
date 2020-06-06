@@ -96,6 +96,11 @@ void FakeCompositorTimingHistory::SetDrawDurationEstimate(
   draw_duration_ = duration;
 }
 
+void FakeCompositorTimingHistory::SetBeginMainFrameSentTime(
+    base::TimeTicks time) {
+  begin_main_frame_sent_time_ = time;
+}
+
 base::TimeDelta
 FakeCompositorTimingHistory::BeginMainFrameQueueDurationCriticalEstimate()
     const {

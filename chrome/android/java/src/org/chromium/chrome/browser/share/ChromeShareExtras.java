@@ -26,9 +26,16 @@ public class ChromeShareExtras {
      */
     private final boolean mShareDirectly;
 
-    public ChromeShareExtras(boolean saveLastUsed, boolean shareDirectly) {
+    /**
+     * Whether the URL is of the current visible page.
+     */
+    private final boolean mIsUrlOfVisiblePage;
+
+    private ChromeShareExtras(
+            boolean saveLastUsed, boolean shareDirectly, boolean isUrlOfVisiblePage) {
         mSaveLastUsed = saveLastUsed;
         mShareDirectly = shareDirectly;
+        mIsUrlOfVisiblePage = isUrlOfVisiblePage;
     }
 
     /**
@@ -44,5 +51,50 @@ public class ChromeShareExtras {
      */
     public boolean shareDirectly() {
         return mShareDirectly;
+    }
+
+    /**
+     * @return Whether the URL is of the current visible page.
+     */
+    public boolean isUrlOfVisiblePage() {
+        return mIsUrlOfVisiblePage;
+    }
+
+    /**
+     * The builder for {@link ChromeShareExtras} objects.
+     */
+    public static class Builder {
+        private boolean mSaveLastUsed;
+        private boolean mShareDirectly;
+        private boolean mIsUrlOfVisiblePage;
+
+        /**
+         * Sets whether to save the chosen activity for future direct sharing.
+         */
+        public Builder setSaveLastUsed(boolean saveLastUsed) {
+            mSaveLastUsed = saveLastUsed;
+            return this;
+        }
+
+        /**
+         * Sets whether it should share directly with the activity that was most recently used to
+         * share.
+         */
+        public Builder setShareDirectly(boolean shareDirectly) {
+            mShareDirectly = shareDirectly;
+            return this;
+        }
+
+        /**
+         * Sets whether the URL is of the current visible page.
+         */
+        public Builder setIsUrlOfVisiblePage(boolean isUrlOfVisiblePage) {
+            mIsUrlOfVisiblePage = isUrlOfVisiblePage;
+            return this;
+        }
+
+        public ChromeShareExtras build() {
+            return new ChromeShareExtras(mSaveLastUsed, mShareDirectly, mIsUrlOfVisiblePage);
+        }
     }
 }

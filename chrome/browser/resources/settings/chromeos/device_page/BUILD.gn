@@ -82,10 +82,10 @@ js_library("display") {
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
-  externs_list = [
-    "$externs_path/settings_private.js",
-    "$externs_path/system_display.js",
-  ]
+  externs_list = chrome_extension_public_externs + [
+                   "$externs_path/settings_private.js",
+                   "$externs_path/system_display.js",
+                 ]
   extra_sources = [ "$interfaces_path/system_display_interface.js" ]
 }
 

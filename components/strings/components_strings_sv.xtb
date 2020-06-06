@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Sidor på <ph name="SOURCE_LANGUAGE" /> översätts till <ph name="TARGET_LANGUAGE" /> från och med nu.</translation>
 <translation id="1676269943528358898">På <ph name="SITE" /> används vanligtvis kryptering (SSL) för att skydda din information. När Chrome försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chrome avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="1682696192498422849">Kortsidan först</translation>
+<translation id="168693727862418163">Principen ignoreras eftersom den inte gick att validera mot schemat.</translation>
 <translation id="168841957122794586">Servercertifikatet innehåller en svag kryptografisk nyckel.</translation>
 <translation id="1697532407822776718">Färdigt!</translation>
 <translation id="1703835215927279855">Letter</translation>

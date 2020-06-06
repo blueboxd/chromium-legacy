@@ -749,7 +749,7 @@ void TabSpecificContentSettings::ReadyToCommitNavigation(
 
   PrefService* prefs = delegate_->GetPrefs();
   if (prefs &&
-      prefs->GetBoolean(
+      !prefs->GetBoolean(
           security_state::prefs::kStricterMixedContentTreatmentEnabled)) {
     auto* render_frame_host = navigation_handle->GetRenderFrameHost();
     mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>

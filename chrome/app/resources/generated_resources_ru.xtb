@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Подписчик сертификата</translation>
 <translation id="1145292499998999162">Плагин заблокирован</translation>
 <translation id="1145593918056169051">Сбой в работе принтера</translation>
-<translation id="1146678959555564648">Войти в режим VR</translation>
 <translation id="114721135501989771">Интеллектуальные функции Google в Chrome</translation>
 <translation id="1147991416141538220">Чтобы запросить доступ, обратитесь к администратору устройства.</translation>
 <translation id="1149401351239820326">Месяц окончания срока действия</translation>
@@ -865,7 +864,6 @@
 <translation id="2096715839409389970">Удалить сторонние файлы cookie</translation>
 <translation id="2097372108957554726">Войдите в Chrome, чтобы зарегистрировать новое устройство</translation>
 <translation id="2099172618127234427">Вы включаете функции отладки Chrome OS. Будет настроен SSHD-демон и разрешена загрузка с USB-дисков.</translation>
-<translation id="2099625543891475722">получить представление о параметрах вашего тела, например о росте;</translation>
 <translation id="2099686503067610784">Удалить сертификат сервера <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Автоматический вход</translation>
 <translation id="2101225219012730419">Версия:</translation>
@@ -2183,6 +2181,7 @@
 <translation id="3732857534841813090">Подсказки от Google Ассистента</translation>
 <translation id="3733127536501031542">SSL-сервер с повышением</translation>
 <translation id="3735740477244556633">Сортировать по:</translation>
+<translation id="3738213647660363521">Пользовательский цвет курсора</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">Открыть приложение "<ph name="APPLICATION" />"?</translation>
 <translation id="3742055079367172538">Сделан скриншот</translation>
@@ -2655,7 +2654,6 @@
 <translation id="4350019051035968019">Это устройство уже зарегистрировано в другом домене.</translation>
 <translation id="4350782034419308508">Фраза "Окей, Google"</translation>
 <translation id="4351060348582610152">Сайт <ph name="ORIGIN" /> ищет устройства Bluetooth поблизости. Обнаружены следующие устройства:</translation>
-<translation id="4353114845960720315">Когда вы находитесь в этом режиме, сайт может:</translation>
 <translation id="4354073718307267720">Запрашивать для сайтов разрешение на создание 3D-карты места, в котором вы находитесь, и отслеживание положения камеры</translation>
 <translation id="4354344420232759511">Здесь появятся сайты, на которые вы заходили.</translation>
 <translation id="435527878592612277">Выберите фото</translation>
@@ -2890,7 +2888,6 @@
 <translation id="4659077111144409915">Основной аккаунт</translation>
 <translation id="4660476621274971848">Ожидаемая версия: <ph name="EXPECTED_VERSION" />, полученная версия: <ph name="NEW_ID" /></translation>
 <translation id="4660540330091848931">Изменение размера…</translation>
-<translation id="4660838440047236328">узнать планировку комнаты, в которой вы находитесь.</translation>
 <translation id="4661407454952063730">Данные приложений – это любая информация, которую приложения сохраняют на устройстве согласно настройкам разработчиков, например контакты, сообщения и фотографии.</translation>
 <translation id="4662373422909645029">Название не должно содержать цифры.</translation>
 <translation id="4662788913887017617">Поделитесь закладкой с iPhone</translation>
@@ -2979,9 +2976,7 @@
 <translation id="4801512016965057443">Разрешить мобильный интернет-роуминг</translation>
 <translation id="4804818685124855865">Отключиться</translation>
 <translation id="4804827417948292437">Авокадо</translation>
-<translation id="4805077164141082536">Перед установкой обновления рекомендуем сохранить резервную копию контейнера Linux.</translation>
 <translation id="4807098396393229769">Имя владельца</translation>
-<translation id="4808319664292298116">Войти в режим виртуальной реальности на сайте <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Всплывающие окна заблокированы</translation>
 <translation id="480990236307250886">Перейти на главную страницу</translation>
 <translation id="4811212958317149293">Автосканирование клавиатуры с помощью функции Switch Access</translation>
@@ -3295,6 +3290,7 @@
 <translation id="52232769093306234">Не удалось выполнить сжатие.</translation>
 <translation id="5225324770654022472">Показывать кнопку "Сервисы"</translation>
 <translation id="5227679487546032910">Аватар по умолчанию (сине-зеленый)</translation>
+<translation id="5228088094491423618">Автоматические субтитры</translation>
 <translation id="5228579091201413441">Включить синхронизацию</translation>
 <translation id="5229189185761556138">Управление методами ввода</translation>
 <translation id="5230516054153933099">Окно</translation>
@@ -3708,7 +3704,6 @@
 <translation id="5739235828260127894">Требуется подтверждение. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Очень крупный</translation>
 <translation id="574209121243317957">Высота звука</translation>
-<translation id="5745136023067925867">Вы можете подписаться на нашу рассылку и получать советы по работе с устройствами <ph name="DEVICE_TYPE" />, специальные предложения и новости, а также оставлять отзывы.</translation>
 <translation id="5746169159649715125">Сохранить как PDF</translation>
 <translation id="5747552184818312860">Срок действия</translation>
 <translation id="5747785204778348146">Нестабильная</translation>
@@ -4831,7 +4826,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Закрыть страницу}one{Закрыть страницы}few{Закрыть страницы}many{Закрыть страницы}other{Закрыть страницы}}</translation>
 <translation id="7207457272187520234">Отправка данных об использовании и диагностике. Сейчас это устройство автоматически отправляет в Google диагностическую информацию, сведения об использовании приложений и самого устройства. Эти сведения помогут нам повысить стабильность приложений и внести другие улучшения. Некоторые агрегированные данные пригодятся партнерам Google, например разработчикам Android. Эта настройка принудительно применяется владельцем. Если запись дополнительной истории приложений и веб-поиска включена, эта информация может сохраняться в вашем аккаунте.</translation>
 <translation id="7207631048330366454">Поиск приложений</translation>
-<translation id="7210171324714276060">Расширение "<ph name="EXTENSION_NAME" />" изменило поисковую систему на <ph name="SEARCH_PROVIDER_DOMAIN" />.</translation>
 <translation id="7210499381659830293">Принтеры, работающие через расширение</translation>
 <translation id="7212097698621322584">Сначала введите текущий PIN-код. Если вы его не знаете, сбросьте настройки электронного ключа и установите новый PIN-код.</translation>
 <translation id="7216409898977639127">Оператор сотовой связи</translation>
@@ -5231,7 +5225,6 @@
 <translation id="7737115349420013392">Подключение к устройству "<ph name="DEVICE_NAME" />"...</translation>
 <translation id="7737238973539693982">Удаление Linux (бета)</translation>
 <translation id="7740996059027112821">Стандартный</translation>
-<translation id="7743128043742060936">Эта страница изменена расширением "<ph name="EXTENSION_NAME" />".</translation>
 <translation id="7744047395460924128">Просмотр истории печати</translation>
 <translation id="7744192722284567281">Раскрыт при утечке данных</translation>
 <translation id="7750228210027921155">Картинка в картинке</translation>
@@ -6348,6 +6341,7 @@
 <translation id="9121814364785106365">Открыть в закрепленной вкладке</translation>
 <translation id="9122176249172999202">Работа приложения "<ph name="IDS_SHORT_PRODUCT_NAME" />" приостановлена</translation>
 <translation id="9124003689441359348">Здесь появятся сохраненные пароли</translation>
+<translation id="9126149354162942022">Цвет курсора</translation>
 <translation id="9128317794749765148">Не удалось завершить установку</translation>
 <translation id="9128870381267983090">Подключитесь к сети</translation>
 <translation id="9130015405878219958">Указан неверный режим.</translation>

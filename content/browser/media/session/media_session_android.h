@@ -11,20 +11,21 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
+#include "content/browser/web_contents/web_contents_android.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 
 namespace content {
 
 class MediaSessionImpl;
-class WebContentsAndroid;
 
 // This class is interlayer between native MediaSession and Java
 // MediaSession. This class is owned by the native MediaSession and will
 // teardown Java MediaSession when the native MediaSession is destroyed.
 // Java MediaSessionObservers are also proxied via this class.
 class MediaSessionAndroid final
-    : public media_session::mojom::MediaSessionObserver {
+    : public media_session::mojom::MediaSessionObserver,
+      public WebContentsAndroid::DestructionObserver {
  public:
   // Helper class for calling GetJavaObject() in a static method, in order to
   // avoid leaking the Java object outside.
@@ -48,6 +49,12 @@ class MediaSessionAndroid final
   void MediaSessionPositionChanged(
       const base::Optional<media_session::MediaPosition>& position) override;
 
+  // WebContentsAndroid::DestructionObserver overrides:
+  // TODO(crbug.com/1091229): Remove this when we correctly support media
+  // sessions in portals.
+  void WebContentsAndroidDestroyed(
+      WebContentsAndroid* web_contents_android) override;
+
   // MediaSession method wrappers.
   void Resume(JNIEnv* env, const base::android::JavaParamRef<jobject>& j_obj);
   void Suspend(JNIEnv* env, const base::android::JavaParamRef<jobject>& j_obj);
@@ -66,13 +73,14 @@ class MediaSessionAndroid final
       const base::android::JavaParamRef<jobject>& j_obj);
 
  private:
-  WebContentsAndroid* GetWebContentsAndroid();
-
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
   // The linked Java object. The strong reference is hold by Java WebContensImpl
   // to avoid introducing a new GC root.
   JavaObjectWeakGlobalRef j_media_session_;
+  // WebContentsAndroid corresponding to the Java WebContentsImpl that holds a
+  // strong reference to |j_media_session_|.
+  WebContentsAndroid* web_contents_android_;
 
   MediaSessionImpl* const media_session_;
 

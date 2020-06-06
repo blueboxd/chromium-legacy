@@ -303,6 +303,9 @@ bool AutoResumptionHandler::IsInterruptedDownloadAutoResumable(
   if (download_item->GetBytesWasted() > auto_resumption_size_limit)
     return false;
 
+  if (download_item->GetTargetFilePath().empty())
+    return false;
+
   int interrupt_reason = download_item->GetLastReason();
   DCHECK_NE(interrupt_reason, download::DOWNLOAD_INTERRUPT_REASON_NONE);
   return interrupt_reason ==

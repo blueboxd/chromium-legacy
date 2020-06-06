@@ -34,8 +34,8 @@ public class ShareServiceImplementationFactory implements InterfaceFactory<Share
             public void share(ShareParams params) {
                 ChromeActivity<?> activity =
                         (ChromeActivity<?>) params.getWindow().getActivity().get();
-                activity.getShareDelegateSupplier().get().share(params,
-                        new ChromeShareExtras(/*saveLastUsed=*/false, /*shareDirectly=*/false));
+                activity.getShareDelegateSupplier().get().share(
+                        params, new ChromeShareExtras.Builder().build());
             }
         };
 

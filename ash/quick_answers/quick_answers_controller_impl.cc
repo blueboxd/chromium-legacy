@@ -88,10 +88,10 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
 
 void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
   MaybeDismissQuickAnswersConsent();
-  quick_answers_ui_controller_->CloseQuickAnswersView();
+  bool closed = quick_answers_ui_controller_->CloseQuickAnswersView();
   quick_answers_client_->OnQuickAnswersDismissed(
       quick_answer_ ? quick_answer_->result_type : ResultType::kNoResult,
-      is_active);
+      is_active && closed);
 }
 
 chromeos::quick_answers::QuickAnswersDelegate*

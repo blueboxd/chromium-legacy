@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">იხილეთ პოპულარული ვებსაიტები „ტოპ-საიტების“ ღილაკზე შეხებით</translation>
 <translation id="1173894706177603556">სახელის შეცვლა</translation>
 <translation id="1178581264944972037">პაუზა</translation>
-<translation id="1188239144602654184">AR-ში შესვლა</translation>
 <translation id="1197267115302279827">სანიშნეების გადატანა</translation>
 <translation id="1201402288615127009">შემდეგი</translation>
 <translation id="1204037785786432551">ბმულის ჩამოტვირთვა</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">ტექსტი</translation>
 <translation id="2082238445998314030">შედეგი <ph name="RESULT_NUMBER" /> / <ph name="TOTAL_RESULTS" />-დან</translation>
 <translation id="2096012225669085171">სინქრონიზაცია და პერსონალიზება სხვადასხვა მოწყობილობას შორის</translation>
-<translation id="2099625543891475722">თქვენი ფიზიკური მონაცემები, როგორიცაა სიმაღლე</translation>
 <translation id="2100273922101894616">ავტომატური შესვლა</translation>
 <translation id="2100314319871056947">ცადეთ ტექსტის გაზიარება უფრო მცირე ფრაგმენტებად</translation>
 <translation id="2109711654079915747">გაეცანით ვებსაიტებზე მოცემულ თემებს გვერდიდან გაუსვლელად. „შეეხეთ ძიებისთვის“ Google Search-ს უგზავნის სიტყვას და შესაბამის კონტექსტს. შედეგად კი მიიღებთ განმარტებებს, სურათებს, ძიების შედეგებსა და სხვა კონტენტს.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">მართვა</translation>
 <translation id="381841723434055211">ტელეფონის ნომრები</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ჩამოტვირთული ფაილი წაიშალა</translation>
-<translation id="3849365399446680203">აუგმენტური რეალობის რეჟიმში ამ საიტს შეეძლება:
-• თქვენი გარემოს 3-განზომილებიანი რუკის შექმნა
-• კამერის მოძრაობისთვის თვალის მიდევნება
-
-კამერის მიერ გადაღებულ კადრებს მხოლოდ თქვენ ხედავთ. ამ საიტს არ ექნება წვდომა კამერის გამოსახულებებზე.</translation>
 <translation id="3859306556332390985">წინ ძიება</translation>
 <translation id="388596076286380598">მიიღეთ სტატიები, ვიდეოები და სხვა კონტენტი საიტებიდან, რომლებიც მოგწონთ, მაშინაც კი თუ ხაზგარეშე რეჟიმში ხართ ან ცუდი კავშირი გაქვთ.</translation>
 <translation id="3894427358181296146">საქაღალდის დამატება</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">ინტერნეტთან კავშირი არ არის</translation>
 <translation id="4321739720395210191">კამერის გახსნა ვერ მოხერხდა. გადატვირთეთ მოწყობილობა და ცადეთ ხელახლა.</translation>
 <translation id="4351244548802238354">დიალოგის დახურვა</translation>
-<translation id="4353114845960720315">VR რეჟიმში ყოფნისას ამ საიტს შეუძლია ინფორმაციის მიღება შემდეგის შესახებ:</translation>
 <translation id="4378154925671717803">ტელეფონი</translation>
 <translation id="4384468725000734951">ძიებისთვის Sogou გამოიყენება</translation>
 <translation id="4404568932422911380">სანიშნეები არ არის</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">კავშირი არ არის</translation>
 <translation id="4565377596337484307">პაროლის დამალვა</translation>
 <translation id="4572422548854449519">მართულ ანგარიშში შესვლა</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# წუთის წინ}other{# წუთის წინ}}</translation>
 <translation id="4587589328781138893">საიტები</translation>
 <translation id="4594952190837476234">ეს ხაზგარეშე გვერდი თარიღდება <ph name="CREATION_TIME" />-ით და შეიძლება განსხვავდებოდეს ონლაინ-ვერსიისგან.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />-ის გახსნა</translation>
 <translation id="4634124774493850572">პაროლის გამოყენება</translation>
 <translation id="4650364565596261010">სისტემის ნაგულისხმევი</translation>
-<translation id="4660838440047236328">თქვენი ოთახის განლაგება</translation>
 <translation id="4662373422909645029">მეტსახელი არ უნდა შეიცავდეს ციფრებს</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> სანიშნე წაიშალა</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> დაემატა მთავარ ეკრანს</translation>
@@ -459,7 +449,6 @@
 
 ამ პარამეტრის შესაცვლელად საჭიროა <ph name="BEGIN_LINK" />სინქრონიზაციის გადაყენება<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">სახელი ბარათზე</translation>
-<translation id="4808319664292298116">გსურთ VR-ში შესვლა <ph name="DOMAIN" />-დან?</translation>
 <translation id="4824958205181053313">გსურთ სინქრონიზაციის გაუქმება?</translation>
 <translation id="4835385943915508971">Chrome-ს მოთხოვნილ რესურსზე წვდომა არ აქვს.</translation>
 <translation id="4837753911714442426">გვერდის ბეჭდვის ვარიანტების გახსნა</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">სრულეკრანიანი რეჟიმიდან გამოსვლა</translation>
 <translation id="6404511346730675251">სანიშნის რედაქტირება</translation>
 <translation id="6406506848690869874">სინქრონიზაცია</translation>
-<translation id="6410973561433500075">გსურთ აუგმენტური რეალობის რეჟიმზე გადასვლა <ph name="DOMAIN" />-დან?</translation>
 <translation id="641643625718530986">ბეჭდვა…</translation>
 <translation id="6427112570124116297">თარგმნეთ ვებ-კონტენტი</translation>
 <translation id="6433501201775827830">აირჩიეთ საძიებო სისტემა</translation>

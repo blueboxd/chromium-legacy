@@ -65,6 +65,15 @@ const char kErrorNoHeaderListsSpecified[] =
     "one of these keys must be specified with a non-empty list.";
 const char kErrorInvalidHeaderName[] =
     "Rule with id * must specify a valid header name to be modified.";
+const char kErrorInvalidHeaderValue[] =
+    "Rule with id * specifies an invalid header value.";
+const char kErrorNoHeaderValueSpecified[] =
+    "Rule with id * must provide a value for a header to be appended/set.";
+const char kErrorHeaderValuePresent[] =
+    "Rule with id * must not provide a header value for a header to be "
+    "removed.";
+const char kErrorCannotAppendRequestHeader[] =
+    "Rule with id * must not specify a request header to be appended.";
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =

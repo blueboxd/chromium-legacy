@@ -120,6 +120,7 @@
 #include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_switches.h"
+#include "components/site_isolation/features.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -2650,7 +2651,8 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-site-isolation-for-password-sites",
      flag_descriptions::kSiteIsolationForPasswordSitesName,
      flag_descriptions::kSiteIsolationForPasswordSitesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kSiteIsolationForPasswordSites)},
+     FEATURE_VALUE_TYPE(
+         site_isolation::features::kSiteIsolationForPasswordSites)},
     {"enable-site-per-process", flag_descriptions::kStrictSiteIsolationName,
      flag_descriptions::kStrictSiteIsolationDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},

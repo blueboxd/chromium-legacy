@@ -110,7 +110,7 @@ DedicatedWorkerHostFactoryClient::CreateWorkerFetchContext(
 void DedicatedWorkerHostFactoryClient::OnWorkerHostCreated(
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
         browser_interface_broker) {
-  worker_->OnWorkerHostCreated(browser_interface_broker.PassPipe());
+  worker_->OnWorkerHostCreated(std::move(browser_interface_broker));
 }
 
 void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(

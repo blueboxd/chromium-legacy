@@ -119,6 +119,11 @@ class XRSystem final : public EventTargetWithInlineData,
 
   bool IsContextDestroyed() const { return is_context_destroyed_; }
 
+  void MakeXrCompatibleAsync(
+      device::mojom::blink::VRService::MakeXrCompatibleCallback callback);
+  void MakeXrCompatibleSync(
+      device::mojom::XrCompatibleResult* xr_compatible_result);
+
  private:
   enum SensorRequirement {
     kNone,

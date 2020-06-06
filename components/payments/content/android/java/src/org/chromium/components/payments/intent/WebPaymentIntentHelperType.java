@@ -4,8 +4,16 @@
 
 package org.chromium.components.payments.intent;
 
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.JsonWriter;
+
 import androidx.annotation.Nullable;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Collection;
+import java.util.List;
 /**
  * The types that corresponds to the types in org.chromium.payments.mojom. The fields of these types
  * are the subset of those in the mojom types. The subset is minimally selected based on the need of
@@ -19,6 +27,8 @@ import androidx.annotation.Nullable;
  *         ready to pay” parameters</a>
  */
 public final class WebPaymentIntentHelperType {
+    private static final String EMPTY_JSON_DATA = "{}";
+
     /**
      * The class that corresponds to mojom.PaymentCurrencyAmount, with minimally required fields.
      */
@@ -29,6 +39,33 @@ public final class WebPaymentIntentHelperType {
             this.currency = currency;
             this.value = value;
         }
+
+        /**
+         * Serializes this object into the provided json writer.
+         * @param json The json object to which the seri
+         */
+        public void serialize(JsonWriter json) throws IOException {
+            // {{{
+            json.beginObject();
+            json.name("currency").value(currency);
+            json.name("value").value(value);
+            json.endObject();
+            // }}}
+        }
+        /**
+         * [Serializes this object
+         * @return The serialized payment currency amount.
+         */
+        public String serialize() {
+            StringWriter stringWriter = new StringWriter();
+            JsonWriter json = new JsonWriter(stringWriter);
+            try {
+                serialize(json);
+            } catch (IOException e) {
+                return null;
+            }
+            return stringWriter.toString();
+        }
     }
 
     /** The class that corresponds mojom.PaymentItem, with minimally required fields. */
@@ -36,6 +73,27 @@ public final class WebPaymentIntentHelperType {
         public final PaymentCurrencyAmount amount;
         public PaymentItem(PaymentCurrencyAmount amount) {
             this.amount = amount;
+        }
+        /**
+         * Serializes this object into the provided json writer after adding an empty string for the
+         * redacted "label" field.
+         * @param  json  The json writer used for serialization
+         */
+        public void serializeAndRedact(JsonWriter json) throws IOException {
+            // item {{{
+            json.beginObject();
+            // Redact the total label, because the payment app does not need it to complete the
+            // transaction. Matches the behavior of:
+            // https://w3c.github.io/payment-handler/#total-attribute
+            json.name("label").value("");
+
+            // amount {{{
+            json.name("amount");
+            amount.serialize(json);
+            // }}} amount
+
+            json.endObject();
+            // }}} item
         }
     }
 
@@ -46,6 +104,56 @@ public final class WebPaymentIntentHelperType {
         public PaymentDetailsModifier(PaymentItem total, PaymentMethodData methodData) {
             this.total = total;
             this.methodData = methodData;
+        }
+
+        /**
+         * Serializes payment details modifiers.
+         * @param  modifiers The collection of details modifiers to serialize.
+         * @return The serialized payment details modifiers
+         */
+        public static String serializeModifiers(Collection<PaymentDetailsModifier> modifiers) {
+            StringWriter stringWriter = new StringWriter();
+            JsonWriter json = new JsonWriter(stringWriter);
+            try {
+                json.beginArray();
+                for (PaymentDetailsModifier modifier : modifiers) {
+                    checkNotNull(modifier, "PaymentDetailsModifier");
+                    modifier.serialize(json);
+                }
+                json.endArray();
+            } catch (IOException e) {
+                return EMPTY_JSON_DATA;
+            }
+            return stringWriter.toString();
+        }
+
+        private void serialize(JsonWriter json) throws IOException {
+            // {{{
+            json.beginObject();
+
+            // total {{{
+            if (total != null) {
+                json.name("total");
+                total.serializeAndRedact(json);
+            } else {
+                json.name("total").nullValue();
+            }
+            // }}} total
+
+            // TODO(https://crbug.com/754779): The supportedMethods field was already changed from
+            // array to string but we should keep backward-compatibility for now. supportedMethods
+            // {{{
+            json.name("supportedMethods").beginArray();
+            json.value(methodData.supportedMethod);
+            json.endArray();
+            // }}} supportedMethods
+
+            // data {{{
+            json.name("data").value(methodData.stringifiedData);
+            // }}}
+
+            json.endObject();
+            // }}}
         }
     }
 
@@ -61,6 +169,12 @@ public final class WebPaymentIntentHelperType {
 
     /** The class that mirrors mojom.PaymentShippingOption. */
     public static final class PaymentShippingOption {
+        public static final String EXTRA_SHIPPING_OPTION_ID = "shippingOptionId";
+        public static final String EXTRA_SHIPPING_OPTION_LABEL = "label";
+        public static final String EXTRA_SHIPPING_OPTION_SELECTED = "selected";
+        public static final String EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY = "amountCurrency";
+        public static final String EXTRA_SHIPPING_OPTION_AMOUNT_VALUE = "amountValue";
+
         public final String id;
         public final String label;
         public final String amountCurrency;
@@ -73,6 +187,31 @@ public final class WebPaymentIntentHelperType {
             this.amountCurrency = amountCurrency;
             this.amountValue = amountValue;
             this.selected = selected;
+        }
+
+        private Bundle asBundle() {
+            Bundle bundle = new Bundle();
+            bundle.putString(EXTRA_SHIPPING_OPTION_ID, id);
+            bundle.putString(EXTRA_SHIPPING_OPTION_LABEL, label);
+            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY, amountCurrency);
+            bundle.putString(EXTRA_SHIPPING_OPTION_AMOUNT_VALUE, amountValue);
+            bundle.putBoolean(EXTRA_SHIPPING_OPTION_SELECTED, selected);
+            return bundle;
+        }
+
+        /**
+         * Create a parcelable array of payment shipping options.
+         * @param  shippingOptions The list of available shipping options
+         * @return The parcelable array of shipping options passed to the native payment app.
+         */
+        public static Parcelable[] buildPaymentShippingOptionList(
+                List<PaymentShippingOption> shippingOptions) {
+            Parcelable[] result = new Parcelable[shippingOptions.size()];
+            int index = 0;
+            for (PaymentShippingOption option : shippingOptions) {
+                result[index++] = option.asBundle();
+            }
+            return result;
         }
     }
 
@@ -92,5 +231,8 @@ public final class WebPaymentIntentHelperType {
             this.requestShipping = requestShipping;
             this.shippingType = shippingType;
         }
+    }
+    private static void checkNotNull(Object value, String name) {
+        if (value == null) throw new IllegalArgumentException(name + " should not be null.");
     }
 }

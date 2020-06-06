@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Tagapaglagda ng Certificate</translation>
 <translation id="1145292499998999162">Na-block ang plugin</translation>
 <translation id="1145593918056169051">Huminto ang printer</translation>
-<translation id="1146678959555564648">Pumasok sa VR</translation>
 <translation id="114721135501989771">Magkaroon ng mga smart na feature ng Google sa Chrome</translation>
 <translation id="1147991416141538220">Para humiling ng access, makipag-ugnayan sa administrator ng device na ito.</translation>
 <translation id="1149401351239820326">Buwan ng pag-expire</translation>
@@ -866,7 +865,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2096715839409389970">I-clear ang cookies ng third party</translation>
 <translation id="2097372108957554726">Kailangan mong mag-sign in sa Chrome upang makapagrehistro ng mga bagong device</translation>
 <translation id="2099172618127234427">Ie-enable mo ang mga feature para sa pagde-debug ng Chrome OS na magse-set up ng sshd daemon at mag-e-enable ng pagbu-boot mula sa mga USB drive.</translation>
-<translation id="2099625543891475722">iyong mga pisikal na katangian, tulad ng tangkad</translation>
 <translation id="2099686503067610784">Tanggalin ang certificate ng server na "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Awtomatikong Mag-sign in</translation>
 <translation id="2101225219012730419">Bersyon:</translation>
@@ -2658,7 +2656,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4350019051035968019">Hindi maaaring i-enroll ang device na ito sa domain kung saan nabibilang ang iyong account dahil minarkahan ang iyong device para mapamahalaan ng ibang domain.</translation>
 <translation id="4350782034419308508">Hey Google</translation>
 <translation id="4351060348582610152">Gustong mag-scan ng <ph name="ORIGIN" /> para sa mga Bluetooth device na nasa malapit. Nahanap ang mga sumusunod na device:</translation>
-<translation id="4353114845960720315">Habang nasa VR ka, posibleng malaman ng site na ito ang tungkol sa:</translation>
 <translation id="4354073718307267720">Magtanong kapag gusto ng isang site na gumawa ng 3D na mapa ng iyong kapaligiran o subaybayan ang posisyon ng camera</translation>
 <translation id="4354344420232759511">Lalabas dito ang mga site na binibisita mo</translation>
 <translation id="435527878592612277">Piliin ang iyong larawan</translation>
@@ -2893,7 +2890,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4659077111144409915">Pangunahing account</translation>
 <translation id="4660476621274971848">"<ph name="EXPECTED_VERSION" />" ang inaasahang bersyon, ngunit "<ph name="NEW_ID" />" ang bersyon</translation>
 <translation id="4660540330091848931">Nire-resize</translation>
-<translation id="4660838440047236328">ang layout ng iyong kwarto</translation>
 <translation id="4661407454952063730">Ang data ng app ay puwedeng anumang data na na-save ng isang app (batay sa mga setting ng developer), kabilang ang data tulad ng mga contact, mensahe, at larawan.</translation>
 <translation id="4662373422909645029">Bawal numero sa nickname</translation>
 <translation id="4662788913887017617">Ibahagi ang bookmark na ito sa iyong iPhone</translation>
@@ -2982,9 +2978,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4801512016965057443">Payagan ang pag-roam ng mobile data</translation>
 <translation id="4804818685124855865">I-disconnect</translation>
 <translation id="4804827417948292437">Abukado</translation>
-<translation id="4805077164141082536">Inirerekomenda namin sa iyo na i-back up ang kasalukuyan mong Linux container bago mag-upgrade.</translation>
 <translation id="4807098396393229769">Pangalang makikita sa card</translation>
-<translation id="4808319664292298116">Ilagay ang VR mula sa <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Naka-block ang mga pop-up</translation>
 <translation id="480990236307250886">Buksan ang home page</translation>
 <translation id="4811212958317149293">Awtomatikong pag-scan ng keyboard sa pamamagitan ng switch access</translation>
@@ -3712,7 +3706,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5739235828260127894">Naghihintay ng pag-verify. <ph name="LINK_BEGIN" />Matuto pa<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Napakalaki</translation>
 <translation id="574209121243317957">Pitch</translation>
-<translation id="5745136023067925867">Makatanggap ng mga tip, alok, at update sa <ph name="DEVICE_TYPE" />, at magbahagi ng feedback</translation>
 <translation id="5746169159649715125">I-save bilang PDF</translation>
 <translation id="5747552184818312860">Mag-e-expire sa</translation>
 <translation id="5747785204778348146">Developer - hindi matatag</translation>
@@ -4835,7 +4828,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Umalis sa Page}one{Umalis sa Mga Page}other{Umalis sa Mga Page}}</translation>
 <translation id="7207457272187520234">Magpadala ng data ng paggamit at diagnostic. Sa kasalukuyan, ang device na ito ay awtomatikong nagpapadala ng diagnostic na data, data ng device, at data ng paggamit sa app sa Google. Makakatulong ito sa stability ng system at ng app, at sa iba pang pagpapahusay. Makakatulong din ang ilang pinagsama-samang data sa mga app at partner ng Google, gaya ng mga developer ng Android. Ipinapatupad ng may-ari ang setting na ito. Kung naka-on ang iyong karagdagang setting ng Aktibidad sa Web at App, posibleng ma-save ang data na ito sa Google Account mo.</translation>
 <translation id="7207631048330366454">Maghanap ng mga app</translation>
-<translation id="7210171324714276060">Pinalitan ng extension na <ph name="EXTENSION_NAME" /> ang paghahanap para magamit ang <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Mga extension na printer</translation>
 <translation id="7212097698621322584">Ilagay ang kasalukuyan mong PIN para palitan ito. Kung hindi mo alam ang iyong PIN, kakailanganin mong i-reset ang security key, pagkatapos ay gumawa ng bagong PIN.</translation>
 <translation id="7216409898977639127">Cellular provider</translation>
@@ -5235,7 +5227,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7737115349420013392">Ipinapares sa "<ph name="DEVICE_NAME" />" ...</translation>
 <translation id="7737238973539693982">I-delete ang Linux (Beta)</translation>
 <translation id="7740996059027112821">Karaniwan</translation>
-<translation id="7743128043742060936">Binago ng extension na <ph name="EXTENSION_NAME" /> ang page na ito</translation>
 <translation id="7744047395460924128">Tingnan ang iyong history ng pag-print</translation>
 <translation id="7744192722284567281">Nakita sa paglabag sa data</translation>
 <translation id="7750228210027921155">Picture in picture</translation>

@@ -13,6 +13,8 @@ NetworkMetadataObserver::~NetworkMetadataObserver() = default;
 void NetworkMetadataObserver::OnFirstConnectionToNetwork(
     const std::string& guid) {}
 
+void NetworkMetadataObserver::OnNetworkCreated(const std::string& guid) {}
+
 void NetworkMetadataObserver::OnNetworkUpdate(
     const std::string& guid,
     base::DictionaryValue* set_properties) {}

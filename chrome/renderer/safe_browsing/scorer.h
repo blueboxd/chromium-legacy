@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace safe_browsing {
 class FeatureMap;
@@ -40,6 +41,11 @@ class Scorer {
   // of phishing.  It returns a score value that falls in the range [0.0,1.0]
   // (range is inclusive on both ends).
   virtual double ComputeScore(const FeatureMap& features) const;
+
+  // This method matches the given |bitmap| against the visual model. It returns
+  // true if any visual target matches, and populates |request| appropriately.
+  virtual bool GetMatchingVisualTargets(const SkBitmap& bitmap,
+                                        ClientPhishingRequest* request) const;
 
   // Returns the version number of the loaded client model.
   int model_version() const;

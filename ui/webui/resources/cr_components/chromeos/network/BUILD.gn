@@ -63,7 +63,8 @@ js_library("network_config") {
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]
-  externs_list = [ "$externs_path/networking_private.js" ]
+  externs_list = chrome_extension_public_externs +
+                 [ "$externs_path/networking_private.js" ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
 }
 

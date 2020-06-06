@@ -55,9 +55,8 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
   // Sets the offsets of the controls and content. See
   // BrowserControlsContainerView's javadoc for details on this.
   void SetTopControlsOffset(JNIEnv* env,
-                            int controls_offset_y,
                             int content_offset_y);
-  void SetBottomControlsOffset(JNIEnv* env, int controls_offset_y);
+  void SetBottomControlsOffset(JNIEnv* env);
 
   // Sets the size of |controls_layer_|.
   void SetControlsSize(JNIEnv* env,
@@ -74,6 +73,12 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
   // WebContentsObserver:
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
+
+  // Only used for bottom controls.
+  void ContentHeightChanged();
+
+  int GetControlsOffset();
+  void DoSetBottomControlsOffset();
 
   base::android::ScopedJavaGlobalRef<jobject>
       java_browser_controls_container_view_;

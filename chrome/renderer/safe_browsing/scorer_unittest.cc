@@ -59,9 +59,39 @@ class PhishingScorerTest : public ::testing::Test {
     model_.set_murmur_hash_seed(12345U);
     model_.set_max_shingles_per_page(10);
     model_.set_shingle_size(3);
+
+    // The first target hash is all 1-bits, except the first 8.
+    std::vector<unsigned char> target_hash;
+    target_hash.push_back('\x30');
+    for (int i = 0; i < 288; i++)
+      target_hash.push_back('\xff');
+    target_hash[1] = '\x00';
+    VisualTarget* target1 = model_.mutable_vision_model()->add_targets();
+    target1->set_digest("target1");
+    target1->set_hash(target_hash.data(), target_hash.size());
+    target1->mutable_match_config()->add_match_rule()->set_hash_distance(8.0);
+
+    // The second target hash is all 1-bits, except the second 8.
+    target_hash[1] = '\xff';
+    target_hash[2] = '\x00';
+    VisualTarget* target2 = model_.mutable_vision_model()->add_targets();
+    target2->set_digest("target2");
+    target2->set_hash(target_hash.data(), target_hash.size());
+    target2->mutable_match_config()->add_match_rule()->set_hash_distance(8.0);
+
+    // Allocate a bitmap for testing visual scoring
+    sk_sp<SkColorSpace> rec2020 = SkColorSpace::MakeRGB(
+        {2.22222f, 0.909672f, 0.0903276f, 0.222222f, 0.0812429f, 0, 0},
+        SkNamedGamut::kRec2020);
+    SkImageInfo bitmap_info =
+        SkImageInfo::Make(1000, 1000, SkColorType::kRGBA_8888_SkColorType,
+                          SkAlphaType::kUnpremul_SkAlphaType, rec2020);
+
+    ASSERT_TRUE(bitmap_.tryAllocPixels(bitmap_info));
   }
 
   ClientSideModel model_;
+  SkBitmap bitmap_;
 };
 
 TEST_F(PhishingScorerTest, HasValidModel) {
@@ -145,4 +175,48 @@ TEST_F(PhishingScorerTest, ComputeScore) {
   EXPECT_TRUE(features.AddBooleanFeature("feature2"));
   EXPECT_DOUBLE_EQ(0.77729986117469119, scorer->ComputeScore(features));
 }
+
+TEST_F(PhishingScorerTest, GetMatchingVisualTargetsMatchOne) {
+  std::unique_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
+
+  // Make the whole image white
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = 0xffffffff;
+
+  // Make the first 164 pixels black. This will make the first 8 bits of the
+  // hash 0.
+  for (int x = 0; x < 164; x++)
+    *bitmap_.getAddr32(x, 0) = 0xff000000;
+
+  ClientPhishingRequest request;
+  scorer->GetMatchingVisualTargets(bitmap_, &request);
+  ASSERT_EQ(request.vision_match_size(), 1);
+  EXPECT_EQ(request.vision_match(0).matched_target_digest(), "target1");
+}
+
+TEST_F(PhishingScorerTest, GetMatchingVisualTargetsMatchBoth) {
+  std::unique_ptr<Scorer> scorer(Scorer::Create(model_.SerializeAsString()));
+
+  // Make the whole image white
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = 0xffffffff;
+
+  // Create an alternating black/white pattern to match both targets. The
+  // pattern is 84 black pixels, then 84 white, then 84 black, then 84 white.
+  // This causes the hash to start 0F0F, for a distance of 8 from both targets.
+  for (int x = 0; x < 84; x++)
+    *bitmap_.getAddr32(x, 0) = 0xff000000;
+
+  for (int x = 168; x < 248; x++)
+    *bitmap_.getAddr32(x, 0) = 0xff000000;
+
+  ClientPhishingRequest request;
+  scorer->GetMatchingVisualTargets(bitmap_, &request);
+  ASSERT_EQ(request.vision_match_size(), 2);
+  EXPECT_EQ(request.vision_match(0).matched_target_digest(), "target1");
+  EXPECT_EQ(request.vision_match(1).matched_target_digest(), "target2");
+}
+
 }  // namespace safe_browsing

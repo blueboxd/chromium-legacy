@@ -537,7 +537,7 @@ cr.define('gpu', function() {
         throw new Error('Node ' + outputElementId + ' not found');
       }
 
-      peg.innerHTML = '';
+      peg.innerHTML = trustedTypes.emptyHTML;
       peg.appendChild(template);
     }
   };

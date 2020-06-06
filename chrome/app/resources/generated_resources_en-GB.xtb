@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Certificate Signer</translation>
 <translation id="1145292499998999162">Plug-in blocked</translation>
 <translation id="1145593918056169051">Printer has stopped</translation>
-<translation id="1146678959555564648">Enter VR</translation>
 <translation id="114721135501989771">Get Google smarts in Chrome</translation>
 <translation id="1147991416141538220">To ask for access, contact the administrator of this device.</translation>
 <translation id="1149401351239820326">Expiry month</translation>
@@ -866,7 +865,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2096715839409389970">Clear third-party cookies</translation>
 <translation id="2097372108957554726">You need to sign in to Chrome to register new devices</translation>
 <translation id="2099172618127234427">You are enabling Chrome OS debugging features which will set up sshd daemon and enable booting from USB drives.</translation>
-<translation id="2099625543891475722">your physical features, such as height</translation>
 <translation id="2099686503067610784">Delete server certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2101225219012730419">Version:</translation>
@@ -2658,7 +2656,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4350019051035968019">This device cannot be enrolled to the domain that your account belongs to because the device is marked for management by a different domain.</translation>
 <translation id="4350782034419308508">Hey Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> wants to scan for nearby Bluetooth devices. The following devices have been found:</translation>
-<translation id="4353114845960720315">While you're in VR, this site may be able to learn about:</translation>
 <translation id="4354073718307267720">Ask when a site wants to create a 3D map of your surroundings or track camera position</translation>
 <translation id="4354344420232759511">Sites that you visit will appear here</translation>
 <translation id="435527878592612277">Select your photo</translation>
@@ -2893,7 +2890,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4659077111144409915">Primary account</translation>
 <translation id="4660476621274971848">Expected version '<ph name="EXPECTED_VERSION" />', but version was '<ph name="NEW_ID" />'</translation>
 <translation id="4660540330091848931">Resizing</translation>
-<translation id="4660838440047236328">the layout of your room</translation>
 <translation id="4661407454952063730">App data can be any data that an app has saved (based on developer settings), including data such as contacts, messages and photos.</translation>
 <translation id="4662373422909645029">Nickname can’t include numbers</translation>
 <translation id="4662788913887017617">Share this bookmark with your iPhone</translation>
@@ -2982,9 +2978,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4801512016965057443">Allow mobile data roaming</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="4804827417948292437">Avocado</translation>
-<translation id="4805077164141082536">We recommend that you back up your current Linux container prior to upgrading.</translation>
 <translation id="4807098396393229769">Name on card</translation>
-<translation id="4808319664292298116">Enter VR from <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Pop-ups blocked:</translation>
 <translation id="480990236307250886">Open the homepage</translation>
 <translation id="4811212958317149293">Switch access keyboard auto-scan</translation>
@@ -3712,7 +3706,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5739235828260127894">Waiting for verification. <ph name="LINK_BEGIN" />Find out more<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Very large</translation>
 <translation id="574209121243317957">Pitch</translation>
-<translation id="5745136023067925867">Get <ph name="DEVICE_TYPE" /> tips, offers and updates, and share feedback</translation>
 <translation id="5746169159649715125">Save as PDF</translation>
 <translation id="5747552184818312860">Expires</translation>
 <translation id="5747785204778348146">Developer - unstable</translation>
@@ -4835,7 +4828,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Exit page}other{Exit pages}}</translation>
 <translation id="7207457272187520234">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account.</translation>
 <translation id="7207631048330366454">Search apps</translation>
-<translation id="7210171324714276060">The <ph name="EXTENSION_NAME" /> extension changed search to use <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Extension printers</translation>
 <translation id="7212097698621322584">Enter your current PIN to change it. If you don’t know your PIN, you’ll need to reset the security key, then create a new PIN.</translation>
 <translation id="7216409898977639127">Mobile provider</translation>
@@ -5235,7 +5227,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7737115349420013392">Pairing with "<ph name="DEVICE_NAME" />" ...</translation>
 <translation id="7737238973539693982">Delete Linux (Beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
-<translation id="7743128043742060936">This page was changed by the <ph name="EXTENSION_NAME" /> extension</translation>
 <translation id="7744047395460924128">See your printing history</translation>
 <translation id="7744192722284567281">Found in data breach</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>

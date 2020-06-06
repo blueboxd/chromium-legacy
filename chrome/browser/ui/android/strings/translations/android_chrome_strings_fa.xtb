@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">با ضربه زدن روی دکمه «سایت‌های برتر»، وب‌سایت‌های پرطرفدار را ببینید</translation>
 <translation id="1173894706177603556">تغییر نام</translation>
 <translation id="1178581264944972037">مکث</translation>
-<translation id="1188239144602654184">‏وارد شدن به AR</translation>
 <translation id="1197267115302279827">انتقال نشانک‌ها</translation>
 <translation id="1201402288615127009">بعدی</translation>
 <translation id="1204037785786432551">بارگیری پیوند</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">نوشتار</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">همگام‌سازی و شخصی‌سازی در همه دستگاه‌ها</translation>
-<translation id="2099625543891475722">ویژگی‌های ظاهری شما، مانند قد</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
 <translation id="2100314319871056947">بخش‌های کوچک‌تری از نوشتار را به اشتراک بگذارید</translation>
 <translation id="2109711654079915747">‏بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی کسب کنید. «لمس برای جستجو» کلمه و بافت پیرامون آن را برای «جستجوی Google» ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را بازمی‌گرداند.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">مدیریت</translation>
 <translation id="381841723434055211">شماره‌های تلفن</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> بارگیری حذف شد</translation>
-<translation id="3849365399446680203">‏وقتی در حالت AR هستید، این سایت می‌تواند:
-• نقشه‌ای سه‌بعدی از محیط شما ایجاد کند
-• حرکت دوربین را ردیابی کند
-
-فقط شما می‌توانید تصویر دوربین را ببینید. این سایت نمی‌تواند تصویر دوربین شما را ببینید.</translation>
 <translation id="3859306556332390985">جستجو به جلو</translation>
 <translation id="388596076286380598">حتی وقتی آفلاین هستید یا ارتباط ضعیفی دارید، مقاله، ویدیو، و محتواهای دیگر را از سایت‌های موردعلاقه دریافت کنید.</translation>
 <translation id="3894427358181296146">افزودن پوشه</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">اتصال اینترنتی ندارید</translation>
 <translation id="4321739720395210191">نمی‌توان دوربین را باز کرد. دستگاه را بازراه‌اندازی و دوباره امتحان کنید.</translation>
 <translation id="4351244548802238354">بستن کادر گفتگو</translation>
-<translation id="4353114845960720315">‏وقتی در حالت VR هستید، این سایت می‌تواند به این موارد پی ببرد:</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="4384468725000734951">‏استفاده از Sogou برای جستجو</translation>
 <translation id="4404568932422911380">هیچ نشانکی موجود نیست</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">اتصال برقرار نیست</translation>
 <translation id="4565377596337484307">عدم نمایش گذرواژه</translation>
 <translation id="4572422548854449519">به حساب مدیریت‌شده وارد شوید</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="4587589328781138893">سایت‌ها</translation>
 <translation id="4594952190837476234">این صفحه آفلاین مربوط به تاریخ <ph name="CREATION_TIME" /> است و ممکن است با نسخه آنلاین متفاوت باشد.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">باز کردن <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">استفاده از گذرواژه</translation>
 <translation id="4650364565596261010">پیش‌فرض سیستم</translation>
-<translation id="4660838440047236328">چیدمان اتاق شما</translation>
 <translation id="4662373422909645029">نام مستعار نباید حاوی عدد باشد</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> نشانک حذف شد</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> به صفحه اصلی شما اضافه شد</translation>
@@ -459,7 +449,6 @@
 
 برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">نام روی کارت</translation>
-<translation id="4808319664292298116">‏VR از <ph name="DOMAIN" /> وارد شود؟</translation>
 <translation id="4824958205181053313">همگام‌سازی لغو شود؟</translation>
 <translation id="4835385943915508971">‏Chrome به منبع درخواستی دسترسی ندارد.</translation>
 <translation id="4837753911714442426">باز کردن گزینه‌های چاپ صفحه</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">خروج از حالت تمام صفحه</translation>
 <translation id="6404511346730675251">ویرایش نشانک</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
-<translation id="6410973561433500075">‏از <ph name="DOMAIN" /> وارد حالت AR می‌شوید؟</translation>
 <translation id="641643625718530986">چاپ...</translation>
 <translation id="6427112570124116297">وب را ترجمه کنید</translation>
 <translation id="6433501201775827830">انتخاب موتور جستجو</translation>

@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/permissions/test/mock_permission_request.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using PermissionPromptBubbleViewTest = ChromeViewsTestBase;
 
@@ -70,5 +72,17 @@ TEST_F(PermissionPromptBubbleViewTest,
   EXPECT_PRED_FORMAT2(::testing::IsSubstring, "bar", title);
   EXPECT_PRED_FORMAT2(::testing::IsNotSubstring, "baz", title);
   EXPECT_PRED_FORMAT2(::testing::IsNotSubstring, "quxx", title);
+}
+
+TEST_F(PermissionPromptBubbleViewTest,
+       AccessibleTitleFileSchemeMentionsThisFile) {
+  TestDelegate delegate(GURL("file:///tmp/index.html"), {"foo", "bar"});
+  auto bubble = std::make_unique<PermissionPromptBubbleView>(
+      nullptr, &delegate, base::TimeTicks::Now());
+
+  EXPECT_PRED_FORMAT2(::testing::IsSubstring,
+                      base::UTF16ToUTF8(l10n_util::GetStringUTF16(
+                          IDS_PERMISSIONS_BUBBLE_PROMPT_THIS_FILE)),
+                      base::UTF16ToUTF8(bubble->GetAccessibleWindowTitle()));
 }
 }  // namespace

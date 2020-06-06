@@ -84,7 +84,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/trace_event_system_stats_monitor.h"
@@ -135,6 +134,7 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/tracing/common/tracing_switches.h"
@@ -957,7 +957,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // Add Site Isolation switches as dictated by policy.
   auto* command_line = base::CommandLine::ForCurrentProcess();
   if (local_state->GetBoolean(prefs::kSitePerProcess) &&
-      SiteIsolationPolicy::IsEnterprisePolicyApplicable() &&
+      site_isolation::SiteIsolationPolicy::IsEnterprisePolicyApplicable() &&
       !command_line->HasSwitch(switches::kSitePerProcess)) {
     command_line->AppendSwitch(switches::kSitePerProcess);
   }

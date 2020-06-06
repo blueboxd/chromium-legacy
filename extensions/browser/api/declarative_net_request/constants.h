@@ -56,7 +56,11 @@ enum class ParseResult {
   ERROR_NO_HEADERS_SPECIFIED,
   ERROR_EMPTY_REQUEST_HEADERS_LIST,
   ERROR_EMPTY_RESPONSE_HEADERS_LIST,
-  ERROR_INVALID_HEADER_NAME
+  ERROR_INVALID_HEADER_NAME,
+  ERROR_INVALID_HEADER_VALUE,
+  ERROR_HEADER_VALUE_NOT_SPECIFIED,
+  ERROR_HEADER_VALUE_PRESENT,
+  ERROR_APPEND_REQUEST_HEADER_UNSUPPORTED
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -143,6 +147,10 @@ extern const char kErrorRegexTooLarge[];
 extern const char kErrorRegexesTooLarge[];
 extern const char kErrorNoHeaderListsSpecified[];
 extern const char kErrorInvalidHeaderName[];
+extern const char kErrorInvalidHeaderValue[];
+extern const char kErrorNoHeaderValueSpecified[];
+extern const char kErrorHeaderValuePresent[];
+extern const char kErrorCannotAppendRequestHeader[];
 
 extern const char kErrorListNotPassed[];
 

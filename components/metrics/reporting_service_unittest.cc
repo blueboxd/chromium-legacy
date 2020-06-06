@@ -56,6 +56,7 @@ class TestLogStore : public LogStore {
     logs_.pop_front();
     staged_log_hash_.clear();
   }
+  void MarkStagedLogAsSent() override {}
   void PersistUnsentLogs() const override {}
   void LoadPersistedUnsentLogs() override {}
 

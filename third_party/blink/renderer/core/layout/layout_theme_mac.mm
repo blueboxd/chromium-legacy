@@ -162,6 +162,7 @@ class LayoutThemeMacRefresh final : public LayoutThemeDefault {
     return file.name();
   }
   bool PopsMenuByArrowKeys() const override;
+  bool PopsMenuByReturnKey() const override;
   bool SupportsSelectionForegroundColors() const override { return false; }
 
  protected:
@@ -381,6 +382,10 @@ bool LayoutThemeMacRefresh::UsesTestModeFocusRingColor() const {
 
 bool LayoutThemeMacRefresh::PopsMenuByArrowKeys() const {
   return true;
+}
+
+bool LayoutThemeMacRefresh::PopsMenuByReturnKey() const {
+  return false;
 }
 
 static FontSelectionValue ToFontWeight(NSInteger app_kit_font_weight) {

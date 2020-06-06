@@ -2973,8 +2973,13 @@ void LayoutObject::GetTransformFromContainer(
   transform.PostTranslate(offset_in_container.left.ToFloat(),
                           offset_in_container.top.ToFloat());
 
-  if (container_object && container_object->HasLayer() &&
-      container_object->StyleRef().HasPerspective()) {
+  bool has_perspective = container_object && container_object->HasLayer() &&
+                         container_object->StyleRef().HasPerspective();
+  if (has_perspective && RuntimeEnabledFeatures::TransformInteropEnabled() &&
+      container_object != Parent())
+    has_perspective = false;
+
+  if (has_perspective) {
     // Perspective on the container affects us, so we have to factor it in here.
     DCHECK(container_object->HasLayer());
     FloatPoint perspective_origin =

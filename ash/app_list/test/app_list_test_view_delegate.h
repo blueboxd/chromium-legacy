@@ -119,6 +119,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
       AppLaunchedMetricParams* metric_params) override;
   gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) override;
   int GetShelfSize() override;
+  bool AppListTargetVisibility() const override;
   bool IsInTabletMode() override;
   AppListNotifier* GetNotifier() override;
 

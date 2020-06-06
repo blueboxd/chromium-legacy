@@ -103,6 +103,9 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
     // Ineligible as it is not top-level.
     kNotTopLevel,
 
+    // Ineligible as it is sandboxed.
+    kSandboxed,
+
     // Ineligible as the host's protocol is not in the HTTP family.
     kNotHTTPFamily,
 

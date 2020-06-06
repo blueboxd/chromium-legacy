@@ -429,13 +429,12 @@ blink::WebURLLoaderFactory* WebWorkerFetchContextImpl::GetURLLoaderFactory() {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 WebWorkerFetchContextImpl::WrapURLLoaderFactory(
-    mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
+    blink::CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+        url_loader_factory) {
   return std::make_unique<WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),
       base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-          mojo::PendingRemote<network::mojom::URLLoaderFactory>(
-              std::move(url_loader_factory_handle),
-              network::mojom::URLLoaderFactory::Version_)));
+          std::move(url_loader_factory)));
 }
 
 std::unique_ptr<blink::CodeCacheLoader>
@@ -539,7 +538,8 @@ WebWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle(
       ancestor_frame_id_, std::move(task_runner));
 }
 
-mojo::ScopedMessagePipeHandle
+blink::CrossVariantMojoReceiver<
+    blink::mojom::WorkerTimingContainerInterfaceBase>
 WebWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
   auto iter = worker_timing_container_receivers_.find(request_id);
   if (iter == worker_timing_container_receivers_.end()) {
@@ -547,7 +547,7 @@ WebWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
   }
   auto receiver = std::move(iter->second);
   worker_timing_container_receivers_.erase(iter);
-  return receiver.PassPipe();
+  return std::move(receiver);
 }
 
 void WebWorkerFetchContextImpl::SetIsOfflineMode(bool is_offline_mode) {

@@ -111,7 +111,8 @@ class FakeWebServiceWorkerFetchContext final
     return &fake_web_url_loader_factory_;
   }
   std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
-      mojo::ScopedMessagePipeHandle url_loader_factory_handle) override {
+      CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+          url_loader_factory) override {
     return nullptr;
   }
   void WillSendRequest(WebURLRequest&) override {}
@@ -126,8 +127,8 @@ class FakeWebServiceWorkerFetchContext final
     return base::Optional<WebSecurityOrigin>();
   }
   WebString GetAcceptLanguages() const override { return WebString(); }
-  mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
-      int request_id) override {
+  CrossVariantMojoReceiver<mojom::blink::WorkerTimingContainerInterfaceBase>
+  TakePendingWorkerTimingReceiver(int request_id) override {
     return {};
   }
   void SetIsOfflineMode(bool is_offline_mode) override {}

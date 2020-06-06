@@ -1365,8 +1365,8 @@ video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-
 
   /* Taller scrim. */
   background:
-    -webkit-image-set(url('default_200_percent/vr_gradient_bg.png') 1x)
-    repeat-x bottom left auto 198px;
+    -webkit-image-set(url('default_100_percent/vr_gradient_bg.png') 1x)
+    repeat-x bottom left;
 }
 
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-before,
@@ -1444,6 +1444,14 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-control
 video::-webkit-media-controls.immersive-mode input[pseudo="-webkit-media-controls-fullscreen-button" i]::-internal-media-controls-button-hover-background,
 video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-controls-overflow-button" i]::-internal-media-controls-button-hover-background {
   display: none;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2) {
+  video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
+    background:
+      -webkit-image-set(url('default_200_percent/vr_gradient_bg.png') 1x)
+      repeat-x bottom left auto 198px;
+  }
 }
 
 /**

@@ -57,7 +57,8 @@ js_library("password_prompt_dialog") {
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
-  externs_list = [ "$externs_path/quick_unlock_private.js" ]
+  externs_list = chrome_extension_public_externs +
+                 [ "$externs_path/quick_unlock_private.js" ]
   extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
 }
 
@@ -183,7 +184,8 @@ js_library("password_prompt_dialog.m") {
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
   ]
-  externs_list = [ "$externs_path/quick_unlock_private.js" ]
+  externs_list = chrome_extension_public_externs +
+                 [ "$externs_path/quick_unlock_private.js" ]
   extra_deps = [ ":password_prompt_dialog_module" ]
 }
 

@@ -78,7 +78,8 @@ RulesetSource CreateTemporarySource(RulesetID id = kMinValidStaticRulesetID,
 
 api::declarative_net_request::ModifyHeaderInfo CreateModifyHeaderInfo(
     api::declarative_net_request::HeaderOperation operation,
-    std::string header);
+    std::string header,
+    base::Optional<std::string> value);
 
 bool EqualsForTesting(
     const api::declarative_net_request::ModifyHeaderInfo& lhs,

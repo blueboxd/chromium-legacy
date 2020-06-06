@@ -392,14 +392,6 @@ extern const base::Feature kShowTrustedPublisherURL;
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSitePerProcess;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSiteIsolationForPasswordSites;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kSitePerProcessOnlyForHighMemoryClients;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kSitePerProcessOnlyForHighMemoryClientsParamName[];
-
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kStreamlinedUsbPrinterSetup;

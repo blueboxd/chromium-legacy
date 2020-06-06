@@ -34,10 +34,8 @@ base::Optional<VAProfile> ConvertToVAProfile(VideoCodecProfile profile) {
       {VP8PROFILE_ANY, VAProfileVP8Version0_3},
       {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
       {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
-      // TODO(crbug.com/1011454, crbug.com/1011469): Reenable
-      // VP9PROFILE_PROFILE2 and _PROFILE3 when P010 is completely supported.
-      //{VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
-      //{VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
+      {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
+      {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
   };
   auto it = kProfileMap.find(profile);
   return it != kProfileMap.end() ? base::make_optional<VAProfile>(it->second)
@@ -56,10 +54,8 @@ base::Optional<VAProfile> StringToVAProfile(const std::string& va_profile) {
       {"VAProfileVP8Version0_3", VAProfileVP8Version0_3},
       {"VAProfileVP9Profile0", VAProfileVP9Profile0},
       {"VAProfileVP9Profile1", VAProfileVP9Profile1},
-      // TODO(crbug.com/1011454, crbug.com/1011469): Reenable
-      // VP9PROFILE_PROFILE2 and _PROFILE3 when P010 is completely supported.
-      // {"VAProfileVP9Profile2", VAProfileVP9Profile2},
-      // {"VAProfileVP9Profile3", VAProfileVP9Profile3},
+      {"VAProfileVP9Profile2", VAProfileVP9Profile2},
+      {"VAProfileVP9Profile3", VAProfileVP9Profile3},
   };
 
   auto it = kStringToVAProfile.find(va_profile);

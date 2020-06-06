@@ -1648,10 +1648,23 @@ CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
     if (!layer.property_tree_state.Transform().BackfaceVisibilitySameAsParent())
       reasons |= CompositingReason::kBackfaceVisibilityHidden;
   }
+
   if (!previous_layer || &layer.property_tree_state.Effect() !=
                              &previous_layer->property_tree_state.Effect()) {
-    reasons |= layer.property_tree_state.Effect()
-                   .DirectCompositingReasonsForDebugging();
+    const auto& effect = layer.property_tree_state.Effect();
+    if (effect.HasDirectCompositingReasons())
+      reasons |= effect.DirectCompositingReasonsForDebugging();
+    if (reasons == CompositingReason::kNone &&
+        layer.compositing_type == PendingLayer::kOther) {
+      if (effect.Opacity() != 1.0f)
+        reasons |= CompositingReason::kOpacityWithCompositedDescendants;
+      if (!effect.Filter().IsEmpty())
+        reasons |= CompositingReason::kFilterWithCompositedDescendants;
+      if (effect.BlendMode() == SkBlendMode::kDstIn)
+        reasons |= CompositingReason::kMaskWithCompositedDescendants;
+      else if (effect.BlendMode() != SkBlendMode::kSrcOver)
+        reasons |= CompositingReason::kBlendingWithCompositedDescendants;
+    }
   }
 
   if (reasons == CompositingReason::kNone &&

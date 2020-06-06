@@ -199,6 +199,14 @@ class MockVRService {
       return {supportsSession: false};
     });
   }
+
+  // Only handles asynchronous calls to makeXrCompatible. Synchronous calls are
+  // not supported in Javascript.
+  makeXrCompatible() {
+    return Promise.resolve({
+      xr_compatible_result: device.mojom.XrCompatibleResult.kAlreadyCompatible
+    });
+  }
 }
 
 class FakeXRAnchorController {
@@ -765,11 +773,6 @@ class MockRuntime extends EventTarget {
 
   closeDataProvider() {
     this.dataProviderBinding_.close();
-  }
-
-  updateSessionGeometry(frame_size, display_rotation) {
-    // This function must exist to ensure that calls to it do not crash, but we
-    // do not have any use for this data at present.
   }
 
   // XREnvironmentIntegrationProvider implementation:

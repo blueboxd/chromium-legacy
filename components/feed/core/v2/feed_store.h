@@ -95,10 +95,6 @@ class FeedStore {
   void WriteMetadata(feedstore::Metadata metadata,
                      base::OnceCallback<void(bool)> callback);
 
-  // TODO(iwells): implement this
-  // Deletes old records that are no longer needed
-  // void RemoveOldData(base::OnceCallback<void(bool)> callback);
-
   bool IsInitializedForTesting() const;
 
   leveldb_proto::ProtoDatabase<feedstore::Record>* GetDatabaseForTesting() {
@@ -150,11 +146,6 @@ class FeedStore {
       base::OnceCallback<void(std::unique_ptr<feedstore::Metadata>)> callback,
       bool read_ok,
       std::unique_ptr<feedstore::Record> record);
-
-  // TODO(iwells): implement
-  // bool OldRecordFilter(const std::string& key);
-  // void OnRemoveOldDataFinished(base::OnceCallback<void(bool)> callback,
-  //                             bool success);
 
   base::OnceClosure initialize_callback_;
   leveldb_proto::Enums::InitStatus database_status_;

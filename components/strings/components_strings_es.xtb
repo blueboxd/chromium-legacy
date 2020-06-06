@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">A partir de ahora, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Google Chrome intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Google Chrome detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="1682696192498422849">Borde corto primero</translation>
+<translation id="168693727862418163">No se ha podido validar el valor de esta política con su esquema y se ignorará.</translation>
 <translation id="168841957122794586">El certificado del servidor contiene una clave criptográfica no segura.</translation>
 <translation id="1697532407822776718">¡Listo!</translation>
 <translation id="1703835215927279855">Letter</translation>

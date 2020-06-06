@@ -4,6 +4,7 @@
 
 #include "services/viz/public/cpp/compositing/quads_mojom_traits.h"
 
+#include "services/viz/public/cpp/crash_keys.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 #include "ui/gfx/mojom/transform_mojom_traits.h"
 
@@ -74,8 +75,10 @@ bool StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad>::Read(
   quad->resources.count = data.mask_resource_id() ? 1 : 0;
   quad->render_pass_id = data.render_pass_id();
   // RenderPass ids are never zero.
-  if (!quad->render_pass_id)
+  if (!quad->render_pass_id) {
+    viz::SetDeserializationCrashKeyString("Draw quad invalid render pass ID");
     return false;
+  }
   if (!data.ReadMaskUvRect(&quad->mask_uv_rect) ||
       !data.ReadMaskTextureSize(&quad->mask_texture_size) ||
       !data.ReadFiltersScale(&quad->filters_scale) ||
@@ -213,8 +216,12 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
   quad->resource_offset = data.resource_offset();
   quad->resource_multiplier = data.resource_multiplier();
   quad->bits_per_channel = data.bits_per_channel();
-  if (quad->bits_per_channel < viz::YUVVideoDrawQuad::kMinBitsPerChannel ||
-      quad->bits_per_channel > viz::YUVVideoDrawQuad::kMaxBitsPerChannel) {
+  if (quad->bits_per_channel < viz::YUVVideoDrawQuad::kMinBitsPerChannel) {
+    viz::SetDeserializationCrashKeyString("Bits per channel too small");
+    return false;
+  }
+  if (quad->bits_per_channel > viz::YUVVideoDrawQuad::kMaxBitsPerChannel) {
+    viz::SetDeserializationCrashKeyString("Bits per channel too big");
     return false;
   }
   return true;
@@ -228,10 +235,14 @@ bool StructTraits<viz::mojom::DrawQuadDataView, viz::DrawQuad>::Read(
     return false;
   }
   // Reject quads with areas larger than int32.
-  if (!out->rect.size().GetCheckedArea().IsValid())
+  if (!out->rect.size().GetCheckedArea().IsValid()) {
+    viz::SetDeserializationCrashKeyString("Draw quad rect too overflow");
     return false;
-  if (!out->rect.Contains(out->visible_rect))
+  }
+  if (!out->rect.Contains(out->visible_rect)) {
+    viz::SetDeserializationCrashKeyString("Rect does not contain visible rect");
     return false;
+  }
 
   out->needs_blending = data.needs_blending();
   return data.ReadDrawQuadState(out);

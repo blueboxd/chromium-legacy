@@ -100,13 +100,12 @@ ServiceWorkerFetchContextImpl::GetURLLoaderFactory() {
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
-    mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
+    blink::CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+        url_loader_factory) {
   return std::make_unique<WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),
       base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-          mojo::PendingRemote<network::mojom::URLLoaderFactory>(
-              std::move(url_loader_factory_handle),
-              network::mojom::URLLoaderFactory::Version_)));
+          std::move(url_loader_factory)));
 }
 
 blink::WebURLLoaderFactory*
@@ -205,7 +204,8 @@ blink::WebString ServiceWorkerFetchContextImpl::GetAcceptLanguages() const {
   return blink::WebString::FromUTF8(renderer_preferences_.accept_languages);
 }
 
-mojo::ScopedMessagePipeHandle
+blink::CrossVariantMojoReceiver<
+    blink::mojom::WorkerTimingContainerInterfaceBase>
 ServiceWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
   // No receiver exists because requests from service workers are never handled
   // by a service worker.

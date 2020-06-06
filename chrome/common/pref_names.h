@@ -990,7 +990,6 @@ extern const char kUnsafelyTreatInsecureOriginAsSecure[];
 
 extern const char kIsolateOrigins[];
 extern const char kSitePerProcess[];
-extern const char kUserTriggeredIsolatedOrigins[];
 
 #if !defined(OS_ANDROID)
 extern const char kAutoplayAllowed[];

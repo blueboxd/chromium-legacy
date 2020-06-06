@@ -24,11 +24,12 @@ namespace {
 // opportunity to yield to other threads according to some heuristics (e.g.
 // presumably when there's no input but perhaps a single WM_USER message posted
 // later than another thread was readied). MessagePumpForUI doesn't intend to
-// give this opportunity to the kernel when invoking ::PeekMessage however as it
-// runs most tasks out-of-band. Hence, PM_NOYIELD should be used to tell
-// ::PeekMessage it's not the only source of work for this thread.
-const Feature kNoYieldFromNativePeek{"NoYieldFromNativePeek",
-                                     FEATURE_DISABLED_BY_DEFAULT};
+// give this opportunity to the kernel when invoking ::PeekMessage however. This
+// experiment attempts to regain control of the pump (behind an experiment
+// because of how fragile this code is -- experiments help external contributors
+// diagnose regressions, e.g. crbug.com/1078475).
+const Feature kPreventMessagePumpHangs{"PreventMessagePumpHangs",
+                                       FEATURE_DISABLED_BY_DEFAULT};
 
 enum MessageLoopProblems {
   MESSAGE_POST_ERROR,
@@ -298,13 +299,10 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
       }
 
       {
-        static const auto kAdditionalFlags =
-            FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
-
         MSG msg;
         // Trace as in ProcessNextWindowsMessage().
         TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork PeekMessage");
-        if (::PeekMessage(&msg, nullptr, 0, 0, kAdditionalFlags | PM_NOREMOVE))
+        if (::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
           return;
       }
 
@@ -488,17 +486,13 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
     // when ::PeekMessage turns out to be a no-op).
     state_->delegate->BeforeDoInternalWork();
 
-    static const auto kAdditionalFlags =
-        FeatureList::IsEnabled(kNoYieldFromNativePeek) ? PM_NOYIELD : 0x0;
-
     // PeekMessage can run a message if there are sent messages, trace that and
     // emit the boolean param to see if it ever janks independently (ref.
     // comment on GetQueueStatus).
     TRACE_EVENT1("base",
                  "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
                  "sent_messages_in_queue", more_work_is_plausible);
-    has_msg = ::PeekMessage(&msg, nullptr, 0, 0,
-                            kAdditionalFlags | PM_REMOVE) != FALSE;
+    has_msg = ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE;
   }
   if (has_msg)
     more_work_is_plausible |= ProcessMessageHelper(msg);
@@ -553,13 +547,33 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   // that peeked replacement. Note that the re-post of kMsgHaveWork may be
   // asynchronous to this thread!!
 
-  // As in ProcessNextWindowsMessage() since ::PeekMessage() may process
-  // sent-messages.
+  // Bump the work id since ::PeekMessage may process internal events.
   state_->delegate->BeforeDoInternalWork();
 
+  // The system headers don't define this; it's equivalent to PM_QS_INPUT |
+  // PM_QS_PAINT | PM_QS_POSTMESSAGE. i.e., anything but QS_SENDMESSAGE. Since
+  // we're looking to replace our kMsgHaveWork posted message, we can ignore
+  // sent messages (which never compete with posted messages in the initial
+  // PeekMessage call).
+  constexpr auto PM_QS_ALLEVENTS = QS_ALLEVENTS << 16;
+  static_assert(
+      PM_QS_ALLEVENTS == (PM_QS_INPUT | PM_QS_PAINT | PM_QS_POSTMESSAGE), "");
+  static_assert((PM_QS_ALLEVENTS & PM_QS_SENDMESSAGE) == 0, "");
+
   MSG msg;
-  const bool have_message =
-      ::PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE;
+  bool have_message = false;
+  {
+    TRACE_EVENT0("base",
+                 "MessagePumpForUI::ProcessPumpReplacementMessage PeekMessage");
+
+    static const auto peek_replacement_message_modifier =
+        base::FeatureList::IsEnabled(kPreventMessagePumpHangs) ? PM_QS_ALLEVENTS
+                                                               : 0;
+
+    have_message =
+        ::PeekMessage(&msg, nullptr, 0, 0,
+                      PM_REMOVE | peek_replacement_message_modifier) != FALSE;
+  }
 
   // Expect no message or a message different than kMsgHaveWork.
   DCHECK(!have_message || kMsgHaveWork != msg.message ||

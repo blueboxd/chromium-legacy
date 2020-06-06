@@ -26,6 +26,7 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_test_utils.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_url_loader_interceptor.h"
@@ -1444,7 +1445,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   IsolatedPrerenderTabHelper* tab_helper =
       IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
 
-  GURL eligible_link = GetOriginServerURL("/prerender/prefetch_page.html");
+  GURL eligible_link =
+      GetOriginServerURL("/prerender/isolated/prefetch_page.html");
 
   TestTabHelperObserver tab_helper_observer(tab_helper);
   tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
@@ -1476,9 +1478,24 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   for (size_t i = origin_requests_before_prerender.size();
        i < origin_requests_after_prerender.size(); ++i) {
     GURL nsp_url = origin_requests_after_prerender[i];
-    found_nsp_javascript |= nsp_url.path() == "/prerender/prefetch.js";
+    found_nsp_javascript |= nsp_url.path() == "/prerender/isolated/prefetch.js";
     found_nsp_mainframe |= nsp_url.path() == eligible_link.path();
   }
   EXPECT_TRUE(found_nsp_javascript);
   EXPECT_FALSE(found_nsp_mainframe);
+
+  // Verify the resource load was reported to the subresource manager.
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
+  IsolatedPrerenderSubresourceManager* manager =
+      service->GetSubresourceManagerForURL(eligible_link);
+  ASSERT_TRUE(manager);
+
+  std::set<GURL> expected_subresources = {
+      GetOriginServerURL("/prerender/isolated/prefetch.js"),
+      GetOriginServerURL("/prerender/isolated/prefetch-redirect-start.js"),
+      GetOriginServerURL("/prerender/isolated/prefetch-redirect-middle.js"),
+      GetOriginServerURL("/prerender/isolated/prefetch-redirect-end.js"),
+  };
+  EXPECT_EQ(expected_subresources, manager->successfully_loaded_subresources());
 }

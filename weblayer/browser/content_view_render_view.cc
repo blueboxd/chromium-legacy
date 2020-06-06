@@ -8,6 +8,7 @@
 #include <android/native_window_jni.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -37,7 +38,15 @@ ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
   java_obj_.Reset(env, obj);
 }
 
-ContentViewRenderView::~ContentViewRenderView() = default;
+ContentViewRenderView::~ContentViewRenderView() {
+  DCHECK(height_changed_listener_.is_null());
+}
+
+void ContentViewRenderView::SetHeightChangedListener(
+    base::RepeatingClosure callback) {
+  DCHECK(height_changed_listener_.is_null() || callback.is_null());
+  height_changed_listener_ = std::move(callback);
+}
 
 // static
 static jlong JNI_ContentViewRenderView_Init(
@@ -75,11 +84,15 @@ void ContentViewRenderView::OnPhysicalBackingSizeChanged(
     const JavaParamRef<jobject>& jweb_contents,
     jint width,
     jint height) {
+  bool height_changed = height_ != height;
   height_ = height;
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
   gfx::Size size(width, height);
   web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
+
+  if (height_changed && !height_changed_listener_.is_null())
+    height_changed_listener_.Run();
 }
 
 void ContentViewRenderView::SurfaceCreated(JNIEnv* env) {

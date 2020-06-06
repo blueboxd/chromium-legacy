@@ -218,7 +218,8 @@ js_library("passwords_list_handler") {
 
 js_library("password_manager_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-  externs_list = [ "$externs_path/passwords_private.js" ]
+  externs_list =
+      chrome_extension_public_externs + [ "$externs_path/passwords_private.js" ]
 }
 
 js_library("passwords_export_dialog") {

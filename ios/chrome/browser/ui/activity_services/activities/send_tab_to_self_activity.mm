@@ -21,19 +21,6 @@ namespace {
 NSString* const kSendTabToSelfActivityType =
     @"com.google.chrome.sendTabToSelfActivity";
 
-const char kClickResultHistogramName[] = "SendTabToSelf.ShareMenu.ClickResult";
-
-// TODO(crbug.com/970886): Move to a directory accessible on all platforms.
-// State of the send tab to self option in the context menu.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class SendTabToSelfClickResult {
-  kShowItem = 0,
-  kClickItem = 1,
-  kShowDeviceList = 2,
-  kMaxValue = kShowDeviceList,
-};
-
 }  // namespace
 
 @interface SendTabToSelfActivity ()
@@ -48,8 +35,6 @@ enum class SendTabToSelfClickResult {
 
 - (instancetype)initWithData:(ShareToData*)data
                      handler:(id<BrowserCommands>)handler {
-  base::UmaHistogramEnumeration(kClickResultHistogramName,
-                                SendTabToSelfClickResult::kShowItem);
   if (self = [super init]) {
     _data = data;
     _handler = handler;

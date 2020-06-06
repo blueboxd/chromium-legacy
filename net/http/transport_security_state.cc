@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/build_time.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -28,6 +29,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "crypto/sha2.h"
+#include "net/base/features.h"
 #include "net/base/hash_value.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_policy_status.h"
@@ -412,7 +414,9 @@ TransportSecurityState::TransportSecurityState(
       enable_static_expect_ct_(true),
       enable_pkp_bypass_for_local_trust_anchors_(true),
       sent_hpkp_reports_cache_(kMaxReportCacheEntries),
-      sent_expect_ct_reports_cache_(kMaxReportCacheEntries) {
+      sent_expect_ct_reports_cache_(kMaxReportCacheEntries),
+      key_expect_ct_by_nik_(base::FeatureList::IsEnabled(
+          features::kPartitionExpectCTStateByNetworkIsolationKey)) {
 // Static pinning is only enabled for official builds to make sure that
 // others don't end up with pins that cannot be easily updated.
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OS_ANDROID) || defined(OS_IOS)
@@ -509,7 +513,8 @@ TransportSecurityState::CheckCTRequirements(
   // Expect-CT reports from being sent.
   bool required_via_expect_ct = false;
   ExpectCTState state;
-  if (IsDynamicExpectCTEnabled() && GetDynamicExpectCTState(hostname, &state)) {
+  if (IsDynamicExpectCTEnabled() &&
+      GetDynamicExpectCTState(hostname, network_isolation_key, &state)) {
     UMA_HISTOGRAM_ENUMERATION(
         "Net.ExpectCTHeader.PolicyComplianceOnConnectionSetup",
         policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
@@ -693,7 +698,8 @@ void TransportSecurityState::AddExpectCTInternal(
     const base::Time& last_observed,
     const base::Time& expiry,
     bool enforce,
-    const GURL& report_uri) {
+    const GURL& report_uri,
+    const NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsDynamicExpectCTEnabled())
     return;
@@ -712,11 +718,12 @@ void TransportSecurityState::AddExpectCTInternal(
 
   // Only store new state when Expect-CT is explicitly enabled. If it is
   // disabled, remove the state from the enabled hosts.
+  ExpectCTStateIndex index = CreateExpectCTStateIndex(
+      HashHost(canonicalized_host), network_isolation_key);
   if (expect_ct_state.enforce || !expect_ct_state.report_uri.is_empty()) {
-    enabled_expect_ct_hosts_[HashHost(canonicalized_host)] = expect_ct_state;
+    enabled_expect_ct_hosts_[index] = expect_ct_state;
   } else {
-    const std::string hashed_host = HashHost(canonicalized_host);
-    enabled_expect_ct_hosts_.erase(hashed_host);
+    enabled_expect_ct_hosts_.erase(index);
   }
 
   DirtyNotify();
@@ -853,9 +860,16 @@ bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {
     deleted = true;
   }
 
-  auto expect_ct_iterator = enabled_expect_ct_hosts_.find(hashed_host);
-  if (expect_ct_iterator != enabled_expect_ct_hosts_.end()) {
-    enabled_expect_ct_hosts_.erase(expect_ct_iterator);
+  // Delete matching entries for all NetworkIsolationKeys. Performance isn't
+  // important here, since this is only called when directly initiated by the
+  // user, so a linear search is fine.
+  for (auto it = enabled_expect_ct_hosts_.begin();
+       it != enabled_expect_ct_hosts_.end();) {
+    auto current = it;
+    ++it;
+    if (current->first.hashed_host != hashed_host)
+      continue;
+    enabled_expect_ct_hosts_.erase(current);
     deleted = true;
   }
 
@@ -967,12 +981,15 @@ void TransportSecurityState::AddHPKP(const std::string& host,
                   report_uri);
 }
 
-void TransportSecurityState::AddExpectCT(const std::string& host,
-                                         const base::Time& expiry,
-                                         bool enforce,
-                                         const GURL& report_uri) {
+void TransportSecurityState::AddExpectCT(
+    const std::string& host,
+    const base::Time& expiry,
+    bool enforce,
+    const GURL& report_uri,
+    const NetworkIsolationKey& network_isolation_key) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  AddExpectCTInternal(host, base::Time::Now(), expiry, enforce, report_uri);
+  AddExpectCTInternal(host, base::Time::Now(), expiry, enforce, report_uri,
+                      network_isolation_key);
 }
 
 void TransportSecurityState::ProcessExpectCTHeader(
@@ -1048,7 +1065,8 @@ void TransportSecurityState::ProcessExpectCTHeader(
     }
     ExpectCTState state;
     if (expect_ct_reporter_ && !report_uri.is_empty() &&
-        !GetDynamicExpectCTState(host_port_pair.host(), &state)) {
+        !GetDynamicExpectCTState(host_port_pair.host(), network_isolation_key,
+                                 &state)) {
       MaybeNotifyExpectCTFailed(
           host_port_pair, report_uri, base::Time(), ssl_info.cert.get(),
           ssl_info.unverified_cert.get(),
@@ -1057,7 +1075,7 @@ void TransportSecurityState::ProcessExpectCTHeader(
     return;
   }
   AddExpectCTInternal(host_port_pair.host(), now, now + max_age, enforce,
-                      report_uri);
+                      report_uri, network_isolation_key);
 }
 
 // static
@@ -1243,8 +1261,10 @@ bool TransportSecurityState::GetDynamicPKPState(const std::string& host,
   return false;
 }
 
-bool TransportSecurityState::GetDynamicExpectCTState(const std::string& host,
-                                                     ExpectCTState* result) {
+bool TransportSecurityState::GetDynamicExpectCTState(
+    const std::string& host,
+    const NetworkIsolationKey& network_isolation_key,
+    ExpectCTState* result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const std::string canonicalized_host = CanonicalizeHost(host);
@@ -1252,7 +1272,8 @@ bool TransportSecurityState::GetDynamicExpectCTState(const std::string& host,
     return false;
 
   base::Time current_time(base::Time::Now());
-  auto j = enabled_expect_ct_hosts_.find(HashHost(canonicalized_host));
+  auto j = enabled_expect_ct_hosts_.find(CreateExpectCTStateIndex(
+      HashHost(canonicalized_host), network_isolation_key));
   if (j == enabled_expect_ct_hosts_.end())
     return false;
   // If the entry is invalid, drop it.
@@ -1276,10 +1297,12 @@ void TransportSecurityState::AddOrUpdateEnabledSTSHosts(
 
 void TransportSecurityState::AddOrUpdateEnabledExpectCTHosts(
     const std::string& hashed_host,
+    const NetworkIsolationKey& network_isolation_key,
     const ExpectCTState& state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(state.enforce || !state.report_uri.is_empty());
-  enabled_expect_ct_hosts_[hashed_host] = state;
+  enabled_expect_ct_hosts_[CreateExpectCTStateIndex(
+      hashed_host, network_isolation_key)] = state;
 }
 
 TransportSecurityState::STSState::STSState()
@@ -1310,6 +1333,15 @@ TransportSecurityState::PKPState::~PKPState() = default;
 TransportSecurityState::ExpectCTState::ExpectCTState() : enforce(false) {}
 
 TransportSecurityState::ExpectCTState::~ExpectCTState() = default;
+
+TransportSecurityState::ExpectCTStateIndex::ExpectCTStateIndex(
+    const std::string& hashed_host,
+    const NetworkIsolationKey& network_isolation_key,
+    bool respect_network_isolation_keyn_key)
+    : hashed_host(hashed_host),
+      network_isolation_key(respect_network_isolation_keyn_key
+                                ? network_isolation_key
+                                : NetworkIsolationKey()) {}
 
 TransportSecurityState::ExpectCTStateIterator::ExpectCTStateIterator(
     const TransportSecurityState& state)
@@ -1358,6 +1390,14 @@ bool TransportSecurityState::PKPState::CheckPublicKeyPins(
 
 bool TransportSecurityState::PKPState::HasPublicKeyPins() const {
   return spki_hashes.size() > 0 || bad_spki_hashes.size() > 0;
+}
+
+TransportSecurityState::ExpectCTStateIndex
+TransportSecurityState::CreateExpectCTStateIndex(
+    const std::string& hashed_host,
+    const NetworkIsolationKey& network_isolation_key) {
+  return ExpectCTStateIndex(hashed_host, network_isolation_key,
+                            key_expect_ct_by_nik_);
 }
 
 }  // namespace net

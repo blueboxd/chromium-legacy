@@ -120,7 +120,11 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
                 // views that may make tests flaky.
                 Features.getInstance().disable(ChromeFeatureList.OFFLINE_INDICATOR);
 
-                base.evaluate();
+                try {
+                    base.evaluate();
+                } finally {
+                    ruleTearDown();
+                }
             }
         };
         Statement testServerStatement = mTestServerRule.apply(chromeActivityStatement, description);
@@ -134,19 +138,13 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         return ACTIVITY_START_TIMEOUT_MS;
     }
 
-    @Override
-    protected void afterActivityFinished() {
+    private void ruleTearDown() {
         try {
-            if (mSetActivity != null) {
-                // Destroy the activity launched manually in this test rule.
-                ApplicationTestUtils.finishActivity(mSetActivity);
-            }
             ApplicationTestUtils.tearDown(InstrumentationRegistry.getTargetContext());
             Thread.setDefaultUncaughtExceptionHandler(mDefaultUncaughtExceptionHandler);
         } catch (Exception e) {
             throw new RuntimeException("Failed to tearDown", e);
         }
-        super.afterActivityFinished();
     }
 
     // TODO(yolandyan): remove this once startActivityCompletely is refactored out of

@@ -93,7 +93,8 @@ class NetworkMetadataStoreTest : public ::testing::Test {
 
     metadata_store_ = std::make_unique<NetworkMetadataStore>(
         network_configuration_handler_, network_connection_handler_.get(),
-        network_state_handler_, user_prefs_.get(), device_prefs_.get());
+        network_state_handler_, user_prefs_.get(), device_prefs_.get(),
+        /*is_enterprise_enrolled=*/false);
     metadata_observer_ = std::make_unique<TestNetworkMetadataObserver>();
     metadata_store_->AddObserver(metadata_observer_.get());
   }
@@ -110,15 +111,30 @@ class NetworkMetadataStoreTest : public ::testing::Test {
     NetworkHandler::Shutdown();
   }
 
-  void SetUp() override { LoginUser(primary_user_); }
+  void SetUp() override {
+    SetIsEnterpriseEnrolled(false);
+    LoginUser(primary_user_);
+  }
+
+  // This creates a new NetworkMetadataStore object.
+  void SetIsEnterpriseEnrolled(bool is_enterprise_enrolled) {
+    metadata_store_.reset(new NetworkMetadataStore(
+        network_configuration_handler_, network_connection_handler_.get(),
+        network_state_handler_, user_prefs_.get(), device_prefs_.get(),
+        is_enterprise_enrolled));
+    metadata_store_->AddObserver(metadata_observer_.get());
+  }
 
   void LoginUser(const user_manager::User* user) {
-    auto* user_manager = static_cast<user_manager::FakeUserManager*>(
+    UserManager()->UserLoggedIn(user->GetAccountId(), user->username_hash(),
+                                true /* browser_restart */,
+                                false /* is_child */);
+    UserManager()->SwitchActiveUser(user->GetAccountId());
+  }
+
+  user_manager::FakeUserManager* UserManager() {
+    return static_cast<user_manager::FakeUserManager*>(
         user_manager::UserManager::Get());
-    user_manager->UserLoggedIn(user->GetAccountId(), user->username_hash(),
-                               true /* browser_restart */,
-                               false /* is_child */);
-    user_manager->SwitchActiveUser(user->GetAccountId());
   }
 
   std::string ConfigureService(const std::string& shill_json_string) {
@@ -320,6 +336,63 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationRemoved) {
 
   ASSERT_TRUE(metadata_store()->GetLastConnectedTimestamp(kGuid).is_zero());
   ASSERT_FALSE(metadata_store()->GetIsConfiguredBySync(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, OwnOobeNetworks) {
+  UserManager()->LogoutAllUsers();
+  ConfigureService(kConfigWifi1Shared);
+  base::RunLoop().RunUntilIdle();
+
+  LoginUser(primary_user_);
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+
+  UserManager()->set_is_current_user_new(true);
+  UserManager()->set_is_current_user_owner(true);
+  metadata_store()->LoggedInStateChanged();
+  ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, OwnOobeNetworks_EnterpriseEnrolled) {
+  SetIsEnterpriseEnrolled(true);
+  UserManager()->LogoutAllUsers();
+  ConfigureService(kConfigWifi1Shared);
+  base::RunLoop().RunUntilIdle();
+
+  LoginUser(primary_user_);
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+
+  UserManager()->set_is_current_user_new(true);
+  UserManager()->set_is_current_user_owner(true);
+  metadata_store()->LoggedInStateChanged();
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, OwnOobeNetworks_NotOwner) {
+  UserManager()->LogoutAllUsers();
+  ConfigureService(kConfigWifi1Shared);
+  base::RunLoop().RunUntilIdle();
+
+  LoginUser(primary_user_);
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+
+  UserManager()->set_is_current_user_new(true);
+  UserManager()->set_is_current_user_owner(false);
+  metadata_store()->LoggedInStateChanged();
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, OwnOobeNetworks_NotFirstLogin) {
+  UserManager()->LogoutAllUsers();
+  ConfigureService(kConfigWifi1Shared);
+  base::RunLoop().RunUntilIdle();
+
+  LoginUser(primary_user_);
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+
+  UserManager()->set_is_current_user_new(false);
+  UserManager()->set_is_current_user_owner(true);
+  metadata_store()->LoggedInStateChanged();
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
 }
 
 }  // namespace chromeos

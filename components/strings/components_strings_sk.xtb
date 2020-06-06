@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Stránky v jazyku <ph name="SOURCE_LANGUAGE" /> budú odteraz prekladané do jazyka <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Web <ph name="SITE" /> zvyčajne chráni vaše informácie pomocou šifrovania. Keď sa Chrome tentokrát pokúsil pripojiť k webu <ph name="SITE" />, odoslal späť nezvyčajné a nesprávne poverenia. Môže sa to stať vtedy, keď sa za web <ph name="SITE" /> snaží vydávať útočník alebo keď pripojenie preruší prihlasovacia obrazovka siete Wi‑Fi. Vaše informácie sú stále zabezpečené, pretože Chrome zastavil pripojenie ešte pred výmenou dát.</translation>
 <translation id="1682696192498422849">Napred krátkym okrajom</translation>
+<translation id="168693727862418163">Túto hodnotu pravidla sa nepodarilo v jeho schéme overiť a bude ignorovaná.</translation>
 <translation id="168841957122794586">Certifikát servera obsahuje slabý kryptografický kľúč.</translation>
 <translation id="1697532407822776718">Všetko je nastavené!</translation>
 <translation id="1703835215927279855">Letter</translation>

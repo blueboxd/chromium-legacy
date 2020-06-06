@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/overview_controller.h"
 
+#include <memory>
+
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
@@ -12,6 +14,7 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -25,8 +28,10 @@
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "ui/aura/client/window_types.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -394,6 +399,44 @@ TEST_F(OverviewControllerTest, SelectingHidesAppList) {
   Shell::Get()->overview_controller()->StartOverview();
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
+}
+
+// Tests that windows that are excluded from overview, are actually not shown in
+// overview.
+TEST_F(OverviewControllerTest, ExcludedWindowsHidden) {
+  // Create three windows, one normal, one which is not user positionable (and
+  // so should be hidden) and one specifically set to be hidden in overview.
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow();
+  window3->SetProperty(kHideInOverviewKey, true);
+
+  // After creation, all windows are visible.
+  ASSERT_TRUE(window1->IsVisible());
+  ASSERT_TRUE(window2->IsVisible());
+  ASSERT_TRUE(window3->IsVisible());
+
+  // Enter overview. Only one of the three windows is in overview, and visible.
+  auto* controller = Shell::Get()->overview_controller();
+  controller->StartOverview();
+  auto* session = controller->overview_session();
+  ASSERT_TRUE(session);
+  EXPECT_TRUE(session->IsWindowInOverview(window1.get()));
+  EXPECT_FALSE(session->IsWindowInOverview(window2.get()));
+  EXPECT_FALSE(session->IsWindowInOverview(window3.get()));
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_FALSE(window3->IsVisible());
+
+  // On exiting overview, the windows should all be visible. Use a run loop
+  // since |session| is destroyed in a post task, and the restoring windows'
+  // previous visibility happens in the destructor.
+  controller->EndOverview();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
 }
 
 // Some ash codes are reliant on some OverviewObserver calls matching (i.e. the

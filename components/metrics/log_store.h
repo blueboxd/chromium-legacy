@@ -42,6 +42,10 @@ class LogStore {
   // Discards the staged log.
   virtual void DiscardStagedLog() = 0;
 
+  // Marks the staged log as sent, DiscardStagedLog() shall still be called if
+  // the staged log needs discarded.
+  virtual void MarkStagedLogAsSent() = 0;
+
   // Saves any unsent logs to persistent storage.
   virtual void PersistUnsentLogs() const = 0;
 

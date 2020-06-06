@@ -14,6 +14,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -326,10 +327,9 @@ class SaveCardBubbleViewsFullFormBrowserTest
   void SetAccountFullName(const std::string& full_name) {
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    PersonalDataManager* personal_data_manager =
-        PersonalDataManagerFactory::GetForProfile(browser()->profile());
     CoreAccountInfo core_info =
-        personal_data_manager->GetAccountInfoForPaymentsServer();
+        PersonalDataManagerFactory::GetForProfile(browser()->profile())
+            ->GetAccountInfoForPaymentsServer();
 
     AccountInfo account_info;
     account_info.account_id = core_info.account_id;
@@ -2206,6 +2206,76 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveCreditCardPrompt.Upload.FirstShow",
       AutofillMetrics::SAVE_CARD_ICON_SHOWN_WITHOUT_PROMPT, 1);
+}
+
+// Tests to ensure the card nickname is shown correctly in the Upstream bubble.
+// The param indicates whether the experiment is enabled.
+class SaveCardBubbleViewsFullFormBrowserTestWithUpstreamForNickname
+    : public SaveCardBubbleViewsFullFormBrowserTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  SaveCardBubbleViewsFullFormBrowserTestWithUpstreamForNickname() {
+    if (GetParam()) {
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{features::
+                                    kAutofillEnableSurfacingServerCardNickname,
+                                features::kAutofillUpstream},
+          /*disabled_features=*/{});
+    } else {
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{features::kAutofillUpstream},
+          /*disabled_features=*/{
+              features::kAutofillEnableSurfacingServerCardNickname});
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    SaveCardBubbleViewsFullFormBrowserTestWithUpstreamForNickname,
+    testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
+    SaveCardBubbleViewsFullFormBrowserTestWithUpstreamForNickname,
+    LocalCardHasNickname) {
+  base::HistogramTester histogram_tester;
+  CreditCard card = test::GetCreditCard();
+  // Set card number to match the number to be filled in the form.
+  card.SetNumber(base::ASCIIToUTF16("5454545454545454"));
+  card.SetNickname(base::ASCIIToUTF16("nickname"));
+  AddTestCreditCard(browser(), card);
+
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  EXPECT_EQ(GetSaveCardBubbleViews()->GetCardIdentifierString(),
+            (GetParam() ? card.NicknameAndLastFourDigitsForTesting()
+                        : card.NetworkAndLastFourDigits()));
+}
+
+IN_PROC_BROWSER_TEST_P(
+    SaveCardBubbleViewsFullFormBrowserTestWithUpstreamForNickname,
+    LocalCardHasNoNickname) {
+  base::HistogramTester histogram_tester;
+  CreditCard card = test::GetCreditCard();
+  // Set card number to match the number to be filled in the form.
+  card.SetNumber(base::ASCIIToUTF16("5454545454545454"));
+  AddTestCreditCard(browser(), card);
+
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  EXPECT_EQ(GetSaveCardBubbleViews()->GetCardIdentifierString(),
+            card.NetworkAndLastFourDigits());
 }
 
 // TODO(crbug.com/932818): Remove the condition once the experiment is enabled

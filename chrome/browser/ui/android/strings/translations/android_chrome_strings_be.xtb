@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Праглядайце папулярныя вэб-сайты, націснуўшы кнопку "Топ сайтаў"</translation>
 <translation id="1173894706177603556">Перайменаваць</translation>
 <translation id="1178581264944972037">Прыпыніць</translation>
-<translation id="1188239144602654184">Пачаць сеанс AR</translation>
 <translation id="1197267115302279827">Перамясціць закладкі</translation>
 <translation id="1201402288615127009">Далей</translation>
 <translation id="1204037785786432551">Спампаваць па спасылцы</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">тэкст</translation>
 <translation id="2082238445998314030">Вынік <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Сінхранізацыя і персаналізацыя на ўсіх прыладах</translation>
-<translation id="2099625543891475722">вашы фізічныя характарыстыкі, такія як рост</translation>
 <translation id="2100273922101894616">Аўтаматычны ўваход</translation>
 <translation id="2100314319871056947">Паспрабуйце абагуліць тэкст меншымі кавалкамі</translation>
 <translation id="2109711654079915747">Даведайцеся больш пра тэмы на вэб-сайтах, не пакідаючы старонку. Функцыя "Пошук дотыкам" адпраўляе слова і яго кантэкст у Google Пошук і паказвае вынікі пошуку па запыце: азначэнні, фота і іншыя звесткі.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">Кіраваць</translation>
 <translation id="381841723434055211">Нумары тэлефонаў</translation>
 <translation id="3819178904835489326">Выдалена спамповак: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3849365399446680203">Пакуль вы знаходзіцеся ў дапоўненай рэальнасці, гэты сайт можа:
-• ствараць 3D-карту вашага асяроддзя;
-• адсочваць рухі камеры.
-
-Толькі вы можаце бачыць тое, на што накіравана камера. Сайт не атрымлівае візуальную інфармацыю з камеры.</translation>
 <translation id="3859306556332390985">Перайсці ўперад</translation>
 <translation id="388596076286380598">Чытайце артыкулы, глядзіце відэа і іншае змесціва на любімых сайтах, нават калі вы не падключаны да інтэрнэту або якасць падключэння дрэнная.</translation>
 <translation id="3894427358181296146">Дадаць папку</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">Няма падключэння да інтэрнэту</translation>
 <translation id="4321739720395210191">Не ўдалося адкрыць камеру. Перазапусціце прыладу і паўтарыце спробу.</translation>
 <translation id="4351244548802238354">Закрыць дыялогавае акно</translation>
-<translation id="4353114845960720315">Пакуль вы знаходзіцеся ў VR, гэты сайт можа атрымліваць звесткі пра:</translation>
 <translation id="4378154925671717803">Тэлефон</translation>
 <translation id="4384468725000734951">Выкарыстоўваецца пошукавая сістэма Sogou</translation>
 <translation id="4404568932422911380">Няма закладак</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">Няма падключэння</translation>
 <translation id="4565377596337484307">Схаваць пароль</translation>
 <translation id="4572422548854449519">Увайдзіце ва ўліковы запіс пад кіраваннем</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{1 хвіліну таму}one{# хвіліну таму}few{# хвіліны таму}many{# хвілін таму}other{# хвіліны таму}}</translation>
 <translation id="4587589328781138893">Сайты</translation>
 <translation id="4594952190837476234">Гэта пазасеткавая старонка створана <ph name="CREATION_TIME" /> і можа адрознівацца ад сваёй інтэрнэт-версіі.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">Адкрыць <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Выкарыстаць пароль</translation>
 <translation id="4650364565596261010">Стандартная сістэмная</translation>
-<translation id="4660838440047236328">планіроўку вашага пакоя</translation>
 <translation id="4662373422909645029">Псеўданім не можа ўключаць лічбы</translation>
 <translation id="4663756553811254707">Закладкі (<ph name="NUMBER_OF_BOOKMARKS" />) выдалены</translation>
 <translation id="4665282149850138822">Карыстальнік <ph name="NAME" /> дададзены на галоўны экран</translation>
@@ -459,7 +449,6 @@
 
 Каб змяніць гэту наладу, <ph name="BEGIN_LINK" />скіньце налады сінхранізацыі<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Імя на картцы</translation>
-<translation id="4808319664292298116">Увайсці ў VR з сайта <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Скасаваць сінхранізацыю?</translation>
 <translation id="4835385943915508971">Chrome не мае доступу да запытанай крыніцы.</translation>
 <translation id="4837753911714442426">Адкрыць параметры друку старонкі</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">Выключыць поўнаэкранны рэжым</translation>
 <translation id="6404511346730675251">Змяніце закладку</translation>
 <translation id="6406506848690869874">Сінхранізаваць</translation>
-<translation id="6410973561433500075">Увайсці ў дапоўненую рэальнасць з сайта <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6427112570124116297">Пераклад вэб-старонак</translation>
 <translation id="6433501201775827830">Выберыце пошукавую сістэму</translation>

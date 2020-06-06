@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">证书签名人</translation>
 <translation id="1145292499998999162">插件已被拦截</translation>
 <translation id="1145593918056169051">打印机已停止运行</translation>
-<translation id="1146678959555564648">进入 VR</translation>
 <translation id="114721135501989771">在 Chrome 中畅享 Google 的智能技术</translation>
 <translation id="1147991416141538220">要申请访问权限，请与此设备的管理员联系。</translation>
 <translation id="1149401351239820326">过期月份</translation>
@@ -863,7 +862,6 @@
 <translation id="2096715839409389970">清除第三方 Cookie</translation>
 <translation id="2097372108957554726">您需要登录 Chrome 才能注册新设备</translation>
 <translation id="2099172618127234427">您正在启用 Chrome 操作系统调试功能，此功能将设置 sshd 守护程序并允许从 U 盘启动设备。</translation>
-<translation id="2099625543891475722">您的身体特征，例如身高</translation>
 <translation id="2099686503067610784">要删除服务器证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2101225219012730419">版本：</translation>
@@ -2180,6 +2178,7 @@
 <translation id="3732857534841813090">Google 助理相关信息</translation>
 <translation id="3733127536501031542">带有递升式验证机制的 SSL 服务器</translation>
 <translation id="3735740477244556633">排序依据</translation>
+<translation id="3738213647660363521">自定义光标颜色</translation>
 <translation id="3738924763801731196"><ph name="OID" />：</translation>
 <translation id="3739254215541673094">要打开 <ph name="APPLICATION" /> 吗？</translation>
 <translation id="3742055079367172538">已完成屏幕截图</translation>
@@ -2651,7 +2650,6 @@
 <translation id="4350019051035968019">该设备无法注册到您的帐号所属的网域，因为它已标记为受其他网域管理。</translation>
 <translation id="4350782034419308508">Ok Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> 想搜索附近的蓝牙设备，并发现了以下设备：</translation>
-<translation id="4353114845960720315">当您处于 VR 环境时，此网站或许能够得知：</translation>
 <translation id="4354073718307267720">在网站想为您的周边环境创建 3D 地图或跟踪摄像头位置时询问您</translation>
 <translation id="4354344420232759511">您访问的网站将显示在此处</translation>
 <translation id="435527878592612277">选择您的照片</translation>
@@ -2886,7 +2884,6 @@
 <translation id="4659077111144409915">主帐号</translation>
 <translation id="4660476621274971848">预期版本是“<ph name="EXPECTED_VERSION" />”，但实际版本是“<ph name="NEW_ID" />”</translation>
 <translation id="4660540330091848931">正在调整大小</translation>
-<translation id="4660838440047236328">您房间的布局</translation>
 <translation id="4661407454952063730">应用数据可以是应用根据开发者设置而保存的任何数据，包括通讯录、邮件/消息、照片等数据。</translation>
 <translation id="4662373422909645029">昵称不能包含数字</translation>
 <translation id="4662788913887017617">将此书签共享给您的 iPhone</translation>
@@ -2975,9 +2972,7 @@
 <translation id="4801512016965057443">允许移动数据漫游</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4804827417948292437">牛油果</translation>
-<translation id="4805077164141082536">我们建议您在升级前先备份您当前的 Linux 容器。</translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
-<translation id="4808319664292298116">从 <ph name="DOMAIN" /> 进入 VR 环境？</translation>
 <translation id="4808667324955055115">已拦截弹出式窗口：</translation>
 <translation id="480990236307250886">打开主页</translation>
 <translation id="4811212958317149293">开关控制键盘自动扫描</translation>
@@ -3291,6 +3286,7 @@
 <translation id="52232769093306234">打包失败。</translation>
 <translation id="5225324770654022472">显示应用快捷方式</translation>
 <translation id="5227679487546032910">默认的蓝绿色头像</translation>
+<translation id="5228088094491423618">实时字幕</translation>
 <translation id="5228579091201413441">启用同步功能</translation>
 <translation id="5229189185761556138">管理输入法</translation>
 <translation id="5230516054153933099">窗口</translation>
@@ -3704,7 +3700,6 @@
 <translation id="5739235828260127894">正在等待验证。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">特大</translation>
 <translation id="574209121243317957">音高</translation>
-<translation id="5745136023067925867">接收 <ph name="DEVICE_TYPE" />相关提示、优惠和动态，并分享反馈</translation>
 <translation id="5746169159649715125">另存为 PDF</translation>
 <translation id="5747552184818312860">到期时间</translation>
 <translation id="5747785204778348146">开发者版本 - 不稳定</translation>
@@ -4826,7 +4821,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{退出网页}other{退出网页}}</translation>
 <translation id="7207457272187520234">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会有助于提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据还会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。</translation>
 <translation id="7207631048330366454">搜索应用</translation>
-<translation id="7210171324714276060">扩展程序“<ph name="EXTENSION_NAME" />”已改用 <ph name="SEARCH_PROVIDER_DOMAIN" /> 进行搜索</translation>
 <translation id="7210499381659830293">扩展打印机</translation>
 <translation id="7212097698621322584">请输入您的当前 PIN 码以更改它。如果您不知道 PIN 码，则需要重置安全密钥，然后创建新 PIN 码。</translation>
 <translation id="7216409898977639127">移动网络服务提供商</translation>
@@ -5226,7 +5220,6 @@
 <translation id="7737115349420013392">正在与“<ph name="DEVICE_NAME" />”配对…</translation>
 <translation id="7737238973539693982">删除 Linux（测试版）</translation>
 <translation id="7740996059027112821">标准</translation>
-<translation id="7743128043742060936">此网页被“<ph name="EXTENSION_NAME" />”扩展程序更改了</translation>
 <translation id="7744047395460924128">查看您的打印记录</translation>
 <translation id="7744192722284567281">遭遇了数据泄露</translation>
 <translation id="7750228210027921155">画中画</translation>
@@ -6343,6 +6336,7 @@
 <translation id="9121814364785106365">在固定标签页中打开</translation>
 <translation id="9122176249172999202"><ph name="IDS_SHORT_PRODUCT_NAME" />已被暂停</translation>
 <translation id="9124003689441359348">已保存的密码将显示在这里</translation>
+<translation id="9126149354162942022">光标颜色</translation>
 <translation id="9128317794749765148">无法完成设置</translation>
 <translation id="9128870381267983090">连接到网络</translation>
 <translation id="9130015405878219958">输入的模式无效。</translation>

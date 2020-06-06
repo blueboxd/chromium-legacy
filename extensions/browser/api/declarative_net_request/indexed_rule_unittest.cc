@@ -766,6 +766,7 @@ TEST_F(IndexedRuleTest, ModifyHeadersParsing) {
   struct RawHeaderInfo {
     dnr_api::HeaderOperation operation;
     std::string header;
+    base::Optional<std::string> value;
   };
 
   using RawHeaderInfoList = std::vector<RawHeaderInfo>;
@@ -785,7 +786,8 @@ TEST_F(IndexedRuleTest, ModifyHeadersParsing) {
       // Raise an error if the request or response headers list is specified,
       // but empty.
       {RawHeaderInfoList(),
-       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "set-cookie"}}),
+       RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_REMOVE, "set-cookie", base::nullopt}}),
        ParseResult::ERROR_EMPTY_REQUEST_HEADERS_LIST},
 
       {base::nullopt, RawHeaderInfoList(),
@@ -794,21 +796,51 @@ TEST_F(IndexedRuleTest, ModifyHeadersParsing) {
       // Raise an error if a header list contains an empty or invalid header
       // name.
       {base::nullopt,
-       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, ""}}),
+       RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_REMOVE, "", base::nullopt}}),
        ParseResult::ERROR_INVALID_HEADER_NAME},
 
       {base::nullopt,
-       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "<<invalid>>"}}),
+       RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_REMOVE, "<<invalid>>", base::nullopt}}),
        ParseResult::ERROR_INVALID_HEADER_NAME},
 
-      // Parsing should succeed if only one non-empty header list is specified.
-      {RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "cookie"}}),
+      // Raise an error if a header list contains an invalid header value.
+      {base::nullopt,
+       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_APPEND, "set-cookie",
+                           "invalid\nvalue"}}),
+       ParseResult::ERROR_INVALID_HEADER_VALUE},
+
+      // Raise an error if a header value is specified for a remove rule.
+      {RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_REMOVE, "cookie", "remove"}}),
+       base::nullopt, ParseResult::ERROR_HEADER_VALUE_PRESENT},
+
+      // Raise an error if no header value is specified for an append or set
+      // rule.
+      {RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_SET, "cookie", base::nullopt}}),
+       base::nullopt, ParseResult::ERROR_HEADER_VALUE_NOT_SPECIFIED},
+
+      {base::nullopt,
+       RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_APPEND, "set-cookie", base::nullopt}}),
+       ParseResult::ERROR_HEADER_VALUE_NOT_SPECIFIED},
+
+      // Raise an error if a rule specifies a request header to be appended.
+      {RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_APPEND, "cookie", "cookie-value"}}),
+       base::nullopt, ParseResult::ERROR_APPEND_REQUEST_HEADER_UNSUPPORTED},
+
+      {RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_REMOVE, "cookie", base::nullopt},
+            {dnr_api::HEADER_OPERATION_SET, "referer", ""}}),
        base::nullopt, ParseResult::SUCCESS},
 
-      // Parsing should succeed if both header lists are specified and
-      // non-empty.
-      {RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "referer"}}),
-       RawHeaderInfoList({{dnr_api::HEADER_OPERATION_REMOVE, "set-cookie"}}),
+      {RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_REMOVE, "referer", base::nullopt}}),
+       RawHeaderInfoList(
+           {{dnr_api::HEADER_OPERATION_APPEND, "set-cookie", "abcd"}}),
        ParseResult::SUCCESS},
   };
 
@@ -821,11 +853,11 @@ TEST_F(IndexedRuleTest, ModifyHeadersParsing) {
     if (cases[i].request_headers) {
       rule.action.request_headers = std::make_unique<ModifyHeaderInfoList>();
       for (auto header : *cases[i].request_headers) {
-        rule.action.request_headers->push_back(
-            CreateModifyHeaderInfo(header.operation, header.header));
+        rule.action.request_headers->push_back(CreateModifyHeaderInfo(
+            header.operation, header.header, header.value));
 
-        expected_request_headers.push_back(
-            CreateModifyHeaderInfo(header.operation, header.header));
+        expected_request_headers.push_back(CreateModifyHeaderInfo(
+            header.operation, header.header, header.value));
       }
     }
 
@@ -833,11 +865,11 @@ TEST_F(IndexedRuleTest, ModifyHeadersParsing) {
     if (cases[i].response_headers) {
       rule.action.response_headers = std::make_unique<ModifyHeaderInfoList>();
       for (auto header : *cases[i].response_headers) {
-        rule.action.response_headers->push_back(
-            CreateModifyHeaderInfo(header.operation, header.header));
+        rule.action.response_headers->push_back(CreateModifyHeaderInfo(
+            header.operation, header.header, header.value));
 
-        expected_response_headers.push_back(
-            CreateModifyHeaderInfo(header.operation, header.header));
+        expected_response_headers.push_back(CreateModifyHeaderInfo(
+            header.operation, header.header, header.value));
       }
     }
 

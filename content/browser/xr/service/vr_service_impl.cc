@@ -77,6 +77,20 @@ VRServiceImpl::SessionRequestData::~SessionRequestData() {
 VRServiceImpl::SessionRequestData::SessionRequestData(SessionRequestData&&) =
     default;
 
+VRServiceImpl::XrCompatibleCallback::XrCompatibleCallback(
+    device::mojom::VRService::MakeXrCompatibleCallback callback)
+    : callback(std::move(callback)) {}
+
+VRServiceImpl::XrCompatibleCallback::XrCompatibleCallback(
+    XrCompatibleCallback&& wrapper) {
+  this->callback = std::move(wrapper.callback);
+}
+
+VRServiceImpl::XrCompatibleCallback::~XrCompatibleCallback() {
+  if (!callback.is_null())
+    std::move(callback).Run(device::mojom::XrCompatibleResult::kNotCompatible);
+}
+
 VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
     : WebContentsObserver(
           content::WebContents::FromRenderFrameHost(render_frame_host)),
@@ -533,6 +547,31 @@ void VRServiceImpl::SetFramesThrottled(bool throttled) {
       immersive_runtime->SetFramesThrottled(this, frames_throttled_);
     }
   }
+}
+
+void VRServiceImpl::MakeXrCompatible(
+    device::mojom::VRService::MakeXrCompatibleCallback callback) {
+  if (!initialization_complete_) {
+    pending_requests_.push_back(base::BindOnce(&VRServiceImpl::MakeXrCompatible,
+                                               base::Unretained(this),
+                                               std::move(callback)));
+    return;
+  }
+
+  xr_compatible_callbacks_.emplace_back(std::move(callback));
+
+  // Only request compatibility if there aren't any pending calls.
+  // OnMakeXrCompatibleComplete will run all callbacks.
+  if (xr_compatible_callbacks_.size() == 1)
+    runtime_manager_->MakeXrCompatible();
+}
+
+void VRServiceImpl::OnMakeXrCompatibleComplete(
+    device::mojom::XrCompatibleResult result) {
+  for (XrCompatibleCallback& wrapper : xr_compatible_callbacks_)
+    std::move(wrapper.callback).Run(result);
+
+  xr_compatible_callbacks_.clear();
 }
 
 void VRServiceImpl::OnExitPresent() {

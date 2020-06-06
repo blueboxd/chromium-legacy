@@ -1847,9 +1847,20 @@ void TabStripModel::SelectRelativeTab(bool next, UserGestureDetails detail) {
   if (contents_data_.empty())
     return;
 
-  int index = active_index();
-  int delta = next ? 1 : -1;
-  index = (index + count() + delta) % count();
+  const int start_index = active_index();
+  base::Optional<tab_groups::TabGroupId> start_group =
+      GetTabGroupForTab(start_index);
+
+  // Ensure the active tab is not in a collapsed group so the while loop can
+  // fallback on activating the active tab.
+  DCHECK(!start_group.has_value() || !IsGroupCollapsed(start_group.value()));
+  const int delta = next ? 1 : -1;
+  int index = (start_index + count() + delta) % count();
+  base::Optional<tab_groups::TabGroupId> group = GetTabGroupForTab(index);
+  while (group.has_value() && IsGroupCollapsed(group.value())) {
+    index = (index + count() + delta) % count();
+    group = GetTabGroupForTab(index);
+  }
   ActivateTabAt(index, detail);
 }
 

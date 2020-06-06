@@ -409,9 +409,7 @@ void WifiConfigurationBridge::SaveNetworkToSync(
   metrics_recorder_->RecordTotalCount(entries_.size());
 }
 
-void WifiConfigurationBridge::OnConfigurationCreated(
-    const std::string& service_path,
-    const std::string& guid) {
+void WifiConfigurationBridge::OnNetworkCreated(const std::string& guid) {
   if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
     // Don't have to upload a configuration that came from sync.
     NET_LOG(EVENT) << "Not uploading newly configured network "

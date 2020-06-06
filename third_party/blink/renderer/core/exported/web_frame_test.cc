@@ -10903,10 +10903,7 @@ class TestLocalFrameHostForSaveImageFromDataURL : public FakeLocalFrameHost {
 
   // FakeLocalFrameHost:
   void DownloadURL(mojom::blink::DownloadURLParamsPtr params) override {
-    mojo::PendingRemote<mojom::blink::Blob> blob_data_remote(
-        std::move(params->data_url_blob), mojom::blink::Blob::Version_);
-
-    mojo::Remote<mojom::blink::Blob> blob(std::move(blob_data_remote));
+    mojo::Remote<mojom::blink::Blob> blob(std::move(params->data_url_blob));
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
     auto result =

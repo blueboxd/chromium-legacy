@@ -67,7 +67,8 @@ js_library("password_page") {
     "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/js:cr",
   ]
-  externs_list = [ "$externs_path/quick_unlock_private.js" ]
+  externs_list = chrome_extension_public_externs +
+                 [ "$externs_path/quick_unlock_private.js" ]
   extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
 }
 

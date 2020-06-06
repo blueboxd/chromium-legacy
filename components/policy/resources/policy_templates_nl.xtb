@@ -3203,9 +3203,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als het beleid is ingesteld op 0, is de opslag van verificatiegegevens in het cachegeheugen uitgeschakeld. Dit kan ervoor zorgen dat gekoppelde gebruikers aanzienlijk minder snel kunnen inloggen, aangezien er realmspecifieke gegevens moeten worden opgehaald voor elke inlogbewerking.
 
       Houd er rekening mee dat er zelfs voor kortstondige gebruikers realmgegevens in het cachegeheugen worden opgeslagen. Als voorkomen moet worden dat de realm van kortstondige gebruikers wordt bijgehouden, moet het cachegeheugen uitgeschakeld worden.</translation>
-<translation id="5700097087679928356">Als je het beleid instelt op '0' (standaardinstelling), heb je toegang tot de tools voor ontwikkelaars en de JavaScript-console, maar niet in de context van extensies die via het organisatiebeleid zijn geïnstalleerd. Als je het beleid instelt op '1', heb je toegang tot de tools voor ontwikkelaars en de JavaScript-console in alle contexten, waaronder die van extensies die via het organisatiebeleid zijn geïnstalleerd. Als je het beleid instelt op '2', heb je geen toegang tot de tools voor ontwikkelaars en kun je website-elementen niet inspecteren.
-
-      Met deze instelling worden sneltoetsen en menu- en contextmenu-opties uitgeschakeld waarmee tools voor ontwikkelaars of de JavaScript-console kunnen worden geopend.</translation>
 <translation id="570062449808736508">Wanneer dit beleid is ingesteld op een niet-lege tekenreeks, leest de WebView de URL-beperkingen van de contentprovider met de opgegeven autoriteitsnaam.</translation>
 <translation id="5708969689202733975">Toegestane modi voor snel ontgrendelen configureren</translation>
 <translation id="5711016543513883877">

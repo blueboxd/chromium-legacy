@@ -310,6 +310,13 @@ void XRRuntimeManagerImpl::SupportsSession(
   std::move(callback).Run(true);
 }
 
+void XRRuntimeManagerImpl::MakeXrCompatible() {
+  // TODO(http://crbug.com/792657): Restart GPU on correct adapter if needed.
+  for (VRServiceImpl* service : services_)
+    service->OnMakeXrCompatibleComplete(
+        device::mojom::XrCompatibleResult::kAlreadyCompatible);
+}
+
 XRRuntimeManagerImpl::XRRuntimeManagerImpl(XRProviderList providers)
     : providers_(std::move(providers)) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

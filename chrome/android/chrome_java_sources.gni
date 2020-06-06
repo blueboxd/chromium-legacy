@@ -1561,7 +1561,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/tabmodel/AsyncTabParams.java",
   "java/src/org/chromium/chrome/browser/tabmodel/AsyncTabParamsManager.java",
   "java/src/org/chromium/chrome/browser/tabmodel/ChromeTabCreator.java",
-  "java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModel.java",
   "java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModelFilter.java",
   "java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModelSelectorObserver.java",
   "java/src/org/chromium/chrome/browser/tabmodel/IncognitoTabModel.java",

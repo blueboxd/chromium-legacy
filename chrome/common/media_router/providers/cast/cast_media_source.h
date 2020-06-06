@@ -44,12 +44,20 @@ class BitwiseOr {
     for (E e : values)
       Add(e);
   }
+  static constexpr BitwiseOr FromBits(T bits) { return BitwiseOr(bits); }
   bool empty() const { return bits_ == 0; }
+  T bits() const { return bits_; }
   void Add(E value) { bits_ |= Mask(value); }
+  bool Has(E value) const { return (bits_ & Mask(value)) != 0; }
+  bool HasAll(const BitwiseOr& other) const {
+    return (bits_ & other.bits_) == other.bits_;
+  }
   bool operator==(const BitwiseOr& other) const { return bits_ == other.bits_; }
   bool operator!=(const BitwiseOr& other) const { return *this != other; }
 
  private:
+  explicit constexpr BitwiseOr(T bits) : bits_(bits) {}
+
   static T Mask(E value) {
     const T result = static_cast<T>(value);
     DCHECK(static_cast<E>(result) == value);
@@ -60,11 +68,15 @@ class BitwiseOr {
 
 // Represents a Cast app and its capabilitity requirements.
 struct CastAppInfo {
-  explicit CastAppInfo(const std::string& app_id,
-                       BitwiseOr<cast_channel::CastDeviceCapability> = {});
+  explicit CastAppInfo(
+      const std::string& app_id,
+      BitwiseOr<cast_channel::CastDeviceCapability> required_capabilities);
   ~CastAppInfo();
 
   CastAppInfo(const CastAppInfo& other);
+
+  static CastAppInfo ForCastStreaming();
+  static CastAppInfo ForCastStreamingAudio();
 
   std::string app_id;
 

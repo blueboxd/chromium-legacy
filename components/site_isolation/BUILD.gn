@@ -27,8 +27,14 @@ buildflag_header("buildflags") {
 
 source_set("site_isolation") {
   sources = [
+    "features.cc",
+    "features.h",
+    "pref_names.cc",
+    "pref_names.h",
     "preloaded_isolated_origins.cc",
     "preloaded_isolated_origins.h",
+    "site_isolation_policy.cc",
+    "site_isolation_policy.h",
   ]
 
   if (use_internal_isolated_origins) {
@@ -41,7 +47,27 @@ source_set("site_isolation") {
   deps = [
     ":buildflags",
     "//base",
+    "//components/prefs",
+    "//components/user_prefs",
     "//content/public/browser",
     "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "site_isolation_policy_unittest.cc" ]
+  deps = [
+    ":site_isolation",
+    "//base",
+    "//base/test:test_support",
+    "//build:branding_buildflags",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//components/user_prefs",
+    "//components/variations",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//testing/gtest",
   ]
 }

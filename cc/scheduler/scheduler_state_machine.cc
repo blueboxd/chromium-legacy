@@ -1191,8 +1191,6 @@ void SchedulerStateMachine::OnBeginImplFrameIdle() {
   // then the main thread is in a high latency mode.
   main_thread_missed_last_deadline_ =
       CommitPending() || has_pending_tree_ || active_tree_needs_first_draw_;
-  main_thread_failed_to_respond_last_deadline_ =
-      begin_main_frame_state_ == BeginMainFrameState::SENT;
 
   // If we're entering a state where we won't get BeginFrames set all the
   // funnels so that we don't perform any actions that we shouldn't.

@@ -9,12 +9,14 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Process;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
+import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.RecordType;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.task.PostTask;
@@ -47,6 +49,39 @@ public final class MetricsBridgeService extends Service {
     private FileOutputStream mFileOutputStream;
     private List<byte[]> mRecordsList = new ArrayList<>();
 
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @VisibleForTesting
+    @IntDef({ParsingLogResult.SUCCESS, ParsingLogResult.MALFORMED_PROTOBUF,
+            ParsingLogResult.IO_EXCEPTION})
+    public @interface ParsingLogResult {
+        int SUCCESS = 0;
+        int MALFORMED_PROTOBUF = 1;
+        int IO_EXCEPTION = 2;
+        int COUNT = 3;
+    }
+
+    // Adding a histogram record to list and not calling base.metrics.RecordHistogram to avoid the
+    // service calling itself.
+    private void logParsingLogResult(@ParsingLogResult int sample) {
+        // Similar to calling RecordHistogram.recordEnumeratedHistogram(
+        //        "Android.WebView.NonEmbeddedMetrics.ParsingLogResult", sample,
+        //        ParsingLogResult.COUNT);
+        HistogramRecord record =
+                HistogramRecord.newBuilder()
+                        .setRecordType(RecordType.HISTOGRAM_LINEAR)
+                        .setHistogramName("Android.WebView.NonEmbeddedMetrics.ParsingLogResult")
+                        .setSample(sample)
+                        .setMin(1)
+                        .setMax(ParsingLogResult.COUNT)
+                        .setNumBuckets(ParsingLogResult.COUNT + 1)
+                        .build();
+        // Add to the in-memory list but never written to file to avoid filling up the record list
+        // and file with redundant records. However, this means when this record is sent to embedded
+        // WebView it represents the parsing result for the most recent service start only.
+        mRecordsList.add(record.toByteArray());
+    }
+
     // To avoid any potential synchronization issues as well as avoid blocking the caller thread
     // (e.g when the caller is a thread from the same process.), we post all read/write operations
     // to be run serially using a SequencedTaskRunner instead of using a lock.
@@ -66,10 +101,13 @@ public final class MetricsBridgeService extends Service {
                     // serialization.
                     mRecordsList.add(proto.toByteArray());
                 }
+                logParsingLogResult(ParsingLogResult.SUCCESS);
             } catch (InvalidProtocolBufferException e) {
                 Log.e(TAG, "Malformed metrics log proto", e);
+                logParsingLogResult(ParsingLogResult.MALFORMED_PROTOBUF);
                 deleteMetricsLogFile();
             } catch (IOException e) {
+                logParsingLogResult(ParsingLogResult.IO_EXCEPTION);
                 Log.e(TAG, "Failed reading proto log file", e);
             }
         });
@@ -98,7 +136,8 @@ public final class MetricsBridgeService extends Service {
                 // Make sure that we don't add records indefinitely in case of no embedded
                 // WebView connects to the service to retrieve and clear the records.
                 if (mRecordsList.size() >= MAX_HISTOGRAM_COUNT) {
-                    // TODO(https://crbug.com/1073683) add a histogram to log request overflow.
+                    // TODO(https://crbug.com/1088467) add a histogram to log the number of dropped
+                    // histograms.
                     Log.w(TAG, "retained records has reached the max capacity, dropping record");
                     return;
                 }
@@ -177,9 +216,8 @@ public final class MetricsBridgeService extends Service {
     }
 
     /**
-     * Block until all the tasks in the local {@code mSequencedTaskRunner} are finished.
-     *
-     * @param timeoutMillis timeout in milliseconds.
+     * Add a FutureTask that can be used to block until all the tasks in the local
+     * {@code mSequencedTaskRunner} are finished for testing.
      */
     @VisibleForTesting
     public FutureTask addTaskToBlock() {

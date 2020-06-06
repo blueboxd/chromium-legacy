@@ -51,7 +51,6 @@ virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
 compositing/masks/mask-with-removed-filters.html [ Failure ]
 external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
 external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
-external/wpt/portals/portals-rendering.html [ Failure ]
 fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 
 printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
@@ -87,6 +86,3 @@ crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html 
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]
-
-# Failures after crrev.com/c/2212813
-fast/table/cell-percent-padding.html [ Crash ]

@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Shiko sajte uebi të mirënjohura duke trokitur te butoni "Sajtet kryesore"</translation>
 <translation id="1173894706177603556">Riemërto</translation>
 <translation id="1178581264944972037">Pauzë</translation>
-<translation id="1188239144602654184">Hyr në AR</translation>
 <translation id="1197267115302279827">Zhvendos faqeshënuesit</translation>
 <translation id="1201402288615127009">Tjetra</translation>
 <translation id="1204037785786432551">Lidhja e shkarkimit</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">teksti</translation>
 <translation id="2082238445998314030">Rezultati <ph name="RESULT_NUMBER" /> nga <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Sinkronizo e personalizo përmes pajisjeve</translation>
-<translation id="2099625543891475722">karakteristikat e tua fizike, si gjatësia</translation>
 <translation id="2100273922101894616">Identifikohu automatikisht</translation>
 <translation id="2100314319871056947">Provo ta ndash tekstin në copëza më të vogla</translation>
 <translation id="2109711654079915747">Mëso për temat në sajtet e uebit pa u larguar nga faqja. "Trokit për të kërkuar" dërgon një fjalë dhe kontekstin e saj rrethues te "Kërko në Google", duke sjellë përkufizime, fotografi, rezultate kërkimi dhe detaje të tjera.
@@ -341,11 +339,6 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3810973564298564668">Menaxho</translation>
 <translation id="381841723434055211">Numrat e telefonit</translation>
 <translation id="3819178904835489326">U fshinë <ph name="NUMBER_OF_DOWNLOADS" /> shkarkime</translation>
-<translation id="3849365399446680203">Kur je në AR, ky sajt mund të arrijë:
-• të krijojë një hartë 3D të ambientit tënd
-• të gjurmojë lëvizjen e kamerës
-
-Vetëm ti mund të shohësh se çfarë po shikon kamera. Sajti nuk mund të shikojë imazhet e kamerës sate.</translation>
 <translation id="3859306556332390985">Kërko përpara</translation>
 <translation id="388596076286380598">Merr artikuj, video dhe përmbajtje të tjera nga sajtet që të pëlqejnë, edhe nëse je jashtë linje ose lidhja jote është e dobët.</translation>
 <translation id="3894427358181296146">Shto dosje</translation>
@@ -399,7 +392,6 @@ Vetëm ti mund të shohësh se çfarë po shikon kamera. Sajti nuk mund të shik
 <translation id="4320177379694898372">Nuk ka lidhje me internetin</translation>
 <translation id="4321739720395210191">Kamera nuk mund të hapet. Rinise pajisjen dhe provo përsëri.</translation>
 <translation id="4351244548802238354">Mbyll dialogun</translation>
-<translation id="4353114845960720315">Kur je në VR, ky sajt mund të arrijë të mësojë për:</translation>
 <translation id="4378154925671717803">Telefoni</translation>
 <translation id="4384468725000734951">Po përdor Sogou për kërkimin</translation>
 <translation id="4404568932422911380">Nuk ka faqeshënues</translation>
@@ -427,7 +419,6 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4561979708150884304">Nuk ka lidhje</translation>
 <translation id="4565377596337484307">Fshih fjalëkalimin</translation>
 <translation id="4572422548854449519">Identifikohu në llogarinë e menaxhuar</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minutë më parë}other{# minuta më parë}}</translation>
 <translation id="4587589328781138893">Sajtet</translation>
 <translation id="4594952190837476234">Kjo faqe jashtë linje është nga <ph name="CREATION_TIME" /> dhe mund të ndryshojë nga versioni në linjë.</translation>
@@ -435,7 +426,6 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4616150815774728855">Hap <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Përdor fjalëkalimin</translation>
 <translation id="4650364565596261010">Parazgjedhja e sistemit</translation>
-<translation id="4660838440047236328">struktura e dhomës</translation>
 <translation id="4662373422909645029">Pseudonimi nuk mund të përmbajë numra</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> faqeshënuesë u fshinë</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> u shtua në ekranin bazë</translation>
@@ -459,7 +449,6 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 
 Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizimin<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Emri në kartë</translation>
-<translation id="4808319664292298116">Do të hysh në VR nga <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Të anulohet sinkronizimi?</translation>
 <translation id="4835385943915508971">Chrome nuk ka qasje te burimi i kërkuar.</translation>
 <translation id="4837753911714442426">Hap opsionet për të printuar faqen</translation>
@@ -659,7 +648,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6398765197997659313">Dil nga ekrani i plotë</translation>
 <translation id="6404511346730675251">Redakto faqeshënuesin</translation>
 <translation id="6406506848690869874">Sinkronizo</translation>
-<translation id="6410973561433500075">Do të hysh në AR nga <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Printo…</translation>
 <translation id="6427112570124116297">Përkthe uebin</translation>
 <translation id="6433501201775827830">Zgjidh motorin e kërkimit</translation>

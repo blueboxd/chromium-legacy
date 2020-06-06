@@ -47,7 +47,7 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
       pref_service_(pref_service),
       had_user_interaction_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
-      card_label_(card.NetworkAndLastFourDigits()),
+      card_label_(card.CardIdentifierStringForAutofillDisplay()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay(false)),
       card_last_four_digits_(card.LastFourDigits()),
       cardholder_name_(card.GetRawInfo(CREDIT_CARD_NAME_FULL)),

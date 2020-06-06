@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">عرض مواقع الويب الشائعة من خلال النقر على الزر "أهم المواقع"</translation>
 <translation id="1173894706177603556">إعادة تسمية</translation>
 <translation id="1178581264944972037">الإيقاف مؤقتًا</translation>
-<translation id="1188239144602654184">إطلاق الواقع المعزّز</translation>
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1204037785786432551">تنزيل الرابط</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">نص</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">المزامنة والتخصيص على الأجهزة</translation>
-<translation id="2099625543891475722">سماتك البدنية، مثل الطول</translation>
 <translation id="2100273922101894616">تسجيل الدخول تلقائيًا</translation>
 <translation id="2100314319871056947">يُرجى تجربة مشاركة النص في مجموعات أصغر.</translation>
 <translation id="2109711654079915747">‏تعرّف على مواضيع على مواقع إلكترونية بدون مغادرة الصفحة. تعمل ميزة "المس للبحث" على إرسال الكلمة والسياق المتعلق بها إلى "بحث Google"، وذلك للحصول على تعريفات وصور ونتائج بحث وتفاصيل أخرى ذات صلة بها.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="381841723434055211">أرقام الهواتف</translation>
 <translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من عمليات التنزيل</translation>
-<translation id="3849365399446680203">أثناء استخدامك لتقنية "الواقع المعزّز"، قد يتمكن هذا الموقع الإلكتروني من:
-• إنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك
-• تتبّع حركة الكاميرا
-
-لا يمكن لأحدٍ غيرك الاطّلاع على ما تُصوره الكاميرا. لا يمكن للموقع الإلكتروني الاطّلاع على الصور المُلتقَطة بالكاميرا.</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
 <translation id="388596076286380598">يمكنك الاطّلاع على المقالات والفيديوهات وغيرها من أنواع المحتوى في المواقع الإلكترونية التي تعجبك، حتى إذا كنت غير متصّل بالإنترنت أو كان اتصالك ضعيفًا.</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">لا يتوفر اتصال بالإنترنت</translation>
 <translation id="4321739720395210191">تعذّر فتح الكاميرا. يمكنك إعادة تشغيل الجهاز والمحاولة مجددًا.</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
-<translation id="4353114845960720315">أثناء استخدامك وضع "الواقع الافتراضي"، يمكن لهذا الموقع الإلكتروني التعرُّف على ما يلي:</translation>
 <translation id="4378154925671717803">هاتف</translation>
 <translation id="4384468725000734951">‏استخدام محرك Sogou للبحث</translation>
 <translation id="4404568932422911380">ليست هناك إشارات مرجعية</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">لا يتوفّر اتصال بالإنترنت</translation>
 <translation id="4565377596337484307">إخفاء كلمة المرور</translation>
 <translation id="4572422548854449519">تسجيل الدخول إلى الحساب المدار</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{قبل دقيقة واحدة (#)}zero{قبل # دقيقة}two{قبل دقيقتين (#)}few{قبل # دقائق}many{قبل # دقيقة}other{قبل # دقيقة}}</translation>
 <translation id="4587589328781138893">المواقع</translation>
 <translation id="4594952190837476234">تم إنشاء هذه الصفحة المتوفّرة بلا اتصال بالإنترنت في <ph name="CREATION_TIME" />، وقد تختلف عن النسخة المتوفِّرة على الإنترنت.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">فتح <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">استخدام كلمة المرور</translation>
 <translation id="4650364565596261010">الإعداد التلقائي للنظام</translation>
-<translation id="4660838440047236328">شكل غرفتك</translation>
 <translation id="4662373422909645029">يجب ألا يضم اللقب أرقامًا</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
 <translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
@@ -459,7 +449,6 @@
 
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
-<translation id="4808319664292298116">هل تريد الدخول إلى وضع "الواقع الافتراضي" من <ph name="DOMAIN" />؟</translation>
 <translation id="4824958205181053313">هل تريد إلغاء المزامنة؟</translation>
 <translation id="4835385943915508971">‏لا تتوفر لمتصفح Chrome إمكانية الوصول إلى المورد المطلوب.</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">إنهاء وضع ملء الشاشة</translation>
 <translation id="6404511346730675251">تعديل الإشارة المرجعية</translation>
 <translation id="6406506848690869874">المزامنة</translation>
-<translation id="6410973561433500075">هل تريد إطلاق "الواقع المعزّز" من <ph name="DOMAIN" />؟</translation>
 <translation id="641643625718530986">طباعة…</translation>
 <translation id="6427112570124116297">ترجمة موقع الويب</translation>
 <translation id="6433501201775827830">اختيار محرك البحث</translation>

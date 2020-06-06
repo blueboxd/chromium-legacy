@@ -70,12 +70,11 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
 
   // NetworkMetadataObserver:
   void OnFirstConnectionToNetwork(const std::string& guid) override;
+  void OnNetworkCreated(const std::string& guid) override;
   void OnNetworkUpdate(const std::string& guid,
                        base::DictionaryValue* set_properties) override;
 
   // NetworkConfigurationObserver::
-  void OnConfigurationCreated(const std::string& service_path,
-                              const std::string& guid) override;
   void OnBeforeConfigurationRemoved(const std::string& service_path,
                                     const std::string& guid) override;
   void OnConfigurationRemoved(const std::string& service_path,
@@ -112,6 +111,8 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
 
   // Starts an async request to serialize a network to a proto and save to sync.
   void OnNetworkConfiguredDelayComplete(const std::string& network_guid);
+
+  bool IsLastUpdateFromSync(const std::string& network_guid);
 
   // An in-memory list of the proto's that mirrors what is on the sync server.
   // This gets updated when changes are received from the server and after local

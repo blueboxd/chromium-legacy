@@ -146,10 +146,10 @@ class UkmServiceTest : public testing::Test {
     EXPECT_GE(GetPersistedLogCount(), 1);
     metrics::UnsentLogStore result_unsent_log_store(
         std::make_unique<ukm::UnsentLogStoreMetricsImpl>(), &prefs_,
-        prefs::kUkmUnsentLogStore,
-        3,     // log count limit
-        1000,  // byte limit
-        0, std::string());
+        prefs::kUkmUnsentLogStore, /* meta_data_pref_name= */ nullptr,
+        /* min_log_count= */ 3, /* min_log_bytes= */ 1000,
+        /* max_log_size= */ 0,
+        /* signing_key= */ std::string());
 
     result_unsent_log_store.LoadPersistedUnsentLogs();
     result_unsent_log_store.StageNextLog();
@@ -313,7 +313,7 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   // Save the Report to the store.
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
-  unsent_log_store->StoreLog(serialized_log);
+  unsent_log_store->StoreLog(serialized_log, base::nullopt);
 
   // Do extension purging.
   service.PurgeExtensions();

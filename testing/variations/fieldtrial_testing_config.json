@@ -1225,6 +1225,27 @@
             ]
         }
     ],
+    "CSSReducedFontLoadingLayoutInvalidations": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CSSReducedFontLoadingLayoutInvalidations"
+                    ]
+                }
+            ]
+        }
+    ],
     "CacheStorageEagerReading": [
         {
             "platforms": [
@@ -4809,6 +4830,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PreloadMetadataLazyLoad"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PreventMessagePumpHangs": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "PreventMessagePumpHangs",
+                    "enable_features": [
+                        "PreventMessagePumpHangs"
                     ]
                 }
             ]

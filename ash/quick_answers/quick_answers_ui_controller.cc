@@ -44,18 +44,22 @@ void QuickAnswersUiController::CreateQuickAnswersView(
 }
 
 void QuickAnswersUiController::OnQuickAnswersViewPressed() {
-  CloseQuickAnswersView();
+  // Route dismissal through |controller_| for logging impressions.
+  controller_->DismissQuickAnswers(/*is_active=*/true);
+
   ash::AssistantInteractionController::Get()->StartTextInteraction(
       query_, /*allow_tts=*/false,
       chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
   controller_->OnQuickAnswerClick();
 }
 
-void QuickAnswersUiController::CloseQuickAnswersView() {
+bool QuickAnswersUiController::CloseQuickAnswersView() {
   if (quick_answers_view_) {
     quick_answers_view_->GetWidget()->Close();
     quick_answers_view_ = nullptr;
+    return true;
   }
+  return false;
 }
 
 void QuickAnswersUiController::OnRetryLabelPressed() {
@@ -101,11 +105,13 @@ void QuickAnswersUiController::CreateUserConsentView(
   user_consent_view_->GetWidget()->ShowInactive();
 }
 
-void QuickAnswersUiController::CloseUserConsentView() {
+bool QuickAnswersUiController::CloseUserConsentView() {
   if (user_consent_view_) {
     user_consent_view_->GetWidget()->Close();
     user_consent_view_ = nullptr;
+    return true;
   }
+  return false;
 }
 
 void QuickAnswersUiController::OnConsentGrantedButtonPressed() {
@@ -118,11 +124,9 @@ void QuickAnswersUiController::OnManageSettingsButtonPressed() {
 }
 
 void QuickAnswersUiController::OnDogfoodButtonPressed() {
-  // Close Quick-Answers related views and open the Dogfood link.
-  if (quick_answers_view_)
-    CloseQuickAnswersView();
-  if (user_consent_view_)
-    CloseUserConsentView();
+  // Route dismissal through |controller_| for logging impressions.
+  controller_->DismissQuickAnswers(/*is_active=*/true);
+
   controller_->OpenQuickAnswersDogfoodLink();
 }
 

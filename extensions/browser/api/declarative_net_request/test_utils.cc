@@ -238,18 +238,6 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
     case ParseResult::ERROR_INVALID_REGEX_FILTER:
       output << "ERROR_INVALID_REGEX_FILTER";
       break;
-    case ParseResult::ERROR_NO_HEADERS_SPECIFIED:
-      output << "ERROR_NO_HEADERS_SPECIFIED";
-      break;
-    case ParseResult::ERROR_EMPTY_REQUEST_HEADERS_LIST:
-      output << "ERROR_EMPTY_REQUEST_HEADERS_LIST";
-      break;
-    case ParseResult::ERROR_EMPTY_RESPONSE_HEADERS_LIST:
-      output << "ERROR_EMPTY_RESPONSE_HEADERS_LIST";
-      break;
-    case ParseResult::ERROR_INVALID_HEADER_NAME:
-      output << "ERROR_INVALID_HEADER_NAME";
-      break;
     case ParseResult::ERROR_REGEX_TOO_LARGE:
       output << "ERROR_REGEX_TOO_LARGE";
       break;
@@ -264,6 +252,30 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
       break;
     case ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE:
       output << "ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE";
+      break;
+    case ParseResult::ERROR_NO_HEADERS_SPECIFIED:
+      output << "ERROR_NO_HEADERS_SPECIFIED";
+      break;
+    case ParseResult::ERROR_EMPTY_REQUEST_HEADERS_LIST:
+      output << "ERROR_EMPTY_REQUEST_HEADERS_LIST";
+      break;
+    case ParseResult::ERROR_EMPTY_RESPONSE_HEADERS_LIST:
+      output << "ERROR_EMPTY_RESPONSE_HEADERS_LIST";
+      break;
+    case ParseResult::ERROR_INVALID_HEADER_NAME:
+      output << "ERROR_INVALID_HEADER_NAME";
+      break;
+    case ParseResult::ERROR_INVALID_HEADER_VALUE:
+      output << "ERROR_INVALID_HEADER_VALUE";
+      break;
+    case ParseResult::ERROR_HEADER_VALUE_NOT_SPECIFIED:
+      output << "ERROR_HEADER_VALUE_NOT_SPECIFIED";
+      break;
+    case ParseResult::ERROR_HEADER_VALUE_PRESENT:
+      output << "ERROR_HEADER_VALUE_PRESENT";
+      break;
+    case ParseResult::ERROR_APPEND_REQUEST_HEADER_UNSUPPORTED:
+      output << "ERROR_APPEND_REQUEST_HEADER_UNSUPPORTED";
       break;
   }
   return output;
@@ -358,18 +370,25 @@ RulesetSource CreateTemporarySource(RulesetID id,
 
 dnr_api::ModifyHeaderInfo CreateModifyHeaderInfo(
     dnr_api::HeaderOperation operation,
-    std::string header) {
+    std::string header,
+    base::Optional<std::string> value) {
   dnr_api::ModifyHeaderInfo header_info;
 
   header_info.operation = operation;
   header_info.header = header;
+
+  if (value)
+    header_info.value = std::make_unique<std::string>(*value);
 
   return header_info;
 }
 
 bool EqualsForTesting(const dnr_api::ModifyHeaderInfo& lhs,
                       const dnr_api::ModifyHeaderInfo& rhs) {
-  return lhs.operation == rhs.operation && lhs.header == rhs.header;
+  bool are_values_equal = lhs.value && rhs.value ? *lhs.value == *rhs.value
+                                                 : lhs.value == rhs.value;
+  return lhs.operation == rhs.operation && lhs.header == rhs.header &&
+         are_values_equal;
 }
 
 RulesetManagerObserver::RulesetManagerObserver(RulesetManager* manager)

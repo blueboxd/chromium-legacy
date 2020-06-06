@@ -158,9 +158,12 @@ void AdTracker::Will(const probe::CallFunction& probe) {
       probe.function->GetScriptOrigin().ResourceName();
   String script_url;
   if (!resource_name.IsEmpty()) {
-    script_url = ToCoreString(
-        resource_name->ToString(ToIsolate(local_root_)->GetCurrentContext())
-            .ToLocalChecked());
+    v8::MaybeLocal<v8::String> resource_name_string =
+        resource_name->ToString(ToIsolate(local_root_)->GetCurrentContext());
+    // Rarely, ToString() can return an empty result, even if |resource_name|
+    // isn't empty (crbug.com/1086832).
+    if (!resource_name_string.IsEmpty())
+      script_url = ToCoreString(resource_name_string.ToLocalChecked());
   }
   WillExecuteScript(probe.context, script_url);
 }

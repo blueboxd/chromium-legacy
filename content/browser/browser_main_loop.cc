@@ -770,10 +770,11 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 }
 
 int BrowserMainLoop::PreCreateThreads() {
+  TRACE_EVENT0("startup", "BrowserMainLoop::PreCreateThreads");
+
   // Make sure no accidental call to initialize GpuDataManager earlier.
   DCHECK(!GpuDataManagerImpl::Initialized());
   if (parts_) {
-    TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads:PreCreateThreads");
 
     result_code_ = parts_->PreCreateThreads();
   }
@@ -786,7 +787,7 @@ int BrowserMainLoop::PreCreateThreads() {
   // but must be created on the main thread. The service ctor is
   // inexpensive and does not invoke the io_thread() accessor.
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::CreateThreads:PluginService");
+    TRACE_EVENT0("startup", "BrowserMainLoop::PluginService");
     PluginService::GetInstance()->Init();
   }
 #endif
@@ -966,8 +967,7 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
 #endif
 
   if (parts_) {
-    TRACE_EVENT0("startup",
-                 "BrowserMainLoop::CreateThreads:PreMainMessageLoopRun");
+    TRACE_EVENT0("startup", "BrowserMainLoop::PreMainMessageLoopRun");
 
     parts_->PreMainMessageLoopRun();
   }
@@ -993,18 +993,12 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
 }
 
 void BrowserMainLoop::RunMainMessageLoopParts() {
-  // Don't use the TRACE_EVENT0 macro because the tracing infrastructure doesn't
-  // expect synchronous events around the main loop of a thread.
-  TRACE_EVENT_ASYNC_BEGIN0("toplevel", "BrowserMain:MESSAGE_LOOP", this);
-
   bool ran_main_loop = false;
   if (parts_)
     ran_main_loop = parts_->MainMessageLoopRun(&result_code_);
 
   if (!ran_main_loop)
     MainMessageLoopRun();
-
-  TRACE_EVENT_ASYNC_END0("toplevel", "BrowserMain:MESSAGE_LOOP", this);
 }
 
 void BrowserMainLoop::ShutdownThreadsAndCleanUp() {

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_H_
 #define COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_H_
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/metrics/unsent_log_store.h"
 
@@ -31,17 +32,25 @@ class UnsentLogStoreMetrics {
     END_RECALL_STATUS  // Number of bins to use to create the histogram.
   };
 
-  UnsentLogStoreMetrics() {}
-  virtual ~UnsentLogStoreMetrics() {}
+  UnsentLogStoreMetrics();
+  virtual ~UnsentLogStoreMetrics();
 
-  virtual void RecordLogReadStatus(LogReadStatus status) {}
+  virtual void RecordLogReadStatus(LogReadStatus status);
 
-  virtual void RecordCompressionRatio(
-    size_t compressed_size, size_t original_size) {}
+  virtual void RecordCompressionRatio(size_t compressed_size,
+                                      size_t original_size);
 
-  virtual void RecordDroppedLogSize(size_t size) {}
+  virtual void RecordDroppedLogSize(size_t size);
 
-  virtual void RecordDroppedLogsNum(int dropped_logs_num) {}
+  virtual void RecordDroppedLogsNum(int dropped_logs_num);
+
+  virtual void RecordLastUnsentLogMetadataMetrics(int unsent_samples_count,
+                                                  int sent_samples_count,
+                                                  int persisted_size_in_kb);
+
+  // The feature to record the unsent log info metrics, refer to
+  // UnsentLogStoreMetricsImpl::RecordLastUnsentLogMetadataMetrics.
+  static const base::Feature kRecordLastUnsentLogMetadataMetrics;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UnsentLogStoreMetrics);

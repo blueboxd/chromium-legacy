@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Mashhur saytlarni chiqarish uchun “Top saytlar” tugmasini bosing</translation>
 <translation id="1173894706177603556">Qayta nomlash</translation>
 <translation id="1178581264944972037">Pauza</translation>
-<translation id="1188239144602654184">Virtual reallikka kirish</translation>
 <translation id="1197267115302279827">Xatcho‘plarni ko‘chirib o‘tkazish</translation>
 <translation id="1201402288615127009">Keyingisi</translation>
 <translation id="1204037785786432551">Havola kontentini yuklab olish</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">matn</translation>
 <translation id="2082238445998314030">Natija: <ph name="RESULT_NUMBER" /> / <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Barcha qurilmalardagi sinxronizatsiya va shaxsiy sozlamalar</translation>
-<translation id="2099625543891475722">boʻy kabi jismoniy xususiyatlaringiz</translation>
 <translation id="2100273922101894616">Avtomatik kirish</translation>
 <translation id="2100314319871056947">Yuboriladigan matnni biroz qisqartiring</translation>
 <translation id="2109711654079915747">Tasvirlar, mavzular va boshqa maʼlumotlarni belgilangan sahifani tark etmasdan qidiring. Buning uchun soʻz tanlang va u Google qidiruv serverlariga kontekst bilan birga yuboriladi.
@@ -341,11 +339,6 @@ Qidiruvni boshlash uchun istalgan soʻzni bosib turing. Qidruvni aniqlashtirish 
 <translation id="3810973564298564668">Sozlash</translation>
 <translation id="381841723434055211">Telefon raqamlari</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ta yuklanma o‘chirib tashlandi</translation>
-<translation id="3849365399446680203">AR seansida bu sayt quyidagi amallarni bajara oladi:
-• atrofingizdagi muhitning 3D xaritasini yaratish
-• kamera harakatlarini kuzatish
-
-Kameradagi tasvirlar faqat sizga koʻrinadi. Kamera tasvirlari saytga koʻrinmaydi.</translation>
 <translation id="3859306556332390985">Oldinga surish</translation>
 <translation id="388596076286380598">Sevimli saytlaringizda maqola, video va boshqa kontentni oflayn rejimda yoki uzilishli internetda ham ochishingiz mumkin.</translation>
 <translation id="3894427358181296146">Jild qo‘shish</translation>
@@ -399,7 +392,6 @@ Kameradagi tasvirlar faqat sizga koʻrinadi. Kamera tasvirlari saytga koʻrinmay
 <translation id="4320177379694898372">Internet aloqasi yo‘q</translation>
 <translation id="4321739720395210191">Kamerangiz ochilmadi. Qurilmani qayta ishga tushirib, yana urining.</translation>
 <translation id="4351244548802238354">Oynani yopish</translation>
-<translation id="4353114845960720315">VR seansida bu sayt ayrim axborotlar ishlatilishini taniy oladi, jumladan:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Asosiy qidiruv tizimi – Sogou</translation>
 <translation id="4404568932422911380">Hech qanday xatcho‘p yo‘q</translation>
@@ -427,7 +419,6 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4561979708150884304">Internetga ulanmagansiz</translation>
 <translation id="4565377596337484307">Parolni berkitish</translation>
 <translation id="4572422548854449519">Tobe hisobga kirish</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# daqiqa oldin}other{# daqiqa oldin}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Bu sahifa saytning <ph name="CREATION_TIME" /> kunidagi nusxasi va onlayn versiyasidan farq qilishi mumkin.</translation>
@@ -435,7 +426,6 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> veb-ilovasini ochish</translation>
 <translation id="4634124774493850572">Paroldan foydalanish</translation>
 <translation id="4650364565596261010">Tizim standarti</translation>
-<translation id="4660838440047236328">xonangiz dizayni</translation>
 <translation id="4662373422909645029">Taxallusga raqam kiritish mumkin emas</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ta xatcho‘p o‘chirib tashlandi</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> sayti bosh ekranga qo‘shildi</translation>
@@ -459,7 +449,6 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 
 Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklang<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Karta egasining ismi</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> orqali VR rejimiga kirilsinmi?</translation>
 <translation id="4824958205181053313">Sinxronizatsiya bekor qilinsinmi?</translation>
 <translation id="4835385943915508971">So‘ralgan manbadan foydalanish uchun Chrome brauzeriga ruxsat berilmagan.</translation>
 <translation id="4837753911714442426">Sahifani chop etish uchun sozlamalarni ochish</translation>
@@ -659,7 +648,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6398765197997659313">To‘liq ekran rejimidan chiqish</translation>
 <translation id="6404511346730675251">Xatcho‘pni tahrirlash</translation>
 <translation id="6406506848690869874">Sinxronlash</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" /> orqali AR rejimiga kirilsinmi?</translation>
 <translation id="641643625718530986">Chop etish…</translation>
 <translation id="6427112570124116297">Internetni oʻz tilingizda kezing</translation>
 <translation id="6433501201775827830">Qidiruv tizimini tanlang</translation>

@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">الموقّع على الشهادات</translation>
 <translation id="1145292499998999162">تم حظر المكوّن الإضافي</translation>
 <translation id="1145593918056169051">توقفت الطابعة</translation>
-<translation id="1146678959555564648">‏إدخال VR</translation>
 <translation id="114721135501989771">‏الحصول على ميزات Google الذكية في Chrome</translation>
 <translation id="1147991416141538220">لطلب إذن الوصول إلى التطبيق، يُرجى التواصل مع مشرف هذا الجهاز.</translation>
 <translation id="1149401351239820326">شهر انتهاء الصلاحية</translation>
@@ -866,7 +865,6 @@
 <translation id="2096715839409389970">حذف ملفات تعريف الارتباط التابعة لجهات خارجية</translation>
 <translation id="2097372108957554726">‏يلزمك تسجيل الدخول إلى Chrome لتسجيل الأجهزة الجديدة</translation>
 <translation id="2099172618127234427">‏أنت تمكن ميزات تصحيح الأخطاء لنظام التشغيل Chrome التي ستثبّت البرنامج الخفي لـ sshd وتمكن التشغيل من محركات الأقراص USB.</translation>
-<translation id="2099625543891475722">سماتك البدنية، مثل الطول</translation>
 <translation id="2099686503067610784">هل تريد حذف شهادة الخادم "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="2100273922101894616">تسجيل الدخول تلقائيًا</translation>
 <translation id="2101225219012730419">الإصدار:</translation>
@@ -2185,6 +2183,7 @@
 <translation id="3732857534841813090">‏معلومات ذات صلة بخدمة "مساعد Google"</translation>
 <translation id="3733127536501031542">‏خادم بروتوكول SSL (طبقة المقابس الآمنة) مع الترقية</translation>
 <translation id="3735740477244556633">ترتيب بحسب</translation>
+<translation id="3738213647660363521">لون مُخصَّص للمؤشر</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739254215541673094">هل ترغب في فتح <ph name="APPLICATION" />؟</translation>
 <translation id="3742055079367172538">تم التقاط لقطة الشاشة</translation>
@@ -2654,7 +2653,6 @@
 <translation id="4350019051035968019">لا يمكن تسجيل هذا الجهاز في النطاق الذي ينتمي له حسابك نظرًا لأنه تم تصنيف الجهاز للعمل تحت إدارة نطاق آخر.</translation>
 <translation id="4350782034419308508">Ok Google</translation>
 <translation id="4351060348582610152">يريد <ph name="ORIGIN" /> البحث عن أجهزة البلوتوث المجاورة. وتم العثور على الأجهزة التالية:</translation>
-<translation id="4353114845960720315">أثناء استخدامك وضع "الواقع الافتراضي"، يمكن لهذا الموقع الإلكتروني التعرُّف على ما يلي:</translation>
 <translation id="4354073718307267720">طلب الإذن عند محاولة موقع إلكتروني إنشاء خريطة ثلاثية الأبعاد للبيئة المحيطة بك أو تتبُّع موضع الكاميرا</translation>
 <translation id="4354344420232759511">ستظهر المواقع التي تزورها هنا.</translation>
 <translation id="435527878592612277">اختيار صورتك</translation>
@@ -2889,7 +2887,6 @@
 <translation id="4659077111144409915">الحساب الأساسي</translation>
 <translation id="4660476621274971848">الإصدار المتوقع "<ph name="EXPECTED_VERSION" />"، ولكن الإصدار كان "<ph name="NEW_ID" />".</translation>
 <translation id="4660540330091848931">جارٍ تغيير الحجم</translation>
-<translation id="4660838440047236328">شكل غرفتك</translation>
 <translation id="4661407454952063730">تشمل بيانات التطبيق أيّ بيانات حفظها هذا التطبيق (بناءً على إعدادات مطوّر البرامج)، بما في ذلك بيانات مثل جهات الاتصال والرسائل والصور.</translation>
 <translation id="4662373422909645029">يجب ألا يضم اللقب أرقامًا</translation>
 <translation id="4662788913887017617">‏مشاركة هذه الإشارة المرجعة مع جهاز iPhone</translation>
@@ -2978,9 +2975,7 @@
 <translation id="4801512016965057443">السماح بتجوال بيانات الجوال</translation>
 <translation id="4804818685124855865">قطع الاتصال</translation>
 <translation id="4804827417948292437">أفوكادو</translation>
-<translation id="4805077164141082536">‏نقترح عليك الاحتفاظ بنسخة احتياطية من حاوية نظام التشغيل Linux الحالية قبل الترقية.</translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
-<translation id="4808319664292298116">هل تريد الدخول إلى وضع "الواقع الافتراضي" من <ph name="DOMAIN" />؟</translation>
 <translation id="4808667324955055115">تمّ حظر النوافذ المنبثقة:</translation>
 <translation id="480990236307250886">فتح الصفحة الرئيسية</translation>
 <translation id="4811212958317149293">المسح التلقائي في لوحة المفاتيح ضمن ميزة "الوصول عبر مفتاح التحويل"</translation>
@@ -3294,6 +3289,7 @@
 <translation id="52232769093306234">تعذرت التعبئة.</translation>
 <translation id="5225324770654022472">إظهار اختصار التطبيقات</translation>
 <translation id="5227679487546032910">الصورة الرمزية التلقائية الزرقاء المخضرة</translation>
+<translation id="5228088094491423618">النُسخ النصية التلقائية</translation>
 <translation id="5228579091201413441">تفعيل المزامنة</translation>
 <translation id="5229189185761556138">إدارة طرق الإدخال</translation>
 <translation id="5230516054153933099">نافذة</translation>
@@ -3708,7 +3704,6 @@
 <translation id="5739235828260127894">في انتظار التحقُّق من صحة الاتصال. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">كبير جدًا</translation>
 <translation id="574209121243317957">درجة الصوت</translation>
-<translation id="5745136023067925867">يمكنك الحصول على آخر التحديثات والنصائح والعروض لجهاز <ph name="DEVICE_TYPE" /> ومشاركة التعليقات.</translation>
 <translation id="5746169159649715125">‏حفظ بتنسيق ملف PDF</translation>
 <translation id="5747552184818312860">تاريخ انتهاء الصلاحية</translation>
 <translation id="5747785204778348146">المطوّر - غير ثابت</translation>
@@ -4832,7 +4827,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{الخروج من الصفجة}zero{الخروج من صفحة}two{الخروج من الصفحتين}few{الخروج من صفحات}many{الخروج من صفحة}other{الخروج من صفحة}}</translation>
 <translation id="7207457272187520234">‏يمكنك إرسال بيانات الاستخدام والتشخيص. ويُرسل هذا الجهاز حاليًا بيانات استخدام التطبيق وبيانات التشخيص وبيانات الجهاز تلقائيًا إلى Google. وسيساعد ذلك في تعزيز استقرار النظام والتطبيقات وإجراء المزيد من التحسينات. وسيستفيد أيضًا مطوّرو التطبيقات والشركاء في Google، مثل مطوّري البرامج المتوافقة مع Android، من بعض البيانات المجمّعة. ويفرض المالك هذا الإعداد. في حال تفعيل إعداد "النشاط الإضافي على الويب وفي التطبيقات"، قد يتم حفظ هذه البيانات في حسابك على Google.</translation>
 <translation id="7207631048330366454">البحث في التطبيقات</translation>
-<translation id="7210171324714276060">غيّرَت الإضافة <ph name="EXTENSION_NAME" /> صفحة البحث لتصبح<ph name="SEARCH_PROVIDER_DOMAIN" />.</translation>
 <translation id="7210499381659830293">طابعات مُوصّلة</translation>
 <translation id="7212097698621322584">يُرجى إدخال رقم التعريف الشخصي الحالي لتغييره. في حال كنت لا تعرف رقم التعريف الشخصي، عليك إعادة ضبط مفتاح الأمان، ثم إنشاء رقم تعريف شخصي جديد.</translation>
 <translation id="7216409898977639127">موفر شبكة الجوّال</translation>
@@ -5232,7 +5226,6 @@
 <translation id="7737115349420013392">جارٍ الإقران مع "<ph name="DEVICE_NAME" />" ...</translation>
 <translation id="7737238973539693982">‏حذف Linux (إصدار تجريبي)</translation>
 <translation id="7740996059027112821">عادي</translation>
-<translation id="7743128043742060936">تم تغيير هذه الصفحة بواسطة إضافة <ph name="EXTENSION_NAME" />.</translation>
 <translation id="7744047395460924128">الاطّلاع على سجلّ الطباعة</translation>
 <translation id="7744192722284567281">تم العثور عليها في عملية اختراق البيانات.</translation>
 <translation id="7750228210027921155">نافذة ضمن النافذة</translation>
@@ -6350,6 +6343,7 @@
 <translation id="9121814364785106365">فتح كعلامة تبويب مثبتة</translation>
 <translation id="9122176249172999202">تم إيقاف <ph name="IDS_SHORT_PRODUCT_NAME" /> مؤقتًا</translation>
 <translation id="9124003689441359348">ستظهر هنا كلمات المرور المحفوظة</translation>
+<translation id="9126149354162942022">لون المؤشر</translation>
 <translation id="9128317794749765148">تعذّر إكمال الإعداد</translation>
 <translation id="9128870381267983090">الاتصال بالشبكة</translation>
 <translation id="9130015405878219958">تم إدخال وضع غير صحيح.</translation>

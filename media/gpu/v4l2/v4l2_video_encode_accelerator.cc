@@ -381,7 +381,6 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
     const gfx::Rect& output_visible_rect) {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-  DCHECK_NE(input_layout.format(), output_format);
 
   auto ip_input_layout = AsMultiPlanarLayout(input_layout);
   if (!ip_input_layout) {
@@ -750,6 +749,16 @@ void V4L2VideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
     return;
 
   if (image_processor_) {
+    if (!frame) {
+      DCHECK(!flush_callback_.is_null());
+      NOTREACHED()
+          << "Flushing is not supported when using an image processor and this "
+             "situation should not happen for well behaved clients.";
+      NOTIFY_ERROR(kIllegalStateError);
+      child_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(std::move(flush_callback_), false));
+      return;
+    }
     image_processor_input_queue_.emplace(std::move(frame), force_keyframe);
     InputImageProcessorTask();
   } else {
@@ -779,7 +788,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
       VLOGF(1) << "Encoder resolution is changed during encoding"
                << ", frame.natural_size()=" << frame.natural_size().ToString()
                << ", encoder_input_visible_rect_="
-               << input_frame_size_.ToString();
+               << encoder_input_visible_rect_.ToString();
       return false;
     }
     if (frame.coded_size() == input_frame_size_) {

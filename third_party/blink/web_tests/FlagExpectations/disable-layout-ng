@@ -99,6 +99,12 @@ crbug.com/1012289 external/wpt/css/css-pseudo/marker-unicode-bidi-normal.html [ 
 crbug.com/591099 external/wpt/css/css-shapes/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
 
 ### external/wpt/css/css-sizing/
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-001.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-002.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-003.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-004.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-005.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-006.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/auto-margins-001.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-001.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/block-aspect-ratio-002.tentative.html [ Failure ]
@@ -443,6 +449,29 @@ crbug.com/591099 external/wpt/css/css-tables/absolute-tables-007.html [ Failure 
 crbug.com/591099 virtual/scalefactor200/external/wpt/element-timing/observe-text.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200withoutzoom/external/wpt/element-timing/css-generated-text.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/larger-text.html [ Failure ]
+
+# Line clamp overflow fixed in NG
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-009.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-010.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-011.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-012.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-013.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-014.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
+
+# White space, absolute position and paint timing failures from June 5, 2020
+crbug.com/591099 external/wpt/paint-timing/fcp-only/fcp-pseudo-element-visibility.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-position/position-absolute-center-001.tentative.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-position/position-absolute-center-002.tentative.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/break-spaces-051.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/break-spaces-052.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/pre-wrap-051.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/pre-wrap-052.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/white-space-pre-031.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/white-space-pre-032.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/white-space-pre-035.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/white-space-pre-051.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/white-space/white-space-pre-052.html [ Failure ]
 
 ### 7/22/2019 update
 crbug.com/591099 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]

@@ -98,7 +98,6 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_ui_util.h"
-#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/storage/storage_notification_service_factory.h"
@@ -141,6 +140,7 @@
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
@@ -724,7 +724,7 @@ void ProfileImpl::DoFinalInit() {
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
 
-  SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
+  site_isolation::SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
 
   InitializeDataReductionProxy();
 

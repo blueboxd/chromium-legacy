@@ -232,6 +232,13 @@ void USER_MANAGER_EXPORT SetIsManaged(const AccountId& account_id,
 
 bool USER_MANAGER_EXPORT GetIsManaged(const AccountId& account_id);
 
+void USER_MANAGER_EXPORT
+SetUserLastInputMethod(const AccountId& account_id,
+                       const std::string& input_method);
+
+bool USER_MANAGER_EXPORT GetUserLastInputMethod(const AccountId& account_id,
+                                                std::string* input_method);
+
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component
 void RemovePrefs(const AccountId& account_id);

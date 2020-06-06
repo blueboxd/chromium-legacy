@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">A(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalak mostantól le lesznek fordítva <ph name="TARGET_LANGUAGE" /> nyelvre.</translation>
 <translation id="1676269943528358898">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Google Chrome most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza. Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Google Chrome még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="1682696192498422849">Rövid él először</translation>
+<translation id="168693727862418163">A házirend értéke nem egyezik a sémájával, ezért a rendszer figyelmen kívül hagyja.</translation>
 <translation id="168841957122794586">A szervertanúsítvány gyenge titkosítási kulcsot tartalmaz.</translation>
 <translation id="1697532407822776718">Máris elkészült!</translation>
 <translation id="1703835215927279855">Letter</translation>

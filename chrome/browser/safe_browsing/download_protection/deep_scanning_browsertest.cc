@@ -450,6 +450,36 @@ IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
   EXPECT_EQ(item->GetState(), download::DownloadItem::INTERRUPTED);
 }
 
+IN_PROC_BROWSER_TEST_P(DownloadDeepScanningBrowserTest,
+                       DangerousHostNotMalwareScanned) {
+  // The file is SAFE according to the metadata check
+  ClientDownloadResponse metadata_response;
+  metadata_response.set_verdict(ClientDownloadResponse::DANGEROUS_HOST);
+  ExpectMetadataResponse(metadata_response);
+
+  // The DLP scan still runs, but finds nothing
+  DeepScanningClientResponse sync_response;
+  sync_response.mutable_dlp_scan_verdict()->set_status(
+      DlpDeepScanningVerdict::SUCCESS);
+  ExpectDeepScanSynchronousResponse(/*is_advanced_protection=*/false,
+                                    sync_response);
+
+  GURL url = embedded_test_server()->GetURL(
+      "/safe_browsing/download_protection/signed.exe");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  WaitForDownloadToFinish();
+
+  // The file should be blocked.
+  ASSERT_EQ(download_items().size(), 1u);
+  download::DownloadItem* item = *download_items().begin();
+  EXPECT_EQ(item->GetDangerType(),
+            download::DownloadDangerType::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST);
+  EXPECT_EQ(item->GetState(), download::DownloadItem::IN_PROGRESS);
+}
+
 class WhitelistedUrlDeepScanningBrowserTest
     : public DownloadDeepScanningBrowserTest {
  public:

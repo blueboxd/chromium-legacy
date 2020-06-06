@@ -131,8 +131,7 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     dmabuf_fds.emplace_back(plane.fd.release());
 
   auto frame = VideoFrame::WrapExternalDmabufs(
-      *layout, visible_rect, visible_rect.size(), std::move(dmabuf_fds),
-      timestamp);
+      *layout, visible_rect, natural_size, std::move(dmabuf_fds), timestamp);
   if (!frame)
     return nullptr;
 

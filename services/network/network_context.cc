@@ -1012,7 +1012,8 @@ void NetworkContext::AddExpectCT(const std::string& domain,
     return;
   }
 
-  transport_security_state->AddExpectCT(domain, expiry, enforce, report_uri);
+  transport_security_state->AddExpectCT(domain, expiry, enforce, report_uri,
+                                        net::NetworkIsolationKey::Todo());
   std::move(callback).Run(true);
 }
 
@@ -1083,7 +1084,7 @@ void NetworkContext::GetExpectCTState(const std::string& domain,
     if (transport_security_state) {
       net::TransportSecurityState::ExpectCTState dynamic_expect_ct_state;
       bool found = transport_security_state->GetDynamicExpectCTState(
-          domain, &dynamic_expect_ct_state);
+          domain, net::NetworkIsolationKey::Todo(), &dynamic_expect_ct_state);
 
       // TODO(estark): query static Expect-CT state as well.
       if (found) {

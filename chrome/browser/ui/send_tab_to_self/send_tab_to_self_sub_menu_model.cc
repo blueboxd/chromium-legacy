@@ -130,13 +130,6 @@ void SendTabToSelfSubMenuModel::ExecuteCommand(int command_id,
   return;
 }
 
-void SendTabToSelfSubMenuModel::OnMenuWillShow(ui::SimpleMenuModel* source) {
-  RecordSendTabToSelfClickResult(MenuTypeToString(menu_type_),
-                                 SendTabToSelfClickResult::kShowDeviceList);
-  RecordSendTabToSelfDeviceCount(MenuTypeToString(menu_type_),
-                                 valid_device_items_.size());
-}
-
 void SendTabToSelfSubMenuModel::Build(Profile* profile) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile);

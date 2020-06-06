@@ -33,6 +33,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -613,7 +614,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void commit();
 
   ScriptPromise makeXRCompatible(ScriptState*, ExceptionState&);
-  bool IsXRCompatible();
+  bool IsXRCompatible() const;
 
   void UpdateNumberOfUserAllocatedMultisampledRenderbuffers(int delta);
 
@@ -794,7 +795,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   Member<WebGLFramebuffer> framebuffer_binding_;
   Member<WebGLRenderbuffer> renderbuffer_binding_;
 
+  static bool MakeXrCompatibleSync(CanvasRenderingContextHost* host);
+  static bool IsXrCompatibleFromResult(
+      device::mojom::blink::XrCompatibleResult result);
+  static bool DidGpuRestart(device::mojom::blink::XrCompatibleResult result);
+  void MakeXrCompatibleAsync();
+  void OnMakeXrCompatibleFinished(
+      device::mojom::blink::XrCompatibleResult xr_compatible_result);
+  void CompleteXrCompatiblePromiseIfPending();
   bool xr_compatible_;
+  Member<ScriptPromiseResolver> make_xr_compatible_resolver_;
 
   HeapVector<TextureUnitState> texture_units_;
   wtf_size_t active_texture_unit_;
@@ -1771,10 +1781,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   const Platform::ContextType context_type_;
 
   bool IsPaintable() const final { return GetDrawingBuffer(); }
-
-  // Returns true if the context is compatible with the XR device as defined
-  // by https://immersive-web.github.io/webxr/spec/latest/#contextcompatibility
-  bool ContextCreatedOnXRCompatibleAdapter();
 
   bool CopyRenderingResultsFromDrawingBuffer(CanvasResourceProvider*,
                                              SourceDrawingBuffer);

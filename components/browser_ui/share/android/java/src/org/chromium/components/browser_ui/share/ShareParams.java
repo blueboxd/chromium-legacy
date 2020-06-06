@@ -145,8 +145,6 @@ public class ShareParams {
 
     /** The builder for {@link ShareParams} objects. */
     public static class Builder {
-        private boolean mShareDirectly;
-        private boolean mSaveLastUsed;
         private WindowAndroid mWindow;
         private String mTitle;
         private String mText;

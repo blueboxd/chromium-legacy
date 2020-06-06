@@ -42,7 +42,6 @@ class SendTabToSelfSubMenuModel : public ui::SimpleMenuModel,
   // Overridden from ui::SimpleMenuModel::Delegate:
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
-  void OnMenuWillShow(ui::SimpleMenuModel* source) override;
 
  private:
   void Build(Profile* profile);

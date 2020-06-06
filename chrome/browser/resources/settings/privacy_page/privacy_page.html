@@ -161,7 +161,8 @@
       <template is="dom-if" route-path="/content/all" no-search>
         <settings-subpage page-title="$i18n{siteSettingsAllSites}"
             search-label="$i18n{siteSettingsAllSitesSearch}"
-            search-term="{{searchFilter_}}">
+            search-term="{{searchFilter_}}"
+            preserve-search-term>
           <all-sites filter="[[searchFilter_]]"></all-sites>
         </settings-subpage>
       </template>
@@ -263,7 +264,8 @@
       <template is="dom-if" route-path="/siteData" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCookieHeader}"
             search-label="$i18n{siteSettingsCookieSearch}"
-            search-term="{{siteDataFilter_}}">
+            search-term="{{siteDataFilter_}}"
+            preserve-search-term>
           <site-data filter="[[siteDataFilter_]]"
               focus-config="[[focusConfig_]]">
           </site-data>

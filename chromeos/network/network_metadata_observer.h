@@ -22,6 +22,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataObserver
   virtual void OnFirstConnectionToNetwork(const std::string& guid);
 
   // Called after a network configuration and associated metadata has been
+  // created.
+  virtual void OnNetworkCreated(const std::string& guid);
+
+  // Called after a network configuration and associated metadata has been
   // updated.
   virtual void OnNetworkUpdate(const std::string& guid,
                                base::DictionaryValue* set_properties);

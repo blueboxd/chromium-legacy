@@ -52,13 +52,19 @@ void FakeCompositorFrameReportingController::DidCommit() {
 }
 
 void FakeCompositorFrameReportingController::WillActivate() {
-  if (!HasReporterAt(PipelineStage::kCommit))
+  // Pending trees for impl-side invalidations are created without a prior
+  // commit.
+  if (!HasReporterAt(PipelineStage::kCommit) &&
+      !next_activate_has_invalidation())
     DidCommit();
   CompositorFrameReportingController::WillActivate();
 }
 
 void FakeCompositorFrameReportingController::DidActivate() {
-  if (!HasReporterAt(PipelineStage::kCommit))
+  // Pending trees for impl-side invalidations are created without a prior
+  // commit.
+  if (!HasReporterAt(PipelineStage::kCommit) &&
+      !next_activate_has_invalidation())
     WillActivate();
   CompositorFrameReportingController::DidActivate();
 }

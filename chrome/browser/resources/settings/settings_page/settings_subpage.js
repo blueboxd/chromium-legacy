@@ -68,6 +68,14 @@ Polymer({
       value: null,
     },
 
+    /**
+     * Whether the subpage search term should be preserved across navigations.
+     */
+    preserveSearchTerm: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private */
     active_: {
       type: Boolean,
@@ -98,6 +106,53 @@ Polymer({
     }
   },
 
+  /**
+   * @return {!Promise<!CrSearchFieldElement>}
+   * @private
+   */
+  getSearchField_() {
+    let searchField = this.$$('cr-search-field');
+    if (searchField) {
+      return Promise.resolve(searchField);
+    }
+
+    return new Promise(resolve => {
+      listenOnce(this, 'dom-change', () => {
+        searchField = this.$$('cr-search-field');
+        resolve(assert(searchField));
+      });
+    });
+  },
+
+  /**
+   * Restore search field value from URL search param
+   * @private
+   */
+  restoreSearchInput_() {
+    const searchField = this.$$('cr-search-field');
+    if (assert(searchField)) {
+      const urlSearchQuery =
+          settings.Router.getInstance().getQueryParameters().get(
+              'searchSubpage') ||
+          '';
+      this.searchTerm = urlSearchQuery;
+      searchField.setValue(urlSearchQuery);
+    }
+  },
+
+  /**
+   * Preserve search field value to URL search param
+   * @private
+   */
+  preserveSearchInput_() {
+    const query = this.searchTerm;
+    const searchParams = query.length > 0 ?
+        new URLSearchParams('searchSubpage=' + encodeURIComponent(query)) :
+        undefined;
+    const currentRoute = settings.Router.getInstance().getCurrentRoute();
+    settings.Router.getInstance().navigateTo(currentRoute, searchParams);
+  },
+
   /** Focuses the back button when page is loaded. */
   initialFocus() {
     if (this.hideCloseButton) {
@@ -110,6 +165,9 @@ Polymer({
   /** @protected */
   currentRouteChanged(route) {
     this.active_ = this.getAttribute('route-path') == route.path;
+    if (this.active_ && this.searchLabel && this.preserveSearchTerm) {
+      this.getSearchField_().then(() => this.restoreSearchInput_());
+    }
   },
 
   /** @private */
@@ -156,7 +214,14 @@ Polymer({
 
   /** @private */
   onSearchChanged_(e) {
+    if (this.searchTerm === e.detail) {
+      return;
+    }
+
     this.searchTerm = e.detail;
+    if (this.preserveSearchTerm && this.active_) {
+      this.preserveSearchInput_();
+    }
   },
 
   /** @private */

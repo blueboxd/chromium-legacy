@@ -3410,9 +3410,6 @@ void RenderFrameHostImpl::DownloadURL(
   if (!VerifyDownloadUrlParams(GetSiteInstance(), *blink_parameters))
     return;
 
-  mojo::PendingRemote<blink::mojom::Blob> blob_data_remote(
-      std::move(blink_parameters->data_url_blob), blink::mojom::Blob::Version_);
-
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("renderer_initiated_download", R"(
         semantics {
@@ -3458,9 +3455,9 @@ void RenderFrameHostImpl::DownloadURL(
       blink_parameters->initiator_origin.value_or(url::Origin()));
   parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
 
-  if (blob_data_remote) {
+  if (blink_parameters->data_url_blob) {
     DataURLBlobReader::ReadDataURLFromBlob(
-        std::move(blob_data_remote),
+        std::move(blink_parameters->data_url_blob),
         base::BindOnce(&OnDataURLRetrieved, std::move(parameters)));
     return;
   }
@@ -4959,6 +4956,15 @@ void RenderFrameHostImpl::CreatePortal(
   if (!is_main_frame()) {
     mojo::ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");
+    frame_host_associated_receiver_.reset();
+    return;
+  }
+
+  // TODO(crbug.com/1051639): We need to find a long term solution to when/how
+  // portals should work in sandboxed documents.
+  if (active_sandbox_flags_ != network::mojom::WebSandboxFlags::kNone) {
+    mojo::ReportBadMessage(
+        "RFHI::CreatePortal called in a sandboxed browsing context");
     frame_host_associated_receiver_.reset();
     return;
   }

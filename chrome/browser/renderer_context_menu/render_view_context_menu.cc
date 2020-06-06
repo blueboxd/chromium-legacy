@@ -1217,8 +1217,6 @@ void RenderViewContextMenu::AppendLinkItems() {
 
     if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
                        active_web_contents, params_.link_url)) {
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kLinkMenu, SendTabToSelfClickResult::kShowItem);
       if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
         menu_model_.AddItem(IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
@@ -1235,11 +1233,6 @@ void RenderViewContextMenu::AppendLinkItems() {
                     GetBrowser()->profile())),
             ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
-        send_tab_to_self::RecordSendTabToSelfClickResult(
-            send_tab_to_self::kLinkMenu,
-            SendTabToSelfClickResult::kShowDeviceList);
-        send_tab_to_self::RecordSendTabToSelfDeviceCount(
-            send_tab_to_self::kLinkMenu, 1);
       } else {
         send_tab_to_self_sub_menu_model_ =
             std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(
@@ -1456,8 +1449,6 @@ void RenderViewContextMenu::AppendPageItems() {
   if (GetBrowser() &&
       send_tab_to_self::ShouldOfferFeature(
           GetBrowser()->tab_strip_model()->GetActiveWebContents())) {
-    send_tab_to_self::RecordSendTabToSelfClickResult(
-        send_tab_to_self::kContentMenu, SendTabToSelfClickResult::kShowItem);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     send_tab_to_self_menu_present = true;
     if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
@@ -1476,11 +1467,6 @@ void RenderViewContextMenu::AppendPageItems() {
                   GetBrowser()->profile())),
           ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif
-      send_tab_to_self::RecordSendTabToSelfClickResult(
-          send_tab_to_self::kContentMenu,
-          SendTabToSelfClickResult::kShowDeviceList);
-      send_tab_to_self::RecordSendTabToSelfDeviceCount(
-          send_tab_to_self::kContentMenu, 1);
     } else {
       send_tab_to_self_sub_menu_model_ =
           std::make_unique<send_tab_to_self::SendTabToSelfSubMenuModel>(

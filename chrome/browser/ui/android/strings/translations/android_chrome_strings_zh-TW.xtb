@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">輕觸 [熱門網站] 按鈕，即可查看熱門網站</translation>
 <translation id="1173894706177603556">重新命名</translation>
 <translation id="1178581264944972037">暫停</translation>
-<translation id="1188239144602654184">啟動 AR</translation>
 <translation id="1197267115302279827">移動書籤</translation>
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1204037785786432551">下載連結</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">文字</translation>
 <translation id="2082238445998314030">第 <ph name="RESULT_NUMBER" /> 個結果，共 <ph name="TOTAL_RESULTS" /> 個</translation>
 <translation id="2096012225669085171">讓多部裝置保持同步，並提供人化體驗</translation>
-<translation id="2099625543891475722">你的身體特徵，例如身高</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2100314319871056947">請嘗試將要分享的文字分成多個片段</translation>
 <translation id="2109711654079915747">不須離開網頁即可瞭解網站上的主題。「輕觸搜尋」功能可將特定字詞及其上下文內容傳送給 Google 搜尋，並傳回定義、圖片、搜尋結果和其他詳細資料。
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="381841723434055211">電話號碼</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
-<translation id="3849365399446680203">當你進入 AR 時，這個網站可能會執行以下作業：
-• 為你的環境建立 3D 地圖
-• 追蹤相機的動作
-
-只有你可以看見相機拍攝的畫面，這個網站無法查看。</translation>
 <translation id="3859306556332390985">快轉到特定的播放時間點</translation>
 <translation id="388596076286380598">即使處於離線狀態或網路訊號不良，你也可以查看喜愛網站上的文章、影片和其他內容。</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">沒有網際網路連線</translation>
 <translation id="4321739720395210191">無法開啟攝影機，請重新啟動裝置，然後再試一次。</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
-<translation id="4353114845960720315">當你進入 VR 時，這個網站可能會取得以下資訊：</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="4384468725000734951">現已使用 Sogou 搜尋</translation>
 <translation id="4404568932422911380">沒有書籤</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">沒有網路連線</translation>
 <translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分鐘前}other{# 分鐘前}}</translation>
 <translation id="4587589328781138893">網站</translation>
 <translation id="4594952190837476234">這個離線版網頁是於 <ph name="CREATION_TIME" />建立，可能會和線上版本有所不同。</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">開啟 <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">使用密碼</translation>
 <translation id="4650364565596261010">系統預設</translation>
-<translation id="4660838440047236328">你的房間配置</translation>
 <translation id="4662373422909645029">暱稱不可包含數字</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
@@ -459,7 +449,6 @@
 
 如要變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">持卡人姓名</translation>
-<translation id="4808319664292298116">要從 <ph name="DOMAIN" /> 進入 VR 嗎？</translation>
 <translation id="4824958205181053313">取消同步處理？</translation>
 <translation id="4835385943915508971">Chrome 無法存取要求的資源。</translation>
 <translation id="4837753911714442426">開啟列印網頁的選項</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">退出全螢幕模式</translation>
 <translation id="6404511346730675251">編輯書籤</translation>
 <translation id="6406506848690869874">同步</translation>
-<translation id="6410973561433500075">要從 <ph name="DOMAIN" /> 進入 AR 嗎？</translation>
 <translation id="641643625718530986">列印…</translation>
 <translation id="6427112570124116297">翻譯網頁</translation>
 <translation id="6433501201775827830">選擇搜尋引擎</translation>

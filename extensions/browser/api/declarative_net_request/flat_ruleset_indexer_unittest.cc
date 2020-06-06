@@ -466,12 +466,12 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
 
   // Modify headers rules.
   std::vector<dnr_api::ModifyHeaderInfo> request_headers_1;
-  request_headers_1.push_back(
-      CreateModifyHeaderInfo(dnr_api::HEADER_OPERATION_REMOVE, "cookie"));
+  request_headers_1.push_back(CreateModifyHeaderInfo(
+      dnr_api::HEADER_OPERATION_REMOVE, "cookie", base::nullopt));
 
   std::vector<dnr_api::ModifyHeaderInfo> response_headers_1;
-  response_headers_1.push_back(
-      CreateModifyHeaderInfo(dnr_api::HEADER_OPERATION_REMOVE, "set-cookie"));
+  response_headers_1.push_back(CreateModifyHeaderInfo(
+      dnr_api::HEADER_OPERATION_REMOVE, "set-cookie", base::nullopt));
 
   rules_to_index.push_back(CreateIndexedRule(
       23, kMinValidPriority, flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
@@ -482,8 +482,8 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       std::move(request_headers_1), std::move(response_headers_1)));
 
   std::vector<dnr_api::ModifyHeaderInfo> request_headers_2;
-  request_headers_2.push_back(
-      CreateModifyHeaderInfo(dnr_api::HEADER_OPERATION_REMOVE, "referer"));
+  request_headers_2.push_back(CreateModifyHeaderInfo(
+      dnr_api::HEADER_OPERATION_REMOVE, "referer", base::nullopt));
 
   rules_to_index.push_back(CreateIndexedRule(
       24, kMinValidPriority, flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
@@ -544,8 +544,8 @@ TEST_F(FlatRulesetIndexerTest, RegexRules) {
 
   // Modify headers rule.
   std::vector<dnr_api::ModifyHeaderInfo> request_headers;
-  request_headers.push_back(
-      CreateModifyHeaderInfo(dnr_api::HEADER_OPERATION_REMOVE, "referer"));
+  request_headers.push_back(CreateModifyHeaderInfo(
+      dnr_api::HEADER_OPERATION_REMOVE, "referer", base::nullopt));
   rules_to_index.push_back(CreateIndexedRule(
       21, kMinValidPriority, flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
       flat_rule::ElementType_SUBDOCUMENT, flat_rule::ActivationType_NONE,

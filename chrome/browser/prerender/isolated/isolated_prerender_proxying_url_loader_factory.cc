@@ -10,6 +10,7 @@
 
 IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     IsolatedPrerenderProxyingURLLoaderFactory* factory,
+    ResourceLoadSuccessfulCallback on_resource_load_successful,
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
     int32_t request_id,
@@ -18,8 +19,11 @@ IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : factory_(factory),
+      on_resource_load_successful_(on_resource_load_successful),
       target_client_(std::move(client)),
       loader_receiver_(this, std::move(loader_receiver)) {
+  redirect_chain_.push_back(request.url);
+
   mojo::PendingRemote<network::mojom::URLLoaderClient> proxy_client =
       client_receiver_.BindNewPipeAndPassRemote();
 
@@ -69,12 +73,16 @@ void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
 
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
     OnReceiveResponse(network::mojom::URLResponseHeadPtr head) {
+  if (head && head->headers) {
+    http_response_code_ = head->headers->response_code();
+  }
   target_client_->OnReceiveResponse(std::move(head));
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
     OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                       network::mojom::URLResponseHeadPtr head) {
+  redirect_chain_.push_back(redirect_info.new_url);
   target_client_->OnReceiveRedirect(redirect_info, std::move(head));
 }
 
@@ -103,6 +111,7 @@ void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
 
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  MaybeReportResourceLoadSuccess(status.error_code);
   target_client_->OnComplete(status);
 }
 
@@ -112,13 +121,39 @@ void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
   factory_->RemoveRequest(this);
 }
 
+void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
+    MaybeReportResourceLoadSuccess(int net_error) {
+  if (net_error != net::OK) {
+    return;
+  }
+
+  if (!http_response_code_) {
+    return;
+  }
+
+  if (*http_response_code_ >= 300) {
+    return;
+  }
+
+  if (*http_response_code_ < 200) {
+    return;
+  }
+
+  DCHECK_GT(redirect_chain_.size(), 0U);
+  for (const GURL& url : redirect_chain_) {
+    on_resource_load_successful_.Run(url);
+  }
+}
+
 IsolatedPrerenderProxyingURLLoaderFactory::
     IsolatedPrerenderProxyingURLLoaderFactory(
         int frame_tree_node_id,
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
         mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
-        DisconnectCallback on_disconnect)
-    : on_disconnect_(std::move(on_disconnect)) {
+        DisconnectCallback on_disconnect,
+        ResourceLoadSuccessfulCallback on_resource_load_successful)
+    : on_resource_load_successful_(std::move(on_resource_load_successful)),
+      on_disconnect_(std::move(on_disconnect)) {
   target_factory_.Bind(std::move(target_factory));
   target_factory_.set_disconnect_handler(base::BindOnce(
       &IsolatedPrerenderProxyingURLLoaderFactory::OnTargetFactoryError,
@@ -142,8 +177,9 @@ void IsolatedPrerenderProxyingURLLoaderFactory::CreateLoaderAndStart(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   requests_.insert(std::make_unique<InProgressRequest>(
-      this, std::move(loader_receiver), routing_id, request_id, options,
-      request, std::move(client), traffic_annotation));
+      this, on_resource_load_successful_, std::move(loader_receiver),
+      routing_id, request_id, options, request, std::move(client),
+      traffic_annotation));
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::Clone(

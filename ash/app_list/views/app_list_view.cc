@@ -1209,8 +1209,15 @@ void AppListView::RecordStateTransitionForUma(AppListViewState new_state) {
 }
 
 void AppListView::MaybeCreateAccessibilityEvent(AppListViewState new_state) {
-  if (new_state != AppListViewState::kPeeking &&
-      new_state != AppListViewState::kFullscreenAllApps)
+  if (new_state == app_list_state_)
+    return;
+
+  if ((new_state != AppListViewState::kPeeking &&
+       new_state != AppListViewState::kFullscreenAllApps)) {
+    return;
+  }
+
+  if (!delegate_->AppListTargetVisibility())
     return;
 
   base::string16 state_announcement;

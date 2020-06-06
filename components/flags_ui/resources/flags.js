@@ -184,9 +184,9 @@ function restartBrowser() {
  * @param {string} text The text that should be announced.
 */
 function announceStatus(text) {
-  $('screen-reader-status-message').innerHTML = '';
+  $('screen-reader-status-message').textContent = '';
   setTimeout(function() {
-    $('screen-reader-status-message').innerHTML = text;
+    $('screen-reader-status-message').textContent = text;
   }, 100);
 }
 

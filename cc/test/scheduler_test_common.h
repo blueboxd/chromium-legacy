@@ -45,6 +45,7 @@ class FakeCompositorTimingHistory : public CompositorTimingHistory {
   void SetPrepareTilesDurationEstimate(base::TimeDelta duration);
   void SetActivateDurationEstimate(base::TimeDelta duration);
   void SetDrawDurationEstimate(base::TimeDelta duration);
+  void SetBeginMainFrameSentTime(base::TimeTicks time);
 
   base::TimeDelta BeginMainFrameQueueDurationCriticalEstimate() const override;
   base::TimeDelta BeginMainFrameQueueDurationNotCriticalEstimate()

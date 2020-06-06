@@ -14,6 +14,10 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -22,6 +26,13 @@ import java.util.Arrays;
  * DisableAnimationsTestRule(true).
  */
 public class DisableAnimationsTestRule implements TestRule {
+    /**
+     * Allows methods to ensure animations are on while disabled rule is applied class-wide.
+     */
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface EnsureAnimationsOn {}
+
     private boolean mEnableAnimation;
     private Method mSetAnimationScalesMethod;
     private Method mGetAnimationScalesMethod;
@@ -65,11 +76,14 @@ public class DisableAnimationsTestRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                boolean overrideRequested =
+                        description.getAnnotation(EnsureAnimationsOn.class) != null;
                 float curAnimationScale = Settings.Global.getFloat(
                         ContextUtils.getApplicationContext().getContentResolver(),
                         Settings.Global.ANIMATOR_DURATION_SCALE, DEFAULT_SCALE_FACTOR);
-                float toAnimationScale =
-                        mEnableAnimation ? DEFAULT_SCALE_FACTOR : DISABLED_SCALE_FACTOR;
+                float toAnimationScale = mEnableAnimation || overrideRequested
+                        ? DEFAULT_SCALE_FACTOR
+                        : DISABLED_SCALE_FACTOR;
                 if (curAnimationScale != toAnimationScale) {
                     setAnimationScaleFactors(toAnimationScale);
                     Log.i(TAG, "Set animation scales to: %.1f", toAnimationScale);

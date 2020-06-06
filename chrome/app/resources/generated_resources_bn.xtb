@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">সার্টিফিকেট স্বাক্ষরকারী</translation>
 <translation id="1145292499998999162">প্লাগ-ইন ব্লক করা আছে</translation>
 <translation id="1145593918056169051">প্রিন্টার বন্ধ হয়ে গেছে</translation>
-<translation id="1146678959555564648">(ভিআর)VR লিখুন</translation>
 <translation id="114721135501989771">Chrome-এ Google স্মার্ট পান</translation>
 <translation id="1147991416141538220">অ্যাক্সেস করার অনুমতি চাইতে এই ডিভাইস অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="1149401351239820326">মেয়াদ শেষের মাস</translation>
@@ -866,7 +865,6 @@
 <translation id="2096715839409389970">থার্ড-পার্টি কুকিজ মুছুন</translation>
 <translation id="2097372108957554726">নতুন ডিভাইস রেজিস্টার করতে আপনাকে Chrome-এ সাইন-ইন করতে হবে</translation>
 <translation id="2099172618127234427">আপনি Chrome OS ডিবাগিং বৈশিষ্ট্যগুলি চালু করছেন যা sshd daemon সেট-আপ করবে এবং USB ড্রাইভগুলি থেকে বুট করা চালু করবে৷</translation>
-<translation id="2099625543891475722">আপনার শারীরিক বৈশিষ্ট্য, যেমন উচ্চতা</translation>
 <translation id="2099686503067610784">সার্ভার সার্টিফিকেট "<ph name="CERTIFICATE_NAME" />" মুছবেন?</translation>
 <translation id="2100273922101894616">অটো সাইন-ইন</translation>
 <translation id="2101225219012730419">ভার্সন:</translation>
@@ -2655,7 +2653,6 @@
 <translation id="4350019051035968019">এই ডিভাইসটি একটি ভিন্ন ডোমেনের দ্বারা পরিচালনার জন্য চিহ্নিত হওয়ায় আপনার অ্যাকাউন্টটি যে ডোমেনের আওতায় রয়েছে তাতে নথিভুক্ত করা যাবে না৷</translation>
 <translation id="4350782034419308508">হ্যালো Google</translation>
 <translation id="4351060348582610152">কাছাকাছি থাকা ব্লুটুথ ডিভাইসগুলিকে <ph name="ORIGIN" /> স্ক্যান করতে চায়, এই ডিভাইসগুলি পাওয়া গেছে:</translation>
-<translation id="4353114845960720315">আপনি ভিআর (VR) মোডে থাকলে এই সাইট যে বিষয় সম্পর্কে জানতে পারে তা হল:</translation>
 <translation id="4354073718307267720">কোনও সাইট আপনার আশেপাশের এলাকার একটি 3D ম্যাপ তৈরি করতে বা ক্যামেরার অবস্থান ট্র্যাক করতে চাইলে, একবার জিজ্ঞাসা করে নিন</translation>
 <translation id="4354344420232759511">আপনার দেখা সাইটগুলি এখানে দেখানো হবে</translation>
 <translation id="435527878592612277">আপনার ফটো বেছে নিন</translation>
@@ -2890,7 +2887,6 @@
 <translation id="4659077111144409915">প্রাথমিক অ্যাকাউন্ট</translation>
 <translation id="4660476621274971848">"<ph name="EXPECTED_VERSION" />" ভার্সনটি হওয়া উচিত ছিল, কিন্তু ভার্সনটি হল "<ph name="NEW_ID" />"</translation>
 <translation id="4660540330091848931">রিসাইজ করা হচ্ছে</translation>
-<translation id="4660838440047236328">আপনার রুমের লে-আউট</translation>
 <translation id="4661407454952063730">অ্যাপ ডেটা হল পরিচিতি, মেসেজ এবং ফটোর মতো যেকোনও ডেটা যা কোনও অ্যাপ (ডেভেলপার সেটিংসের উপরে ভিত্তি করে) সেভ করে রাখে।</translation>
 <translation id="4662373422909645029">ডাকনামে সংখ্যা থাকবে না</translation>
 <translation id="4662788913887017617">এই বুকমার্কটি আপনার iPhone এর সাথে শেয়ার করুন</translation>
@@ -2979,9 +2975,7 @@
 <translation id="4801512016965057443">মোবাইল ডেটা রোমিংয়ের অনুমতি দিন</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="4804827417948292437">অ্যাভোকাডো</translation>
-<translation id="4805077164141082536">আপগ্রেড করার আগে আপনার বর্তমান Linux কন্টেনারের ব্যাক-আপ নেওয়ার জন্য সাজেস্ট করছি।</translation>
 <translation id="4807098396393229769">কার্ডে থাকা নাম</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> থেকে ভিআর (VR) প্রেজেন্টেশন চালু করতে চান?</translation>
 <translation id="4808667324955055115">পপ-আপগুলি ব্লক করা হয়েছে:</translation>
 <translation id="480990236307250886">হোম পৃষ্ঠাটি খুলুন</translation>
 <translation id="4811212958317149293">কীবোর্ড অটোমেটিক স্ক্যান করার অ্যাক্সেস পাল্টান</translation>
@@ -3709,7 +3703,6 @@
 <translation id="5739235828260127894">যাচাইকরণের জন্য অপেক্ষা করা হচ্ছে। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">খুব বড়</translation>
 <translation id="574209121243317957">পিচ</translation>
-<translation id="5745136023067925867"><ph name="DEVICE_TYPE" /> সংক্রান্ত পরামর্শ, অফার ও আপডেট পান এবং মতামত শেয়ার করুন</translation>
 <translation id="5746169159649715125">পিডিএফ হিসেবে সেভ করুন</translation>
 <translation id="5747552184818312860">মেয়াদ শেষ হবে</translation>
 <translation id="5747785204778348146">ডেভেলপার - অস্থায়ী</translation>
@@ -4833,7 +4826,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{পৃষ্ঠাটি ছেড়ে যান}one{পৃষ্ঠাগুলি ছেড়ে যান}other{পৃষ্ঠাগুলি ছেড়ে যান}}</translation>
 <translation id="7207457272187520234">ব্যবহার এবং ডায়াগনস্টিক বিষয়ক ডেটা পাঠান। বর্তমানে এই ডিভাইসটি অটোমেটিক Google-কে ডায়াগনস্টিক, ডিভাইস এবং অ্যাপ ব্যবহারের ডেটা পাঠাচ্ছে। এটি সিস্টেম ও অ্যাপের স্টেবিলিটি বাড়াতে এবং অন্যান্য উন্নতিতে সাহায্য করবে। কিছু একত্রিত করা ডেটা Android ডেভেলপারের মতো Google অ্যাপ এবং পার্টনারদেরও সাহায্য করবে। এই সেটিং মালিকের নিয়ন্ত্রণে রয়েছে। আপনার অতিরিক্ত 'ওয়েব ও অ্যাপ অ্যাক্টিভিটি' সেটিং চালু থাকলে, এই ডেটা আপনার Google অ্যাকাউন্টে সেভ করা হতে পারে।</translation>
 <translation id="7207631048330366454">অ্যাপ খুঁজুন</translation>
-<translation id="7210171324714276060"><ph name="EXTENSION_NAME" /> এক্সটেনশন <ph name="SEARCH_PROVIDER_DOMAIN" /> ব্যবহার করার জন্য সার্চ পরিবর্তন করেছে</translation>
 <translation id="7210499381659830293">এক্সটেনশন প্রিন্টার</translation>
 <translation id="7212097698621322584">পরিবর্তন করার জন্য আপনি পিন লিখুন। আপনি যদি পিন না জানেন তাহলে আপনাকে নিরাপত্তা কী রিসেট করতে হবে, তারপর নতুন পিন তৈরি করুন।</translation>
 <translation id="7216409898977639127">মোবাইল পরিষেবা প্রদানকারী</translation>
@@ -5233,7 +5225,6 @@
 <translation id="7737115349420013392">"<ph name="DEVICE_NAME" />"-এর সাথে পেয়ার করা হয়েছে ...</translation>
 <translation id="7737238973539693982">Linux (বিটা) মুছে ফেলুন</translation>
 <translation id="7740996059027112821">মানক</translation>
-<translation id="7743128043742060936"><ph name="EXTENSION_NAME" /> এক্সটেনশনের মাধ্যমে এই পৃষ্ঠাটি পরিবর্তন করা হয়েছে</translation>
 <translation id="7744047395460924128">আপনার প্রিন্ট করার ইতিহাস দেখুন</translation>
 <translation id="7744192722284567281">ডেটার নিরাপত্তা লঙ্ঘন দেখা গেছে</translation>
 <translation id="7750228210027921155">ছবির-মধ্যে-ছবি</translation>

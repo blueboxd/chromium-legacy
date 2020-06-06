@@ -3158,9 +3158,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini disetel ke 0, penyimpanan data autentikasi ke cache akan dinonaktifkan. Hal ini akan memperlambat login pengguna terafiliasi secara signifikan karena data khusus area harus diambil setiap kali login.
 
       Perhatikan bahwa data area disimpan dalam cache bahkan untuk pengguna singkat. Cache harus dinonaktifkan jika pelacakan area pengguna singkat ingin dicegah.</translation>
-<translation id="5700097087679928356">Jika kebijakan ditetapkan ke 0 (default), Anda akan dapat mengakses alat developer dan konsol JavaScript, tetapi bukan dalam konteks ekstensi yang diinstal oleh kebijakan perusahaan. Jika kebijakan ditetapkan ke 1, Anda akan dapat mengakses alat developer dan konsol JavaScript di semua konteks, termasuk yang memiliki ekstensi yang diinstal oleh kebijakan perusahaan. Jika kebijakan ditetapkan ke 2, Anda tidak akan dapat mengakses alat developer, dan Anda tidak dapat memeriksa elemen situs.
-
-      Setelan ini juga akan menonaktifkan pintasan keyboard dan entri menu atau menu konteks untuk membuka alat developer atau konsol JavaScript.</translation>
 <translation id="570062449808736508">Jika kebijakan ini disetel ke string yang tidak kosong, WebView akan membaca batasan URL dari penyedia konten dengan nama otoritas yang diberikan.</translation>
 <translation id="5708969689202733975">Mengonfigurasi mode buka kunci cepat yang diizinkan</translation>
 <translation id="5711016543513883877">

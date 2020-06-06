@@ -99,9 +99,11 @@ UpdateService::ErrorCategory ToErrorCategory(
 
 update_client::UpdateClient::CrxStateChangeCallback
 MakeUpdateClientCrxStateChangeCallback(
+    scoped_refptr<update_client::Configurator> config,
     UpdateService::StateChangeCallback callback) {
   return base::BindRepeating(
-      [](UpdateService::StateChangeCallback callback,
+      [](scoped_refptr<update_client::Configurator> config,
+         UpdateService::StateChangeCallback callback,
          update_client::CrxUpdateItem crx_update_item) {
         UpdateService::UpdateState update_state;
         update_state.app_id = crx_update_item.id;
@@ -113,9 +115,16 @@ MakeUpdateClientCrxStateChangeCallback(
             ToErrorCategory(crx_update_item.error_category);
         update_state.error_code = crx_update_item.error_code;
         update_state.extra_code1 = crx_update_item.extra_code1;
+
+        // Commit the prefs values written by |update_client| when the
+        // update has completed, such as `pv` and `fingerprint`.
+        if (update_state.state == UpdateService::UpdateState::State::kUpdated) {
+          config->GetPrefService()->CommitPendingWrite();
+        }
+
         callback.Run(update_state);
       },
-      callback);
+      config, callback);
 }
 
 std::vector<base::Optional<update_client::CrxComponent>> GetComponents(
@@ -160,10 +169,10 @@ void UpdateServiceInProcess::UpdateAll(StateChangeCallback state_update,
   const auto app_ids = persisted_data_->GetAppIds();
   DCHECK(base::Contains(app_ids, kUpdaterAppId));
 
-  update_client_->Update(app_ids,
-                         base::BindOnce(&GetComponents, persisted_data_),
-                         MakeUpdateClientCrxStateChangeCallback(state_update),
-                         false, MakeUpdateClientCallback(std::move(callback)));
+  update_client_->Update(
+      app_ids, base::BindOnce(&GetComponents, persisted_data_),
+      MakeUpdateClientCrxStateChangeCallback(config_, state_update), false,
+      MakeUpdateClientCallback(std::move(callback)));
 }
 
 void UpdateServiceInProcess::Update(const std::string& app_id,
@@ -172,11 +181,11 @@ void UpdateServiceInProcess::Update(const std::string& app_id,
                                     Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  update_client_->Update({app_id},
-                         base::BindOnce(&GetComponents, persisted_data_),
-                         MakeUpdateClientCrxStateChangeCallback(state_update),
-                         priority == Priority::kForeground,
-                         MakeUpdateClientCallback(std::move(callback)));
+  update_client_->Update(
+      {app_id}, base::BindOnce(&GetComponents, persisted_data_),
+      MakeUpdateClientCrxStateChangeCallback(config_, state_update),
+      priority == Priority::kForeground,
+      MakeUpdateClientCallback(std::move(callback)));
 }
 
 void UpdateServiceInProcess::Uninitialize() {

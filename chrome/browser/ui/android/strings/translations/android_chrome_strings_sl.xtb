@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Oglejte si priljubljena spletna mesta z dotikom gumba »Najb. prilj.«</translation>
 <translation id="1173894706177603556">Preimenuj</translation>
 <translation id="1178581264944972037">Prekini</translation>
-<translation id="1188239144602654184">Začni RR</translation>
 <translation id="1197267115302279827">Premakni zavihke</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1204037785786432551">Prenesi povezavo</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">besedilo</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" />. rezultat od <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Sinhronizacija in prilagajanje med napravami</translation>
-<translation id="2099625543891475722">vaše fizične poteze, na primer višina,</translation>
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2100314319871056947">Poskusite deliti besedilo v manjših kosih</translation>
 <translation id="2109711654079915747">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
@@ -341,11 +339,6 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="3810973564298564668">Upravljanje</translation>
 <translation id="381841723434055211">Telefonske številke</translation>
 <translation id="3819178904835489326">Št. izbrisanih prenosov: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3849365399446680203">Med uporabo razširjene resničnosti lahko to spletno mesto:
-• ustvari 3D-zemljevid okolja,
-• spremlja premikanje fotoaparata.
-
-Samo vam je vidno, kam je usmerjen fotoaparat. Spletno mesto si ne more ogledati slik fotoaparata.</translation>
 <translation id="3859306556332390985">Išči naprej</translation>
 <translation id="388596076286380598">Prejemajte članke, videoposnetke in drugo vsebino s spletnih mest, ki so vam všeč, tudi ko nimate povezave ali ko je ta slaba.</translation>
 <translation id="3894427358181296146">Dodajanje mape</translation>
@@ -399,7 +392,6 @@ Samo vam je vidno, kam je usmerjen fotoaparat. Spletno mesto si ne more ogledati
 <translation id="4320177379694898372">Ni internetne povezave</translation>
 <translation id="4321739720395210191">Kamere ni mogoče odpreti. Znova zaženite napravo in poskusite znova.</translation>
 <translation id="4351244548802238354">Zapri pogovorno okno</translation>
-<translation id="4353114845960720315">Med uporabo navidezne resničnosti lahko to spletno mesto o vas izve to:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Uporaba iskalnika Sogou za iskanje</translation>
 <translation id="4404568932422911380">Ni zaznamkov</translation>
@@ -427,7 +419,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4561979708150884304">Ni povezave</translation>
 <translation id="4565377596337484307">Skrij geslo</translation>
 <translation id="4572422548854449519">Prijava v upravljani račun</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Pred # minuto}one{Pred # minuto}two{Pred # minutama}few{Pred # minutami}other{Pred # minutami}}</translation>
 <translation id="4587589328781138893">Spletna mesta</translation>
 <translation id="4594952190837476234">Ta stran brez povezave je bila ustvarjena <ph name="CREATION_TIME" /> in se morda razlikuje od spletne različice.</translation>
@@ -435,7 +426,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4616150815774728855">Odpri <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Uporabi geslo</translation>
 <translation id="4650364565596261010">Sistemsko privzeto</translation>
-<translation id="4660838440047236328">tloris sobe.</translation>
 <translation id="4662373422909645029">Vzdevek ne sme vsebovati številk</translation>
 <translation id="4663756553811254707">Št. izbrisanih zaznamkov: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Spletno mesto <ph name="NAME" /> je bilo dodano na začetni zaslon</translation>
@@ -459,7 +449,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 
 Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Ime na kartici</translation>
-<translation id="4808319664292298116">Želite zagnati navidezno resničnost z domene <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Želite preklicati sinhronizacijo?</translation>
 <translation id="4835385943915508971">Chrome nima dostopa do zahtevanega vira</translation>
 <translation id="4837753911714442426">Odpiranje možnosti za tiskanje strani</translation>
@@ -659,7 +648,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6398765197997659313">Izhod iz celozaslonskega načina</translation>
 <translation id="6404511346730675251">Uredi zaznamek</translation>
 <translation id="6406506848690869874">Sinhronizacija</translation>
-<translation id="6410973561433500075">Ali želite zagnati razširjeno resničnost z domene <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Tiskanje …</translation>
 <translation id="6427112570124116297">Prevajanje spleta</translation>
 <translation id="6433501201775827830">Izbira iskalnika</translation>

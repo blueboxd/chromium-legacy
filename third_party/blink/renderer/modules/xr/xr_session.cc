@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
-#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
 #include "third_party/blink/renderer/modules/xr/xr_anchor_set.h"
 #include "third_party/blink/renderer/modules/xr/xr_bounded_reference_space.h"
@@ -306,6 +305,7 @@ void XRSession::MetricsReporter::ReportFeatureUsed(
     case XRSessionFeature::HIT_TEST:
     case XRSessionFeature::LIGHT_ESTIMATION:
     case XRSessionFeature::ANCHORS:
+    case XRSessionFeature::CAMERA_ACCESS:
       // Not recording metrics for these features currently.
       break;
   }
@@ -1710,16 +1710,6 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   update_views_next_frame_ = true;
   output_width_ = element->OffsetWidth() * devicePixelRatio;
   output_height_ = element->OffsetHeight() * devicePixelRatio;
-  int output_angle = 0;
-
-  // TODO(crbug.com/836948): handle square canvases.
-  // TODO(crbug.com/840346): we should not need to use ScreenOrientation here.
-  ScreenOrientation* orientation = ScreenOrientation::Create(window);
-
-  if (orientation) {
-    output_angle = orientation->angle();
-    DVLOG(2) << __func__ << ": got angle=" << output_angle;
-  }
 
   if (render_state_->baseLayer()) {
     render_state_->baseLayer()->OnResize();

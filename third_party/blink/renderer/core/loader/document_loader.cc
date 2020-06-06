@@ -588,11 +588,8 @@ mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
 DocumentLoader::TakePendingWorkerTimingReceiver(int request_id) {
   if (!GetServiceWorkerNetworkProvider())
     return mojo::NullReceiver();
-  mojo::ScopedMessagePipeHandle pipe =
-      GetServiceWorkerNetworkProvider()->TakePendingWorkerTimingReceiver(
-          request_id);
-  return mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>(
-      std::move(pipe));
+  return GetServiceWorkerNetworkProvider()->TakePendingWorkerTimingReceiver(
+      request_id);
 }
 
 void DocumentLoader::BodyCodeCacheReceived(mojo_base::BigBuffer data) {

@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">ผู้เซ็นชื่อในใบรับรอง</translation>
 <translation id="1145292499998999162">ปลั๊กอินถูกบล็อก</translation>
 <translation id="1145593918056169051">เครื่องพิมพ์หยุดทำงาน</translation>
-<translation id="1146678959555564648">เข้าสู่ VR</translation>
 <translation id="114721135501989771">ใช้ฟีเจอร์เจ๋งๆ จาก Google ใน Chrome</translation>
 <translation id="1147991416141538220">หากต้องการสิทธิ์เข้าถึง ให้ติดต่อผู้ดูแลระบบของอุปกรณ์นี้</translation>
 <translation id="1149401351239820326">เดือนที่หมดอายุ</translation>
@@ -866,7 +865,6 @@
 <translation id="2096715839409389970">ล้างคุกกี้ของบุคคลที่สาม</translation>
 <translation id="2097372108957554726">คุณต้องลงชื่อเข้าใช้ Chrome เพื่อลงทะเบียนอุปกรณ์ใหม่</translation>
 <translation id="2099172618127234427">คุณกำลังเปิดใช้ฟีเจอร์การแก้ไขข้อบกพร่องของ Chrome OS ซึ่งจะตั้งค่า sshd daemon และเปิดใช้การเปิดเครื่องจากไดรฟ์ USB</translation>
-<translation id="2099625543891475722">ลักษณะทางกายภาพของคุณ เช่น ส่วนสูง</translation>
 <translation id="2099686503067610784">ลบใบรับรองของเซิร์ฟเวอร์ "<ph name="CERTIFICATE_NAME" />" หรือไม่</translation>
 <translation id="2100273922101894616">ลงชื่อเข้าใช้อัตโนมัติ</translation>
 <translation id="2101225219012730419">รุ่น:</translation>
@@ -2658,7 +2656,6 @@
 <translation id="4350019051035968019">ไม่สามารถลงทะเบียนอุปกรณ์นี้กับโดเมนที่บัญชีของคุณใช้อยู่ได้ เนื่องจากอุปกรณ์มีการทำเครื่องหมายไว้ว่าได้รับการจัดการจากโดเมนอื่น</translation>
 <translation id="4350782034419308508">Ok Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> ต้องการสแกนหาอุปกรณ์บลูทูธที่อยู่ใกล้เคียงและได้พบอุปกรณ์ต่อไปนี้</translation>
-<translation id="4353114845960720315">ขณะอยู่ในโหมด VR เว็บไซต์นี้อาจรู้เกี่ยวกับ</translation>
 <translation id="4354073718307267720">ถามเมื่อเว็บไซต์ต้องการสร้างแผนที่ 3 มิติของสิ่งที่อยู่รอบตัวคุณหรือติดตามตำแหน่งของกล้อง</translation>
 <translation id="4354344420232759511">เว็บไซต์ที่คุณเข้าชมจะปรากฏที่นี่</translation>
 <translation id="435527878592612277">เลือกรูปภาพของคุณ</translation>
@@ -2893,7 +2890,6 @@
 <translation id="4659077111144409915">บัญชีหลัก</translation>
 <translation id="4660476621274971848">เวอร์ชันที่คาดการณ์ "<ph name="EXPECTED_VERSION" />" แต่เวอร์ชันที่แจ้งคือ "<ph name="NEW_ID" />"</translation>
 <translation id="4660540330091848931">กำลังปรับขนาด</translation>
-<translation id="4660838440047236328">เลย์เอาต์ของห้อง</translation>
 <translation id="4661407454952063730">ข้อมูลแอปอาจเป็นข้อมูลใดก็ตามที่แอปบันทึกไว้ (ขึ้นอยู่กับการตั้งค่าของนักพัฒนาซอฟต์แวร์) ซึ่งรวมถึงข้อมูลอย่างเช่นรายชื่อติดต่อ ข้อความ และรูปภาพ</translation>
 <translation id="4662373422909645029">ชื่อเล่นต้องไม่มีตัวเลข</translation>
 <translation id="4662788913887017617">แชร์บุ๊กมาร์กนี้กับ iPhone ของคุณ</translation>
@@ -2982,9 +2978,7 @@
 <translation id="4801512016965057443">อนุญาตการโรมมิ่งข้อมูลมือถือ</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="4804827417948292437">อะโวคาโด</translation>
-<translation id="4805077164141082536">เราขอแนะนำให้สำรองข้อมูลในคอนเทนเนอร์ Linux ปัจจุบันก่อนที่จะอัปเกรด</translation>
 <translation id="4807098396393229769">ชื่อบนบัตร</translation>
-<translation id="4808319664292298116">เข้าสู่โหมด VR จาก <ph name="DOMAIN" /> ใช่ไหม</translation>
 <translation id="4808667324955055115">บล็อกป๊อปอัปอยู่:</translation>
 <translation id="480990236307250886">เปิดหน้าแรก</translation>
 <translation id="4811212958317149293">การสแกนอัตโนมัติของแป้นพิมพ์การเข้าถึงด้วยสวิตช์</translation>
@@ -3712,7 +3706,6 @@
 <translation id="5739235828260127894">กำลังรอการยืนยัน <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ใหญ่มาก</translation>
 <translation id="574209121243317957">ระดับเสียงสูงต่ำ</translation>
-<translation id="5745136023067925867">รับเคล็ดลับการใช้งาน ข้อเสนอ และข้อมูลอัปเดต รวมถึงแชร์ความคิดเห็นสำหรับ <ph name="DEVICE_TYPE" /></translation>
 <translation id="5746169159649715125">บันทึกเป็น PDF</translation>
 <translation id="5747552184818312860">หมดอายุ</translation>
 <translation id="5747785204778348146">นักพัฒนาซอฟต์แวร์ - ไม่เสถียร</translation>
@@ -4835,7 +4828,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{หน้าที่ออกไป}other{หน้าที่ออกไป}}</translation>
 <translation id="7207457272187520234">ส่งข้อมูลการใช้งานและการวินิจฉัย ปัจจุบันอุปกรณ์นี้ส่งข้อมูลการวินิจฉัย อุปกรณ์ และการใช้งานแอปไปยัง Google โดยอัตโนมัติ ซึ่งจะช่วยปรับปรุงความเสถียรของแอปและระบบ และอื่นๆ ข้อมูลที่รวบรวมมาบางส่วนจะมีประโยชน์ต่อแอปและพาร์ทเนอร์ของ Google ด้วย เช่น นักพัฒนาซอฟต์แวร์ Android เจ้าของเป็นผู้บังคับใช้การตั้งค่านี้ หากเปิดการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปไว้ ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของคุณ</translation>
 <translation id="7207631048330366454">ค้นหาแอป</translation>
-<translation id="7210171324714276060">ส่วนขยาย <ph name="EXTENSION_NAME" /> เปลี่ยนไปใช้การค้นหาโดย <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">เครื่องพิมพ์ที่สั่งการผ่านส่วนขยาย</translation>
 <translation id="7212097698621322584">ป้อน PIN ปัจจุบันเพื่อเปลี่ยน PIN หากไม่ทราบ PIN คุณจะต้องรีเซ็ตคีย์ความปลอดภัย แล้วสร้าง PIN ใหม่</translation>
 <translation id="7216409898977639127">ผู้ให้บริการเครือข่ายมือถือ</translation>
@@ -5235,7 +5227,6 @@
 <translation id="7737115349420013392">กำลังจับคู่กับ "<ph name="DEVICE_NAME" />" ...</translation>
 <translation id="7737238973539693982">ลบ Linux (เบต้า)</translation>
 <translation id="7740996059027112821">มาตรฐาน</translation>
-<translation id="7743128043742060936">ส่วนขยาย <ph name="EXTENSION_NAME" /> ได้เปลี่ยนแปลงหน้านี้</translation>
 <translation id="7744047395460924128">ดูประวัติการพิมพ์</translation>
 <translation id="7744192722284567281">พบในการละเมิดข้อมูล</translation>
 <translation id="7750228210027921155">การแสดงภาพซ้อนภาพ</translation>

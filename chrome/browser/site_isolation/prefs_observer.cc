@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/site_isolation_policy.h"
 
@@ -37,7 +37,7 @@ void SiteIsolationPrefsObserver::OnChangeInIsolatedOriginsPref() {
   // Don't do anything if the policy was removed or shouldn't apply.
   if (!pref_change_registrar_.prefs()->HasPrefPath(prefs::kIsolateOrigins))
     return;
-  if (!SiteIsolationPolicy::IsEnterprisePolicyApplicable())
+  if (!site_isolation::SiteIsolationPolicy::IsEnterprisePolicyApplicable())
     return;
 
   // Add isolated origins based on the policy.  Note that the policy may only

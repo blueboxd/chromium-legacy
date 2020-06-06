@@ -14,11 +14,8 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_configurator.h"
-#include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
-#include "ui/display/screen.h"
 #include "ui/display/types/display_mode.h"
-#include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -61,13 +58,6 @@ class DisplayChangeObserverTest : public testing::Test,
     }
 
     Test::SetUp();
-  }
-
-  // Pass through method to be called by individual test cases.
-  ManagedDisplayInfo CreateManagedDisplayInfo(DisplayChangeObserver* observer,
-                                              const DisplaySnapshot* snapshot,
-                                              const DisplayMode* mode_info) {
-    return observer->CreateManagedDisplayInfo(snapshot, mode_info);
   }
 
  private:
@@ -185,8 +175,7 @@ TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
       123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN, false,
       false, PrivacyScreenState::kNotSupported, false, false, std::string(), {},
-      nullptr, nullptr, 0, gfx::Size(), gfx::ColorSpace(),
-      /*bits_per_channel=*/8u);
+      nullptr, nullptr, 0, gfx::Size());
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
@@ -304,127 +293,6 @@ TEST_P(DisplayChangeObserverTest,
     EXPECT_EQ(display_modes[0].refresh_rate(), 60);
   }
 }
-
-TEST_P(DisplayChangeObserverTest, InvalidDisplayColorSpaces) {
-  const std::unique_ptr<DisplaySnapshot> display_snapshot =
-      FakeDisplaySnapshot::Builder()
-          .SetId(123)
-          .SetName("AmazingFakeDisplay")
-          .SetNativeMode(MakeDisplayMode(1920, 1080, true, 60))
-          .SetColorSpace(gfx::ColorSpace())
-          .Build();
-
-  ui::DeviceDataManager::CreateInstance();
-  DisplayManager manager(nullptr);
-  const auto display_mode = MakeDisplayMode(1920, 1080, true, 60);
-  DisplayChangeObserver observer(&manager);
-  const ManagedDisplayInfo display_info = CreateManagedDisplayInfo(
-      &observer, display_snapshot.get(), display_mode.get());
-
-  EXPECT_EQ(display_info.bits_per_channel(), 8u);
-  const auto display_color_spaces = display_info.display_color_spaces();
-  EXPECT_FALSE(display_color_spaces.SupportsHDR());
-
-  EXPECT_EQ(
-      DisplaySnapshot::PrimaryFormat(),
-      display_color_spaces.GetOutputBufferFormat(gfx::ContentColorUsage::kSRGB,
-                                                 /*needs_alpha=*/true));
-
-  const auto color_space = display_color_spaces.GetRasterColorSpace();
-  // DisplayColorSpaces will fix an invalid ColorSpace to return sRGB.
-  EXPECT_TRUE(color_space.IsValid());
-  EXPECT_EQ(color_space, gfx::ColorSpace::CreateSRGB());
-}
-
-TEST_P(DisplayChangeObserverTest, SDRDisplayColorSpaces) {
-  const std::unique_ptr<DisplaySnapshot> display_snapshot =
-      FakeDisplaySnapshot::Builder()
-          .SetId(123)
-          .SetName("AmazingFakeDisplay")
-          .SetNativeMode(MakeDisplayMode(1920, 1080, true, 60))
-          .SetColorSpace(gfx::ColorSpace::CreateSRGB())
-          .Build();
-
-  ui::DeviceDataManager::CreateInstance();
-  DisplayManager manager(nullptr);
-  const auto display_mode = MakeDisplayMode(1920, 1080, true, 60);
-  DisplayChangeObserver observer(&manager);
-  const ManagedDisplayInfo display_info = CreateManagedDisplayInfo(
-      &observer, display_snapshot.get(), display_mode.get());
-
-  EXPECT_EQ(display_info.bits_per_channel(), 8u);
-
-  const auto display_color_spaces = display_info.display_color_spaces();
-  EXPECT_FALSE(display_color_spaces.SupportsHDR());
-
-  EXPECT_EQ(
-      DisplaySnapshot::PrimaryFormat(),
-      display_color_spaces.GetOutputBufferFormat(gfx::ContentColorUsage::kSRGB,
-                                                 /*needs_alpha=*/true));
-
-  const auto color_space = display_color_spaces.GetRasterColorSpace();
-  EXPECT_TRUE(color_space.IsValid());
-  EXPECT_EQ(color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::BT709);
-  EXPECT_EQ(color_space.GetTransferID(),
-            gfx::ColorSpace::TransferID::IEC61966_2_1);
-}
-
-#if defined(OS_CHROMEOS)
-TEST_P(DisplayChangeObserverTest, HDRDisplayColorSpaces) {
-  // TODO(crbug.com/1012846): Remove this flag and provision when HDR is fully
-  // supported on ChromeOS.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableUseHDRTransferFunction);
-
-  const std::unique_ptr<DisplaySnapshot> display_snapshot =
-      FakeDisplaySnapshot::Builder()
-          .SetId(123)
-          .SetName("AmazingFakeDisplay")
-          .SetNativeMode(MakeDisplayMode(1920, 1080, true, 60))
-          .SetColorSpace(gfx::ColorSpace::CreateHDR10(100.0f))
-          .SetBitsPerChannel(10u)
-          .Build();
-
-  ui::DeviceDataManager::CreateInstance();
-  DisplayManager manager(nullptr);
-  const auto display_mode = MakeDisplayMode(1920, 1080, true, 60);
-  DisplayChangeObserver observer(&manager);
-  const ManagedDisplayInfo display_info = CreateManagedDisplayInfo(
-      &observer, display_snapshot.get(), display_mode.get());
-
-  EXPECT_EQ(display_info.bits_per_channel(), 10u);
-
-  const auto display_color_spaces = display_info.display_color_spaces();
-  EXPECT_TRUE(display_color_spaces.SupportsHDR());
-
-  // |display_color_spaces| still supports SDR rendering.
-  EXPECT_EQ(
-      DisplaySnapshot::PrimaryFormat(),
-      display_color_spaces.GetOutputBufferFormat(gfx::ContentColorUsage::kSRGB,
-                                                 /*needs_alpha=*/true));
-
-  const auto sdr_color_space =
-      display_color_spaces.GetOutputColorSpace(gfx::ContentColorUsage::kSRGB,
-                                               /*needs_alpha=*/true);
-  EXPECT_TRUE(sdr_color_space.IsValid());
-  EXPECT_EQ(sdr_color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::BT2020);
-  EXPECT_EQ(sdr_color_space.GetTransferID(),
-            gfx::ColorSpace::TransferID::IEC61966_2_1);
-
-  EXPECT_EQ(
-      display_color_spaces.GetOutputBufferFormat(gfx::ContentColorUsage::kHDR,
-                                                 /*needs_alpha=*/true),
-      gfx::BufferFormat::RGBA_1010102);
-
-  const auto hdr_color_space =
-      display_color_spaces.GetOutputColorSpace(gfx::ContentColorUsage::kHDR,
-                                               /*needs_alpha=*/true);
-  EXPECT_TRUE(hdr_color_space.IsValid());
-  EXPECT_EQ(hdr_color_space.GetPrimaryID(), gfx::ColorSpace::PrimaryID::BT2020);
-  EXPECT_EQ(hdr_color_space.GetTransferID(),
-            gfx::ColorSpace::TransferID::PIECEWISE_HDR);
-}
-#endif
 
 INSTANTIATE_TEST_SUITE_P(All,
                          DisplayChangeObserverTest,

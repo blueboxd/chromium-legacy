@@ -175,14 +175,13 @@ void ServiceWorkerNetworkProviderForFrame::DispatchNetworkQuiet() {
   context()->DispatchNetworkQuiet();
 }
 
-mojo::ScopedMessagePipeHandle
+blink::CrossVariantMojoReceiver<
+    blink::mojom::WorkerTimingContainerInterfaceBase>
 ServiceWorkerNetworkProviderForFrame::TakePendingWorkerTimingReceiver(
     int request_id) {
   if (!context())
     return {};
-  auto worker_timing_receiver =
-      context()->TakePendingWorkerTimingReceiver(request_id);
-  return worker_timing_receiver.PassPipe();
+  return context()->TakePendingWorkerTimingReceiver(request_id);
 }
 
 void ServiceWorkerNetworkProviderForFrame::NotifyExecutionReady() {

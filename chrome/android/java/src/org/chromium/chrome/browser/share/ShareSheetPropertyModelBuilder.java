@@ -10,7 +10,10 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.view.View.OnClickListener;
+
+import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -19,9 +22,13 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles displaying the share sheet. The version used depends on several
@@ -31,10 +38,25 @@ import java.util.List;
  * #chrome-sharing-hub enabled: custom share sheet
  */
 class ShareSheetPropertyModelBuilder {
-    private final BottomSheetController mBottomSheetController;
-    private final PackageManager mPackageManager;
-    private static final int MAX_NUM_APPS = 7;
+    @IntDef({ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.TEXT,
+            ContentType.IMAGE, ContentType.OTHER_FILE_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ContentType {
+        int LINK_PAGE_VISIBLE = 0;
+        int LINK_PAGE_NOT_VISIBLE = 1;
+        int TEXT = 2;
+        int IMAGE = 3;
+        int OTHER_FILE_TYPE = 4;
+    }
 
+    private static final int MAX_NUM_APPS = 7;
+    private static final String IMAGE_TYPE = "image/";
+    // Variations parameter name for the comma-separated list of third-party activity names.
+    private static final String PARAM_SHARING_HUB_THIRD_PARTY_APPS = "sharing-hub-third-party-apps";
+
+    static final HashSet<Integer> ALL_CONTENT_TYPES = new HashSet<>(
+            Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
+                    ContentType.TEXT, ContentType.IMAGE, ContentType.OTHER_FILE_TYPE));
     private static final ArrayList<String> FALLBACK_ACTIVITIES =
             new ArrayList(Arrays.asList("com.whatsapp.ContactPicker",
                     "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias",
@@ -52,13 +74,55 @@ class ShareSheetPropertyModelBuilder {
                     "com.yahoo.mail.ui.activities.ComposeActivity",
                     "org.telegram.ui.LaunchActivity", "com.tencent.mm.ui.tools.ShareImgUI"));
 
-    /** Variations parameter name for the comma-separated list of third-party activity names. */
-    private static final String PARAM_SHARING_HUB_THIRD_PARTY_APPS = "sharing-hub-third-party-apps";
+    private final BottomSheetController mBottomSheetController;
+    private final PackageManager mPackageManager;
 
     ShareSheetPropertyModelBuilder(
             BottomSheetController bottomSheetController, PackageManager packageManager) {
         mBottomSheetController = bottomSheetController;
         mPackageManager = packageManager;
+    }
+
+    /**
+     * Returns a set of {@link ShareSheetCoordinator.ContentType}s for the current share.
+     *
+     * <p>If {@link ChromeFeatureList.CHROME_SHARING_HUB_V15} is not enabled, this returns a set of
+     * all of the {@link ContentType}s. Otherwise, it adds {@link ContentType}s according to the
+     * following logic:
+     *
+     * <ul>
+     *     <li>If a URL is present, {@code isUrlOfVisiblePage} determines whether to add
+     *     {@link ContentType.LINK_PAGE_VISIBLE} or {@link ContentType.LINK_PAGE_NOT_VISIBLE}.
+     *     <li>If the text being shared is not the same as the URL, add {@link ContentType.TEXT}
+     *     <li>If the share contains files and the {@code fileContentType} is an image, add
+     *     {@link ContentType.IMAGE}. Otherwise, add {@link ContentType.OTHER_FILE_TYPE}.
+     * </ul>
+     */
+    static Set<Integer> getContentTypes(ShareParams params, boolean isUrlOfVisiblePage) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
+            return ALL_CONTENT_TYPES;
+        }
+        Set<Integer> contentTypes = new HashSet<>();
+        if (!TextUtils.isEmpty(params.getUrl())) {
+            if (isUrlOfVisiblePage) {
+                contentTypes.add(ContentType.LINK_PAGE_VISIBLE);
+            } else {
+                contentTypes.add(ContentType.LINK_PAGE_NOT_VISIBLE);
+            }
+        }
+        if (!TextUtils.isEmpty(params.getText())
+                && !TextUtils.equals(params.getUrl(), params.getText())) {
+            contentTypes.add(ContentType.TEXT);
+        }
+        if (params.getFileUris() != null) {
+            if (!TextUtils.isEmpty(params.getFileContentType())
+                    && params.getFileContentType().startsWith(IMAGE_TYPE)) {
+                contentTypes.add(ContentType.IMAGE);
+            } else {
+                contentTypes.add(ContentType.OTHER_FILE_TYPE);
+            }
+        }
+        return contentTypes;
     }
 
     ArrayList<PropertyModel> selectThirdPartyApps(ShareSheetBottomSheetContent bottomSheet,

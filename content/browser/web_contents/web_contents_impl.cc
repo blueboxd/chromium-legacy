@@ -1986,8 +1986,6 @@ void WebContentsImpl::DidActivatePortal(
   for (auto& observer : observers_)
     observer.DidActivatePortal(predecessor_web_contents, activation_time);
 
-  // This happens later than SwapWebContents so that the delegate can observe it
-  // happening after predecessor WebContents has been moved into a portal.
   GetDelegate()->WebContentsBecamePortal(predecessor_web_contents);
 }
 

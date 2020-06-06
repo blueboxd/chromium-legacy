@@ -45,6 +45,9 @@ class LacrosLoader {
   // Removes any state that Lacros left behind.
   void CleanUp(bool previously_installed);
 
+  // Checks whether Lacros is already running.
+  bool IsLacrosRunning();
+
   scoped_refptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
 
@@ -55,6 +58,9 @@ class LacrosLoader {
   LoadCompleteCallback load_complete_callback_;
 
   // Process handle for the lacros-chrome process.
+  // TODO(https://crbug.com/1091863): There is currently no notification for
+  // when lacros-chrome is killed, so the underlying pid may be pointing at a
+  // non-existent process, or a new, unrelated process with the same pid.
   base::Process lacros_process_;
 
   base::WeakPtrFactory<LacrosLoader> weak_factory_{this};

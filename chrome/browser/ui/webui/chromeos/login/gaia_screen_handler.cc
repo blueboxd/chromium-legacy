@@ -884,7 +884,7 @@ void GaiaScreenHandler::HandleCompleteAdAuthentication(
   if (LoginDisplayHost::default_host())
     LoginDisplayHost::default_host()->SetDisplayEmail(username);
 
-  set_populated_email(username);
+  set_populated_account(AccountId::FromUserEmail(username));
   DCHECK(authpolicy_login_helper_);
   Key key(password);
   key.SetLabel(kCryptohomeGaiaKeyLabel);
@@ -1085,7 +1085,7 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // |args| can be null if it's OOBE.
   if (args)
     args->GetString(0, &email);
-  set_populated_email(email);
+  set_populated_account(AccountId::FromUserEmail(email));
   OnShowAddUser();
 }
 
@@ -1288,9 +1288,9 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool is_third_party_idp,
 
 void GaiaScreenHandler::ShowGaiaAsync(const AccountId& account_id) {
   if (account_id.is_valid())
-    populated_email_ = account_id.GetUserEmail();
+    populated_account_id_ = account_id;
   show_when_ready_ = true;
-  if (gaia_silent_load_ && populated_email_.empty()) {
+  if (gaia_silent_load_ && !populated_account_id_.is_valid()) {
     dns_cleared_ = true;
     cookies_cleared_ = true;
     ShowGaiaScreenIfReady();
@@ -1410,9 +1410,10 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   imm->SetState(gaia_ime_state);
 
   // Set Least Recently Used input method for the user.
-  if (!populated_email_.empty()) {
-    lock_screen_utils::SetUserInputMethod(
-        populated_email_, gaia_ime_state.get(), true /*honor_device_policy*/);
+  if (populated_account_id_.is_valid()) {
+    lock_screen_utils::SetUserInputMethod(populated_account_id_,
+                                          gaia_ime_state.get(),
+                                          true /*honor_device_policy*/);
   } else {
     std::vector<std::string> input_methods;
     if (gaia_ime_state->GetAllowedInputMethods().empty()) {
@@ -1422,7 +1423,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
       input_methods = gaia_ime_state->GetAllowedInputMethods();
     }
     const std::string owner_im = lock_screen_utils::GetUserLastInputMethod(
-        user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
+        user_manager::UserManager::Get()->GetOwnerAccountId());
     const std::string system_im = g_browser_process->local_state()->GetString(
         language_prefs::kPreferredKeyboardLayout);
 
@@ -1497,7 +1498,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force, bool offline) {
   GaiaContext context;
   context.force_reload = force;
   context.use_offline = offline;
-  context.email = populated_email_;
+  context.email = populated_account_id_.GetUserEmail();
 
   std::string gaia_id;
   if (!context.email.empty() &&
@@ -1511,7 +1512,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force, bool offline) {
         AccountId::FromUserEmail(gaia::CanonicalizeEmail(context.email)));
   }
 
-  populated_email_.clear();
+  populated_account_id_.clear();
 
   LoadGaia(context);
 }

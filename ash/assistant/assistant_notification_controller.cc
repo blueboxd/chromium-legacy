@@ -53,6 +53,8 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
           /*delegate=*/nullptr, kNotificationAssistantIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
+  system_notification->set_pinned(notification->is_pinned);
+
   switch (notification->priority) {
     case chromeos::assistant::mojom::AssistantNotificationPriority::kLow:
       system_notification->set_priority(message_center::LOW_PRIORITY);

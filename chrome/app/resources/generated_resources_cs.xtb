@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Autor podpisu certifikátu</translation>
 <translation id="1145292499998999162">Plugin zablokován</translation>
 <translation id="1145593918056169051">Tiskárna přestala fungovat</translation>
-<translation id="1146678959555564648">Zapnout VR</translation>
 <translation id="114721135501989771">Získejte do Chromu chytré funkce Google</translation>
 <translation id="1147991416141538220">Chcete-li požádat o přístup, kontaktujte administrátora tohoto zařízení.</translation>
 <translation id="1149401351239820326">Měsíc vypršení platnosti</translation>
@@ -866,7 +865,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2096715839409389970">Vymazat soubory cookie třetích stran</translation>
 <translation id="2097372108957554726">Chcete-li zaregistrovat nová zařízení, musíte se přihlásit do Chromu.</translation>
 <translation id="2099172618127234427">Aktivujete funkce ladění systému Chrome OS, které nastaví démona sshd a umožní spouštění z jednotek USB.</translation>
-<translation id="2099625543891475722">vaše fyzické vlastnosti, například výšku,</translation>
 <translation id="2099686503067610784">Smazat certifikát serveru <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="2101225219012730419">Verze:</translation>
@@ -2656,7 +2654,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4350019051035968019">Toto zařízení nelze zaregistrovat do domény, do které patří váš účet, protože je označeno pro správu jinou doménou.</translation>
 <translation id="4350782034419308508">Hej Google</translation>
 <translation id="4351060348582610152">Web <ph name="ORIGIN" /> chce vyhledat zařízení Bluetooth v okolí. Byla nalezena následující zařízení:</translation>
-<translation id="4353114845960720315">V režimu virtuální reality tento web může získat následující informace:</translation>
 <translation id="4354073718307267720">Zeptat se, když chce web vytvořit 3D mapu vašeho okolí nebo sledovat polohu kamery</translation>
 <translation id="4354344420232759511">Zde se zobrazí weby, které navštívíte</translation>
 <translation id="435527878592612277">Vyberte svou fotografii</translation>
@@ -2891,7 +2888,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4659077111144409915">Primární účet</translation>
 <translation id="4660476621274971848">Byla očekávána verze <ph name="EXPECTED_VERSION" />, ale použita byla verze <ph name="NEW_ID" /></translation>
 <translation id="4660540330091848931">Probíhá změna velikosti</translation>
-<translation id="4660838440047236328">rozvržení vaší místnosti.</translation>
 <translation id="4661407454952063730">Data aplikací mohou zahrnovat jakákoliv data, která uložila aplikace (v závislosti na nastavení vývojáře), včetně dat, jako jsou kontakty, zprávy a fotky.</translation>
 <translation id="4662373422909645029">Přezdívka nesmí obsahovat čísla</translation>
 <translation id="4662788913887017617">Sdílejte tuto záložku se svým iPhonem</translation>
@@ -2980,9 +2976,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4801512016965057443">Povolit roaming pro mobilní data</translation>
 <translation id="4804818685124855865">Odpojit</translation>
 <translation id="4804827417948292437">Avokádo</translation>
-<translation id="4805077164141082536">Před upgradováním doporučujeme zálohovat aktuální kontejner systému Linux.</translation>
 <translation id="4807098396393229769">Jméno na kartě</translation>
-<translation id="4808319664292298116">Spustit virtuální realitu z webu <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Byla zablokována vyskakovací okna:</translation>
 <translation id="480990236307250886">Otevřít domovskou stránku</translation>
 <translation id="4811212958317149293">Automatické vyhledávání klávesnice pro přístup pomocí přepínačů</translation>
@@ -3710,7 +3704,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5739235828260127894">Čeká na ověření. <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Velmi velké</translation>
 <translation id="574209121243317957">Výška</translation>
-<translation id="5745136023067925867">Nechte si zasílat tipy, nabídky a aktuality týkající se zařízení <ph name="DEVICE_TYPE" /> a poskytujte nám zpětnou vazbu</translation>
 <translation id="5746169159649715125">Uložit jako PDF</translation>
 <translation id="5747552184818312860">Konec platnosti</translation>
 <translation id="5747785204778348146">Pro vývojáře – nestabilní</translation>
@@ -4833,7 +4826,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Opustit stránku}few{Opustit stránky}many{Opustit stránky}other{Opustit stránky}}</translation>
 <translation id="7207457272187520234">Odesílat údaje o využití a diagnostice. Toto zařízení aktuálně automaticky odesílá do Googlu diagnostické údaje a údaje o zařízení a aplikacích a jejich využití. Tyto údaje nám pomohou se zvyšováním stability systému a aplikací a dalšími vylepšeními. Některá souhrnná data budou moci využít také naši partneři, např. vývojáři aplikací pro Android. Toto nastavení je vyžadováno vlastníkem. Pokud je zapnuto dodatečné nastavení Aktivita na webu a v aplikacích, mohou se tato data ukládat do vašeho účtu Google.</translation>
 <translation id="7207631048330366454">Hledat v aplikacích</translation>
-<translation id="7210171324714276060">Rozšíření <ph name="EXTENSION_NAME" /> změnilo poskytovatele vyhledávání na <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Rozšíření pro tiskárny</translation>
 <translation id="7212097698621322584">Chcete-li změnit PIN, zadejte aktuální PIN. Pokud svůj PIN neznáte, budete bezpečnostní klíč muset resetovat a poté vytvořit nový PIN.</translation>
 <translation id="7216409898977639127">Poskytovatel mobilních dat</translation>
@@ -5233,7 +5225,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7737115349420013392">Párování se zařízením <ph name="DEVICE_NAME" />…</translation>
 <translation id="7737238973539693982">Vymazat Linux (beta)</translation>
 <translation id="7740996059027112821">Standardně</translation>
-<translation id="7743128043742060936">Tato stránka byla změněna rozšířením <ph name="EXTENSION_NAME" /></translation>
 <translation id="7744047395460924128">Zobrazení historie tisku</translation>
 <translation id="7744192722284567281">Nalezeno v porušení zabezpečení údajů</translation>
 <translation id="7750228210027921155">Obraz v obraze</translation>

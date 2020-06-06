@@ -995,6 +995,37 @@ TEST_P(HotseatWidgetTest, HomeToOverviewChangesStateOnce) {
   }
 }
 
+// Verifies that the hotseat widget and the status area widget are animated to
+// the target location when entering overview mode in home launcher
+// (https://crbug.com/1079347).
+TEST_P(HotseatWidgetTest, VerifyShelfAnimationWhenEnteringOverview) {
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  HotseatWidget* hotseat_widget = GetPrimaryShelf()->hotseat_widget();
+  ASSERT_EQ(HotseatState::kShownHomeLauncher, hotseat_widget->state());
+
+  ui::LayerAnimator* hotseat_layer_animator =
+      hotseat_widget->GetNativeView()->layer()->GetAnimator();
+  ui::LayerAnimator* status_area_layer_animator = GetShelfWidget()
+                                                      ->status_area_widget()
+                                                      ->GetNativeView()
+                                                      ->layer()
+                                                      ->GetAnimator();
+  ASSERT_FALSE(hotseat_layer_animator->is_animating());
+  ASSERT_FALSE(status_area_layer_animator->is_animating());
+
+  OverviewAnimationWaiter waiter;
+  StartOverview();
+  EXPECT_TRUE(hotseat_layer_animator->is_animating());
+  EXPECT_TRUE(status_area_layer_animator->is_animating());
+  waiter.Wait();
+  ASSERT_EQ(HotseatState::kExtended, hotseat_widget->state());
+}
+
 // Tests that home -> in-app results in only one state change.
 TEST_P(HotseatWidgetTest, HomeToInAppChangesStateOnce) {
   GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());

@@ -191,8 +191,8 @@ std::unique_ptr<CastMediaSource> CastMediaSourceForTabMirroring(
     const MediaSource::Id& source_id) {
   return std::make_unique<CastMediaSource>(
       source_id,
-      std::vector<CastAppInfo>({CastAppInfo(kCastStreamingAppId),
-                                CastAppInfo(kCastStreamingAudioAppId)}));
+      std::vector<CastAppInfo>({CastAppInfo::ForCastStreaming(),
+                                CastAppInfo::ForCastStreamingAudio()}));
 }
 
 std::unique_ptr<CastMediaSource> CastMediaSourceForDesktopMirroring(
@@ -200,7 +200,7 @@ std::unique_ptr<CastMediaSource> CastMediaSourceForDesktopMirroring(
   // TODO(https://crbug.com/849335): Add back audio-only devices for desktop
   // mirroring when proper support is implemented.
   return std::make_unique<CastMediaSource>(
-      source_id, std::vector<CastAppInfo>({CastAppInfo(kCastStreamingAppId)}));
+      source_id, std::vector<CastAppInfo>({CastAppInfo::ForCastStreaming()}));
 }
 
 // The logic shared by ParseCastUrl() and ParseLegacyCastUrl().
@@ -363,9 +363,22 @@ CastAppInfo::CastAppInfo(
     const std::string& app_id,
     BitwiseOr<cast_channel::CastDeviceCapability> required_capabilities)
     : app_id(app_id), required_capabilities(required_capabilities) {}
+
 CastAppInfo::~CastAppInfo() = default;
 
 CastAppInfo::CastAppInfo(const CastAppInfo& other) = default;
+
+// static
+CastAppInfo CastAppInfo::ForCastStreaming() {
+  return CastAppInfo(kCastStreamingAppId, {CastDeviceCapability::VIDEO_OUT,
+                                           CastDeviceCapability::AUDIO_OUT});
+}
+
+// static
+CastAppInfo CastAppInfo::ForCastStreamingAudio() {
+  return CastAppInfo(kCastStreamingAudioAppId,
+                     {CastDeviceCapability::AUDIO_OUT});
+}
 
 // static
 std::unique_ptr<CastMediaSource> CastMediaSource::FromMediaSource(

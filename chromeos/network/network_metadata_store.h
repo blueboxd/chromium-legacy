@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_connection_observer.h"
 #include "chromeos/network/network_metadata_observer.h"
@@ -32,14 +33,16 @@ class NetworkStateHandler;
 // networks.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
     : public NetworkConnectionObserver,
-      public NetworkConfigurationObserver {
+      public NetworkConfigurationObserver,
+      public LoginState::Observer {
  public:
   NetworkMetadataStore(
       NetworkConfigurationHandler* network_configuration_handler,
       NetworkConnectionHandler* network_connection_handler,
       NetworkStateHandler* network_state_handler,
       PrefService* profile_pref_service,
-      PrefService* device_pref_service);
+      PrefService* device_pref_service,
+      bool is_enterprise_managed);
 
   ~NetworkMetadataStore() override;
 
@@ -47,6 +50,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // should be called for both the Profile registry and the Local State registry
   // prior to using this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // LoginState::Observer overrides.
+  void LoggedInStateChanged() override;
 
   // NetworkConnectionObserver::
   void ConnectSucceeded(const std::string& service_path) override;
@@ -87,6 +93,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // will always return false.
   bool GetHasBadPassword(const std::string& network_guid);
 
+  // When the active user is the device owner and its the first login, this
+  // marks networks that were added in OOBE to the user's list.
+  void OwnSharedNetworksOnFirstUserLogin();
+
   // Manage observers.
   void AddObserver(NetworkMetadataObserver* observer);
   void RemoveObserver(NetworkMetadataObserver* observer);
@@ -106,12 +116,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   void UpdateExternalModifications(const std::string& network_guid,
                                    const std::string& field);
 
+  // Sets the owner metadata when there is an active user, otherwise a no-op.
+  void SetIsCreatedByUser(const std::string& network_guid);
+
   base::ObserverList<NetworkMetadataObserver> observers_;
   NetworkConfigurationHandler* network_configuration_handler_;
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;
   PrefService* profile_pref_service_;
   PrefService* device_pref_service_;
+  bool is_enterprise_managed_;
   base::WeakPtrFactory<NetworkMetadataStore> weak_ptr_factory_{this};
 };
 

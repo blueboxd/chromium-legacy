@@ -179,6 +179,7 @@
 <translation id="1676269943528358898"><ph name="SITE" /> notast yfirleitt við dulkóðun til að vernda upplýsingarnar þínar. Þegar Google Chrome reyndi að tengjast <ph name="SITE" /> í þetta skiptið sendi vefsvæðið óvenjuleg
 og röng skilríki til baka. Þetta getur gerst þegar tölvuþrjótur reynir að þykjast vera <ph name="SITE" /> eða innskráningarskjár fyrir Wi-Fi hefur truflað tenginguna. Upplýsingarnar þínar eru enn öruggar vegna þess að Google Chrome sleit tengingunni áður en skipst var á gögnum.</translation>
 <translation id="1682696192498422849">Skammhlið fyrst</translation>
+<translation id="168693727862418163">Ekki tókst að staðfesta gildi þessarar reglu gagnvart skema hennar og hún verður hunsuð.</translation>
 <translation id="168841957122794586">Vottorð netþjónsins inniheldur ótraustan dulmálslykil.</translation>
 <translation id="1697532407822776718">Nú er allt tilbúið!</translation>
 <translation id="1703835215927279855">Bréf</translation>

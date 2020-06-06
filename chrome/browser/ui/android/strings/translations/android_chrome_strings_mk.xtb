@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Допрете го копчето „Популарни“ за да ги разгледате популарните веб-сајтови</translation>
 <translation id="1173894706177603556">Преименувај</translation>
 <translation id="1178581264944972037">Пауза</translation>
-<translation id="1188239144602654184">Влези во AR</translation>
 <translation id="1197267115302279827">Премести обележувачи</translation>
 <translation id="1201402288615127009">Следно</translation>
 <translation id="1204037785786432551">Преземи линк</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">текст</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> од <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Синхронизирајте и персонализирајте низ уредите</translation>
-<translation id="2099625543891475722">вашите физички карактеристики, како висината</translation>
 <translation id="2100273922101894616">Автоматско најавување</translation>
 <translation id="2100314319871056947">Обидете се да го споделите текстот во помали делови</translation>
 <translation id="2109711654079915747">Дознајте повеќе за темите на веб-сајтовите без да ја напуштите страницата. Функцијата „Допри за пребарување“ го испраќа зборот и околниот контекст во „Пребарување на Google“, а враќа дефиниции, слики, резултати од пребарување и други детали.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">Управувај</translation>
 <translation id="381841723434055211">Телефонски броеви</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> преземања се избришани</translation>
-<translation id="3849365399446680203">Додека сте во AR, сајтов ќе може:
-• да создаде карта во 3D на вашата околина
-• да го следи движењето на камерата
-
-Само вие може да видите што гледа камерата. Сајтов не може да ги види сликите на вашата камера.</translation>
 <translation id="3859306556332390985">Барај понапред</translation>
 <translation id="388596076286380598">Добивајте статии, видеа и други содржини од сајтови што ви се допаѓаат, дури и ако сте офлајн или ако врската е слаба.</translation>
 <translation id="3894427358181296146">Додај папка</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">Нема интернет поврзување</translation>
 <translation id="4321739720395210191">Камерата не може да се отвори. Рестартирајте го уредот и обидете се повторно.</translation>
 <translation id="4351244548802238354">Затвори дијалог</translation>
-<translation id="4353114845960720315">Додека сте во VR, сајтов ќе може да дознае за:</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4384468725000734951">Се користи Sogou за пребарување</translation>
 <translation id="4404568932422911380">Нема обележувачи</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">Нема интернет-врска</translation>
 <translation id="4565377596337484307">Сокриј ја лозинката</translation>
 <translation id="4572422548854449519">Најавете се на управувана сметка</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Пред # минута}one{Пред # минута}other{Пред # минути}}</translation>
 <translation id="4587589328781138893">Сајтови</translation>
 <translation id="4594952190837476234">Офлајн страницава е од <ph name="CREATION_TIME" /> и може да се разликува од онлајн верзијата.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">Отвори <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Употреби ја лозинката</translation>
 <translation id="4650364565596261010">Стандардна поставка за системот</translation>
-<translation id="4660838440047236328">распоредот на вашата соба</translation>
 <translation id="4662373422909645029">Прекарот не може да содржи броеви</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> обележувачи се избришани</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> е додадена на вашиот Почетен екран</translation>
@@ -459,7 +449,6 @@
 
 За да ја промените поставкава, <ph name="BEGIN_LINK" />ресетирајте ја синхронизацијата<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Име на картичка</translation>
-<translation id="4808319664292298116">Да се влезе во VR од <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Да се откаже синхронизацијата?</translation>
 <translation id="4835385943915508971">Chrome нема пристап до бараниот ресурс.</translation>
 <translation id="4837753911714442426">Отворете опции за печатење страница</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">Излези од цел екран</translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
-<translation id="6410973561433500075">Дали да се влезе во AR од <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Печати...</translation>
 <translation id="6427112570124116297">Преведете го интернетот</translation>
 <translation id="6433501201775827830">Изберете пребарувач</translation>

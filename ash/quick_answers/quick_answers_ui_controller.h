@@ -39,7 +39,8 @@ class ASH_EXPORT QuickAnswersUiController {
                               const std::string& title,
                               const std::string& query);
 
-  void CloseQuickAnswersView();
+  // Returns true if there was a QuickAnswersView to close.
+  bool CloseQuickAnswersView();
 
   void OnQuickAnswersViewPressed();
 
@@ -61,7 +62,8 @@ class ASH_EXPORT QuickAnswersUiController {
   // anchor.
   void CreateUserConsentView(const gfx::Rect& anchor_bounds);
 
-  void CloseUserConsentView();
+  // Returns true if there was a UserConsentView to close.
+  bool CloseUserConsentView();
 
   // Invoked when user clicks the consent button to grant consent for using
   // Quick Answers.

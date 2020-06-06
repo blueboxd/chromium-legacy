@@ -31,6 +31,7 @@ struct DownloadDialogResult {
 
 // Used to show a dialog for the user to select download details, such as file
 // location, file name. and download start time.
+// TODO(xingliu): Move logic out of the bridge, and write a test.
 class DownloadDialogBridge {
  public:
   using DialogCallback = base::OnceCallback<void(DownloadDialogResult)>;
@@ -50,7 +51,9 @@ class DownloadDialogBridge {
 
   void OnComplete(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
-                  const base::android::JavaParamRef<jstring>& returned_path);
+                  const base::android::JavaParamRef<jstring>& returned_path,
+                  jboolean on_wifi,
+                  jlong start_time);
 
   void OnCanceled(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 

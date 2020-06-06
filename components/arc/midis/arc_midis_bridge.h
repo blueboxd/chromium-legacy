@@ -13,6 +13,7 @@
 #include "components/arc/mojom/midis.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
@@ -36,12 +37,12 @@ class ArcMidisBridge : public KeyedService,
 
   // Midis Mojo host interface
   void Connect(mojo::PendingReceiver<mojom::MidisServer> receiver,
-               mojom::MidisClientPtr client_ptr) override;
+               mojo::PendingRemote<mojom::MidisClient> client_remote) override;
 
  private:
   void OnBootstrapMojoConnection(
       mojo::PendingReceiver<mojom::MidisServer> receiver,
-      mojom::MidisClientPtr client_ptr,
+      mojo::PendingRemote<mojom::MidisClient> client_remote,
       bool result);
   void OnMojoConnectionError();
 

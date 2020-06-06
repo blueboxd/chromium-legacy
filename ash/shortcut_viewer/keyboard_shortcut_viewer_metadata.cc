@@ -1084,8 +1084,9 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        // |accelerator_ids|
        {},
        // |shortcut_key_codes|
-       {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_LEFT, ui::VKEY_CONTROL,
-        ui::VKEY_UNKNOWN, ui::VKEY_RIGHT}},
+       {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_BROWSER_BACK,
+        ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT, ui::VKEY_UNKNOWN,
+        ui::VKEY_BROWSER_BACK}},
 
       {// |categories|
        {ShortcutCategory::kAccessibility},
@@ -1184,9 +1185,9 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},
        IDS_KSV_DESCRIPTION_FOCUS_NEXT_PANE,
-       IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
        // |accelerator_ids|
-       {{ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN}}},
+       {{ui::VKEY_BROWSER_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
 
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},

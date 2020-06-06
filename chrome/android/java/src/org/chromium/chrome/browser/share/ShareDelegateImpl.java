@@ -53,9 +53,9 @@ public class ShareDelegateImpl implements ShareDelegate {
     /**
      * Constructs a new {@link ShareDelegateImpl}.
      *
-     * @param controller  The BottomSheetController for the current activity.
+     * @param controller The BottomSheetController for the current activity.
      * @param tabProvider Supplier for the current activity tab.
-     * @param delegate    The ShareSheetDelegate for the current activity.
+     * @param delegate The ShareSheetDelegate for the current activity.
      */
     public ShareDelegateImpl(BottomSheetController controller, Supplier<Tab> tabProvider,
             ShareSheetDelegate delegate) {
@@ -88,8 +88,8 @@ public class ShareDelegateImpl implements ShareDelegate {
      * This creates and shows a share intent picker dialog or starts a share intent directly.
      *
      * @param shareDirectly Whether it should share directly with the activity that was most
-     *                      recently used to share.
-     * @param isIncognito   Whether currentTab is incognito.
+     * recently used to share.
+     * @param isIncognito Whether currentTab is incognito.
      */
     private void onShareSelected(
             Activity activity, Tab currentTab, boolean shareDirectly, boolean isIncognito) {
@@ -118,7 +118,7 @@ public class ShareDelegateImpl implements ShareDelegate {
         triggerShare(currentTab, shareDirectly, isIncognito);
     }
 
-    protected void triggerShare(
+    private void triggerShare(
             final Tab currentTab, final boolean shareDirectly, boolean isIncognito) {
         ScreenshotTabObserver tabObserver = ScreenshotTabObserver.from(currentTab);
         if (tabObserver != null) {
@@ -128,7 +128,7 @@ public class ShareDelegateImpl implements ShareDelegate {
 
         OfflinePageUtils.maybeShareOfflinePage(currentTab, (ShareParams p) -> {
             if (p != null) {
-                share(p, new ChromeShareExtras(/*saveLastUsed=*/false, /*shareDirectly=*/false));
+                share(p, new ChromeShareExtras.Builder().setIsUrlOfVisiblePage(true).build());
             } else {
                 WindowAndroid window = currentTab.getWindowAndroid();
                 // Could not share as an offline page.
@@ -165,7 +165,12 @@ public class ShareDelegateImpl implements ShareDelegate {
         ShareParams.Builder builder =
                 new ShareParams.Builder(window, title, getUrlToShare(visibleUrl, canonicalUrl))
                         .setScreenshotUri(blockingUri);
-        share(builder.build(), new ChromeShareExtras(!shareDirectly, shareDirectly));
+        share(builder.build(),
+                new ChromeShareExtras.Builder()
+                        .setSaveLastUsed(!shareDirectly)
+                        .setShareDirectly(shareDirectly)
+                        .setIsUrlOfVisiblePage(true)
+                        .build());
         if (shareDirectly) {
             RecordUserAction.record("MobileMenuDirectShare");
         } else {
@@ -268,8 +273,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                                         ContextUtils.getApplicationContext().getPackageManager()),
                                 PrefServiceBridge.getInstance());
                 // TODO(crbug/1009124): open custom share sheet.
-                coordinator.showShareSheet(
-                        params, chromeShareExtras.saveLastUsed(), shareStartTime);
+                coordinator.showShareSheet(params, chromeShareExtras, shareStartTime);
             } else {
                 ShareHelper.showDefaultShareUi(params, chromeShareExtras.saveLastUsed());
             }

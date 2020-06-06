@@ -53,6 +53,8 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // Exists for testing (specifically, browsertests).
   views::View* GetFootnoteViewForTesting();
 
+  const base::string16 GetCardIdentifierString() const;
+
  protected:
   // Delegate for the personalized sync promo view used when desktop identity
   // consistency is enabled.

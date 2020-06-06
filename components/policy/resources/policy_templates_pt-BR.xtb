@@ -3122,9 +3122,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Se esta política for definida como 0, o armazenamento em cache dos dados de autenticação será desativado. Isso pode desacelerar significativamente o login de usuários afiliados, já que os dados específicos do domínio precisam ser buscados a cada login.
 
       Observe que os dados de domínio são armazenados em cache até para usuários temporários. O cache precisa ser desativado se você quiser impedir o rastreamento de domínio de usuários temporários.</translation>
-<translation id="5700097087679928356">Se a política for definida como 0 (o padrão), você poderá acessar as ferramentas para desenvolvedores e o Console JavaScript, mas não no contexto de extensões instaladas pela política da empresa. Se ela for definida como 1, você poderá acessar as ferramentas para desenvolvedores e o Console JavaScript em todos os contextos, inclusive o das extensões instaladas pela política da empresa. Se a política for definida como 2, não será possível acessar as ferramentas para desenvolvedores nem inspecionar elementos de sites.
-
-      Essa definição também desativa atalhos de teclado e entradas do menu de contexto ou do menu para abrir as ferramentas para desenvolvedores e o Console JavaScript.</translation>
 <translation id="570062449808736508">Quando essa política estiver definida para uma string não vazia, o WebView lerá as restrições de URL do provedor de conteúdo com o nome de autoridade fornecido.</translation>
 <translation id="5708969689202733975">Configurar os modos de desbloqueio rápido permitidos</translation>
 <translation id="5711016543513883877">

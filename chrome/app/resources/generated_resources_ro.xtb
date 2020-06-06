@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">Semnatarul certificatului</translation>
 <translation id="1145292499998999162">Plugin blocat</translation>
 <translation id="1145593918056169051">Imprimanta s-a oprit</translation>
-<translation id="1146678959555564648">Intră în RV</translation>
 <translation id="114721135501989771">Profită de ingeniozitatea Google în Chrome</translation>
 <translation id="1147991416141538220">Pentru a solicita acces, contactează administratorul dispozitivului.</translation>
 <translation id="1149401351239820326">Luna expirării</translation>
@@ -866,7 +865,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2096715839409389970">Șterge cookie-urile terță parte</translation>
 <translation id="2097372108957554726">Pentru a înregistra dispozitive noi, este necesar să vă conectați la Chrome</translation>
 <translation id="2099172618127234427">În prezent, activezi funcțiile de remediere a erorilor în sistemul de operare Chrome, care vor configura SSH daemon și vor activa pornirea de pe dispozitive USB.</translation>
-<translation id="2099625543891475722">trăsăturile tale fizice, cum ar fi înălțimea;</translation>
 <translation id="2099686503067610784">Șterge certificatul de server „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="2100273922101894616">Conectare automată</translation>
 <translation id="2101225219012730419">Versiune:</translation>
@@ -2658,7 +2656,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4350019051035968019">Acest dispozitiv nu poate fi înregistrat pe domeniul căruia îi aparține contul dvs., deoarece dispozitivul este asociat pentru gestionare de alt domeniu.</translation>
 <translation id="4350782034419308508">Ok Google</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> vrea să caute dispozitive Bluetooth în apropiere. Următoarele dispozitive au fost găsite:</translation>
-<translation id="4353114845960720315">În RV, acest site ar putea afla:</translation>
 <translation id="4354073718307267720">Anunță-mă dacă un site vrea să creeze o hartă 3D a lucrurilor din jur sau să urmărească poziția camerei video</translation>
 <translation id="4354344420232759511">Site-urile pe care le accesezi apar aici</translation>
 <translation id="435527878592612277">Selectează fotografia</translation>
@@ -2893,7 +2890,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4659077111144409915">Cont principal</translation>
 <translation id="4660476621274971848">Versiunea așteptată era „<ph name="EXPECTED_VERSION" />”, dar versiunea a fost „<ph name="NEW_ID" />”</translation>
 <translation id="4660540330091848931">Se redimensionează</translation>
-<translation id="4660838440047236328">aspectul camerei în care te afli.</translation>
 <translation id="4661407454952063730">Datele unei aplicații reprezintă toate datele pe care le-a salvat aplicația (în funcție de setările dezvoltatorului), inclusiv date cum ar fi agenda, mesajele și fotografiile.</translation>
 <translation id="4662373422909645029">Pseudonimele nu pot să includă cifre</translation>
 <translation id="4662788913887017617">Trimite marcajul pe iPhone</translation>
@@ -2982,9 +2978,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4801512016965057443">Permite roaming de date mobile</translation>
 <translation id="4804818685124855865">Deconectează-te</translation>
 <translation id="4804827417948292437">Avocado</translation>
-<translation id="4805077164141082536">Îți recomandăm să faci backup containerului Linux actual înainte să faci upgrade.</translation>
 <translation id="4807098396393229769">Numele de pe card</translation>
-<translation id="4808319664292298116">Intri în RV din <ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">Ferestre pop-up blocate:</translation>
 <translation id="480990236307250886">Deschide pagina de pornire</translation>
 <translation id="4811212958317149293">Căutarea automată a tastaturii pentru accesul prin comutare</translation>
@@ -3712,7 +3706,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5739235828260127894">Se așteaptă confirmarea. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Foarte mare</translation>
 <translation id="574209121243317957">Tonalitatea</translation>
-<translation id="5745136023067925867">Primește sfaturi, oferte și actualizări referitoare la <ph name="DEVICE_TYPE" /> și trimite feedback</translation>
 <translation id="5746169159649715125">Salvați ca PDF</translation>
 <translation id="5747552184818312860">Expiră</translation>
 <translation id="5747785204778348146">Canal pentru dezvoltatori – instabil</translation>
@@ -4835,7 +4828,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Închide pagina}few{Închide paginile}other{Închide paginile}}</translation>
 <translation id="7207457272187520234">Trimite date de utilizare și diagnosticare. Momentan, dispozitivul trimite automat date de diagnosticare și de utilizare a dispozitivului și aplicațiilor la Google. Aceasta va ajuta la stabilitatea sistemului, a aplicației și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Această setare este impusă de proprietar. Dacă setarea Activitatea suplimentară de pe web și din aplicații este activată, aceste date pot fi salvate în Contul tău Google.</translation>
 <translation id="7207631048330366454">Caută aplicații</translation>
-<translation id="7210171324714276060">Extensia <ph name="EXTENSION_NAME" /> a modificat căutarea, astfel încât să folosească <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Imprimante de extensie</translation>
 <translation id="7212097698621322584">Introdu codul PIN actual pentru a-l schimba. Dacă nu știi codul PIN, trebuie să resetezi cheia de securitate, apoi să creezi un nou cod PIN.</translation>
 <translation id="7216409898977639127">Furnizor de date mobile</translation>
@@ -5235,7 +5227,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7737115349420013392">Se asociază cu „<ph name="DEVICE_NAME" />”...</translation>
 <translation id="7737238973539693982">Șterge Linux (Beta)</translation>
 <translation id="7740996059027112821">Standard</translation>
-<translation id="7743128043742060936">Această pagină a fost modificată de extensia <ph name="EXTENSION_NAME" /></translation>
 <translation id="7744047395460924128">Vezi istoricul de printare</translation>
 <translation id="7744192722284567281">S-a găsit în urma încălcării securității datelor</translation>
 <translation id="7750228210027921155">Picture-in-picture</translation>

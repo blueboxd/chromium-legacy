@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"ಉನ್ನತ ಸೈಟ್‌ಗಳು" ಬಟನ್ ಟ್ಯಾಪ್ ಮಾಡುವ ಮೂಲಕ ಜನಪ್ರಿಯ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ನೋಡಿ</translation>
 <translation id="1173894706177603556">ಮರುಹೆಸರಿಸು</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
-<translation id="1188239144602654184">AR ಅನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="1197267115302279827">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಚಲಿಸಿ</translation>
 <translation id="1201402288615127009">ಮುಂದೆ</translation>
 <translation id="1204037785786432551">ಲಿಂಕ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
@@ -133,7 +132,6 @@
 <translation id="2067805253194386918">ಪಠ್ಯ</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> ರಲ್ಲಿ <ph name="RESULT_NUMBER" /> ಫಲಿತಾಂಶಗಳು</translation>
 <translation id="2096012225669085171">ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್ ಮಾಡಿ ಮತ್ತು ವೈಯಕ್ತೀಕರಿಸಿ</translation>
-<translation id="2099625543891475722">ನಿಮ್ಮ ಭೌತಿಕ ಗುಣಲಕ್ಷಣಗಳು, ಉದಾ. ಎತ್ತರ ಇತ್ಯಾದಿ</translation>
 <translation id="2100273922101894616">ಸ್ವಯಂ ಸೈನ್-ಇನ್</translation>
 <translation id="2100314319871056947">ಪಠ್ಯವನ್ನು ಸಣ್ಣ ಭಾಗಗಳಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2109711654079915747">ಪುಟದಿಂದ ಹೊರಹೋಗದೆಯೇ ವೆಬ್‌ಸೈಟ್‌ನಲ್ಲಿನ ವಿಷಯಗಳ ಕುರಿತು ತಿಳಿದುಕೊಳ್ಳಿ. 'ಹುಡುಕಾಟ' ಸ್ಪರ್ಶಿಸಿದರೆ ಅದು, ಪದ ಮತ್ತು ಪದಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಸಾಂದರ್ಭಿಕ ವಿವರಣೆಗಳನ್ನು Google ಹುಡುಕಾಟಕ್ಕೆ ರವಾನಿಸುತ್ತದೆ. ಆ ಮೂಲಕ ವಿವರಗಳು, ಚಿತ್ರಗಳು ಮತ್ತು ಇತರ ಹುಡುಕಾಟ ಫಲಿತಾಂಶಗಳನ್ನು ಒದಗಿಸುತ್ತದೆ.
@@ -342,11 +340,6 @@
 <translation id="3810973564298564668">ನಿರ್ವಹಿಸು</translation>
 <translation id="381841723434055211">ಫೋನ್ ಸಂಖ್ಯೆಗಳು</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
-<translation id="3849365399446680203">ನೀವು AR ನಲ್ಲಿರುವಾಗ, ಈ ಸೈಟ್‌ಗೆ ಇವುಗಳನ್ನು ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ:
-• ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಪರಿಸರದ 3D ನಕ್ಷೆಯನ್ನು ರಚಿಸುವುದು
-• ಕ್ಯಾಮರಾ ಚಲನೆಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡುವುದು
-
-ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಯಾವ ಕಡೆಗೆ ನೋಡುತ್ತಿದೆ ಎಂಬುದನ್ನು ನೀವು ಮಾತ್ರ ನೋಡಬಹುದು. ಸೈಟ್‌ಗೆ ನಿಮ್ಮ ಕ್ಯಾಮರಾದ ಚಿತ್ರಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="3859306556332390985">ಮುಂದಕ್ಕೆ ಸೀಕ್ ಮಾಡಿ</translation>
 <translation id="388596076286380598">ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದರೂ ಅಥವಾ ನಿಮ್ಮ ಕನೆಕ್ಷನ್ ಕಳಪೆ ಆಗಿದ್ದರೂ ಸಹ ನಿಮಗೆ ಇಷ್ಟವಾಗುವ ಸೈಟ್‌ನಲ್ಲಿರುವ ಲೇಖನಗಳು, ವೀಡಿಯೊಗಳು ಮತ್ತು ಇತರ ವಿಷಯವನ್ನು ಪಡೆದುಕೊಳ್ಳಿ.</translation>
 <translation id="3894427358181296146">ಫೋಲ್ಡರ್ ಸೇರಿಸು</translation>
@@ -400,7 +393,6 @@
 <translation id="4320177379694898372">ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವಿಲ್ಲ</translation>
 <translation id="4321739720395210191">ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ತೆರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಸಾಧನವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ ಹಾಗೂ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4351244548802238354">ಸಂವಾದವನ್ನು ಮುಚ್ಚಿ</translation>
-<translation id="4353114845960720315">ನೀವು VR ನಲ್ಲಿರುವಾಗ, ಈ ಸೈಟ್ ಕುರಿತು ತಿಳಿಯಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ:</translation>
 <translation id="4378154925671717803">ಫೋನ್</translation>
 <translation id="4384468725000734951">ಹುಡುಕಲು Sogou ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="4404568932422911380">ಯಾವುದೇ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಲಭ್ಯವಿಲ್ಲ</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">ಯಾವುದೇ ಸಂಪರ್ಕವಿಲ್ಲ</translation>
 <translation id="4565377596337484307">ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ</translation>
 <translation id="4572422548854449519">ನಿರ್ವಹಿಸಲ್ಪಟ್ಟ ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# ನಿಮಿಷದ ಹಿಂದೆ}one{# ನಿಮಿಷಗಳ ಹಿಂದೆ}other{# ನಿಮಿಷಗಳ ಹಿಂದೆ}}</translation>
 <translation id="4587589328781138893">ಸೈಟ್‌ಗಳು</translation>
 <translation id="4594952190837476234">ಈ ಆಫ್‍ಲೈನ್ ಪುಟವನ್ನು <ph name="CREATION_TIME" /> ರಂದು ರಚಿಸಲಾಗಿದೆ ಮತ್ತು ಇದು ಆನ್‌ಲೈನ್ ಆವೃತ್ತಿಗಿಂತ ಭಿನ್ನವಾಗಿರಬಹುದು.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> ತೆರೆಯಿರಿ</translation>
 <translation id="4634124774493850572">ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
 <translation id="4650364565596261010">ಸಿಸ್ಟಂ ಡಿಫಾಲ್ಟ್</translation>
-<translation id="4660838440047236328">ನಿಮ್ಮ ರೂಮ್‌ನ ವಿನ್ಯಾಸ</translation>
 <translation id="4662373422909645029">ಅಡ್ಡಹೆಸರಿಗೆ ಸಂಖ್ಯೆ ಇಲ್ಲ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ಅನ್ನು ನಿಮ್ಮ ಹೋಮ್ ಪರದೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
@@ -459,7 +449,6 @@
 
 ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ಬದಲಾಯಿಸಲು, <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಅನ್ನು ಮರುಹೊಂದಿಸಿ<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">ಕಾರ್ಡ್‌ನಲ್ಲಿರುವ ಹೆಸರು</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> ನಿಂದ VR ಅನ್ನು ನಮೂದಿಸುವುದೇ?</translation>
 <translation id="4824958205181053313">ಸಿಂಕ್ ರದ್ದುಗೊಳಿಸುವುದೇ?</translation>
 <translation id="4835385943915508971">ವಿನಂತಿಸಿದ ಸಂಪನ್ಮೂಲದಲ್ಲಿ Chrome ಪ್ರವೇಶವನ್ನು ಹೊಂದಿಲ್ಲ.</translation>
 <translation id="4837753911714442426">ಪುಟವನ್ನು ಮುದ್ರಿಸಲು ಆಯ್ಕೆಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">ಪೂರ್ಣಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="6404511346730675251">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6406506848690869874">ಸಿಂಕ್</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" /> ನಿಂದ AR ಅನ್ನು ಪ್ರವೇಶಿಸಬೇಕೇ?</translation>
 <translation id="641643625718530986">ಮುದ್ರಿಸು...</translation>
 <translation id="6427112570124116297">ವೆಬ್ ಅನ್ನು ಅನುವಾದಿಸಿ</translation>
 <translation id="6433501201775827830">ನಿಮ್ಮ ಹುಡುಕಾಟದ ಇಂಜಿನ್ ಆಯ್ಕೆಮಾಡಿ</translation>

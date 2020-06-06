@@ -68,4 +68,7 @@ struct AssistantNotification {
 
   // If |true|, the notification will be removed on click.
   bool remove_on_click = true;
+
+  //  If |true|, the user can't remove the notification.
+  bool is_pinned = false;
 };

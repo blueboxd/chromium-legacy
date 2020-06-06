@@ -3204,9 +3204,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Bu politika 0 değerine ayarlanırsa, kimlik doğrulama verisi önbelleğe alma devre dışı bırakılır. Her oturum açmada alana özgü verilerin getirilmesi gerektiği için bunu yapmak ilişkili kullanıcıların oturum açmasını önemli ölçüde yavaşlatabilir.
 
       Alan verilerinin geçici kullanıcılar için bile önbelleğe alındığını unutmayın. Geçici kullanıcıların alanının izlenmesini önlemek istiyorsanız önbellek kapatılmalıdır.</translation>
-<translation id="5700097087679928356">Politikanın 0 (varsayılan) değerine ayarlanması, geliştirici araçlarına ve JavaScript konsoluna erişebileceğiniz anlamına gelir. Ancak kurumsal politikaya göre yüklenen uzantıların bağlamında erişemezsiniz. Politikanın 1 değerine ayarlanması, kurumsal politikaya göre yüklenen uzantılar bağlamı dahil olmak üzere tüm bağlamlarda geliştirici araçlarına ve JavaScript konsoluna erişebilirsiniz anlamına gelir. Politikanın 2 değerine ayarlanması, geliştirici ayarlarına erişemezsiniz ve web sitesi öğelerini inceleyemezsiniz anlamına gelir.
-
-      Bu ayar ayrıca, klavye kısayollarını ve menüyü veya geliştirici ayarlarını ya da JavaScript konsolunu açan içerik menüsü girişlerini kapatır.</translation>
 <translation id="570062449808736508">Bu politika boş olmayan bir dizeye ayarlanırsa Web Görünümü, belirtilen yetkili adına sahip içerik sağlayıcıdan URL kısıtlamalarını okur.</translation>
 <translation id="5708969689202733975">İzin verilen hızlı kilit açma modlarını yapılandır</translation>
 <translation id="5711016543513883877">

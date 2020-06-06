@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
@@ -158,32 +159,65 @@ void PhishingClassifier::DOMExtractionFinished(bool success) {
 
 void PhishingClassifier::TermExtractionFinished(bool success) {
   if (success) {
-    blink::WebLocalFrame* main_frame = render_frame_->GetWebFrame();
-
-    // Hash all of the features so that they match the model, then compute
-    // the score.
-    FeatureMap hashed_features;
-    ClientPhishingRequest verdict;
-    verdict.set_model_version(scorer_->model_version());
-    verdict.set_url(main_frame->GetDocument().Url().GetString().Utf8());
-    for (const auto& it : features_->features()) {
-      bool result = hashed_features.AddRealFeature(
-          crypto::SHA256HashString(it.first), it.second);
-      DCHECK(result);
-      ClientPhishingRequest::Feature* feature = verdict.add_feature_map();
-      feature->set_name(it.first);
-      feature->set_value(it.second);
-    }
-    for (const auto& it : *shingle_hashes_) {
-      verdict.add_shingle_hashes(it);
-    }
-    float score = static_cast<float>(scorer_->ComputeScore(hashed_features));
-    verdict.set_client_score(score);
-    verdict.set_is_phishing(score >= scorer_->threshold_probability());
-    RunCallback(verdict);
+    ExtractVisualFeatures();
   } else {
     RunFailureCallback();
   }
+}
+
+void PhishingClassifier::ExtractVisualFeatures() {
+  blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
+  gfx::Rect bounds = gfx::Rect(0, 0, frame->DocumentSize().width,
+                               frame->DocumentSize().height);
+  bitmap_ = std::make_unique<SkBitmap>();
+  // Use the Rec. 2020 color space, in case the user input is wide-gamut.
+  sk_sp<SkColorSpace> rec2020 = SkColorSpace::MakeRGB(
+      {2.22222f, 0.909672f, 0.0903276f, 0.222222f, 0.0812429f, 0, 0},
+      SkNamedGamut::kRec2020);
+  SkImageInfo bitmap_info = SkImageInfo::Make(
+      bounds.width(), bounds.height(), SkColorType::kRGBA_8888_SkColorType,
+      SkAlphaType::kUnpremul_SkAlphaType, rec2020);
+  if (!bitmap_->tryAllocPixels(bitmap_info))
+    return VisualExtractionFinished(/*success=*/false);
+  SkCanvas sk_canvas(*bitmap_);
+  cc::SkiaPaintCanvas cc_canvas(&sk_canvas);
+  VisualExtractionFinished(frame->CapturePaintPreview(bounds, &cc_canvas));
+}
+
+void PhishingClassifier::VisualExtractionFinished(bool success) {
+  if (!success) {
+    RunFailureCallback();
+    return;
+  }
+
+  blink::WebLocalFrame* main_frame = render_frame_->GetWebFrame();
+
+  // Hash all of the features so that they match the model, then compute
+  // the score.
+  FeatureMap hashed_features;
+  ClientPhishingRequest verdict;
+  verdict.set_model_version(scorer_->model_version());
+  verdict.set_url(main_frame->GetDocument().Url().GetString().Utf8());
+  for (const auto& it : features_->features()) {
+    bool result = hashed_features.AddRealFeature(
+        crypto::SHA256HashString(it.first), it.second);
+    DCHECK(result);
+    ClientPhishingRequest::Feature* feature = verdict.add_feature_map();
+    feature->set_name(it.first);
+    feature->set_value(it.second);
+  }
+  for (const auto& it : *shingle_hashes_) {
+    verdict.add_shingle_hashes(it);
+  }
+  float score = static_cast<float>(scorer_->ComputeScore(hashed_features));
+  verdict.set_client_score(score);
+  verdict.set_is_phishing(score >= scorer_->threshold_probability());
+
+  if (scorer_->GetMatchingVisualTargets(*bitmap_, &verdict)) {
+    verdict.set_is_phishing(true);
+  }
+
+  RunCallback(verdict);
 }
 
 void PhishingClassifier::CheckNoPendingClassification() {
@@ -215,6 +249,7 @@ void PhishingClassifier::Clear() {
   done_callback_.Reset();
   features_.reset(nullptr);
   shingle_hashes_.reset(nullptr);
+  bitmap_.reset(nullptr);
 }
 
 }  // namespace safe_browsing

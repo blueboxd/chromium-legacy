@@ -13,5 +13,12 @@
       await adoptionCompletePromise;
       domAutomationController.send(true);
     }
+
+    function activate() {
+      let portal = document.querySelector('portal');
+      portal.activate().then(() => {
+        document.body.removeChild(portal);
+      });
+    }
   </script>
 </body>

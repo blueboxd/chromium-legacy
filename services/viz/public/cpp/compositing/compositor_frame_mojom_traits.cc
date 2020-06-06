@@ -11,11 +11,8 @@ namespace mojo {
 // static
 bool StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame>::
     Read(viz::mojom::CompositorFrameDataView data, viz::CompositorFrame* out) {
-  if (!data.ReadPasses(&out->render_pass_list)) {
-    viz::SetDeserializationCrashKeyString(
-        "Failed read CompositorFrame::render_pass_list");
+  if (!data.ReadPasses(&out->render_pass_list))
     return false;
-  }
 
   if (out->render_pass_list.empty()) {
     viz::SetDeserializationCrashKeyString(
@@ -28,11 +25,8 @@ bool StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame>::
     return false;
   }
 
-  if (!data.ReadMetadata(&out->metadata)) {
-    viz::SetDeserializationCrashKeyString(
-        "Failed read CompositorFrame::metadata");
+  if (!data.ReadMetadata(&out->metadata))
     return false;
-  }
 
   if (!data.ReadResources(&out->resource_list)) {
     viz::SetDeserializationCrashKeyString(

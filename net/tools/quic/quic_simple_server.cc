@@ -125,6 +125,7 @@ bool QuicSimpleServer::Listen(const IPEndPoint& address) {
 }
 
 void QuicSimpleServer::Shutdown() {
+  LOG(WARNING) << "QuicSimpleServer is shutting down";
   // Before we shut down the epoll server, give all active sessions a chance to
   // notify clients that they're closing.
   dispatcher_->Shutdown();
@@ -177,19 +178,23 @@ void QuicSimpleServer::StartReading() {
 
 void QuicSimpleServer::OnReadComplete(int result) {
   read_pending_ = false;
-  if (result == 0)
-    result = ERR_CONNECTION_CLOSED;
 
-  if (result < 0) {
+  if (result > 0) {
+    quic::QuicReceivedPacket packet(read_buffer_->data(), result,
+                                    helper_->GetClock()->Now(), false);
+    dispatcher_->ProcessPacket(ToQuicSocketAddress(server_address_),
+                               ToQuicSocketAddress(client_address_), packet);
+  } else {
     LOG(ERROR) << "QuicSimpleServer read failed: " << ErrorToString(result);
-    Shutdown();
-    return;
+    // Do not act on ERR_MSG_TOO_BIG as that indicates that we received a UDP
+    // packet whose payload is larger than our receive buffer. Do not act on 0
+    // as that indicates that we received a UDP packet with an empty payload.
+    // In both cases, the socket should still be usable.
+    if (result != ERR_MSG_TOO_BIG && result != 0) {
+      Shutdown();
+      return;
+    }
   }
-
-  quic::QuicReceivedPacket packet(read_buffer_->data(), result,
-                                  helper_->GetClock()->Now(), false);
-  dispatcher_->ProcessPacket(ToQuicSocketAddress(server_address_),
-                             ToQuicSocketAddress(client_address_), packet);
 
   StartReading();
 }

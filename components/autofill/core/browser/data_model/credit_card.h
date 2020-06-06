@@ -292,10 +292,12 @@ class CreditCard : public AutofillDataModel {
   // Returns whether the card has a valid nickname.
   bool HasValidNickname() const;
 
+  // Should be used ONLY by tests.
+  base::string16 NicknameAndLastFourDigitsForTesting() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
-  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, NicknameAndLastFourDigitsStrings);
 
   base::string16 Expiration2DigitYearAsString() const;
 

@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">ເບິ່ງເວັບໄຊຍອດນິຍົມໂດຍການແຕະປຸ່ມ "ເວັບໄຊຍອດນິຍົມ"</translation>
 <translation id="1173894706177603556">ໃສ່ຊື່ໃໝ່</translation>
 <translation id="1178581264944972037">ຢຸດຊົ່ວຄາວ</translation>
-<translation id="1188239144602654184">ເຂົ້າຫາ AR</translation>
 <translation id="1197267115302279827">ຍ້າຍ​ບຸກ​ມາກ​ສ໌</translation>
 <translation id="1201402288615127009">ຕໍ່ໄປ</translation>
 <translation id="1204037785786432551">ດາວໂຫຼດລິ້ງ</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">ຂໍ້ຄວາມ</translation>
 <translation id="2082238445998314030">ຜົນຮັບ <ph name="RESULT_NUMBER" /> ຈາກ <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">ຊິ້ງຂໍ້ມູນ ແລະ ປັບແຕ່ງໃຫ້ເປັນແບບສ່ວນຕົວໃນທົ່ວອຸປະກອນ</translation>
-<translation id="2099625543891475722">ລັກສະນະຮ່າງກາຍຂອງທ່ານ ເຊັ່ນ: ລວງສູງ</translation>
 <translation id="2100273922101894616">ເຂົ້າສູ່​ລະບົບ​ອັດຕະໂນມັດ</translation>
 <translation id="2100314319871056947">ລອງແບ່ງປັນຂໍ້ຄວາມໃນຈຳນວນທີ່ໜ້ອຍກວ່າ</translation>
 <translation id="2109711654079915747">ຮຽນຮູ້ກ່ຽວກັບຫົວຂໍ້ຢູ່ໃນເວັບໄຊໂດຍບໍ່ຕ້ອງອອກໄປຈາກໜ້າ. ແຕະເພື່ອຊອກຫາ ສົ່ງຄຳສັບ ແລະ ບໍລິບົດທີ່ກ່ຽວຂ້ອງຂອງມັນໄປໃຫ້ Google ຊອກຫາ ເຊິ່ງຈະສົ່ງຄຳນິຍາມ, ຮູບ, ຜົນການຊອກຫາ ແລະ ລາຍລະອຽດອື່ນໆຄືນມາ.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">ຈັດການ</translation>
 <translation id="381841723434055211">ເບີໂທລະສັບ</translation>
 <translation id="3819178904835489326">ລຶບ <ph name="NUMBER_OF_DOWNLOADS" /> ການດາວໂຫຼດແລ້ວ</translation>
-<translation id="3849365399446680203">ໃນຂະນະທີ່ທ່ານຢູ່ໃນໂໝດ AR, ເວັບໄຊນີ້ອາດຈະສາມາດ:
-• ສ້າງແຜນທີ່ 3 ມິຕິກ່ຽວກັບສະພາບແວດລ້ອມຂອງທ່ານ
-• ຕິດຕາມການເຄື່ອນໄຫວຂອງກ້ອງ
-
-ມີແຕ່ທ່ານເທົ່ານັ້ນສາມາດເຫັນສິ່ງທີ່ກ້ອງຂອງທ່ານເບິ່ງຢູ່. ເວັບໄຊບໍ່ສາມາດເຫັນພາບຂອງກ້ອງໄດ້.</translation>
 <translation id="3859306556332390985">ເລື່ອນໄປໜ້າ</translation>
 <translation id="388596076286380598">ຮັບບົດຄວາມ, ວິດີໂອ ແລະ ເນື້ອຫາອື່ນໆຈາກເວັບໄຊທີ່ທ່ານມັກ, ເຖິງແມ່ນວ່າທ່ານອອບລາຍ ຫຼື ສັນຍານເຊື່ອມຕໍ່ຂອງທ່ານບໍ່ດີກໍຕາມ.</translation>
 <translation id="3894427358181296146">ເພີ່ມໂຟລເດີ</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">ບໍ່​ມີການ​ເຊື່ອມ​ຕໍ່​ອິນ​ເຕີ​ເນັດ​</translation>
 <translation id="4321739720395210191">ບໍ່ສາມາດເປີດກ້ອງຂອງທ່ານໄດ້. ຣິສະຕາດອຸປະກອນຂອງທ່ານ ແລ້ວລອງໃໝ່.</translation>
 <translation id="4351244548802238354">ປິດ​ໜ້າ​ຕ່າງ</translation>
-<translation id="4353114845960720315">ໃນຂະນະທີ່ທ່ານຢູ່ໃນ VR, ເວັບໄຊນີ້ອາດຈະສາມາດຮຽນຮູ້ກ່ຽວກັບ:</translation>
 <translation id="4378154925671717803">ໂທລະ​ສັບ</translation>
 <translation id="4384468725000734951">ກຳລັງໃຊ້ Sogou ສຳລັບການຊອກຫາ</translation>
 <translation id="4404568932422911380">ບໍ່ມີບຸກມາກ</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">ບໍ່ມີການເຊື່ອມຕໍ່</translation>
 <translation id="4565377596337484307">ເຊື່ອງລະຫັດຜ່ານ</translation>
 <translation id="4572422548854449519">ເຂົ້າສູ່ລະບົບບັນຊີທີ່ມີການຈັດການ</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# ນາທີກ່ອນນີ້}other{# ນາທີກ່ອນນີ້}}</translation>
 <translation id="4587589328781138893">ເວັບໄຊ</translation>
 <translation id="4594952190837476234">ໜ້າອອບລາຍນີ້ມາຈາກ <ph name="CREATION_TIME" /> ແລະ ອາດຈະແຕກຕ່າງຈາກເວີຊັນອອນລາຍ.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">ເປີດ <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">ໃຊ້ລະຫັດຜ່ານ</translation>
 <translation id="4650364565596261010">ຄ່າເລີ່ມຕົ້ນຂອງລະບົບ</translation>
-<translation id="4660838440047236328">ແຜນຜັງຫ້ອງຂອງທ່ານ</translation>
 <translation id="4662373422909645029">ຊື່ຫຼິ້ນບໍ່ສາມາດຮວມມີຕົວເລກໄດ້</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ບຸກ​ມາກ​ຖືກ​ລຶບ​ໄປ​ແລ້ວ</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ຖືກເພີ່ມ​ເຂົ້າ​ໃສ່​ໜ້າ​ຈໍ​ຫຼັກ​ຂອງ​ທ່ານ​ແລ້ວ</translation>
@@ -459,7 +449,6 @@
 
 ເພື່ອປ່ຽນການຕັ້ງຄ່ານີ້, ກະລຸນາ <ph name="BEGIN_LINK" />ຣີເຊັດການຊິິ້ງຂໍ້ມູນ<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">ຊື່​ຢູ່ໃນ​ບັດ</translation>
-<translation id="4808319664292298116">ເຂົ້າຫາ VR ຈາກ <ph name="DOMAIN" /> ບໍ?</translation>
 <translation id="4824958205181053313">ຍົກເລີກການຊິ້ງຂໍ້ມູນບໍ?</translation>
 <translation id="4835385943915508971">Chrome ບໍ່ມີການເຂົ້າເຖິງຊັບພະຍາກອນທີ່ຮ້ອງຂໍ.</translation>
 <translation id="4837753911714442426">ເປີດຕົວເລືອກຕໍ່ກັບໜ້າການພິມ</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">ອອກຈາກເຕັມໜ້າຈໍ</translation>
 <translation id="6404511346730675251">ແກ້​ໄຂບຸກມາກສ໌</translation>
 <translation id="6406506848690869874">ຊິງຄ໌</translation>
-<translation id="6410973561433500075">ເຂົ້າສູ່ໂໝດ AR ຈາກ <ph name="DOMAIN" /> ບໍ?</translation>
 <translation id="641643625718530986">ພິມ</translation>
 <translation id="6427112570124116297">ແປເວັບໄຊ</translation>
 <translation id="6433501201775827830">ເລືອກໂປຣແກຣມຊອກຫາຂອງທ່ານ</translation>

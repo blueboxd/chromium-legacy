@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">Lehed keeles <ph name="SOURCE_LANGUAGE" /> tõlgitakse nüüd keelde <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1676269943528358898">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Google Chrome püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Google Chrome peatas ühenduse enne andmevahetust.</translation>
 <translation id="1682696192498422849">Lühem serv enne</translation>
+<translation id="168693727862418163">Seda reegli väärtust ei õnnestunud skeemiga võrdluses kinnitada ja seda eiratakse.</translation>
 <translation id="168841957122794586">Serveri sertifikaat sisaldab nõrka krüptograafilist võtit.</translation>
 <translation id="1697532407822776718">Kõik on valmis!</translation>
 <translation id="1703835215927279855">Letter</translation>

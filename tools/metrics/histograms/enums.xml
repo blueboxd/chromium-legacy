@@ -1998,6 +1998,12 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="RemoteException"/>
 </enum>
 
+<enum name="AndroidWebViewNonEmbeddedMetricsParsingLogResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Malformed protobuf"/>
+  <int value="2" label="IOException"/>
+</enum>
+
 <enum name="AndroidWebViewProxySchemeFilterType">
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>

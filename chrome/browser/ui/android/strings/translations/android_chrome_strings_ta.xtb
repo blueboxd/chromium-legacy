@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">"பிரபலமானவை" பட்டனைத் தட்டி பிரபல இணையதளங்களைப் பாருங்கள்</translation>
 <translation id="1173894706177603556">மறுபெயரிடு</translation>
 <translation id="1178581264944972037">இடைநிறுத்து</translation>
-<translation id="1188239144602654184">ARரில் நுழைக</translation>
 <translation id="1197267115302279827">புத்தகக்குறிகளை நகர்த்து</translation>
 <translation id="1201402288615127009">அடுத்து</translation>
 <translation id="1204037785786432551">இணைப்பைப் பதிவிறக்கு</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">உரை</translation>
 <translation id="2082238445998314030"><ph name="TOTAL_RESULTS" /> முடிவுகளில் <ph name="RESULT_NUMBER" />வது முடிவு</translation>
 <translation id="2096012225669085171">பல சாதனங்களுக்கிடையில் ஒத்திசைக்கலாம், தனிப்பயனாக்கலாம்</translation>
-<translation id="2099625543891475722">உங்களின் உயரம் போன்ற உடல் அமைப்பு விவரங்கள்</translation>
 <translation id="2100273922101894616">தானாக உள்நுழையவும்</translation>
 <translation id="2100314319871056947">சிறுசிறு பகுதியாக உரையைப் பகிர முயலவும்</translation>
 <translation id="2109711654079915747">பக்கத்தை விட்டு வெளியேறாமலேயே இணையதளங்களில் தலைப்புகளைப் பற்றித் தெரிந்துகொள்ளலாம். 'தேடுவதற்குத் தொடு' அம்சமானது சொல்லையும் அதன் சூழலையும் Google தேடலுக்கு அனுப்பி விளக்கங்கள், படங்கள், தேடல் முடிவுகள் மற்றும் பிற விவரங்களை வழங்குகிறது.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">நிர்வகி</translation>
 <translation id="381841723434055211">ஃபோன் எண்கள்</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> பதிவிறக்கங்கள் உள்ளன</translation>
-<translation id="3849365399446680203">நீங்கள் ARரில் இருக்கும்போது இந்தத் தளத்தால் செய்யமுடியக்கூடும்:
-• உங்களைச் சுற்றியுள்ள இடத்தின் 3D மேப்பை உருவாக்குதல்
-• கேமரா நகர்வைக் கண்காணித்தல்
-
-உங்கள் கேமரா எங்கு ஃபோகஸ் செய்கிறது என்பதை உங்களால் மட்டுமே பார்க்க முடியும். உங்கள் கேமராவின் படங்களைத் தளத்தால் பார்க்க முடியாது.</translation>
 <translation id="3859306556332390985">முன்செல்</translation>
 <translation id="388596076286380598">ஆஃப்லைனிலும், வேகம் குறைந்த இணைப்பிலும் கூட உங்களுக்கு விருப்பமான தளங்களில் இருந்து கட்டுரைகள், வீடியோக்கள் மற்றும் பிற உள்ளடக்கங்களைப் பெற்றிடுங்கள்.</translation>
 <translation id="3894427358181296146">கோப்புறையைச் சேர்</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">இணைய இணைப்பு இல்லை</translation>
 <translation id="4321739720395210191">கேமராவைத் திறக்க முடியவில்லை. சாதனத்தை மீண்டும் தொடங்கி மறுபடியும் முயலவும்.</translation>
 <translation id="4351244548802238354">அறிவிப்பை மூடு</translation>
-<translation id="4353114845960720315">VRரில் இருக்கும்போது இந்தத் தளம் இவற்றைப் பற்றி அறியக்கூடும்:</translation>
 <translation id="4378154925671717803">மொபைல்</translation>
 <translation id="4384468725000734951">தேடலுக்கு Sogouஐப் பயன்படுத்துகிறீர்கள்</translation>
 <translation id="4404568932422911380">புக்மார்க்குகள் இல்லை</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">இணைப்பு இல்லை</translation>
 <translation id="4565377596337484307">கடவுச்சொல்லை மறைக்கும்</translation>
 <translation id="4572422548854449519">நிர்வகிக்கப்படும் கணக்கில் உள்நுழையவும்</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# நிமிடத்திற்கு முன்பு}other{# நிமிடங்களுக்கு முன்பு}}</translation>
 <translation id="4587589328781138893">தளங்கள்</translation>
 <translation id="4594952190837476234"><ph name="CREATION_TIME" /> அன்று இந்த ஆஃப்லைன் பக்கம் உருவாக்கப்பட்டது. இது ஆன்லைன் பதிப்பிலிருந்து வேறுபடலாம்.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />ஐத் திற</translation>
 <translation id="4634124774493850572">கடவுச்சொல்லைப் பயன்படுத்து</translation>
 <translation id="4650364565596261010">சிஸ்டத்தின் இயல்புநிலை</translation>
-<translation id="4660838440047236328">உங்கள் அறையின் வடிவமைப்பு</translation>
 <translation id="4662373422909645029">புனைப்பெயரில் எண்கள் இருக்கக்கூடாது</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> புக்மார்க்குகள் நீக்கப்பட்டன</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> உங்கள் முகப்புத் திரையில் சேர்க்கப்பட்டது</translation>
@@ -459,7 +449,6 @@
 
 இந்த அமைப்பை மாற்ற, <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்கவும்<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">அட்டையிலுள்ள பெயர் </translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> வழங்கும் VRரைப் பார்க்க விரும்புகிறீர்களா?</translation>
 <translation id="4824958205181053313">ஒத்திசைவை ரத்துசெய்யவா?</translation>
 <translation id="4835385943915508971">Chromeமிடம் நீங்கள் கோரியதற்கான அணுகல் இல்லை.</translation>
 <translation id="4837753911714442426">பக்கத்தை அச்சிடுவதற்கான விருப்பங்களைத் திறக்கும்</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">முழுத்திரையிலிருந்து வெளியேறு</translation>
 <translation id="6404511346730675251">புக்மார்க்களைத் திருத்து</translation>
 <translation id="6406506848690869874">Sync</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" /> இல் இருந்து ARரில் நுழையவா?</translation>
 <translation id="641643625718530986">அச்சிடு...</translation>
 <translation id="6427112570124116297">இணையத்தை மொழிபெயர்த்தல்</translation>
 <translation id="6433501201775827830">தேடல் இன்ஜினைத் தேர்வுசெய்யவும்</translation>

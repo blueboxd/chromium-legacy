@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import mock
+import sys
 import textwrap
 import unittest
 
@@ -11,9 +12,56 @@ import gn_helpers
 
 class UnitTest(unittest.TestCase):
   def test_ToGNString(self):
-    self.assertEqual(
-        gn_helpers.ToGNString([1, 'two', [ '"thr$\\', True, False, [] ]]),
-        '[ 1, "two", [ "\\"thr\\$\\\\", true, false, [  ] ] ]')
+    test_cases = [
+        (42, '42', '42'), ('foo', '"foo"', '"foo"'), (True, 'true', 'true'),
+        (False, 'false', 'false'), ('', '""', '""'),
+        ('\\$"$\\', '"\\\\\\$\\"\\$\\\\"', '"\\\\\\$\\"\\$\\\\"'),
+        (' \t\r\n', '" $0x09$0x0D$0x0A"', '" $0x09$0x0D$0x0A"'),
+        (u'\u2713', '"$0xE2$0x9C$0x93"', '"$0xE2$0x9C$0x93"'),
+        ([], '[  ]', '[]'), ([1], '[ 1 ]', '[\n  1\n]\n'),
+        ([3, 1, 4, 1], '[ 3, 1, 4, 1 ]', '[\n  3,\n  1,\n  4,\n  1\n]\n'),
+        (['a', True, 2], '[ "a", true, 2 ]', '[\n  "a",\n  true,\n  2\n]\n'),
+        ({
+            'single': 'item'
+        }, 'single = "item"\n', 'single = "item"\n'),
+        ({
+            'kEy': 137,
+            '_42A_Zaz_': [False, True]
+        }, '_42A_Zaz_ = [ false, true ]\nkEy = 137\n',
+         '_42A_Zaz_ = [\n  false,\n  true\n]\nkEy = 137\n'),
+        ([1, 'two',
+          ['"thr,.$\\', True, False, [],
+           u'(\u2713)']], '[ 1, "two", [ "\\"thr,.\\$\\\\", true, false, ' +
+         '[  ], "($0xE2$0x9C$0x93)" ] ]', '''[
+  1,
+  "two",
+  [
+    "\\"thr,.\\$\\\\",
+    true,
+    false,
+    [],
+    "($0xE2$0x9C$0x93)"
+  ]
+]
+'''),
+        ({
+            's': 'foo',
+            'n': 42,
+            'b': True,
+            'a': [3, 'x']
+        }, 'a = [ 3, "x" ]\nb = true\nn = 42\ns = "foo"\n',
+         'a = [\n  3,\n  "x"\n]\nb = true\nn = 42\ns = "foo"\n'),
+        (
+            [[[], [[]]], []],
+            '[ [ [  ], [ [  ] ] ], [  ] ]',
+            '[\n  [\n    [],\n    [\n      []\n    ]\n  ],\n  []\n]\n',
+        )
+    ]
+    for obj, exp_ugly, exp_pretty in test_cases:
+      out_ugly = gn_helpers.ToGNString(obj)
+      self.assertEqual(exp_ugly, out_ugly)
+      out_pretty = gn_helpers.ToGNString(obj, pretty=True)
+      self.assertEqual(exp_pretty, out_pretty)
 
   def test_UnescapeGNString(self):
     # Backslash followed by a \, $, or " means the folling character without
@@ -139,7 +187,7 @@ class UnitTest(unittest.TestCase):
         some_arg2 = "val2"
     """))
     parser.ReplaceImports()
-    self.assertEquals(
+    self.assertEqual(
         parser.input,
         textwrap.dedent("""
         some_arg1 = "val1"
@@ -155,9 +203,11 @@ class UnitTest(unittest.TestCase):
         some_arg2 = "val2"
     """))
     fake_import = 'some_imported_arg = "imported_val"'
-    with mock.patch('__builtin__.open', mock.mock_open(read_data=fake_import)):
+    builtin_var = '__builtin__' if sys.version_info.major < 3 else 'builtins'
+    open_fun = '{}.open'.format(builtin_var)
+    with mock.patch(open_fun, mock.mock_open(read_data=fake_import)):
       parser.ReplaceImports()
-    self.assertEquals(
+    self.assertEqual(
         parser.input,
         textwrap.dedent("""
         some_arg1 = "val1"

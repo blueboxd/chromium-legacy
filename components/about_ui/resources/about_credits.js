@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
       },
     });
 
-    // TODO remove an empty string argument once supported
+    // TODO(Jun.Kokatsu@microsoft.com): remove an empty string argument
+    // once supported.
     // https://github.com/w3c/webappsec-trusted-types/issues/278
     keyboardUtils.src = staticURLPolicy.createScriptURL('');
     document.body.appendChild(keyboardUtils);

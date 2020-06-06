@@ -60,6 +60,7 @@ enum XRSessionFeature {
   HIT_TEST = 7,
   LIGHT_ESTIMATION = 8, // Experimental feature.
   ANCHORS = 9,  // Experimental feature.
+  CAMERA_ACCESS = 10, // Experimental feature.
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -655,6 +656,19 @@ union RequestSessionResult {
   RequestSessionError failure_reason;
 };
 
+// Return value for VRService.MakeXrCompatible() to indicate whether the GPU
+// process is compatible with the active VR headset.
+enum XrCompatibleResult {
+  // Compatibility results where the GPU process was not restarted.
+  kAlreadyCompatible,
+  kNotCompatible,
+
+  // Compatibility results where the GPU was restarted. Context lost and
+  // restored for existing WebGL contexts must be handled before using for XR.
+  kCompatibleAfterRestart,    // XR compatible, GPU process was restarted.
+  kNotCompatibleAfterRestart, // Not XR compatible, GPU process was restarted.
+};
+
 // Interface for requesting XRDevice interfaces and registering for
 // notifications that the XRDevice has changed. Implemented in the browser
 // process and consumed in the renderer process.
@@ -681,6 +695,17 @@ interface VRService {
   // renderer can (and may) still decide to submit frames and that should not be
   // treated as illegal or clear the throttled state.
   SetFramesThrottled(bool throttled);
+
+  // Request for the GPU process to be compatible with the active VR headset.
+  // This will trigger the initialization of the XR process if it isn't already
+  // initialized and then restart the GPU process if it's not using the same GPU
+  // as the VR headset. The Sync attribute is needed because there are two ways
+  // for WebXR to trigger this - WebGLRenderingContext.makeXRCompatible()
+  // which returns a promise and is asynchronous, and
+  // HTMLCanvasElement.getContext('webgl', { xrCompatible: true }) which is
+  // synchronous and must return a context that is already xr compatible.
+  [Sync]
+  MakeXrCompatible() => (XrCompatibleResult xr_compatible_result);
 };
 
 // Any metrics that must be recorded throughout the duration of an XR session

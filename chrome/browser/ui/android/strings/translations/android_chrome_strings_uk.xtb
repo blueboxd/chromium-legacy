@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Натисніть кнопку "Популярні сайти", щоб переглянути їх.</translation>
 <translation id="1173894706177603556">Перейменувати</translation>
 <translation id="1178581264944972037">Пауза</translation>
-<translation id="1188239144602654184">Почати сеанс у режимі доповненої реальності</translation>
 <translation id="1197267115302279827">Перемістити закладки</translation>
 <translation id="1201402288615127009">Далі</translation>
 <translation id="1204037785786432551">Завантажити дані за посиланням</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">SMS</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Синхронізація та персоналізація на всіх пристроях</translation>
-<translation id="2099625543891475722">ваші фізичні характеристики, такі як зріст;</translation>
 <translation id="2100273922101894616">Автоматичний вхід</translation>
 <translation id="2100314319871056947">Спробуйте надіслати текст меншими частинами</translation>
 <translation id="2109711654079915747">Дізнавайтеся про теми на веб-сайтах, залишаючись на сторінці. Функція пошуку дотиком надсилає в Пошук Google слово та його контекст і повертає визначення, зображення, результати пошуку й іншу інформацію.
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">Змінити</translation>
 <translation id="381841723434055211">Номери телефонів</translation>
 <translation id="3819178904835489326">Видалено завантажених файлів: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3849365399446680203">Під час сеансу доповненої реальності цей сайт може:
-• створювати 3D-мапу вашого оточення;
-• відстежувати рух камери.
-
-Лише ви можете бачити те, що знімає ваша камера. Сайт не має доступу до зображень із вашої камери.</translation>
 <translation id="3859306556332390985">Далі</translation>
 <translation id="388596076286380598">Отримуйте статті, відео й інший контент від сайтів, які вам подобаються, навіть у режимі офлайн або при слабкому з'єднанні.</translation>
 <translation id="3894427358181296146">Додати папку</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">Немає з’єднання з Інтернетом</translation>
 <translation id="4321739720395210191">Не вдається відкрити камеру. Перезапустіть пристрій і повторіть спробу.</translation>
 <translation id="4351244548802238354">Закрити діалогове вікно</translation>
-<translation id="4353114845960720315">Під час сеансу VR цей сайт може розпізнавати:</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4384468725000734951">Пошук за допомогою Sogou</translation>
 <translation id="4404568932422911380">Немає закладок</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">Немає з’єднання</translation>
 <translation id="4565377596337484307">Сховати пароль</translation>
 <translation id="4572422548854449519">Увійдіть у керований обліковий запис</translation>
-<translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# хвилину тому}one{# хвилину тому}few{# хвилини тому}many{# хвилин тому}other{# хвилини тому}}</translation>
 <translation id="4587589328781138893">Сайти</translation>
 <translation id="4594952190837476234">Цю сторінку створено <ph name="CREATION_TIME" />. Вона може відрізнятися від онлайн-версії.</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855">Відкрити файл <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Прийняти пароль</translation>
 <translation id="4650364565596261010">За умовчанням у системі</translation>
-<translation id="4660838440047236328">вигляд вашої кімнати.</translation>
 <translation id="4662373422909645029">Не можна додавати цифри</translation>
 <translation id="4663756553811254707">Видалено закладок: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Веб-сайт <ph name="NAME" /> додано на головний екран</translation>
@@ -459,7 +449,6 @@
 
 Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте параметри синхронізації<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Ім'я на картці</translation>
-<translation id="4808319664292298116">Увійти у VR-режим на сайті <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Скасувати синхронізацію?</translation>
 <translation id="4835385943915508971">Chrome не має доступу до потрібного ресурсу.</translation>
 <translation id="4837753911714442426">Відкрити налаштування друку сторінки</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">Вийти з повноекранного режиму</translation>
 <translation id="6404511346730675251">Редагувати закладку</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
-<translation id="6410973561433500075">Почати сеанс доповненої реальності на сайті <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Друк…</translation>
 <translation id="6427112570124116297">Перекласти веб-сторінки</translation>
 <translation id="6433501201775827830">Виберіть пошукову систему</translation>

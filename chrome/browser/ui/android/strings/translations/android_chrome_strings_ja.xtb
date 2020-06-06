@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">人気のウェブサイトを表示するには、[上位のサイト] ボタンをタップします</translation>
 <translation id="1173894706177603556">名前を変更</translation>
 <translation id="1178581264944972037">一時停止</translation>
-<translation id="1188239144602654184">AR を開始</translation>
 <translation id="1197267115302279827">ブックマークを移動</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1204037785786432551">リンクをダウンロード</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">テキスト</translation>
 <translation id="2082238445998314030">結果 <ph name="TOTAL_RESULTS" /> 件中 <ph name="RESULT_NUMBER" /> 件目</translation>
 <translation id="2096012225669085171">デバイス間の同期とカスタマイズ</translation>
-<translation id="2099625543891475722">あなたの身体的特徴（身長など）</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2100314319871056947">共有するテキスト ブロックを小さくしてください</translation>
 <translation id="2109711654079915747">ウェブサイト上のトピックについて、ページを移動せずに調べることができます。「タップして検索」では、単語とその周囲のコンテキストが Google 検索に送信され、定義、画像、検索結果などの情報が返されます。
@@ -341,11 +339,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="381841723434055211">電話番号</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
-<translation id="3849365399446680203">AR の使用中、このサイトで次の処理が行われる場合があります。
-• 環境の 3D マップを作成する
-• カメラの動きを追跡する
-
-カメラが写している内容は自分にしか見えません。サイト側ではカメラの画像は見えません。</translation>
 <translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="388596076286380598">オフラインの場合や接続が不安定な場合でも、お気に入りのサイトの記事や動画などのコンテンツを閲覧できます。</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
@@ -399,7 +392,6 @@
 <translation id="4320177379694898372">インターネットに接続されていません</translation>
 <translation id="4321739720395210191">カメラを開けません。デバイスを再起動してもう一度お試しください。</translation>
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
-<translation id="4353114845960720315">VR の使用中、このサイトで次の情報が把握される場合があります。</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="4384468725000734951">検索に Sogou を使用します</translation>
 <translation id="4404568932422911380">ブックマークがありません</translation>
@@ -427,7 +419,6 @@
 <translation id="4561979708150884304">接続されていません</translation>
 <translation id="4565377596337484307">パスワードを表示しない</translation>
 <translation id="4572422548854449519">管理対象アカウントにログイン</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分前}other{# 分前}}</translation>
 <translation id="4587589328781138893">サイト</translation>
 <translation id="4594952190837476234">このオフライン ページは <ph name="CREATION_TIME" /> 時点のものであり、オンライン版とは異なる可能性があります。</translation>
@@ -435,7 +426,6 @@
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> を起動</translation>
 <translation id="4634124774493850572">パスワードを使用</translation>
 <translation id="4650364565596261010">システムのデフォルト</translation>
-<translation id="4660838440047236328">あなたの部屋のレイアウト</translation>
 <translation id="4662373422909645029">ニックネームに数字を含めることはできません</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> 件のブックマークを削除しました</translation>
 <translation id="4665282149850138822">「<ph name="NAME" />」がホーム画面に追加されました</translation>
@@ -459,7 +449,6 @@
 
 この設定を変更する場合は<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />してください</translation>
 <translation id="4807098396393229769">カード名義人（半角英文字）</translation>
-<translation id="4808319664292298116"><ph name="DOMAIN" /> で VR を使用しますか？</translation>
 <translation id="4824958205181053313">同期をキャンセルしますか？</translation>
 <translation id="4835385943915508971">Chrome はリクエストされたリソースにアクセスできません。</translation>
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
@@ -659,7 +648,6 @@
 <translation id="6398765197997659313">全画面表示を終了</translation>
 <translation id="6404511346730675251">ブックマークを編集</translation>
 <translation id="6406506848690869874">同期</translation>
-<translation id="6410973561433500075"><ph name="DOMAIN" /> で AR を使用しますか？</translation>
 <translation id="641643625718530986">印刷...</translation>
 <translation id="6427112570124116297">ウェブの翻訳</translation>
 <translation id="6433501201775827830">検索エンジンを選択</translation>

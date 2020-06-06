@@ -277,6 +277,13 @@ void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
       model_->IsVisible(views::CAPTION_BUTTON_ICON_CLOSE));
 }
 
+void FrameCaptionButtonContainerView::UpdateSizeButtonTooltip(
+    bool use_restore_frame) {
+  size_button_->SetTooltipText(
+      use_restore_frame ? l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE)
+                        : l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE));
+}
+
 void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
   menu_button_->SetPreferredSize(size);
   minimize_button_->SetPreferredSize(size);

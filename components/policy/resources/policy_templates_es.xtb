@@ -3235,9 +3235,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si se le asigna el valor 0, no se almacenarán datos de autenticación en la memoria caché. Esto puede ralentizar el inicio de sesión de los usuarios afiliados, ya que será necesario obtener datos de cada dominio cada vez que inicien sesión.
 
       Ten en cuenta que los datos de dominio se almacenan en caché incluso para los usuarios en modo efímero. Para evitar el rastreo del dominio de los usuarios en modo efímero, debe desactivarse la memoria caché.</translation>
-<translation id="5700097087679928356">Si se asigna el valor "0" (predeterminado) a esta política, podrás acceder a las herramientas para desarrolladores y a la consola de JavaScript, pero no en extensiones instaladas por política de empresa. Si se le asigna el valor "1", podrás acceder a las herramientas para desarrolladores y a la consola de JavaScript sin excepciones, incluso en extensiones instaladas por política de empresa. Si se le asigna el valor "2", no podrás acceder a las herramientas para desarrolladores ni tampoco podrás inspeccionar los elementos de los sitios web.
-
-      Este ajuste también desactiva las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las herramientas para desarrolladores y la consola de JavaScript.</translation>
 <translation id="570062449808736508">Si esta política se asigna a una cadena no vacía, WebView leerá las restricciones de URL del proveedor de contenido con el nombre de autoridad especificado.</translation>
 <translation id="5708969689202733975">Configurar los modos de desbloqueo rápido permitidos</translation>
 <translation id="5711016543513883877">

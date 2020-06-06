@@ -750,14 +750,13 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       std::move(commit_params), browser_initiated,
       false /* from_begin_navigation */, false /* is_for_commit */, frame_entry,
       entry, std::move(navigation_ui_data), mojo::NullAssociatedRemote(),
-      mojo::NullRemote(), rfh_restored_from_back_forward_cache));
+      mojo::NullRemote(), rfh_restored_from_back_forward_cache,
+      initiator_routing_id));
 
   if (frame_entry) {
     navigation_request->blob_url_loader_factory_ =
         frame_entry->blob_url_loader_factory();
   }
-
-  navigation_request->initiator_routing_id_ = initiator_routing_id;
 
   if (navigation_request->common_params().url.SchemeIsBlob() &&
       !navigation_request->blob_url_loader_factory_) {
@@ -841,6 +840,14 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           frame_tree_node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */);
 
+  // CreateRendererInitiated() should only be triggered when the navigation is
+  // initiated by a frame in the same process.
+  // TODO(https://crbug.com/1074464): Find a way to DCHECK that the routing ID
+  // is from the current RFH.
+  GlobalFrameRoutingId initiator_routing_id(
+      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+      begin_params->initiator_routing_id);
+
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params),
@@ -850,8 +857,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       nullptr, entry,
       nullptr,  // navigation_ui_data
       std::move(navigation_client), std::move(navigation_initiator),
-      nullptr  // rfh_restored_from_back_forward_cache
-      ));
+      nullptr,  // rfh_restored_from_back_forward_cache
+      initiator_routing_id));
   navigation_request->blob_url_loader_factory_ =
       std::move(blob_url_loader_factory);
   navigation_request->prefetched_signed_exchange_cache_ =
@@ -859,13 +866,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   navigation_request->web_bundle_handle_tracker_ =
       std::move(web_bundle_handle_tracker);
 
-  // CreateRendererInitiated() should only be triggered when the navigation is
-  // initiated by a frame in the same process.
-  // TODO(https://crbug.com/1074464): Find a way to DCHECK that the routing ID
-  // is from the current RFH.
-  navigation_request->initiator_routing_id_ = GlobalFrameRoutingId(
-      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-      navigation_request->begin_params()->initiator_routing_id);
   return navigation_request;
 }
 
@@ -933,9 +933,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
       frame_tree_node, std::move(common_params), std::move(begin_params),
       std::move(commit_params), false /* browser_initiated */,
       false /* from_begin_navigation */, true /* is_for_commit */,
-      nullptr /* frame_navigation_entry */, nullptr /* navitation_entry */,
+      nullptr /* frame_navigation_entry */, nullptr /* navigation_entry */,
       nullptr /* navigation_ui_data */, mojo::NullAssociatedRemote(),
-      mojo::NullRemote(), nullptr /* rfh_restored_from_back_forward_cache */));
+      mojo::NullRemote(), nullptr, /* rfh_restored_from_back_forward_cache */
+      {} /* initiator_routing_id */));
 
   navigation_request->web_bundle_navigation_info_ =
       std::move(web_bundle_navigation_info);
@@ -960,7 +961,8 @@ NavigationRequest::NavigationRequest(
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
-    RenderFrameHostImpl* rfh_restored_from_back_forward_cache)
+    RenderFrameHostImpl* rfh_restored_from_back_forward_cache,
+    GlobalFrameRoutingId initiator_routing_id)
     : frame_tree_node_(frame_tree_node),
       is_for_commit_(is_for_commit),
       common_params_(std::move(common_params)),
@@ -969,22 +971,34 @@ NavigationRequest::NavigationRequest(
       browser_initiated_(browser_initiated),
       navigation_ui_data_(std::move(navigation_ui_data)),
       state_(NOT_STARTED),
-      restore_type_(RestoreType::NONE),
+      restore_type_(entry ? entry->restore_type() : RestoreType::NONE),
+      reload_type_(entry ? entry->reload_type() : ReloadType::NONE),
+      nav_entry_id_(entry ? entry->GetUniqueID() : 0),
       is_view_source_(false),
       bindings_(FrameNavigationEntry::kInvalidBindings),
       response_should_be_rendered_(true),
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE),
       from_begin_navigation_(from_begin_navigation),
       has_stale_copy_in_cache_(false),
-      net_error_(net::OK),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
+      initiator_csp_context_(std::make_unique<InitiatorCSPContext>(
+          std::move(common_params_->initiator_csp_info->initiator_csp),
+          std::move(common_params_->initiator_csp_info->initiator_self_source),
+          std::move(navigation_initiator))),
       devtools_navigation_token_(base::UnguessableToken::Create()),
       request_navigation_client_(mojo::NullAssociatedRemote()),
       commit_navigation_client_(mojo::NullAssociatedRemote()),
       navigation_handle_timing_(std::make_unique<NavigationHandleTiming>()),
       rfh_restored_from_back_forward_cache_(
           rfh_restored_from_back_forward_cache),
-      client_security_state_(network::mojom::ClientSecurityState::New()) {
+      // Store the old RenderFrameHost id at request creation to be used later.
+      previous_render_frame_host_id_(GlobalFrameRoutingId(
+          frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+          frame_tree_node->current_frame_host()->GetRoutingID())),
+      initiator_routing_id_(initiator_routing_id),
+      client_security_state_(network::mojom::ClientSecurityState::New()),
+      previous_page_load_ukm_source_id_(
+          frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
   DCHECK(!IsRendererDebugURL(common_params_->url));
   DCHECK(common_params_->method == "POST" || !common_params_->post_data);
@@ -1067,14 +1081,6 @@ NavigationRequest::NavigationRequest(
     commit_params_->is_browser_initiated = browser_initiated_;
   }
 
-  // Store the old RenderFrameHost id at request creation to be used later.
-  previous_render_frame_host_id_ = GlobalFrameRoutingId(
-      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-      frame_tree_node->current_frame_host()->GetRoutingID());
-
-  previous_page_load_ukm_source_id_ =
-      frame_tree_node_->current_frame_host()->GetPageUkmSourceId();
-
   // Update the load flags with cache information.
   UpdateLoadFlagsWithCacheFlags(&begin_params_->load_flags,
                                 common_params_->navigation_type,
@@ -1083,9 +1089,6 @@ NavigationRequest::NavigationRequest(
   // Add necessary headers that may not be present in the
   // mojom::BeginNavigationParams.
   if (entry) {
-    nav_entry_id_ = entry->GetUniqueID();
-    restore_type_ = entry->restore_type();
-    reload_type_ = entry->reload_type();
     // TODO(altimin, crbug.com/933147): Remove this logic after we are done
     // with implementing back-forward cache.
     if (frame_tree_node->IsMainFrame() && entry->back_forward_cache_metrics()) {
@@ -1142,11 +1145,6 @@ NavigationRequest::NavigationRequest(
   }
 
   begin_params_->headers = headers.ToString();
-
-  initiator_csp_context_.reset(new InitiatorCSPContext(
-      std::move(common_params_->initiator_csp_info->initiator_csp),
-      std::move(common_params_->initiator_csp_info->initiator_self_source),
-      std::move(navigation_initiator)));
 
   navigation_entry_offset_ = EstimateHistoryOffset();
 
@@ -2610,9 +2608,9 @@ void NavigationRequest::OnStartChecksComplete(
             .application_cache_enabled) {
       // The final process id won't be available until
       // NavigationRequest::ReadyToCommitNavigation.
-      appcache_handle_.reset(new AppCacheNavigationHandle(
+      appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
           static_cast<ChromeAppCacheService*>(partition->GetAppCacheService()),
-          ChildProcessHost::kInvalidUniqueID));
+          ChildProcessHost::kInvalidUniqueID);
     }
   }
 

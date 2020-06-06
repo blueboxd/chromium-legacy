@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.share;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Matchers.any;
@@ -12,7 +13,6 @@ import android.app.Activity;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,6 +50,8 @@ public final class ShareSheetCoordinatorTest {
     @Mock
     private ShareSheetPropertyModelBuilder mPropertyModelBuilder;
 
+    private ShareSheetCoordinator mShareSheetCoordinator;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -71,46 +73,45 @@ public final class ShareSheetCoordinatorTest {
         Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(
                              any(), any(), anyBoolean(), anyLong()))
                 .thenReturn(thirdPartyPropertyModels);
+
+        mShareSheetCoordinator = new ShareSheetCoordinator(null, null, mPropertyModelBuilder, null);
     }
 
     @Test
     @MediumTest
     public void disableFirstPartyFeatures() {
-        ShareSheetCoordinator coordinator =
-                new ShareSheetCoordinator(null, null, mPropertyModelBuilder, null);
-        coordinator.disableFirstPartyFeaturesForTesting();
+        mShareSheetCoordinator.disableFirstPartyFeaturesForTesting();
         Activity activity = mActivityTestRule.getActivity();
 
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         List<PropertyModel> propertyModels =
-                coordinator.createTopRowPropertyModels(bottomSheet, activity, /*shareParams=*/null);
-        Assert.assertEquals("Property model list should be empty.", 0, propertyModels.size());
+                mShareSheetCoordinator.createTopRowPropertyModels(bottomSheet, activity,
+                        /*shareParams=*/null, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
+        assertEquals("Property model list should be empty.", 0, propertyModels.size());
     }
 
     @Test
     @MediumTest
     public void testCreateBottomRowPropertyModels() {
-        ShareSheetCoordinator coordinator =
-                new ShareSheetCoordinator(null, null, mPropertyModelBuilder, null);
         Activity activity = mActivityTestRule.getActivity();
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
-        List<PropertyModel> propertyModels = coordinator.createBottomRowPropertyModels(
+        List<PropertyModel> propertyModels = mShareSheetCoordinator.createBottomRowPropertyModels(
                 bottomSheet, activity, /*shareParams=*/null, /*saveLastUsed=*/false);
-        Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
-        Assert.assertEquals("First property model isn't testModel1.", "testModel1",
+        assertEquals("Incorrect number of property models.", 3, propertyModels.size());
+        assertEquals("First property model isn't testModel1.", "testModel1",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
-        Assert.assertEquals("First property model is marked as first party.", false,
+        assertEquals("First property model is marked as first party.", false,
                 propertyModels.get(0).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
-        Assert.assertEquals("Second property model isn't testModel2.", "testModel2",
+        assertEquals("Second property model isn't testModel2.", "testModel2",
                 propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
-        Assert.assertEquals("Second property model is marked as first party.", false,
+        assertEquals("Second property model is marked as first party.", false,
                 propertyModels.get(1).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
-        Assert.assertEquals("Third property model isn't More.",
+        assertEquals("Third property model isn't More.",
                 activity.getResources().getString(R.string.sharing_more_icon_label),
                 propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
-        Assert.assertEquals("Thired property model isn't marked as first party.", true,
+        assertEquals("Third property model isn't marked as first party.", true,
                 propertyModels.get(2).get(ShareSheetItemViewProperties.IS_FIRST_PARTY));
     }
 }

@@ -4,6 +4,7 @@
 
 #include "components/metrics/unsent_log_store.h"
 
+#include <cmath>
 #include <memory>
 #include <string>
 #include <utility>
@@ -28,6 +29,9 @@ const char kLogHashKey[] = "hash";
 const char kLogSignatureKey[] = "signature";
 const char kLogTimestampKey[] = "timestamp";
 const char kLogDataKey[] = "data";
+const char kLogUnsentCountKey[] = "unsent_samples_count";
+const char kLogSentCountKey[] = "sent_samples_count";
+const char kLogPersistedSizeInKbKey[] = "unsent_persisted_size_in_kb";
 
 std::string EncodeToBase64(const std::string& to_convert) {
   DCHECK(to_convert.data());
@@ -44,15 +48,17 @@ std::string DecodeFromBase64(const std::string& to_convert) {
 
 }  // namespace
 
-UnsentLogStore::LogInfo::LogInfo() {}
-UnsentLogStore::LogInfo::LogInfo(
-  const UnsentLogStore::LogInfo& other) = default;
-UnsentLogStore::LogInfo::~LogInfo() {}
+UnsentLogStore::LogInfo::LogInfo() = default;
+UnsentLogStore::LogInfo::LogInfo(const UnsentLogStore::LogInfo& other) =
+    default;
+UnsentLogStore::LogInfo::~LogInfo() = default;
 
-void UnsentLogStore::LogInfo::Init(UnsentLogStoreMetrics* metrics,
-                                  const std::string& log_data,
-                                  const std::string& log_timestamp,
-                                  const std::string& signing_key) {
+void UnsentLogStore::LogInfo::Init(
+    UnsentLogStoreMetrics* metrics,
+    const std::string& log_data,
+    const std::string& log_timestamp,
+    const std::string& signing_key,
+    base::Optional<base::HistogramBase::Count> samples_count) {
   DCHECK(!log_data.empty());
 
   if (!compression::GzipCompress(log_data, &compressed_log_data)) {
@@ -75,18 +81,21 @@ void UnsentLogStore::LogInfo::Init(UnsentLogStoreMetrics* metrics,
   }
 
   timestamp = log_timestamp;
+  this->samples_count = samples_count;
 }
 
 UnsentLogStore::UnsentLogStore(std::unique_ptr<UnsentLogStoreMetrics> metrics,
-                             PrefService* local_state,
-                             const char* pref_name,
-                             size_t min_log_count,
-                             size_t min_log_bytes,
-                             size_t max_log_size,
-                             const std::string& signing_key)
+                               PrefService* local_state,
+                               const char* log_data_pref_name,
+                               const char* metadata_pref_name,
+                               size_t min_log_count,
+                               size_t min_log_bytes,
+                               size_t max_log_size,
+                               const std::string& signing_key)
     : metrics_(std::move(metrics)),
       local_state_(local_state),
-      pref_name_(pref_name),
+      log_data_pref_name_(log_data_pref_name),
+      metadata_pref_name_(metadata_pref_name),
       min_log_count_(min_log_count),
       min_log_bytes_(min_log_bytes),
       max_log_size_(max_log_size != 0 ? max_log_size : static_cast<size_t>(-1)),
@@ -148,8 +157,15 @@ void UnsentLogStore::DiscardStagedLog() {
   staged_log_index_ = -1;
 }
 
+void UnsentLogStore::MarkStagedLogAsSent() {
+  DCHECK(has_staged_log());
+  DCHECK_LT(static_cast<size_t>(staged_log_index_), list_.size());
+  if (list_[staged_log_index_].samples_count.has_value())
+    total_samples_sent_ += list_[staged_log_index_].samples_count.value();
+}
+
 void UnsentLogStore::PersistUnsentLogs() const {
-  ListPrefUpdate update(local_state_, pref_name_);
+  ListPrefUpdate update(local_state_, log_data_pref_name_);
   // TODO(crbug.com/859477): Verify that the preference has been properly
   // registered.
   CHECK(update.Get());
@@ -157,14 +173,17 @@ void UnsentLogStore::PersistUnsentLogs() const {
 }
 
 void UnsentLogStore::LoadPersistedUnsentLogs() {
-  ReadLogsFromPrefList(*local_state_->GetList(pref_name_));
+  ReadLogsFromPrefList(*local_state_->GetList(log_data_pref_name_));
+  RecordMetaDataMertics();
 }
 
-void UnsentLogStore::StoreLog(const std::string& log_data) {
-  list_.push_back(LogInfo());
+void UnsentLogStore::StoreLog(
+    const std::string& log_data,
+    base::Optional<base::HistogramBase::Count> samples_count) {
+  list_.emplace_back();
   list_.back().Init(metrics_.get(), log_data,
                     base::NumberToString(base::Time::Now().ToTimeT()),
-                    signing_key_);
+                    signing_key_, samples_count);
 }
 
 const std::string& UnsentLogStore::GetLogAtIndex(size_t index) {
@@ -173,8 +192,10 @@ const std::string& UnsentLogStore::GetLogAtIndex(size_t index) {
   return list_[index].compressed_log_data;
 }
 
-std::string UnsentLogStore::ReplaceLogAtIndex(size_t index,
-                                              const std::string& new_log_data) {
+std::string UnsentLogStore::ReplaceLogAtIndex(
+    size_t index,
+    const std::string& new_log_data,
+    base::Optional<base::HistogramBase::Count> samples_count) {
   DCHECK_GE(index, 0U);
   DCHECK_LT(index, list_.size());
 
@@ -185,7 +206,8 @@ std::string UnsentLogStore::ReplaceLogAtIndex(size_t index,
   old_timestamp.swap(list_[index].timestamp);
 
   list_[index] = LogInfo();
-  list_[index].Init(metrics_.get(), new_log_data, old_timestamp, signing_key_);
+  list_[index].Init(metrics_.get(), new_log_data, old_timestamp, signing_key_,
+                    samples_count);
   return old_log_data;
 }
 
@@ -194,7 +216,11 @@ void UnsentLogStore::Purge() {
     DiscardStagedLog();
   }
   list_.clear();
-  local_state_->ClearPref(pref_name_);
+  local_state_->ClearPref(log_data_pref_name_);
+  // The |total_samples_sent_| isn't cleared intentionally because it is still
+  // meaningful.
+  if (metadata_pref_name_)
+    local_state_->ClearPref(metadata_pref_name_);
 }
 
 void UnsentLogStore::ReadLogsFromPrefList(const base::ListValue& list_value) {
@@ -257,6 +283,8 @@ void UnsentLogStore::WriteLogsToPrefList(base::ListValue* list_value) const {
     ++saved_log_count;
   }
   int dropped_logs_num = start - 1;
+  base::HistogramBase::Count unsent_samples_count = 0;
+  size_t unsent_persisted_size = 0;
 
   for (size_t i = start; i < list_.size(); ++i) {
     size_t log_size = list_[i].compressed_log_data.length();
@@ -273,9 +301,56 @@ void UnsentLogStore::WriteLogsToPrefList(base::ListValue* list_value) const {
                           EncodeToBase64(list_[i].compressed_log_data));
     dict_value->SetString(kLogTimestampKey, list_[i].timestamp);
     list_value->Append(std::move(dict_value));
+
+    if (list_[i].samples_count.has_value()) {
+      unsent_samples_count += list_[i].samples_count.value();
+    }
+    unsent_persisted_size += log_size;
   }
   if (dropped_logs_num > 0)
     metrics_->RecordDroppedLogsNum(dropped_logs_num);
+
+  WriteToMetricsPref(unsent_samples_count, total_samples_sent_,
+                     unsent_persisted_size);
+}
+
+void UnsentLogStore::WriteToMetricsPref(
+    base::HistogramBase::Count unsent_samples_count,
+    base::HistogramBase::Count sent_samples_count,
+    size_t unsent_persisted_size) const {
+  if (metadata_pref_name_ == nullptr)
+    return;
+
+  DictionaryPrefUpdate update(local_state_, metadata_pref_name_);
+  base::DictionaryValue* pref_data = update.Get();
+  pref_data->SetKey(kLogUnsentCountKey, base::Value(unsent_samples_count));
+  pref_data->SetKey(kLogSentCountKey, base::Value(sent_samples_count));
+  // Round up to kb.
+  pref_data->SetKey(
+      kLogPersistedSizeInKbKey,
+      base::Value(static_cast<int>(std::ceil(unsent_persisted_size / 1024.0))));
+}
+
+void UnsentLogStore::RecordMetaDataMertics() {
+  if (metadata_pref_name_ == nullptr)
+    return;
+
+  const base::DictionaryValue* value =
+      local_state_->GetDictionary(metadata_pref_name_);
+  if (!value)
+    return;
+
+  auto unsent_samples_count = value->FindIntKey(kLogUnsentCountKey);
+  auto sent_samples_count = value->FindIntKey(kLogSentCountKey);
+  auto unsent_persisted_size_in_kb =
+      value->FindIntKey(kLogPersistedSizeInKbKey);
+
+  if (unsent_samples_count && sent_samples_count &&
+      unsent_persisted_size_in_kb) {
+    metrics_->RecordLastUnsentLogMetadataMetrics(
+        unsent_samples_count.value(), sent_samples_count.value(),
+        unsent_persisted_size_in_kb.value());
+  }
 }
 
 }  // namespace metrics

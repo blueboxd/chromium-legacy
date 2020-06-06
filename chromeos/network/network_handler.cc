@@ -126,7 +126,8 @@ void NetworkHandler::InitializePrefServices(
       ui_proxy_config_service_.get());
   network_metadata_store_.reset(new NetworkMetadataStore(
       network_configuration_handler_.get(), network_connection_handler_.get(),
-      network_state_handler_.get(), logged_in_profile_prefs, device_prefs));
+      network_state_handler_.get(), logged_in_profile_prefs, device_prefs,
+      is_enterprise_managed_));
 }
 
 void NetworkHandler::ShutdownPrefServices() {

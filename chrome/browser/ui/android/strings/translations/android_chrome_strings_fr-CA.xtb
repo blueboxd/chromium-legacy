@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Affichez des sites Web populaires en touchant le bouton « Sites populaires »</translation>
 <translation id="1173894706177603556">Renommer</translation>
 <translation id="1178581264944972037">Interrompre</translation>
-<translation id="1188239144602654184">Démarrer la RA</translation>
 <translation id="1197267115302279827">Déplacer les favoris</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1204037785786432551">Télécharger le lien</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">texte</translation>
 <translation id="2082238445998314030">Résultat <ph name="RESULT_NUMBER" /> sur <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Profitez de la synchronisation et d'une expérience personnalisée sur tous vos appareils</translation>
-<translation id="2099625543891475722">vos caractéristiques physiques, comme votre taille;</translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
 <translation id="2100314319871056947">Essayez de partager le texte en plusieurs parties plus petites</translation>
 <translation id="2109711654079915747">Apprenez-en davantage sur des sujets mentionnés sur des sites Web sans quitter la page. La fonctionnalité Toucher pour rechercher envoie un mot et son contexte à la recherche Google, qui vous renvoie des définitions, des photos, des résultats de recherche et d'autres renseignements.
@@ -341,11 +339,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="3810973564298564668">Gérer</translation>
 <translation id="381841723434055211">Numéros de téléphone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> téléchargements supprimés</translation>
-<translation id="3849365399446680203">Lorsque vous êtes en mode RA, ce site pourrait effectuer les actions suivantes :
-• Créer une carte 3D de votre environnement
-• Faire le suivi du mouvement de l'appareil photo
-
-Vous seul voyez les images de l'appareil photo. Le site n'y a pas accès.</translation>
 <translation id="3859306556332390985">Rechercher vers l'avant</translation>
 <translation id="388596076286380598">Consultez des articles, des vidéos et d'autres contenus sur les sites qui vous intéressent, même si vous êtes hors ligne ou si votre connexion est mauvaise.</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
@@ -399,7 +392,6 @@ Vous seul voyez les images de l'appareil photo. Le site n'y a pas accès.</trans
 <translation id="4320177379694898372">Pas de connexion Internet</translation>
 <translation id="4321739720395210191">Impossible d'ouvrir votre appareil photo. Redémarrez votre appareil et réessayez.</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
-<translation id="4353114845960720315">Lorsque vous êtes en mode RV, ce site pourrait en apprendre davantage sur :</translation>
 <translation id="4378154925671717803">Numéro de téléphone</translation>
 <translation id="4384468725000734951">Sogou est utilisé pour la recherche</translation>
 <translation id="4404568932422911380">Aucun favori</translation>
@@ -427,7 +419,6 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4561979708150884304">Aucune connexion</translation>
 <translation id="4565377596337484307">Masquer le mot de passe</translation>
 <translation id="4572422548854449519">Connectez-vous à un compte géré</translation>
-<translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Il y a # minute}one{Il y a # minute}other{Il y a # minutes}}</translation>
 <translation id="4587589328781138893">Sites</translation>
 <translation id="4594952190837476234">Cette page hors connexion a été créée le <ph name="CREATION_TIME" /> et peut différer de la version en ligne.</translation>
@@ -435,7 +426,6 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 <translation id="4616150815774728855">Ouvrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Utiliser le mot de passe</translation>
 <translation id="4650364565596261010">Paramètres par défaut</translation>
-<translation id="4660838440047236328">la disposition de votre pièce.</translation>
 <translation id="4662373422909645029">Aucun chiffre dans le pseudo</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> favoris supprimés</translation>
 <translation id="4665282149850138822">Le site <ph name="NAME" /> a été ajouté à votre écran d'accueil</translation>
@@ -459,7 +449,6 @@ D'autres formes d'historique de navigation, telles que les recherches et l'activ
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Nom du titulaire de la carte</translation>
-<translation id="4808319664292298116">Démarrer la RV à partir de <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Annuler la synchronisation?</translation>
 <translation id="4835385943915508971">Chrome n'a pas accès à la ressource demandée.</translation>
 <translation id="4837753911714442426">Ouvrir les options d'impression de la page</translation>
@@ -659,7 +648,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
-<translation id="6410973561433500075">Démarrer la RA à partir de <ph name="DOMAIN" />?</translation>
 <translation id="641643625718530986">Imprimer...</translation>
 <translation id="6427112570124116297">Traduisez le Web</translation>
 <translation id="6433501201775827830">Choisissez votre moteur de recherche</translation>

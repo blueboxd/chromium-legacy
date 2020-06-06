@@ -178,6 +178,7 @@
 <translation id="1671391448414634642">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁翻譯成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Google Chrome 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Google Chrome 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="1682696192498422849">先從短邊開始</translation>
+<translation id="168693727862418163">這項政策的值未通過其結構定義的驗證，因此會遭到忽略。</translation>
 <translation id="168841957122794586">伺服器憑證含有防護力薄弱的加密編譯金鑰。</translation>
 <translation id="1697532407822776718">大功告成！</translation>
 <translation id="1703835215927279855">Letter</translation>

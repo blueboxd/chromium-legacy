@@ -74,6 +74,9 @@ bool DefaultTexture2DWrapper::ProcessTexture(
   if (received_error_)
     return false;
 
+  // Temporary check to track down https://crbug.com/1077645
+  CHECK(texture);
+
   // It's okay to post and forget this call, since it'll be ordered correctly
   // with respect to any access on the gpu main thread.
   gpu_resources_.Post(FROM_HERE, &GpuResources::PushNewTexture,

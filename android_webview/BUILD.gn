@@ -69,19 +69,6 @@ if (enable_webview_bundles) {
     min_sdk_version = 21
     compress_shared_libraries = true
   }
-
-  if (is_official_build) {
-    # Used for binary size monitoring.
-    create_app_bundle_minimal_apks("system_webview_minimal_apks") {
-      deps = [ ":system_webview_bundle" ]
-      bundle_path = "$root_build_dir/apks/SystemWebView.aab"
-    }
-
-    android_resource_sizes_test("resource_sizes_system_webview_bundle") {
-      file_path = "$root_build_dir/apks/SystemWebView.minimal.apks"
-      data_deps = [ ":system_webview_minimal_apks" ]
-    }
-  }
 }
 
 if (android_64bit_target_cpu) {
@@ -164,19 +151,6 @@ if (enable_webview_bundles) {
     uncompress_dex = true
     min_sdk_version = 29
     static_library_provider = "//chrome/android:trichrome_library_apk"
-  }
-
-  if (is_official_build) {
-    # Used for binary size monitoring.
-    create_app_bundle_minimal_apks("trichrome_webview_minimal_apks") {
-      deps = [ ":trichrome_webview_bundle" ]
-      bundle_path = "$root_build_dir/apks/TrichromeWebView.aab"
-    }
-
-    android_resource_sizes_test("resource_sizes_trichrome_webview_bundle") {
-      file_path = "$root_build_dir/apks/TrichromeWebView.minimal.apks"
-      data_deps = [ ":trichrome_webview_minimal_apks" ]
-    }
   }
 }
 

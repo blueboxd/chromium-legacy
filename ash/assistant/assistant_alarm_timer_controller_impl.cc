@@ -278,6 +278,7 @@ AssistantNotificationPtr CreateTimerNotification(const AssistantTimer& timer) {
   notification->client_id = CreateTimerNotificationId(timer);
   notification->grouping_key = kTimerNotificationGroupingKey;
   notification->priority = CreateTimerNotificationPriority(timer);
+  notification->is_pinned = IsTimersV2Enabled();
   return notification;
 }
 

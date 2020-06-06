@@ -1107,7 +1107,7 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   std::string email;
   args->GetString(0, &email);
 
-  gaia_screen_handler_->set_populated_email(email);
+  gaia_screen_handler_->set_populated_account(AccountId::FromUserEmail(email));
   gaia_screen_handler_->LoadAuthExtension(true /* force */, true /* offline */);
   UpdateUIState(UI_STATE_GAIA_SIGNIN);
 }
@@ -1313,8 +1313,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id,
   // TODO(https://crbug.com/1071779): Migrate KioskTest to Views Account picker.
   // DCHECK_EQ(session_manager::SessionManager::Get()->session_state(),
   //           session_manager::SessionState::LOGIN_SECONDARY);
-  lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
-                                        ime_state_.get(),
+  lock_screen_utils::SetUserInputMethod(account_id, ime_state_.get(),
                                         false /*honor_device_policy*/);
   lock_screen_utils::SetKeyboardSettings(account_id);
 

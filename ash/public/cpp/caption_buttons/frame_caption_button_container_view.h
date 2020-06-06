@@ -93,6 +93,8 @@ class ASH_PUBLIC_EXPORT FrameCaptionButtonContainerView
   // state. A parent view should relayout to reflect the change in states.
   void UpdateCaptionButtonState(bool animate);
 
+  void UpdateSizeButtonTooltip(bool use_restore_frame);
+
   // Sets the size of the buttons in this container.
   void SetButtonSize(const gfx::Size& size);
 

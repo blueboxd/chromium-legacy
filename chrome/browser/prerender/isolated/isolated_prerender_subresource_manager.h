@@ -44,6 +44,10 @@ class IsolatedPrerenderSubresourceManager
 
   bool has_nsp_handle() const { return !!nsp_handle_; }
 
+  const std::set<GURL>& successfully_loaded_subresources() const {
+    return successfully_loaded_subresources_;
+  }
+
   // Takes ownership of |mainframe_response_|.
   std::unique_ptr<PrefetchedMainframeResponseContainer> TakeMainframeResponse();
 
@@ -82,8 +86,18 @@ class IsolatedPrerenderSubresourceManager
   void RemoveProxiedURLLoaderFactory(
       IsolatedPrerenderProxyingURLLoaderFactory* factory);
 
+  // Used as
+  // |IsolatedPrerenderProxyingURLLoaderFactory::ResourceLoadSuccessfulCallback|
+  // to report a subresource was successfully loaded during the NSP.
+  void OnSubresourceLoadSuccessful(const GURL& url);
+
   // The page that is being prerendered.
   const GURL url_;
+
+  // All the subresources that have been successfully loaded during the NSP.
+  // Each step in a subresource's redirect chain is also added here so that
+  // those steps can be used from the network cache later as well.
+  std::set<GURL> successfully_loaded_subresources_;
 
   // The mainframe response headers and body.
   std::unique_ptr<PrefetchedMainframeResponseContainer> mainframe_response_;

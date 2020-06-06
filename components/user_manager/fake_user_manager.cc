@@ -120,6 +120,11 @@ void FakeUserManager::UpdateUserAccountData(
   }
 }
 
+void FakeUserManager::LogoutAllUsers() {
+  primary_user_ = nullptr;
+  active_user_ = nullptr;
+}
+
 void FakeUserManager::UserLoggedIn(const AccountId& account_id,
                                    const std::string& username_hash,
                                    bool browser_restart,
@@ -230,11 +235,11 @@ base::string16 FakeUserManager::GetUserDisplayName(
 }
 
 bool FakeUserManager::IsCurrentUserOwner() const {
-  return false;
+  return is_current_user_owner_;
 }
 
 bool FakeUserManager::IsCurrentUserNew() const {
-  return false;
+  return is_current_user_new_;
 }
 
 bool FakeUserManager::IsCurrentUserNonCryptohomeDataEphemeral() const {

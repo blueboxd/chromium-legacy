@@ -8,11 +8,14 @@ import android.content.Context;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
@@ -53,15 +56,26 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
      * @param context The {@link Context} in which snackbar is shown.
      * @param selector The {@link TabModelSelector} that will be used to commit and undo tab
      *                 closures.
-     * @param snackbarManagable The holder class to get the manager that helps to show up snackbar.
+     * @param snackbarManageable The holder class to get the manager that helps to show up snackbar.
+     * @param overviewModeBehavior The {@link OverviewModeBehavior} to help check whether the
+     *         overview is showing or not.
      */
     public UndoBarController(Context context, TabModelSelector selector,
-            SnackbarManager.SnackbarManageable snackbarManagable) {
-        mSnackbarManagable = snackbarManagable;
+            SnackbarManager.SnackbarManageable snackbarManageable,
+            OverviewModeBehavior overviewModeBehavior) {
+        mSnackbarManagable = snackbarManageable;
         mTabModelSelector = selector;
         mContext = context;
         mTabModelObserver = new TabModelObserver() {
             private boolean disableUndo() {
+                // If the closure happens through conditional tab strip, show the undo snack bar
+                // regardless of whether accessibility mode is enabled.
+                if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
+                        && ConditionalTabStripUtils.getFeatureStatus()
+                                == ConditionalTabStripUtils.FeatureStatus.ACTIVATED
+                        && !overviewModeBehavior.overviewVisible()) {
+                    return false;
+                }
                 return ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                         || DeviceClassManager.enableAccessibilityLayout();
             }

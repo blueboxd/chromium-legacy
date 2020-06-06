@@ -175,6 +175,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
   void ViewShown(int64_t display_id) override;
+  bool AppListTargetVisibility() const override;
   void ViewClosing() override;
   void ViewClosed() override;
   const std::vector<SkColor>& GetWallpaperProminentColors() override;

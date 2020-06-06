@@ -120,26 +120,26 @@ const char kPerfLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
 
 // TLB miss cycles for IvyBridge, Haswell, Broadwell and SandyBridge.
 const char kPerfITLBMissCyclesCmdIvyBridge[] =
-    "perf record -a -e itlb_misses.walk_duration -c 2003";
+    "perf record -a -e itlb_misses.walk_duration -c 20001";
 
 const char kPerfDTLBMissCyclesCmdIvyBridge[] =
-    "perf record -a -e dtlb_load_misses.walk_duration -c 2003";
+    "perf record -a -e dtlb_load_misses.walk_duration -c 20001";
 
 // TLB miss cycles for Skylake and Kabylake.
 const char kPerfITLBMissCyclesCmdSkylake[] =
-    "perf record -a -e itlb_misses.walk_pending -c 2003";
+    "perf record -a -e itlb_misses.walk_pending -c 20001";
 
 const char kPerfDTLBMissCyclesCmdSkylake[] =
-    "perf record -a -e dtlb_load_misses.walk_pending -c 2003";
+    "perf record -a -e dtlb_load_misses.walk_pending -c 20001";
 
 // TLB miss cycles for Atom, including Silvermont, Airmont and Goldmont.
 const char kPerfITLBMissCyclesCmdAtom[] =
-    "perf record -a -e page_walks.i_side_cycles -c 2003";
+    "perf record -a -e page_walks.i_side_cycles -c 20001";
 
 const char kPerfDTLBMissCyclesCmdAtom[] =
-    "perf record -a -e page_walks.d_side_cycles -c 2003";
+    "perf record -a -e page_walks.d_side_cycles -c 20001";
 
-const char kPerfCacheMissesCmd[] = "perf record -a -e cache-misses -c 10007";
+const char kPerfCacheMissesCmd[] = "perf record -a -e cache-misses -c 12007";
 
 const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     const CPUIdentity& cpuid) {

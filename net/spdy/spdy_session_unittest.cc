@@ -6795,18 +6795,20 @@ TEST(CanPoolTest, CanPoolExpectCT) {
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
 
   // A different Expect-CT enabled host should not be allowed to pool.
-  tss.AddExpectCT("mail.example.org", expiry, true, GURL());
+  tss.AddExpectCT("mail.example.org", expiry, true, GURL(),
+                  NetworkIsolationKey());
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
                                     "www.example.org", "mail.example.org"));
   // A report-only Expect-CT configuration should not prevent pooling.
   tss.AddExpectCT("mail.example.org", expiry, false,
-                  GURL("https://report.test"));
+                  GURL("https://report.test"), NetworkIsolationKey());
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
                                    "www.example.org", "mail.example.org"));
   // If Expect-CT becomes enabled for the same host for which the connection was
   // already made, subsequent connections to that host should not be allowed to
   // pool.
-  tss.AddExpectCT("www.example.org", expiry, true, GURL());
+  tss.AddExpectCT("www.example.org", expiry, true, GURL(),
+                  NetworkIsolationKey());
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
                                     "www.example.org", "www.example.org"));
 }

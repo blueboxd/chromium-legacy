@@ -3146,9 +3146,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se establece en 0, se desactiva el almacenamiento en caché de los datos de autenticación. Esta acción puede ralentizar significativamente el acceso de los usuarios afiliados, dado que deben obtenerse los datos específicos del dominio en cada acceso.
 
       Ten en cuenta que se almacenan en caché incluso los datos de dominio de usuarios ocasionales. Si no quieres registrar el dominio de usuarios ocasionales, desactiva el almacenamiento en caché.</translation>
-<translation id="5700097087679928356">Si estableces la política con el valor "0" (la opción predeterminada), podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript, pero no podrás hacerlo en el contexto de extensiones instaladas por una política empresarial. Si estableces la política con el valor "1", podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript en todos los contextos, incluido el de las extensiones instaladas por una política empresarial. Si estableces la política con el valor "2", no podrás acceder a las herramientas para desarrolladores ni inspeccionar elementos de sitios web.
-
-      Esta configuración también desactivará las combinaciones de teclas y las entradas del menú contextual o de cualquier menú.</translation>
 <translation id="570062449808736508">Cuando esta política se establece con una string no vacía, WebView leerá las restricciones de URL del proveedor de contenido con el nombre de la autoridad proporcionado.</translation>
 <translation id="5708969689202733975">Configurar los modos de desbloqueo rápido permitidos</translation>
 <translation id="5711016543513883877">

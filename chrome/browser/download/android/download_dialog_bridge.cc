@@ -82,11 +82,22 @@ void DownloadDialogBridge::ShowDialog(gfx::NativeWindow native_window,
 void DownloadDialogBridge::OnComplete(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& returned_path) {
+    const base::android::JavaParamRef<jstring>& returned_path,
+    jboolean on_wifi,
+    jlong start_time) {
   DownloadDialogResult dialog_result;
   dialog_result.location_result = DownloadLocationDialogResult::USER_CONFIRMED;
   dialog_result.file_path = base::FilePath(
       base::android::ConvertJavaStringToUTF8(env, returned_path));
+
+  if (on_wifi) {
+    dialog_result.download_schedule =
+        download::DownloadSchedule(true /*on_wifi*/);
+  }
+  if (start_time > 0) {
+    dialog_result.download_schedule =
+        download::DownloadSchedule(base::Time::FromJavaTime(start_time));
+  }
 
   CompleteSelection(std::move(dialog_result));
   is_dialog_showing_ = false;

@@ -258,8 +258,8 @@ public class TabGridDialogMediator {
                                     public void onCancel() {}
                                 })
                                 .build();
-                mShareDelegateSupplier.get().share(shareParams,
-                        new ChromeShareExtras(/*saveLastUsed=*/true, /*shareDirectly=*/false));
+                mShareDelegateSupplier.get().share(
+                        shareParams, new ChromeShareExtras.Builder().setSaveLastUsed(true).build());
             }
         };
 

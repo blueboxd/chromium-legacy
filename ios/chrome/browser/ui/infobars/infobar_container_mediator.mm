@@ -76,10 +76,10 @@
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
   DCHECK_EQ(_webStateList, webStateList);
-  if (!newWebState)
-    return;
-  infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(newWebState);
+  infobars::InfoBarManager* infoBarManager = nullptr;
+  if (newWebState) {
+    infoBarManager = InfoBarManagerImpl::FromWebState(newWebState);
+  }
   _infoBarContainer->ChangeInfoBarManager(infoBarManager);
 }
 

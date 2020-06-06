@@ -9,11 +9,13 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "components/download/public/common/download_item.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -27,6 +29,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame.mojom-test-utils.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -40,11 +44,14 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/portal/portal_activated_observer.h"
 #include "content/test/portal/portal_created_observer.h"
 #include "content/test/portal/portal_interceptor_for_testing.h"
 #include "content/test/test_render_frame_host_factory.h"
+#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -54,6 +61,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
+#include "url/gurl.h"
 #include "url/url_constants.h"
 
 using testing::_;
@@ -1947,6 +1955,132 @@ IN_PROC_BROWSER_TEST_F(PortalOOPIFBrowserTest, OOPIFInsidePortal) {
   EXPECT_TRUE(
       ExecJs(portal_main_frame, "document.querySelector('iframe').remove();"));
   deleted_observer.WaitUntilDeleted();
+}
+
+namespace {
+
+class DownloadObserver : public DownloadManager::Observer {
+ public:
+  DownloadObserver()
+      : manager_(BrowserContext::GetDownloadManager(
+            ShellContentBrowserClient::Get()->browser_context())) {
+    manager_->AddObserver(this);
+  }
+
+  ~DownloadObserver() override {
+    if (manager_)
+      manager_->RemoveObserver(this);
+  }
+
+  ::testing::AssertionResult DownloadObserved() {
+    if (download_url_.is_empty())
+      return ::testing::AssertionFailure() << "no download observed";
+    return ::testing::AssertionSuccess()
+           << "download observed: " << download_url_;
+  }
+
+  ::testing::AssertionResult AwaitDownload() {
+    if (download_url_.is_empty() && !dropped_download_) {
+      base::RunLoop run_loop;
+      quit_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+      quit_closure_.Reset();
+    }
+    return DownloadObserved();
+  }
+
+  // DownloadManager::Observer
+
+  void ManagerGoingDown(DownloadManager* manager) override {
+    DCHECK_EQ(manager_, manager);
+    manager_->RemoveObserver(this);
+    manager_ = nullptr;
+  }
+
+  void OnDownloadCreated(DownloadManager* manager,
+                         download::DownloadItem* item) override {
+    DCHECK_EQ(manager_, manager);
+    if (download_url_.is_empty()) {
+      download_url_ = item->GetURL();
+      if (!quit_closure_.is_null())
+        std::move(quit_closure_).Run();
+    }
+  }
+
+  void OnDownloadDropped(DownloadManager* manager) override {
+    DCHECK_EQ(manager_, manager);
+    dropped_download_ = true;
+    if (!quit_closure_.is_null())
+      std::move(quit_closure_).Run();
+  }
+
+ private:
+  DownloadManager* manager_;
+  bool dropped_download_ = false;
+  GURL download_url_;
+  base::OnceClosure quit_closure_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DownloadsBlockedInMainFrame) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ASSERT_TRUE(NavigateToURL(
+      web_contents_impl,
+      embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  CreatePortalToUrl(web_contents_impl, embedded_test_server()->GetURL(
+                                           "portal.test", "/title2.html"));
+
+  GURL download_url = embedded_test_server()->GetURL(
+      "portal.test", "/set-header?Content-Disposition: attachment");
+
+  DownloadObserver download_observer;
+  EXPECT_TRUE(ExecJs(
+      web_contents_impl,
+      JsReplace("document.querySelector('portal').src = $1", download_url)));
+  EXPECT_FALSE(download_observer.AwaitDownload());
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DownloadsBlockedInSubframe) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ASSERT_TRUE(NavigateToURL(
+      web_contents_impl,
+      embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  CreatePortalToUrl(web_contents_impl, embedded_test_server()->GetURL(
+                                           "portal.test", "/title2.html"));
+
+  GURL download_url = embedded_test_server()->GetURL(
+      "portal.test", "/set-header?Content-Disposition: attachment");
+  GURL iframe_url = embedded_test_server()->GetURL(
+      "portal.test", "/iframe?" + net::EscapeQueryParamValue(
+                                      download_url.spec(), /*use_plus=*/false));
+
+  DownloadObserver download_observer;
+  EXPECT_TRUE(ExecJs(
+      web_contents_impl,
+      JsReplace("document.querySelector('portal').src = $1", iframe_url)));
+  EXPECT_FALSE(download_observer.AwaitDownload());
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, DownloadsBlockedViaDownloadLink) {
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  ASSERT_TRUE(NavigateToURL(
+      web_contents_impl,
+      embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  Portal* portal = CreatePortalToUrl(
+      web_contents_impl,
+      embedded_test_server()->GetURL("portal.test", "/title2.html"));
+
+  DownloadObserver download_observer;
+  EXPECT_TRUE(ExecJs(portal->GetPortalContents(),
+                     "let a = document.createElement('a');\n"
+                     "a.download = 'download.html';\n"
+                     "a.href = '/title3.html';\n"
+                     "a.click();\n"));
+  EXPECT_FALSE(download_observer.AwaitDownload());
 }
 
 }  // namespace content

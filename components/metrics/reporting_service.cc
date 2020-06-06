@@ -192,6 +192,9 @@ void ReportingService::OnLogUploadComplete(int response_code,
     }
 
     if (upload_succeeded || discard_log) {
+      if (upload_succeeded)
+        log_store()->MarkStagedLogAsSent();
+
       log_store()->DiscardStagedLog();
       // Store the updated list to disk now that the removed log is uploaded.
       log_store()->PersistUnsentLogs();

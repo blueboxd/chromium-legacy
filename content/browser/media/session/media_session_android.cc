@@ -38,9 +38,14 @@ MediaSessionAndroid::MediaSessionAndroid(MediaSessionImpl* session)
       Java_MediaSessionImpl_create(env, reinterpret_cast<intptr_t>(this));
   j_media_session_ = JavaObjectWeakGlobalRef(env, j_media_session);
 
-  WebContentsAndroid* contents_android = GetWebContentsAndroid();
-  if (contents_android)
-    contents_android->SetMediaSession(j_media_session);
+  WebContentsImpl* contents =
+      static_cast<WebContentsImpl*>(media_session_->web_contents());
+  if (contents) {
+    web_contents_android_ = contents->GetWebContentsAndroid();
+    DCHECK(web_contents_android_);
+    web_contents_android_->SetMediaSession(j_media_session);
+    web_contents_android_->AddDestructionObserver(this);
+  }
 
   session->AddObserver(observer_receiver_.BindNewPipeAndPassRemote());
 }
@@ -55,9 +60,10 @@ MediaSessionAndroid::~MediaSessionAndroid() {
 
   j_media_session_.reset();
 
-  WebContentsAndroid* contents_android = GetWebContentsAndroid();
-  if (contents_android)
-    contents_android->SetMediaSession(nullptr);
+  if (web_contents_android_) {
+    web_contents_android_->SetMediaSession(nullptr);
+    web_contents_android_->RemoveDestructionObserver(this);
+  }
 }
 
 // static
@@ -71,7 +77,7 @@ ScopedJavaLocalRef<jobject> JNI_MediaSessionImpl_GetMediaSessionFromWebContents(
   MediaSessionImpl* session = MediaSessionImpl::Get(contents);
   DCHECK(session);
   return MediaSessionAndroid::JavaObjectGetter::GetJavaObject(
-      session->session_android());
+      session->GetMediaSessionAndroid());
 }
 
 void MediaSessionAndroid::MediaSessionInfoChanged(
@@ -173,6 +179,14 @@ void MediaSessionAndroid::MediaSessionPositionChanged(
   }
 }
 
+// The Java MediaSession is kept alive by the Java WebContents and will be
+// cleared when the WebContents is destroyed, so we destroy the corresponding
+// MediaSessionAndroid to ensure mediaSessionDestroyed is called.
+void MediaSessionAndroid::WebContentsAndroidDestroyed(
+    WebContentsAndroid* web_contents_android) {
+  media_session_->ClearMediaSessionAndroid();  // Deletes |this|.
+}
+
 void MediaSessionAndroid::Resume(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_obj) {
@@ -226,14 +240,6 @@ void MediaSessionAndroid::RequestSystemAudioFocus(
   DCHECK(media_session_);
   media_session_->RequestSystemAudioFocus(
       media_session::mojom::AudioFocusType::kGain);
-}
-
-WebContentsAndroid* MediaSessionAndroid::GetWebContentsAndroid() {
-  WebContentsImpl* contents =
-      static_cast<WebContentsImpl*>(media_session_->web_contents());
-  if (!contents)
-    return nullptr;
-  return contents->GetWebContentsAndroid();
 }
 
 ScopedJavaLocalRef<jobject> MediaSessionAndroid::GetJavaObject() {

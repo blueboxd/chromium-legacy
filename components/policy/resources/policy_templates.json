@@ -7351,7 +7351,7 @@
       'id': 711,
       'caption': '''Enables experimental policies''',
       'tags': [],
-      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> load experimental policies.
+      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to load experimental policies.
 
         WARNING: Experimental policies are unsupported and subject to change or be removed without notice in future version of the browser!
 

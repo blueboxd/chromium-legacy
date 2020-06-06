@@ -1155,6 +1155,10 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
   keyboard_traversal_engaged_ = false;
 }
 
+bool AppListControllerImpl::AppListTargetVisibility() const {
+  return last_target_visible_;
+}
+
 void AppListControllerImpl::ViewClosing() {
   if (presenter_.GetView()->search_box_view()->is_search_box_active()) {
     // Close the virtual keyboard before the app list view is dismissed.

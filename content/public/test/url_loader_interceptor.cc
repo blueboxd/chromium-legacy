@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -531,6 +532,39 @@ URLLoaderInterceptor::~URLLoaderInterceptor() {
         FROM_HERE, base::BindOnce(&URLLoaderInterceptor::IOState::Shutdown,
                                   io_thread_, base::OnceClosure()));
   }
+}
+
+// static
+std::unique_ptr<URLLoaderInterceptor>
+URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
+    const std::string& relative_base_path,
+    const GURL& origin,
+    base::RepeatingCallback<void(const GURL&)> callback) {
+  return std::make_unique<URLLoaderInterceptor>(base::BindLambdaForTesting(
+      [=](content::URLLoaderInterceptor::RequestParams* params) -> bool {
+        // Ignore requests for other origins.
+        if (params->url_request.url.GetOrigin() != origin.GetOrigin())
+          return false;
+
+        // Remove the leading slash from the url path, so that it can be
+        // treated as a relative path by base::FilePath::AppendASCII.
+        auto path = base::TrimString(params->url_request.url.path_piece(), "/",
+                                     base::TRIM_LEADING);
+
+        // URLLoaderInterceptor insists that all files exist unless
+        // explicitly said to be failing.  Many browsertests fetch
+        // nonessential urls like favicons, so just ignore missing files
+        // entirely, to behave more like net::test::EmbeddedTestServer.
+        base::ScopedAllowBlockingForTesting allow_blocking;
+        auto full_path = GetDataFilePath(relative_base_path).AppendASCII(path);
+        if (!base::PathExists(full_path))
+          return false;
+
+        callback.Run(params->url_request.url);
+        content::URLLoaderInterceptor::WriteResponse(full_path,
+                                                     params->client.get());
+        return true;
+      }));
 }
 
 void URLLoaderInterceptor::WriteResponse(

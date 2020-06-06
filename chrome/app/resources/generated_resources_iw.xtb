@@ -114,7 +114,6 @@
 <translation id="1143142264369994168">חותם על אישור </translation>
 <translation id="1145292499998999162">הפלאגין חסום</translation>
 <translation id="1145593918056169051">המדפסת הפסיקה לפעול</translation>
-<translation id="1146678959555564648">‏כניסה למצב VR</translation>
 <translation id="114721135501989771">‏תכונות חכמות של Google</translation>
 <translation id="1147991416141538220">כדי לבקש גישה, צריך לפנות למנהל של המכשיר הזה.</translation>
 <translation id="1149401351239820326">חודש פקיעת התוקף</translation>
@@ -863,7 +862,6 @@
 <translation id="2096715839409389970">‏ניקוי קובצי cookie של צד שלישי</translation>
 <translation id="2097372108957554726">‏עליך להיכנס מחדש ל-Chrome כדי לרשום מכשירים חדשים</translation>
 <translation id="2099172618127234427">‏אתה מאפשר תכונות ניפוי באגים במערכת ההפעלה של Chrome שיגדירו sshd daemon ויאפשרו אתחול מכונני USB.</translation>
-<translation id="2099625543891475722">התכונות הפיזיות שלך, כמו גובה.</translation>
 <translation id="2099686503067610784">למחוק את אישור השרת "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2101225219012730419">גרסה:</translation>
@@ -2655,7 +2653,6 @@
 <translation id="4350019051035968019">לא ניתן לרשום את המכשיר הזה לדומיין שאליו שייך החשבון שלך מפני שהמכשיר מסומן לניהול על ידי דומיין אחר.</translation>
 <translation id="4350782034419308508">Ok Google</translation>
 <translation id="4351060348582610152">‏<ph name="ORIGIN" /> מבקש לבצע סריקה כדי לאתר מכשירי Bluetooth בקרבת מקום. המכשירים הבאים נמצאו:</translation>
-<translation id="4353114845960720315">‏במצב VR, האתר הזה עשוי לקבל מידע על:</translation>
 <translation id="4354073718307267720">תוצג שאלה כשאתר ירצה ליצור מפה בתלת ממד של הסביבה שלך או לעקוב אחר מיקום המצלמה</translation>
 <translation id="4354344420232759511">אתרים שבהם ביקרת יופיעו כאן</translation>
 <translation id="435527878592612277">בחירת התמונה שלך</translation>
@@ -2890,7 +2887,6 @@
 <translation id="4659077111144409915">חשבון ראשי</translation>
 <translation id="4660476621274971848">הגירסה הצפויה היא "<ph name="EXPECTED_VERSION" />", אבל הגירסה הייתה "<ph name="NEW_ID" />"</translation>
 <translation id="4660540330091848931">שינוי הגודל מתבצע</translation>
-<translation id="4660838440047236328">מבנה החדר שלך.</translation>
 <translation id="4661407454952063730">נתוני אפליקציות הם כל הנתונים שנשמרים באפליקציות (בהתאם להגדרות של המפתחים), כולל נתונים כמו אנשי קשר, הודעות ותמונות.</translation>
 <translation id="4662373422909645029">אין לכלול מספרים בכינוי</translation>
 <translation id="4662788913887017617">‏שיתוף הסימניה באמצעות ה-iPhone</translation>
@@ -2979,9 +2975,7 @@
 <translation id="4801512016965057443">אפשר נדידה</translation>
 <translation id="4804818685124855865">נתק</translation>
 <translation id="4804827417948292437">אבוקדו</translation>
-<translation id="4805077164141082536">‏מומלץ לגבות את מאגר Linux הנוכחי לפני השדרוג.</translation>
 <translation id="4807098396393229769">שם על הכרטיס</translation>
-<translation id="4808319664292298116">‏לעבור למצב VR מ-<ph name="DOMAIN" />?</translation>
 <translation id="4808667324955055115">חלונות קופצים חסומים</translation>
 <translation id="480990236307250886">פתח את דף הבית</translation>
 <translation id="4811212958317149293">סריקה אוטומטית של מקלדת גישה באמצעות מתג</translation>
@@ -3708,7 +3702,6 @@
 <translation id="5739235828260127894">בהמתנה לאימות. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">גדול מאוד</translation>
 <translation id="574209121243317957">גובה צליל</translation>
-<translation id="5745136023067925867">אפשר לקבל טיפים, מידע על מבצעים ועדכונים בנוגע ל-<ph name="DEVICE_TYPE" /> ולשתף משוב</translation>
 <translation id="5746169159649715125">‏שמור כקובץ PDF</translation>
 <translation id="5747552184818312860">מועד תפוגה</translation>
 <translation id="5747785204778348146">מפתח - לא יציב</translation>
@@ -4831,7 +4824,6 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{יציאה מהדף}two{יציאה מהדפים}many{יציאה מהדפים}other{יציאה מהדפים}}</translation>
 <translation id="7207457272187520234">‏שליחת מידע לגבי אופן השימוש בנתונים וניתוח הביצועים. המכשיר הזה שולח עכשיו אל Google באופן אוטומטי נתוני אבחון, נתוני מכשיר ונתוני שימוש באפליקציות. הנתונים האלה יעזרו לשמור על היציבות של המערכת ושל האפליקציות ולבצע שיפורים אחרים. חלק מהנתונים הנצברים יעזרו גם לשפר את האפליקציות של Google וכן יעזרו לשותפים של Google, כמו מפתחים של Android. ההגדרה הזו נאכפת על-ידי הבעלים. אם הופעלה ההגדרה 'פעילות באתרי אינטרנט ובאפליקציות נוספים', ייתכן שהנתונים יישמרו בחשבון Google שלך.</translation>
 <translation id="7207631048330366454">חיפוש אפליקציות</translation>
-<translation id="7210171324714276060">התוסף <ph name="EXTENSION_NAME" /> שינה את ספק החיפוש ל-<ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">מדפסות בתוסף</translation>
 <translation id="7212097698621322584">צריך להזין את קוד האימות הנוכחי כדי לשנות אותו. אם קוד האימות לא ידוע לך, צריך לאפס את מפתח האבטחה ולאחר מכן ליצור קוד אימות חדש.</translation>
 <translation id="7216409898977639127">ספק שירות סלולרי</translation>
@@ -5231,7 +5223,6 @@
 <translation id="7737115349420013392">מתבצעת התאמה עם "<ph name="DEVICE_NAME" />" ...</translation>
 <translation id="7737238973539693982">‏מחיקת Linux (בטא)</translation>
 <translation id="7740996059027112821">רגילה</translation>
-<translation id="7743128043742060936">בדף זה בוצע שינוי באמצעות התוסף "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="7744047395460924128">הצגת היסטוריית ההדפסות שלך</translation>
 <translation id="7744192722284567281">נמצאה בפרצה באבטחת מידע</translation>
 <translation id="7750228210027921155">תמונה בתוך תמונה</translation>

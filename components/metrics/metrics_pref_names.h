@@ -14,10 +14,12 @@ extern const char kInstallDate[];
 extern const char kMetricsClientID[];
 extern const char kMetricsDefaultOptIn[];
 extern const char kMetricsInitialLogs[];
+extern const char kMetricsInitialLogsMetadata[];
 extern const char kMetricsLowEntropySource[];
 extern const char kMetricsOldLowEntropySource[];
 extern const char kMetricsMachineId[];
 extern const char kMetricsOngoingLogs[];
+extern const char kMetricsOngoingLogsMetadata[];
 extern const char kMetricsResetIds[];
 
 // For finding out whether metrics and crash reporting is enabled use the

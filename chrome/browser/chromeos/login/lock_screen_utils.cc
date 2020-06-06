@@ -18,18 +18,47 @@
 namespace chromeos {
 namespace lock_screen_utils {
 
-void SetUserInputMethod(const std::string& username,
+namespace {
+
+bool SetUserInputMethodImpl(
+    const std::string& user_input_method,
+    input_method::InputMethodManager::State* ime_state) {
+  if (!chromeos::input_method::InputMethodManager::Get()->IsLoginKeyboard(
+          user_input_method)) {
+    LOG(WARNING) << "SetUserInputMethod: stored user last input method '"
+                 << user_input_method
+                 << "' is no longer Full Latin Keyboard Language"
+                 << " (entry dropped). Use hardware default instead.";
+    return false;
+  }
+  if (!base::Contains(ime_state->GetActiveInputMethodIds(),
+                      user_input_method)) {
+    if (!ime_state->EnableInputMethod(user_input_method)) {
+      DLOG(ERROR) << "SetUserInputMethod: user input method '"
+                  << user_input_method
+                  << "' is not enabled and enabling failed (ignored!).";
+      return false;
+    }
+  }
+  ime_state->ChangeInputMethod(user_input_method, false /* show_message */);
+
+  return true;
+}
+
+}  // namespace
+
+void SetUserInputMethod(const AccountId& account_id,
                         input_method::InputMethodManager::State* ime_state,
                         bool honor_device_policy) {
   bool succeed = false;
 
-  const std::string input_method = GetUserLastInputMethod(username);
+  const std::string input_method = GetUserLastInputMethod(account_id);
 
   if (honor_device_policy)
     EnforceDevicePolicyInputMethods(input_method);
 
   if (!input_method.empty())
-    succeed = SetUserInputMethodImpl(username, input_method, ime_state);
+    succeed = SetUserInputMethodImpl(input_method, ime_state);
 
   // This is also a case when last layout is set only for a few local users,
   // thus others need to be switched to default locale.
@@ -42,7 +71,14 @@ void SetUserInputMethod(const std::string& username,
   }
 }
 
-std::string GetUserLastInputMethod(const std::string& username) {
+std::string GetUserLastInputMethod(const AccountId& account_id) {
+  std::string input_method;
+  if (user_manager::known_user::GetUserLastInputMethod(account_id,
+                                                       &input_method)) {
+    return input_method;
+  }
+
+  // Try to use old values.
   PrefService* const local_state = g_browser_process->local_state();
   const base::DictionaryValue* users_last_input_methods =
       local_state->GetDictionary(prefs::kUsersLastInputMethod);
@@ -52,47 +88,13 @@ std::string GetUserLastInputMethod(const std::string& username) {
     return std::string();
   }
 
-  std::string input_method;
-
-  if (!users_last_input_methods->GetStringWithoutPathExpansion(username,
-                                                               &input_method)) {
+  if (!users_last_input_methods->GetStringWithoutPathExpansion(
+          account_id.GetUserEmail(), &input_method)) {
     DVLOG(0) << "GetUserLastInputMethod: no input method for this user";
     return std::string();
   }
 
   return input_method;
-}
-
-bool SetUserInputMethodImpl(
-    const std::string& username,
-    const std::string& user_input_method,
-    input_method::InputMethodManager::State* ime_state) {
-  if (!chromeos::input_method::InputMethodManager::Get()->IsLoginKeyboard(
-          user_input_method)) {
-    LOG(WARNING) << "SetUserInputMethod: stored user last input method '"
-                 << user_input_method
-                 << "' is no longer Full Latin Keyboard Language"
-                 << " (entry dropped). Use hardware default instead.";
-
-    PrefService* const local_state = g_browser_process->local_state();
-    DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
-
-    base::DictionaryValue* const users_last_input_methods = updater.Get();
-    if (users_last_input_methods)
-      users_last_input_methods->SetKey(username, base::Value(""));
-    return false;
-  }
-  if (!base::Contains(ime_state->GetActiveInputMethodIds(),
-                      user_input_method)) {
-    if (!ime_state->EnableInputMethod(user_input_method)) {
-      DLOG(ERROR) << "SetUserInputMethod: user input method '"
-                  << user_input_method
-                  << "' is not enabled and enabling failed (ignored!).";
-    }
-  }
-  ime_state->ChangeInputMethod(user_input_method, false /* show_message */);
-
-  return true;
 }
 
 void EnforceDevicePolicyInputMethods(std::string user_input_method) {

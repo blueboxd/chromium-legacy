@@ -25,7 +25,6 @@
 <translation id="1171770572613082465">Vaadake populaarseid veebisaite, puudutades nuppu „Popid saidid”</translation>
 <translation id="1173894706177603556">Muuda nime</translation>
 <translation id="1178581264944972037">Peata</translation>
-<translation id="1188239144602654184">Sisene AR-i</translation>
 <translation id="1197267115302279827">Teisalda järjehoidjad</translation>
 <translation id="1201402288615127009">Edasi</translation>
 <translation id="1204037785786432551">Allalaadimislink</translation>
@@ -132,7 +131,6 @@
 <translation id="2067805253194386918">tekst</translation>
 <translation id="2082238445998314030">Tulemus <ph name="RESULT_NUMBER" />/<ph name="TOTAL_RESULTS" /></translation>
 <translation id="2096012225669085171">Seadmete vahel sünkroonimine ja isikupärastamine</translation>
-<translation id="2099625543891475722">teie füüsilised omadused, nt pikkus</translation>
 <translation id="2100273922101894616">Automaatne sisselogimine</translation>
 <translation id="2100314319871056947">Proovige teksti jagada väiksemate lõikudena</translation>
 <translation id="2109711654079915747">Vaadake lisateavet veebisaitide teemade kohta ilma lehelt lahkumata. Funktsioon Puuduta otsimiseks saadab sõna ja seda ümbritseva konteksti Google'i otsingule, saates tagasi definitsioonid, pildid, otsingutulemused ja muud üksikasjad.
@@ -341,11 +339,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3810973564298564668">Halda</translation>
 <translation id="381841723434055211">Telefoninumbrid</translation>
 <translation id="3819178904835489326">Tuvastati <ph name="NUMBER_OF_DOWNLOADS" /> allalaadimist</translation>
-<translation id="3849365399446680203">Kui kasutate AR-i, võib sellel saidil olla võimalik:
-• luua teie keskkonnast 3D-kaart;
-• jälgida kaamera liikumist.
-
-Ainult teie näete, mida kaamera vaatab. See sait ei näe teie kaamera pilti.</translation>
 <translation id="3859306556332390985">Keri edasi</translation>
 <translation id="388596076286380598">Hankige artikleid, videoid ja muud sisu teile meeldivatelt saitidelt – isegi kui võrguühendus on halb või puudub.</translation>
 <translation id="3894427358181296146">Kausta lisamine</translation>
@@ -399,7 +392,6 @@ Ainult teie näete, mida kaamera vaatab. See sait ei näe teie kaamera pilti.</t
 <translation id="4320177379694898372">Interneti-ühendus puudub</translation>
 <translation id="4321739720395210191">Kaamerat ei saa avada. Taaskäivitage seade ja proovige uuesti.</translation>
 <translation id="4351244548802238354">Sule dialoog</translation>
-<translation id="4353114845960720315">Kui olete VR-režiimis, võib see sait hankida järgmist teavet:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Otsimiseks kasutatakse teenust Sogou</translation>
 <translation id="4404568932422911380">Järjehoidjaid pole</translation>
@@ -427,7 +419,6 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4561979708150884304">Ühendus puudub</translation>
 <translation id="4565377596337484307">Peida parool</translation>
 <translation id="4572422548854449519">Logige hallatud kontole sisse</translation>
-<translation id="4574741712540401491">• <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minut tagasi}other{# minutit tagasi}}</translation>
 <translation id="4587589328781138893">Saidid</translation>
 <translation id="4594952190837476234">Võrguühenduseta leht loodi <ph name="CREATION_TIME" /> ja see võib veebiversioonist erineda.</translation>
@@ -435,7 +426,6 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 <translation id="4616150815774728855">Ava <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Kasuta parooli</translation>
 <translation id="4650364565596261010">Süsteemi vaikeseade</translation>
-<translation id="4660838440047236328">teie ruumi paigutus</translation>
 <translation id="4662373422909645029">Hüüdnimes ei tohi olla numbreid</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> järjehoidjat kustutati</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> lisati teie avaekraanile</translation>
@@ -459,7 +449,6 @@ Veebisaidil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 
 
 Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Kaardil olev nimi</translation>
-<translation id="4808319664292298116">Kas aktiveerida VR saidilt <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Kas tühistada sünkroonimine?</translation>
 <translation id="4835385943915508971">Chrome'il pole soovitud allikale juurdepääsu.</translation>
 <translation id="4837753911714442426">Valikute avamine lehe printimiseks</translation>
@@ -659,7 +648,6 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6398765197997659313">Välju täisekraanilt</translation>
 <translation id="6404511346730675251">Muuda järjehoidjat</translation>
 <translation id="6406506848690869874">Sünkroonimine</translation>
-<translation id="6410973561433500075">Kas siseneda domeenil <ph name="DOMAIN" /> AR-i?</translation>
 <translation id="641643625718530986">Printimine ...</translation>
 <translation id="6427112570124116297">Veebi tõlkimine</translation>
 <translation id="6433501201775827830">Valige oma otsingumootor</translation>

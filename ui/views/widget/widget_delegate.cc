@@ -153,8 +153,12 @@ bool WidgetDelegate::ShouldRestoreWindowSize() const {
   return true;
 }
 
-void WidgetDelegate::WidgetInitialized(Widget* widget) {
+void WidgetDelegate::WidgetInitializing(Widget* widget) {
   widget_ = widget;
+  OnWidgetInitializing();
+}
+
+void WidgetDelegate::WidgetInitialized() {
   OnWidgetInitialized();
 }
 

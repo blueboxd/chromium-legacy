@@ -20,6 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "media/base/media_switches.h"
+#include "services/network/public/cpp/features.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "weblayer/browser/content_browser_client_impl.h"
@@ -36,6 +37,7 @@
 #include "base/android/locale_utils.h"
 #include "base/i18n/rtl.h"
 #include "base/posix/global_descriptors.h"
+#include "components/viz/common/features.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_switches.h"
@@ -145,11 +147,22 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
         // TODO(crbug.com/1025627): make webauth work with WebLayer.
         ::features::kWebAuth, ::features::kSmsReceiver,
         // TODO(crbug.com/1057106): make web-xr work with WebLayer.
-        ::features::kWebXr,
+        ::features::kWebXr, ::features::kWebXrArModule,
+        ::features::kWebXrHitTest,
         // TODO(crbug.com/1057770): make Background Fetch work with WebLayer.
-        ::features::kBackgroundFetch,
+        ::features::kBackgroundFetch, ::features::kInstalledApp,
+        // TODO(crbug.com/1091212): make Notification triggers work with
+        // WebLayer.
+        ::features::kNotificationTriggers,
+        // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
+        ::features::kPeriodicBackgroundSync, ::features::kSmsReceiver,
+        media::kOverlayFullscreenVideo,
+        // TODO(crbug.com/1091795): Support Cross Origin Embedder Policy on
+        // WebLayer.
+        network::features::kCrossOriginEmbedderPolicy,
 #if defined(OS_ANDROID)
-        media::kPictureInPictureAPI,
+        media::kPictureInPictureAPI, ::features::kDisableDeJelly,
+        ::features::kDynamicColorGamut,
 #endif
   });
 

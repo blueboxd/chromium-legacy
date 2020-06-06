@@ -846,16 +846,18 @@ LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason()
     return LCDTextDisallowedReason::kContentsNotOpaque;
   }
 
-  if (!GetTransformTree()
-           .Node(transform_tree_index())
-           ->node_and_ancestors_have_only_integer_translation)
-    return LCDTextDisallowedReason::kNonIntegralTranslation;
-  if (static_cast<int>(offset_to_transform_parent().x()) !=
-      offset_to_transform_parent().x())
-    return LCDTextDisallowedReason::kNonIntegralXOffset;
-  if (static_cast<int>(offset_to_transform_parent().y()) !=
-      offset_to_transform_parent().y())
-    return LCDTextDisallowedReason::kNonIntegralYOffset;
+  if (!use_transformed_rasterization_) {
+    if (!GetTransformTree()
+             .Node(transform_tree_index())
+             ->node_and_ancestors_have_only_integer_translation)
+      return LCDTextDisallowedReason::kNonIntegralTranslation;
+    if (static_cast<int>(offset_to_transform_parent().x()) !=
+        offset_to_transform_parent().x())
+      return LCDTextDisallowedReason::kNonIntegralXOffset;
+    if (static_cast<int>(offset_to_transform_parent().y()) !=
+        offset_to_transform_parent().y())
+      return LCDTextDisallowedReason::kNonIntegralYOffset;
+  }
 
   if (has_will_change_transform_hint())
     return LCDTextDisallowedReason::kWillChangeTransform;
@@ -1074,6 +1076,14 @@ void PictureLayerImpl::SetUseTransformedRasterization(bool use) {
     return;
 
   use_transformed_rasterization_ = use;
+  // With transformed rasterization, the pixels along the edge of the layer may
+  // become translucent, so clear contents_opaque.
+  if (use) {
+    // This doesn't affect contents_opaque_for_text.
+    bool opaque_for_text = contents_opaque_for_text();
+    SetContentsOpaque(false);
+    SetContentsOpaqueForText(opaque_for_text);
+  }
   NoteLayerPropertyChanged();
 }
 
@@ -1564,6 +1574,8 @@ gfx::Vector2dF PictureLayerImpl::CalculateRasterTranslation(
     float raster_scale) {
   if (!use_transformed_rasterization_)
     return gfx::Vector2dF();
+
+  DCHECK(!contents_opaque());
 
   gfx::Transform draw_transform = DrawTransform();
   // TODO(enne): for performance reasons, we should only have a raster

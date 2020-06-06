@@ -27,23 +27,21 @@ const PasswordCheckState = chrome.passwordsPrivate.PasswordCheckState;
  * the expected data.
  * @param {!Element} passwordsSection The passwords section element that will
  *     be checked.
- * @param {!Array<!MultiStorePasswordUiEntry>} passwordList The expected data.
+ * @param {!Array<!MultiStorePasswordUiEntry>} expectedPasswords The expected
+ *     data.
  * @private
  */
-function validateMultiStorePasswordList(passwordsSection, passwordList) {
-  const listElement = passwordsSection.$.passwordList;
-  assertEquals(passwordList.length, listElement.items.length);
-  for (let index = 0; index < passwordList.length; ++index) {
-    const listItems =
-        passwordsSection.shadowRoot.querySelectorAll('password-list-item');
-    const node = listItems[index];
-    assertTrue(!!node);
-    const passwordInfo = passwordList[index];
-    assertEquals(
-        passwordInfo.urls.shown, node.$$('#originUrl').textContent.trim());
-    assertEquals(passwordInfo.urls.link, node.$$('#originUrl').href);
-    assertEquals(passwordInfo.username, node.$$('#username').value);
-    assertDeepEquals(listElement.items[index], passwordInfo);
+function validateMultiStorePasswordList(passwordsSection, expectedPasswords) {
+  assertDeepEquals(expectedPasswords, passwordsSection.$.passwordList.items);
+  const listItems =
+      passwordsSection.shadowRoot.querySelectorAll('password-list-item');
+  for (let index = 0; index < expectedPasswords.length; ++index) {
+    const expected = expectedPasswords[index];
+    const listItem = listItems[index];
+    assertTrue(!!listItem);
+    assertEquals(expected.urls.shown, listItem.$.originUrl.textContent.trim());
+    assertEquals(expected.urls.link, listItem.$.originUrl.href);
+    assertEquals(expected.username, listItem.$.username.value);
   }
 }
 

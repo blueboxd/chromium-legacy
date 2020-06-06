@@ -27,6 +27,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "chromeos/services/assistant/assistant_interaction_logger.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_manager_service_delegate_impl.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
@@ -517,6 +518,12 @@ void Service::CreateAssistantManagerService() {
   assistant_manager_service_ = CreateAndReturnAssistantManagerService();
   assistant_manager_service_->AddCommunicationErrorObserver(this);
   assistant_manager_service_->AddAndFireStateObserver(this);
+
+  if (AssistantInteractionLogger::IsLoggingEnabled()) {
+    interaction_logger_ = std::make_unique<AssistantInteractionLogger>();
+    assistant_manager_service_->AddAssistantInteractionSubscriber(
+        interaction_logger_->BindNewPipeAndPassRemote());
+  }
 }
 
 std::unique_ptr<AssistantManagerService>

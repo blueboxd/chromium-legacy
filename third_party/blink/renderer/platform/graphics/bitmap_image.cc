@@ -458,8 +458,6 @@ DarkModeClassification BitmapImage::CheckTypeSpecificConditionsForDarkMode(
     return DarkModeClassification::kDoNotApplyFilter;
   }
 
-  classifier->SetImageType(DarkModeImageClassifier::ImageType::kBitmap);
-
   return DarkModeClassification::kNotClassified;
 }
 

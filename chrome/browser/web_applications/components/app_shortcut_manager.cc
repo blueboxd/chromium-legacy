@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_run_on_os_login.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -228,7 +229,7 @@ void AppShortcutManager::RegisterRunOnOsLogin(
 void AppShortcutManager::OnShortcutInfoRetrievedRegisterRunOnOsLogin(
     RegisterRunOnOsLoginCallback callback,
     std::unique_ptr<ShortcutInfo> info) {
-  internals::ScheduleRegisterRunOnOsLogin(std::move(info), std::move(callback));
+  ScheduleRegisterRunOnOsLogin(std::move(info), std::move(callback));
 }
 
 void AppShortcutManager::OnShortcutInfoRetrievedUpdateShortcuts(

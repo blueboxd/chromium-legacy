@@ -428,7 +428,7 @@ public abstract class SigninFragmentBase
     private void runStateMachineAndSignin(boolean settingsClicked) {
         mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(
                 new ConfirmSyncDataStateMachineDelegate(getChildFragmentManager()),
-                PrefServiceBridge.getInstance().getString(Pref.SYNC_LAST_ACCOUNT_NAME),
+                PrefServiceBridge.getInstance().getString(Pref.GOOGLE_SERVICES_LAST_USERNAME),
                 mSelectedAccountName, new ConfirmSyncDataStateMachine.Listener() {
                     @Override
                     public void onConfirm(boolean wipeData) {

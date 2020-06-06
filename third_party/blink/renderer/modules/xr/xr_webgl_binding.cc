@@ -77,6 +77,10 @@ WebGLTexture* XRWebGLBinding::getReflectionCubeMap(
   return texture;
 }
 
+WebGLTexture* XRWebGLBinding::getCameraImage(XRFrame* frame, XRView* view) {
+  return nullptr;
+}
+
 void XRWebGLBinding::Trace(Visitor* visitor) const {
   visitor->Trace(session_);
   visitor->Trace(webgl_context_);

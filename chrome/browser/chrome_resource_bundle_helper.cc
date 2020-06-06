@@ -66,8 +66,11 @@ std::string InitResourceBundleAndDetermineLocale(PrefService* local_state,
   // not have been created yet.
   DCHECK(!ui::ResourceBundle::HasSharedInstance());
   // Auto-detect based on en-US whether secondary locale .pak files exist.
+  bool in_split = false;
+  bool log_error = false;
   ui::SetLoadSecondaryLocalePaks(
-      !ui::GetPathForAndroidLocalePakWithinApk("en-US").empty());
+      !ui::GetPathForAndroidLocalePakWithinApk("en-US", in_split, log_error)
+           .empty());
 #endif
 
   std::string preferred_locale;

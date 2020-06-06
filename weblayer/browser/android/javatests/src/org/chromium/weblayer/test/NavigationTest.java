@@ -111,6 +111,19 @@ public class NavigationTest {
             }
         }
 
+        public static class UriCallbackHelper extends CallbackHelper {
+            private Uri mUri;
+
+            public void notifyCalled(Uri uri) {
+                mUri = uri;
+                notifyCalled();
+            }
+
+            public Uri getUri() {
+                return mUri;
+            }
+        }
+
         public static class NavigationCallbackValueRecorder {
             private List<String> mObservedValues =
                     Collections.synchronizedList(new ArrayList<String>());
@@ -139,6 +152,7 @@ public class NavigationTest {
         public NavigationCallbackValueRecorder loadProgressChangedCallback =
                 new NavigationCallbackValueRecorder();
         public CallbackHelper onFirstContentfulPaintCallback = new CallbackHelper();
+        public UriCallbackHelper onOldPageNoLongerRenderedCallback = new UriCallbackHelper();
 
         @Override
         public void onNavigationStarted(Navigation navigation) {
@@ -168,6 +182,11 @@ public class NavigationTest {
         @Override
         public void onFirstContentfulPaint() {
             onFirstContentfulPaintCallback.notifyCalled();
+        }
+
+        @Override
+        public void onOldPageNoLongerRendered(Uri newNavigationUri) {
+            onOldPageNoLongerRenderedCallback.notifyCalled(newNavigationUri);
         }
 
         @Override
@@ -204,6 +223,19 @@ public class NavigationTest {
         mCallback.onCompletedCallback.assertCalledWith(curCompletedCount, URL2);
         mCallback.onFirstContentfulPaintCallback.waitForCallback(curOnFirstContentfulPaintCount);
         assertEquals(mCallback.onCompletedCallback.getHttpStatusCode(), 200);
+    }
+
+    @MinWebLayerVersion(85)
+    @Test
+    @SmallTest
+    public void testOldPageNoLongerRendered() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        int renderedCount = mCallback.onOldPageNoLongerRenderedCallback.getCallCount();
+        mActivityTestRule.navigateAndWait(URL2);
+        mCallback.onOldPageNoLongerRenderedCallback.waitForCallback(renderedCount);
+        assertEquals(Uri.parse(URL2), mCallback.onOldPageNoLongerRenderedCallback.getUri());
     }
 
     @Test

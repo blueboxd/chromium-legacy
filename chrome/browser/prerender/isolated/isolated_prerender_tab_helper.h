@@ -198,6 +198,17 @@ class IsolatedPrerenderTabHelper
     base::Optional<base::TimeDelta> probe_latency_;
   };
 
+  // Used to determine if |url| is eligible for isolated prefetching. Also gives
+  // a reason in |status| if one is applicable.
+  using OnEligibilityResultCallback = base::OnceCallback<void(
+      const GURL& url,
+      bool eligible,
+      base::Optional<IsolatedPrerenderTabHelper::PrefetchStatus> status)>;
+  static void CheckEligibilityOfURL(
+      Profile* profile,
+      const GURL& url,
+      OnEligibilityResultCallback result_callback);
+
   const PrefetchMetrics& srp_metrics() const { return *(page_->srp_metrics_); }
 
   // Returns nullopt unless the previous page load was a Google SRP where |this|
@@ -341,16 +352,10 @@ class IsolatedPrerenderTabHelper
       const base::Optional<NavigationPredictorKeyedService::Prediction>
           prediction) override;
 
-  // Runs |url| through all the eligibility checks and appends it to
-  // |urls_to_prefetch_| if eligible and returns true. If not eligible, returns
-  // false.
-  bool CheckAndMaybePrefetchURL(const GURL& url);
-
-  // Callback for each eligible prediction URL when their cookie list is known.
-  // Only urls with no cookies will be prefetched.
-  void OnGotCookieList(const GURL& url,
-                       const net::CookieStatusList& cookie_with_status_list,
-                       const net::CookieStatusList& excluded_cookies);
+  // Used as a callback for when the eligibility of |url| is determined.
+  void OnGotEligibilityResult(const GURL& url,
+                              bool eligible,
+                              base::Optional<PrefetchStatus> status);
 
   // Creates the isolated network context and url loader factory for this page.
   void CreateIsolatedURLLoaderFactory();

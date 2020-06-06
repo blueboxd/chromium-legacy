@@ -7,13 +7,16 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store_default.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
+#include "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
@@ -31,7 +34,8 @@ using password_manager::LoginDatabase;
 
 class CredentialProviderServiceTest : public PlatformTest {
  public:
-  CredentialProviderServiceTest() {}
+  CredentialProviderServiceTest()
+      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -43,8 +47,19 @@ class CredentialProviderServiceTest : public PlatformTest {
     EXPECT_FALSE([shared_defaults
         boolForKey:kUserDefaultsCredentialProviderFirstTimeSyncCompleted]);
     credential_store_ = [[ArchivableCredentialStore alloc] initWithFileURL:nil];
+
+    TestChromeBrowserState::Builder builder;
+    builder.AddTestingFactory(
+        AuthenticationServiceFactory::GetInstance(),
+        base::BindRepeating(
+            &AuthenticationServiceFake::CreateAuthenticationService));
+    chrome_browser_state_ = builder.Build();
+    AuthenticationService* authentication_service =
+        AuthenticationServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get());
+
     credential_provider_service_ = std::make_unique<CredentialProviderService>(
-        password_store_, credential_store_);
+        password_store_, authentication_service, credential_store_);
   }
 
   void TearDown() override {
@@ -69,10 +84,11 @@ class CredentialProviderServiceTest : public PlatformTest {
   }
 
   base::ScopedTempDir temp_dir_;
-  base::test::TaskEnvironment task_environment_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<CredentialProviderService> credential_provider_service_;
   scoped_refptr<PasswordStoreDefault> password_store_;
   ArchivableCredentialStore* credential_store_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialProviderServiceTest);
 };

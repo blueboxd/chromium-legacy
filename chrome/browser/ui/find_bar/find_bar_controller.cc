@@ -50,38 +50,36 @@ void FindBarController::Show(bool find_next, bool forward_direction) {
   }
   find_bar_->SetFocusAndSelection();
 
-  base::string16 find_text;
+  if (find_next) {
+    base::string16 find_text;
 
 #if defined(OS_MACOSX)
-  if (find_next) {
-    // For macOS, we always want to search for the current contents of the find
-    // bar on OS X, rather than the behavior we'd get with empty find_text
-    // (see FindBarState::GetSearchPrepopulateText).
+    // For macOS, we always want to search for the current contents of the
+    // find bar on OS X, rather than the behavior we'd get with empty
+    // find_text (see FindBarState::GetSearchPrepopulateText).
     find_text = find_bar_->GetFindText();
-  }
 #endif
 
-  if (!find_next && !has_user_modified_text_) {
+    find_tab_helper->StartFinding(find_text, forward_direction,
+                                  false /* case_sensitive */,
+                                  true /* find_next_if_selection_matches */);
+    return;
+  }
+
+  if (!has_user_modified_text_) {
     base::string16 selected_text = GetSelectedText();
     auto selected_length = selected_text.length();
     if (selected_length > 0 && selected_length <= 250) {
-      find_text = selected_text;
-      find_bar_->SetFindTextAndSelectedRange(find_text,
-                                             gfx::Range(0, find_text.length()));
-      if (web_contents_) {
-        // Collapse the selection to its start, so we can run a find_next and
-        // make it find the selection. This is a no-op in terms of what ends
-        // up selected, but initializes the rest of the find machinery (like
-        // showing how many matches there are in the document).
-        web_contents_->AdjustSelectionByCharacterOffset(0, -selected_length,
-                                                        false);
-        find_next = true;
-      }
+      find_bar_->SetFindTextAndSelectedRange(
+          selected_text, gfx::Range(0, selected_text.length()));
+      // Start a new find based on the selection.
+      // |find_next_if_selection_matches| is set to false so that the initial
+      // result will be the selection itself.
+      find_tab_helper->StartFinding(selected_text, true /* forward_direction */,
+                                    false /* case_sensitive */,
+                                    false /* find_next_if_selection_matches */);
     }
   }
-
-  if (find_next)
-    find_tab_helper->StartFinding(find_text, forward_direction, false);
 }
 
 void FindBarController::EndFindSession(

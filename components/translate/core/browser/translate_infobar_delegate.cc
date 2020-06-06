@@ -148,6 +148,10 @@ base::string16 TranslateInfoBarDelegate::original_language_name() const {
   return language_name_at(ui_delegate_.GetOriginalLanguageIndex());
 }
 
+base::string16 TranslateInfoBarDelegate::target_language_name() const {
+  return language_name_at(ui_delegate_.GetTargetLanguageIndex());
+}
+
 void TranslateInfoBarDelegate::UpdateOriginalLanguage(
     const std::string& language_code) {
   ui_delegate_.UpdateOriginalLanguage(language_code);

@@ -6,6 +6,7 @@
 import './appearance_page/appearance_fonts_page.js';
 import './autofill_page/password_check.js';
 import './autofill_page/passwords_section.js';
+import './autofill_page/passwords_device_section.js';
 import './autofill_page/payments_section.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 import './search_engines_page/search_engines_page.js';

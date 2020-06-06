@@ -891,7 +891,7 @@
     All set!
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE" desc="The sub-title of the dialog that allows user to opt-in into several Google marketing options.">
-    Get <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> tips, offers, and updates, and share feedback
+    Get <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> tips, offers, and updates, and share feedback. Unsubscribe anytime.
   </message>
   <message name="IDS_LOGIN_MARKETING_OPT_IN_SCREEN_SUBTITLE_WITH_DEVICE_NAME" desc="The sub-title of the marketing opt in screen which will also include the name of the user's device.">
     You are ready to start using your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.

@@ -15,22 +15,25 @@ namespace {
 struct GLibX11Source : public GSource {
   // Note: The GLibX11Source is created and destroyed by GLib. So its
   // constructor/destructor may or may not get called.
-  XDisplay* display;
+  x11::Connection* connection;
   GPollFD* poll_fd;
 };
 
 gboolean XSourcePrepare(GSource* source, gint* timeout_ms) {
   GLibX11Source* gxsource = static_cast<GLibX11Source*>(source);
-  if (XPending(gxsource->display))
-    *timeout_ms = 0;
-  else
-    *timeout_ms = -1;
+  gxsource->connection->Flush();
+  gxsource->connection->ReadResponses();
+  if (gxsource->connection->HasPendingResponses())
+    return TRUE;
+  *timeout_ms = -1;
   return FALSE;
 }
 
 gboolean XSourceCheck(GSource* source) {
   GLibX11Source* gxsource = static_cast<GLibX11Source*>(source);
-  return XPending(gxsource->display);
+  gxsource->connection->Flush();
+  gxsource->connection->ReadResponses();
+  return gxsource->connection->HasPendingResponses();
 }
 
 gboolean XSourceDispatch(GSource* source,
@@ -67,7 +70,7 @@ void X11EventWatcherGlib::StartWatching() {
 
   GLibX11Source* glib_x_source = static_cast<GLibX11Source*>(
       g_source_new(&XSourceFuncs, sizeof(GLibX11Source)));
-  glib_x_source->display = display;
+  glib_x_source->connection = x11::Connection::Get();
   glib_x_source->poll_fd = x_poll_.get();
 
   x_source_ = glib_x_source;

@@ -39,8 +39,8 @@ class ScopedGeolocationOverrider::FakeGeolocationContext
   void OnDisconnect(FakeGeolocation* impl);
 
   // mojom::GeolocationContext implementation:
-  void BindGeolocation(
-      mojo::PendingReceiver<mojom::Geolocation> receiver) override;
+  void BindGeolocation(mojo::PendingReceiver<mojom::Geolocation> receiver,
+                       const GURL& requesting_origin) override;
   void SetOverride(mojom::GeopositionPtr geoposition) override;
   void ClearOverride() override;
 
@@ -194,7 +194,8 @@ void ScopedGeolocationOverrider::FakeGeolocationContext::BindForOverrideService(
 }
 
 void ScopedGeolocationOverrider::FakeGeolocationContext::BindGeolocation(
-    mojo::PendingReceiver<mojom::Geolocation> receiver) {
+    mojo::PendingReceiver<mojom::Geolocation> receiver,
+    const GURL& requesting_origin) {
   impls_.insert(std::make_unique<FakeGeolocation>(std::move(receiver), this));
 }
 

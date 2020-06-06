@@ -121,11 +121,12 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
     PaintLayerCompositor* inner_compositor =
         PaintLayerCompositor::FrameContentsCompositor(
             ToLayoutEmbeddedContent(layer.GetLayoutObject()));
-    // If the embedded frame is render-throttled, it might not be compositing
-    // clean at this point. In that case, we still need to connect its existing
-    // root graphics layer, so we need to query the stale compositing state.
-    DisableCompositingQueryAsserts disabler;
     if (inner_compositor) {
+      // If the embedded frame is render-throttled, it might not be compositing
+      // clean at this point. In that case, we still need to connect its
+      // existing root graphics layer, so we need to query the stale compositing
+      // state.
+      DisableCompositingQueryAsserts disabler;
       if (inner_compositor->InCompositingMode()) {
         GraphicsLayer* inner_root_layer = inner_compositor->RootGraphicsLayer();
         DCHECK(inner_root_layer);

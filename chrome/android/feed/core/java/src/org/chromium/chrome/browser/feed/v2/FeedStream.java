@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
-import android.content.Context;
-import android.view.ContextThemeWrapper;
+import android.app.Activity;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -28,7 +27,7 @@ import java.util.List;
 public class FeedStream implements Stream {
     private static final String TAG = "FeedStream";
 
-    private final Context mContext;
+    private final Activity mActivity;
     private final FeedStreamSurface mFeedStreamSurface;
     private final ObserverList<ScrollListener> mScrollListeners;
 
@@ -36,10 +35,12 @@ public class FeedStream implements Stream {
     // TODO(jianli): To be used.
     private boolean mIsStreamContentVisible = true;
 
-    public FeedStream(Context context, boolean isBackgroundDark, SnackbarManager snackbarManager) {
-        this.mFeedStreamSurface = new FeedStreamSurface(null, () -> null, context, snackbarManager);
-        this.mContext =
-                new ContextThemeWrapper(context, (isBackgroundDark ? R.style.Dark : R.style.Light));
+    public FeedStream(
+            Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager) {
+        // TODO(petewil): Use isBackgroundDark to turn on dark theme.
+        this.mActivity = activity;
+        this.mFeedStreamSurface =
+                new FeedStreamSurface(null, () -> null, activity, snackbarManager);
         this.mScrollListeners = new ObserverList<ScrollListener>();
     }
 

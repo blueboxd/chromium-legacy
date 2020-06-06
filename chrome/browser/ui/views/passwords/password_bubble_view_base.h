@@ -57,10 +57,6 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   virtual PasswordBubbleControllerBase* GetController() = 0;
   virtual const PasswordBubbleControllerBase* GetController() const = 0;
 
-  // LocationBarBubbleDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
-
  protected:
   // The |easily_dismissable| flag indicates if the bubble should close upon
   // a click in the content area of the browser.
@@ -71,6 +67,9 @@ class PasswordBubbleViewBase : public LocationBarBubbleDelegateView {
   ~PasswordBubbleViewBase() override;
 
  private:
+  // views::BubbleDialogDelegateView:
+  void Init() override;
+
   // WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
 

@@ -31,8 +31,14 @@ struct AXTextEdit {
 // Returns true if the given object is AXTextMarker object.
 bool IsAXTextMarker(id);
 
+// Returns true if the given object is AXTextMarkerRange object.
+bool IsAXTextMarkerRange(id);
+
 // Returns browser accessibility position for the given AXTextMarker.
 BrowserAccessibilityPosition::AXPositionInstance AXTextMarkerToPosition(id);
+
+// Returns browser accessibility range for the given AXTextMarkerRange.
+BrowserAccessibilityPosition::AXRangeType AXTextMarkerRangeToRange(id);
 
 }  // namespace content
 

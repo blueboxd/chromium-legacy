@@ -6,7 +6,6 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "components/sync/driver/sync_service.h"
 #include "crypto/ec_private_key.h"
@@ -37,11 +36,8 @@ bool VapidKeyManager::RefreshCachedKey() {
     return false;
 
   auto generated_key = crypto::ECPrivateKey::Create();
-  if (!generated_key) {
-    LogSharingVapidKeyCreationResult(
-        SharingVapidKeyCreationResult::kGenerateECKeyFailed);
+  if (!generated_key)
     return false;
-  }
 
   return UpdateCachedKey(std::move(generated_key));
 }
@@ -49,11 +45,8 @@ bool VapidKeyManager::RefreshCachedKey() {
 bool VapidKeyManager::UpdateCachedKey(
     std::unique_ptr<crypto::ECPrivateKey> new_key) {
   std::vector<uint8_t> new_key_info;
-  if (!new_key->ExportPrivateKey(&new_key_info)) {
-    LogSharingVapidKeyCreationResult(
-        SharingVapidKeyCreationResult::kExportPrivateKeyFailed);
+  if (!new_key->ExportPrivateKey(&new_key_info))
     return false;
-  }
 
   if (vapid_key_info_ == new_key_info)
     return false;
@@ -61,7 +54,6 @@ bool VapidKeyManager::UpdateCachedKey(
   vapid_key_ = std::move(new_key);
   vapid_key_info_ = std::move(new_key_info);
   sharing_sync_preference_->SetVapidKey(vapid_key_info_);
-  LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult::kSuccess);
   return true;
 }
 

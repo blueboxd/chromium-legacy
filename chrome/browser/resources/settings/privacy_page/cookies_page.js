@@ -29,18 +29,19 @@ import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.js';
 import {Router} from '../router.m.js';
-import {ContentSetting, ContentSettingsTypes, CookieControlsMode, SiteSettingSource} from '../site_settings/constants.js';
-import {ContentSettingProvider, CookieControlsManagedState, DefaultContentSetting, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
+import {ContentSetting, ContentSettingsTypes} from '../site_settings/constants.js';
 
 /**
- * Enumeration of all cookies radio controls.
- * @enum {string}
+ * The primary cookie setting associated with each radio button. Must be kept in
+ * sync with the C++ enum of the same name in
+ * chrome/browser/content_settings/generated_cookie_prefs.h
+ * @enum {number}
  */
-const CookiesControl = {
-  ALLOW_ALL: 'allow-all',
-  BLOCK_THIRD_PARTY_INCOGNITO: 'block-third-party-incognito',
-  BLOCK_THIRD_PARTY: 'block-third-party',
-  BLOCK_ALL: 'block-all',
+const CookiePrimarySetting = {
+  ALLOW_ALL: 0,
+  BLOCK_THIRD_PARTY_INCOGNITO: 1,
+  BLOCK_THIRD_PARTY: 2,
+  BLOCK_ALL: 3,
 };
 
 /**
@@ -81,16 +82,13 @@ Polymer({
     },
 
     /**
-     * Valid cookie states.
+     * Primary cookie control states for use in bindings.
      * @private
      */
-    cookiesControlEnum_: {
+    cookiePrimarySettingEnum_: {
       type: Object,
-      value: CookiesControl,
+      value: CookiePrimarySetting,
     },
-
-    /** @private */
-    cookiesControlRadioSelected_: String,
 
     /**
      * Used for HTML bindings. This is defined as a property rather than
@@ -118,19 +116,10 @@ Polymer({
       value: ContentSettingsTypes.COOKIES,
     },
 
-    /**
-     * Whether the cookie content setting is managed.
-     * @private
-     */
-    cookiesContentSettingManaged_: {
+    /** @private */
+    exceptionListsReadOnly_: {
       type: Boolean,
-      notify: false,
-    },
-
-    /** @private {!CookieControlsManagedState} */
-    cookieControlsManagedState_: {
-      type: Object,
-      notify: true,
+      value: false,
     },
 
     /** @private */
@@ -141,6 +130,14 @@ Polymer({
       }
     },
 
+    /** @private {!chrome.settingsPrivate.PrefObject} */
+    blockAllPref_: {
+      type: Object,
+      value() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
+      },
+    },
+
     /** @type {!Map<string, (string|Function)>} */
     focusConfig: {
       type: Object,
@@ -148,32 +145,15 @@ Polymer({
     },
   },
 
-  observers: [
-    'updateCookiesControls_(prefs.profile.cookie_controls_mode,' +
-        'prefs.profile.block_third_party_cookies)',
-  ],
-
-  /** @type {?SiteSettingsPrefsBrowserProxy} */
-  browserProxy_: null,
+  observers: [`onGeneratedPrefsUpdated_(prefs.generated.cookie_session_only,
+      prefs.generated.cookie_primary_setting)`],
 
   /** @type {?MetricsBrowserProxy} */
   metricsBrowserProxy_: null,
 
   /** @override */
-  created() {
-    // Used during property initialisation so must be set in created.
-    this.browserProxy_ = SiteSettingsPrefsBrowserProxyImpl.getInstance();
-  },
-
-  /** @override */
   ready() {
     this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
-
-    this.addWebUIListener('contentSettingCategoryChanged', category => {
-      if (category === ContentSettingsTypes.COOKIES) {
-        this.updateCookiesControls_();
-      }
-    });
   },
 
   /*
@@ -194,131 +174,45 @@ Polymer({
     Router.getInstance().navigateTo(routes.SITE_SETTINGS_SITE_DATA);
   },
 
-  /**
-   * Updates the cookies control radio toggle to represent the current cookie
-   * state.
-   * @private
-   */
-  async updateCookiesControls_() {
-    const controlMode = this.getPref('profile.cookie_controls_mode');
-    const blockThirdParty = this.getPref('profile.block_third_party_cookies');
-    const contentSetting =
-        await this.browserProxy_.getDefaultValueForContentType(
-            ContentSettingsTypes.COOKIES);
+  /** @private */
+  onGeneratedPrefsUpdated_() {
+    const sessionOnlyPref = this.getPref('generated.cookie_session_only');
 
-    // Set control state.
-    if (contentSetting.setting === ContentSetting.BLOCK) {
-      this.cookiesControlRadioSelected_ = CookiesControl.BLOCK_ALL;
-    } else if (blockThirdParty.value) {
-      this.cookiesControlRadioSelected_ =
-          this.cookiesControlEnum_.BLOCK_THIRD_PARTY;
-    } else if (
-        this.improvedCookieControlsEnabled_ &&
-        controlMode.value === CookieControlsMode.INCOGNITO_ONLY) {
-      this.cookiesControlRadioSelected_ =
-          this.cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO;
-    } else {
-      this.cookiesControlRadioSelected_ = CookiesControl.ALLOW_ALL;
-    }
+    // If the clear on exit toggle is managed this implies a content setting
+    // policy is present and the exception lists should be disabled.
+    this.exceptionListsReadOnly_ = sessionOnlyPref.enforcement ==
+        chrome.settingsPrivate.Enforcement.ENFORCED;
 
-    // Set the exception lists to read only if the content setting is managed.
-    // Display of managed state for individual entries will be handled by each
-    // site-list-entry.
-    this.exceptionListsReadOnly_ =
-        contentSetting.source === SiteSettingSource.POLICY;
-
-    // Retrieve and update remaining controls managed state.
-    this.cookieControlsManagedState_ =
-        await this.browserProxy_.getCookieControlsManagedState();
+    // It is not currently possible to represent multiple management sources
+    // for a single a preference. In all management scenarios, the blockAll
+    // setting shares the same controlledBy as the cookie_session_only pref.
+    // To support this, the controlledBy fields for the |cookie_primary_setting|
+    // pref provided to the blockAll control are overwritten with values from
+    // the session_only preference.
+    this.set(
+        'blockAllPref_',
+        Object.assign(this.getPref('generated.cookie_primary_setting'), {
+          controlledBy: sessionOnlyPref.controlledBy,
+          controlledByName: sessionOnlyPref.controlledByName
+        }));
   },
 
   /**
-   * Get an appropriate pref source for a DefaultContentSetting.
-   * @param {!DefaultContentSetting} provider
-   * @return {!chrome.settingsPrivate.ControlledBy}
+   * Record interaction metrics for the primary cookie radio setting.
    * @private
    */
-  getControlledBy_({source}) {
-    switch (source) {
-      case ContentSettingProvider.POLICY:
-        return chrome.settingsPrivate.ControlledBy.DEVICE_POLICY;
-      case ContentSettingProvider.SUPERVISED_USER:
-        return chrome.settingsPrivate.ControlledBy.PARENT;
-      case ContentSettingProvider.EXTENSION:
-        return chrome.settingsPrivate.ControlledBy.EXTENSION;
-      default:
-        return chrome.settingsPrivate.ControlledBy.USER_POLICY;
-    }
-  },
-
-  /**
-   * Get an appropriate pref enforcement setting for a DefaultContentSetting.
-   * @param {!DefaultContentSetting} provider
-   * @return {!chrome.settingsPrivate.Enforcement|undefined}
-   * @private
-   */
-  getEnforced_({source}) {
-    switch (source) {
-      case ContentSettingProvider.POLICY:
-        return chrome.settingsPrivate.Enforcement.ENFORCED;
-      case ContentSettingProvider.SUPERVISED_USER:
-        return chrome.settingsPrivate.Enforcement.PARENT_SUPERVISED;
-      default:
-        return undefined;
-    }
-  },
-
-  /**
-   * @return {!ContentSetting}
-   * @private
-   */
-  computeClearOnExitSetting_() {
-    return this.$.clearOnExit.checked ? ContentSetting.SESSION_ONLY :
-                                        ContentSetting.ALLOW;
-  },
-
-  /**
-   * Set required preferences base on control mode and content setting.
-   * @param {!CookieControlsMode} controlsMode
-   * @param {!ContentSetting} contentSetting
-   * @private
-   */
-  setAllPrefs_(controlsMode, contentSetting) {
-    this.setPrefValue('profile.cookie_controls_mode', controlsMode);
-    this.setPrefValue(
-        'profile.block_third_party_cookies',
-        controlsMode == CookieControlsMode.BLOCK_THIRD_PARTY);
-    this.browserProxy_.setDefaultValueForContentType(
-        ContentSettingsTypes.COOKIES, contentSetting);
-  },
-
-  /**
-   * Updates the various underlying cookie prefs and content settings
-   * based on the newly selected radio button.
-   * @param {!CustomEvent<{value:!CookiesControl}>} event
-   * @private
-   */
-  onCookiesControlRadioChange_(event) {
-    if (event.detail.value === CookiesControl.ALLOW_ALL) {
-      this.setAllPrefs_(
-          CookieControlsMode.OFF, this.computeClearOnExitSetting_());
+  onCookiePrimarySettingChanged_() {
+    const selection = Number(this.$.primarySettingGroup.selected);
+    if (selection === CookiePrimarySetting.ALLOW_ALL) {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           PrivacyElementInteractions.COOKIES_ALL);
-    } else if (
-        event.detail.value === CookiesControl.BLOCK_THIRD_PARTY_INCOGNITO) {
-      this.setAllPrefs_(
-          CookieControlsMode.INCOGNITO_ONLY, this.computeClearOnExitSetting_());
+    } else if (selection === CookiePrimarySetting.BLOCK_THIRD_PARTY_INCOGNITO) {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           PrivacyElementInteractions.COOKIES_INCOGNITO);
-    } else if (event.detail.value === CookiesControl.BLOCK_THIRD_PARTY) {
-      this.setAllPrefs_(
-          CookieControlsMode.BLOCK_THIRD_PARTY,
-          this.computeClearOnExitSetting_());
+    } else if (selection === CookiePrimarySetting.BLOCK_THIRD_PARTY) {
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           PrivacyElementInteractions.COOKIES_THIRD);
-    } else {  // CookiesControl.BLOCK_ALL
-      this.setAllPrefs_(
-          CookieControlsMode.BLOCK_THIRD_PARTY, ContentSetting.BLOCK);
+    } else {  // CookiePrimarySetting.BLOCK_ALL
       this.metricsBrowserProxy_.recordSettingsPageHistogram(
           PrivacyElementInteractions.COOKIES_BLOCK);
     }

@@ -19,9 +19,6 @@ const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
 const base::Feature kAutoNightLight{"AutoNightLight",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCornerShortcuts{"CornerShortcuts",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContextualNudges{"ContextualNudges",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -249,10 +246,6 @@ bool AreContextualNudgesEnabled() {
   if (!IsHideShelfControlsInTabletModeEnabled())
     return false;
   return base::FeatureList::IsEnabled(kContextualNudges);
-}
-
-bool IsCornerShortcutsEnabled() {
-  return base::FeatureList::IsEnabled(kCornerShortcuts);
 }
 
 bool IsSystemTrayMicGainSettingEnabled() {

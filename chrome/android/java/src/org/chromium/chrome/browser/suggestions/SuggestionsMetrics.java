@@ -54,7 +54,7 @@ public abstract class SuggestionsMetrics {
      */
     public static void recordArticlesListVisible() {
         RecordHistogram.recordBooleanHistogram("NewTabPage.ContentSuggestions.ArticlesListVisible",
-                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
+                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
     }
 
     /**

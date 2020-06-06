@@ -992,6 +992,13 @@ void LocationBarView::UpdateContentSettingsIcons() {
   }
 }
 
+inline void LocationBarView::UpdateQRCodeGeneratorIcon() {
+  PageActionIconView* icon = page_action_icon_controller_->GetIconView(
+      PageActionIconType::kQRCodeGenerator);
+  if (icon)
+    icon->Update();
+}
+
 inline bool LocationBarView::UpdateSendTabToSelfIcon() {
   PageActionIconView* icon = page_action_icon_controller_->GetIconView(
       PageActionIconType::kSendTabToSelf);
@@ -1146,6 +1153,7 @@ void LocationBarView::OnChanged() {
   Layout();
   SchedulePaint();
   UpdateSendTabToSelfIcon();
+  UpdateQRCodeGeneratorIcon();
 }
 
 void LocationBarView::OnPopupVisibilityChanged() {
@@ -1181,6 +1189,7 @@ void LocationBarView::OnOmniboxFocused() {
     send_tab_to_self::RecordSendTabToSelfClickResult(
         send_tab_to_self::kOmniboxIcon, SendTabToSelfClickResult::kShowItem);
   }
+  UpdateQRCodeGeneratorIcon();
   RefreshBackground();
 }
 
@@ -1188,6 +1197,7 @@ void LocationBarView::OnOmniboxBlurred() {
   if (focus_ring_)
     focus_ring_->SchedulePaint();
   UpdateSendTabToSelfIcon();
+  UpdateQRCodeGeneratorIcon();
   RefreshBackground();
 }
 

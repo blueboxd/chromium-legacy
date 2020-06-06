@@ -84,6 +84,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   void RemoveLoader(PreflightLoader* loader);
   void AppendToCache(const url::Origin& origin,
                      const GURL& url,
+                     const net::NetworkIsolationKey& network_isolation_key,
                      std::unique_ptr<PreflightResult> result);
 
   NetworkService* network_service() { return network_service_; }

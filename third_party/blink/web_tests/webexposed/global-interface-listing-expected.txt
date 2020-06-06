@@ -11520,6 +11520,7 @@ interface XRView
     method constructor
 interface XRViewerPose : XRPose
     attribute @@toStringTag
+    getter cameraViews
     getter views
     method constructor
 interface XRViewport
@@ -11532,6 +11533,7 @@ interface XRViewport
 interface XRWebGLBinding
     attribute @@toStringTag
     method constructor
+    method getCameraImage
     method getReflectionCubeMap
 interface XRWebGLLayer : XRLayer
     static method getNativeFramebufferScaleFactor

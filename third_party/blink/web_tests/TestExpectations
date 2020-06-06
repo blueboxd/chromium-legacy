@@ -264,6 +264,8 @@ crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scroll
 crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
 crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
 
+crbug.com/898394 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
+
 crbug.com/1024151 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Failure Pass ]
 
 # Subpixel rounding differences that are incorrect.
@@ -295,7 +297,7 @@ crbug.com/1086473 external/wpt/css/css-images/image-resolution/* [ Skip ]
 # Fail due to lack of fuzzy matching on Linux, Win and Mac platforms for WPT. The pixels in the pre-rotated reference
 # images do not exactly match the exif rotated images, probably due to jpeg decoding/encoding issues. Maybe
 # adjusting the image size to a multiple of 8 would fix this (so all jpeg blocks are solid color).
-crbug.com/997202 external/wpt/html/canvas/element/drawing-images-to-the-canvas/image-orientation/drawImage-with-src-rect.tentative.html [ Failure ]
+crbug.com/997202 external/wpt/html/canvas/element/manual/drawing-images-to-the-canvas/image-orientation/drawImage-with-src-rect.tentative.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-default.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited-dynamic1.html [ Failure ]
 crbug.com/997202 external/wpt/css/css-images/image-orientation/image-orientation-from-image-composited.html [ Failure ]
@@ -1338,8 +1340,10 @@ crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ 
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
 
-crbug.com/1058822 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-alpha.html [ Failure ]
-crbug.com/1058822 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque.html [ Failure ]
+crbug.com/1058822 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-alpha.html [ Failure ]
+crbug.com/1058822 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque.html [ Failure ]
+crbug.com/929098 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Failure ]
+crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Pass ]
 
 # ====== Style team owned tests to here ======
 
@@ -1357,10 +1361,8 @@ crbug.com/1058822 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/re
 crbug.com/891427 virtual/threaded-no-composited-antialiasing/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
 crbug.com/891427 virtual/threaded-no-composited-antialiasing/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
 crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
-crbug.com/891427 virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
 ## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
 crbug.com/891427 virtual/threaded-no-composited-antialiasing/animations/timing/animation-duration-infinite.html [ Failure ]
-crbug.com/891427 fast/overflow/transformed-frame-scrollIntoView.html [ Crash ]
 
 ### Flaky on trybots:
 ### Note: this list includes anything that flaked even once during my (many)
@@ -1381,17 +1383,7 @@ crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_re
 # The following fail only on Mac.
 crbug.com/891427 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Pass Failure Timeout Crash ]
 
-# These 6 are special. They are tied to both of these CLs:
-#   - https://chromium-review.googlesource.com/c/chromium/src/+/1213864
-#   - https://chromium-review.googlesource.com/c/chromium/src/+/1308038
-# and they only seem (really) flaky when the second CL is in place. But I believe
-# they are related to timing and to the same issues as above.
-# Here is an example: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/221340
-crbug.com/891427 http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 paint/invalidation/scroll/fixed-img-src-change-after-scroll.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-body-scrollablearea.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-changing-style-relayout-div-body-scrollablearea.html [ Pass Failure Timeout Crash ]
-
 # ====== OOPIF-mode failures until here ======
 
 # ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
@@ -2152,9 +2144,6 @@ crbug.com/543369 [ Mac ] fast/forms/select-popup/popup-menu-appearance-tall.html
 crbug.com/543369 [ Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure Pass ]
 
 crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
-
-### See crbug.com/891427 comment near the top of this file:
-###crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
@@ -4702,10 +4691,6 @@ crbug.com/895257 [ Mac ] external/wpt/css/css-fonts/variations/at-font-face-font
 #Sheriff 2018-10-23
 crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll.html [ Timeout ]
 
-# Sheriff 2018-10-24
-### See crbug.com/891427 comment near the top of this file:
-####crbug.com/898394 [ Linux ] virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Failure ]
-
 # Sheriff 2018-10-26
 ### See crbug.com/891427 comment near the top of this file:
 ####crbug.com/899087 [ Linux ] virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass ]
@@ -5619,6 +5604,7 @@ crbug.com/1046784 http/tests/devtools/forced-layout-in-microtask.js [ Pass Timeo
 crbug.com/1046784 http/tests/devtools/application-panel/resources-panel-iframe-idb.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Pass Timeout ]
 crbug.com/1046784 http/tests/inspector-protocol/service-worker/target-reloaded-after-crash.js [ Pass Timeout ]
+crbug.com/1046784 http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Pass Timeout ]
 
 # Sheriff 2020-01-28
 crbug.com/1046201 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
@@ -5909,6 +5895,10 @@ crbug.com/1084637 compositing/video/video-reflection.html [ Pass Failure ]
 crbug.com/1083362 compositing/reflections/load-video-in-reflection.html [ Pass Failure ]
 crbug.com/1087471 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Pass Failure ]
 
+# Temporary disabling to allow landing https://webrtc-review.googlesource.com/c/src/+/176509
+crbug.com/webrtc/8787 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
+crbug.com/webrtc/8787 external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Pass Failure ]
+
 # Sheriff 2020-06-01
 # Also see crbug.com/626703, these timed-out before but now fail as well.
 crbug.com/1088220 [ Linux ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-domain-failure.https.sub.html [ Pass Failure Timeout ]
@@ -5934,3 +5924,9 @@ crbug.com/1083293 [ Linux ] media/video-aspect-ratio.html [ Pass Failure ]
 # Sheriff 2020-06-04
 crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Pass Failure Timeout ]
 crbug.com/1057060 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Pass Failure Timeout ]
+
+# Sheriff 2020-06-05
+crbug.com/1091829 [ Mac ] fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
+crbug.com/1091829 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
+crbug.com/1091885 fast/peerconnection/RTCPeerConnection-iframe-gc.html [ Pass Failure ]
+crbug.com/1091250 [ Win10 ] virtual/cors/http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]

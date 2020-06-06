@@ -76,10 +76,12 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
 
-  initial_cursor_ = source_window->GetHost()->last_cursor();
+  auto initial_cursor = source_window->GetHost()->last_cursor();
   drag_operation_ = operation;
-  cursor_client->SetCursor(
-      cursor_manager_->GetInitializedCursor(ui::mojom::CursorType::kGrabbing));
+  if (cursor_client) {
+    cursor_client->SetCursor(cursor_manager_->GetInitializedCursor(
+        ui::mojom::CursorType::kGrabbing));
+  }
 
   drag_handler_->StartDrag(
       *data.get(), operation, cursor_client->GetCursor(),
@@ -87,7 +89,10 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
                      base::Unretained(this)));
   in_move_loop_ = true;
   run_loop.Run();
-  DragDropSessionCompleted();
+
+  if (cursor_client)
+    cursor_client->SetCursor(initial_cursor);
+
   return drag_operation_;
 }
 
@@ -116,15 +121,13 @@ void DesktopDragDropClientOzone::OnDragEnter(
   last_drag_point_ = point;
   drag_operation_ = operation;
 
-  // If it doesn't have |data|, it defers sending events to
-  // |drag_drop_delegate_|. It will try again before handling drop.
+  // If |data| is empty, we defer sending any events to the
+  // |drag_drop_delegate_|.  All necessary events will be sent on dropping.
   if (!data)
     return;
 
-  os_exchange_data_ = std::move(data);
-  std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(point);
-  if (drag_drop_delegate_ && event)
-    drag_drop_delegate_->OnDragEntered(*event);
+  data_to_drop_ = std::move(data);
+  UpdateTargetAndCreateDropEvent(point);
 }
 
 int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
@@ -134,10 +137,11 @@ int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
   int client_operation =
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
 
-  if (os_exchange_data_) {
-    std::unique_ptr<ui::DropTargetEvent> event = CreateDropTargetEvent(point);
-    // If |os_exchange_data_| has a valid data, |drag_drop_delegate_| returns
-    // the operation which it expects.
+  // If |data_to_drop_| has a valid data, ask |drag_drop_delegate_| about the
+  // operation that it would accept.
+  if (data_to_drop_) {
+    std::unique_ptr<ui::DropTargetEvent> event =
+        UpdateTargetAndCreateDropEvent(point);
     if (drag_drop_delegate_ && event)
       client_operation = drag_drop_delegate_->OnDragUpdated(*event);
   }
@@ -146,45 +150,52 @@ int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
 
 void DesktopDragDropClientOzone::OnDragDrop(
     std::unique_ptr<ui::OSExchangeData> data) {
-  // If it doesn't have |os_exchange_data_|, it needs to update it with |data|.
-  if (!os_exchange_data_) {
-    DCHECK(data);
-    os_exchange_data_ = std::move(data);
-    std::unique_ptr<ui::DropTargetEvent> event =
-        CreateDropTargetEvent(last_drag_point_);
-    // Sends the deferred drag events to |drag_drop_delegate_| before handling
-    // drop.
-    if (drag_drop_delegate_ && event) {
-      drag_drop_delegate_->OnDragEntered(*event);
-      // TODO(jkim): It doesn't use the return value from 'OnDragUpdated' and
-      // doesn't have a chance to update the expected operation.
-      // https://crbug.com/875164
+  // If we didn't have |data_to_drop_|, then |drag_drop_delegate_| had never
+  // been updated, and now it needs to receive deferred enter and update events
+  // before handling the actual drop.
+  const bool posponed_enter_and_update = !data_to_drop_;
+
+  // If we had |data_to_drop_| already since the drag had entered the window,
+  // then we don't expect new data to come now, and vice versa.
+  DCHECK((data_to_drop_ && !data) || (!data_to_drop_ && data));
+  if (!data_to_drop_)
+    data_to_drop_ = std::move(data);
+
+  // This will call the delegate's OnDragEntered if needed.
+  auto event = UpdateTargetAndCreateDropEvent(last_drag_point_);
+  if (drag_drop_delegate_ && event) {
+    if (posponed_enter_and_update) {
+      // TODO(https://crbug.com/1014860): deal with drop refusals.
+      // The delegate's OnDragUpdated returns an operation that the delegate
+      // would accept.  Normally the accepted operation would be propagated
+      // properly, and if the delegate didn't accept it, the drop would never
+      // be called, but in this scenario of postponed updates we send all events
+      // at once.  Now we just drop, but perhaps we could call OnDragLeave
+      // and quit?
       drag_drop_delegate_->OnDragUpdated(*event);
     }
-  } else {
-    // If it has |os_exchange_data_|, it doesn't expect |data| on OnDragDrop.
-    DCHECK(!data);
+    drag_operation_ =
+        drag_drop_delegate_->OnPerformDrop(*event, std::move(data_to_drop_));
   }
-  PerformDrop();
+  ResetDragDropTarget();
 }
 
 void DesktopDragDropClientOzone::OnDragLeave() {
-  os_exchange_data_.reset();
+  data_to_drop_.reset();
   ResetDragDropTarget();
+}
+
+void DesktopDragDropClientOzone::OnWindowDestroyed(aura::Window* window) {
+  DCHECK_EQ(window, current_window_);
+
+  current_window_->RemoveObserver(this);
+  current_window_ = nullptr;
+  drag_drop_delegate_ = nullptr;
 }
 
 void DesktopDragDropClientOzone::OnDragSessionClosed(int dnd_action) {
   drag_operation_ = dnd_action;
   QuitRunLoop();
-}
-
-void DesktopDragDropClientOzone::DragDropSessionCompleted() {
-  aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window_);
-  if (!cursor_client)
-    return;
-
-  cursor_client->SetCursor(initial_cursor_);
 }
 
 void DesktopDragDropClientOzone::QuitRunLoop() {
@@ -195,50 +206,49 @@ void DesktopDragDropClientOzone::QuitRunLoop() {
 }
 
 std::unique_ptr<ui::DropTargetEvent>
-DesktopDragDropClientOzone::CreateDropTargetEvent(const gfx::PointF& location) {
+DesktopDragDropClientOzone::UpdateTargetAndCreateDropEvent(
+    const gfx::PointF& location) {
   const gfx::Point point(location.x(), location.y());
   aura::Window* window = GetTargetWindow(root_window_, point);
-  if (!window)
+  if (!window) {
+    ResetDragDropTarget();
+    return nullptr;
+  }
+
+  auto* new_delegate = aura::client::GetDragDropDelegate(window);
+  const bool delegate_has_changed = (new_delegate != drag_drop_delegate_);
+  if (delegate_has_changed) {
+    ResetDragDropTarget();
+    drag_drop_delegate_ = new_delegate;
+    current_window_ = window;
+    current_window_->AddObserver(this);
+  }
+
+  if (!drag_drop_delegate_)
     return nullptr;
 
-  UpdateDragDropDelegate(window);
   gfx::Point root_location(location.x(), location.y());
   root_window_->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
   gfx::PointF target_location(root_location);
   aura::Window::ConvertPointToTarget(root_window_, window, &target_location);
 
-  return std::make_unique<ui::DropTargetEvent>(
-      *os_exchange_data_, target_location, gfx::PointF(root_location),
+  auto event = std::make_unique<ui::DropTargetEvent>(
+      *data_to_drop_, target_location, gfx::PointF(root_location),
       drag_operation_);
-}
-
-void DesktopDragDropClientOzone::UpdateDragDropDelegate(aura::Window* window) {
-  aura::client::DragDropDelegate* delegate =
-      aura::client::GetDragDropDelegate(window);
-
-  if (drag_drop_delegate_ == delegate)
-    return;
-
-  ResetDragDropTarget();
-  if (delegate)
-    drag_drop_delegate_ = delegate;
+  if (delegate_has_changed)
+    drag_drop_delegate_->OnDragEntered(*event);
+  return event;
 }
 
 void DesktopDragDropClientOzone::ResetDragDropTarget() {
-  if (!drag_drop_delegate_)
-    return;
-  drag_drop_delegate_->OnDragExited();
-  drag_drop_delegate_ = nullptr;
-}
-
-void DesktopDragDropClientOzone::PerformDrop() {
-  std::unique_ptr<ui::DropTargetEvent> event =
-      CreateDropTargetEvent(last_drag_point_);
-  if (drag_drop_delegate_ && event)
-    drag_operation_ = drag_drop_delegate_->OnPerformDrop(
-        *event, std::move(os_exchange_data_));
-  DragDropSessionCompleted();
-  ResetDragDropTarget();
+  if (drag_drop_delegate_) {
+    drag_drop_delegate_->OnDragExited();
+    drag_drop_delegate_ = nullptr;
+  }
+  if (current_window_) {
+    current_window_->RemoveObserver(this);
+    current_window_ = nullptr;
+  }
 }
 
 }  // namespace views

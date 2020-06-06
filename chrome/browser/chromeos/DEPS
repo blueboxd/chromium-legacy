@@ -31,7 +31,6 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
    "+ash/public",
-   "+ash/keyboard/ui/public",
   ],
   "assistant_util_unittest\.cc": [
     "+ui/events/devices/device_data_manager.h",

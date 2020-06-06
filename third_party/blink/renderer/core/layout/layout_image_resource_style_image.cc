@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker_image.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
 
 namespace blink {
@@ -70,9 +71,12 @@ scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
 
 FloatSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {
   // TODO(davve): Find out the correct default object size in this context.
-  return ImageSizeWithDefaultSize(multiplier,
-                                  LayoutSize(LayoutReplaced::kDefaultWidth,
-                                             LayoutReplaced::kDefaultHeight));
+  LayoutSize default_size =
+      layout_object_->IsLayoutNGListMarkerImage()
+          ? ToLayoutNGListMarkerImage(layout_object_)->DefaultSize()
+          : LayoutSize(LayoutReplaced::kDefaultWidth,
+                       LayoutReplaced::kDefaultHeight);
+  return ImageSizeWithDefaultSize(multiplier, default_size);
 }
 
 FloatSize LayoutImageResourceStyleImage::ImageSizeWithDefaultSize(

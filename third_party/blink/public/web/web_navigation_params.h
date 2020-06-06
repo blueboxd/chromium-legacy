@@ -11,9 +11,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "services/network/public/mojom/url_loader_factory.mojom-shared.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
@@ -353,14 +353,16 @@ struct BLINK_EXPORT WebNavigationParams {
         const WebString& header_integrity,
         const WebURL& inner_url,
         const WebURLResponse& inner_response,
-        mojo::ScopedMessagePipeHandle loader_factory_handle);
+        CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+            loader_factory);
     ~PrefetchedSignedExchange();
 
     WebURL outer_url;
     WebString header_integrity;
     WebURL inner_url;
     WebURLResponse inner_response;
-    mojo::ScopedMessagePipeHandle loader_factory_handle;
+    CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+        loader_factory;
   };
   WebVector<std::unique_ptr<PrefetchedSignedExchange>>
       prefetched_signed_exchanges;

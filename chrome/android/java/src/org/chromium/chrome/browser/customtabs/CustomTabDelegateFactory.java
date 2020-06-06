@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.app.tab_activity_glue.ActivityTabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
@@ -325,6 +326,18 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         @Override
         public boolean canShowAppBanners() {
             return mActivityType == ActivityType.CUSTOM_TAB;
+        }
+
+        @Override
+        protected boolean isInstalledWebappDelegateGeolocation() {
+            if ((mActivity instanceof CustomTabActivity)
+                    && ((CustomTabActivity) mActivity).isInTwaMode()) {
+                // Whether the corresponding TWA client app enrolled in location delegation.
+                return TrustedWebActivityPermissionManager.hasAndroidLocationPermission(
+                               ((CustomTabActivity) mActivity).getTwaPackage())
+                        != null;
+            }
+            return false;
         }
     }
 

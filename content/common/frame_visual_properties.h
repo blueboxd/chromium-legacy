@@ -37,6 +37,7 @@ struct CONTENT_EXPORT FrameVisualProperties {
   gfx::Size visible_viewport_size;
   gfx::Size min_size_for_auto_resize;
   gfx::Size max_size_for_auto_resize;
+  std::vector<gfx::Rect> root_widget_window_segments;
 
   // The size of the compositor viewport, to match the sub-frame's surface.
   gfx::Rect compositor_viewport;

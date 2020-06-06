@@ -44,8 +44,7 @@ class PrefetchEnabledSupplier implements ObservableSupplier<Boolean> {
     private void startTrackingPref() {
         if (mPrefChangeRegistrar != null) return;
         mPrefChangeRegistrar = new PrefChangeRegistrar();
-        mPrefChangeRegistrar.addObserver(
-                Pref.OFFLINE_PREFETCH_USER_SETTING_ENABLED, this::notifyObservers);
+        mPrefChangeRegistrar.addObserver(Pref.USER_SETTING_ENABLED, this::notifyObservers);
     }
 
     private void stopTrackingPref() {

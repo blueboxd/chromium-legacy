@@ -63,7 +63,7 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public static class PermissionUpdateWaiter extends EmptyTabObserver {
         private CallbackHelper mCallbackHelper;
         private String mPrefix;
-        private int mExpectedCount;
+        private String mExpectedTitle;
         private final ChromeActivity mActivity;
 
         public PermissionUpdateWaiter(String prefix, ChromeActivity activity) {
@@ -74,18 +74,24 @@ public class PermissionTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
         @Override
         public void onTitleUpdated(Tab tab) {
-            String expectedTitle = mPrefix + mExpectedCount;
-            if (mActivity.getActivityTab().getTitle().equals(expectedTitle)) {
+            if (mActivity.getActivityTab().getTitle().equals(mExpectedTitle)) {
                 mCallbackHelper.notifyCalled();
             }
         }
 
+        /**
+         * Wait for the page title to reach the expected number of updates. The page is expected to
+         * update the title like so: `prefix` + numUpdates. In essence this waits for the page to
+         * update the title to match, and does not actually count page title updates.
+         * @param numUpdates The number that should be after the prefix for the wait to be over. `0`
+         *         to only wait for the prefix.
+         * @throws Exception
+         */
         public void waitForNumUpdates(int numUpdates) throws Exception {
-            mExpectedCount = numUpdates;
-
             // Update might have already happened, check before waiting for title udpdates.
-            String expectedTitle = mPrefix + mExpectedCount;
-            if (mActivity.getActivityTab().getTitle().equals(expectedTitle)) return;
+            mExpectedTitle = mPrefix;
+            if (numUpdates != 0) mExpectedTitle += numUpdates;
+            if (mActivity.getActivityTab().getTitle().equals(mExpectedTitle)) return;
 
             mCallbackHelper.waitForCallback(0);
         }

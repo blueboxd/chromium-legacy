@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.client.scope;
 
-import android.content.Context;
+import android.app.Activity;
 
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
@@ -35,7 +35,7 @@ public interface ProcessScope extends Dumpable {
     KnownContent getKnownContent();
 
     /** Returns a {@link StreamScopeBuilder.Builder}. */
-    StreamScopeBuilder createStreamScopeBuilder(Context context, ImageLoaderApi imageLoaderApi,
+    StreamScopeBuilder createStreamScopeBuilder(Activity activity, ImageLoaderApi imageLoaderApi,
             ActionApi actionApi, StreamConfiguration streamConfiguration,
             CardConfiguration cardConfiguration, SnackbarApi snackbarApi,
             OfflineIndicatorApi offlineIndicatorApi, TooltipApi tooltipApi,

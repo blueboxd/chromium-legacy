@@ -105,7 +105,7 @@ class FindTaskController::FindTask final : public GarbageCollected<FindTask> {
     blink::FindOptions find_options =
         (options_->forward ? 0 : kBackwards) |
         (options_->match_case ? 0 : kCaseInsensitive) |
-        (options_->find_next ? 0 : kStartInSelection);
+        (options_->new_session ? kStartInSelection : 0);
     auto start_time = base::TimeTicks::Now();
 
     while (search_start != search_end) {

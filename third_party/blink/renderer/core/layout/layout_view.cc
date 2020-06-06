@@ -24,6 +24,7 @@
 #include <inttypes.h>
 
 #include "build/build_config.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -899,6 +900,18 @@ bool LayoutView::UpdateLogicalWidthAndColumnWidth() {
   // When we're printing, the size of LayoutView is changed outside of layout,
   // so we'll fail to detect any changes here. Just return true.
   return relayout_children || ShouldUsePrintingLayout();
+}
+
+CompositingReasons LayoutView::AdditionalCompositingReasons() const {
+  // TODO(lfg): Audit for portals
+  const LocalFrame& frame = frame_view_->GetFrame();
+  if (frame.OwnerLayoutObject() &&
+      base::FeatureList::IsEnabled(
+          blink::features::kCompositeCrossOriginIframes) &&
+      frame.IsCrossOriginToParentFrame()) {
+    return CompositingReason::kIFrame;
+  }
+  return CompositingReason::kNone;
 }
 
 void LayoutView::UpdateCounters() {

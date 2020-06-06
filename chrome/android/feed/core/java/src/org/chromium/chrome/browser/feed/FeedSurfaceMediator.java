@@ -98,7 +98,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
 
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mHasHeader = mCoordinator.getSectionHeaderView() != null;
-        mPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED, this::updateContent);
+        mPrefChangeRegistrar.addObserver(Pref.ENABLE_SNIPPETS, this::updateContent);
         mHasHeaderMenu = ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS);
 
         // Check that there is a navigation delegate when using the feed header menu.
@@ -181,13 +181,12 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
         stream.addOnContentChangedListener(mStreamContentChangedListener);
 
         boolean suggestionsVisible =
-                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
+                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
 
         if (mHasHeader) {
             mSectionHeader = new SectionHeader(getSectionHeaderText(suggestionsVisible),
                     suggestionsVisible, this::onSectionHeaderToggled);
-            mPrefChangeRegistrar.addObserver(
-                    Pref.NTP_ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
+            mPrefChangeRegistrar.addObserver(Pref.ARTICLES_LIST_VISIBLE, this::updateSectionHeader);
             TemplateUrlServiceFactory.get().addObserver(this);
             mCoordinator.getSectionHeaderView().setHeader(mSectionHeader);
 
@@ -272,7 +271,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
             mSignInPromo = null;
         }
 
-        mPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_LIST_VISIBLE);
+        mPrefChangeRegistrar.removeObserver(Pref.ARTICLES_LIST_VISIBLE);
         TemplateUrlServiceFactory.get().removeObserver(this);
         mSigninManager.getIdentityManager().removeObserver(this);
     }
@@ -295,7 +294,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
         }
 
         boolean suggestionsVisible =
-                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
+                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
         if (mSectionHeader.isExpanded() != suggestionsVisible) mSectionHeader.toggleHeader();
         if (mSignInPromo != null) {
             mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
@@ -311,7 +310,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
      */
     private void onSectionHeaderToggled() {
         PrefServiceBridge.getInstance().setBoolean(
-                Pref.NTP_ARTICLES_LIST_VISIBLE, mSectionHeader.isExpanded());
+                Pref.ARTICLES_LIST_VISIBLE, mSectionHeader.isExpanded());
         mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
         // TODO(huayinz): Update the section header view through a ModelChangeProcessor.
         mCoordinator.getSectionHeaderView().updateVisuals();

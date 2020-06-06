@@ -1097,6 +1097,7 @@ test("ui_base_unittests") {
       "dragdrop/os_exchange_data_provider_x11_unittest.cc",
       "x/selection_requestor_unittest.cc",
     ]
+    deps += [ "//ui/gfx/x:unit_test" ]
   }
 
   if (is_chromeos) {

@@ -78,6 +78,20 @@ display::Display::Rotation GetRotationFromCommandLine() {
     return display::Display::ROTATE_0;
 }
 
+display::Display::Rotation RotationFromPanelOrientation(
+    display::PanelOrientation orientation) {
+  switch (orientation) {
+    case display::kNormal:
+      return display::Display::ROTATE_0;
+    case display::kRightUp:
+      return display::Display::ROTATE_90;
+    case display::kBottomUp:
+      return display::Display::ROTATE_180;
+    case display::kLeftUp:
+      return display::Display::ROTATE_270;
+  }
+}
+
 gfx::Rect GetScreenBounds(const gfx::Size& size_in_pixels,
                           display::Display::Rotation rotation) {
   switch (rotation) {
@@ -187,7 +201,7 @@ void CastDisplayConfigurator::OnDisplaysAcquired(
     // during the first queries to display::Screen.
     UpdateScreen(display_->display_id(), gfx::Rect(origin, native_size),
                  GetDeviceScaleFactor(native_size),
-                 GetRotationFromCommandLine());
+                 RotationFromPanelOrientation(display_->panel_orientation()));
   }
 
   delegate_->Configure(
@@ -216,7 +230,7 @@ void CastDisplayConfigurator::OnDisplayConfigured(
 
     UpdateScreen(display_->display_id(), bounds,
                  GetDeviceScaleFactor(display->native_mode()->size()),
-                 GetRotationFromCommandLine());
+                 RotationFromPanelOrientation(display_->panel_orientation()));
   } else {
     LOG(FATAL) << "Failed to configure display";
   }

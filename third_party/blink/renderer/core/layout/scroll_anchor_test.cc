@@ -1131,19 +1131,19 @@ class ScrollAnchorFindInPageTest : public testing::Test {
     test::RunPendingTasks();
   }
 
-  mojom::blink::FindOptionsPtr FindOptions(bool find_next = false) {
+  mojom::blink::FindOptionsPtr FindOptions(bool new_session = true) {
     auto find_options = mojom::blink::FindOptions::New();
     find_options->run_synchronously_for_testing = true;
-    find_options->find_next = find_next;
+    find_options->new_session = new_session;
     find_options->forward = true;
     return find_options;
   }
 
   void Find(String search_text,
             ScrollAnchorTestFindInPageClient& client,
-            bool find_next = false) {
+            bool new_session = true) {
     client.Reset();
-    GetFindInPage()->Find(FAKE_FIND_ID, search_text, FindOptions(find_next));
+    GetFindInPage()->Find(FAKE_FIND_ID, search_text, FindOptions(new_session));
     test::RunPendingTasks();
   }
 

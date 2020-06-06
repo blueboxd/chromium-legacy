@@ -80,8 +80,7 @@ gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia skia_image) {
     skia_image = gfx::ImageSkiaOperations::ExtractSubset(skia_image, target);
   }
   return gfx::ImageSkiaOperations::CreateResizedImage(
-      skia_image,
-      skia::ImageOperations::RESIZE_BEST,
+      skia_image, skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kAvatarImageSize, kAvatarImageSize));
 }
 
@@ -103,11 +102,10 @@ std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
       form.username_value + base::ASCIIToUTF16("\n") + federation);
 }
 
-void GetSavePasswordDialogTitleTextAndLinkRange(
+base::string16 GetSavePasswordDialogTitleText(
     const GURL& user_visible_url,
     const url::Origin& form_origin_url,
-    PasswordTitleType dialog_type,
-    base::string16* title) {
+    PasswordTitleType dialog_type) {
   std::vector<size_t> offsets;
   std::vector<base::string16> replacements;
   int title_id = 0;
@@ -136,13 +134,13 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
         form_origin_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
   }
 
-  *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
+  return l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
 }
 
-void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
-                                       const url::Origin& password_origin_url,
-                                       bool has_credentials,
-                                       base::string16* title) {
+base::string16 GetManagePasswordsDialogTitleText(
+    const GURL& user_visible_url,
+    const url::Origin& password_origin_url,
+    bool has_credentials) {
   DCHECK(!password_origin_url.opaque());
   // Check whether the registry controlled domains for user-visible URL
   // (i.e. the one seen in the omnibox) and the managed password origin URL
@@ -150,16 +148,15 @@ void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
   if (!SameDomainOrHost(user_visible_url, password_origin_url)) {
     base::string16 formatted_url =
         url_formatter::FormatOriginForSecurityDisplay(password_origin_url);
-    *title = l10n_util::GetStringFUTF16(
+    return l10n_util::GetStringFUTF16(
         has_credentials
             ? IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_TITLE
             : IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_NO_PASSWORDS_TITLE,
         formatted_url);
-  } else {
-    *title = l10n_util::GetStringUTF16(
-        has_credentials ? IDS_MANAGE_PASSWORDS_TITLE
-                        : IDS_MANAGE_PASSWORDS_NO_PASSWORDS_TITLE);
   }
+  return l10n_util::GetStringUTF16(
+      has_credentials ? IDS_MANAGE_PASSWORDS_TITLE
+                      : IDS_MANAGE_PASSWORDS_NO_PASSWORDS_TITLE);
 }
 
 base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {

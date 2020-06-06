@@ -30,6 +30,8 @@ extern const char kAuthServerWhitelist[];
 
 }  // namespace prefs
 
+class VisibilityMetricsLogger;
+
 class AwBrowserProcess {
  public:
   AwBrowserProcess(AwFeatureListCreator* aw_feature_list_creator);
@@ -39,6 +41,7 @@ class AwBrowserProcess {
 
   PrefService* local_state();
   AwBrowserPolicyConnector* browser_policy_connector();
+  VisibilityMetricsLogger* visibility_metrics_logger();
 
   void CreateBrowserPolicyConnector();
   void CreateLocalState();
@@ -98,6 +101,8 @@ class AwBrowserProcess {
   // Accessed on UI and IO threads.
   std::unique_ptr<AwSafeBrowsingWhitelistManager>
       safe_browsing_whitelist_manager_;
+
+  std::unique_ptr<VisibilityMetricsLogger> visibility_metrics_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(AwBrowserProcess);
 };

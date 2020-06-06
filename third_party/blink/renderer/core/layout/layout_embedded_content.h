@@ -44,7 +44,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   explicit LayoutEmbeddedContent(HTMLFrameOwnerElement*);
   ~LayoutEmbeddedContent() override;
 
-  bool RequiresAcceleratedCompositing() const;
+  bool ContentDocumentIsCompositing() const;
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
@@ -59,6 +59,7 @@ class CORE_EXPORT LayoutEmbeddedContent : public LayoutReplaced {
   // to LayoutObject::GetFrameView which returns the LocalFrameView associated
   // with the root Document Frame.
   FrameView* ChildFrameView() const;
+  LayoutView* ChildLayoutView() const;
   WebPluginContainerImpl* Plugin() const;
   EmbeddedContentView* GetEmbeddedContentView() const;
 

@@ -152,6 +152,13 @@ struct MyStruct {
     CheckedPtr<SomeClass> inner_ptr;
   } * ptr_to_non_free_standing_struct2;
 
+  // The following is an unnamed/anonymous, free-standing struct.
+  //
+  // Expected rewrite: ??? (as long as there are no overlapping replacements).
+  struct {
+    CheckedPtr<SomeClass> inner_ptr;
+  } * ptr_to_non_free_standing_struct3;
+
   // Despite avoiding the problems in NonFreeStandingStruct and
   // NonFreeStandingStruct2 above, we should still rewrite the example below.
   struct FreeStandingStruct {

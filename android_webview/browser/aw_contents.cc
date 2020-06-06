@@ -247,6 +247,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   content::SynchronousCompositor::SetClientForWebContents(
       web_contents_.get(), &browser_view_renderer_);
   AwContentsLifecycleNotifier::GetInstance().OnWebViewCreated(this);
+  AwBrowserProcess::GetInstance()->visibility_metrics_logger()->AddClient(this);
 }
 
 void AwContents::SetJavaPeers(
@@ -350,6 +351,8 @@ AwContents::~AwContents() {
   }
   browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
   AwContentsLifecycleNotifier::GetInstance().OnWebViewDestroyed(this);
+  AwBrowserProcess::GetInstance()->visibility_metrics_logger()->RemoveClient(
+      this);
 }
 
 base::android::ScopedJavaLocalRef<jobject> AwContents::GetWebContents(
@@ -916,6 +919,9 @@ void AwContents::OnSizeChanged(JNIEnv* env,
   web_contents_->GetNativeView()->OnPhysicalBackingSizeChanged(size);
   web_contents_->GetNativeView()->OnSizeChanged(w, h);
   browser_view_renderer_.OnSizeChanged(w, h);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::SetViewVisibility(JNIEnv* env,
@@ -923,6 +929,9 @@ void AwContents::SetViewVisibility(JNIEnv* env,
                                    bool visible) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.SetViewVisibility(visible);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::SetWindowVisibility(JNIEnv* env,
@@ -934,6 +943,9 @@ void AwContents::SetWindowVisibility(JNIEnv* env,
     AwContentsLifecycleNotifier::GetInstance().OnWebViewWindowBeVisible(this);
   else
     AwContentsLifecycleNotifier::GetInstance().OnWebViewWindowBeInvisible(this);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::SetIsPaused(JNIEnv* env,
@@ -950,6 +962,9 @@ void AwContents::OnAttachedToWindow(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnAttachedToWindow(w, h);
   AwContentsLifecycleNotifier::GetInstance().OnWebViewAttachedToWindow(this);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 void AwContents::OnDetachedFromWindow(JNIEnv* env,
@@ -957,6 +972,9 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.OnDetachedFromWindow();
   AwContentsLifecycleNotifier::GetInstance().OnWebViewDetachedFromWindow(this);
+  AwBrowserProcess::GetInstance()
+      ->visibility_metrics_logger()
+      ->ClientVisibilityChanged(this);
 }
 
 bool AwContents::IsVisible(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -1488,6 +1506,13 @@ int AwContents::GetErrorUiType() {
   if (obj.is_null())
     return false;
   return Java_AwContents_getErrorUiType(env, obj);
+}
+
+VisibilityMetricsLogger::VisibilityInfo AwContents::GetVisibilityInfo() {
+  return VisibilityMetricsLogger::VisibilityInfo{
+      browser_view_renderer_.attached_to_window(),
+      browser_view_renderer_.view_visible(),
+      browser_view_renderer_.window_visible()};
 }
 
 void AwContents::RendererUnresponsive(

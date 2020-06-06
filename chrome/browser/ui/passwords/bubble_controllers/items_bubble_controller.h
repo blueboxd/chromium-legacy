@@ -37,10 +37,11 @@ class ItemsBubbleController : public PasswordBubbleControllerBase {
   base::string16 GetTitle() const override;
   void ReportInteractions() override;
 
-  std::vector<autofill::PasswordForm> local_credentials_;
-  base::string16 title_;
+  const std::vector<autofill::PasswordForm> local_credentials_;
+  const base::string16 title_;
   // Dismissal reason for a password bubble.
-  password_manager::metrics_util::UIDismissalReason dismissal_reason_;
+  password_manager::metrics_util::UIDismissalReason dismissal_reason_ =
+      password_manager::metrics_util::NO_DIRECT_INTERACTION;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_BUBBLE_CONTROLLERS_ITEMS_BUBBLE_CONTROLLER_H_

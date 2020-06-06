@@ -10,6 +10,8 @@
 class SwitchAccess {
   static initialize() {
     window.switchAccess = new SwitchAccess();
+    chrome.virtualKeyboardPrivate.setKeyboardState(
+        chrome.virtualKeyboardPrivate.KeyboardState.ENABLED);
 
     chrome.automation.getDesktop((desktop) => {
       // These two must be initialized before the others.

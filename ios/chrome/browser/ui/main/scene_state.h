@@ -47,6 +47,9 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 - (void)sceneState:(SceneState*)sceneState
     hasPendingURLs:(NSSet<UIOpenURLContext*>*)URLContexts
     API_AVAILABLE(ios(13));
+// Notifies that a new activity request has been received.
+- (void)sceneState:(SceneState*)sceneState
+    receivedUserActivity:(NSUserActivity*)userActivity;
 
 @end
 
@@ -99,6 +102,10 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // Setting the property to nil will clear the set.
 @property(nonatomic)
     NSSet<UIOpenURLContext*>* URLContextsToOpen API_AVAILABLE(ios(13));
+
+// A NSUserActivity that has been passed to
+// |UISceneDelegate scene:continueUserActivity:| and needs to be opened.
+@property(nonatomic) NSUserActivity* pendingUserActivity;
 
 // Adds an observer to this scene state. The observers will be notified about
 // scene state changes per SceneStateObserver protocol.

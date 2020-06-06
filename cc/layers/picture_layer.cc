@@ -290,14 +290,6 @@ bool PictureLayer::ShouldUseTransformedRasterization() const {
   if (!picture_layer_inputs_.transformed_rasterization_allowed)
     return false;
 
-  // Background color overfill is undesirable with transformed rasterization.
-  // However, without background overfill, the tiles will be non-opaque on
-  // external edges, and layer opaque region can't be computed in layer space
-  // due to rounding under extreme scaling. This defeats many opaque layer
-  // optimization. Prefer optimization over quality for this particular case.
-  if (contents_opaque())
-    return false;
-
   const TransformTree& transform_tree =
       layer_tree_host()->property_trees()->transform_tree;
   DCHECK(!transform_tree.needs_update());

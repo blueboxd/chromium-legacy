@@ -35,12 +35,11 @@ ItemsBubbleController::ItemsBubbleController(
     : PasswordBubbleControllerBase(
           std::move(delegate),
           /*display_disposition=*/metrics_util::MANUAL_MANAGE_PASSWORDS),
-      dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION) {
-  local_credentials_ = DeepCopyForms(delegate_->GetCurrentForms());
-  GetManagePasswordsDialogTitleText(GetWebContents()->GetVisibleURL(),
-                                    delegate_->GetOrigin(),
-                                    !local_credentials_.empty(), &title_);
-}
+      local_credentials_(DeepCopyForms(delegate_->GetCurrentForms())),
+      title_(
+          GetManagePasswordsDialogTitleText(GetWebContents()->GetVisibleURL(),
+                                            delegate_->GetOrigin(),
+                                            !local_credentials_.empty())) {}
 
 ItemsBubbleController::~ItemsBubbleController() {
   if (!interaction_reported_)

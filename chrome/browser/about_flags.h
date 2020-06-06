@@ -103,16 +103,6 @@ void ResetAllFlags(flags_ui::FlagsStorage* flags_storage);
 // startup.
 void RecordUMAStatistics(flags_ui::FlagsStorage* flags_storage);
 
-// Returns the UMA id for the specified switch name.
-base::HistogramBase::Sample GetSwitchUMAId(const std::string& switch_name);
-
-// Sends stats (as UMA histogram) about a set of command line |flags| in
-// a histogram, with an enum value for each flag in |switches| and |features|,
-// based on the hash of the flag name.
-void ReportAboutFlagsHistogram(const std::string& uma_histogram_name,
-                               const std::set<std::string>& switches,
-                               const std::set<std::string>& features);
-
 namespace testing {
 
 // Returns the global set of feature entries.
@@ -120,10 +110,6 @@ const flags_ui::FeatureEntry* GetFeatureEntries(size_t* count);
 
 // Sets the global set of feature entries.
 void SetFeatureEntries(const std::vector<flags_ui::FeatureEntry>& entries);
-
-// This value is reported as switch histogram ID if switch name has unknown
-// format.
-extern const base::HistogramBase::Sample kBadSwitchFormatHistogramId;
 
 }  // namespace testing
 

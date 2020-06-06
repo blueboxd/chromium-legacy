@@ -42,10 +42,7 @@ polymer_modulizer("cr_toast_manager") {
   html_file = "cr_toast_manager.html"
   html_type = "dom-module"
   auto_imports = [ "ui/webui/resources/html/assert.html|assert" ]
-  namespace_rewrites = [
-    "cr.toastManager.CrToastManagerElement|CrToastManagerElement",
-    "cr.toastManager.getToastManager|getToastManager",
-  ]
+  namespace_rewrites = [ "cr.toastManager.getToastManager|getToastManager" ]
 }
 
 js_type_check("closure_compile_module") {

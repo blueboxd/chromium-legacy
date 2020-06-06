@@ -32,6 +32,8 @@ if ($command == "reset") {
     print("CACHE MANIFEST\n");
     print("NETWORK:\n");
     print("fail-on-update.php?command=\n");
+    print("ORIGIN-TRIAL:\n");
+    print("AnwB3aSh6U8pmYtO/AzzxELSwk8BRJoj77nUnCq6u3N8LMJKlX/ImydQmXn3SgE0a+8RyowLbV835tXQHJMHuAEAAABQeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTc2MTE3NjE5OH0=\n");
 } else if ($state == "Deleted") {
     header('HTTP/1.0 404 Not Found');
 }

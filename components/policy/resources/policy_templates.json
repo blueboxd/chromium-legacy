@@ -4666,7 +4666,7 @@
       'id': 443,
       'caption': '''Control where Developer Tools can be used''',
       'tags': [],
-      'desc': '''Setting the policy to 0 (the default) means you can access the developer tools and the JavaScript console, but not in the context of extensions installed by enterprise policy. Setting the policy to 1 means you can access the developer tools and the JavaScript console in all contexts, including that of extensions installed by enterprise policy. Setting the policy to 2 developer tools means you can't acess developer tools, and you can't inspect website elements.
+      'desc': '''Setting the policy to 0 (the default) means you can access the developer tools and the JavaScript console, but not in the context of extensions installed by enterprise policy. Setting the policy to 1 means you can access the developer tools and the JavaScript console in all contexts, including that of extensions installed by enterprise policy. Setting the policy to 2 means you can't acess developer tools, and you can't inspect website elements.
 
       This setting also turns off keyboard shortcuts and menu or context menu entries to open developer tools or the JavaScript console.''',
       'arc_support': '''This policy also controls access to Android Developer Options. If you set this policy to 'DeveloperToolsDisallowed' (value 2), users cannot access Developer Options. If you set this policy to another value or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.''',
@@ -7351,13 +7351,13 @@
       'id': 711,
       'caption': '''Enables experimental policies''',
       'tags': [],
-      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>google Chrome</ex></ph>load experimental policies.
+      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> load experimental policies.
 
         WARNING: Experimental policies are unsupported and subject to change or be removed without notice in future version of the browser!
 
         An experimental policy may not be finished or still have known or unknown defects. It may be changed or even removed without any notification. By enabling experimental policies, you could lose browser data or compromise your security or privacy.
 
-        If a policy is not in the list and it's not officially released, its value will be ignored on Chrome Beta and Chrome Stable.
+        If a policy is not in the list and it's not officially released, its value will be ignored on Beta and Stable channel.
 
         If a policy is in the list and it's not officially released, its value will be applied.
 

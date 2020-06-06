@@ -93,6 +93,10 @@ class VIEWS_EXPORT WidgetDelegate {
   // menu bars, etc.) changes in size.
   virtual void OnWorkAreaChanged();
 
+  // Called when the widget's initialization is beginning, right after the
+  // ViewsDelegate decides to use this WidgetDelegate for a Widget.
+  virtual void OnWidgetInitializing() {}
+
   // Called when the widget's initialization is complete.
   virtual void OnWidgetInitialized() {}
 
@@ -287,7 +291,8 @@ class VIEWS_EXPORT WidgetDelegate {
 
   // Called to notify the WidgetDelegate of changes to the state of its Widget.
   // It is not usually necessary to call these from client code.
-  void WidgetInitialized(Widget* widget);
+  void WidgetInitializing(Widget* widget);
+  void WidgetInitialized();
   void WidgetDestroying();
   void WindowWillClose();
 

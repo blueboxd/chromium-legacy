@@ -73,7 +73,7 @@ public class AccessibilitySettings
         ChromeBaseCheckBoxPreference readerForAccessibilityPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_READER_FOR_ACCESSIBILITY);
         readerForAccessibilityPref.setChecked(
-                PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED));
+                PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY));
         readerForAccessibilityPref.setOnPreferenceChangeListener(this);
 
         ChromeBaseCheckBoxPreference mAccessibilityTabSwitcherPref =
@@ -120,7 +120,7 @@ public class AccessibilitySettings
             mFontSizePrefs.setForceEnableZoomFromUser((Boolean) newValue);
         } else if (PREF_READER_FOR_ACCESSIBILITY.equals(preference.getKey())) {
             PrefServiceBridge.getInstance().setBoolean(
-                    Pref.READER_FOR_ACCESSIBILITY_ENABLED, (Boolean) newValue);
+                    Pref.READER_FOR_ACCESSIBILITY, (Boolean) newValue);
         }
         return true;
     }

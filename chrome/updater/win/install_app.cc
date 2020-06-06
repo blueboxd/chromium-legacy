@@ -432,7 +432,7 @@ class InstallAppController
   void DoInstallApp();
   void InstallComplete();
   void HandleInstallResult(const update_client::CrxUpdateItem& update_item);
-  void FlushPrefs();
+  void PrefsCommit();
 
   // Returns the thread id of the thread which owns the progress window.
   DWORD GetUIThreadID() const;
@@ -546,7 +546,7 @@ void InstallAppController::DoInstallApp() {
 // by calling UpdateClient::GetCrxUpdateState.
 void InstallAppController::InstallComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  FlushPrefs();
+  PrefsCommit();
   update_client_ = nullptr;
 }
 
@@ -681,9 +681,9 @@ BOOL InstallAppController::PreTranslateMessage(MSG* msg) {
   return false;
 }
 
-void InstallAppController::FlushPrefs() {
+void InstallAppController::PrefsCommit() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  config_->GetPrefService()->SchedulePendingLossyWrites();
+  config_->GetPrefService()->CommitPendingWrite();
 }
 
 DWORD InstallAppController::GetUIThreadID() const {

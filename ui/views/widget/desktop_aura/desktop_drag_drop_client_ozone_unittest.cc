@@ -288,10 +288,77 @@ TEST_F(DesktopDragDropClientOzoneTest, ReceiveDrag) {
   EXPECT_EQ(sample_data, string_data);
 
   EXPECT_EQ(1, dragdrop_delegate_->num_enters());
-  EXPECT_EQ(1, dragdrop_delegate_->num_enters());
   EXPECT_EQ(1, dragdrop_delegate_->num_updates());
   EXPECT_EQ(1, dragdrop_delegate_->num_drops());
   EXPECT_EQ(1, dragdrop_delegate_->num_exits());
+}
+
+TEST_F(DesktopDragDropClientOzoneTest, TargetDestroyedDuringDrag) {
+  const int suggested_operation =
+      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
+
+  // Set the operation which the destination can accept.
+  dragdrop_delegate_->SetOperation(ui::DragDropTypes::DRAG_MOVE);
+
+  // Set the data which will be delivered.
+  const base::string16 sample_data = base::ASCIIToUTF16("ReceiveDrag");
+  std::unique_ptr<ui::OSExchangeData> data =
+      std::make_unique<ui::OSExchangeData>();
+  data->SetString(sample_data);
+
+  // Simulate that the drag enter/motion/leave events happen with the
+  // |suggested_operation| in the main window.
+  platform_window_->OnDragEnter(gfx::PointF(), std::move(data),
+                                suggested_operation);
+  platform_window_->OnDragMotion(gfx::PointF(), suggested_operation);
+  platform_window_->OnDragLeave();
+
+  // Create another window with its own DnD facility and simulate that the drag
+  // enters it and then the window is destroyed.
+  auto another_widget = std::make_unique<Widget>();
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(100, 100);
+  another_widget->Init(std::move(params));
+  another_widget->Show();
+
+  aura::Window* another_window = another_widget->GetNativeWindow();
+  auto another_dragdrop_delegate = std::make_unique<FakeDragDropDelegate>();
+  aura::client::SetDragDropDelegate(another_window,
+                                    another_dragdrop_delegate.get());
+  another_dragdrop_delegate->SetOperation(ui::DragDropTypes::DRAG_COPY);
+
+  auto another_cursor_manager = std::make_unique<DesktopNativeCursorManager>();
+  auto another_platform_window = std::make_unique<FakePlatformWindow>();
+  ui::WmDragHandler* drag_handler =
+      ui::GetWmDragHandler(*(another_platform_window));
+  auto another_client = std::make_unique<DesktopDragDropClientOzone>(
+      another_window, another_cursor_manager.get(), drag_handler);
+  SetWmDropHandler(another_platform_window.get(), another_client.get());
+
+  std::unique_ptr<ui::OSExchangeData> another_data =
+      std::make_unique<ui::OSExchangeData>();
+  another_data->SetString(sample_data);
+  another_platform_window->OnDragEnter(gfx::PointF(), std::move(another_data),
+                                       suggested_operation);
+  another_platform_window->OnDragMotion(gfx::PointF(), suggested_operation);
+
+  another_widget->CloseWithReason(Widget::ClosedReason::kUnspecified);
+  another_widget.reset();
+
+  // The main window should have the typical record of a drag started and left.
+  EXPECT_EQ(1, dragdrop_delegate_->num_enters());
+  EXPECT_EQ(1, dragdrop_delegate_->num_updates());
+  EXPECT_EQ(0, dragdrop_delegate_->num_drops());
+  EXPECT_EQ(1, dragdrop_delegate_->num_exits());
+
+  // As the target window has closed and we have never provided another one,
+  // the number of exits should be zero despite that the platform window has
+  // notified the client about leaving the drag.
+  EXPECT_EQ(1, another_dragdrop_delegate->num_enters());
+  EXPECT_EQ(1, another_dragdrop_delegate->num_updates());
+  EXPECT_EQ(0, another_dragdrop_delegate->num_drops());
+  EXPECT_EQ(0, another_dragdrop_delegate->num_exits());
 }
 
 }  // namespace views

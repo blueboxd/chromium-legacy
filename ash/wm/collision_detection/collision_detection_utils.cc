@@ -100,6 +100,7 @@ std::vector<gfx::Rect> CollectCollisionRects(
                              root_window->bounds().width(),
                              hotseat_window->GetTargetBounds().height()};
       if (hotseat_widget->state() != HotseatState::kHidden &&
+          hotseat_widget->state() != HotseatState::kNone &&
           !ShouldIgnoreWindowForCollision(hotseat_window, priority)) {
         rects.push_back(ComputeCollisionRectFromBounds(
             hotseat_rect, hotseat_window->parent()));

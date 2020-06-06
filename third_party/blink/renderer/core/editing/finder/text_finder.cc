@@ -135,7 +135,7 @@ bool TextFinder::Find(int identifier,
                       const mojom::blink::FindOptions& options,
                       bool wrap_within_frame,
                       bool* active_now) {
-  if (!options.find_next) {
+  if (options.new_session) {
     // This find-in-page is redone due to the frame finishing loading.
     // If we can, just reuse the old active match;
     if (options.force && active_match_) {
@@ -169,17 +169,20 @@ bool TextFinder::Find(int identifier,
       (options.forward ? 0 : kBackwards) |
       (options.match_case ? 0 : kCaseInsensitive) |
       (wrap_within_frame ? kWrapAround : 0) |
-      (options.find_next ? 0 : kStartInSelection);
+      (options.find_next_if_selection_matches
+           ? 0
+           : kDontFindNextIfSelectionMatches) |
+      (options.new_session ? kStartInSelection : 0);
   active_match_ = Editor::FindRangeOfString(
       *OwnerFrame().GetFrame()->GetDocument(), search_text,
       EphemeralRangeInFlatTree(active_match_.Get()), find_options);
 
   if (!active_match_) {
-    if (current_active_match_frame_ && !options.find_next)
+    if (current_active_match_frame_ && options.new_session)
       should_locate_active_rect_ = true;
-    // If we're finding next the next active match might not be in the current
+    // In an existing session the next active match might not be in
     // frame.  In this case we don't want to clear the matches cache.
-    if (!options.find_next)
+    if (options.new_session)
       ClearFindMatchesCache();
 
     InvalidatePaintForTickmarks();
@@ -213,7 +216,7 @@ bool TextFinder::Find(int identifier,
   // Set this frame as focused.
   OwnerFrame().ViewImpl()->SetFocusedFrame(&OwnerFrame());
 
-  if (!options.find_next || active_selection || !is_active) {
+  if (options.new_session || active_selection || !is_active) {
     // This is either an initial Find operation, a Find-next from a new
     // start point due to a selection, or new matches were found during
     // Find-next due to DOM alteration (that couldn't be set as active), so

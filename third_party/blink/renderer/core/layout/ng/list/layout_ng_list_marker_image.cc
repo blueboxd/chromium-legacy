@@ -24,21 +24,24 @@ bool LayoutNGListMarkerImage::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGListMarkerImage || LayoutImage::IsOfType(type);
 }
 
+LayoutSize LayoutNGListMarkerImage::DefaultSize() const {
+  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
+  DCHECK(font_data);
+  if (!font_data)
+    return LayoutSize(kDefaultWidth, kDefaultHeight);
+
+  LayoutUnit bullet_width =
+      font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
+  return LayoutSize(bullet_width, bullet_width);
+}
+
 // Because ImageResource() is always LayoutImageResourceStyleImage. So we could
 // use StyleImage::ImageSize to determine the concrete object size with
 // default object size(ascent/2 x ascent/2).
 void LayoutNGListMarkerImage::ComputeIntrinsicSizingInfoByDefaultSize(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return;
-
-  LayoutUnit bullet_width =
-      font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
-  LayoutSize default_object_size(bullet_width, bullet_width);
   FloatSize concrete_size = ImageResource()->ImageSizeWithDefaultSize(
-      Style()->EffectiveZoom(), default_object_size);
+      Style()->EffectiveZoom(), DefaultSize());
   concrete_size.Scale(ImageDevicePixelRatio());
   LayoutSize image_size(RoundedLayoutSize(concrete_size));
 

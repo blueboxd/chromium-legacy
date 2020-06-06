@@ -155,6 +155,9 @@ If you're intending to launch a feature in WebView or start a field trial (AKA
 Finch experiment), we **highly encourage** you to [add to the
 list](/android_webview/java/src/org/chromium/android_webview/common/ProductionSupportedFlagList.java)
 (ex. [CL](https://crrev.com/c/2008007), [CL](https://crrev.com/c/2066144)).
+After that, follow [these
+steps](/tools/metrics/histograms/README.md#Flag-Histograms) to collect metrics
+about your feature usage.
 
 Exposing your feature this way has several benefits:
 

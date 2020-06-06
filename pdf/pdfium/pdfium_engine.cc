@@ -3668,7 +3668,20 @@ void PDFiumEngine::SetSelection(
   }
 }
 
-void PDFiumEngine::ScrollIntoView(const pp::Rect& rect) {
+void PDFiumEngine::ScrollAnnotationIntoView(FPDF_ANNOTATION annot,
+                                            int page_index) {
+  if (!PageIndexInBounds(page_index))
+    return;
+
+  FS_RECTF annot_rect;
+  if (!FPDFAnnot_GetRect(annot, &annot_rect))
+    return;
+
+  pp::Rect rect = pages_[page_index]->PageToScreen(
+      pp::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
+      annot_rect.right, annot_rect.bottom,
+      layout_.options().default_page_orientation());
+
   pp::Rect visible_rect = GetVisibleRect();
   if (visible_rect.Contains(rect))
     return;

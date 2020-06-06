@@ -82,7 +82,9 @@ public class InstalledWebappBridge {
         TrustedWebActivityPermissionManager manager = TrustedWebActivityPermissionManager.get();
         Origin origin = Origin.create(Uri.parse(url));
         String packageName = manager.getDelegatePackageName(origin);
-        return manager.isRunningTwa() && manager.hasAndroidLocationPermission(packageName) != null;
+        return manager.isRunningTwa()
+                && TrustedWebActivityPermissionManager.hasAndroidLocationPermission(packageName)
+                != null;
     }
 
     @CalledByNative

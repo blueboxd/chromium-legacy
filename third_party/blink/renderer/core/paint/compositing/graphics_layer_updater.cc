@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -137,6 +138,15 @@ void GraphicsLayerUpdater::UpdateRecursive(
         scrollable_area->PositionOverflowControls();
       update_type = mapping->UpdateTypeForChildren(update_type);
       mapping->ClearNeedsGraphicsLayerUpdate();
+    }
+  }
+
+  if (layer.GetLayoutObject().IsLayoutEmbeddedContent()) {
+    if (PaintLayerCompositor* inner_compositor =
+            PaintLayerCompositor::FrameContentsCompositor(
+                ToLayoutEmbeddedContent(layer.GetLayoutObject()))) {
+      if (inner_compositor->RootLayerAttachmentDirty())
+        needs_rebuild_tree_ = true;
     }
   }
 

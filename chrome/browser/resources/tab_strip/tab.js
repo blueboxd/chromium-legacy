@@ -92,6 +92,14 @@ export class TabElement extends CustomElement {
     /** @private {!HTMLElement} */
     this.titleTextEl_ = /** @type {!HTMLElement} */ (this.$('#titleText'));
 
+    /**
+     * Flag indicating if this TabElement can accept dragover events. This
+     * is used to pause dragover events while animating as animating causes
+     * the elements below the pointer to shift.
+     * @private {boolean}
+     */
+    this.isValidDragOverTarget_ = true;
+
     this.tabEl_.addEventListener('click', () => this.onClick_());
     this.tabEl_.addEventListener('contextmenu', e => this.onContextMenu_(e));
     this.tabEl_.addEventListener(
@@ -167,6 +175,16 @@ export class TabElement extends CustomElement {
     }
 
     this.tab_ = Object.freeze(tab);
+  }
+
+  /** @return {boolean} */
+  get isValidDragOverTarget() {
+    return !this.hasAttribute('dragging_') && this.isValidDragOverTarget_;
+  }
+
+  /** @param {boolean} isValid */
+  set isValidDragOverTarget(isValid) {
+    this.isValidDragOverTarget_ = isValid;
   }
 
   /** @param {!Function} callback */

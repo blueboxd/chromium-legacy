@@ -43,7 +43,7 @@
         JSON.stringify(constraints));
     navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => {
-          window.document.title = 'Granted:1';
+          window.document.title = 'Granted';
           detectVideoInLocalView1(stream).then(() => {
             stream.getVideoTracks()[0].stop();
             detectVideoStopped('local-view-1')
@@ -51,7 +51,7 @@
           });
         })
         .catch(() => {
-          window.document.title = 'Denied:1';
+          window.document.title = 'Denied';
           failTest();
         });
   }

@@ -560,7 +560,7 @@ class WebLocalFrame : public WebFrame {
                               const WebString& search_text,
                               bool match_case,
                               bool forward,
-                              bool find_next,
+                              bool new_session,
                               bool force,
                               bool wrap_within_frame) = 0;
 

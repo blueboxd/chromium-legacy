@@ -138,6 +138,20 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
  private:
   class DelegateView;
 
+  // Defines the hotseat transition types.
+  enum class StateTransition {
+    // Hotseat state transits between kShownHomeLauncher and kExtended.
+    kHomeLauncherAndExtended,
+
+    // Hotseat state transits between kShownHomeLauncher and kHidden.
+    kHomeLauncherAndHidden,
+
+    // Hotseat state transits between kHidden and kExtended.
+    kHiddenAndExtended,
+
+    kOther
+  };
+
   struct LayoutInputs {
     gfx::Rect bounds;
     float shelf_view_opacity = 0.0f;
@@ -162,13 +176,22 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
       const gfx::Size& available_size,
       HotseatState hotseat_target_state) const;
 
+  // Animates the hotseat to the target opacity/bounds.
+  void LayoutHotseatByAnimation(double target_opacity,
+                                const gfx::Rect& target_bounds);
+
+  // Calculates the state transition type before animating the hotseat.
+  StateTransition CalculateHotseatStateTransition() const;
+
   // The set of inputs that impact this widget's layout. The assumption is that
   // this widget needs a relayout if, and only if, one or more of these has
   // changed.
   base::Optional<LayoutInputs> layout_inputs_;
 
   gfx::Rect target_bounds_;
-  HotseatState state_ = HotseatState::kShownClamshell;
+
+  HotseatState old_state_ = HotseatState::kNone;
+  HotseatState state_ = HotseatState::kNone;
 
   Shelf* shelf_ = nullptr;
 

@@ -799,8 +799,6 @@ void GCMClientImpl::IgnoreWriteResultCallback(
   // TODO(crbug.com/1081149): Implement proper error handling.
   // TODO(fgorski): Ignoring the write result for now to make sure
   // sync_intergration_tests are not broken.
-  base::UmaHistogramBoolean(
-      "GCM.IgnoredWriteResult." + operation_suffix_for_uma, success);
 }
 
 void GCMClientImpl::DestroyStoreCallback(bool success) {

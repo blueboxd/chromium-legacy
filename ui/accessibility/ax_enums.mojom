@@ -27,7 +27,7 @@ module ax.mojom;
 
 enum Event {
   kNone,
-  kActiveDescendantChanged,  // Web
+  kActiveDescendantChanged,
   kAlert,
   kAriaAttributeChanged,   // Implicit
   kAutocorrectionOccured,  // Unknown: http://crbug.com/392498

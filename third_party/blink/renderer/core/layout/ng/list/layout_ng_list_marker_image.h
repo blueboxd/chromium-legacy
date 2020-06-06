@@ -18,6 +18,7 @@ class CORE_EXPORT LayoutNGListMarkerImage final : public LayoutImage {
   static LayoutNGListMarkerImage* CreateAnonymous(Document*);
 
   bool IsLayoutNGObject() const override { return true; }
+  LayoutSize DefaultSize() const;
 
  private:
   bool IsOfType(LayoutObjectType) const override;
@@ -25,6 +26,9 @@ class CORE_EXPORT LayoutNGListMarkerImage final : public LayoutImage {
   void ComputeIntrinsicSizingInfoByDefaultSize(IntrinsicSizingInfo&) const;
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 };
+
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarkerImage,
+                                IsLayoutNGListMarkerImage());
 
 }  // namespace blink
 

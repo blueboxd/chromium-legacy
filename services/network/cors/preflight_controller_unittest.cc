@@ -343,7 +343,8 @@ class PreflightControllerTest : public testing::Test {
   PreflightControllerTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         test_initiator_origin_(
-            url::Origin::Create(GURL("http://example.com/"))) {
+            url::Origin::Create(GURL("http://example.com/"))),
+        access_control_allow_origin_(test_initiator_origin_) {
     CorsURLLoaderFactory::SetAllowExternalPreflightsForTesting(true);
     mojo::Remote<mojom::NetworkService> network_service_remote;
     network_service_ = NetworkService::Create(
@@ -393,8 +394,15 @@ class PreflightControllerTest : public testing::Test {
     run_loop_->Run();
   }
 
+  void SetAccessControlAllowOrigin(const url::Origin origin) {
+    access_control_allow_origin_ = origin;
+  }
+
   const url::Origin& test_initiator_origin() const {
     return test_initiator_origin_;
+  }
+  const url::Origin& access_control_allow_origin() const {
+    return access_control_allow_origin_;
   }
   int net_error() const { return net_error_; }
   base::Optional<CorsErrorStatus> status() { return status_; }
@@ -404,6 +412,8 @@ class PreflightControllerTest : public testing::Test {
 
  private:
   void SetUp() override {
+    SetAccessControlAllowOrigin(test_initiator_origin_);
+
     preflight_controller_ = std::make_unique<PreflightController>(
         std::vector<std::string>(), network_service_.get());
 
@@ -430,7 +440,7 @@ class PreflightControllerTest : public testing::Test {
       const url::Origin origin =
           net::test_server::ShouldHandle(request, "/tainted")
               ? url::Origin()
-              : test_initiator_origin();
+              : access_control_allow_origin();
       response->AddCustomHeader(header_names::kAccessControlAllowOrigin,
                                 origin.Serialize());
       response->AddCustomHeader(header_names::kAccessControlAllowMethods,
@@ -445,6 +455,7 @@ class PreflightControllerTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   const url::Origin test_initiator_origin_;
+  url::Origin access_control_allow_origin_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   std::unique_ptr<NetworkService> network_service_;
@@ -508,6 +519,41 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
   EXPECT_EQ(net::OK, net_error());
   ASSERT_FALSE(status());
   EXPECT_EQ(4u, access_count());
+}
+
+TEST_F(PreflightControllerTest, CheckRequestNetworkIsolationKey) {
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kCors;
+  request.credentials_mode = mojom::CredentialsMode::kOmit;
+  request.url = GetURL("/allow");
+  const url::Origin& origin = test_initiator_origin();
+  request.request_initiator = origin;
+  ResourceRequest::TrustedParams trusted_params;
+  trusted_params.isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing, origin, origin,
+      net::SiteForCookies());
+  request.trusted_params = {trusted_params};
+
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(1u, access_count());
+
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
+
+  url::Origin second_origin = url::Origin::Create(GURL("https://example.com/"));
+  request.request_initiator = second_origin;
+  SetAccessControlAllowOrigin(second_origin);
+  request.trusted_params->isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RedirectMode::kUpdateNothing, origin, second_origin,
+      net::SiteForCookies());
+  PerformPreflightCheck(request);
+  EXPECT_EQ(net::OK, net_error());
+  ASSERT_FALSE(status());
+  EXPECT_EQ(2u, access_count());
 }
 
 TEST_F(PreflightControllerTest, CheckTaintedRequest) {

@@ -76,8 +76,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return embedded_content_view_;
   }
 
-  void FrameCrossOriginToParentFrameChanged();
-
   class PluginDisposeSuspendScope {
     STACK_ALLOCATED();
 

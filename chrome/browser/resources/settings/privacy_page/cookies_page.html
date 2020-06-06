@@ -42,15 +42,14 @@
     </picture>
     <div id="generalControls">
       <h2>$i18n{cookiePageGeneralControls}</h2>
-      <cr-radio-group selected="[[cookiesControlRadioSelected_]]"
+      <settings-radio-group id="primarySettingGroup"
+          pref="{{prefs.generated.cookie_primary_setting}}"
           selectable-elements="cr-radio-button, settings-collapse-radio-button"
-          on-selected-changed="onCookiesControlRadioChange_">
+          on-change="onCookiePrimarySettingChanged_">
         <settings-collapse-radio-button id="allowAll"
-            name="[[cookiesControlEnum_.ALLOW_ALL]]"
-            label="$i18n{cookiePageAllowAll}"
-            disabled="[[cookieControlsManagedState_.allowAll.disabled]]"
-            policy-indicator-type=
-                    "[[cookieControlsManagedState_.allowAll.indicator]]">
+            pref="[[prefs.generated.cookie_primary_setting]]"
+            name="[[cookiePrimarySettingEnum_.ALLOW_ALL]]"
+            label="$i18n{cookiePageAllowAll}">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="settings:cookie"></iron-icon>
@@ -64,14 +63,9 @@
         </settings-collapse-radio-button>
         <template is="dom-if" if="[[improvedCookieControlsEnabled_]]">
           <settings-collapse-radio-button id="blockThirdPartyIncognito"
-              name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
-              label="$i18n{cookiePageBlockThirdIncognito}"
-              disabled="[[
-                  cookieControlsManagedState_.blockThirdPartyIncognito.disabled
-                  ]]"
-              policy-indicator-type="[[
-                  cookieControlsManagedState_.blockThirdPartyIncognito.indicator
-                  ]]">
+              pref="[[prefs.generated.cookie_primary_setting]]"
+              name="[[cookiePrimarySettingEnum_.BLOCK_THIRD_PARTY_INCOGNITO]]"
+              label="$i18n{cookiePageBlockThirdIncognito}">
             <div slot="collapse">
               <div class="bullet-line">
                 <iron-icon icon="settings:cookie"></iron-icon>
@@ -89,11 +83,9 @@
           </settings-collapse-radio-button>
         </template>
         <settings-collapse-radio-button id="blockThirdParty"
-            name="[[cookiesControlEnum_.BLOCK_THIRD_PARTY]]"
-            label="$i18n{cookiePageBlockThird}"
-            disabled="[[cookieControlsManagedState_.blockThirdParty.disabled]]"
-            policy-indicator-type="[[
-                cookieControlsManagedState_.blockThirdParty.indicator]]">
+            pref="[[prefs.generated.cookie_primary_setting]]"
+            name="[[cookiePrimarySettingEnum_.BLOCK_THIRD_PARTY]]"
+            label="$i18n{cookiePageBlockThird}">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="settings:cookie"></iron-icon>
@@ -106,11 +98,9 @@
           </div>
         </settings-collapse-radio-button>
         <settings-collapse-radio-button id="blockAll"
-            name="[[cookiesControlEnum_.BLOCK_ALL]]"
-            label="$i18n{cookiePageBlockAll}"
-            disabled="[[cookieControlsManagedState_.blockAll.disabled]]"
-            policy-indicator-type="[[
-                cookieControlsManagedState_.blockAll.indicator]]">
+            pref="[[blockAllPref_]]"
+            name="[[cookiePrimarySettingEnum_.BLOCK_ALL]]"
+            label="$i18n{cookiePageBlockAll}">
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="settings:block"></iron-icon>
@@ -126,7 +116,7 @@
             </div>
           </div>
         </settings-collapse-radio-button>
-      </cr-radio-group>
+      </settings-radio-group>
     </div>
     <settings-toggle-button id="clearOnExit" class="hr"
         pref="{{prefs.generated.cookie_session_only}}"

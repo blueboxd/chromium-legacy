@@ -355,5 +355,13 @@ public class NavigationController {
                 callback.onFirstContentfulPaint();
             }
         }
+
+        @Override
+        public void onOldPageNoLongerRendered(String uri) {
+            StrictModeWorkaround.apply();
+            for (NavigationCallback callback : mCallbacks) {
+                callback.onOldPageNoLongerRendered(Uri.parse(uri));
+            }
+        }
     }
 }

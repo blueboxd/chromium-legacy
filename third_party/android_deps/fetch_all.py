@@ -305,6 +305,11 @@ def _GenerateCipdUploadCommands(cipd_pkg_infos):
         for info, result in executor.map(cipd_describe, cipd_pkg_infos):
             if result:
                 pkg_path, pkg_name, pkg_tag = info
+                # pkg_path is implicitly relative to _CHROMIUM_SRC, make it
+                # explicit.
+                pkg_path = os.path.join(_CHROMIUM_SRC, pkg_path)
+                # Now make pkg_path relative to os.curdir.
+                pkg_path = os.path.relpath(pkg_path)
                 cmds.append(TEMPLATE.format(pkg_path, pkg_name, pkg_tag))
     return cmds
 

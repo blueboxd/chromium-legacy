@@ -141,6 +141,11 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORDS_DEVICE_SECTION_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/passwords_device_section.js"
+           use_base_dir="false"
+           compress="false" type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_EDIT_DIALOG_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_edit_dialog.js"
            use_base_dir="false"

@@ -199,10 +199,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   const XID xwindow_;
 
   // Target side information.
+  XID target_current_window_ = x11::None;
   std::unique_ptr<XDragContext> target_current_context_;
 
   // Source side information.
-  XID source_current_window_ = x11::None;
   SourceState source_state_ = SourceState::kOther;
   const XOSExchangeDataProvider* source_provider_ = nullptr;
 

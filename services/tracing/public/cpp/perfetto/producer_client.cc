@@ -25,30 +25,7 @@
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/common/track_event_descriptor.pbzero.h"
 
-#if defined(OS_LINUX)
-#include "components/crash/core/app/crashpad.h"  // nogncheck
-#endif
-
 namespace {
-#if defined(OS_LINUX)
-constexpr char kCrashHandlerMetricName[] =
-    "CrashReport.DumpWithoutCrashingHandler.FromInitSharedMemoryIfNeeded";
-// Crash handler that might handle base::debug::DumpWithoutCrashing.
-// TODO(crbug.com/1074115): Remove once crbug.com/1074115 is resolved.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class CrashHandler {
-  kCrashpad = 0,
-  kBreakpad = 1,
-  kMaxValue = kBreakpad,
-};
-#endif
-
-// UMA that records the return value of base::debug::DumpWithoutCrashing.
-// TODO(crbug.com/1074115): Remove once crbug.com/1074115 is resolved.
-constexpr char kDumpWithoutCrashingResultMetricName[] =
-    "CrashReport.DumpWithoutCrashingResult.FromInitSharedMemoryIfNeeded";
-
 // Result for getting the shared buffer in InitSharedMemoryIfNeeded.
 constexpr char kSharedBufferIsValidMetricName[] = "Tracing.SharedBufferIsValid";
 }  // namespace
@@ -421,18 +398,17 @@ bool ProducerClient::InitSharedMemoryIfNeeded() {
   base::UmaHistogramBoolean(kSharedBufferIsValidMetricName, valid);
 
   if (!valid) {
-#if defined(OS_LINUX)
     // TODO(crbug.com/1074115): Investigate why Breakpad doesn't seem to
     // generate reports on some ChromeOS boards.
-    CrashHandler handler = crash_reporter::IsCrashpadEnabled()
-                               ? CrashHandler::kCrashpad
-                               : CrashHandler::kBreakpad;
-    base::UmaHistogramEnumeration(kCrashHandlerMetricName, handler);
-#endif
+    if (pre_dump_error_callback_) {
+      pre_dump_error_callback_.Run();
+    }
 
     bool dump_with_crashing_result = base::debug::DumpWithoutCrashing();
-    base::UmaHistogramBoolean(kDumpWithoutCrashingResultMetricName,
-                              dump_with_crashing_result);
+
+    if (post_dump_error_callback_) {
+      post_dump_error_callback_.Run(dump_with_crashing_result);
+    }
 
     LOG(ERROR) << "Failed to create tracing SMB";
     shared_memory_.reset();
@@ -491,6 +467,14 @@ void ProducerClient::NotifyDataSourceFlushComplete(
   if (--pending_replies_for_latest_flush_.second == 0) {
     MaybeSharedMemoryArbiter()->NotifyFlushComplete(id);
   }
+}
+
+void ProducerClient::SetBufferAllocationFailureCallbacks(
+    base::Closure pre_dump_error_callback,
+    base::Callback<void(bool dump_result)> post_dump_error_callback) {
+  base::AutoLock lock(lock_);
+  pre_dump_error_callback_ = std::move(pre_dump_error_callback);
+  post_dump_error_callback_ = std::move(post_dump_error_callback);
 }
 
 }  // namespace tracing

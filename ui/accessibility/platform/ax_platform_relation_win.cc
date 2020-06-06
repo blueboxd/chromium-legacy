@@ -43,6 +43,12 @@ base::string16 GetIA2RelationFromIntAttr(ax::mojom::IntAttribute attribute) {
       return IA2_RELATION_MEMBER_OF;
     case ax::mojom::IntAttribute::kErrormessageId:
       return IA2_RELATION_ERROR;
+    case ax::mojom::IntAttribute::kPopupForId:
+      // Map "popup for" to "controlled by".
+      // Unlike ATK there is no special IA2 popup-for relationship, but it can
+      // be exposed via the controlled by relation, which is also computed for
+      // content as the reverse of the controls relationship.
+      return IA2_RELATION_CONTROLLED_BY;
     default:
       break;
   }

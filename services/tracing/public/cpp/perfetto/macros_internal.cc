@@ -29,7 +29,8 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
     const unsigned char* category_group_enabled,
     const char* name,
     unsigned int flags,
-    base::TimeTicks ts = base::TimeTicks()) {
+    base::TimeTicks ts,
+    bool explicit_track) {
   DCHECK(phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_END ||
          phase == TRACE_EVENT_PHASE_INSTANT);
   DCHECK(category_group_enabled);
@@ -47,9 +48,15 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
   } else {
     flags |= TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
   }
-  base::ThreadTicks thread_now = ThreadNow();
-  base::trace_event::ThreadInstructionCount thread_instruction_now =
-      ThreadInstructionNow();
+
+  // Only emit thread time / instruction count for events on the default track
+  // without explicit timestamp.
+  base::ThreadTicks thread_now;
+  base::trace_event::ThreadInstructionCount thread_instruction_now;
+  if ((flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP) == 0 && !explicit_track) {
+    thread_now = ThreadNow();
+    thread_instruction_now = ThreadInstructionNow();
+  }
 
   return base::trace_event::TraceEvent(
       thread_id, ts, thread_now, thread_instruction_now, phase,

@@ -7306,6 +7306,8 @@ base::Optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
   switch (event) {
     case ax::mojom::Event::kAlert:
       return EVENT_SYSTEM_ALERT;
+    case ax::mojom::Event::kActiveDescendantChanged:
+      return IA2_EVENT_ACTIVE_DESCENDANT_CHANGED;
     case ax::mojom::Event::kCheckedStateChanged:
     case ax::mojom::Event::kExpandedChanged:
     case ax::mojom::Event::kStateChanged:

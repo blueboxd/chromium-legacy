@@ -28,6 +28,7 @@ js_type_check("closure_compile_module") {
     ":password_list_item",
     ":password_manager_proxy",
     ":password_remove_confirmation_dialog",
+    ":passwords_device_section",
     ":passwords_export_dialog",
     ":passwords_list_handler",
     ":passwords_section",
@@ -254,6 +255,20 @@ js_library("passwords_section") {
   ]
 }
 
+js_library("passwords_device_section") {
+  deps = [
+    ":merge_passwords_store_copies_behavior",
+    ":multi_store_password_ui_entry",
+    ":password_list_item",
+    ":password_manager_proxy",
+    ":passwords_list_handler",
+    "..:route",
+    "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:util.m",
+  ]
+}
+
 js_library("payments_list") {
   deps = [
     ":credit_card_list_entry",
@@ -329,6 +344,7 @@ html_to_js("web_components") {
     "password_remove_confirmation_dialog.js",
     "passwords_export_dialog.js",
     "passwords_section.js",
+    "passwords_device_section.js",
     "passwords_shared_css.js",
     "payments_list.js",
     "payments_section.js",

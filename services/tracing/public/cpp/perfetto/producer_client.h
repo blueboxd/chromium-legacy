@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -108,6 +109,13 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       mojo::PendingRemote<mojom::ProducerHost>);
   perfetto::SharedMemory* shared_memory_for_testing();
 
+  // Callbacks that are triggered if this class cannot allocate its shared
+  // buffer. For error reporting. The second callback is called after
+  // DumpWithoutCrashing is called, and includes the result of that call.
+  void SetBufferAllocationFailureCallbacks(
+      base::Closure pre_dump_error_callback,
+      base::Callback<void(bool dump_result)> post_dump_error_callback);
+
  protected:
   // Protected for testing. Returns false if SMB creation failed.
   bool InitSharedMemoryIfNeeded();
@@ -141,6 +149,12 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   std::unique_ptr<MojoSharedMemory> shared_memory_ GUARDED_BY(lock_);
   std::unique_ptr<perfetto::SharedMemoryArbiter> shared_memory_arbiter_
       GUARDED_BY(lock_);
+
+  // See ProducerClient::SetBufferAllocationFailureCallbacks for details of
+  // what these callbacks mean.
+  base::Closure pre_dump_error_callback_ GUARDED_BY(lock_);
+  base::Callback<void(bool dump_without_crashing_result)>
+      post_dump_error_callback_ GUARDED_BY(lock_);
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<ProducerClient> weak_ptr_factory_{this};

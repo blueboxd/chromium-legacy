@@ -447,7 +447,7 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
   }
 
   SetFootnoteView(CreateFooterView());
-  UpdateDialogButtonsAndAccountPickerVisiblity();
+  UpdateBubbleUIElements();
 }
 
 PasswordSaveUpdateWithAccountStoreView::
@@ -487,7 +487,7 @@ void PasswordSaveUpdateWithAccountStoreView::OnContentChanged(
   if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
       is_ok_button_enabled_before !=
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
-    UpdateDialogButtonsAndAccountPickerVisiblity();
+    UpdateBubbleUIElements();
     DialogModelChanged();
   }
 }
@@ -570,8 +570,7 @@ void PasswordSaveUpdateWithAccountStoreView::
                                  std::move(new_password));
 }
 
-void PasswordSaveUpdateWithAccountStoreView::
-    UpdateDialogButtonsAndAccountPickerVisiblity() {
+void PasswordSaveUpdateWithAccountStoreView::UpdateBubbleUIElements() {
   SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -583,6 +582,9 @@ void PasswordSaveUpdateWithAccountStoreView::
       l10n_util::GetStringUTF16(
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON
                             : IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
+
+  SetTitle(controller_.GetTitle());
+
   // Nothing to do if the bubble isn't visible yet.
   if (!GetWidget())
     return;

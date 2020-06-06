@@ -307,7 +307,7 @@ public class FeedAppLifecycleTest {
     public void testClearDataAfterDisablingDoesNotCrash() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             FeedProcessScopeFactory.clearFeedProcessScopeForTesting();
-            PrefServiceBridge.getInstance().setBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED, false);
+            PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, false);
             FeedLifecycleBridge.onCachedDataCleared();
             FeedLifecycleBridge.onHistoryDeleted();
         });

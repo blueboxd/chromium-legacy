@@ -1,0 +1,11 @@
+{
+  "name": "Max Pay",
+  "icons": [{
+    "src": "../icon.png",
+    "sizes": "40x40",
+    "type": "image/png"
+  }],
+  "serviceworker": {
+    "src": "payment_handler_sw.js"
+  }
+}

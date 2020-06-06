@@ -595,13 +595,6 @@ void HTMLFrameOwnerElement::ParseAttribute(
   }
 }
 
-void HTMLFrameOwnerElement::FrameCrossOriginToParentFrameChanged() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kCompositeCrossOriginIframes)) {
-    SetNeedsCompositingUpdate();
-  }
-}
-
 void HTMLFrameOwnerElement::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {
   DCHECK(content_frame_);

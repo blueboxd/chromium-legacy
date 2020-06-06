@@ -33,6 +33,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/sync/split_settings_sync_field_trial.h"
 #include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
 #endif
 
@@ -90,6 +91,11 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
+#if defined(OS_CHROMEOS)
+  // This trial is fully client controlled and must be configured whether or not
+  // a seed is available.
+  split_settings_sync_field_trial::Create(feature_list, local_state_);
+#endif
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {

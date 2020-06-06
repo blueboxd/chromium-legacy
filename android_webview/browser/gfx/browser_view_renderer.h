@@ -116,6 +116,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   // Android views hierarchy gluing.
   bool IsVisible() const;
   gfx::Rect GetScreenRect() const;
+  bool view_visible() const { return view_visible_; }
+  bool window_visible() const { return window_visible_; }
   bool attached_to_window() const { return attached_to_window_; }
   bool was_attached() const { return was_attached_; }
   gfx::Size size() const { return size_; }

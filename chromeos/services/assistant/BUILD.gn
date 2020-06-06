@@ -18,6 +18,8 @@ component("lib") {
   defines = [ "IS_ASSISTANT_SERVICE_IMPL" ]
 
   sources = [
+    "assistant_interaction_logger.cc",
+    "assistant_interaction_logger.h",
     "assistant_manager_service.h",
     "fake_assistant_manager_service_impl.cc",
     "fake_assistant_manager_service_impl.h",

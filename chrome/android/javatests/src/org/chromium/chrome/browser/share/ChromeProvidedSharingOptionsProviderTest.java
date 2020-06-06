@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.share;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 
 import android.app.Activity;
 import android.support.test.filters.MediumTest;
@@ -68,7 +68,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
                 /*shareParams=*/null, /*shareStartTime=*/0);
 
         // Return false to indicate printing is disabled.
-        Mockito.when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(false);
+        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(false);
     }
 
     @Test
@@ -113,7 +113,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
             {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
     public void
     createPropertyModels_printingEnabled_includesPrinting() {
-        Mockito.when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(true);
+        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
 
         List<PropertyModel> propertyModels =
                 mChromeProvidedSharingOptionsProvider.createPropertyModels(sAllContentTypes);
@@ -133,7 +133,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
             {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
     public void
     createPropertyModels_filtersByContentType() {
-        Mockito.when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(true);
+        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
 
         List<PropertyModel> propertyModels =
                 mChromeProvidedSharingOptionsProvider.createPropertyModels(
@@ -154,7 +154,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
             {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
     public void
     createPropertyModels_multipleTypes_filtersByContentType() {
-        Mockito.when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(true);
+        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
 
         List<PropertyModel> propertyModels =
                 mChromeProvidedSharingOptionsProvider.createPropertyModels(

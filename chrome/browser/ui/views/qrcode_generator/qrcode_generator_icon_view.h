@@ -35,6 +35,10 @@ class QRCodeGeneratorIconView : public PageActionIconView {
   const char* GetClassName() const override;
 
  private:
+  // Flag set when OnExecuting() is called and cleared after bubble is created.
+  // Avoids losing ink drop on, or flickering, the PageActionIconView.
+  bool bubble_requested_;
+
   DISALLOW_COPY_AND_ASSIGN(QRCodeGeneratorIconView);
 };
 

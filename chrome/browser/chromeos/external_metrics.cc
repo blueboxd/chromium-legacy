@@ -48,14 +48,13 @@ bool CheckLinearValues(const std::string& name, int maximum) {
   return CheckValues(name, 1, maximum, maximum + 1);
 }
 
-// The file from which externally-reported metrics are read.
-constexpr char kEventsFilePath[] = "/var/lib/metrics/uma-events";
-
 // Default interval between externally-reported metrics being collected.
 constexpr base::TimeDelta kDefaultCollectionInterval =
     base::TimeDelta::FromSeconds(30);
 
 }  // namespace
+
+constexpr char ExternalMetrics::kEventsFilePath[];
 
 ExternalMetrics::ExternalMetrics()
     : uma_events_file_(kEventsFilePath),

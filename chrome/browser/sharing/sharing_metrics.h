@@ -13,17 +13,6 @@
 
 enum class SharingDeviceRegistrationResult;
 
-// Result of VAPID key creation during Sharing registration.
-// These values are logged to UMA. Entries should not be renumbered and numeric
-// values should never be reused. Please keep in sync with
-// "SharingVapidKeyCreationResult" in src/tools/metrics/histograms/enums.xml.
-enum class SharingVapidKeyCreationResult {
-  kSuccess = 0,
-  kGenerateECKeyFailed = 1,
-  kExportPrivateKeyFailed = 2,
-  kMaxValue = kExportPrivateKeyFailed,
-};
-
 // The types of dialogs that can be shown for sharing features.
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with
@@ -70,10 +59,6 @@ void LogSharingRegistrationResult(SharingDeviceRegistrationResult result);
 // Logs the |result| to UMA. This should be called after attempting un-register
 // Sharing.
 void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result);
-
-// Logs the |result| to UMA. This should be called after attempting to create
-// VAPID keys.
-void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result);
 
 // Logs the number of available devices that are about to be shown in a UI for
 // picking a device to start a sharing functionality. The |histogram_suffix|

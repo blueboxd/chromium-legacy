@@ -119,18 +119,6 @@ const content::WebContents* PasswordBubbleViewBase::GetWebContents() const {
   return controller->GetWebContents();
 }
 
-base::string16 PasswordBubbleViewBase::GetWindowTitle() const {
-  const PasswordBubbleControllerBase* controller = GetController();
-  DCHECK(controller);
-  return controller->GetTitle();
-}
-
-bool PasswordBubbleViewBase::ShouldShowWindowTitle() const {
-  const PasswordBubbleControllerBase* controller = GetController();
-  DCHECK(controller);
-  return !controller->GetTitle().empty();
-}
-
 PasswordBubbleViewBase::PasswordBubbleViewBase(
     content::WebContents* web_contents,
     views::View* anchor_view,
@@ -149,6 +137,14 @@ PasswordBubbleViewBase::PasswordBubbleViewBase(
 PasswordBubbleViewBase::~PasswordBubbleViewBase() {
   if (g_manage_passwords_bubble_ == this)
     g_manage_passwords_bubble_ = nullptr;
+}
+
+void PasswordBubbleViewBase::Init() {
+  LocationBarBubbleDelegateView::Init();
+  const PasswordBubbleControllerBase* controller = GetController();
+  DCHECK(controller);
+  SetTitle(controller->GetTitle());
+  SetShowTitle(!controller->GetTitle().empty());
 }
 
 void PasswordBubbleViewBase::OnWidgetClosing(views::Widget* widget) {

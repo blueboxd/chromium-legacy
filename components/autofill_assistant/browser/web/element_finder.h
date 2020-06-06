@@ -95,6 +95,10 @@ class ElementFinder : public WebControllerWorker {
     void AddRegexpFilter(const SelectorProto::TextFilter& filter,
                          const std::string& property);
 
+    // Declares and initializes a variable containing a RegExp object that
+    // correspond to [filter] and returns the variable name.
+    std::string AddRegexpInstance(const SelectorProto::TextFilter& filter);
+
     // Returns the name of a new unique variable.
     std::string DeclareVariable();
 

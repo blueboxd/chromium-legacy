@@ -26,6 +26,7 @@ XRViewerPose::XRViewerPose(XRSession* session,
 
 void XRViewerPose::Trace(Visitor* visitor) const {
   visitor->Trace(views_);
+  visitor->Trace(camera_views_);
   XRPose::Trace(visitor);
 }
 

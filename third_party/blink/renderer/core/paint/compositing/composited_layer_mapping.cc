@@ -447,11 +447,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
         graphics_layer_->SetContentsToCcLayer(
             remote->GetCcLayer(), remote->WebLayerHasFixedContentsOpaque());
       }
-      PaintLayerCompositor* inner_compositor =
-          PaintLayerCompositor::FrameContentsCompositor(
-              ToLayoutEmbeddedContent(layout_object));
-      if (inner_compositor && inner_compositor->RootLayerAttachmentDirty())
-        layer_config_changed = true;
     }
   } else if (IsA<LayoutVideo>(layout_object)) {
     auto* media_element = To<HTMLMediaElement>(layout_object.GetNode());
@@ -1423,7 +1418,7 @@ bool CompositedLayerMapping::PaintsChildren() const {
 
 static bool IsCompositedPlugin(LayoutObject& layout_object) {
   return layout_object.IsEmbeddedObject() &&
-         ToLayoutEmbeddedObject(layout_object).RequiresAcceleratedCompositing();
+         layout_object.AdditionalCompositingReasons();
 }
 
 bool CompositedLayerMapping::HasVisibleNonCompositingDescendant(

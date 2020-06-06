@@ -4,6 +4,11 @@
 
 #import "ios/chrome/browser/translate/fake_translate_infobar_delegate.h"
 
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/translate/core/browser/mock_translate_client.h"
+#include "components/translate/core/browser/mock_translate_infobar_delegate.h"
+#include "components/translate/core/browser/mock_translate_ranker.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -26,7 +31,9 @@ FakeTranslateInfoBarDelegate::FakeTranslateInfoBarDelegate(
                                           original_language,
                                           target_language,
                                           error_type,
-                                          triggered_from_menu) {}
+                                          triggered_from_menu),
+      original_language_(original_language.begin(), original_language.end()),
+      target_language_(target_language.begin(), target_language.end()) {}
 
 FakeTranslateInfoBarDelegate::~FakeTranslateInfoBarDelegate() {
   for (auto& observer : observers_) {
@@ -48,6 +55,14 @@ void FakeTranslateInfoBarDelegate::TriggerOnTranslateStepChanged(
   for (auto& observer : observers_) {
     observer.OnTranslateStepChanged(step, error_type);
   }
+}
+
+base::string16 FakeTranslateInfoBarDelegate::original_language_name() const {
+  return original_language_;
+}
+
+base::string16 FakeTranslateInfoBarDelegate::target_language_name() const {
+  return target_language_;
 }
 
 FakeTranslateInfoBarDelegateFactory::FakeTranslateInfoBarDelegateFactory() {

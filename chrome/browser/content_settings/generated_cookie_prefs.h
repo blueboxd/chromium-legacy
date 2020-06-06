@@ -17,10 +17,8 @@ namespace content_settings {
 extern const char kCookieSessionOnly[];
 extern const char kCookiePrimarySetting[];
 
-// Must be kept in sync with the CookiesControl enum located in
+// Must be kept in sync with the enum of the same name located in
 // chrome/browser/resources/settings/privacy_page/cookies_page.js
-// TODO(crbug.com/1063265): Rename JS enum to match this one when the generated
-//    preference is used in production code.
 enum class CookiePrimarySetting {
   ALLOW_ALL,
   BLOCK_THIRD_PARTY_INCOGNITO,

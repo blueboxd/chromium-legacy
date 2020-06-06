@@ -687,7 +687,17 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
     if (box_child_fragment.IsColumnBox())
       continue;
 
-    child_fragment.GetLayoutObject()->Paint(paint_info_for_descendants);
+    auto* layout_object = child_fragment.GetLayoutObject();
+    DCHECK(layout_object);
+    if (child_fragment.IsPaintedAtomically() &&
+        child_fragment.IsLegacyLayoutRoot()) {
+      ObjectPainter(*layout_object)
+          .PaintAllPhasesAtomically(paint_info_for_descendants);
+    } else {
+      // TODO(ikilpatrick): Once FragmentItem ships we should call the
+      // NGBoxFragmentPainter directly for NG objects.
+      layout_object->Paint(paint_info_for_descendants);
+    }
   }
 }
 

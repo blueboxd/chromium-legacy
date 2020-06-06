@@ -31,6 +31,14 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
                       const gfx::ImageFamily& image,
                       bool refresh_shell_icon_cache);
 
+// Finds shortcuts in |shortcut_path| that match profile for |profile_path| and
+// extension with title |shortcut_name|.
+// If |shortcut_name| is empty, finds all shortcuts matching |profile_path|.
+std::vector<base::FilePath> FindAppShortcutsByProfileAndTitle(
+    const base::FilePath& shortcut_path,
+    const base::FilePath& profile_path,
+    const base::string16& shortcut_name);
+
 base::FilePath GetIconFilePath(const base::FilePath& web_app_path,
                                const base::string16& title);
 

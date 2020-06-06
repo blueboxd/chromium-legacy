@@ -28,8 +28,10 @@ source_set("credential_provider") {
     "//components/password_manager/core/browser:affiliation",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/signin",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/credential_provider",
+    "//ios/public/provider/chrome/browser/signin",
     "//url",
   ]
   libs = [
@@ -58,9 +60,13 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/autofill/core/common",
     "//components/password_manager/core/browser:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:test_support",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/credential_provider",
     "//ios/chrome/common/credential_provider:ui",
+    "//ios/web/public/test",
     "//testing/gtest",
     "//url",
   ]

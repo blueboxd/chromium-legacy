@@ -94,14 +94,17 @@ class ReusingTextShaper final {
         ShapeResult::CreateEmpty(*reusable_shape_results.front());
     unsigned offset = start_offset;
     for (const ShapeResult* reusable_shape_result : reusable_shape_results) {
-      DCHECK_LE(offset, reusable_shape_result->StartIndex());
+      // In case of pre-wrap having break opportunity after leading space,
+      // |offset| can be greater than |reusable_shape_result->StartIndex()|.
+      // e.g. <div style="white-space:pre">&nbsp; abc</div>, deleteChar(0, 1)
+      // See xternal/wpt/editing/run/delete.html?993-993
       if (offset < reusable_shape_result->StartIndex()) {
         AppendShapeResult(
             *Reshape(start_item, offset, reusable_shape_result->StartIndex()),
             shape_result.get());
         offset = shape_result->EndIndex();
       }
-      DCHECK_EQ(offset, reusable_shape_result->StartIndex());
+      DCHECK_LT(offset, reusable_shape_result->EndIndex());
       DCHECK(shape_result->NumCharacters() == 0 ||
              shape_result->EndIndex() == offset);
       reusable_shape_result->CopyRange(

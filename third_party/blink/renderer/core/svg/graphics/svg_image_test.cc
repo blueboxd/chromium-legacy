@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
@@ -71,29 +70,9 @@ class SVGImageTest : public testing::Test, private ScopedMockOverlayScrollbars {
                 Image::kSyncDecode);
   }
 
-  // Loads the image from |file_name|, computes features into |features|,
-  // and returns the classification result.
-  bool GetFeaturesAndClassification(
-      const String& file_name,
-      DarkModeImageClassifier::Features* features) {
-    CHECK(features);
-    SCOPED_TRACE(file_name);
-    LoadUsingFileName(file_name);
-    DarkModeImageClassifier dark_mode_image_classifier;
-    dark_mode_image_classifier.SetImageType(
-        DarkModeImageClassifier::ImageType::kSvg);
-    auto features_or_null = dark_mode_image_classifier.GetFeatures(
-        image_.get(), FloatRect(0, 0, image_->width(), image_->height()));
-    CHECK(features_or_null.has_value());
-    (*features) = features_or_null.value();
-    DarkModeClassification result =
-        dark_mode_generic_classifier_.ClassifyWithFeatures(*features);
-    return result == DarkModeClassification::kApplyFilter;
-  }
-
-  DarkModeGenericClassifier* classifier() {
-    return &dark_mode_generic_classifier_;
-  }
+  // TODO(prashant.n): This will be removed in follow-up cl.
+  Image* GetLoadedImage() { return image_.get(); }
+  DarkModeImageClassifier* classifier() { return &dark_mode_image_classifier_; }
 
  private:
   class PauseControlImageObserver
@@ -122,7 +101,7 @@ class SVGImageTest : public testing::Test, private ScopedMockOverlayScrollbars {
   };
   Persistent<PauseControlImageObserver> observer_;
   scoped_refptr<SVGImage> image_;
-  DarkModeGenericClassifier dark_mode_generic_classifier_;
+  DarkModeImageClassifier dark_mode_image_classifier_;
 };
 
 const char kAnimatedDocument[] =
@@ -276,12 +255,18 @@ TEST_F(SVGImageTest, DarkModeClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA
-  EXPECT_TRUE(GetFeaturesAndClassification("/svg/animations/path-animation.svg",
-                                           &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  LoadUsingFileName("/svg/animations/path-animation.svg");
+  classifier()->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
+  features = classifier()
+                 ->GetFeatures(GetLoadedImage(),
+                               FloatRect(0, 0, GetLoadedImage()->width(),
+                                         GetLoadedImage()->height()))
+                 .value();
+  EXPECT_EQ(classifier()->ClassifyWithFeatures(features),
+            DarkModeClassification::kApplyFilter);
+  EXPECT_EQ(classifier()->ClassifyUsingDecisionTree(features),
             DarkModeClassification::kApplyFilter);
   EXPECT_FALSE(features.is_colorful);
-  EXPECT_TRUE(features.is_svg);
   EXPECT_NEAR(0.0625f, features.color_buckets_ratio, kEpsilon);
   EXPECT_NEAR(0.968889f, features.transparency_ratio, kEpsilon);
   EXPECT_NEAR(0.02f, features.background_ratio, kEpsilon);
@@ -291,12 +276,19 @@ TEST_F(SVGImageTest, DarkModeClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA.
-  EXPECT_TRUE(GetFeaturesAndClassification(
-      "/svg/stroke/zero-length-path-linecap-rendering.svg", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  LoadUsingFileName("/svg/stroke/zero-length-path-linecap-rendering.svg");
+  classifier()->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
+  features = classifier()
+                 ->GetFeatures(GetLoadedImage(),
+                               FloatRect(0, 0, GetLoadedImage()->width(),
+                                         GetLoadedImage()->height()))
+                 .value();
+  EXPECT_EQ(classifier()->ClassifyWithFeatures(features),
+            DarkModeClassification::kApplyFilter);
+
+  EXPECT_EQ(classifier()->ClassifyUsingDecisionTree(features),
             DarkModeClassification::kApplyFilter);
   EXPECT_TRUE(features.is_colorful);
-  EXPECT_TRUE(features.is_svg);
   EXPECT_NEAR(0.00170898f, features.color_buckets_ratio, kEpsilon);
   EXPECT_NEAR(0.0f, features.transparency_ratio, kEpsilon);
   EXPECT_NEAR(0.0f, features.background_ratio, kEpsilon);
@@ -306,12 +298,18 @@ TEST_F(SVGImageTest, DarkModeClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA.
-  EXPECT_TRUE(GetFeaturesAndClassification(
-      "/svg/foreignObject/fixed-position.svg", &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  LoadUsingFileName("/svg/foreignObject/fixed-position.svg");
+  classifier()->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
+  features = classifier()
+                 ->GetFeatures(GetLoadedImage(),
+                               FloatRect(0, 0, GetLoadedImage()->width(),
+                                         GetLoadedImage()->height()))
+                 .value();
+  EXPECT_EQ(classifier()->ClassifyWithFeatures(features),
+            DarkModeClassification::kApplyFilter);
+  EXPECT_EQ(classifier()->ClassifyUsingDecisionTree(features),
             DarkModeClassification::kApplyFilter);
   EXPECT_TRUE(features.is_colorful);
-  EXPECT_TRUE(features.is_svg);
   EXPECT_NEAR(0.000244141f, features.color_buckets_ratio, kEpsilon);
   EXPECT_NEAR(0.777778f, features.transparency_ratio, kEpsilon);
   EXPECT_NEAR(0.0f, features.background_ratio, kEpsilon);
@@ -321,12 +319,18 @@ TEST_F(SVGImageTest, DarkModeClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA.
-  EXPECT_TRUE(GetFeaturesAndClassification("/svg/clip-path/clip-in-mask.svg",
-                                           &features));
-  EXPECT_EQ(classifier()->ClassifyUsingDecisionTreeForTesting(features),
+  LoadUsingFileName("/svg/clip-path/clip-in-mask.svg");
+  classifier()->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
+  features = classifier()
+                 ->GetFeatures(GetLoadedImage(),
+                               FloatRect(0, 0, GetLoadedImage()->width(),
+                                         GetLoadedImage()->height()))
+                 .value();
+  EXPECT_EQ(classifier()->ClassifyWithFeatures(features),
+            DarkModeClassification::kApplyFilter);
+  EXPECT_EQ(classifier()->ClassifyUsingDecisionTree(features),
             DarkModeClassification::kApplyFilter);
   EXPECT_FALSE(features.is_colorful);
-  EXPECT_TRUE(features.is_svg);
   EXPECT_NEAR(0.0625f, features.color_buckets_ratio, kEpsilon);
   EXPECT_NEAR(0.888889f, features.transparency_ratio, kEpsilon);
   EXPECT_NEAR(0.11f, features.background_ratio, kEpsilon);

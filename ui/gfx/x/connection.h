@@ -5,6 +5,7 @@
 #ifndef UI_GFX_X_CONNECTION_H_
 #define UI_GFX_X_CONNECTION_H_
 
+#include <list>
 #include <queue>
 
 #include "base/component_export.h"
@@ -23,7 +24,23 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
     virtual void DispatchXEvent(XEvent* event) = 0;
 
    protected:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
+  };
+
+  struct Event {
+    Event(base::Optional<uint32_t> sequence, const XEvent& xlib_event);
+    Event(xcb_generic_event_t* xcb_event, x11::Connection* connection);
+
+    Event(const Event&) = delete;
+    Event& operator=(const Event&) = delete;
+
+    Event(Event&& event);
+    Event& operator=(Event&& event);
+
+    ~Event();
+
+    base::Optional<uint32_t> sequence;
+    XEvent xlib_event;
   };
 
   // Gets or creates the singeton connection.
@@ -47,7 +64,28 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   const Depth* default_root_depth() const { return default_root_depth_; }
   const VisualType* default_root_visual() const { return defualt_root_visual_; }
 
+  template <typename T>
+  T GenerateId() {
+    return static_cast<T>(xcb_generate_id(XcbConnection()));
+  }
+
+  // Write all requests to the socket.
+  void Flush();
+
+  // Flush and block until the server has responded to all requests.
+  void Sync();
+
+  // Read all responses from the socket without blocking.
+  void ReadResponses();
+
+  // Are there any events, errors, or replies already buffered?
+  bool HasPendingResponses() const;
+
+  // Dispatch any buffered events, errors, or replies.
   void Dispatch(Delegate* delegate);
+
+  // Access the event buffer.  Clients can add, delete, or modify events.
+  std::list<Event>& events() { return events_; }
 
  private:
   friend class FutureBase;
@@ -63,6 +101,8 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   void AddRequest(unsigned int sequence, FutureBase::ResponseCallback callback);
 
+  bool HasNextResponse() const;
+
   XDisplay* const display_;
 
   uint32_t extended_max_request_length_ = 0;
@@ -71,6 +111,8 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   const Screen* default_screen_ = nullptr;
   const Depth* default_root_depth_ = nullptr;
   const VisualType* defualt_root_visual_ = nullptr;
+
+  std::list<Event> events_;
 
   std::queue<Request> requests_;
 };

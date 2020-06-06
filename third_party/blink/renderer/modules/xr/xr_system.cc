@@ -168,9 +168,9 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
   }
 }
 
-bool HasRequiredFeaturePolicy(const Document* doc,
+bool HasRequiredFeaturePolicy(const ExecutionContext* context,
                               device::mojom::XRSessionFeature feature) {
-  if (!doc)
+  if (!context)
     return false;
 
   switch (feature) {
@@ -184,8 +184,9 @@ bool HasRequiredFeaturePolicy(const Document* doc,
     case device::mojom::XRSessionFeature::HIT_TEST:
     case device::mojom::XRSessionFeature::LIGHT_ESTIMATION:
     case device::mojom::XRSessionFeature::ANCHORS:
-      return doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr,
-                                   ReportOptions::kReportOnFailure);
+      return context->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kWebXr,
+          ReportOptions::kReportOnFailure);
   }
 }
 
@@ -846,10 +847,8 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
     const String& mode,
     ExceptionState& exception_state,
     bool throw_on_unsupported) {
-  LocalFrame* frame = GetFrame();
-  Document* doc = frame ? frame->GetDocument() : nullptr;
-  if (!doc) {
-    // Reject if the frame or document is inaccessible.
+  if (!GetExecutionContext()) {
+    // Reject if the context is inaccessible.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kNavigatorDetachedError);
     return ScriptPromise();  // Will be rejected by generated bindings
@@ -864,7 +863,7 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
                                                         throw_on_unsupported);
 
   if (session_mode == device::mojom::blink::XRSessionMode::kImmersiveAr &&
-      !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
+      !RuntimeEnabledFeatures::WebXRARModuleEnabled(GetExecutionContext())) {
     DVLOG(2) << __func__
              << ": Immersive AR session is only supported if WebXRARModule "
                 "feature is enabled";
@@ -878,8 +877,9 @@ ScriptPromise XRSystem::InternalIsSessionSupported(
     return promise;
   }
 
-  if (!doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr,
-                             ReportOptions::kReportOnFailure)) {
+  if (!GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kWebXr,
+          ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
     query->RejectWithSecurityError(kFeaturePolicyBlocked, &exception_state);
@@ -1058,7 +1058,8 @@ XRSystem::RequestedXRSessionFeatureSet XRSystem::ParseRequestedFeatures(
                                            "' is not supported for mode: " +
                                            SessionModeToString(session_mode));
         result.invalid_features = true;
-      } else if (!HasRequiredFeaturePolicy(doc, feature_enum.value())) {
+      } else if (!HasRequiredFeaturePolicy(GetExecutionContext(),
+                                           feature_enum.value())) {
         AddConsoleMessage(error_level,
                           "Feature '" + feature_string +
                               "' is not permitted by feature policy");
@@ -1149,7 +1150,7 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
   }
 
   for (const auto& feature : default_features) {
-    if (HasRequiredFeaturePolicy(doc, feature)) {
+    if (HasRequiredFeaturePolicy(GetExecutionContext(), feature)) {
       required_features.valid_features.insert(feature);
     } else {
       DVLOG(2) << __func__
@@ -1191,10 +1192,9 @@ ScriptPromise XRSystem::requestSession(ScriptState* script_state,
 // changed. For example, if a new physical device was connected to the system,
 // it might be able to support immersive sessions, where it couldn't before.
 void XRSystem::OnDeviceChanged() {
-  LocalFrame* frame = GetFrame();
-  Document* doc = frame ? frame->GetDocument() : nullptr;
-  if (doc &&
-      doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr)) {
+  ExecutionContext* context = GetExecutionContext();
+  if (context &&
+      context->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr)) {
     DispatchEvent(*blink::Event::Create(event_type_names::kDevicechange));
   }
 }

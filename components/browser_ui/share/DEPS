@@ -1,5 +1,6 @@
 include_rules = [
   "+components/dom_distiller/core/android",
   "+content/public/android",
+  "+content/public/test/android/javatests",
   "+ui/android",
 ]

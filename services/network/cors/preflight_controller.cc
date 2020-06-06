@@ -295,8 +295,14 @@ class PreflightController::PreflightLoader final {
 
     if (!(original_request_.load_flags & net::LOAD_DISABLE_CACHE) &&
         !detected_error_status) {
+      const net::NetworkIsolationKey& network_isolation_key =
+          original_request_.trusted_params.has_value()
+              ? original_request_.trusted_params->isolation_info
+                    .network_isolation_key()
+              : net::NetworkIsolationKey();
       controller_->AppendToCache(*original_request_.request_initiator,
-                                 original_request_.url, std::move(result));
+                                 original_request_.url, network_isolation_key,
+                                 std::move(result));
     }
 
     std::move(completion_callback_)
@@ -400,11 +406,15 @@ void PreflightController::PerformPreflightCheck(
     int32_t process_id) {
   DCHECK(request.request_initiator);
 
+  const net::NetworkIsolationKey& network_isolation_key =
+      request.trusted_params.has_value()
+          ? request.trusted_params->isolation_info.network_isolation_key()
+          : net::NetworkIsolationKey();
   if (!RetrieveCacheFlags(request.load_flags) && !request.is_external_request &&
       cache_.CheckIfRequestCanSkipPreflight(
-          request.request_initiator.value(), request.url,
-          net::NetworkIsolationKey::Todo(), request.credentials_mode,
-          request.method, request.headers, request.is_revalidating)) {
+          request.request_initiator.value(), request.url, network_isolation_key,
+          request.credentials_mode, request.method, request.headers,
+          request.is_revalidating)) {
     std::move(callback).Run(net::OK, base::nullopt);
     return;
   }
@@ -424,9 +434,9 @@ void PreflightController::RemoveLoader(PreflightLoader* loader) {
 void PreflightController::AppendToCache(
     const url::Origin& origin,
     const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
     std::unique_ptr<PreflightResult> result) {
-  cache_.AppendEntry(origin, url, net::NetworkIsolationKey::Todo(),
-                     std::move(result));
+  cache_.AppendEntry(origin, url, network_isolation_key, std::move(result));
 }
 
 }  // namespace cors

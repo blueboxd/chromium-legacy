@@ -648,11 +648,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "corner-shortcuts",
-    "owners": [ "baileyberro", "cros-peripherals" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "cors-for-content-scripts",
     "owners": [ "lukasza" ],
     "expiry_milestone": 85

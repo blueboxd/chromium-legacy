@@ -234,24 +234,24 @@ void XDragDropClient::ProcessMouseMove(const gfx::Point& screen_point,
   // Find the current window the cursor is over.
   XID dest_window = FindWindowFor(screen_point);
 
-  if (source_current_window_ != dest_window) {
-    if (source_current_window_ != x11::None)
-      SendXdndLeave(source_current_window_);
+  if (target_current_window_ != dest_window) {
+    if (target_current_window_ != x11::None)
+      SendXdndLeave(target_current_window_);
 
-    source_current_window_ = dest_window;
+    target_current_window_ = dest_window;
     waiting_on_status_ = false;
     next_position_message_.reset();
     status_received_since_enter_ = false;
     negotiated_operation_ = DragDropTypes::DRAG_NONE;
 
-    if (source_current_window_ != x11::None) {
+    if (target_current_window_ != x11::None) {
       std::vector<x11::Atom> targets;
       source_provider_->RetrieveTargets(&targets);
-      SendXdndEnter(source_current_window_, targets);
+      SendXdndEnter(target_current_window_, targets);
     }
   }
 
-  if (source_current_window_ != x11::None) {
+  if (target_current_window_ != x11::None) {
     if (waiting_on_status_) {
       next_position_message_ =
           std::make_unique<std::pair<gfx::Point, unsigned long>>(screen_point,
@@ -346,7 +346,7 @@ void XDragDropClient::OnXdndStatus(const XClientMessageEvent& event) {
 
   XID source_window = event.data.l[0];
 
-  if (source_window != source_current_window_)
+  if (source_window != target_current_window_)
     return;
 
   if (source_state_ != SourceState::kPendingDrop &&
@@ -417,16 +417,16 @@ void XDragDropClient::OnXdndDrop(const XClientMessageEvent& event) {
 void XDragDropClient::OnXdndFinished(const XClientMessageEvent& event) {
   DVLOG(1) << "OnXdndFinished";
   XID source_window = event.data.l[0];
-  if (source_current_window_ != source_window)
+  if (target_current_window_ != source_window)
     return;
 
   // Clear |negotiated_operation_| if the drag was rejected.
   if ((event.data.l[1] & 1) == 0)
     negotiated_operation_ = DragDropTypes::DRAG_NONE;
 
-  // Clear |source_current_window_| to avoid sending XdndLeave upon ending the
+  // Clear |target_current_window_| to avoid sending XdndLeave upon ending the
   // move loop.
-  source_current_window_ = x11::None;
+  target_current_window_ = x11::None;
   EndMoveLoop();
 }
 
@@ -441,7 +441,7 @@ void XDragDropClient::OnSelectionNotify(const XSelectionEvent& xselection) {
 }
 
 void XDragDropClient::InitDrag(int operation, const OSExchangeData* data) {
-  source_current_window_ = x11::None;
+  target_current_window_ = x11::None;
   source_state_ = SourceState::kOther;
   waiting_on_status_ = false;
   next_position_message_.reset();
@@ -517,7 +517,7 @@ void XDragDropClient::HandleMouseReleased() {
     return;
   }
 
-  if (source_current_window_ != x11::None) {
+  if (target_current_window_ != x11::None) {
     if (waiting_on_status_) {
       if (status_received_since_enter_) {
         // If we are waiting for an XdndStatus message, we need to wait for it
@@ -544,8 +544,12 @@ void XDragDropClient::HandleMouseReleased() {
 
       // We have negotiated an action with the other end.
       source_state_ = SourceState::kDropped;
-      SendXdndDrop(source_current_window_);
+      SendXdndDrop(target_current_window_);
       return;
+    } else {
+      // No transfer is negotiated.  We need to tell the target window that we
+      // are leaving.
+      SendXdndLeave(target_current_window_);
     }
   }
 
@@ -553,9 +557,9 @@ void XDragDropClient::HandleMouseReleased() {
 }
 
 void XDragDropClient::HandleMoveLoopEnded() {
-  if (source_current_window_ != x11::None) {
-    SendXdndLeave(source_current_window_);
-    source_current_window_ = x11::None;
+  if (target_current_window_ != x11::None) {
+    SendXdndLeave(target_current_window_);
+    target_current_window_ = x11::None;
   }
   ResetDragContext();
   StopRepeatMouseMoveTimer();

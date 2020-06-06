@@ -12,8 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.NativeMethods;
 
 /**
- * PrefServiceBridge is a singleton which provides read and write access to native PrefService for
- * preferences enumerated in chrome/browser/android/preferences/prefs.h.
+ * PrefServiceBridge is a singleton which provides read and write access to native PrefService.
  */
 public class PrefServiceBridge {
     // Singleton constructor. Do not call directly unless for testing purpose.
@@ -36,7 +35,7 @@ public class PrefServiceBridge {
     /**
      * @param preference The name of the preference.
      */
-    public void clearPref(@Pref int preference) {
+    public void clearPref(@NonNull String preference) {
         PrefServiceBridgeJni.get().clearPref(preference);
     }
 
@@ -44,7 +43,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @return Whether the specified preference is enabled.
      */
-    public boolean getBoolean(@Pref int preference) {
+    public boolean getBoolean(@NonNull String preference) {
         return PrefServiceBridgeJni.get().getBoolean(preference);
     }
 
@@ -52,7 +51,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @param value The value the specified preference will be set to.
      */
-    public void setBoolean(@Pref int preference, boolean value) {
+    public void setBoolean(@NonNull String preference, boolean value) {
         PrefServiceBridgeJni.get().setBoolean(preference, value);
     }
 
@@ -60,7 +59,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @return value The value of the specified preference.
      */
-    public int getInteger(@Pref int preference) {
+    public int getInteger(@NonNull String preference) {
         return PrefServiceBridgeJni.get().getInteger(preference);
     }
 
@@ -68,7 +67,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @param value The value the specified preference will be set to.
      */
-    public void setInteger(@Pref int preference, int value) {
+    public void setInteger(@NonNull String preference, int value) {
         PrefServiceBridgeJni.get().setInteger(preference, value);
     }
 
@@ -77,7 +76,7 @@ public class PrefServiceBridge {
      * @return value The value of the specified preference.
      */
     @NonNull
-    public String getString(@Pref int preference) {
+    public String getString(@NonNull String preference) {
         return PrefServiceBridgeJni.get().getString(preference);
     }
 
@@ -85,7 +84,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @param value The value the specified preference will be set to.
      */
-    public void setString(@Pref int preference, @NonNull String value) {
+    public void setString(@NonNull String preference, @NonNull String value) {
         PrefServiceBridgeJni.get().setString(preference, value);
     }
 
@@ -93,7 +92,7 @@ public class PrefServiceBridge {
      * @param preference The name of the preference.
      * @return Whether the specified preference is managed.
      */
-    public boolean isManagedPreference(@Pref int preference) {
+    public boolean isManagedPreference(@NonNull String preference) {
         return PrefServiceBridgeJni.get().isManagedPreference(preference);
     }
 
@@ -104,13 +103,13 @@ public class PrefServiceBridge {
 
     @NativeMethods
     interface Natives {
-        void clearPref(int preference);
-        boolean getBoolean(int preference);
-        void setBoolean(int preference, boolean value);
-        int getInteger(int preference);
-        void setInteger(int preference, int value);
-        String getString(int preference);
-        void setString(int preference, String value);
-        boolean isManagedPreference(int preference);
+        void clearPref(String preference);
+        boolean getBoolean(String preference);
+        void setBoolean(String preference, boolean value);
+        int getInteger(String preference);
+        void setInteger(String preference, int value);
+        String getString(String preference);
+        void setString(String preference, String value);
+        boolean isManagedPreference(String preference);
     }
 }

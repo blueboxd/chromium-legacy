@@ -463,6 +463,14 @@ Rules can only be added before each target process is spawned, and cannot be
 modified while a target is running, but different targets can have different
 rules.
 
+### Diagnostics
+
+In Chromium, the policies associated with active processes can be viewed at
+chrome://sandbox. Tracing of the `sandbox` category will output the policy used
+when a process is launched. Tracing can be enabled using chrome://tracing or by
+using the `--trace-startup=-*,disabled-by-default-sandbox` command line flag.
+Trace output can be investigated with `//tools/win/trace-sandbox-viewer.py`.
+
 ## Target bootstrapping
 
 Targets do not start executing with the restrictions specified by policy. They

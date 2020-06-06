@@ -6,6 +6,7 @@
 
 #include <X11/Xlib-xcb.h>
 #include <X11/Xlib.h>
+#include <X11/Xlibint.h>
 #include <xcb/xcb.h>
 
 #include <algorithm>
@@ -51,6 +52,56 @@ XDisplay* OpenNewXDisplay() {
 
 }  // namespace
 
+Connection::Event::Event(base::Optional<uint32_t> sequence,
+                         const XEvent& xlib_event)
+    : sequence(sequence), xlib_event(xlib_event) {}
+
+Connection::Event::Event(xcb_generic_event_t* xcb_event,
+                         x11::Connection* connection) {
+  XDisplay* display = connection->display();
+
+  sequence = xcb_event->full_sequence;
+  // KeymapNotify events are the only events that don't have a sequence.
+  if ((xcb_event->response_type & 0x7f) != x11::KeymapNotifyEvent::opcode) {
+    // Rewrite the sequence to the last seen sequence so that Xlib doesn't
+    // think the sequence wrapped around.
+    xcb_event->sequence = XLastKnownRequestProcessed(display);
+
+    // On the wire, events are 32 bytes except for generic events which are
+    // trailed by additional data.  XCB inserts an extended 4-byte sequence
+    // between the 32-byte event and the additional data, so we need to shift
+    // the additional data over by 4 bytes so the event is back in its wire
+    // format, which is what Xlib and XProto are expecting.
+    if ((xcb_event->response_type & 0x7f) == x11::GeGenericEvent::opcode) {
+      auto* ge = reinterpret_cast<xcb_ge_event_t*>(xcb_event);
+      memmove(&ge->full_sequence, &ge[1], ge->length * 4);
+    }
+  }
+
+  _XEnq(display, reinterpret_cast<xEvent*>(xcb_event));
+  XNextEvent(display, &xlib_event);
+  if (xlib_event.type == x11::GeGenericEvent::opcode)
+    XGetEventData(display, &xlib_event.xcookie);
+}
+
+Connection::Event::Event(Event&& event) {
+  xlib_event = event.xlib_event;
+  sequence = event.sequence;
+  memset(&event, 0, sizeof(Event));
+}
+
+Connection::Event& Connection::Event::operator=(Event&& event) {
+  xlib_event = event.xlib_event;
+  sequence = event.sequence;
+  memset(&event, 0, sizeof(Event));
+  return *this;
+}
+
+Connection::Event::~Event() {
+  if (xlib_event.type == x11::GeGenericEvent::opcode && xlib_event.xcookie.data)
+    XFreeEventData(xlib_event.xcookie.display, &xlib_event.xcookie);
+}
+
 Connection* Connection::Get() {
   static Connection* instance = new Connection;
   return instance;
@@ -59,6 +110,8 @@ Connection* Connection::Get() {
 Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
   if (!display_)
     return;
+
+  XSetEventQueueOwner(display_, XCBOwnsEventQueue);
 
   setup_ = std::make_unique<Setup>(Read<Setup>(
       reinterpret_cast<const uint8_t*>(xcb_get_setup(XcbConnection()))));
@@ -101,10 +154,35 @@ Connection::Request::Request(Request&& other)
 
 Connection::Request::~Request() = default;
 
+bool Connection::HasNextResponse() const {
+  return !requests_.empty() &&
+         CompareSequenceIds(XLastKnownRequestProcessed(display_),
+                            requests_.front().sequence) >= 0;
+}
+
+void Connection::Flush() {
+  XFlush(display_);
+}
+
+void Connection::Sync() {
+  GetInputFocus({}).Sync();
+}
+
+void Connection::ReadResponses() {
+  while (auto* event = xcb_poll_for_event(XcbConnection())) {
+    events_.emplace_back(event, this);
+    free(event);
+  }
+}
+
+bool Connection::HasPendingResponses() const {
+  return !events_.empty() || HasNextResponse();
+}
+
 void Connection::Dispatch(Delegate* delegate) {
   DCHECK(display_);
 
-  auto process_next_response = [&]() {
+  auto process_next_response = [&] {
     xcb_connection_t* connection = XGetXCBConnection(display_);
     auto request = std::move(requests_.front());
     requests_.pop();
@@ -118,26 +196,27 @@ void Connection::Dispatch(Delegate* delegate) {
              FutureBase::RawError{raw_error});
   };
 
-  auto process_next_event = [&]() {
-    XEvent xevent;
-    XNextEvent(display_, &xevent);
-    delegate->DispatchXEvent(&xevent);
+  auto process_next_event = [&] {
+    DCHECK(!events_.empty());
+
+    Event event = std::move(events_.front());
+    events_.pop_front();
+    delegate->DispatchXEvent(&event.xlib_event);
   };
 
   // Handle all pending events.
   while (delegate->ShouldContinueStream()) {
-    bool has_next_response =
-        !requests_.empty() &&
-        CompareSequenceIds(XLastKnownRequestProcessed(display_),
-                           requests_.front().sequence) >= 0;
-    bool has_next_event = XPending(display_);
+    Flush();
+    ReadResponses();
 
-    if (has_next_response && has_next_event) {
+    if (HasNextResponse() && !events_.empty()) {
+      if (!events_.front().sequence.has_value()) {
+        process_next_event();
+        continue;
+      }
+
       auto next_response_sequence = requests_.front().sequence;
-
-      XEvent event;
-      XPeekEvent(display_, &event);
-      auto next_event_sequence = event.xany.serial;
+      auto next_event_sequence = events_.front().sequence.value();
 
       // All events have the sequence number of the last processed request
       // included in them.  So if a reply and an event have the same sequence,
@@ -146,9 +225,9 @@ void Connection::Dispatch(Delegate* delegate) {
         process_next_response();
       else
         process_next_event();
-    } else if (has_next_response) {
+    } else if (HasNextResponse()) {
       process_next_response();
-    } else if (has_next_event) {
+    } else if (!events_.empty()) {
       process_next_event();
     } else {
       break;

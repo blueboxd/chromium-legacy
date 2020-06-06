@@ -262,6 +262,15 @@ found in the LICENSE file.
       <a href="#">I have read and understood <br />the terms and conditions</a>
     </label>
 
+    <label id="option1_label" for="option1">Option <b>1</b></label>
+    <input type="checkbox" id="option1">
+    <label id="option2_label">
+      Option <b>2</b>
+      <input id="option2" type="checkbox" name="option2">
+    </label>
+    <label id="bad_label1" for="doesnotexist">A label without an element</label>
+    <label id="bad_label2">Another label without an element</label>
+    
     <script>
       let upperCaseInput = document.querySelector("#uppercase_input");
       document.addEventListener('keyup', () => {

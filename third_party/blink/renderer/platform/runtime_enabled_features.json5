@@ -685,7 +685,7 @@
     },
     {
       name: "EncryptedMediaPersistentUsageRecordSession",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "EnterKeyHintAttribute",

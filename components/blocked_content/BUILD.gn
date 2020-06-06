@@ -42,7 +42,10 @@ source_set("blocked_content") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "safe_browsing_triggered_popup_blocker_unittest.cc" ]
+  sources = [
+    "popup_blocker_tab_helper_unittest.cc",
+    "safe_browsing_triggered_popup_blocker_unittest.cc",
+  ]
   deps = [
     ":blocked_content",
     "//base",

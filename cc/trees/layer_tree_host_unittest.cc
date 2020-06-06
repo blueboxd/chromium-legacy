@@ -8903,28 +8903,11 @@ class LayerTreeHostCustomThrougputTrackerTest : public LayerTreeHostTest {
   }
 
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override {
+    // Check that data for kSequenceId is captured. Ideally, we should get
+    // 2 frame_expected and 2 frame_produced. But on slow bots, it is difficult
+    // to infer the correct numbers. Both frame_expected and frame_produced
+    // could drop to 1 (or even below). So no sanity check on data itself.
     ASSERT_TRUE(base::Contains(results, kSequenceId));
-    const auto& throughput = results[kSequenceId];
-    // Frame 3 and 4 are counted. See the sequence in DidCommit comment for
-    // normal case that expects 2 for both frames_expected and frames_produced.
-    //
-    // However, on slow bots, things could be different.
-    // - Begin frame could be skipped but still counted as expected frames,
-    //
-    //     e(5,5)b(8)B(0,8)E(8)s(3)S(8)e(8,8)b(11)
-    //         B(8,11)E(11)ts(4)S(11)e(11,11)P(3)e(14,14)P(4)
-    //
-    //   B(0, 8) and B(8, 11) make frame_expected to be 4, more than 2 expected
-    //   by test.
-    //
-    // - Finish before frame 4 is presented in multi-thread mode.
-    //
-    //     e(3,3)b(4)B(0,4)E(4)s(2)e(4,4)b(6)B(4,6)E(6)s(3)S(4)e(6,6)
-    //         P(2)e(7,7)P(3)
-    //
-    //   Only P(3) is counted thus frames_produced is 1.
-    EXPECT_GE(throughput.frames_expected, 2u);
-    EXPECT_GE(throughput.frames_produced, 1u);
 
     EndTest();
   }

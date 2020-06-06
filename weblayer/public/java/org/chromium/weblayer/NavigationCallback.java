@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 /**
@@ -112,4 +114,12 @@ public abstract class NavigationCallback {
      * non-empty layout has finished. This is *not* called for same-document navigations.
      */
     public void onFirstContentfulPaint() {}
+
+    /**
+     * Called after each navigation to indicate that the old page is no longer
+     * being rendered. Note this is not ordered with respect to onFirstContentfulPaint.
+     * @param newNavigationUri Uri of the new navigation.
+     * @since 85
+     */
+    public void onOldPageNoLongerRendered(@NonNull Uri newNavigationUri) {}
 }

@@ -90,6 +90,8 @@ class OmniboxPopupContentsView : public views::View,
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override;
 
+  void FireAXEventsForNewActiveDescendant(View* descendant_view);
+
  private:
   friend class OmniboxPopupContentsViewTest;
   class AutocompletePopupWidget;

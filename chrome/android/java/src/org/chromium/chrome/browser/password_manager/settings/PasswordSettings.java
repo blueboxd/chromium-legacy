@@ -428,13 +428,13 @@ public class PasswordSettings
         mSavePasswordsSwitch.setSummaryOff(R.string.text_off);
         mSavePasswordsSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
             PrefServiceBridge.getInstance().setBoolean(
-                    Pref.REMEMBER_PASSWORDS_ENABLED, (boolean) newValue);
+                    Pref.CREDENTIALS_ENABLE_SERVICE, (boolean) newValue);
             return true;
         });
         mSavePasswordsSwitch.setManagedPreferenceDelegate(
                 (ChromeManagedPreferenceDelegate) preference
                 -> PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.REMEMBER_PASSWORDS_ENABLED));
+                        Pref.CREDENTIALS_ENABLE_SERVICE));
 
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             getPreferenceScreen().addPreference(mSavePasswordsSwitch);
@@ -445,7 +445,7 @@ public class PasswordSettings
         // (e.g. the switch will say "On" when save passwords is really turned off), so
         // .setChecked() should be called after .addPreference()
         mSavePasswordsSwitch.setChecked(
-                PrefServiceBridge.getInstance().getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
+                PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
     }
 
     private void createAutoSignInCheckbox() {
@@ -456,15 +456,15 @@ public class PasswordSettings
         mAutoSignInSwitch.setSummary(R.string.passwords_auto_signin_description);
         mAutoSignInSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
             PrefServiceBridge.getInstance().setBoolean(
-                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, (boolean) newValue);
+                    Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, (boolean) newValue);
             return true;
         });
         mAutoSignInSwitch.setManagedPreferenceDelegate((ChromeManagedPreferenceDelegate) preference
                 -> PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
+                        Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
         getPreferenceScreen().addPreference(mAutoSignInSwitch);
-        mAutoSignInSwitch.setChecked(PrefServiceBridge.getInstance().getBoolean(
-                Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
+        mAutoSignInSwitch.setChecked(
+                PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
     }
 
     private void displayManageAccountLink() {

@@ -117,9 +117,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
     return ui_delegate_.GetTargetLanguageCode();
   }
 
-  base::string16 target_language_name() const {
-    return language_name_at(ui_delegate_.GetTargetLanguageIndex());
-  }
+  virtual base::string16 target_language_name() const;
 
   virtual void UpdateTargetLanguage(const std::string& language_code);
 

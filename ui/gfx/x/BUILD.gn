@@ -143,3 +143,12 @@ jumbo_component("x") {
   ]
   public_deps = [ ":xprotos" ]
 }
+
+source_set("unit_test") {
+  testonly = true
+  sources = [ "connection_unittest.cc" ]
+  deps = [
+    "//testing/gtest",
+    "//ui/gfx/x",
+  ]
+}

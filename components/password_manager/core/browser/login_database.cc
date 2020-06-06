@@ -2031,20 +2031,10 @@ FormRetrievalResult LoginDatabase::StatementToForms(
       count_removed_logins++;
     }
   }
-
-  if (count_removed_logins > 0) {
-    UMA_HISTOGRAM_COUNTS_100("PasswordManager.RemovedCorruptedPasswords",
-                             count_removed_logins);
-  }
-
-  if (count_removed_logins != forms_to_be_deleted.size()) {
-    metrics_util::LogDeleteCorruptedPasswordsResult(
-        metrics_util::DeleteCorruptedPasswordsResult::kItemFailure);
-  } else if (count_removed_logins > 0) {
+  if (count_removed_logins == forms_to_be_deleted.size() &&
+      count_removed_logins > 0) {
     DCHECK(password_recovery_util_);
     password_recovery_util_->RecordPasswordRecovery();
-    metrics_util::LogDeleteCorruptedPasswordsResult(
-        metrics_util::DeleteCorruptedPasswordsResult::kSuccessPasswordsDeleted);
   }
 #endif
 

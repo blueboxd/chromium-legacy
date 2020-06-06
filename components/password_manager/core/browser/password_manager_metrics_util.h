@@ -510,10 +510,6 @@ void LogPasswordSettingsReauthResult(ReauthResult result);
 void LogDeleteUndecryptableLoginsReturnValue(
     DeleteCorruptedPasswordsResult result);
 
-// Log a result of removing passwords that couldn't be decrypted with the
-// present encryption key on MacOS.
-void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result);
-
 // Log whether a saved password was generated.
 void LogNewlySavedPasswordIsGenerated(
     bool value,

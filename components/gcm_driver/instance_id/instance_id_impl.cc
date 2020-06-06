@@ -232,7 +232,6 @@ void InstanceIDImpl::GetInstanceIDDataCompleted(
 void InstanceIDImpl::EnsureIDGenerated() {
   if (!id_.empty())
     return;
-  UMA_HISTOGRAM_BOOLEAN("InstanceID.GeneratedNewID", true);
 
   // Now produce the ID in the following steps:
 

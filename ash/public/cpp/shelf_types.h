@@ -39,6 +39,9 @@ enum class HotseatState {
 
   // Hotseat is shown above the shelf.
   kExtended,
+
+  // No value,
+  kNone
 };
 
 // Defines the density of hotseat. Hotseat is "denser" if it can accommodate

@@ -141,10 +141,6 @@ target(tracing_lib_type, "cpp") {
       ]
     }
 
-    if (is_linux && !is_fuchsia) {
-      deps += [ "//components/crash/core/app:app" ]
-    }
-
     if (is_android && can_unwind_with_cfi_table && is_official_build) {
       sources += [
         "stack_sampling/stack_sampler_android.cc",

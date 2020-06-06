@@ -317,11 +317,12 @@ BrowserAccessibilityPositionInstance CreatePositionFromTextMarker(
 }
 
 AXPlatformRange CreateRangeFromTextMarkerRange(id marker_range) {
+  if (!content::IsAXTextMarkerRange(marker_range)) {
+    return AXPlatformRange();
+  }
+
   AXTextMarkerRangeRef cf_marker_range =
       static_cast<AXTextMarkerRangeRef>(marker_range);
-  DCHECK(cf_marker_range);
-  if (CFGetTypeID(cf_marker_range) != AXTextMarkerRangeGetTypeID())
-    return AXPlatformRange();
 
   base::ScopedCFTypeRef<AXTextMarkerRef> start_marker(
       AXTextMarkerRangeCopyStartMarker(cf_marker_range));
@@ -735,9 +736,24 @@ bool content::IsAXTextMarker(id object) {
   return CFGetTypeID(cf_text_marker) == AXTextMarkerGetTypeID();
 }
 
+bool content::IsAXTextMarkerRange(id object) {
+  if (object == nil)
+    return false;
+
+  AXTextMarkerRangeRef cf_marker_range =
+      static_cast<AXTextMarkerRangeRef>(object);
+  DCHECK(cf_marker_range);
+  return CFGetTypeID(cf_marker_range) == AXTextMarkerRangeGetTypeID();
+}
+
 BrowserAccessibilityPosition::AXPositionInstance
 content::AXTextMarkerToPosition(id text_marker) {
   return CreatePositionFromTextMarker(text_marker);
+}
+
+BrowserAccessibilityPosition::AXRangeType
+content::AXTextMarkerRangeToRange(id text_marker_range) {
+  return CreateRangeFromTextMarkerRange(text_marker_range);
 }
 
 @implementation BrowserAccessibilityCocoa

@@ -119,7 +119,8 @@ class CORE_EXPORT PaintLayerCompositor {
   // swapped out for an overlay video or immersive-ar DOM overlay layer.
   GraphicsLayer* PaintRootGraphicsLayer() const;
 
-  static PaintLayerCompositor* FrameContentsCompositor(LayoutEmbeddedContent&);
+  static PaintLayerCompositor* FrameContentsCompositor(
+      const LayoutEmbeddedContent&);
 
   void UpdateTrackingRasterInvalidations();
 

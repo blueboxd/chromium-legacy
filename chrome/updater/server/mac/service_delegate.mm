@@ -107,10 +107,8 @@ const base::Version& GetSelfVersion() {
 
   auto sccb = base::BindRepeating(base::RetainBlock(^(
       updater::UpdateService::UpdateState state) {
-    base::scoped_nsobject<NSString> version(@"");
-    if (state.next_version.IsValid()) {
-      version.reset(base::SysUTF8ToNSString(state.next_version.GetString()));
-    }
+    NSString* version = base::SysUTF8ToNSString(
+        state.next_version.IsValid() ? state.next_version.GetString() : "");
 
     base::scoped_nsobject<CRUUpdateStateStateWrapper> updateStateStateWrapper(
         [[CRUUpdateStateStateWrapper alloc]
@@ -125,7 +123,7 @@ const base::Version& GetSelfVersion() {
         [[CRUUpdateStateWrapper alloc]
               initWithAppId:base::SysUTF8ToNSString(state.app_id)
                       state:updateStateStateWrapper.get()
-                    version:version.get()
+                    version:version
             downloadedBytes:state.downloaded_bytes
                  totalBytes:state.total_bytes
             installProgress:state.install_progress
@@ -153,10 +151,8 @@ const base::Version& GetSelfVersion() {
 
   auto sccb = base::BindRepeating(base::RetainBlock(^(
       updater::UpdateService::UpdateState state) {
-    base::scoped_nsobject<NSString> version(@"");
-    if (state.next_version.IsValid()) {
-      version.reset(base::SysUTF8ToNSString(state.next_version.GetString()));
-    }
+    NSString* version = base::SysUTF8ToNSString(
+        state.next_version.IsValid() ? state.next_version.GetString() : "");
 
     base::scoped_nsobject<CRUUpdateStateStateWrapper> updateStateStateWrapper(
         [[CRUUpdateStateStateWrapper alloc]
@@ -171,7 +167,7 @@ const base::Version& GetSelfVersion() {
         [[CRUUpdateStateWrapper alloc]
               initWithAppId:base::SysUTF8ToNSString(state.app_id)
                       state:updateStateStateWrapper.get()
-                    version:version.get()
+                    version:version
             downloadedBytes:state.downloaded_bytes
                  totalBytes:state.total_bytes
             installProgress:state.install_progress

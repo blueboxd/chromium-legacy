@@ -52,7 +52,7 @@ public class WebContentsDarkModeController implements ApplicationStateListener {
      * @param enabled the new state of the web content dark mode
      */
     private static void enableWebContentsDarkMode(boolean enabled) {
-        PrefServiceBridge.getInstance().setBoolean(Pref.WEBKIT_FORCE_DARK_MODE_ENABLED, enabled);
+        PrefServiceBridge.getInstance().setBoolean(Pref.WEB_KIT_FORCE_DARK_MODE_ENABLED, enabled);
     }
 
     private static boolean shouldEnableWebContentsDarkMode() {

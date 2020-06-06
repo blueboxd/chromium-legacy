@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
@@ -61,6 +62,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final View mRootView;
     private final HybridListRenderer mHybridListRenderer;
     private final SnackbarManager mSnackbarManager;
+    private final Activity mActivity;
 
     private int mHeaderCount;
 
@@ -120,17 +122,18 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * client implementation.
      */
     public FeedStreamSurface(TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
-            Context activityContext, SnackbarManager snackbarManager) {
+            Activity activity, SnackbarManager snackbarManager) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
         mTabModelSelector = tabModelSelector;
         mTabProvider = tabProvider;
         mSnackbarManager = snackbarManager;
+        mActivity = activity;
 
         mContentManager = new FeedListContentManager(this, this);
 
         ProcessScope processScope = xSurfaceProcessScope();
         if (processScope != null) {
-            mSurfaceScope = xSurfaceProcessScope().obtainSurfaceScope(activityContext);
+            mSurfaceScope = xSurfaceProcessScope().obtainSurfaceScope(mActivity);
         } else {
             mSurfaceScope = null;
         }
@@ -138,7 +141,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         if (mSurfaceScope != null) {
             mHybridListRenderer = mSurfaceScope.provideListRenderer();
         } else {
-            mHybridListRenderer = new NativeViewListRenderer(activityContext);
+            mHybridListRenderer = new NativeViewListRenderer(mActivity);
         }
 
         if (mHybridListRenderer != null) {

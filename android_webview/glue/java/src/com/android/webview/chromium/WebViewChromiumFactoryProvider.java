@@ -32,6 +32,7 @@ import com.android.webview.chromium.WebViewDelegateFactory.WebViewDelegate;
 
 import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
+import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.ProductConfig;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
@@ -332,13 +333,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                     developerModeEnd - developerModeStart);
             RecordHistogram.recordBooleanHistogram(
                     "Android.WebView.DevUi.DeveloperModeEnabled", isDeveloperModeEnabled);
+            Map<String, Boolean> flagOverrides = null;
             if (isDeveloperModeEnabled) {
                 long start = SystemClock.elapsedRealtime();
                 try {
                     FlagOverrideHelper helper =
                             new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
-                    Map<String, Boolean> flagOverrides =
-                            DeveloperModeUtils.getFlagOverrides(webViewPackageName);
+                    flagOverrides = DeveloperModeUtils.getFlagOverrides(webViewPackageName);
                     helper.applyFlagOverrides(flagOverrides);
 
                     RecordHistogram.recordCount100Histogram(
@@ -374,6 +375,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             }
 
             // Now safe to use WebView data directory.
+
+            if (flagOverrides != null) {
+                AwContentsStatics.logFlagOverridesWithNative(flagOverrides);
+            }
 
             mAwInit.startVariationsInit();
 

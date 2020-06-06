@@ -746,6 +746,8 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/preferences:java",
     "//chrome/browser/preferences:preferences_junit_tests",
     "//chrome/browser/profiles/android:java",
+    "//chrome/browser/safety_check/android:java",
+    "//chrome/browser/safety_check/android:junit",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/thumbnail:java",
@@ -932,6 +934,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//chrome/test:sync_integration_test_support_java",
+    "//chrome/test/android:chrome_java_test_pagecontroller",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
@@ -1093,9 +1096,11 @@ android_library("chrome_test_java") {
     "//components/test/data/payments/",
     "//content/test/data/browsing_data/",
     "//content/test/data/android/authenticator.html",
+    "//content/test/data/android/auto_downloads_permissions.html",
     "//content/test/data/android/geolocation.html",
     "//content/test/data/android/installedapp.html",
     "//content/test/data/android/media_permissions.html",
+    "//content/test/data/android/midi_permissions.html",
     "//content/test/data/android/permission_navigation.html",
     "//content/test/data/android/quota_permissions.html",
     "//content/test/data/android/webshare.html",
@@ -2715,6 +2720,28 @@ if (public_android_sdk) {
 
     verify_manifest = _enable_manifest_verification
     verify_native_libs_and_assets = _enable_libs_and_assets_verification
+  }
+
+  if (is_official_build) {
+    # Used for binary size monitoring.
+    create_app_bundle_minimal_apks("trichrome_chrome_minimal_apks") {
+      deps = [ ":trichrome_chrome_bundle" ]
+      bundle_path = "$root_build_dir/apks/TrichromeChrome.aab"
+    }
+
+    android_resource_sizes_test("resource_sizes_trichrome") {
+      apk_name = "Trichrome"
+      trichrome_chrome_path =
+          "$root_build_dir/apks/TrichromeChrome.minimal.apks"
+      trichrome_webview_path =
+          "$root_build_dir/apks/TrichromeWebView.minimal.apks"
+      trichrome_library_path = "$root_build_dir/apks/TrichromeLibrary.apk"
+      data_deps = [
+        ":trichrome_chrome_minimal_apks",
+        ":trichrome_library_apk",
+        "//android_webview:trichrome_webview_minimal_apks",
+      ]
+    }
   }
 
   if (android_64bit_target_cpu) {

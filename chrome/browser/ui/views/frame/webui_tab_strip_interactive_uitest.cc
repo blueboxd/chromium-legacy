@@ -48,17 +48,24 @@ IN_PROC_BROWSER_TEST_F(WebUITabStripInteractiveTest,
   container->SetVisibleForTesting(true);
   browser_view->Layout();
 
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+
   // Make sure the tab strip's contents are fully loaded.
   views::WebView* const container_web_view = container->web_view_for_testing();
   ASSERT_TRUE(WaitForLoadStop(container_web_view->GetWebContents()));
 
-  // Click in tab strip, then close it.
-  base::RunLoop click_loop;
+  // Click in tab strip then in Omnibox.
+  base::RunLoop click_loop_1;
   ui_test_utils::MoveMouseToCenterAndPress(
       container_web_view, ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP, click_loop.QuitClosure());
-  click_loop.Run();
-  container->SetVisibleForTesting(false);
+      ui_controls::DOWN | ui_controls::UP, click_loop_1.QuitClosure());
+  click_loop_1.Run();
+
+  base::RunLoop click_loop_2;
+  ui_test_utils::MoveMouseToCenterAndPress(omnibox, ui_controls::LEFT,
+                                           ui_controls::DOWN | ui_controls::UP,
+                                           click_loop_2.QuitClosure());
+  click_loop_2.Run();
 
   // The omnibox should still be focused and should accept keyboard input.
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));

@@ -218,14 +218,15 @@ TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
   )HTML");
   UpdateAllLifecyclePhasesForTest();
 
-  Element* iframe = GetDocument().getElementById("iframe");
+  HTMLFrameOwnerElement* iframe =
+      To<HTMLFrameOwnerElement>(GetDocument().getElementById("iframe"));
   ASSERT_TRUE(iframe);
-  PaintLayer* iframe_layer =
-      ToLayoutBoxModelObject(iframe->GetLayoutObject())->Layer();
+  ASSERT_FALSE(iframe->ContentFrame()->IsCrossOriginToMainFrame());
+  LayoutView* iframe_layout_view =
+      To<LocalFrame>(iframe->ContentFrame())->ContentLayoutObject();
+  ASSERT_TRUE(iframe_layout_view);
+  PaintLayer* iframe_layer = iframe_layout_view->Layer();
   ASSERT_TRUE(iframe_layer);
-  ASSERT_FALSE(To<HTMLFrameOwnerElement>(iframe)
-                   ->ContentFrame()
-                   ->IsCrossOriginToMainFrame());
   EXPECT_EQ(kNotComposited, iframe_layer->DirectCompositingReasons());
 
   SetBodyInnerHTML(R"HTML(
@@ -234,13 +235,12 @@ TEST_F(CompositingReasonFinderTest, PromoteCrossOriginIframe) {
   )HTML");
   UpdateAllLifecyclePhasesForTest();
 
-  iframe = GetDocument().getElementById("iframe");
-  ASSERT_TRUE(iframe);
-  iframe_layer = ToLayoutBoxModelObject(iframe->GetLayoutObject())->Layer();
+  iframe = To<HTMLFrameOwnerElement>(GetDocument().getElementById("iframe"));
+  iframe_layout_view =
+      To<LocalFrame>(iframe->ContentFrame())->ContentLayoutObject();
+  iframe_layer = iframe_layout_view->Layer();
   ASSERT_TRUE(iframe_layer);
-  ASSERT_TRUE(To<HTMLFrameOwnerElement>(iframe)
-                  ->ContentFrame()
-                  ->IsCrossOriginToMainFrame());
+  ASSERT_TRUE(iframe->ContentFrame()->IsCrossOriginToMainFrame());
   EXPECT_EQ(CompositingReason::kIFrame,
             iframe_layer->DirectCompositingReasons());
 }

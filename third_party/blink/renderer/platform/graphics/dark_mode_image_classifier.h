@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DARK_MODE_IMAGE_CLASSIFIER_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -15,23 +16,18 @@ namespace blink {
 
 class Image;
 
+FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, FeaturesAndClassification);
+FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, Caching);
+FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, BlocksCount);
+FORWARD_DECLARE_TEST(SVGImageTest, DarkModeClassification);
+
 class PLATFORM_EXPORT DarkModeImageClassifier {
   DISALLOW_NEW();
 
  public:
-  DarkModeImageClassifier();
-  ~DarkModeImageClassifier() = default;
-
-  DarkModeClassification Classify(Image* image,
-                                  const FloatRect& src_rect,
-                                  const FloatRect& dest_rect);
-
   struct Features {
     // True if the image is in color, false if it is grayscale.
     bool is_colorful;
-
-    // Whether the image was originally an SVG.
-    bool is_svg;
 
     // Ratio of the number of bucketed colors used in the image to all
     // possibilities. Color buckets are represented with 4 bits per color
@@ -40,41 +36,26 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
 
     // How much of the image is transparent or considered part of the
     // background.
-    float background_ratio;
     float transparency_ratio;
+    float background_ratio;
   };
 
-  // Computes the features for a given image.
-  base::Optional<Features> GetFeatures(Image* image, const FloatRect& src_rect);
+  DarkModeImageClassifier();
+  ~DarkModeImageClassifier() = default;
 
-  virtual DarkModeClassification ClassifyWithFeatures(
-      const Features& features) {
-    return DarkModeClassification::kDoNotApplyFilter;
-  }
+  DarkModeClassification Classify(Image* image,
+                                  const FloatRect& src_rect,
+                                  const FloatRect& dest_rect);
 
   enum class ImageType { kBitmap = 0, kSvg = 1 };
-
   void SetImageType(ImageType image_type) { image_type_ = image_type; }
 
-  // Functions for testing.
-
-  void SetHorizontalBlocksCount(int horizontal_blocks) {
-    blocks_count_horizontal_ = horizontal_blocks;
-  }
-
-  void SetVerticalBlocksCount(int vertical_blocks) {
-    blocks_count_vertical_ = vertical_blocks;
-  }
-
-  int HorizontalBlocksCount() { return blocks_count_horizontal_; }
-
-  int VerticalBlocksCount() { return blocks_count_vertical_; }
-
-  void ResetDataMembersToDefaults();
-
-  // End of Functions for testing.
-
  private:
+  DarkModeClassification ClassifyWithFeatures(const Features& features);
+  DarkModeClassification ClassifyUsingDecisionTree(const Features& features);
+  base::Optional<Features> GetFeatures(Image* image, const FloatRect& src_rect);
+  void Reset();
+
   enum class ColorMode { kColor = 0, kGrayscale = 1 };
 
   // Given a SkBitmap, extracts a sample set of pixels (|sampled_pixels|),
@@ -114,6 +95,12 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   int blocks_count_vertical_;
 
   ImageType image_type_;
+
+  FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest,
+                           FeaturesAndClassification);
+  FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest, Caching);
+  FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest, BlocksCount);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, DarkModeClassification);
 };
 
 }  // namespace blink

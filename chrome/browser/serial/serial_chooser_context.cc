@@ -17,6 +17,7 @@
 namespace {
 
 constexpr char kPortNameKey[] = "name";
+constexpr char kPersistentIdKey[] = "persistent_id";
 constexpr char kTokenKey[] = "token";
 
 std::string EncodeToken(const base::UnguessableToken& token) {
@@ -40,13 +41,20 @@ base::UnguessableToken DecodeToken(base::StringPiece input) {
   return base::UnguessableToken::Deserialize(data[0], data[1]);
 }
 
+bool CanStorePersistentEntry(const device::mojom::SerialPortInfo& port) {
+  return port.persistent_id && !port.persistent_id->empty();
+}
+
 base::Value PortInfoToValue(const device::mojom::SerialPortInfo& port) {
   base::Value value(base::Value::Type::DICTIONARY);
   if (port.display_name)
     value.SetStringKey(kPortNameKey, *port.display_name);
   else
     value.SetStringKey(kPortNameKey, port.path.LossyDisplayName());
-  value.SetStringKey(kTokenKey, EncodeToken(port.token));
+  if (CanStorePersistentEntry(port))
+    value.SetStringKey(kPersistentIdKey, port.persistent_id.value());
+  else
+    value.SetStringKey(kTokenKey, EncodeToken(port.token));
   return value;
 }
 
@@ -63,7 +71,9 @@ SerialChooserContext::~SerialChooserContext() = default;
 bool SerialChooserContext::IsValidObject(const base::Value& object) {
   const std::string* token = object.FindStringKey(kTokenKey);
   return object.is_dict() && object.DictSize() == 2 &&
-         object.FindStringKey(kPortNameKey) && token && DecodeToken(*token);
+         object.FindStringKey(kPortNameKey) &&
+         ((token && DecodeToken(*token)) ||
+          object.FindStringKey(kPersistentIdKey));
 }
 
 base::string16 SerialChooserContext::GetObjectDisplayName(
@@ -76,24 +86,26 @@ base::string16 SerialChooserContext::GetObjectDisplayName(
 std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 SerialChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
                                         const url::Origin& embedding_origin) {
-  if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
-    return {};
+  std::vector<std::unique_ptr<Object>> objects =
+      ChooserContextBase::GetGrantedObjects(requesting_origin,
+                                            embedding_origin);
 
-  auto origin_it = ephemeral_ports_.find(
-      std::make_pair(requesting_origin, embedding_origin));
-  if (origin_it == ephemeral_ports_.end())
-    return {};
-  const std::set<base::UnguessableToken> ports = origin_it->second;
+  if (CanRequestObjectPermission(requesting_origin, embedding_origin)) {
+    auto it = ephemeral_ports_.find({requesting_origin, embedding_origin});
+    if (it != ephemeral_ports_.end()) {
+      const std::set<base::UnguessableToken>& ports = it->second;
+      for (const auto& token : ports) {
+        auto port_it = port_info_.find(token);
+        if (port_it == port_info_.end())
+          continue;
 
-  std::vector<std::unique_ptr<Object>> objects;
-  for (const auto& token : ports) {
-    auto it = port_info_.find(token);
-    if (it == port_info_.end())
-      continue;
-
-    objects.push_back(std::make_unique<Object>(
-        requesting_origin, embedding_origin, it->second.Clone(),
-        content_settings::SettingSource::SETTING_SOURCE_USER, is_incognito_));
+        const base::Value& port = port_it->second;
+        objects.push_back(std::make_unique<Object>(
+            requesting_origin, embedding_origin, port.Clone(),
+            content_settings::SettingSource::SETTING_SOURCE_USER,
+            is_incognito_));
+      }
+    }
   }
 
   return objects;
@@ -101,7 +113,8 @@ SerialChooserContext::GetGrantedObjects(const url::Origin& requesting_origin,
 
 std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
 SerialChooserContext::GetAllGrantedObjects() {
-  std::vector<std::unique_ptr<Object>> objects;
+  std::vector<std::unique_ptr<Object>> objects =
+      ChooserContextBase::GetAllGrantedObjects();
   for (const auto& map_entry : ephemeral_ports_) {
     const url::Origin& requesting_origin = map_entry.first.first;
     const url::Origin& embedding_origin = map_entry.first.second;
@@ -127,14 +140,20 @@ void SerialChooserContext::RevokeObjectPermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const base::Value& object) {
-  auto origin_it = ephemeral_ports_.find(
-      std::make_pair(requesting_origin, embedding_origin));
-  if (origin_it == ephemeral_ports_.end())
+  const std::string* token = object.FindStringKey(kTokenKey);
+  if (!token) {
+    ChooserContextBase::RevokeObjectPermission(requesting_origin,
+                                               embedding_origin, object);
     return;
-  std::set<base::UnguessableToken>& ports = origin_it->second;
+  }
+
+  auto it = ephemeral_ports_.find({requesting_origin, embedding_origin});
+  if (it == ephemeral_ports_.end())
+    return;
+  std::set<base::UnguessableToken>& ports = it->second;
 
   DCHECK(IsValidObject(object));
-  ports.erase(DecodeToken(*object.FindStringKey(kTokenKey)));
+  ports.erase(DecodeToken(*token));
   NotifyPermissionRevoked(requesting_origin, embedding_origin);
 }
 
@@ -142,11 +161,16 @@ void SerialChooserContext::GrantPortPermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const device::mojom::SerialPortInfo& port) {
-  // TODO(crbug.com/908836): If |port| can be remembered persistently call into
-  // ChooserContextBase to store it in user preferences.
-  ephemeral_ports_[std::make_pair(requesting_origin, embedding_origin)].insert(
-      port.token);
-  port_info_[port.token] = PortInfoToValue(port);
+  base::Value value = PortInfoToValue(port);
+  port_info_.insert({port.token, value.Clone()});
+
+  if (CanStorePersistentEntry(port)) {
+    GrantObjectPermission(requesting_origin, embedding_origin,
+                          std::move(value));
+    return;
+  }
+
+  ephemeral_ports_[{requesting_origin, embedding_origin}].insert(port.token);
   NotifyPermissionChanged();
 }
 
@@ -158,16 +182,24 @@ bool SerialChooserContext::HasPortPermission(
     return false;
   }
 
-  auto origin_it = ephemeral_ports_.find(
-      std::make_pair(requesting_origin, embedding_origin));
-  if (origin_it == ephemeral_ports_.end())
-    return false;
-  const std::set<base::UnguessableToken> ports = origin_it->second;
+  auto it = ephemeral_ports_.find({requesting_origin, embedding_origin});
+  if (it != ephemeral_ports_.end()) {
+    const std::set<base::UnguessableToken> ports = it->second;
+    if (base::Contains(ports, port.token))
+      return true;
+  }
 
-  // TODO(crbug.com/908836): Call into ChooserContextBase to check persistent
-  // permissions.
-  auto port_it = ports.find(port.token);
-  return port_it != ports.end();
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      object_list = GetGrantedObjects(requesting_origin, embedding_origin);
+  for (const auto& object : object_list) {
+    const base::Value& device = object->value;
+    DCHECK(IsValidObject(device));
+
+    const std::string* persistent_id = device.FindStringKey(kPersistentIdKey);
+    if (port.persistent_id == *persistent_id)
+      return true;
+  }
+  return false;
 }
 
 device::mojom::SerialPortManager* SerialChooserContext::GetPortManager() {
@@ -216,8 +248,10 @@ void SerialChooserContext::OnPortRemoved(
   port_info_.erase(port->token);
 
   for (auto& observer : permission_observer_list_) {
-    observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
-                                              data_content_settings_type_);
+    if (!revoked_url_pairs.empty()) {
+      observer.OnChooserObjectPermissionChanged(guard_content_settings_type_,
+                                                data_content_settings_type_);
+    }
     for (const auto& url_pair : revoked_url_pairs)
       observer.OnPermissionRevoked(url_pair.first, url_pair.second);
   }

@@ -1120,7 +1120,7 @@ bool TestRunnerBindings::FindString(
 
   bool match_case = true;
   bool forward = true;
-  bool find_next = true;
+  bool new_session = false;
   bool wrap_around = false;
   for (const auto& option : options_array) {
     if (option == "CaseInsensitive")
@@ -1128,14 +1128,14 @@ bool TestRunnerBindings::FindString(
     else if (option == "Backwards")
       forward = false;
     else if (option == "StartInSelection")
-      find_next = false;
+      new_session = true;
     else if (option == "WrapAround")
       wrap_around = true;
   }
 
   const bool find_result = GetWebFrame()->FindForTesting(
       0, blink::WebString::FromUTF8(search_text), match_case, forward,
-      find_next, false /* force */, wrap_around);
+      new_session, false /* force */, wrap_around);
   return find_result;
 }
 

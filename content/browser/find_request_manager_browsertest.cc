@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(Basic)) {
   EXPECT_EQ(19, results.number_of_matches);
   EXPECT_EQ(1, results.active_match_ordinal);
 
-  options->find_next = true;
+  options->new_session = false;
   for (int i = 2; i <= 10; ++i) {
     Find("result", options->Clone());
     delegate()->WaitForFinalReply();
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RapidFire) {
   options->run_synchronously_for_testing = true;
   Find("result", options.Clone());
 
-  options->find_next = true;
+  options->new_session = false;
   for (int i = 2; i <= 1000; ++i)
     Find("result", options.Clone());
   delegate()->WaitForFinalReply();
@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RemoveFrame) {
   options->run_synchronously_for_testing = true;
   Find("result", options->Clone());
   delegate()->WaitForFinalReply();
-  options->find_next = true;
+  options->new_session = false;
   options->forward = false;
   Find("result", options->Clone());
   Find("result", options->Clone());
@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, RemoveMainFrame) {
   options->run_synchronously_for_testing = true;
   Find("result", options->Clone());
   delegate()->WaitForFinalReply();
-  options->find_next = true;
+  options->new_session = false;
   options->forward = false;
   Find("result", options->Clone());
   Find("result", options->Clone());
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_AddFrame) {
   auto options = blink::mojom::FindOptions::New();
   options->run_synchronously_for_testing = true;
   Find("result", options.Clone());
-  options->find_next = true;
+  options->new_session = false;
   Find("result", options.Clone());
   Find("result", options.Clone());
   Find("result", options.Clone());
@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(NavigateFrame)) {
   auto options = blink::mojom::FindOptions::New();
   options->run_synchronously_for_testing = true;
   Find("result", options.Clone());
-  options->find_next = true;
+  options->new_session = false;
   options->forward = false;
   Find("result", options.Clone());
   Find("result", options.Clone());
@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(FindNewMatches)) {
   auto options = blink::mojom::FindOptions::New();
   options->run_synchronously_for_testing = true;
   Find("result", options.Clone());
-  options->find_next = true;
+  options->new_session = false;
   Find("result", options.Clone());
   Find("result", options.Clone());
   delegate()->WaitForFinalReply();
@@ -599,7 +599,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE_FindInPage_Issue627799) {
   EXPECT_EQ(1, results.active_match_ordinal);
 
   delegate()->StartReplyRecord();
-  options->find_next = true;
+  options->new_session = false;
   options->forward = false;
   Find("42", options.Clone());
   delegate()->WaitForFinalReply();
@@ -885,7 +885,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, HistoryBackAndForth) {
     // Iterate forward/backward over a few elements.
     int match_index = results.active_match_ordinal;
     for (int delta : {-1, -1, +1, +1, +1, +1, -1, +1, +1}) {
-      options->find_next = true;
+      options->new_session = false;
       options->forward = delta > 0;
       // |active_match_ordinal| uses 1-based index. It belongs to [1, 19].
       match_index += delta;

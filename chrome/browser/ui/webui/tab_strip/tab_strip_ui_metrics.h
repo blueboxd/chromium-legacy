@@ -18,9 +18,12 @@ enum class TabStripUIOpenAction {
 
 enum class TabStripUICloseAction {
   kTapOnTabCounter = 0,
-  kTapOutsideTabStrip = 1,
+  // No longer used
+  // kTapOutsideTabStrip = 1,
   kTabSelected = 2,
-  kMaxValue = kTabSelected,
+  kTapInTabContent = 3,
+  kOmniboxFocusedOrNewTabOpened = 4,
+  kMaxValue = kOmniboxFocusedOrNewTabOpened,
 };
 
 void RecordTabStripUIOpenHistogram(TabStripUIOpenAction action);

@@ -88,7 +88,7 @@ TEST_F(LayoutThemeTest, SystemColorWithColorScheme) {
     <style>
       #dark {
         color: buttonface;
-        color-scheme: dark;
+        color-scheme: light dark;
       }
     </style>
     <div id="dark"></div>

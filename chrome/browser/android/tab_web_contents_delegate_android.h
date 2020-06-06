@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -118,6 +120,8 @@ class TabWebContentsDelegateAndroid
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
+  device::mojom::GeolocationContext* GetInstalledWebappGeolocationContext()
+      override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   void PrintCrossProcessSubframe(
@@ -149,8 +153,12 @@ class TabWebContentsDelegateAndroid
   // might change over the lifetime of the tab.
   bool IsCustomTab() const;
   const GURL GetManifestScope() const;
+  bool IsInstalledWebappDelegateGeolocation() const;
 
  private:
+  std::unique_ptr<device::mojom::GeolocationContext>
+      installed_webapp_geolocation_context_;
+
   ScopedObserver<find_in_page::FindTabHelper, find_in_page::FindResultObserver>
       find_result_observer_{this};
 

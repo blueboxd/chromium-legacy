@@ -1935,6 +1935,103 @@ TEST_F(AXPlatformNodeWinTest, IAccessible2GetNRelations) {
   // TODO(dougt): Try adding one more relation.
 }
 
+TEST_F(AXPlatformNodeWinTest,
+       IAccessible2TestPopupForRelationMapsToControlledByRelation) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kTextField;
+  child1.AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds, {3});
+  root.child_ids.push_back(2);
+
+  // Add listbox that is popup for the textfield.
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kListBox;
+  child2.AddIntAttribute(ax::mojom::IntAttribute::kPopupForId, 2);
+  root.child_ids.push_back(3);
+
+  Init(root, child1, child2);
+  ComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
+  ComPtr<IAccessible2> root_iaccessible2 = ToIAccessible2(root_iaccessible);
+
+  ComPtr<IDispatch> result;
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(1), &result));
+  ComPtr<IAccessible2> ax_child1;
+  EXPECT_EQ(S_OK, result.As(&ax_child1));
+  result.Reset();
+
+  EXPECT_EQ(S_OK, root_iaccessible2->get_accChild(ScopedVariant(2), &result));
+  ComPtr<IAccessible2> ax_child2;
+  EXPECT_EQ(S_OK, result.As(&ax_child2));
+  result.Reset();
+
+  LONG n_relations = 0;
+  LONG n_targets = 0;
+  ScopedBstr relation_type;
+  ComPtr<IAccessibleRelation> controls_relation;
+  ComPtr<IAccessibleRelation> controlled_by_relation;
+  ComPtr<IUnknown> target;
+
+  EXPECT_HRESULT_SUCCEEDED(ax_child1->get_nRelations(&n_relations));
+  EXPECT_EQ(1, n_relations);
+
+  EXPECT_HRESULT_SUCCEEDED(ax_child1->get_relation(0, &controls_relation));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      controls_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"controllerFor", base::string16(relation_type.Get()));
+
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(controls_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(1, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(controls_relation->get_target(0, &target));
+  target.Reset();
+
+  controls_relation.Reset();
+
+  // Test the controlled by relation, mapped from the popup for relation.
+  EXPECT_HRESULT_SUCCEEDED(ax_child2->get_nRelations(&n_relations));
+  // The test is currently outsmarting us, and automatically mapping the
+  // reverse relation in addition to mapping the popup for -> controlled by.
+  // Therefore, the same relation will exist twice in this test, which
+  // actually shows that the popup for -> controlled by relation is working.
+  // As a result, both relations should have the same result in this test.
+  EXPECT_EQ(2, n_relations);
+
+  // Both relations should have the same result in this test.
+  EXPECT_HRESULT_SUCCEEDED(ax_child2->get_relation(0, &controlled_by_relation));
+  EXPECT_HRESULT_SUCCEEDED(
+      controlled_by_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"controlledBy", base::string16(relation_type.Get()));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(controlled_by_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(1, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(controlled_by_relation->get_target(0, &target));
+  target.Reset();
+  controlled_by_relation.Reset();
+
+  // Both relations should have the same result in this test.
+  EXPECT_HRESULT_SUCCEEDED(ax_child2->get_relation(1, &controlled_by_relation));
+  EXPECT_HRESULT_SUCCEEDED(
+      controlled_by_relation->get_relationType(relation_type.Receive()));
+  EXPECT_EQ(L"controlledBy", base::string16(relation_type.Get()));
+  relation_type.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(controlled_by_relation->get_nTargets(&n_targets));
+  EXPECT_EQ(1, n_targets);
+
+  EXPECT_HRESULT_SUCCEEDED(controlled_by_relation->get_target(0, &target));
+  target.Reset();
+}
+
 TEST_F(AXPlatformNodeWinTest, DISABLED_TestRelationTargetsOfType) {
   AXNodeData root;
   root.id = 1;

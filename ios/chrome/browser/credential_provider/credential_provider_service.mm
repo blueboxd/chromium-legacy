@@ -19,6 +19,7 @@
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/as_password_credential_identity+credential.h"
 #import "ios/chrome/common/credential_provider/constants.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -78,11 +79,12 @@ void SyncASIdentityStore(ArchivableCredentialStore* credential_store) {
       getCredentialIdentityStoreStateWithCompletion:stateCompletion];
 }
 
-ArchivableCredential* CredentialFromForm(const PasswordForm& form) {
+ArchivableCredential* CredentialFromForm(const PasswordForm& form,
+                                         NSString* validation_id) {
   ArchivableCredential* credential =
       [[ArchivableCredential alloc] initWithPasswordForm:form
                                                  favicon:nil
-                                    validationIdentifier:nil];
+                                    validationIdentifier:validation_id];
   if (!credential) {
     // Verify that the credential is nil because it's an Android one or
     // blacklisted.
@@ -96,13 +98,20 @@ ArchivableCredential* CredentialFromForm(const PasswordForm& form) {
 
 CredentialProviderService::CredentialProviderService(
     scoped_refptr<PasswordStore> password_store,
+    AuthenticationService* authentication_service,
     ArchivableCredentialStore* credential_store)
     : password_store_(password_store),
+      authentication_service_(authentication_service),
       archivable_credential_store_(credential_store) {
   DCHECK(password_store_);
   password_store_->AddObserver(this);
-  // TODO(crbug.com/1066803): Wait for things to settle down before syncs, and
-  // sync credentials after Sync finishes or some seconds in the future.
+
+  DCHECK(authentication_service_);
+  account_validation_id_ =
+      authentication_service_->GetAuthenticatedIdentity().gaiaID;
+  // TODO(crbug.com/1066803): Wait for things to settle down before
+  // syncs, and sync credentials after Sync finishes or some
+  // seconds in the future.
   if (ShouldSyncASIdentityStore()) {
     SyncASIdentityStore(credential_store);
   }
@@ -123,7 +132,8 @@ void CredentialProviderService::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   [archivable_credential_store_ removeAllCredentials];
   for (const auto& form : results) {
-    ArchivableCredential* credential = CredentialFromForm(*form);
+    ArchivableCredential* credential =
+        CredentialFromForm(*form, account_validation_id_);
     if (credential) {
       [archivable_credential_store_ addCredential:credential];
     }
@@ -150,7 +160,8 @@ void CredentialProviderService::SyncStore(void (^completion)(NSError*)) const {
 void CredentialProviderService::OnLoginsChanged(
     const PasswordStoreChangeList& changes) {
   for (const PasswordStoreChange& change : changes) {
-    ArchivableCredential* credential = CredentialFromForm(change.form());
+    ArchivableCredential* credential =
+        CredentialFromForm(change.form(), account_validation_id_);
     if (!credential) {
       continue;
     }

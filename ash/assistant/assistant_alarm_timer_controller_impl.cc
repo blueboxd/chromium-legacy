@@ -146,14 +146,17 @@ std::string CreateTimerNotificationMessage(const AssistantTimer& timer) {
       return base::UTF16ToUTF8(
           base::i18n::MessageFormatter::FormatWithNumberedArgs(
               l10n_util::GetStringUTF16(
-                  IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE),
+                  timer.state == AssistantTimerState::kFired
+                      ? IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WHEN_FIRED
+                      : IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE),
               ToOriginalDurationString(timer)));
     }
-    return base::UTF16ToUTF8(
-        base::i18n::MessageFormatter::FormatWithNumberedArgs(
-            l10n_util::GetStringUTF16(
-                IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WITH_LABEL),
-            ToOriginalDurationString(timer), timer.label));
+    return base::UTF16ToUTF8(base::i18n::MessageFormatter::FormatWithNumberedArgs(
+        l10n_util::GetStringUTF16(
+            timer.state == AssistantTimerState::kFired
+                ? IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WHEN_FIRED_WITH_LABEL
+                : IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WITH_LABEL),
+        ToOriginalDurationString(timer), timer.label));
   }
   return ToRemainingTimeString(timer);
 }

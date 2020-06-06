@@ -85,7 +85,7 @@ public final class NtpStreamLifecycleManager extends StreamLifecycleManager {
         // We don't call Stream#onShow to prevent feed services from being warmed up if the user
         // has opted out from article suggestions during the previous session.
         return super.canShow()
-                && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)
+                && PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
                 && !mTab.isHidden();
     }
 
@@ -93,7 +93,7 @@ public final class NtpStreamLifecycleManager extends StreamLifecycleManager {
     @Override
     protected boolean canActivate() {
         return super.canActivate()
-                && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)
+                && PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
                 && mTab.isUserInteractable();
     }
 

@@ -98,6 +98,7 @@ function createNotificationHelper(note, waitForDisplay) {
 function sendResultToTest(result) {
   // Convert the result to a string.
   var stringResult = "" + result;
+  window.document.title = stringResult;
   if (typeof stringResult != "string")
     stringResult = JSON.stringify(result);
   window.domAutomationController.send(stringResult);

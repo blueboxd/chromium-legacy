@@ -434,7 +434,7 @@ void HotseatWidget::SetTranslucentBackground(
 int HotseatWidget::CalculateHotseatYInScreen(
     HotseatState hotseat_target_state) const {
   DCHECK(shelf_->IsHorizontalAlignment());
-  int hotseat_distance_from_bottom_of_display;
+  int hotseat_distance_from_bottom_of_display = 0;
   const int hotseat_size = GetHotseatSize();
   switch (hotseat_target_state) {
     case HotseatState::kShownClamshell:
@@ -457,6 +457,8 @@ int HotseatWidget::CalculateHotseatYInScreen(
           ShelfConfig::Get()->in_app_shelf_size() +
           ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
       break;
+    case HotseatState::kNone:
+      NOTREACHED();
   }
   const int target_shelf_size =
       shelf_->shelf_widget()->GetTargetBounds().size().height();
@@ -548,27 +550,21 @@ void HotseatWidget::UpdateLayout(bool animate) {
     shelf_view_layer->SetOpacity(new_layout_inputs.shelf_view_opacity);
   }
 
-  ui::Layer* hotseat_layer = GetNativeView()->layer();
-  {
-    ui::ScopedLayerAnimationSettings animation_setter(
-        hotseat_layer->GetAnimator());
-    animation_setter.SetTransitionDuration(
-        animate ? ShelfConfig::Get()->shelf_animation_duration()
-                : base::TimeDelta::FromMilliseconds(0));
-    animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-    animation_setter.SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    animation_setter.SetAnimationMetricsReporter(
-        shelf_->GetHotseatTransitionMetricsReporter(state_));
+  // If shelf view is invisible, the hotseat should be as well. Otherwise the
+  // hotseat opacit should be 1.0f to preserve background blur.
+  const double target_opacity =
+      (new_layout_inputs.shelf_view_opacity == 0.f ? 0.f : 1.f);
+  const gfx::Rect& target_bounds = new_layout_inputs.bounds;
 
-    // If shelf view is invisible, the hotseat should be as well. Otherwise the
-    // hotseat opacit should be 1.0f to preserve background blur.
-    hotseat_layer->SetOpacity(
-        new_layout_inputs.shelf_view_opacity == 0.0f ? 0.0f : 1.0f);
-    SetBounds(new_layout_inputs.bounds);
-    layout_inputs_ = new_layout_inputs;
-    delegate_view_->UpdateTranslucentBackground();
+  if (animate) {
+    LayoutHotseatByAnimation(target_opacity, target_bounds);
+  } else {
+    GetNativeView()->layer()->SetOpacity(target_opacity);
+    SetBounds(target_bounds);
   }
+
+  layout_inputs_ = new_layout_inputs;
+  delegate_view_->UpdateTranslucentBackground();
 
   // Setting visibility during an animation causes the visibility property to
   // animate. Set the visibility property without an animation.
@@ -647,6 +643,7 @@ void HotseatWidget::SetState(HotseatState state) {
   if (state_ == state)
     return;
 
+  old_state_ = state_;
   state_ = state;
 
   // If the hotseat is not extended we can use the normal targeting as the
@@ -717,6 +714,52 @@ HotseatDensity HotseatWidget::CalculateTargetHotseatDensity(
     }
   }
   return HotseatDensity::kDense;
+}
+
+void HotseatWidget::LayoutHotseatByAnimation(double target_opacity,
+                                             const gfx::Rect& target_bounds) {
+  ui::Layer* hotseat_layer = GetNativeView()->layer();
+
+  ui::ScopedLayerAnimationSettings animation_setter(
+      hotseat_layer->GetAnimator());
+  animation_setter.SetTransitionDuration(
+      ShelfConfig::Get()->shelf_animation_duration());
+  animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+  animation_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation_setter.SetAnimationMetricsReporter(
+      shelf_->GetHotseatTransitionMetricsReporter(state_));
+
+  hotseat_layer->SetOpacity(target_opacity);
+  SetBounds(target_bounds);
+}
+
+HotseatWidget::StateTransition HotseatWidget::CalculateHotseatStateTransition()
+    const {
+  if (old_state_ == HotseatState::kNone || state_ == HotseatState::kNone)
+    return StateTransition::kOther;
+
+  if (old_state_ == state_)
+    return StateTransition::kOther;
+
+  const bool related_to_homelauncher =
+      (old_state_ == HotseatState::kShownHomeLauncher ||
+       state_ == HotseatState::kShownHomeLauncher);
+  const bool related_to_extended = (old_state_ == HotseatState::kExtended ||
+                                    state_ == HotseatState::kExtended);
+  const bool related_to_hidden =
+      (old_state_ == HotseatState::kHidden || state_ == HotseatState::kHidden);
+
+  if (related_to_homelauncher && related_to_extended)
+    return StateTransition::kHomeLauncherAndExtended;
+
+  if (related_to_homelauncher && related_to_hidden)
+    return StateTransition::kHomeLauncherAndHidden;
+
+  if (related_to_extended && related_to_hidden)
+    return StateTransition::kHiddenAndExtended;
+
+  return StateTransition::kOther;
 }
 
 }  // namespace ash

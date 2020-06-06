@@ -591,11 +591,12 @@
             ]
         }
     ],
-    "AutofillCacheServerCardInfoLaunch": [
+    "AutofillCacheServerCardInfo": [
         {
             "platforms": [
                 "android",
                 "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "ios",
                 "linux",

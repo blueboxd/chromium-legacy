@@ -537,6 +537,11 @@ AXPlatformNodeDelegateBase::GetTargetNodesForRelation(
 
 std::set<AXPlatformNode*> AXPlatformNodeDelegateBase::GetReverseRelations(
     ax::mojom::IntAttribute attr) {
+  // TODO(accessibility) Implement these if views ever use relations more
+  // widely. The use so far has been for the Omnibox to the suggestion popup.
+  // If this is ever implemented, then the "popup for" to "controlled by"
+  // mapping in AXPlatformRelationWin can be removed, as it would be
+  // redundant with setting the controls relationship.
   return std::set<AXPlatformNode*>();
 }
 

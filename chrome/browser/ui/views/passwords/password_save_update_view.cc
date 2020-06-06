@@ -43,6 +43,11 @@
 
 namespace {
 
+// Controls whether we should update the bubble title when transitioning
+// between Save and Update states.
+const base::Feature kUpdatePasswordSaveUpdateBubbleTitle{
+    "UpdatePasswordSaveUpdateBubbleTitle", base::FEATURE_ENABLED_BY_DEFAULT};
+
 enum PasswordSaveUpdateViewColumnSetType {
   // | | (LEADING, FILL) | | (FILL, FILL) | |
   // Used for the username/password line of the bubble, for the pending view.
@@ -311,7 +316,7 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
   SetFootnoteView(CreateFooterView());
   SetCancelCallback(base::BindOnce(&PasswordSaveUpdateView::OnDialogCancelled,
                                    base::Unretained(this)));
-  UpdateDialogButtons();
+  UpdateBubbleUIElements();
 }
 
 views::View* PasswordSaveUpdateView::GetUsernameTextfieldForTest() const {
@@ -364,7 +369,7 @@ void PasswordSaveUpdateView::OnContentChanged(
   if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
       is_ok_button_enabled_before !=
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
-    UpdateDialogButtons();
+    UpdateBubbleUIElements();
     DialogModelChanged();
     // TODO(ellyjones): This should not be necessary; DialogModelChanged()
     // implies a re-layout of the dialog.
@@ -466,15 +471,15 @@ void PasswordSaveUpdateView::ReplaceWithPromo() {
     NOTREACHED();
   }
   GetWidget()->UpdateWindowIcon();
-  GetWidget()->UpdateWindowTitle();
-  UpdateDialogButtons();
+  SetTitle(controller_.GetTitle());
+  UpdateBubbleUIElements();
   DialogModelChanged();
 
   SizeToContents();
 #endif  // defined(OS_CHROMEOS)
 }
 
-void PasswordSaveUpdateView::UpdateDialogButtons() {
+void PasswordSaveUpdateView::UpdateBubbleUIElements() {
   if (sign_in_promo_) {
     SetButtons(ui::DIALOG_BUTTON_NONE);
     return;
@@ -490,6 +495,9 @@ void PasswordSaveUpdateView::UpdateDialogButtons() {
       l10n_util::GetStringUTF16(
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON
                             : IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
+
+  if (base::FeatureList::IsEnabled(kUpdatePasswordSaveUpdateBubbleTitle))
+    SetTitle(controller_.GetTitle());
 }
 
 std::unique_ptr<views::View> PasswordSaveUpdateView::CreateFooterView() {

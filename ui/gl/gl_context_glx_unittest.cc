@@ -43,14 +43,11 @@ TEST(GLContextGLXTest, MAYBE_DoNotDestroyOnFailedMakeCurrent) {
       static_cast<int>(x11::WindowClass::InputOutput),
       nullptr,  // visual
       CWBackPixmap | CWOverrideRedirect, &swa);
-  XSelectInput(xdisplay, xwindow, StructureNotifyMask);
 
-  XEvent xevent;
   XMapWindow(xdisplay, xwindow);
-  // Wait until the window is mapped.
-  while (XNextEvent(xdisplay, &xevent) && xevent.type != MapNotify &&
-         xevent.xmap.window != xwindow) {
-  }
+  // Since this window is override-redirect, syncing is sufficient
+  // to ensure the map is complete.
+  XSync(xdisplay, x11::False);
 
   GLImageTestSupport::InitializeGL(base::nullopt);
   auto surface =
@@ -63,12 +60,11 @@ TEST(GLContextGLXTest, MAYBE_DoNotDestroyOnFailedMakeCurrent) {
   ASSERT_TRUE(context->MakeCurrent(surface.get()));
   EXPECT_TRUE(context->GetHandle());
 
-  // Destroy the window, and wait until the window is unmapped. There should be
-  // no x11 errors.
   context->ReleaseCurrent(surface.get());
   XDestroyWindow(xdisplay, xwindow);
-  while (XNextEvent(xdisplay, &xevent) && xevent.type != UnmapNotify) {
-  }
+  // Since this window is override-redirect, syncing is sufficient
+  // to ensure the window is destroyed and unmapped.
+  XSync(xdisplay, x11::False);
   ASSERT_FALSE(error_tracker.FoundNewError());
 
   if (context->MakeCurrent(surface.get())) {

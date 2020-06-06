@@ -5206,7 +5206,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   EXPECT_TRUE(find_in_page_client.FindResultsAreReady());
 
   // Find in a <div> element.
-  options->find_next = true;
+  options->new_session = false;
   EXPECT_TRUE(frame->GetFindInPage()->FindInternal(
       kFindIdentifier, search_text, *options, false, &active_now));
   EXPECT_TRUE(active_now);
@@ -5259,7 +5259,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
 
   auto options = mojom::blink::FindOptions::New();
   options->run_synchronously_for_testing = true;
-  options->find_next = false;
+  options->new_session = true;
   options->forward = true;
   // The first search that will start the scoping process.
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
@@ -5270,7 +5270,7 @@ TEST_F(WebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
   EXPECT_EQ(2, find_in_page_client.Count());
   EXPECT_EQ(1, find_in_page_client.ActiveIndex());
 
-  options->find_next = true;
+  options->new_session = false;
   // The second search will jump to the next match without any scoping.
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
                                options->Clone());
@@ -5338,7 +5338,7 @@ TEST_F(WebFrameTest, FindInPageForcedRedoOfFindInPage) {
 
   auto options = mojom::blink::FindOptions::New();
   options->run_synchronously_for_testing = true;
-  options->find_next = false;
+  options->new_session = true;
   options->forward = true;
   // First run.
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
@@ -5354,7 +5354,7 @@ TEST_F(WebFrameTest, FindInPageForcedRedoOfFindInPage) {
   EXPECT_EQ(2, find_in_page_client.Count());
   EXPECT_EQ(1, find_in_page_client.ActiveIndex());
 
-  options->find_next = true;
+  options->new_session = false;
   options->force = false;
 
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,
@@ -5363,7 +5363,7 @@ TEST_F(WebFrameTest, FindInPageForcedRedoOfFindInPage) {
   EXPECT_EQ(2, find_in_page_client.Count());
   EXPECT_EQ(2, find_in_page_client.ActiveIndex());
 
-  options->find_next = false;
+  options->new_session = true;
   options->force = true;
 
   frame->GetFindInPage()->Find(kFindIdentifier, search_pattern,

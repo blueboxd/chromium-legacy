@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/graphics/darkmode/darkmode_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -13,6 +14,10 @@
 
 namespace blink {
 namespace {
+
+// Decision tree lower and upper thresholds for grayscale and color images.
+const float kLowColorCountThreshold[2] = {0.8125, 0.015137};
+const float kHighColorCountThreshold[2] = {1, 0.025635};
 
 bool IsColorGray(const SkColor& color) {
   return abs(static_cast<int>(SkColorGetR(color)) -
@@ -60,6 +65,12 @@ DarkModeClassification DarkModeImageClassifier::Classify(
   result = ClassifyWithFeatures(features_or_null.value());
   image->AddDarkModeClassification(src_rect, result);
   return result;
+}
+
+void DarkModeImageClassifier::Reset() {
+  pixels_to_sample_ = kPixelsToSample;
+  blocks_count_horizontal_ = kBlocksCount1D;
+  blocks_count_vertical_ = kBlocksCount1D;
 }
 
 base::Optional<DarkModeImageClassifier::Features>
@@ -205,7 +216,6 @@ DarkModeImageClassifier::Features DarkModeImageClassifier::ComputeFeatures(
       ComputeColorBucketsRatio(sampled_pixels, color_mode);
   features.transparency_ratio = transparency_ratio;
   features.background_ratio = background_ratio;
-  features.is_svg = image_type_ == ImageType::kSvg;
 
   return features;
 }
@@ -243,10 +253,48 @@ float DarkModeImageClassifier::ComputeColorBucketsRatio(
          max_buckets[color_mode == ColorMode::kColor];
 }
 
-void DarkModeImageClassifier::ResetDataMembersToDefaults() {
-  pixels_to_sample_ = kPixelsToSample;
-  blocks_count_horizontal_ = kBlocksCount1D;
-  blocks_count_vertical_ = kBlocksCount1D;
+DarkModeClassification DarkModeImageClassifier::ClassifyWithFeatures(
+    const Features& features) {
+  DarkModeClassification result = ClassifyUsingDecisionTree(features);
+
+  // If decision tree cannot decide, we use a neural network to decide whether
+  // to filter or not based on all the features.
+  if (result == DarkModeClassification::kNotClassified) {
+    darkmode_tfnative_model::FixedAllocations nn_temp;
+    float nn_out;
+
+    // The neural network expects these features to be in a specific order
+    // within float array. Do not change the order here without also changing
+    // the neural network code!
+    float feature_list[]{features.is_colorful, features.color_buckets_ratio,
+                         features.transparency_ratio,
+                         features.background_ratio};
+
+    darkmode_tfnative_model::Inference(feature_list, &nn_out, &nn_temp);
+    result = nn_out > 0 ? DarkModeClassification::kApplyFilter
+                        : DarkModeClassification::kDoNotApplyFilter;
+  }
+
+  return result;
+}
+
+DarkModeClassification DarkModeImageClassifier::ClassifyUsingDecisionTree(
+    const DarkModeImageClassifier::Features& features) {
+  float low_color_count_threshold =
+      kLowColorCountThreshold[features.is_colorful];
+  float high_color_count_threshold =
+      kHighColorCountThreshold[features.is_colorful];
+
+  // Very few colors means it's not a photo, apply the filter.
+  if (features.color_buckets_ratio < low_color_count_threshold)
+    return DarkModeClassification::kApplyFilter;
+
+  // Too many colors means it's probably photorealistic, do not apply it.
+  if (features.color_buckets_ratio > high_color_count_threshold)
+    return DarkModeClassification::kDoNotApplyFilter;
+
+  // In-between, decision tree cannot give a precise result.
+  return DarkModeClassification::kNotClassified;
 }
 
 }  // namespace blink

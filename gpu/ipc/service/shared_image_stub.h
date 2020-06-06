@@ -91,7 +91,7 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
   void OnReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
 #endif  // OS_FUCHSIA
 
-  bool MakeContextCurrent();
+  bool MakeContextCurrent(bool needs_gl = false);
   ContextResult MakeContextCurrentAndCreateFactory();
   void OnError();
 

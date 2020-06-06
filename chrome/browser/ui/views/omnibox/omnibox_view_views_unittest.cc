@@ -706,6 +706,38 @@ TEST_F(OmniboxViewViewsTest, SelectAllDuringMouseDown) {
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
 }
 
+TEST_F(OmniboxViewViewsTest, SetWindowTextAndCaretPos) {
+  // googl|e.com
+  omnibox_view()->SetWindowTextAndCaretPos(base::UTF8ToUTF16("google.com"), 5,
+                                           false, false);
+  EXPECT_EQ(base::ASCIIToUTF16("google.com"), omnibox_view()->GetText());
+  EXPECT_EQ(omnibox_view()->GetRenderText()->GetAllSelections(),
+            (std::vector<Range>{{5, 5}}));
+}
+
+TEST_F(OmniboxViewViewsTest, OnInlineAutocompleteTextMaybeChanged) {
+  // No selection, google.com|
+  omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
+      base::UTF8ToUTF16("google.com"), 10);
+  EXPECT_EQ(base::ASCIIToUTF16("google.com"), omnibox_view()->GetText());
+  EXPECT_EQ(omnibox_view()->GetRenderText()->GetAllSelections(),
+            (std::vector<Range>{{10, 10}}));
+
+  // Single selection, gmai[l.com]
+  omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
+      base::UTF8ToUTF16("gmail.com"), 4);
+  EXPECT_EQ(base::ASCIIToUTF16("gmail.com"), omnibox_view()->GetText());
+  EXPECT_EQ(omnibox_view()->GetRenderText()->GetAllSelections(),
+            (std::vector<Range>{{9, 4}}));
+
+  // Multiselection, [go]ogl[e.com]
+  omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
+      base::UTF8ToUTF16("google.com"), 3, 2);
+  EXPECT_EQ(base::ASCIIToUTF16("google.com"), omnibox_view()->GetText());
+  EXPECT_EQ(omnibox_view()->GetRenderText()->GetAllSelections(),
+            (std::vector<Range>{{10, 5}, {0, 2}}));
+}
+
 class OmniboxViewViewsClipboardTest
     : public OmniboxViewViewsTest,
       public ::testing::WithParamInterface<ui::TextEditCommand> {
@@ -1314,6 +1346,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
   EXPECT_FALSE(omnibox_view()->scheme_range().IsValid());
 }
 
+// TODO (manukh) move up to where the other OmniboxViewViewsTest tests are.
 TEST_F(OmniboxViewViewsTest, OverflowingAutocompleteText) {
   // Make the Omnibox narrow so it can't fit the entire string (~650px), but
   // wide enough to fit the user text (~65px).

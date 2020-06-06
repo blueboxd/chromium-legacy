@@ -40,7 +40,7 @@ public class SigninPromoUtil {
         SigninPreferencesManager preferencesManager = SigninPreferencesManager.getInstance();
         int currentMajorVersion = ChromeVersionInfo.getProductMajorVersion();
         boolean wasSignedIn = TextUtils.isEmpty(
-                PrefServiceBridge.getInstance().getString(Pref.SYNC_LAST_ACCOUNT_NAME));
+                PrefServiceBridge.getInstance().getString(Pref.GOOGLE_SERVICES_LAST_USERNAME));
         List<String> accountNames = AccountUtils.toAccountNames(
                 AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts());
         Supplier<Set<String>> accountNamesSupplier = () -> new ArraySet<>(accountNames);

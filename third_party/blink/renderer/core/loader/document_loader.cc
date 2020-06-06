@@ -1641,9 +1641,6 @@ void DocumentLoader::InstallNewDocument(
     previous_security_origin = frame_->GetDocument()->GetSecurityOrigin();
   }
 
-  bool was_cross_origin_to_parent_frame =
-      previous_security_origin && frame_->IsCrossOriginToParentFrame();
-
   // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
   // example, when a script calls window.open("..."), the browser gives
   // JavaScript a window synchronously but kicks off the load in the window
@@ -1713,12 +1710,6 @@ void DocumentLoader::InstallNewDocument(
   // This must be called before the document is opened, otherwise HTML parser
   // will use stale values from HTMLParserOption.
   DidCommitNavigation();
-
-  if (was_cross_origin_to_parent_frame !=
-      frame_->IsCrossOriginToParentFrame()) {
-    if (auto* owner = frame_->DeprecatedLocalOwner())
-      owner->FrameCrossOriginToParentFrameChanged();
-  }
 
   if (initiator_origin) {
     const scoped_refptr<const SecurityOrigin> url_origin =

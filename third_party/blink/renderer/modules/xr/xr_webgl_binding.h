@@ -17,6 +17,8 @@ class WebGLRenderingContextBase;
 class WebGLTexture;
 class XRLightProbe;
 class XRSession;
+class XRFrame;
+class XRView;
 
 class XRWebGLBinding final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -33,6 +35,7 @@ class XRWebGLBinding final : public ScriptWrappable {
   XRSession* session() const { return session_; }
 
   WebGLTexture* getReflectionCubeMap(XRLightProbe*, ExceptionState&);
+  WebGLTexture* getCameraImage(XRFrame*, XRView*);
 
   void Trace(Visitor*) const override;
 

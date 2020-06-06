@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -32,14 +33,18 @@ class DesktopNativeCursorManager;
 
 class VIEWS_EXPORT DesktopDragDropClientOzone
     : public aura::client::DragDropClient,
-      public ui::WmDropHandler {
+      public ui::WmDropHandler,
+      public aura::WindowObserver {
  public:
   DesktopDragDropClientOzone(aura::Window* root_window,
                              views::DesktopNativeCursorManager* cursor_manager,
                              ui::WmDragHandler* drag_handler);
   ~DesktopDragDropClientOzone() override;
 
-  // Overridden from aura::client::DragDropClient:
+ private:
+  friend class DesktopDragDropClientOzoneTest;
+
+  // aura::client::DragDropClient
   int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
                        aura::Window* root_window,
                        aura::Window* source_window,
@@ -51,7 +56,7 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   void AddObserver(aura::client::DragDropClientObserver* observer) override;
   void RemoveObserver(aura::client::DragDropClientObserver* observer) override;
 
-  // Overridden from void ui::WmDropHandler:
+  // ui::WmDropHandler
   void OnDragEnter(const gfx::PointF& point,
                    std::unique_ptr<ui::OSExchangeData> data,
                    int operation) override;
@@ -59,24 +64,22 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data) override;
   void OnDragLeave() override;
 
-  void OnDragSessionClosed(int operation);
+  // aura::WindowObserver
+  void OnWindowDestroyed(aura::Window* window) override;
 
- private:
-  void DragDropSessionCompleted();
+  void OnDragSessionClosed(int operation);
   void QuitRunLoop();
 
-  // Returns a DropTargetEvent to be passed to the DragDropDelegate, or null to
-  // abort the drag.
-  std::unique_ptr<ui::DropTargetEvent> CreateDropTargetEvent(
+  // Returns a DropTargetEvent to be passed to the DragDropDelegate.
+  // Updates the delegate if needed, which in its turn calls their
+  // OnDragExited/OnDragEntered, so after getting the event the delegate
+  // is ready to accept OnDragUpdated or OnPerformDrop.  Returns nullptr if
+  // drop is not possible.
+  std::unique_ptr<ui::DropTargetEvent> UpdateTargetAndCreateDropEvent(
       const gfx::PointF& point);
 
-  // Updates |drag_drop_delegate_| along with |window|.
-  void UpdateDragDropDelegate(aura::Window* window);
-
-  // Resets |drag_drop_delegate_|.
+  // Resets |drag_drop_delegate_|.  Calls OnDragExited() before resetting.
   void ResetDragDropTarget();
-
-  void PerformDrop();
 
   aura::Window* const root_window_;
 
@@ -84,11 +87,13 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
 
   ui::WmDragHandler* const drag_handler_;
 
+  // Last window under the mouse.
+  aura::Window* current_window_ = nullptr;
   // The delegate corresponding to the window located at the mouse position.
   aura::client::DragDropDelegate* drag_drop_delegate_ = nullptr;
 
   // The data to be delivered through the drag and drop.
-  std::unique_ptr<ui::OSExchangeData> os_exchange_data_ = nullptr;
+  std::unique_ptr<ui::OSExchangeData> data_to_drop_;
 
   // The most recent native coordinates of a drag.
   gfx::PointF last_drag_point_;

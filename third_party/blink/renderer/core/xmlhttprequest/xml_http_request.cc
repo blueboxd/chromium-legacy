@@ -741,7 +741,7 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
 
   if (!async_) {
     if (GetExecutionContext()->IsDocument() &&
-        !GetDocument()->IsFeatureEnabled(
+        !GetExecutionContext()->IsFeatureEnabled(
             mojom::blink::FeaturePolicyFeature::kSyncXHR,
             ReportOptions::kReportOnFailure,
             "Synchronous requests are disabled by Feature Policy.")) {

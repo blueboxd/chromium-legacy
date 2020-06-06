@@ -108,7 +108,7 @@ TEST_F(TextFinderTest, FindTextSimple) {
   EXPECT_EQ(text_node, active_match->endContainer());
   EXPECT_EQ(10u, active_match->endOffset());
 
-  find_options->find_next = true;
+  find_options->new_session = false;
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame));
   active_match = GetTextFinder().ActiveMatch();
@@ -142,7 +142,7 @@ TEST_F(TextFinderTest, FindTextSimple) {
   EXPECT_EQ(text_node, active_match->endContainer());
   EXPECT_EQ(20u, active_match->endOffset());
 
-  find_options->find_next = true;
+  find_options->new_session = false;
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame));
   active_match = GetTextFinder().ActiveMatch();
@@ -248,7 +248,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   EXPECT_EQ(text_in_i_element, active_match->endContainer());
   EXPECT_EQ(3u, active_match->endOffset());
 
-  find_options->find_next = true;
+  find_options->new_session = false;
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame));
   active_match = GetTextFinder().ActiveMatch();
@@ -291,7 +291,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM) {
   EXPECT_EQ(text_in_b_element, active_match->endContainer());
   EXPECT_EQ(3u, active_match->endOffset());
 
-  find_options->find_next = true;
+  find_options->new_session = false;
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame));
   active_match = GetTextFinder().ActiveMatch();
@@ -502,7 +502,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             *find_options);
 
-  find_options->find_next = true;
+  find_options->new_session = false;
   ASSERT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
                                    wrap_within_frame, &active_now));
   EXPECT_TRUE(active_now);
@@ -525,7 +525,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   EXPECT_EQ(8u, active_match->endOffset());
 
   // Restart full search and check that added text is found.
-  find_options->find_next = false;
+  find_options->new_session = true;
   GetTextFinder().ResetMatchCount();
   GetTextFinder().CancelPendingScopingEffort();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
@@ -559,7 +559,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   GetTextFinder().StartScopingStringMatches(identifier, search_text,
                                             *find_options);
 
-  find_options->find_next = true;
+  find_options->new_session = false;
   ASSERT_FALSE(GetTextFinder().Find(identifier, search_text, *find_options,
                                     wrap_within_frame, &active_now));
   EXPECT_FALSE(active_now);
@@ -579,7 +579,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
   EXPECT_EQ(8u, active_match->endOffset());
 
   // Restart full search and check that added text is found.
-  find_options->find_next = false;
+  find_options->new_session = true;
   GetTextFinder().ResetMatchCount();
   GetTextFinder().CancelPendingScopingEffort();
   GetTextFinder().StartScopingStringMatches(identifier, search_text,

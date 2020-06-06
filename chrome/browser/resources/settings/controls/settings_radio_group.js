@@ -21,6 +21,11 @@ Polymer({
     groupAriaLabel: String,
 
     selected: String,
+
+    selectableElements: {
+      type: String,
+      value: ['cr-radio-button', 'controlled-radio-button'].join(', '),
+    },
   },
 
   hostAttributes: {
@@ -46,5 +51,6 @@ Polymer({
     this.set(
         'pref.value',
         Settings.PrefUtil.stringToPrefValue(this.selected, this.pref));
+    this.fire('change');
   },
 });

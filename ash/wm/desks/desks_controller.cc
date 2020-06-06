@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
-#include "ash/public/cpp/fps_counter.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -34,6 +34,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -90,8 +91,7 @@ void RemoveAllWindowsFromOverview() {
   }
 }
 
-// Selects and returns the compositor that the FpsCounter will use to measure
-// the animation smoothness.
+// Selects and returns the compositor to measure the animation smoothness.
 ui::Compositor* GetSelectedCompositorForAnimationSmoothness() {
   // Favor the compositor associated with the active window's root window (if
   // any), or that of the primary root window.
@@ -140,8 +140,7 @@ class DesksController::DeskAnimationBase
     for (auto& observer : controller_->observers_)
       observer.OnDeskSwitchAnimationLaunching();
 
-    fps_counter_ = std::make_unique<FpsCounter>(
-        GetSelectedCompositorForAnimationSmoothness());
+    throughput_tracker_.Start(GetReportCallback());
 
     // This step makes sure that the containers of the target desk are shown at
     // the beginning of the animation (but not actually visible to the user yet,
@@ -214,7 +213,7 @@ class DesksController::DeskAnimationBase
 
     desk_switch_animators_.clear();
 
-    ComputeAnimationSmoothnessAndReport();
+    throughput_tracker_.Stop();
 
     for (auto& observer : controller_->observers_)
       observer.OnDeskSwitchAnimationFinished();
@@ -240,9 +239,10 @@ class DesksController::DeskAnimationBase
 
   // Since performance here matters, we have to use the UMA histograms macros to
   // report the smoothness histograms, but each macro use has to be associated
-  // with exactly one histogram name. This function allows subclasses to report
-  // the histogram using the macro with their desired name.
-  virtual void ReportSmoothness(int smoothness) const = 0;
+  // with exactly one histogram name. This function allows subclasses to return
+  // a callback that reports the histogram using the macro with their desired
+  // name.
+  virtual ash::metrics_util::ReportCallback GetReportCallback() const = 0;
 
   DesksController* const controller_;
 
@@ -255,17 +255,10 @@ class DesksController::DeskAnimationBase
   const Desk* const ending_desk_;
 
  private:
-  // Computes the animation smoothness and reports an UMA stat for it.
-  void ComputeAnimationSmoothnessAndReport() {
-    DCHECK(fps_counter_);
-    const int smoothness = fps_counter_->ComputeSmoothness();
-    if (smoothness < 0)
-      return;
-    ReportSmoothness(smoothness);
-  }
-
-  // The FPS counter used for measuring this animation smoothness.
-  std::unique_ptr<FpsCounter> fps_counter_;
+  // ThroughputTracker used for measuring this animation smoothness.
+  ui::ThroughputTracker throughput_tracker_ =
+      GetSelectedCompositorForAnimationSmoothness()
+          ->RequestNewThroughputTracker();
 
   DISALLOW_COPY_AND_ASSIGN(DeskAnimationBase);
 };
@@ -323,9 +316,12 @@ class DesksController::DeskActivationAnimation
 
   void OnDeskSwitchAnimationFinishedInternal() override {}
 
-  void ReportSmoothness(int smoothness) const override {
-    UMA_HISTOGRAM_PERCENTAGE(kDeskActivationSmoothnessHistogramName,
-                             smoothness);
+  ash::metrics_util::ReportCallback GetReportCallback() const override {
+    return ash::metrics_util::ForSmoothness(
+        base::BindRepeating([](int smoothness) {
+          UMA_HISTOGRAM_PERCENTAGE(kDeskActivationSmoothnessHistogramName,
+                                   smoothness);
+        }));
   }
 
  private:
@@ -388,8 +384,12 @@ class DesksController::DeskRemovalAnimation
     MaybeRestoreSplitView(/*refresh_snapped_windows=*/true);
   }
 
-  void ReportSmoothness(int smoothness) const override {
-    UMA_HISTOGRAM_PERCENTAGE(kDeskRemovalSmoothnessHistogramName, smoothness);
+  ash::metrics_util::ReportCallback GetReportCallback() const override {
+    return ash::metrics_util::ForSmoothness(
+        base::BindRepeating([](int smoothness) {
+          UMA_HISTOGRAM_PERCENTAGE(kDeskRemovalSmoothnessHistogramName,
+                                   smoothness);
+        }));
   }
 
  private:

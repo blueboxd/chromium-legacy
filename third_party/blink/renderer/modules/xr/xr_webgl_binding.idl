@@ -13,4 +13,6 @@
   // Lighting Estimation API
   [RaisesException]
   WebGLTexture? getReflectionCubeMap(XRLightProbe lightProbe);
+
+  [RuntimeEnabled=WebXRCameraAccess] WebGLTexture? getCameraImage(XRFrame frame, XRView view);
 };

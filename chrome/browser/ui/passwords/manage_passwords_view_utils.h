@@ -45,31 +45,30 @@ gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
 std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
     const autofill::PasswordForm& form);
 
-// Sets the formatted |title| in the Save Password bubble or the Update Password
-// bubble (depending on |dialog_type|). If the registry controlled domain of
-// |user_visible_url| (i.e. the one seen in the omnibox) differs from the
-// registry controlled domain of |form_origin_url|, it adds the site name.
-void GetSavePasswordDialogTitleTextAndLinkRange(
+// Returns the formatted title in the Save Password bubble or the Update
+// Password bubble (depending on |dialog_type|). If the registry controlled
+// domain of |user_visible_url| (i.e. the one seen in the omnibox) differs from
+// the registry controlled domain of |form_origin_url|, it adds the site name.
+base::string16 GetSavePasswordDialogTitleText(
     const GURL& user_visible_url,
     const url::Origin& form_origin_url,
-    PasswordTitleType dialog_type,
-    base::string16* title);
+    PasswordTitleType dialog_type);
 
-// Sets the formatted |title| in the Manage Passwords bubble. If the registry
+// Returns the formatted title in the Manage Passwords bubble. If the registry
 // controlled domain of |user_visible_url| (i.e. the one seen in the omnibox)
 // differs from the domain of the managed password origin URL
 // |password_origin_url|, sets |IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_TITLE| or
 // |IDS_MANAGE_PASSWORDS_DIFFERENT_DOMAIN_NO_PASSWORDS_TITLE| as
-// the |title| so that it replaces "this site" in title text with output of
+// the title so that it replaces "this site" in title text with output of
 // |FormatUrlForSecurityDisplay(password_origin_url)|.
 // Otherwise, sets |IDS_MANAGE_PASSWORDS_TITLE| or
-// |IDS_MANAGE_PASSWORDS_NO_PASSWORDS_TITLE| as |title| having "this site".
+// |IDS_MANAGE_PASSWORDS_NO_PASSWORDS_TITLE| as the title having "this site".
 // The *_NO_PASSWORDS_* variants of the title strings are used when no
 // credentials are present.
-void GetManagePasswordsDialogTitleText(const GURL& user_visible_url,
-                                       const url::Origin& password_origin_url,
-                                       bool has_credentials,
-                                       base::string16* title);
+base::string16 GetManagePasswordsDialogTitleText(
+    const GURL& user_visible_url,
+    const url::Origin& password_origin_url,
+    bool has_credentials);
 
 // Returns an username in the form that should be shown in the bubble.
 base::string16 GetDisplayUsername(const autofill::PasswordForm& form);

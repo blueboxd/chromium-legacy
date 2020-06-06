@@ -1474,7 +1474,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
       return hotseat_state();
   }
   NOTREACHED();
-  return HotseatState::kShownHomeLauncher;
+  return HotseatState::kNone;
 }
 
 ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
@@ -2049,7 +2049,8 @@ bool ShelfLayoutManager::ShouldHomeGestureHandleEvent(float scroll_y) const {
 
   if (IsHotseatEnabled()) {
     if (features::IsDragFromShelfToHomeOrOverviewEnabled() &&
-        hotseat_state() != HotseatState::kShownHomeLauncher) {
+        hotseat_state() != HotseatState::kShownHomeLauncher &&
+        hotseat_state() != HotseatState::kNone) {
       // If hotseat is hidden or extended (in-app or in-overview), do not let
       // HomeLauncherGestureHandler to handle the events.
       return false;

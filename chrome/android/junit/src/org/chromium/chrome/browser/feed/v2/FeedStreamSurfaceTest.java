@@ -9,7 +9,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
-import android.content.Context;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 
@@ -41,7 +40,7 @@ import java.util.Arrays;
 public class FeedStreamSurfaceTest {
     private static final String TEST_DATA = "test";
     private FeedStreamSurface mFeedStreamSurface;
-    private Context mContext;
+    private Activity mActivity;
 
     @Mock
     private SnackbarManager mSnackbarManager;
@@ -57,9 +56,9 @@ public class FeedStreamSurfaceTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        mContext = Robolectric.buildActivity(Activity.class).get();
+        mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface = new FeedStreamSurface(null, () -> null, mContext, mSnackbarManager);
+        mFeedStreamSurface = new FeedStreamSurface(null, () -> null, mActivity, mSnackbarManager);
     }
 
     @Test
@@ -250,9 +249,9 @@ public class FeedStreamSurfaceTest {
         FeedListContentManager contentManager =
                 mFeedStreamSurface.getFeedListContentManagerForTesting();
 
-        View v0 = new View(mContext);
-        View v1 = new View(mContext);
-        View v2 = new View(mContext);
+        View v0 = new View(mActivity);
+        View v1 = new View(mActivity);
+        View v2 = new View(mActivity);
 
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
         assertEquals(2, contentManager.getItemCount());
@@ -280,8 +279,8 @@ public class FeedStreamSurfaceTest {
                 mFeedStreamSurface.getFeedListContentManagerForTesting();
 
         // Set 2 header views first. These should always be there throughout stream update.
-        View v0 = new View(mContext);
-        View v1 = new View(mContext);
+        View v0 = new View(mActivity);
+        View v1 = new View(mActivity);
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
         assertEquals(2, contentManager.getItemCount());
         assertEquals(v0,

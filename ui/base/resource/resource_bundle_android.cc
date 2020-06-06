@@ -59,11 +59,10 @@ bool LoadFromApkOrFile(const char* apk_path,
 int LoadLocalePakFromApk(const std::string& app_locale,
                          bool in_split,
                          base::MemoryMappedFile::Region* out_region) {
+  bool log_error = true;
   std::string locale_path_within_apk =
-      GetPathForAndroidLocalePakWithinApk(app_locale, in_split);
+      GetPathForAndroidLocalePakWithinApk(app_locale, in_split, log_error);
   if (locale_path_within_apk.empty()) {
-    LOG(WARNING) << "locale_path_within_apk.empty() for locale "
-                 << app_locale;
     return -1;
   }
   return base::android::OpenApkAsset(locale_path_within_apk, out_region);
@@ -98,10 +97,13 @@ void ResourceBundle::LoadCommonResources() {
 
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
-  if (g_locale_paks_in_apk) {
-    return !GetPathForAndroidLocalePakWithinApk(locale, false).empty();
+  bool log_error = false;
+  bool in_split = !g_locale_paks_in_apk;
+  if (!in_split) {
+    return !GetPathForAndroidLocalePakWithinApk(locale, in_split, log_error)
+                .empty();
   }
-  if (!GetPathForAndroidLocalePakWithinApk(locale, true).empty())
+  if (!GetPathForAndroidLocalePakWithinApk(locale, in_split, log_error).empty())
     return true;
   const auto path = GetLocaleFilePath(locale);
   return !path.empty() && base::PathExists(path);
@@ -267,11 +269,13 @@ int GetSecondaryLocalePackFd(base::MemoryMappedFile::Region* out_region) {
 }
 
 std::string GetPathForAndroidLocalePakWithinApk(const std::string& locale,
-                                                bool in_bundle) {
+                                                bool in_bundle,
+                                                bool log_error) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> ret =
       Java_ResourceBundle_getLocalePakResourcePath(
-          env, base::android::ConvertUTF8ToJavaString(env, locale), in_bundle);
+          env, base::android::ConvertUTF8ToJavaString(env, locale), in_bundle,
+          log_error);
   if (ret.obj() == nullptr) {
     return std::string();
   }

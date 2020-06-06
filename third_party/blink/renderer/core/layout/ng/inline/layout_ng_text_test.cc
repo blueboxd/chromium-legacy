@@ -142,6 +142,23 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteCollapseWhiteSpaceEnd) {
             GetItemsAsString(*text.GetLayoutObject()));
 }
 
+// web_tests/external/wpt/editing/run/delete.html?993-993
+// web_tests/external/wpt/editing/run/forwarddelete.html?1193-1193
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteNbspInPreWrap) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  InsertStyleElement("#target { white-space:pre-wrap; }");
+  SetBodyInnerHTML(u"<p id=target>&nbsp; abc</p>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(0, 1, ASSERT_NO_EXCEPTION);
+
+  EXPECT_EQ(
+      "*{' ', ShapeResult=0+1}\n"
+      "*{'abc', ShapeResult=2+3}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;

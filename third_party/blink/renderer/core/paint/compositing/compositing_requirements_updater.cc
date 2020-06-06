@@ -376,11 +376,22 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   RecursionData child_recursion_data = current_recursion_data;
   child_recursion_data.subtree_is_compositing_ = false;
 
+  // Embedded objects treat the embedded document as a child for the purposes
+  // of composited layer decisions. Look into the embedded document to determine
+  // if it is composited.
+  bool contains_composited_layer =
+      (layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
+       ToLayoutEmbeddedContent(layer->GetLayoutObject())
+           .ContentDocumentIsCompositing());
+
   bool will_be_composited_or_squashed =
       can_be_composited && RequiresCompositingOrSquashing(reasons_to_composite);
-  if (will_be_composited_or_squashed) {
-    // This layer now acts as the ancestor for child layers.
-    child_recursion_data.compositing_ancestor_ = layer;
+
+  if (will_be_composited_or_squashed || contains_composited_layer) {
+    if (will_be_composited_or_squashed) {
+      // This layer now acts as the ancestor for child layers.
+      child_recursion_data.compositing_ancestor_ = layer;
+    }
 
     // Here we know that all children and the layer's own contents can blindly
     // paint into this layer's backing, until a descendant is composited. So, we
@@ -508,23 +519,15 @@ void CompositingRequirementsUpdater::UpdateRecursive(
         child_recursion_data.has_unisolated_composited_blending_descendant_;
   }
 
-  // Embedded objects treat the embedded document as a child for the purposes
-  // of composited layer decisions. Look into the embedded document to determine
-  // if it is composited.
-  bool contains_composited_iframe =
-      layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
-      ToLayoutEmbeddedContent(layer->GetLayoutObject())
-          .RequiresAcceleratedCompositing();
-
   // Subsequent layers in the parent's stacking context may also need to
   // composite.
-  if (child_recursion_data.subtree_is_compositing_)
+  if (child_recursion_data.subtree_is_compositing_ || contains_composited_layer)
     current_recursion_data.subtree_is_compositing_ = true;
 
   // Set the flag to say that this SC has compositing children.
   layer->SetHasCompositingDescendant(
       child_recursion_data.subtree_is_compositing_ ||
-      contains_composited_iframe);
+      contains_composited_layer);
 
   if (layer->IsRootLayer()) {
     // The root layer needs to be composited if anything else in the tree is
@@ -550,9 +553,11 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     // the overlap map. Layers that are not separately composited will paint
     // into their compositing ancestor's backing, and so are still considered
     // for overlap.
-    if (child_recursion_data.compositing_ancestor_ &&
-        !child_recursion_data.compositing_ancestor_->IsRootLayer())
+    if ((child_recursion_data.compositing_ancestor_ &&
+         !child_recursion_data.compositing_ancestor_->IsRootLayer()) ||
+        contains_composited_layer) {
       overlap_map.Add(layer, abs_bounds, use_clipped_bounding_rect);
+    }
 
     // Now check for reasons to become composited that depend on the state of
     // descendant layers.
@@ -597,8 +602,10 @@ void CompositingRequirementsUpdater::UpdateRecursive(
         layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation())
       current_recursion_data.testing_overlap_ = false;
 
-    if (child_recursion_data.compositing_ancestor_ == layer)
+    if (child_recursion_data.compositing_ancestor_ == layer ||
+        contains_composited_layer) {
       overlap_map.FinishCurrentOverlapTestingContext();
+    }
 
     descendant_has3d_transform |=
         any_descendant_has3d_transform || layer->Has3DTransform();

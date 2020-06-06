@@ -256,11 +256,15 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
   } else {
     // This occurs if PerformBlockingConvertSelection() is called during
     // shutdown and the X11EventSource has already been destroyed.
+    auto* conn = x11::Connection::Get();
+    auto& events = conn->events();
     while (!request->completed && request->timeout > base::TimeTicks::Now()) {
-      if (XPending(x_display_)) {
-        XEvent event;
-        XNextEvent(x_display_, &event);
-        dispatcher_->DispatchXEvent(&event);
+      conn->Flush();
+      conn->ReadResponses();
+      if (!conn->events().empty()) {
+        x11::Connection::Event event = std::move(events.front());
+        events.pop_front();
+        dispatcher_->DispatchXEvent(&event.xlib_event);
       }
     }
   }

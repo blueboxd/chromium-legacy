@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 
-#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -208,19 +207,19 @@ void SyncConsentScreenHandler::HandleContinueWithDefaults(
 void SyncConsentScreenHandler::HandleAcceptAndContinue(
     const login::StringList& consent_description,
     const std::string& consent_confirmation) {
-  Continue(consent_description, consent_confirmation, UserChoice::kAccepted);
+  Continue(consent_description, consent_confirmation, /*enable_sync=*/true);
 }
 
 void SyncConsentScreenHandler::HandleDeclineAndContinue(
     const login::StringList& consent_description,
     const std::string& consent_confirmation) {
-  Continue(consent_description, consent_confirmation, UserChoice::kDeclined);
+  Continue(consent_description, consent_confirmation, /*enable_sync=*/false);
 }
 
 void SyncConsentScreenHandler::Continue(
     const login::StringList& consent_description,
     const std::string& consent_confirmation,
-    UserChoice choice) {
+    bool enable_sync) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   std::vector<int> consent_description_ids;
   int consent_confirmation_id;
@@ -229,7 +228,8 @@ void SyncConsentScreenHandler::Continue(
   // Manually add this ID because the string contains a runtime substitution,
   // so it's not included in GetConsentIDs().
   consent_description_ids.push_back(IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE);
-  screen_->OnContinue(consent_description_ids, consent_confirmation_id, choice);
+  screen_->OnAcceptAndContinue(consent_description_ids, consent_confirmation_id,
+                               enable_sync);
 
   SyncConsentScreen::SyncConsentScreenTestDelegate* test_delegate =
       screen_->GetDelegateForTesting();

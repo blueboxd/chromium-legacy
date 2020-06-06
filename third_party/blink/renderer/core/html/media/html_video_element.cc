@@ -87,7 +87,7 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
       is_effectively_fullscreen_(false),
       is_default_overridden_intrinsic_size_(
           !document.IsMediaDocument() &&
-          !document.IsFeatureEnabled(
+          !GetExecutionContext()->IsFeatureEnabled(
               mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       video_has_played_(false),
       mostly_filling_viewport_(false) {
@@ -654,7 +654,7 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
         "The provided element has not retrieved data.");
     return ScriptPromise();
   }
-  if (getReadyState() <= HTMLMediaElement::kHaveMetadata) {
+  if (!HasAvailableVideoFrame()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The provided element's player has no current data.");

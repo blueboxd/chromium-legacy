@@ -1296,11 +1296,26 @@ _VALID_OS_MACROS = (
 )
 
 
+# These are not checked on the public chromium-presubmit trybot.
+# Add files here that rely on .py files that exists only for target_os="android"
+# checkouts (e.g. //third_party/catapult).
 _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'android_webview/tools/run_cts.pydeps',
+    'build/android/devil_chromium.pydeps',
+    'build/android/gyp/create_bundle_wrapper_script.pydeps',
+    'build/android/gyp/jinja_template.pydeps',
+    'build/android/resource_sizes.pydeps',
+    'build/android/test_runner.pydeps',
+    'build/android/test_wrapper/logdog_wrapper.pydeps',
+    'chrome/android/features/create_stripped_java_factory.pydeps',
+    'testing/scripts/run_android_wpt.pydeps',
+    'third_party/android_platform/development/scripts/stack.pydeps',
+]
+
+
+_GENERIC_PYDEPS_FILES = [
     'base/android/jni_generator/jni_generator.pydeps',
     'base/android/jni_generator/jni_registration_generator.pydeps',
-    'build/android/devil_chromium.pydeps',
     'build/android/gyp/aar.pydeps',
     'build/android/gyp/aidl.pydeps',
     'build/android/gyp/allot_native_libraries.pydeps',
@@ -1313,7 +1328,6 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/create_apk_operations_script.pydeps',
     'build/android/gyp/create_app_bundle_apks.pydeps',
     'build/android/gyp/create_app_bundle.pydeps',
-    'build/android/gyp/create_bundle_wrapper_script.pydeps',
     'build/android/gyp/create_java_binary_script.pydeps',
     'build/android/gyp/create_size_info_files.pydeps',
     'build/android/gyp/desugar.pydeps',
@@ -1329,7 +1343,6 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/java_cpp_enum.pydeps',
     'build/android/gyp/java_cpp_strings.pydeps',
     'build/android/gyp/jetify_jar.pydeps',
-    'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',
     'build/android/gyp/main_dex_list.pydeps',
     'build/android/gyp/merge_manifest.pydeps',
@@ -1342,21 +1355,11 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/zip.pydeps',
     'build/android/incremental_install/generate_android_manifest.pydeps',
     'build/android/incremental_install/write_installer_json.pydeps',
-    'build/android/resource_sizes.pydeps',
-    'build/android/test_runner.pydeps',
-    'build/android/test_wrapper/logdog_wrapper.pydeps',
     'build/protoc_java.pydeps',
-    'chrome/android/features/create_stripped_java_factory.pydeps',
-    'components/module_installer/android/module_desc_java.pydeps',
-    'net/tools/testserver/testserver.pydeps',
-    'testing/scripts/run_android_wpt.pydeps',
-    'third_party/android_platform/development/scripts/stack.pydeps',
-]
-
-
-_GENERIC_PYDEPS_FILES = [
     'chrome/test/chromedriver/log_replay/client_replay_unittest.pydeps',
     'chrome/test/chromedriver/test/run_py_tests.pydeps',
+    'components/module_installer/android/module_desc_java.pydeps',
+    'net/tools/testserver/testserver.pydeps',
     'third_party/blink/renderer/bindings/scripts/build_web_idl_database.pydeps',
     'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'third_party/blink/renderer/bindings/scripts/generate_bindings.pydeps',
@@ -3643,7 +3646,8 @@ class PydepsChecker(object):
       # subrepositories. We can't figure out which files change, so re-check
       # all files.
       # Changes to print_python_deps.py affect all .pydeps.
-      if local_path == 'DEPS' or local_path.endswith('print_python_deps.py'):
+      if local_path in ('DEPS', 'PRESUBMIT.py') or local_path.endswith(
+          'print_python_deps.py'):
         return self._pydeps_files
       elif local_path.endswith('.pydeps'):
         if local_path in self._pydeps_files:

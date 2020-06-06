@@ -13,16 +13,17 @@ namespace base {
 
 ChromeUnwinderAndroid::ChromeUnwinderAndroid(
     const ArmCFITable* cfi_table,
-    const ModuleCache::Module* chrome_module)
-    : cfi_table_(cfi_table), chrome_module_(chrome_module) {
+    uintptr_t chrome_module_base_address)
+    : cfi_table_(cfi_table),
+      chrome_module_base_address_(chrome_module_base_address) {
   DCHECK(cfi_table_);
-  DCHECK(chrome_module_);
 }
 
 ChromeUnwinderAndroid::~ChromeUnwinderAndroid() = default;
 
 bool ChromeUnwinderAndroid::CanUnwindFrom(const Frame& current_frame) const {
-  return current_frame.module == chrome_module_;
+  return current_frame.module &&
+         current_frame.module->GetBaseAddress() == chrome_module_base_address_;
 }
 
 UnwindResult ChromeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,

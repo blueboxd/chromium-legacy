@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_process.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/metrics/visibility_metrics_logger.h"
 #include "base/base_paths_posix.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
@@ -74,6 +75,12 @@ AwBrowserPolicyConnector* AwBrowserProcess::browser_policy_connector() {
   if (!browser_policy_connector_)
     CreateBrowserPolicyConnector();
   return browser_policy_connector_.get();
+}
+
+VisibilityMetricsLogger* AwBrowserProcess::visibility_metrics_logger() {
+  if (!visibility_metrics_logger_)
+    visibility_metrics_logger_ = std::make_unique<VisibilityMetricsLogger>();
+  return visibility_metrics_logger_.get();
 }
 
 void AwBrowserProcess::CreateBrowserPolicyConnector() {

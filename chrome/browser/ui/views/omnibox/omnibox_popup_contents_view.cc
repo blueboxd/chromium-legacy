@@ -271,6 +271,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // the omnibox popup window.  Close any existing popup.
     if (popup_) {
       NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
+      // The active descendant should be cleared when the popup closes.
+      FireAXEventsForNewActiveDescendant(nullptr);
       popup_->CloseAnimated();  // This will eventually delete the popup.
       popup_.reset();
     }
@@ -378,8 +380,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
     if (!base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup) &&
         result_view_at(0)) {
-      result_view_at(0)->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
-                                                  true);
+      FireAXEventsForNewActiveDescendant(result_view_at(0));
     }
   }
   InvalidateLayout();
@@ -442,6 +443,14 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
       return;
   }
   event->SetHandled();
+}
+
+void OmniboxPopupContentsView::FireAXEventsForNewActiveDescendant(
+    View* descendant_view) {
+  if (descendant_view)
+    descendant_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
+                                              true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kActiveDescendantChanged, true);
 }
 
 void OmniboxPopupContentsView::OnWidgetBoundsChanged(
@@ -545,6 +554,12 @@ void OmniboxPopupContentsView::GetAccessibleNodeData(
   node_data->role = ax::mojom::Role::kListBox;
   if (IsOpen()) {
     node_data->AddState(ax::mojom::State::kExpanded);
+    OmniboxResultView* selected_result_view =
+        result_view_at(model_->selected_line());
+    if (selected_result_view)
+      node_data->AddIntAttribute(
+          ax::mojom::IntAttribute::kActivedescendantId,
+          selected_result_view->GetViewAccessibility().GetUniqueId().Get());
   } else {
     node_data->AddState(ax::mojom::State::kCollapsed);
     node_data->AddState(ax::mojom::State::kInvisible);

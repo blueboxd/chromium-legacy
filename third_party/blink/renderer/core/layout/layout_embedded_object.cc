@@ -107,12 +107,6 @@ void LayoutEmbeddedObject::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
-  if (RequiresAcceleratedCompositing())
-    return CompositingReason::kPlugin;
-  return CompositingReason::kNone;
-}
-
 void LayoutEmbeddedObject::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
   DCHECK(!ShouldApplySizeContainment());

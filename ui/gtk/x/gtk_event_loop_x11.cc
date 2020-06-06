@@ -66,13 +66,16 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // corresponding key event in the X event queue.  So we have to handle this
   // case.  ibus-gtk is used through gtk-immodule to support IMEs.
 
+  auto* conn = x11::Connection::Get();
+  XDisplay* display = conn->display();
+
   XEvent x_event;
   x_event.xkey = {};
   x_event.xkey.type = gdk_event_key.type == GDK_KEY_PRESS
                           ? x11::KeyPressEvent::opcode
                           : x11::KeyReleaseEvent::opcode;
   x_event.xkey.send_event = gdk_event_key.send_event;
-  x_event.xkey.display = gfx::GetXDisplay();
+  x_event.xkey.display = display;
   x_event.xkey.window = GDK_WINDOW_XID(gdk_event_key.window);
   x_event.xkey.root = DefaultRootWindow(x_event.xkey.display);
   x_event.xkey.time = gdk_event_key.time;
@@ -84,9 +87,9 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // We want to process the gtk event; mapped to an X11 event immediately
   // otherwise if we put it back on the queue we may get items out of order.
   if (ui::X11EventSource* x11_source = ui::X11EventSource::GetInstance())
-    x11_source->DispatchXEventNow(&x_event);
+    x11_source->DispatchXEvent(&x_event);
   else
-    XPutBackEvent(x_event.xkey.display, &x_event);
+    conn->events().emplace_front(base::nullopt, x_event);
 }
 
 }  // namespace ui

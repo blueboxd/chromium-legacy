@@ -46,7 +46,7 @@ public class SettingsActivityTest {
             @Override
             public boolean isSatisfied() {
                 return PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.REMEMBER_PASSWORDS_ENABLED);
+                        Pref.CREDENTIALS_ENABLE_SERVICE);
             }
         });
 

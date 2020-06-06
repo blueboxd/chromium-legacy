@@ -70,16 +70,12 @@ void TestCompositorHostX11::Show() {
       static_cast<int>(x11::WindowClass::InputOutput),
       nullptr,  // visual
       CWOverrideRedirect, &swa);
-  window_events_.reset(
-      new XScopedEventSelector(window_, StructureNotifyMask | ExposureMask));
+  window_events_ =
+      std::make_unique<XScopedEventSelector>(window_, ExposureMask);
   XMapWindow(display, window_);
-
-  while (true) {
-    XEvent event;
-    XNextEvent(display, &event);
-    if (event.type == MapNotify && event.xmap.window == window_)
-      break;
-  }
+  // Since this window is override-redirect, syncing is sufficient
+  // to ensure the map is complete.
+  XSync(display, x11::False);
   allocator_.GenerateId();
   compositor_.SetAcceleratedWidget(window_);
   compositor_.SetScaleAndSize(1.0f, bounds_.size(),

@@ -106,12 +106,26 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 )~~");
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest, AXTextMarker) {
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Serialize_AXTextMarker) {
   TestAndCheck(R"~~(data:text/html,
                     <p>Paragraph</p>)~~",
                {":3;AXStartTextMarker=*"}, R"~~(AXWebArea
 ++AXGroup
 ++++AXStaticText AXStartTextMarker={:1, 0, down} AXValue='Paragraph'
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Serialize_AXTextMarkerRange) {
+  TestAndCheck(R"~~(data:text/html,
+                    <p id='p'>Paragraph</p>
+                    <script>
+                      window.getSelection().selectAllChildren(document.getElementById('p'));
+                    </script>)~~",
+               {":3;AXSelectedTextMarkerRange=*"}, R"~~(AXWebArea
+++AXGroup
+++++AXStaticText AXSelectedTextMarkerRange={anchor: {:3, 0, down}, focus: {:2, -1, down}} AXValue='Paragraph'
 )~~");
 }
 

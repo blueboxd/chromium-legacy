@@ -307,10 +307,10 @@ public class NewTabPageUma {
     public void recordContentSuggestionsDisplayStatus() {
         @ContentSuggestionsDisplayStatus
         int status = ContentSuggestionsDisplayStatus.VISIBLE;
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) {
+        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS)) {
             // Disabled by policy.
             status = ContentSuggestionsDisplayStatus.DISABLED_BY_POLICY;
-        } else if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+        } else if (!PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
             // Articles are collapsed.
             status = ContentSuggestionsDisplayStatus.COLLAPSED;
         }

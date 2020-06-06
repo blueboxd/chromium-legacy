@@ -41,13 +41,28 @@ Polymer({
 
     label: String,
 
+    /*
+     * The Preference associated with the radio group.
+     * @type {!chrome.settingsPrivate.PrefObject|undefined}
+     */
+    pref: Object,
+
+    disabled: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     subLabel: {
       type: String,
       value: '',  // Allows the $hidden= binding to run without being set.
     },
   },
 
-  observers: ['onCheckedChanged_(checked)'],
+  observers: [
+    'onCheckedChanged_(checked)',
+    'onPrefChanged_(pref.*)',
+  ],
 
   /** @private */
   onCheckedChanged_() {
@@ -62,5 +77,22 @@ Polymer({
     // Prevent interacting with the indicator changing anything when disabled.
     e.preventDefault();
     e.stopPropagation();
+  },
+
+  /** @private */
+  onPrefChanged_() {
+    // If the preference has been set, and is managed, this control should be
+    // disabled. Unless the value associated with this control is present in
+    // |pref.userSelectableValues|. This will override the disabled set on the
+    // element externally.
+    this.disabled = !!this.pref &&
+        this.pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED &&
+        !(!!this.pref.userSelectableValues &&
+          this.pref.userSelectableValues.includes(this.name));
+  },
+
+  /** @private */
+  shouldShowPolicyIndicator_() {
+    return !this.pref;
   },
 });

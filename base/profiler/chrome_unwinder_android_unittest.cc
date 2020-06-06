@@ -213,7 +213,8 @@ TEST(ChromeUnwinderAndroidTest, CanUnwindFrom) {
   auto non_chrome_module =
       std::make_unique<TestModule>(0x2000, 0x500, "OtherModule");
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module.get());
+  ChromeUnwinderAndroid unwinder(cfi_table.get(),
+                                 chrome_module->GetBaseAddress());
 
   EXPECT_TRUE(unwinder.CanUnwindFrom({0x1100, chrome_module.get()}));
   EXPECT_FALSE(unwinder.CanUnwindFrom({0x2100, non_chrome_module.get()}));
@@ -227,7 +228,8 @@ TEST(ChromeUnwinderAndroidTest, TryUnwind) {
   const ModuleCache::Module* chrome_module = AddNativeModule(
       &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module);
+  ChromeUnwinderAndroid unwinder(cfi_table.get(),
+                                 chrome_module->GetBaseAddress());
 
   std::vector<uintptr_t> stack_buffer = {
       0xFFFF,
@@ -264,7 +266,8 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindAbort) {
   const ModuleCache::Module* chrome_module = AddNativeModule(
       &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module);
+  ChromeUnwinderAndroid unwinder(cfi_table.get(),
+                                 chrome_module->GetBaseAddress());
 
   std::vector<uintptr_t> stack_buffer = {
       0xFFFF,
@@ -295,7 +298,8 @@ TEST(ChromeUnwinderAndroidTest, TryUnwindNoData) {
   const ModuleCache::Module* chrome_module = AddNativeModule(
       &module_cache, std::make_unique<TestModule>(0x1000, 0x500));
 
-  ChromeUnwinderAndroid unwinder(cfi_table.get(), chrome_module);
+  ChromeUnwinderAndroid unwinder(cfi_table.get(),
+                                 chrome_module->GetBaseAddress());
 
   std::vector<uintptr_t> stack_buffer = {0xFFFF};
 

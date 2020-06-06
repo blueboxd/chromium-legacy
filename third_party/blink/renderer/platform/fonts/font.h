@@ -237,10 +237,14 @@ class PLATFORM_EXPORT Font {
   bool IsFallbackValid() const;
 
   bool ShouldSkipDrawing() const {
-    return font_fallback_list_ && font_fallback_list_->ShouldSkipDrawing();
+    if (!font_fallback_list_)
+      return false;
+    return EnsureFontFallbackList()->ShouldSkipDrawing();
   }
 
  private:
+  // TODO(xiaochengh): The function not only initializes null FontFallbackList,
+  // but also syncs invalid FontFallbackList. Rename it for better readability.
   FontFallbackList* EnsureFontFallbackList() const;
   void RevalidateFontFallbackList() const;
   void ReleaseFontFallbackListRef() const;

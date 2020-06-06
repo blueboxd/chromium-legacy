@@ -368,6 +368,8 @@ api::autotest_private::AppReadiness GetAppReadiness(
 api::autotest_private::HotseatState GetHotseatState(
     ash::HotseatState hotseat_state) {
   switch (hotseat_state) {
+    case ash::HotseatState::kNone:
+      return api::autotest_private::HotseatState::HOTSEAT_STATE_NONE;
     case ash::HotseatState::kHidden:
       return api::autotest_private::HotseatState::HOTSEAT_STATE_HIDDEN;
     case ash::HotseatState::kShownClamshell:

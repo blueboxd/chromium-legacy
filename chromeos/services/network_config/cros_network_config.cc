@@ -269,15 +269,14 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
     const DeviceState* device =
         network_state_handler->GetDeviceState(network->device_path());
     if (!device) {
-      // When a device is removed (e.g. cellular modem unplugged) it's possible
-      // for the device object to disappear before networks on that device
-      // are cleaned up.  This fixes crbug/1001687.
-      NET_LOG(DEBUG) << "Cellular is not available.";
-      return nullptr;
-    }
-
-    if (device->IsSimLocked() || device->scanning())
+      // When a device is removed or SIM is replaced, the Shill Service may
+      // outlive the Device. Such services are not connectable.
+      NET_LOG(DEBUG) << "Cellular device is not available: "
+                     << network->device_path();
       result->connectable = false;
+    } else if (device->IsSimLocked() || device->scanning()) {
+      result->connectable = false;
+    }
   }
   result->connect_requested = network->connect_requested();
   bool technology_enabled = network->Matches(NetworkTypePattern::VPN()) ||
@@ -324,7 +323,7 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
 
       const DeviceState* cellular_device =
           network_state_handler->GetDeviceState(network->device_path());
-      cellular->sim_locked = cellular_device->IsSimLocked();
+      cellular->sim_locked = cellular_device && cellular_device->IsSimLocked();
       result->type_state =
           mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;

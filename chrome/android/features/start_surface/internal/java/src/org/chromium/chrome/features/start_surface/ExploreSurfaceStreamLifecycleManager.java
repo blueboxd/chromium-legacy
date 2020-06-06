@@ -40,7 +40,7 @@ class ExploreSurfaceStreamLifecycleManager extends StreamLifecycleManager {
         // Stream#onShow to prevent feed services from being warmed up if the user
         // has opted out during the previous session.
         return (!mHasHeader
-                || PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
+                || PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
     }
     // TODO(crbug.com/982018): Save and restore instance state when opening the feeds in normal
     // Tabs.

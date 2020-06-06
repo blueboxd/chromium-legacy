@@ -42,10 +42,6 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
  public:
   using TView = SyncConsentScreenView;
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused. Public for testing.
-  enum class UserChoice { kDeclined = 0, kAccepted = 1, kMaxValue = kAccepted };
-
   explicit SyncConsentScreenHandler(JSCallsContainer* js_calls_container);
   ~SyncConsentScreenHandler() override;
 
@@ -81,7 +77,7 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   // Helper for the accept and decline cases.
   void Continue(const ::login::StringList& consent_description,
                 const std::string& consent_confirmation,
-                UserChoice choice);
+                bool enable_sync);
 
   // Adds resource |resource_id| both to |builder| and to |known_string_ids_|.
   void RememberLocalizedValue(const std::string& name,

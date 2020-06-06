@@ -117,8 +117,6 @@ void SyncConsentScreen::Finish(Result result) {
   DCHECK(profile_);
   // Always set completed, even if the dialog was skipped (e.g. by policy).
   profile_->GetPrefs()->SetBoolean(chromeos::prefs::kSyncOobeCompleted, true);
-  // Record whether the dialog was shown, skipped, etc.
-  base::UmaHistogramEnumeration("OOBE.SyncConsentScreen.Behavior", behavior_);
   exit_callback_.Run(result);
 }
 
@@ -182,18 +180,16 @@ void SyncConsentScreen::OnContinueWithDefaults(
   Finish(Result::NEXT);
 }
 
-void SyncConsentScreen::OnContinue(
+void SyncConsentScreen::OnAcceptAndContinue(
     const std::vector<int>& consent_description,
     int consent_confirmation,
-    SyncConsentScreenHandler::UserChoice choice) {
+    bool enable_sync) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   if (is_hidden())
     return;
-  base::UmaHistogramEnumeration("OOBE.SyncConsentScreen.UserChoice", choice);
   // Record that the user saw the consent text, regardless of which features
   // they chose to enable.
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
-  bool enable_sync = choice == SyncConsentScreenHandler::UserChoice::kAccepted;
   UpdateSyncSettings(enable_sync);
   Finish(Result::NEXT);
 }

@@ -2362,7 +2362,13 @@ This file contains the strings for ash.
         <ph name="TOTAL_TIME">{0}<ex>10m</ex></ph> timer
       </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WITH_LABEL" desc="Message for Assistant timer notification. Example: 10m timer · Eggs.">
-        <ph name="TOTAL_TIME">{0}<ex>10m</ex></ph> timer · <ph name="LABEL">{1}<ex>Eggs</ex></ph>
+        <ph name="TOTAL_TIME">{0}<ex>10m</ex></ph> timer &#x00B7; <ph name="LABEL">{1}<ex>Eggs</ex></ph>
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WHEN_FIRED" desc="Message for Assistant timer notification once the timer has fired.">
+        Time's up
+      </message>
+      <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_MESSAGE_WHEN_FIRED_WITH_LABEL" desc="Message for Assistant timer notification once the timer has fired. Example: Time's up · Eggs.">
+        Time's up &#x00B7; <ph name="LABEL">{1}<ex>Eggs</ex></ph>
       </message>
       <message name="IDS_ASSISTANT_TIMER_NOTIFICATION_FORMATTED_TIME_NEGATE" desc="Negates a formatted time string. Example: -10:27.">
         -<ph name="FORMATTED_TIME">{0}<ex>10:27</ex></ph>
@@ -2396,6 +2402,22 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASSISTANT_AMBIENT_GREETING_MESSAGE" desc="Greetings message shown on Ambient Mode UI.">
         Hi, <ph name="USERNAME">$1</ph>
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_MORNING" desc="Message shown to greet the user in Assistant UI during the morning.">
+        Good morning <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_AFTERNOON" desc="Message shown to greet the user in Assistant UI during the afternoon.">
+        Good afternoon <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_EVENING" desc="Message shown to greet the user in Assistant UI during the evening.">
+        Good evening <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_GREETING_NIGHT" desc="Message shown to greet the user in Assistant UI during the night.">
+        Good night <ph name="GIVEN_NAME">$1<ex>David</ex>,</ph>
+      </message>
+      <message name="IDS_ASSISTANT_BETTER_ONBOARDING_INTRO" desc="Message shown to introduce Assistant capabilities to the user.">
+        I'm your Google Assistant, here to help you throughout your day!
+Here are some things you can try to get started.
       </message>
 
       <message name="IDS_ASH_MESSAGE_CENTER_UNLOCK_TO_PERFORM_ACTION" desc="The short message to encourage user to unlock the device so that Chrome OS can perform the notification action selected by user after unlocking.">

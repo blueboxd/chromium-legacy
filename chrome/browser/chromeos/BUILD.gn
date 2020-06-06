@@ -92,6 +92,7 @@ source_set("chromeos") {
     "//chrome/common",
     "//chrome/common/extensions/api",
     "//chrome/common/string_matching",
+    "//chrome/installer/util:with_no_strings",
     "//chrome/services/file_util/public/cpp",
     "//chrome/services/keymaster/public/mojom",
     "//chrome/services/printing/public/mojom",
@@ -215,6 +216,7 @@ source_set("chromeos") {
     "//components/language/core/browser",
     "//components/language/core/common",
     "//components/login",
+    "//components/metrics",
     "//components/metrics:serialization",
     "//components/omnibox/browser",
     "//components/onc",
@@ -2378,6 +2380,8 @@ source_set("chromeos") {
     "sync/os_sync_util.h",
     "sync/os_syncable_service_model_type_controller.cc",
     "sync/os_syncable_service_model_type_controller.h",
+    "sync/split_settings_sync_field_trial.cc",
+    "sync/split_settings_sync_field_trial.h",
     "sync/turn_sync_on_helper.cc",
     "sync/turn_sync_on_helper.h",
     "system/automatic_reboot_manager.cc",
@@ -2446,6 +2450,8 @@ source_set("chromeos") {
     "tpm_firmware_update.h",
     "tpm_firmware_update_notification.cc",
     "tpm_firmware_update_notification.h",
+    "tracing_allocation_failure_tracker.cc",
+    "tracing_allocation_failure_tracker.h",
     "u2f_notification.cc",
     "u2f_notification.h",
     "ui/echo_dialog_listener.h",
@@ -3577,9 +3583,11 @@ if (use_libfuzzer) {
 
     deps = [
       ":policy_fuzzer_proto",
+      "//base/test:test_support",
       "//chrome/browser",
       "//chrome/browser/chromeos",
       "//chromeos/dbus:dbus",
+      "//chromeos/tpm",
       "//third_party/libprotobuf-mutator",
     ]
   }

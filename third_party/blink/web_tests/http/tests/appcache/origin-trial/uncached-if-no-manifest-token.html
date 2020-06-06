@@ -1,4 +1,4 @@
-<html manifest="../resources/simple.manifest">
+<html manifest="../resources/simple-no-token.manifest">
 <!--
 Generate this token with the command:
 tools/origin_trials/generate_token.py http://127.0.0.1:8000 AppCache --expire-days=2000
@@ -38,9 +38,9 @@ function test(e)
 
     event = e;
     shouldBeEqualToString("event.reason", "manifest");
-    shouldBeEqualToString("event.message", "Invalid or missing manifest origin trial token: http://127.0.0.1:8000/appcache/resources/simple.manifest");
+    shouldBeEqualToString("event.message", "Invalid or missing manifest origin trial token: http://127.0.0.1:8000/appcache/resources/simple-no-token.manifest");
 
-    shouldBeEqualToString("event.url", "http://127.0.0.1:8000/appcache/resources/simple.manifest");
+    shouldBeEqualToString("event.url", "http://127.0.0.1:8000/appcache/resources/simple-no-token.manifest");
     // event.status is 0 and not relevant when there is a token error.
     shouldBe("event.status", "0");
 

@@ -3215,10 +3215,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Reopen Chrome.
       </message>
 
-      <if expr="enable_vr">
-        <part file="xr_consent_ui_strings_java.grdp" />
-      </if>
-
       <if expr="enable_arcore">
         <!-- ARCore check infobar -->
         <message name="IDS_AR_CORE_CHECK_INFOBAR_INSTALL_TEXT" desc="Text to be displayed in the ARCore check infobar. When a WebXR page is loaded, if ARCore is needed to display AR content and it is not installed, an infobar will be shown to the user prompting them to install ARCore.">
@@ -3231,19 +3227,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         <!-- AR module -->
         <message name="IDS_AR_MODULE_TITLE" desc="Text shown when the AR module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Augmented Reality for Chrome…').">
           Augmented Reality
-        </message>
-        <message name="IDS_AR_IMMERSIVE_MODE_CONSENT_TITLE" desc="Title for dialog shown when a site requests consent for starting an augmented reality session.">
-          Enter AR from <ph name="DOMAIN">%s<ex>example.com</ex></ph>?
-        </message>
-        <message name="IDS_AR_IMMERSIVE_MODE_CONSENT_MESSAGE" desc="Message for dialog shown when a site requests consent for starting an augmented reality session.">
-          While you're in AR, this site may be able to:
-• create a 3D map of your environment
-• track camera motion
-
-Only you can see what your camera is looking at. The site can't see your camera's images.
-        </message>
-        <message name="IDS_AR_IMMERSIVE_MODE_CONSENT_BUTTON" desc="Confirm button for dialog shown when a site requests consent for starting an augmented reality session.">
-          Enter AR
         </message>
 
         <!-- App upgrade from Play Store -->

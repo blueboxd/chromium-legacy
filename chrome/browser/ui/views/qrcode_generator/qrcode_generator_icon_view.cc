@@ -24,7 +24,8 @@ QRCodeGeneratorIconView::QRCodeGeneratorIconView(
     : PageActionIconView(command_updater,
                          IDC_QRCODE_GENERATOR,
                          icon_label_bubble_delegate,
-                         page_action_icon_delegate) {
+                         page_action_icon_delegate),
+      bubble_requested_(false) {
   SetVisible(false);
   SetLabel(l10n_util::GetStringUTF16(IDS_OMNIBOX_QRCODE_GENERATOR_ICON_LABEL));
 }
@@ -54,26 +55,31 @@ void QRCodeGeneratorIconView::UpdateImpl() {
   if (!omnibox_view)
     return;
 
-  if (!QRCodeGeneratorBubbleController::IsGeneratorAvailable(
+  bool feature_available =
+      QRCodeGeneratorBubbleController::IsGeneratorAvailable(
           web_contents->GetURL(),
-          web_contents->GetBrowserContext()->IsOffTheRecord())) {
-    return;
-  }
+          web_contents->GetBrowserContext()->IsOffTheRecord());
 
-  if (omnibox_view->model()->has_focus()) {
-    if (!omnibox_view->model()->user_input_in_progress() && !GetVisible()) {
-      SetVisible(true);
-    }
-  } else {
-    // Omnibox not focused.
-    if (GetVisible()) {
-      SetVisible(false);
-    }
-  }
+  bool visible = GetBubble() != nullptr ||
+                 (feature_available && omnibox_view->model()->has_focus() &&
+                  !omnibox_view->model()->user_input_in_progress());
+
+  // Once the bubble has initialized, or focus returned to the omnibox,
+  // clear the initializing flag.
+  if (visible && bubble_requested_)
+    bubble_requested_ = false;
+
+  // If the bubble is in the process of showing, prevent losing the
+  // inkdrop or going through a hide/show cycle.
+  visible |= bubble_requested_;
+
+  SetVisible(visible);
 }
 
 void QRCodeGeneratorIconView::OnExecuting(
-    PageActionIconView::ExecuteSource execute_source) {}
+    PageActionIconView::ExecuteSource execute_source) {
+  bubble_requested_ = true;
+}
 
 const gfx::VectorIcon& QRCodeGeneratorIconView::GetVectorIcon() const {
   return kQrcodeGeneratorIcon;

@@ -499,7 +499,8 @@
   },
   {
     "prefix": "no-auto-wpt-origin-isolation",
-    "bases": ["external/wpt/origin-isolation"],
+    "bases": ["external/wpt/origin-isolation",
+              "wpt_internal/origin-isolation"],
     "args": ["--disable-auto-wpt-origin-isolation"]
   },
   {
@@ -566,7 +567,7 @@
   },
   {
     "prefix": "appcache-origin-trial",
-    "bases": ["http/tests/appcache/origin-trial"],
+    "bases": ["http/tests/appcache"],
     "args": ["--enable-features=AppCacheRequireOriginTrial"]
   },
   {

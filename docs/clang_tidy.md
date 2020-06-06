@@ -30,12 +30,69 @@ disabled.
 
 ### Adding a new check
 
-If you'd like to propose the addition of a new check, please send an email to
-cxx@chromium.org describing why you think the check is helpful. If the proposed
-check is approved, you may turn it on, though please note that this is only
+New checks require review from cxx@chromium.org. If you propose a check and it
+gets approved, you may turn it on, though please note that this is only
 provisional approval: we get signal from users clicking "Not Useful" on
 comments. If feedback is overwhelmingly "users don't find this useful," the
 check may be removed.
+
+Traditionally, petitions to add checks include [an
+evaluation](https://docs.google.com/document/d/1i1KmXtDD4j_qjhmAdGlJ6UkYXByVX1Kp952Zusdcl5k/edit?usp=sharing)
+of the check under review. Crucially, this includes two things:
+
+- a count of how many times this check fires across Chromium
+- a random sample (>30) of places where the check fires across Chromium
+
+It's expected that the person proposing the check has manually surveyed every
+clang-tidy diagnostic in the sample, noting any bugs, odd behaviors, or
+interesting patterns they've noticed. If clang-tidy emits FixIts, these are
+expected to be considered by the evaluation, too.
+
+An example of a previous proposal email thread is
+[here](https://groups.google.com/a/chromium.org/g/cxx/c/iZ6-Y9ZhC3Q/m/g-8HzqmbAAAJ).
+
+#### Evaluating: running clang-tidy across Chromium
+
+Running clang-tidy requires some setup. First, you'll need to sync clang-tidy,
+which requires adding `checkout_clang_tidy` to your `.gclient` file:
+
+```
+solutions = [
+  {
+    'custom_vars': {
+      'checkout_clang_tidy': True,
+    },
+  }
+]
+```
+
+Your next run of `gclient runhooks` should cause clang-tidy to be synced.
+
+To run clang-tidy across all of Chromium, you'll need a checkout of Chromium's
+[build/](https://chromium.googlesource.com/chromium/tools/build) repository.
+Once you have that and a Chromium `out/` dir with an `args.gn`, running
+clang-tidy across all of Chromium is a single command:
+
+```
+$ cd ${chromium}/src
+$ ${chromium_build}/scripts/slave/recipes/tricium_clang_tidy_wrapper.resources/tricium_clang_tidy.py \
+    --base_path $PWD \
+    --out_dir out/Linux \
+    --findings_file all_findings.json \
+    --clang_tidy_binary $PWD/third_party/llvm-build/Release+Asserts/bin/clang-tidy \
+    --all
+```
+
+All clang-tidy checks are run on Linux builds of Chromium, so please set up your
+`args.gn` to build Linux.
+
+`all_findings.json` is where all of clang-tidy's findings will be dumped. The
+format of this file is detailed in `tricium_clang_tidy.py`.
+
+**Note** that the above command will use Chromium's top-level `.clang-tidy` file
+(or `.clang-tidy` files scattered throughout `third_party/`, depending on the
+files we lint. In order to test a *new* check, you'll have to add it to
+Chromium's top-level `.clang-tidy` file.
 
 ### Ignoring a check
 

@@ -187,6 +187,8 @@ typedef NS_ENUM(NSInteger, CRUUpdateStateStateEnum) {
       updater::UpdateService::UpdateState::State::kNotStarted),
   kCRUUpdateStateStateCheckingForUpdates = static_cast<NSInteger>(
       updater::UpdateService::UpdateState::State::kCheckingForUpdates),
+  kCRUUPdateStateStateUpdateAvailable = static_cast<NSInteger>(
+      updater::UpdateService::UpdateState::State::kUpdateAvailable),
   kCRUUpdateStateStateDownloading = static_cast<NSInteger>(
       updater::UpdateService::UpdateState::State::kDownloading),
   kCRUUpdateStateStateInstalling = static_cast<NSInteger>(
@@ -227,6 +229,10 @@ typedef NS_ENUM(NSInteger, CRUUpdateStateStateEnum) {
       return
           [self initWithUpdateStateState:updater::UpdateService::UpdateState::
                                              State::kCheckingForUpdates];
+    case kCRUUPdateStateStateUpdateAvailable:
+      return
+          [self initWithUpdateStateState:updater::UpdateService::UpdateState::
+                                             State::kUpdateAvailable];
     case kCRUUpdateStateStateDownloading:
       return
           [self initWithUpdateStateState:updater::UpdateService::UpdateState::

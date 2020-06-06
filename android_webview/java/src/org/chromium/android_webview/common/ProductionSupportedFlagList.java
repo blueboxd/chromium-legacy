@@ -22,7 +22,9 @@ public final class ProductionSupportedFlagList {
     private ProductionSupportedFlagList() {}
 
     /**
-     * A list of commandline flags supported on user devices.
+     * A list of commandline flags supported on user devices. If updating this list, please also
+     * update enums.xml. See android_webview/docs/developer-ui.md
+     * (https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/developer-ui.md#Adding-your-flags-and-features-to-the-UI).
      */
     public static final Flag[] sFlagList = {
             Flag.commandLine(AwSwitches.HIGHLIGHT_ALL_WEBVIEWS,

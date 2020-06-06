@@ -162,6 +162,7 @@ class LayoutThemeMacRefresh final : public LayoutThemeDefault {
     return file.name();
   }
   bool PopsMenuByArrowKeys() const override;
+  bool SupportsSelectionForegroundColors() const override { return false; }
 
  protected:
   // Controls color values returned from FocusRingColor().

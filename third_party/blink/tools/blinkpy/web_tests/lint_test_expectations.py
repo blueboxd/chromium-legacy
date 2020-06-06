@@ -36,7 +36,7 @@ from blinkpy.common.host import Host
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.models.test_expectations import (TestExpectations,
                                                         ParseError)
-
+from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.port.factory import platform_options
 
 _log = logging.getLogger(__name__)
@@ -166,7 +166,7 @@ def _check_expectations_file_content(content):
     return failures
 
 
-def _check_existence(host, port, path, expectations):
+def _check_test_existence(host, port, path, expectations):
     failures = []
     for exp in expectations:
         if not exp.test:
@@ -249,12 +249,58 @@ def _check_redundant_virtual_expectations(host, port, path, expectations):
     return failures
 
 
+def _check_never_fix_tests(host, port, path, expectations):
+    if not path.endswith('NeverFixTests'):
+        return []
+
+    def pass_validly_overrides_skip(pass_exp, skip_exp):
+        if skip_exp.results != set([ResultType.Skip]):
+            return False
+        if not skip_exp.tags.issubset(pass_exp.tags):
+            return False
+        if skip_exp.is_glob and pass_exp.test.startswith(skip_exp.test[:-1]):
+            return True
+        base_test = port.lookup_virtual_test_base(pass_exp.test)
+        if not base_test:
+            return False
+        if base_test == skip_exp.test:
+            return True
+        if skip_exp.is_glob and base_test.startswith(skip_exp.test[:-1]):
+            return True
+        return False
+
+    failures = []
+    for i in range(len(expectations)):
+        exp = expectations[i]
+        if (exp.results != set([ResultType.Pass])
+                and exp.results != set([ResultType.Skip])):
+            error = "{}:{} Only one of [ Skip ] and [ Pass ] is allowed".format(
+                host.filesystem.basename(path), exp.lineno)
+            _log.error(error)
+            failures.append(error)
+            continue
+        if exp.is_default_pass or exp.results != set([ResultType.Pass]):
+            continue
+        if any(
+                pass_validly_overrides_skip(exp, expectations[j])
+                for j in range(i - 1, 0, -1)):
+            continue
+        error = (
+            "{}:{} {}: The [ Pass ] entry must override a previous [ Skip ]"
+            " entry with a more specific test name or tags".format(
+                host.filesystem.basename(path), exp.lineno, exp.test))
+        _log.error(error)
+        failures.append(error)
+    return failures
+
+
 def _check_expectations(host, port, path, test_expectations, options):
     # Check for original expectation lines (from get_updated_lines) instead of
     # expectations filtered for the current port (test_expectations).
     expectations = test_expectations.get_updated_lines(path)
-    failures = _check_existence(host, port, path, expectations)
+    failures = _check_test_existence(host, port, path, expectations)
     failures.extend(_check_directory_glob(host, port, path, expectations))
+    failures.extend(_check_never_fix_tests(host, port, path, expectations))
     # TODO(crbug.com/1080691): Change this to failures once
     # wpt_expectations_updater is fixed.
     warnings = []

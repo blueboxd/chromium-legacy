@@ -97,8 +97,6 @@ class WizardController {
   // Zero-Touch Hands-Off Enrollment Flow.
   static bool UsingHandsOffEnrollment();
 
-  bool is_initialized() { return is_initialized_; }
-
   // Shows the first screen defined by |first_screen| or by default if the
   // parameter is empty.
   void Init(OobeScreenId first_screen);
@@ -422,8 +420,6 @@ class WizardController {
   base::Value oobe_configuration_{base::Value::Type::DICTIONARY};
 
   BaseScreen* hid_screen_ = nullptr;
-
-  bool is_initialized_ = false;
 
   base::WeakPtrFactory<WizardController> weak_factory_{this};
 

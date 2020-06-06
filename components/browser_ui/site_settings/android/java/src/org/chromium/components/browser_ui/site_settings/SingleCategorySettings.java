@@ -35,6 +35,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
@@ -70,6 +71,7 @@ import java.util.Set;
  * the websites with microphone permissions. When the user selects a site, SingleWebsiteSettings
  * is launched to allow the user to see or modify the settings for that particular website.
  */
+@UsedByReflection("site_settings_preferences.xml")
 public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener,
                    AddExceptionPreference.SiteAddedCallback, View.OnClickListener,

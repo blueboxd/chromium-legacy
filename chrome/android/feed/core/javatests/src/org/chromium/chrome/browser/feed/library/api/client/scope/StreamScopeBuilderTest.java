@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.app.Activity;
-import android.content.Context;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +107,7 @@ public class StreamScopeBuilderTest {
     @Mock
     private SnackbarManager mSnackbarManager;
 
-    private Context mContext;
+    private Activity mActivity;
     private MainThreadRunner mMainThreadRunner;
     private ThreadUtils mThreadUtils;
     private TimingUtils mTimingUtils;
@@ -119,12 +118,12 @@ public class StreamScopeBuilderTest {
     @Before
     public void setUp() {
         initMocks(this);
-        mContext = Robolectric.buildActivity(Activity.class).get();
+        mActivity = Robolectric.buildActivity(Activity.class).get();
         mMainThreadRunner = new MainThreadRunner();
         mThreadUtils = new ThreadUtils();
         mTimingUtils = new TimingUtils();
         mClock = new FakeClock();
-        mApplicationInfo = new ApplicationInfo.Builder(mContext).setBuildType(BUILD_TYPE).build();
+        mApplicationInfo = new ApplicationInfo.Builder(mActivity).setBuildType(BUILD_TYPE).build();
         when(mConfig.getValueOrDefault(
                      eq(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS), anyLong()))
                 .thenReturn(1000L);
@@ -134,7 +133,7 @@ public class StreamScopeBuilderTest {
 
     @Test
     public void testBasicBuild() {
-        StreamScope streamScope = new StreamScopeBuilder(mContext, mActionApi, mImageLoaderApi,
+        StreamScope streamScope = new StreamScopeBuilder(mActivity, mActionApi, mImageLoaderApi,
                 mProtocolAdapter, mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
@@ -147,7 +146,7 @@ public class StreamScopeBuilderTest {
 
     @Test
     public void testComplexBuild() {
-        StreamScope streamScope = new StreamScopeBuilder(mContext, mActionApi, mImageLoaderApi,
+        StreamScope streamScope = new StreamScopeBuilder(mActivity, mActionApi, mImageLoaderApi,
                 mProtocolAdapter, mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,
@@ -165,7 +164,7 @@ public class StreamScopeBuilderTest {
     public void testStreamFactoryBuild() {
         setupStreamFactory(mStream);
 
-        StreamScope streamScope = new StreamScopeBuilder(mContext, mActionApi, mImageLoaderApi,
+        StreamScope streamScope = new StreamScopeBuilder(mActivity, mActionApi, mImageLoaderApi,
                 mProtocolAdapter, mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue,
                 mMainThreadRunner, mClock, DEBUG_BEHAVIOR, mStreamConfiguration, mCardConfiguration,
                 mActionManager, mConfig, mSnackbarApi, mBasicLoggingApi, mOfflineIndicatorApi,

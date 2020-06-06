@@ -12,6 +12,8 @@ static_library("flags_ui") {
     "flags_storage.h",
     "flags_ui_constants.cc",
     "flags_ui_constants.h",
+    "flags_ui_metrics.cc",
+    "flags_ui_metrics.h",
     "flags_ui_pref_names.cc",
     "flags_ui_pref_names.h",
     "pref_service_flags_storage.cc",

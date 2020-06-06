@@ -242,6 +242,68 @@ suite('TabList', () => {
     assertEquals('TABSTRIP-TAB-GROUP', groupedTab.parentElement.tagName);
   });
 
+  /**
+   * @param {!Element} element
+   * @param {number} scale
+   */
+  function testPlaceTabElementAnimation(element, scale) {
+    const animations = element.getAnimations();
+
+    // TODO(crbug.com/1090645): Remove logging once the test no longer flakes.
+    if (animations.length > 1) {
+      console.log('--- Multiple animations found. ---');
+      animations.forEach(animation => {
+        console.log('playState:', animation.playState);
+        console.log('duration:', animation.effect.getTiming().duration);
+      });
+    }
+
+    assertEquals(1, animations.length);
+    assertEquals('running', animations[0].playState);
+    assertEquals(120, animations[0].effect.getTiming().duration);
+    assertEquals('ease-out', animations[0].effect.getTiming().easing);
+
+    const keyframes = animations[0].effect.getKeyframes();
+    const tabSpacingVars =
+        '(var(--tabstrip-tab-width) + var(--tabstrip-tab-spacing))';
+    assertEquals(2, keyframes.length);
+    assertEquals(
+        `translateX(calc(${scale} * ${tabSpacingVars}))`,
+        keyframes[0].transform);
+    assertEquals('translateX(0px)', keyframes[1].transform);
+  }
+
+  test('PlaceTabElementAnimatesTabMovedLeft', async () => {
+    await tabList.animationPromises;
+    let unpinnedTabs = getUnpinnedTabs();
+
+    // Move the last tab to the first tab to test right to left animations.
+    const movedTab = unpinnedTabs[unpinnedTabs.length - 1];
+    tabList.placeTabElement(movedTab, 0, false, undefined);
+    testPlaceTabElementAnimation(movedTab, unpinnedTabs.length - 1);
+
+    // All other tabs should animate a space of 1 TabElement to the right.
+    Array.from(unpinnedTabs)
+        .filter(tabElement => tabElement !== movedTab)
+        .forEach(tabElement => testPlaceTabElementAnimation(tabElement, -1));
+  });
+
+  test('PlaceTabElementAnimatesTabMovedRight', async () => {
+    await tabList.animationPromises;
+    let unpinnedTabs = getUnpinnedTabs();
+
+    // Move the first tab to the last tab to test left to right animations.
+    const movedTab = unpinnedTabs[0];
+    tabList.placeTabElement(
+        movedTab, unpinnedTabs.length - 1, false, undefined);
+    testPlaceTabElementAnimation(movedTab, -1 * (unpinnedTabs.length - 1));
+
+    // All other tabs should animate a space of 1 TabElement to the left.
+    Array.from(unpinnedTabs)
+        .filter(tabElement => tabElement !== movedTab)
+        .forEach(tabElement => testPlaceTabElementAnimation(tabElement, 1));
+  });
+
   test('PlacesTabGroupElement', () => {
     const tabGroupElement = document.createElement('tabstrip-tab-group');
     tabList.placeTabGroupElement(tabGroupElement, 2);

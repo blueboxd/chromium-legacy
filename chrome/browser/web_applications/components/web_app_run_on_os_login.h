@@ -1,0 +1,51 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_RUN_ON_OS_LOGIN_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_RUN_ON_OS_LOGIN_H_
+
+#include <memory>
+
+#include "base/callback_forward.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/components/web_app_shortcut.h"
+
+namespace base {
+class FilePath;
+}
+
+namespace web_app {
+
+struct ShortcutInfo;
+
+// Callback made when RegisterRunOnOsLogin has finished trying to register the
+// app to the OS Startup indicating whether or not it was successfully
+// registered.
+using RegisterRunOnOsLoginCallback = base::OnceCallback<void(bool success)>;
+
+namespace internals {
+
+// Registers the app with the OS to run on OS login. Platform specific
+// implementations are required for this.
+// See web_app_shortcut_win.cc for Windows.
+bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info);
+
+// Unregisters the app with the OS from running on startup. Platform specific
+// implementations are required for this.
+// See web_app_shortcut_win.cc for Windows.
+void UnregisterRunOnOsLogin(const base::FilePath& profile_path,
+                            const base::string16& shortcut_title);
+
+}  // namespace internals
+
+// Schedules a call to |RegisterRunOnOsLogin| on the Shortcut IO thread and
+// invokes |callback| when complete. This function must be called from the UI
+// thread.
+void ScheduleRegisterRunOnOsLogin(std::unique_ptr<ShortcutInfo> shortcut_info,
+                                  RegisterRunOnOsLoginCallback callback);
+
+}  // namespace web_app
+
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_RUN_ON_OS_LOGIN_H_

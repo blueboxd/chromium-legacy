@@ -123,6 +123,51 @@ TEST_F(SerialChooserContextTest, GrantAndRevokeEphemeralPermission) {
   EXPECT_EQ(0u, objects.size());
 }
 
+TEST_F(SerialChooserContextTest, GrantAndRevokePersistentPermission) {
+  const auto origin = url::Origin::Create(GURL("https://google.com"));
+
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  port->persistent_id = "ABC123";
+
+  EXPECT_FALSE(context()->HasPortPermission(origin, origin, *port));
+
+  EXPECT_CALL(permission_observer(),
+              OnChooserObjectPermissionChanged(
+                  ContentSettingsType::SERIAL_GUARD,
+                  ContentSettingsType::SERIAL_CHOOSER_DATA));
+
+  context()->GrantPortPermission(origin, origin, *port);
+  EXPECT_TRUE(context()->HasPortPermission(origin, origin, *port));
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      origin_objects = context()->GetGrantedObjects(origin, origin);
+  ASSERT_EQ(1u, origin_objects.size());
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = context()->GetAllGrantedObjects();
+  ASSERT_EQ(1u, objects.size());
+  EXPECT_EQ(origin.GetURL(), objects[0]->requesting_origin);
+  EXPECT_EQ(origin.GetURL(), objects[0]->embedding_origin);
+  EXPECT_EQ(origin_objects[0]->value, objects[0]->value);
+  EXPECT_EQ(content_settings::SettingSource::SETTING_SOURCE_USER,
+            objects[0]->source);
+  EXPECT_FALSE(objects[0]->incognito);
+
+  EXPECT_CALL(permission_observer(),
+              OnChooserObjectPermissionChanged(
+                  ContentSettingsType::SERIAL_GUARD,
+                  ContentSettingsType::SERIAL_CHOOSER_DATA));
+  EXPECT_CALL(permission_observer(), OnPermissionRevoked(origin, origin));
+
+  context()->RevokeObjectPermission(origin, origin, objects[0]->value);
+  EXPECT_FALSE(context()->HasPortPermission(origin, origin, *port));
+  origin_objects = context()->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(0u, origin_objects.size());
+  objects = context()->GetAllGrantedObjects();
+  EXPECT_EQ(0u, objects.size());
+}
+
 TEST_F(SerialChooserContextTest, EphemeralPermissionRevokedOnDisconnect) {
   const auto origin = url::Origin::Create(GURL("https://google.com"));
 
@@ -156,6 +201,55 @@ TEST_F(SerialChooserContextTest, EphemeralPermissionRevokedOnDisconnect) {
   EXPECT_EQ(0u, origin_objects.size());
   auto objects = context()->GetAllGrantedObjects();
   EXPECT_EQ(0u, objects.size());
+}
+
+TEST_F(SerialChooserContextTest, PersistentPermissionNotRevokedOnDisconnect) {
+  const auto origin = url::Origin::Create(GURL("https://google.com"));
+  const char persistent_id[] = "ABC123";
+
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  port->persistent_id = persistent_id;
+  port_manager().AddPort(port.Clone());
+
+  context()->GrantPortPermission(origin, origin, *port);
+  EXPECT_TRUE(context()->HasPortPermission(origin, origin, *port));
+
+  EXPECT_CALL(permission_observer(),
+              OnChooserObjectPermissionChanged(
+                  ContentSettingsType::SERIAL_GUARD,
+                  ContentSettingsType::SERIAL_CHOOSER_DATA))
+      .Times(0);
+  EXPECT_CALL(permission_observer(), OnPermissionRevoked(origin, origin))
+      .Times(0);
+
+  port_manager().RemovePort(port->token);
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(port_observer(), OnPortRemoved(testing::_))
+        .WillOnce(
+            testing::Invoke([&](const device::mojom::SerialPortInfo& info) {
+              EXPECT_EQ(port->token, info.token);
+              EXPECT_TRUE(context()->HasPortPermission(origin, origin, info));
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(context()->HasPortPermission(origin, origin, *port));
+  auto origin_objects = context()->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(1u, origin_objects.size());
+  auto objects = context()->GetAllGrantedObjects();
+  EXPECT_EQ(1u, objects.size());
+
+  // Simulate reconnection of the port. It gets a new token but the same
+  // persistent ID. This SerialPortInfo should still match the old permission.
+  port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  port->persistent_id = persistent_id;
+  port_manager().AddPort(port.Clone());
+
+  EXPECT_TRUE(context()->HasPortPermission(origin, origin, *port));
 }
 
 TEST_F(SerialChooserContextTest, GuardPermission) {

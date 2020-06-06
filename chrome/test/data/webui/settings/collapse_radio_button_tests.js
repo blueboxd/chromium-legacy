@@ -100,4 +100,61 @@ suite('CrCollapseRadioButton', function() {
     flush();
     assertTrue(isChildVisible(collapseRadioButton, '#policyIndicator'));
   });
+
+  test('respectPreferenceState', function() {
+    const togglePrefValue = 'pref_value';
+    collapseRadioButton.name = togglePrefValue;
+    collapseRadioButton.pref = {
+      type: chrome.settingsPrivate.PrefType.NUMBER,
+      enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+      controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
+    };
+    flush();
+    assertTrue(isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+    assertTrue(collapseRadioButton.disabled);
+
+    collapseRadioButton.set('pref.userSelectableValues', ['unrelated-value']);
+    flush();
+    assertTrue(isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+    assertTrue(collapseRadioButton.disabled);
+
+    collapseRadioButton.set('pref.userSelectableValues', [togglePrefValue]);
+    flush();
+    assertFalse(
+        isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+    assertFalse(collapseRadioButton.disabled);
+
+    collapseRadioButton.set(
+        'pref.enforcement', chrome.settingsPrivate.Enforcement.RECOMMENDED);
+    collapseRadioButton.set('pref.recommendedValue', 'unrelated-value');
+    flush();
+    assertFalse(
+        isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+    assertFalse(collapseRadioButton.disabled);
+
+    collapseRadioButton.set('pref.recommendedValue', togglePrefValue);
+    assertTrue(isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+    assertFalse(collapseRadioButton.disabled);
+  });
+
+  test('singlePolicyIndicator', function() {
+    assertFalse(isChildVisible(collapseRadioButton, '#policyIndicator'));
+    assertFalse(
+        isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+
+    collapseRadioButton.policyIndicatorType =
+        CrPolicyIndicatorType.DEVICE_POLICY;
+    flush();
+    assertTrue(isChildVisible(collapseRadioButton, '#policyIndicator'));
+    assertFalse(
+        isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+
+    collapseRadioButton.pref = {
+      enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
+      controlledBy: chrome.settingsPrivate.ControlledBy.DEVICE_POLICY,
+    };
+    flush();
+    assertFalse(isChildVisible(collapseRadioButton, '#policyIndicator'));
+    assertTrue(isChildVisible(collapseRadioButton, 'cr-policy-pref-indicator'));
+  });
 });

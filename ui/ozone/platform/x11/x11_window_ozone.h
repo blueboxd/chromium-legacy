@@ -56,6 +56,10 @@ class X11WindowOzone : public X11Window,
 
   // True while the drag initiated in this window is in progress.
   bool dragging_ = false;
+  // Whether the drop handler has notified that the drag has entered.
+  bool notified_enter_ = false;
+  // Keeps the last negotiated operation returned by the drop handler.
+  int drag_operation_ = 0;
 
   std::unique_ptr<XDragDropClient> drag_drop_client_;
   base::OnceCallback<void(int)> end_drag_callback_;

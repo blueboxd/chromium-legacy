@@ -361,6 +361,7 @@ js_library("switch_access") {
     "$externs_path/automation.js",
     "$externs_path/command_line_private.js",
     "$externs_path/metrics_private.js",
+    "$externs_path/virtual_keyboard_private.js",
   ]
 }
 

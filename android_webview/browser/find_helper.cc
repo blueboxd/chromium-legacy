@@ -45,7 +45,7 @@ void FindHelper::FindAllAsync(const base::string16& search_string) {
   auto options = blink::mojom::FindOptions::New();
   options->forward = true;
   options->match_case = false;
-  options->find_next = false;
+  options->new_session = true;
 
   web_contents()->Find(current_request_id_, search_string, std::move(options));
 }
@@ -72,7 +72,7 @@ void FindHelper::FindNext(bool forward) {
   auto options = blink::mojom::FindOptions::New();
   options->forward = forward;
   options->match_case = false;
-  options->find_next = true;
+  options->new_session = false;
 
   web_contents()->Find(current_request_id_, last_search_string_,
                        std::move(options));

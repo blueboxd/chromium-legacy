@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
   delegate()->MarkNextReply();
   delegate()->WaitForNextReply();
 
-  options->find_next = true;
+  options->new_session = false;
   Find("result", options.Clone());
   delegate()->MarkNextReply();
   delegate()->WaitForNextReply();
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
   // Verify that find-in-page works fine.
   auto options = blink::mojom::FindOptions::New();
   Find("FXCMAP_CMap", options.Clone());
-  options->find_next = true;
+  options->new_session = false;
   Find("FXCMAP_CMap", options.Clone());
   Find("FXCMAP_CMap", options.Clone());
   delegate()->WaitForFinalReply();
@@ -259,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
   auto options = blink::mojom::FindOptions::New();
-  options->find_next = true;
+  options->new_session = false;
   Find("result", options.Clone());
   options->forward = false;
   Find("result", options.Clone());

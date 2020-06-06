@@ -7,10 +7,13 @@
 #include <X11/Xlib-xcb.h>
 #include <xcb/xcb.h>
 #include <xcb/xcbext.h>
+#include <xcb/xproto.h>
 
+#include <algorithm>
 #include <memory>
 #include <type_traits>
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/metrics/histogram_macros.h"
@@ -25,6 +28,7 @@
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto.h"
 
 #if defined(USE_GLIB)
 #include "ui/events/platform/x11/x11_event_watcher_glib.h"
@@ -100,13 +104,6 @@ void UpdateDeviceList() {
   DeviceDataManagerX11::GetInstance()->UpdateDeviceList(display);
 }
 
-x11::Bool IsPropertyNotifyForTimestamp(Display* display,
-                                       XEvent* event,
-                                       XPointer arg) {
-  return event->type == PropertyNotify &&
-         event->xproperty.window == *reinterpret_cast<Window*>(arg);
-}
-
 }  // namespace
 
 #if defined(USE_GLIB)
@@ -158,10 +155,6 @@ void X11EventSource::DispatchXEvents() {
   x11::Connection::Get()->Dispatch(this);
 }
 
-void X11EventSource::DispatchXEventNow(XEvent* event) {
-  ExtractCookieDataDispatchEvent(event);
-}
-
 Time X11EventSource::GetCurrentServerTime() {
   DCHECK(display_);
 
@@ -184,7 +177,8 @@ Time X11EventSource::GetCurrentServerTime() {
     start = base::TimeTicks::Now();
 
   // Make a no-op property change on |dummy_window_|.
-  x11::Connection::Get()->ChangeProperty({
+  auto* connection = x11::Connection::Get();
+  connection->ChangeProperty({
       .window = static_cast<x11::Window>(dummy_window_),
       .property = dummy_atom_,
       .type = x11::Atom::STRING,
@@ -194,18 +188,29 @@ Time X11EventSource::GetCurrentServerTime() {
   });
 
   // Observe the resulting PropertyNotify event to obtain the timestamp.
-  XFlush(display_);
-  XEvent event;
-  XIfEvent(display_, &event, IsPropertyNotifyForTimestamp,
-           reinterpret_cast<XPointer>(&dummy_window_));
-
+  connection->Sync();
   if (measure_rtt) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Linux.X11.ServerRTT",
         (base::TimeTicks::Now() - start).InMicroseconds(), 1,
         base::TimeDelta::FromMilliseconds(50).InMicroseconds(), 50);
   }
-  return event.xproperty.time;
+  connection->ReadResponses();
+
+  Time time = x11::CurrentTime;
+  auto pred = [&](const x11::Connection::Event& event) {
+    if (event.xlib_event.type == x11::PropertyNotifyEvent::opcode &&
+        event.xlib_event.xproperty.window == dummy_window_) {
+      time = event.xlib_event.xproperty.time;
+      return true;
+    }
+    return false;
+  };
+
+  auto& events = connection->events();
+  events.erase(std::remove_if(events.begin(), events.end(), pred),
+               events.end());
+  return time;
 }
 
 Time X11EventSource::GetTimestamp() {
@@ -378,24 +383,6 @@ void X11EventSource::ProcessXEvent(XEvent* xevent) {
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, protected
 
-void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
-  bool have_cookie = false;
-  if (xevent->type == x11::GeGenericEvent::opcode &&
-      XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
-    have_cookie = true;
-  }
-
-  dispatching_event_ = xevent;
-
-  ProcessXEvent(xevent);
-  PostDispatchEvent(xevent);
-
-  dispatching_event_ = nullptr;
-
-  if (have_cookie)
-    XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);
-}
-
 void X11EventSource::PostDispatchEvent(XEvent* xevent) {
   bool should_update_device_list = false;
 
@@ -447,7 +434,10 @@ bool X11EventSource::ShouldContinueStream() const {
 }
 
 void X11EventSource::DispatchXEvent(XEvent* event) {
-  ExtractCookieDataDispatchEvent(event);
+  base::AutoReset<XEvent*> dispatching_event(&dispatching_event_, event);
+
+  ProcessXEvent(event);
+  PostDispatchEvent(event);
 }
 
 // ScopedXEventDispatcher implementation

@@ -910,12 +910,6 @@
       invalidate: "ForceDark",
     },
     {
-      name: "forceDarkModeClassifierType",
-      initial: "DarkModeClassifierType::kGeneric",
-      type: "DarkModeClassifierType",
-      invalidate: "ForceDark",
-    },
-    {
       name: "forceDarkModeImagePolicy",
       initial: "DarkModeImagePolicy::kFilterNone",
       type: "DarkModeImagePolicy",

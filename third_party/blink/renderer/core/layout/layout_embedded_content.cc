@@ -92,6 +92,14 @@ FrameView* LayoutEmbeddedContent::ChildFrameView() const {
   return DynamicTo<FrameView>(GetEmbeddedContentView());
 }
 
+LayoutView* LayoutEmbeddedContent::ChildLayoutView() const {
+  if (HTMLFrameOwnerElement* owner_element = GetFrameOwnerElement()) {
+    if (Document* content_document = owner_element->contentDocument())
+      return content_document->GetLayoutView();
+  }
+  return nullptr;
+}
+
 WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();
   if (embedded_content_view && embedded_content_view->IsPluginView())
@@ -106,44 +114,30 @@ EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
 }
 
 PaintLayerType LayoutEmbeddedContent::LayerTypeRequired() const {
-  if (RequiresAcceleratedCompositing())
+  if (AdditionalCompositingReasons())
     return kNormalPaintLayer;
 
   PaintLayerType type = LayoutReplaced::LayerTypeRequired();
   if (type != kNoPaintLayer)
     return type;
-  return kForcedPaintLayer;
-}
 
-bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
-  // There are two general cases in which we can return true. First, if this is
-  // a plugin LayoutObject and the plugin has a layer, then we need a layer.
-  // Second, if this is a LayoutObject with a contentDocument and that document
-  // needs a layer, then we need a layer.
-  WebPluginContainerImpl* plugin_view = Plugin();
-  if (plugin_view && plugin_view->CcLayer())
-    return true;
-
-  auto* element = GetFrameOwnerElement();
-  if (!element)
-    return false;
-
-  if (Frame* content_frame = element->ContentFrame()) {
-    if (content_frame->IsRemoteFrame())
-      return true;
-    if (base::FeatureList::IsEnabled(
-            blink::features::kCompositeCrossOriginIframes) &&
-        content_frame->IsCrossOriginToParentFrame()) {
-      return true;
+  // We can't check layout_view->Layer()->GetCompositingReasons() here because
+  // we're only in style update, so haven't run compositing update yet.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    if (LayoutView* child_layout_view = ChildLayoutView()) {
+      if (child_layout_view->AdditionalCompositingReasons())
+        return kNormalPaintLayer;
     }
   }
 
-  if (Document* content_document = element->contentDocument()) {
-    auto* layout_view = content_document->GetLayoutView();
-    if (layout_view)
-      return layout_view->UsesCompositing();
-  }
+  return kForcedPaintLayer;
+}
 
+bool LayoutEmbeddedContent::ContentDocumentIsCompositing() const {
+  if (PaintLayerCompositor* inner_compositor =
+          PaintLayerCompositor::FrameContentsCompositor(*this)) {
+    return inner_compositor->StaleInCompositingMode();
+  }
   return false;
 }
 
@@ -253,8 +247,15 @@ bool LayoutEmbeddedContent::NodeAtPoint(
 }
 
 CompositingReasons LayoutEmbeddedContent::AdditionalCompositingReasons() const {
-  if (RequiresAcceleratedCompositing())
-    return CompositingReason::kIFrame;
+  WebPluginContainerImpl* plugin_view = Plugin();
+  if (plugin_view && plugin_view->CcLayer())
+    return CompositingReason::kPlugin;
+  if (auto* element = GetFrameOwnerElement()) {
+    if (Frame* content_frame = element->ContentFrame()) {
+      if (content_frame->IsRemoteFrame())
+        return CompositingReason::kIFrame;
+    }
+  }
   return CompositingReason::kNone;
 }
 

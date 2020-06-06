@@ -835,6 +835,25 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
   if (!text_layout_object)
     return;
 
+  if (!text_layout_object->HasInlineFragments()) {
+    // whole text node is empty
+    // Removing a Text node won't dispatch synchronous events.
+    RemoveNode(text_node, ASSERT_NO_EDITING_ABORT);
+    return;
+  }
+  unsigned length = text_node->length();
+  if (start >= length || end > length)
+    return;
+
+  if (text_layout_object->IsInLayoutNGInlineFormattingContext()) {
+    const String string = PlainText(
+        EphemeralRange(Position(*text_node, start), Position(*text_node, end)));
+    if (string.IsEmpty())
+      return DeleteTextFromNode(text_node, start, end - start);
+    // Replace the text between start and end with collapsed version.
+    return ReplaceTextInNode(text_node, start, end - start, string);
+  }
+
   Vector<InlineTextBox*> sorted_text_boxes;
   wtf_size_t sorted_text_boxes_position = 0;
 
@@ -849,17 +868,6 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
   InlineTextBox* box = sorted_text_boxes.IsEmpty()
                            ? 0
                            : sorted_text_boxes[sorted_text_boxes_position];
-
-  if (!box) {
-    // whole text node is empty
-    // Removing a Text node won't dispatch synchronous events.
-    RemoveNode(text_node, ASSERT_NO_EDITING_ABORT);
-    return;
-  }
-
-  unsigned length = text_node->length();
-  if (start >= length || end > length)
-    return;
 
   unsigned removed = 0;
   InlineTextBox* prev_box = nullptr;

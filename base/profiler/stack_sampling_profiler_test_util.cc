@@ -120,14 +120,14 @@ std::unique_ptr<NativeUnwinderAndroid> CreateNativeUnwinderAndroidForTesting(
 }
 
 std::unique_ptr<Unwinder> CreateChromeUnwinderAndroidForTesting(
-    ModuleCache* module_cache) {
+    uintptr_t chrome_module_base_address) {
   static constexpr char kCfiFileName[] = "assets/unwind_cfi_32";
   class ChromeUnwinderAndroidForTesting : public ChromeUnwinderAndroid {
    public:
     ChromeUnwinderAndroidForTesting(std::unique_ptr<MemoryMappedFile> cfi_file,
                                     std::unique_ptr<ArmCFITable> cfi_table,
-                                    const ModuleCache::Module* chrome_module)
-        : ChromeUnwinderAndroid(cfi_table.get(), chrome_module),
+                                    uintptr_t chrome_module_base_address)
+        : ChromeUnwinderAndroid(cfi_table.get(), chrome_module_base_address),
           cfi_file_(std::move(cfi_file)),
           cfi_table_(std::move(cfi_table)) {}
     ~ChromeUnwinderAndroidForTesting() override = default;
@@ -150,9 +150,7 @@ std::unique_ptr<Unwinder> CreateChromeUnwinderAndroidForTesting(
     return nullptr;
 
   return std::make_unique<ChromeUnwinderAndroidForTesting>(
-      std::move(cfi_file), std::move(cfi_table),
-      module_cache->GetModuleForAddress(
-          reinterpret_cast<uintptr_t>(&__executable_start)));
+      std::move(cfi_file), std::move(cfi_table), chrome_module_base_address);
 }
 #endif  // #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 
@@ -422,7 +420,8 @@ std::vector<std::unique_ptr<Unwinder>> CreateCoreUnwindersForTesting(
   std::vector<std::unique_ptr<Unwinder>> unwinders;
   unwinders.push_back(CreateNativeUnwinderAndroidForTesting(
       reinterpret_cast<uintptr_t>(&__executable_start)));
-  unwinders.push_back(CreateChromeUnwinderAndroidForTesting(module_cache));
+  unwinders.push_back(CreateChromeUnwinderAndroidForTesting(
+      reinterpret_cast<uintptr_t>(&__executable_start)));
   return unwinders;
 #else
   return {};

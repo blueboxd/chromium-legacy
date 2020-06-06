@@ -391,9 +391,7 @@ public class FeedNewTabPageTest {
     public void testFeedDisabledByPolicy() throws Exception {
         openNewTabPage();
         final boolean pref = TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> PrefServiceBridge.getInstance().getBoolean(
-                                Pref.NTP_ARTICLES_SECTION_ENABLED));
+                () -> PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS));
 
         // Policy is disabled. Verify the NTP root view contains only the Stream view as child.
         ViewGroup rootView = (ViewGroup) mNtp.getView();
@@ -407,9 +405,7 @@ public class FeedNewTabPageTest {
         // Simulate that policy is enabled. Verify the NTP root view contains only the view for
         // policy as child.
         TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> PrefServiceBridge.getInstance().setBoolean(
-                                Pref.NTP_ARTICLES_SECTION_ENABLED, false));
+                () -> PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, false));
         Assert.assertNotNull(mNtp.getCoordinatorForTesting().getScrollViewForPolicy());
         Assert.assertNull(mNtp.getCoordinatorForTesting().getStreamForTesting());
         Assert.assertEquals(1, rootView.getChildCount());
@@ -431,9 +427,7 @@ public class FeedNewTabPageTest {
         // Simulate that policy is disabled. Verify the NTP root view is the view for policy. We
         // don't re-enable the Feed until the next restart.
         TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> PrefServiceBridge.getInstance().setBoolean(
-                                Pref.NTP_ARTICLES_SECTION_ENABLED, true));
+                () -> PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, true));
         Assert.assertNotNull(ntp2.getCoordinatorForTesting().getScrollViewForPolicy());
         Assert.assertNull(ntp2.getCoordinatorForTesting().getStream());
         Assert.assertEquals(1, rootView2.getChildCount());
@@ -450,9 +444,7 @@ public class FeedNewTabPageTest {
 
         // Reset state.
         TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> PrefServiceBridge.getInstance().setBoolean(
-                                Pref.NTP_ARTICLES_SECTION_ENABLED, pref));
+                () -> PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, pref));
     }
 
     /**
@@ -472,6 +464,6 @@ public class FeedNewTabPageTest {
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {
         return TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
+                () -> PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
     }
 }

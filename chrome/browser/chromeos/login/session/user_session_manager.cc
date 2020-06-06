@@ -124,6 +124,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/flags_ui/flags_ui_metrics.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -846,7 +847,7 @@ bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
 
   LogCustomSwitches(command_line_difference);
 
-  about_flags::ReportAboutFlagsHistogram(
+  flags_ui::ReportAboutFlagsHistogram(
       "Login.CustomFlags", command_line_difference, std::set<std::string>());
 
   base::CommandLine::StringVector flags;

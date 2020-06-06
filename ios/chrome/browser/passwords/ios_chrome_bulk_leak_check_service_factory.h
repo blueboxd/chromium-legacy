@@ -14,7 +14,7 @@ class ChromeBrowserState;
 enum class ServiceAccessType;
 
 namespace password_manager {
-class BulkLeakCheckService;
+class BulkLeakCheckServiceInterface;
 }
 
 // Singleton that owns all BulkLeakCheckServices and associates them with
@@ -23,7 +23,7 @@ class IOSChromeBulkLeakCheckServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static IOSChromeBulkLeakCheckServiceFactory* GetInstance();
-  static password_manager::BulkLeakCheckService* GetForBrowserState(
+  static password_manager::BulkLeakCheckServiceInterface* GetForBrowserState(
       ChromeBrowserState* browser_state);
 
  private:

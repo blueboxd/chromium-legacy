@@ -9,37 +9,31 @@ When the parent document becomes composited, the layer trees should get connecte
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutIFrame IFRAME id='iframe'",
-      "position": [-30, -30],
-      "bounds": [390, 240],
-      "transform": 1
-    },
-    {
       "name": "Scrolling Contents Layer",
       "bounds": [285, 230],
       "contentsOpaqueForText": true,
       "backgroundColor": "#C0C0C0",
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='iframe-content' class='box'",
       "bounds": [210, 210],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 3
+      "transform": 2
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [285, 0],
       "bounds": [15, 150],
-      "transform": 2
+      "transform": 1
     },
     {
       "name": "LayoutBlockFlow DIV id='box' class='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
-      "transform": 4
+      "transform": 3
     }
   ],
   "transforms": [
@@ -49,7 +43,7 @@ When the parent document becomes composited, the layer trees should get connecte
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [28, 128, 0, 1]
+        [43, 143, 0, 1]
       ]
     },
     {
@@ -59,21 +53,11 @@ When the parent document becomes composited, the layer trees should get connecte
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [15, 15, 0, 1]
-      ]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
         [18, 10, 0, 1]
       ]
     },
     {
-      "id": 4,
+      "id": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

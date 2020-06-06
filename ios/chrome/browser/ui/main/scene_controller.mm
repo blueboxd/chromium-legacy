@@ -310,6 +310,30 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                         startupInformation:self.mainController
                          interfaceProvider:self.interfaceProvider];
         }
+
+        // See if this scene launched as part of a multiwindow URL opening.
+        // If so, load that URL (this also creates a new tab to load the URL
+        // in). No other UI will show in this case.
+        NSUserActivity* activityWithCompletion;
+        for (NSUserActivity* activity in self.sceneState.connectionOptions
+                 .userActivities) {
+          if (ActivityIsURLLoad(activity)) {
+            UrlLoadParams params = LoadParamsFromActivity(activity);
+            UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
+                ->Load(params);
+            return;
+          } else if (!activityWithCompletion) {
+            // Completion involves user interaction.
+            // Only one can be triggered.
+            activityWithCompletion = activity;
+          }
+        }
+        if (activityWithCompletion) {
+          [UserActivityHandler continueUserActivity:activityWithCompletion
+                                applicationIsActive:YES
+                                          tabOpener:self
+                                 startupInformation:self.mainController];
+        }
         self.sceneState.connectionOptions = nil;
 
         // Handle URL opening from
@@ -390,10 +414,25 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
 - (void)sceneStateWillHideModalOverlay:(SceneState*)sceneState {
   [self.blockingOverlayViewController.view removeFromSuperview];
   self.blockingOverlayViewController = nil;
+
+  // When the scene has displayed the blocking overlay and isn't in foreground
+  // when it exits it, the cached app switcher snapshot will have the overlay on
+  // it, and therefore needs updating.
+  if (sceneState.activationLevel < SceneActivationLevelForegroundInactive) {
+    if (@available(iOS 13, *)) {
+      [[UIApplication sharedApplication]
+          requestSceneSessionRefresh:sceneState.scene.session];
+    }
+  }
 }
 
 // TODO(crbug.com/1072408): factor out into a new class.
 - (void)displayBlockingOverlay {
+  // Make the window visible. This is because in safe mode it's not visible yet.
+  if (self.sceneState.window.hidden) {
+    [self.sceneState.window makeKeyAndVisible];
+  }
+
   self.blockingOverlayViewController =
       [[BlockingOverlayViewController alloc] init];
   self.blockingOverlayViewController.blockingSceneCommandHandler =
@@ -437,6 +476,24 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
                                           tabOpener:self
                                  startupInformation:self.mainController
                                   interfaceProvider:self.interfaceProvider];
+}
+
+- (void)sceneState:(SceneState*)sceneState
+    receivedUserActivity:(NSUserActivity*)userActivity {
+  if (self.mainController.appState.isInSafeMode || !userActivity) {
+    return;
+  }
+  BOOL sceneIsActive =
+      self.sceneState.activationLevel >= SceneActivationLevelForegroundActive;
+  [UserActivityHandler continueUserActivity:userActivity
+                        applicationIsActive:sceneIsActive
+                                  tabOpener:self
+                         startupInformation:self.mainController];
+  // It is necessary to reset the pendingUserActivity after handling it.
+  // Handle the reset asynchronously to avoid interfering with other observers.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    self.sceneState.pendingUserActivity = nil;
+  });
 }
 
 #pragma mark - AppStateObserver
@@ -568,23 +625,6 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   }
 
   // Figure out what UI to show initially.
-
-  // See if this scene launched as part of a multiwindow URL opening.
-  // If so, load that URL (this also creates a new tab to load the URL in).
-  // No other UI will show in this case.
-  if (IsMultiwindowSupported()) {
-    if (@available(iOS 13, *)) {
-      for (NSUserActivity* activity in self.sceneState.connectionOptions
-               .userActivities) {
-        if (ActivityIsURLLoad(activity)) {
-          UrlLoadParams params = LoadParamsFromActivity(activity);
-          UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
-              ->Load(params);
-          return;
-        }
-      }
-    }
-  }
 
   if (self.tabSwitcherIsActive) {
     DCHECK(!self.dismissingTabSwitcher);

@@ -165,8 +165,7 @@ public class GoogleServicesSettings
             PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                     this::updateLeakDetectionAndSafeBrowsingReportingPreferences);
         } else if (PREF_PASSWORD_LEAK_DETECTION.equals(key)) {
-            mPrefServiceBridge.setBoolean(
-                    Pref.PASSWORD_MANAGER_LEAK_DETECTION_ENABLED, (boolean) newValue);
+            mPrefServiceBridge.setBoolean(Pref.PASSWORD_LEAK_DETECTION_ENABLED, (boolean) newValue);
         } else if (PREF_SAFE_BROWSING_SCOUT_REPORTING.equals(key)) {
             SafeBrowsingBridge.setSafeBrowsingExtendedReportingEnabled((boolean) newValue);
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
@@ -224,7 +223,7 @@ public class GoogleServicesSettings
 
         boolean has_token_for_leak_check = PasswordUIView.hasAccountForLeakCheckRequest();
         boolean leak_detection_enabled =
-                mPrefServiceBridge.getBoolean(Pref.PASSWORD_MANAGER_LEAK_DETECTION_ENABLED);
+                mPrefServiceBridge.getBoolean(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
         boolean toggle_enabled = safe_browsing_enabled && has_token_for_leak_check;
 
         mPasswordLeakDetection.setEnabled(toggle_enabled);
@@ -254,8 +253,7 @@ public class GoogleServicesSettings
                 return mPrefServiceBridge.isManagedPreference(Pref.SAFE_BROWSING_ENABLED);
             }
             if (PREF_PASSWORD_LEAK_DETECTION.equals(key)) {
-                return mPrefServiceBridge.isManagedPreference(
-                        Pref.PASSWORD_MANAGER_LEAK_DETECTION_ENABLED);
+                return mPrefServiceBridge.isManagedPreference(Pref.PASSWORD_LEAK_DETECTION_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
                 return PrivacyPreferencesManager.getInstance().isMetricsReportingManaged();

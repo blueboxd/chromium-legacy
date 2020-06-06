@@ -96,6 +96,21 @@ void InformPLMOfLikelyPrefetching(content::WebContents* web_contents) {
       IsolatedPrerenderTabHelper::PrefetchingLikelyEventKey());
 }
 
+void OnGotCookieList(
+    const GURL& url,
+    IsolatedPrerenderTabHelper::OnEligibilityResultCallback result_callback,
+    const net::CookieStatusList& cookie_with_status_list,
+    const net::CookieStatusList& excluded_cookies) {
+  if (!cookie_with_status_list.empty()) {
+    std::move(result_callback)
+        .Run(url, false,
+             IsolatedPrerenderTabHelper::PrefetchStatus::
+                 kPrefetchNotEligibleUserHasCookies);
+    return;
+  }
+  std::move(result_callback).Run(url, true, base::nullopt);
+}
+
 }  // namespace
 
 IsolatedPrerenderTabHelper::PrefetchMetrics::PrefetchMetrics() = default;
@@ -436,7 +451,10 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
 
   // Run the new URL through all the eligibility checks. In the mean time,
   // continue on with other Prefetches.
-  CheckAndMaybePrefetchURL(redirect_info.new_url);
+  CheckEligibilityOfURL(
+      profile_, redirect_info.new_url,
+      base::BindOnce(&IsolatedPrerenderTabHelper::OnGotEligibilityResult,
+                     weak_factory_.GetWeakPtr()));
 
   // Cancels the current request.
   Prefetch();
@@ -617,6 +635,7 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
 
   page_->number_of_no_state_prefetch_attempts_++;
 }
+
 void IsolatedPrerenderTabHelper::OnPrerenderDone(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!page_->urls_to_no_state_prefetch_.empty());
@@ -701,79 +720,92 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
     size_t url_index = original_prediction_ordering_starting_size + i;
     page_->original_prediction_ordering_.emplace(url, url_index);
 
-    CheckAndMaybePrefetchURL(url);
+    CheckEligibilityOfURL(
+        profile_, url,
+        base::BindOnce(&IsolatedPrerenderTabHelper::OnGotEligibilityResult,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 
-bool IsolatedPrerenderTabHelper::CheckAndMaybePrefetchURL(const GURL& url) {
-  DCHECK(data_reduction_proxy::DataReductionProxySettings::
-             IsDataSaverEnabledByUser(profile_->IsOffTheRecord(),
-                                      profile_->GetPrefs()));
+// static
+void IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
+    Profile* profile,
+    const GURL& url,
+    OnEligibilityResultCallback result_callback) {
+  if (!data_reduction_proxy::DataReductionProxySettings::
+          IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
+                                   profile->GetPrefs())) {
+    std::move(result_callback).Run(url, false, base::nullopt);
+    return;
+  }
 
   if (google_util::IsGoogleAssociatedDomainUrl(url)) {
-    OnPrefetchStatusUpdate(url,
-                           PrefetchStatus::kPrefetchNotEligibleGoogleDomain);
-    return false;
+    std::move(result_callback)
+        .Run(url, false, PrefetchStatus::kPrefetchNotEligibleGoogleDomain);
+    return;
   }
 
   if (url.HostIsIPAddress()) {
-    OnPrefetchStatusUpdate(url,
-                           PrefetchStatus::kPrefetchNotEligibleHostIsIPAddress);
-    return false;
+    std::move(result_callback)
+        .Run(url, false, PrefetchStatus::kPrefetchNotEligibleHostIsIPAddress);
+    return;
   }
 
   if (!url.SchemeIs(url::kHttpsScheme)) {
-    OnPrefetchStatusUpdate(
-        url, PrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps);
-    return false;
+    std::move(result_callback)
+        .Run(url, false, PrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps);
+    return;
   }
 
   content::StoragePartition* default_storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(profile_);
+      content::BrowserContext::GetDefaultStoragePartition(profile);
 
   // Only the default storage partition is supported since that is the only
   // place where service workers are observed by
   // |IsolatedPrerenderServiceWorkersObserver|.
   if (default_storage_partition !=
       content::BrowserContext::GetStoragePartitionForSite(
-          profile_, url, /*can_create=*/false)) {
-    OnPrefetchStatusUpdate(
-        url, PrefetchStatus::kPrefetchNotEligibleNonDefaultStoragePartition);
-    return false;
+          profile, url,
+          /*can_create=*/false)) {
+    std::move(result_callback)
+        .Run(url, false,
+             PrefetchStatus::kPrefetchNotEligibleNonDefaultStoragePartition);
+    return;
   }
 
   IsolatedPrerenderService* isolated_prerender_service =
-      IsolatedPrerenderServiceFactory::GetForProfile(profile_);
+      IsolatedPrerenderServiceFactory::GetForProfile(profile);
   if (!isolated_prerender_service) {
-    return false;
+    std::move(result_callback).Run(url, false, base::nullopt);
+    return;
   }
 
   base::Optional<bool> site_has_service_worker =
       isolated_prerender_service->service_workers_observer()
           ->IsServiceWorkerRegisteredForOrigin(url::Origin::Create(url));
   if (!site_has_service_worker.has_value() || site_has_service_worker.value()) {
-    OnPrefetchStatusUpdate(
-        url, PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker);
-    return false;
+    std::move(result_callback)
+        .Run(url, false,
+             PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker);
+    return;
   }
 
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   default_storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
       url, options,
-      base::BindOnce(&IsolatedPrerenderTabHelper::OnGotCookieList,
-                     weak_factory_.GetWeakPtr(), url));
-  return true;
+      base::BindOnce(&OnGotCookieList, url, std::move(result_callback)));
 }
 
-void IsolatedPrerenderTabHelper::OnGotCookieList(
+void IsolatedPrerenderTabHelper::OnGotEligibilityResult(
     const GURL& url,
-    const net::CookieStatusList& cookie_with_status_list,
-    const net::CookieStatusList& excluded_cookies) {
+    bool eligible,
+    base::Optional<IsolatedPrerenderTabHelper::PrefetchStatus> status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!cookie_with_status_list.empty()) {
-    OnPrefetchStatusUpdate(url,
-                           PrefetchStatus::kPrefetchNotEligibleUserHasCookies);
+  if (!eligible) {
+    if (status) {
+      OnPrefetchStatusUpdate(url, status.value());
+    }
     return;
   }
 

@@ -2080,15 +2080,20 @@ void StyleEngine::UpdateLayoutTreeRebuildRoot(ContainerNode* ancestor,
 bool StyleEngine::SupportsDarkColorScheme() {
   if (!meta_color_scheme_)
     return false;
+  bool has_light = false;
+  bool has_dark = false;
   if (const auto* scheme_list = DynamicTo<CSSValueList>(*meta_color_scheme_)) {
     for (auto& item : *scheme_list) {
       if (const auto* ident = DynamicTo<CSSIdentifierValue>(*item)) {
         if (ident->GetValueID() == CSSValueID::kDark)
-          return true;
+          has_dark = true;
+        else if (ident->GetValueID() == CSSValueID::kLight)
+          has_light = true;
       }
     }
   }
-  return false;
+  return has_dark &&
+         (!has_light || preferred_color_scheme_ == PreferredColorScheme::kDark);
 }
 
 void StyleEngine::UpdateColorScheme() {
@@ -2109,10 +2114,7 @@ void StyleEngine::UpdateColorScheme() {
     if (value.IsValid())
       preferred_color_scheme_ = CSSValueIDToPreferredColorScheme(value.id);
   }
-  bool use_dark_scheme =
-      preferred_color_scheme_ == PreferredColorScheme::kDark &&
-      SupportsDarkColorScheme();
-  if (!use_dark_scheme && settings->GetForceDarkModeEnabled()) {
+  if (!SupportsDarkColorScheme() && settings->GetForceDarkModeEnabled()) {
     // Make sure we don't match (prefers-color-scheme: dark) when forced
     // darkening is enabled.
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
@@ -2145,8 +2147,7 @@ void StyleEngine::UpdateColorSchemeBackground() {
 
   bool use_dark_background = false;
 
-  if (preferred_color_scheme_ == PreferredColorScheme::kDark &&
-      forced_colors_ != ForcedColors::kActive) {
+  if (forced_colors_ != ForcedColors::kActive) {
     const ComputedStyle* style = nullptr;
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();

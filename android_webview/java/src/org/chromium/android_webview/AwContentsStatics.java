@@ -7,16 +7,22 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.net.Uri;
 
+import org.chromium.android_webview.common.Flag;
+import org.chromium.android_webview.common.FlagOverrideHelper;
 import org.chromium.android_webview.common.PlatformServiceBridge;
+import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementations of various static methods, and also a home for static
@@ -129,6 +135,29 @@ public class AwContentsStatics {
         AwContentsStaticsJni.get().logCommandLineForDebugging();
     }
 
+    public static void logFlagOverridesWithNative(Map<String, Boolean> flagOverrides) {
+        // Do work asynchronously to avoid blocking startup.
+        PostTask.postTask(TaskTraits.THREAD_POOL_BEST_EFFORT, () -> {
+            FlagOverrideHelper helper =
+                    new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
+            ArrayList<String> switches = new ArrayList<>();
+            ArrayList<String> features = new ArrayList<>();
+            for (Map.Entry<String, Boolean> entry : flagOverrides.entrySet()) {
+                Flag flag = helper.getFlagForName(entry.getKey());
+                boolean enabled = entry.getValue();
+                if (flag.isBaseFeature()) {
+                    features.add(flag.getName() + (enabled ? ":enabled" : ":disabled"));
+                } else if (enabled) {
+                    switches.add("--" + flag.getName());
+                }
+                // Only insert enabled switches; ignore explicitly disabled switches since this is
+                // usually a NOOP.
+            }
+            AwContentsStaticsJni.get().logFlagMetrics(
+                    switches.toArray(new String[0]), features.toArray(new String[0]));
+        });
+    }
+
     /**
      * Return the first substring consisting of the address of a physical location.
      * @see {@link android.webkit.WebView#findAddress(String)}
@@ -153,6 +182,7 @@ public class AwContentsStatics {
     @NativeMethods
     interface Natives {
         void logCommandLineForDebugging();
+        void logFlagMetrics(String[] switches, String[] features);
 
         String getSafeBrowsingPrivacyPolicyUrl();
         void clearClientCertPreferences(Runnable callback);

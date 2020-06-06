@@ -10,6 +10,7 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
+#include "components/password_manager/core/browser/bulk_leak_check_service_interface.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -24,10 +25,10 @@ IOSChromeBulkLeakCheckServiceFactory::GetInstance() {
 }
 
 // static
-password_manager::BulkLeakCheckService*
+password_manager::BulkLeakCheckServiceInterface*
 IOSChromeBulkLeakCheckServiceFactory::GetForBrowserState(
     ChromeBrowserState* browser_state) {
-  return static_cast<password_manager::BulkLeakCheckService*>(
+  return static_cast<password_manager::BulkLeakCheckServiceInterface*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 

@@ -139,16 +139,6 @@ SaveUpdateWithAccountStoreBubbleController::
   enable_editing_ = delegate_->GetCredentialSource() !=
                     password_manager::metrics_util::CredentialSourceType::
                         kCredentialManagementAPI;
-
-  // Compute the title.
-  PasswordTitleType type =
-      state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
-          ? PasswordTitleType::UPDATE_PASSWORD
-          : (pending_password_.federation_origin.opaque()
-                 ? PasswordTitleType::SAVE_PASSWORD
-                 : PasswordTitleType::SAVE_ACCOUNT);
-  GetSavePasswordDialogTitleTextAndLinkRange(GetWebContents()->GetVisibleURL(),
-                                             origin_, type, &title_);
 }
 
 SaveUpdateWithAccountStoreBubbleController::
@@ -283,6 +273,16 @@ SaveUpdateWithAccountStoreBubbleController::GetPrimaryAccountAvatar(
                                    icon_size_dip, profiles::SHAPE_CIRCLE));
 }
 
+base::string16 SaveUpdateWithAccountStoreBubbleController::GetTitle() const {
+  PasswordTitleType type = IsCurrentStateUpdate()
+                               ? PasswordTitleType::UPDATE_PASSWORD
+                               : (pending_password_.federation_origin.opaque()
+                                      ? PasswordTitleType::SAVE_PASSWORD
+                                      : PasswordTitleType::SAVE_ACCOUNT);
+  return GetSavePasswordDialogTitleText(GetWebContents()->GetVisibleURL(),
+                                        origin_, type);
+}
+
 void SaveUpdateWithAccountStoreBubbleController::ReportInteractions() {
   DCHECK(state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
          state_ == password_manager::ui::PENDING_PASSWORD_STATE);
@@ -325,8 +325,4 @@ void SaveUpdateWithAccountStoreBubbleController::ReportInteractions() {
   // Record UKM statistics on dismissal reason.
   if (metrics_recorder_)
     metrics_recorder_->RecordUIDismissalReason(dismissal_reason_);
-}
-
-base::string16 SaveUpdateWithAccountStoreBubbleController::GetTitle() const {
-  return title_;
 }

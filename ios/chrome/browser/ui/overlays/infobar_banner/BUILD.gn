@@ -8,7 +8,10 @@ source_set("infobar_banner") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  deps = [ ":coordinators" ]
+  deps = [
+    ":coordinators",
+    "//ios/chrome/browser/ui/overlays/infobar_banner/translate:coordinators",
+  ]
 }
 
 source_set("coordinators") {
@@ -31,6 +34,7 @@ source_set("coordinators") {
     "//ios/chrome/browser/ui/overlays:util",
     "//ios/chrome/browser/ui/overlays/infobar_banner/confirm",
     "//ios/chrome/browser/ui/overlays/infobar_banner/passwords",
+    "//ios/chrome/browser/ui/overlays/infobar_banner/translate:mediators",
     "//ios/chrome/browser/ui/util",
   ]
 }

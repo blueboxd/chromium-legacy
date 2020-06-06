@@ -73,6 +73,12 @@ struct Referrer;
 struct SecurityStyleExplanations;
 }  // namespace content
 
+namespace device {
+namespace mojom {
+class GeolocationContext;
+}
+}  // namespace device
+
 namespace gfx {
 class Rect;
 class Size;
@@ -728,6 +734,12 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Invoked when media playback is interrupted or completed.
   virtual void MediaWatchTimeChanged(const MediaPlayerWatchTime& watch_time) {}
+
+  // Returns a  InstalledWebappGeolocationContext if this web content is running
+  // in a installed webapp and geolocation should be deleagted from the
+  // installed webapp; otherwise returns nullptr.
+  virtual device::mojom::GeolocationContext*
+  GetInstalledWebappGeolocationContext();
 
   // Returns a weak ptr to the web contents delegate.
   virtual base::WeakPtr<WebContentsDelegate> GetDelegateWeakPtr();

@@ -176,10 +176,6 @@ void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result) {
   base::UmaHistogramEnumeration("Sharing.DeviceUnregistrationResult", result);
 }
 
-void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result) {
-  base::UmaHistogramEnumeration("Sharing.VapidKeyCreationResult", result);
-}
-
 void LogSharingDevicesToShow(SharingFeatureName feature,
                              const char* histogram_suffix,
                              int count) {

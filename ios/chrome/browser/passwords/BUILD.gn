@@ -11,6 +11,8 @@ source_set("passwords") {
     "credential_manager.mm",
     "ios_chrome_bulk_leak_check_service_factory.cc",
     "ios_chrome_bulk_leak_check_service_factory.h",
+    "ios_chrome_password_check_manager.h",
+    "ios_chrome_password_check_manager.mm",
     "ios_chrome_password_manager_client.h",
     "ios_chrome_password_manager_client.mm",
     "ios_chrome_password_manager_driver.h",
@@ -160,6 +162,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "credential_manager_unittest.mm",
+    "ios_chrome_password_check_manager_unittest.mm",
     "ios_chrome_password_manager_client_unittest.mm",
     "js_credential_manager_unittest.mm",
     "password_controller_js_unittest.mm",

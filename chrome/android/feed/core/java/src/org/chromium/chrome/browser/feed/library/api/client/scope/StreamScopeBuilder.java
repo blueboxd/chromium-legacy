@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.client.scope;
 
-import android.content.Context;
+import android.app.Activity;
 
 import org.chromium.base.FeatureList;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
@@ -48,7 +48,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 /** A builder that creates a {@link StreamScope}. */
 public final class StreamScopeBuilder {
     // Required external dependencies.
-    private final Context mContext;
+    private final Activity mActivity;
     private final ActionApi mActionApi;
     private final ImageLoaderApi mImageLoaderApi;
 
@@ -84,7 +84,7 @@ public final class StreamScopeBuilder {
     private HostBindingProvider mHostBindingProvider;
 
     /** Construct this builder using {@link ProcessScope#createStreamScopeBuilder} */
-    public StreamScopeBuilder(Context context, ActionApi actionApi, ImageLoaderApi imageLoaderApi,
+    public StreamScopeBuilder(Activity activity, ActionApi actionApi, ImageLoaderApi imageLoaderApi,
             ProtocolAdapter protocolAdapter, FeedSessionManager feedSessionManager,
             ThreadUtils threadUtils, TimingUtils timingUtils, TaskQueue taskQueue,
             MainThreadRunner mainThreadRunner, Clock clock, DebugBehavior debugBehavior,
@@ -94,7 +94,7 @@ public final class StreamScopeBuilder {
             FeedKnownContent feedKnownContent, TooltipApi tooltipApi,
             TooltipSupportedApi tooltipSupportedApi, ApplicationInfo applicationInfo,
             FeedExtensionRegistry feedExtensionRegistry, SnackbarManager snackbarManager) {
-        this.mContext = context;
+        this.mActivity = activity;
         this.mActionApi = actionApi;
         this.mImageLoaderApi = imageLoaderApi;
         this.mProtocolAdapter = protocolAdapter;
@@ -166,12 +166,12 @@ public final class StreamScopeBuilder {
         }
         if (FeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
-            mStream = new FeedStream(mContext, mIsBackgroundDark, mSnackbarManager);
+            mStream = new FeedStream(mActivity, mIsBackgroundDark, mSnackbarManager);
         } else {
             if (mStreamFactory == null) {
                 mStreamFactory = new BasicStreamFactory();
             }
-            mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mContext,
+            mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mActivity,
                     mApplicationInfo.getBuildType(), mCardConfiguration, mImageLoaderApi,
                     Validators.checkNotNull(mCustomElementProvider), mDebugBehavior, mClock,
                     Validators.checkNotNull(mModelProviderFactory),

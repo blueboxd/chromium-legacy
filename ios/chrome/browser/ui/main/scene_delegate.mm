@@ -125,4 +125,9 @@ NSString* const kOriginDetectedKey = @"OriginDetectedKey";
                                completionHandler:completionHandler];
 }
 
+- (void)scene:(UIScene*)scene
+    continueUserActivity:(NSUserActivity*)userActivity API_AVAILABLE(ios(13)) {
+  self.sceneState.pendingUserActivity = userActivity;
+}
+
 @end

@@ -118,8 +118,10 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
   base::Value PopulateRange(NSRange) const;
-  base::Value PopulateTextMarker(id,
-                                 const LineIndexesMap& line_indexes_map) const;
+  base::Value PopulateTextPosition(
+      BrowserAccessibilityPosition::AXPositionInstance::pointer,
+      const LineIndexesMap&) const;
+  base::Value PopulateTextMarkerRange(id, const LineIndexesMap&) const;
   base::Value PopulateObject(id, const LineIndexesMap& line_indexes_map) const;
   base::Value PopulateArray(NSArray*,
                             const LineIndexesMap& line_indexes_map) const;
@@ -346,10 +348,16 @@ base::Value AccessibilityTreeFormatterMac::PopulateObject(
 
   // AXTextMarker
   if (content::IsAXTextMarker(value)) {
-    return PopulateTextMarker(value, line_indexes_map);
+    return PopulateTextPosition(content::AXTextMarkerToPosition(value).get(),
+                                line_indexes_map);
   }
 
-  // Accessible object.
+  // AXTextMarkerRange
+  if (content::IsAXTextMarkerRange(value)) {
+    return PopulateTextMarkerRange(value, line_indexes_map);
+  }
+
+  // Accessible object
   if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
     return base::Value(NodeToLineIndex(value, line_indexes_map));
   }
@@ -367,11 +375,9 @@ base::Value AccessibilityTreeFormatterMac::PopulateRange(
   return range;
 }
 
-base::Value AccessibilityTreeFormatterMac::PopulateTextMarker(
-    id object,
+base::Value AccessibilityTreeFormatterMac::PopulateTextPosition(
+    BrowserAccessibilityPosition::AXPositionInstance::pointer position,
     const LineIndexesMap& line_indexes_map) const {
-  BrowserAccessibilityPosition::AXPositionInstance position =
-      content::AXTextMarkerToPosition(object);
   if (position->IsNullPosition()) {
     return base::Value(kNULLValue);
   }
@@ -400,6 +406,21 @@ base::Value AccessibilityTreeFormatterMac::PopulateTextMarker(
   set.SetStringPath(setkey_prefix + "index3_affinity",
                     kConstValuePrefix + affinity);
   return set;
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulateTextMarkerRange(
+    id object,
+    const LineIndexesMap& line_indexes_map) const {
+  auto range = content::AXTextMarkerRangeToRange(object);
+  if (range.IsNull()) {
+    return base::Value(kNULLValue);
+  }
+
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetPath("anchor",
+               PopulateTextPosition(range.anchor(), line_indexes_map));
+  dict.SetPath("focus", PopulateTextPosition(range.focus(), line_indexes_map));
+  return dict;
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateArray(

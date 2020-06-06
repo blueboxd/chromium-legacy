@@ -9,9 +9,4 @@ specific_include_rules = {
   'stack_unwinder_android_unittest.cc': [
     "+services/tracing/jni_headers",
   ],
-  # Temporary to research https://crbug.com/1074115
-  # TODO(crbug.com/1074115): Remove this
-  'producer_client.cc': [
-    "+components/crash/core/app/crashpad.h",
-  ],
 }

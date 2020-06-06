@@ -12,13 +12,8 @@ namespace {
 
 bool operator<(const SelectorProto::TextFilter& a,
                const SelectorProto::TextFilter& b) {
-  if (a.re2() < b.re2()) {
-    return true;
-  }
-  if (a.re2() != b.re2()) {
-    return false;
-  }
-  return (a.case_sensitive() ? 1 : 0) < (b.case_sensitive() ? 1 : 0);
+  return std::make_tuple(a.re2(), a.case_sensitive()) <
+         std::make_tuple(b.re2(), b.case_sensitive());
 }
 
 bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b) {
@@ -41,9 +36,22 @@ bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b) {
     case SelectorProto::Filter::kPseudoType:
       return a.pseudo_type() < b.pseudo_type();
 
+    case SelectorProto::Filter::kPseudoElementContent:
+      if (a.pseudo_element_content().pseudo_type() <
+          b.pseudo_element_content().pseudo_type()) {
+        return true;
+      }
+      if (a.pseudo_element_content().pseudo_type() !=
+          b.pseudo_element_content().pseudo_type()) {
+        return false;
+      }
+      return a.pseudo_element_content().content() <
+             b.pseudo_element_content().content();
+
     case SelectorProto::Filter::kBoundingBox:
     case SelectorProto::Filter::kEnterFrame:
     case SelectorProto::Filter::kPickOne:
+    case SelectorProto::Filter::kLabelled:
       return false;
 
     case SelectorProto::Filter::FILTER_NOT_SET:
@@ -55,65 +63,12 @@ bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b) {
 #ifndef NDEBUG
 
 std::ostream& operator<<(std::ostream& out, PseudoType pseudo_type) {
-  switch (pseudo_type) {
-    case UNDEFINED:
-      out << "UNDEFINED";
-      break;
-    case FIRST_LINE:
-      out << "FIRST_LINE";
-      break;
-    case FIRST_LETTER:
-      out << "FIRST_LETTER";
-      break;
-    case BEFORE:
-      out << "BEFORE";
-      break;
-    case AFTER:
-      out << "AFTER";
-      break;
-    case BACKDROP:
-      out << "BACKDROP";
-      break;
-    case SELECTION:
-      out << "SELECTION";
-      break;
-    case FIRST_LINE_INHERITED:
-      out << "FIRST_LINE_INHERITED";
-      break;
-    case SCROLLBAR:
-      out << "SCROLLBAR";
-      break;
-    case SCROLLBAR_THUMB:
-      out << "SCROLLBAR_THUMB";
-      break;
-    case SCROLLBAR_BUTTON:
-      out << "SCROLLBAR_BUTTON";
-      break;
-    case SCROLLBAR_TRACK:
-      out << "SCROLLBAR_TRACK";
-      break;
-    case SCROLLBAR_TRACK_PIECE:
-      out << "SCROLLBAR_TRACK_PIECE";
-      break;
-    case SCROLLBAR_CORNER:
-      out << "SCROLLBAR_CORNER";
-      break;
-    case RESIZER:
-      out << "RESIZER";
-      break;
-    case INPUT_LIST_BUTTON:
-      out << "INPUT_LIST_BUTTON";
-      break;
-
-      // Intentionally no default case to make compilation fail if a new value
-      // was added to the enum but not to this list.
-  }
-  return out;
+  return out << PseudoTypeName(pseudo_type);
 }
 
 std::ostream& operator<<(std::ostream& out,
                          const SelectorProto::TextFilter& c) {
-  out << "~=/" << c.re2() << "/";
+  out << "/" << c.re2() << "/";
   if (c.case_sensitive()) {
     out << "i";
   }
@@ -131,15 +86,20 @@ std::ostream& operator<<(std::ostream& out, const SelectorProto::Filter& f) {
       return out;
 
     case SelectorProto::Filter::kInnerText:
-      out << "innerText" << f.inner_text();
+      out << "innerText~=" << f.inner_text();
       return out;
 
     case SelectorProto::Filter::kValue:
-      out << "value" << f.value();
+      out << "value~=" << f.value();
       return out;
 
     case SelectorProto::Filter::kPseudoType:
       out << "::" << f.pseudo_type();
+      return out;
+
+    case SelectorProto::Filter::kPseudoElementContent:
+      out << "::" << f.pseudo_element_content().pseudo_type()
+          << "~=" << f.pseudo_element_content().content();
       return out;
 
     case SelectorProto::Filter::kBoundingBox:
@@ -148,6 +108,10 @@ std::ostream& operator<<(std::ostream& out, const SelectorProto::Filter& f) {
 
     case SelectorProto::Filter::kPickOne:
       out << "pick_one";
+      return out;
+
+    case SelectorProto::Filter::kLabelled:
+      out << "labelled";
       return out;
 
     case SelectorProto::Filter::FILTER_NOT_SET:
@@ -175,6 +139,46 @@ SelectorProto ToSelectorProto(const std::vector<std::string>& s) {
     }
   }
   return proto;
+}
+
+std::string PseudoTypeName(PseudoType pseudo_type) {
+  switch (pseudo_type) {
+    case UNDEFINED:
+      return "undefined";
+    case FIRST_LINE:
+      return "first-line";
+    case FIRST_LETTER:
+      return "first-letter";
+    case BEFORE:
+      return "before";
+    case AFTER:
+      return "after";
+    case BACKDROP:
+      return "backdrop";
+    case SELECTION:
+      return "selection";
+    case FIRST_LINE_INHERITED:
+      return "first-line-inherited";
+    case SCROLLBAR:
+      return "scrollbar";
+    case SCROLLBAR_THUMB:
+      return "scrollbar-thumb";
+    case SCROLLBAR_BUTTON:
+      return "scrollbar-button";
+    case SCROLLBAR_TRACK:
+      return "scrollbar-track";
+    case SCROLLBAR_TRACK_PIECE:
+      return "scrollbar-track-piece";
+    case SCROLLBAR_CORNER:
+      return "scrollbar-corner";
+    case RESIZER:
+      return "resizer";
+    case INPUT_LIST_BUTTON:
+      return "input-list-button";
+
+      // Intentionally no default case to make compilation fail if a new value
+      // was added to the enum but not to this list.
+  }
 }
 
 Selector::Selector() {}
@@ -279,6 +283,8 @@ base::Optional<std::string> Selector::ExtractSingleCssSelectorForAutofill()
       case SelectorProto::Filter::kInnerText:
       case SelectorProto::Filter::kValue:
       case SelectorProto::Filter::kPseudoType:
+      case SelectorProto::Filter::kPseudoElementContent:
+      case SelectorProto::Filter::kLabelled:
         VLOG(1) << __func__
                 << " Selector feature not supported by autofill: " << *this;
         return base::nullopt;

@@ -56,7 +56,7 @@ class ScopedResourceOverride {
   }
 
   const bool had_shared_instance_;  // Was there a shared bundle before?
-  ui::ResourceBundle& bundle_;  // The shared bundle.
+  ui::ResourceBundle& bundle_;      // The shared bundle.
   const std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedResourceOverride);
@@ -130,19 +130,18 @@ const struct {
 
 }  // namespace
 
-// Test for GetSavePasswordDialogTitleTextAndLinkRange().
-TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
+// Test for GetSavePasswordDialogTitleText().
+TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleText) {
   for (size_t i = 0; i < base::size(kDomainsTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "user_visible_url = "
                                     << kDomainsTestCases[i].user_visible_url
                                     << ", form_origin_url = "
                                     << kDomainsTestCases[i].form_origin_url);
 
-    base::string16 title;
-    GetSavePasswordDialogTitleTextAndLinkRange(
+    base::string16 title = GetSavePasswordDialogTitleText(
         GURL(kDomainsTestCases[i].user_visible_url),
         url::Origin::Create(GURL(kDomainsTestCases[i].form_origin_url)),
-        kDomainsTestCases[i].bubble_type, &title);
+        kDomainsTestCases[i].bubble_type);
 
     // Verify against expectations.
     base::string16 domain =
@@ -160,15 +159,13 @@ TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleTextAndLinkRange) {
 }
 
 // Check that empty localised strings do not cause a crash.
-TEST(ManagePasswordsViewUtilTest,
-     GetSavePasswordDialogTitleTextAndLinkRange_EmptyStrings) {
+TEST(ManagePasswordsViewUtilTest, GetSavePasswordDialogTitleText_EmptyStrings) {
   ScopedResourceOverride resource_override;
 
   // Ensure that the resource bundle returns an empty string for the UI.
   resource_override.OverrideLocaleStringResource(IDS_SAVE_PASSWORD,
                                                  base::string16());
 
-  base::string16 title;
   const GURL kExample("http://example.org");
   // The arguments passed below have this importance for the codepath:
   // * The first two URLs need to be the same, otherwise
@@ -179,11 +176,11 @@ TEST(ManagePasswordsViewUtilTest,
   //   triggers the crash in http://crbug.com/658902.
   // * SAVE_PASSWORD dialog type needs to be passed to match the
   //   IDS_SAVE_PASSWORD overridden above.
-  GetSavePasswordDialogTitleTextAndLinkRange(
-      kExample, url::Origin::Create(kExample), PasswordTitleType::SAVE_PASSWORD,
-      &title);
+  base::string16 title =
+      GetSavePasswordDialogTitleText(kExample, url::Origin::Create(kExample),
+                                     PasswordTitleType::SAVE_PASSWORD);
   // Verify that the test did not pass just because
-  // GetSavePasswordDialogTitleTextAndLinkRange changed the resource IDs it uses
+  // GetSavePasswordDialogTitleText changed the resource IDs it uses
   // (and hence did not get the overridden empty string). If the empty localised
   // string was used, the title and the range will be empty as well.
   EXPECT_THAT(title, testing::IsEmpty());
@@ -196,11 +193,9 @@ TEST(ManagePasswordsViewUtilTest, GetManagePasswordsDialogTitleText) {
                                     << ", password_origin_url = "
                                     << kDomainsTestCases[i].form_origin_url);
 
-    base::string16 title;
-    GetManagePasswordsDialogTitleText(
+    base::string16 title = GetManagePasswordsDialogTitleText(
         GURL(kDomainsTestCases[i].user_visible_url),
-        url::Origin::Create(GURL(kDomainsTestCases[i].form_origin_url)), true,
-        &title);
+        url::Origin::Create(GURL(kDomainsTestCases[i].form_origin_url)), true);
 
     // Verify against expectations.
     base::string16 domain =

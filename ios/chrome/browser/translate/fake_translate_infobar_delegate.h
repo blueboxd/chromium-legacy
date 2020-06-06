@@ -5,12 +5,21 @@
 #ifndef IOS_CHROME_BROWSER_TRANSLATE_FAKE_TRANSLATE_INFOBAR_DELEGATE_H_
 #define IOS_CHROME_BROWSER_TRANSLATE_FAKE_TRANSLATE_INFOBAR_DELEGATE_H_
 
-#include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "components/translate/core/browser/mock_translate_client.h"
-#include "components/translate/core/browser/mock_translate_driver.h"
-#include "components/translate/core/browser/mock_translate_infobar_delegate.h"
-#include "components/translate/core/browser/mock_translate_ranker.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+
+#include "components/translate/core/browser/mock_translate_driver.h"
+
+namespace sync_preferences {
+class TestingPrefServiceSyncable;
+}
+namespace translate {
+class TranslateManager;
+namespace testing {
+class MockTranslateClient;
+class MockTranslateRanker;
+class MockLanguageModel;
+}  // namespace testing
+}  // namespace translate
 
 // Fake of TranslateInfoBarDelegate that allows for triggering Observer
 // callbacks.
@@ -36,8 +45,14 @@ class FakeTranslateInfoBarDelegate
       translate::TranslateStep step,
       translate::TranslateErrors::Type error_type);
 
+  base::string16 original_language_name() const override;
+
+  base::string16 target_language_name() const override;
+
  private:
   base::ObserverList<Observer> observers_;
+  base::string16 original_language_;
+  base::string16 target_language_;
 };
 
 // Factory class to create instances of FakeTranslateInfoBarDelegate.

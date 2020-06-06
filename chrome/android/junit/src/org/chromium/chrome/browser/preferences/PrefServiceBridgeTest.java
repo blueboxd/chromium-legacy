@@ -26,7 +26,7 @@ import org.chromium.base.test.util.JniMocker;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class PrefServiceBridgeTest {
-    private static final int PREF = 42;
+    private static final String PREF = "42";
 
     @Rule
     public JniMocker mocker = new JniMocker();

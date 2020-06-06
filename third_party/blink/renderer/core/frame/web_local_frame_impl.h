@@ -250,7 +250,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                       bool match_case,
                       bool forward,
                       bool force,
-                      bool find_next,
+                      bool new_session,
                       bool wrap_within_frame) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;

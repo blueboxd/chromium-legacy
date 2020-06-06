@@ -20,6 +20,7 @@ class SafetyCheck {
   // desktop, Android, and iOS) of the safety check and should be kept in sync
   // with the JS frontend (safety_check_browser_proxy.js) and |SafetyCheck*|
   // metrics enums in enums.xml.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.safety_check
   enum class SafeBrowsingStatus {
     kChecking = 0,
     kEnabled = 1,

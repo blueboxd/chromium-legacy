@@ -63,12 +63,10 @@ class POLICY_EXPORT PolicyMap {
     // Returns a copy of |this|.
     Entry DeepCopy() const;
 
-    base::Value* value() { return value_.get(); }
-    const base::Value* value() const { return value_.get(); }
+    base::Value* value() { return base::OptionalOrNullptr(value_); }
+    const base::Value* value() const { return base::OptionalOrNullptr(value_); }
 
-    void set_value(std::unique_ptr<base::Value> val) {
-      value_ = std::move(val);
-    }
+    void set_value(std::unique_ptr<base::Value> val);
 
     // Returns true if |this| has higher priority than |other|. The priority of
     // the fields are |level| > |scope| > |source|.
@@ -123,7 +121,7 @@ class POLICY_EXPORT PolicyMap {
     base::string16 GetLocalizedWarnings(L10nLookupFunction lookup) const;
 
    private:
-    std::unique_ptr<base::Value> value_;
+    base::Optional<base::Value> value_;
     bool ignored_ = false;
     std::string error_strings_;
     std::set<int> error_message_ids_;

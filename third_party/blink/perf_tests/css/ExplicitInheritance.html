@@ -6,10 +6,11 @@
 <style>
   .red { border: 1px solid red; }
   .green { border: 2px solid green; }
+  #container div { all: unset; }
   #container div { border-color: inherit; }
 </style>
 <script>
-  createDOMTree(container, 5, 6);
+  createDOMTree(container, 4, 5);
 
   PerfTestRunner.measureTime({
       description: 'Measure impact of explicit inheritance',

@@ -590,3 +590,6 @@ crbug.com/1035582 tables/mozilla/bugs/bug7342.html [ Failure ]
 
 crbug.com/845235 external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
 crbug.com/845235 external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
+
+crbug.com/1074752 editing/selection/selection-color.html [ Failure ]
+

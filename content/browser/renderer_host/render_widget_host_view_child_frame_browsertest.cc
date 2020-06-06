@@ -34,6 +34,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -592,6 +593,110 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   EXPECT_EQ(true,
             EvalJs(root->child_at(0),
                    "window.matchMedia('(display-mode: standalone)').matches"));
+}
+
+// Validate that the root widget's window segments are correctly propagated
+// via the SynchronizeVisualProperties cascade.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
+                       VisualPropertiesPropagation_RootWindowSegments) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c),a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Main frame/root view.
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  RenderWidgetHostImpl* root_widget =
+      root->current_frame_host()->GetRenderWidgetHost();
+  RenderWidgetHostViewBase* root_view = root_widget->GetView();
+  // Out-of-process child frame.
+  FrameTreeNode* oopchild = root->child_at(0);
+  auto* oopchild_rph = static_cast<RenderProcessHostImpl*>(
+      oopchild->current_frame_host()->GetProcess());
+  // Out-of-process descendant frame (child of the first oop-iframe).
+  FrameTreeNode* oopdescendant = oopchild->child_at(0);
+  auto* oopdescendant_rph = static_cast<RenderProcessHostImpl*>(
+      oopdescendant->current_frame_host()->GetProcess());
+
+  const gfx::Size root_view_size = root_view->GetVisibleViewportSize();
+  const int kDisplayFeatureLength = 10;
+  DisplayFeature emulated_display_feature{
+      DisplayFeature::Orientation::kVertical,
+      /* offset */ root_view_size.width() / 2 - kDisplayFeatureLength / 2,
+      /* mask_length */ kDisplayFeatureLength};
+  std::vector<gfx::Rect> expected_segments;
+  expected_segments.emplace_back(0, 0, emulated_display_feature.offset,
+                                 root_view_size.height());
+  expected_segments.emplace_back(
+      emulated_display_feature.offset + emulated_display_feature.mask_length, 0,
+      emulated_display_feature.offset, root_view_size.height());
+
+  {
+    base::RunLoop loop;
+
+    // Watch for visual properties changes, first to the child oop-iframe, then
+    // to the descendant (at which point we're done and can validate the
+    // values).
+    std::vector<gfx::Rect> oopchild_root_window_segments;
+    OutgoingVisualPropertiesIPCWatcher oopchild_watcher(
+        oopchild_rph, root,
+        base::BindLambdaForTesting([&](const VisualProperties& props) {
+          oopchild_root_window_segments = props.root_widget_window_segments;
+        }));
+
+    std::vector<gfx::Rect> oopdescendant_root_window_segments;
+    OutgoingVisualPropertiesIPCWatcher oopdescendant_watcher(
+        oopdescendant_rph, root,
+        base::BindLambdaForTesting([&](const VisualProperties& props) {
+          oopdescendant_root_window_segments =
+              props.root_widget_window_segments;
+          if (oopdescendant_root_window_segments == expected_segments)
+            loop.Quit();
+        }));
+
+    root_view->SetDisplayFeatureForTesting(emulated_display_feature);
+    root_widget->SynchronizeVisualProperties();
+
+    loop.Run();
+
+    // The child widgets must be informed of the changed window segments.
+    EXPECT_THAT(oopchild_root_window_segments,
+                ::testing::ContainerEq(expected_segments));
+    EXPECT_THAT(oopdescendant_root_window_segments,
+                ::testing::ContainerEq(expected_segments));
+  }
+
+  {
+    base::RunLoop loop;
+    std::vector<gfx::Rect> new_frame_root_window_segments;
+    OutgoingVisualPropertiesIPCWatcher oopdescendant_watcher(
+        oopdescendant_rph, root,
+        base::BindLambdaForTesting([&](const VisualProperties& props) {
+          new_frame_root_window_segments = props.root_widget_window_segments;
+          // This check is needed, since we'll get an IPC originating from
+          // RenderWidgetHostImpl immediately after the frame is added with the
+          // incorrect value (the segments are cascaded from the parent renderer
+          // when the frame is added in that process). So we need to wait for
+          // the outgoing VisualProperties triggered from the parent renderer
+          // and comes in via the CrossProcessFrameConnector, which can happen
+          // after NavigateFrameToURL completes.
+          if (new_frame_root_window_segments == expected_segments)
+            loop.Quit();
+        }));
+
+    // Creating a new local frame root (navigating a.com to c.com) should also
+    // propagate the property to the new local frame root. Note that we're
+    // re-using the existing RenderProcessHost from c.com (aka
+    // |oopdescendant_rph|).
+    GURL new_frame_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+    NavigateFrameToURL(root->child_at(1), new_frame_url);
+
+    loop.Run();
+
+    EXPECT_THAT(new_frame_root_window_segments,
+                ::testing::ContainerEq(expected_segments));
+  }
 }
 
 }  // namespace content

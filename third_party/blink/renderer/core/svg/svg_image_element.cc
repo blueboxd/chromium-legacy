@@ -36,8 +36,9 @@ namespace blink {
 SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(svg_names::kImageTag, document),
       SVGURIReference(this),
-      is_default_overridden_intrinsic_size_(!document.IsFeatureEnabled(
-          mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
+      is_default_overridden_intrinsic_size_(
+          !GetExecutionContext()->IsFeatureEnabled(
+              mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       x_(MakeGarbageCollected<SVGAnimatedLength>(
           this,
           svg_names::kXAttr,

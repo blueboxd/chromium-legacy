@@ -15,11 +15,7 @@ namespace autofill_assistant {
 namespace {
 // Javascript code to get document root element.
 const char kGetDocumentElement[] =
-    R"(
-    (function() {
-      return document.documentElement;
-    }())
-    )";
+    "(function() { return document.documentElement; }())";
 
 const char kGetArrayElement[] = "function(index) { return this[index]; }";
 
@@ -94,32 +90,41 @@ ElementFinder::JsFilterBuilder::BuildArgumentList() const {
   return arguments;
 }
 
+// clang-format off
 std::string ElementFinder::JsFilterBuilder::BuildFunction() const {
-  return base::StrCat({R"(function(args) {
-  var elements = [this];
-)",
-                       base::JoinString(lines_, "\n"), R"(
-  if (elements.length == 0) return null;
-  if (elements.length == 1) { return elements[0] }
-  return elements;
-})"});
+  return base::StrCat({
+    R"(
+    function(args) {
+      var elements = [this];
+    )",
+    base::JoinString(lines_, "\n"),
+    R"(
+      if (elements.length == 0) return null;
+      if (elements.length == 1) { return elements[0] }
+      return elements;
+    })"
+  });
 }
+// clang-format on
 
 bool ElementFinder::JsFilterBuilder::AddFilter(
     const SelectorProto::Filter& filter) {
   switch (filter.filter_case()) {
     case SelectorProto::Filter::kCssSelector:
-      AddLine(
-          {"elements = elements.flatMap((e) => "
-           "Array.from(e.querySelectorAll(",
-           AddArgument(filter.css_selector()), ")));"});
+      // clang-format off
+      AddLine({
+        "elements = elements.flatMap((e) => Array.from(e.querySelectorAll(",
+        AddArgument(filter.css_selector()),
+        ")));"
+      });
 
       // Elements are temporarily put into a set to get rid of duplicates, which
       // are likely when using inner text before CSS selector filters. We must
       // not return duplicates as they cause incorrect TOO_MANY_ELEMENTS errors.
       AddLine(R"(if (elements.length > 1) {
-  elements = Array.from(new Set(elements));
-})");
+        elements = Array.from(new Set(elements));
+      })");
+      // clang-format on
       return true;
 
     case SelectorProto::Filter::kInnerText:
@@ -135,6 +140,46 @@ bool ElementFinder::JsFilterBuilder::AddFilter(
           "elements = elements.filter((e) => e.getClientRects().length > 0);");
       return true;
 
+    case SelectorProto::Filter::kPseudoElementContent: {
+      // When a content is set, window.getComputedStyle().content contains a
+      // double-quoted string with the content, unquoted here by JSON.parse().
+      std::string re_var =
+          AddRegexpInstance(filter.pseudo_element_content().content());
+      std::string pseudo_type =
+          PseudoTypeName(filter.pseudo_element_content().pseudo_type());
+
+      AddLine("elements = elements.filter((e) => {");
+      AddLine({"  var s = window.getComputedStyle(e, '", pseudo_type, "');"});
+      AddLine("  if (!s || !s.content || !s.content.startsWith('\"')) {");
+      AddLine("    return false;");
+      AddLine("  }");
+      AddLine({"  return ", re_var, ".test(JSON.parse(s.content));"});
+      AddLine("});");
+      return true;
+    }
+
+    case SelectorProto::Filter::kLabelled:
+      AddLine(R"(elements = elements.flatMap((e) => {
+  if (e.tagName != 'LABEL') return [];
+  var element = null;
+  var id = e.getAttribute('for');
+  if (id) {
+    element = document.getElementById(id)
+  }
+  if (!element) {
+    element = e.querySelector(
+      'button,input,keygen,meter,output,progress,select,textarea');
+  }
+  if (element) return [element];
+  return [];
+});
+)");
+      // The selector above for the case where there's no "for" corresponds to
+      // the list of labelable elements listed on "W3C's HTML5: Edition for Web
+      // Authors":
+      // https://www.w3.org/TR/2011/WD-html5-author-20110809/forms.html#category-label
+      return true;
+
     case SelectorProto::Filter::kEnterFrame:
     case SelectorProto::Filter::kPseudoType:
     case SelectorProto::Filter::kPickOne:
@@ -143,13 +188,19 @@ bool ElementFinder::JsFilterBuilder::AddFilter(
   }
 }
 
-void ElementFinder::JsFilterBuilder::AddRegexpFilter(
-    const SelectorProto::TextFilter& filter,
-    const std::string& property) {
+std::string ElementFinder::JsFilterBuilder::AddRegexpInstance(
+    const SelectorProto::TextFilter& filter) {
   std::string re_flags = filter.case_sensitive() ? "" : "i";
   std::string re_var = DeclareVariable();
   AddLine({"var ", re_var, " = RegExp(", AddArgument(filter.re2()), ", '",
            re_flags, "');"});
+  return re_var;
+}
+
+void ElementFinder::JsFilterBuilder::AddRegexpFilter(
+    const SelectorProto::TextFilter& filter,
+    const std::string& property) {
+  std::string re_var = AddRegexpInstance(filter);
   AddLine({"elements = elements.filter((e) => ", re_var, ".test(e.", property,
            "));"});
 }
@@ -274,7 +325,9 @@ void ElementFinder::ExecuteNextTask() {
     case SelectorProto::Filter::kCssSelector:
     case SelectorProto::Filter::kInnerText:
     case SelectorProto::Filter::kValue:
-    case SelectorProto::Filter::kBoundingBox: {
+    case SelectorProto::Filter::kBoundingBox:
+    case SelectorProto::Filter::kPseudoElementContent:
+    case SelectorProto::Filter::kLabelled: {
       std::vector<std::string> matches;
       if (!ConsumeAllMatchesOrFail(matches))
         return;

@@ -34,6 +34,8 @@ void PolicyBundle::Swap(PolicyBundle* other) {
 }
 
 void PolicyBundle::CopyFrom(const PolicyBundle& other) {
+  DCHECK_NE(this, &other);
+
   Clear();
   for (auto it = other.begin(); it != other.end(); ++it) {
     policy_bundle_[it->first] = it->second->DeepCopy();
@@ -41,6 +43,8 @@ void PolicyBundle::CopyFrom(const PolicyBundle& other) {
 }
 
 void PolicyBundle::MergeFrom(const PolicyBundle& other) {
+  DCHECK_NE(this, &other);
+
   // Iterate over both |this| and |other| in order; skip what's extra in |this|,
   // add what's missing, and merge the namespaces in common.
   auto it_this = policy_bundle_.begin();

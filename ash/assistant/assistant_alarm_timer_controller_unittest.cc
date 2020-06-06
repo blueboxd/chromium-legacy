@@ -553,7 +553,8 @@ TEST_F(AssistantAlarmTimerControllerTest,
   typedef struct {
     base::TimeDelta original_duration;
     std::string label;
-    std::string expected_message;
+    std::string expected_message_when_scheduled;
+    std::string expected_message_when_fired;
   } TestTimer;
 
   // We're going to run our test over a few locales to ensure i18n compliance.
@@ -569,12 +570,14 @@ TEST_F(AssistantAlarmTimerControllerTest,
       /*locale=*/"en_US",
       /*timers=*/
       {
-          {kOneSec, kEmptyLabel, "1s timer"},
-          {kOneSec, "Eggs", "1s timer · Eggs"},
-          {kOneSec + kOneMin, kEmptyLabel, "1m 1s timer"},
-          {kOneSec + kOneMin, "Eggs", "1m 1s timer · Eggs"},
-          {kOneSec + kOneMin + kOneHour, kEmptyLabel, "1h 1m 1s timer"},
-          {kOneSec + kOneMin + kOneHour, "Eggs", "1h 1m 1s timer · Eggs"},
+          {kOneSec, kEmptyLabel, "1s timer", "Time's up"},
+          {kOneSec, "Eggs", "1s timer · Eggs", "Time's up · Eggs"},
+          {kOneSec + kOneMin, kEmptyLabel, "1m 1s timer", "Time's up"},
+          {kOneSec + kOneMin, "Eggs", "1m 1s timer · Eggs", "Time's up · Eggs"},
+          {kOneSec + kOneMin + kOneHour, kEmptyLabel, "1h 1m 1s timer",
+           "Time's up"},
+          {kOneSec + kOneMin + kOneHour, "Eggs", "1h 1m 1s timer · Eggs",
+           "Time's up · Eggs"},
       },
   });
 
@@ -587,7 +590,7 @@ TEST_F(AssistantAlarmTimerControllerTest,
 
     // Run each timer in the test.
     for (auto& timer : i18n_test_case.timers) {
-      // Schedule a timer.
+      // Schedule timer.
       ScheduleTimer(kTimerId)
           .WithLabel(timer.label)
           .WithOriginalDuration(timer.original_duration);
@@ -595,7 +598,18 @@ TEST_F(AssistantAlarmTimerControllerTest,
       // Make assertions about the notification.
       EXPECT_NOTIFICATION_EQ(
           ExpectedNotification().WithClientId(kClientId).WithMessage(
-              timer.expected_message),
+              timer.expected_message_when_scheduled),
+          notification_model_observer.last_notification());
+
+      // Fire timer.
+      FireTimer(kTimerId)
+          .WithLabel(timer.label)
+          .WithOriginalDuration(timer.original_duration);
+
+      // Make assertions about the notification.
+      EXPECT_NOTIFICATION_EQ(
+          ExpectedNotification().WithClientId(kClientId).WithMessage(
+              timer.expected_message_when_fired),
           notification_model_observer.last_notification());
     }
   }

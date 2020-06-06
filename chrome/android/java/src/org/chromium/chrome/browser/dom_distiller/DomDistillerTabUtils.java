@@ -99,7 +99,7 @@ public class DomDistillerTabUtils {
      */
     public static boolean shouldExcludeMobileFriendly() {
         if (sExcludeMobileFriendlyForTesting != null) return sExcludeMobileFriendlyForTesting;
-        return !PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED)
+        return !PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY)
                 && getDistillerHeuristics() == DistillerHeuristicsType.ADABOOST_MODEL;
     }
 

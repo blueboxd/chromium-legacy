@@ -36,4 +36,6 @@ print("CACHE MANIFEST\n");
 print("# version " . getCount($tmpFile) . "\n");
 print("CACHE:\n");
 print("modified-manifest.php?command=step\n");
+print("ORIGIN-TRIAL:\n");
+print("AnwB3aSh6U8pmYtO/AzzxELSwk8BRJoj77nUnCq6u3N8LMJKlX/ImydQmXn3SgE0a+8RyowLbV835tXQHJMHuAEAAABQeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiQXBwQ2FjaGUiLCAiZXhwaXJ5IjogMTc2MTE3NjE5OH0=\n");
 ?>

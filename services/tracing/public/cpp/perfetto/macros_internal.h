@@ -41,7 +41,8 @@ base::Optional<base::trace_event::TraceEvent> COMPONENT_EXPORT(TRACING_CPP)
                      const unsigned char* category_group_enabled,
                      const char* name,
                      unsigned int flags,
-                     base::TimeTicks timestamp);
+                     base::TimeTicks timestamp,
+                     bool explicit_track);
 
 template <
     typename TrackEventArgumentFunction = void (*)(perfetto::EventContext),
@@ -57,7 +58,8 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
     TrackEventArgumentFunction argument_func) {
   base::trace_event::TraceEventHandle handle = {0, 0, 0};
   auto maybe_event =
-      CreateTraceEvent(phase, category_group_enabled, name, flags, timestamp);
+      CreateTraceEvent(phase, category_group_enabled, name, flags, timestamp,
+                       track.uuid != perfetto::Track().uuid);
   if (!maybe_event) {
     return handle;
   }

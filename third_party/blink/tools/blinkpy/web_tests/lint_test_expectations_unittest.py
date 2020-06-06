@@ -346,6 +346,44 @@ class LintTest(LoggingTestCase):
         self.assertEquals(len(warnings), 1)
         self.assertRegexpMatches(warnings[0], ':5 .*redundant with.* line 4$')
 
+    def test_never_fix_tests(self):
+        options = optparse.Values({
+            'additional_expectations': [],
+            'platform': 'test',
+            'debug_rwt_logging': False
+        })
+        host = MockHost()
+
+        port = host.port_factory.get(options.platform, options=options)
+        port.virtual_test_suites = lambda: [
+            VirtualTestSuite(
+                prefix='foo', bases=['test', 'test1'], args=['--foo'])
+        ]
+        test_expectations = ('# tags: [ mac win ]\n'
+                             '# results: [ Skip Pass ]\n'
+                             'test/* [ Skip ]\n'
+                             '[ mac ] test1/* [ Skip ]\n'
+                             'test/sub/* [ Pass ]\n'
+                             'test/test1.html [ Pass ]\n'
+                             'test1/foo/* [ Pass ]\n'
+                             'test2/* [ Pass ]\n'
+                             'test2.html [ Skip Pass ]\n'
+                             'virtual/foo/test/* [ Pass ]\n'
+                             'virtual/foo/test1/* [ Pass ]\n')
+        port.expectations_dict = lambda: {'NeverFixTests': test_expectations}
+        port.test_exists = lambda test: True
+        host.port_factory.get = lambda platform, options=None: port
+        host.port_factory.all_port_names = lambda platform=None: [port.name()]
+
+        failures, warnings = lint_test_expectations.lint(host, options)
+        self.assertEqual(warnings, [])
+
+        self.assertEquals(len(failures), 4)
+        self.assertRegexpMatches(failures[0], ':7 .*must override')
+        self.assertRegexpMatches(failures[1], ':8 .*must override')
+        self.assertRegexpMatches(failures[2], ':9 Only one of')
+        self.assertRegexpMatches(failures[3], ':11 .*must override')
+
 
 class CheckVirtualSuiteTest(unittest.TestCase):
     def setUp(self):

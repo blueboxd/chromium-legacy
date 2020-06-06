@@ -18,7 +18,7 @@ void CheckUnsizedMediaViolation(const LayoutObject* layout_object,
   bool is_unsized = !style.LogicalWidth().IsSpecified() &&
                     !style.LogicalHeight().IsSpecified();
   if (is_unsized) {
-    layout_object->GetDocument().IsFeatureEnabled(
+    layout_object->GetDocument().GetExecutionContext()->IsFeatureEnabled(
         mojom::blink::DocumentPolicyFeature::kUnsizedMedia,
         send_report ? ReportOptions::kReportOnFailure
                     : ReportOptions::kDoNotReport);

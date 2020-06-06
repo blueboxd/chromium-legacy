@@ -134,11 +134,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // available X events.
   void DispatchXEvents();
 
-  // Dispatches a given event immediately. This is to facilitate sequential
-  // interaction between the gtk event loop (used for IME) and the
-  // main X11 event loop.
-  void DispatchXEventNow(XEvent* event);
-
   XDisplay* display() { return display_; }
 
   // Returns the timestamp of the event currently being dispatched.  Falls back
@@ -184,12 +179,11 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
   void ProcessXEvent(XEvent* xevent);
 
- protected:
-  // Extracts cookie data from |xevent| if it's of GenericType, and dispatches
-  // the event. This function also frees up the cookie data after dispatch is
-  // complete.
-  void ExtractCookieDataDispatchEvent(XEvent* xevent);
+  // x11::Connection::Delegate:
+  bool ShouldContinueStream() const override;
+  void DispatchXEvent(XEvent* event) override;
 
+ protected:
   // Handles updates after event has been dispatched.
   void PostDispatchEvent(XEvent* xevent);
 
@@ -208,10 +202,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // PlatformEventSource:
   void StopCurrentEventStream() override;
   void OnDispatcherListChanged() override;
-
-  // x11::Connection::Delegate:
-  bool ShouldContinueStream() const override;
-  void DispatchXEvent(XEvent* event) override;
 
   void RestoreOverridenXEventDispatcher();
 

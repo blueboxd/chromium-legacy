@@ -65,7 +65,7 @@ class PasswordSaveUpdateView : public PasswordBubbleViewBase,
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
   void ReplaceWithPromo();
-  void UpdateDialogButtons();
+  void UpdateBubbleUIElements();
   std::unique_ptr<views::View> CreateFooterView();
   void OnDialogCancelled();
 

@@ -202,6 +202,7 @@ source_set("browser") {
     "//components/cdm/browser",
     "//components/content_capture/android",
     "//components/content_capture/browser",
+    "//components/flags_ui",
 
     # Called via JNI in CrashpadMain
     "//components/crash/android:crashpad_main",

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.api.internal.scope;
 
-import android.content.Context;
+import android.app.Activity;
 
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
@@ -175,12 +175,12 @@ public final class FeedProcessScope implements ProcessScope {
      * <p>This is called by hosts so it must be public
      */
     @Override
-    public StreamScopeBuilder createStreamScopeBuilder(Context context,
+    public StreamScopeBuilder createStreamScopeBuilder(Activity activity,
             ImageLoaderApi imageLoaderApi, ActionApi actionApi,
             StreamConfiguration streamConfiguration, CardConfiguration cardConfiguration,
             SnackbarApi snackbarApi, OfflineIndicatorApi offlineIndicatorApi, TooltipApi tooltipApi,
             SnackbarManager snackbarManager) {
-        return new StreamScopeBuilder(context, actionApi, imageLoaderApi, mProtocolAdapter,
+        return new StreamScopeBuilder(activity, actionApi, imageLoaderApi, mProtocolAdapter,
                 mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue, mMainThreadRunner,
                 mClock, mDebugBehavior, streamConfiguration, cardConfiguration, mActionManager,
                 mConfiguration, snackbarApi, mBasicLoggingApi, offlineIndicatorApi,

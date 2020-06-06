@@ -229,7 +229,7 @@ void OmniboxResultView::OnSelectionStateChanged() {
     // The text is also accessible via text/value change events in the omnibox
     // but this selection event allows the screen reader to get more details
     // about the list and the user's position within it.
-    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    popup_contents_view_->FireAXEventsForNewActiveDescendant(this);
 
     // TODO(orinj): Eventually the deep digging in this class should get
     //  replaced with a single local point of access to all selection state.
@@ -247,7 +247,6 @@ bool OmniboxResultView::IsMatchSelected() const {
          popup_contents_view_->model()->selected_line_state() !=
              OmniboxPopupModel::HEADER_BUTTON_FOCUSED;
 }
-
 views::Button* OmniboxResultView::GetSecondaryButton() {
   if (suggestion_tab_switch_button_->GetVisible())
     return suggestion_tab_switch_button_;
@@ -487,9 +486,11 @@ void OmniboxResultView::OnThemeChanged() {
 void OmniboxResultView::ProvideButtonFocusHint() {
   if (suggestion_tab_switch_button_->GetVisible()) {
     suggestion_tab_switch_button_->ProvideFocusHint();
+    // TODO(tommycli) Why isn't this using the same AX code as for the
+    // remove suggestion button below?
   } else if (remove_suggestion_button_->GetVisible()) {
-    remove_suggestion_button_->NotifyAccessibilityEvent(
-        ax::mojom::Event::kSelection, true);
+    popup_contents_view_->FireAXEventsForNewActiveDescendant(
+        remove_suggestion_button_);
   }
 }
 

@@ -266,7 +266,7 @@ public class HomepagePolicyManagerTest {
         // 1. Test initialization early finishing
         setupNewHomepagePolicyManagerForTests(true, TEST_URL, null);
         Mockito.verify(mMockRegistrar, Mockito.never())
-                .addObserver(Mockito.anyInt(), Mockito.any());
+                .addObserver(Mockito.anyString(), Mockito.any());
 
         // 2. Test getters
         Assert.assertFalse("Policy should be disabled when feature flag disabled",

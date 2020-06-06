@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.feed;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
@@ -62,8 +62,8 @@ public class NtpStreamLifecycleManagerTest {
         MockitoAnnotations.initMocks(this);
 
         // Initialize a test instance for PrefServiceBridge.
-        when(mPrefServiceBridge.getBoolean(anyInt())).thenReturn(true);
-        doNothing().when(mPrefServiceBridge).setBoolean(anyInt(), anyBoolean());
+        when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
+        doNothing().when(mPrefServiceBridge).setBoolean(anyString(), anyBoolean());
         PrefServiceBridge.setInstanceForTesting(mPrefServiceBridge);
 
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.CREATED);
@@ -104,7 +104,7 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testShow_ArticlesNotVisible() {
         // Verify that onShow is not called when articles are set hidden by the user.
-        when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(false);
+        when(mPrefServiceBridge.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(false);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
@@ -112,7 +112,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(0)).onShow();
 
         // Verify that onShow is called when articles are set shown by the user.
-        when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(true);
+        when(mPrefServiceBridge.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(true);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(1)).onShow();
 

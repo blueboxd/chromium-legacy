@@ -9,6 +9,11 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 
 struct SerialPortInfo {
   mojo_base.mojom.UnguessableToken token;
+
+  // This platform-specific identifier, if present, can be used to identify the
+  // device across restarts of the application and operating system.
+  string? persistent_id;
+
   mojo_base.mojom.FilePath path;
   uint16 vendor_id;
   bool has_vendor_id = false;

@@ -3410,6 +3410,13 @@ RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
 }
 
 device::mojom::GeolocationContext* WebContentsImpl::GetGeolocationContext() {
+  if (delegate_) {
+    auto* installed_webapp_context =
+        delegate_->GetInstalledWebappGeolocationContext();
+    if (installed_webapp_context)
+      return installed_webapp_context;
+  }
+
   if (!geolocation_context_) {
     GetDeviceService().BindGeolocationContext(
         geolocation_context_.BindNewPipeAndPassReceiver());

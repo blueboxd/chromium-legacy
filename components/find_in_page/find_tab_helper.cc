@@ -45,6 +45,7 @@ void FindTabHelper::RemoveObserver(FindResultObserver* observer) {
 void FindTabHelper::StartFinding(base::string16 search_string,
                                  bool forward_direction,
                                  bool case_sensitive,
+                                 bool find_next_if_selection_matches,
                                  bool run_synchronously_for_testing) {
   // Remove the carriage return character, which generally isn't in web content.
   const base::char16 kInvalidChars[] = {'\r', 0};
@@ -62,18 +63,13 @@ void FindTabHelper::StartFinding(base::string16 search_string,
   // Keep track of the previous search.
   previous_find_text_ = find_text_;
 
-  // This is a FindNext operation if we are searching for the same text again,
-  // or if the passed in search text is empty (FindNext keyboard shortcut). The
-  // exception to this is if the Find was aborted (then we don't want FindNext
-  // because the highlighting has been cleared and we need it to reappear). We
-  // therefore treat FindNext after an aborted Find operation as a full fledged
-  // Find.
-  bool find_next = (find_text_ == search_string || search_string.empty()) &&
-                   (last_search_case_sensitive_ == case_sensitive) &&
-                   !find_op_aborted_;
+  // NB: search_string will be empty when using the FindNext keyboard shortcut.
+  bool new_session = (find_text_ != search_string && !search_string.empty()) ||
+                     (last_search_case_sensitive_ != case_sensitive) ||
+                     find_op_aborted_;
 
   current_find_request_id_ = find_request_id_counter_++;
-  if (!find_next)
+  if (new_session)
     current_find_session_id_ = current_find_request_id_;
 
   if (!search_string.empty())
@@ -89,7 +85,8 @@ void FindTabHelper::StartFinding(base::string16 search_string,
   auto options = blink::mojom::FindOptions::New();
   options->forward = forward_direction;
   options->match_case = case_sensitive;
-  options->find_next = find_next;
+  options->new_session = new_session;
+  options->find_next_if_selection_matches = find_next_if_selection_matches;
   options->run_synchronously_for_testing = run_synchronously_for_testing;
   web_contents_->Find(current_find_request_id_, find_text_, std::move(options));
 }

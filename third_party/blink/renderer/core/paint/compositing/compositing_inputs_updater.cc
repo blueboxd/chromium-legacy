@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -188,6 +189,13 @@ void CompositingInputsUpdater::UpdateSelfAndDescendantsRecursively(
       UpdateSelfAndDescendantsRecursively(child, update_type, info);
     descendant_has_direct_compositing_reason |=
         LayerOrDescendantShouldBeComposited(child);
+  }
+  if (!descendant_has_direct_compositing_reason &&
+      layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
+    if (ToLayoutEmbeddedContent(layer->GetLayoutObject())
+            .ContentDocumentIsCompositing()) {
+      descendant_has_direct_compositing_reason = true;
+    }
   }
   layer->SetDescendantHasDirectOrScrollingCompositingReason(
       descendant_has_direct_compositing_reason);

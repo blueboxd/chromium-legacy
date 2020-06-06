@@ -122,20 +122,42 @@ class WebUITabStripWebView : public views::WebView {
 
 }  // namespace
 
-// When enabled, closes the container upon any event in the window not
-// destined for the container and cancels the event. If an event is
-// destined for the container, it passes it through.
-class WebUITabStripContainerView::AutoCloser : public ui::EventHandler {
+// When enabled, closes the container for taps in either the web content
+// area or the Omnibox (both passed in as View arguments).
+class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
+                                               public views::ViewObserver {
  public:
-  using EventPassthroughPredicate =
-      base::RepeatingCallback<bool(const ui::Event& event)>;
+  using CloseCallback = base::RepeatingCallback<void(TabStripUICloseAction)>;
 
-  AutoCloser(EventPassthroughPredicate event_passthrough_predicate,
-             base::RepeatingClosure close_container_callback)
-      : event_passthrough_predicate_(std::move(event_passthrough_predicate)),
-        close_container_callback_(std::move(close_container_callback)) {}
+  AutoCloser(CloseCallback close_callback,
+             views::View* content_area,
+             views::View* omnibox)
+      : close_callback_(std::move(close_callback)),
+        content_area_(content_area),
+        omnibox_(omnibox) {
+    DCHECK(content_area_);
+    DCHECK(omnibox_);
+    view_observer_.Add(content_area_);
+    view_observer_.Add(omnibox_);
 
-  ~AutoCloser() override {}
+    // Our observed Widget's NativeView may be destroyed before us. We
+    // have no reasonable way of un-registering our pre-target handler
+    // from the NativeView while the Widget is destroying. This disables
+    // EventHandler's check that it has been removed from all
+    // EventTargets.
+    DisableCheckTargets();
+
+    content_area_->GetWidget()->GetNativeView()->AddPreTargetHandler(this);
+    pretarget_handler_added_ = true;
+  }
+
+  ~AutoCloser() override {
+    views::Widget* const widget =
+        content_area_ ? content_area_->GetWidget() : nullptr;
+    if (pretarget_handler_added_ && widget) {
+      widget->GetNativeView()->RemovePreTargetHandler(this);
+    }
+  }
 
   // Sets whether to inspect events. If not enabled, all events are
   // ignored and passed through as usual.
@@ -145,17 +167,73 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler {
   void OnEvent(ui::Event* event) override {
     if (!enabled_)
       return;
-    if (event_passthrough_predicate_.Run(*event))
+    if (!event->IsLocatedEvent())
+      return;
+    ui::LocatedEvent* located_event = event->AsLocatedEvent();
+
+    if (!EventTypeCanCloseTabStrip(located_event->type()))
       return;
 
-    event->StopPropagation();
-    close_container_callback_.Run();
+    const gfx::Point event_location_in_screen =
+        located_event->target()->GetScreenLocation(*located_event);
+    if (!content_area_->GetBoundsInScreen().Contains(event_location_in_screen))
+      return;
+
+    located_event->StopPropagation();
+    close_callback_.Run(TabStripUICloseAction::kTapInTabContent);
+  }
+
+  // views::ViewObserver:
+  void OnViewFocused(views::View* observed_view) override {
+    if (observed_view != omnibox_)
+      return;
+    if (!enabled_)
+      return;
+
+    close_callback_.Run(TabStripUICloseAction::kOmniboxFocusedOrNewTabOpened);
+  }
+
+  void OnViewIsDeleting(views::View* observed_view) override {
+    view_observer_.Remove(observed_view);
+    if (observed_view == content_area_)
+      content_area_ = nullptr;
+    else if (observed_view == omnibox_)
+      omnibox_ = nullptr;
+    else
+      NOTREACHED();
+  }
+
+  void OnViewAddedToWidget(views::View* observed_view) override {
+    if (observed_view != content_area_)
+      return;
+    if (pretarget_handler_added_)
+      return;
+    aura::Window* const native_view =
+        content_area_->GetWidget()->GetNativeView();
+    if (native_view)
+      native_view->RemovePreTargetHandler(this);
+  }
+
+  void OnViewRemovedFromWidget(views::View* observed_view) override {
+    if (observed_view != content_area_)
+      return;
+    aura::Window* const native_view =
+        content_area_->GetWidget()->GetNativeView();
+    if (native_view)
+      native_view->RemovePreTargetHandler(this);
+    pretarget_handler_added_ = false;
   }
 
  private:
-  EventPassthroughPredicate event_passthrough_predicate_;
-  base::RepeatingClosure close_container_callback_;
+  CloseCallback close_callback_;
+  views::View* content_area_;
+  views::View* omnibox_;
+
   bool enabled_ = false;
+
+  bool pretarget_handler_added_ = false;
+
+  ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
 };
 
 class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
@@ -347,29 +425,23 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver,
 WebUITabStripContainerView::WebUITabStripContainerView(
     Browser* browser,
     views::View* tab_contents_container,
-    views::View* drag_handle)
+    views::View* drag_handle,
+    views::View* omnibox)
     : browser_(browser),
       web_view_(AddChildView(
           std::make_unique<WebUITabStripWebView>(browser->profile()))),
       tab_contents_container_(tab_contents_container),
       auto_closer_(std::make_unique<AutoCloser>(
-          base::Bind(&WebUITabStripContainerView::EventShouldPropagate,
-                     base::Unretained(this)),
           base::Bind(&WebUITabStripContainerView::CloseForEventOutsideTabStrip,
-                     base::Unretained(this)))),
+                     base::Unretained(this)),
+          tab_contents_container,
+          omnibox)),
       drag_to_open_handler_(
           std::make_unique<DragToOpenHandler>(this, drag_handle)),
       iph_controller_(std::make_unique<IPHController>(browser_)) {
   TRACE_EVENT0("ui", "WebUITabStripContainerView.Init");
   DCHECK(UseTouchableTabStrip());
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
-
-  // Our observed Widget's NativeView may be destroyed before us. We
-  // have no reasonable way of un-registering our pre-target handler
-  // from the NativeView while the Widget is destroying. This disables
-  // EventHandler's check that it has been removed from all
-  // EventTargets.
-  auto_closer_->DisableCheckTargets();
 
   SetVisible(false);
   animation_.Reset(0.0);
@@ -551,7 +623,12 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
       animation_.Show();
     }
 
-    web_view_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+    // Switch focus to the WebView container. This prevents a confusing
+    // situation where a View appears to have focus, but keyboard inputs
+    // are actually directed to the WebUITabStrip.
+    web_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
+    web_view_->RequestFocus();
+
     time_at_open_ = base::TimeTicks::Now();
 
     // If we're opening, end IPH if it's showing.
@@ -572,61 +649,13 @@ void WebUITabStripContainerView::SetContainerTargetVisibility(
     }
 
     web_view_->SetFocusBehavior(FocusBehavior::NEVER);
-
-    // Tapping in the WebUI tab strip gives keyboard focus to the
-    // WebContents's native window. While this doesn't take away View
-    // focus, it will change the focused TextInputClient; see
-    // |ui::InputMethod::SetFocusedTextInputClient()|. The Omnibox is a
-    // TextInputClient, and it installs itself as the focused
-    // TextInputClient when it receives Views-focus. So, tapping in the
-    // tab strip while the Omnibox has focus will mean text cannot be
-    // entered until it is blurred and re-focused. This caused
-    // crbug.com/1027375.
-    //
-    // TODO(crbug.com/994350): stop WebUI tab strip from taking focus on
-    // tap and remove this workaround.
-    views::FocusManager* const focus_manager = GetFocusManager();
-    if (focus_manager) {
-      focus_manager->StoreFocusedView(true /* clear_native_focus */);
-      focus_manager->RestoreFocusedView();
-    }
   }
   auto_closer_->set_enabled(target_visible);
 }
 
-bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
-  if (!event.IsLocatedEvent())
-    return true;
-  const ui::LocatedEvent* located_event = event.AsLocatedEvent();
-
-  if (!EventTypeCanCloseTabStrip(located_event->type()))
-    return true;
-
-  const gfx::Point event_location_in_screen =
-      located_event->target()->GetScreenLocation(*located_event);
-  const gfx::Rect container_bounds_in_screen = GetBoundsInScreen();
-
-  // Events in the titlebar need to be handled, so that, for example, hitting
-  // close actually closes the window. Since converting into frame coordinates
-  // is fraught, it's easiest to just test relative position - any click above
-  // the tabstrip is in the frame since the tabstrip is the topmost view.
-  if (event_location_in_screen.y() < container_bounds_in_screen.y())
-    return true;
-
-  // Events in the tab strip container need to be handled.
-  if (container_bounds_in_screen.Contains(event_location_in_screen))
-    return true;
-
-  // Events in the tab counter button need to be handled.
-  if (tab_counter_->GetBoundsInScreen().Contains(event_location_in_screen))
-    return true;
-
-  // Otherwise, cancel the event and close the container.
-  return false;
-}
-
-void WebUITabStripContainerView::CloseForEventOutsideTabStrip() {
-  RecordTabStripUICloseHistogram(TabStripUICloseAction::kTapOutsideTabStrip);
+void WebUITabStripContainerView::CloseForEventOutsideTabStrip(
+    TabStripUICloseAction reason) {
+  RecordTabStripUICloseHistogram(reason);
   iph_controller_->NotifyClosed();
   SetContainerTargetVisibility(false);
 }
@@ -674,16 +703,6 @@ TabStripUILayout WebUITabStripContainerView::GetLayout() {
 
 SkColor WebUITabStripContainerView::GetColor(int id) const {
   return GetThemeProvider()->GetColor(id);
-}
-
-void WebUITabStripContainerView::AddedToWidget() {
-  GetWidget()->GetNativeView()->AddPreTargetHandler(auto_closer_.get());
-}
-
-void WebUITabStripContainerView::RemovedFromWidget() {
-  aura::Window* const native_view = GetWidget()->GetNativeView();
-  if (native_view)
-    native_view->RemovePreTargetHandler(auto_closer_.get());
 }
 
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {

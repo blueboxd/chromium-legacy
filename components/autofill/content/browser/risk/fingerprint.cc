@@ -51,6 +51,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/browser/plugin_service.h"
@@ -316,7 +317,7 @@ FingerprintDataLoader::FingerprintDataLoader(
   content::GetDeviceService().BindGeolocationContext(
       geolocation_context_.BindNewPipeAndPassReceiver());
   geolocation_context_->BindGeolocation(
-      geolocation_.BindNewPipeAndPassReceiver());
+      geolocation_.BindNewPipeAndPassReceiver(), GURL::EmptyGURL());
   geolocation_->SetHighAccuracy(false);
   geolocation_->QueryNextPosition(
       base::BindOnce(&FingerprintDataLoader::OnGotGeoposition,

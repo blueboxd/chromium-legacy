@@ -50,6 +50,7 @@
 #include "weblayer/browser/file_select_helper.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
+#include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/page_load_metrics_initialize.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
@@ -307,6 +308,7 @@ TabImpl::TabImpl(ProfileImpl* profile,
   InitializePageLoadMetricsForWebContents(web_contents_.get());
 
 #if defined(OS_ANDROID)
+  InfoBarService::CreateForWebContents(web_contents_.get());
   javascript_dialogs::TabModalDialogManager::CreateForWebContents(
       web_contents_.get(),
       std::make_unique<JavaScriptTabModalDialogManagerDelegateAndroid>(

@@ -539,9 +539,10 @@ class TraceEventDataSourceTest : public testing::Test {
     } else {
       EXPECT_EQ(packet->track_event().extra_counter_track_uuids_size(), 0);
       if (packet->track_event().extra_counter_values_size()) {
-        // If the event is for a different thread, then we shouldn't have thread
-        // timestamps except for the explicit thread timestamps above.
+        // If the event is for a different thread or track, we shouldn't have
+        // thread timestamps except for the explicit thread timestamps above.
         EXPECT_TRUE(tid_override == 0);
+        EXPECT_EQ(track.uuid, 0u);
         int64_t thread_time_delta =
             packet->track_event().extra_counter_values()[0];
         EXPECT_LE(last_thread_time_ + thread_time_delta,

@@ -70,7 +70,7 @@ void FindInPage::Find(int request_id,
   blink::WebPlugin* plugin = GetWebPluginForFind();
   // Check if the plugin still exists in the document.
   if (plugin) {
-    if (options->find_next) {
+    if (!options->new_session) {
       // Just navigate back/forward.
       plugin->SelectFindResult(options->forward, request_id);
       LocalFrame* core_frame = frame_->GetFrame();
@@ -95,20 +95,20 @@ void FindInPage::Find(int request_id,
   bool result = false;
   bool active_now = false;
 
-  if (!options->find_next) {
+  if (options->new_session) {
     // If this is an initial find request, cancel any pending scoping effort
     // done by the previous find request.
     EnsureTextFinder().CancelPendingScopingEffort();
   }
 
-  // Search for an active match only if this frame is focused or if this is a
-  // find next
-  if (frame_->IsFocused() || options->find_next) {
+  // Search for an active match only if this frame is focused or if this is an
+  // existing session.
+  if (frame_->IsFocused() || !options->new_session) {
     result = FindInternal(request_id, search_text, *options,
                           false /* wrap_within_frame */, &active_now);
   }
 
-  if (result && !options->find_next) {
+  if (result && options->new_session) {
     // Indicate that at least one match has been found. 1 here means
     // possibly more matches could be coming.
     ReportFindInPageMatchCount(request_id, 1 /* count */,
@@ -117,8 +117,7 @@ void FindInPage::Find(int request_id,
 
   // There are three cases in which scoping is needed:
   //
-  // (1) This is an initial find request (|options.findNext| is false). This
-  // will be the first scoping effort for this find session.
+  // (1) This is a new find session. This will be its first scoping effort.
   //
   // (2) Something has been selected since the last search. This means that we
   // cannot just increment the current match ordinal; we need to re-generate
@@ -133,7 +132,7 @@ void FindInPage::Find(int request_id,
   //
   // If none of these cases are true, then we just report the current match
   // count without scoping.
-  if (/* (1) */ options->find_next && /* (2) */ current_selection.IsNull() &&
+  if (/* (1) */ !options->new_session && /* (2) */ current_selection.IsNull() &&
       /* (3) */ !(result && !active_now)) {
     // Force report of the actual count.
     EnsureTextFinder().IncreaseMatchCount(request_id, 0);
@@ -150,13 +149,13 @@ bool WebLocalFrameImpl::FindForTesting(int identifier,
                                        const WebString& search_text,
                                        bool match_case,
                                        bool forward,
-                                       bool find_next,
+                                       bool new_session,
                                        bool force,
                                        bool wrap_within_frame) {
   auto options = mojom::blink::FindOptions::New();
   options->match_case = match_case;
   options->forward = forward;
-  options->find_next = find_next;
+  options->new_session = new_session;
   options->force = force;
   options->run_synchronously_for_testing = true;
   bool result = find_in_page_->FindInternal(identifier, search_text, *options,

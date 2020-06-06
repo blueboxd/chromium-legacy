@@ -9,6 +9,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabList.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModel.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelObserver.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelUtils.java",
   ]
   deps = [
     "//base:base_java",

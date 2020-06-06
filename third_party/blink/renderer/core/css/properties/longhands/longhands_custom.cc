@@ -1527,15 +1527,6 @@ const CSSValue* ColorScheme::ParseSingleValue(
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueID::kNormal)
     return css_parsing_utils::ConsumeIdent(range);
-  if (range.Peek().Id() == CSSValueID::kOnly) {
-    // Handle 'only light'
-    CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-    values->Append(*css_parsing_utils::ConsumeIdent(range));
-    if (range.Peek().Id() != CSSValueID::kLight)
-      return nullptr;
-    values->Append(*css_parsing_utils::ConsumeIdent(range));
-    return values;
-  }
 
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
   do {
@@ -1545,16 +1536,6 @@ const CSSValue* ColorScheme::ParseSingleValue(
     // compat and interop.
     if (id == CSSValueID::kNormal || id == CSSValueID::kRevert ||
         id == CSSValueID::kDefault) {
-      return nullptr;
-    }
-    if (id == CSSValueID::kOnly) {
-      values->Append(*css_parsing_utils::ConsumeIdent(range));
-      // Has to be 'light only'
-      if (range.AtEnd() && values->length() == 2 &&
-          To<CSSIdentifierValue>(values->Item(0)).GetValueID() ==
-              CSSValueID::kLight) {
-        return values;
-      }
       return nullptr;
     }
     CSSValue* value =
@@ -1607,21 +1588,24 @@ void ColorScheme::ApplyValue(StyleResolverState& state,
     bool prefers_dark =
         state.GetDocument().GetStyleEngine().GetPreferredColorScheme() ==
         PreferredColorScheme::kDark;
-    bool use_dark = false;
+    bool has_dark = false;
+    bool has_light = false;
     Vector<AtomicString> color_schemes;
     for (auto& item : *scheme_list) {
       if (const auto* custom_ident = DynamicTo<CSSCustomIdentValue>(*item)) {
         color_schemes.push_back(custom_ident->Value());
       } else if (const auto* ident = DynamicTo<CSSIdentifierValue>(*item)) {
         color_schemes.push_back(ident->CssText());
-        if (prefers_dark && ident->GetValueID() == CSSValueID::kDark)
-          use_dark = true;
+        if (ident->GetValueID() == CSSValueID::kDark)
+          has_dark = true;
+        else if (ident->GetValueID() == CSSValueID::kLight)
+          has_light = true;
       } else {
         NOTREACHED();
       }
     }
     state.Style()->SetColorScheme(color_schemes);
-    state.Style()->SetDarkColorScheme(use_dark);
+    state.Style()->SetDarkColorScheme(has_dark && (!has_light || prefers_dark));
   } else {
     NOTREACHED();
   }

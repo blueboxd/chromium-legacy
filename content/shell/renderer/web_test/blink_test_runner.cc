@@ -283,10 +283,6 @@ void BlinkTestRunner::TestFinished() {
     // we will ask the browser to initiate it.
     CaptureLocalPixelsDump();
   } else {
-    // If the browser should capture pixels, then we shouldn't be waiting
-    // for layout dump results. Any test can only require the browser to
-    // dump one or the other at this time.
-    DCHECK(!waiting_for_layout_dump_results_);
     if (test_runner->ShouldDumpSelectionRect()) {
       dump_result_->selection_rect =
           web_frame->GetSelectionBoundsRectForTesting();

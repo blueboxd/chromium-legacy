@@ -72,7 +72,7 @@ class PasswordSaveUpdateWithAccountStoreView
 
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
-  void UpdateDialogButtonsAndAccountPickerVisiblity();
+  void UpdateBubbleUIElements();
   std::unique_ptr<views::View> CreateFooterView();
 
   SaveUpdateWithAccountStoreBubbleController controller_;

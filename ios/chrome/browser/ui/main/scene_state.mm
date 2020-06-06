@@ -124,6 +124,11 @@
   }
 }
 
+- (void)setPendingUserActivity:(NSUserActivity*)pendingUserActivity {
+  _pendingUserActivity = pendingUserActivity;
+  [self.observers sceneState:self receivedUserActivity:pendingUserActivity];
+}
+
 #pragma mark - debug
 
 - (NSString*)description {

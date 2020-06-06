@@ -124,12 +124,6 @@ base::FilePath GetOsIntegrationResourcesDirectoryForApp(
 // created.
 using CreateShortcutsCallback = base::OnceCallback<void(bool shortcut_created)>;
 
-// Callback made when RegisterRunOnOsLogin has finished trying to register the
-// app to the OS Startup indicating whether or not it was successfully
-// registered.
-using RegisterRunOnOsLoginCallback =
-    base::OnceCallback<void(bool registered_successfully)>;
-
 // Returns an array of desired icon sizes (in px) to be contained in an app OS
 // shortcut, sorted in ascending order (biggest desired icon size is last).
 base::span<const int> GetDesiredIconSizesForShortcut();
@@ -160,23 +154,6 @@ void ScheduleCreatePlatformShortcuts(
     ShortcutCreationReason reason,
     std::unique_ptr<ShortcutInfo> shortcut_info,
     CreateShortcutsCallback callback);
-
-// Schedules a call to |RegisterRunOnOsLogin| on the Shortcut IO thread and
-// invokes |callback| when complete. This function must be called from the UI
-// thread.
-void ScheduleRegisterRunOnOsLogin(std::unique_ptr<ShortcutInfo> shortcut_info,
-                                  RegisterRunOnOsLoginCallback callback);
-
-// Registers the app with the OS to run on OS login. Platform specific
-// implementations are required for this.
-// See web_app_shortcut_win.cc for Windows.
-bool RegisterRunOnOsLogin(const ShortcutInfo& shortcut_info);
-
-// Unregisters the app with the OS from running on startup. Platform specific
-// implementations are required for this.
-// See web_app_shortcut_win.cc for Windows.
-void UnregisterRunOnOsLogin(const base::FilePath& profile_path,
-                            const base::string16& shortcut_title);
 
 // Delete all the shortcuts we have added for this extension. This is the
 // platform specific implementation of the DeleteAllShortcuts function, and

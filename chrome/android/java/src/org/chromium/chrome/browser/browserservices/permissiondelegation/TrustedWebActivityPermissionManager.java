@@ -240,7 +240,7 @@ public class TrustedWebActivityPermissionManager {
      * {@code null} if it does not exist or did not request location permission.
      **/
     @Nullable
-    Boolean hasAndroidLocationPermission(String packageName) {
+    public static Boolean hasAndroidLocationPermission(String packageName) {
         try {
             PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
             PackageInfo packageInfo =

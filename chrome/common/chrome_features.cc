@@ -401,6 +401,11 @@ const base::Feature kHideCorsLegacyModeEnabledPolicySupport{
 const base::Feature kHideCorsMitigationListPolicySupport{
     "HideCorsMitigationListPolicySupport", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables LiteVideos, a data-saving optimization that throttles media requests
+// to reduce the bitrate of adaptive media streams. Only for Lite mode users
+// (formerly DataSaver).
+const base::Feature kLiteVideo{"LiteVideo", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
 // domain names that are visually similar to popular domains or to domains with
 // engagement score, such as googlé.com).

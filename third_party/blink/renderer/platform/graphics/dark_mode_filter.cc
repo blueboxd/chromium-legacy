@@ -11,8 +11,6 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_color_filter.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_generic_classifier.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_icon_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -55,21 +53,9 @@ bool ShouldApplyToImage(const DarkModeSettings& settings,
                         Image* image) {
   switch (settings.image_policy) {
     case DarkModeImagePolicy::kFilterSmart: {
-      DarkModeImageClassifier* classifier;
-      switch (settings.classifier_type) {
-        case DarkModeClassifierType::kIcon: {
-          DarkModeIconClassifier icon_classifier;
-          classifier = &icon_classifier;
-          break;
-        }
-        case DarkModeClassifierType::kGeneric: {
-          DarkModeGenericClassifier generic_classifier;
-          classifier = &generic_classifier;
-          break;
-        }
-      }
+      DarkModeImageClassifier classifier;
       DarkModeClassification result =
-          classifier->Classify(image, src_rect, dest_rect);
+          classifier.Classify(image, src_rect, dest_rect);
       return result == DarkModeClassification::kApplyFilter;
     }
     case DarkModeImagePolicy::kFilterNone:

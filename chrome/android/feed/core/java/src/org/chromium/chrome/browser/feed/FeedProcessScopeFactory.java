@@ -131,7 +131,7 @@ public class FeedProcessScopeFactory {
         // assume who will be called first. See https://crbug.com/896468.
         if (!sEverDisabledForPolicy) {
             sEverDisabledForPolicy =
-                    !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
+                    !PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS);
         }
         return !sEverDisabledForPolicy;
     }
@@ -142,10 +142,10 @@ public class FeedProcessScopeFactory {
         if (!isFeedProcessEnabled()) return;
 
         sArticlesVisibleDuringSession =
-                PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
+                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
         sPrefChangeRegistrar = new PrefChangeRegistrar();
-        sPrefChangeRegistrar.addObserver(Pref.NTP_ARTICLES_SECTION_ENABLED,
-                FeedProcessScopeFactory::articlesEnabledPrefChange);
+        sPrefChangeRegistrar.addObserver(
+                Pref.ENABLE_SNIPPETS, FeedProcessScopeFactory::articlesEnabledPrefChange);
 
         Profile profile = Profile.getLastUsedRegularProfile();
         Configuration configHostApi = FeedConfiguration.createConfiguration();
@@ -271,7 +271,7 @@ public class FeedProcessScopeFactory {
     static boolean areArticlesVisibleDuringSession() {
         // Skip the native call if sArticlesVisibleDuringSession is already true to reduce overhead.
         if (!sArticlesVisibleDuringSession
-                && PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)) {
+                && PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
             sArticlesVisibleDuringSession = true;
         }
 
@@ -280,7 +280,7 @@ public class FeedProcessScopeFactory {
 
     private static void articlesEnabledPrefChange() {
         // Cannot assume this is called because of an actual change. May be going from true to true.
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED)) {
+        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS)) {
             // There have been quite a few crashes/bugs that happen when code does not correctly
             // handle the scenario where Feed suddenly becomes disabled and the above getters start
             // returning nulls. Having this log a warning helps diagnose this pattern from the
@@ -294,7 +294,7 @@ public class FeedProcessScopeFactory {
     /** Clears out all static state. */
     private static void destroy() {
         if (sPrefChangeRegistrar != null) {
-            sPrefChangeRegistrar.removeObserver(Pref.NTP_ARTICLES_SECTION_ENABLED);
+            sPrefChangeRegistrar.removeObserver(Pref.ENABLE_SNIPPETS);
             sPrefChangeRegistrar.destroy();
             sPrefChangeRegistrar = null;
         }

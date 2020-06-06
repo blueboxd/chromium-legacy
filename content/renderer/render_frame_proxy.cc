@@ -303,6 +303,13 @@ void RenderFrameProxy::OnZoomLevelChanged(double zoom_level) {
   SynchronizeVisualProperties();
 }
 
+void RenderFrameProxy::OnRootWindowSegmentsChanged(
+    std::vector<gfx::Rect> root_widget_window_segments) {
+  pending_visual_properties_.root_widget_window_segments =
+      std::move(root_widget_window_segments);
+  SynchronizeVisualProperties();
+}
+
 void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor,
                                                 bool is_pinch_gesture_active) {
   DCHECK(ancestor_render_widget_);
@@ -516,6 +523,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.visible_viewport_size ||
       sent_visual_properties_->compositor_viewport !=
           pending_visual_properties_.compositor_viewport ||
+      sent_visual_properties_->root_widget_window_segments !=
+          pending_visual_properties_.root_widget_window_segments ||
       capture_sequence_number_changed;
 
   if (synchronized_props_changed) {

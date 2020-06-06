@@ -6,6 +6,7 @@ package org.chromium.weblayer_private.interfaces;
 
 import org.chromium.weblayer_private.interfaces.IClientNavigation;
 import org.chromium.weblayer_private.interfaces.INavigation;
+import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 
 /**
  * Interface used by NavigationController to inform the client of changes. This largely duplicates
@@ -29,4 +30,7 @@ interface INavigationControllerClient {
   void loadProgressChanged(double progress) = 7;
 
   void onFirstContentfulPaint() = 8;
+
+  // Added in M85.
+  void onOldPageNoLongerRendered(in String uri) = 9;
 }

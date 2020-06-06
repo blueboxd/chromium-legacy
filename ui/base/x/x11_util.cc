@@ -356,22 +356,23 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
 
 int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
   DCHECK(xev->type == MotionNotify || xev->type == x11::GeGenericEvent::opcode);
-  XDisplay* display = xev->xany.display;
-  XEvent next_event;
+  auto* conn = x11::Connection::Get();
   bool is_motion = false;
   int num_coalesced = 0;
 
+  conn->ReadResponses();
   if (xev->type == MotionNotify) {
     is_motion = true;
-    while (XPending(display)) {
-      XPeekEvent(xev->xany.display, &next_event);
+    for (auto it = conn->events().begin(); it != conn->events().end();) {
+      const auto& next_event = it->xlib_event;
       // Discard all but the most recent motion event that targets the same
       // window with unchanged state.
       if (next_event.type == MotionNotify &&
           next_event.xmotion.window == xev->xmotion.window &&
           next_event.xmotion.subwindow == xev->xmotion.subwindow &&
           next_event.xmotion.state == xev->xmotion.state) {
-        XNextEvent(xev->xany.display, last_event);
+        *last_event = next_event;
+        it = conn->events().erase(it);
       } else {
         break;
       }
@@ -382,12 +383,11 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
     DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
     is_motion = event_type == XI_Motion;
 
-    while (XPending(display)) {
-      XPeekEvent(display, &next_event);
+    for (auto it = conn->events().begin(); it != conn->events().end();) {
+      auto& next_event = it->xlib_event;
 
-      // If we can't get the cookie, abort the check.
-      if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
-        return num_coalesced;
+      if (next_event.type != GenericEvent || !next_event.xcookie.data)
+        break;
 
       // If this isn't from a valid device, throw the event away, as
       // that's what the message pump would do. Device events come in pairs
@@ -395,8 +395,7 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
       // always be at least one pending.
       if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(
               &next_event)) {
-        XFreeEventData(display, &next_event.xcookie);
-        XNextEvent(display, &next_event);
+        it = conn->events().erase(it);
         continue;
       }
 
@@ -420,19 +419,16 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
             xievent->mods.latched == next_xievent->mods.latched &&
             xievent->mods.locked == next_xievent->mods.locked &&
             xievent->mods.effective == next_xievent->mods.effective) {
-          XFreeEventData(display, &next_event.xcookie);
           // Free the previous cookie.
           if (num_coalesced > 0)
-            XFreeEventData(display, &last_event->xcookie);
-          // Get the event and its cookie data.
-          XNextEvent(display, last_event);
-          XGetEventData(display, &last_event->xcookie);
-          ++num_coalesced;
+            XFreeEventData(last_event->xany.display, &last_event->xcookie);
+          last_event->xcookie = next_event.xcookie;
+          next_event.xcookie.data = nullptr;
+          it = conn->events().erase(it);
+          num_coalesced++;
           continue;
         }
       }
-      // This isn't an event we want so free its cookie data.
-      XFreeEventData(display, &next_event.xcookie);
       break;
     }
   }

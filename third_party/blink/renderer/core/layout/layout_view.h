@@ -181,6 +181,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   LayoutState* GetLayoutState() const { return layout_state_; }
 
+  bool CanHaveAdditionalCompositingReasons() const override { return true; }
+  CompositingReasons AdditionalCompositingReasons() const override;
+
   void UpdateHitTestResult(HitTestResult&,
                            const PhysicalOffset&) const override;
 

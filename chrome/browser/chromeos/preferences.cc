@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/sync/split_settings_sync_field_trial.h"
 #include "chrome/browser/chromeos/sync/turn_sync_on_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
@@ -169,6 +170,7 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(::prefs::kMinimumAllowedChromeVersion, "");
 
   ash::RegisterLocalStatePrefs(registry);
+  split_settings_sync_field_trial::RegisterLocalStatePrefs(registry);
 }
 
 // static

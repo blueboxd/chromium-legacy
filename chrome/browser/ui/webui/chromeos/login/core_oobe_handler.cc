@@ -64,8 +64,15 @@ namespace chromeos {
 namespace {
 
 void LaunchResetScreen() {
-  DCHECK(LoginDisplayHost::default_host());
-  LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
+  // Don't recreate WizardController if it already exists.
+  WizardController* const wizard_controller =
+      WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->AdvanceToScreen(ResetView::kScreenId);
+  } else {
+    DCHECK(LoginDisplayHost::default_host());
+    LoginDisplayHost::default_host()->StartWizard(ResetView::kScreenId);
+  }
 }
 
 }  // namespace
@@ -223,15 +230,24 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
 }
 
 void CoreOobeHandler::ShowEnableDebuggingScreen() {
-  DCHECK(LoginDisplayHost::default_host());
-  LoginDisplayHost::default_host()->StartWizard(
-      EnableDebuggingScreenView::kScreenId);
+  // Don't recreate WizardController if it already exists.
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->AdvanceToScreen(EnableDebuggingScreenView::kScreenId);
+  }
 }
 
 void CoreOobeHandler::ShowEnableAdbSideloadingScreen() {
-  DCHECK(LoginDisplayHost::default_host());
-  LoginDisplayHost::default_host()->StartWizard(
-      EnableAdbSideloadingScreenView::kScreenId);
+  // Don't recreate WizardController if it already exists.
+  WizardController* wizard_controller = WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->AdvanceToScreen(
+        EnableAdbSideloadingScreenView::kScreenId);
+  } else {
+    DCHECK(LoginDisplayHost::default_host());
+    LoginDisplayHost::default_host()->StartWizard(
+        EnableAdbSideloadingScreenView::kScreenId);
+  }
 }
 
 void CoreOobeHandler::ShowActiveDirectoryPasswordChangeScreen(

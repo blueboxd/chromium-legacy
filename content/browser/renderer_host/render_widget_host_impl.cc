@@ -46,6 +46,7 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/display_feature.h"
 #include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/fling_scheduler.h"
@@ -908,6 +909,17 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
     viewport = view_->GetVisibleViewportSize();
   visual_properties.visible_viewport_size = viewport;
 
+  // The root widget's window segments are computed here - child frames just
+  // use the value provided from the parent.
+  if (is_top_most_widget) {
+    const DisplayFeature* display_feature = view_->GetDisplayFeature();
+    visual_properties.root_widget_window_segments = ComputeRootWindowSegments(
+        visual_properties.visible_viewport_size, display_feature);
+  } else {
+    visual_properties.root_widget_window_segments =
+        properties_from_parent_local_root_.root_widget_window_segments;
+  }
+
   visual_properties.capture_sequence_number = view_->GetCaptureSequenceNumber();
 
   // TODO(ccameron): GetLocalSurfaceId is not synchronized with the device
@@ -1028,6 +1040,43 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   }
 
   return true;
+}
+
+std::vector<gfx::Rect> RenderWidgetHostImpl::ComputeRootWindowSegments(
+    const gfx::Size& visible_viewport_size,
+    const DisplayFeature* display_feature) const {
+  std::vector<gfx::Rect> window_segments;
+
+  if (!display_feature) {
+    window_segments.emplace_back(visible_viewport_size);
+    return window_segments;
+  }
+
+  int display_feature_end =
+      display_feature->offset + display_feature->mask_length;
+  if (display_feature->orientation == DisplayFeature::Orientation::kVertical) {
+    // If the display feature is vertically oriented, it splits or masks
+    // the widget into two side-by-side segments. Note that in the masking
+    // scenario, there is an area of the widget that are not covered by the
+    // union of the window segments - this area's pixels will not be visible
+    // to the user.
+    window_segments.emplace_back(0, 0, display_feature->offset,
+                                 visible_viewport_size.height());
+    window_segments.emplace_back(
+        display_feature_end, 0,
+        visible_viewport_size.width() - display_feature_end,
+        visible_viewport_size.height());
+  } else {
+    // If the display feature is offset in the y direction, it splits or masks
+    // the widget into two stacked segments.
+    window_segments.emplace_back(0, 0, visible_viewport_size.width(),
+                                 display_feature->offset);
+    window_segments.emplace_back(
+        0, display_feature_end, visible_viewport_size.width(),
+        visible_viewport_size.height() - display_feature_end);
+  }
+
+  return window_segments;
 }
 
 void RenderWidgetHostImpl::GotFocus() {
@@ -2093,13 +2142,16 @@ void RenderWidgetHostImpl::SetVisualPropertiesFromParentFrame(
     float page_scale_factor,
     bool is_pinch_gesture_active,
     const gfx::Size& visible_viewport_size,
-    const gfx::Rect& compositor_viewport) {
+    const gfx::Rect& compositor_viewport,
+    std::vector<gfx::Rect> root_widget_window_segments) {
   properties_from_parent_local_root_.page_scale_factor = page_scale_factor;
   properties_from_parent_local_root_.is_pinch_gesture_active =
       is_pinch_gesture_active;
   properties_from_parent_local_root_.visible_viewport_size =
       visible_viewport_size;
   properties_from_parent_local_root_.compositor_viewport = compositor_viewport;
+  properties_from_parent_local_root_.root_widget_window_segments =
+      std::move(root_widget_window_segments);
 }
 
 void RenderWidgetHostImpl::SetAutoResize(bool enable,
@@ -2403,7 +2455,9 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
          old_visual_properties->page_scale_factor !=
              new_visual_properties.page_scale_factor ||
          old_visual_properties->is_pinch_gesture_active !=
-             new_visual_properties.is_pinch_gesture_active;
+             new_visual_properties.is_pinch_gesture_active ||
+         old_visual_properties->root_widget_window_segments !=
+             new_visual_properties.root_widget_window_segments;
 }
 
 void RenderWidgetHostImpl::AutoscrollStart(const gfx::PointF& position) {
@@ -3333,5 +3387,11 @@ gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
 
   return root_view->GetVisibleViewportSize();
 }
+
+RenderWidgetHostImpl::MainFramePropagationProperties::
+    MainFramePropagationProperties() = default;
+
+RenderWidgetHostImpl::MainFramePropagationProperties::
+    ~MainFramePropagationProperties() = default;
 
 }  // namespace content

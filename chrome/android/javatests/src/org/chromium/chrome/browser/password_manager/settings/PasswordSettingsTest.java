@@ -561,7 +561,7 @@ public class PasswordSettingsTest {
     @Feature({"Preferences"})
     public void testSavePasswordsSwitch() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.REMEMBER_PASSWORDS_ENABLED, true);
+            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_SERVICE, true);
         });
 
         final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
@@ -575,14 +575,14 @@ public class PasswordSettingsTest {
 
             onOffSwitch.performClick();
             Assert.assertFalse(
-                    PrefServiceBridge.getInstance().getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
+                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
             onOffSwitch.performClick();
             Assert.assertTrue(
-                    PrefServiceBridge.getInstance().getBoolean(Pref.REMEMBER_PASSWORDS_ENABLED));
+                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
 
             settingsActivity.finish();
 
-            PrefServiceBridge.getInstance().setBoolean(Pref.REMEMBER_PASSWORDS_ENABLED, false);
+            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_SERVICE, false);
         });
 
         mSettingsActivityTestRule.startSettingsActivity();
@@ -684,8 +684,7 @@ public class PasswordSettingsTest {
     @Feature({"Preferences"})
     public void testAutoSignInCheckbox() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, true);
+            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, true);
         });
 
         final SettingsActivity settingsActivity = mSettingsActivityTestRule.startSettingsActivity();
@@ -698,16 +697,15 @@ public class PasswordSettingsTest {
             Assert.assertTrue(onOffSwitch.isChecked());
 
             onOffSwitch.performClick();
-            Assert.assertFalse(PrefServiceBridge.getInstance().getBoolean(
-                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
+            Assert.assertFalse(
+                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
             onOffSwitch.performClick();
-            Assert.assertTrue(PrefServiceBridge.getInstance().getBoolean(
-                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED));
+            Assert.assertTrue(
+                    PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
 
             settingsActivity.finish();
 
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.PASSWORD_MANAGER_AUTO_SIGNIN_ENABLED, false);
+            PrefServiceBridge.getInstance().setBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, false);
         });
 
         mSettingsActivityTestRule.startSettingsActivity();

@@ -22,14 +22,14 @@ class PrefChangeRegistrarAndroid {
   void Destroy(JNIEnv*, const JavaParamRef<jobject>&);
   void Add(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
-           const jint j_pref_index);
+           const JavaParamRef<jstring>& j_preference);
   void Remove(JNIEnv* env,
               const JavaParamRef<jobject>& obj,
-              const jint j_pref_index);
+              const JavaParamRef<jstring>& j_preference);
 
  private:
   ~PrefChangeRegistrarAndroid();
-  void OnPreferenceChange(const int pref_index);
+  void OnPreferenceChange(std::string preference);
 
   PrefChangeRegistrar pref_change_registrar_;
   ScopedJavaGlobalRef<jobject> pref_change_registrar_jobject_;

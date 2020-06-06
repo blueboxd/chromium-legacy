@@ -60,15 +60,13 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     : PasswordManagerInfoBarDelegate(),
       form_to_save_(std::move(form_to_save)),
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION) {
-  base::string16 message;
   PasswordTitleType type =
       form_to_save_->GetPendingCredentials().federation_origin.opaque()
           ? PasswordTitleType::SAVE_PASSWORD
           : PasswordTitleType::SAVE_ACCOUNT;
-  GetSavePasswordDialogTitleTextAndLinkRange(
+  SetMessage(GetSavePasswordDialogTitleText(
       web_contents->GetVisibleURL(),
-      url::Origin::Create(form_to_save_->GetURL()), type, &message);
-  SetMessage(message);
+      url::Origin::Create(form_to_save_->GetURL()), type));
 
   if (type == PasswordTitleType::SAVE_PASSWORD &&
       is_smartlock_branding_enabled) {

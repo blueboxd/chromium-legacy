@@ -27,6 +27,9 @@ namespace chromeos {
 // flock() to synchronize accesses to the file.
 class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
  public:
+  // The file from which externally-reported metrics are read.
+  static constexpr char kEventsFilePath[] = "/var/lib/metrics/uma-events";
+
   ExternalMetrics();
 
   // Begins the external data collection.  This service is started and stopped

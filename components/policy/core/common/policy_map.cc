@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,11 +44,12 @@ PolicyMap::Entry::Entry(
     PolicySource source,
     std::unique_ptr<base::Value> value,
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher)
-    : level(level),
-      scope(scope),
-      source(source),
-      external_data_fetcher(std::move(external_data_fetcher)),
-      value_(std::move(value)) {}
+    : Entry(level,
+            scope,
+            source,
+            value ? base::make_optional<base::Value>(std::move(*value))
+                  : base::nullopt,
+            std::move(external_data_fetcher)) {}
 
 PolicyMap::Entry::Entry(
     PolicyLevel level,
@@ -55,12 +57,11 @@ PolicyMap::Entry::Entry(
     PolicySource source,
     base::Optional<base::Value> value,
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher)
-    : Entry(level,
-            scope,
-            source,
-            value.has_value() ? std::make_unique<base::Value>(std::move(*value))
-                              : nullptr,
-            std::move(external_data_fetcher)) {}
+    : level(level),
+      scope(scope),
+      source(source),
+      external_data_fetcher(std::move(external_data_fetcher)),
+      value_(std::move(value)) {}
 
 PolicyMap::Entry::~Entry() = default;
 
@@ -68,7 +69,9 @@ PolicyMap::Entry::Entry(Entry&&) noexcept = default;
 PolicyMap::Entry& PolicyMap::Entry::operator=(Entry&&) noexcept = default;
 
 PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
-  Entry copy(level, scope, source, value_ ? value_->CreateDeepCopy() : nullptr,
+  Entry copy(level, scope, source,
+             value_ ? base::make_optional<base::Value>(value_->Clone())
+                    : base::nullopt,
              external_data_fetcher
                  ? std::make_unique<ExternalDataFetcher>(*external_data_fetcher)
                  : nullptr);
@@ -81,6 +84,10 @@ PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
     copy.AddConflictingPolicy(conflict.DeepCopy());
   }
   return copy;
+}
+
+void PolicyMap::Entry::set_value(std::unique_ptr<base::Value> val) {
+  value_ = val ? base::make_optional(std::move(*val)) : base::nullopt;
 }
 
 bool PolicyMap::Entry::has_higher_priority_than(
@@ -277,6 +284,8 @@ void PolicyMap::Swap(PolicyMap* other) {
 }
 
 void PolicyMap::CopyFrom(const PolicyMap& other) {
+  DCHECK_NE(this, &other);
+
   Clear();
   for (const auto& it : other)
     Set(it.first, it.second.DeepCopy());
@@ -289,6 +298,8 @@ std::unique_ptr<PolicyMap> PolicyMap::DeepCopy() const {
 }
 
 void PolicyMap::MergeFrom(const PolicyMap& other) {
+  DCHECK_NE(this, &other);
+
   for (const auto& policy_and_entry : other) {
     Entry* current_policy = GetMutableUntrusted(policy_and_entry.first);
     Entry other_policy = policy_and_entry.second.DeepCopy();
@@ -310,12 +321,13 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
         higher_policy.source != conflicting_policy.source &&
         conflicting_policy.source == POLICY_SOURCE_ENTERPRISE_DEFAULT;
     if (!overwriting_default_policy) {
-      higher_policy.AddConflictingPolicy(std::move(conflicting_policy));
-      higher_policy.AddWarning(
+      auto warning =
           (current_policy->value() &&
            *policy_and_entry.second.value() == *current_policy->value())
               ? IDS_POLICY_CONFLICT_SAME_VALUE
-              : IDS_POLICY_CONFLICT_DIFF_VALUE);
+              : IDS_POLICY_CONFLICT_DIFF_VALUE;
+      higher_policy.AddConflictingPolicy(std::move(conflicting_policy));
+      higher_policy.AddWarning(warning);
     }
 
     if (other_is_higher_priority)

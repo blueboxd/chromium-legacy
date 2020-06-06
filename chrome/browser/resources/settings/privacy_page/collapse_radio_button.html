@@ -8,6 +8,7 @@
       }
 
       cr-policy-indicator,
+      cr-policy-pref-indicator,
       :host([disabled]) cr-expand-button {
         pointer-events: auto;
       }
@@ -77,11 +78,19 @@
             <slot name="sub-label"></slot>
           </div>
         </div>
-        <cr-policy-indicator id="policyIndicator"
-            on-click="onIndicatorClick_"
-            on-aria-label="[[label]]"
-            indicator-type="[[policyIndicatorType]]">
-        </cr-policy-indicator>
+        <template is="dom-if" if="[[pref]]">
+          <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]"
+            associated-value="[[name]]">
+          </cr-policy-pref-indicator>
+        </template>
+        <template is="dom-if"
+            if="[[shouldShowPolicyIndicator_(pref, policyIndicatorType)]]">
+          <cr-policy-indicator id="policyIndicator"
+              on-click="onIndicatorClick_"
+              on-aria-label="[[label]]"
+              indicator-type="[[policyIndicatorType]]">
+          </cr-policy-indicator>
+        </template>
         <div hidden$="[[noCollapse]]" class="separator"></div>
         <cr-expand-button hidden$="[[noCollapse]]" expanded="{{expanded}}">
         </cr-expand-button>

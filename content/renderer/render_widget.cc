@@ -753,6 +753,20 @@ void RenderWidget::OnUpdateVisualProperties(
   if (for_frame()) {
     SetZoomLevel(visual_properties.zoom_level);
 
+    if (root_widget_window_segments_ !=
+        visual_properties.root_widget_window_segments) {
+      root_widget_window_segments_ =
+          visual_properties.root_widget_window_segments;
+
+      // TODO(crbug.com/1039050) Set this on WebWidget, so Blink can expose the
+      // values to JavaScript and CSS.
+
+      // Propagate changes down to child local root RenderWidgets in other frame
+      // trees/processes.
+      for (auto& observer : render_frame_proxies_)
+        observer.OnRootWindowSegmentsChanged(root_widget_window_segments_);
+    }
+
     bool capture_sequence_number_changed =
         visual_properties.capture_sequence_number !=
         last_capture_sequence_number_;
@@ -3070,6 +3084,7 @@ void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
   proxy->OnScreenInfoChanged(GetOriginalScreenInfo());
   proxy->OnZoomLevelChanged(zoom_level_);
   proxy->OnVisibleViewportSizeChanged(visible_viewport_size_);
+  proxy->OnRootWindowSegmentsChanged(root_widget_window_segments_);
 }
 
 void RenderWidget::UnregisterRenderFrameProxy(RenderFrameProxy* proxy) {

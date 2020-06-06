@@ -47,6 +47,8 @@ void X11WindowOzone::StartDrag(const ui::OSExchangeData& data,
 
   end_drag_callback_ = std::move(callback);
   drag_drop_client_->InitDrag(operation, &data);
+  drag_operation_ = 0;
+  notified_enter_ = false;
 
   SetCapture();
 
@@ -61,9 +63,23 @@ int X11WindowOzone::UpdateDrag(const gfx::Point& screen_point) {
   WmDropHandler* drop_handler = GetWmDropHandler(*this);
   if (!drop_handler)
     return ui::DragDropTypes::DRAG_NONE;
-  // TODO: calculate the appropriate drag operation here.
-  return drop_handler->OnDragMotion(gfx::PointF(screen_point),
-                                    ui::DragDropTypes::DRAG_COPY);
+  if (!notified_enter_) {
+    DCHECK(drag_drop_client_);
+    auto* target_current_context = drag_drop_client_->target_current_context();
+    DCHECK(target_current_context);
+    drop_handler->OnDragEnter(
+        gfx::PointF(screen_point),
+        std::make_unique<ui::OSExchangeData>(
+            std::make_unique<ui::XOSExchangeDataProvider>(
+                drag_drop_client_->xwindow(),
+                target_current_context->fetched_targets())),
+        ui::DragDropTypes::DRAG_COPY);
+    notified_enter_ = true;
+  }
+
+  drag_operation_ = drop_handler->OnDragMotion(gfx::PointF(screen_point),
+                                               ui::DragDropTypes::DRAG_COPY);
+  return drag_operation_;
 }
 
 void X11WindowOzone::UpdateCursor(
@@ -80,7 +96,11 @@ void X11WindowOzone::OnEndForeignDrag() {
 }
 
 void X11WindowOzone::OnBeforeDragLeave() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return;
+  drop_handler->OnDragLeave();
+  notified_enter_ = false;
 }
 
 int X11WindowOzone::PerformDrop() {
@@ -88,17 +108,13 @@ int X11WindowOzone::PerformDrop() {
   if (!drop_handler)
     return ui::DragDropTypes::DRAG_NONE;
 
-  DCHECK(drag_drop_client_);
-  auto* target_current_context = drag_drop_client_->target_current_context();
-  DCHECK(target_current_context);
+  DCHECK(notified_enter_);
 
-  int drag_operation = ui::DragDropTypes::DRAG_NONE;
-
-  drop_handler->OnDragDrop(std::make_unique<ui::OSExchangeData>(
-      std::make_unique<ui::XOSExchangeDataProvider>(
-          drag_drop_client_->xwindow(),
-          target_current_context->fetched_targets())));
-  return drag_operation;
+  // The drop data has been supplied on entering the window.  The drop handler
+  // should have it since then.
+  drop_handler->OnDragDrop({});
+  notified_enter_ = false;
+  return drag_operation_;
 }
 
 void X11WindowOzone::EndMoveLoop() {

@@ -389,7 +389,7 @@ void SharedImageStub::OnRegisterSharedImageUploadBuffer(
   }
 }
 
-bool SharedImageStub::MakeContextCurrent() {
+bool SharedImageStub::MakeContextCurrent(bool needs_gl) {
   DCHECK(context_state_);
 
   if (context_state_->context_lost()) {
@@ -401,8 +401,8 @@ bool SharedImageStub::MakeContextCurrent() {
   // improve performance. https://crbug.com/457431
   auto* context = context_state_->real_context();
   if (context->IsCurrent(nullptr))
-    return !context_state_->CheckResetStatus(/*needs_gl=*/false);
-  return context_state_->MakeCurrent(/*surface=*/nullptr, /*needs_gl=*/false);
+    return !context_state_->CheckResetStatus(needs_gl);
+  return context_state_->MakeCurrent(/*surface=*/nullptr, needs_gl);
 }
 
 ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {
@@ -417,7 +417,9 @@ ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {
   }
   DCHECK(context_state_);
   DCHECK(!context_state_->context_lost());
-  if (!MakeContextCurrent()) {
+  // Some shared image backing factories will use GL in ctor, so we need GL even
+  // if chrome is using non-GL backing.
+  if (!MakeContextCurrent(/*needs_gl=*/true)) {
     context_state_ = nullptr;
     return ContextResult::kTransientFailure;
   }

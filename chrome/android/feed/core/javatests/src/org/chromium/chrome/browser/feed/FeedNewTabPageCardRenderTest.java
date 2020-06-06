@@ -154,6 +154,6 @@ public class FeedNewTabPageCardRenderTest {
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {
         return ThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE));
+                () -> PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
     }
 }

@@ -13,6 +13,11 @@ declare_args() {
   enable_widevine = is_chrome_branded || is_android || is_fuchsia
 }
 
+# Disable Widevine when running linux-chromeos.
+if (is_chromeos && !is_chromeos_device) {
+  enable_widevine = false
+}
+
 # Widevine CDM is available as a library CDM on the following platforms and
 # architectures. Notably on Android library CDM is not used and Widevine is
 # supported via Android MediaDrm API.

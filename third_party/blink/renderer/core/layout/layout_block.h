@@ -401,6 +401,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void UpdateAfterLayout() override;
   MinMaxSizes PreferredLogicalWidths() const override;
 
+  virtual bool HasLineIfEmpty() const;
+
  protected:
   MinMaxSizes ComputeIntrinsicLogicalWidths() const override;
   void ComputeChildPreferredLogicalWidths(
@@ -429,8 +431,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   // hasOverflowClip() will be false and we won't create scrollable area for
   // this object even if overflow is non-visible.
   virtual bool AllowsOverflowClip() const;
-
-  virtual bool HasLineIfEmpty() const;
 
   bool SimplifiedLayout();
   virtual void SimplifiedNormalFlowLayout();

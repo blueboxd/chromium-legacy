@@ -376,8 +376,10 @@ void NetworkStateHandler::SetProhibitedTechnologies(
 const DeviceState* NetworkStateHandler::GetDeviceState(
     const std::string& device_path) const {
   const DeviceState* device = GetModifiableDeviceState(device_path);
-  if (device && !device->update_received())
+  if (device && !device->update_received()) {
+    NET_LOG(DEBUG) << "Device exists but update not received: " << device_path;
     return nullptr;
+  }
   return device;
 }
 
@@ -1464,7 +1466,7 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
       key == shill::kNetworkTechnologyProperty ||
       (key == shill::kDeviceProperty && value_str == "/")) {
     // Uninteresting update. This includes 'Device' property changes to "/"
-    // (occurs before just a service is removed).
+    // (occurs just before a service is removed).
     // For non active networks do not log or send any notifications.
     if (!network->IsActive())
       return;

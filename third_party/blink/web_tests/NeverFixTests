@@ -1383,10 +1383,10 @@ http/tests/mixed-autoupgrade/* [ Skip ]
 
 # Not expected to pass in default configuration, only virtual test suite.
 crbug.com/830901 fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html [ Skip ]
-virtual/webgl-extra-video-texture-metadata/fast/webgl/video-metadata/* [ Pass ]
+virtual/webgl-extra-video-texture-metadata/fast/webgl/video-metadata/texImage-video-last-uploaded-metadata.html [ Pass ]
 
 # Below are manual tests from web-platform-tests without automation.
-external/wpt/html/canvas/element/drawing-paths-to-the-canvas/canvas_focus_drawFocusIfNeeded_AAPI_001-manual.html [ Skip ]
+external/wpt/html/canvas/element/manual/drawing-paths-to-the-canvas/canvas_focus_drawFocusIfNeeded_AAPI_001-manual.html [ Skip ]
 external/wpt/FileAPI/FileReader/test_notreadableerrors-manual.html [ Skip ]
 external/wpt/FileAPI/FileReader/test_securityerrors-manual.html [ Skip ]
 external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ Skip ]
@@ -1904,11 +1904,11 @@ http/tests/devtools/isolated-code-cache/cross-origin-test.js [ Skip ]
 # test that feature when web-platform.test domains are being forced into
 # origin-isolation mode. Note that since we also want coverage of this feature
 # with site isolation enabled, we use a different virtual test suite than
-# not-site-per-process, named no-auto-web-platform-test-origin-isolation.
+# not-site-per-process, named no-auto-wpt-origin-isolation.
 external/wpt/origin-isolation/* [ Skip ]
 wpt_internal/origin-isolation/* [ Skip ]
-virtual/no-auto-wpt-origin-isolation/* [ Pass ]
-virtual/not-site-per-process/* [ Pass ]
+virtual/no-auto-wpt-origin-isolation/external/wpt/origin-isolation/* [ Pass ]
+virtual/no-auto-wpt-origin-isolation/wpt_internal/origin-isolation/* [ Pass ]
 # ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
 # Tests using testRunner.useUnfortunateSynchronousResizeMode occasionally fail on Win7,
@@ -1989,10 +1989,6 @@ crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-
 
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_fractional_coordinates-manual.html [ Skip ]
 
-# These tests require a preferred dark color-scheme and are only run as virtual tests
-external/wpt/css/css-color-adjust/rendering/dark-color-scheme/* [ Skip ]
-virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/* [ Pass ]
-
 crbug.com/626703 [ Linux ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
 crbug.com/626703 [ Mac ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
 crbug.com/626703 [ Win ] external/wpt/payment-request/dynamically-change-shipping-options-manual.https.html [ Skip ]
@@ -2016,8 +2012,10 @@ virtual/scalefactor200withzoom/fast/hidpi/static/* [ Pass ]
 # Skip the non-virtualized CORS-RFC1918 blocking tests (`.addressSpace` tests are fine):
 crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
 crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
-virtual/cors-rfc1918/http/tests/security/cors-rfc1918/* [ Pass ]
-virtual/omt-worker-fetch-cors-rfc1918/http/tests/security/cors-rfc1918/* [ Pass ]
+virtual/cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Pass ]
+virtual/cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Pass ]
+virtual/omt-worker-fetch-cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Pass ]
+virtual/omt-worker-fetch-cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Pass ]
 
 # Memory measurement tests are run as virtual tests.
 external/wpt/measure-memory/* [ Skip ]
@@ -2036,8 +2034,20 @@ crbug.com/961439 external/wpt/cookies/samesite/setcookie-lax.https.html?legacy-s
 crbug.com/961439 external/wpt/cookies/samesite/setcookie-navigation.https.html?legacy-samesite [ Skip ]
 crbug.com/961439 external/wpt/cookies/samesite/window-open-reload.https.html?legacy-samesite [ Skip ]
 crbug.com/961439 external/wpt/cookies/samesite/window-open.https.html?legacy-samesite [ Skip ]
+
 # Unskip the above tests for virtual/legacy-samesite.
-virtual/legacy-samesite/external/wpt/cookies/samesite/* [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/fetch.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank-reload.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/form-get-blank.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank-reload.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/form-post-blank.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/iframe-reload.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/iframe.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/img.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-lax.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-navigation.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/window-open-reload.https.html?legacy-samesite [ Pass ]
+virtual/legacy-samesite/external/wpt/cookies/samesite/window-open.https.html?legacy-samesite [ Pass ]
 
 # Non-legacy SameSite cookie tests do not apply when legacy SameSite behavior is in effect.
 crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/fetch.https.html [ Skip ]
@@ -2052,6 +2062,11 @@ crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie
 crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/setcookie-navigation.https.html [ Skip ]
 crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open-reload.https.html [ Skip ]
 crbug.com/961439 virtual/legacy-samesite/external/wpt/cookies/samesite/window-open.https.html [ Skip ]
+
+# AppCache tests that need to run only in a virtual test suite
+# But have to live under non-virtual http/ to get http/ behavior
+crbug.com/582750 http/tests/appcache/* [ Skip ]
+virtual/appcache-origin-trial/http/tests/appcache/* [ Pass ]
 
 # Remove these from virtual tests when Network Error Logging is turned on by default
 crbug.com/748549 external/wpt/network-error-logging/* [ Skip ]

@@ -129,11 +129,12 @@ WebNavigationParams::PrefetchedSignedExchange::PrefetchedSignedExchange(
     const WebString& header_integrity,
     const WebURL& inner_url,
     const WebURLResponse& inner_response,
-    mojo::ScopedMessagePipeHandle loader_factory_handle)
+    CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
+        loader_factory)
     : outer_url(outer_url),
       header_integrity(header_integrity),
       inner_url(inner_url),
       inner_response(inner_response),
-      loader_factory_handle(std::move(loader_factory_handle)) {}
+      loader_factory(std::move(loader_factory)) {}
 
 }  // namespace blink

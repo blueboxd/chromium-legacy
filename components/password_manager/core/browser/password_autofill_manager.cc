@@ -738,8 +738,8 @@ void PasswordAutofillManager::OnUnlockReauthCompleted(
     }
     return;
   }
-  UpdatePopup(SetUnlockLoadingState(autofill_client_->GetPopupSuggestions(),
-                                    unlock_item, IsLoading(false)));
+  UpdatePopup(SetUnlockLoadingState(reopen_args.suggestions, unlock_item,
+                                    IsLoading(false)));
 }
 
 }  //  namespace password_manager

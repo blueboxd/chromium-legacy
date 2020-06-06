@@ -133,16 +133,6 @@ SaveUpdateBubbleController::SaveUpdateBubbleController(
   enable_editing_ = delegate_->GetCredentialSource() !=
                     password_manager::metrics_util::CredentialSourceType::
                         kCredentialManagementAPI;
-
-  // Compute the title.
-  PasswordTitleType type =
-      state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
-          ? PasswordTitleType::UPDATE_PASSWORD
-          : (pending_password_.federation_origin.opaque()
-                 ? PasswordTitleType::SAVE_PASSWORD
-                 : PasswordTitleType::SAVE_ACCOUNT);
-  GetSavePasswordDialogTitleTextAndLinkRange(GetWebContents()->GetVisibleURL(),
-                                             origin_, type, &title_);
 }
 
 SaveUpdateBubbleController::~SaveUpdateBubbleController() {
@@ -213,7 +203,6 @@ bool SaveUpdateBubbleController::ReplaceToShowPromotionIfNeeded() {
   if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(
           prefs, sync_service)) {
     ReportInteractions();
-    title_ = l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE);
     state_ = password_manager::ui::CHROME_SIGN_IN_PROMO_STATE;
     int show_count = prefs->GetInteger(
         password_manager::prefs::kNumberSignInPasswordPromoShown);
@@ -231,6 +220,19 @@ bool SaveUpdateBubbleController::RevealPasswords() {
   if (reveal_immediately)
     delegate_->OnPasswordsRevealed();
   return reveal_immediately;
+}
+
+base::string16 SaveUpdateBubbleController::GetTitle() const {
+  if (state_ == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE)
+    return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SYNC_PROMO_TITLE);
+
+  PasswordTitleType type = IsCurrentStateUpdate()
+                               ? PasswordTitleType::UPDATE_PASSWORD
+                               : (pending_password_.federation_origin.opaque()
+                                      ? PasswordTitleType::SAVE_PASSWORD
+                                      : PasswordTitleType::SAVE_ACCOUNT);
+  return GetSavePasswordDialogTitleText(GetWebContents()->GetVisibleURL(),
+                                        origin_, type);
 }
 
 void SaveUpdateBubbleController::ReportInteractions() {
@@ -277,8 +279,4 @@ void SaveUpdateBubbleController::ReportInteractions() {
   // Record UKM statistics on dismissal reason.
   if (metrics_recorder_)
     metrics_recorder_->RecordUIDismissalReason(dismissal_reason_);
-}
-
-base::string16 SaveUpdateBubbleController::GetTitle() const {
-  return title_;
 }

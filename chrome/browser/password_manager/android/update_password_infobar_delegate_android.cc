@@ -106,12 +106,10 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
     bool is_smartlock_branding_enabled)
     : infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION),
       is_smartlock_branding_enabled_(is_smartlock_branding_enabled) {
-  base::string16 message;
-  GetSavePasswordDialogTitleTextAndLinkRange(
+  SetMessage(GetSavePasswordDialogTitleText(
       web_contents->GetVisibleURL(),
       url::Origin::Create(form_to_update->GetURL()),
-      PasswordTitleType::UPDATE_PASSWORD, &message);
-  SetMessage(message);
+      PasswordTitleType::UPDATE_PASSWORD));
   if (is_smartlock_branding_enabled)
     SetDetailsMessage(l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER));
 

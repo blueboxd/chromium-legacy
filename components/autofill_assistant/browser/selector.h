@@ -20,6 +20,9 @@ namespace autofill_assistant {
 SelectorProto ToSelectorProto(const std::string& s);
 SelectorProto ToSelectorProto(const std::vector<std::string>& s);
 
+// Returns the CSS name of a pseudo-type, without "::" prefix.
+std::string PseudoTypeName(PseudoType pseudoType);
+
 // Convenience wrapper around a SelectorProto that makes it simpler to work with
 // selectors.
 //

@@ -740,8 +740,8 @@ public class TabGroupUiMediatorUnitTest {
         mTabModelObserverArgumentCaptor.getValue().tabClosureUndone(mTab2);
 
         // Since overview mode is showing, we should not show strip.
-        mVisibilityControllerInOrder.verify(mVisibilityController, never())
-                .setBottomControlsVisible(anyBoolean());
+        mVisibilityControllerInOrder.verify(mVisibilityController, times(2))
+                .setBottomControlsVisible(eq(false));
     }
 
     @Test
@@ -1121,7 +1121,7 @@ public class TabGroupUiMediatorUnitTest {
         mTabModelObserverArgumentCaptor.getValue().tabClosureUndone(mTab3);
 
         // Since overview mode is showing, we should not show strip.
-        verifyNeverReset();
+        verifyResetStrip(false, null);
     }
 
     @Test
@@ -1165,7 +1165,7 @@ public class TabGroupUiMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
-    public void onResumeWithNative_featureEnabled_CTS() {
+    public void onResumeWithNative_featureActivated_CTS() {
         initAndAssertProperties(mTab1);
 
         ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.ACTIVATED);
@@ -1176,7 +1176,7 @@ public class TabGroupUiMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
-    public void onResumeWithNative_featureDisabled_CTS() {
+    public void onResumeWithNative_featureForbidden_CTS() {
         initAndAssertProperties(mTab1);
 
         ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.FORBIDDEN);
@@ -1187,10 +1187,28 @@ public class TabGroupUiMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
-    public void onResumeWithNative_featureExpired_CTS() {
+    public void onResumeWithNative_featureDefault_CTS() {
         initAndAssertProperties(mTab1);
 
         ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.DEFAULT);
+        mPauseResumeWithNativeObserverArgumentCaptor.getValue().onResumeWithNative();
+
+        verifyResetStrip(false, null);
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
+    public void onResumeWithNative_featureActivated_ShowingOverviewMode_CTS() {
+        initAndAssertProperties(mTab1);
+
+        // Mock that the overview mode is showing.
+        mOverviewModeObserverArgumentCaptor.getValue().onOverviewModeStartedShowing(true);
+        verifyResetStrip(false, null);
+        assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(true));
+
+        // When overview mode is showing before native resume, i,e. ReturnToClank enabled, strip
+        // should not be showing.
+        ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.ACTIVATED);
         mPauseResumeWithNativeObserverArgumentCaptor.getValue().onResumeWithNative();
 
         verifyResetStrip(false, null);

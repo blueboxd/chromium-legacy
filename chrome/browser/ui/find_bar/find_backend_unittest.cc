@@ -61,9 +61,10 @@ TEST_F(FindBackendTest, InternalState) {
   base::string16 search_term2 = base::ASCIIToUTF16(" but the economy ");
   base::string16 search_term3 = base::ASCIIToUTF16(" eated it.       ");
 
-  // Start searching in the first WebContents, searching forwards but not case
-  // sensitive (as indicated by the last two params).
-  find_tab_helper->StartFinding(search_term1, true, false);
+  // Start searching in the first WebContents.
+  find_tab_helper->StartFinding(search_term1, true /* forward_direction */,
+                                false /* case_sensitive */,
+                                true /* find_next_if_selection_matches */);
 
   // Pre-populate string should always match between the two, but find_text
   // should not.
@@ -72,9 +73,10 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(search_term1, FindPrepopulateText(contents2.get()));
   EXPECT_EQ(base::string16(), find_tab_helper2->find_text());
 
-  // Now search in the other WebContents, searching forwards but not case
-  // sensitive (as indicated by the last two params).
-  find_tab_helper2->StartFinding(search_term2, true, false);
+  // Now search in the other WebContents.
+  find_tab_helper2->StartFinding(search_term2, true /* forward_direction */,
+                                 false /* case_sensitive */,
+                                 true /* find_next_if_selection_matches */);
 
   // Again, pre-populate string should always match between the two, but
   // find_text should not.
@@ -83,9 +85,10 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(search_term2, FindPrepopulateText(contents2.get()));
   EXPECT_EQ(search_term2, find_tab_helper2->find_text());
 
-  // Search again in the first WebContents, searching forwards but not case
-  // find_tab_helper (as indicated by the last two params).
-  find_tab_helper->StartFinding(search_term3, true, false);
+  // Search again in the first WebContents
+  find_tab_helper->StartFinding(search_term3, true /* forward_direction */,
+                                false /* case_sensitive */,
+                                true /* find_next_if_selection_matches */);
 
   // The fallback search term for the first WebContents will be the original
   // search.

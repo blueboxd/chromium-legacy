@@ -319,6 +319,9 @@ void Widget::Init(InitParams params) {
   // Henceforth, ensure the delegate outlives the Widget.
   widget_delegate_->can_delete_this_ = false;
 
+  if (params.delegate)
+    params.delegate->WidgetInitializing(this);
+
   ownership_ = params.ownership;
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
@@ -374,7 +377,7 @@ void Widget::Init(InitParams params) {
   native_widget_->OnWidgetInitDone();
 
   if (delegate)
-    delegate->WidgetInitialized(this);
+    delegate->WidgetInitialized();
 
   internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetInitialized(
       this);

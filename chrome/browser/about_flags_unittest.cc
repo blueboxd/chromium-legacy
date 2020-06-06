@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_version.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/flags_test_helpers.h"
+#include "components/flags_ui/flags_ui_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace about_flags {
@@ -159,20 +160,21 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
   // Build reverse map {switch_name => id} from login_custom_flags.
   SwitchToIdMap histograms_xml_switches_ids;
 
-  EXPECT_TRUE(login_custom_flags->count(testing::kBadSwitchFormatHistogramId))
+  EXPECT_TRUE(
+      login_custom_flags->count(flags_ui::testing::kBadSwitchFormatHistogramId))
       << "Entry for UMA ID of incorrect command-line flag is not found in "
          "enums.xml enum LoginCustomFlags. "
          "Consider adding entry:\n"
       << "  " << GetHistogramEnumEntryText("BAD_FLAG_FORMAT", 0);
   // Check that all LoginCustomFlags entries have correct values.
   for (const auto& entry : *login_custom_flags) {
-    if (entry.first == testing::kBadSwitchFormatHistogramId) {
+    if (entry.first == flags_ui::testing::kBadSwitchFormatHistogramId) {
       // Add error value with empty name.
       SetSwitchToHistogramIdMapping(std::string(), entry.first,
                                     &histograms_xml_switches_ids);
       continue;
     }
-    const Sample uma_id = GetSwitchUMAId(entry.second);
+    const Sample uma_id = flags_ui::GetSwitchUMAId(entry.second);
     EXPECT_EQ(uma_id, entry.first)
         << "enums.xml enum LoginCustomFlags "
            "entry '"
@@ -189,12 +191,12 @@ TEST_F(AboutFlagsHistogramTest, CheckHistograms) {
     // Skip empty placeholders.
     if (flag.empty())
       continue;
-    const Sample uma_id = GetSwitchUMAId(flag);
-    EXPECT_NE(testing::kBadSwitchFormatHistogramId, uma_id)
+    const Sample uma_id = flags_ui::GetSwitchUMAId(flag);
+    EXPECT_NE(flags_ui::testing::kBadSwitchFormatHistogramId, uma_id)
         << "Command-line switch '" << flag
         << "' from about_flags.cc has UMA ID equal to reserved value "
            "kBadSwitchFormatHistogramId="
-        << testing::kBadSwitchFormatHistogramId
+        << flags_ui::testing::kBadSwitchFormatHistogramId
         << ". Please modify switch name.";
     auto enum_entry = histograms_xml_switches_ids.lower_bound(flag);
 

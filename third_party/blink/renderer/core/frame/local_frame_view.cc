@@ -4100,8 +4100,13 @@ void LocalFrameView::CrossOriginToMainFrameChanged() {
 }
 
 void LocalFrameView::CrossOriginToParentFrameChanged() {
-  if (auto* owner = frame_->DeprecatedLocalOwner())
-    owner->FrameCrossOriginToParentFrameChanged();
+  if (base::FeatureList::IsEnabled(
+          blink::features::kCompositeCrossOriginIframes)) {
+    if (LayoutView* layout_view = GetLayoutView()) {
+      if (PaintLayer* root_layer = layout_view->Layer())
+        root_layer->SetNeedsCompositingInputsUpdate();
+    }
+  }
 }
 
 void LocalFrameView::VisibilityForThrottlingChanged() {

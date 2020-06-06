@@ -897,8 +897,14 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
                                    cross_axis_offset);
   }
 
-  LayoutUnit intrinsic_block_size = algorithm_->IntrinsicContentBlockSize() +
-                                    border_scrollbar_padding_.BlockSum();
+  LayoutUnit intrinsic_block_size = border_scrollbar_padding_.BlockSum();
+
+  if (algorithm_->FlexLines().IsEmpty() &&
+      To<LayoutBlock>(Node().GetLayoutBox())->HasLineIfEmpty()) {
+    intrinsic_block_size += Node().GetLayoutBox()->LogicalHeightForEmptyLine();
+  } else {
+    intrinsic_block_size += algorithm_->IntrinsicContentBlockSize();
+  }
 
   intrinsic_block_size =
       ClampIntrinsicBlockSize(ConstraintSpace(), Node(),

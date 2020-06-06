@@ -30,8 +30,8 @@ class GeolocationContext : public mojom::GeolocationContext {
   static void Create(mojo::PendingReceiver<mojom::GeolocationContext> receiver);
 
   // mojom::GeolocationContext implementation:
-  void BindGeolocation(
-      mojo::PendingReceiver<mojom::Geolocation> receiver) override;
+  void BindGeolocation(mojo::PendingReceiver<mojom::Geolocation> receiver,
+                       const GURL& requesting_origin) override;
   void SetOverride(mojom::GeopositionPtr geoposition) override;
   void ClearOverride() override;
 

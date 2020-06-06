@@ -648,7 +648,7 @@ class SamlTest : public OobeBaseTest {
   }
 
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
-    OobeScreenWaiter(GaiaView::kScreenId).Wait();
+    WaitForSigninScreen();
 
     content::DOMMessageQueue message_queue;  // Start observe before SAML.
     SetupAuthFlowChangeListener();
@@ -712,9 +712,6 @@ class SamlTest : public OobeBaseTest {
   SecretInterceptingFakeCryptohomeClient* cryptohome_client_;
 
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
-
-  chromeos::DeviceStateMixin device_state_{
-      &mixin_host_, chromeos::DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
 
  private:
   FakeSamlIdp fake_saml_idp_;
@@ -1294,6 +1291,10 @@ class SAMLPolicyTest : public SamlTest {
   policy::MockConfigurationPolicyProvider provider_;
   net::CookieList cookie_list_;
 
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+
   // Add a fake user so the login screen does not show GAIA auth by default.
   // This enables tests to control when the GAIA is shown (and ensure it's
   // loaded after SAML config has been set up).
@@ -1308,8 +1309,6 @@ class SAMLPolicyTest : public SamlTest {
 
 SAMLPolicyTest::SAMLPolicyTest()
     : device_policy_(test_helper_.device_policy()) {
-  device_state_.SetState(
-      DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
   device_state_.set_skip_initial_policy_setup(true);
 }
 
@@ -1550,7 +1549,6 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLNoLimit) {
   // Remove the offline login time limit for SAML users.
   SetSAMLOfflineSigninTimeLimitPolicy(-1);
 
-  ShowGAIALoginForm();
   LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
                 kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 }
@@ -1569,7 +1567,6 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_SAMLZeroLimit) {
   // Set the offline login time limit for SAML users to zero.
   SetSAMLOfflineSigninTimeLimitPolicy(0);
 
-  ShowGAIALoginForm();
   LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
                 kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 }
@@ -1585,7 +1582,6 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLZeroLimit) {
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_PRE_TransferCookiesAffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue1);
-  ShowGAIALoginForm();
   LogInWithSAML(saml_test_users::kFirstUserCorpExampleComEmail,
                 kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 
@@ -1633,7 +1629,6 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, TransferCookiesAffiliated) {
 
 IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, PRE_TransferCookiesUnaffiliated) {
   fake_saml_idp()->SetCookieValue(kSAMLIdPCookieValue1);
-  ShowGAIALoginForm();
   LogInWithSAML(saml_test_users::kFifthUserExampleTestEmail,
                 kTestAuthSIDCookie1, kTestAuthLSIDCookie1);
 
@@ -1797,9 +1792,11 @@ void SAMLPasswordAttributesTest::SetUpOnMainThread() {
 // Verifies that password attributes are extracted and stored during a
 // successful log in - but only if the appropriate policy is enabled.
 IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
+  // LoginDisplayHostMojo does not show Oobe dialog by default.
+  LoginDisplayHost::default_host()->ShowGaiaDialog(EmptyAccountId());
+
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
-  ShowGAIALoginForm();
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFirstUserCorpExampleComEmail);
 
@@ -1830,9 +1827,11 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
 
 // Verify that no password attributes are stored when login fails.
 IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
+  // LoginDisplayHostMojo does not show Oobe dialog by default.
+  LoginDisplayHost::default_host()->ShowGaiaDialog(EmptyAccountId());
+
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
-  ShowGAIALoginForm();
   StartSamlAndWaitForIdpPageLoad(
       saml_test_users::kFirstUserCorpExampleComEmail);
 

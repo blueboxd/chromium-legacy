@@ -14,6 +14,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.AppCompatImageView;
 
 import org.chromium.chrome.R;
@@ -175,7 +176,8 @@ public class BaseSuggestionView<T extends View> extends SimpleHorizontalLayoutVi
     }
 
     /** @return Decorated suggestion view. */
-    DecoratedSuggestionView<T> getDecoratedSuggestionView() {
+    @VisibleForTesting
+    public DecoratedSuggestionView<T> getDecoratedSuggestionView() {
         return mDecoratedView;
     }
 

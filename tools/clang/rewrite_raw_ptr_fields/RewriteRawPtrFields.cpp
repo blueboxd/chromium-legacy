@@ -183,6 +183,13 @@ AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
   return file_path.contains("third_party");
 }
 
+AST_MATCHER(clang::FieldDecl, isInGeneratedLocation) {
+  llvm::StringRef file_path =
+      GetFilePath(Finder->getASTContext().getSourceManager(), Node);
+
+  return file_path.startswith("gen/") || file_path.contains("/gen/");
+}
+
 class FieldDeclFilterFile {
  public:
   explicit FieldDeclFilterFile(const std::string& filepath) {
@@ -261,6 +268,47 @@ AST_POLYMORPHIC_MATCHER(isInMacroLocation,
                                                         clang::Stmt,
                                                         clang::TypeLoc)) {
   return Node.getBeginLoc().isMacroID();
+}
+
+// If |field_decl| declares a field in an implicit template specialization, then
+// finds and returns the corresponding FieldDecl from the template definition.
+// Otherwise, just returns the original |field_decl| argument.
+const clang::FieldDecl* GetExplicitDecl(const clang::FieldDecl* field_decl) {
+  if (field_decl->isAnonymousStructOrUnion())
+    return field_decl;  // Safe fallback - |field_decl| is not a pointer field.
+
+  const clang::CXXRecordDecl* record_decl =
+      clang::dyn_cast<clang::CXXRecordDecl>(field_decl->getParent());
+  if (!record_decl)
+    return field_decl;  // Non-C++ records are never template instantiations.
+
+  const clang::CXXRecordDecl* pattern_decl =
+      record_decl->getTemplateInstantiationPattern();
+  if (!pattern_decl)
+    return field_decl;  // |pattern_decl| is not a template instantiation.
+
+  if (record_decl->getTemplateSpecializationKind() !=
+      clang::TemplateSpecializationKind::TSK_ImplicitInstantiation) {
+    return field_decl;  // |field_decl| was in an *explicit* specialization.
+  }
+
+  // Find the field decl with the same name in |pattern_decl|.
+  clang::DeclContextLookupResult lookup_result =
+      pattern_decl->lookup(field_decl->getDeclName());
+  assert(!lookup_result.empty());
+  const clang::NamedDecl* found_decl = lookup_result.front();
+  assert(found_decl);
+  field_decl = clang::dyn_cast<clang::FieldDecl>(found_decl);
+  assert(field_decl);
+  return field_decl;
+}
+
+AST_MATCHER_P(clang::FieldDecl,
+              hasExplicitDecl,
+              clang::ast_matchers::internal::Matcher<clang::FieldDecl>,
+              InnerMatcher) {
+  const clang::FieldDecl* explicit_field_decl = GetExplicitDecl(&Node);
+  return InnerMatcher.matches(*explicit_field_decl, Finder, Builder);
 }
 
 // Matcher for FieldDecl that has a TypeLoc with a unique start location
@@ -470,12 +518,13 @@ int main(int argc, const char* argv[]) {
   //   the source code)
   FieldDeclFilterFile fields_to_exclude(exclude_fields_param);
   auto field_decl_matcher =
-      fieldDecl(allOf(hasType(supported_pointer_types_matcher),
-                      hasUniqueTypeLoc(),
-                      unless(anyOf(isInThirdPartyLocation(),
-                                   isInMacroLocation(), isInExternCContext(),
-                                   isListedInFilterFile(fields_to_exclude),
-                                   implicit_field_decl_matcher))))
+      fieldDecl(
+          allOf(hasType(supported_pointer_types_matcher), hasUniqueTypeLoc(),
+                unless(anyOf(isInThirdPartyLocation(), isInGeneratedLocation(),
+                             isExpansionInSystemHeader(), isInMacroLocation(),
+                             isInExternCContext(),
+                             isListedInFilterFile(fields_to_exclude),
+                             implicit_field_decl_matcher))))
           .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
@@ -490,7 +539,8 @@ int main(int argc, const char* argv[]) {
   //   additional work and should cause related fields to be emitted as
   //   candidates for the --field-filter-file parameter.
   auto affected_member_expr_matcher =
-      memberExpr(member(field_decl_matcher)).bind("affectedMemberExpr");
+      memberExpr(member(fieldDecl(hasExplicitDecl(field_decl_matcher))))
+          .bind("affectedMemberExpr");
   auto affected_implicit_expr_matcher = implicitCastExpr(has(expr(anyOf(
       // Only single implicitCastExpr is present in case of:
       // |auto* v = s.ptr_field;|

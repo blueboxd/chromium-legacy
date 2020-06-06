@@ -92,10 +92,6 @@ void PaintLayerCompositor::SetCompositingModeEnabled(bool enable) {
   if (enable == compositing_)
     return;
   compositing_ = enable;
-  root_layer_attachment_dirty_ = true;
-  // Schedule an update in the parent frame so the <iframe>'s layer in the owner
-  // document matches the compositing state here.
-  SetOwnerNeedsCompositingUpdate();
 }
 
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
@@ -399,11 +395,10 @@ void PaintLayerCompositor::UpdateIfNeeded(
     if (!child_list.IsEmpty()) {
       CHECK(compositing_);
       DCHECK_EQ(1u, child_list.size());
-      // If this is a popup, don't hook into the layer tree.
-      if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
-        current_parent = nullptr;
-      if (current_parent)
-        current_parent->SetChildren(child_list);
+      // Schedule an update in the parent frame so the <iframe>'s layer in the
+      // owner document matches the compositing state here.
+      SetOwnerNeedsCompositingUpdate();
+      root_layer_attachment_dirty_ = true;
     }
   }
 
@@ -512,8 +507,9 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
 }
 
 PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
-    LayoutEmbeddedContent& layout_object) {
-  auto* element = DynamicTo<HTMLFrameOwnerElement>(layout_object.GetNode());
+    const LayoutEmbeddedContent& layout_object) {
+  const auto* element =
+      DynamicTo<HTMLFrameOwnerElement>(layout_object.GetNode());
   if (!element)
     return nullptr;
 

@@ -17,6 +17,12 @@ var ifrCache;
 function test()
 {
     ifrCache = frames[0].applicationCache;
+    // If the origin trial is required, then about:blank will not have
+    // an applicationCache.  In this case, just early out.
+    if (!ifrCache) {
+        testRunner.notifyDone();
+        return;
+    }
     document.body.removeChild(document.getElementsByTagName("iframe")[0]);
     setTimeout(function() {
         gc();

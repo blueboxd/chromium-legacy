@@ -1330,7 +1330,6 @@ void OmniboxEditModel::OnPopupDataChanged(const base::string16& text,
     return;
   }
 
-  bool call_controller_onchanged = true;
   inline_autocomplete_text_ = text;
   if (inline_autocomplete_text_.empty())
     view_->OnInlineAutocompleteTextCleared();
@@ -1356,15 +1355,13 @@ void OmniboxEditModel::OnPopupDataChanged(const base::string16& text,
     // caret or selection correctly so the caret positioning we do here won't
     // matter.
     view_->SetWindowTextAndCaretPos(user_text, 0, false, true);
-  } else if (view_->OnInlineAutocompleteTextMaybeChanged(
-                 user_text + inline_autocomplete_text_, user_text.length())) {
-    call_controller_onchanged = false;
-  }
+  } else
+    view_->OnInlineAutocompleteTextMaybeChanged(
+        user_text + inline_autocomplete_text_, user_text.length());
 
   // We need to invoke OnChanged in case the destination url changed (as could
   // happen when control is toggled).
-  if (call_controller_onchanged)
-    OnChanged();
+  OnChanged();
 }
 
 bool OmniboxEditModel::OnAfterPossibleChange(

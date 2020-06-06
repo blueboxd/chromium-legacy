@@ -2454,7 +2454,6 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 TEST_F(LoginDatabaseUndecryptableLoginsTest, PasswordRecoveryEnabledGetLogins) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kDeleteCorruptedPasswords);
 
@@ -2476,18 +2475,10 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, PasswordRecoveryEnabledGetLogins) {
 
   RunUntilIdle();
   EXPECT_TRUE(testing_local_state().HasPrefPath(prefs::kPasswordRecovery));
-
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.RemovedCorruptedPasswords", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.DeleteCorruptedPasswordsResult",
-      metrics_util::DeleteCorruptedPasswordsResult::kSuccessPasswordsDeleted,
-      1);
 }
 
 TEST_F(LoginDatabaseUndecryptableLoginsTest,
        PasswordRecoveryDisabledGetLogins) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       features::kDeleteCorruptedPasswords);
@@ -2509,19 +2500,10 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest,
 
   RunUntilIdle();
   EXPECT_FALSE(testing_local_state().HasPrefPath(prefs::kPasswordRecovery));
-
-  EXPECT_TRUE(histogram_tester
-                  .GetAllSamples("PasswordManager.RemovedCorruptedPasswords")
-                  .empty());
-  EXPECT_TRUE(
-      histogram_tester
-          .GetAllSamples("PasswordManager.DeleteCorruptedPasswordsResult")
-          .empty());
 }
 
 TEST_F(LoginDatabaseUndecryptableLoginsTest,
        PasswordRecoveryEnabledKeychainLocked) {
-  base::HistogramTester histogram_tester;
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kDeleteCorruptedPasswords);
 
@@ -2544,14 +2526,6 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest,
 
   RunUntilIdle();
   EXPECT_FALSE(testing_local_state().HasPrefPath(prefs::kPasswordRecovery));
-
-  EXPECT_TRUE(histogram_tester
-                  .GetAllSamples("PasswordManager.RemovedCorruptedPasswords")
-                  .empty());
-  EXPECT_TRUE(
-      histogram_tester
-          .GetAllSamples("PasswordManager.DeleteCorruptedPasswordsResult")
-          .empty());
 
   // Note: it's not possible that encryption suddenly becomes available. This is
   // only used to check that the form is not removed from the database.

@@ -5,6 +5,8 @@
 #ifndef WEBLAYER_PUBLIC_NAVIGATION_OBSERVER_H_
 #define WEBLAYER_PUBLIC_NAVIGATION_OBSERVER_H_
 
+class GURL;
+
 namespace weblayer {
 class Navigation;
 
@@ -95,6 +97,11 @@ class NavigationObserver {
   // This is fired after each navigation has completed to indicate that the
   // first paint after a non-empty layout has finished.
   virtual void OnFirstContentfulPaint() {}
+
+  // Called after each navigation to indicate that the old page is no longer
+  // being rendered. Note this is not ordered with respect to
+  // OnFirstContentfulPaint.
+  virtual void OnOldPageNoLongerRendered(const GURL& url) {}
 };
 
 }  // namespace weblayer

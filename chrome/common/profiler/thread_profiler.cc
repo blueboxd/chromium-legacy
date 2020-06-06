@@ -27,7 +27,11 @@
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+#include "base/android/apk_assets.h"
+#include "base/files/memory_mapped_file.h"
+#include "base/profiler/arm_cfi_table.h"
+#include "base/profiler/chrome_unwinder_android.h"
 #include "chrome/android/modules/stack_unwinder/public/module.h"
 
 extern "C" {
@@ -76,32 +80,53 @@ CallStackProfileParams::Process GetProcess() {
 const base::RepeatingCallback<std::vector<std::unique_ptr<base::Unwinder>>()>&
 GetCoreUnwindersFactory() {
   const auto create_unwinders_factory = []() {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
+    static constexpr char kCfiFileName[] = "assets/unwind_cfi_32";
+
     // The module is loadable if the profiler is enabled for the current
     // process.
     CHECK(StackSamplingConfiguration::Get()
               ->IsProfilerEnabledForCurrentProcess());
 
-    struct UnwinderCreationState {
-      std::unique_ptr<stack_unwinder::Module> module;
-      std::unique_ptr<stack_unwinder::MemoryRegionsMap> memory_regions_map;
-    };
-    const auto create_unwinders = [](UnwinderCreationState* creation_state) {
-      std::vector<std::unique_ptr<base::Unwinder>> unwinders;
-      unwinders.push_back(creation_state->module->CreateNativeUnwinder(
-          creation_state->memory_regions_map.get(),
-          reinterpret_cast<uintptr_t>(&__executable_start)));
-      return unwinders;
+    class UnwindersFactory {
+     public:
+      UnwindersFactory()
+          : module_(stack_unwinder::Module::Load()),
+            memory_regions_map_(module_->CreateMemoryRegionsMap()) {
+        base::MemoryMappedFile::Region cfi_region;
+        int fd = base::android::OpenApkAsset(kCfiFileName, &cfi_region);
+        DCHECK(fd >= 0);
+        bool mapped_file_ok =
+            chrome_cfi_file_.Initialize(base::File(fd), cfi_region);
+        DCHECK(mapped_file_ok);
+        chrome_cfi_table_ = base::ArmCFITable::Parse(
+            {chrome_cfi_file_.data(), chrome_cfi_file_.length()});
+        DCHECK(chrome_cfi_table_);
+      }
+      UnwindersFactory(const UnwindersFactory&) = delete;
+      UnwindersFactory& operator=(const UnwindersFactory&) = delete;
+
+      std::vector<std::unique_ptr<base::Unwinder>> Run() {
+        std::vector<std::unique_ptr<base::Unwinder>> unwinders;
+        unwinders.push_back(module_->CreateNativeUnwinder(
+            memory_regions_map_.get(),
+            reinterpret_cast<uintptr_t>(&__executable_start)));
+        unwinders.push_back(std::make_unique<base::ChromeUnwinderAndroid>(
+            chrome_cfi_table_.get(),
+            reinterpret_cast<uintptr_t>(&__executable_start)));
+        return unwinders;
+      }
+
+     private:
+      const std::unique_ptr<stack_unwinder::Module> module_;
+      const std::unique_ptr<stack_unwinder::MemoryRegionsMap>
+          memory_regions_map_;
+      base::MemoryMappedFile chrome_cfi_file_;
+      std::unique_ptr<base::ArmCFITable> chrome_cfi_table_;
     };
 
-    std::unique_ptr<stack_unwinder::Module> module =
-        stack_unwinder::Module::Load();
-    std::unique_ptr<stack_unwinder::MemoryRegionsMap> memory_regions_map =
-        module->CreateMemoryRegionsMap();
-    return base::BindRepeating(
-        create_unwinders,
-        base::Owned(new UnwinderCreationState{std::move(module),
-                                              std::move(memory_regions_map)}));
+    return base::BindRepeating(&UnwindersFactory::Run,
+                               std::make_unique<UnwindersFactory>());
 #else
     return base::BindRepeating(
         []() -> std::vector<std::unique_ptr<base::Unwinder>> { return {}; });

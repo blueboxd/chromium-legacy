@@ -5,6 +5,7 @@
 #include <stdint.h>  // for uintptr_t
 
 #include "base/memory/checked_ptr.h"
+#include "gen/generated_header.h"
 
 class SomeClass {};
 class DerivedClass : public SomeClass {};
@@ -168,3 +169,92 @@ void foo(int x) {
 }
 
 }  // namespace ternary_operator_tests
+
+namespace generated_code_tests {
+
+void MyPrintf(const char* fmt, ...) {}
+
+void foo() {
+  GeneratedStruct s;
+
+  // No rewrite expected below (i.e. no |.get()| appended), because the field
+  // dereferenced below comes from (simulated) generated code.
+  MyPrintf("%p", s.ptr_field);
+}
+
+}  // namespace generated_code_tests
+
+namespace affected_implicit_template_specialization {
+
+template <typename T, typename T2>
+struct MyTemplate {
+  CheckedPtr<T> t_ptr;
+  CheckedPtr<T2> t2_ptr;
+
+  struct NestedStruct {
+    CheckedPtr<SomeClass> nested_ptr_field;
+    CheckedPtr<T> nested_t_ptr_field;
+  };
+  NestedStruct nested_struct_field;
+};
+
+template <typename T3>
+struct MyTemplate<SomeClass, T3> {
+  CheckedPtr<SomeClass> some_ptr;
+  CheckedPtr<T3> t3_ptr;
+};
+
+// The example that forces explicit |isAnonymousStructOrUnion| checks in
+// the implementation of GetExplicitDecl.  The example is based on
+// buildtools/third_party/libc++/trunk/include/string.
+template <typename T>
+struct MyStringTemplate {
+  struct NestedStruct {
+    union {
+      long l;
+      short s;
+      CheckedPtr<T> t_ptr;
+      CheckedPtr<int> i_ptr;
+    };  // Unnamed / anonymous union *field*.
+
+    struct {
+      long l2;
+      short s2;
+      CheckedPtr<T> t_ptr2;
+      CheckedPtr<int> i_ptr2;
+    };  // Unnamed / anonymous struct *field*.
+  };
+  NestedStruct s;
+};
+
+void MyPrintf(const char* fmt, ...) {}
+
+void foo() {
+  // |s.t_ptr| comes from implicit template specialization (which needs to be
+  // skipped for rewriting, but should be included for appending |.get()|).
+  //
+  // Expected rewrite: MyPrintf("%p", s.t_ptr.get());
+  MyTemplate<int, int> s;
+  MyPrintf("%p", s.t_ptr.get());
+
+  // |s.some_ptr| and |s.t2_ptr| come from implicit template specialization or a
+  // partial template specialization.
+  //
+  // Expected rewrite: MyPrintf("%p", s.some_ptr.get(), s.t3_ptr.get());
+  MyTemplate<SomeClass, int> s2;
+  MyPrintf("%p %p", s2.some_ptr.get(), s2.t3_ptr.get());
+
+  // Nested structs require extra care when trying to look up the non-implicit
+  // field definition.  Expected rewrite: adding |.get()| suffix.
+  MyPrintf("%p", s.nested_struct_field.nested_ptr_field.get());
+  MyPrintf("%p", s.nested_struct_field.nested_t_ptr_field.get());
+
+  // Lines below are added mainly to Force implicit specialization of
+  // MyStringTemplate (to force explicit |isAnonymousStructOrUnion| checks in
+  // the rewriter).  Still, the expected rewrite is: appending |.get()| to the
+  // printf arg.
+  MyStringTemplate<void> mst;
+  MyPrintf("%p %p", mst.s.t_ptr.get(), mst.s.t_ptr2.get());
+}
+
+}  // namespace affected_implicit_template_specialization

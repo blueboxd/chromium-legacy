@@ -75,6 +75,8 @@
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
+#include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
@@ -1394,6 +1396,15 @@ void AccessibilityManager::OnExtensionUnloaded(
     extensions::UnloadedExtensionReason reason) {
   if (extension->id() == keyboard_listener_extension_id_)
     keyboard_listener_extension_id_ = std::string();
+
+  if (extension->id() == extension_misc::kSwitchAccessExtensionId) {
+    extensions::VirtualKeyboardAPI* api =
+        extensions::BrowserContextKeyedAPIFactory<
+            extensions::VirtualKeyboardAPI>::Get(browser_context);
+    DCHECK(api);
+    api->delegate()->SetRequestedKeyboardState(
+        extensions::api::virtual_keyboard_private::KEYBOARD_STATE_AUTO);
+  }
 }
 
 void AccessibilityManager::OnShutdown(extensions::ExtensionRegistry* registry) {
@@ -1536,7 +1547,7 @@ void AccessibilityManager::PostLoadSwitchAccess() {
 }
 
 void AccessibilityManager::PostUnloadSwitchAccess() {
-  // Do any teardown work needed immediately after SwitchAccess actually
+  // Do any teardown work needed immediately after Switch Access actually
   // unloads.
 
   // Clear the accessibility focus ring.

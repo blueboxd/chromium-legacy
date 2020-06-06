@@ -100,7 +100,7 @@ public class SiteSettingsTest {
         Tab tab = mPermissionRule.getActivity().getActivityTab();
 
         mPermissionUpdateWaiter = new PermissionUpdateWaiter(
-                expectGranted ? "Granted:" : "Denied:", mPermissionRule.getActivity());
+                expectGranted ? "Granted" : "Denied", mPermissionRule.getActivity());
         tab.addObserver(mPermissionUpdateWaiter);
     }
 
@@ -142,7 +142,7 @@ public class SiteSettingsTest {
 
         // Launch a page that uses geolocation and make sure a permission prompt shows up.
         mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
-                "/chrome/test/data/geolocation/geolocation_on_load.html", "", 1, false, true);
+                "/chrome/test/data/geolocation/geolocation_on_load.html", "", 0, false, true);
     }
 
     /**
@@ -157,7 +157,7 @@ public class SiteSettingsTest {
         // Launch a page that uses geolocation. No permission prompt is expected.
         initializeUpdateWaiter(false /* expectGranted */);
         mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
-                "/chrome/test/data/geolocation/geolocation_on_load.html", "", 1, false, true);
+                "/chrome/test/data/geolocation/geolocation_on_load.html", "", 0, false, true);
     }
 
     private void setCookiesEnabled(final SettingsActivity settingsActivity, final boolean enabled) {
@@ -927,7 +927,7 @@ public class SiteSettingsTest {
         initializeUpdateWaiter(false /* expectGranted */);
         mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
-                "getUserMediaAndStop({video: true, audio: false});", 1, false, true);
+                "getUserMediaAndStop({video: true, audio: false});", 0, false, true);
     }
 
     /**
@@ -952,7 +952,7 @@ public class SiteSettingsTest {
         initializeUpdateWaiter(false /* expectGranted */);
         mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
-                "getUserMediaAndStop({video: false, audio: true});", 1, true, true);
+                "getUserMediaAndStop({video: false, audio: true});", 0, true, true);
     }
 
     /**
@@ -970,7 +970,7 @@ public class SiteSettingsTest {
         initializeUpdateWaiter(true /* expectGranted */);
         mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
-                "getUserMediaAndStop({video: true, audio: false});", 1, false, true);
+                "getUserMediaAndStop({video: true, audio: false});", 0, false, true);
     }
 
     /**
@@ -989,7 +989,7 @@ public class SiteSettingsTest {
         initializeUpdateWaiter(true /* expectGranted */);
         mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
                 "/content/test/data/media/getusermedia.html",
-                "getUserMediaAndStop({video: false, audio: true});", 1, true, true);
+                "getUserMediaAndStop({video: false, audio: true});", 0, true, true);
     }
 
     /**

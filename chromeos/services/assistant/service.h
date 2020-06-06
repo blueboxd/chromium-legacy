@@ -55,8 +55,9 @@ class IdentityManager;
 namespace chromeos {
 namespace assistant {
 
-class ServiceContext;
+class AssistantInteractionLogger;
 class ScopedAshSessionObserver;
+class ServiceContext;
 
 // |AssistantManagerService|'s state won't update if it's currently in the
 // process of starting up. This is the delay before we will try to update
@@ -200,6 +201,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   base::CancelableOnceClosure update_assistant_manager_callback_;
 
   std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
+
+  std::unique_ptr<AssistantInteractionLogger> interaction_logger_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

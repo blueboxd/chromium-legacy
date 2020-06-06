@@ -177,8 +177,7 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
                     return;
                 }
 
-                if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
-                        && (mIsTabGroupUiVisible || mIsShowingOverViewMode)) {
+                if (TabUiFeatureUtilities.isConditionalTabStripEnabled() && mIsTabGroupUiVisible) {
                     return;
                 }
                 // TODO(995956): Optimization we can do here if we decided always hide the strip if
@@ -231,7 +230,7 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
 
             @Override
             public void tabClosureUndone(Tab tab) {
-                if (!mIsTabGroupUiVisible && !mIsShowingOverViewMode) {
+                if (!mIsTabGroupUiVisible) {
                     resetTabStripWithRelatedTabsForId(tab.getId());
                 }
             }
@@ -278,9 +277,6 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 mSnackbarManageable.getSnackbarManager().dismissSnackbars(TabGroupUiMediator.this);
-                if (mIsShowingOverViewMode) {
-                    return;
-                }
                 resetTabStripWithRelatedTabsForId(mTabModelSelector.getCurrentTabId());
             }
         };
@@ -418,10 +414,16 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
      *            not, associated tabs from #getTabsToShowForID will be showing in the tab strip.
      */
     private void resetTabStripWithRelatedTabsForId(int id) {
-        // When conditional tab strip feature is turned on but the feature is not activated (i.e.
-        // forbidden or default), keep the tab strip hidden.
-        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
-                && ConditionalTabStripUtils.getFeatureStatus() != FeatureStatus.ACTIVATED) {
+        // TODO(crbug.com/1090655): We should be able to guard this call behind some checks so that
+        // we can assert here that 1) mIsShowingOverViewMode is false 2) mIsTabGroupUiVisible with
+        // valid id is false.
+        // When overview mode is showing or conditional tab strip feature is
+        // turned on but the feature is not activated (i.e. forbidden or default), keep the tab
+        // strip hidden.
+        if (mIsShowingOverViewMode
+                || (TabUiFeatureUtilities.isConditionalTabStripEnabled()
+                        && ConditionalTabStripUtils.getFeatureStatus()
+                                != FeatureStatus.ACTIVATED)) {
             id = Tab.INVALID_TAB_ID;
         }
         List<Tab> listOfTabs = getTabsToShowForId(id);

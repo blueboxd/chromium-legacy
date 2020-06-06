@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -60,7 +61,7 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
   const String& image_url =
       cached_image ? cached_image->Url().GetString() : g_empty_string;
 
-  return !layout_image.GetDocument().IsFeatureEnabled(
+  return !layout_image.GetDocument().domWindow()->IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature::kOversizedImages,
       blink::PolicyValue(
           std::max(downscale_ratio_width, downscale_ratio_height),

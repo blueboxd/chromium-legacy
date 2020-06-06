@@ -231,11 +231,6 @@ void LogDeleteUndecryptableLoginsReturnValue(
       "PasswordManager.DeleteUndecryptableLoginsReturnValue", result);
 }
 
-void LogDeleteCorruptedPasswordsResult(DeleteCorruptedPasswordsResult result) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.DeleteCorruptedPasswordsResult", result);
-}
-
 void LogNewlySavedPasswordIsGenerated(
     bool value,
     PasswordAccountStorageUsageLevel account_storage_usage_level) {

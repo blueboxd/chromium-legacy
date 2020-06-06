@@ -187,6 +187,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/crash_report/breadcrumbs",
     "//ios/chrome/browser/crash_report/breadcrumbs:feature_flags",
+    "//ios/chrome/browser/credential_provider",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/external_files",
     "//ios/chrome/browser/favicon",

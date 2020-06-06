@@ -2831,7 +2831,8 @@ void BrowserView::MaybeInitializeWebUITabStrip() {
       // downloads bar.
       webui_tab_strip_ = top_container_->AddChildView(
           std::make_unique<WebUITabStripContainerView>(
-              browser_.get(), contents_container_, top_container_));
+              browser_.get(), contents_container_, top_container_,
+              GetLocationBarView()->omnibox_view()));
       loading_bar_ = top_container_->AddChildView(
           std::make_unique<TopContainerLoadingBar>(browser_.get()));
       loading_bar_->SetWebContents(GetActiveWebContents());

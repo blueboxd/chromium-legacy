@@ -12,19 +12,23 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import ConfigParser
 
 try:
-  import cStringIO as StringIO
+  import configparser
 except ImportError:
-  import StringIO
+  import ConfigParser as configparser
+
+try:
+  import StringIO as io
+except ImportError:
+  import io
 
 
 SUPPORTED_TARGETS = ('iphoneos', 'iphonesimulator')
 SUPPORTED_CONFIGS = ('Debug', 'Release', 'Profile', 'Official', 'Coverage')
 
 
-class ConfigParserWithStringInterpolation(ConfigParser.SafeConfigParser):
+class ConfigParserWithStringInterpolation(configparser.SafeConfigParser):
 
   '''A .ini file parser that supports strings and environment variables.'''
 
@@ -32,8 +36,8 @@ class ConfigParserWithStringInterpolation(ConfigParser.SafeConfigParser):
 
   def values(self, section):
     return map(
-        lambda (k, v): self._UnquoteString(self._ExpandEnvVar(v)),
-        ConfigParser.SafeConfigParser.items(self, section))
+        lambda kv: self._UnquoteString(self._ExpandEnvVar(kv[1])),
+        configparser.ConfigParser.items(self, section))
 
   def getstring(self, section, option):
     return self._UnquoteString(self._ExpandEnvVar(self.get(section, option)))
@@ -123,7 +127,7 @@ class GnGenerator(object):
 
 
   def Generate(self, gn_path, root_path, out_path):
-    buf = StringIO.StringIO()
+    buf = io.StringIO()
     self.WriteArgsGn(buf)
     WriteToFileIfChanged(
         os.path.join(out_path, 'args.gn'),
@@ -134,14 +138,14 @@ class GnGenerator(object):
         self.GetGnCommand(gn_path, root_path, out_path, True))
 
   def CreateGnRules(self, gn_path, root_path, out_path):
-    buf = StringIO.StringIO()
+    buf = io.StringIO()
     self.WriteArgsGn(buf)
     WriteToFileIfChanged(
         os.path.join(out_path, 'args.gn'),
         buf.getvalue(),
         overwrite=True)
 
-    buf = StringIO.StringIO()
+    buf = io.StringIO()
     gn_command = self.GetGnCommand(gn_path, root_path, out_path, False)
     self.WriteBuildNinja(buf, gn_command)
     WriteToFileIfChanged(
@@ -149,7 +153,7 @@ class GnGenerator(object):
         buf.getvalue(),
         overwrite=False)
 
-    buf = StringIO.StringIO()
+    buf = io.StringIO()
     self.WriteBuildNinjaDeps(buf)
     WriteToFileIfChanged(
         os.path.join(out_path, 'build.ninja.d'),

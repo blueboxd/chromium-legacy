@@ -24,9 +24,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kAutoNightLight;
 // Enables contextual nudges for gesture education.
 ASH_PUBLIC_EXPORT extern const base::Feature kContextualNudges;
 
-// Enables shortcuts on corners of the display.
-ASH_PUBLIC_EXPORT extern const base::Feature kCornerShortcuts;
-
 // Enables indicators to hint where displays are connected.
 ASH_PUBLIC_EXPORT extern const base::Feature kDisplayAlignAssist;
 
@@ -218,8 +215,6 @@ ASH_PUBLIC_EXPORT bool IsHideShelfControlsInTabletModeEnabled();
 ASH_PUBLIC_EXPORT bool IsDisplayChangeModalEnabled();
 
 ASH_PUBLIC_EXPORT bool AreContextualNudgesEnabled();
-
-ASH_PUBLIC_EXPORT bool IsCornerShortcutsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayMicGainSettingEnabled();
 

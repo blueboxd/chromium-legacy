@@ -124,13 +124,39 @@ bool ScopedLsaPolicy::PrivateDataExists(const wchar_t* key) {
   return true;
 }
 
-HRESULT ScopedLsaPolicy::AddAccountRights(PSID sid, const wchar_t* right) {
-  LSA_UNICODE_STRING lsa_right;
-  InitLsaString(right, &lsa_right);
-  NTSTATUS sts = ::LsaAddAccountRights(handle_, sid, &lsa_right, 1);
+HRESULT ScopedLsaPolicy::AddAccountRights(
+    PSID sid,
+    const std::vector<base::string16>& rights) {
+  std::vector<LSA_UNICODE_STRING> lsa_rights;
+  for (auto& right : rights) {
+    LSA_UNICODE_STRING lsa_right;
+    InitLsaString(right.c_str(), &lsa_right);
+    lsa_rights.push_back(lsa_right);
+  }
+  NTSTATUS sts = ::LsaAddAccountRights(handle_, sid, lsa_rights.data(), 1);
   if (sts != STATUS_SUCCESS) {
     HRESULT hr = HRESULT_FROM_NT(sts);
     LOGFN(ERROR) << "LsaAddAccountRights sts=" << putHR(sts)
+                 << " hr=" << putHR(hr);
+    return hr;
+  }
+  return S_OK;
+}
+
+HRESULT ScopedLsaPolicy::RemoveAccountRights(
+    PSID sid,
+    const std::vector<base::string16>& rights) {
+  std::vector<LSA_UNICODE_STRING> lsa_rights;
+  for (auto& right : rights) {
+    LSA_UNICODE_STRING lsa_right;
+    InitLsaString(right.c_str(), &lsa_right);
+    lsa_rights.push_back(lsa_right);
+  }
+  NTSTATUS sts =
+      ::LsaRemoveAccountRights(handle_, sid, FALSE, lsa_rights.data(), 1);
+  if (sts != STATUS_SUCCESS) {
+    HRESULT hr = HRESULT_FROM_NT(sts);
+    LOGFN(ERROR) << "LsaRemoveAccountRights sts=" << putHR(sts)
                  << " hr=" << putHR(hr);
     return hr;
   }

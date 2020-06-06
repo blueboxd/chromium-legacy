@@ -568,4 +568,35 @@ suite('DragManager', () => {
     assertFalse(
         !!delegate.querySelector(`[data-tab-id="${PLACEHOLDER_TAB_ID}"]`));
   });
+
+  test('DragOverInvalidDragOverTarget', () => {
+    const draggedIndex = 0;
+    const dragOverIndex = 1;
+    const draggedTab = delegate.children[draggedIndex];
+    const dragOverTab = delegate.children[dragOverIndex];
+    const mockDataTransfer = new MockDataTransfer();
+
+    // Dispatch a dragstart event to start the drag process.
+    const dragStartEvent = new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedTab.dispatchEvent(dragStartEvent);
+
+    // Mark the dragOverIndex tab to be an invalid dragover target.
+    dragOverTab.isValidDragOverTarget = false;
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    dragOverTab.dispatchEvent(dragOverEvent);
+
+    // Dragover tab and dragged tab remain in their initial positions.
+    assertEquals(draggedTab, delegate.children[draggedIndex]);
+    assertEquals(dragOverTab, delegate.children[dragOverIndex]);
+  });
 });

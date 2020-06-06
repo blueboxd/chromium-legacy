@@ -56,7 +56,7 @@ public class PasswordManagerLauncher {
                     "PasswordManager.ManagePasswordsReferrerSignedInAndSyncing", referrer,
                     ManagePasswordsReferrer.MAX_VALUE + 1);
             if (!PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.REMEMBER_PASSWORDS_ENABLED)) {
+                        Pref.CREDENTIALS_ENABLE_SERVICE)) {
                 if (tryShowingTheGooglePasswordManager(activity)) return;
             }
         }

@@ -105,6 +105,29 @@
   public <init>();
 }
 
+# AndroidX classes that are inflated via reflection.
+-keep public class androidx.preference.Preference {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class androidx.preference.PreferenceScreen {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class androidx.preference.PreferenceCategory {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class androidx.preference.ListPreference {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+
+# SearchView is used in website_preferences_menu.xml and is constructed by
+# Android using reflection.
+-keep class androidx.appcompat.widget.SearchView {
+  public <init>(...);
+}
+
+# Referenced by android.support.v7.preference.PreferenceInflater.
+-keep public class androidx.preference.SwitchPreference {}
+
 # Don't obfuscate Parcelables as they might be marshalled outside Chrome.
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the
@@ -337,23 +360,6 @@
   public <init>();
 }
 
-# Referenced by android.support.v7.preference.PreferenceInflater
--keep public class androidx.preference.SwitchPreference {}
-
-# Inflated via reflection
--keep public class androidx.preference.Preference {
-    public <init>(android.content.Context, android.util.AttributeSet);
-}
--keep public class androidx.preference.PreferenceScreen {
-    public <init>(android.content.Context, android.util.AttributeSet);
-}
--keep public class androidx.preference.PreferenceCategory {
-    public <init>(android.content.Context, android.util.AttributeSet);
-}
--keep public class androidx.preference.ListPreference {
-    public <init>(android.content.Context, android.util.AttributeSet);
-}
-
 # These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
 # referenced, and we look up these services by appending a number onto the name
 # of the base class. Thus, we need to keep the base class name around so that
@@ -378,12 +384,6 @@
 # TODO(bjoyce): Remove after verifying AndroidX migration is sound.
 -keepclassmembers class android.support.design.internal.BottomNavigationMenuView {
     boolean mShiftingMode;
-}
-
-# SearchView is used in website_preferences_menu.xml and is constructed by
-# Android using reflection.
--keep class androidx.appcompat.widget.SearchView {
-  public <init>(...);
 }
 
 # This class member is referenced in BottomSheetBottomNav as a temporary
@@ -671,20 +671,6 @@
 # obj/third_party/android_deps/androidx_versionedparcelable_versionedparcelable_java/proguard.txt
 ################################################################################
 -keep public class * implements androidx.versionedparcelable.VersionedParcelable
--keep public class android.support.**Parcelizer { *; }
--keep public class androidx.**Parcelizer { *; }
--keep public class androidx.versionedparcelable.ParcelImpl
-
-################################################################################
-# obj/third_party/android_deps/com_android_support_support_compat_java/proguard.txt
-################################################################################
-# aapt2 is not (yet) keeping FQCNs defined in the appComponentFactory <application> attribute
--keep class android.support.v4.app.CoreComponentFactory
-
-################################################################################
-# obj/third_party/android_deps/com_android_support_versionedparcelable_java/proguard.txt
-################################################################################
--keep public class * extends androidx.versionedparcelable.VersionedParcelable
 -keep public class android.support.**Parcelizer { *; }
 -keep public class androidx.**Parcelizer { *; }
 -keep public class androidx.versionedparcelable.ParcelImpl

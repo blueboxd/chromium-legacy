@@ -21,6 +21,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -268,4 +269,8 @@ TEST_F(OmniboxResultViewTest, AccessibleNodeData) {
   EXPECT_FALSE(popup_node_data.HasState(ax::mojom::State::kExpanded));
   EXPECT_TRUE(popup_node_data.HasState(ax::mojom::State::kCollapsed));
   EXPECT_TRUE(popup_node_data.HasState(ax::mojom::State::kInvisible));
+  EXPECT_FALSE(popup_node_data.HasIntAttribute(
+      ax::mojom::IntAttribute::kActivedescendantId));
+  EXPECT_FALSE(
+      popup_node_data.HasIntAttribute(ax::mojom::IntAttribute::kPopupForId));
 }

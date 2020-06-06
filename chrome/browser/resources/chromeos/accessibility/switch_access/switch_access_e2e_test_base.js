@@ -48,8 +48,6 @@ SwitchAccessE2ETest.prototype = {
   /** @override */
   testGenPreamble() {
     GEN(`
-  //keyboard::SetRequestedKeyboardState(keyboard::KEYBOARD_STATE_ENABLED);
-  //ash::Shell::Get()->CreateKeyboard();
   base::Closure load_cb =
       base::Bind(&chromeos::AccessibilityManager::SetSwitchAccessEnabled,
           base::Unretained(chromeos::AccessibilityManager::Get()),

@@ -45,6 +45,11 @@ if (is_android || is_chromeos) {
     # repositories to support both public only and internal builds.
     enable_chrome_android_internal = has_chrome_android_internal
 
+    # The default to use for android:minSdkVersion for targets that do
+    # not explicitly set it. This can generally be set higher than the
+    # default, but not lower.
+    default_min_sdk_version = 19
+
     # Android API level for 32 bits platforms
     android32_ndk_api_level = 16
 
@@ -67,9 +72,6 @@ if (is_android || is_chromeos) {
       android_sdk_release = default_android_sdk_release
     }
   }
-
-  # Our build rules support only KitKat+.
-  default_min_sdk_version = 19
 
   if (!defined(default_android_ndk_root)) {
     default_android_ndk_root = "//third_party/android_ndk"

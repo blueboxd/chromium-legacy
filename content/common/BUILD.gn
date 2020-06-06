@@ -187,6 +187,7 @@ source_set("common") {
     "service_worker/service_worker_utils.h",
     "skia_utils.cc",
     "skia_utils.h",
+    "state_transitions.h",
     "text_input_client_messages.h",
     "text_input_state.cc",
     "text_input_state.h",

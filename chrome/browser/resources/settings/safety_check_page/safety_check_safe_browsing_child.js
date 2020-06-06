@@ -120,9 +120,7 @@ Polymer({
     this.metricsBrowserProxy_.recordAction(
         'Settings.SafetyCheck.ManageSafeBrowsing');
 
-    Router.getInstance().navigateTo(
-        routes.SECURITY, /* dynamicParams= */ null,
-        /* removeSearch= */ true);
+    Router.getInstance().navigateTo(routes.SECURITY);
   },
 
   /**

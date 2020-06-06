@@ -122,9 +122,7 @@ Polymer({
     this.metricsBrowserProxy_.recordAction(
         'Settings.SafetyCheck.ManagePasswords');
 
-    Router.getInstance().navigateTo(
-        routes.CHECK_PASSWORDS,
-        /* dynamicParams= */ null, /* removeSearch= */ true);
+    Router.getInstance().navigateTo(routes.CHECK_PASSWORDS);
     PasswordManagerImpl.getInstance().recordPasswordCheckReferrer(
         PasswordManagerProxy.PasswordCheckReferrer.SAFETY_CHECK);
   },

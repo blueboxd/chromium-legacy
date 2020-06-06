@@ -473,19 +473,15 @@ suite('SafetyCheckUpdatesChildUiTests', function() {
 suite('SafetyCheckPasswordsChildUiTests', function() {
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
+
   /** @type {!SettingsSafetyCheckPasswordsChildElement} */
   let page;
-  /** @type {!SettingsUiElement} */
-  let ui;
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
     document.body.innerHTML = '';
-    ui = /** @type {!SettingsUiElement} */ (
-        document.createElement('settings-ui'));
-    document.body.appendChild(ui);
     page = /** @type {!SettingsSafetyCheckPasswordsChildElement} */ (
         document.createElement('settings-safety-check-passwords-child'));
     document.body.appendChild(page);
@@ -532,12 +528,6 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
     const passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.instance_ = passwordManager;
 
-    // Put some search term into the Settings search.
-    const toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-    const searchField =
-        /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
-    searchField.setValue('GOOG');
-
     // User clicks the manage passwords button.
     page.$$('#safetyCheckChild').$$('#button').click();
     // Ensure UMA is logged.
@@ -551,8 +541,6 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
     // Ensure the correct Settings page is shown.
     assertEquals(
         routes.CHECK_PASSWORDS, Router.getInstance().getCurrentRoute());
-    // Ensure the search term got cleared.
-    assertEquals('', searchField.getSearchInput().value);
 
     // Ensure correct referrer sent to password check.
     const referrer =
@@ -592,19 +580,15 @@ suite('SafetyCheckPasswordsChildUiTests', function() {
 suite('SafetyCheckSafeBrowsingChildUiTests', function() {
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
+
   /** @type {!SettingsSafetyCheckSafeBrowsingChildElement} */
   let page;
-  /** @type {!SettingsUiElement} */
-  let ui;
 
   setup(function() {
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
     document.body.innerHTML = '';
-    ui = /** @type {!SettingsUiElement} */ (
-        document.createElement('settings-ui'));
-    document.body.appendChild(ui);
     page = /** @type {!SettingsSafetyCheckSafeBrowsingChildElement} */ (
         document.createElement('settings-safety-check-safe-browsing-child'));
     document.body.appendChild(page);
@@ -659,12 +643,6 @@ suite('SafetyCheckSafeBrowsingChildUiTests', function() {
       buttonClass: 'action-button',
     });
 
-    // Put some search term into the Settings search.
-    const toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-    const searchField =
-        /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
-    searchField.setValue('GOOG');
-
     // User clicks the manage safe browsing button.
     page.$$('#safetyCheckChild').$$('#button').click();
     // Ensure UMA is logged.
@@ -677,8 +655,6 @@ suite('SafetyCheckSafeBrowsingChildUiTests', function() {
         await metricsBrowserProxy.whenCalled('recordAction'));
     // Ensure the correct Settings page is shown.
     assertEquals(routes.SECURITY, Router.getInstance().getCurrentRoute());
-    // Ensure the search term got cleared.
-    assertEquals('', searchField.getSearchInput().value);
   });
 
   test('safeBrowsingDisabledByAdminUiTest', function() {

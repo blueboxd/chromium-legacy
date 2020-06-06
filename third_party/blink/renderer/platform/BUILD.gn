@@ -1396,6 +1396,7 @@ jumbo_component("platform") {
     "text/web_entities.cc",
     "text/web_entities.h",
     "text/win/hyphenation_win.cc",
+    "text/writing_direction_mode.h",
     "text/writing_mode.h",
     "text/writing_mode_utils.h",
     "timer.cc",

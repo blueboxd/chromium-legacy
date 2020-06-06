@@ -66,6 +66,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
+#include "content/common/state_transitions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1203,13 +1204,12 @@ NavigationRequest::~NavigationRequest() {
 }
 
 void NavigationRequest::BeginNavigation() {
-  DCHECK(state_ == NOT_STARTED || state_ == WAITING_FOR_RENDERER_RESPONSE);
   EnterChildTraceEvent("BeginNavigation", this);
   DCHECK(!loader_);
   DCHECK(!render_frame_host_);
   ScopedNavigationRequestCrashKeys crash_keys(this);
 
-  state_ = WILL_START_NAVIGATION;
+  SetState(WILL_START_NAVIGATION);
 
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
@@ -1339,8 +1339,7 @@ void NavigationRequest::BeginNavigation() {
 
 void NavigationRequest::SetWaitingForRendererResponse() {
   EnterChildTraceEvent("WaitingForRendererResponse", this);
-  DCHECK(state_ == NOT_STARTED);
-  state_ = WAITING_FOR_RENDERER_RESPONSE;
+  SetState(WAITING_FOR_RENDERER_RESPONSE);
 }
 
 void NavigationRequest::StartNavigation(bool is_for_commit) {
@@ -1396,7 +1395,7 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   }
 
   DCHECK(!IsNavigationStarted());
-  state_ = WILL_START_REQUEST;
+  SetState(WILL_START_REQUEST);
   navigation_handle_id_ = CreateUniqueHandleID();
 
   modified_request_headers_.Clear();
@@ -1462,7 +1461,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
 
   // Reset the state of the NavigationRequest, and the navigation_handle_id.
   StopCommitTimeout();
-  state_ = NOT_STARTED;
+  SetState(NOT_STARTED);
   processing_navigation_throttle_ = false;
   navigation_handle_id_ = 0;
 
@@ -1976,7 +1975,7 @@ void NavigationRequest::OnResponseStarted(
   DCHECK(response_head);
   DCHECK(response_head->parsed_headers);
   EnterChildTraceEvent("OnResponseStarted", this);
-  state_ = WILL_PROCESS_RESPONSE;
+  SetState(WILL_PROCESS_RESPONSE);
   response_head_ = std::move(response_head);
   response_body_ = std::move(response_body);
   ssl_info_ = response_head_->ssl_info;
@@ -2383,10 +2382,7 @@ void NavigationRequest::OnRequestFailedInternal(
     bool skip_throttles,
     const base::Optional<std::string>& error_page_content,
     bool collapse_frame) {
-  DCHECK(state_ == WILL_START_NAVIGATION || state_ == WILL_START_REQUEST ||
-         state_ == WILL_REDIRECT_REQUEST || state_ == WILL_PROCESS_RESPONSE ||
-         state_ == DID_COMMIT || state_ == CANCELING ||
-         state_ == WILL_FAIL_REQUEST);
+  CheckStateTransition(WILL_FAIL_REQUEST);
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
   ScopedNavigationRequestCrashKeys crash_keys(this);
@@ -2404,7 +2400,7 @@ void NavigationRequest::OnRequestFailedInternal(
   // TODO(https://crbug.com/757633): Check that ssl_info.has_value() if
   // net_error is a certificate error.
   EnterChildTraceEvent("OnRequestFailed", this, "error", status.error_code);
-  state_ = WILL_FAIL_REQUEST;
+  SetState(WILL_FAIL_REQUEST);
   processing_navigation_throttle_ = false;
 
   // Ensure the pending entry also gets discarded if it has no other active
@@ -3526,7 +3522,7 @@ void NavigationRequest::OnWillStartRequestProcessed(
   DCHECK(processing_navigation_throttle_);
   processing_navigation_throttle_ = false;
   if (result.action() != NavigationThrottle::PROCEED)
-    state_ = CANCELING;
+    SetState(CANCELING);
 
   if (complete_callback_for_testing_ &&
       std::move(complete_callback_for_testing_).Run(result)) {
@@ -3554,7 +3550,7 @@ void NavigationRequest::OnWillRedirectRequestProcessed(
       GetDelegate()->DidRedirectNavigation(this);
     }
   } else {
-    state_ = CANCELING;
+    SetState(CANCELING);
   }
 
   if (complete_callback_for_testing_ &&
@@ -3577,7 +3573,7 @@ void NavigationRequest::OnWillFailRequestProcessed(
     result = NavigationThrottle::ThrottleCheckResult(
         NavigationThrottle::PROCEED, net_error_);
   } else {
-    state_ = CANCELING;
+    SetState(CANCELING);
   }
 
   if (complete_callback_for_testing_ &&
@@ -3604,7 +3600,7 @@ void NavigationRequest::OnWillProcessResponseProcessed(
     if (render_frame_host_)
       ReadyToCommitNavigation(false);
   } else {
-    state_ = CANCELING;
+    SetState(CANCELING);
   }
 
   if (complete_callback_for_testing_ &&
@@ -3672,7 +3668,7 @@ void NavigationRequest::CancelDeferredNavigationInternal(
 
   EnterChildTraceEvent("CancelDeferredNavigation", this);
   NavigationState old_state = state_;
-  state_ = CANCELING;
+  SetState(CANCELING);
   if (complete_callback_for_testing_ &&
       std::move(complete_callback_for_testing_).Run(result)) {
     return;
@@ -3703,7 +3699,7 @@ void NavigationRequest::WillStartRequest() {
   DCHECK_EQ(state_, WILL_START_REQUEST);
 
   if (IsSelfReferentialURL()) {
-    state_ = CANCELING;
+    SetState(CANCELING);
     if (complete_callback_for_testing_ &&
         std::move(complete_callback_for_testing_)
             .Run(NavigationThrottle::CANCEL)) {
@@ -3742,7 +3738,7 @@ void NavigationRequest::WillRedirectRequest(
   UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
-    state_ = CANCELING;
+    SetState(CANCELING);
     if (complete_callback_for_testing_ &&
         std::move(complete_callback_for_testing_)
             .Run(NavigationThrottle::CANCEL)) {
@@ -3765,7 +3761,7 @@ void NavigationRequest::WillRedirectRequest(
 void NavigationRequest::WillFailRequest() {
   EnterChildTraceEvent("WillFailRequest", this);
 
-  state_ = WILL_FAIL_REQUEST;
+  SetState(WILL_FAIL_REQUEST);
   processing_navigation_throttle_ = true;
 
   // Notify each throttle of the request.
@@ -3836,10 +3832,10 @@ void NavigationRequest::DidCommitNavigation(
   if (params.base_url.spec() == kUnreachableWebDataURL ||
       net_error_ != net::OK) {
     EnterChildTraceEvent("DidCommitNavigation: error page", this);
-    state_ = DID_COMMIT_ERROR_PAGE;
+    SetState(DID_COMMIT_ERROR_PAGE);
   } else {
     EnterChildTraceEvent("DidCommitNavigation", this);
-    state_ = DID_COMMIT;
+    SetState(DID_COMMIT);
   }
 
   StopCommitTimeout();
@@ -3918,7 +3914,7 @@ void NavigationRequest::UpdateStateFollowingRedirect(
   was_redirected_ = true;
   redirect_chain_.push_back(common_params_->url);
 
-  state_ = WILL_REDIRECT_REQUEST;
+  SetState(WILL_REDIRECT_REQUEST);
   processing_navigation_throttle_ = true;
 
 #if defined(OS_ANDROID)
@@ -3952,7 +3948,7 @@ bool NavigationRequest::NeedsUrlLoader() {
 void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   EnterChildTraceEvent("ReadyToCommitNavigation", this);
 
-  state_ = READY_TO_COMMIT;
+  SetState(READY_TO_COMMIT);
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
 
@@ -4630,6 +4626,48 @@ NavigationRequest::ComputeSandboxFlagsToCommit() {
 
 CrossOriginOpenerPolicyStatus& NavigationRequest::coop_status() {
   return coop_status_;
+}
+
+#if 0 && DCHECK_IS_ON()
+// The DCHECK needs to be able to output values when it triggers.
+std::ostream& operator<<(std::ostream& o,
+                         const NavigationRequest::NavigationState& s) {
+  return o << static_cast<int>(s);
+}
+#endif  // DCHECK_IS_ON()
+
+void NavigationRequest::CheckStateTransition(NavigationState state) const {
+#if DCHECK_IS_ON()
+  static const base::NoDestructor<StateTransitions<NavigationState>>
+      transitions(StateTransitions<NavigationState>({
+          // See
+          // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.svg
+          {NOT_STARTED,
+           {WAITING_FOR_RENDERER_RESPONSE, WILL_START_NAVIGATION,
+            WILL_START_REQUEST}},
+          {WAITING_FOR_RENDERER_RESPONSE, {WILL_START_NAVIGATION}},
+          {WILL_START_NAVIGATION, {WILL_START_REQUEST, WILL_FAIL_REQUEST}},
+          {WILL_START_REQUEST,
+           {WILL_REDIRECT_REQUEST, WILL_PROCESS_RESPONSE, READY_TO_COMMIT,
+            DID_COMMIT, CANCELING, WILL_FAIL_REQUEST, DID_COMMIT_ERROR_PAGE}},
+          {WILL_REDIRECT_REQUEST,
+           {WILL_REDIRECT_REQUEST, WILL_PROCESS_RESPONSE, CANCELING,
+            WILL_FAIL_REQUEST}},
+          {WILL_PROCESS_RESPONSE,
+           {READY_TO_COMMIT, CANCELING, WILL_FAIL_REQUEST}},
+          {READY_TO_COMMIT, {NOT_STARTED, DID_COMMIT, DID_COMMIT_ERROR_PAGE}},
+          {DID_COMMIT, {}},
+          {CANCELING, {READY_TO_COMMIT, WILL_FAIL_REQUEST}},
+          {WILL_FAIL_REQUEST, {READY_TO_COMMIT, CANCELING, WILL_FAIL_REQUEST}},
+          {DID_COMMIT_ERROR_PAGE, {}},
+      }));
+  DCHECK_STATE_TRANSITION(transitions, state_, state);
+#endif  // DCHECK_IS_ON()
+}
+
+void NavigationRequest::SetState(NavigationState state) {
+  CheckStateTransition(state);
+  state_ = state;
 }
 
 }  // namespace content

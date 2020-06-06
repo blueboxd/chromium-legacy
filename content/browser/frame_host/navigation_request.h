@@ -109,6 +109,9 @@ class CONTENT_EXPORT NavigationRequest
       private network::mojom::CookieAccessObserver {
  public:
   // Keeps track of the various stages of a NavigationRequest.
+  // To see what state transitions are allowed, see |SetState|.
+  // See
+  // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.svg
   enum NavigationState {
     // Initial state.
     NOT_STARTED = 0,
@@ -1008,6 +1011,14 @@ class CONTENT_EXPORT NavigationRequest
   // Compute the sandbox policy of the document to be loaded. Called once when
   // reaching the 'ReadyToCommit' stage.
   network::mojom::WebSandboxFlags ComputeSandboxFlagsToCommit();
+
+  // DCHECK that tranistioning from the current state to |state| valid. This
+  // does nothing in non-debug builds.
+  void CheckStateTransition(NavigationState state) const;
+
+  // Set |state_| to |state| and also DCHECK that this state transition is
+  // valid.
+  void SetState(NavigationState state);
 
   FrameTreeNode* const frame_tree_node_;
 

@@ -1446,12 +1446,10 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-contr
   display: none;
 }
 
-@media (-webkit-min-device-pixel-ratio: 2) {
-  video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
-    background:
-      -webkit-image-set(url('default_200_percent/vr_gradient_bg.png') 1x)
-      repeat-x bottom left auto 198px;
-  }
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-panel" i] {
+  background:
+    -webkit-image-set(url('default_200_percent/vr_gradient_bg.png') 1x)
+    repeat-x bottom left auto 198px;
 }
 
 /**

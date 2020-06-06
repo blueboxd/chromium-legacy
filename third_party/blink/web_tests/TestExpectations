@@ -6745,3 +6745,4 @@ crbug.com/1091829 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/s
 crbug.com/1091885 fast/peerconnection/RTCPeerConnection-iframe-gc.html [ Pass Failure ]
 crbug.com/1091250 [ Win10 ] virtual/cors/http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
 crbug.com/1091948 [ Linux ] external/wpt/html/canvas/element/manual/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Pass Timeout ]
+crbug.com/1092091 [ Mac ] virtual/dark-color-scheme/datetimelocal-picker/datetimelocal-open.html [ Pass Failure ]

@@ -1312,13 +1312,19 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
       PumpPendingSpeculations();
     }
     return;
+  } else if (!tokenizer_) {
+    // Attempted fix for test_installer failures. Appears that
+    // HTMLDocumentParser::ExecuteScriptsWaitingForResources is queued from a
+    // callback tasks, which calls this, possibly after Detach.
+    DCHECK(!token_);
+    token_ = std::make_unique<HTMLToken>();
+    tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
   }
 
   insertion_preload_scanner_.reset();
   task_runner_state_->SetEndIfDelayed(true);
   if (task_runner_state_->GetMode() !=
-          ParserSynchronizationPolicy::kAllowDeferredParsing ||
-      task_runner_state_->ShouldComplete()) {
+      ParserSynchronizationPolicy::kAllowDeferredParsing) {
     PumpTokenizerIfPossible();
   } else {
     DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());

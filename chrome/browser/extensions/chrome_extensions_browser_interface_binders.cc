@@ -17,8 +17,11 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
+#include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/chromeos_camera/camera_app_helper_impl.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -127,6 +130,14 @@ void ConnectToCameraAppHelper(
   mojo::MakeSelfOwnedReceiver(std::move(camera_app_helper),
                               std::move(receiver));
 }
+
+void BindTtsStream(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<chromeos::tts::mojom::TtsStream> receiver) {
+  TtsEngineExtensionObserver::GetInstance(
+      Profile::FromBrowserContext(render_frame_host->GetBrowserContext()))
+      ->BindTtsStream(std::move(receiver));
+}
 #endif
 }  // namespace
 
@@ -179,6 +190,11 @@ void PopulateChromeFrameBindersForExtension(
         base::BindRepeating(&ConnectToCameraAppDeviceProvider));
     binder_map->Add<chromeos_camera::mojom::CameraAppHelper>(
         base::BindRepeating(&ConnectToCameraAppHelper));
+  }
+
+  if (extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId) {
+    binder_map->Add<chromeos::tts::mojom::TtsStream>(
+        base::BindRepeating(&BindTtsStream));
   }
 #endif
 }

@@ -44,14 +44,15 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   scoped_refptr<const NGLayoutResult> Layout(
       const NGConstraintSpace&,
       const NGBreakToken*,
-      NGInlineChildLayoutContext* context);
+      NGInlineChildLayoutContext* context) const;
 
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
   // opportunity, and max-content is when lines do not wrap at all.
-  MinMaxSizesResult ComputeMinMaxSizes(WritingMode container_writing_mode,
-                                       const MinMaxSizesInput&,
-                                       const NGConstraintSpace* = nullptr);
+  MinMaxSizesResult ComputeMinMaxSizes(
+      WritingMode container_writing_mode,
+      const MinMaxSizesInput&,
+      const NGConstraintSpace* = nullptr) const;
 
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayoutForTest() {
@@ -98,7 +99,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // Returns the DOM to text content offset mapping of this block. If it is not
   // computed before, compute and store it in NGInlineNodeData.
   // This funciton must be called with clean layout.
-  const NGOffsetMapping* ComputeOffsetMappingIfNeeded();
+  const NGOffsetMapping* ComputeOffsetMappingIfNeeded() const;
 
   // Get |NGOffsetMapping| for the |layout_block_flow|. |layout_block_flow|
   // should be laid out. This function works for both new and legacy layout.
@@ -141,22 +142,22 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
-  void PrepareLayoutIfNeeded();
-  void PrepareLayout(std::unique_ptr<NGInlineNodeData> previous_data);
+  void PrepareLayoutIfNeeded() const;
+  void PrepareLayout(std::unique_ptr<NGInlineNodeData> previous_data) const;
 
   void CollectInlines(NGInlineNodeData*,
-                      NGInlineNodeData* previous_data = nullptr);
-  void SegmentText(NGInlineNodeData*);
-  void SegmentScriptRuns(NGInlineNodeData*);
-  void SegmentFontOrientation(NGInlineNodeData*);
-  void SegmentBidiRuns(NGInlineNodeData*);
+                      NGInlineNodeData* previous_data = nullptr) const;
+  void SegmentText(NGInlineNodeData*) const;
+  void SegmentScriptRuns(NGInlineNodeData*) const;
+  void SegmentFontOrientation(NGInlineNodeData*) const;
+  void SegmentBidiRuns(NGInlineNodeData*) const;
   void ShapeText(NGInlineItemsData*,
                  const String* previous_text = nullptr,
-                 const Vector<NGInlineItem>* previous_items = nullptr);
-  void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
-  void AssociateItemsWithInlines(NGInlineNodeData*);
+                 const Vector<NGInlineItem>* previous_items = nullptr) const;
+  void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*) const;
+  void AssociateItemsWithInlines(NGInlineNodeData*) const;
 
-  NGInlineNodeData* MutableData() {
+  NGInlineNodeData* MutableData() const {
     return To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& Data() const {
@@ -169,7 +170,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
     DCHECK(IsPrepareLayoutFinished());
     return *To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
   }
-  const NGInlineNodeData& EnsureData();
+  const NGInlineNodeData& EnsureData() const;
 
   static void ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
                                    NGInlineNodeData* data);

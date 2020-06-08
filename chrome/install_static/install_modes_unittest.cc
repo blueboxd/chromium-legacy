@@ -27,7 +27,7 @@ namespace install_static {
 namespace {
 
 // A matcher that returns true if |arg| contains a character that is neither
-// alpha-numeric nor a period.
+// alphanumeric nor a period.
 MATCHER(ContainsIllegalProgIdChar, "") {
   const wchar_t* scan = arg;
   wint_t c;
@@ -66,8 +66,9 @@ TEST(InstallModes, VerifyModes) {
     else
       ASSERT_THAT(mode.logo_suffix, StrNe(L""));
 
-    // The modes must have an appguid if Google Update integration is supported.
 #if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+    // The modes must have an appguid if Google Update integration is
+    // supported.
     ASSERT_THAT(mode.app_guid, StrNe(L""));
 #else
     ASSERT_THAT(mode.app_guid, StrEq(L""));

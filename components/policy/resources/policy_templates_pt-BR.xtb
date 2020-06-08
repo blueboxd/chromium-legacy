@@ -1395,17 +1395,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Se esta política não for definida ou o valor depois da substituição não for um nome de host válido, nenhum nome de host será definido na solicitação de DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Permite que o <ph name="PRODUCT_NAME" /> carregue políticas experimentais.
-
-        ALERTA: políticas experimentais não são compatíveis e podem ser modificadas ou removidas sem aviso em uma versão futura do navegador.
-
-        Uma política experimental pode não ter sido concluída ou pode ainda ter defeitos conhecidos ou desconhecidos. Ela pode ser modificada ou até removida sem aviso. Ao ativar políticas experimentais, você pode perder dados do navegador ou comprometer sua segurança ou privacidade.
-
-        Se uma política não estiver na lista e não tiver sido lançada oficialmente, o valor dela será ignorado nas versões Beta e Stable do Chrome.
-
-        Se uma política estiver na lista, mas não tiver sido lançada oficialmente, o valor dela será aplicado.
-
-        Esta política não afeta políticas já lançadas.</translation>
 <translation id="3066446511111537292">Permite que usuários afiliados deste dispositivo usem sideload com adb</translation>
 <translation id="3069958900488014740">Permite desativar a otimização da descoberta automática de proxies da Web (WPAD, na sigla em inglês) no <ph name="PRODUCT_NAME" />.
 

@@ -43,10 +43,8 @@ ThermalStateObserverMac::ThermalStateObserverMac(
     state = NSProcessInfoThermalStateToDeviceThermalState(nsinfo_state);
     if (state_for_testing_ != PowerObserver::DeviceThermalState::kUnknown)
       state = state_for_testing_;
-#if DCHECK_IS_ON()
     DVLOG(1) << __func__ << ": "
              << PowerMonitorSource::DeviceThermalStateToString(state);
-#endif
     state_update_callback.Run(state);
   };
 

@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame_owner.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -103,7 +104,7 @@ LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
 
   // Do not lazyload image elements when JavaScript is disabled, regardless of
   // the `loading` attribute.
-  if (!frame.GetDocument()->CanExecuteScripts(kNotAboutToExecuteScript))
+  if (!frame.DomWindow()->CanExecuteScripts(kNotAboutToExecuteScript))
     return LazyImageHelper::Eligibility::kDisabled;
 
   const auto lazy_load_image_setting = frame.GetLazyLoadImageSetting();

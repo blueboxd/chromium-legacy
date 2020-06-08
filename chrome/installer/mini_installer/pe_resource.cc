@@ -7,8 +7,7 @@
 #include <algorithm>
 
 PEResource::PEResource(HRSRC resource, HMODULE module)
-    : resource_(resource), module_(module) {
-}
+    : resource_(resource), module_(module) {}
 
 PEResource::PEResource(const wchar_t* name, const wchar_t* type, HMODULE module)
     : resource_(nullptr), module_(module) {

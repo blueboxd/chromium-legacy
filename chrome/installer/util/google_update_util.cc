@@ -38,7 +38,7 @@ bool LaunchProcessAndWaitWithTimeout(const base::string16& cmd_string,
     PLOG(ERROR) << "Failed to launch (" << cmd_string << ")";
   } else if (!process.WaitForExitWithTimeout(timeout, &exit_code)) {
     // The GetExitCodeProcess failed or timed-out.
-    LOG(ERROR) <<"Command (" << cmd_string << ") is taking more than "
+    LOG(ERROR) << "Command (" << cmd_string << ") is taking more than "
                << timeout.InMilliseconds() << " milliseconds to complete.";
   } else if (exit_code != 0) {
     LOG(ERROR) << "Command (" << cmd_string << ") exited with code "
@@ -58,8 +58,8 @@ bool UninstallGoogleUpdate(bool system_install) {
   if (cmd_string.empty()) {
     success = true;  // Nothing to; vacuous success.
   } else {
-    success = LaunchProcessAndWaitWithTimeout(cmd_string,
-        base::TimeDelta::FromMilliseconds(kGoogleUpdateTimeoutMs));
+    success = LaunchProcessAndWaitWithTimeout(
+        cmd_string, base::TimeDelta::FromMilliseconds(kGoogleUpdateTimeoutMs));
   }
   return success;
 }

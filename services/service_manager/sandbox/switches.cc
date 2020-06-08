@@ -40,6 +40,7 @@ const char kXrCompositingSandbox[] = "xr_compositing";
 
 #if defined(OS_CHROMEOS)
 const char kImeSandbox[] = "ime";
+const char kTtsSandbox[] = "tts";
 #endif  // OS_CHROMEOS
 
 // Flags owned by the service manager sandbox.

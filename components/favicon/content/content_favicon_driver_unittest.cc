@@ -81,7 +81,7 @@ class ContentFaviconDriverTest : public content::RenderViewHostTestHarness {
         ContentFaviconDriver::FromWebContents(web_contents());
     web_contents_tester()->NavigateAndCommit(page_url);
     static_cast<content::WebContentsObserver*>(favicon_driver)
-        ->DidUpdateFaviconURL(candidates);
+        ->DidUpdateFaviconURL(web_contents()->GetMainFrame(), candidates);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -113,7 +113,7 @@ TEST_F(ContentFaviconDriverTest, ShouldNotCauseImageDownload) {
   favicon_urls.push_back(blink::mojom::FaviconURL::New(
       kIconURL, blink::mojom::FaviconIconType::kFavicon, kEmptyIconSizes));
   static_cast<content::WebContentsObserver*>(favicon_driver)
-      ->DidUpdateFaviconURL(favicon_urls);
+      ->DidUpdateFaviconURL(web_contents()->GetMainFrame(), favicon_urls);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(web_contents_tester()->HasPendingDownloadImage(kIconURL));
@@ -164,8 +164,8 @@ TEST_F(ContentFaviconDriverTest, FaviconUpdateNoLastCommittedEntry) {
       blink::mojom::FaviconIconType::kFavicon, kEmptyIconSizes));
   favicon::ContentFaviconDriver* driver =
       favicon::ContentFaviconDriver::FromWebContents(web_contents());
-  static_cast<content::WebContentsObserver*>(driver)
-      ->DidUpdateFaviconURL(favicon_urls);
+  static_cast<content::WebContentsObserver*>(driver)->DidUpdateFaviconURL(
+      web_contents()->GetMainFrame(), favicon_urls);
 
   // Test that ContentFaviconDriver ignored the favicon url update.
   EXPECT_TRUE(driver->favicon_urls().empty());

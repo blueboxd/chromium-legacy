@@ -15,10 +15,7 @@ class FilePath;
 
 namespace upgrade_test {
 
-enum Direction {
-  PREVIOUS_VERSION,
-  NEXT_VERSION
-};
+enum Direction { PREVIOUS_VERSION, NEXT_VERSION };
 
 // Generates an alternate mini_installer.exe using the one indicated by
 // |original_installer_path|, giving the new one a lower or higher version than

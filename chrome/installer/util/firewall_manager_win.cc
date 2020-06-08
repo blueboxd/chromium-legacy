@@ -41,9 +41,7 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
                                kDefaultMdnsPort);
   }
 
-  void RemoveFirewallRules() override {
-    manager_.DeleteAllRules();
-  }
+  void RemoveFirewallRules() override { manager_.DeleteAllRules(); }
 
  private:
   static base::string16 GetMdnsRuleName() {
@@ -74,7 +72,6 @@ std::unique_ptr<FirewallManager> FirewallManager::Create(
   return nullptr;
 }
 
-FirewallManager::FirewallManager() {
-}
+FirewallManager::FirewallManager() {}
 
 }  // namespace installer

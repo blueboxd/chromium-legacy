@@ -1072,7 +1072,9 @@ suite('PasswordsSection', function() {
       assertTrue(bg.includes(iconDataUrl));
     });
 
-    test('enablingSyncHidesAccountStorageOptInButtons', function() {
+    // Test verifies that enabling sync hides the buttons for account storage
+    // opt-in/out and the 'device passwords' page.
+    test('enablingSyncHidesAccountStorageButtons', function() {
       // Feature flag enabled.
       loadTimeData.overrideValues({enableAccountStorage: true});
 
@@ -1095,6 +1097,54 @@ suite('PasswordsSection', function() {
       simulateSyncStatus({signedIn: true});
       assertFalse(
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
+    });
+
+    // Test verifies that the button linking to the 'device passwords' page is
+    // only visible when there is at least one device password, and that it has
+    // the appropriate text.
+    test('verifyDevicePasswordsButtonVisibility', function() {
+      // Set up user eligible to passwords account storage, not opted in and
+      // with no device passwords. Button should be hidden.
+      loadTimeData.overrideValues({enableAccountStorage: true});
+      const passwordList =
+          [createPasswordEntry({fromAccountStore: true, id: 10})];
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, passwordList, []);
+      simulateSyncStatus({signedIn: false});
+      simulateStoredAccounts([{
+        fullName: 'john doe',
+        givenName: 'john',
+        email: 'john@gmail.com',
+      }]);
+      assertTrue(passwordsSection.$.devicePasswordsLink.hidden);
+
+      // Opting in still doesn't display it because the user has no device
+      // passwords yet.
+      passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+      assertTrue(passwordsSection.$.devicePasswordsLink.hidden);
+
+      // Add a device password. The button shows up, with the text in singular
+      // form.
+      passwordList.unshift(
+          createPasswordEntry({fromAccountStore: false, id: 20}));
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
+      flush();
+      assertFalse(passwordsSection.$.devicePasswordsLink.hidden);
+      assertEquals(
+          passwordsSection.i18n('devicePasswordsLinkLabelSingular'),
+          passwordsSection.$.devicePasswordsLinkLabel.innerText);
+
+      // Add a second device password. The text nows says '2 passwords'.
+      passwordList.unshift(
+          createPasswordEntry({fromAccountStore: false, id: 30}));
+      passwordManager.lastCallback.addSavedPasswordListChangedListener(
+          passwordList);
+      flush();
+      assertFalse(passwordsSection.$.devicePasswordsLink.hidden);
+      assertEquals(
+          passwordsSection.i18n('devicePasswordsLinkLabelPlural', 2),
+          passwordsSection.$.devicePasswordsLinkLabel.innerText);
     });
 
     // Test verifies that the notification displayed after removing a password

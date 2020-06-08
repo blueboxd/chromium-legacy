@@ -101,7 +101,7 @@ TEST(InstallStaticTest, GetSwitchValueFromCommandLineTest) {
   value = GetSwitchValueFromCommandLine(L"\"blah --type=\t\t\t", L"type");
   EXPECT_TRUE(value.empty());
 
-  // Anything following "--" should be considered args and therfore ignored.
+  // Anything following "--" should be considered args and therefore ignored.
   value = GetSwitchValueFromCommandLine(L"blah -- --type=bleh", L"type");
   EXPECT_TRUE(value.empty());
 }
@@ -171,8 +171,8 @@ TEST(InstallStaticTest, SpacesAndQuotesInCommandLineArguments) {
   EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
   EXPECT_EQ(L"--stuff=d:\\stuff and things", tokenized[1]);
 
-  tokenized = TokenizeCommandLineToArray(
-      L"\"C:\\with space\\b.exe\" \\\\\\\"\"");
+  tokenized =
+      TokenizeCommandLineToArray(L"\"C:\\with space\\b.exe\" \\\\\\\"\"");
   ASSERT_EQ(2u, tokenized.size());
   EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
   EXPECT_EQ(L"\\\"", tokenized[1]);
@@ -199,14 +199,12 @@ TEST(InstallStaticTest, SpacesAndQuotesOldNewThing) {
   EXPECT_EQ(L"program.exe", tokenized[0]);
   EXPECT_EQ(L"C:\\Hello there.txt", tokenized[1]);
 
-  tokenized =
-      TokenizeCommandLineToArray(L"program.exe \"hello\\\"there\"");
+  tokenized = TokenizeCommandLineToArray(L"program.exe \"hello\\\"there\"");
   ASSERT_EQ(2u, tokenized.size());
   EXPECT_EQ(L"program.exe", tokenized[0]);
   EXPECT_EQ(L"hello\"there", tokenized[1]);
 
-  tokenized =
-      TokenizeCommandLineToArray(L"program.exe \"hello\\\\\"");
+  tokenized = TokenizeCommandLineToArray(L"program.exe \"hello\\\\\"");
   ASSERT_EQ(2u, tokenized.size());
   EXPECT_EQ(L"program.exe", tokenized[0]);
   EXPECT_EQ(L"hello\\", tokenized[1]);
@@ -366,7 +364,9 @@ TEST_P(InstallStaticUtilTest, GetChromeInstallSubDirectory) {
   // The directory strings for the brand's install modes; parallel to
   // kInstallModes.
   static constexpr const wchar_t* kInstallDirs[] = {
-      L"Google\\Chrome", L"Google\\Chrome Beta", L"Google\\Chrome Dev",
+      L"Google\\Chrome",
+      L"Google\\Chrome Beta",
+      L"Google\\Chrome Dev",
       L"Google\\Chrome SxS",
   };
 #else
@@ -387,8 +387,10 @@ TEST_P(InstallStaticUtilTest, GetRegistryPath) {
   // The registry path strings for the brand's install modes; parallel to
   // kInstallModes.
   static constexpr const wchar_t* kRegistryPaths[] = {
-      L"Software\\Google\\Chrome", L"Software\\Google\\Chrome Beta",
-      L"Software\\Google\\Chrome Dev", L"Software\\Google\\Chrome SxS",
+      L"Software\\Google\\Chrome",
+      L"Software\\Google\\Chrome Beta",
+      L"Software\\Google\\Chrome Dev",
+      L"Software\\Google\\Chrome SxS",
   };
 #else
   // The registry path strings for the brand's install modes; parallel to
@@ -454,7 +456,10 @@ TEST_P(InstallStaticUtilTest, GetBaseAppId) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // The base app ids for the brand's install modes; parallel to kInstallModes.
   static constexpr const wchar_t* kBaseAppIds[] = {
-      L"Chrome", L"ChromeBeta", L"ChromeDev", L"ChromeCanary",
+      L"Chrome",
+      L"ChromeBeta",
+      L"ChromeDev",
+      L"ChromeCanary",
   };
 #else
   // The base app ids for the brand's install modes; parallel to kInstallModes.

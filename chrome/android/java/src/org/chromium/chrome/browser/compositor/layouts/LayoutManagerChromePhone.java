@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
@@ -42,6 +43,7 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     @Override
     public void init(TabModelSelector selector, TabCreatorManager creator,
             TabContentManager content, ViewGroup androidContentContainer,
+            ControlContainer controlContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         Context context = mHost.getContext();
@@ -53,8 +55,8 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(false);
 
-        super.init(selector, creator, content, androidContentContainer, contextualSearchDelegate,
-                dynamicResourceLoader);
+        super.init(selector, creator, content, androidContentContainer, controlContainer,
+                contextualSearchDelegate, dynamicResourceLoader);
 
         mToolbarSwipeLayout.setMovesToolbar(true);
 

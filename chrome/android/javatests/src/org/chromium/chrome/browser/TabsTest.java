@@ -1587,9 +1587,9 @@ public class TabsTest {
         final long duration = 500;
 
         View toolbarRoot = mActivityTestRule.getActivity()
-                                   .getFullscreenManager()
-                                   .getControlContainer()
-                                   .getView();
+                                   .getRootUiCoordinatorForTesting()
+                                   .getToolbarManager()
+                                   .getContainerViewForTesting();
         TouchCommon.performDrag(toolbarRoot, fromX, toX, y, y, stepCount, duration);
     }
 

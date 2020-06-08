@@ -46,6 +46,9 @@ PAYLOAD_OFFSET = PAYLOAD_LENGTH_OFFSET + PAYLOAD_LENGTH_SIZE
 VERSION2 = "\x02"
 VERSION3 = "\x03"
 
+# Only empty string and "subset" are supported in alternative usage restriction.
+USAGE_RESTRICTION = ["", "subset"]
+
 # Chrome public key, used by default to validate signatures
 #  - Copied from chrome/common/origin_trials/chrome_origin_trial_policy.cc
 CHROME_PUBLIC_KEY = [
@@ -212,7 +215,18 @@ def main():
   is_subdomain = token_data.get("isSubdomain")
   is_third_party = token_data.get("isThirdParty")
   if (is_third_party is not None and version != VERSION3):
-    print("isThirdParty flag can only be be set in Version 3 token.")
+    print("The isThirdParty field can only be be set in Version 3 token.")
+    sys.exit(1)
+
+  usage_restriction = token_data.get("usage")
+  if (usage_restriction is not None and version != VERSION3):
+    print("The usage field can only be be set in Version 3 token.")
+    sys.exit(1)
+  if (usage_restriction is not None and not is_third_party):
+    print("Only third party token supports alternative usage restriction.")
+    sys.exit(1)
+  if (usage_restriction not in USAGE_RESTRICTION):
+    print("Only empty string and \"subset\" are supported in the usage field.")
     sys.exit(1)
 
   # Output the token details
@@ -222,6 +236,7 @@ def main():
   print(" Is Subdomain: %s" % is_subdomain)
   if (version == VERSION3):
     print(" Is Third Party: %s" % is_third_party)
+    print(" Usage Restriction: %s" % usage_restriction)
   print(" Feature: %s" % trial_name)
   print(" Expiry: %d (%s UTC)" % (expiry, datetime.utcfromtimestamp(expiry)))
   print(" Signature: %s" % ", ".join('0x%02x' % ord(x) for x in signature))

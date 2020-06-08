@@ -460,6 +460,14 @@ class CORE_EXPORT NGConstraintSpace final {
     return HasRareData() && rare_data_->is_restricted_block_size_table_cell;
   }
 
+  // The amount of available space for block-start side annotation.
+  // For the first box, this is the padding-block-start value of the container.
+  // Otherwise, this comes from NGLayoutResult::BlockEndAnnotationSpace().
+  LayoutUnit BlockStartAnnotationSpace() const {
+    return HasRareData() ? rare_data_->BlockStartAnnotationSpace()
+                         : LayoutUnit();
+  }
+
   NGMarginStrut MarginStrut() const {
     return HasRareData() ? rare_data_->MarginStrut() : NGMarginStrut();
   }
@@ -676,6 +684,7 @@ class CORE_EXPORT NGConstraintSpace final {
         : percentage_resolution_size(other.percentage_resolution_size),
           replaced_percentage_resolution_block_size(
               other.replaced_percentage_resolution_block_size),
+          block_start_annotation_space(other.block_start_annotation_space),
           bfc_offset(other.bfc_offset),
           fragmentainer_block_size(other.fragmentainer_block_size),
           fragmentainer_offset_at_bfc(other.fragmentainer_offset_at_bfc),
@@ -782,6 +791,14 @@ class CORE_EXPORT NGConstraintSpace final {
 
       DCHECK_EQ(data_union_type, kStretchData);
       return stretch_data_.IsInitialForMaySkipLayout();
+    }
+
+    LayoutUnit BlockStartAnnotationSpace() const {
+      return block_start_annotation_space;
+    }
+
+    void SetBlockStartAnnotationSpace(LayoutUnit space) {
+      block_start_annotation_space = space;
     }
 
     NGMarginStrut MarginStrut() const {
@@ -903,6 +920,7 @@ class CORE_EXPORT NGConstraintSpace final {
 
     LogicalSize percentage_resolution_size;
     LayoutUnit replaced_percentage_resolution_block_size;
+    LayoutUnit block_start_annotation_space;
     NGBfcOffset bfc_offset;
 
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;

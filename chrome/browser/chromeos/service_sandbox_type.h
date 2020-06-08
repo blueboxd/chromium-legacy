@@ -23,12 +23,27 @@ class InputEngineManager;
 }  // namespace chromeos
 
 template <>
-content::SandboxType
+inline content::SandboxType
 content::GetServiceSandboxType<chromeos::ime::mojom::InputEngineManager>() {
   if (chromeos::features::IsImeSandboxEnabled())
     return content::SandboxType::kIme;
 
   return content::SandboxType::kUtility;
+}
+
+// chromeos::tts::mojom::TtsService
+namespace chromeos {
+namespace tts {
+namespace mojom {
+class TtsService;
+}  // namespace mojom
+}  // namespace tts
+}  // namespace chromeos
+
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<chromeos::tts::mojom::TtsService>() {
+  return content::SandboxType::kTts;
 }
 
 #endif  // CHROME_BROWSER_CHROMEOS_SERVICE_SANDBOX_TYPE_H_

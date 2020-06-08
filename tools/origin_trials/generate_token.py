@@ -10,6 +10,7 @@ usage: generate_token.py [-h] [--key-file KEY_FILE]
                           --expire-timestamp EXPIRE_TIMESTAMP]
                          [--is_subdomain | --no-subdomain]
                          [--is_third-party | --no-third-party]
+                         [--usage-restriction USAGE_RESTRICTION]
                          --version=VERSION
                          origin trial_name
 
@@ -40,6 +41,10 @@ DNS_LABEL_REGEX = re.compile(r"^(?!-)[a-z\d-]{1,63}(?<!-)$", re.IGNORECASE)
 
 # This script generates Version 2 and 3 tokens.
 VERSION = {"2": (2, "\x02"), "3": (3, "\x03")}
+
+# Only empty string and "subset" are currently supoprted in alternative usage
+# resetriction.
+USAGE_RESTRICTION = ["", "subset"]
 
 # Default key file, relative to script_dir.
 DEFAULT_KEY_FILE = 'eftest.key'
@@ -106,15 +111,17 @@ def ExpiryFromArgs(args):
 
 
 def GenerateTokenData(version, origin, is_subdomain, is_third_party,
-                      feature_name, expiry):
+                      usage_restriction, feature_name, expiry):
   data = {"origin": origin,
           "feature": feature_name,
           "expiry": expiry}
   if is_subdomain is not None:
     data["isSubdomain"] = is_subdomain
-  # Only version 3 token supports is_third_party flag.
+  # Only version 3 token supports fields: is_third_party, usage.
   if version == 3 and is_third_party is not None:
     data["isThirdParty"] = is_third_party
+  if version == 3 and usage_restriction is not None:
+    data["usage"] = usage_restriction
   return json.dumps(data).encode('utf-8')
 
 def GenerateDataToSign(version, data):
@@ -177,6 +184,11 @@ def main():
       action="store_false")
   parser.set_defaults(is_third_party=None)
 
+  parser.add_argument("--usage-restriction",
+                      help="Alternative token usage resctriction. This option "
+                      "is only available for token version 3. Currently only "
+                      "subset exclusion is supported.")
+
   expiry_group = parser.add_mutually_exclusive_group()
   expiry_group.add_argument("--expire-days",
                             help="Days from now when the token should expire",
@@ -209,9 +221,23 @@ def main():
     print("Only version 3 token supports is_third_party flag.")
     sys.exit(1)
 
+  if (args.usage_restriction is not None):
+    if (args.version[0] != 3):
+      print("Only version 3 token supports alternative usage restriction.")
+      sys.exit(1)
+    if (not args.is_third_party):
+      print("Only third party token supports alternative usage restriction.")
+      sys.exit(1)
+    if (args.usage_restriction not in USAGE_RESTRICTION):
+      print(
+          "Only empty string and \"subset\" are supported in alternative usage "
+          "restriction.")
+      sys.exit(1)
+
   token_data = GenerateTokenData(args.version[0], args.origin,
                                  args.is_subdomain, args.is_third_party,
-                                 args.trial_name, expiry)
+                                 args.usage_restriction, args.trial_name,
+                                 expiry)
   data_to_sign = GenerateDataToSign(args.version[1], token_data)
   signature = Sign(private_key, data_to_sign)
 
@@ -231,6 +257,7 @@ def main():
   print(" Is Subdomain: %s" % args.is_subdomain)
   if args.version[0] == 3:
     print(" Is Third Party: %s" % args.is_third_party)
+    print(" Usage Restriction: %s" % args.usage_restriction)
   print(" Feature: %s" % args.trial_name)
   print(" Expiry: %d (%s UTC)" % (expiry, datetime.utcfromtimestamp(expiry)))
   print(" Signature: %s" % ", ".join('0x%02x' % ord(x) for x in signature))

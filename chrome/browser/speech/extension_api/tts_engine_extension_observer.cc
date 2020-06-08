@@ -14,6 +14,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/browser/tts_controller.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
@@ -133,6 +134,14 @@ const std::set<std::string> TtsEngineExtensionObserver::GetTtsExtensions() {
   return engine_extension_ids_;
 }
 
+#if defined(OS_CHROMEOS)
+void TtsEngineExtensionObserver::BindTtsStream(
+    mojo::PendingReceiver<chromeos::tts::mojom::TtsStream> receiver) {
+  if (tts_service_)
+    tts_service_->BindTtsStream(std::move(receiver));
+}
+#endif  // defined(OS_CHROMEOS)
+
 void TtsEngineExtensionObserver::Shutdown() {
   extensions::EventRouter::Get(profile_)->UnregisterObserver(this);
 }
@@ -170,10 +179,10 @@ void TtsEngineExtensionObserver::OnExtensionLoaded(
   engine_extension_ids_.insert(extension->id());
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled() &&
-      // This check is important because we only ever want to increment once
-      // when this extension loads.
-      extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId) {
+  if (extension->id() != extension_misc::kGoogleSpeechSynthesisExtensionId)
+    return;
+
+  if (chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled()) {
     UpdateGoogleSpeechSynthesisKeepAliveCount(browser_context,
                                               true /* increment */);
   }
@@ -188,6 +197,12 @@ void TtsEngineExtensionObserver::OnExtensionUnloaded(
   erase_count += engine_extension_ids_.erase(extension->id());
   if (erase_count > 0)
     content::TtsController::GetInstance()->VoicesChanged();
+
+#if defined(OS_CHROMEOS)
+  if (tts_service_ &&
+      extension->id() == extension_misc::kGoogleSpeechSynthesisExtensionId)
+    tts_service_.reset();
+#endif  // defined(OS_CHROMEOS)
 }
 
 #if defined(OS_CHROMEOS)

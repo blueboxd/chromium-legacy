@@ -64,8 +64,7 @@ Beacon::Beacon(base::StringPiece16 name, BeaconType type, BeaconScope scope)
   Initialize(name);
 }
 
-Beacon::~Beacon() {
-}
+Beacon::~Beacon() {}
 
 void Beacon::Update() {
   const REGSAM kAccess = KEY_WOW64_32KEY | KEY_QUERY_VALUE | KEY_SET_VALUE;

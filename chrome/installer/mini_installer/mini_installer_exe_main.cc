@@ -40,7 +40,7 @@ extern "C" int WINAPI wWinMain(HINSTANCE /* instance */,
 // This also avoids having to explicitly set the __sse2_available hack when
 // linking with both the x64 and x86 obj files which is required when not
 // linking with the std C lib in certain instances (including Chromium) with
-// MSVC.  __sse2_available determines whether to use SSE2 intructions with
+// MSVC.  __sse2_available determines whether to use SSE2 instructions with
 // std C lib routines, and is set by MSVC's std C lib implementation normally.
 extern "C" {
 #ifdef __clang__

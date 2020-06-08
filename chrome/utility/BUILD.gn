@@ -160,6 +160,8 @@ static_library("utility") {
       "//chromeos/assistant:buildflags",
       "//chromeos/services/ime:lib",
       "//chromeos/services/ime/public/mojom",
+      "//chromeos/services/tts",
+      "//chromeos/services/tts/public/mojom",
     ]
 
     if (enable_cros_libassistant) {

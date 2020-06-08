@@ -93,8 +93,8 @@ TEST_P(ProductStateTest, InitializeInstalled) {
   // Bogus version.
   {
     ProductState state;
-    LONG result = clients_.WriteValue(google_update::kRegVersionField,
-                                      L"goofy");
+    LONG result =
+        clients_.WriteValue(google_update::kRegVersionField, L"goofy");
     EXPECT_TRUE(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
     EXPECT_FALSE(state.Initialize(system_install_));
   }
@@ -102,8 +102,8 @@ TEST_P(ProductStateTest, InitializeInstalled) {
   // Valid "pv" value.
   {
     ProductState state;
-    LONG result = clients_.WriteValue(google_update::kRegVersionField,
-                                      L"10.0.47.0");
+    LONG result =
+        clients_.WriteValue(google_update::kRegVersionField, L"10.0.47.0");
     EXPECT_TRUE(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
     EXPECT_TRUE(state.Initialize(system_install_));
     EXPECT_EQ("10.0.47.0", state.version().GetString());
@@ -135,8 +135,8 @@ TEST_P(ProductStateTest, InitializeOldVersion) {
   // Bogus "opv" value.
   {
     ProductState state;
-    LONG result = clients_.WriteValue(google_update::kRegOldVersionField,
-                                      L"coming home");
+    LONG result =
+        clients_.WriteValue(google_update::kRegOldVersionField, L"coming home");
     EXPECT_TRUE(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
     EXPECT_TRUE(state.Initialize(system_install_));
     EXPECT_EQ(state.old_version(), nullptr);
@@ -145,8 +145,8 @@ TEST_P(ProductStateTest, InitializeOldVersion) {
   // Valid "opv" value.
   {
     ProductState state;
-    LONG result = clients_.WriteValue(google_update::kRegOldVersionField,
-                                      L"10.0.47.0");
+    LONG result =
+        clients_.WriteValue(google_update::kRegOldVersionField, L"10.0.47.0");
     EXPECT_TRUE(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
     EXPECT_TRUE(state.Initialize(system_install_));
     EXPECT_NE(state.old_version(), nullptr);
@@ -335,8 +335,7 @@ TEST_P(ProductStateTest, InitializeMsi) {
   {
     ProductState state;
     EXPECT_EQ(ERROR_SUCCESS,
-              client_state_.WriteValue(google_update::kRegMSIField,
-                                       L"bogus!"));
+              client_state_.WriteValue(google_update::kRegMSIField, L"bogus!"));
     EXPECT_TRUE(state.Initialize(system_install_));
     EXPECT_FALSE(state.is_msi());
   }

@@ -322,7 +322,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // should move to LocalDOMWindow.
   ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
   LocalDOMWindow* ExecutingWindow() const;
-  bool CanExecuteScripts(ReasonForCallingCanExecuteScripts);
   String OutgoingReferrer() const;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
@@ -357,7 +356,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSecureContext(String& error_message) const;
   void SetSecureContextModeForTesting(SecureContextMode);
   void SetReferrerPolicy(network::mojom::ReferrerPolicy);
-  v8::Isolate* GetIsolate() const;
   Agent* GetAgent() const;
   OriginTrialContext* GetOriginTrialContext() const;
 

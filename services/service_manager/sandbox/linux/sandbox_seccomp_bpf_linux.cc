@@ -54,6 +54,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "services/service_manager/sandbox/linux/bpf_ime_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_tts_policy_linux.h"
 #endif  // defined(OS_CHROMEOS)
 
 using sandbox::BaselinePolicy;
@@ -185,6 +186,8 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
       return std::make_unique<ImeProcessPolicy>();
+    case SandboxType::kTts:
+      return std::make_unique<TtsProcessPolicy>();
 #endif  // defined(OS_CHROMEOS)
     case SandboxType::kZygoteIntermediateSandbox:
     case SandboxType::kNoSandbox:
@@ -228,6 +231,7 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
     } break;
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
+    case SandboxType::kTts:
 #endif  // defined(OS_CHROMEOS)
     case SandboxType::kAudio:
     case SandboxType::kSharingService:

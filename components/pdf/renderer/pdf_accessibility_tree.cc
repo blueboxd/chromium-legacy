@@ -410,6 +410,29 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
       return false;
   }
 
+  const std::vector<ppapi::PdfAccessibilityButtonInfo>& buttons =
+      page_objects.form_fields.buttons;
+  if (!std::is_sorted(
+          buttons.begin(), buttons.end(),
+          CompareTextRuns<ppapi::PdfAccessibilityButtonInfo>)) {
+    return false;
+  }
+  for (const ppapi::PdfAccessibilityButtonInfo& button :
+       buttons) {
+    // Text run index of an |button| works on the same logic as the text run
+    // index of a |link| as mentioned above.
+    if (button.text_run_index > text_runs.size())
+      return false;
+
+    // For radio button or checkbox, value of |button.control_index| should
+    // always be less than |button.control_count|.
+    if ((button.type == PP_PrivateButtonType::PP_PRIVATEBUTTON_CHECKBOX ||
+         button.type == PP_PrivateButtonType::PP_PRIVATEBUTTON_RADIOBUTTON) &&
+        (button.control_index >= button.control_count)) {
+      return false;
+    }
+  }
+
   return true;
 }
 

@@ -309,7 +309,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // within it (recursively).
   std::vector<WebContentsImpl*> GetWebContentsAndAllInner();
 
-  void NotifyManifestUrlChanged(const base::Optional<GURL>& manifest_url);
+  void NotifyManifestUrlChanged(RenderFrameHost* rfh,
+                                const base::Optional<GURL>& manifest_url);
 
 #if defined(OS_ANDROID)
   void SetMainFrameImportance(ChildProcessImportance importance);

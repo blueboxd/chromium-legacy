@@ -4,8 +4,8 @@
 
 #include "chrome/install_static/user_data_dir.h"
 
-#include <windows.h>
 #include <assert.h>
+#include <windows.h>
 
 #include "chrome/chrome_elf/nt_registry/nt_registry.h"
 #include "chrome/install_static/install_details.h"
@@ -42,7 +42,7 @@ void GetUserDataDirFromRegistryPolicyIfSet(const InstallConstants& mode,
 
   // Second, try HKCU.
   if (nt::QueryRegValueSZ(nt::HKCU, nt::NONE, policies_path.c_str(),
-                             kUserDataDirRegistryKeyName, &value)) {
+                          kUserDataDirRegistryKeyName, &value)) {
     *user_data_dir = ExpandPathVariables(value);
     return;
   }

@@ -1406,17 +1406,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Wenn diese Richtlinie nicht konfiguriert oder der Wert nach dem Ersetzen kein gültiger Hostname ist, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Gestattet <ph name="PRODUCT_NAME" /> das Laden experimenteller Richtlinien.
-
-        WARNUNG: Experimentelle Richtlinien werden nicht unterstützt und können ohne vorherige Ankündigung in künftigen Versionen des Browsers geändert oder entfernt werden!
-
-        Die Entwicklung einer experimentellen Richtlinie ist möglicherweise noch nicht abgeschlossen. Auch kann sie bekannte oder unbekannte Mängel aufweisen. Sie kann unangekündigt geändert oder entfernt werden. Wenn Sie experimentelle Richtlinien aktivieren, besteht die Gefahr, Browserdaten zu verlieren oder Ihre Sicherheit und Privatsphäre zu gefährden.
-
-        Steht eine Richtlinie nicht auf der Liste und wurde sie nicht offiziell veröffentlicht, dann wird ihr Wert in Beta- und stabilen Chrome-Versionen ignoriert.
-
-        Steht eine Richtlinie auf der Liste, dann wird ihr Wert angewendet, auch wenn sie noch nicht offiziell veröffentlicht wurde.
-
-        Diese Richtlinie hat keine Auswirkung auf bereits veröffentlichte Richtlinien.</translation>
 <translation id="3066446511111537292">Nutzern dieses Geräts erlauben, ADB-Sideloading zu verwenden</translation>
 <translation id="3069958900488014740">Erlaubt die Deaktivierung der WPAD-Optimierung (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 

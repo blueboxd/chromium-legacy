@@ -311,10 +311,9 @@ class NavigationManager {
    */
   moveTo_(automationNode) {
     MenuManager.exit();
-    this.history_.buildFromAutomationNode(automationNode);
-    if (!this.history_.peek().focus.isEquivalentTo(automationNode)) {
+    if (this.history_.buildFromAutomationNode(automationNode)) {
+      this.restoreFromHistory_();
     }
-    this.restoreFromHistory_();
   }
 
   /**

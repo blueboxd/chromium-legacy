@@ -179,6 +179,10 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_IME_SERVICE_MOJOM_JS);
   source_map->RegisterSource("chromeos.ime.service",
                              IDR_IME_SERVICE_BINDINGS_JS);
+
+  source_map->RegisterSource("chromeos.tts.mojom.tts_stream.mojom",
+                             IDR_TTS_STREAM_MOJOM_JS);
+  source_map->RegisterSource("chromeos.tts.stream", IDR_TTS_STREAM_BINDINGS_JS);
 #endif  // defined(OS_CHROMEOS)
 
   source_map->RegisterSource("cast.streaming.rtpStream",

@@ -215,6 +215,11 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.bitfields_.cache_slot = static_cast<unsigned>(slot);
   }
 
+  void SetBlockStartAnnotationSpace(LayoutUnit space) {
+    if (space)
+      space_.EnsureRareData()->SetBlockStartAnnotationSpace(space);
+  }
+
   void SetMarginStrut(const NGMarginStrut& margin_strut) {
 #if DCHECK_IS_ON()
     DCHECK(!is_margin_strut_set_);

@@ -865,8 +865,7 @@ void SearchTabHelper::OpenAutocompleteMatch(
 
   auto* bookmark_model = BookmarkModelFactory::GetForBrowserContext(profile());
   if (bookmark_model->IsBookmarked(match.destination_url)) {
-    RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
-                         ProfileMetrics::GetBrowserProfileType(profile()));
+    RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
   }
 
   const AutocompleteInput& input = autocomplete_controller_->input();

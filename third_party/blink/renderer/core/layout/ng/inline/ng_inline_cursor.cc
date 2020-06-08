@@ -655,11 +655,17 @@ PhysicalOffset NGInlineCursorPosition::LineEndPoint() const {
                                        pixel_size);
 }
 
+LogicalRect NGInlineCursorPosition::ConvertToLogical(
+    const PhysicalRect& physical_rect) const {
+  return physical_rect.ConvertToLogical(Style().GetWritingMode(),
+                                        ResolvedOrBaseDirection(), Size(),
+                                        physical_rect.size);
+}
+
 PhysicalRect NGInlineCursorPosition::ConvertToPhysical(
     const LogicalRect& logical_rect) const {
-  return logical_rect.ConvertToPhysical(
-      Style().GetWritingMode(),
-      IsLineBox() ? BaseDirection() : ResolvedDirection(), Size());
+  return logical_rect.ConvertToPhysical(Style().GetWritingMode(),
+                                        ResolvedOrBaseDirection(), Size());
 }
 
 PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
@@ -891,6 +897,16 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
       break;
   }
   return PositionWithAffinity();
+}
+
+PositionWithAffinity NGInlineCursor::PositionForStartOfLine() const {
+  DCHECK(Current().IsLineBox());
+  return PositionForPointInInlineBox(Current().LineStartPoint());
+}
+
+PositionWithAffinity NGInlineCursor::PositionForEndOfLine() const {
+  DCHECK(Current().IsLineBox());
+  return PositionForPointInInlineBox(Current().LineEndPoint());
 }
 
 void NGInlineCursor::MoveTo(const NGInlineCursorPosition& position) {

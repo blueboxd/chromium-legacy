@@ -310,7 +310,7 @@ void MainThreadDebugger::endEnsureAllContextsInGroup(int context_group_id) {
 
 bool MainThreadDebugger::canExecuteScripts(int context_group_id) {
   LocalFrame* frame = WeakIdentifierMap<LocalFrame>::Lookup(context_group_id);
-  return frame->GetDocument()->CanExecuteScripts(kNotAboutToExecuteScript);
+  return frame->DomWindow()->CanExecuteScripts(kNotAboutToExecuteScript);
 }
 
 void MainThreadDebugger::runIfWaitingForDebugger(int context_group_id) {

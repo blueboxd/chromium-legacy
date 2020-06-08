@@ -458,7 +458,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // the renderer process. If the instance is created after the page is loaded,
   // it is recommended to call WebContents::GetFaviconURLs() to get the current
   // list as this callback will not be executed unless there is an update.
+  // |render_frame_host| is the main render frame host.
   virtual void DidUpdateFaviconURL(
+      RenderFrameHost* render_frame_host,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) {}
 
   // Called when an audio change occurs to this WebContents. If |audible| is
@@ -604,6 +606,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // document has both a manifest and a favicon, DidUpdateWebManifestURL() will
   // be invoked before DidUpdateFaviconURL().
   virtual void DidUpdateWebManifestURL(
+      RenderFrameHost* target_frame,
       const base::Optional<GURL>& manifest_url) {}
 
   // DEPRECATED. Please register interface binders with BrowserInterfaceBroker

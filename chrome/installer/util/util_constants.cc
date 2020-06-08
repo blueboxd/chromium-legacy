@@ -11,7 +11,7 @@ namespace switches {
 // Allow an update of Chrome from a higher version to a lower version.
 // Ordinarily, such downgrades are disallowed. An administrator may wish to
 // allow them in circumstances where the potential loss of user data is
-// permissable.
+// permissible.
 const char kAllowDowngrade[] = "allow-downgrade";
 
 // Create shortcuts for this user to point to a system-level install (which
@@ -52,7 +52,7 @@ const char kDoNotRemoveSharedItems[] = "do-not-remove-shared-items";
 const char kEnableLogging[] = "enable-logging";
 
 // Same as kConfigureUserSettings above; except the checks to know whether
-// first run already occured are bypassed and shortcuts are created either way
+// first run already occurred are bypassed and shortcuts are created either way
 // (kConfigureUserSettings also needs to be on the command-line for this to have
 // any effect).
 const char kForceConfigureUserSettings[] = "force-configure-user-settings";

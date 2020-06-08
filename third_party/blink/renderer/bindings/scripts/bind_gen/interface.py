@@ -5868,6 +5868,16 @@ static void InstallContextDependentPropertiesAdapter(
         wrapper_type_info_def.append(
             F(pattern, FN_INSTALL_CONTEXT_DEPENDENT_PROPS))
     pattern = """\
+// Construction of WrapperTypeInfo may require non-trivial initialization due
+// to cross-component address resolution in order to load the pointer to the
+// parent interface's WrapperTypeInfo.  We ignore this issue because the issue
+// happens only on component builds and the official release builds
+// (statically-linked builds) are never affected by this issue.
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wglobal-constructors"
+#endif
+
 const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     gin::kEmbedderBlink,
     ${class_name}::DomTemplate,
@@ -5878,6 +5888,10 @@ const WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     {wrapper_class_id},
     {active_script_wrappable_inheritance},
 }};
+
+#if defined(COMPONENT_BUILD) && defined(WIN32) && defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 """
     class_like = cg_context.class_like
     if has_context_dependent_props:
@@ -6016,6 +6030,7 @@ def generate_interface(interface):
     api_component = path_manager.api_component
     impl_component = path_manager.impl_component
     is_cross_components = path_manager.is_cross_components
+    for_testing = interface.code_generator_info.for_testing
 
     # Class names
     api_class_name = v8_bridge_class_name(interface)
@@ -6069,15 +6084,15 @@ def generate_interface(interface):
                     blink_class_name(interface)),
         ],
         final=True,
-        export=component_export(api_component))
+        export=component_export(api_component, for_testing))
     api_class_def.set_base_template_vars(cg_context.template_bindings())
     api_class_def.bottom_section.append(
         TextNode("friend class {};".format(blink_class_name(interface))))
     if is_cross_components:
-        impl_class_def = CxxClassDefNode(
-            impl_class_name,
-            final=True,
-            export=component_export(impl_component))
+        impl_class_def = CxxClassDefNode(impl_class_name,
+                                         final=True,
+                                         export=component_export(
+                                             impl_component, for_testing))
         impl_class_def.set_base_template_vars(cg_context.template_bindings())
         api_class_def.public_section.extend([
             TextNode("// Cross-component implementation class"),
@@ -6394,19 +6409,19 @@ def generate_interface(interface):
         ])
     api_header_node.accumulator.add_include_headers([
         interface.code_generator_info.blink_headers[0],
-        component_export_header(api_component),
+        component_export_header(api_component, for_testing),
         "third_party/blink/renderer/platform/bindings/v8_interface_bridge.h",
     ])
     api_source_node.accumulator.add_include_headers([
         "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h",
     ])
     if interface.inherited:
-        api_source_node.accumulator.add_include_header(
-            PathManager(interface.inherited).api_path(ext="h"))
+        api_source_node.accumulator.add_include_headers(
+            [PathManager(interface.inherited).api_path(ext="h")])
     if is_cross_components:
         impl_header_node.accumulator.add_include_headers([
             api_header_path,
-            component_export_header(impl_component),
+            component_export_header(impl_component, for_testing),
         ])
     impl_source_node.accumulator.add_include_headers([
         "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h",
@@ -6570,7 +6585,7 @@ def generate_install_properties_per_feature(web_idl_database,
         return_type="void")
 
     # Assemble the parts.
-    header_node.accumulator.add_class_decl("ScriptState")
+    header_node.accumulator.add_class_decls(["ScriptState"])
     header_node.accumulator.add_include_headers([
         "third_party/blink/renderer/platform/runtime_enabled_features.h",
     ])
@@ -6685,8 +6700,8 @@ using InstallFuncType =
 
     for interface in set_of_interfaces:
         path_manager = PathManager(interface)
-        source_node.accumulator.add_include_header(
-            path_manager.api_path(ext="h"))
+        source_node.accumulator.add_include_headers(
+            [path_manager.api_path(ext="h")])
 
     # The helper function
     globals = filter(lambda x: "Global" in x.extended_attributes,
@@ -6703,8 +6718,7 @@ using InstallFuncType =
         # simplify this implementation.
         helper_func_def.body.extend([
             ListNode([
-                TextNode("static constexpr const WrapperTypeInfo* "
-                         "globals_body[] = {"),
+                TextNode("static const WrapperTypeInfo* globals_body[] = {"),
                 ListNode(entries),
                 TextNode("};"),
             ]),
@@ -6826,8 +6840,8 @@ def generate_init_idl_interfaces(web_idl_database,
 
         path_manager = PathManager(interface)
         if path_manager.is_cross_components:
-            source_node.accumulator.add_include_header(
-                path_manager.impl_path(ext="h"))
+            source_node.accumulator.add_include_headers(
+                [path_manager.impl_path(ext="h")])
 
             class_name = v8_bridge_class_name(interface)
             init_calls.append(_format("{}::Impl::Init();", class_name))

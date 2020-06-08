@@ -46,35 +46,6 @@ struct SameSizeAsNGPaintFragment : public RefCounted<NGPaintFragment>,
 static_assert(sizeof(NGPaintFragment) == sizeof(SameSizeAsNGPaintFragment),
               "NGPaintFragment should stay small.");
 
-LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
-                                  WritingMode writing_mode,
-                                  TextDirection text_direction,
-                                  const PhysicalSize& outer_size) {
-  const LogicalOffset logical_offset = physical_rect.offset.ConvertToLogical(
-      writing_mode, text_direction, outer_size, physical_rect.size);
-  const LogicalSize logical_size =
-      physical_rect.size.ConvertToLogical(writing_mode);
-  return {logical_offset, logical_size};
-}
-
-LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
-                                  const NGPaintFragment& paint_fragment) {
-  const NGPhysicalFragment& physical_fragment =
-      paint_fragment.PhysicalFragment();
-  return physical_fragment.ConvertToLogical(
-      physical_rect, physical_fragment.ResolvedDirection(), physical_rect.size);
-}
-
-LogicalRect ComputeLogicalRectFor(const PhysicalRect& physical_rect,
-                                  const NGInlineCursor& cursor) {
-  if (const NGPaintFragment* paint_fragment = cursor.CurrentPaintFragment())
-    return ComputeLogicalRectFor(physical_rect, *paint_fragment);
-
-  const NGFragmentItem& item = *cursor.CurrentItem();
-  return ComputeLogicalRectFor(physical_rect, item.GetWritingMode(),
-                               item.ResolvedDirection(), item.Size());
-}
-
 LogicalRect ExpandedSelectionRectForSoftLineBreakIfNeeded(
     const LogicalRect& rect,
     const NGInlineCursor& cursor,
@@ -114,7 +85,7 @@ LogicalRect ExpandSelectionRectToLineHeight(const LogicalRect& rect,
           cursor.Current().OffsetInContainerBlock(),
       line.Current().Size());
   return ExpandSelectionRectToLineHeight(
-      rect, ComputeLogicalRectFor(line_physical_rect, cursor));
+      rect, cursor.Current().ConvertToLogical(line_physical_rect));
 }
 
 base::Optional<PositionWithAffinity> PositionForPointInChild(
@@ -772,7 +743,7 @@ PhysicalRect ComputeLocalSelectionRectForText(
     const LayoutSelectionStatus& selection_status) {
   const PhysicalRect selection_rect =
       cursor.CurrentLocalRect(selection_status.start, selection_status.end);
-  LogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, cursor);
+  LogicalRect logical_rect = cursor.Current().ConvertToLogical(selection_rect);
   // Let LocalRect for line break have a space width to paint line break
   // when it is only character in a line or only selected in a line.
   if (selection_status.start != selection_status.end &&
@@ -801,7 +772,7 @@ PhysicalRect ComputeLocalSelectionRectForReplaced(
     const NGInlineCursor& cursor) {
   DCHECK(cursor.Current().GetLayoutObject()->IsLayoutReplaced());
   const PhysicalRect selection_rect = PhysicalRect({}, cursor.Current().Size());
-  LogicalRect logical_rect = ComputeLogicalRectFor(selection_rect, cursor);
+  LogicalRect logical_rect = cursor.Current().ConvertToLogical(selection_rect);
   const LogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(logical_rect, cursor);
   const PhysicalRect physical_rect =

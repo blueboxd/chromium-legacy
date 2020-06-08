@@ -219,7 +219,8 @@ class TestPipelineHelpers(unittest.TestCase):
                 '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
                 '$W/modified_unsigned_framework',
                 dry_run=False),
-            mock.call.sign_chrome(paths, channel_dist_config, sign_framework=True),
+            mock.call.sign_chrome(
+                paths, channel_dist_config, sign_framework=True),
             mock.call.copy_dir_overwrite_and_count_changes(
                 '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework',
                 '$W/modified_unsigned_framework',
@@ -419,10 +420,9 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
         self.assertEqual('$O/AppProduct-99.0.9999.99.pkg',
                          pipeline._package_and_sign_pkg(paths, dist_config))
 
-        manager.assert_has_calls([
-            mock.call.run_command(mock.ANY),
-            mock.call.run_command(mock.ANY)
-        ])
+        manager.assert_has_calls(
+            [mock.call.run_command(mock.ANY),
+             mock.call.run_command(mock.ANY)])
 
         run_commands = [
             call for call in manager.mock_calls if call[0] == 'run_command'
@@ -512,10 +512,9 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
         self.assertEqual('$O/AppProduct-99.0.9999.99-ForCows.pkg',
                          pipeline._package_and_sign_pkg(paths, dist_config))
 
-        manager.assert_has_calls([
-            mock.call.run_command(mock.ANY),
-            mock.call.run_command(mock.ANY)
-        ])
+        manager.assert_has_calls(
+            [mock.call.run_command(mock.ANY),
+             mock.call.run_command(mock.ANY)])
 
         run_commands = [
             call for call in manager.mock_calls if call[0] == 'run_command'
@@ -738,9 +737,9 @@ framework dir is 'App Product.app/Contents/Frameworks/Product Framework.framewor
         m: mock.DEFAULT for m in ('move_file', 'copy_files', 'run_command',
                                   'make_dir', 'shutil')
     })
-@mock.patch.multiple(
-    'signing.notarize',
-    **{m: mock.DEFAULT for m in ('submit', 'wait_for_results', 'staple')})
+@mock.patch.multiple('signing.notarize', **{
+    m: mock.DEFAULT for m in ('submit', 'wait_for_results', 'staple')
+})
 @mock.patch.multiple(
     'signing.pipeline', **{
         m: mock.DEFAULT
@@ -796,9 +795,7 @@ class TestSignAll(unittest.TestCase):
                                   cwd='$W_1/AppProduct-99.0.9999.99'),
             mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
-            mock.call.wait_for_results({
-                app_uuid: None
-            }.keys(), mock.ANY),
+            mock.call.wait_for_results({app_uuid: None}.keys(), mock.ANY),
             mock.call._staple_chrome(
                 self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),
                 mock.ANY),
@@ -808,9 +805,7 @@ class TestSignAll(unittest.TestCase):
 
             # Notarize the DMG.
             mock.call.submit('$O/AppProduct-99.0.9999.99.dmg', mock.ANY),
-            mock.call.wait_for_results({
-                dmg_uuid: None
-            }.keys(), mock.ANY),
+            mock.call.wait_for_results({dmg_uuid: None}.keys(), mock.ANY),
             mock.call.staple('$O/AppProduct-99.0.9999.99.dmg'),
             mock.call.shutil.rmtree('$W_1'),
 
@@ -859,9 +854,7 @@ class TestSignAll(unittest.TestCase):
                                   cwd='$W_1/AppProduct-99.0.9999.99'),
             mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
-            mock.call.wait_for_results({
-                app_uuid: None
-            }.keys(), mock.ANY),
+            mock.call.wait_for_results({app_uuid: None}.keys(), mock.ANY),
             mock.call._staple_chrome(
                 self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),
                 mock.ANY),
@@ -871,9 +864,7 @@ class TestSignAll(unittest.TestCase):
 
             # Notarize the DMG.
             mock.call.submit('$O/AppProduct-99.0.9999.99.pkg', mock.ANY),
-            mock.call.wait_for_results({
-                pkg_uuid: None
-            }.keys(), mock.ANY),
+            mock.call.wait_for_results({pkg_uuid: None}.keys(), mock.ANY),
             mock.call.staple('$O/AppProduct-99.0.9999.99.pkg'),
             mock.call.shutil.rmtree('$W_1'),
 
@@ -925,9 +916,7 @@ class TestSignAll(unittest.TestCase):
                                   cwd='$W_1/AppProduct-99.0.9999.99'),
             mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
-            mock.call.wait_for_results({
-                app_uuid: None
-            }.keys(), mock.ANY),
+            mock.call.wait_for_results({app_uuid: None}.keys(), mock.ANY),
             mock.call._staple_chrome(
                 self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),
                 mock.ANY),
@@ -978,9 +967,7 @@ class TestSignAll(unittest.TestCase):
                                   cwd='$W_1/AppProduct-99.0.9999.99'),
             mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
-            mock.call.wait_for_results({
-                app_uuid: None
-            }.keys(), mock.ANY),
+            mock.call.wait_for_results({app_uuid: None}.keys(), mock.ANY),
             mock.call._staple_chrome(
                 self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),
                 mock.ANY),
@@ -1028,8 +1015,9 @@ class TestSignAll(unittest.TestCase):
 
         manager.assert_has_calls([
             # First customize the distribution and sign it.
-            mock.call._customize_and_sign_chrome(
-                mock.ANY, mock.ANY, '$O/AppProduct-99.0.9999.99', mock.ANY),
+            mock.call._customize_and_sign_chrome(mock.ANY, mock.ANY,
+                                                 '$O/AppProduct-99.0.9999.99',
+                                                 mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
             mock.call.shutil.rmtree('$W_1'),
 

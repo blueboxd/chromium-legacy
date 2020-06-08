@@ -166,9 +166,10 @@ class CORE_EXPORT NGLayoutInputNode {
   }
 
   // Returns the border-box min/max content sizes for the node.
-  MinMaxSizesResult ComputeMinMaxSizes(WritingMode,
-                                       const MinMaxSizesInput&,
-                                       const NGConstraintSpace* = nullptr);
+  MinMaxSizesResult ComputeMinMaxSizes(
+      WritingMode,
+      const MinMaxSizesInput&,
+      const NGConstraintSpace* = nullptr) const;
 
   // Returns intrinsic sizing information for replaced elements.
   // ComputeReplacedSize can use it to compute actual replaced size.

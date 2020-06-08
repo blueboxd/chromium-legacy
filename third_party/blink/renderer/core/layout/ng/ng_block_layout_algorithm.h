@@ -32,6 +32,7 @@ class NGFragment;
 struct NGPreviousInflowPosition {
   LayoutUnit logical_block_offset;
   NGMarginStrut margin_strut;
+  LayoutUnit block_end_annotation_space;
   bool self_collapsing_child_had_clearance;
 };
 
@@ -113,7 +114,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const LogicalSize child_available_size,
       bool is_new_fc,
       const base::Optional<LayoutUnit> bfc_block_offset = base::nullopt,
-      bool has_clearance_past_adjoining_floats = false);
+      bool has_clearance_past_adjoining_floats = false,
+      LayoutUnit block_start_annotation_space = LayoutUnit());
 
   // @return Estimated BFC block offset for the "to be layout" child.
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,

@@ -5,6 +5,7 @@
 #include "chrome/installer/setup/installer_state.h"
 
 #include <windows.h>
+
 #include <stddef.h>
 
 #include <fstream>
@@ -45,9 +46,7 @@ class InstallerStateTest : public testing::Test {
  protected:
   InstallerStateTest() {}
 
-  void SetUp() override {
-    ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-  }
+  void SetUp() override { ASSERT_TRUE(test_dir_.CreateUniqueTempDir()); }
 
   base::ScopedTempDir test_dir_;
 
@@ -58,7 +57,7 @@ class InstallerStateTest : public testing::Test {
 // An installer state on which we can access otherwise protected members.
 class MockInstallerState : public InstallerState {
  public:
-  MockInstallerState() : InstallerState() { }
+  MockInstallerState() : InstallerState() {}
   void set_target_path(const base::FilePath& target_path) {
     target_path_ = target_path;
   }
@@ -70,8 +69,7 @@ class MockInstallerState : public InstallerState {
 TEST_F(InstallerStateTest, WithProduct) {
   const bool system_level = true;
   base::CommandLine cmd_line = base::CommandLine::FromString(
-      std::wstring(L"setup.exe") +
-      (system_level ? L" --system-level" : L""));
+      std::wstring(L"setup.exe") + (system_level ? L" --system-level" : L""));
   MasterPreferences prefs(cmd_line);
   InstallationState machine_state;
   machine_state.Initialize();
@@ -93,9 +91,9 @@ TEST_F(InstallerStateTest, WithProduct) {
                       KEY_ALL_ACCESS);
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
-      chrome_key.WriteValue(google_update::kRegVersionField,
-                            base::UTF8ToWide(
-                                current_version.GetString()).c_str());
+      chrome_key.WriteValue(
+          google_update::kRegVersionField,
+          base::UTF8ToWide(current_version.GetString()).c_str());
       machine_state.Initialize();
       // TODO(tommi): Also test for when there exists a new_chrome.exe.
       base::Version found_version(

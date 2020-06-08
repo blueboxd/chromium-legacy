@@ -35,7 +35,7 @@ gen_control() {
   rm -f "${DEB_CONTROL}"
 }
 
-# Setup the installation directory hierachy in the package staging area.
+# Setup the installation directory hierarchy in the package staging area.
 prep_staging_debian() {
   prep_staging_common
   install -m 755 -d "${STAGEDIR}/DEBIAN" \

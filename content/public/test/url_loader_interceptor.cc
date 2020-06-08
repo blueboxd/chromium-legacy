@@ -106,32 +106,6 @@ class URLLoaderInterceptor::IOState
     return parent_->Intercept(params);
   }
 
-  bool BeginNavigationCallback(
-      mojo::PendingReceiver<network::mojom::URLLoader>* receiver,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& url_request,
-      mojo::PendingRemote<network::mojom::URLLoaderClient>* client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-    RequestParams params;
-    params.process_id = 0;
-    params.receiver = std::move(*receiver);
-    params.routing_id = routing_id;
-    params.request_id = request_id;
-    params.options = options;
-    params.url_request = url_request;
-    params.client.Bind(std::move(*client));
-    params.traffic_annotation = traffic_annotation;
-
-    if (Intercept(&params))
-      return true;
-
-    *receiver = std::move(params.receiver);
-    *client = params.client.Unbind();
-    return false;
-  }
-
   // Callback on IO thread whenever NavigationURLLoaderImpl needs a
   // URLLoaderFactory with a network::mojom::TrustedURLLoaderHeaderClient or
   // for a non-network-service scheme.

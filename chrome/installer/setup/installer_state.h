@@ -31,17 +31,9 @@ class MasterPreferences;
 // the operations to be performed.
 class InstallerState {
  public:
-  enum Level {
-    UNKNOWN_LEVEL,
-    USER_LEVEL,
-    SYSTEM_LEVEL
-  };
+  enum Level { UNKNOWN_LEVEL, USER_LEVEL, SYSTEM_LEVEL };
 
-  enum Operation {
-    UNINITIALIZED,
-    SINGLE_INSTALL_OR_UPDATE,
-    UNINSTALL
-  };
+  enum Operation { UNINITIALIZED, SINGLE_INSTALL_OR_UPDATE, UNINSTALL };
 
   // Constructs an uninitialized instance; see Initialize().
   InstallerState();

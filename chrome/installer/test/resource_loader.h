@@ -8,6 +8,7 @@
 #define CHROME_INSTALLER_TEST_RESOURCE_LOADER_H_
 
 #include <windows.h>
+
 #include <stdint.h>
 
 #include <string>

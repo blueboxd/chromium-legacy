@@ -120,6 +120,7 @@ def _make_include_headers(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     dictionary = cg_context.dictionary
+    for_testing = dictionary.code_generator_info.for_testing
 
     header_includes = set()
     source_includes = set()
@@ -132,7 +133,7 @@ def _make_include_headers(cg_context):
             "third_party/blink/renderer/platform/bindings/dictionary_base.h")
 
     header_includes.update([
-        component_export_header(dictionary.components[0]),
+        component_export_header(dictionary.components[0], for_testing),
         "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h",
         "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h",
         "v8/include/v8.h",
@@ -856,9 +857,12 @@ def make_dict_trace_func(cg_context):
 
 
 def generate_dictionary(dictionary):
+    assert isinstance(dictionary, web_idl.Dictionary)
+
     assert len(dictionary.components) == 1, (
         "We don't support partial dictionaries across components yet.")
     component = dictionary.components[0]
+    for_testing = dictionary.code_generator_info.for_testing
 
     path_manager = PathManager(dictionary)
     class_name = name_style.class_(blink_class_name(dictionary))
@@ -889,10 +893,10 @@ def generate_dictionary(dictionary):
     source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
 
     # Class definitions
-    class_def = CxxClassDefNode(
-        cg_context.class_name,
-        base_class_names=[cg_context.base_class_name],
-        export=component_export(component))
+    class_def = CxxClassDefNode(cg_context.class_name,
+                                base_class_names=[cg_context.base_class_name],
+                                export=component_export(
+                                    component, for_testing))
     class_def.set_base_template_vars(cg_context.template_bindings())
     class_def.top_section.append(
         TextNode("using BaseClass = ${base_class_name};"))

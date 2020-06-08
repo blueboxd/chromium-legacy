@@ -181,7 +181,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // Send dummy events to simulate the initial title/favicon update (as these
   // are ignored).
-  observer()->DidUpdateFaviconURL(std::vector<blink::mojom::FaviconURLPtr>());
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(),
+                                  std::vector<blink::mojom::FaviconURLPtr>());
   observer()->TitleWasSet(nullptr);
 
   EXPECT_CALL(*mock_writer, NotifySiteLoaded());
@@ -198,7 +199,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   // Ensure that no event gets forwarded if the tab is not in background.
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
@@ -212,14 +213,14 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   // Title and Favicon should be ignored during the post-loading grace period.
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   test_clock().Advance(kTitleOrFaviconChangePostLoadGracePeriod);
 
   EXPECT_CALL(*mock_writer, NotifyUpdatesFaviconInBackground());
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
   ::testing::Mock::VerifyAndClear(mock_writer);
   EXPECT_CALL(*mock_writer, NotifyUpdatesTitleInBackground());
   observer()->TitleWasSet(nullptr);
@@ -238,7 +239,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // These events should be ignored during the post-background grace period.
   observer()->OnAudioStateChanged(true);
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
@@ -247,7 +248,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   EXPECT_CALL(*mock_writer, NotifyUpdatesFaviconInBackground());
   EXPECT_CALL(*mock_writer, NotifyUpdatesTitleInBackground());
   observer()->OnAudioStateChanged(true);
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
@@ -260,7 +261,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // Send dummy events to simulate the initial title/favicon update (as these
   // are ignored).
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
   observer()->TitleWasSet(nullptr);
 
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
@@ -272,7 +273,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);

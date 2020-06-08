@@ -36,7 +36,7 @@ enum TestCallbackState {
 
 }  // namespace
 
-// Test that the callback is invoked correclty during Do() and Rollback().
+// Test that the callback is invoked correctly during Do() and Rollback().
 TEST(CallbackWorkItemTest, TestForwardBackward) {
   TestCallbackState state = TCS_UNDEFINED;
 

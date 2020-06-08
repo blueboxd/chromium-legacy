@@ -69,6 +69,8 @@ enum class SandboxType {
 
 #if defined(OS_CHROMEOS)
   kIme,
+  // Text-to-speech.
+  kTts,
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_LINUX)

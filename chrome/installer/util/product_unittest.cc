@@ -52,9 +52,9 @@ TEST(ProductTest, ProductInstallBasic) {
 
     const char kCurrentVersion[] = "1.2.3.4";
     base::Version current_version(kCurrentVersion);
-    version_key.WriteValue(google_update::kRegVersionField,
-                           base::UTF8ToWide(
-                               current_version.GetString()).c_str());
+    version_key.WriteValue(
+        google_update::kRegVersionField,
+        base::UTF8ToWide(current_version.GetString()).c_str());
 
     machine_state.Initialize();
     const installer::ProductState* chrome_state =

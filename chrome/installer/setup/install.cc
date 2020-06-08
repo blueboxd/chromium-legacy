@@ -5,6 +5,7 @@
 #include "chrome/installer/setup/install.h"
 
 #include <windows.h>
+
 #include <shlobj.h>
 #include <time.h>
 
@@ -65,12 +66,13 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
     message.append("Failed: ");
   message.append(
       (operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
-       operation == ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) ?
-      "Creating " : "Overwriting ");
+       operation == ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL)
+          ? "Creating "
+          : "Overwriting ");
   if (failed && operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING)
     message.append("(maybe the shortcut doesn't exist?) ");
-  message.append((properties.level == ShellUtil::CURRENT_USER) ? "per-user " :
-                                                                 "all-users ");
+  message.append((properties.level == ShellUtil::CURRENT_USER) ? "per-user "
+                                                               : "all-users ");
   switch (location) {
     case ShellUtil::SHORTCUT_LOCATION_DESKTOP:
       message.append("Desktop ");
@@ -352,8 +354,9 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
   }
 
   // Shortcuts are always installed per-user unless specified.
-  ShellUtil::ShellChange shortcut_level = (install_level == ALL_USERS ?
-      ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER);
+  ShellUtil::ShellChange shortcut_level =
+      (install_level == ALL_USERS ? ShellUtil::SYSTEM_LEVEL
+                                  : ShellUtil::CURRENT_USER);
 
   // |base_properties|: The basic properties to set on every shortcut installed
   // (to be refined on a per-shortcut basis).

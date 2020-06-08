@@ -31,8 +31,10 @@ class ResourceUpdater {
 
   // Replaces the contents of the resource |name| of |type| and |language_id|
   // with the contents of |input_file|, returning true on success.
-  bool Update(const std::wstring& name, const std::wstring& type,
-              WORD language_id, const base::FilePath& input_file);
+  bool Update(const std::wstring& name,
+              const std::wstring& type,
+              WORD language_id,
+              const base::FilePath& input_file);
 
   // Commits all updates to the file on disk.
   bool Commit();

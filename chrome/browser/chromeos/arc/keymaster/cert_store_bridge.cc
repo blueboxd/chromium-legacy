@@ -9,9 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-
-#include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 
 namespace arc {
@@ -28,12 +26,11 @@ CertStoreBridge::~CertStoreBridge() {
 }
 
 void CertStoreBridge::GetSecurityTokenOperation(
-    mojom::SecurityTokenOperationRequest operation_request,
+    mojo::PendingReceiver<mojom::SecurityTokenOperation> operation_receiver,
     GetSecurityTokenOperationCallback callback) {
   VLOG(2) << "CertStoreBridge::GetSecurityTokenOperation";
   security_token_operation_ = std::make_unique<SecurityTokenOperationBridge>(
-      context_, mojo::PendingReceiver<mojom::SecurityTokenOperation>(
-                    std::move(operation_request)));
+      context_, std::move(operation_receiver));
   std::move(callback).Run();
 }
 
@@ -44,12 +41,12 @@ void CertStoreBridge::BindToInvitation(mojo::OutgoingInvitation* invitation) {
       invitation->AttachMessagePipe("arc-cert-store-pipe");
 
   cert_store_proxy_.Bind(
-      mojo::InterfacePtrInfo<keymaster::mojom::CertStoreInstance>(
-          std::move(pipe), 0u));
+      mojo::PendingRemote<keymaster::mojom::CertStoreInstance>(std::move(pipe),
+                                                               0u));
   VLOG(2) << "Bound remote CertStoreInstance interface to pipe.";
-  cert_store_proxy_.set_connection_error_handler(base::BindOnce(
-      &mojo::InterfacePtr<keymaster::mojom::CertStoreInstance>::reset,
-      base::Unretained(&cert_store_proxy_)));
+  cert_store_proxy_.set_disconnect_handler(
+      base::BindOnce(&mojo::Remote<keymaster::mojom::CertStoreInstance>::reset,
+                     base::Unretained(&cert_store_proxy_)));
 }
 
 void CertStoreBridge::OnBootstrapMojoConnection(bool result) {
@@ -58,30 +55,30 @@ void CertStoreBridge::OnBootstrapMojoConnection(bool result) {
     return;
   }
 
-  auto binding =
-      std::make_unique<mojo::Binding<keymaster::mojom::CertStoreHost>>(this);
-  mojo::InterfacePtr<keymaster::mojom::CertStoreHost> host_proxy;
-  binding->Bind(mojo::MakeRequest(&host_proxy));
+  auto receiver =
+      std::make_unique<mojo::Receiver<keymaster::mojom::CertStoreHost>>(this);
+  mojo::PendingRemote<keymaster::mojom::CertStoreHost> host_proxy;
+  receiver->Bind(host_proxy.InitWithNewPipeAndPassReceiver());
 
   cert_store_proxy_->Init(
       std::move(host_proxy),
       base::BindOnce(&CertStoreBridge::OnConnectionReady,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(binding)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(receiver)));
 }
 
 void CertStoreBridge::OnConnectionReady(
-    std::unique_ptr<mojo::Binding<mojom::CertStoreHost>> binding) {
+    std::unique_ptr<mojo::Receiver<mojom::CertStoreHost>> receiver) {
   VLOG(2) << "CertStoreBridge::OnConnectionReady";
-  DCHECK(!binding_);
-  binding->set_connection_error_handler(base::BindOnce(
+  DCHECK(!receiver_);
+  receiver->set_disconnect_handler(base::BindOnce(
       &CertStoreBridge::OnConnectionClosed, base::Unretained(this)));
-  binding_ = std::move(binding);
+  receiver_ = std::move(receiver);
 }
 
 void CertStoreBridge::OnConnectionClosed() {
   VLOG(2) << "CertStoreBridge::OnConnectionClosed";
-  DCHECK(binding_);
-  binding_.reset();
+  DCHECK(receiver_);
+  receiver_.reset();
 }
 
 }  // namespace keymaster

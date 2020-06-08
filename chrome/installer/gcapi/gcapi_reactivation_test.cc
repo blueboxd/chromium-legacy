@@ -36,12 +36,11 @@ class GCAPIReactivationTest : public ::testing::Test {
     std::wstring reg_path(google_update::kRegPathClients);
     reg_path += L"\\";
     reg_path += google_update::kChromeUpgradeCode;
-    RegKey client_state(hive,
-                        reg_path.c_str(),
+    RegKey client_state(hive, reg_path.c_str(),
                         KEY_CREATE_SUB_KEY | KEY_SET_VALUE | KEY_WOW64_32KEY);
     return (client_state.Valid() &&
-            client_state.WriteValue(
-                google_update::kRegVersionField, L"1.2.3.4") == ERROR_SUCCESS);
+            client_state.WriteValue(google_update::kRegVersionField,
+                                    L"1.2.3.4") == ERROR_SUCCESS);
   }
 
   bool SetLastRunTime(HKEY hive, int64_t last_run_time) {
@@ -50,19 +49,18 @@ class GCAPIReactivationTest : public ::testing::Test {
 
   bool SetLastRunTimeString(HKEY hive,
                             const base::string16& last_run_time_string) {
-    const wchar_t* base_path =
-        (hive == HKEY_LOCAL_MACHINE) ?
-            google_update::kRegPathClientStateMedium :
-            google_update::kRegPathClientState;
+    const wchar_t* base_path = (hive == HKEY_LOCAL_MACHINE)
+                                   ? google_update::kRegPathClientStateMedium
+                                   : google_update::kRegPathClientState;
     std::wstring path(base_path);
     path += L"\\";
     path += google_update::kChromeUpgradeCode;
 
     RegKey client_state(hive, path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
     return (client_state.Valid() &&
-            client_state.WriteValue(
-                google_update::kRegLastRunTimeField,
-                last_run_time_string.c_str()) == ERROR_SUCCESS);
+            client_state.WriteValue(google_update::kRegLastRunTimeField,
+                                    last_run_time_string.c_str()) ==
+                ERROR_SUCCESS);
   }
 
   bool HasExperimentLabels(HKEY hive) {
@@ -70,18 +68,16 @@ class GCAPIReactivationTest : public ::testing::Test {
     client_state_path.push_back(L'\\');
     client_state_path.append(google_update::kChromeUpgradeCode);
 
-    RegKey client_state_key(hive,
-                            client_state_path.c_str(),
+    RegKey client_state_key(hive, client_state_path.c_str(),
                             KEY_QUERY_VALUE | KEY_WOW64_32KEY);
     return client_state_key.Valid() &&
-        client_state_key.HasValue(google_update::kExperimentLabels);
+           client_state_key.HasValue(google_update::kExperimentLabels);
   }
 
   std::wstring GetReactivationString(HKEY hive) {
-    const wchar_t* base_path =
-        (hive == HKEY_LOCAL_MACHINE) ?
-            google_update::kRegPathClientStateMedium :
-            google_update::kRegPathClientState;
+    const wchar_t* base_path = (hive == HKEY_LOCAL_MACHINE)
+                                   ? google_update::kRegPathClientStateMedium
+                                   : google_update::kRegPathClientState;
     std::wstring path(base_path);
     path += L"\\";
     path += google_update::kChromeUpgradeCode;
@@ -112,34 +108,30 @@ TEST_F(GCAPIReactivationTest, CanOfferReactivation_Basic) {
   DWORD error;
 
   // We're not installed yet. Make sure CanOfferReactivation fails.
-  EXPECT_FALSE(CanOfferReactivation(L"GAGA",
-                                    GCAPI_INVOKED_STANDARD_SHELL,
-                                    &error));
+  EXPECT_FALSE(
+      CanOfferReactivation(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(static_cast<DWORD>(REACTIVATE_ERROR_NOTINSTALLED), error);
 
   // Now pretend to be installed. CanOfferReactivation should pass.
   EXPECT_TRUE(SetChromeInstallMarker(HKEY_CURRENT_USER));
-  EXPECT_TRUE(CanOfferReactivation(L"GAGA",
-                                   GCAPI_INVOKED_STANDARD_SHELL,
-                                   &error));
+  EXPECT_TRUE(
+      CanOfferReactivation(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
 
   // Now set a recent last_run value. CanOfferReactivation should fail again.
   Time hkcu_last_run = Time::NowFromSystemTime() - TimeDelta::FromDays(20);
-  EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
-                             hkcu_last_run.ToInternalValue()));
-  EXPECT_FALSE(CanOfferReactivation(L"GAGA",
-                                    GCAPI_INVOKED_STANDARD_SHELL,
-                                    &error));
+  EXPECT_TRUE(
+      SetLastRunTime(HKEY_CURRENT_USER, hkcu_last_run.ToInternalValue()));
+  EXPECT_FALSE(
+      CanOfferReactivation(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(static_cast<DWORD>(REACTIVATE_ERROR_NOTDORMANT), error);
 
   // Now set a last_run value that exceeds the threshold.
   hkcu_last_run = Time::NowFromSystemTime() -
-      TimeDelta::FromDays(kReactivationMinDaysDormant);
-  EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
-                             hkcu_last_run.ToInternalValue()));
-  EXPECT_TRUE(CanOfferReactivation(L"GAGA",
-                                   GCAPI_INVOKED_STANDARD_SHELL,
-                                   &error));
+                  TimeDelta::FromDays(kReactivationMinDaysDormant);
+  EXPECT_TRUE(
+      SetLastRunTime(HKEY_CURRENT_USER, hkcu_last_run.ToInternalValue()));
+  EXPECT_TRUE(
+      CanOfferReactivation(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
 
   // Test some invalid inputs
   EXPECT_FALSE(
@@ -147,16 +139,14 @@ TEST_F(GCAPIReactivationTest, CanOfferReactivation_Basic) {
   EXPECT_EQ(static_cast<DWORD>(REACTIVATE_ERROR_INVALID_INPUT), error);
 
   // One more valid one
-  EXPECT_TRUE(CanOfferReactivation(L"GAGA",
-                                   GCAPI_INVOKED_STANDARD_SHELL,
-                                   &error));
+  EXPECT_TRUE(
+      CanOfferReactivation(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
 
   // Check that the previous brands check works:
-  EXPECT_TRUE(SetReactivationBrandCode(L"GOOGOO",
-                                       GCAPI_INVOKED_STANDARD_SHELL));
-  EXPECT_FALSE(CanOfferReactivation(L"GAGA",
-                                    GCAPI_INVOKED_STANDARD_SHELL,
-                                    &error));
+  EXPECT_TRUE(
+      SetReactivationBrandCode(L"GOOGOO", GCAPI_INVOKED_STANDARD_SHELL));
+  EXPECT_FALSE(
+      CanOfferReactivation(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(static_cast<DWORD>(REACTIVATE_ERROR_ALREADY_REACTIVATED), error);
 }
 
@@ -167,31 +157,23 @@ TEST_F(GCAPIReactivationTest, Reactivation_Flow) {
   EXPECT_TRUE(SetChromeInstallMarker(HKEY_CURRENT_USER));
 
   Time hkcu_last_run = Time::NowFromSystemTime() -
-      TimeDelta::FromDays(kReactivationMinDaysDormant);
-  EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
-                             hkcu_last_run.ToInternalValue()));
+                       TimeDelta::FromDays(kReactivationMinDaysDormant);
+  EXPECT_TRUE(
+      SetLastRunTime(HKEY_CURRENT_USER, hkcu_last_run.ToInternalValue()));
 
-  EXPECT_TRUE(ReactivateChrome(L"GAGA",
-                               GCAPI_INVOKED_STANDARD_SHELL,
-                               &error));
+  EXPECT_TRUE(ReactivateChrome(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 
   // Make sure we can't reactivate again:
-  EXPECT_FALSE(ReactivateChrome(L"GAGA",
-                                GCAPI_INVOKED_STANDARD_SHELL,
-                                &error));
+  EXPECT_FALSE(ReactivateChrome(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(static_cast<DWORD>(REACTIVATE_ERROR_ALREADY_REACTIVATED), error);
 
   // Should not be able to reactivate under other brands:
-  EXPECT_FALSE(ReactivateChrome(L"MAMA",
-                                GCAPI_INVOKED_STANDARD_SHELL,
-                                &error));
+  EXPECT_FALSE(ReactivateChrome(L"MAMA", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 
   // Validate that previous_brands are rejected:
-  EXPECT_FALSE(ReactivateChrome(L"PFFT",
-                                GCAPI_INVOKED_STANDARD_SHELL,
-                                &error));
+  EXPECT_FALSE(ReactivateChrome(L"PFFT", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(static_cast<DWORD>(REACTIVATE_ERROR_ALREADY_REACTIVATED), error);
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 }
@@ -203,13 +185,11 @@ TEST_F(GCAPIReactivationTest, ExperimentLabelCheck) {
   EXPECT_TRUE(SetChromeInstallMarker(HKEY_CURRENT_USER));
 
   Time hkcu_last_run = Time::NowFromSystemTime() -
-      TimeDelta::FromDays(kReactivationMinDaysDormant);
-  EXPECT_TRUE(SetLastRunTime(HKEY_CURRENT_USER,
-                             hkcu_last_run.ToInternalValue()));
+                       TimeDelta::FromDays(kReactivationMinDaysDormant);
+  EXPECT_TRUE(
+      SetLastRunTime(HKEY_CURRENT_USER, hkcu_last_run.ToInternalValue()));
 
-  EXPECT_TRUE(ReactivateChrome(L"GAGA",
-                               GCAPI_INVOKED_STANDARD_SHELL,
-                               &error));
+  EXPECT_TRUE(ReactivateChrome(L"GAGA", GCAPI_INVOKED_STANDARD_SHELL, &error));
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 
   EXPECT_TRUE(HasExperimentLabels(HKEY_CURRENT_USER));

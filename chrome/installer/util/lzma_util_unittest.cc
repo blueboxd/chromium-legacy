@@ -89,8 +89,8 @@ TEST_F(LzmaUtilTest, UnPackTest) {
   EXPECT_EQ(UNPACK_NO_ERROR, lzma_util.OpenArchive(archive));
   EXPECT_EQ(UNPACK_NO_ERROR, lzma_util.UnPack(extract_dir, &unpacked_file));
   EXPECT_TRUE(base::PathExists(extract_dir.AppendASCII("archive\\a.exe")));
-  EXPECT_TRUE(base::PathExists(
-      extract_dir.AppendASCII("archive\\sub_dir\\text.txt")));
+  EXPECT_TRUE(
+      base::PathExists(extract_dir.AppendASCII("archive\\sub_dir\\text.txt")));
 }
 
 // Test the static method that can be used to unpack archives.

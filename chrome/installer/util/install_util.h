@@ -99,7 +99,8 @@ class InstallUtil {
 
   // Deletes the registry value named value_name at path key_path under the key
   // given by reg_root.
-  static bool DeleteRegistryValue(HKEY reg_root, const base::string16& key_path,
+  static bool DeleteRegistryValue(HKEY reg_root,
+                                  const base::string16& key_path,
                                   REGSAM wow64_access,
                                   const base::string16& value_name);
 
@@ -107,15 +108,15 @@ class InstallUtil {
   // DeleteRegistryValueIf.
   class RegistryValuePredicate {
    public:
-    virtual ~RegistryValuePredicate() { }
+    virtual ~RegistryValuePredicate() {}
     virtual bool Evaluate(const base::string16& value) const = 0;
   };
 
   // The result of a conditional delete operation (i.e., DeleteFOOIf).
   enum ConditionalDeleteResult {
-    NOT_FOUND,      // The condition was not satisfied.
-    DELETED,        // The condition was satisfied and the delete succeeded.
-    DELETE_FAILED   // The condition was satisfied but the delete failed.
+    NOT_FOUND,     // The condition was not satisfied.
+    DELETED,       // The condition was satisfied and the delete succeeded.
+    DELETE_FAILED  // The condition was satisfied but the delete failed.
   };
 
   // Deletes the key |key_to_delete_path| under |root_key| iff the value
@@ -144,10 +145,12 @@ class InstallUtil {
   class ValueEquals : public RegistryValuePredicate {
    public:
     explicit ValueEquals(const base::string16& value_to_match)
-        : value_to_match_(value_to_match) { }
+        : value_to_match_(value_to_match) {}
     bool Evaluate(const base::string16& value) const override;
+
    protected:
     base::string16 value_to_match_;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(ValueEquals);
   };
@@ -263,6 +266,5 @@ class InstallUtil {
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);
 };
-
 
 #endif  // CHROME_INSTALLER_UTIL_INSTALL_UTIL_H_

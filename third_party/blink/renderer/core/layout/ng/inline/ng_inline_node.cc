@@ -376,7 +376,7 @@ bool NGInlineNode::IsPrepareLayoutFinished() const {
   return data && !data->text_content.IsNull();
 }
 
-void NGInlineNode::PrepareLayoutIfNeeded() {
+void NGInlineNode::PrepareLayoutIfNeeded() const {
   std::unique_ptr<NGInlineNodeData> previous_data;
   LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
   if (IsPrepareLayoutFinished()) {
@@ -391,7 +391,7 @@ void NGInlineNode::PrepareLayoutIfNeeded() {
 }
 
 void NGInlineNode::PrepareLayout(
-    std::unique_ptr<NGInlineNodeData> previous_data) {
+    std::unique_ptr<NGInlineNodeData> previous_data) const {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
   NGInlineNodeData* data = MutableData();
@@ -708,12 +708,12 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
   return true;
 }
 
-const NGInlineNodeData& NGInlineNode::EnsureData() {
+const NGInlineNodeData& NGInlineNode::EnsureData() const {
   PrepareLayoutIfNeeded();
   return Data();
 }
 
-const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
+const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() const {
   DCHECK(!GetLayoutBlockFlow()->GetDocument().NeedsLayoutTreeUpdate());
 
   NGInlineNodeData* data = MutableData();
@@ -796,7 +796,7 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
 void NGInlineNode::CollectInlines(NGInlineNodeData* data,
-                                  NGInlineNodeData* previous_data) {
+                                  NGInlineNodeData* previous_data) const {
   DCHECK(data->text_content.IsNull());
   DCHECK(data->items.IsEmpty());
   LayoutBlockFlow* block = GetLayoutBlockFlow();
@@ -808,7 +808,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   builder.DidFinishCollectInlines(data);
 }
 
-void NGInlineNode::SegmentText(NGInlineNodeData* data) {
+void NGInlineNode::SegmentText(NGInlineNodeData* data) const {
   SegmentBidiRuns(data);
   SegmentScriptRuns(data);
   SegmentFontOrientation(data);
@@ -817,7 +817,7 @@ void NGInlineNode::SegmentText(NGInlineNodeData* data) {
 }
 
 // Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
-void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
+void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) const {
   DCHECK_EQ(data->segments, nullptr);
 
   String& text_content = data->text_content;
@@ -900,7 +900,7 @@ void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
   DCHECK_EQ(range.end, text_content.length());
 }
 
-void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
+void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) const {
   // Segment by orientation, only if vertical writing mode and items with
   // 'text-orientation: mixed'.
   if (GetLayoutBlockFlow()->IsHorizontalWritingMode())
@@ -942,7 +942,7 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
 
 // Segment bidi runs by resolving bidi embedding levels.
 // http://unicode.org/reports/tr9/#Resolving_Embedding_Levels
-void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
+void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) const {
   if (!data->is_bidi_enabled_) {
     data->SetBaseDirection(TextDirection::kLtr);
     return;
@@ -987,7 +987,7 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
 
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
                              const String* previous_text,
-                             const Vector<NGInlineItem>* previous_items) {
+                             const Vector<NGInlineItem>* previous_items) const {
   const String& text_content = data->text_content;
   Vector<NGInlineItem>* items = &data->items;
 
@@ -1160,7 +1160,7 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
 }
 
 // Create Vector<NGInlineItem> with :first-line rules applied if needed.
-void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
+void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) const {
   // First check if the document has any :first-line rules.
   DCHECK(!data->first_line_items_);
   LayoutObject* layout_object = GetLayoutBox();
@@ -1205,7 +1205,7 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
   data->first_line_items_ = std::move(first_line_items);
 }
 
-void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) {
+void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
 #if DCHECK_IS_ON()
   HashSet<LayoutObject*> associated_objects;
 #endif
@@ -1288,7 +1288,7 @@ void NGInlineNode::ClearAssociatedFragments(
 scoped_refptr<const NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
     const NGBreakToken* break_token,
-    NGInlineChildLayoutContext* context) {
+    NGInlineChildLayoutContext* context) const {
   PrepareLayoutIfNeeded();
 
   const auto* inline_break_token = To<NGInlineBreakToken>(break_token);
@@ -1646,7 +1646,7 @@ static LayoutUnit ComputeContentSize(
 MinMaxSizesResult NGInlineNode::ComputeMinMaxSizes(
     WritingMode container_writing_mode,
     const MinMaxSizesInput& input,
-    const NGConstraintSpace* constraint_space) {
+    const NGConstraintSpace* constraint_space) const {
   PrepareLayoutIfNeeded();
 
   // Compute the max of inline sizes of all line boxes with 0 available inline

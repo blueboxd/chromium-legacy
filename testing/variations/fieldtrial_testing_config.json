@@ -5096,6 +5096,29 @@
             ]
         }
     ],
+    "RenderDocument": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableForCrashedFrame",
+                    "params": {
+                        "level": "crashed-frame"
+                    },
+                    "enable_features": [
+                        "RenderDocument"
+                    ]
+                }
+            ]
+        }
+    ],
     "ReopenTabInProductHelp": [
         {
             "platforms": [

@@ -5,6 +5,7 @@
 #include "chrome/installer/test/resource_updater.h"
 
 #include <windows.h>
+
 #include <stdint.h>
 
 #include "base/files/file_path.h"
@@ -27,8 +28,8 @@ bool ResourceUpdater::Initialize(const base::FilePath& pe_image_path) {
   DCHECK_EQ(handle_, nullptr);
   handle_ = BeginUpdateResource(pe_image_path.value().c_str(), FALSE);
   if (handle_ == nullptr) {
-    PLOG(DFATAL)
-      << "BeginUpdateResource failed on \"" << pe_image_path.value() << "\"";
+    PLOG(DFATAL) << "BeginUpdateResource failed on \"" << pe_image_path.value()
+                 << "\"";
     return false;
   }
   return true;

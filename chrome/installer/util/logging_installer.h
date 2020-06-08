@@ -5,7 +5,6 @@
 #ifndef CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
 #define CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
 
-
 namespace base {
 class FilePath;
 }

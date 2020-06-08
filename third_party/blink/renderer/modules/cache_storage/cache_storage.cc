@@ -51,7 +51,8 @@ struct TypeConverter<MultiCacheQueryOptionsPtr,
 
     MultiCacheQueryOptionsPtr output = MultiCacheQueryOptions::New();
     output->query_options = std::move(query_options);
-    output->cache_name = input->cacheName();
+    if (input->hasCacheName())
+      output->cache_name = input->cacheName();
     return output;
   }
 };

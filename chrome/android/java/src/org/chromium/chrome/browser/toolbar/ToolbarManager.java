@@ -1470,4 +1470,12 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     public HomeButton getHomeButtonForTesting() {
         return mToolbar.getToolbarLayoutForTesting().getHomeButtonForTesting();
     }
+
+    /**
+     * @return View for toolbar container.
+     */
+    @VisibleForTesting
+    public View getContainerViewForTesting() {
+        return mControlContainer.getView();
+    }
 }

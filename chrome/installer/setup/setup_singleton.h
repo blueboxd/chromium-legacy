@@ -17,7 +17,7 @@
 namespace base {
 class CommandLine;
 class TimeDelta;
-}
+}  // namespace base
 
 namespace installer {
 

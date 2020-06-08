@@ -69,7 +69,6 @@ class MODULES_EXPORT ImageCapture final
                            const PhotoSettings*,
                            bool trigger_take_photo = false);
 
-  ScriptPromise takePhoto(ScriptState*);
   ScriptPromise takePhoto(ScriptState*, const PhotoSettings*);
 
   ScriptPromise grabFrame(ScriptState*);

@@ -86,12 +86,10 @@ void ManifestManagerHost::ManifestUrlChanged(
   if (!manifest_manager_frame_->IsCurrent())
     return;
 
-  // TODO(yuzus): |NotifyManifestUrlChanged| should start taking a
-  // |RenderFrameHost| parameter.
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(manifest_manager_frame_);
   static_cast<WebContentsImpl*>(web_contents)
-      ->NotifyManifestUrlChanged(manifest_url);
+      ->NotifyManifestUrlChanged(manifest_manager_frame_, manifest_url);
 }
 
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(ManifestManagerHost)

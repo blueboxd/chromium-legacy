@@ -118,11 +118,8 @@ class PerformanceEvaluator : public BitstreamProcessor {
   // Create a new performance evaluator.
   PerformanceEvaluator() {}
 
-  // Interface BitstreamProcessor
-  void ProcessBitstreamBuffer(
-      int32_t bitstream_buffer_id,
-      const BitstreamBufferMetadata& metadata,
-      const base::UnsafeSharedMemoryRegion* shm) override;
+  void ProcessBitstream(scoped_refptr<BitstreamRef> bitstream,
+                        size_t frame_index) override;
   bool WaitUntilDone() override { return true; }
 
   // Start/Stop collecting performance metrics.
@@ -144,10 +141,9 @@ class PerformanceEvaluator : public BitstreamProcessor {
   PerformanceMetrics perf_metrics_;
 };
 
-void PerformanceEvaluator::ProcessBitstreamBuffer(
-    int32_t bitstream_buffer_id,
-    const BitstreamBufferMetadata& metadata,
-    const base::UnsafeSharedMemoryRegion* shm) {
+void PerformanceEvaluator::ProcessBitstream(
+    scoped_refptr<BitstreamRef> bitstream,
+    size_t frame_index) {
   base::TimeTicks now = base::TimeTicks::Now();
 
   base::TimeDelta delivery_time = (now - prev_bitstream_delivery_time_);
@@ -155,7 +151,8 @@ void PerformanceEvaluator::ProcessBitstreamBuffer(
       delivery_time.InMillisecondsF());
   prev_bitstream_delivery_time_ = now;
 
-  base::TimeDelta encode_time = now.since_origin() - metadata.timestamp;
+  base::TimeDelta encode_time =
+      now.since_origin() - bitstream->metadata.timestamp;
   perf_metrics_.bitstream_encode_times_.push_back(
       encode_time.InMillisecondsF());
 }

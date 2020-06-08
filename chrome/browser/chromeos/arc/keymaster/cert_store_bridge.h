@@ -10,7 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/security_token_operation_bridge.h"
 #include "chrome/services/keymaster/public/mojom/cert_store.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 
 namespace content {
@@ -36,22 +38,22 @@ class CertStoreBridge : public mojom::CertStoreHost {
 
   // CertStoreHost overrides.
   void GetSecurityTokenOperation(
-      mojom::SecurityTokenOperationRequest operation_request,
+      mojo::PendingReceiver<mojom::SecurityTokenOperation> operation_receiver,
       GetSecurityTokenOperationCallback callback) override;
 
  private:
   void OnConnectionReady(
-      std::unique_ptr<mojo::Binding<mojom::CertStoreHost>> binding);
+      std::unique_ptr<mojo::Receiver<mojom::CertStoreHost>> receiver);
   void OnConnectionClosed();
 
   content::BrowserContext* context_;  // not owned.
 
   // Points to a proxy bound to the implementation in arc-keymasterd.
-  keymaster::mojom::CertStoreInstancePtr cert_store_proxy_;
+  mojo::Remote<keymaster::mojom::CertStoreInstance> cert_store_proxy_;
 
   std::unique_ptr<SecurityTokenOperationBridge> security_token_operation_;
 
-  std::unique_ptr<mojo::Binding<mojom::CertStoreHost>> binding_;
+  std::unique_ptr<mojo::Receiver<mojom::CertStoreHost>> receiver_;
 
   base::WeakPtrFactory<CertStoreBridge> weak_ptr_factory_;
 };

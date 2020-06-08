@@ -279,8 +279,10 @@ void AppendCommandLineFlags(const wchar_t* command_line,
 // matching resource found, the callback is invoked and at this point we write
 // it to disk. We expect resource names to start with 'chrome' or 'setup'. Any
 // other name is treated as an error.
-BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
-                              wchar_t* name, LONG_PTR context) {
+BOOL CALLBACK OnResourceFound(HMODULE module,
+                              const wchar_t* type,
+                              wchar_t* name,
+                              LONG_PTR context) {
   if (!context)
     return FALSE;
 
@@ -291,8 +293,7 @@ BOOL CALLBACK OnResourceFound(HMODULE module, const wchar_t* type,
     return FALSE;
 
   PathString full_path;
-  if (!full_path.assign(ctx->base_path) ||
-      !full_path.append(name) ||
+  if (!full_path.assign(ctx->base_path) || !full_path.append(name) ||
       !resource.WriteToDisk(full_path.get()))
     return FALSE;
 
@@ -322,10 +323,8 @@ BOOL CALLBACK WriteResourceToDirectory(HMODULE module,
   PathString full_path;
 
   PEResource resource(name, type, module);
-  return (resource.IsValid() &&
-          full_path.assign(base_path) &&
-          full_path.append(name) &&
-          resource.WriteToDisk(full_path.get()));
+  return (resource.IsValid() && full_path.assign(base_path) &&
+          full_path.append(name) && resource.WriteToDisk(full_path.get()));
 }
 #endif
 
@@ -342,21 +341,21 @@ BOOL CALLBACK WriteResourceToDirectory(HMODULE module,
 // uncompressed 'BN' resources are also extracted. This is generally the set of
 // DLLs/resources needed by setup.exe to run.
 ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
-                                      HMODULE module, const wchar_t* base_path,
-                                      PathString* archive_path,
-                                      PathString* setup_path) {
+                                        HMODULE module,
+                                        const wchar_t* base_path,
+                                        PathString* archive_path,
+                                        PathString* setup_path) {
   // Generate the setup.exe path where we patch/uncompress setup resource.
   PathString setup_dest_path;
-  if (!setup_dest_path.assign(base_path) ||
-      !setup_dest_path.append(kSetupExe))
+  if (!setup_dest_path.assign(base_path) || !setup_dest_path.append(kSetupExe))
     return ProcessExitResult(PATH_STRING_OVERFLOW);
 
   // Prepare the input to OnResourceFound method that needs a location where
   // it will write all the resources.
   Context context = {
-    base_path,
-    archive_path,
-    setup_path,
+      base_path,
+      archive_path,
+      setup_path,
   };
 
   // Get the resources of type 'B7' (7zip archive).
@@ -492,8 +491,7 @@ ProcessExitResult RunSetup(const Configuration& configuration,
 
   // Append the command line param for the previous version of Chrome.
   if (configuration.previous_version() &&
-      (!cmd_line.append(L" --") ||
-       !cmd_line.append(kCmdPreviousVersion) ||
+      (!cmd_line.append(L" --") || !cmd_line.append(kCmdPreviousVersion) ||
        !cmd_line.append(L"=\"") ||
        !cmd_line.append(configuration.previous_version()) ||
        !cmd_line.append(L"\""))) {
@@ -571,13 +569,15 @@ bool SetSecurityDescriptor(const wchar_t* path, PSECURITY_DESCRIPTOR* sd) {
 
   // The largest SID is under 200 characters, so 300 should give enough slack.
   StackString<300> sddl;
-  bool result = sddl.append(L"D:PAI"  // Protected, auto-inherited DACL.
+  bool result = sddl.append(
+                    L"D:PAI"         // Protected, auto-inherited DACL.
                     L"(A;;FA;;;BA)"  // Admin: Full control.
                     L"(A;OIIOCI;GA;;;BA)"
                     L"(A;;FA;;;SY)"  // System: Full control.
                     L"(A;OIIOCI;GA;;;SY)"
                     L"(A;OIIOCI;GA;;;CO)"  // Owner: Full control.
-                    L"(A;;FA;;;") && sddl.append(sid) && sddl.append(L")");
+                    L"(A;;FA;;;") &&
+                sddl.append(sid) && sddl.append(L")");
   if (result) {
     result = !!::ConvertStringSecurityDescriptorToSecurityDescriptor(
         sddl.get(), SDDL_REVISION_1, sd, nullptr);
@@ -597,7 +597,8 @@ bool SetSecurityDescriptor(const wchar_t* path, PSECURITY_DESCRIPTOR* sd) {
 // delete it and create a directory in its place.  So, we use our own mechanism
 // for creating a directory with a hopefully-unique name.  In the case of a
 // collision, we retry a few times with a new name before failing.
-bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir,
+bool CreateWorkDir(const wchar_t* base_path,
+                   PathString* work_dir,
                    ProcessExitResult* exit_code) {
   *exit_code = ProcessExitResult(PATH_STRING_OVERFLOW);
   if (!work_dir->assign(base_path) || !work_dir->append(kTempPrefix))
@@ -618,8 +619,8 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir,
   SECURITY_ATTRIBUTES sa = {};
   sa.nLength = sizeof(SECURITY_ATTRIBUTES);
   if (!SetSecurityDescriptor(base_path, &sa.lpSecurityDescriptor)) {
-    *exit_code = ProcessExitResult(UNABLE_TO_SET_DIRECTORY_ACL,
-                                   ::GetLastError());
+    *exit_code =
+        ProcessExitResult(UNABLE_TO_SET_DIRECTORY_ACL, ::GetLastError());
     return false;
   }
 
@@ -659,11 +660,12 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir,
 
 // Creates and returns a temporary directory in |work_dir| that can be used to
 // extract mini_installer payload. |work_dir| ends with a path separator.
-bool GetWorkDir(HMODULE module, PathString* work_dir,
+bool GetWorkDir(HMODULE module,
+                PathString* work_dir,
                 ProcessExitResult* exit_code) {
   PathString base_path;
-  DWORD len = ::GetTempPath(static_cast<DWORD>(base_path.capacity()),
-                            base_path.get());
+  DWORD len =
+      ::GetTempPath(static_cast<DWORD>(base_path.capacity()), base_path.get());
   if (!len || len >= base_path.capacity() ||
       !CreateWorkDir(base_path.get(), work_dir, exit_code)) {
     // Problem creating the work dir under TEMP path, so try using the
@@ -687,8 +689,7 @@ bool GetWorkDir(HMODULE module, PathString* work_dir,
 
 // Returns true for ".." and "." directories.
 bool IsCurrentOrParentDirectory(const wchar_t* dir) {
-  return dir &&
-         dir[0] == L'.' &&
+  return dir && dir[0] == L'.' &&
          (dir[1] == L'\0' || (dir[1] == L'.' && dir[2] == L'\0'));
 }
 
@@ -708,8 +709,9 @@ void RecursivelyDeleteDirectory(PathString* path) {
   if (find != INVALID_HANDLE_VALUE) {
     do {
       // Use the short name if available to make the most of our buffer.
-      const wchar_t* name = find_data.cAlternateFileName[0] ?
-          find_data.cAlternateFileName : find_data.cFileName;
+      const wchar_t* name = find_data.cAlternateFileName[0]
+                                ? find_data.cAlternateFileName
+                                : find_data.cFileName;
       if (IsCurrentOrParentDirectory(name))
         continue;
 
@@ -753,8 +755,9 @@ void DeleteDirectoriesWithPrefix(const wchar_t* parent_dir,
   do {
     if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
       // Use the short name if available to make the most of our buffer.
-      const wchar_t* name = find_data.cAlternateFileName[0] ?
-          find_data.cAlternateFileName : find_data.cFileName;
+      const wchar_t* name = find_data.cAlternateFileName[0]
+                                ? find_data.cAlternateFileName
+                                : find_data.cFileName;
       if (IsCurrentOrParentDirectory(name))
         continue;
       if (path.assign(parent_dir) && path.append(name))
@@ -768,9 +771,9 @@ void DeleteDirectoriesWithPrefix(const wchar_t* parent_dir,
 // installer runs have failed to clean up.
 void DeleteOldChromeTempDirectories() {
   static const wchar_t* const kDirectoryPrefixes[] = {
-    kTempPrefix,
-    L"chrome_"  // Previous installers created directories with this prefix
-                // and there are still some lying around.
+      kTempPrefix,
+      L"chrome_"  // Previous installers created directories with this prefix
+                  // and there are still some lying around.
   };
 
   PathString temp;

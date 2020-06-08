@@ -347,7 +347,7 @@ v8::Local<v8::Value> ScriptController::EvaluateScriptInMainWorld(
     const ScriptFetchOptions& fetch_options,
     ExecuteScriptPolicy policy) {
   if (policy == kDoNotExecuteScriptWhenScriptsDisabled &&
-      !GetFrame()->GetDocument()->CanExecuteScripts(kAboutToExecuteScript))
+      !GetFrame()->DomWindow()->CanExecuteScripts(kAboutToExecuteScript))
     return v8::Local<v8::Value>();
 
   // |context| should be initialized already due to the MainWorldProxy() call.

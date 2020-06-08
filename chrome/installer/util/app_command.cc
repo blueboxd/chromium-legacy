@@ -17,30 +17,25 @@ namespace installer {
 // static
 // Associate bool member variables with registry entries.
 const AppCommand::NamedBoolVar AppCommand::kNameBoolVars[] = {
-  {&AppCommand::sends_pings_,
-       google_update::kRegSendsPingsField},
-  {&AppCommand::is_web_accessible_,
-       google_update::kRegWebAccessibleField},
-  {&AppCommand::is_auto_run_on_os_upgrade_,
-       google_update::kRegAutoRunOnOSUpgradeField},
-  {&AppCommand::is_run_as_user_,
-       google_update::kRegRunAsUserField},
+    {&AppCommand::sends_pings_, google_update::kRegSendsPingsField},
+    {&AppCommand::is_web_accessible_, google_update::kRegWebAccessibleField},
+    {&AppCommand::is_auto_run_on_os_upgrade_,
+     google_update::kRegAutoRunOnOSUpgradeField},
+    {&AppCommand::is_run_as_user_, google_update::kRegRunAsUserField},
 };
 
 AppCommand::AppCommand()
     : sends_pings_(false),
       is_web_accessible_(false),
       is_auto_run_on_os_upgrade_(false),
-      is_run_as_user_(false) {
-}
+      is_run_as_user_(false) {}
 
 AppCommand::AppCommand(const base::string16& command_line)
     : command_line_(command_line),
       sends_pings_(false),
       is_web_accessible_(false),
       is_auto_run_on_os_upgrade_(false),
-      is_run_as_user_(false) {
-}
+      is_run_as_user_(false) {}
 
 bool AppCommand::Initialize(const base::win::RegKey& key) {
   if (!key.Valid()) {
@@ -75,15 +70,13 @@ void AppCommand::AddWorkItems(HKEY predefined_root,
                               WorkItemList* item_list) const {
   // Command_path is derived from GetRegCommandKey which always returns
   // value from GetClientsKeyPath() which should be 32-bit hive.
-  item_list->AddCreateRegKeyWorkItem(
-                 predefined_root, command_path, KEY_WOW64_32KEY)
+  item_list
+      ->AddCreateRegKeyWorkItem(predefined_root, command_path, KEY_WOW64_32KEY)
       ->set_log_message("creating AppCommand registry key");
-  item_list->AddSetRegValueWorkItem(predefined_root,
-                                    command_path,
-                                    KEY_WOW64_32KEY,
-                                    google_update::kRegCommandLineField,
-                                    command_line_,
-                                    true)
+  item_list
+      ->AddSetRegValueWorkItem(predefined_root, command_path, KEY_WOW64_32KEY,
+                               google_update::kRegCommandLineField,
+                               command_line_, true)
       ->set_log_message("setting AppCommand CommandLine registry value");
 
   for (size_t i = 0; i < base::size(kNameBoolVars); ++i) {
@@ -93,15 +86,12 @@ void AppCommand::AddWorkItems(HKEY predefined_root,
     // Adds a work item to set |var_name| to DWORD 1 if |var_data| is true;
     // adds a work item to remove |var_name| otherwise.
     if (var_data) {
-      item_list->AddSetRegValueWorkItem(predefined_root,
-                                        command_path,
-                                        KEY_WOW64_32KEY,
-                                        var_name,
-                                        static_cast<DWORD>(1),
-                                        true);
+      item_list->AddSetRegValueWorkItem(predefined_root, command_path,
+                                        KEY_WOW64_32KEY, var_name,
+                                        static_cast<DWORD>(1), true);
     } else {
-      item_list->AddDeleteRegValueWorkItem(
-          predefined_root, command_path, KEY_WOW64_32KEY, var_name);
+      item_list->AddDeleteRegValueWorkItem(predefined_root, command_path,
+                                           KEY_WOW64_32KEY, var_name);
     }
   }
 }

@@ -259,5 +259,5 @@ class TestSignChrome(unittest.TestCase):
     def test_sanity_check_bad(self, read_plist, **kwargs):
         config = model.Distribution().to_config(test_config.TestConfig())
         self.assertRaises(
-            ValueError,
-            lambda: parts.sign_chrome(self.paths, config, sign_framework=True))
+            ValueError, lambda: parts.sign_chrome(
+                self.paths, config, sign_framework=True))

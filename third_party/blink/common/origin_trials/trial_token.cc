@@ -56,6 +56,8 @@ const uint8_t kVersion3 = 3;
 // enabled in the stable M50 release which would have used those tokens.
 const uint8_t kVersion2 = 2;
 
+const char* kUsageSubset = "subset";
+
 }  // namespace
 
 TrialToken::~TrialToken() = default;
@@ -216,6 +218,7 @@ std::unique_ptr<TrialToken> TrialToken::Parse(const std::string& token_payload,
 
   // Initialize optional version 3 fields to default values.
   bool is_third_party = false;
+  UsageRestriction usage = UsageRestriction::kNone;
 
   if (version == kVersion3) {
     // The |isThirdParty| flag is optional. If found, ensure it is a valid
@@ -227,10 +230,27 @@ std::unique_ptr<TrialToken> TrialToken::Parse(const std::string& token_payload,
       }
       is_third_party = is_third_party_value->GetBool();
     }
+
+    // The |usage| field is optional and can only be set if |isThirdParty| flag
+    // is true. If found, ensure its value is either empty or "subset".
+    std::string* usage_value = datadict->FindStringKey("usage");
+    if (usage_value) {
+      if (!is_third_party) {
+        return nullptr;
+      }
+      if (usage_value->empty()) {
+        usage = UsageRestriction::kNone;
+      } else if (*usage_value == kUsageSubset) {
+        usage = UsageRestriction::kSubset;
+      } else {
+        return nullptr;
+      }
+    }
   }
 
   return base::WrapUnique(new TrialToken(origin, is_subdomain, *feature_name,
-                                         expiry_timestamp, is_third_party));
+                                         expiry_timestamp, is_third_party,
+                                         usage));
 }
 
 bool TrialToken::ValidateOrigin(const url::Origin& origin) const {
@@ -272,11 +292,13 @@ TrialToken::TrialToken(const url::Origin& origin,
                        bool match_subdomains,
                        const std::string& feature_name,
                        uint64_t expiry_timestamp,
-                       bool is_third_party)
+                       bool is_third_party,
+                       UsageRestriction usage_restriction)
     : origin_(origin),
       match_subdomains_(match_subdomains),
       feature_name_(feature_name),
       expiry_time_(base::Time::FromDoubleT(expiry_timestamp)),
-      is_third_party_(is_third_party) {}
+      is_third_party_(is_third_party),
+      usage_restriction_(usage_restriction) {}
 
 }  // namespace blink

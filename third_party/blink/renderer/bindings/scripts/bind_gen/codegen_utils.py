@@ -59,15 +59,21 @@ def make_header_include_directives(accumulator):
     return LiteralNode(HeaderIncludeDirectives(accumulator))
 
 
-def component_export(component):
+def component_export(component, for_testing):
     assert isinstance(component, web_idl.Component)
+    assert isinstance(for_testing, bool)
 
+    if for_testing:
+        return ""
     return name_style.macro(component, "EXPORT")
 
 
-def component_export_header(component):
+def component_export_header(component, for_testing):
     assert isinstance(component, web_idl.Component)
+    assert isinstance(for_testing, bool)
 
+    if for_testing:
+        return None
     if component == "core":
         return "third_party/blink/renderer/core/core_export.h"
     elif component == "modules":

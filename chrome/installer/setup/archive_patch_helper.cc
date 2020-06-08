@@ -75,10 +75,9 @@ bool ArchivePatchHelper::CourgetteEnsemblePatch() {
     return false;
   }
 
-  courgette::Status result =
-      courgette::ApplyEnsemblePatch(patch_source_.value().c_str(),
-                                    last_uncompressed_file_.value().c_str(),
-                                    target_.value().c_str());
+  courgette::Status result = courgette::ApplyEnsemblePatch(
+      patch_source_.value().c_str(), last_uncompressed_file_.value().c_str(),
+      target_.value().c_str());
   if (result == courgette::C_OK)
     return true;
 
@@ -127,11 +126,9 @@ bool ArchivePatchHelper::BinaryPatch() {
   if (result == OK)
     return true;
 
-  LOG(ERROR)
-      << "Failed to apply patch " << last_uncompressed_file_.value()
-      << " to file " << patch_source_.value()
-      << " and generating file " << target_.value()
-      << " using bsdiff. err=" << result;
+  LOG(ERROR) << "Failed to apply patch " << last_uncompressed_file_.value()
+             << " to file " << patch_source_.value() << " and generating file "
+             << target_.value() << " using bsdiff. err=" << result;
 
   // Ensure a partial output is not left behind.
   base::DeleteFile(target_, false);

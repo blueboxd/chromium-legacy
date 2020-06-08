@@ -31,9 +31,7 @@ class ScopedGoogleUpdateIsMachine {
     env_->SetVar("GoogleUpdateIsMachine", value ? "1" : "0");
   }
 
-  ~ScopedGoogleUpdateIsMachine() {
-    env_->UnSetVar("GoogleUpdateIsMachine");
-  }
+  ~ScopedGoogleUpdateIsMachine() { env_->UnSetVar("GoogleUpdateIsMachine"); }
 
  private:
   std::unique_ptr<base::Environment> env_;
@@ -101,9 +99,9 @@ TEST_F(MiniInstallerConfigurationTest, ArgumentCount) {
 
 TEST_F(MiniInstallerConfigurationTest, CommandLine) {
   static const wchar_t* const kCommandLines[] = {
-    L"",
-    L"spam.exe",
-    L"spam.exe --foo",
+      L"",
+      L"spam.exe",
+      L"spam.exe --foo",
   };
   for (size_t i = 0; i < _countof(kCommandLines); ++i) {
     EXPECT_TRUE(std::wstring(kCommandLines[i]) ==
@@ -142,8 +140,8 @@ TEST_F(MiniInstallerConfigurationTest, IsSystemLevel) {
 
 TEST_F(MiniInstallerConfigurationTest, HasInvalidSwitch) {
   EXPECT_FALSE(TestConfiguration(L"spam.exe").has_invalid_switch());
-  EXPECT_TRUE(TestConfiguration(L"spam.exe --chrome-frame")
-                  .has_invalid_switch());
+  EXPECT_TRUE(
+      TestConfiguration(L"spam.exe --chrome-frame").has_invalid_switch());
 }
 
 }  // namespace mini_installer

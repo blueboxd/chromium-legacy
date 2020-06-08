@@ -1385,17 +1385,6 @@
 
       如果不設定這項政策，或是替換後的值不是有效的主機名稱，系統將不會設定 DHCP 要求中的主機名稱。 </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">允許 <ph name="PRODUCT_NAME" /> 載入實驗性政策。
-
-        警告：實驗性政策不受支援，且在未來的瀏覽器版本中如有變動或遭到移除，恕不另行通知。
-
-        實驗性政策可能尚未完成實驗階段，或仍有已知或未知的瑕疵。這類政策可能會在未通知的情況下進行變更，甚至是遭到移除。啟用實驗性政策可能會造成瀏覽器資料遺失，或對你的安全性或隱私權有不良影響。
-
-        如果某項政策不在清單中，而且未正式發布，則 Chrome Beta 版和 Chrome 穩定版會忽略該政策的值。
-
-        如果某項政策列於清單中，但並未正式發布，系統會套用該政策的值。
-
-        這項政策不會影響已發布的政策。</translation>
 <translation id="3066446511111537292">允許這部裝置的相關使用者採用 ADB 側載</translation>
 <translation id="3069958900488014740">允許關閉 <ph name="PRODUCT_NAME" /> 的 WPAD (Web Proxy Auto Discovery) 最佳化設定。
 

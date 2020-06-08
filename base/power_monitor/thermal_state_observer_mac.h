@@ -27,7 +27,8 @@ class BASE_EXPORT ThermalStateObserverMac {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ThermalStateObserverMacTest, StateChange);
-  PowerObserver::DeviceThermalState state_for_testing_;
+  PowerObserver::DeviceThermalState state_for_testing_ =
+      PowerObserver::DeviceThermalState::kUnknown;
 
   id thermal_state_update_observer_;
 };

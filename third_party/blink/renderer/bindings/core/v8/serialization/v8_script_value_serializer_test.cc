@@ -1045,7 +1045,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   // Make a 10x7 red ImageBitmap in P3 color space.
   SkImageInfo info =
       SkImageInfo::Make(10, 7, kRGBA_F16_SkColorType, kPremul_SkAlphaType,
-                        SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                        SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB,
                                               SkNamedGamut::kDisplayP3));
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   surface->getCanvas()->clear(SK_ColorRED);
@@ -1068,7 +1068,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
   EXPECT_EQ(CanvasPixelFormat::kF16, color_params.PixelFormat());
 
   // Check that the pixel at (3, 3) is red. We expect red in P3 to be
-  // {0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24, 0x00, 0x3C} when each color
+  // {0x57, 0x3B, 0x68, 0x32, 0x6E, 0x30, 0x00, 0x3C} when each color
   // component is presented as a half float in Skia. However, difference in
   // GPU hardware may result in small differences in lower significant byte in
   // Skia color conversion pipeline. Hence, we use a tolerance of 2 here.
@@ -1077,7 +1077,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
                   ->PaintImageForCurrentFrame()
                   .GetSkImage()
                   ->readPixels(info.makeWH(1, 1), &pixel, 8, 3, 3));
-  uint8_t p3_red[8] = {0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24, 0x00, 0x3C};
+  uint8_t p3_red[8] = {0x57, 0x3B, 0x68, 0x32, 0x6E, 0x30, 0x00, 0x3C};
   bool approximate_match = true;
   uint8_t tolerance = 2;
   for (int i = 0; i < 8; i++) {
@@ -1152,7 +1152,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmapV18) {
   uint8_t pixel[8] = {};
   SkImageInfo info =
       SkImageInfo::Make(1, 1, kRGBA_F16_SkColorType, kPremul_SkAlphaType,
-                        SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
+                        SkColorSpace::MakeRGB(SkNamedTransferFn::kSRGB,
                                               SkNamedGamut::kDisplayP3));
   ASSERT_TRUE(new_image_bitmap->BitmapImage()
                   ->PaintImageForCurrentFrame()

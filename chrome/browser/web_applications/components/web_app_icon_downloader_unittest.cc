@@ -93,7 +93,8 @@ class TestWebAppIconDownloader : public WebAppIconDownloader {
 
   void UpdateFaviconURLs(
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
-    WebAppIconDownloader::DidUpdateFaviconURL(candidates);
+    WebAppIconDownloader::DidUpdateFaviconURL(web_contents()->GetMainFrame(),
+                                              candidates);
   }
 
   void set_initial_favicon_urls(

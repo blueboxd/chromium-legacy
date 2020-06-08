@@ -1403,17 +1403,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       Si no se establece esta política, o si el valor que se obtiene después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud de DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Permite que <ph name="PRODUCT_NAME" /> cargue las políticas experimentales.
-
-        ADVERTENCIA: Las políticas experimentales no son compatibles y pueden modificarse o quitarse sin previo aviso en futuras versiones del navegador.
-
-        Es posible que una política experimental no esté terminada o tenga defectos conocidos o desconocidos. Esta política puede modificarse o quitarse sin previo aviso. Si habilitas las políticas experimentales, podrías perder datos de navegación o poner en riesgo tu seguridad o privacidad.
-
-        Si una política no se encuentra en la lista y no se publicó oficialmente, se ignorará su valor en las versiones Beta y estable de Chrome.
-
-        Si una política se encuentra en la lista, pero no se publicó oficialmente, se aplicará su valor.
-
-        Esta política no prevalecerá sobre las políticas ya publicadas.</translation>
 <translation id="3066446511111537292">Permite que los usuarios afiliados de este dispositivo apliquen la transferencia de ADB</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (Web Proxy Auto-Discovery) en <ph name="PRODUCT_NAME" />.
 
@@ -2988,7 +2977,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Se planea quitar esta política en la versión <ph name="PRODUCT_NAME" /> 87 para Mac OS, cuando se quite la compatibilidad con el verificador de certificados heredado de Mac OS X.
       </translation>
-<translation id="5494917047563607689">Si se establece en menos de 1 MB o no se establece, <ph name="PRODUCT_OS_NAME" /> usará el tamaño predeterminado para almacenar en caché las apps y extensiones cuando las instalan varios usuarios del mismo dispositivo. Esta acción evitará que cada usuario las tenga que volver a descargar.</translation>
+<translation id="5494917047563607689">Si se establece en menos de 1 MB o no se establece, el <ph name="PRODUCT_OS_NAME" /> usará el tamaño predeterminado para almacenar en caché las apps y extensiones cuando las instalan varios usuarios del mismo dispositivo. Esta acción evitará que cada usuario las tenga que volver a descargar.</translation>
 <translation id="5498045818698736356">Especifica una lista de aplicaciones web que se instalan de manera silenciosa, sin interacción del usuario y que este no puede desinstalar ni inhabilitar.
 
       Cada elemento de la lista de la política es un objeto con un miembro obligatorio "url" y dos miembros opcionales: "default_launch_container" y "create_desktop_shortcut". "url" debe ser la URL de la aplicación web que se va a instalar, "launch_container" debe ser "window" o "tab" para indicar cómo se abrirá la app una vez que se instale, y "create_desktop_shortcut" debe ser verdadero para crear un acceso directo de escritorio en Linux y Windows. Si se omite "default_launch_container", se abrirá la app en una pestaña de forma predeterminada. Más allá del valor de "default_launch_container", los usuarios podrán cambiar el contenedor donde se abrirá la app. Si se omite "create_desktop_shortcuts", no se crearán accesos directos de escritorio. Consulta la política <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> para fijar apps a la biblioteca de ChromeOS.</translation>

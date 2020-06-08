@@ -35,7 +35,7 @@
 // Include the brand-specific values. Each of these must define:
 // - enum InstallConstantIndex: named indices of the brand's kInstallModes
 //   array.
-// - NUM_INSTALL_MODES: the total numer of modes (i.e., the numer of items in
+// - NUM_INSTALL_MODES: the total number of modes (i.e., the number of items in
 //   kInstallModes.
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/install_static/google_chrome_install_modes.h"

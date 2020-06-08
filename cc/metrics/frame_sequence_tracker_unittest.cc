@@ -1959,4 +1959,61 @@ TEST_F(FrameSequenceTrackerTest, CustomTrackers) {
   EXPECT_EQ(1u, results[3].frames_expected);
 }
 
+TEST_F(FrameSequenceTrackerTest, MergeTrackers) {
+  // Generate two sequences of scrolls: first with only 1 frame, and then with
+  // 99 frames. Verify that the two scrolls are merged to report a single
+  // metric.
+  base::HistogramTester histogram_tester;
+  const char first_sequence[] = "b(1)s(1)e(1,0)P(1)";
+  GenerateSequence(first_sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+
+  const char metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
+  histogram_tester.ExpectTotalCount(metric, 0u);
+  EXPECT_FALSE(TrackerExists(FrameSequenceTrackerType::kTouchScroll));
+
+  CreateNewTracker();
+  const char second_sequence[] = "b(2)s(2)e(2,0)P(2)b(100)s(3)e(100,0)P(3)";
+  GenerateSequence(second_sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 99u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 2u);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  EXPECT_FALSE(TrackerExists(FrameSequenceTrackerType::kTouchScroll));
+  histogram_tester.ExpectTotalCount(metric, 1u);
+  EXPECT_THAT(histogram_tester.GetAllSamples(metric),
+              testing::ElementsAre(base::Bucket(97, 1)));
+}
+
+TEST_F(FrameSequenceTrackerTest, MergeTrackersPresentAfterStopSequence) {
+  // Generate two sequences of scrolls: first with only 1 frame, and then with
+  // 99 frames. Verify that the two scrolls are merged to report a single
+  // metric. For the second sequence, the last frame is presented after the
+  // sequence ends.
+  base::HistogramTester histogram_tester;
+  const char first_sequence[] = "b(1)s(1)e(1,0)P(1)";
+  GenerateSequence(first_sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+
+  const char metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
+  histogram_tester.ExpectTotalCount(metric, 0u);
+  EXPECT_FALSE(TrackerExists(FrameSequenceTrackerType::kTouchScroll));
+
+  CreateNewTracker();
+  const char second_sequence[] = "b(2)s(2)e(2,0)P(2)b(100)s(3)e(100,0)";
+  GenerateSequence(second_sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 99u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  GenerateSequence("P(3)");
+  histogram_tester.ExpectTotalCount(metric, 1u);
+  EXPECT_THAT(histogram_tester.GetAllSamples(metric),
+              testing::ElementsAre(base::Bucket(97, 1)));
+}
+
 }  // namespace cc

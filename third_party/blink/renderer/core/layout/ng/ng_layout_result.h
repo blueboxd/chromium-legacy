@@ -78,6 +78,14 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return HasRareData() ? rare_data_->annotation_overflow : LayoutUnit();
   }
 
+  // The amount of available space for block-start side annotations of the
+  // next box.
+  // This never be negative.
+  LayoutUnit BlockEndAnnotationSpace() const {
+    return HasRareData() ? rare_data_->block_end_annotation_space
+                         : LayoutUnit();
+  }
+
   LogicalOffset OutOfFlowPositionedOffset() const {
     DCHECK(bitfields_.has_oof_positioned_offset);
     return HasRareData() ? rare_data_->oof_positioned_offset
@@ -384,6 +392,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     scoped_refptr<SerializedScriptValue> custom_layout_data;
     LayoutUnit overflow_block_size = kIndefiniteSize;
     LayoutUnit annotation_overflow;
+    LayoutUnit block_end_annotation_space;
 #if DCHECK_IS_ON()
     bool has_tallest_unbreakable_block_size = false;
 #endif

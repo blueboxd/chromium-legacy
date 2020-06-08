@@ -84,6 +84,8 @@
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/services/ime/ime_service.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
+#include "chromeos/services/tts/tts_service.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder_factory.h"  // nogncheck
@@ -217,6 +219,11 @@ auto RunImeService(
   return std::make_unique<chromeos::ime::ImeService>(std::move(receiver));
 }
 
+auto RunTtsService(
+    mojo::PendingReceiver<chromeos::tts::mojom::TtsService> receiver) {
+  return std::make_unique<chromeos::tts::TtsService>(std::move(receiver));
+}
+
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 auto RunAssistantAudioDecoder(
     mojo::PendingReceiver<
@@ -295,6 +302,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 
 #if defined(OS_CHROMEOS)
     RunImeService,
+    RunTtsService,
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
     RunAssistantAudioDecoder,
 #endif

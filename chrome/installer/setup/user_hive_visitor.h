@@ -11,7 +11,7 @@ namespace base {
 namespace win {
 class RegKey;
 }
-}
+}  // namespace base
 
 namespace installer {
 

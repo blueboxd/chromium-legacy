@@ -28,7 +28,7 @@ function drawSRGBThenGetImageDataP3() {
     var pixel = ctx.getImageData(5, 5, 1, 1).dataUnion;
     // Check against the same color in P3. 0.01 protects the test against
     // color conversion deviations.
-    assert_array_approx_equals(pixel, [0.05, 0.12, 0.29, 1], 0.01);
+    assert_array_approx_equals(pixel, [0.24304, 0.38818, 0.57227, 1], 0.01);
 }
 
 function putImageDataP3ThenGetImageDataP3() {
@@ -38,9 +38,9 @@ function putImageDataP3ThenGetImageDataP3() {
     var ctx = canvas.getContext('2d',
         {colorSpace: 'p3', pixelFormat:'float16'})
     var dataP3 = new Float32Array(4);
-    dataP3[0] = 0.05;
-    dataP3[1] = 0.12;
-    dataP3[2] = 0.29;
+    dataP3[0] = 0.24304;
+    dataP3[1] = 0.38818;
+    dataP3[2] = 0.57227;
     dataP3[3] = 1;
     var imageData = ctx.createImageData(dataP3, 1, 1,
         {colorSpace: 'p3', storageFormat:'float32'});
@@ -48,7 +48,7 @@ function putImageDataP3ThenGetImageDataP3() {
     var pixel = ctx.getImageData(5, 5, 1, 1).dataUnion;
     // Check against the same color in P3. 0.001 protects the test against
     // rounding errors.
-    assert_array_approx_equals(pixel, [0.05, 0.12, 0.29, 1], 0.001);
+    assert_array_approx_equals(pixel, [0.24304, 0.38818, 0.57227, 1], 0.001);
 }
 
 function putImageDataSRGBThenGetImageDataP3() {
@@ -68,7 +68,7 @@ function putImageDataSRGBThenGetImageDataP3() {
     var pixel = ctx.getImageData(5, 5, 1, 1).dataUnion;
     // Check against the same color in P3. 0.01 protects the test against
     // color conversion deviations.
-    assert_array_approx_equals(pixel, [0.05, 0.12, 0.29, 1], 0.01);
+    assert_array_approx_equals(pixel, [0.24304, 0.38818, 0.57227, 1], 0.01);
 }
 </script>
 </body>

@@ -818,6 +818,7 @@ void InstallableManager::DidFinishNavigation(
 }
 
 void InstallableManager::DidUpdateWebManifestURL(
+    content::RenderFrameHost* rfh,
     const base::Optional<GURL>& manifest_url) {
   // A change in the manifest URL invalidates our entire internal state.
   Reset();

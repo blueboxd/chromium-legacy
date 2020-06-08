@@ -155,6 +155,16 @@ Polymer({
           'computeHasSavedPasswords_(savedPasswords, savedPasswords.splices)',
     },
 
+    /**
+     * Used to decide the text on the button leading to 'device passwords' page.
+     * @private
+     */
+    numberOfDevicePasswords_: {
+      type: Number,
+      computed: 'computeNumberOfDevicePasswords_(savedPasswords, ' +
+          'savedPasswords.splices)',
+    },
+
     /** @private */
     hasPasswordExceptions_: {
       type: Boolean,
@@ -177,6 +187,18 @@ Polymer({
       value: false,
       computed: 'computeShouldShowStorageDetails_(' +
           'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
+    },
+
+    /**
+     * Whether the entry point leading to the device passwords page should be
+     * shown for a user who is already eligible for account storage.
+     * @private
+     */
+    shouldShowDevicePasswordsLink_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeShouldShowDevicePasswordsLink_(' +
+          'isOptedInForAccountStorage_, numberOfDevicePasswords_)',
     },
 
     /** @private */
@@ -213,6 +235,13 @@ Polymer({
       type: String,
       value: '',
       computed: 'computeAccountStorageToggleBody(isOptedInForAccountStorage_)',
+    },
+
+    /** @private */
+    devicePasswordsLinkLabel_: {
+      type: String,
+      value: '',
+      computed: 'computeDevicePasswordsLinkLabel_(numberOfDevicePasswords_)',
     },
 
     /** @private */
@@ -382,6 +411,13 @@ Polymer({
         PasswordManagerProxy.PasswordCheckReferrer.PASSWORD_SETTINGS);
   },
 
+  /**
+   * Shows the 'device passwords' page.
+   */
+  onDevicePasswordsLinkClicked_() {
+    Router.getInstance().navigateTo(routes.DEVICE_PASSWORDS);
+  },
+
   // <if expr="chromeos">
   /**
    * When this event fired, it means that the password-prompt-dialog succeeded
@@ -444,6 +480,14 @@ Polymer({
   },
 
   /**
+   * @return {number}
+   * @private
+   */
+  computeNumberOfDevicePasswords_() {
+    return this.savedPasswords.filter(p => p.isPresentOnDevice()).length;
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -466,6 +510,15 @@ Polymer({
    */
   computeShouldShowStorageDetails_() {
     return this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowDevicePasswordsLink_() {
+    return this.isOptedInForAccountStorage_ &&
+        (this.numberOfDevicePasswords_ > 0);
   },
 
   /**
@@ -631,6 +684,17 @@ Polymer({
     return this.isOptedInForAccountStorage_ ?
         this.i18n('optOutAccountStorageBody') :
         this.i18n('optInAccountStorageBody');
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  computeDevicePasswordsLinkLabel_() {
+    return this.numberOfDevicePasswords_ === 1 ?
+        this.i18n('devicePasswordsLinkLabelSingular') :
+        this.i18n(
+            'devicePasswordsLinkLabelPlural', this.numberOfDevicePasswords_);
   },
 
   /**

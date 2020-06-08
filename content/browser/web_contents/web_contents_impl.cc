@@ -1287,9 +1287,10 @@ std::vector<WebContentsImpl*> WebContentsImpl::GetWebContentsAndAllInner() {
 }
 
 void WebContentsImpl::NotifyManifestUrlChanged(
+    RenderFrameHost* rfh,
     const base::Optional<GURL>& manifest_url) {
   for (auto& observer : observers_)
-    observer.DidUpdateWebManifestURL(manifest_url);
+    observer.DidUpdateWebManifestURL(rfh, manifest_url);
 }
 
 WebUI* WebContentsImpl::GetWebUI() {
@@ -5132,7 +5133,7 @@ void WebContentsImpl::UpdateFaviconURL(
   favicon_urls_ = std::move(candidates);
 
   for (auto& observer : observers_)
-    observer.DidUpdateFaviconURL(favicon_urls_);
+    observer.DidUpdateFaviconURL(source, favicon_urls_);
 }
 
 void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {

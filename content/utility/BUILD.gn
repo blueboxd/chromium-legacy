@@ -74,7 +74,10 @@ jumbo_source_set("utility") {
   }
 
   if (is_chromeos) {
-    deps += [ "//chromeos/services/ime:sandbox_hook" ]
+    deps += [
+      "//chromeos/services/ime:sandbox_hook",
+      "//chromeos/services/tts:sandbox_hook",
+    ]
   }
 
   # PAC execution is done in process on Android.

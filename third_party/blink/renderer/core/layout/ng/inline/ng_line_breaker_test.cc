@@ -567,6 +567,32 @@ TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
   // Pass if |ComputeMinMaxSize| doesn't hit DCHECK failures.
 }
 
+// crbug.com/1091359
+TEST_F(NGLineBreakerTest, RewindRubyRun) {
+  NGInlineNode node = CreateInlineNode(R"HTML(
+<div id="container">
+<style>
+* {
+  -webkit-text-security:square;
+  font-size:16px;
+}
+</style>
+<big style="word-wrap: break-word">a
+<ruby dir="rtl">
+<rt>
+B AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+<svg></svg>
+<b>
+</rt>
+</ruby>
+  )HTML");
+
+  node.ComputeMinMaxSizes(
+      WritingMode::kHorizontalTb,
+      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
+  // This test passes if no CHECK failures.
+}
+
 #undef MAYBE_OverflowAtomicInline
 }  // namespace
 }  // namespace blink

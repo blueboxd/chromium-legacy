@@ -351,7 +351,36 @@ const SecurityContext& LocalDOMWindow::GetSecurityContext() const {
 
 bool LocalDOMWindow::CanExecuteScripts(
     ReasonForCallingCanExecuteScripts reason) {
-  return document()->CanExecuteScripts(reason);
+  DCHECK(GetFrame())
+      << "you are querying canExecuteScripts on a non-attached Window.";
+
+  // Normally, scripts are not allowed in sandboxed contexts that disallow them.
+  // However, there is an exception for cases when the script should bypass the
+  // main world's CSP (such as for privileged isolated worlds). See
+  // https://crbug.com/811528.
+  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kScripts) &&
+      !ContentSecurityPolicy::ShouldBypassMainWorld(this)) {
+    // FIXME: This message should be moved off the console once a solution to
+    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+    if (reason == kAboutToExecuteScript) {
+      AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kSecurity,
+          mojom::blink::ConsoleMessageLevel::kError,
+          "Blocked script execution in '" + Url().ElidedString() +
+              "' because the document's frame is sandboxed and the "
+              "'allow-scripts' permission is not set."));
+    }
+    return false;
+  }
+
+  WebContentSettingsClient* settings_client =
+      GetFrame()->GetContentSettingsClient();
+  bool script_enabled = GetFrame()->GetSettings()->GetScriptEnabled();
+  if (settings_client)
+    script_enabled = settings_client->AllowScript(script_enabled);
+  if (!script_enabled && reason == kAboutToExecuteScript && settings_client)
+    settings_client->DidNotAllowScript();
+  return script_enabled;
 }
 
 void LocalDOMWindow::ExceptionThrown(ErrorEvent* event) {

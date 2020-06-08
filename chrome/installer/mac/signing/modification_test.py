@@ -321,24 +321,28 @@ class TestModification(unittest.TestCase):
 
         self.assertEqual(7, plistlib.writePlist.call_count)
         plistlib.writePlist.assert_has_calls([
-            mock.call({
-                'CFBundleIdentifier':
-                    'test.signing.bundle_id.canary.AlertNotificationService.xpc'
-            }, '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/XPCServices/AlertNotificationService.xpc/Contents/Info.plist'
-                     ),
-            mock.call({
-                'CFBundleIdentifier': config.base_bundle_id,
-                'CFBundleExecutable': config.app_product,
-                'KSProductID': 'test.ksproduct.canary',
-                'KSChannelID': 'canary',
-                'KSChannelID-full': 'canary-full',
-                'CrProductDirName': 'Acme/Product Canary',
-                'CFBundleSignature': 'Mooo'
-            }, '$W/App Product Canary.app/Contents/Info.plist'),
-            mock.call({
-                'com.apple.application-identifier':
-                    'test.signing.bundle_id.canary'
-            }, '$W/app-entitlements.plist'),
+            mock.call(
+                {
+                    'CFBundleIdentifier':
+                        'test.signing.bundle_id.canary.AlertNotificationService.xpc'
+                },
+                '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/XPCServices/AlertNotificationService.xpc/Contents/Info.plist'
+            ),
+            mock.call(
+                {
+                    'CFBundleIdentifier': config.base_bundle_id,
+                    'CFBundleExecutable': config.app_product,
+                    'KSProductID': 'test.ksproduct.canary',
+                    'KSChannelID': 'canary',
+                    'KSChannelID-full': 'canary-full',
+                    'CrProductDirName': 'Acme/Product Canary',
+                    'CFBundleSignature': 'Mooo'
+                }, '$W/App Product Canary.app/Contents/Info.plist'),
+            mock.call(
+                {
+                    'com.apple.application-identifier':
+                        'test.signing.bundle_id.canary'
+                }, '$W/app-entitlements.plist'),
             mock.call({}, '$W/helper-gpu-entitlements.plist'),
             mock.call({}, '$W/helper-renderer-entitlements.plist'),
             mock.call({}, '$W/helper-plugin-entitlements.plist'),

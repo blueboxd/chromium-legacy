@@ -15,7 +15,7 @@
 namespace base {
 class CommandLine;
 class FilePath;
-}
+}  // namespace base
 
 namespace installer {
 

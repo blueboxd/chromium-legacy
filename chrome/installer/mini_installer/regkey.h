@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_MINI_INSTALLER_REGKEY_H_
 
 #include <windows.h>
+
 #include <stddef.h>
 
 namespace mini_installer {
@@ -44,8 +45,10 @@ class RegKey {
   // Helper function to read a value from registry.  Returns true if value
   // is read successfully and stored in parameter value. Returns false
   // otherwise. |size| is measured in wchar_t units.
-  static bool ReadSZValue(HKEY root_key, const wchar_t *sub_key,
-                          const wchar_t *value_name, wchar_t *value,
+  static bool ReadSZValue(HKEY root_key,
+                          const wchar_t* sub_key,
+                          const wchar_t* value_name,
+                          wchar_t* value,
                           size_t value_size);
 
  private:

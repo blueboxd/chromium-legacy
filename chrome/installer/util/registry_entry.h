@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_UTIL_REGISTRY_ENTRY_H_
 
 #include <windows.h>
+
 #include <stdint.h>
 
 #include "base/macros.h"

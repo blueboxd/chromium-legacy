@@ -71,26 +71,15 @@ template("mojolpm_fuzzer_test") {
       "\"testcase_proto_kind\" must be defined for $target_name since \"seed_corpus_sources\" is defined.")
 
   if (enable_ipc_fuzzer) {
-    proto_copy_target_name = "${target_name}_proto_copy"
     proto_target_name = "${target_name}_proto"
 
-    proto_file_name = get_path_info(invoker.proto_source, "file")
-    proto_source_path = "$root_gen_dir/${proto_file_name}"
-
-    copy(proto_copy_target_name) {
-      sources = [ invoker.proto_source ]
-      outputs = [ proto_source_path ]
-      testonly = true
-    }
-
     proto_library(proto_target_name) {
-      sources = [ proto_source_path ]
+      sources = [ invoker.proto_source ]
       generate_python = false
 
-      proto_deps = [
-        ":${proto_copy_target_name}",
-        "//mojo/public/tools/fuzzers:mojolpm_proto_copy",
-      ]
+      proto_deps = [ "//mojo/public/tools/fuzzers:mojolpm_proto_copy" ]
+
+      import_dirs = [ root_gen_dir ]
 
       link_deps = []
 
@@ -109,18 +98,20 @@ template("mojolpm_fuzzer_test") {
       protoc_convert(protoc_convert_target_name) {
         sources = invoker.seed_corpus_sources
 
-        inputs = [ proto_source_path ]
+        inputs = [ invoker.proto_source ]
 
         output_pattern = "${seed_corpus_path}/{{source_name_part}}.binarypb"
 
         args = [
           "--encode=${invoker.testcase_proto_kind}",
           "-I",
-          rebase_path("$root_gen_dir"),
+          rebase_path(root_gen_dir),
+          "-I",
+          get_path_info(rebase_path(inputs[0]), "dir"),
           rebase_path(inputs[0]),
         ]
 
-        deps = [ ":${proto_copy_target_name}" ]
+        deps = []
 
         if (defined(invoker.proto_deps)) {
           deps += invoker.proto_deps

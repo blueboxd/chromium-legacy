@@ -296,6 +296,7 @@ void MediaSessionImpl::TitleWasSet(NavigationEntry* entry) {
 }
 
 void MediaSessionImpl::DidUpdateFaviconURL(
+    RenderFrameHost* rfh,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   std::vector<media_session::MediaImage> icons;
 
@@ -860,7 +861,8 @@ void MediaSessionImpl::Initialize() {
   delegate_->MediaSessionInfoChanged(GetMediaSessionInfoSync());
 
   DCHECK(web_contents());
-  DidUpdateFaviconURL(web_contents()->GetFaviconURLs());
+  DidUpdateFaviconURL(web_contents()->GetMainFrame(),
+                      web_contents()->GetFaviconURLs());
 }
 
 AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(

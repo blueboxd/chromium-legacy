@@ -82,12 +82,8 @@ class ArchivePatchHelper {
   void set_patch_source(const base::FilePath& patch_source) {
     patch_source_ = patch_source;
   }
-  const base::FilePath& patch_source() const {
-    return patch_source_;
-  }
-  const base::FilePath& target() const {
-    return target_;
-  }
+  const base::FilePath& patch_source() const { return patch_source_; }
+  const base::FilePath& target() const { return target_; }
 
   // Returns the path of the last file extracted by Uncompress().
   const base::FilePath& last_uncompressed_file() const {

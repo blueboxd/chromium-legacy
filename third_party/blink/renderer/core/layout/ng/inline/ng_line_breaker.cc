@@ -234,9 +234,6 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
   DCHECK_GE(offset_, item.StartOffset());
   DCHECK_GE(end_offset, offset_);
   DCHECK_LE(end_offset, item.EndOffset());
-  if (item.Type() != NGInlineItem::kCloseTag &&
-      item.Type() != NGInlineItem::kOpenTag)
-    pending_end_overhang_ = LayoutUnit();
   NGInlineItemResults* item_results = line_info->MutableResults();
   return &item_results->emplace_back(
       &item, item_index_, offset_, end_offset, break_anywhere_if_overflow_,
@@ -558,14 +555,14 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
     return;
   }
 
-  LayoutUnit end_overhang = pending_end_overhang_;
   NGInlineItemResult* item_result = AddItem(item, line_info);
   item_result->should_create_line_box = true;
-  // Try to commit |pending_end_overhang_| set by a prior item.
+  // Try to commit |pending_end_overhang_| of a prior NGInlineItemResult.
   // |pending_end_overhang_| doesn't work well with bidi reordering. It's
   // difficult to compute overhang after bidi reordering because it affect
   // line breaking.
-  position_ -= CommitPendingEndOverhang(end_overhang, line_info);
+  if (maybe_have_end_overhang_)
+    position_ -= CommitPendingEndOverhang(line_info);
 
   if (auto_wrap_) {
     if (mode_ == NGLineBreakerMode::kMinContent &&
@@ -1418,7 +1415,10 @@ void NGLineBreaker::HandleAtomicInline(
 
   if (item.IsRubyRun()) {
     NGAnnotationOverhang overhang = GetOverhang(*item_result);
-    pending_end_overhang_ = overhang.end;
+    if (overhang.end > LayoutUnit()) {
+      item_result->pending_end_overhang = overhang.end;
+      maybe_have_end_overhang_ = true;
+    }
 
     if (CanApplyStartOverhang(*line_info, overhang.start)) {
       DCHECK_EQ(item_result->margins.inline_start, LayoutUnit());
@@ -1978,6 +1978,7 @@ void NGLineBreaker::Rewind(unsigned new_end, NGLineInfo* line_info) {
     item_index_ = first_remove.item_index;
     offset_ = first_remove.start_offset;
     trailing_whitespace_ = WhitespaceState::kLeading;
+    maybe_have_end_overhang_ = false;
   }
   SetCurrentStyle(ComputeCurrentStyle(new_end, line_info));
 

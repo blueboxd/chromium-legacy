@@ -139,12 +139,9 @@ TEST_F(SetRegValueWorkItemTest, WriteExistingNonOverwrite) {
   // Now test REG_DWORD value.
   // Write data to the value we are going to set.
   ASSERT_EQ(ERROR_SUCCESS, test_key_.WriteValue(kNameDword, kDword1));
-  work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                                      kTestKey,
-                                                      WorkItem::kWow64Default,
-                                                      kNameDword,
-                                                      kDword2,
-                                                      false));
+  work_item.reset(WorkItem::CreateSetRegValueWorkItem(
+      HKEY_CURRENT_USER, kTestKey, WorkItem::kWow64Default, kNameDword, kDword2,
+      false));
   ASSERT_TRUE(work_item->Do());
 
   DWORD read_dword;
@@ -232,12 +229,9 @@ TEST_F(SetRegValueWorkItemTest, WriteNonExistingKey) {
           kNameStr, kDataStr1, false));
   EXPECT_FALSE(work_item->Do());
 
-  work_item.reset(WorkItem::CreateSetRegValueWorkItem(HKEY_CURRENT_USER,
-                                                      non_existing.c_str(),
-                                                      WorkItem::kWow64Default,
-                                                      kNameStr,
-                                                      kDword1,
-                                                      false));
+  work_item.reset(WorkItem::CreateSetRegValueWorkItem(
+      HKEY_CURRENT_USER, non_existing.c_str(), WorkItem::kWow64Default,
+      kNameStr, kDword1, false));
   EXPECT_FALSE(work_item->Do());
 }
 

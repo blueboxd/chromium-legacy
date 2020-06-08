@@ -56,7 +56,6 @@ import java.util.concurrent.TimeUnit;
  * Tests for the PhotoPickerDialog class.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // See crbug.com/888931 for details.
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObserver<PickerBitmap>,
                                               DecoderServiceHost.DecoderStatusCallback,
@@ -449,7 +448,7 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
 
     @Test
     @LargeTest
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N) // Video is only supported on N+.
+    @MinAndroidSdkLevel(Build.VERSION_CODES.N) // Video is only supported on N+.
     public void testVideoPlayerPlayAndRestart() throws Throwable {
         // Requesting to play a video is not a case of an accidental disk read on the UI thread.
         StrictMode.ThreadPolicy oldPolicy = TestThreadUtils.runOnUiThreadBlocking(
@@ -515,7 +514,8 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @Test
     @LargeTest
     @DisableAnimationsTestRule.EnsureAnimationsOn
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N) // Video is only supported on N+.
+    @MinAndroidSdkLevel(Build.VERSION_CODES.N) // Video is only supported on N+.
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1092104")
     public void testVideoPlayerAnimations() throws Throwable {
         PickerVideoPlayer.setShortAnimationTimesForTesting(true);
 

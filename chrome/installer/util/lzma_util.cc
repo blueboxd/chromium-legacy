@@ -312,7 +312,7 @@ UnPackStatus LzmaUtilImpl::UnPack(const base::FilePath& location,
               error_code_ = error_code;
             return UNPACK_EXTRACT_ERROR;
           }
-        } __except(FilterPageError(*mapped_file, GetExceptionCode(),
+        } __except (FilterPageError(*mapped_file, GetExceptionCode(),
                                     GetExceptionInformation(), &ntstatus)) {
           LOG(ERROR)
               << "EXCEPTION_IN_PAGE_ERROR while accessing mapped memory; "

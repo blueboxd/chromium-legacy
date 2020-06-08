@@ -35,8 +35,7 @@ bool CanApplyStartOverhang(const NGLineInfo& line_info,
 //
 // This function may update a NGInlineItemResult representing RubyRun
 // in |line_info|
-LayoutUnit CommitPendingEndOverhang(LayoutUnit end_overhang,
-                                    NGLineInfo* line_info);
+LayoutUnit CommitPendingEndOverhang(NGLineInfo* line_info);
 
 }  // namespace blink
 

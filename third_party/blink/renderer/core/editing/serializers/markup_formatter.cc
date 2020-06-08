@@ -383,17 +383,17 @@ EntityMask MarkupFormatter::EntityMaskForText(const Text& text) const {
   if (text.parentElement())
     parent_name = &(text.parentElement())->TagQName();
 
-  if (parent_name &&
-      (*parent_name == html_names::kScriptTag ||
-       *parent_name == html_names::kStyleTag ||
-       *parent_name == html_names::kXmpTag ||
-       *parent_name == html_names::kIFrameTag ||
-       *parent_name == html_names::kPlaintextTag ||
-       *parent_name == html_names::kNoembedTag ||
-       *parent_name == html_names::kNoframesTag ||
-       (*parent_name == html_names::kNoscriptTag &&
-        text.GetDocument().GetFrame() &&
-        text.GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))))
+  if (parent_name && (*parent_name == html_names::kScriptTag ||
+                      *parent_name == html_names::kStyleTag ||
+                      *parent_name == html_names::kXmpTag ||
+                      *parent_name == html_names::kIFrameTag ||
+                      *parent_name == html_names::kPlaintextTag ||
+                      *parent_name == html_names::kNoembedTag ||
+                      *parent_name == html_names::kNoframesTag ||
+                      (*parent_name == html_names::kNoscriptTag &&
+                       text.GetExecutionContext() &&
+                       text.GetExecutionContext()->CanExecuteScripts(
+                           kNotAboutToExecuteScript))))
     return kEntityMaskInCDATA;
   return kEntityMaskInHTMLPCDATA;
 }

@@ -75,8 +75,8 @@ namespace {
 // TODO(erikwright): Shouldn't this still lead to
 // ScheduleParentAndGrandparentForDeletion?
 void DeleteInstallTempDir(const base::FilePath& target_path) {
-  base::FilePath temp_path(target_path.DirName().Append(
-      installer::kInstallTempDir));
+  base::FilePath temp_path(
+      target_path.DirName().Append(installer::kInstallTempDir));
   if (base::DirectoryExists(temp_path)) {
     SelfCleaningTempDir temp_dir;
     if (!temp_dir.Initialize(target_path.DirName(),
@@ -105,10 +105,9 @@ void ProcessChromeWorkItems(const InstallerState& installer_state) {
 }
 
 void ClearRlzProductState() {
-  const rlz_lib::AccessPoint points[] = {rlz_lib::CHROME_OMNIBOX,
-                                         rlz_lib::CHROME_HOME_PAGE,
-                                         rlz_lib::CHROME_APP_LIST,
-                                         rlz_lib::NO_ACCESS_POINT};
+  const rlz_lib::AccessPoint points[] = {
+      rlz_lib::CHROME_OMNIBOX, rlz_lib::CHROME_HOME_PAGE,
+      rlz_lib::CHROME_APP_LIST, rlz_lib::NO_ACCESS_POINT};
 
   rlz_lib::ClearProductState(rlz_lib::CHROME, points);
 
@@ -125,8 +124,7 @@ void ClearRlzProductState() {
 // error.
 bool RemoveInstallerFiles(const base::FilePath& installer_directory) {
   base::FileEnumerator file_enumerator(
-      installer_directory,
-      false,
+      installer_directory, false,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   bool success = true;
 
@@ -201,7 +199,7 @@ void RetargetUserShortcutsWithArgs(const InstallerState& installer_state,
   // ShellUtil::ShortcutLocations.
   VLOG(1) << "Retargeting shortcuts.";
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
-      location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
+       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
     if (!ShellUtil::RetargetShortcutsWithArgs(
             static_cast<ShellUtil::ShortcutLocation>(location), install_level,
             old_target_exe, new_target_exe)) {
@@ -218,8 +216,9 @@ void DeleteShortcuts(const InstallerState& installer_state,
                      const base::FilePath& target_exe) {
   // The per-user shortcut for this user, if present on a system-level install,
   // has already been deleted in chrome_browser_main_win.cc::DoUninstallTasks().
-  ShellUtil::ShellChange install_level = installer_state.system_install() ?
-      ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER;
+  ShellUtil::ShellChange install_level = installer_state.system_install()
+                                             ? ShellUtil::SYSTEM_LEVEL
+                                             : ShellUtil::CURRENT_USER;
 
   // Delete and unpin all shortcuts that point to |target_exe| from all
   // ShellUtil::ShortcutLocations.
@@ -322,8 +321,8 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
   std::vector<base::FilePath> setup_files;
   setup_files.push_back(setup_exe);
 #if defined(COMPONENT_BUILD)
-  base::FileEnumerator file_enumerator(
-      setup_exe.DirName(), false, base::FileEnumerator::FILES, L"*.dll");
+  base::FileEnumerator file_enumerator(setup_exe.DirName(), false,
+                                       base::FileEnumerator::FILES, L"*.dll");
   for (base::FilePath setup_dll = file_enumerator.Next(); !setup_dll.empty();
        setup_dll = file_enumerator.Next()) {
     setup_files.push_back(setup_dll);
@@ -352,8 +351,8 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
       return false;
     }
 
-    VLOG(1) << "Attempting to move " << setup_file.BaseName().value() << " to: "
-            << temp_file.value();
+    VLOG(1) << "Attempting to move " << setup_file.BaseName().value()
+            << " to: " << temp_file.value();
     if (!base::Move(setup_file, temp_file)) {
       PLOG(ERROR) << "Failed to move " << setup_file.BaseName().value()
                   << " to " << temp_file.value();
@@ -392,7 +391,8 @@ DeleteResult DeleteChromeFilesAndFolders(const InstallerState& installer_state,
   // directory. For parents of the installer directory, we will later recurse
   // and delete all the children (that are not also parents/children of the
   // installer directory).
-  base::FileEnumerator file_enumerator(target_path, true,
+  base::FileEnumerator file_enumerator(
+      target_path, true,
       base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
   for (base::FilePath to_delete = file_enumerator.Next(); !to_delete.empty();
        to_delete = file_enumerator.Next()) {
@@ -478,10 +478,10 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
   // Chrome (only a risk if the suffix is empty).  Don't delete the whole key
   // since other apps may have stored data there.
   std::vector<const wchar_t*> cleared_assocs;
-  if (installer_state.system_install() ||
-      !browser_entry_suffix.empty() ||
+  if (installer_state.system_install() || !browser_entry_suffix.empty() ||
       !base::win::RegKey(HKEY_LOCAL_MACHINE, (classes_path + prog_id).c_str(),
-                         KEY_QUERY_VALUE).Valid()) {
+                         KEY_QUERY_VALUE)
+           .Valid()) {
     InstallUtil::ValueEquals prog_id_pred(prog_id);
     for (const wchar_t* const* filetype =
              &ShellUtil::kPotentialFileAssociations[0];
@@ -627,12 +627,12 @@ DeleteResult DeleteChromeDirectoriesIfEmpty(
     // For example Google\Chrome or Chromium
     const base::FilePath product_directory(application_directory.DirName());
     if (!product_directory.empty()) {
-        result = DeleteEmptyDir(product_directory);
-        if (result == DELETE_SUCCEEDED) {
-          const base::FilePath vendor_directory(product_directory.DirName());
-          if (!vendor_directory.empty())
-            result = DeleteEmptyDir(vendor_directory);
-        }
+      result = DeleteEmptyDir(product_directory);
+      if (result == DELETE_SUCCEEDED) {
+        const base::FilePath vendor_directory(product_directory.DirName());
+        if (!vendor_directory.empty())
+          result = DeleteEmptyDir(vendor_directory);
+      }
     }
   }
   if (result == DELETE_NOT_EMPTY)
@@ -757,8 +757,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
     open_with_list_key.append(L"OpenWithList");
     open_with_list_key.push_back(base::FilePath::kSeparators[0]);
     open_with_list_key.append(installer::kChromeExe);
-    InstallUtil::DeleteRegistryKey(
-        root, open_with_list_key, WorkItem::kWow64Default);
+    InstallUtil::DeleteRegistryKey(root, open_with_list_key,
+                                   WorkItem::kWow64Default);
 
     open_with_progids_key.assign(file_assoc_key);
     open_with_progids_key.append(ShellUtil::kRegOpenWithProgids);

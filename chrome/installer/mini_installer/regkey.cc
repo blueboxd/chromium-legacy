@@ -27,7 +27,7 @@ LONG RegKey::ReadSZValue(const wchar_t* value_name,
       result = ERROR_NOT_SUPPORTED;
     } else if (byte_length < 2) {
       *value = L'\0';
-    } else if (value[byte_length/sizeof(wchar_t) - 1] != L'\0') {
+    } else if (value[byte_length / sizeof(wchar_t) - 1] != L'\0') {
       if ((byte_length / sizeof(wchar_t)) < value_size)
         value[byte_length / sizeof(wchar_t)] = L'\0';
       else
@@ -60,8 +60,7 @@ LONG RegKey::WriteSZValue(const wchar_t* value_name, const wchar_t* value) {
 
 LONG RegKey::WriteDWValue(const wchar_t* value_name, DWORD value) {
   return ::RegSetValueEx(key_, value_name, 0, REG_DWORD,
-                         reinterpret_cast<const BYTE*>(&value),
-                         sizeof(value));
+                         reinterpret_cast<const BYTE*>(&value), sizeof(value));
 }
 
 void RegKey::Close() {
@@ -72,8 +71,10 @@ void RegKey::Close() {
 }
 
 // static
-bool RegKey::ReadSZValue(HKEY root_key, const wchar_t *sub_key,
-                         const wchar_t *value_name, wchar_t *value,
+bool RegKey::ReadSZValue(HKEY root_key,
+                         const wchar_t* sub_key,
+                         const wchar_t* value_name,
+                         wchar_t* value,
                          size_t size) {
   RegKey key;
   return (key.Open(root_key, sub_key, KEY_QUERY_VALUE) == ERROR_SUCCESS &&

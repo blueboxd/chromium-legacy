@@ -120,6 +120,23 @@ PdfAccessibilityChoiceFieldInfo::PdfAccessibilityChoiceFieldInfo(
   }
 }
 
+PdfAccessibilityButtonInfo::PdfAccessibilityButtonInfo() = default;
+
+PdfAccessibilityButtonInfo::~PdfAccessibilityButtonInfo() = default;
+
+PdfAccessibilityButtonInfo::PdfAccessibilityButtonInfo(
+    const PP_PrivateAccessibilityButtonInfo& button)
+    : name(std::string(button.name, button.name_length)),
+      value(std::string(button.value, button.value_length)),
+      type(button.type),
+      is_read_only(button.is_read_only),
+      is_checked(button.is_checked),
+      control_count(button.control_count),
+      control_index(button.control_index),
+      index_in_page(button.index_in_page),
+      text_run_index(button.text_run_index),
+      bounds(button.bounds) {}
+
 PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo() = default;
 
 PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo(
@@ -132,6 +149,11 @@ PdfAccessibilityFormFieldInfo::PdfAccessibilityFormFieldInfo(
   choice_fields.reserve(form_fields.choice_field_count);
   for (size_t i = 0; i < form_fields.choice_field_count; i++) {
     choice_fields.emplace_back(form_fields.choice_fields[i]);
+  }
+
+  buttons.reserve(form_fields.button_count);
+  for (size_t i = 0; i < form_fields.button_count; i++) {
+    buttons.emplace_back(form_fields.buttons[i]);
   }
 }
 

@@ -420,29 +420,60 @@ void NGInlineLayoutAlgorithm::CreateLine(
     annotation_metrics = ComputeAnnotationOverflow(
         line_box_metrics, LayoutUnit(), line_info->LineStyle());
   }
+  // Borrow the bottom space of the previous line.
+  if (annotation_metrics.ascent > LayoutUnit() &&
+      ConstraintSpace().BlockStartAnnotationSpace() > LayoutUnit()) {
+    annotation_metrics.ascent = (annotation_metrics.ascent -
+                                 ConstraintSpace().BlockStartAnnotationSpace())
+                                    .ClampNegativeToZero();
+  }
 
   if (line_info->UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
   container_builder_.SetBaseDirection(line_info->BaseDirection());
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
-  container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset +
-                                       annotation_metrics.ascent);
+  container_builder_.SetBfcBlockOffset(
+      line_info->BfcOffset().block_offset +
+      annotation_metrics.ascent.ClampNegativeToZero());
   if (annotation_metrics.descent > LayoutUnit())
     container_builder_.SetAnnotationOverflow(annotation_metrics.descent);
+  else if (annotation_metrics.descent < LayoutUnit())
+    container_builder_.SetBlockEndAnnotationSpace(-annotation_metrics.descent);
 }
 
+// Return value:
+//   .ascent > 0: The amount of annotation overflow at the line-top side
+//   .ascent < 0: The amount of annotation space which the next line at the
+//                line-top side can consume.
+//   .descent > 0: The amount of annotation overflow at the line-bottom side.
+//   .descent < 0: The amount of annotation space which the next line at the
+//                 line-bottom side can consume.
 NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
     const NGLineHeightMetrics& line_box_metrics,
     LayoutUnit line_block_start,
     const ComputedStyle& line_style) {
   DCHECK(Node().HasRuby());
   DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
-  LayoutUnit annotatin_block_start = line_block_start;
+  // Min/max position of content without line-height.
+  LayoutUnit content_block_start = line_block_start + line_box_metrics.ascent;
+  LayoutUnit content_block_end = content_block_start;
+
+  // Min/max position of annotations.
+  LayoutUnit annotation_block_start = content_block_start;
+  LayoutUnit annotation_block_end = content_block_start;
+
   const LayoutUnit line_block_end =
       line_block_start + line_box_metrics.LineHeight();
-  LayoutUnit annotation_block_end = line_block_end;
   for (const auto& item : line_box_) {
+    if (item.HasInFlowFragment()) {
+      content_block_start =
+          std::min(content_block_start, item.Offset().block_offset);
+      content_block_end =
+          std::max(content_block_end,
+                   item.Offset().block_offset + item.Size().block_size);
+    }
+
     // Accumulate |AnnotationOverflow| from ruby runs. All ruby run items have
     // |layout_result|.
     const NGLayoutResult* layout_result = item.layout_result.get();
@@ -450,8 +481,8 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
       continue;
     const LayoutUnit overflow = layout_result->AnnotationOverflow();
     if (overflow < LayoutUnit()) {
-      annotatin_block_start = std::min(
-          annotatin_block_start, item.rect.offset.block_offset + overflow);
+      annotation_block_start = std::min(
+          annotation_block_start, item.rect.offset.block_offset + overflow);
     } else if (overflow > LayoutUnit()) {
       const LayoutUnit block_end =
           item.rect.offset.block_offset +
@@ -463,9 +494,13 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
           std::max(annotation_block_end, block_end + overflow);
     }
   }
+  const LayoutUnit content_or_annotation_block_start =
+      std::min(content_block_start, annotation_block_start);
+  const LayoutUnit content_or_annotation_block_end =
+      std::max(content_block_end, annotation_block_end);
   return NGLineHeightMetrics(
-      std::max(line_block_start - annotatin_block_start, LayoutUnit()),
-      std::max(annotation_block_end - line_block_end, LayoutUnit()));
+      line_block_start - content_or_annotation_block_start,
+      content_or_annotation_block_end - line_block_end);
 }
 
 void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,

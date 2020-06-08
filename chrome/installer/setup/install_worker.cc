@@ -258,8 +258,7 @@ void AddChromeWorkItems(const InstallParams& install_params,
   // never be.
   // TODO(grt): Touch the Start Menu shortcut after putting the manifest in
   // place to force the Start Menu to refresh Chrome's tile.
-  if (base::PathExists(
-          src_path.Append(installer::kVisualElementsManifest))) {
+  if (base::PathExists(src_path.Append(installer::kVisualElementsManifest))) {
     install_list->AddMoveTreeWorkItem(
         src_path.Append(installer::kVisualElementsManifest),
         target_path.Append(installer::kVisualElementsManifest), temp_path,
@@ -268,8 +267,7 @@ void AddChromeWorkItems(const InstallParams& install_params,
     // We do not want to have an old VisualElementsManifest pointing to an old
     // version directory. Delete it as there wasn't a new one to replace it.
     install_list->AddDeleteTreeWorkItem(
-        target_path.Append(installer::kVisualElementsManifest),
-        temp_path);
+        target_path.Append(installer::kVisualElementsManifest), temp_path);
   }
 
   // In the past, we copied rather than moved for system level installs so that
@@ -473,21 +471,15 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
   AppendUninstallCommandLineFlags(installer_state, &uninstall_arguments);
 
   base::string16 update_state_key(install_static::GetClientStateKeyPath());
-  install_list->AddCreateRegKeyWorkItem(
-      reg_root, update_state_key, KEY_WOW64_32KEY);
-  install_list->AddSetRegValueWorkItem(reg_root,
-                                       update_state_key,
-                                       KEY_WOW64_32KEY,
-                                       installer::kUninstallStringField,
-                                       installer_path.value(),
-                                       true);
+  install_list->AddCreateRegKeyWorkItem(reg_root, update_state_key,
+                                        KEY_WOW64_32KEY);
   install_list->AddSetRegValueWorkItem(
-      reg_root,
-      update_state_key,
-      KEY_WOW64_32KEY,
+      reg_root, update_state_key, KEY_WOW64_32KEY,
+      installer::kUninstallStringField, installer_path.value(), true);
+  install_list->AddSetRegValueWorkItem(
+      reg_root, update_state_key, KEY_WOW64_32KEY,
       installer::kUninstallArgumentsField,
-      uninstall_arguments.GetCommandLineString(),
-      true);
+      uninstall_arguments.GetCommandLineString(), true);
 
   // MSI installations will manage their own uninstall shortcuts.
   if (!installer_state.is_msi()) {
@@ -497,63 +489,42 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
     quoted_uninstall_cmd.AppendArguments(uninstall_arguments, false);
 
     base::string16 uninstall_reg = install_static::GetUninstallRegistryPath();
-    install_list->AddCreateRegKeyWorkItem(
-        reg_root, uninstall_reg, KEY_WOW64_32KEY);
+    install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg,
+                                          KEY_WOW64_32KEY);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          KEY_WOW64_32KEY,
                                          installer::kUninstallDisplayNameField,
                                          InstallUtil::GetDisplayName(), true);
     install_list->AddSetRegValueWorkItem(
-        reg_root,
-        uninstall_reg,
-        KEY_WOW64_32KEY,
+        reg_root, uninstall_reg, KEY_WOW64_32KEY,
         installer::kUninstallStringField,
-        quoted_uninstall_cmd.GetCommandLineString(),
-        true);
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"InstallLocation",
-                                         install_path.value(),
-                                         true);
+        quoted_uninstall_cmd.GetCommandLineString(), true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         KEY_WOW64_32KEY, L"InstallLocation",
+                                         install_path.value(), true);
 
     base::string16 chrome_icon =
         ShellUtil::FormatIconLocation(install_path.Append(kChromeExe),
                                       install_static::GetIconResourceIndex());
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"DisplayIcon",
-                                         chrome_icon,
-                                         true);
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"NoModify",
-                                         static_cast<DWORD>(1),
-                                         true);
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"NoRepair",
-                                         static_cast<DWORD>(1),
-                                         true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         KEY_WOW64_32KEY, L"DisplayIcon",
+                                         chrome_icon, true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         KEY_WOW64_32KEY, L"NoModify",
+                                         static_cast<DWORD>(1), true);
+    install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
+                                         KEY_WOW64_32KEY, L"NoRepair",
+                                         static_cast<DWORD>(1), true);
 
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          KEY_WOW64_32KEY, L"Publisher",
                                          InstallUtil::GetPublisherName(), true);
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"Version",
-                                         ASCIIToUTF16(new_version.GetString()),
-                                         true);
-    install_list->AddSetRegValueWorkItem(reg_root,
-                                         uninstall_reg,
-                                         KEY_WOW64_32KEY,
-                                         L"DisplayVersion",
-                                         ASCIIToUTF16(new_version.GetString()),
-                                         true);
+    install_list->AddSetRegValueWorkItem(
+        reg_root, uninstall_reg, KEY_WOW64_32KEY, L"Version",
+        ASCIIToUTF16(new_version.GetString()), true);
+    install_list->AddSetRegValueWorkItem(
+        reg_root, uninstall_reg, KEY_WOW64_32KEY, L"DisplayVersion",
+        ASCIIToUTF16(new_version.GetString()), true);
     // TODO(wfh): Ensure that this value is preserved in the 64-bit hive when
     // 64-bit installs place the uninstall information into the 64-bit registry.
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
@@ -564,19 +535,11 @@ void AddUninstallShortcutWorkItems(const InstallParams& install_params,
     if (version_components.size() == 4) {
       // Our version should be in major.minor.build.rev.
       install_list->AddSetRegValueWorkItem(
-          reg_root,
-          uninstall_reg,
-          KEY_WOW64_32KEY,
-          L"VersionMajor",
-          static_cast<DWORD>(version_components[2]),
-          true);
+          reg_root, uninstall_reg, KEY_WOW64_32KEY, L"VersionMajor",
+          static_cast<DWORD>(version_components[2]), true);
       install_list->AddSetRegValueWorkItem(
-          reg_root,
-          uninstall_reg,
-          KEY_WOW64_32KEY,
-          L"VersionMinor",
-          static_cast<DWORD>(version_components[3]),
-          true);
+          reg_root, uninstall_reg, KEY_WOW64_32KEY, L"VersionMinor",
+          static_cast<DWORD>(version_components[3]), true);
     }
   }
 }
@@ -637,8 +600,8 @@ void AddUpdateBrandCodeWorkItem(const InstallerState& installer_state,
   bool is_enterprise_version =
       base::win::OSInfo::GetInstance()->version_type() != base::win::SUITE_HOME;
   if (!(base::win::IsEnrolledToDomain() ||
-      (base::win::IsDeviceRegisteredWithManagement() &&
-       is_enterprise_version))) {
+        (base::win::IsDeviceRegisteredWithManagement() &&
+         is_enterprise_version))) {
     return;
   }
 
@@ -691,11 +654,11 @@ bool AppendPostInstallTasks(const InstallParams& install_params,
 
     // |critical_version| will be valid only if this in-use update includes a
     // version considered critical relative to the version being updated.
-    base::Version critical_version(installer_state.DetermineCriticalVersion(
-        current_version, new_version));
+    base::Version critical_version(
+        installer_state.DetermineCriticalVersion(current_version, new_version));
     base::FilePath installer_path(
-        installer_state.GetInstallerDirectory(new_version).Append(
-            setup_path.BaseName()));
+        installer_state.GetInstallerDirectory(new_version)
+            .Append(setup_path.BaseName()));
 
     const base::string16 clients_key(install_static::GetClientsKeyPath());
 
@@ -990,24 +953,21 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   const base::string16 active_setup_path(install_static::GetActiveSetupPath());
 
   VLOG(1) << "Adding registration items for Active Setup.";
-  list->AddCreateRegKeyWorkItem(
-      root, active_setup_path, WorkItem::kWow64Default);
+  list->AddCreateRegKeyWorkItem(root, active_setup_path,
+                                WorkItem::kWow64Default);
   list->AddSetRegValueWorkItem(root, active_setup_path, WorkItem::kWow64Default,
                                L"", InstallUtil::GetDisplayName(), true);
 
-  base::FilePath active_setup_exe(installer_state.GetInstallerDirectory(
-      new_version).Append(kActiveSetupExe));
+  base::FilePath active_setup_exe(
+      installer_state.GetInstallerDirectory(new_version)
+          .Append(kActiveSetupExe));
   base::CommandLine cmd(active_setup_exe);
   cmd.AppendSwitch(installer::switches::kConfigureUserSettings);
   cmd.AppendSwitch(installer::switches::kVerboseLogging);
   cmd.AppendSwitch(installer::switches::kSystemLevel);
   InstallUtil::AppendModeSwitch(&cmd);
-  list->AddSetRegValueWorkItem(root,
-                               active_setup_path,
-                               WorkItem::kWow64Default,
-                               L"StubPath",
-                               cmd.GetCommandLineString(),
-                               true);
+  list->AddSetRegValueWorkItem(root, active_setup_path, WorkItem::kWow64Default,
+                               L"StubPath", cmd.GetCommandLineString(), true);
 
   // TODO(grt): http://crbug.com/75152 Write a reference to a localized
   // resource.
@@ -1015,12 +975,8 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
                                L"Localized Name", InstallUtil::GetDisplayName(),
                                true);
 
-  list->AddSetRegValueWorkItem(root,
-                               active_setup_path,
-                               WorkItem::kWow64Default,
-                               L"IsInstalled",
-                               static_cast<DWORD>(1U),
-                               true);
+  list->AddSetRegValueWorkItem(root, active_setup_path, WorkItem::kWow64Default,
+                               L"IsInstalled", static_cast<DWORD>(1U), true);
 
   list->AddWorkItem(new UpdateActiveSetupVersionWorkItem(
       active_setup_path, UpdateActiveSetupVersionWorkItem::UPDATE));

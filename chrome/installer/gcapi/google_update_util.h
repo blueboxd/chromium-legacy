@@ -17,11 +17,11 @@ extern const wchar_t kChromeRegClientStateMediumKey[];
 // with the brand.
 bool GetBrand(base::string16* value);
 
-// Reads Chrome's experiment lables into |experiment_lables|.
+// Reads Chrome's experiment labels into |experiment_labels|.
 bool ReadExperimentLabels(bool system_install,
                           base::string16* experiment_labels);
 
-// Sets Chrome's experiment lables to |experiment_lables|.
+// Sets Chrome's experiment labels to |experiment_labels|.
 bool SetExperimentLabels(bool system_install,
                          const base::string16& experiment_labels);
 

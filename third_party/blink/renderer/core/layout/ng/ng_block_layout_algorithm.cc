@@ -579,6 +579,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
 
   NGPreviousInflowPosition previous_inflow_position = {
       LayoutUnit(), ConstraintSpace().MarginStrut(),
+      is_resuming_ ? LayoutUnit() : container_builder_.Padding().block_start,
       /* self_collapsing_child_had_clearance */ false};
 
   // Do not collapse margins between parent and its child if:
@@ -1588,7 +1589,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleInflow(
                        /* is_new_fc */ false);
   NGConstraintSpace child_space = CreateConstraintSpaceForChild(
       child, child_data, child_available_size_, /* is_new_fc */ false,
-      forced_bfc_block_offset, has_clearance_past_adjoining_floats);
+      forced_bfc_block_offset, has_clearance_past_adjoining_floats,
+      previous_inflow_position->block_end_annotation_space);
   scoped_refptr<const NGLayoutResult> layout_result =
       LayoutInflow(child_space, child_break_token, early_break_, &child,
                    inline_child_layout_context);
@@ -2071,6 +2073,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
        is_self_collapsing);
 
   return {logical_block_offset, margin_strut,
+          layout_result.BlockEndAnnotationSpace(),
           self_or_sibling_self_collapsing_child_had_clearance};
 }
 
@@ -2410,7 +2413,8 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     const LogicalSize child_available_size,
     bool is_new_fc,
     const base::Optional<LayoutUnit> child_bfc_block_offset,
-    bool has_clearance_past_adjoining_floats) {
+    bool has_clearance_past_adjoining_floats,
+    LayoutUnit block_start_annotation_space) {
   const ComputedStyle& style = Style();
   const ComputedStyle& child_style = child.Style();
   WritingMode child_writing_mode =
@@ -2525,6 +2529,7 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // child establishes a new formatting context or not.
     builder.SetDiscardingMarginStrut();
   }
+  builder.SetBlockStartAnnotationSpace(block_start_annotation_space);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
     LayoutUnit fragmentainer_offset_delta;

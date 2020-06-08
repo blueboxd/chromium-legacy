@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.base.LocalizationUtils;
@@ -362,15 +363,18 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @param creator                  A {@link TabCreatorManager} instance.
      * @param content                  A {@link TabContentManager} instance.
      * @param androidContentContainer  A {@link ViewGroup} for Android views to be bound to.
+     * @param controlContainer         A {@link ControlContainer} for browser controls' layout.
      * @param contextualSearchDelegate A {@link ContextualSearchManagementDelegate} instance.
      * @param dynamicResourceLoader    A {@link DynamicResourceLoader} instance.
      */
     public void init(TabModelSelector selector, TabCreatorManager creator,
             TabContentManager content, ViewGroup androidContentContainer,
+            ControlContainer controlContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
-        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
+        mToolbarOverlay = new ToolbarSceneLayer(
+                mContext, this, renderHost, controlContainer, selector::getCurrentTab);
 
         // Initialize Layouts
         mStaticLayout.onFinishNativeInitialization();

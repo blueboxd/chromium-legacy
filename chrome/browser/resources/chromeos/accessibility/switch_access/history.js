@@ -33,6 +33,7 @@ class FocusHistory {
    * automation node.
    * Erases the current history and replaces with the new data.
    * @param {!AutomationNode} node
+   * @return {boolean} Whether the history was rebuilt from the given node.
    */
   buildFromAutomationNode(node) {
     // Create a list of ancestors.
@@ -42,12 +43,18 @@ class FocusHistory {
       node = node.parent;
     }
 
-    this.dataStack_ = [];
-    let group = DesktopNode.build(NavigationManager.desktopNode);
+    let group = DesktopNode.build(ancestorStack.pop());
+    const firstAncestor = ancestorStack[ancestorStack.length - 1];
+    if (!SwitchAccessPredicate.isInterestingSubtree(firstAncestor)) {
+      // If the topmost ancestor (other than the desktop) is entirely
+      // uninteresting, we leave the history as is.
+      return false;
+    }
+
+    const newDataStack = [];
     while (ancestorStack.length > 0) {
       const candidate = ancestorStack.pop();
-      if (candidate.role === chrome.automation.RoleType.DESKTOP ||
-          !SwitchAccessPredicate.isInteresting(candidate, group)) {
+      if (!SwitchAccessPredicate.isInteresting(candidate, group)) {
         continue;
       }
 
@@ -55,13 +62,19 @@ class FocusHistory {
       if (!focus) {
         continue;
       }
-      this.dataStack_.push(new FocusData(group, focus));
+      newDataStack.push(new FocusData(group, focus));
 
       group = focus.asRootNode();
       if (!group) {
         break;
       }
     }
+
+    if (newDataStack.length === 0) {
+      return false;
+    }
+    this.dataStack_ = newDataStack;
+    return true;
   }
 
   /**

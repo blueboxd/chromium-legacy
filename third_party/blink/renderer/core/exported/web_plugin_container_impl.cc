@@ -490,14 +490,12 @@ void WebPluginContainerImpl::ReportGeometry() {
 }
 
 v8::Local<v8::Object> WebPluginContainerImpl::V8ObjectForElement() {
-  LocalFrame* frame = element_->GetDocument().GetFrame();
-  if (!frame)
+  ExecutionContext* context = element_->GetExecutionContext();
+  if (!context || !context->CanExecuteScripts(kNotAboutToExecuteScript))
     return v8::Local<v8::Object>();
 
-  if (!element_->GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))
-    return v8::Local<v8::Object>();
-
-  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  ScriptState* script_state =
+      ToScriptState(context, DOMWrapperWorld::MainWorld());
   if (!script_state)
     return v8::Local<v8::Object>();
 

@@ -1440,17 +1440,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
       Si no se asigna ningún valor a esta política o si el valor que se obtiene de la sustitución no es un nombre de host válido, no se establece ningún nombre de host en la solicitud DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Permite a <ph name="PRODUCT_NAME" /> cargar políticas experimentales.
-
-        ADVERTENCIA: No se ofrece asistencia para las políticas experimentales. Además, estas pueden modificarse o eliminarse sin previo aviso en futuras versiones del navegador.
-
-        Las políticas experimentales pueden no haberse completado o tener defectos conocidos o desconocidos. Pueden también modificarse o eliminarse sin notificación previa. Si habilitas las políticas experimentales, podrías perder datos de navegación o poner en peligro tu seguridad o privacidad.
-
-        Si una política no está en la lista y no se ha publicado oficialmente, su valor se ignorará en Chrome Beta y Chrome Stable.
-
-        Si una política está en la lista, pero no se ha publicado oficialmente, su valor sí se aplicará.
-
-        Esta política no tiene ningún efecto en las políticas ya publicadas.</translation>
 <translation id="3066446511111537292">Permite que los usuarios afiliados de este dispositivo usen la instalación de fuente desconocida adb</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (detección automática de proxy web) en <ph name="PRODUCT_NAME" />.
 

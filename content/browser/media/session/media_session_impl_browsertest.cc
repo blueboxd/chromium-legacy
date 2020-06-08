@@ -2514,7 +2514,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, UpdateFaviconURL) {
       GURL("https://www.example.org/favicon6.png"),
       blink::mojom::FaviconIconType::kTouchIcon, std::vector<gfx::Size>()));
 
-  media_session_->DidUpdateFaviconURL(favicons);
+  media_session_->DidUpdateFaviconURL(shell()->web_contents()->GetMainFrame(),
+                                      favicons);
 
   {
     std::vector<media_session::MediaImage> expected_images;
@@ -2542,6 +2543,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, UpdateFaviconURL) {
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
     media_session_->DidUpdateFaviconURL(
+        shell()->web_contents()->GetMainFrame(),
         std::vector<blink::mojom::FaviconURLPtr>());
     observer.WaitForExpectedImagesOfType(
         media_session::mojom::MediaSessionImageType::kSourceIcon,
@@ -2556,7 +2558,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
       GURL("https://www.example.org/favicon1.png"),
       blink::mojom::FaviconIconType::kFavicon, std::vector<gfx::Size>()));
 
-  media_session_->DidUpdateFaviconURL(favicons);
+  media_session_->DidUpdateFaviconURL(shell()->web_contents()->GetMainFrame(),
+                                      favicons);
 
   {
     std::vector<media_session::MediaImage> expected_images;
@@ -2607,6 +2610,7 @@ class FaviconWaiter : public WebContentsObserver {
       : WebContentsObserver(web_contents) {}
 
   void DidUpdateFaviconURL(
+      RenderFrameHost* render_frame_host,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     received_favicon_ = true;
     run_loop_.Quit();

@@ -228,6 +228,7 @@ class InstallableManager
   // content::WebContentsObserver overrides
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidUpdateWebManifestURL(
+      content::RenderFrameHost* rfh,
       const base::Optional<GURL>& manifest_url) override;
   void WebContentsDestroyed() override;
 

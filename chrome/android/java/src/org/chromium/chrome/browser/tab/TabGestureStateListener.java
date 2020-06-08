@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.fullscreen;
+package org.chromium.chrome.browser.tab;
 
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabWebContentsUserData;
+import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
@@ -21,7 +20,6 @@ public final class TabGestureStateListener extends TabWebContentsUserData {
 
     private final Tab mTab;
     private GestureStateListener mGestureListener;
-    private ChromeFullscreenManager mFullscreenManager;
 
     /**
      * Creates TabGestureStateListener and lets the WebContentsUserData of the Tab manage it.
@@ -39,14 +37,6 @@ public final class TabGestureStateListener extends TabWebContentsUserData {
     private TabGestureStateListener(Tab tab) {
         super(tab);
         mTab = tab;
-    }
-
-    /**
-     * Set {@link FullscreenManager} instance. This is non-null for active tab.
-     * @param manager FullscreenManager instance.
-     */
-    void setFullscreenManager(ChromeFullscreenManager manager) {
-        mFullscreenManager = manager;
     }
 
     @Override
@@ -74,9 +64,11 @@ public final class TabGestureStateListener extends TabWebContentsUserData {
             }
 
             private void onScrollingStateChanged() {
-                if (mFullscreenManager == null) return;
                 boolean scrolling = manager != null ? manager.isScrollInProgress() : false;
-                mFullscreenManager.onContentViewScrollingStateChanged(scrolling);
+                RewindableIterator<TabObserver> observers = ((TabImpl) mTab).getTabObservers();
+                while (observers.hasNext()) {
+                    observers.next().onContentViewScrollingStateChanged(scrolling);
+                }
             }
         };
         manager.addListener(mGestureListener);

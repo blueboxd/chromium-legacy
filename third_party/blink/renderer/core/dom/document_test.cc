@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
@@ -1094,19 +1095,19 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
     // Since the page is sandboxed, main world script execution shouldn't be
     // allowed.
     ScriptState::Scope scope(main_world_script_state);
-    EXPECT_FALSE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+    EXPECT_FALSE(frame->DomWindow()->CanExecuteScripts(kAboutToExecuteScript));
   }
   {
     // Isolated worlds without a dedicated CSP should also not be allowed to
     // run scripts.
     ScriptState::Scope scope(isolated_world_without_csp_script_state);
-    EXPECT_FALSE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+    EXPECT_FALSE(frame->DomWindow()->CanExecuteScripts(kAboutToExecuteScript));
   }
   {
     // An isolated world with a CSP should bypass the main world CSP, and be
     // able to run scripts.
     ScriptState::Scope scope(isolated_world_with_csp_script_state);
-    EXPECT_TRUE(GetDocument().CanExecuteScripts(kAboutToExecuteScript));
+    EXPECT_TRUE(frame->DomWindow()->CanExecuteScripts(kAboutToExecuteScript));
   }
 }
 

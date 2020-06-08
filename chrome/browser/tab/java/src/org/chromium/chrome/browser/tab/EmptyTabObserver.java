@@ -147,4 +147,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY,
             int bottomControlsOffsetY, int contentOffsetY, int topControlsMinHeightOffsetY,
             int bottomControlsMinHeightOffsetY) {}
+
+    @Override
+    public void onContentViewScrollingStateChanged(boolean scrolling) {}
 }

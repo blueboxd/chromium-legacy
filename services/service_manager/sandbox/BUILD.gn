@@ -79,6 +79,8 @@ component("sandbox") {
     sources += [
       "linux/bpf_ime_policy_linux.cc",
       "linux/bpf_ime_policy_linux.h",
+      "linux/bpf_tts_policy_linux.cc",
+      "linux/bpf_tts_policy_linux.h",
     ]
   }
   if (is_mac) {

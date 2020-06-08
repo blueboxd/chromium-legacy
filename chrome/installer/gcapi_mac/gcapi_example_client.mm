@@ -11,16 +11,16 @@
 
 void Usage() {
   fprintf(stderr,
-"usage: gcapi_example [options]\n"
-"\n"
-"options:\n"
-"  --criteria-check    exit after criteria check\n"
-"  --force-reinstall   delete Google Chrome from Applications first\n"
-"  --install <path>    copy <path> to /Applications/Google Chrome.app, set up\n"
-"  --brand <CODE>      set brandcode to <CODE> during installation\n"
-"  --launch            launch Google Chrome when all is done\n"
-"  --help              print this message\n"
-);
+          "usage: gcapi_example [options]\n"
+          "\n"
+          "options:\n"
+          "  --criteria-check    exit after criteria check\n"
+          "  --force-reinstall   delete Google Chrome from Applications first\n"
+          "  --install <path>    copy <path> to /Applications/Google "
+          "Chrome.app, set up\n"
+          "  --brand <CODE>      set brandcode to <CODE> during installation\n"
+          "  --launch            launch Google Chrome when all is done\n"
+          "  --help              print this message\n");
 }
 
 int main(int argc, char* argv[]) {
@@ -65,7 +65,8 @@ int main(int argc, char* argv[]) {
 
   if (reinstall) {
     [[NSFileManager defaultManager]
-        removeItemAtPath:@"/Applications/Google Chrome.app" error:nil];
+        removeItemAtPath:@"/Applications/Google Chrome.app"
+                   error:nil];
   }
 
   unsigned reasons;

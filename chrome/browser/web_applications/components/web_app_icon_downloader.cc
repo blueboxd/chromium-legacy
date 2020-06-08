@@ -153,6 +153,7 @@ void WebAppIconDownloader::DidFinishNavigation(
 }
 
 void WebAppIconDownloader::DidUpdateFaviconURL(
+    content::RenderFrameHost* rfh,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // Only consider the first candidates we are given. This prevents pages that
   // change their favicon from spamming us.

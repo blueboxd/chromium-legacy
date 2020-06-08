@@ -220,6 +220,12 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
             protected void onObservingDifferentTab(Tab tab) {
                 setTab(tab);
             }
+
+            @Override
+            public void onContentViewScrollingStateChanged(boolean scrolling) {
+                mContentViewScrolling = scrolling;
+                if (!scrolling) updateVisuals();
+            }
         };
 
         mTabFullscreenObserver = new TabModelSelectorTabObserver(modelSelector) {
@@ -310,7 +316,8 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      * @return The currently selected tab for fullscreen.
      */
     @Nullable
-    public Tab getTab() {
+    @VisibleForTesting
+    Tab getTab() {
         return mTab;
     }
 
@@ -318,14 +325,10 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         Tab previousTab = getTab();
         mTab = tab;
         if (previousTab != tab) {
-            if (previousTab != null) {
-                TabGestureStateListener.from(previousTab).setFullscreenManager(null);
-            }
             updateViewStateListener();
             if (tab != null) {
                 mBrowserVisibilityDelegate.showControlsTransient();
                 updateMultiTouchZoomSupport(!getPersistentFullscreenMode());
-                TabGestureStateListener.from(tab).setFullscreenManager(this);
                 if (tab.isUserInteractable()) restoreControlsPositions();
             }
         }
@@ -659,14 +662,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         return mRendererBottomControlsMinHeightOffset;
     }
 
-    /**
-     * @return The toolbar control container, may be null.
-     */
-    @Nullable
-    public ControlContainer getControlContainer() {
-        return mControlContainer;
-    }
-
     private void updateControlOffset() {
         if (mControlsPosition == ControlsPosition.NONE) return;
 
@@ -757,7 +752,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      * Updates the current ContentView's children and any popups with the correct offsets based on
      * the current fullscreen state.
      */
-    public void updateContentViewChildrenState() {
+    private void updateContentViewChildrenState() {
         ViewGroup view = getContentView();
         if (view == null) return;
 
@@ -835,7 +830,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      * NB: this only affects the Android controls. For controlling composited toolbar visibility,
      * implement {@link BrowserControlsVisibilityDelegate#canShowBrowserControls()}.
      */
-    public int hideAndroidControls() {
+    private int hideAndroidControls() {
         return mHidingTokenHolder.acquireToken();
     }
 
@@ -927,7 +922,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      * Updates the positions of the browser controls and content to the default non fullscreen
      * values.
      */
-    public void setPositionsForTabToNonFullscreen() {
+    private void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
         if (tab == null
                 || TabBrowserControlsConstraintsHelper.getConstraints(tab)
@@ -953,7 +948,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      * @param topControlsMinHeightOffset The Y offset for the top controls min-height in px.
      * @param bottomControlsMinHeightOffset The Y offset for the bottom controls min-height in px.
      */
-    public void setPositionsForTab(int topControlsOffset, int bottomControlsOffset,
+    private void setPositionsForTab(int topControlsOffset, int bottomControlsOffset,
             int topContentOffset, int topControlsMinHeightOffset,
             int bottomControlsMinHeightOffset) {
         // This min/max logic is here to handle changes in the browser controls height. For example,
@@ -1001,14 +996,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
             mInGesture = false;
             updateVisuals();
         }
-    }
-
-    /**
-     * Called when scrolling state of the ContentView changed.
-     */
-    public void onContentViewScrollingStateChanged(boolean scrolling) {
-        mContentViewScrolling = scrolling;
-        if (!scrolling) updateVisuals();
     }
 
     /**

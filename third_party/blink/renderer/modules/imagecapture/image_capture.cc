@@ -268,39 +268,6 @@ ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise ImageCapture::takePhoto(ScriptState* script_state) {
-  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
-                       "ImageCapture::takePhoto", TRACE_EVENT_SCOPE_PROCESS);
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  if (TrackIsInactive(*stream_track_)) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError,
-        "The associated Track is in an invalid state."));
-    return promise;
-  }
-  if (!service_.is_bound()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotFoundError, kNoServiceError));
-    return promise;
-  }
-
-  service_requests_.insert(resolver);
-
-  // m_streamTrack->component()->source()->id() is the renderer "name" of the
-  // camera;
-  // TODO(mcasas) consider sending the security origin as well:
-  // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-  TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
-                       "ImageCapture::takePhoto", TRACE_EVENT_SCOPE_PROCESS);
-  service_->TakePhoto(
-      stream_track_->Component()->Source()->Id(),
-      WTF::Bind(&ImageCapture::OnMojoTakePhoto, WrapPersistent(this),
-                WrapPersistent(resolver)));
-  return promise;
-}
-
 ScriptPromise ImageCapture::takePhoto(ScriptState* script_state,
                                       const PhotoSettings* photo_settings) {
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),

@@ -58,6 +58,10 @@ struct CORE_EXPORT NGInlineItemResult {
   // Inline size of this item.
   LayoutUnit inline_size;
 
+  // Pending inline-end overhang amount for RubyRun.
+  // This is committed if a following item meets conditions.
+  LayoutUnit pending_end_overhang;
+
   // ShapeResult for text items. Maybe different from NGInlineItem if re-shape
   // is needed in the line breaker.
   scoped_refptr<const ShapeResultView> shape_result;

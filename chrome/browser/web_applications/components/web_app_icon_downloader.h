@@ -85,6 +85,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidUpdateFaviconURL(
+      content::RenderFrameHost* rfh,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
 
   void CancelDownloads();

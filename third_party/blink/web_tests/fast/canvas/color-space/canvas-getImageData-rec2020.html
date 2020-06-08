@@ -28,7 +28,7 @@ function drawSRGBThenGetImageDataRec2020() {
     var pixel = ctx.getImageData(5, 5, 1, 1).dataUnion;
     // Check against the same color in Rec2020. 0.01 protects the test against
     // color conversion deviations.
-    assert_array_approx_equals(pixel, [0.07, 0.12, 0.28, 1], 0.01);
+    assert_array_approx_equals(pixel, [0.34106, 0.41553, 0.59180, 1.00000], 0.01);
 }
 
 function putImageDataRec2020ThenGetImageDataRec2020() {
@@ -38,17 +38,17 @@ function putImageDataRec2020ThenGetImageDataRec2020() {
     var ctx = canvas.getContext('2d',
         {colorSpace: 'rec2020', pixelFormat:'float16'})
     var dataRec2020 = new Float32Array(4);
-    dataRec2020[0] = 0.07;
-    dataRec2020[1] = 0.12;
-    dataRec2020[2] = 0.28;
-    dataRec2020[3] = 1;
+    dataRec2020[0] = 0.34106;
+    dataRec2020[1] = 0.41553;
+    dataRec2020[2] = 0.59180;
+    dataRec2020[3] = 1.00000;
     var imageData = ctx.createImageData(dataRec2020, 1, 1,
         {colorSpace: 'rec2020', storageFormat:'float32'});
     ctx.putImageData(imageData, 5, 5);
     var pixel = ctx.getImageData(5, 5, 1, 1).dataUnion;
     // Check against the same color in Rec2020. 0.001 protects the test against
     // rounding errors.
-    assert_array_approx_equals(pixel, [0.07, 0.12, 0.28, 1], 0.001);
+    assert_array_approx_equals(pixel, [0.34106, 0.41553, 0.59180, 1.00000], 0.001);
 }
 
 function putImageDataSRGBThenGetImageDataRec2020() {
@@ -68,7 +68,7 @@ function putImageDataSRGBThenGetImageDataRec2020() {
     var pixel = ctx.getImageData(5, 5, 1, 1).dataUnion;
     // Check against the same color in Rec2020. 0.01 protects the test against
     // color conversion deviations.
-    assert_array_approx_equals(pixel, [0.07, 0.12, 0.28, 1], 0.01);
+    assert_array_approx_equals(pixel, [0.34106, 0.41553, 0.59180, 1.00000], 0.01);
 }
 </script>
 </body>

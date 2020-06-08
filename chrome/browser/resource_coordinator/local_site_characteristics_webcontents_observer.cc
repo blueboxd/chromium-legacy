@@ -159,6 +159,7 @@ void LocalSiteCharacteristicsWebContentsObserver::TitleWasSet(
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::DidUpdateFaviconURL(
+    content::RenderFrameHost* rfh,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

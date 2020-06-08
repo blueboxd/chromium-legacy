@@ -79,8 +79,8 @@ passwd* GetRealUserId() {
   if (!session_info_dict)
     return nullptr;  // Possibly no screen plugged in.
 
-  CFNumberRef ns_uid = (CFNumberRef)CFDictionaryGetValue(session_info_dict,
-                                                         kCGSessionUserIDKey);
+  CFNumberRef ns_uid =
+      (CFNumberRef)CFDictionaryGetValue(session_info_dict, kCGSessionUserIDKey);
   if (CFGetTypeID(ns_uid) != CFNumberGetTypeID())
     return nullptr;
 
@@ -92,9 +92,7 @@ passwd* GetRealUserId() {
   return getpwuid(uid);
 }
 
-enum TicketKind {
-  kSystemTicket, kUserTicket
-};
+enum TicketKind { kSystemTicket, kUserTicket };
 
 // Replaces "~~" with |home_dir|.
 NSString* AdjustHomedir(NSString* s, const char* home_dir) {
@@ -106,7 +104,8 @@ NSString* AdjustHomedir(NSString* s, const char* home_dir) {
 
 // If |chrome_path| is not 0, |*chrome_path| is set to the path where chrome
 // is according to keystone. It's only set if that path exists on disk.
-BOOL FindChromeTicket(TicketKind kind, const passwd* user,
+BOOL FindChromeTicket(TicketKind kind,
+                      const passwd* user,
                       NSString** chrome_path) {
   if (chrome_path)
     *chrome_path = nil;
@@ -116,7 +115,7 @@ BOOL FindChromeTicket(TicketKind kind, const passwd* user,
       arrayWithObjects:kSystemKsadminPath, kSystemKsadminPathOld, nil];
   if (kind == kUserTicket) {
     [keystone_paths insertObject:AdjustHomedir(kUserKsadminPath, user->pw_dir)
-                        atIndex:0];
+                         atIndex:0];
     [keystone_paths
         insertObject:AdjustHomedir(kUserKsadminPathOld, user->pw_dir)
              atIndex:1];
@@ -136,15 +135,15 @@ BOOL FindChromeTicket(TicketKind kind, const passwd* user,
       [task setLaunchPath:ks_path];
 
       NSArray* arguments = @[
-          kind == kUserTicket ? @"--user-store" : @"--system-store",
-          @"--print-tickets",
-          @"--productid",
-          @"com.google.Chrome",
+        kind == kUserTicket ? @"--user-store" : @"--system-store",
+        @"--print-tickets",
+        @"--productid",
+        @"com.google.Chrome",
       ];
       if (geteuid() == 0 && kind == kUserTicket) {
         NSString* run_as = [NSString stringWithUTF8String:user->pw_name];
         [task setLaunchPath:@"/usr/bin/sudo"];
-        arguments = [@[@"-u", run_as, ks_path]
+        arguments = [@[ @"-u", run_as, ks_path ]
             arrayByAddingObjectsFromArray:arguments];
       }
       [task setArguments:arguments];
@@ -160,10 +159,10 @@ BOOL FindChromeTicket(TicketKind kind, const passwd* user,
       [task waitUntilExit];
 
       ksadmin_ran_successfully = [task terminationStatus] == 0;
-      string = [[[NSString alloc] initWithData:data
-                                    encoding:NSUTF8StringEncoding] autorelease];
-    }
-    @catch (id exception) {
+      string =
+          [[[NSString alloc] initWithData:data
+                                 encoding:NSUTF8StringEncoding] autorelease];
+    } @catch (id exception) {
       // Most likely, ks_path didn't exist.
     }
     [task release];
@@ -244,14 +243,12 @@ BOOL CreatePathToFile(NSString* path, const passwd* user) {
 
 // Tries to write |data| at |user_path|.
 // Returns the path where it wrote, or nil on failure.
-NSString* WriteUserData(NSData* data,
-                        NSString* user_path,
-                        const passwd* user) {
+NSString* WriteUserData(NSData* data, NSString* user_path, const passwd* user) {
   user_path = AdjustHomedir(user_path, user->pw_dir);
-  if (CreatePathToFile(user_path, user) &&
-      [data writeToFile:user_path atomically:YES]) {
+  if (CreatePathToFile(user_path, user) && [data writeToFile:user_path
+                                                  atomically:YES]) {
     chmod([user_path fileSystemRepresentation], kUserPermissions & ~0111);
-    chown([user_path fileSystemRepresentation], user->pw_uid, user->pw_gid);
+    chown([user_path fileSystemRepresentation], user -> pw_uid, user -> pw_gid);
     return user_path;
   }
   return nil;
@@ -269,7 +266,7 @@ NSString* WriteData(NSData* data,
     chmod([system_path fileSystemRepresentation], kAdminPermissions & ~0111);
     // Make sure the file is owned by group admin.
     if (group* group = getgrnam("admin"))
-      chown([system_path fileSystemRepresentation], 0, group->gr_gid);
+      chown([system_path fileSystemRepresentation], 0, group -> gr_gid);
     return system_path;
   }
 
@@ -279,7 +276,7 @@ NSString* WriteData(NSData* data,
 
 NSString* WriteBrandCode(const char* brand_code, const passwd* user) {
   NSDictionary* brand_dict = @{
-      kBrandKey: [NSString stringWithUTF8String:brand_code],
+    kBrandKey : [NSString stringWithUTF8String:brand_code],
   };
   NSData* contents = [NSPropertyListSerialization
       dataFromPropertyList:brand_dict
@@ -294,8 +291,8 @@ BOOL WriteMasterPrefs(const char* master_prefs_contents,
                       const passwd* user) {
   NSData* contents = [NSData dataWithBytes:master_prefs_contents
                                     length:master_prefs_contents_size];
-  return WriteData(
-      contents, kSystemMasterPrefsPath, kUserMasterPrefsPath, user) != nil;
+  return WriteData(contents, kSystemMasterPrefsPath, kUserMasterPrefsPath,
+                   user) != nil;
 }
 
 NSString* PathToFramework(NSString* app_path, NSDictionary* info_plist) {
@@ -309,8 +306,8 @@ NSString* PathToFramework(NSString* app_path, NSDictionary* info_plist) {
 }
 
 NSString* PathToInstallScript(NSString* app_path, NSDictionary* info_plist) {
-  return [PathToFramework(app_path, info_plist) stringByAppendingPathComponent:
-      @"Resources/install.sh"];
+  return [PathToFramework(app_path, info_plist)
+      stringByAppendingPathComponent:@"Resources/install.sh"];
 }
 
 bool isbrandchar(int c) {
@@ -345,7 +342,7 @@ int GoogleChromeCompatibilityCheck(unsigned* reasons) {
     if ((local_reasons & GCCC_ERROR_ALREADYPRESENT) == 0) {
       if (![[NSFileManager defaultManager]
               isWritableFileAtPath:@"/Applications"])
-      local_reasons |= GCCC_ERROR_ACCESSDENIED;
+        local_reasons |= GCCC_ERROR_ACCESSDENIED;
     }
   }
 
@@ -404,16 +401,13 @@ int InstallGoogleChrome(const char* source_path,
             stringByReplacingOccurrencesOfString:@"'"
                                       withString:single_quote_escape];
 
-        NSString* install_script_execution =
-            [NSString stringWithFormat:@"exec '%@' '%@' '%@'",
-                                       install_script_quoted,
-                                       app_path_quoted,
-                                       install_path_quoted];
-        [task setArguments:
-            @[run_as, @"-c", install_script_execution]];
+        NSString* install_script_execution = [NSString
+            stringWithFormat:@"exec '%@' '%@' '%@'", install_script_quoted,
+                             app_path_quoted, install_path_quoted];
+        [task setArguments:@[ run_as, @"-c", install_script_execution ]];
       } else {
         [task setLaunchPath:install_script];
-        [task setArguments:@[app_path, kChromeInstallPath]];
+        [task setArguments:@[ app_path, kChromeInstallPath ]];
       }
 
       [task launch];
@@ -421,8 +415,7 @@ int InstallGoogleChrome(const char* source_path,
       if ([task terminationStatus] != 0) {
         return 0;
       }
-    }
-    @catch (id exception) {
+    } @catch (id exception) {
       return 0;
     }
 
@@ -432,9 +425,10 @@ int InstallGoogleChrome(const char* source_path,
         [info_plist_brand respondsToSelector:@selector(UTF8String)])
       brand_code = [info_plist_brand UTF8String];
 
-    BOOL valid_brand_code = brand_code && strlen(brand_code) == 4 &&
-        isbrandchar(brand_code[0]) && isbrandchar(brand_code[1]) &&
-        isbrandchar(brand_code[2]) && isbrandchar(brand_code[3]);
+    BOOL valid_brand_code =
+        brand_code && strlen(brand_code) == 4 && isbrandchar(brand_code[0]) &&
+        isbrandchar(brand_code[1]) && isbrandchar(brand_code[2]) &&
+        isbrandchar(brand_code[3]);
 
     NSString* brand_path = nil;
     if (valid_brand_code)

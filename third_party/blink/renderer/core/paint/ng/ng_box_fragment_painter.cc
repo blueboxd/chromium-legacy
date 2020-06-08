@@ -427,6 +427,9 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly &&
+      // For now all scrollers with overlay overflow controls are
+      // self-painting layers, so we don't need to traverse descendants
+      // here.
       original_phase != PaintPhase::kOverlayOverflowControls) {
     if (original_phase == PaintPhase::kMask ||
         !box_fragment_.GetLayoutObject()->IsBox()) {
@@ -437,6 +440,26 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
       PaintObject(contents_paint_state.GetPaintInfo(),
                   contents_paint_state.PaintOffset());
     }
+  }
+
+  // If the caret's node's fragment's containing block is this block, and
+  // the paint action is PaintPhaseForeground, then paint the caret.
+  if (original_phase == PaintPhase::kForeground &&
+      box_fragment_.ShouldPaintCarets()) {
+    // Apply overflow clip if needed.
+    // reveal-caret-of-multiline-contenteditable.html needs this.
+    // TDOO(yoisn): We should share this code with |BlockPainter::Paint()|
+    base::Optional<ScopedPaintChunkProperties> paint_chunk_properties;
+    if (const auto* fragment = paint_state.FragmentToPaint()) {
+      if (const auto* properties = fragment->PaintProperties()) {
+        if (const auto* overflow_clip = properties->OverflowClip()) {
+          paint_chunk_properties.emplace(
+              paint_info.context.GetPaintController(), *overflow_clip,
+              *box_fragment_.GetLayoutObject(), DisplayItem::kCaret);
+        }
+      }
+    }
+    PaintCarets(paint_info, paint_offset);
   }
 
   if (ShouldPaintSelfOutline(original_phase)) {
@@ -572,12 +595,6 @@ void NGBoxFragmentPainter::PaintObject(
     NGFragmentPainter(box_fragment_, GetDisplayItemClient())
         .PaintOutline(paint_info, paint_offset);
   }
-
-  // If the caret's node's fragment's containing block is this block, and
-  // the paint action is PaintPhaseForeground, then paint the caret.
-  if (paint_phase == PaintPhase::kForeground &&
-      physical_box_fragment.ShouldPaintCarets())
-    PaintCarets(paint_info, paint_offset);
 }
 
 void NGBoxFragmentPainter::PaintCarets(const PaintInfo& paint_info,

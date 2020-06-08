@@ -174,8 +174,8 @@ ScopedPriorityClass::ScopedPriorityClass(DWORD original_priority_class)
     : original_priority_class_(original_priority_class) {}
 
 ScopedPriorityClass::~ScopedPriorityClass() {
-  BOOL result = ::SetPriorityClass(::GetCurrentProcess(),
-                                   original_priority_class_);
+  BOOL result =
+      ::SetPriorityClass(::GetCurrentProcess(), original_priority_class_);
   EXPECT_NE(FALSE, result);
 }
 
@@ -277,8 +277,7 @@ namespace {
 // with a product being updated.
 class FindArchiveToPatchTest : public testing::Test {
  protected:
-  class FakeInstallationState : public installer::InstallationState {
-  };
+  class FakeInstallationState : public installer::InstallationState {};
 
   class FakeProductState : public installer::ProductState {
    public:
@@ -315,22 +314,19 @@ class FindArchiveToPatchTest : public testing::Test {
 
     // Prepare to update the product in the temp dir.
     installer_state_.reset(new installer::InstallerState(
-        kSystemInstall_ ? installer::InstallerState::SYSTEM_LEVEL :
-        installer::InstallerState::USER_LEVEL));
+        kSystemInstall_ ? installer::InstallerState::SYSTEM_LEVEL
+                        : installer::InstallerState::USER_LEVEL));
     installer_state_->set_target_path_for_testing(test_dir_.GetPath());
 
     // Create archives in the two version dirs.
     ASSERT_TRUE(
         base::CreateDirectory(GetProductVersionArchivePath().DirName()));
     ASSERT_EQ(1, base::WriteFile(GetProductVersionArchivePath(), "a", 1));
-    ASSERT_TRUE(
-        base::CreateDirectory(GetMaxVersionArchivePath().DirName()));
+    ASSERT_TRUE(base::CreateDirectory(GetMaxVersionArchivePath().DirName()));
     ASSERT_EQ(1, base::WriteFile(GetMaxVersionArchivePath(), "b", 1));
   }
 
-  void TearDown() override {
-    original_state_.reset();
-  }
+  void TearDown() override { original_state_.reset(); }
 
   base::FilePath GetArchivePath(const base::Version& version) const {
     return test_dir_.GetPath()
@@ -421,16 +417,16 @@ TEST_F(FindArchiveToPatchTest, NoVersionFound) {
 
 TEST_F(FindArchiveToPatchTest, DesiredVersionFound) {
   base::FilePath patch_source1(installer::FindArchiveToPatch(
-    *original_state_, *installer_state_, product_version_));
+      *original_state_, *installer_state_, product_version_));
   EXPECT_EQ(GetProductVersionArchivePath().value(), patch_source1.value());
   base::FilePath patch_source2(installer::FindArchiveToPatch(
-    *original_state_, *installer_state_, max_version_));
+      *original_state_, *installer_state_, max_version_));
   EXPECT_EQ(GetMaxVersionArchivePath().value(), patch_source2.value());
 }
 
 TEST_F(FindArchiveToPatchTest, DesiredVersionNotFound) {
   base::FilePath patch_source(installer::FindArchiveToPatch(
-    *original_state_, *installer_state_, base::Version("1.2.3.4")));
+      *original_state_, *installer_state_, base::Version("1.2.3.4")));
   EXPECT_EQ(base::FilePath().value(), patch_source.value());
 }
 
@@ -533,20 +529,23 @@ class DeleteRegistryKeyPartialTest : public ::testing::Test {
     // These subkeys are added such that 1) keys to preserve are intermixed with
     // other keys, and 2) the case of the keys to preserve doesn't match the
     // values in |to_preserve_|.
-    ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
-                                 .CreateKey(L"0sub", KEY_WRITE));
+    ASSERT_EQ(
+        ERROR_SUCCESS,
+        RegKey(root_, path_.c_str(), KEY_WRITE).CreateKey(L"0sub", KEY_WRITE));
     if (with_preserves) {
       ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
                                    .CreateKey(L"1evreserp", KEY_WRITE));
     }
-    ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
-                                 .CreateKey(L"asub", KEY_WRITE));
+    ASSERT_EQ(
+        ERROR_SUCCESS,
+        RegKey(root_, path_.c_str(), KEY_WRITE).CreateKey(L"asub", KEY_WRITE));
     if (with_preserves) {
       ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
                                    .CreateKey(L"preserve1", KEY_WRITE));
     }
-    ASSERT_EQ(ERROR_SUCCESS, RegKey(root_, path_.c_str(), KEY_WRITE)
-                                 .CreateKey(L"sub1", KEY_WRITE));
+    ASSERT_EQ(
+        ERROR_SUCCESS,
+        RegKey(root_, path_.c_str(), KEY_WRITE).CreateKey(L"sub1", KEY_WRITE));
   }
 
   const HKEY root_ = HKEY_CURRENT_USER;
@@ -612,14 +611,17 @@ TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKeyWithPreserve) {
     RegKey key(root_, path_.c_str(), KEY_SET_VALUE);
     ASSERT_TRUE(key.Valid());
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(nullptr, 5U));
-    ASSERT_EQ(1u, base::win::RegistryValueIterator(root_, path_.c_str())
-                      .ValueCount());
+    ASSERT_EQ(
+        1u,
+        base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"foo", L"bar"));
-    ASSERT_EQ(2u, base::win::RegistryValueIterator(root_, path_.c_str())
-                      .ValueCount());
+    ASSERT_EQ(
+        2u,
+        base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"baz", L"huh"));
-    ASSERT_EQ(3u, base::win::RegistryValueIterator(root_, path_.c_str())
-                      .ValueCount());
+    ASSERT_EQ(
+        3u,
+        base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
   }
 
   ASSERT_TRUE(RegKey(root_, path_.c_str(), KEY_WRITE).Valid());

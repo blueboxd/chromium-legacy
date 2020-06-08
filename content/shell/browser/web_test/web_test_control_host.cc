@@ -959,6 +959,7 @@ void WebTestControlHost::WebContentsDestroyed() {
 }
 
 void WebTestControlHost::DidUpdateFaviconURL(
+    RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   bool should_dump_icon_changes = false;
   accumulated_web_test_runtime_flags_changes_.GetBoolean(

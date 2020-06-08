@@ -56,8 +56,7 @@ installer::TranslationDelegate* g_translation_delegate = nullptr;
 
 namespace installer {
 
-TranslationDelegate::~TranslationDelegate() {
-}
+TranslationDelegate::~TranslationDelegate() {}
 
 void SetTranslationDelegate(TranslationDelegate* delegate) {
   g_translation_delegate = delegate;
@@ -73,8 +72,8 @@ std::wstring GetLocalizedString(int base_message_id) {
   std::wstring localized_string;
 
   int message_id = base_message_id + GetLanguageSelector().offset();
-  const ATLSTRINGRESOURCEIMAGE* image = AtlGetStringResourceImage(
-      _AtlBaseModule.GetModuleInstance(), message_id);
+  const ATLSTRINGRESOURCEIMAGE* image =
+      AtlGetStringResourceImage(_AtlBaseModule.GetModuleInstance(), message_id);
   if (image) {
     localized_string = std::wstring(image->achString, image->nLength);
   } else {
@@ -120,8 +119,8 @@ std::wstring GetLocalizedEulaResource() {
   DCHECK(std::numeric_limits<uint32_t>::max() > (url_path.size() * 3));
   DWORD count = static_cast<DWORD>(url_path.size() * 3);
   std::unique_ptr<wchar_t[]> url_canon(new wchar_t[count]);
-  HRESULT hr = ::UrlCanonicalizeW(url_path.c_str(), url_canon.get(),
-                                  &count, URL_ESCAPE_UNSAFE);
+  HRESULT hr = ::UrlCanonicalizeW(url_path.c_str(), url_canon.get(), &count,
+                                  URL_ESCAPE_UNSAFE);
   if (SUCCEEDED(hr))
     return std::wstring(url_canon.get());
   return url_path;

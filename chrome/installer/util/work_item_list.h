@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_UTIL_WORK_ITEM_LIST_H_
 
 #include <windows.h>
+
 #include <stdint.h>
 
 #include <list>

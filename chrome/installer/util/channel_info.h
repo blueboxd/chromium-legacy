@@ -11,7 +11,7 @@ namespace base {
 namespace win {
 class RegKey;
 }
-}
+}  // namespace base
 
 namespace installer {
 
@@ -19,7 +19,6 @@ namespace installer {
 // parameter ("ap") client state value for a product.
 class ChannelInfo {
  public:
-
   // Initialize an instance from the "ap" value in a given registry key.
   // Returns false if the value is present but could not be read from the
   // registry. Returns true if the value was not present or could be read.
@@ -33,9 +32,7 @@ class ChannelInfo {
 
   const base::string16& value() const { return value_; }
   void set_value(const base::string16& value) { value_ = value; }
-  bool Equals(const ChannelInfo& other) const {
-    return value_ == other.value_;
-  }
+  bool Equals(const ChannelInfo& other) const { return value_ == other.value_; }
 
   // Removes the -stage: modifier, returning true if the value is modified.
   bool ClearStage();

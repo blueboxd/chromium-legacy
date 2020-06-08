@@ -32,11 +32,7 @@ namespace {
 TEST(ProductInstallDetailsTest, IsPathParentOf) {
   std::wstring path = L"C:\\Program Files\\Company\\Product\\Application\\foo";
   static constexpr const wchar_t* kFalseExpectations[] = {
-      L"",
-      L"\\",
-      L"\\\\",
-      L"C:\\Program File",
-      L"C:\\Program Filesz",
+      L"", L"\\", L"\\\\", L"C:\\Program File", L"C:\\Program Filesz",
   };
   for (const wchar_t* false_expectation : kFalseExpectations) {
     EXPECT_FALSE(IsPathParentOf(
@@ -134,52 +130,72 @@ struct TestData {
 constexpr TestData kTestData[] = {
     {
         L"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-        STABLE_INDEX, true, L"",
+        STABLE_INDEX,
+        true,
+        L"",
     },
     {
         L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome\\Application"
         L"\\chrome.exe",
-        STABLE_INDEX, false, L"",
+        STABLE_INDEX,
+        false,
+        L"",
     },
     {
         L"C:\\Program Files (x86)\\Google\\Chrome "
         L"Beta\\Application\\chrome.exe",
-        BETA_INDEX, true, L"beta",
+        BETA_INDEX,
+        true,
+        L"beta",
     },
     {
         L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome Beta\\Application"
         L"\\chrome.exe",
-        BETA_INDEX, false, L"beta",
+        BETA_INDEX,
+        false,
+        L"beta",
     },
     {
         L"C:\\Program Files (x86)\\Google\\Chrome Dev\\Application\\chrome.exe",
-        DEV_INDEX, true, L"dev",
+        DEV_INDEX,
+        true,
+        L"dev",
     },
     {
         L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome Dev\\Application"
         L"\\chrome.exe",
-        DEV_INDEX, false, L"dev",
+        DEV_INDEX,
+        false,
+        L"dev",
     },
     {
         L"C:\\Users\\user\\AppData\\Local\\Google\\Chrome SxS\\Application"
         L"\\chrome.exe",
-        CANARY_INDEX, false, L"canary",
+        CANARY_INDEX,
+        false,
+        L"canary",
     },
     {
         L"C:\\Users\\user\\AppData\\Local\\Google\\CHROME SXS\\application"
         L"\\chrome.exe",
-        CANARY_INDEX, false, L"canary",
+        CANARY_INDEX,
+        false,
+        L"canary",
     },
 };
 #else   // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr TestData kTestData[] = {
     {
         L"C:\\Program Files (x86)\\Chromium\\Application\\chrome.exe",
-        CHROMIUM_INDEX, true, L"",
+        CHROMIUM_INDEX,
+        true,
+        L"",
     },
     {
         L"C:\\Users\\user\\AppData\\Local\\Chromium\\Application\\chrome.exe",
-        CHROMIUM_INDEX, false, L"",
+        CHROMIUM_INDEX,
+        false,
+        L"",
     },
 };
 #endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -193,8 +209,7 @@ class MakeProductDetailsTest : public testing::TestWithParam<TestData> {
       : test_data_(GetParam()),
         root_key_(test_data_.system_level ? HKEY_LOCAL_MACHINE
                                           : HKEY_CURRENT_USER),
-        nt_root_key_(test_data_.system_level ? nt::HKLM : nt::HKCU) {
-  }
+        nt_root_key_(test_data_.system_level ? nt::HKLM : nt::HKCU) {}
 
   ~MakeProductDetailsTest() {
     nt::SetTestingOverride(nt_root_key_, base::string16());

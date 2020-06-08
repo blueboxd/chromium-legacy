@@ -723,9 +723,6 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
 
   base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
-  if (host_impl_->pending_tree())
-    host_impl_->pending_tree()->UpdateDrawProperties();
-
   // This method is called on a forced draw, regardless of whether we are able
   // to produce a frame, as the calling site on main thread is blocked until its
   // request completes, and we signal completion here. If CanDraw() is false, we
@@ -775,6 +772,12 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
         FROM_HERE, base::BindOnce(&ProxyMain::DidCommitAndDrawFrame,
                                   proxy_main_weak_ptr_));
   }
+
+  // The tile visibility/priority of the pending tree needs to be updated so
+  // that it doesn't get activated before the raster is complete. But this needs
+  // to happen after the draw, off of the critical path to draw.
+  if (host_impl_->pending_tree())
+    host_impl_->pending_tree()->UpdateDrawProperties();
 
   DCHECK_NE(INVALID_RESULT, result);
   return result;

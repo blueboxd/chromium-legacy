@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
 
@@ -55,10 +56,21 @@ class PLATFORM_EXPORT WritingDirectionMode {
   //
   bool IsHorizontalLtr() const { return IsHorizontal() && IsLtr(); }
 
+  bool operator==(const WritingDirectionMode& other) const {
+    return writing_mode_ == other.writing_mode_ &&
+           direction_ == other.direction_;
+  }
+  bool operator!=(const WritingDirectionMode& other) const {
+    return !operator==(other);
+  }
+
  private:
   WritingMode writing_mode_;
   TextDirection direction_;
 };
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         const WritingDirectionMode&);
 
 }  // namespace blink
 

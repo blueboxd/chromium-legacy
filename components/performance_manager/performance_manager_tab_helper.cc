@@ -432,6 +432,7 @@ void PerformanceManagerTabHelper::WebContentsDestroyed() {
 }
 
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(
+    content::RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // TODO(siggi): This logic belongs in the policy layer rather than here.
   if (!first_time_favicon_set_) {

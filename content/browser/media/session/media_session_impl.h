@@ -136,6 +136,7 @@ class MediaSessionImpl : public MediaSession,
   void OnWebContentsLostFocus(RenderWidgetHost*) override;
   void TitleWasSet(NavigationEntry* entry) override;
   void DidUpdateFaviconURL(
+      RenderFrameHost* rfh,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 

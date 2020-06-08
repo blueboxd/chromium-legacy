@@ -492,3 +492,98 @@ IN_PROC_BROWSER_TEST_F(
     NoTrustedTypesViolationInLinuxProxyConfig) {
   CheckTrustedTypesViolation("chrome://linux-proxy-config");
 }
+
+// Verify that there's no Trusted Types violation in
+// chrome://indexeddb-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInIndexeddbInternals) {
+  CheckTrustedTypesViolation("chrome://indexeddb-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://download-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInDownloadInternals) {
+  CheckTrustedTypesViolation("chrome://download-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://invalidations
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInInvalidations) {
+  CheckTrustedTypesViolation("chrome://invalidations");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://ntp-tiles-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInNTPTilesInternals) {
+  CheckTrustedTypesViolation("chrome://ntp-tiles-internals");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://serviceworker-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInServiceworkerInternals) {
+  CheckTrustedTypesViolation("chrome://serviceworker-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://signin-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSigninInternals) {
+  CheckTrustedTypesViolation("chrome://signin-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://sync-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSyncInternals) {
+  CheckTrustedTypesViolation("chrome://sync-internals");
+}
+
+// Verify that there's no Trusted Types violation in chrome://nacl
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInNacl) {
+  CheckTrustedTypesViolation("chrome://nacl");
+}
+
+// Verify that there's no Trusted Types violation in chrome://conflicts
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInConflicts) {
+  CheckTrustedTypesViolation("chrome://conflicts");
+}
+
+// Verify that there's no Trusted Types violation in chrome://components
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInComponents) {
+  CheckTrustedTypesViolation("chrome://components");
+}
+
+// Verify that there's no Trusted Types violation in chrome://flags
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInFlags) {
+  CheckTrustedTypesViolation("chrome://flags");
+}
+
+// Verify that there's no Trusted Types violation in chrome://gpu
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInGPU) {
+  CheckTrustedTypesViolation("chrome://gpu");
+}
+
+// Verify that there's no Trusted Types violation in
+// chrome://supervised-user-internals
+IN_PROC_BROWSER_TEST_F(
+    ChromeURLDataManagerTestWithWebUIReportOnlyTrustedTypesEnabled,
+    NoTrustedTypesViolationInSupervisedUserInternals) {
+  CheckTrustedTypesViolation("chrome://supervised-user-internals");
+}

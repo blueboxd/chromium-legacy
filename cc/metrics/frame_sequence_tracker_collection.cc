@@ -193,42 +193,8 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
     tracker.second->ReportFramePresented(frame_token, feedback);
   for (auto& tracker : custom_frame_trackers_)
     tracker.second->ReportFramePresented(frame_token, feedback);
-
   for (auto& tracker : removal_trackers_)
     tracker->ReportFramePresented(frame_token, feedback);
-
-  for (auto& tracker : removal_trackers_) {
-    if (tracker->termination_status() ==
-        FrameSequenceTracker::TerminationStatus::kReadyForTermination) {
-      // The tracker is ready to be terminated.
-      // For non kCustom typed trackers, take the metrics from the tracker.
-      // merge with any outstanding metrics from previous trackers of the same
-      // type. If there are enough frames to report the metrics, then report the
-      // metrics and destroy it. Otherwise, retain it to be merged with
-      // follow-up sequences.
-      // For kCustom typed trackers, |metrics| invokes AddCustomTrackerResult
-      // on its destruction, which add its data to |custom_tracker_results_|
-      // to be picked up by caller.
-      auto metrics = tracker->TakeMetrics();
-      if (metrics->type() == FrameSequenceTrackerType::kCustom)
-        continue;
-
-      auto key = std::make_pair(metrics->type(), metrics->GetEffectiveThread());
-      if (accumulated_metrics_.contains(key)) {
-        metrics->Merge(std::move(accumulated_metrics_[key]));
-        accumulated_metrics_.erase(key);
-      }
-
-      if (metrics->HasEnoughDataForReporting()) {
-        // Do this before ReportMetrics() which clears the throughput data.
-        if (metrics->type() == FrameSequenceTrackerType::kUniversal)
-          throughput_ukm_reporter_->ComputeUniversalThroughput(metrics.get());
-        metrics->ReportMetrics();
-      }
-      if (metrics->HasDataLeftForReporting())
-        accumulated_metrics_[key] = std::move(metrics);
-    }
-  }
 
   DestroyTrackers();
 }
@@ -267,6 +233,39 @@ void FrameSequenceTrackerCollection::ComputeUniversalThroughputForTesting() {
 }
 
 void FrameSequenceTrackerCollection::DestroyTrackers() {
+  for (auto& tracker : removal_trackers_) {
+    if (tracker->termination_status() ==
+        FrameSequenceTracker::TerminationStatus::kReadyForTermination) {
+      // The tracker is ready to be terminated.
+      // For non kCustom typed trackers, take the metrics from the tracker.
+      // merge with any outstanding metrics from previous trackers of the same
+      // type. If there are enough frames to report the metrics, then report the
+      // metrics and destroy it. Otherwise, retain it to be merged with
+      // follow-up sequences.
+      // For kCustom typed trackers, |metrics| invokes AddCustomTrackerResult
+      // on its destruction, which add its data to |custom_tracker_results_|
+      // to be picked up by caller.
+      auto metrics = tracker->TakeMetrics();
+      if (metrics->type() == FrameSequenceTrackerType::kCustom)
+        continue;
+
+      auto key = std::make_pair(metrics->type(), metrics->GetEffectiveThread());
+      if (accumulated_metrics_.contains(key)) {
+        metrics->Merge(std::move(accumulated_metrics_[key]));
+        accumulated_metrics_.erase(key);
+      }
+
+      if (metrics->HasEnoughDataForReporting()) {
+        // Do this before ReportMetrics() which clears the throughput data.
+        if (metrics->type() == FrameSequenceTrackerType::kUniversal)
+          throughput_ukm_reporter_->ComputeUniversalThroughput(metrics.get());
+        metrics->ReportMetrics();
+      }
+      if (metrics->HasDataLeftForReporting())
+        accumulated_metrics_[key] = std::move(metrics);
+    }
+  }
+
   base::EraseIf(
       removal_trackers_,
       [](const std::unique_ptr<FrameSequenceTracker>& tracker) {

@@ -24,7 +24,7 @@ gen_spec() {
   process_template "${SCRIPTDIR}/chrome.spec.template" "${SPEC}"
 }
 
-# Setup the installation directory hierachy in the package staging area.
+# Setup the installation directory hierarchy in the package staging area.
 prep_staging_rpm() {
   prep_staging_common
   install -m 755 -d "${STAGEDIR}/etc/cron.daily"

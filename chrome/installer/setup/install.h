@@ -13,7 +13,7 @@
 namespace base {
 class FilePath;
 class Version;
-}
+}  // namespace base
 
 namespace installer {
 
@@ -61,11 +61,10 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
 // created even if they don't exist.
 // If creating the Start menu shortcut is successful, it is also pinned to the
 // taskbar.
-void CreateOrUpdateShortcuts(
-    const base::FilePath& target,
-    const MasterPreferences& prefs,
-    InstallShortcutLevel install_level,
-    InstallShortcutOperation install_operation);
+void CreateOrUpdateShortcuts(const base::FilePath& target,
+                             const MasterPreferences& prefs,
+                             InstallShortcutLevel install_level,
+                             InstallShortcutOperation install_operation);
 
 // This function installs or updates a new version of Chrome. It returns
 // install status (failed, new_install, updated etc).

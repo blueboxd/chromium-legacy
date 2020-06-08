@@ -344,6 +344,7 @@ class CORE_EXPORT NGPhysicalFragment
   LogicalRect ConvertToLogical(const PhysicalRect& physical_rect,
                                TextDirection direction,
                                PhysicalSize inner_size) const;
+  PhysicalRect ConvertToPhysical(const LogicalRect& logical_rect) const;
 
   // Utility functions for caret painting. Note that carets are painted as part
   // of the containing block's foreground.

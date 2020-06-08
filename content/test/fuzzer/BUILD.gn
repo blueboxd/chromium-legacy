@@ -4,6 +4,7 @@
 
 # Fuzzers for content/ components.
 
+import("//mojo/public/tools/fuzzers/mojolpm.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -158,6 +159,29 @@ fuzzer_test("appcache_fuzzer") {
     "//services/network:test_support",
     "//storage/browser:test_support",
     "//third_party/libprotobuf-mutator",
+  ]
+}
+
+mojolpm_fuzzer_test("code_cache_host_mojolpm_fuzzer") {
+  sources = [ "code_cache_host_mojolpm_fuzzer.cc" ]
+
+  proto_source = "code_cache_host_mojolpm_fuzzer.proto"
+  testcase_proto_kind = "content.fuzzing.code_cache_host.proto.Testcase"
+
+  deps = [
+    "//base/test:test_support",
+    "//content/browser:for_content_tests",
+    "//content/public/browser:browser_sources",
+    "//content/test:test_support",
+    "//services/network:test_support",
+    "//storage/browser:test_support",
+  ]
+
+  proto_deps = [ "//third_party/blink/public/mojom:mojom_platform_mojolpm" ]
+
+  seed_corpus_sources = [
+    "//content/test/data/fuzzer_corpus/code_cache_host_mojolpm_fuzzer/did_generate_cacheable_metadata_origin_a.textproto",
+    "//content/test/data/fuzzer_corpus/code_cache_host_mojolpm_fuzzer/did_generate_cacheable_metadata_origin_b.textproto",
   ]
 }
 

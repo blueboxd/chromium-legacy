@@ -520,6 +520,12 @@ LogicalRect NGPhysicalFragment::ConvertToLogical(
                                         Size(), inner_size);
 }
 
+PhysicalRect NGPhysicalFragment::ConvertToPhysical(
+    const LogicalRect& logical_rect) const {
+  return logical_rect.ConvertToPhysical(Style().GetWritingMode(),
+                                        Style().Direction(), Size());
+}
+
 String NGPhysicalFragment::ToString() const {
   StringBuilder output;
   output.AppendFormat("Type: '%d' Size: '%s'", Type(),

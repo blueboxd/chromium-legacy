@@ -121,6 +121,7 @@ class UtilityProcessSandboxBrowserTest
       case SandboxType::kAudio:
 #if defined(OS_CHROMEOS)
       case SandboxType::kIme:
+      case SandboxType::kTts:
 #endif
       case SandboxType::kNetwork:
       case SandboxType::kSpeechRecognition: {

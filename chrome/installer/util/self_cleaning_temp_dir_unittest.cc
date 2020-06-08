@@ -42,8 +42,7 @@ std::string GetRandomFilename() {
 
 namespace installer {
 
-class SelfCleaningTempDirTest : public testing::Test {
-};
+class SelfCleaningTempDirTest : public testing::Test {};
 
 // Test the implementation of GetTopDirToCreate when given the root of a
 // volume.
@@ -53,7 +52,7 @@ TEST_F(SelfCleaningTempDirTest, TopLevel) {
   EXPECT_TRUE(base_dir.empty());
 }
 
-// Test the implementation of GetTopDirToCreate when given a non-existant dir
+// Test the implementation of GetTopDirToCreate when given a non-existent dir
 // under the root of a volume.
 TEST_F(SelfCleaningTempDirTest, TopLevelPlusOne) {
   base::FilePath base_dir;

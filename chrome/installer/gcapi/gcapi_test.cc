@@ -24,7 +24,7 @@ void call_statically() {
       TRUE, GCAPI_INVOKED_STANDARD_SHELL, &reason);
 
   if (result_flag_off != result_flag_on)
-      printf("Registry key flag is not being set properly.");
+    printf("Registry key flag is not being set properly.");
 
   printf("Static call returned result as %d and reason as %ld.\n",
          result_flag_on, reason);
@@ -37,7 +37,7 @@ void call_dynamically() {
     return;
   }
 
-  GCCC_CompatibilityCheck gccfn = (GCCC_CompatibilityCheck) GetProcAddress(
+  GCCC_CompatibilityCheck gccfn = (GCCC_CompatibilityCheck)GetProcAddress(
       module, "GoogleChromeCompatibilityCheck");
   if (gccfn != nullptr) {
     DWORD reason = 0;

@@ -72,6 +72,9 @@
           <!-- ChromeOS IME Mojo service and bindings. -->
           <include name="IDR_IME_SERVICE_BINDINGS_JS" file="extensions\chromeos_ime_service_bindings.js" type="BINDATA" />
           <include name="IDR_IME_SERVICE_MOJOM_JS" file="${mojom_root}\chromeos/services/ime/public/mojom/input_engine.mojom.js" use_base_dir="false" type="BINDATA" />
+
+          <include name="IDR_TTS_STREAM_BINDINGS_JS" file="extensions\chromeos_tts_stream_bindings.js" type="BINDATA" />
+          <include name="IDR_TTS_STREAM_MOJOM_JS" file="${mojom_root}\chromeos/services/tts/public/mojom/tts_service.mojom.js" use_base_dir="false" type="BINDATA" />
         </if>
         <!-- Media Router Mojo service and bindings. -->
         <include name="IDR_MEDIA_CONTROLLER_MOJOM_JS" file="${mojom_root}\chrome\common\media_router\mojom\media_controller.mojom.js" use_base_dir="false" type="BINDATA" />

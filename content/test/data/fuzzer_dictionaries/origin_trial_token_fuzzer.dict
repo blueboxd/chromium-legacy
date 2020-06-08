@@ -5,6 +5,7 @@
 "\"origin\""
 "\"isSubdomain\""
 "\"isThirdParty\""
+"\"usage\""
 "\"feature\""
 "\"expiry\""
 "https://"
@@ -12,3 +13,5 @@
 ":443"
 "true"
 "false"
+"\"\""
+"\"subset\""

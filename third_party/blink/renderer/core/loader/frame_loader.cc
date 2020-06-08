@@ -800,7 +800,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
 
   if (url.ProtocolIsJavaScript()) {
     if (!origin_document ||
-        origin_document->CanExecuteScripts(kAboutToExecuteScript)) {
+        origin_document->GetExecutionContext()->CanExecuteScripts(
+            kAboutToExecuteScript)) {
       frame_->GetDocument()->ProcessJavaScriptUrl(
           url, request.ShouldCheckMainWorldContentSecurityPolicy());
     }
@@ -1525,7 +1526,6 @@ void FrameLoader::SetFrameOwnerSandboxFlags(
 }
 
 void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
-  DCHECK(frame_->GetDocument());
   if (state_machine_.CreatingInitialEmptyDocument())
     return;
 
@@ -1535,7 +1535,7 @@ void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
     frame_->GetScriptController().WindowProxy(DOMWrapperWorld::MainWorld());
   }
   probe::DidClearDocumentOfWindowObject(frame_);
-  if (!frame_->GetDocument()->CanExecuteScripts(kNotAboutToExecuteScript))
+  if (!frame_->DomWindow()->CanExecuteScripts(kNotAboutToExecuteScript))
     return;
 
   if (dispatching_did_clear_window_object_in_main_world_)
@@ -1548,8 +1548,7 @@ void FrameLoader::DispatchDidClearDocumentOfWindowObject() {
 }
 
 void FrameLoader::DispatchDidClearWindowObjectInMainWorld() {
-  DCHECK(frame_->GetDocument());
-  if (!frame_->GetDocument()->CanExecuteScripts(kNotAboutToExecuteScript))
+  if (!frame_->DomWindow()->CanExecuteScripts(kNotAboutToExecuteScript))
     return;
 
   if (dispatching_did_clear_window_object_in_main_world_)

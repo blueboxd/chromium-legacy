@@ -158,6 +158,44 @@ const uint8_t kSampleNonThirdPartyTokenSignature[] = {
     0xb6, 0x0f, 0x83, 0x97, 0xca, 0x51, 0x76, 0xa5, 0x06, 0xd7, 0xd0,
     0x61, 0x5a, 0x78, 0xb3, 0x9f, 0x94, 0xdb, 0x28, 0x03};
 
+// This is a good third party trial token with usage restriction set to subset,
+// signed with the above test private key. Generate this token with the
+// command:
+// generate_token.py valid.example.com Frobulate --version 3 --is-third-party
+//   --expire-timestamp=1458766277 --usage-restriction subset
+const char kSampleThirdPartyUsageSubsetToken[] =
+    "A27Ee1Bm6HYjEu2Zz1DbGNUaPuM8x0Tnk15Gyx8TRKZg72+JUXgCccMxlLIjVh4l"
+    "enOES58tfJxrRCorBAKmBwcAAACCeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiaXNUaGlyZFBhcnR5IjogdHJ1ZSwgInVzYWdlIjog"
+    "InN1YnNldCIsICJmZWF0dXJlIjogIkZyb2J1bGF0ZSIsICJleHBpcnkiOiAxNDU4"
+    "NzY2Mjc3fQ==";
+const uint8_t kSampleThirdPartyUsageSubsetTokenSignature[] = {
+    0x6e, 0xc4, 0x7b, 0x50, 0x66, 0xe8, 0x76, 0x23, 0x12, 0xed, 0x99,
+    0xcf, 0x50, 0xdb, 0x18, 0xd5, 0x1a, 0x3e, 0xe3, 0x3c, 0xc7, 0x44,
+    0xe7, 0x93, 0x5e, 0x46, 0xcb, 0x1f, 0x13, 0x44, 0xa6, 0x60, 0xef,
+    0x6f, 0x89, 0x51, 0x78, 0x02, 0x71, 0xc3, 0x31, 0x94, 0xb2, 0x23,
+    0x56, 0x1e, 0x25, 0x7a, 0x73, 0x84, 0x4b, 0x9f, 0x2d, 0x7c, 0x9c,
+    0x6b, 0x44, 0x2a, 0x2b, 0x04, 0x02, 0xa6, 0x07, 0x07};
+
+// This is a good third party trial token with usage restriction set to none,
+// signed with the above test private key. Generate this token with the
+// command:
+// generate_token.py valid.example.com Frobulate --version 3 --is-third-party
+//   --expire-timestamp=1458766277 --usage-restriction ""
+const char kSampleThirdPartyUsageEmptyToken[] =
+    "A+gXf6yZgfN8NADWvnEhQ/GKycwCg34USmDlQ9UXTP6jDGJLBV+jI1npSUI0W/YW"
+    "hNyNYbzBaE2iCJSGCD56pwwAAAB8eyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5l"
+    "eGFtcGxlLmNvbTo0NDMiLCAiaXNUaGlyZFBhcnR5IjogdHJ1ZSwgInVzYWdlIjog"
+    "IiIsICJmZWF0dXJlIjogIkZyb2J1bGF0ZSIsICJleHBpcnkiOiAxNDU4NzY2Mjc3"
+    "fQ==";
+const uint8_t kSampleThirdPartyUsageEmptyTokenSignature[] = {
+    0xe8, 0x17, 0x7f, 0xac, 0x99, 0x81, 0xf3, 0x7c, 0x34, 0x00, 0xd6,
+    0xbe, 0x71, 0x21, 0x43, 0xf1, 0x8a, 0xc9, 0xcc, 0x02, 0x83, 0x7e,
+    0x14, 0x4a, 0x60, 0xe5, 0x43, 0xd5, 0x17, 0x4c, 0xfe, 0xa3, 0x0c,
+    0x62, 0x4b, 0x05, 0x5f, 0xa3, 0x23, 0x59, 0xe9, 0x49, 0x42, 0x34,
+    0x5b, 0xf6, 0x16, 0x84, 0xdc, 0x8d, 0x61, 0xbc, 0xc1, 0x68, 0x4d,
+    0xa2, 0x08, 0x94, 0x86, 0x08, 0x3e, 0x7a, 0xa7, 0x0c};
+
 const char kExpectedFeatureName[] = "Frobulate";
 // This is an excessively long feature name (100 characters). This is valid, as
 // there is no explicit limit on feature name length. Excessive refers to the
@@ -233,6 +271,15 @@ const char kSampleThirdPartyTokenJSON[] =
     "{\"origin\": \"https://valid.example.com:443\", \"isThirdParty\": true, "
     "\"feature\": \"Frobulate\", \"expiry\": 1458766277}";
 
+const char kSampleThirdPartyTokenUsageSubsetJSON[] =
+    "{\"origin\": \"https://valid.example.com:443\", \"isThirdParty\": true, "
+    "\"usage\": \"subset\", \"feature\": \"Frobulate\", \"expiry\": "
+    "1458766277}";
+
+const char kSampleThirdPartyTokenUsageEmptyJSON[] =
+    "{\"origin\": \"https://valid.example.com:443\", \"isThirdParty\": true, "
+    "\"usage\": \"\", \"feature\": \"Frobulate\", \"expiry\": 1458766277}";
+
 // Various ill-formed trial tokens. These should all fail to parse.
 const char* kInvalidTokens[] = {
     // Empty String
@@ -275,6 +322,14 @@ const char* kInvalidTokensVersion3[] = {
     "{\"origin\": \"https://a.a\", \"isThirdParty\": \"true\", \"feature\": "
     "\"a\", \"expiry\": 1458766277}",
     "{\"origin\": \"https://a.a\", \"isThirdParty\": 1, \"feature\": \"a\", "
+    "\"expiry\": 1458766277}",
+    // Invalid value in usage field
+    "{\"origin\": \"https://a.a\", \"isThirdParty\": true, \"usage\": "
+    "\"cycle\", \"feature\": \"a\", "
+    "\"expiry\": 1458766277}",
+    // usage in non third party token
+    "{\"origin\": \"https://a.a\", \"isThirdParty\": false, \"usage\": "
+    "\"subset\", \"feature\": \"a\", "
     "\"expiry\": 1458766277}",
 };
 
@@ -652,6 +707,14 @@ class TrialTokenTest : public testing::Test {
         expected_non_third_party_signature_(std::string(
             reinterpret_cast<const char*>(kSampleNonThirdPartyTokenSignature),
             base::size(kSampleNonThirdPartyTokenSignature))),
+        expected_third_party_usage_empty_signature_(
+            std::string(reinterpret_cast<const char*>(
+                            kSampleThirdPartyUsageEmptyTokenSignature),
+                        base::size(kSampleThirdPartyUsageEmptyTokenSignature))),
+        expected_third_party_usage_subset_signature_(std::string(
+            reinterpret_cast<const char*>(
+                kSampleThirdPartyUsageSubsetTokenSignature),
+            base::size(kSampleThirdPartyUsageSubsetTokenSignature))),
         correct_public_key_(
             base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
                               base::size(kTestPublicKey))),
@@ -717,6 +780,8 @@ class TrialTokenTest : public testing::Test {
   std::string expected_nonsubdomain_signature_;
   std::string expected_third_party_signature_;
   std::string expected_non_third_party_signature_;
+  std::string expected_third_party_usage_empty_signature_;
+  std::string expected_third_party_usage_subset_signature_;
 
  private:
   base::StringPiece correct_public_key_;
@@ -803,6 +868,32 @@ TEST_F(TrialTokenTest, ExtractNonThirdPartyValidSignature) {
   EXPECT_EQ(kVersion3, token_version);
   EXPECT_STREQ(kSampleNonThirdPartyTokenJSON, token_payload.c_str());
   EXPECT_EQ(expected_non_third_party_signature_, token_signature);
+}
+
+TEST_F(TrialTokenTest, ExtractThirdPartyUsageEmptyValidSignature) {
+  std::string token_payload;
+  std::string token_signature;
+  uint8_t token_version;
+  OriginTrialTokenStatus status =
+      Extract(kSampleThirdPartyUsageEmptyToken, correct_public_key(),
+              &token_payload, &token_signature, &token_version);
+  ASSERT_EQ(OriginTrialTokenStatus::kSuccess, status);
+  EXPECT_EQ(kVersion3, token_version);
+  EXPECT_STREQ(kSampleThirdPartyTokenUsageEmptyJSON, token_payload.c_str());
+  EXPECT_EQ(expected_third_party_usage_empty_signature_, token_signature);
+}
+
+TEST_F(TrialTokenTest, ExtractThirdPartyUsageSubsetValidSignature) {
+  std::string token_payload;
+  std::string token_signature;
+  uint8_t token_version;
+  OriginTrialTokenStatus status =
+      Extract(kSampleThirdPartyUsageSubsetToken, correct_public_key(),
+              &token_payload, &token_signature, &token_version);
+  ASSERT_EQ(OriginTrialTokenStatus::kSuccess, status);
+  EXPECT_EQ(kVersion3, token_version);
+  EXPECT_STREQ(kSampleThirdPartyTokenUsageSubsetJSON, token_payload.c_str());
+  EXPECT_EQ(expected_third_party_usage_subset_signature_, token_signature);
 }
 
 TEST_F(TrialTokenTest, ExtractInvalidSignature) {
@@ -1040,6 +1131,28 @@ TEST_F(TrialTokenTest, ParseValidThirdPartyTokenInvalidVersion) {
   ASSERT_TRUE(token);
   EXPECT_EQ(kExpectedFeatureName, token->feature_name());
   EXPECT_FALSE(token->is_third_party());
+  EXPECT_EQ(expected_origin_, token->origin());
+  EXPECT_EQ(expected_expiry_, token->expiry_time());
+}
+
+TEST_F(TrialTokenTest, ParseValidThirdPartyUsageSubsetToken) {
+  std::unique_ptr<TrialToken> token =
+      Parse(kSampleThirdPartyTokenUsageSubsetJSON, kVersion3);
+  ASSERT_TRUE(token);
+  EXPECT_EQ(kExpectedFeatureName, token->feature_name());
+  EXPECT_TRUE(token->is_third_party());
+  EXPECT_EQ(TrialToken::UsageRestriction::kSubset, token->usage_restriction());
+  EXPECT_EQ(expected_origin_, token->origin());
+  EXPECT_EQ(expected_expiry_, token->expiry_time());
+}
+
+TEST_F(TrialTokenTest, ParseValidThirdPartyUsageEmptyToken) {
+  std::unique_ptr<TrialToken> token =
+      Parse(kSampleThirdPartyTokenUsageEmptyJSON, kVersion3);
+  ASSERT_TRUE(token);
+  EXPECT_EQ(kExpectedFeatureName, token->feature_name());
+  EXPECT_TRUE(token->is_third_party());
+  EXPECT_EQ(TrialToken::UsageRestriction::kNone, token->usage_restriction());
   EXPECT_EQ(expected_origin_, token->origin());
   EXPECT_EQ(expected_expiry_, token->expiry_time());
 }

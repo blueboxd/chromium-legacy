@@ -1449,17 +1449,6 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 
       Si cette règle n'est pas définie ou si la valeur après substitution ne constitue pas un nom d'hôte valide, aucun nom d'hôte ne sera défini dans la requête DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Permet à <ph name="PRODUCT_NAME" /> de charger des règles expérimentales.
-
-        AVERTISSEMENT : Les règles expérimentales ne sont pas prises en charge et peuvent être modifiées ou supprimées sans préavis dans la future version du navigateur.
-
-        Une règle expérimentale peut ne pas être terminée ou encore présenter des défauts connus ou inconnus. Elle peut être modifiée ou même supprimée sans aucune notification. En activant des règles expérimentales, vous pouvez perdre des données de navigateur, ou compromettre votre sécurité ou la confidentialité de vos données.
-
-        Si une règle ne figure pas dans la liste et qu'elle n'est pas officiellement publiée, sa valeur est alors ignorée dans les versions bêta et stable de Chrome.
-
-        Si une règle figure dans la liste et qu'elle n'est pas officiellement publiée, sa valeur est alors appliquée.
-
-        Cette règle n'a aucune incidence sur les règles déjà publiées.</translation>
 <translation id="3066446511111537292">Permet aux utilisateurs affiliés de cet appareil d'utiliser le téléchargement indépendant adb</translation>
 <translation id="3069958900488014740">Permet la désactivation de l'optimisation WPAD (Web Proxy Auto-Discovery) dans <ph name="PRODUCT_NAME" />.
 

@@ -69,8 +69,7 @@ class DuplicateTreeDetectorTest : public testing::Test {
 
 const wchar_t DuplicateTreeDetectorTest::text_content_1_[] =
     L"Gooooooooooooooooooooogle";
-const wchar_t DuplicateTreeDetectorTest::text_content_2_[] =
-    L"Overwrite Me";
+const wchar_t DuplicateTreeDetectorTest::text_content_2_[] = L"Overwrite Me";
 const wchar_t DuplicateTreeDetectorTest::text_content_3_[] =
     L"I'd rather see your watermelon and raise you ham and a half.";
 
@@ -122,9 +121,8 @@ TEST_F(DuplicateTreeDetectorTest, TestIdenticalDirsDifferentFiles) {
                                 temp_dest_dir_.GetPath());
 
   base::FilePath existing_file(temp_dest_dir_.GetPath());
-  existing_file = existing_file.AppendASCII("D1")
-                               .AppendASCII("D2")
-                               .AppendASCII("F2");
+  existing_file =
+      existing_file.AppendASCII("D1").AppendASCII("D2").AppendASCII("F2");
   CreateTextFile(existing_file.MaybeAsASCII(), text_content_3_);
 
   EXPECT_FALSE(installer::IsIdenticalFileHierarchy(temp_source_dir_.GetPath(),

@@ -978,9 +978,9 @@ Location* Document::location() const {
 }
 
 ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
-  v8::Isolate* isolate = GetIsolate();
-  if (!isolate)
+  if (!GetExecutionContext())
     return GetContentSecurityPolicy();
+  v8::Isolate* isolate = GetExecutionContext()->GetIsolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
 
@@ -1087,10 +1087,6 @@ bool Document::IsSecureContext(String& error_message) const {
 
 void Document::SetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
   GetExecutionContext()->SetReferrerPolicy(policy);
-}
-
-v8::Isolate* Document::GetIsolate() const {
-  return GetExecutionContext() ? GetExecutionContext()->GetIsolate() : nullptr;
 }
 
 Agent* Document::GetAgent() const {
@@ -7266,45 +7262,6 @@ void Document::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
   GetContentSecurityPolicy()->BindToDelegate(
       GetContentSecurityPolicyDelegate());
-}
-
-bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
-  DCHECK(GetFrame())
-      << "you are querying canExecuteScripts on a non-attached Document.";
-
-  // Normally, scripts are not allowed in sandboxed contexts that disallow them.
-  // However, there is an exception for cases when the script should bypass the
-  // main world's CSP (such as for privileged isolated worlds). See
-  // https://crbug.com/811528.
-  if (IsSandboxed(network::mojom::blink::WebSandboxFlags::kScripts) &&
-      !ContentSecurityPolicy::ShouldBypassMainWorld(domWindow())) {
-    // FIXME: This message should be moved off the console once a solution to
-    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    if (reason == kAboutToExecuteScript) {
-      AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-          mojom::ConsoleMessageSource::kSecurity,
-          mojom::ConsoleMessageLevel::kError,
-          "Blocked script execution in '" + Url().ElidedString() +
-              "' because the document's frame is sandboxed and the "
-              "'allow-scripts' permission is not set."));
-    }
-    return false;
-  }
-
-  // No scripting on a detached frame.
-  if (!GetFrame()->Client())
-    return false;
-
-  WebContentSettingsClient* settings_client =
-      GetFrame()->GetContentSettingsClient();
-
-  Settings* settings = GetFrame()->GetSettings();
-  bool script_enabled = settings && settings->GetScriptEnabled();
-  if (settings_client)
-    script_enabled = settings_client->AllowScript(script_enabled);
-  if (!script_enabled && reason == kAboutToExecuteScript && settings_client)
-    settings_client->DidNotAllowScript();
-  return script_enabled;
 }
 
 bool Document::AllowInlineEventHandler(Node* node,

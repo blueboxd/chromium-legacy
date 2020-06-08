@@ -2643,8 +2643,8 @@ bool HTMLMediaElement::ShouldShowControls(
     return true;
   }
 
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (frame && !GetDocument().CanExecuteScripts(kNotAboutToExecuteScript)) {
+  ExecutionContext* context = GetExecutionContext();
+  if (context && !context->CanExecuteScripts(kNotAboutToExecuteScript)) {
     if (record_metrics == RecordMetricsBehavior::kDoRecord)
       RecordShowControlsUsage(this, MediaControlsShow::kNoScript);
     return true;

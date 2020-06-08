@@ -31,7 +31,7 @@ bool AdvancedFirewallManager::Init(const base::string16& app_name,
     firewall_policy_ = nullptr;
     return false;
   }
-  hr = firewall_policy_->get_Rules(firewall_rules_.GetAddressOf());
+  hr = firewall_policy_->get_Rules(&firewall_rules_);
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     firewall_rules_ = nullptr;
@@ -49,10 +49,7 @@ bool AdvancedFirewallManager::IsFirewallEnabled() {
     return false;
   // The most-restrictive active profile takes precedence.
   const NET_FW_PROFILE_TYPE2 kProfileTypes[] = {
-    NET_FW_PROFILE2_PUBLIC,
-    NET_FW_PROFILE2_PRIVATE,
-    NET_FW_PROFILE2_DOMAIN
-  };
+      NET_FW_PROFILE2_PUBLIC, NET_FW_PROFILE2_PRIVATE, NET_FW_PROFILE2_DOMAIN};
   for (size_t i = 0; i < base::size(kProfileTypes); ++i) {
     if ((profile_types & kProfileTypes[i]) != 0) {
       VARIANT_BOOL enabled = VARIANT_TRUE;
@@ -153,14 +150,14 @@ Microsoft::WRL::ComPtr<INetFwRule> AdvancedFirewallManager::CreateUDPRule(
 void AdvancedFirewallManager::GetAllRules(
     std::vector<Microsoft::WRL::ComPtr<INetFwRule>>* rules) {
   Microsoft::WRL::ComPtr<IUnknown> rules_enum_unknown;
-  HRESULT hr = firewall_rules_->get__NewEnum(rules_enum_unknown.GetAddressOf());
+  HRESULT hr = firewall_rules_->get__NewEnum(&rules_enum_unknown);
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return;
   }
 
   Microsoft::WRL::ComPtr<IEnumVARIANT> rules_enum;
-  hr = rules_enum_unknown.CopyTo(rules_enum.GetAddressOf());
+  hr = rules_enum_unknown.As(&rules_enum);
   if (FAILED(hr)) {
     DLOG(ERROR) << logging::SystemErrorCodeToString(hr);
     return;

@@ -119,6 +119,7 @@ class PendingTaskWaiter : public content::WebContentsObserver {
  private:
   // content::WebContentsObserver:
   void DidUpdateFaviconURL(
+      content::RenderFrameHost* rfh,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     TestUrlAndTitle();
   }
@@ -194,6 +195,7 @@ class PageLoadStopper : public content::WebContentsObserver {
   }
 
   void DidUpdateFaviconURL(
+      content::RenderFrameHost* rfh,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     last_favicon_candidates_.clear();
     for (const auto& candidate : candidates)

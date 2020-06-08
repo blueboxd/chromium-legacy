@@ -93,11 +93,9 @@ class RegistryKeyBackup::KeyData {
   // Copy constructible and assignable for use in STL containers.
 };
 
-ValueData::ValueData() : type_(REG_NONE) {
-}
+ValueData::ValueData() : type_(REG_NONE) {}
 
-ValueData::~ValueData() {
-}
+ValueData::~ValueData() {}
 
 void ValueData::Initialize(const wchar_t* name_buffer,
                            DWORD name_size,
@@ -109,11 +107,9 @@ void ValueData::Initialize(const wchar_t* name_buffer,
   data_.assign(data, data + data_size);
 }
 
-RegistryKeyBackup::KeyData::KeyData() {
-}
+RegistryKeyBackup::KeyData::KeyData() {}
 
-RegistryKeyBackup::KeyData::~KeyData() {
-}
+RegistryKeyBackup::KeyData::~KeyData() {}
 
 bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
   std::vector<ValueData> values;
@@ -143,7 +139,7 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
     DWORD value_type = REG_NONE;
     DWORD value_size = 0;
 
-    for (DWORD i = 0; i < num_values; ) {
+    for (DWORD i = 0; i < num_values;) {
       name_size = static_cast<DWORD>(name_buffer.size());
       value_size = static_cast<DWORD>(value_buffer.size());
       result =
@@ -167,8 +163,8 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
             name_buffer.resize(name_size + 1);
           break;
         default:
-          LOG(ERROR) << "Failed backing up value " << i << ", result: "
-                     << result;
+          LOG(ERROR) << "Failed backing up value " << i
+                     << ", result: " << result;
           return false;
       }
     }
@@ -183,7 +179,7 @@ bool RegistryKeyBackup::KeyData::Initialize(const RegKey& key) {
     DWORD name_size = 0;
 
     // Get the names of them.
-    for (DWORD i = 0; i < num_subkeys; ) {
+    for (DWORD i = 0; i < num_subkeys;) {
       name_size = static_cast<DWORD>(name_buffer.size());
       result = RegEnumKeyEx(key.Handle(), i, &name_buffer[0], &name_size,
                             nullptr, nullptr, nullptr, nullptr);
@@ -258,13 +254,13 @@ bool RegistryKeyBackup::KeyData::WriteTo(RegKey* key) const {
 
     result = subkey.Create(key->Handle(), name.c_str(), KEY_WRITE);
     if (result != ERROR_SUCCESS) {
-      LOG(ERROR) << "Failed creating subkey \"" << name << "\", result: "
-                 << result;
+      LOG(ERROR) << "Failed creating subkey \"" << name
+                 << "\", result: " << result;
       return false;
     }
     if (!it->second.WriteTo(&subkey)) {
-      LOG(ERROR) << "Failed writing subkey \"" << name << "\", result: "
-                 << result;
+      LOG(ERROR) << "Failed writing subkey \"" << name
+                 << "\", result: " << result;
       return false;
     }
   }
@@ -272,18 +268,15 @@ bool RegistryKeyBackup::KeyData::WriteTo(RegKey* key) const {
   return true;
 }
 
-RegistryKeyBackup::RegistryKeyBackup() {
-}
+RegistryKeyBackup::RegistryKeyBackup() {}
 
-RegistryKeyBackup::~RegistryKeyBackup() {
-}
+RegistryKeyBackup::~RegistryKeyBackup() {}
 
 bool RegistryKeyBackup::Initialize(HKEY root,
                                    const wchar_t* key_path,
                                    REGSAM wow64_access) {
   DCHECK(key_path);
-  DCHECK(wow64_access == 0 ||
-         wow64_access == KEY_WOW64_32KEY ||
+  DCHECK(wow64_access == 0 || wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
 
   RegKey key;
@@ -311,8 +304,7 @@ bool RegistryKeyBackup::WriteTo(HKEY root,
                                 const wchar_t* key_path,
                                 REGSAM wow64_access) const {
   DCHECK(key_path);
-  DCHECK(wow64_access == 0 ||
-         wow64_access == KEY_WOW64_32KEY ||
+  DCHECK(wow64_access == 0 || wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
 
   bool success = false;

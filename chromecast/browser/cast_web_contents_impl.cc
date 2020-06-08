@@ -930,6 +930,7 @@ void CastWebContentsImpl::WebContentsDestroyed() {
 }
 
 void CastWebContentsImpl::DidUpdateFaviconURL(
+    content::RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

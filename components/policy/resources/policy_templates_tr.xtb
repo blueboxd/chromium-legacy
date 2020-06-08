@@ -1422,17 +1422,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 
       Bu politika ayarlanmazsa veya değişiklikten sonraki değer, geçerli bir ana makine adı değilse DHCP isteğinde ana makine adı ayarlanmaz. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128"><ph name="PRODUCT_NAME" /> ürününün deneysel politikaları yüklemesine izin verir.
-
-        UYARI: Deneysel politikalar desteklenmez ve tarayıcının gelecekteki sürümünde bildirimde bulunmaksızın değiştirilebilir veya kaldırılabilir.
-
-        Deneysel bir politika tamamlanmamış olabilir veya hâlâ bilinen ya da bilinmeyen kusurlar içerebilir. Herhangi bir bildirimde bulunulmadan değiştirilebilir, hatta kaldırılabilir. Deneysel politikaları etkinleştirdiğinizde tarayıcı verileri kaybolabilir ya da güvenliğiniz veya gizliliğiniz ihlal edilebilir.
-
-        Listede olmayan bir politika resmi olarak yayınlanmadıysa Chrome'un Beta ve Kararlı sürümlerinde politikanın değeri göz ardı edilir.
-
-        Listede yer alan bir politika resmi olarak yayınlanmadıysa politikanın değeri geçerli olur.
-
-        Bu politikanın önceden yayınlanmış politikalar üzerinde bir etkisi yoktur.</translation>
 <translation id="3066446511111537292">Bu cihazın ilişkili kullanıcılarının ADB başka cihazdan yükleme işlevini kullanmalarına izin verir</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> ürününde WPAD (Otomatik Web Proxy Keşfi) optimizasyonunu kapatmanıza olanak verir.
 

@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_WRITING_MODE_H_
 
 #include <cstdint>
+#include <iosfwd>
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -79,6 +81,8 @@ inline bool IsFlippedBlocksWritingMode(WritingMode writing_mode) {
 inline bool IsParallelWritingMode(WritingMode a, WritingMode b) {
   return (a == WritingMode::kHorizontalTb) == (b == WritingMode::kHorizontalTb);
 }
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, WritingMode);
 
 }  // namespace blink
 

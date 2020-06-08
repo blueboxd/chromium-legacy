@@ -43,8 +43,7 @@ void BinaryDataToString(const std::vector<uint8_t>& binary_data,
 
 }  // namespace
 
-SetRegValueWorkItem::~SetRegValueWorkItem() {
-}
+SetRegValueWorkItem::~SetRegValueWorkItem() {}
 
 SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
                                          const std::wstring& key_path,
@@ -60,8 +59,7 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       type_(REG_SZ),
       previous_type_(0),
       status_(SET_VALUE) {
-  DCHECK(wow64_access == 0 ||
-         wow64_access == KEY_WOW64_32KEY ||
+  DCHECK(wow64_access == 0 || wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
   StringToBinaryData(value_data, &value_);
 }
@@ -80,8 +78,7 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       type_(REG_DWORD),
       previous_type_(0),
       status_(SET_VALUE) {
-  DCHECK(wow64_access == 0 ||
-         wow64_access == KEY_WOW64_32KEY ||
+  DCHECK(wow64_access == 0 || wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
   const uint8_t* data = reinterpret_cast<const uint8_t*>(&value_data);
   value_.assign(data, data + sizeof(value_data));
@@ -101,8 +98,7 @@ SetRegValueWorkItem::SetRegValueWorkItem(HKEY predefined_root,
       type_(REG_QWORD),
       previous_type_(0),
       status_(SET_VALUE) {
-  DCHECK(wow64_access == 0 ||
-         wow64_access == KEY_WOW64_32KEY ||
+  DCHECK(wow64_access == 0 || wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
   const uint8_t* data = reinterpret_cast<const uint8_t*>(&value_data);
   value_.assign(data, data + sizeof(value_data));
@@ -123,8 +119,7 @@ SetRegValueWorkItem::SetRegValueWorkItem(
       type_(REG_SZ),
       previous_type_(0),
       status_(SET_VALUE) {
-  DCHECK(wow64_access == 0 ||
-         wow64_access == KEY_WOW64_32KEY ||
+  DCHECK(wow64_access == 0 || wow64_access == KEY_WOW64_32KEY ||
          wow64_access == KEY_WOW64_64KEY);
   // Nothing to do, |get_value_callback| will fill |value_| later.
 }
@@ -204,8 +199,8 @@ void SetRegValueWorkItem::RollbackImpl() {
   }
 
   base::win::RegKey key;
-  LONG result = key.Open(
-      predefined_root_, key_path_.c_str(), KEY_SET_VALUE | wow64_access_);
+  LONG result = key.Open(predefined_root_, key_path_.c_str(),
+                         KEY_SET_VALUE | wow64_access_);
   if (result != ERROR_SUCCESS) {
     VLOG(1) << "rollback: can not open " << key_path_ << " error: " << result;
     return;

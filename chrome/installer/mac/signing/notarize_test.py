@@ -179,11 +179,9 @@ class TestWaitForResults(unittest.TestCase):
     @mock.patch('signing.commands.run_command_output')
     def test_bad_notarization_info(self, run_command_output, **kwargs):
         run_command_output.side_effect = subprocess.CalledProcessError(
-            239, 'altool', _make_plist({
-                'product-errors': [{
-                    'code': 9595
-                }]
-            }))
+            239, 'altool', _make_plist({'product-errors': [{
+                'code': 9595
+            }]}))
 
         with self.assertRaises(subprocess.CalledProcessError):
             uuids = ['77c0ad17-479e-4b82-946a-73739cf6ca16']
@@ -193,11 +191,10 @@ class TestWaitForResults(unittest.TestCase):
     @mock.patch.multiple('signing.commands',
                          **{'run_command_output': mock.DEFAULT})
     def test_timeout(self, **kwargs):
-        kwargs['run_command_output'].return_value = _make_plist({
-            'notarization-info': {
+        kwargs['run_command_output'].return_value = _make_plist(
+            {'notarization-info': {
                 'Status': 'in progress'
-            }
-        })
+            }})
         uuid = '0c652bb4-7d44-4904-8c59-1ee86a376ece'
         uuids = [uuid]
         with self.assertRaises(notarize.NotarizationError) as cm:

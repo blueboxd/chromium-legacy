@@ -607,10 +607,7 @@ std::string TestPostMessage::TestSendingResource() {
   // properties of the file system.
   pp::Var file_system_var(file_system);
   std::vector<std::string> properties_to_check;
-  properties_to_check.push_back(
-      "message_event.data.constructor.name === 'DOMFileSystem'");
-  properties_to_check.push_back(
-      "message_event.data.root.constructor.name === 'DirectoryEntry'");
+  properties_to_check.push_back("message_event.data.root.isDirectory");
   properties_to_check.push_back(
       "message_event.data.name.indexOf("
       "    ':Temporary',"

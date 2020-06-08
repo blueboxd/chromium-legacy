@@ -237,9 +237,12 @@ def make_enum_string_table(cg_context):
 
 
 def generate_enumeration(enumeration):
+    assert isinstance(enumeration, web_idl.Enumeration)
+
     path_manager = PathManager(enumeration)
     assert path_manager.api_component == path_manager.impl_component
     api_component = path_manager.api_component
+    for_testing = enumeration.code_generator_info.for_testing
 
     # Class names
     class_name = blink_class_name(enumeration)
@@ -266,11 +269,11 @@ def generate_enumeration(enumeration):
     source_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
 
     # Class definition
-    class_def = CxxClassDefNode(
-        cg_context.class_name,
-        base_class_names=["bindings::EnumerationBase"],
-        final=True,
-        export=component_export(api_component))
+    class_def = CxxClassDefNode(cg_context.class_name,
+                                base_class_names=["bindings::EnumerationBase"],
+                                final=True,
+                                export=component_export(
+                                    api_component, for_testing))
     class_def.set_base_template_vars(cg_context.template_bindings())
 
     # Implementation parts
@@ -311,7 +314,7 @@ def generate_enumeration(enumeration):
         EmptyNode(),
     ])
     header_node.accumulator.add_include_headers([
-        component_export_header(api_component),
+        component_export_header(api_component, for_testing),
         "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h",
         "third_party/blink/renderer/platform/bindings/enumeration_base.h",
     ])

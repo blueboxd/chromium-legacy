@@ -63,7 +63,7 @@ void AppendNodeToString(NGLayoutInputNode node,
 MinMaxSizesResult NGLayoutInputNode::ComputeMinMaxSizes(
     WritingMode writing_mode,
     const MinMaxSizesInput& input,
-    const NGConstraintSpace* space) {
+    const NGConstraintSpace* space) const {
   if (auto* inline_node = DynamicTo<NGInlineNode>(this))
     return inline_node->ComputeMinMaxSizes(writing_mode, input, space);
   return To<NGBlockNode>(*this).ComputeMinMaxSizes(writing_mode, input, space);

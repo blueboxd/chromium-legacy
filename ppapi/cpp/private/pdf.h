@@ -128,11 +128,42 @@ class PDF {
     FloatRect bounds;
   };
 
+  // C++ version of PP_PrivateAccessibilityButtonInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityButtonInfo {
+    std::string name;
+    std::string value;
+    // Represents the button type.
+    PP_PrivateButtonType type;
+    // Represents if the button is non-editable.
+    bool is_read_only;
+    // Represents if the radio button or check box is checked or not.
+    bool is_checked;
+    // Represents count of controls in the control group. A group of interactive
+    // form annotations is collectively called a form control group. Here, an
+    // interactive form annotation, should be either a radio button or a
+    // checkbox. Value of |control_count| is >= 1.
+    uint32_t control_count;
+    // Represents index of the control in the control group. A group of
+    // interactive form annotations is collectively called a form control group.
+    // Here, an interactive form annotation, should be either a radio button or
+    // a checkbox. Value of |control_index| should always be less than
+    // |control_count|.
+    uint32_t control_index;
+    // Index of this button in the collection of buttons in the page.
+    uint32_t index_in_page;
+    // We anchor the button to a text run index, this denotes the text run
+    // before which the button should be inserted in the accessibility tree.
+    uint32_t text_run_index;
+    FloatRect bounds;
+  };
+
   // C++ version of PP_PrivateAccessibilityFormFieldInfo.
   // Needs to stay in sync with the C version.
   struct PrivateAccessibilityFormFieldInfo {
     std::vector<PrivateAccessibilityTextFieldInfo> text_fields;
     std::vector<PrivateAccessibilityChoiceFieldInfo> choice_fields;
+    std::vector<PrivateAccessibilityButtonInfo> buttons;
   };
 
   // C++ version of PP_PrivateAccessibilityPageObjects.

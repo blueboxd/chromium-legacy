@@ -998,8 +998,8 @@ String InspectorStyleSheet::FinalURL() {
 
 bool InspectorStyleSheet::SetText(const String& text,
                                   ExceptionState& exception_state) {
-  InnerSetText(text, true);
   page_style_sheet_->SetText(text, CSSImportRules::kAllow);
+  InnerSetText(text, true);
   OnStyleSheetTextChanged();
   return true;
 }
@@ -1114,8 +1114,10 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
     style = style_rule->style();
   else
     style = To<CSSKeyframeRule>(rule)->style();
-  style->setCSSText(page_style_sheet_->OwnerDocument()->GetExecutionContext(),
-                    text, exception_state);
+
+  ExecutionContext* execution_context =
+      page_style_sheet_->OwnerDocument()->GetExecutionContext();
+  style->setCSSText(execution_context, text, exception_state);
 
   ReplaceText(source_data->rule_body_range, text, new_range, old_text);
   OnStyleSheetTextChanged();
@@ -1400,8 +1402,7 @@ void InspectorStyleSheet::ReplaceText(const SourceRange& range,
   InnerSetText(sheet_text, true);
 }
 
-void InspectorStyleSheet::InnerSetText(const String& text,
-                                       bool mark_as_locally_modified) {
+void InspectorStyleSheet::ParseText(const String& text) {
   CSSRuleSourceDataList* rule_tree =
       MakeGarbageCollected<CSSRuleSourceDataList>();
   auto* style_sheet = MakeGarbageCollected<StyleSheetContents>(
@@ -1430,6 +1431,34 @@ void InspectorStyleSheet::InnerSetText(const String& text,
 
   source_data_ = MakeGarbageCollected<CSSRuleSourceDataList>();
   FlattenSourceData(*rule_tree, source_data_.Get());
+}
+
+String InspectorStyleSheet::MergeCSSOMRulesWithText(const String& text) {
+  SourceRange last_range;
+  String merged_text = text;
+  for (unsigned i = 0; i < page_style_sheet_->length(); i++) {
+    CSSRuleSourceData* source_data =
+        SourceDataForRule(page_style_sheet_->item(i));
+    if (source_data) {
+      last_range = SourceRange(source_data->rule_body_range.start,
+                               source_data->rule_body_range.end + 1);
+      continue;
+    }
+    SourceRange next(last_range.end, last_range.end);
+    String rule_text = CanonicalCSSText(page_style_sheet_->item(i));
+    merged_text.replace(next.start, next.length(), rule_text);
+    last_range = SourceRange(next.start, next.start + rule_text.length());
+  }
+  rule_to_source_data_.clear();
+  source_data_to_rule_.clear();
+  cssom_flat_rules_.clear();
+  return merged_text;
+}
+
+void InspectorStyleSheet::InnerSetText(const String& text,
+                                       bool mark_as_locally_modified) {
+  ParseText(text);
+
   text_ = text;
 
   if (mark_as_locally_modified) {
@@ -1879,7 +1908,8 @@ bool InspectorStyleSheet::ResourceStyleSheetText(String* result) {
     return false;
 
   KURL url(page_style_sheet_->href());
-  if (resource_container_->LoadStyleSheetContent(url, result))
+  if (page_style_sheet_->href() &&
+      resource_container_->LoadStyleSheetContent(url, result))
     return true;
 
   bool base64_encoded;
@@ -1903,8 +1933,7 @@ Element* InspectorStyleSheet::OwnerStyleElement() {
 String InspectorStyleSheet::CollectStyleSheetRules() {
   StringBuilder builder;
   for (unsigned i = 0; i < page_style_sheet_->length(); i++) {
-    String css_text = page_style_sheet_->item(i)->cssText();
-    builder.Append(css_text);
+    builder.Append(CanonicalCSSText(page_style_sheet_->item(i)));
     builder.Append('\n');
   }
   return builder.ToString();
@@ -1918,15 +1947,26 @@ bool InspectorStyleSheet::CSSOMStyleSheetText(String* result) {
   return true;
 }
 
-bool InspectorStyleSheet::InlineStyleSheetText(String* result) {
+bool InspectorStyleSheet::InlineStyleSheetText(String* out) {
   Element* owner_element = OwnerStyleElement();
+  bool result = false;
   if (!owner_element)
-    return false;
-  if (resource_container_->LoadStyleElementContent(
-          DOMNodeIds::IdForNode(owner_element), result))
-    return true;
-  *result = owner_element->textContent();
-  return true;
+    return result;
+
+  result = resource_container_->LoadStyleElementContent(
+      DOMNodeIds::IdForNode(owner_element), out);
+
+  if (!result) {
+    *out = owner_element->textContent();
+    result = true;
+  }
+
+  if (result && page_style_sheet_->Contents()->IsMutable()) {
+    ParseText(*out);
+    *out = MergeCSSOMRulesWithText(*out);
+  }
+
+  return result;
 }
 
 bool InspectorStyleSheet::InspectorStyleSheetText(String* result) {

@@ -22,6 +22,8 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/MediaStoreHelper.java",
     "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
     "java/src/org/chromium/chrome/browser/download/StringUtils.java",
+    "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogChoice.java",
+    "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogController.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogCoordinator.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogProperties.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogView.java",

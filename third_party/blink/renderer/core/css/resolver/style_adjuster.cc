@@ -526,10 +526,10 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
                                        bool is_svg_root) {
   TouchAction inherited_action = parent_style.GetEffectiveTouchAction();
 
-  bool is_replaced_canvas =
-      element && IsA<HTMLCanvasElement>(element) &&
-      element->GetDocument().GetFrame() &&
-      element->GetDocument().CanExecuteScripts(kNotAboutToExecuteScript);
+  bool is_replaced_canvas = element && IsA<HTMLCanvasElement>(element) &&
+                            element->GetExecutionContext() &&
+                            element->GetExecutionContext()->CanExecuteScripts(
+                                kNotAboutToExecuteScript);
   bool is_non_replaced_inline_elements =
       style.IsDisplayInlineType() &&
       !(style.IsDisplayReplacedType() || is_svg_root ||

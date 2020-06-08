@@ -92,15 +92,14 @@ MasterPreferences::MasterPreferences(const std::string& prefs) {
   InitializeFromString(prefs);
 }
 
-MasterPreferences::~MasterPreferences() {
-}
+MasterPreferences::~MasterPreferences() = default;
 
 void MasterPreferences::InitializeFromCommandLine(
     const base::CommandLine& cmd_line) {
 #if defined(OS_WIN)
   if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
-    base::FilePath prefs_path(cmd_line.GetSwitchValuePath(
-        installer::switches::kInstallerData));
+    base::FilePath prefs_path(
+        cmd_line.GetSwitchValuePath(installer::switches::kInstallerData));
     InitializeFromFilePath(prefs_path);
   } else {
     master_dictionary_.reset(new base::DictionaryValue());
@@ -142,8 +141,8 @@ void MasterPreferences::InitializeFromCommandLine(
   }
 
   // See if the log file path was specified on the command line.
-  std::wstring str_value(cmd_line.GetSwitchValueNative(
-      installer::switches::kLogFile));
+  std::wstring str_value(
+      cmd_line.GetSwitchValueNative(installer::switches::kLogFile));
   if (!str_value.empty()) {
     name.assign(installer::master_preferences::kDistroDict);
     name.append(".").append(installer::master_preferences::kLogFile);
@@ -282,8 +281,8 @@ std::vector<std::string> MasterPreferences::GetFirstRunTabs() const {
 
 bool MasterPreferences::GetExtensionsBlock(
     base::DictionaryValue** extensions) const {
-  return master_dictionary_->GetDictionary(
-      master_preferences::kExtensionsBlock, extensions);
+  return master_dictionary_->GetDictionary(master_preferences::kExtensionsBlock,
+                                           extensions);
 }
 
 std::string MasterPreferences::GetCompressedVariationsSeed() const {

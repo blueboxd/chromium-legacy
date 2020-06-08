@@ -178,8 +178,8 @@ void HTMLCanvasElement::ParseAttribute(
 
 LayoutObject* HTMLCanvasElement::CreateLayoutObject(const ComputedStyle& style,
                                                     LegacyLayout legacy) {
-  LocalFrame* frame = GetDocument().GetFrame();
-  if (frame && GetDocument().CanExecuteScripts(kNotAboutToExecuteScript)) {
+  if (GetExecutionContext() &&
+      GetExecutionContext()->CanExecuteScripts(kNotAboutToExecuteScript)) {
     // Allocation of a layout object indicates that the canvas doesn't
     // have display:none set, so is conceptually being displayed.
     if (context_) {

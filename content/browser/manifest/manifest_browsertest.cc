@@ -131,12 +131,14 @@ class ManifestBrowserTest : public ContentBrowserTest,
 
   // WebContentsObserver:
   void DidUpdateFaviconURL(
+      RenderFrameHost* rfh,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     manifests_reported_when_favicon_url_updated_.push_back(
         reported_manifest_urls_.size());
   }
 
   void DidUpdateWebManifestURL(
+      RenderFrameHost* rfh,
       const base::Optional<GURL>& manifest_url) override {
     if (!manifest_url) {
       reported_manifest_urls_.emplace_back();

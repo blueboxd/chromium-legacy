@@ -309,8 +309,8 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
   base::CopyFile(exe_full_path, file_name_to);
   ASSERT_TRUE(base::PathExists(file_name_to));
 
-  VLOG(1) << "copy ourself from " << exe_full_path.value()
-          << " to " << file_name_to.value();
+  VLOG(1) << "copy ourself from " << exe_full_path.value() << " to "
+          << file_name_to.value();
 
   // Run the executable in destination path
   STARTUPINFOW si = {sizeof(si)};
@@ -387,8 +387,8 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   ASSERT_TRUE(base::PathExists(file_name_to));
   ASSERT_FALSE(CopyTreeWorkItem::IsFileInUse(file_name_to));
 
-  VLOG(1) << "copy ourself from " << exe_full_path.value()
-          << " to " << file_name_to.value();
+  VLOG(1) << "copy ourself from " << exe_full_path.value() << " to "
+          << file_name_to.value();
 
   // Run the executable in destination path
   STARTUPINFOW si = {sizeof(si)};
@@ -571,8 +571,8 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
   base::CopyFile(exe_full_path, file_name_to);
   ASSERT_TRUE(base::PathExists(file_name_to));
 
-  VLOG(1) << "copy ourself from " << exe_full_path.value()
-          << " to " << file_name_to.value();
+  VLOG(1) << "copy ourself from " << exe_full_path.value() << " to "
+          << file_name_to.value();
 
   // Run the executable in destination path
   STARTUPINFOW si = {sizeof(si)};
@@ -664,15 +664,15 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyTree) {
   file_name_to_1 = file_name_to_1.AppendASCII("1");
   file_name_to_1 = file_name_to_1.AppendASCII("File_1.txt");
   EXPECT_TRUE(base::PathExists(file_name_to_1));
-  VLOG(1) << "compare " << file_name_from_1.value()
-          << " and " << file_name_to_1.value();
+  VLOG(1) << "compare " << file_name_from_1.value() << " and "
+          << file_name_to_1.value();
   EXPECT_TRUE(base::ContentsEqual(file_name_from_1, file_name_to_1));
 
   base::FilePath file_name_to_2(dir_name_to);
   file_name_to_2 = file_name_to_2.AppendASCII("2");
   file_name_to_2 = file_name_to_2.AppendASCII("File_2.txt");
   EXPECT_TRUE(base::PathExists(file_name_to_2));
-  VLOG(1) << "compare " << file_name_from_2.value()
-          << " and " << file_name_to_2.value();
+  VLOG(1) << "compare " << file_name_from_2.value() << " and "
+          << file_name_to_2.value();
   EXPECT_TRUE(base::ContentsEqual(file_name_from_2, file_name_to_2));
 }

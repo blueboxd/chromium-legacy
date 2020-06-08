@@ -10,6 +10,7 @@
 #define CHROME_INSTALLER_UTIL_SHELL_UTIL_H_
 
 #include <windows.h>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -31,7 +32,7 @@ class RegistryEntry;
 namespace base {
 class AtomicFlag;
 class CommandLine;
-}
+}  // namespace base
 
 // This is a utility class that provides common shell integration methods
 // that can be used by installer as well as Chrome.
@@ -175,25 +176,17 @@ class ShellUtil {
       pin_to_taskbar = pin_to_taskbar_in;
     }
 
-    bool has_target() const {
-      return (options & PROPERTIES_TARGET) != 0;
-    }
+    bool has_target() const { return (options & PROPERTIES_TARGET) != 0; }
 
-    bool has_arguments() const {
-      return (options & PROPERTIES_ARGUMENTS) != 0;
-    }
+    bool has_arguments() const { return (options & PROPERTIES_ARGUMENTS) != 0; }
 
     bool has_description() const {
       return (options & PROPERTIES_DESCRIPTION) != 0;
     }
 
-    bool has_icon() const {
-      return (options & PROPERTIES_ICON) != 0;
-    }
+    bool has_icon() const { return (options & PROPERTIES_ICON) != 0; }
 
-    bool has_app_id() const {
-      return (options & PROPERTIES_APP_ID) != 0;
-    }
+    bool has_app_id() const { return (options & PROPERTIES_APP_ID) != 0; }
 
     bool has_shortcut_name() const {
       return (options & PROPERTIES_SHORTCUT_NAME) != 0;
@@ -360,10 +353,9 @@ class ShellUtil {
   // SHORTCUT_LOCATION_QUICK_LAUNCH, SHORTCUT_LOCATION_START_MENU_ROOT,
   // SHORTCUT_LOCATION_START_MENU_CHROME_DIR, or
   // SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR.
-  static bool CreateOrUpdateShortcut(
-      ShortcutLocation location,
-      const ShortcutProperties& properties,
-      ShortcutOperation operation);
+  static bool CreateOrUpdateShortcut(ShortcutLocation location,
+                                     const ShortcutProperties& properties,
+                                     ShortcutOperation operation);
 
   // Returns the string "|icon_path|,|icon_index|" (see, for example,
   // http://msdn.microsoft.com/library/windows/desktop/dd391573.aspx).
@@ -518,7 +510,7 @@ class ShellUtil {
   // best effort deal.
   // If write to HKLM is required, but fails, and:
   // - |elevate_if_not_admin| is true (and OS is Vista or above):
-  //   tries to launch setup.exe with admin priviledges (by prompting the user
+  //   tries to launch setup.exe with admin privileges (by prompting the user
   //   with a UAC) to do these tasks.
   // - |elevate_if_not_admin| is false (or OS is XP):
   //   adds the ProgId entries to HKCU. These entries will not make Chrome show
@@ -582,11 +574,10 @@ class ShellUtil {
   // redirected to |new_target_exe|.
   // Returns true if all updates to matching shortcuts are successful, including
   // the vacuous case where no matching shortcuts are found.
-  static bool RetargetShortcutsWithArgs(
-      ShortcutLocation location,
-      ShellChange level,
-      const base::FilePath& old_target_exe,
-      const base::FilePath& new_target_exe);
+  static bool RetargetShortcutsWithArgs(ShortcutLocation location,
+                                        ShellChange level,
+                                        const base::FilePath& old_target_exe,
+                                        const base::FilePath& new_target_exe);
 
   typedef base::RefCountedData<base::AtomicFlag> SharedCancellationFlag;
 
@@ -600,7 +591,7 @@ class ShellUtil {
       const base::FilePath& chrome_exe,
       bool do_removal,
       const scoped_refptr<SharedCancellationFlag>& cancel,
-      std::vector<std::pair<base::FilePath, base::string16> >* shortcuts);
+      std::vector<std::pair<base::FilePath, base::string16>>* shortcuts);
 
   // Sets |suffix| to the base 32 encoding of the md5 hash of this user's sid
   // preceded by a dot.
@@ -684,6 +675,5 @@ class ShellUtil {
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);
 };
-
 
 #endif  // CHROME_INSTALLER_UTIL_SHELL_UTIL_H_

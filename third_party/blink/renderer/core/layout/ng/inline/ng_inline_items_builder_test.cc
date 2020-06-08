@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -48,6 +49,10 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     return style;
   }
 
+  bool HasRuby(const NGInlineItemsBuilder& builder) const {
+    return builder.has_ruby_;
+  }
+
   void AppendText(const String& text, NGInlineItemsBuilder* builder) {
     LayoutText* layout_text = LayoutText::CreateEmptyAnonymous(
         GetDocument(), style_.get(), LegacyLayout::kAuto);
@@ -60,6 +65,14 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
         &GetDocument(), style_, LegacyLayout::kAuto);
     anonymous_objects_.push_back(layout_block_flow);
     builder->AppendAtomicInline(layout_block_flow);
+  }
+
+  void AppendRubyRun(NGInlineItemsBuilder* builder) {
+    LayoutNGRubyRun* ruby_run = new LayoutNGRubyRun();
+    ruby_run->SetDocumentForAnonymous(&GetDocument());
+    ruby_run->SetStyle(style_);
+    anonymous_objects_.push_back(ruby_run);
+    builder->AppendAtomicInline(ruby_run);
   }
 
   struct Input {
@@ -507,6 +520,28 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
                    u" World"),
             builder.ToString());
   isolate_override_rtl->Destroy();
+}
+
+TEST_F(NGInlineItemsBuilderTest, HasRuby) {
+  Vector<NGInlineItem> items;
+  NGInlineItemsBuilder builder(&items);
+  EXPECT_FALSE(HasRuby(builder)) << "has_ruby_ should be false initially.";
+
+  AppendText("Hello ", &builder);
+  EXPECT_FALSE(HasRuby(builder))
+      << "Adding non-AtomicInline should not affect it.";
+
+  AppendAtomicInline(&builder);
+  EXPECT_FALSE(HasRuby(builder))
+      << "Adding non-ruby AtomicInline should not affect it.";
+
+  AppendRubyRun(&builder);
+  EXPECT_TRUE(HasRuby(builder))
+      << "Adding a ruby AtomicInline should set it to true.";
+
+  AppendAtomicInline(&builder);
+  EXPECT_TRUE(HasRuby(builder))
+      << "Adding non-ruby AtomicInline should not clear it.";
 }
 
 }  // namespace blink

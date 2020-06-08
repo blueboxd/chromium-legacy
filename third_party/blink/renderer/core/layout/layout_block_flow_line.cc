@@ -2468,9 +2468,41 @@ void LayoutBlockFlow::AddLayoutOverflowFromInlineChildren() {
   LayoutUnit end_padding = HasOverflowClip() ? PaddingEnd() : LayoutUnit();
   // FIXME: Need to find another way to do this, since scrollbars could show
   // when we don't want them to.
+  // The test[1] verifies this.
+  // [1] editing/input/editable-container-with-word-wrap-normal.html
   if (HasOverflowClip() && !end_padding && GetNode() &&
-      IsRootEditableElement(*GetNode()) && StyleRef().IsLeftToRightDirection())
+      IsRootEditableElement(*GetNode()) &&
+      StyleRef().IsLeftToRightDirection()) {
+    if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+      if (const NGFragmentItems* items = fragment->Items()) {
+        for (NGInlineCursor cursor(*items); cursor;
+             cursor.MoveToNextSkippingChildren()) {
+          if (!cursor.Current().IsLineBox())
+            continue;
+          const NGFragmentItem& child = *cursor.CurrentItem();
+          LogicalRect logical_rect = fragment->ConvertToLogical(
+              child.RectInContainerBlock(), child.Size());
+          logical_rect.size.inline_size += 1;
+          AddLayoutOverflow(
+              fragment->ConvertToPhysical(logical_rect).ToLayoutRect());
+        }
+        return;
+      }
+      // Note: Paint fragment for this block isn't set yet.
+      for (const NGLink& child : fragment->Children()) {
+        if (!child->IsLineBox())
+          continue;
+        LogicalRect logical_rect = fragment->ConvertToLogical(
+            PhysicalRect(child.Offset(), child->Size()), child->Size());
+        logical_rect.size.inline_size += 1;
+        AddLayoutOverflow(
+            fragment->ConvertToPhysical(logical_rect).ToLayoutRect());
+      }
+      return;
+    }
     end_padding = LayoutUnit(1);
+  }
+
   for (RootInlineBox* curr = FirstRootBox(); curr; curr = curr->NextRootBox())
     AddLayoutOverflow(curr->PaddedLayoutOverflowRect(end_padding));
 }

@@ -27,8 +27,8 @@ constexpr const base::char16* kMonths[] = {
 
 // Returns the number of weeks since 2/3/2003.
 int GetCurrentRlzWeek(const base::Time& current_time) {
-  const base::Time::Exploded february_third_2003_exploded =
-      {2003, 2, 1, 3, 0, 0, 0, 0};
+  const base::Time::Exploded february_third_2003_exploded = {2003, 2, 1, 3,
+                                                             0,    0, 0, 0};
   base::Time f;
   bool conversion_success =
       base::Time::FromUTCExploded(february_third_2003_exploded, &f);
@@ -60,9 +60,8 @@ bool SetExperimentLabel(const wchar_t* brand_code,
   label_and_separator.push_back('=');
   base::string16 new_labels;
   for (const base::string16& entry : entries) {
-    if (!entry.empty() &&
-        !base::StartsWith(entry, label_and_separator,
-                          base::CompareCase::SENSITIVE)) {
+    if (!entry.empty() && !base::StartsWith(entry, label_and_separator,
+                                            base::CompareCase::SENSITIVE)) {
       new_labels += entry;
       new_labels += kExperimentLabelSeparator;
     }

@@ -227,6 +227,8 @@ class NGInlineItemsBuilderTemplate {
                                                          const ComputedStyle&,
                                                          LayoutText*,
                                                          unsigned* start);
+
+  friend class NGInlineItemsBuilderTest;
 };
 
 template <>

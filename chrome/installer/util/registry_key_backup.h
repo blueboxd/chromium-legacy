@@ -34,9 +34,7 @@ class RegistryKeyBackup {
   // initialized from a non-existent key.
   bool WriteTo(HKEY root, const wchar_t* key_path, REGSAM wow64_acccess) const;
 
-  void swap(RegistryKeyBackup& other) {
-    key_data_.swap(other.key_data_);
-  }
+  void swap(RegistryKeyBackup& other) { key_data_.swap(other.key_data_); }
 
  private:
   class KeyData;

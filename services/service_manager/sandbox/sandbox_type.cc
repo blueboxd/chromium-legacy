@@ -57,6 +57,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #endif
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
+    case SandboxType::kTts:
 #endif
 #if !defined(OS_MACOSX)
     case SandboxType::kSharingService:
@@ -119,6 +120,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
 #endif  // defined(OS_WIN)
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
+    case SandboxType::kTts:
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_MACOSX)
     case SandboxType::kSharingService:
@@ -241,6 +243,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
       return switches::kImeSandbox;
+    case SandboxType::kTts:
+      return switches::kTtsSandbox;
 #endif  // defined(OS_CHROMEOS)
       // The following are not utility processes so should not occur.
     case SandboxType::kRenderer:
@@ -297,6 +301,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
 #if defined(OS_CHROMEOS)
   if (sandbox_string == switches::kImeSandbox)
     return SandboxType::kIme;
+  if (sandbox_string == switches::kTtsSandbox)
+    return SandboxType::kTts;
 #endif  // defined(OS_CHROMEOS)
   return SandboxType::kUtility;
 }

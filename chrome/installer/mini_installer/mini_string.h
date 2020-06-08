@@ -62,7 +62,8 @@ const wchar_t* SearchStringI(const wchar_t* source, const wchar_t* find);
 // immediately followed by '-' or is at the end of the string.  If |position|
 // is non-nullptr, the location of the tag is returned in |*position| on
 // success.
-bool FindTagInStr(const wchar_t* str, const wchar_t* tag,
+bool FindTagInStr(const wchar_t* str,
+                  const wchar_t* tag,
                   const wchar_t** position);
 
 // Takes the path to file and returns a pointer to the basename component.
@@ -91,13 +92,9 @@ class StackString {
 
   // Returns the number of reserved characters in this buffer, _including_
   // the reserved char for the terminator.
-  size_t capacity() const {
-    return kCapacity;
-  }
+  size_t capacity() const { return kCapacity; }
 
-  wchar_t* get() {
-    return buffer_;
-  }
+  wchar_t* get() { return buffer_; }
 
   bool assign(const wchar_t* str) {
     return SafeStrCopy(buffer_, kCapacity, str);
@@ -107,13 +104,9 @@ class StackString {
     return SafeStrCat(buffer_, kCapacity, str);
   }
 
-  void clear() {
-    buffer_[0] = L'\0';
-  }
+  void clear() { buffer_[0] = L'\0'; }
 
-  size_t length() const {
-    return SafeStrLen(buffer_, kCapacity);
-  }
+  size_t length() const { return SafeStrLen(buffer_, kCapacity); }
 
   // Does a case insensitive search for a substring.
   const wchar_t* findi(const wchar_t* find) const {
@@ -121,14 +114,10 @@ class StackString {
   }
 
   // Case insensitive string compare.
-  int comparei(const wchar_t* str) const {
-    return lstrcmpiW(buffer_, str);
-  }
+  int comparei(const wchar_t* str) const { return lstrcmpiW(buffer_, str); }
 
   // Case sensitive string compare.
-  int compare(const wchar_t* str) const {
-    return lstrcmpW(buffer_, str);
-  }
+  int compare(const wchar_t* str) const { return lstrcmpW(buffer_, str); }
 
   // Terminates the string at the specified location.
   // Note: this method has no effect if this object's length is less than

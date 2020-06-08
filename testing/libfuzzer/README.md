@@ -36,6 +36,7 @@ Started Guide].
   ***
 
 * [Reproducing bugs] found by libFuzzer/AFL and reported by ClusterFuzz.
+* [Fuzzing mojo interfaces] using automatically generated libprotobuf-mutator fuzzers.
 
 ## Further Reading
 

@@ -6,11 +6,11 @@
 #define CHROME_INSTALLER_GCAPI_MAC_GCAPI_H_
 
 // Error conditions for GoogleChromeCompatibilityCheck().
-#define GCCC_ERROR_ALREADYPRESENT                (1 << 0)
-#define GCCC_ERROR_ACCESSDENIED                  (1 << 1)
-#define GCCC_ERROR_OSNOTSUPPORTED                (1 << 2)
-#define GCCC_ERROR_ALREADYOFFERED                (1 << 3)
-#define GCCC_ERROR_INTEGRITYLEVEL                (1 << 4)
+#define GCCC_ERROR_ALREADYPRESENT (1 << 0)
+#define GCCC_ERROR_ACCESSDENIED (1 << 1)
+#define GCCC_ERROR_OSNOTSUPPORTED (1 << 2)
+#define GCCC_ERROR_ALREADYOFFERED (1 << 3)
+#define GCCC_ERROR_INTEGRITYLEVEL (1 << 4)
 
 #ifdef __cplusplus
 extern "C" {

@@ -226,6 +226,8 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
                    SourceRange* new_range,
                    String* old_text);
   void InnerSetText(const String& new_text, bool mark_as_locally_modified);
+  void ParseText(const String& text);
+  String MergeCSSOMRulesWithText(const String& text);
   Element* OwnerStyleElement();
 
   Member<InspectorResourceContainer> resource_container_;

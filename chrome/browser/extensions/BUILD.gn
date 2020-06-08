@@ -1023,6 +1023,7 @@ static_library("extensions") {
       "//chromeos/services/machine_learning/public/cpp",
       "//chromeos/services/machine_learning/public/mojom",
       "//chromeos/services/media_perception/public/mojom",
+      "//chromeos/services/tts/public/mojom",
       "//chromeos/settings",
       "//chromeos/system",
       "//chromeos/tpm",

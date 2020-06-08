@@ -42,4 +42,13 @@ bool LayoutRubyText::IsChildAllowed(LayoutObject* child,
   return child->IsInline();
 }
 
+void LayoutRubyText::StyleDidChange(StyleDifference diff,
+                                    const ComputedStyle* old_style) {
+  if (StyleRef().GetTextAlign() != ETextAlign::kInternalSpaceAround) {
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kRubyTextWithNonDefaultTextAlign);
+  }
+  LayoutBlockFlow::StyleDidChange(diff, old_style);
+}
+
 }  // namespace blink

@@ -1381,17 +1381,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       Se questo criterio non è impostato o se il valore ottenuto in seguito alla sostituzione non è un nome host valido, non verrà impostato alcun nome host nella richiesta DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Consente a <ph name="PRODUCT_NAME" /> di caricare criteri sperimentali.
-
-        AVVISO: i criteri sperimentali non sono supportati e sono soggetti a modifiche o a rimozione senza preavviso nella versione successiva del browser.
-
-        Un criterio sperimentale può non essere completo o avere ancora problemi noti o sconosciuti. Può essere modificato o anche rimosso senza preavviso. Attivando i criteri sperimentali, potresti perdere i dati del browser o compromettere la sicurezza o la privacy.
-
-        Se un criterio non è nell'elenco e non è stato pubblicato ufficialmente, il suo valore sarà ignorato su Chrome Beta e Chrome Stable.
-
-        Se un criterio è nell'elenco e non è stato pubblicato ufficialmente, il suo valore verrà applicato.
-
-        Il criterio non ha effetto su quelli già pubblicati.</translation>
 <translation id="3066446511111537292">Consenti agli utenti affiliati di questo dispositivo di utilizzare il processo sideload ADB</translation>
 <translation id="3069958900488014740">Consente di disattivare l'ottimizzazione WPAD (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 

@@ -104,37 +104,41 @@ bool CanApplyStartOverhang(const NGLineInfo& line_info,
 }
 
 // See LayoutRubyRun::GetOverhang().
-LayoutUnit CommitPendingEndOverhang(LayoutUnit end_overhang,
-                                    NGLineInfo* line_info) {
-  if (end_overhang <= LayoutUnit())
-    return LayoutUnit();
+LayoutUnit CommitPendingEndOverhang(NGLineInfo* line_info) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
   DCHECK(line_info);
   NGInlineItemResults* items = line_info->MutableResults();
-  DCHECK_GE(items->size(), 2U);
+  if (items->size() < 2U)
+    return LayoutUnit();
   const NGInlineItemResult& text_item = items->back();
   DCHECK_EQ(text_item.item->Type(), NGInlineItem::kText);
-  wtf_size_t ruby_run_index = items->size() - 2;
-  while ((*items)[ruby_run_index].item->Type() != NGInlineItem::kAtomicInline) {
-    const auto type = (*items)[ruby_run_index].item->Type();
-    DCHECK(type == NGInlineItem::kOpenTag || type == NGInlineItem::kCloseTag)
-        << type;
-    --ruby_run_index;
+  wtf_size_t i = items->size() - 2;
+  while ((*items)[i].item->Type() != NGInlineItem::kAtomicInline) {
+    const auto type = (*items)[i].item->Type();
+    if (type != NGInlineItem::kOpenTag && type != NGInlineItem::kCloseTag)
+      return LayoutUnit();
+    if (i-- == 0)
+      return LayoutUnit();
   }
-  NGInlineItemResult& ruby_run_item = (*items)[ruby_run_index];
-  DCHECK(ruby_run_item.layout_result->PhysicalFragment().IsRubyRun());
-  if (ruby_run_item.item->Style()->FontSize() <
+  NGInlineItemResult& atomic_inline_item = (*items)[i];
+  if (!atomic_inline_item.layout_result->PhysicalFragment().IsRubyRun())
+    return LayoutUnit();
+  if (atomic_inline_item.pending_end_overhang <= LayoutUnit())
+    return LayoutUnit();
+  if (atomic_inline_item.item->Style()->FontSize() <
       text_item.item->Style()->FontSize())
     return LayoutUnit();
   // Ideally we should refer to inline_size of |text_item| instead of the width
   // of the NGInlineItem's ShapeResult. However it's impossible to compute
   // inline_size of |text_item| before calling BreakText(), and BreakText()
   // requires precise |position_| which takes |end_overhang| into account.
-  end_overhang = std::min(
-      end_overhang, LayoutUnit(text_item.item->TextShapeResult()->Width()));
-  DCHECK_EQ(ruby_run_item.margins.inline_end, LayoutUnit());
-  ruby_run_item.margins.inline_end = -end_overhang;
-  ruby_run_item.inline_size -= end_overhang;
+  LayoutUnit end_overhang =
+      std::min(atomic_inline_item.pending_end_overhang,
+               LayoutUnit(text_item.item->TextShapeResult()->Width()));
+  DCHECK_EQ(atomic_inline_item.margins.inline_end, LayoutUnit());
+  atomic_inline_item.margins.inline_end = -end_overhang;
+  atomic_inline_item.inline_size -= end_overhang;
+  atomic_inline_item.pending_end_overhang = LayoutUnit();
   return end_overhang;
 }
 

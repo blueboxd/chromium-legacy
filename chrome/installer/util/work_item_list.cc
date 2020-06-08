@@ -149,12 +149,9 @@ WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& value_name,
                                                const std::wstring& value_data,
                                                bool overwrite) {
-  WorkItem* item = WorkItem::CreateSetRegValueWorkItem(predefined_root,
-                                                       key_path,
-                                                       wow64_access,
-                                                       value_name,
-                                                       value_data,
-                                                       overwrite);
+  WorkItem* item = WorkItem::CreateSetRegValueWorkItem(
+      predefined_root, key_path, wow64_access, value_name, value_data,
+      overwrite);
   AddWorkItem(item);
   return item;
 }
@@ -165,12 +162,9 @@ WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& value_name,
                                                DWORD value_data,
                                                bool overwrite) {
-  WorkItem* item = WorkItem::CreateSetRegValueWorkItem(predefined_root,
-                                                       key_path,
-                                                       wow64_access,
-                                                       value_name,
-                                                       value_data,
-                                                       overwrite);
+  WorkItem* item = WorkItem::CreateSetRegValueWorkItem(
+      predefined_root, key_path, wow64_access, value_name, value_data,
+      overwrite);
   AddWorkItem(item);
   return item;
 }
@@ -181,13 +175,10 @@ WorkItem* WorkItemList::AddSetRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& value_name,
                                                int64_t value_data,
                                                bool overwrite) {
-  WorkItem* item = reinterpret_cast<WorkItem*>(
-      WorkItem::CreateSetRegValueWorkItem(predefined_root,
-                                          key_path,
-                                          wow64_access,
-                                          value_name,
-                                          value_data,
-                                          overwrite));
+  WorkItem* item =
+      reinterpret_cast<WorkItem*>(WorkItem::CreateSetRegValueWorkItem(
+          predefined_root, key_path, wow64_access, value_name, value_data,
+          overwrite));
   AddWorkItem(item);
   return item;
 }

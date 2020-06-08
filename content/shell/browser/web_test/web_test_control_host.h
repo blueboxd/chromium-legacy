@@ -159,6 +159,7 @@ class WebTestControlHost : public WebContentsObserver,
                    int error_code) override;
   void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
+      RenderFrameHost* render_frame_host,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
 
   // RenderProcessHostObserver implementation.

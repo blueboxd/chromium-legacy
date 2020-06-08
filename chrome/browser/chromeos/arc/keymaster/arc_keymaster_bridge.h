@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/arc/keymaster/cert_store_bridge.h"
 #include "components/arc/mojom/keymaster.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class BrowserContext;
@@ -46,7 +47,7 @@ class ArcKeymasterBridge : public KeyedService, public mojom::KeymasterHost {
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
   // Points to a proxy bound to the implementation in arc-keymasterd.
-  mojom::KeymasterServerPtr keymaster_server_proxy_;
+  mojo::Remote<mojom::KeymasterServer> keymaster_server_proxy_;
 
   // Points to a proxy bound to the implementation in arc-keymasterd.
   std::unique_ptr<keymaster::CertStoreBridge> cert_store_bridge_;

@@ -167,6 +167,7 @@ void ContentFaviconDriver::OnFaviconDeleted(
 }
 
 void ContentFaviconDriver::DidUpdateFaviconURL(
+    content::RenderFrameHost* rfh,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // Ignore the update if there is no last committed navigation entry. This can
   // occur when loading an initially blank page.
@@ -192,6 +193,7 @@ void ContentFaviconDriver::DidUpdateFaviconURL(
 }
 
 void ContentFaviconDriver::DidUpdateWebManifestURL(
+    content::RenderFrameHost* rfh,
     const base::Optional<GURL>& manifest_url) {
   // Ignore the update if there is no last committed navigation entry. This can
   // occur when loading an initially blank page.

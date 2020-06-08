@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+
 #include <mshtmhst.h>
 #include <urlmon.h>
 
@@ -41,7 +42,7 @@ class HTMLDialogWin : public HTMLDialog {
   HTMLDialogWin(const base::string16& url, const base::string16& param)
       : url_(url), param_(param) {
     if (!mshtml_)
-       mshtml_ = LoadLibrary(L"MSHTML.DLL");
+      mshtml_ = LoadLibrary(L"MSHTML.DLL");
   }
 
   DialogResult ShowModal(void* parent_window,
@@ -98,9 +99,8 @@ bool HTMLDialogWin::InternalDoDialog(CustomizationCallback* callback,
                                      int* result) {
   if (!mshtml_)
     return false;
-  SHOWHTMLDIALOGFN* show_html_dialog =
-      reinterpret_cast<SHOWHTMLDIALOGFN*>(
-          GetProcAddress(mshtml_, "ShowHTMLDialog"));
+  SHOWHTMLDIALOGFN* show_html_dialog = reinterpret_cast<SHOWHTMLDIALOGFN*>(
+      GetProcAddress(mshtml_, "ShowHTMLDialog"));
   if (!show_html_dialog)
     return false;
 
@@ -150,8 +150,7 @@ bool HTMLDialogWin::InternalDoDialog(CustomizationCallback* callback,
 
 // EulaHTMLDialog implementation ---------------------------------------------
 
-void EulaHTMLDialog::Customizer::OnBeforeCreation(wchar_t** extra) {
-}
+void EulaHTMLDialog::Customizer::OnBeforeCreation(wchar_t** extra) {}
 
 // The customization of the window consists in removing the close button and
 // replacing the existing 'e' icon with the standard informational icon.

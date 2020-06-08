@@ -1424,17 +1424,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
       Als dit beleid niet is ingesteld of als de vervanging geen geldige hostnaam oplevert, wordt er geen hostnaam ingesteld in het DHCP-verzoek. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Hiermee kan <ph name="PRODUCT_NAME" /> experimentele beleidsregels laden.
-
-        WAARSCHUWING: Experimentele beleidsregels worden niet ondersteund en kunnen zonder kennisgeving worden gewijzigd of verwijderd uit toekomstige versies van de browser.
-
-        Een experimentele beleidsregel is mogelijk niet compleet of kan bekende of onbekende fouten bevatten. De beleidsregel kan zonder kennisgeving worden gewijzigd of zelfs worden verwijderd. Door experimentele beleidsregels in te schakelen, kun je browsergegevens kwijtraken of je veiligheid of privacy in gevaar brengen.
-
-        Als een beleidsregel niet in de lijst wordt vermeld en niet officieel is uitgebracht, wordt de waarde hiervan genegeerd in de bètaversie en de stabiele versie van Chrome.
-
-        Als een beleidsregel in de lijst wordt vermeld en niet officieel is uitgebracht, wordt de waarde hiervan toegepast.
-
-        Dit beleid heeft geen invloed op al uitgebrachte beleidsregels.</translation>
 <translation id="3066446511111537292">Toestaan dat gekoppelde gebruikers van dit apparaat ADB-sideloading gebruiken</translation>
 <translation id="3069958900488014740">Hiermee kan WPAD-optimalisatie (Web Proxy Auto-Discovery) worden uitgeschakeld in <ph name="PRODUCT_NAME" />.
 

@@ -48,6 +48,9 @@ class LayoutRubyText : public LayoutBlockFlow {
 
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const override;
 
+  void StyleDidChange(StyleDifference diff,
+                      const ComputedStyle* old_style) override;
+
   bool CreatesNewFormattingContext() const final {
     // Ruby text objects are pushed around after layout, to become flush with
     // the associated ruby base. As such, we cannot let floats leak out from

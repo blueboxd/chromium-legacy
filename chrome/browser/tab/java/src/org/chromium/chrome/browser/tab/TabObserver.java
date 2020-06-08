@@ -337,4 +337,10 @@ public interface TabObserver {
     void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffsetY, int bottomControlsOffsetY,
             int contentOffsetY, int topControlsMinHeightOffsetY,
             int bottomControlsMinHeightOffsetY);
+
+    /**
+     * Called when scrolling state of Tab's content view changes.
+     * @param scrolling {@code true} if scrolling started; {@code false} if stopped.
+     */
+    void onContentViewScrollingStateChanged(boolean scrolling);
 }

@@ -83,7 +83,7 @@ const base::char16 kTempDirPrefix[] = L"mini_installer_test_temp";
 // contents) when the guard instance is destroyed.
 class ScopedTempDirectory {
  public:
-  ScopedTempDirectory() { }
+  ScopedTempDirectory() {}
   ~ScopedTempDirectory() {
     if (!directory_.empty() && !base::DeleteFileRecursively(directory_)) {
       LOG(DFATAL) << "Failed deleting temporary directory \""
@@ -126,8 +126,8 @@ class ChromeVersion {
                          static_cast<ULONGLONG>(c[3]));
   }
 
-  ChromeVersion() { }
-  explicit ChromeVersion(ULONGLONG value) : version_(value) { }
+  ChromeVersion() {}
+  explicit ChromeVersion(ULONGLONG value) : version_(value) {}
   WORD major() const { return static_cast<WORD>(version_ >> 48); }
   WORD minor() const { return static_cast<WORD>(version_ >> 32); }
   WORD build() const { return static_cast<WORD>(version_ >> 16); }
@@ -176,8 +176,8 @@ bool RunProcessAndWait(const base::char16* exe_path,
     if (exit_code) {
       if (!GetExitCodeProcess(process.Handle(),
                               reinterpret_cast<DWORD*>(exit_code))) {
-        PLOG(DFATAL) << "Failed getting the exit code for \""
-                     << cmdline << "\".";
+        PLOG(DFATAL) << "Failed getting the exit code for \"" << cmdline
+                     << "\".";
         result = false;
       } else {
         DCHECK_NE(*exit_code, static_cast<int>(STILL_ACTIVE));
@@ -245,8 +245,8 @@ bool ReplaceAll(uint8_t* dest_first,
     if (dest_first == dest_last)
       break;
     changed = true;
-    if (memcpy_s(dest_first, dest_last - dest_first,
-                 replacement_first, src_last - src_first) != 0) {
+    if (memcpy_s(dest_first, dest_last - dest_first, replacement_first,
+                 src_last - src_first) != 0) {
       result = false;
       break;
     }
@@ -294,12 +294,9 @@ void VisitResource(const upgrade_test::EntryPath& path,
       DWORD high;
       DWORD low;
     };
-    VersionPair cur_ver = {
-      ctx.current_version.high(), ctx.current_version.low()
-    };
-    VersionPair new_ver = {
-      ctx.new_version.high(), ctx.new_version.low()
-    };
+    VersionPair cur_ver = {ctx.current_version.high(),
+                           ctx.current_version.low()};
+    VersionPair new_ver = {ctx.new_version.high(), ctx.new_version.low()};
     ReplaceAll(data, data + size, reinterpret_cast<const uint8_t*>(&cur_ver),
                reinterpret_cast<const uint8_t*>(&cur_ver) + sizeof(cur_ver),
                reinterpret_cast<const uint8_t*>(&new_ver), nullptr);
@@ -531,13 +528,12 @@ base::FilePath Get7zaPath() {
 bool CreateArchive(const base::FilePath& output_file,
                    const base::FilePath& input_path,
                    int compression_level) {
-  DCHECK(compression_level == 0 ||
-         compression_level >= 1 && compression_level <= 9 &&
-         (compression_level & 0x01) != 0);
+  DCHECK(compression_level == 0 || compression_level >= 1 &&
+                                       compression_level <= 9 &&
+                                       (compression_level & 0x01) != 0);
 
   base::string16 command_line(1, L'"');
-  command_line
-      .append(Get7zaPath().Append(&k7zaExe[0]).value())
+  command_line.append(Get7zaPath().Append(&k7zaExe[0]).value())
       .append(L"\" a -bd -t7z \"")
       .append(output_file.value())
       .append(L"\" \"")
@@ -549,8 +545,8 @@ bool CreateArchive(const base::FilePath& output_file,
     return false;
   if (exit_code != 0) {
     LOG(DFATAL) << Get7zaPath().Append(&k7zaExe[0]).value()
-                << " exited with code " << exit_code
-                << " while creating " << output_file.value();
+                << " exited with code " << exit_code << " while creating "
+                << output_file.value();
     return false;
   }
   return true;
@@ -595,10 +591,9 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
     // Write out setup.ex_
     if (!resource_loader.Load(&kSetupEx_[0], &kBl[0], &resource_data))
       return false;
-    int written =
-        base::WriteFile(setup_ex_,
-                        reinterpret_cast<const char*>(resource_data.first),
-                        static_cast<int>(resource_data.second));
+    int written = base::WriteFile(
+        setup_ex_, reinterpret_cast<const char*>(resource_data.first),
+        static_cast<int>(resource_data.second));
     if (written != static_cast<int>(resource_data.second)) {
       LOG(DFATAL) << "Failed writing \"" << setup_ex_.value() << "\"";
       return false;
@@ -632,12 +627,12 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   base::FilePath setup_exe = setup_ex_.ReplaceExtension(&kExe[0]);
   base::string16 command_line;
   command_line.append(1, L'"')
-    .append(&kExpandExe[0])
-    .append(L"\" \"")
-    .append(setup_ex_.value())
-    .append(L"\" \"")
-    .append(setup_exe.value())
-    .append(1, L'\"');
+      .append(&kExpandExe[0])
+      .append(L"\" \"")
+      .append(setup_ex_.value())
+      .append(L"\" \"")
+      .append(setup_exe.value())
+      .append(1, L'\"');
   int exit_code;
   if (!RunProcessAndWait(nullptr, command_line, &exit_code))
     return false;
@@ -742,8 +737,8 @@ base::string16 GenerateAlternatePEFileVersion(
   DCHECK_EQ(ctx.current_version_str.size(), ctx.new_version_str.size());
 
   if (!base::CopyFile(original_file, target_file)) {
-    LOG(DFATAL) << "Failed copying \"" << original_file.value()
-                << "\" to \"" << target_file.value() << "\"";
+    LOG(DFATAL) << "Failed copying \"" << original_file.value() << "\" to \""
+                << target_file.value() << "\"";
     return base::string16();
   }
 

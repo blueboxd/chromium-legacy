@@ -52,6 +52,27 @@ PhysicalRect ComputeLocalCaretRectByBoxSide(const NGInlineCursor& cursor,
   return PhysicalRect(caret_location, caret_size);
 }
 
+bool ShouldAlignCaretRight(ETextAlign text_align, TextDirection direction) {
+  switch (text_align) {
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
+      return true;
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter:
+      return false;
+    case ETextAlign::kJustify:
+    case ETextAlign::kInternalSpaceAround:
+    case ETextAlign::kStart:
+      return IsRtl(direction);
+    case ETextAlign::kEnd:
+      return IsLtr(direction);
+  }
+  NOTREACHED();
+  return false;
+}
+
 PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
                                                unsigned offset) {
   DCHECK(cursor.Current().IsText());
@@ -62,7 +83,8 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
       cursor.Current().GetLayoutObject()->GetDocument().View();
   LayoutUnit caret_width = frame_view->CaretWidth();
 
-  const bool is_horizontal = cursor.Current().Style().IsHorizontalWritingMode();
+  const ComputedStyle& style = cursor.Current().Style();
+  const bool is_horizontal = style.IsHorizontalWritingMode();
 
   LayoutUnit caret_height = is_horizontal ? cursor.Current().Size().height
                                           : cursor.Current().Size().width;
@@ -90,15 +112,33 @@ PhysicalRect ComputeLocalCaretRectAtTextOffset(const NGInlineCursor& cursor,
       line_box.Current().OffsetInContainerBlock();
   const PhysicalRect line_box_rect(line_box_offset, line_box.Current().Size());
 
+  const NGInlineBreakToken& break_token =
+      *line_box.Current().InlineBreakToken();
+  const bool is_last_line =
+      break_token.IsFinished() || break_token.IsForcedBreak();
+  const ComputedStyle& block_style = fragmentainer.Style();
+  bool should_align_caret_right =
+      ShouldAlignCaretRight(block_style.GetTextAlign(is_last_line),
+                            block_style.Direction()) &&
+      (style.GetUnicodeBidi() != UnicodeBidi::kPlaintext ||
+       IsLtr(cursor.Current().ResolvedDirection()));
+
   // For horizontal text, adjust the location in the x direction to ensure that
   // it completely falls in the union of line box and containing block, and
   // then round it to the nearest pixel.
   if (is_horizontal) {
-    const LayoutUnit min_x = std::min(LayoutUnit(), line_box_offset.left);
-    caret_location.left = std::max(caret_location.left, min_x);
-    const LayoutUnit max_x =
-        std::max(fragmentainer.Size().width, line_box_rect.Right());
-    caret_location.left = std::min(caret_location.left, max_x - caret_width);
+    if (should_align_caret_right) {
+      const LayoutUnit left_edge = std::min(LayoutUnit(), line_box_rect.X());
+      caret_location.left = std::max(caret_location.left, left_edge);
+      caret_location.left =
+          std::min(caret_location.left, line_box_rect.Right() - caret_width);
+    } else {
+      const LayoutUnit right_edge =
+          std::max(fragmentainer.Size().width, line_box_rect.Right());
+      caret_location.left =
+          std::min(caret_location.left, right_edge - caret_width);
+      caret_location.left = std::max(caret_location.left, line_box_rect.X());
+    }
     caret_location.left = LayoutUnit(caret_location.left.Round());
     return PhysicalRect(caret_location, caret_size);
   }

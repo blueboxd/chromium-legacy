@@ -14,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 
@@ -64,7 +65,7 @@ void ArcKeymasterBridge::GetServer(GetServerCallback callback) {
     BootstrapMojoConnection(std::move(callback));
     return;
   }
-  std::move(callback).Run(std::move(keymaster_server_proxy_));
+  std::move(callback).Run(keymaster_server_proxy_.Unbind());
 }
 
 void ArcKeymasterBridge::OnBootstrapMojoConnection(GetServerCallback callback,
@@ -73,11 +74,11 @@ void ArcKeymasterBridge::OnBootstrapMojoConnection(GetServerCallback callback,
   if (!result) {
     LOG(ERROR) << "Error bootstrapping Mojo in arc-keymasterd.";
     keymaster_server_proxy_.reset();
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
   DVLOG(1) << "Success bootstrapping Mojo in arc-keymasterd.";
-  std::move(callback).Run(std::move(keymaster_server_proxy_));
+  std::move(callback).Run(keymaster_server_proxy_.Unbind());
 }
 
 void ArcKeymasterBridge::BootstrapMojoConnection(GetServerCallback callback) {
@@ -95,11 +96,11 @@ void ArcKeymasterBridge::BootstrapMojoConnection(GetServerCallback callback) {
                                  base::kNullProcessHandle,
                                  channel.TakeLocalEndpoint());
 
-  keymaster_server_proxy_.Bind(mojo::InterfacePtrInfo<mojom::KeymasterServer>(
-      std::move(server_pipe), 0u));
+  keymaster_server_proxy_.Bind(
+      mojo::PendingRemote<mojom::KeymasterServer>(std::move(server_pipe), 0u));
   DVLOG(1) << "Bound remote KeymasterServer interface to pipe.";
-  keymaster_server_proxy_.set_connection_error_handler(
-      base::BindOnce(&mojo::InterfacePtr<mojom::KeymasterServer>::reset,
+  keymaster_server_proxy_.set_disconnect_handler(
+      base::BindOnce(&mojo::Remote<mojom::KeymasterServer>::reset,
                      base::Unretained(&keymaster_server_proxy_)));
   chromeos::DBusThreadManager::Get()
       ->GetArcKeymasterClient()

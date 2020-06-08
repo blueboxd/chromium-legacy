@@ -128,11 +128,12 @@ TEST_F(InstallUtilTest, ComposeCommandLine) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
 
   std::pair<std::wstring, std::wstring> params[] = {
-    std::make_pair(std::wstring(L""), std::wstring(L"")),
-    std::make_pair(std::wstring(L""), std::wstring(L"--do-something --silly")),
-    std::make_pair(std::wstring(L"spam.exe"), std::wstring(L"")),
-    std::make_pair(std::wstring(L"spam.exe"),
-                   std::wstring(L"--do-something --silly")),
+      std::make_pair(std::wstring(L""), std::wstring(L"")),
+      std::make_pair(std::wstring(L""),
+                     std::wstring(L"--do-something --silly")),
+      std::make_pair(std::wstring(L"spam.exe"), std::wstring(L"")),
+      std::make_pair(std::wstring(L"spam.exe"),
+                     std::wstring(L"--do-something --silly")),
   };
   for (std::pair<std::wstring, std::wstring>& param : params) {
     InstallUtil::ComposeCommandLine(param.first, param.second, &command_line);
@@ -299,16 +300,15 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(L"foosball!"))).WillOnce(Return(false));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(value_name, L"foosball!"));
+      ASSERT_EQ(ERROR_SUCCESS, RegKey(root, key_path.c_str(), KEY_SET_VALUE)
+                                   .WriteValue(value_name, L"foosball!"));
       EXPECT_EQ(InstallUtil::NOT_FOUND,
                 InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
                                                    WorkItem::kWow64Default,
                                                    value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_TRUE(RegKey(root, key_path.c_str(),
-                         KEY_QUERY_VALUE).HasValue(value_name));
+      EXPECT_TRUE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(value_name));
     }
 
     // Value exists, and matches: delete.
@@ -316,16 +316,15 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(value_name, value));
+      ASSERT_EQ(ERROR_SUCCESS, RegKey(root, key_path.c_str(), KEY_SET_VALUE)
+                                   .WriteValue(value_name, value));
       EXPECT_EQ(InstallUtil::DELETED,
                 InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
                                                    WorkItem::kWow64Default,
                                                    value_name, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).HasValue(value_name));
+      EXPECT_FALSE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(value_name));
     }
   }
 
@@ -336,16 +335,15 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(L"", value));
-      EXPECT_EQ(InstallUtil::DELETED,
-                InstallUtil::DeleteRegistryValueIf(root, key_path.c_str(),
-                                                   WorkItem::kWow64Default, L"",
-                                                   pred));
+      ASSERT_EQ(
+          ERROR_SUCCESS,
+          RegKey(root, key_path.c_str(), KEY_SET_VALUE).WriteValue(L"", value));
+      EXPECT_EQ(InstallUtil::DELETED, InstallUtil::DeleteRegistryValueIf(
+                                          root, key_path.c_str(),
+                                          WorkItem::kWow64Default, L"", pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).HasValue(L""));
+      EXPECT_FALSE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(L""));
     }
   }
 
@@ -356,16 +354,16 @@ TEST_F(InstallUtilTest, DeleteRegistryValueIf) {
       MockRegistryValuePredicate pred;
 
       EXPECT_CALL(pred, Evaluate(StrEq(value))).WillOnce(Return(true));
-      ASSERT_EQ(ERROR_SUCCESS,
-                RegKey(root, key_path.c_str(),
-                       KEY_SET_VALUE).WriteValue(L"", value));
+      ASSERT_EQ(
+          ERROR_SUCCESS,
+          RegKey(root, key_path.c_str(), KEY_SET_VALUE).WriteValue(L"", value));
       EXPECT_EQ(
           InstallUtil::DELETED,
           InstallUtil::DeleteRegistryValueIf(
               root, key_path.c_str(), WorkItem::kWow64Default, nullptr, pred));
       EXPECT_TRUE(RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).Valid());
-      EXPECT_FALSE(RegKey(root, key_path.c_str(),
-                          KEY_QUERY_VALUE).HasValue(L""));
+      EXPECT_FALSE(
+          RegKey(root, key_path.c_str(), KEY_QUERY_VALUE).HasValue(L""));
     }
   }
 }
@@ -423,9 +421,9 @@ TEST_F(InstallUtilTest, ProgramCompare) {
 
   // Test where strings don't match, but the same file is indicated.
   std::wstring short_expect;
-  DWORD short_len = GetShortPathName(expect.value().c_str(),
-                                     base::WriteInto(&short_expect, MAX_PATH),
-                                     MAX_PATH);
+  DWORD short_len =
+      GetShortPathName(expect.value().c_str(),
+                       base::WriteInto(&short_expect, MAX_PATH), MAX_PATH);
   ASSERT_NE(static_cast<DWORD>(0), short_len);
   ASSERT_GT(static_cast<DWORD>(MAX_PATH), short_len);
   short_expect.resize(short_len);

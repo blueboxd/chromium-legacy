@@ -37,8 +37,8 @@ static constexpr base::TimeDelta kFakeMediaPlayerAutoIncrementTimeDelta =
 // exception of the mocked methods).
 class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
  public:
-  FakeWebMediaPlayer(WebMediaPlayerClient* client, Document* document)
-      : client_(client), document_(document) {}
+  FakeWebMediaPlayer(WebMediaPlayerClient* client, ExecutionContext* context)
+      : client_(client), context_(context) {}
 
   MOCK_METHOD1(SetIsEffectivelyFullscreen,
                void(blink::WebFullscreenVideoStatus));
@@ -86,7 +86,7 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
       return;
     }
 
-    document_->GetTaskRunner(TaskType::kInternalMediaRealTime)
+    context_->GetTaskRunner(TaskType::kInternalMediaRealTime)
         ->PostDelayedTask(FROM_HERE,
                           base::BindOnce(&FakeWebMediaPlayer::AutoTimeIncrement,
                                          base::Unretained(this)),
@@ -104,11 +104,11 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
     ScheduleTimeIncrement();
 
     // Run V8 Microtasks (update OfficialPlaybackPosition)
-    Microtask::PerformCheckpoint(document_->GetIsolate());
+    Microtask::PerformCheckpoint(context_->GetIsolate());
   }
 
   WebMediaPlayerClient* client_;
-  WeakPersistent<Document> document_;
+  WeakPersistent<ExecutionContext> context_;
   mutable double current_time_ = 0;
   bool playing_ = false;
   bool auto_increment_current_time_ = false;
@@ -122,7 +122,8 @@ class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
       HTMLMediaElement& element,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient* client) override {
-    return std::make_unique<FakeWebMediaPlayer>(client, &element.GetDocument());
+    return std::make_unique<FakeWebMediaPlayer>(client,
+                                                element.GetExecutionContext());
   }
 };
 

@@ -14,6 +14,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #endif
 
 class Profile;
@@ -31,6 +32,11 @@ class TtsEngineExtensionObserver
   const std::set<std::string> GetTtsExtensions();
 
   Profile* profile() { return profile_; }
+
+#if defined(OS_CHROMEOS)
+  void BindTtsStream(
+      mojo::PendingReceiver<chromeos::tts::mojom::TtsStream> receiver);
+#endif  // defined(OS_CHROMEOS)
 
   // Implementation of KeyedService.
   void Shutdown() override;
@@ -67,6 +73,8 @@ class TtsEngineExtensionObserver
 #if defined(OS_CHROMEOS)
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;
+
+  mojo::Remote<chromeos::tts::mojom::TtsService> tts_service_;
 #endif
 
   friend class TtsEngineExtensionObserverFactory;

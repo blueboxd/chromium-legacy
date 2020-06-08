@@ -462,8 +462,9 @@ IN_PROC_BROWSER_TEST_F(LoginApitestWithEnterpriseUser,
       kUnlockManagedGuestSessionNotManagedGuestSession);
 }
 
+// TODO(https://crbug.com/1075511) Flaky test.
 IN_PROC_BROWSER_TEST_F(LoginApitestWithEnterpriseUser,
-                       LockManagedGuestSessionNotManagedGuestSession) {
+                       DISABLED_LockManagedGuestSessionNotManagedGuestSession) {
   LoginUser();
   SetUpTestListeners();
   SetUpInSessionExtension();

@@ -1407,17 +1407,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Jika kebijakan ini tidak ditetapkan, atau nilai setelah substitusi bukan merupakan hostname yang valid, tidak ada hostname yang akan disetel dalam permintaan DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
-<translation id="3063659901357934128">Mengizinkan <ph name="PRODUCT_NAME" /> memuat kebijakan eksperimental.
-
-        PERINGATAN: Kebijakan eksperimental tidak didukung dan dapat berubah atau dihapus tanpa pemberitahuan di versi browser mendatang.
-
-        Kebijakan eksperimental mungkin tidak selesai atau masih terdapat kerusakan yang diketahui atau tidak diketahui. Kebijakan dapat berubah atau bahkan dihapus tanpa notifikasi apa pun. Jika mengaktifkan kebijakan eksperimental, Anda dapat kehilangan data penjelajahan atau membahayakan keamanan atau privasi Anda.
-
-        Jika kebijakan tidak tercantum dalam daftar dan tidak dirilis secara resmi, nilainya akan diabaikan di Chrome Beta dan Chrome Stable.
-
-        Jika kebijakan tercantum dalam daftar dan tidak dirilis secara resmi, nilainya akan diterapkan.
-
-        Kebijakan ini tidak memengaruhi kebijakan yang sudah dirilis.</translation>
 <translation id="3066446511111537292">Izinkan pengguna terafiliasi di perangkat ini untuk menggunakan sideload ADB</translation>
 <translation id="3069958900488014740">Memungkinkan penonaktifan pengoptimalan WPAD (Web Proxy Auto-Discovery) di <ph name="PRODUCT_NAME" />.
 

@@ -4,6 +4,7 @@ include_rules = [
   "+content/public/utility",
   "+content/services/isolated_xr_device",
   "+chromeos/services/ime",
+  "+chromeos/services/tts",
   "+device/vr/buildflags",
   "+device/vr/public",
   "+services/audio",

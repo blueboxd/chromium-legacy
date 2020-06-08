@@ -49,7 +49,8 @@ extern const wchar_t kUserDataDirSwitch[];
 extern const wchar_t kUtilityProcess[];
 
 // Used for suppressing warnings.
-template <typename T> inline void IgnoreUnused(T) {}
+template <typename T>
+inline void IgnoreUnused(T) {}
 
 // Returns true if Chrome is running at system level.
 bool IsSystemInstall();

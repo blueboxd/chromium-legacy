@@ -6,6 +6,7 @@
 #define CHROME_INSTALLER_UTIL_ADVANCED_FIREWALL_MANAGER_WIN_H_
 
 #include <windows.h>
+
 #include <netfw.h>
 #include <stdint.h>
 #include <wrl/client.h>

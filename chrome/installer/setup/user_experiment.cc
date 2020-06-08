@@ -82,7 +82,7 @@ bool IsEnterpriseInstall(const InstallerState& installer_state) {
 #endif
 
 // Returns the delay to be used between presentation retries. The default (five
-// minutes) can be overidden via --experiment-retry-delay=SECONDS.
+// minutes) can be overridden via --experiment-retry-delay=SECONDS.
 base::TimeDelta GetRetryDelay() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::string16 value =
@@ -495,7 +495,7 @@ int PickGroup(ExperimentStorage::Study participation) {
   DCHECK(participation == ExperimentStorage::kStudyOne ||
          participation == ExperimentStorage::kStudyTwo);
   if (participation == ExperimentStorage::kStudyOne) {
-    // Evenly distrubute clients among the groups.
+    // Evenly distribute clients among the groups.
     return base::RandInt(0, ExperimentMetrics::kNumGroups - 1);
   }
 

@@ -1347,9 +1347,7 @@ void BookmarkBarView::OnButtonPressed(views::Button* sender,
                                 disposition_from_event_flags,
                                 ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
   page_navigator_->OpenURL(params);
-  RecordBookmarkLaunch(
-      BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR,
-      ProfileMetrics::GetBrowserProfileType(browser_->profile()));
+  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_ATTACHED_BAR);
 }
 
 void BookmarkBarView::ShowContextMenuForViewImpl(

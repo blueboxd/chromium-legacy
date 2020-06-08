@@ -26,7 +26,7 @@
 namespace installer {
 class ChannelInfo;
 class InstallationState;
-}
+}  // namespace installer
 
 // This class provides accessors to the Google Update group policies and
 // 'ClientState' information. The group policies are set using specific
@@ -37,10 +37,10 @@ class GoogleUpdateSettings {
  public:
   // Update policy constants defined by Google Update; do not change these.
   enum UpdatePolicy {
-    UPDATES_DISABLED    = 0,
-    AUTOMATIC_UPDATES   = 1,
+    UPDATES_DISABLED = 0,
+    AUTOMATIC_UPDATES = 1,
     MANUAL_UPDATES_ONLY = 2,
-    AUTO_UPDATES_ONLY   = 3,
+    AUTO_UPDATES_ONLY = 3,
     UPDATE_POLICIES_COUNT
   };
 

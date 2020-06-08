@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>  // NOLINT
+
 #include <fcntl.h>  // for _O_* constants
 #include <fdi.h>
 #include <stddef.h>
@@ -55,15 +56,13 @@ wchar_t* Utf8ToWide(const char* str) {
 template <typename T>
 class scoped_ptr {
  public:
-  explicit scoped_ptr(T* a) : a_(a) {
-  }
+  explicit scoped_ptr(T* a) : a_(a) {}
   ~scoped_ptr() {
     if (a_)
       Free(a_);
   }
-  operator T*() {
-    return a_;
-  }
+  operator T*() { return a_; }
+
  private:
   T* a_;
 };
@@ -170,14 +169,23 @@ FNFDINOTIFY(Notify) {
 HMODULE g_fdi = nullptr;
 
 // API prototypes.
-typedef HFDI (DIAMONDAPI* FDICreateFn)(PFNALLOC alloc, PFNFREE free,
-                                       PFNOPEN open, PFNREAD read,
-                                       PFNWRITE write, PFNCLOSE close,
-                                       PFNSEEK seek, int cpu_type, PERF perf);
-typedef BOOL (DIAMONDAPI* FDIDestroyFn)(HFDI fdi);
-typedef BOOL (DIAMONDAPI* FDICopyFn)(HFDI fdi, char* cab, char* cab_path,
-                                     int flags, PFNFDINOTIFY notify,
-                                     PFNFDIDECRYPT decrypt, void* context);
+typedef HFDI(DIAMONDAPI* FDICreateFn)(PFNALLOC alloc,
+                                      PFNFREE free,
+                                      PFNOPEN open,
+                                      PFNREAD read,
+                                      PFNWRITE write,
+                                      PFNCLOSE close,
+                                      PFNSEEK seek,
+                                      int cpu_type,
+                                      PERF perf);
+typedef BOOL(DIAMONDAPI* FDIDestroyFn)(HFDI fdi);
+typedef BOOL(DIAMONDAPI* FDICopyFn)(HFDI fdi,
+                                    char* cab,
+                                    char* cab_path,
+                                    int flags,
+                                    PFNFDINOTIFY notify,
+                                    PFNFDIDECRYPT decrypt,
+                                    void* context);
 FDICreateFn g_FDICreate = nullptr;
 FDIDestroyFn g_FDIDestroy = nullptr;
 FDICopyFn g_FDICopy = nullptr;
@@ -190,16 +198,16 @@ bool InitializeFdi() {
     // fails.
     // The cabinet.dll should be available on all supported versions of Windows.
     static const wchar_t* const candidate_paths[] = {
-      L"%WINDIR%\\system32\\cabinet.dll",
-      L"%SYSTEMROOT%\\system32\\cabinet.dll",
-      L"C:\\Windows\\system32\\cabinet.dll",
+        L"%WINDIR%\\system32\\cabinet.dll",
+        L"%SYSTEMROOT%\\system32\\cabinet.dll",
+        L"C:\\Windows\\system32\\cabinet.dll",
     };
 
     wchar_t path[MAX_PATH] = {0};
     for (size_t i = 0; i < _countof(candidate_paths); ++i) {
       path[0] = L'\0';
-      DWORD result = ::ExpandEnvironmentStringsW(candidate_paths[i],
-                                                 path, _countof(path));
+      DWORD result =
+          ::ExpandEnvironmentStringsW(candidate_paths[i], path, _countof(path));
 
       if (result > 0 && result <= _countof(path))
         g_fdi = ::LoadLibraryExW(path, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -214,8 +222,7 @@ bool InitializeFdi() {
         reinterpret_cast<FDICreateFn>(::GetProcAddress(g_fdi, "FDICreate"));
     g_FDIDestroy =
         reinterpret_cast<FDIDestroyFn>(::GetProcAddress(g_fdi, "FDIDestroy"));
-    g_FDICopy =
-        reinterpret_cast<FDICopyFn>(::GetProcAddress(g_fdi, "FDICopy"));
+    g_FDICopy = reinterpret_cast<FDICopyFn>(::GetProcAddress(g_fdi, "FDICopy"));
   }
 
   return g_FDICreate && g_FDIDestroy && g_FDICopy;

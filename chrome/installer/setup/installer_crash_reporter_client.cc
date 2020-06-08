@@ -20,8 +20,7 @@
 
 InstallerCrashReporterClient::InstallerCrashReporterClient(
     bool is_per_user_install)
-    : is_per_user_install_(is_per_user_install) {
-}
+    : is_per_user_install_(is_per_user_install) {}
 
 InstallerCrashReporterClient::~InstallerCrashReporterClient() = default;
 
@@ -141,12 +140,12 @@ bool InstallerCrashReporterClient::ReportingIsEnforcedByPolicy(bool* enabled) {
   // read. If it is true, |enabled| contains the value set by policy.
   DWORD value = 0;
   base::win::RegKey policy_key;
-  static const HKEY kHives[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+  static const HKEY kHives[] = {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER};
   for (HKEY hive : kHives) {
-    if (policy_key.Open(hive, kRegistryChromePolicyKey,
-                        KEY_READ) == ERROR_SUCCESS &&
-        policy_key.ReadValueDW(kMetricsReportingEnabled,
-                               &value) == ERROR_SUCCESS) {
+    if (policy_key.Open(hive, kRegistryChromePolicyKey, KEY_READ) ==
+            ERROR_SUCCESS &&
+        policy_key.ReadValueDW(kMetricsReportingEnabled, &value) ==
+            ERROR_SUCCESS) {
       *enabled = value != 0;
       return true;
     }

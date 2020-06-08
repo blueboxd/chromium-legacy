@@ -61,8 +61,8 @@ bool GetValueFromRegistry(InstallationLevel level,
                           const wchar_t* app_guid,
                           const wchar_t* value_name,
                           base::string16* value) {
-  HKEY root_key = (level == USER_LEVEL_INSTALLATION) ?
-      HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+  HKEY root_key = (level == USER_LEVEL_INSTALLATION) ? HKEY_CURRENT_USER
+                                                     : HKEY_LOCAL_MACHINE;
   base::string16 subkey(key_path);
   if (app_guid)
     subkey.append(1, L'\\').append(app_guid);

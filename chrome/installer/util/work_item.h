@@ -10,6 +10,7 @@
 #define CHROME_INSTALLER_UTIL_WORK_ITEM_H_
 
 #include <windows.h>
+
 #include <stdint.h>
 
 #include <string>
@@ -69,16 +70,16 @@ class WorkItem {
   static const REGSAM kWow64Default = 0;
   // Possible states
   enum CopyOverWriteOption {
-    ALWAYS,  // Always overwrite regardless of what existed before.
-    NEVER,  // Not used currently.
-    IF_DIFFERENT,  // Overwrite if different. Currently only applies to file.
+    ALWAYS,          // Always overwrite regardless of what existed before.
+    NEVER,           // Not used currently.
+    IF_DIFFERENT,    // Overwrite if different. Currently only applies to file.
     IF_NOT_PRESENT,  // Copy only if file/directory do not exist already.
     NEW_NAME_IF_IN_USE  // Copy to a new path if dest is in use(only files).
   };
 
   // Options for the MoveTree work item.
   enum MoveTreeOption {
-    ALWAYS_MOVE,  // Always attempt to do a move operation.
+    ALWAYS_MOVE,      // Always attempt to do a move operation.
     CHECK_DUPLICATES  // Only move if the move target is different.
   };
 

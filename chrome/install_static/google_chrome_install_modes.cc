@@ -95,9 +95,9 @@ const InstallConstants kInstallModes[] = {
                    // {A2721D66-376E-4D2F-9F0F-9070E9A42B5F}.
         L"beta",   // Forced channel name.
         ChannelStrategy::FIXED,
-        true,   // Supports system-level installs.
-        true,   // Supports in-product set as default browser UX.
-        true,   // Supports retention experiments.
+        true,  // Supports system-level installs.
+        true,  // Supports in-product set as default browser UX.
+        true,  // Supports retention experiments.
         icon_resources::kBetaApplicationIndex,  // App icon resource index.
         IDR_X005_BETA,                          // App icon resource id.
         L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"
@@ -135,9 +135,9 @@ const InstallConstants kInstallModes[] = {
                    // {BB2AA26B-343A-4072-8B6F-80557B8CE571}.
         L"dev",    // Forced channel name.
         ChannelStrategy::FIXED,
-        true,   // Supports system-level installs.
-        true,   // Supports in-product set as default browser UX.
-        true,   // Supports retention experiments.
+        true,  // Supports system-level installs.
+        true,  // Supports in-product set as default browser UX.
+        true,  // Supports retention experiments.
         icon_resources::kDevApplicationIndex,  // App icon resource index.
         IDR_X004_DEV,                          // App icon resource id.
         L"S-1-15-2-3251537155-1984446955-2931258699-841473695-1938553385-"

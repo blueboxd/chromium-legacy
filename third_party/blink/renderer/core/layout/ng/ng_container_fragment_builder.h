@@ -178,6 +178,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     annotation_overflow_ = overflow;
   }
 
+  // See NGLayoutRsult::BlockEndAnnotatioSpace().
+  void SetBlockEndAnnotationSpace(LayoutUnit space) {
+    block_end_annotation_space_ = space;
+  }
+
   const NGConstraintSpace* ConstraintSpace() const { return space_; }
 
 #if DCHECK_IS_ON()
@@ -232,6 +237,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   // See NGLayoutResult::AnnotationOverflow().
   LayoutUnit annotation_overflow_;
+  // See NGLayoutResult::BlockEndAnotationSpace().
+  LayoutUnit block_end_annotation_space_;
 
   NGAdjoiningObjectTypes adjoining_object_types_ = kAdjoiningNone;
   bool has_adjoining_object_descendants_ = false;

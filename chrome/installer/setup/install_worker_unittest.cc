@@ -69,7 +69,7 @@ class MockWorkItemList : public WorkItemList {
                          const base::FilePath&,
                          CopyOverWriteOption,
                          const base::FilePath&));
-  MOCK_METHOD1(AddCreateDirWorkItem, WorkItem* (const base::FilePath&));
+  MOCK_METHOD1(AddCreateDirWorkItem, WorkItem*(const base::FilePath&));
   MOCK_METHOD3(AddCreateRegKeyWorkItem,
                WorkItem*(HKEY, const std::wstring&, REGSAM));
   MOCK_METHOD3(AddDeleteRegKeyWorkItem,
@@ -153,8 +153,7 @@ class MockProductState : public ProductState {
 class MockInstallationState : public InstallationState {
  public:
   // Included for testing.
-  void SetProductState(bool system_install,
-                       const ProductState& product_state) {
+  void SetProductState(bool system_install, const ProductState& product_state) {
     ProductState& target = system_install ? system_chrome_ : user_chrome_;
     target.CopyFrom(product_state);
   }
@@ -162,15 +161,11 @@ class MockInstallationState : public InstallationState {
 
 class MockInstallerState : public InstallerState {
  public:
-  void set_level(Level level) {
-    InstallerState::set_level(level);
-  }
+  void set_level(Level level) { InstallerState::set_level(level); }
 
   void set_operation(Operation operation) { operation_ = operation; }
 
-  void set_state_key(const std::wstring& state_key) {
-    state_key_ = state_key;
-  }
+  void set_state_key(const std::wstring& state_key) { state_key_ = state_key; }
 };
 
 void AddChromeToInstallationState(bool system_level,
@@ -259,8 +254,8 @@ class InstallWorkerTest : public testing::Test {
         base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123\\chrome.7z");
     src_path_ = base::FilePath(
         L"C:\\UnlikelyPath\\Temp\\chrome_123\\source\\Chrome-bin");
-    setup_path_ = base::FilePath(
-        L"C:\\UnlikelyPath\\Temp\\CR_123.tmp\\setup.exe");
+    setup_path_ =
+        base::FilePath(L"C:\\UnlikelyPath\\Temp\\CR_123.tmp\\setup.exe");
     temp_dir_ = base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123");
   }
 

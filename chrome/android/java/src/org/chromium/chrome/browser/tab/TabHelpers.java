@@ -57,5 +57,6 @@ public final class TabHelpers {
         TabFavicon.from(tab);
         TrustedCdn.from(tab);
         TabAssociatedApp.from(tab);
+        TabGestureStateListener.from(tab);
     }
 }

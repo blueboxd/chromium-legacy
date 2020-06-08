@@ -11,9 +11,15 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Contains all the properties for the download later dialog {@link PropertyModel}.
  */
 public class DownloadLaterDialogProperties {
-    /** The selection to define when to start the download. */
-    public static final PropertyModel.WritableIntPropertyKey DOWNLOAD_TIME_SELECTION =
-            new PropertyModel.WritableIntPropertyKey();
+    /** The initial selection to define when to start the download. */
+    public static final PropertyModel.ReadableIntPropertyKey DOWNLOAD_TIME_INITIAL_SELECTION =
+            new PropertyModel.ReadableIntPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {DOWNLOAD_TIME_SELECTION};
+    /** The controller that receives events from the UI view layer. */
+    public static final PropertyModel
+            .ReadableObjectPropertyKey<DownloadLaterDialogController> CONTROLLER =
+            new PropertyModel.ReadableObjectPropertyKey();
+
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {DOWNLOAD_TIME_INITIAL_SELECTION, CONTROLLER};
 }

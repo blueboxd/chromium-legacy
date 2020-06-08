@@ -76,6 +76,7 @@ class PerformanceManagerTabHelper
       content::WebContents* inner_web_contents) override;
   void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
+      content::RenderFrameHost* render_frame_host,
       const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
 
   // WebContentsProxyImpl overrides.

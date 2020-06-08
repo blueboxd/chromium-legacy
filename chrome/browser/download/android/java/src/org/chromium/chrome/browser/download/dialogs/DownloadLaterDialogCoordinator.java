@@ -24,28 +24,30 @@ public class DownloadLaterDialogCoordinator {
     private final DownloadLaterDialogView mCustomView;
     private final ModalDialogManager mModalDialogManager;
     private final PropertyModel mDialogModel;
-    private final ModalDialogProperties.Controller mController;
     private final PropertyModelChangeProcessor<PropertyModel, DownloadLaterDialogView, PropertyKey>
             mPropertyModelChangeProcessor;
 
     /**
      * The coordinator that bridges the download later diaog view logic to multiple data models.
      * @param activity The activity mainly to provide the {@link ModalDialogManager}.
+     * @param modalDialogManager Provides functionalities to access the dialog.
+     * @param model The data model for the download later dialog.
+     * @param modalDialogController The data model for modal dialog.
      */
     public DownloadLaterDialogCoordinator(Activity activity, ModalDialogManager modalDialogManager,
-            ModalDialogProperties.Controller controller) {
+            PropertyModel model, ModalDialogProperties.Controller modalDialogController) {
         // Set up the download later UI MVC.
-        mDownloadLaterDialogModel = new PropertyModel(DownloadLaterDialogProperties.ALL_KEYS);
+        mDownloadLaterDialogModel = model;
         mCustomView = (DownloadLaterDialogView) LayoutInflater.from(activity).inflate(
                 R.layout.download_later_dialog, null);
+        mCustomView.initialize();
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mDownloadLaterDialogModel, mCustomView,
                         DownloadLaterDialogView.Binder::bind, true /*performInitialBind*/);
 
         // Set up the modal dialog.
         mModalDialogManager = modalDialogManager;
-        mController = controller;
-        mDialogModel = getModalDialogModel(activity);
+        mDialogModel = getModalDialogModel(activity, modalDialogController);
     }
 
     /**
@@ -70,11 +72,11 @@ public class DownloadLaterDialogCoordinator {
         mPropertyModelChangeProcessor.destroy();
     }
 
-    private PropertyModel getModalDialogModel(Context context) {
-        assert mController != null;
+    private PropertyModel getModalDialogModel(
+            Context context, ModalDialogProperties.Controller modalDialogController) {
         assert mCustomView != null;
         return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                .with(ModalDialogProperties.CONTROLLER, mController)
+                .with(ModalDialogProperties.CONTROLLER, modalDialogController)
                 .with(ModalDialogProperties.CUSTOM_VIEW, mCustomView)
                 .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, context.getResources(),
                         R.string.duplicate_download_infobar_download_button)

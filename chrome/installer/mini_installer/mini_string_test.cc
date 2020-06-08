@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -19,7 +20,7 @@ class MiniInstallerStringTest : public testing::Test {
   void SetUp() override {}
   void TearDown() override {}
 };
-}
+}  // namespace
 
 // Tests the strcat/strcpy/length support of the StackString class.
 TEST_F(MiniInstallerStringTest, StackStringOverflow) {

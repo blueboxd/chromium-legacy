@@ -90,6 +90,7 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == service_manager::SandboxType::kVideoCapture ||
 #if defined(OS_CHROMEOS)
         sandbox_type_ == service_manager::SandboxType::kIme ||
+        sandbox_type_ == service_manager::SandboxType::kTts ||
 #endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SandboxType::kAudio ||
 #if !defined(OS_MACOSX)
@@ -208,6 +209,7 @@ class UtilitySandboxedProcessLauncherDelegate
     if (sandbox_type_ == service_manager::SandboxType::kNetwork ||
 #if defined(OS_CHROMEOS)
         sandbox_type_ == service_manager::SandboxType::kIme ||
+        sandbox_type_ == service_manager::SandboxType::kTts ||
 #endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SandboxType::kAudio ||
         sandbox_type_ == service_manager::SandboxType::kSpeechRecognition) {

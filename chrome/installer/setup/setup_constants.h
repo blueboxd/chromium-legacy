@@ -4,8 +4,8 @@
 
 // Defines all the command-line switches used by Chrome installer.
 
-#ifndef CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H__
-#define CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H__
+#ifndef CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H_
+#define CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H_
 
 #include "chrome/installer/setup/buildflags.h"
 
@@ -48,4 +48,4 @@ extern const char kUserExperiment[];
 
 }  // namespace installer
 
-#endif  // CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H__
+#endif  // CHROME_INSTALLER_SETUP_SETUP_CONSTANTS_H_

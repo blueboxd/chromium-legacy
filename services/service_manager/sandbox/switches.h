@@ -39,6 +39,7 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kXrCompositingSandbox[];
 
 #if defined(OS_CHROMEOS)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kImeSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kTtsSandbox[];
 #endif  // OS_CHROMEOS
 
 // Flags owned by the service manager sandbox.

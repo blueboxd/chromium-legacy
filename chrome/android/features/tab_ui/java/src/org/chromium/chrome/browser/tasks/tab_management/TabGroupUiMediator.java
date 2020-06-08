@@ -255,6 +255,10 @@ public class TabGroupUiMediator implements SnackbarManager.SnackbarController {
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
+                // TODO(crbug.com/1087826) This is a band-aid fix for M84. The root cause is
+                // probably a leaked observer. Remove this when the TabObservers are removed during
+                // tab reparenting.
+                if (mTabModelSelector.getTabById(tab.getId()) == null) return;
                 List<Tab> listOfTabs = getTabsToShowForId(tab.getId());
                 int numTabs = listOfTabs.size();
                 // This is set to zero because the UI is hidden.

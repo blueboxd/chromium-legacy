@@ -108,7 +108,7 @@ class LoadEbayStory2018(_LoadingStory):
 ################################################################################
 
 
-class LoadTwitterMoibleStory2019(_LoadingStory):
+class LoadTwitterMobileStory2019(_LoadingStory):
   NAME = 'load:social:twitter:2019'
   URL = 'https://www.twitter.com/nasa'
   TAGS = [story_tags.YEAR_2019]

@@ -44,32 +44,8 @@ public class LocaleUtilsTest {
     }
 
     @Test
-    @Config(qualifiers = "fr-rCA", sdk = VERSION_CODES.LOLLIPOP)
-    public void getLanguageTag_byContext_postLollipop() {
+    @Config(qualifiers = "fr-rCA")
+    public void getLanguageTag() {
         assertThat(LocaleUtils.getLanguageTag(mContext)).isEqualTo("fr-CA");
-    }
-
-    @Test
-    @Config(qualifiers = "fr-rCA", sdk = VERSION_CODES.KITKAT)
-    public void getLanguageTag_byContext_preLollipop() {
-        assertThat(LocaleUtils.getLanguageTag(mContext)).isEqualTo("fr-CA");
-    }
-
-    @Test
-    @Config(sdk = VERSION_CODES.LOLLIPOP)
-    public void getLanguageTag_byLocale_postLollipop() {
-        assertThat(LocaleUtils.getLanguageTag(Locale.CANADA_FRENCH)).isEqualTo("fr-CA");
-    }
-
-    @Test
-    @Config(sdk = VERSION_CODES.KITKAT)
-    public void getLanguageTag_byLocale_preLollipop() {
-        assertThat(LocaleUtils.getLanguageTag(Locale.CANADA_FRENCH)).isEqualTo("fr-CA");
-    }
-
-    @Test
-    @Config(sdk = VERSION_CODES.KITKAT)
-    public void getLanguageTag_byLocale_preLollipop_badLanguage() {
-        assertThat(LocaleUtils.getLanguageTag(new Locale("", "CA"))).isEqualTo("und-CA");
     }
 }

@@ -389,7 +389,7 @@ class FrameRemoteTester : public content::FakeLocalFrame {
 
 class AdsPageLoadMetricsObserverTest
     : public SubresourceFilterTestHarness,
-      public blacklist::OptOutBlacklistDelegate {
+      public blocklist::OptOutBlocklistDelegate {
  public:
   AdsPageLoadMetricsObserverTest()
       : test_blocklist_(std::make_unique<HeavyAdBlocklist>(

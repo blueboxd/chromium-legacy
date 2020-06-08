@@ -76,6 +76,10 @@ class D3D11VP9Accelerator : public VP9Decoder::VP9Accelerator {
   ComD3D11VideoDevice video_device_;
   std::unique_ptr<VideoContextWrapper> video_context_;
 
+  // Used to set |use_prev_in_find_mv_refs| properly.
+  gfx::Size last_frame_size_;
+  bool last_show_frame_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(D3D11VP9Accelerator);
 };
 

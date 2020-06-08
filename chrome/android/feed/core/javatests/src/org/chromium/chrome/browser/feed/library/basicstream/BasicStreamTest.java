@@ -24,7 +24,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import android.app.Activity;
 import android.content.Context;
-import android.os.Build.VERSION_CODES;
 import android.util.Base64;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -758,18 +757,6 @@ public class BasicStreamTest {
         mBasicStream.onShow();
 
         assertThat(mBasicStream.mStreamDriverRestoring).isFalse();
-    }
-
-    @Test
-    @Config(sdk = VERSION_CODES.KITKAT)
-    public void testPadding_kitKat() {
-        // Padding is setup in constructor.
-        View view = mBasicStream.getView();
-
-        assertThat(view.getPaddingStart()).isEqualTo(START_PADDING);
-        assertThat(view.getPaddingEnd()).isEqualTo(END_PADDING);
-        assertThat(view.getPaddingTop()).isEqualTo(TOP_PADDING);
-        assertThat(view.getPaddingBottom()).isEqualTo(BOTTOM_PADDING);
     }
 
     @Test

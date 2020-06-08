@@ -40,19 +40,25 @@ namespace chromeos {
 namespace {
 
 const char kStubWifiGuid[] = "wlan0";
-const std::initializer_list<base::StringPiece> kCheckingForUpdatesDialogPath = {
-    "oobe-update-md", "checking-downloading-update",
-    "checking-for-updates-dialog"};
-const std::initializer_list<base::StringPiece> kUpdatingDialogPath = {
-    "oobe-update-md", "checking-downloading-update", "updating-dialog"};
-const std::initializer_list<base::StringPiece> kUpdatingProgressPath = {
-    "oobe-update-md", "checking-downloading-update", "updating-progress"};
-const std::initializer_list<base::StringPiece> kProgressMessagePath = {
-    "oobe-update-md", "checking-downloading-update", "progress-message"};
-const std::initializer_list<base::StringPiece> kUpdateCompletedDialog = {
-    "oobe-update-md", "checking-downloading-update", "update-complete-dialog"};
-const std::initializer_list<base::StringPiece> kCellularPermissionDialog = {
-    "oobe-update-md", "cellular-permission-dialog"};
+const test::UIPath kCheckingDownloadingUpdate = {"oobe-update",
+                                                 "checking-downloading-update"};
+const test::UIPath kCheckingForUpdatesDialog = {"oobe-update",
+                                                "checking-downloading-update",
+                                                "checking-for-updates-dialog"};
+const test::UIPath kUpdatingDialog = {
+    "oobe-update", "checking-downloading-update", "updating-dialog"};
+const test::UIPath kUpdatingProgress = {
+    "oobe-update", "checking-downloading-update", "updating-progress"};
+const test::UIPath kProgressMessage = {
+    "oobe-update", "checking-downloading-update", "progress-message"};
+const test::UIPath kUpdateCompletedDialog = {
+    "oobe-update", "checking-downloading-update", "update-complete-dialog"};
+const test::UIPath kCellularPermissionDialog = {"oobe-update",
+                                                "cellular-permission-dialog"};
+const test::UIPath kCellularPermissionNext = {"oobe-update",
+                                              "cellular-permission-next"};
+const test::UIPath kCellularPermissionBack = {"oobe-update",
+                                              "cellular-permission-back"};
 
 // These values should be kept in sync with the progress bar values in
 // chrome/browser/chromeos/login/version_updater/version_updater.cc.
@@ -167,12 +173,11 @@ void UpdateScreenTest::CheckPathVisiblity(
 void UpdateScreenTest::CheckUpdatingDialogComponents(
     const int updating_progress_value,
     const std::string& progress_message_value) {
-  CheckPathVisiblity(kUpdatingDialogPath, true);
+  CheckPathVisiblity(kUpdatingDialog, true);
   test::OobeJS().ExpectEQ(
-      test::GetOobeElementPath(kUpdatingProgressPath) + ".value",
+      test::GetOobeElementPath(kUpdatingProgress) + ".value",
       updating_progress_value);
-  test::OobeJS().ExpectElementText(progress_message_value,
-                                   kProgressMessagePath);
+  test::OobeJS().ExpectElementText(progress_message_value, kProgressMessage);
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateCheckDoneBeforeShow) {
@@ -229,10 +234,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateNotFoundAfterScreenShow) {
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().ExpectVisible("oobe-update");
+  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialog);
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
-  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialog);
 
   status.set_current_operation(update_engine::Operation::IDLE);
   // GetLastStatus() will be called via ExitUpdate() called from
@@ -265,9 +270,9 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialogPath);
-  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
+  test::OobeJS().ExpectVisible("oobe-update");
+  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialog);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialog);
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
   test::OobeJS().ExpectHiddenPath(kUpdateCompletedDialog);
 
@@ -281,8 +286,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   update_engine_client()->set_default_status(status);
   update_engine_client()->NotifyObserversThatStatusChanged(status);
 
-  test::OobeJS().CreateVisibilityWaiter(true, kUpdatingDialogPath)->Wait();
-  test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().CreateVisibilityWaiter(true, kUpdatingDialog)->Wait();
+  test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialog);
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
   test::OobeJS().ExpectHiddenPath(kUpdateCompletedDialog);
 
@@ -364,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
   ASSERT_TRUE(version_updater_->GetRebootTimerForTesting()->IsRunning());
   version_updater_->GetRebootTimerForTesting()->FireNow();
 
-  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialog);
   test::OobeJS().ExpectVisiblePath(kUpdateCompletedDialog);
 }
 
@@ -454,10 +459,10 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestTemporaryPortalNetwork) {
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("oobe-update-md");
-  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialogPath);
+  test::OobeJS().ExpectVisible("oobe-update");
+  test::OobeJS().ExpectVisiblePath(kCheckingForUpdatesDialog);
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
-  test::OobeJS().ExpectHiddenPath(kUpdatingDialogPath);
+  test::OobeJS().ExpectHiddenPath(kUpdatingDialog);
 
   status.set_current_operation(update_engine::Operation::IDLE);
   update_engine_client()->set_default_status(status);
@@ -597,21 +602,19 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularAccepted) {
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("oobe-update-md");
+  test::OobeJS().ExpectVisible("oobe-update");
   test::OobeJS().ExpectVisiblePath(kCellularPermissionDialog);
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "checking-downloading-update"});
+  test::OobeJS().ExpectHiddenPath(kCheckingDownloadingUpdate);
 
-  test::OobeJS().TapOnPath({"oobe-update-md", "cellular-permission-next"});
+  test::OobeJS().TapOnPath(kCellularPermissionNext);
 
   test::OobeJS()
-      .CreateVisibilityWaiter(true,
-                              {"oobe-update-md", "checking-downloading-update"})
+      .CreateVisibilityWaiter(true, kCheckingDownloadingUpdate)
       ->Wait();
 
   test::OobeJS().ExpectHiddenPath(kCellularPermissionDialog);
-  test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialogPath);
-  test::OobeJS().ExpectVisiblePath(kUpdatingDialogPath);
+  test::OobeJS().ExpectHiddenPath(kCheckingForUpdatesDialog);
+  test::OobeJS().ExpectVisiblePath(kUpdatingDialog);
 
   status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
   version_updater_->UpdateStatusChangedForTesting(status);
@@ -642,12 +645,11 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, UpdateOverCellularRejected) {
   update_screen_waiter.set_assert_next_screen();
   update_screen_waiter.Wait();
 
-  test::OobeJS().ExpectVisible("oobe-update-md");
+  test::OobeJS().ExpectVisible("oobe-update");
   test::OobeJS().ExpectVisiblePath(kCellularPermissionDialog);
-  test::OobeJS().ExpectHiddenPath(
-      {"oobe-update-md", "checking-downloading-update"});
+  test::OobeJS().ExpectHiddenPath(kCheckingDownloadingUpdate);
 
-  test::OobeJS().ClickOnPath({"oobe-update-md", "cellular-permission-back"});
+  test::OobeJS().ClickOnPath(kCellularPermissionBack);
 
   WaitForScreenResult();
   EXPECT_EQ(UpdateScreen::Result::UPDATE_ERROR, last_screen_result_.value());

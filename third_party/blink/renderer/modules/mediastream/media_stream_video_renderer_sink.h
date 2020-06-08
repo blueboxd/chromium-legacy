@@ -11,9 +11,9 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_video_renderer.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class MODULES_EXPORT MediaStreamVideoRendererSink
       public MediaStreamVideoSink {
  public:
   MediaStreamVideoRendererSink(
-      const WebMediaStreamTrack& video_track,
+      MediaStreamComponent* video_component,
       const WebMediaStreamVideoRenderer::RepaintCB& repaint_cb,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner);
@@ -69,7 +69,7 @@ class MODULES_EXPORT MediaStreamVideoRendererSink
   State GetStateForTesting();
 
   const RepaintCB repaint_cb_;
-  const WebMediaStreamTrack video_track_;
+  Persistent<MediaStreamComponent> video_component_;
 
   // Inner class used for transfering frames on compositor thread and running
   // |repaint_cb_|.

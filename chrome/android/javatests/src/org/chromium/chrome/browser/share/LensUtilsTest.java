@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -38,7 +37,7 @@ public class LensUtilsTest {
     @Test
     @SmallTest
     public void getShareWithGoogleLensIntentSignedInTest() {
-        SigninTestUtil.signIn(SigninTestUtil.addTestAccount("test@gmail.com"));
+        mBrowserTestRule.addAndSignInTestAccount();
 
         Intent intentNoUri = getShareWithGoogleLensIntentOnUiThread(Uri.EMPTY,
                 /* isIncognito= */ false, 1234L, /* srcUrl */ "", /* titleOrAltText */ "");
@@ -65,7 +64,7 @@ public class LensUtilsTest {
     @Test
     @SmallTest
     public void getShareWithGoogleLensIntentIncognitoTest() {
-        SigninTestUtil.signIn(SigninTestUtil.addTestAccount("test@gmail.com"));
+        mBrowserTestRule.addAndSignInTestAccount();
         Intent intentNoUri = getShareWithGoogleLensIntentOnUiThread(Uri.EMPTY,
                 /* isIncognito= */ true, 1234L, /* srcUrl */ "", /* titleOrAltText */ "");
         Assert.assertEquals("Intent without image has incorrect URI", "googleapp://lens",
@@ -93,7 +92,7 @@ public class LensUtilsTest {
     @SmallTest
     public void getShareWithGoogleLensIntentWithVariationsTest() {
         LensUtils.setFakeVariationsForTesting(" 123 456 ");
-        SigninTestUtil.signIn(SigninTestUtil.addTestAccount("test@gmail.com"));
+        mBrowserTestRule.addAndSignInTestAccount();
 
         final String contentUrl = "content://image-url";
         Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(Uri.parse(contentUrl),
@@ -117,7 +116,7 @@ public class LensUtilsTest {
     @SmallTest
     public void getShareWithGoogleLensIntentWithVariationsIncognitoTest() {
         LensUtils.setFakeVariationsForTesting(" 123 456 ");
-        SigninTestUtil.signIn(SigninTestUtil.addTestAccount("test@gmail.com"));
+        mBrowserTestRule.addAndSignInTestAccount();
 
         final String contentUrl = "content://image-url";
         Intent intentWithContentUri = getShareWithGoogleLensIntentOnUiThread(Uri.parse(contentUrl),

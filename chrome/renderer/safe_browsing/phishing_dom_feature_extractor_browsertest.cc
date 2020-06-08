@@ -106,9 +106,6 @@ class TestPhishingDOMFeatureExtractor : public PhishingDOMFeatureExtractor {
         const std::string frame_domain = it->second;
         full_url = GURL("http://" + it->second).Resolve(partial_url.Utf8());
         url_to_frame_domain_map_[full_url.spec()] = it->second;
-      } else {
-        NOTREACHED() << "Testing input setup is incorrect. "
-                        "Please check url_to_frame_domain_map_ setup.";
       }
     }
     return blink::WebURL(full_url);

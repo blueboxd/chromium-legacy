@@ -200,15 +200,15 @@ class TestDataReductionProxyService : public DataReductionProxyService {
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner);
   ~TestDataReductionProxyService() override;
 
-  // Records |ignore_long_term_black_list_rules| as |ignore_blacklist_|.
-  void SetIgnoreLongTermBlackListRules(
-      bool ignore_long_term_black_list_rules) override;
+  // Records |ignore_long_term_block_list_rules| as |ignore_blocklist_|.
+  void SetIgnoreLongTermBlockListRules(
+      bool ignore_long_term_block_list_rules) override;
 
-  bool ignore_blacklist() const { return ignore_blacklist_; }
+  bool ignore_blocklist() const { return ignore_blocklist_; }
 
  private:
-  // Whether the long term blacklist rules should be ignored.
-  bool ignore_blacklist_ = false;
+  // Whether the long term blocklist rules should be ignored.
+  bool ignore_blocklist_ = false;
 };
 
 // Test version of |DataStore|. Uses an in memory hash map to store data.

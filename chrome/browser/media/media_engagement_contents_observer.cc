@@ -605,7 +605,7 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
 content::WebContents* MediaEngagementContentsObserver::GetOpener() const {
 #if !defined(OS_ANDROID)
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (!browser->profile()->IsSameProfileAndType(service_->profile()))
+    if (browser->profile() != service_->profile())
       continue;
 
     int index =

@@ -37,14 +37,16 @@ class CaptionBubbleController {
 
   static std::unique_ptr<CaptionBubbleController> Create(Browser* browser);
 
-  // Called when a transcription is received from the service.
-  virtual void OnTranscription(
+  // Called when a transcription is received from the service. Returns whether
+  // the transcription result was set on the caption bubble successfully.
+  // Transcriptions will halt if this returns false.
+  virtual bool OnTranscription(
       const chrome::mojom::TranscriptionResultPtr& transcription_result,
-      content::WebContents* web_contents) {}
+      content::WebContents* web_contents) = 0;
 
   // Called when the caption style changes.
   virtual void UpdateCaptionStyle(
-      base::Optional<ui::CaptionStyle> caption_style) {}
+      base::Optional<ui::CaptionStyle> caption_style) = 0;
 };
 
 }  // namespace captions

@@ -85,6 +85,9 @@ class CORE_EXPORT WebFrameWidgetBase
   void AutoscrollFling(const gfx::Vector2dF& position);
   void AutoscrollEnd();
 
+  // Notifies RenderWidgetHostImpl that the frame widget has painted something.
+  void DidMeaningfulLayout(WebMeaningfulLayout layout_type);
+
   // Creates or returns cached mutator dispatcher. This usually requires a
   // round trip to the compositor. The returned WeakPtr must only be
   // dereferenced on the output |mutator_task_runner|.
@@ -389,6 +392,8 @@ class CORE_EXPORT WebFrameWidgetBase
  private:
   void CancelDrag();
   void RequestAnimationAfterDelayTimerFired(TimerBase*);
+  void PresentationCallbackForMeaningfulLayout(blink::WebSwapResult,
+                                               base::TimeTicks);
 
   static bool ignore_input_events_;
 

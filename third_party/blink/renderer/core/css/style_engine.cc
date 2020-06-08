@@ -75,6 +75,7 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_popup_controller.h"
@@ -127,6 +128,7 @@ StyleEngine::StyleEngine(Document& document)
   }
   if (Platform::Current() && Platform::Current()->ThemeEngine())
     forced_colors_ = Platform::Current()->ThemeEngine()->GetForcedColors();
+  UpdateForcedBackgroundColor();
 }
 
 StyleEngine::~StyleEngine() = default;
@@ -942,6 +944,7 @@ void StyleEngine::FontsNeedUpdate(FontSelector*, FontInvalidationReason) {
 }
 
 void StyleEngine::PlatformColorsChanged() {
+  UpdateForcedBackgroundColor();
   if (resolver_)
     resolver_->InvalidateMatchedPropertiesCache();
   MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
@@ -2121,10 +2124,14 @@ void StyleEngine::UpdateColorScheme() {
   }
   if (GetDocument().Printing())
     preferred_color_scheme_ = PreferredColorScheme::kLight;
+
+  bool color_scheme_changed = false;
   if (forced_colors_ != old_forced_colors ||
-      preferred_color_scheme_ != old_preferred_color_scheme)
+      preferred_color_scheme_ != old_preferred_color_scheme) {
     PlatformColorsChanged();
-  UpdateColorSchemeBackground();
+    color_scheme_changed = true;
+  }
+  UpdateColorSchemeBackground(color_scheme_changed);
 }
 
 void StyleEngine::ColorSchemeChanged() {
@@ -2140,26 +2147,44 @@ void StyleEngine::SetColorSchemeFromMeta(const CSSValue* color_scheme) {
   UpdateColorScheme();
 }
 
-void StyleEngine::UpdateColorSchemeBackground() {
+void StyleEngine::UpdateColorSchemeBackground(bool color_scheme_changed) {
   LocalFrameView* view = GetDocument().View();
   if (!view)
     return;
 
-  bool use_dark_background = false;
+  bool use_color_adjust_background = false;
+  use_dark_background_ = false;
 
-  if (forced_colors_ != ForcedColors::kActive) {
+  if (forced_colors_ != ForcedColors::kNone) {
+    use_color_adjust_background = true;
+  } else {
     const ComputedStyle* style = nullptr;
     if (auto* root_element = GetDocument().documentElement())
       style = root_element->GetComputedStyle();
     if (style) {
       if (style->UsedColorSchemeForInitialColors() == WebColorScheme::kDark)
-        use_dark_background = true;
+        use_dark_background_ = true;
     } else if (SupportsDarkColorScheme()) {
-      use_dark_background = true;
+      use_dark_background_ = true;
     }
   }
 
-  view->SetUseDarkSchemeBackground(use_dark_background);
+  use_color_adjust_background |= use_dark_background_;
+  view->SetUseColorAdjustBackground(use_color_adjust_background,
+                                    color_scheme_changed);
+}
+
+void StyleEngine::UpdateForcedBackgroundColor() {
+  forced_background_color_ = LayoutTheme::GetTheme().SystemColor(
+      CSSValueID::kCanvas, WebColorScheme::kLight);
+}
+
+Color StyleEngine::ColorAdjustBackgroundColor() const {
+  if (use_dark_background_ && forced_colors_ == ForcedColors::kNone)
+    return Color::kBlack;
+
+  DCHECK(forced_colors_ != ForcedColors::kNone);
+  return ForcedBackgroundColor();
 }
 
 void StyleEngine::MarkAllElementsForStyleRecalc(

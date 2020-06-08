@@ -5177,7 +5177,7 @@ TEST_F(SpdyNetworkTransactionTest, FailOnGoAway) {
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_ABORTED));
+  EXPECT_THAT(out.rv, IsError(ERR_HTTP2_PROTOCOL_ERROR));
 }
 
 // Request should be retried on a new connection upon receiving a GOAWAY frame

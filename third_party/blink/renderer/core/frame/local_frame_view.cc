@@ -1744,9 +1744,10 @@ void LocalFrameView::SetNeedsLayout() {
 }
 
 Color LocalFrameView::BaseBackgroundColor() const {
-  if (use_dark_scheme_background_ &&
+  if (use_color_adjust_background_ &&
       base_background_color_ != Color::kTransparent) {
-    return Color::kBlack;
+    DCHECK(frame_->GetDocument());
+    return frame_->GetDocument()->GetStyleEngine().ColorAdjustBackgroundColor();
   }
   return base_background_color_;
 }
@@ -1772,11 +1773,12 @@ void LocalFrameView::SetBaseBackgroundColor(const Color& background_color) {
     GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());
 }
 
-void LocalFrameView::SetUseDarkSchemeBackground(bool dark_scheme) {
-  if (use_dark_scheme_background_ == dark_scheme)
+void LocalFrameView::SetUseColorAdjustBackground(bool color_adjust,
+                                                 bool color_scheme_changed) {
+  if (use_color_adjust_background_ == color_adjust && !color_scheme_changed)
     return;
 
-  use_dark_scheme_background_ = dark_scheme;
+  use_color_adjust_background_ = color_adjust;
   if (auto* layout_view = GetLayoutView())
     layout_view->SetBackgroundNeedsFullPaintInvalidation();
 }

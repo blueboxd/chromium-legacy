@@ -260,14 +260,6 @@ const base::Feature kHistoryPreventSandboxedNavigation{
 const base::Feature kIdleDetection{"IdleDetection",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// This flag is used to set field parameters to choose predictor we use when
-// kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
-// on finch and also for choosing predictor type for predictedEvents API without
-// enabling resampling. It does not have any effect when the resampling flag is
-// enabled.
-const base::Feature kInputPredictorTypeChoice{
-    "InputPredictorTypeChoice", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Kill switch for the GetInstalledRelatedApps API.
 const base::Feature kInstalledApp{"InstalledApp",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
@@ -506,10 +498,6 @@ const base::Feature kRenderDocument{"RenderDocument",
 
 const base::Feature kRequestUnbufferedDispatch{
     "RequestUnbufferedDispatch", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables resampling input events on main thread.
-const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Respect the MacOS system setting for subpixel text anti-aliasing.
 // https://crbug.com/1079418.

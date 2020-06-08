@@ -29,10 +29,10 @@ FakeChannelAuthenticator::~FakeChannelAuthenticator() = default;
 
 void FakeChannelAuthenticator::SecureAndAuthenticate(
     std::unique_ptr<P2PStreamSocket> socket,
-    const DoneCallback& done_callback) {
+    DoneCallback done_callback) {
   socket_ = std::move(socket);
 
-  done_callback_ = done_callback;
+  done_callback_ = std::move(done_callback);
 
   if (async_) {
     if (result_ != net::OK) {

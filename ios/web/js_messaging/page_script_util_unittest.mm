@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/bind_test_util.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/browsing_data/cookie_blocking_mode.h"
@@ -21,6 +22,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace web {
 namespace {
@@ -60,18 +64,41 @@ TEST_F(PageScriptUtilTest, WKEmbedderScript) {
 // state in the DocumentStartScriptForAllFrames.
 TEST_F(PageScriptUtilTest, AllFrameStartCookieReplacement) {
   web::BrowserState* browser_state = GetBrowserState();
-  browser_state->SetCookieBlockingMode(web::CookieBlockingMode::kAllow);
+
+  __block bool success = false;
+  bool* success_ptr = &success;
+  browser_state->SetCookieBlockingMode(
+      web::CookieBlockingMode::kAllow,
+      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
   NSString* script = GetDocumentStartScriptForAllFrames(browser_state);
   EXPECT_EQ(0U, [script rangeOfString:@"$(COOKIE_STATE)"].length);
   EXPECT_LT(0U, [script rangeOfString:@"(\"allow\")"].length);
 
+  success = false;
   browser_state->SetCookieBlockingMode(
-      web::CookieBlockingMode::kBlockThirdParty);
+      web::CookieBlockingMode::kBlockThirdParty,
+      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
   script = GetDocumentStartScriptForAllFrames(browser_state);
   EXPECT_EQ(0U, [script rangeOfString:@"$(COOKIE_STATE)"].length);
   EXPECT_LT(0U, [script rangeOfString:@"(\"block-third-party\")"].length);
 
-  browser_state->SetCookieBlockingMode(web::CookieBlockingMode::kBlock);
+  success = false;
+  browser_state->SetCookieBlockingMode(
+      web::CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
   script = GetDocumentStartScriptForAllFrames(browser_state);
   EXPECT_EQ(0U, [script rangeOfString:@"$(COOKIE_STATE)"].length);
   EXPECT_LT(0U, [script rangeOfString:@"(\"block\")"].length);

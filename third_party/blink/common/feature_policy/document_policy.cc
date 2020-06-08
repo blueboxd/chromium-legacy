@@ -153,19 +153,6 @@ const base::Optional<std::string> DocumentPolicy::GetFeatureEndpoint(
   }
 }
 
-bool DocumentPolicy::IsFeatureSupported(
-    mojom::DocumentPolicyFeature feature) const {
-  // TODO(iclelland): Generate this switch block
-  switch (feature) {
-    case mojom::DocumentPolicyFeature::kFontDisplay:
-    case mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages:
-    case mojom::DocumentPolicyFeature::kForceLoadAtTop:
-      return true;
-    default:
-      return false;
-  }
-}
-
 void DocumentPolicy::UpdateFeatureState(const FeatureState& feature_state) {
   for (const auto& feature_and_value : feature_state) {
     internal_feature_state_[static_cast<size_t>(feature_and_value.first)] =

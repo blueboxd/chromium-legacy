@@ -7,6 +7,8 @@
 #import <WebKit/WebKit.h>
 
 #include "base/supports_user_data.h"
+#import "base/test/bind_test_util.h"
+#import "base/test/ios/wait_util.h"
 #include "ios/web/public/browsing_data/cookie_blocking_mode.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
@@ -16,6 +18,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
 
 namespace {
 class TestSupportsUserData : public base::SupportsUserData {
@@ -48,7 +53,15 @@ TEST_F(BrowserStateTest, FromSupportsUserData) {
 // to change.
 TEST_F(BrowserStateTest, SetCookieBlockingMode) {
   web::TestBrowserState browser_state;
-  browser_state.SetCookieBlockingMode(web::CookieBlockingMode::kAllow);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  browser_state.SetCookieBlockingMode(
+      web::CookieBlockingMode::kAllow,
+      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   web::WKWebViewConfigurationProvider& config_provider =
       web::WKWebViewConfigurationProvider::FromBrowserState(&browser_state);
@@ -64,7 +77,14 @@ TEST_F(BrowserStateTest, SetCookieBlockingMode) {
       [original_scripts isEqualToArray:config_provider.GetWebViewConfiguration()
                                            .userContentController.userScripts]);
 
-  browser_state.SetCookieBlockingMode(web::CookieBlockingMode::kBlock);
+  success = false;
+  browser_state.SetCookieBlockingMode(
+      web::CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   NSArray<WKUserScript*>* updated_scripts =
       [[NSArray alloc] initWithArray:wkscripts copyItems:NO];

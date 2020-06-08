@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.feed.library.piet;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -387,20 +385,16 @@ class StyleProvider {
         marginLayoutParams.setMargins(startMargin,
                 (int) LayoutUtils.dpToPx(margins.getTop(), context), endMargin,
                 (int) LayoutUtils.dpToPx(margins.getBottom(), context));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            marginLayoutParams.setMarginStart(startMargin);
-            marginLayoutParams.setMarginEnd(endMargin);
-        }
+        marginLayoutParams.setMarginStart(startMargin);
+        marginLayoutParams.setMarginEnd(endMargin);
     }
 
     FrameLayout createWrapperView(Context context, RoundedCornerMaskCache maskCache,
             boolean allowClipPathRounding, boolean allowOutlineRounding) {
         if (!hasRoundedCorners()) {
             FrameLayout view = new FrameLayout(context);
-            if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-                // The wrapper view gets elevation; set an outline so it can cast a shadow.
-                view.setOutlineProvider(ViewOutlineProvider.BOUNDS);
-            }
+            // The wrapper view gets elevation; set an outline so it can cast a shadow.
+            view.setOutlineProvider(ViewOutlineProvider.BOUNDS);
             return view;
         }
         int radiusOverride = getRoundedCorners().getUseHostRadiusOverride()

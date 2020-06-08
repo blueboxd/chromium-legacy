@@ -842,4 +842,20 @@
       ],
     },
   },
+  'xcode_11e608c': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '11e608c'
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'xcode_ios_11e608c',
+          'path': 'Xcode.app',
+        },
+      ],
+    },
+  },
 }

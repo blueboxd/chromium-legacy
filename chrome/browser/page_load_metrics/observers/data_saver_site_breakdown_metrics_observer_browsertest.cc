@@ -124,7 +124,7 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         data_reduction_proxy::switches::kEnableDataReductionProxy);
-    command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+    command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlocklist);
   }
 };
 

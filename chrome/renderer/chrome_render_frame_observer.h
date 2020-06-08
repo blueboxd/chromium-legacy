@@ -12,7 +12,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
-#include "components/prerender/prerender_types.h"
+#include "components/prerender/common/prerender_types.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"

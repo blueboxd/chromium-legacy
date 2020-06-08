@@ -46,7 +46,6 @@ class PictureInPictureWindowController {
   virtual WebContents* GetWebContents() = 0;
   virtual void UpdatePlaybackState(bool is_playing,
                                    bool reached_end_of_stream) = 0;
-  virtual void SetAlwaysHidePlayPauseButton(bool is_visible) = 0;
 
   // Called when the user interacts with the "Skip Ad" control.
   virtual void SkipAd() = 0;

@@ -90,6 +90,8 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   mojom::blink::RemoteFrameHost& GetRemoteFrameHostRemote();
 
+  AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces();
+
   RemoteFrameView* View() const override;
 
   RemoteFrameClient* Client() const;

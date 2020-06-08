@@ -101,7 +101,6 @@ void D3D11VP9Accelerator::CopyFrameParams(const D3D11VP9Picture& pic,
   COPY_PARAM(frame_context_idx);
   COPY_PARAM(reset_frame_context);
   COPY_PARAM(allow_high_precision_mv);
-  COPY_PARAM(refresh_frame_context);
   COPY_PARAM(frame_parallel_decoding_mode);
   COPY_PARAM(intra_only);
   COPY_PARAM(frame_context_idx);
@@ -125,6 +124,18 @@ void D3D11VP9Accelerator::CopyFrameParams(const D3D11VP9Picture& pic,
   SET_PARAM(log2_tile_rows, tile_rows_log2);
 #undef COPY_PARAM
 #undef SET_PARAM
+
+  // This is taken, approximately, from libvpx.
+  gfx::Size this_frame_size(pic.frame_hdr->frame_width,
+                            pic.frame_hdr->frame_height);
+  pic_params->use_prev_in_find_mv_refs = last_frame_size_ == this_frame_size &&
+                                         !pic.frame_hdr->error_resilient_mode &&
+                                         !pic.frame_hdr->intra_only &&
+                                         last_show_frame_;
+
+  // TODO(liberato): So, uh, do we ever need to reset this?
+  last_frame_size_ = this_frame_size;
+  last_show_frame_ = pic.frame_hdr->show_frame;
 }
 
 void D3D11VP9Accelerator::CopyReferenceFrames(

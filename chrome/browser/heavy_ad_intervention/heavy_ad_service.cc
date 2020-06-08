@@ -38,14 +38,14 @@ void HeavyAdService::Initialize(const base::FilePath& profile_path) {
   if (!base::FeatureList::IsEnabled(features::kHeavyAdPrivacyMitigations))
     return;
 
-  std::unique_ptr<blacklist::OptOutStoreSQL> opt_out_store;
+  std::unique_ptr<blocklist::OptOutStoreSQL> opt_out_store;
   if (!HeavyAdOptOutStoreDisabled()) {
     // Get the background thread to run SQLite on.
     scoped_refptr<base::SequencedTaskRunner> background_task_runner =
         base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
 
-    opt_out_store = std::make_unique<blacklist::OptOutStoreSQL>(
+    opt_out_store = std::make_unique<blocklist::OptOutStoreSQL>(
         content::GetUIThreadTaskRunner({}), background_task_runner,
         profile_path.Append(chrome::kHeavyAdInterventionOptOutDBFilename));
   }

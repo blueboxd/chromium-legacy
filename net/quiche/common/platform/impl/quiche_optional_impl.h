@@ -12,7 +12,7 @@ namespace quiche {
 template <typename T>
 using QuicheOptionalImpl = base::Optional<T>;
 
-#define QuicheNullOptImpl base::nullopt
+#define QUICHE_NULLOPT_IMPL base::nullopt
 
 }  // namespace quiche
 

@@ -737,8 +737,11 @@ void Annotator::ProcessResults(
     // |request_infos_|, and this method should only execute once per request
     // key.
     const auto request_info_it = request_infos_.find(request_key);
-    if (request_info_it == request_infos_.end())
+    if (request_info_it == request_infos_.end()) {
+      LOG(ERROR) << "Could not find request key in request_infos_: "
+                 << request_key.first << "," << request_key.second;
       continue;
+    }
 
     const auto image_result = result_lookup != results.end()
                                   ? result_lookup->second.Clone()

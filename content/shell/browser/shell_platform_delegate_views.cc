@@ -79,6 +79,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
   explicit ShellWindowDelegateView(Shell* shell) : shell_(shell) {
+    SetHasWindowSizeControls(true);
     InitShellWindow();
   }
 
@@ -268,9 +269,6 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   }
 
   // Overridden from WidgetDelegateView
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
   base::string16 GetWindowTitle() const override { return title_; }
 
   // Overridden from View

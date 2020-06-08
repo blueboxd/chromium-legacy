@@ -238,10 +238,10 @@ class TestStaple(unittest.TestCase):
                 'Foo.app/Contents/Helpers/Helper.app/Contents/XPCServices/'
                 'Service2.xpc', ''),
             CodeSignedProduct('Foo.app', '')
-        ], Paths('in', 'out', 'work'))
+        ], Paths('/in', '/out', '/work'))
         staple.assert_has_calls([
-            mock.call('work/Foo.app/Contents/Helpers/Helper.app/Contents'
+            mock.call('/work/Foo.app/Contents/Helpers/Helper.app/Contents'
                       '/Helpers/Bar.app'),
-            mock.call('work/Foo.app/Contents/Helpers/Helper.app'),
-            mock.call('work/Foo.app')
+            mock.call('/work/Foo.app/Contents/Helpers/Helper.app'),
+            mock.call('/work/Foo.app')
         ])

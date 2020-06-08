@@ -67,6 +67,7 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
     const std::string& email_address,
     const GURL& url)
     : parent_(parent), web_view_(web_view), email_address_(email_address) {
+  SetHasWindowSizeControls(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
 
@@ -87,18 +88,6 @@ gfx::Size UserManagerProfileDialogDelegate::CalculatePreferredSize() const {
 
 void UserManagerProfileDialogDelegate::DisplayErrorMessage() {
   web_view_->LoadInitialURL(GURL(chrome::kChromeUISigninErrorURL));
-}
-
-bool UserManagerProfileDialogDelegate::CanResize() const {
-  return true;
-}
-
-bool UserManagerProfileDialogDelegate::CanMaximize() const {
-  return true;
-}
-
-bool UserManagerProfileDialogDelegate::CanMinimize() const {
-  return true;
 }
 
 ui::ModalType UserManagerProfileDialogDelegate::GetModalType() const {
@@ -295,6 +284,7 @@ UserManagerView::UserManagerView()
       delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetHasWindowSizeControls(true);
   set_use_custom_frame(false);
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::USER_MANAGER_VIEW, KeepAliveRestartOption::DISABLED);
@@ -441,18 +431,6 @@ bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 gfx::Size UserManagerView::CalculatePreferredSize() const {
   return gfx::Size(UserManager::kWindowWidth, UserManager::kWindowHeight);
-}
-
-bool UserManagerView::CanResize() const {
-  return true;
-}
-
-bool UserManagerView::CanMaximize() const {
-  return true;
-}
-
-bool UserManagerView::CanMinimize() const {
-  return true;
 }
 
 base::string16 UserManagerView::GetWindowTitle() const {

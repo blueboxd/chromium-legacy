@@ -127,6 +127,20 @@ Polymer({
   },
 
   /**
+   * @private
+   * Focuses the element. As cr-input uses focusInput() instead of focus() due
+   * to bug, we have to handle this separately.
+   * TODO(crbug.com/882612): Replace this with focus() in show().
+   */
+  focusElement_(element) {
+    if (element.focusInput) {
+      element.focusInput();
+      return;
+    }
+    element.focus();
+  },
+
+  /**
    * This is called from oobe_welcome when this dialog is shown.
    */
   show() {
@@ -137,11 +151,11 @@ Polymer({
         continue;
 
       focused = true;
-      focusedElements[i].focus();
+      this.focusElement_(focusedElements[i]);
       break;
     }
     if (!focused && focusedElements.length > 0)
-      focusedElements[0].focus();
+      this.focusElement_(focusedElements[0]);
 
     this.fire('show-dialog');
     this.updateScroll();

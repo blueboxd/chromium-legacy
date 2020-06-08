@@ -897,7 +897,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent, OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 

@@ -90,12 +90,18 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
       model->CollectPIN(8, base::BindOnce([](std::string pin) {}));
     } else if (name == "inline_bio_enrollment") {
       model->StartInlineBioEnrollment(base::DoNothing());
-      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(2),
-                   base::BindLambdaForTesting([&, weak_model = model.get()] {
-                     weak_model->OnSampleCollected(--bio_samples_remaining_);
-                     if (bio_samples_remaining_ <= 0)
-                       timer_.Stop();
-                   }));
+      timer_.Start(
+          FROM_HERE, base::TimeDelta::FromSeconds(2),
+          base::BindLambdaForTesting([&, weak_model = model->GetWeakPtr()] {
+            if (!weak_model || weak_model->current_step() !=
+                                   AuthenticatorRequestDialogModel::Step::
+                                       kInlineBioEnrollment) {
+              return;
+            }
+            weak_model->OnSampleCollected(--bio_samples_remaining_);
+            if (bio_samples_remaining_ <= 0)
+              timer_.Stop();
+          }));
     } else if (name == "retry_uv") {
       model->OnRetryUserVerification(5);
     } else if (name == "retry_uv_two_tries_remaining") {

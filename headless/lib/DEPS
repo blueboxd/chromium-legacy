@@ -9,6 +9,7 @@ specific_include_rules = {
     "+cc/base/switches.h",
     "+components/viz/common/switches.h",
     "+gpu/config/gpu_switches.h",
+    "+third_party/blink/public/common/switches.h",
   ],
   "headless_web_contents_browsertest.cc": [
     "+cc/base/switches.h",

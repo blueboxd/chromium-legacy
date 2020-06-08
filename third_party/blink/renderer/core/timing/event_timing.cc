@@ -68,10 +68,12 @@ bool ShouldReportForEventTiming(WindowPerformance* performance) {
 
 EventTiming::EventTiming(base::TimeTicks processing_start,
                          base::TimeTicks event_timestamp,
-                         WindowPerformance* performance)
+                         WindowPerformance* performance,
+                         bool should_log_event)
     : processing_start_(processing_start),
       event_timestamp_(event_timestamp),
-      performance_(performance) {}
+      performance_(performance),
+      should_log_event_(should_log_event) {}
 
 // static
 std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
@@ -92,6 +94,7 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
                     : event.PlatformTimeStamp();
 
   base::TimeTicks processing_start = Now();
+
   if (should_log_event) {
     InteractiveDetector* interactive_detector =
         InteractiveDetector::From(*window->document());
@@ -103,15 +106,24 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
 
   return should_report_for_event_timing
              ? std::make_unique<EventTiming>(processing_start, event_timestamp,
-                                             performance)
+                                             performance, should_log_event)
              : nullptr;
 }
 
-void EventTiming::DidDispatchEvent(const Event& event) {
+void EventTiming::DidDispatchEvent(const Event& event, Document& document) {
   Node* target = event.target() ? event.target()->ToNode() : nullptr;
+  base::TimeTicks processing_end = Now();
   performance_->RegisterEventTiming(event.type(), event_timestamp_,
-                                    processing_start_, Now(),
+                                    processing_start_, processing_end,
                                     event.cancelable(), target);
+  if (should_log_event_) {
+    InteractiveDetector* interactive_detector =
+        InteractiveDetector::From(document);
+    if (interactive_detector) {
+      interactive_detector->RecordInputEventTimingUKM(
+          event, event_timestamp_, processing_start_, processing_end);
+    }
+  }
 }
 
 // static

@@ -429,7 +429,7 @@ TEST(CTAPResponseTest, TestSerializedPublicKey) {
       static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
       test_data::kTestU2fRegisterResponse);
   ASSERT_TRUE(public_key);
-  EXPECT_THAT(public_key->cose_key_bytes(),
+  EXPECT_THAT(public_key->cose_key_bytes,
               ::testing::ElementsAreArray(test_data::kTestECPublicKeyCOSE));
 }
 

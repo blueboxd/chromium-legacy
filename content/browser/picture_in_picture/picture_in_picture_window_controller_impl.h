@@ -65,7 +65,6 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   bool TogglePlayPause() override;
   void UpdatePlaybackState(bool is_playing,
                            bool reached_end_of_stream) override;
-  void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   void SkipAd() override;
   void NextTrack() override;
   void PreviousTrack() override;
@@ -86,6 +85,8 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   // Embeds a surface in the Picture-in-Picture window.
   void EmbedSurface(const viz::SurfaceId& surface_id,
                     const gfx::Size& natural_size);
+
+  void SetShowPlayPauseButton(bool show_play_pause_button);
 
   // Called by PictureInPictureServiceImpl when a session request is received.
   // The call should return the |session_remote| and |window_size| as out
@@ -153,7 +154,7 @@ class CONTENT_EXPORT PictureInPictureWindowControllerImpl
   // Used to hide play/pause button if video is a MediaStream or has infinite
   // duration. Play/pause button visibility can be overridden by the Media
   // Session API in UpdatePlayPauseButtonVisibility().
-  bool always_hide_play_pause_button_ = false;
+  bool always_show_play_pause_button_ = false;
 
   // Session currently associated with the Picture-in-Picture window. The
   // session object makes the bridge with the renderer process by handling

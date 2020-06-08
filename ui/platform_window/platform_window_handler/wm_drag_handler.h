@@ -6,6 +6,8 @@
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_HANDLER_WM_DRAG_HANDLER_H_
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_handler/wm_platform_export.h"
 
@@ -15,15 +17,28 @@ class OSExchangeData;
 
 class WM_PLATFORM_EXPORT WmDragHandler {
  public:
+  // During the drag operation, the handler may send updates
+  class Delegate {
+   public:
+    // Called every time when the drag location has changed.
+    virtual void OnDragLocationChanged(const gfx::Point& screen_point_px) = 0;
+    // Called once when the operation has finished.
+    virtual void OnDragFinished(int operation) = 0;
+
+   protected:
+    virtual ~Delegate();
+  };
+
   // Starts dragging with |data| which it wants to deliver to the destination.
   // |operation| is the suggested operation which is bitmask of DRAG_NONE,
   // DRAG_MOVE, DRAG_COPY and DRAG_LINK in DragDropTypes::DragOperation to the
   // destination and the destination sets the final operation when the drop
-  // action is performed.
+  // action is performed.  In progress updates on the drag operation come back
+  // through the |delegate|.
   virtual void StartDrag(const OSExchangeData& data,
                          int operation,
                          gfx::NativeCursor cursor,
-                         base::OnceCallback<void(int)> callback) = 0;
+                         Delegate* delegate) = 0;
 
  protected:
   virtual ~WmDragHandler() {}

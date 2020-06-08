@@ -32,6 +32,7 @@ class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
       HasSecureWiFiConnectionCallback callback) override;
   void DnsResolverPresent(DnsResolverPresentCallback callback) override;
   void DnsLatency(DnsLatencyCallback callback) override;
+  void DnsResolution(DnsResolutionCallback callback) override;
 
  private:
   mojo::ReceiverSet<mojom::NetworkDiagnosticsRoutines> receivers_;

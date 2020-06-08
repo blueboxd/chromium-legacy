@@ -99,10 +99,10 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
     cmd->AppendSwitch("optimization-guide-disable-installer");
     cmd->AppendSwitch("purge_hint_cache_store");
 
-    // Due to race conditions, it's possible that blacklist data is not loaded
+    // Due to race conditions, it's possible that blocklist data is not loaded
     // at the time of first navigation. That may prevent Preview from
     // triggering, and causing the test to flake.
-    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
+    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlocklist);
 
     InProcessBrowserTest::SetUpCommandLine(cmd);
   }

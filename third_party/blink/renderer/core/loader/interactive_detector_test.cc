@@ -567,23 +567,28 @@ TEST_F(InteractiveDetectorTest, LongTaskAfterTTIDoesNothing) {
 }
 
 TEST_F(InteractiveDetectorTest, RecordInputDelayUKM) {
-  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(10);
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(20);
+  base::TimeDelta processing_time = base::TimeDelta::FromMilliseconds(10);
   Event event;
   event.SetTrusted(true);
   event.SetType(event_type_names::kClick);
   base::TimeTicks processing_start = Now() + delay;
   base::TimeTicks event_platform_timestamp = Now();
+  base::TimeTicks processing_end = processing_start + processing_time;
 
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   GetDetector()->SetUkmRecorderForTesting(&test_ukm_recorder);
-  GetDetector()->HandleForInputDelay(event, event_platform_timestamp,
-                                     processing_start);
+  GetDetector()->RecordInputEventTimingUKM(event, event_platform_timestamp,
+                                           processing_start, processing_end);
   auto entries = test_ukm_recorder.GetEntriesByName(InputEvent::kEntryName);
   EXPECT_EQ(1ul, entries.size());
   auto* entry = entries[0];
   test_ukm_recorder.ExpectEntryMetric(
       entry, InputEvent::kInteractiveTiming_InputDelayName,
       delay.InMilliseconds());
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, InputEvent::kInteractiveTiming_ProcessingTimeName,
+      processing_time.InMilliseconds());
 }
 
 // In tests for Total Blocking Time (TBT) we call SetTimeToInteractive() instead

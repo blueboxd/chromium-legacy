@@ -1434,9 +1434,9 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget,
                                   params->visual_properties.screen_info);
 
-  // The WebFrame created here was already attached to the Page as its
-  // main frame, and the WebFrameWidget has been initialized, so we can call
-  // WebViewImpl's DidAttachLocalMainFrame().
+  // The WebFrame created here was already attached to the Page as its main
+  // frame, and the WebFrameWidget has been initialized, so we can call
+  // WebView's DidAttachLocalMainFrame().
   render_view->GetWebView()->DidAttachLocalMainFrame();
 
   // The RenderWidget should start with valid VisualProperties, including a
@@ -1606,9 +1606,9 @@ void RenderFrameImpl::CreateFrame(
     // TODO(crbug.com/419087): This could become part of RenderWidget Init.
     render_widget->OnUpdateVisualProperties(widget_params->visual_properties);
 
-    // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
-    // for yet because this frame is provisional and not attached to the Page
-    // yet. We will tell WebViewImpl about it once it is swapped in.
+    // Note that we do *not* call WebView's DidAttachLocalMainFrame() here yet
+    // because this frame is provisional and not attached to the Page yet. We
+    // will tell WebViewImpl about it once it is swapped in.
 
     render_frame->render_widget_ = render_widget.get();
     render_frame->owned_render_widget_ = std::move(render_widget);
@@ -2336,6 +2336,11 @@ void RenderFrameImpl::OnUnload(
     // For main frames, the swap should have cleared the RenderView's pointer to
     // this frame.
     CHECK(!render_view->main_render_frame_);
+
+    // The RenderFrameProxy being swapped in here has now been attached to the
+    // Page as its main frame and properly initialized by the WebFrame::Swap()
+    // call, so we can call WebView's DidAttachRemoteMainFrame().
+    render_view->GetWebView()->DidAttachRemoteMainFrame();
   }
 
   if (!success) {
@@ -5346,8 +5351,7 @@ bool RenderFrameImpl::SwapInInternal() {
 
     // The WebFrame being swapped in here has now been attached to the Page as
     // its main frame, and the WebFrameWidget was previously initialized when
-    // the frame was created, so we can call WebViewImpl's
-    // DidAttachLocalMainFrame().
+    // the frame was created so we can call WebView's DidAttachLocalMainFrame().
     render_view_->GetWebView()->DidAttachLocalMainFrame();
   }
 
@@ -6325,10 +6329,6 @@ scoped_refptr<base::SingleThreadTaskRunner> RenderFrameImpl::GetTaskRunner(
 
 int RenderFrameImpl::GetEnabledBindings() {
   return enabled_bindings_;
-}
-
-void RenderFrameImpl::FrameDidCallFocus() {
-  Send(new FrameHostMsg_FrameDidCallFocus(routing_id_));
 }
 
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {

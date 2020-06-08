@@ -349,6 +349,11 @@ mojom::blink::RemoteFrameHost& RemoteFrame::GetRemoteFrameHostRemote() {
   return *remote_frame_host_remote_.get();
 }
 
+AssociatedInterfaceProvider* RemoteFrame::GetRemoteAssociatedInterfaces() {
+  DCHECK(Client());
+  return Client()->GetRemoteAssociatedInterfaces();
+}
+
 RemoteFrameClient* RemoteFrame::Client() const {
   return static_cast<RemoteFrameClient*>(Frame::Client());
 }

@@ -29,17 +29,17 @@ const char kPreviewsFieldTrial[] = "Previews";
 const char kEnabled[] = "Enabled";
 
 // Verifies that the default params are correct, and that custom params can be
-// set, for both the previews blacklist and offline previews.
-TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
+// set, for both the previews blocklist and offline previews.
+TEST(PreviewsExperimentsTest, TestParamsForBlockListAndOffline) {
   // Verify that the default params are correct.
-  EXPECT_EQ(4u, params::MaxStoredHistoryLengthForPerHostBlackList());
-  EXPECT_EQ(10u, params::MaxStoredHistoryLengthForHostIndifferentBlackList());
-  EXPECT_EQ(100u, params::MaxInMemoryHostsInBlackList());
-  EXPECT_EQ(2, params::PerHostBlackListOptOutThreshold());
-  EXPECT_EQ(6, params::HostIndifferentBlackListOptOutThreshold());
-  EXPECT_EQ(base::TimeDelta::FromDays(30), params::PerHostBlackListDuration());
+  EXPECT_EQ(4u, params::MaxStoredHistoryLengthForPerHostBlockList());
+  EXPECT_EQ(10u, params::MaxStoredHistoryLengthForHostIndifferentBlockList());
+  EXPECT_EQ(100u, params::MaxInMemoryHostsInBlockList());
+  EXPECT_EQ(2, params::PerHostBlockListOptOutThreshold());
+  EXPECT_EQ(6, params::HostIndifferentBlockListOptOutThreshold());
+  EXPECT_EQ(base::TimeDelta::FromDays(30), params::PerHostBlockListDuration());
   EXPECT_EQ(base::TimeDelta::FromDays(30),
-            params::HostIndifferentBlackListPerHostDuration());
+            params::HostIndifferentBlockListPerHostDuration());
   EXPECT_EQ(base::TimeDelta::FromSeconds(60 * 5),
             params::SingleOptOutDuration());
   EXPECT_EQ(base::TimeDelta::FromDays(7),
@@ -51,6 +51,7 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_EQ(0, params::OfflinePreviewsVersion());
 
   // Set some custom params. Somewhat random yet valid values.
+  // TODO(crbug.com/1092102) : Migrate blacklist names to blocklist.
   std::map<std::string, std::string> custom_params = {
       {"per_host_max_stored_history_length", "3"},
       {"host_indifferent_max_stored_history_length", "4"},
@@ -69,14 +70,14 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
       kClientSidePreviewsFieldTrial, kEnabled));
 
-  EXPECT_EQ(3u, params::MaxStoredHistoryLengthForPerHostBlackList());
-  EXPECT_EQ(4u, params::MaxStoredHistoryLengthForHostIndifferentBlackList());
-  EXPECT_EQ(13u, params::MaxInMemoryHostsInBlackList());
-  EXPECT_EQ(12, params::PerHostBlackListOptOutThreshold());
-  EXPECT_EQ(84, params::HostIndifferentBlackListOptOutThreshold());
-  EXPECT_EQ(base::TimeDelta::FromDays(99), params::PerHostBlackListDuration());
+  EXPECT_EQ(3u, params::MaxStoredHistoryLengthForPerHostBlockList());
+  EXPECT_EQ(4u, params::MaxStoredHistoryLengthForHostIndifferentBlockList());
+  EXPECT_EQ(13u, params::MaxInMemoryHostsInBlockList());
+  EXPECT_EQ(12, params::PerHostBlockListOptOutThreshold());
+  EXPECT_EQ(84, params::HostIndifferentBlockListOptOutThreshold());
+  EXPECT_EQ(base::TimeDelta::FromDays(99), params::PerHostBlockListDuration());
   EXPECT_EQ(base::TimeDelta::FromDays(64),
-            params::HostIndifferentBlackListPerHostDuration());
+            params::HostIndifferentBlockListPerHostDuration());
   EXPECT_EQ(base::TimeDelta::FromSeconds(28), params::SingleOptOutDuration());
   EXPECT_EQ(base::TimeDelta::FromDays(12),
             params::OfflinePreviewFreshnessDuration());

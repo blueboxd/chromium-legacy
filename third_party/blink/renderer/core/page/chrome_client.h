@@ -148,7 +148,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // part of.
   virtual IntRect RootWindowRect(LocalFrame&) = 0;
 
-  virtual void Focus(LocalFrame*) = 0;
+  virtual void FocusPage() = 0;
+  virtual void DidFocusPage() = 0;
 
   virtual bool CanTakeFocus(mojom::blink::FocusType) = 0;
   virtual void TakeFocus(mojom::blink::FocusType) = 0;

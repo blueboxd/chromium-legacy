@@ -430,7 +430,11 @@ class ZeroconfPrinterDetectorTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  // Runs pending tasks regardless of delay.
+  void CompleteTasks() { task_environment_.FastForwardUntilNoTasksRemain(); }
+
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   // Device listers fakes.  These are initialized when the test is constructed.
   // These pointers don't involve ownership; ownership of the listers starts
@@ -461,44 +465,44 @@ class ZeroconfPrinterDetectorTest : public testing::Test {
 TEST_F(ZeroconfPrinterDetectorTest, SingleIppPrinter) {
   ipp_lister_->Announce("Printer1");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer1", ServiceType::kIpp)});
 }
 
 TEST_F(ZeroconfPrinterDetectorTest, SingleIppsPrinter) {
   ipps_lister_->Announce("Printer2");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer2", ServiceType::kIpps)});
 }
 
 TEST_F(ZeroconfPrinterDetectorTest, SingleIppEverywherePrinter) {
   ippe_lister_->Announce("Printer3");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer3", ServiceType::kIppE)});
 }
 
 TEST_F(ZeroconfPrinterDetectorTest, SingleIppsEverywherePrinter) {
   ippse_lister_->Announce("Printer4");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer4", ServiceType::kIppsE)});
 }
 
 TEST_F(ZeroconfPrinterDetectorTest, SingleSocketPrinter) {
   socket_lister_->Announce("Printer5");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kSocket)});
 }
 
 // Test that an announce after the detector creation shows up as a printer.
 TEST_F(ZeroconfPrinterDetectorTest, AnnounceAfterDetectorCreation) {
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ippse_lister_->Announce("Printer4");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer4", ServiceType::kIppsE)});
 }
 
@@ -507,7 +511,7 @@ TEST_F(ZeroconfPrinterDetectorTest, AnnounceAfterDetectorCreation) {
 TEST_F(ZeroconfPrinterDetectorTest, StableIds) {
   ipp_lister_->Announce("Printer1");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_FALSE(printers_found_callbacks_.empty());
   ASSERT_EQ(1U, printers_found_callbacks_.back().size());
   // Grab the id when it's an IPPS printer We should continue to get the same id
@@ -516,20 +520,20 @@ TEST_F(ZeroconfPrinterDetectorTest, StableIds) {
 
   // Remove it as an IPP printer, add it as an IPPS printer.
   ipp_lister_->Remove("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_TRUE(printers_found_callbacks_.back().empty());
   ipps_lister_->Announce("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_EQ(1U, printers_found_callbacks_.back().size());
   // Id should be the same.
   ASSERT_EQ(id, printers_found_callbacks_.back()[0].printer.id());
 
   // Remove it as an IPPS printer, add it as an IPP-Everywhere printer.
   ipps_lister_->Remove("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_TRUE(printers_found_callbacks_.back().empty());
   ippe_lister_->Announce("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_EQ(1U, printers_found_callbacks_.back().size());
   // Id should be the same.
   ASSERT_EQ(id, printers_found_callbacks_.back()[0].printer.id());
@@ -537,20 +541,20 @@ TEST_F(ZeroconfPrinterDetectorTest, StableIds) {
   // Remove it as an IPP-Everywhere printer, add it as an IPPS-Everywhere
   // printer.
   ippe_lister_->Remove("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_TRUE(printers_found_callbacks_.back().empty());
   ippse_lister_->Announce("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_EQ(1U, printers_found_callbacks_.back().size());
   // Id should be the same.
   ASSERT_EQ(id, printers_found_callbacks_.back()[0].printer.id());
 
   // Remove it as an IPPS-Everywhere printer, add it as a socket printer.
   ippse_lister_->Remove("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_TRUE(printers_found_callbacks_.back().empty());
   socket_lister_->Announce("Printer1");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ASSERT_EQ(1U, printers_found_callbacks_.back().size());
   // Id should be the same.
   ASSERT_EQ(id, printers_found_callbacks_.back()[0].printer.id());
@@ -564,14 +568,14 @@ TEST_F(ZeroconfPrinterDetectorTest, Removal) {
   ipp_lister_->Announce("Printer8");
   ipp_lister_->Announce("Printer9");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kIpp),
                      MakeExpectedPrinter("Printer6", ServiceType::kIpp),
                      MakeExpectedPrinter("Printer7", ServiceType::kIpp),
                      MakeExpectedPrinter("Printer8", ServiceType::kIpp),
                      MakeExpectedPrinter("Printer9", ServiceType::kIpp)});
   ipp_lister_->Remove("Printer7");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kIpp),
                      MakeExpectedPrinter("Printer6", ServiceType::kIpp),
                      MakeExpectedPrinter("Printer8", ServiceType::kIpp),
@@ -589,31 +593,31 @@ TEST_F(ZeroconfPrinterDetectorTest, ServiceTypePriorities) {
   ippse_lister_->Announce("Printer5");
   socket_lister_->Announce("Printer5");
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   // IPPS-E is highest priority.
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kIppsE)});
   ippse_lister_->Remove("Printer5");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   // IPP-E is highest remaining priority.
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kIppE)});
 
   ippe_lister_->Remove("Printer5");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   // IPPS is highest remaining priority.
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kIpps)});
 
   ipps_lister_->Remove("Printer5");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   // IPP is highest remaining priority.
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kIpp)});
 
   ipp_lister_->Remove("Printer5");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   // Socket is only remaining entry.
   ExpectPrintersAre({MakeExpectedPrinter("Printer5", ServiceType::kSocket)});
 
   socket_lister_->Remove("Printer5");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   // No entries left.
   ExpectPrintersEmpty();
 }
@@ -632,7 +636,7 @@ TEST_F(ZeroconfPrinterDetectorTest, CacheFlushes) {
   socket_lister_->Announce("Printer11");
 
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer6", ServiceType::kIpp),
                      MakeExpectedPrinter("Printer7", ServiceType::kIpps),
                      MakeExpectedPrinter("Printer8", ServiceType::kIppE),
@@ -642,7 +646,7 @@ TEST_F(ZeroconfPrinterDetectorTest, CacheFlushes) {
 
   ipps_lister_->Clear();
 
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   // With the IPPS lister cleared, all printers should be cleared.
   ExpectPrintersEmpty();
 
@@ -651,12 +655,12 @@ TEST_F(ZeroconfPrinterDetectorTest, CacheFlushes) {
 
   // Just for kicks, announce something new at this point.
   ipps_lister_->Announce("Printer12");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer12", ServiceType::kIpps)});
 
   // Clear out the IPPS lister, which will clear all printers too.
   ipps_lister_->Clear();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
 
   // With the IPPS lister cleared, Printer12 should disappear.
   ExpectPrintersEmpty();
@@ -673,7 +677,7 @@ TEST_F(ZeroconfPrinterDetectorTest, GeneralMixedTraffic) {
   socket_lister_->Announce("Printer16");
 
   CreateDetector();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer12", ServiceType::kIpps),
                      MakeExpectedPrinter("Printer13", ServiceType::kIpps),
                      MakeExpectedPrinter("Printer14", ServiceType::kIppsE),
@@ -682,7 +686,7 @@ TEST_F(ZeroconfPrinterDetectorTest, GeneralMixedTraffic) {
 
   ippe_lister_->Announce("Printer13");
   ipp_lister_->Announce("Printer17");
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersAre({MakeExpectedPrinter("Printer12", ServiceType::kIpps),
                      MakeExpectedPrinter("Printer13", ServiceType::kIppE),
                      MakeExpectedPrinter("Printer14", ServiceType::kIppsE),
@@ -693,8 +697,24 @@ TEST_F(ZeroconfPrinterDetectorTest, GeneralMixedTraffic) {
   ipp_lister_->Remove("NonexistantPrinter");
   ipps_lister_->Remove("Printer12");
   ipps_lister_->Clear();
-  task_environment_.RunUntilIdle();
+  CompleteTasks();
   ExpectPrintersEmpty();
+}
+
+// Verify tasks are cleaned up properly when class is destroyed.
+TEST_F(ZeroconfPrinterDetectorTest, DestroyedWithTasksPending) {
+  CreateDetector();
+  // Cause a callback to be queued.
+  ipp_lister_->Announce("TestPrinter");
+  // Run listers but don't run the delayed tasks.
+  task_environment_.RunUntilIdle();
+
+  // Delete the detector.
+  detector_.reset();
+
+  // Clear task queues where we would crash if we did something wrong.
+  task_environment_.FastForwardUntilNoTasksRemain();
+  SUCCEED();
 }
 
 }  // namespace

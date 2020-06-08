@@ -238,6 +238,7 @@ js_library("oobe_supervision_transition") {
 
 js_library("oobe_update") {
   deps = [
+    "components:login_screen_behavior",
     "components:oobe_dialog_host_behavior",
     "components:oobe_i18n_behavior",
   ]

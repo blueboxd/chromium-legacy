@@ -1815,6 +1815,8 @@ template("chrome_public_apk_or_module_tmpl") {
                              "is_modern",
                              "target_type",
                              "enable_multidex",
+                             "lint_suppressions_dep",
+                             "lint_suppressions_file",
 
                              # TODO(crbug.com/1076896): remove
                              # "disable_library_rename" when we remove chrome

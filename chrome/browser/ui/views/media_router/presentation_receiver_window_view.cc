@@ -111,6 +111,7 @@ PresentationReceiverWindowView::PresentationReceiverWindowView(
                                                  content::kMaxURLDisplayChars)),
       command_updater_(this),
       exclusive_access_manager_(this) {
+  SetHasWindowSizeControls(true);
   DCHECK(frame);
   DCHECK(delegate);
 }
@@ -254,18 +255,6 @@ void PresentationReceiverWindowView::ExecuteCommandWithDisposition(
 
 WebContents* PresentationReceiverWindowView::GetActiveWebContents() const {
   return delegate_->web_contents();
-}
-
-bool PresentationReceiverWindowView::CanResize() const {
-  return true;
-}
-
-bool PresentationReceiverWindowView::CanMaximize() const {
-  return true;
-}
-
-bool PresentationReceiverWindowView::CanMinimize() const {
-  return true;
 }
 
 void PresentationReceiverWindowView::DeleteDelegate() {

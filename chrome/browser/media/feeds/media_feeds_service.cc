@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_checker.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/feeds/media_feeds_converter.h"
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
@@ -123,14 +122,10 @@ const char MediaFeedsService::kSafeSearchResultHistogramName[] =
 
 MediaFeedsService::MediaFeedsService(Profile* profile)
     :
-#if defined(OS_ANDROID)
-      cookie_change_listener_(nullptr),
-#else
       cookie_change_listener_(std::make_unique<CookieChangeListener>(
           profile,
           base::BindRepeating(&MediaFeedsService::OnResetOriginFromCookie,
                               base::Unretained(this)))),
-#endif  // defined(OS_ANDROID)
       profile_(profile) {
   DCHECK(!profile->IsOffTheRecord());
 

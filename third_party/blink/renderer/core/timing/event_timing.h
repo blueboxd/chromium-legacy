@@ -30,10 +30,11 @@ class CORE_EXPORT EventTiming final {
 
   explicit EventTiming(base::TimeTicks processing_start,
                        base::TimeTicks event_timestamp,
-                       WindowPerformance* performance);
+                       WindowPerformance* performance,
+                       bool should_log);
 
   // Notifies the Performance object that the event has been dispatched.
-  void DidDispatchEvent(const Event&);
+  void DidDispatchEvent(const Event&, Document& document);
 
   // The caller owns the |clock| which must outlive the EventTiming.
   static void SetTickClockForTesting(const base::TickClock* clock);
@@ -45,6 +46,9 @@ class CORE_EXPORT EventTiming final {
   base::TimeTicks event_timestamp_;
 
   Persistent<WindowPerformance> performance_;
+
+  bool should_log_event_;
+
   DISALLOW_COPY_AND_ASSIGN(EventTiming);
 };
 

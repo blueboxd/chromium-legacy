@@ -5,6 +5,7 @@
 #import <WebKit/WebKit.h>
 
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/bind_test_util.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "ios/web/public/browsing_data/cookie_blocking_mode.h"
@@ -76,7 +77,14 @@ class CookieBlockingTest : public WebTestWithWebState {
 // Tests that cookies are accessible from JavaScript in all frames
 // when the blocking mode is set to allow.
 TEST_F(CookieBlockingTest, CookiesAllowed) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow);
+  bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kAllow,
+      base::BindLambdaForTesting([&] { success = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -104,7 +112,15 @@ TEST_F(CookieBlockingTest, CookiesAllowed) {
 // Tests that cookies are inaccessable from JavaScript in all frames
 // when the blocking mode is set to block.
 TEST_F(CookieBlockingTest, CookiesBlocked) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -131,8 +147,15 @@ TEST_F(CookieBlockingTest, CookiesBlocked) {
 // Tests that cookies are accessible from JavaScript on the main page, but
 // inaccessible from a third-party iframe when third party cookies are blocked.
 TEST_F(CookieBlockingTest, ThirdPartyCookiesBlocked) {
+  __block bool success = false;
+  bool* success_ptr = &success;
   GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlockThirdParty);
+      CookieBlockingMode::kBlockThirdParty,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -164,8 +187,15 @@ TEST_F(CookieBlockingTest, ThirdPartyCookiesBlocked) {
 // Tests that a first-party iframe can still access cookies when third party
 // cookies are blocked.
 TEST_F(CookieBlockingTest, FirstPartyCookiesNotBlockedWhenThirdPartyBlocked) {
+  __block bool success = false;
+  bool* success_ptr = &success;
   GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlockThirdParty);
+      CookieBlockingMode::kBlockThirdParty,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   GURL iframe_url = server_.GetURL(kIFrameUrl);
   std::string url_spec = kPageUrl + net::EscapeQueryParamValue(
@@ -192,7 +222,15 @@ TEST_F(CookieBlockingTest, FirstPartyCookiesNotBlockedWhenThirdPartyBlocked) {
 // Tests that the document.cookie override cannot be deleted by external
 // JavaScript.
 TEST_F(CookieBlockingTest, CookiesBlockedUndeletable) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -217,7 +255,15 @@ TEST_F(CookieBlockingTest, CookiesBlockedUndeletable) {
 // Tests that localStorage is accessible from JavaScript in all frames
 // when the blocking mode is set to allow.
 TEST_F(CookieBlockingTest, LocalStorageAllowed) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kAllow,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -250,7 +296,15 @@ TEST_F(CookieBlockingTest, LocalStorageAllowed) {
 // Tests that localStorage is inaccessable from JavaScript in all frames
 // when the blocking mode is set to block.
 TEST_F(CookieBlockingTest, LocalStorageBlocked) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -284,7 +338,15 @@ TEST_F(CookieBlockingTest, LocalStorageBlocked) {
 
 // Tests that the localStorage override is undeletable via extra JavaScript.
 TEST_F(CookieBlockingTest, LocalStorageBlockedUndeletable) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -316,7 +378,15 @@ TEST_F(CookieBlockingTest, LocalStorageBlockedUndeletable) {
 // Tests that sessionStorage is accessible from JavaScript in all frames
 // when the blocking mode is set to allow.
 TEST_F(CookieBlockingTest, SessionStorageAllowed) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kAllow,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -349,7 +419,15 @@ TEST_F(CookieBlockingTest, SessionStorageAllowed) {
 // Tests that sessionStorage is inaccessable from JavaScript in all frames
 // when the blocking mode is set to block.
 TEST_F(CookieBlockingTest, SessionStorageBlocked) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
@@ -383,7 +461,15 @@ TEST_F(CookieBlockingTest, SessionStorageBlocked) {
 
 // Tests that the sessionStorage override is undeletable via extra JavaScript.
 TEST_F(CookieBlockingTest, SessionStorageBlockedUndeletable) {
-  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock);
+  __block bool success = false;
+  bool* success_ptr = &success;
+  GetBrowserState()->SetCookieBlockingMode(
+      CookieBlockingMode::kBlock,
+      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
 
   // Use arbitrary third party url for iframe.
   GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);

@@ -248,6 +248,11 @@ void EventHandlerRegistry::NotifyHandlersChanged(
     bool has_active_handlers) {
   LocalFrame* frame = GetLocalFrameForTarget(target);
 
+  // TODO(keishi): Added for crbug.com/1090687. Change to CHECK once bug is
+  // fixed.
+  if (!GetPage())
+    return;
+
   switch (handler_class) {
     case kScrollEvent:
       GetPage()->GetChromeClient().SetHasScrollEventHandlers(

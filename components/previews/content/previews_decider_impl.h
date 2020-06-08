@@ -32,7 +32,7 @@ namespace base {
 class Clock;
 }
 
-namespace blacklist {
+namespace blocklist {
 class OptOutStore;
 }
 
@@ -49,24 +49,24 @@ typedef base::RepeatingCallback<bool(PreviewsType)> PreviewsIsEnabledCallback;
 // previews/ objects. Created on the UI thread, but used only on the IO thread
 // after initialization.
 class PreviewsDeciderImpl : public PreviewsDecider,
-                            public blacklist::OptOutBlacklistDelegate {
+                            public blocklist::OptOutBlocklistDelegate {
  public:
   explicit PreviewsDeciderImpl(base::Clock* clock);
   ~PreviewsDeciderImpl() override;
 
-  // blacklist::OptOutBlacklistDelegate:
-  void OnNewBlacklistedHost(const std::string& host, base::Time time) override;
-  void OnUserBlacklistedStatusChange(bool blacklisted) override;
-  void OnBlacklistCleared(base::Time time) override;
+  // blocklist::OptOutBlocklistDelegate:
+  void OnNewBlocklistedHost(const std::string& host, base::Time time) override;
+  void OnUserBlocklistedStatusChange(bool blocklisted) override;
+  void OnBlocklistCleared(base::Time time) override;
 
-  // Initializes the blacklist and and stores the passed in members.
+  // Initializes the blocklist and and stores the passed in members.
   // |previews_ui_service| owns |this|, and shares the same lifetime.
   virtual void Initialize(
       PreviewsUIService* previews_ui_service,
-      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      std::unique_ptr<blocklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews);
+      blocklist::BlocklistData::AllowedTypesAndVersions allowed_previews);
 
   // Adds log message of the navigation asynchronously.
   void LogPreviewNavigation(const GURL& url,
@@ -90,24 +90,24 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       std::vector<PreviewsEligibilityReason>&& passed_reasons,
       PreviewsUserData* user_data) const;
 
-  // Adds a navigation to |url| to the black list with result |opt_out|.
+  // Adds a navigation to |url| to the block list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url,
                             bool opt_out,
                             PreviewsType type,
                             uint64_t page_id);
 
-  // Clears the history of the black list between |begin_time| and |end_time|,
+  // Clears the history of the block list between |begin_time| and |end_time|,
   // both inclusive. Additional, clears the appropriate data from the hint
   // cache. TODO(mcrouse): Rename to denote clearing all necessary data,
-  // including the Fetched hints and the blacklist.
-  void ClearBlackList(base::Time begin_time, base::Time end_time);
+  // including the Fetched hints and the blocklist.
+  void ClearBlockList(base::Time begin_time, base::Time end_time);
 
   // Change the status of whether to ignore the decisions made by
-  // PreviewsBlackList to |ignored|. Virtualized in testing.
-  virtual void SetIgnorePreviewsBlacklistDecision(bool ignored);
+  // PreviewsBlockList to |ignored|. Virtualized in testing.
+  virtual void SetIgnorePreviewsBlocklistDecision(bool ignored);
 
-  // The previews black list that decides whether a navigation can use previews.
-  PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
+  // The previews block list that decides whether a navigation can use previews.
+  PreviewsBlockList* block_list() const { return previews_block_list_.get(); }
 
   // PreviewsDecider implementation:
   bool ShouldAllowPreviewAtNavigationStart(
@@ -119,9 +119,9 @@ class PreviewsDeciderImpl : public PreviewsDecider,
                            content::NavigationHandle* navigation_handle,
                            PreviewsType type) const override;
 
-  // Set whether to ignore the long term blacklist rules for server previews.
-  void SetIgnoreLongTermBlackListForServerPreviews(
-      bool ignore_long_term_blacklist_for_server_previews);
+  // Set whether to ignore the long term blocklist rules for server previews.
+  void SetIgnoreLongTermBlockListForServerPreviews(
+      bool ignore_long_term_blocklist_for_server_previews);
 
   bool AreCommitTimePreviewsAvailable(
       content::NavigationHandle* navigation_handle) override;
@@ -142,9 +142,9 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   void AddPreviewReload();
 
  protected:
-  // Sets a blacklist for testing.
-  void SetPreviewsBlacklistForTesting(
-      std::unique_ptr<PreviewsBlackList> previews_back_list);
+  // Sets a blocklist for testing.
+  void SetPreviewsBlocklistForTesting(
+      std::unique_ptr<PreviewsBlockList> previews_back_list);
 
  private:
   // Returns whether the preview |type| should be considered for |url|.
@@ -163,8 +163,8 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       bool is_drp_server_preview,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
-  // Returns previews eligibility with respect to the local blacklist.
-  PreviewsEligibilityReason CheckLocalBlacklist(
+  // Returns previews eligibility with respect to the local blocklist.
+  PreviewsEligibilityReason CheckLocalBlocklist(
       const GURL& url,
       PreviewsType type,
       bool is_drp_server_preview,
@@ -192,20 +192,20 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   // The UI service object owns |this| and exists as long as |this| does.
   PreviewsUIService* previews_ui_service_;
 
-  std::unique_ptr<PreviewsBlackList> previews_black_list_;
+  std::unique_ptr<PreviewsBlockList> previews_block_list_;
 
   // Holds optimization guidance from the server.
   std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide_;
 
-  // Whether the decisions made by PreviewsBlackList should be ignored or not.
+  // Whether the decisions made by PreviewsBlockList should be ignored or not.
   // This can be changed by chrome://interventions-internals to test/debug the
   // behavior of Previews decisions.
   // This is related to a test flag and should only be true when the user has
-  // set it in flags. See previews::IsPreviewsBlacklistIgnoredViaFlag.
-  bool blacklist_ignored_;
+  // set it in flags. See previews::IsPreviewsBlocklistIgnoredViaFlag.
+  bool blocklist_ignored_;
 
-  // Whether to ignore the blacklist for server previews.
-  bool ignore_long_term_blacklist_for_server_previews_ = false;
+  // Whether to ignore the blocklist for server previews.
+  bool ignore_long_term_blocklist_for_server_previews_ = false;
 
   // The estimate of how slow a user's connection is. Used for triggering
   // Previews.

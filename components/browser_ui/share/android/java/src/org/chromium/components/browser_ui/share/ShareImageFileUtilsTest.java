@@ -19,7 +19,6 @@ import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.test.filters.SmallTest;
 
-import androidx.core.content.FileProvider;
 import androidx.core.util.ObjectsCompat;
 
 import org.junit.Assert;
@@ -35,6 +34,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.base.Clipboard;
@@ -56,17 +56,6 @@ public class ShareImageFileUtilsTest extends DummyUiActivityTestCase {
     private static final String TEST_GIF_IMAGE_FILE_EXTENSION = ".gif";
     private static final String TEST_JPG_IMAGE_FILE_EXTENSION = ".jpg";
     private static final String TEST_PNG_IMAGE_FILE_EXTENSION = ".png";
-
-    private class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
-        private static final String API_AUTHORITY_SUFFIX = ".FileProvider";
-
-        @Override
-        public Uri getContentUriFromFile(File file) {
-            Context appContext = ContextUtils.getApplicationContext();
-            return FileProvider.getUriForFile(
-                    appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
-        }
-    }
 
     private class GenerateUriCallback extends CallbackHelper implements Callback<Uri> {
         private Uri mImageUri;

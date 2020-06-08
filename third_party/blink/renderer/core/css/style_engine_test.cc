@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/html/html_span_element.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
@@ -2126,6 +2127,14 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(Color::kBlack, GetDocument().View()->BaseBackgroundColor());
+
+  color_scheme_helper.SetForcedColors(GetDocument(), ForcedColors::kActive);
+  UpdateAllLifecyclePhases();
+  Color system_background_color = LayoutTheme::GetTheme().SystemColor(
+      CSSValueID::kCanvas, WebColorScheme::kLight);
+
+  EXPECT_EQ(system_background_color,
+            GetDocument().View()->BaseBackgroundColor());
 }
 
 TEST_F(StyleEngineTest, ColorSchemeOverride) {

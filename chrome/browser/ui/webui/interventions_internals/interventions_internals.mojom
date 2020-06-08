@@ -60,10 +60,10 @@ interface InterventionsInternalsPageHandler {
   // Inject the client side page object.
   SetClientPage(pending_remote<InterventionsInternalsPage> page);
 
-  // Change the status of ignoring blacklist to |ignored|. |ignored| will
-  // indicate whether the blacklist decision would be ignored when deciding if a
+  // Change the status of ignoring blocklist to |ignored|. |ignored| will
+  // indicate whether the blocklist decision would be ignored when deciding if a
   // preview should be shown or not.
-  SetIgnorePreviewsBlacklistDecision(bool ignored);
+  SetIgnorePreviewsBlocklistDecision(bool ignored);
 };
 
 interface InterventionsInternalsPage {
@@ -72,20 +72,20 @@ interface InterventionsInternalsPage {
   // publishes it on the javscript side.
   LogNewMessage(MessageLog log);
 
-  // Notify the page that |host| has been blacklisted at |time|. The method is
+  // Notify the page that |host| has been blocklisted at |time|. The method is
   // called by InterventionsInternalsPageHandler when PreviewsUIService receives
-  // new blacklisted host.
-  OnBlacklistedHost(string host, int64 time);
+  // new blocklisted host.
+  OnBlocklistedHost(string host, int64 time);
 
-  // Notify the page that user blacklisted status has changed to |blacklisted|.
+  // Notify the page that user blocklisted status has changed to |blocklisted|.
   // The method is called by InterventionsInternalsPageHandler when user's
-  // blacklist status changes.
-  OnUserBlacklistedStatusChange(bool blacklisted);
+  // blocklist status changes.
+  OnUserBlocklistedStatusChange(bool blocklisted);
 
-  // Notify the page that the blacklist is cleared at |time|. The method is
+  // Notify the page that the blocklist is cleared at |time|. The method is
   // called by InterventionsInternalsPageHandler when PreviewsUIService clears
-  // the blacklist.
-  OnBlacklistCleared(int64 time);
+  // the blocklist.
+  OnBlocklistCleared(int64 time);
 
   // Notify the page on the new estimated effective connection type is |type|.
   // Also reports the session's maximum intervention effective connection type
@@ -94,8 +94,8 @@ interface InterventionsInternalsPage {
   // changes.
   UpdateEffectiveConnectionType(string type, string max_intervention_type);
 
-  // Notify the page on whether the blacklist decision is considered or ignored.
+  // Notify the page on whether the blocklist decision is considered or ignored.
   // This method is called by InterventionsInternalsPageHandler when the status
-  // of ignore blacklist decision is updated to |ignored|.
-  OnIgnoreBlacklistDecisionStatusChanged(bool ignored);
+  // of ignore blocklist decision is updated to |ignored|.
+  OnIgnoreBlocklistDecisionStatusChanged(bool ignored);
 };

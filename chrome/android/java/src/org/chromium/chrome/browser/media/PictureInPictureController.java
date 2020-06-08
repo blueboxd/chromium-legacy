@@ -345,6 +345,11 @@ public class PictureInPictureController {
         public void onCrash(Tab tab) {
             dismissActivity(mActivity, METRICS_END_REASON_CRASH);
         }
+
+        @Override
+        public void webContentsWillSwap(Tab tab) {
+            dismissActivity(mActivity, METRICS_END_REASON_WEB_CONTENTS_LEFT_FULLSCREEN);
+        }
     }
 
     /** A class to dismiss the Activity when a new tab is created. */

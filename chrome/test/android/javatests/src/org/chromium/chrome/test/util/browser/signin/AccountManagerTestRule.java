@@ -6,8 +6,6 @@ package org.chromium.chrome.test.util.browser.signin;
 
 import android.accounts.Account;
 
-import androidx.annotation.Nullable;
-
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -19,17 +17,28 @@ import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
 
 /**
- * JUnit4 rule for overriding behaviour of {@link AccountManagerFacade} for tests.
+ * This test rule mocks AccountManagerFacade and manages sign-in/sign-out.
+ *
+ * When the user does not invoke any sign-in functions with this rule, the rule will not
+ * invoke any native code, therefore it is safe to use it in Robolectric tests just as
+ * a simple AccountManagerFacade mock.
  */
 public class AccountManagerTestRule implements TestRule {
-    private final FakeAccountManagerFacade mFakeAccountManagerFacade;
+    private static final String TEST_ACCOUNT_EMAIL = "test@gmail.com";
 
-    public AccountManagerTestRule(@Nullable FakeProfileDataSource fakeProfileDataSource) {
-        mFakeAccountManagerFacade = new FakeAccountManagerFacade(fakeProfileDataSource);
-    }
+    private final FakeAccountManagerFacade mFakeAccountManagerFacade;
+    private boolean mIsSignedIn = false;
 
     public AccountManagerTestRule() {
-        this(null);
+        this(new FakeAccountManagerFacade(null));
+    }
+
+    public AccountManagerTestRule(FakeProfileDataSource fakeProfileDataSource) {
+        this(new FakeAccountManagerFacade(fakeProfileDataSource));
+    }
+
+    public AccountManagerTestRule(FakeAccountManagerFacade fakeAccountManagerFacade) {
+        mFakeAccountManagerFacade = fakeAccountManagerFacade;
     }
 
     @Override
@@ -41,17 +50,13 @@ public class AccountManagerTestRule implements TestRule {
                 try {
                     statement.evaluate();
                 } finally {
+                    if (mIsSignedIn) {
+                        signOut();
+                    }
                     AccountManagerFacadeProvider.resetInstanceForTests();
                 }
             }
         };
-    }
-
-    /**
-     * Sets the boolean for whether the account cache has already been populated.
-     */
-    public void setIsCachePopulated(boolean isCachePopulated) {
-        mFakeAccountManagerFacade.setIsCachePopulated(isCachePopulated);
     }
 
     /**
@@ -80,5 +85,29 @@ public class AccountManagerTestRule implements TestRule {
         Account account = addAccount(accountName);
         mFakeAccountManagerFacade.setProfileData(accountName, profileData);
         return account;
+    }
+
+    /**
+     * Add and sign in an account with the default name.
+     *
+     * This method invokes native code. It shouldn't be called in a Robolectric test.
+     */
+    public Account addAndSignInTestAccount() {
+        assert !mIsSignedIn : "An account is already signed in!";
+        Account account = addAccount(TEST_ACCOUNT_EMAIL);
+        SigninTestUtil.signIn(account);
+        mIsSignedIn = true;
+        return account;
+    }
+
+    /**
+     * Sign out from the current account.
+     *
+     * This method invokes native code. It shouldn't be called in a Robolectric test.
+     */
+    private void signOut() {
+        assert mIsSignedIn : "No account is signed in!";
+        SigninTestUtil.signOut();
+        mIsSignedIn = false;
     }
 }

@@ -18,7 +18,7 @@
 
 namespace device {
 
-class PublicKey;
+struct PublicKey;
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-attestation-data
 class COMPONENT_EXPORT(DEVICE_FIDO) AttestedCredentialData {

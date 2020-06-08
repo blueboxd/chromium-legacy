@@ -12,6 +12,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
 #include "media/base/video_util.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -133,12 +134,12 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
 };
 
 MediaStreamVideoRendererSink::MediaStreamVideoRendererSink(
-    const WebMediaStreamTrack& video_track,
+    MediaStreamComponent* video_component,
     const RepaintCB& repaint_cb,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> main_render_task_runner)
     : repaint_cb_(repaint_cb),
-      video_track_(video_track),
+      video_component_(video_component),
       io_task_runner_(std::move(io_task_runner)),
       main_render_task_runner_(std::move(main_render_task_runner)) {}
 
@@ -157,7 +158,7 @@ void MediaStreamVideoRendererSink::Start() {
                           WTF::CrossThreadUnretained(frame_deliverer_.get())));
 
   MediaStreamVideoSink::ConnectToTrack(
-      video_track_,
+      WebMediaStreamTrack(video_component_.Get()),
       // This callback is run on IO thread. It is safe to use base::Unretained
       // here because |frame_receiver_| will be destroyed on IO thread after
       // sink is disconnected from track.
@@ -167,9 +168,9 @@ void MediaStreamVideoRendererSink::Start() {
       // Local display video rendering is considered a secure link.
       true);
 
-  if (video_track_.Source().GetReadyState() ==
-          WebMediaStreamSource::kReadyStateEnded ||
-      !video_track_.IsEnabled()) {
+  if (video_component_->Source()->GetReadyState() ==
+          MediaStreamSource::kReadyStateEnded ||
+      !video_component_->Enabled()) {
     PostCrossThreadTask(
         *io_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&FrameDeliverer::RenderEndOfStream,

@@ -490,8 +490,7 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   GetBackToTabControlsLayer()->SetVisible(is_visible);
   previous_track_controls_view_->ToggleVisibility(is_visible &&
                                                   show_previous_track_button_);
-  play_pause_controls_view_->SetVisible(is_visible &&
-                                        !always_hide_play_pause_button_);
+  play_pause_controls_view_->SetVisible(is_visible && show_play_pause_button_);
   next_track_controls_view_->ToggleVisibility(is_visible &&
                                               show_next_track_button_);
 
@@ -545,7 +544,7 @@ void OverlayWindowViews::OnUpdateControlsBounds() {
   visible_controls_views.push_back(back_to_tab_controls_view_);
   if (show_previous_track_button_)
     visible_controls_views.push_back(previous_track_controls_view_);
-  if (!always_hide_play_pause_button_)
+  if (show_play_pause_button_)
     visible_controls_views.push_back(play_pause_controls_view_);
   if (show_next_track_button_)
     visible_controls_views.push_back(next_track_controls_view_);
@@ -709,11 +708,11 @@ void OverlayWindowViews::SetPlaybackState(PlaybackState playback_state) {
   play_pause_controls_view_->SetPlaybackState(playback_state);
 }
 
-void OverlayWindowViews::SetAlwaysHidePlayPauseButton(bool is_visible) {
-  if (always_hide_play_pause_button_ == !is_visible)
+void OverlayWindowViews::SetPlayPauseButtonVisibility(bool is_visible) {
+  if (show_play_pause_button_ == is_visible)
     return;
 
-  always_hide_play_pause_button_ = !is_visible;
+  show_play_pause_button_ = is_visible;
   UpdateControlsBounds();
 }
 

@@ -124,9 +124,9 @@ class DataReductionProxyService
     settings_ = settings;
   }
 
-  // When triggering previews, prevent long term black list rules. Virtual for
+  // When triggering previews, prevent long term block list rules. Virtual for
   // testing.
-  virtual void SetIgnoreLongTermBlackListRules(
+  virtual void SetIgnoreLongTermBlockListRules(
       bool ignore_long_term_black_list_rules);
 
   // Returns the current network quality estimates.

@@ -224,7 +224,7 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       is_legacy_layout_root_(false),
       is_painted_atomically_(false),
       has_baseline_(false) {
-  DCHECK(builder->layout_object_);
+  CHECK(builder->layout_object_);
 }
 
 NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
@@ -243,7 +243,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       is_legacy_layout_root_(false),
       is_painted_atomically_(false),
       has_baseline_(false) {
-  DCHECK(layout_object);
+  CHECK(layout_object);
 }
 
 // Keep the implementation of the destructor here, to avoid dependencies on

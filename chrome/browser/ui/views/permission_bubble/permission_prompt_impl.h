@@ -48,6 +48,8 @@ class PermissionPromptImpl : public permissions::PermissionPrompt {
 
   PromptStyle prompt_style_;
 
+  PermissionChip* permission_chip_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptImpl);
 };
 

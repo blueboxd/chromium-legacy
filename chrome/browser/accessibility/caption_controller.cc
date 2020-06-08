@@ -163,14 +163,14 @@ void CaptionController::OnBrowserRemoved(Browser* browser) {
   caption_bubble_controllers_.erase(browser);
 }
 
-void CaptionController::DispatchTranscription(
+bool CaptionController::DispatchTranscription(
     content::WebContents* web_contents,
     const chrome::mojom::TranscriptionResultPtr& transcription_result) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser || !caption_bubble_controllers_.count(browser))
-    return;
-  caption_bubble_controllers_[browser]->OnTranscription(transcription_result,
-                                                        web_contents);
+    return false;
+  return caption_bubble_controllers_[browser]->OnTranscription(
+      transcription_result, web_contents);
 }
 
 CaptionBubbleController*

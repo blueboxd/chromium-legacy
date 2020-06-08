@@ -42,7 +42,7 @@ void PictureInPictureSession::Update(
   player_id_ = MediaPlayerId(service_->render_frame_host(), player_id);
 
   GetController().EmbedSurface(surface_id.value(), natural_size);
-  GetController().SetAlwaysHidePlayPauseButton(show_play_pause_button);
+  GetController().SetShowPlayPauseButton(show_play_pause_button);
 }
 
 void PictureInPictureSession::NotifyWindowResized(const gfx::Size& size) {

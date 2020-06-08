@@ -17,6 +17,7 @@ js_type_check("closure_compile_module") {
     ":credit_card_edit_dialog",
     ":credit_card_list_entry",
     ":merge_passwords_store_copies_behavior",
+    ":multi_store_exception_entry",
     ":multi_store_id_handler",
     ":multi_store_password_ui_entry",
     ":password_check",
@@ -167,7 +168,7 @@ js_library("multi_store_password_ui_entry") {
 }
 
 js_library("multi_store_exception_entry") {
-  sources = [ "multi_store_password_ui_entry.js" ]
+  sources = [ "multi_store_exception_entry.js" ]
   deps = [
     ":multi_store_id_handler",
     ":password_manager_proxy",

@@ -10,6 +10,9 @@ import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
+# Prevent Chromium source assignment filters from being inherited.
+set_sources_assignment_filter([])
+
 declare_args() {
   # Whether to compress the main Chromevox javascript files or load the
   # modules individually from source files.
@@ -136,12 +139,17 @@ relative_closure_library_modules = [
 closure_library_modules =
     rebase_path(relative_closure_library_modules, ".", closure_library_dir)
 
+chromevox_gen_dir =
+    "$root_gen_dir/chrome/browser/resources/chromeos/accessibility/chromevox"
+
 chromevox_out_dir = "$root_out_dir/resources/chromeos/accessibility/chromevox"
 
 group("build") {
   deps = [
     ":chromevox_copied_files",
     ":chromevox_phonetic_dictionaries_js",
+    ":lesson_component",
+    ":tutorial_component",
     "//chrome/browser/resources/chromeos/accessibility/braille_ime:braille_ime_manifest",
     "//third_party/chromevox:chromevox_third_party_resources",
     "//third_party/liblouis",
@@ -183,6 +191,11 @@ run_jsbundler("chromevox_copied_files") {
     "background/keymaps/default_keymap.json",
     "background/logging/log.css",
     "background/logging/log.html",
+    "i_tutorial/components/i_tutorial.js",
+    "i_tutorial/components/tutorial_lesson.js",
+    "i_tutorial/lessons/basic_navigation.html",
+    "i_tutorial/lessons/jump_commands.html",
+    "i_tutorial/lessons/text_fields.html",
     "images/chromevox-128.png",
     "images/chromevox-16.png",
     "images/chromevox-19.png",
@@ -443,4 +456,23 @@ if (is_chromeos) {
     ]
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
+}
+
+copy("lesson_component") {
+  sources = [ "$chromevox_gen_dir/i_tutorial/components/tutorial_lesson.js" ]
+  outputs = [ "$chromevox_out_dir/i_tutorial/tutorial_lesson.js" ]
+  deps = [
+    "i_tutorial/components:closure_compile",
+    "i_tutorial/components:components",
+  ]
+}
+
+copy("tutorial_component") {
+  sources = [ "$chromevox_gen_dir/i_tutorial/components/i_tutorial.js" ]
+  outputs = [ "$chromevox_out_dir/i_tutorial/i_tutorial.js" ]
+
+  deps = [
+    "i_tutorial/components:closure_compile",
+    "i_tutorial/components:components",
+  ]
 }

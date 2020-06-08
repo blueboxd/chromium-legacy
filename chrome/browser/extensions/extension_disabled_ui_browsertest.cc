@@ -65,10 +65,7 @@ class ExtensionDisabledGlobalErrorTest
         test_dir.AppendASCII("v1"),
         scoped_temp_dir_.GetPath().AppendASCII("permissions1.crx"), pem_path,
         base::FilePath());
-    path_v2_ = PackExtensionWithOptions(
-        test_dir.AppendASCII("v2"),
-        scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"), pem_path,
-        base::FilePath());
+    path_v2_ = test_dir.AppendASCII("v2.crx");
     path_v3_ = PackExtensionWithOptions(
         test_dir.AppendASCII("v3"),
         scoped_temp_dir_.GetPath().AppendASCII("permissions3.crx"), pem_path,
@@ -233,13 +230,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
         if (path == "/autoupdate/updates.xml") {
           content::URLLoaderInterceptor::WriteResponse(
               test_data_dir_.AppendASCII("permissions_increase")
-                  .AppendASCII("updates.xml"),
+                  .AppendASCII("updates.json"),
               params->client.get());
           return true;
         } else if (path == "/autoupdate/v2.crx") {
-          content::URLLoaderInterceptor::WriteResponse(
-              scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"),
-              params->client.get());
+          content::URLLoaderInterceptor::WriteResponse(path_v2_,
+                                                       params->client.get());
           return true;
         }
         return false;
@@ -283,9 +279,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
               params->client.get());
           return true;
         } else if (path == "/autoupdate/v2.crx") {
-          content::URLLoaderInterceptor::WriteResponse(
-              scoped_temp_dir_.GetPath().AppendASCII("permissions2.crx"),
-              params->client.get());
+          content::URLLoaderInterceptor::WriteResponse(path_v2_,
+                                                       params->client.get());
           return true;
         }
         return false;

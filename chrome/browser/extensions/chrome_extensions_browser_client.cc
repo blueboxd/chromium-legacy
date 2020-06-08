@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -60,6 +62,7 @@
 #include "extensions/browser/extensions_browser_interface_binders.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/url_request_util.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_channel.h"
 
 #if defined(OS_CHROMEOS)
@@ -76,6 +79,9 @@
 namespace extensions {
 
 namespace {
+
+const char kCrxUrlPath[] = "/service/update2/crx";
+const char kJsonUrlPath[] = "/service/update2/json";
 
 // If true, the extensions client will behave as though there is always a
 // new chrome update.
@@ -443,8 +449,17 @@ void ChromeExtensionsBrowserClient::AttachExtensionTaskManagerTag(
 scoped_refptr<update_client::UpdateClient>
 ChromeExtensionsBrowserClient::CreateUpdateClient(
     content::BrowserContext* context) {
+  base::Optional<GURL> override_url;
+  GURL update_url = extension_urls::GetWebstoreUpdateUrl();
+  if (update_url != extension_urls::GetDefaultWebstoreUpdateUrl()) {
+    if (update_url.path() == kCrxUrlPath) {
+      override_url = update_url.GetWithEmptyPath().Resolve(kJsonUrlPath);
+    } else {
+      override_url = update_url;
+    }
+  }
   return update_client::UpdateClientFactory(
-      ChromeUpdateClientConfig::Create(context));
+      ChromeUpdateClientConfig::Create(context, override_url));
 }
 
 std::unique_ptr<content::BluetoothChooser>

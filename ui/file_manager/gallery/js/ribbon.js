@@ -203,23 +203,24 @@ Ribbon.prototype.onSplice_ = function(event) {
   }
 
   if (event.added.length > 0) {
-    for (var i = 0; i < event.added.length; i++) {
-      var index = this.dataModel_.indexOf(event.added[i]);
+    for (let i = 0; i < event.added.length; i++) {
+      const index = this.dataModel_.indexOf(event.added[i]);
       if (index === -1) {
         continue;
       }
-      var element = this.renderThumbnail_(index);
-      var nextItem = this.dataModel_.item(index + 1);
-      var nextElement =
+      const element = this.renderThumbnail_(index);
+      const nextItem = this.dataModel_.item(index + 1);
+      const nextElement =
           nextItem && this.renderCache_[nextItem.getEntry().toURL()];
       this.insertBefore(element, nextElement);
     }
     return;
   }
 
-  var persistentNodes = this.querySelectorAll('.ribbon-image:not([vanishing])');
+  const persistentNodes =
+      this.querySelectorAll('.ribbon-image:not([vanishing])');
   if (this.lastVisibleIndex_ < this.dataModel_.length) { // Not at the end.
-    var lastNode = persistentNodes[persistentNodes.length - 1];
+    const lastNode = persistentNodes[persistentNodes.length - 1];
     if (lastNode.nextSibling) {
       // Pull back a vanishing node from the right.
       lastNode.nextSibling.removeAttribute('vanishing');
@@ -232,14 +233,14 @@ Ribbon.prototype.onSplice_ = function(event) {
     this.lastVisibleIndex_--;
     if (this.firstVisibleIndex_) {
       this.firstVisibleIndex_--;
-      var firstNode = persistentNodes[0];
+      const firstNode = persistentNodes[0];
       if (firstNode.previousSibling) {
         // Pull back a vanishing node from the left.
         firstNode.previousSibling.removeAttribute('vanishing');
       } else {
         // Push a new item at the left end.
         if (this.firstVisibleIndex_ < this.dataModel_.length) {
-          var newThumbnail = this.renderThumbnail_(this.firstVisibleIndex_);
+          const newThumbnail = this.renderThumbnail_(this.firstVisibleIndex_);
           newThumbnail.style.marginLeft = -(this.clientHeight - 2) + 'px';
           this.insertBefore(newThumbnail, this.firstChild);
           setTimeout(function() {
@@ -250,9 +251,9 @@ Ribbon.prototype.onSplice_ = function(event) {
     }
   }
 
-  var removed = false;
-  for (var i = 0; i < event.removed.length; i++) {
-    var removedDom = this.renderCache_[event.removed[i].getEntry().toURL()];
+  let removed = false;
+  for (let i = 0; i < event.removed.length; i++) {
+    const removedDom = this.renderCache_[event.removed[i].getEntry().toURL()];
     if (removedDom) {
       removedDom.removeAttribute('selected');
       removedDom.setAttribute('vanishing', 'smooth');
@@ -272,21 +273,21 @@ Ribbon.prototype.onSplice_ = function(event) {
  * @private
  */
 Ribbon.prototype.onSelection_ = function() {
-  var indexes = this.selectionModel_.selectedIndexes;
+  const indexes = this.selectionModel_.selectedIndexes;
   if (indexes.length === 0) {
     return;  // Ignore temporary empty selection.
   }
-  var selectedIndex = indexes[0];
+  const selectedIndex = indexes[0];
 
-  var length = this.dataModel_.length;
-  var fullItems = Math.min(this.getItemCount_(), length);
-  var right = Math.floor((fullItems - 1) / 2);
+  const length = this.dataModel_.length;
+  const fullItems = Math.min(this.getItemCount_(), length);
+  const right = Math.floor((fullItems - 1) / 2);
 
-  var lastIndex = selectedIndex + right;
+  let lastIndex = selectedIndex + right;
   lastIndex = Math.max(lastIndex, fullItems - 1);
   lastIndex = Math.min(lastIndex, length - 1);
 
-  var firstIndex = lastIndex - fullItems + 1;
+  const firstIndex = lastIndex - fullItems + 1;
 
   if (this.firstVisibleIndex_ !== firstIndex ||
       this.lastVisibleIndex_ !== lastIndex) {
@@ -299,18 +300,17 @@ Ribbon.prototype.onSelection_ = function() {
     this.removeVanishing_();
 
     this.textContent = '';
-    var startIndex = Math.min(firstIndex, this.firstVisibleIndex_);
+    const startIndex = Math.min(firstIndex, this.firstVisibleIndex_);
     // All the items except the first one treated equally.
-    for (var index = startIndex + 1;
-         index <= Math.max(lastIndex, this.lastVisibleIndex_);
-         ++index) {
+    for (let index = startIndex + 1;
+         index <= Math.max(lastIndex, this.lastVisibleIndex_); ++index) {
       // Only add items that are in either old or the new viewport.
       if (this.lastVisibleIndex_ < index && index < firstIndex ||
           lastIndex < index && index < this.firstVisibleIndex_) {
         continue;
       }
 
-      var box = this.renderThumbnail_(index);
+      const box = this.renderThumbnail_(index);
       box.style.marginLeft = Ribbon.MARGIN + 'px';
       this.appendChild(box);
 
@@ -321,9 +321,9 @@ Ribbon.prototype.onSelection_ = function() {
       }
     }
 
-    var slideCount = this.childNodes.length + 1 - fullItems;
-    var margin = Ribbon.THUMBNAIL_WIDTH * slideCount;
-    var startBox = this.renderThumbnail_(startIndex);
+    const slideCount = this.childNodes.length + 1 - fullItems;
+    const margin = Ribbon.THUMBNAIL_WIDTH * slideCount;
+    const startBox = this.renderThumbnail_(startIndex);
 
     if (startIndex === firstIndex) {
       // Sliding to the right.
@@ -370,12 +370,12 @@ Ribbon.prototype.onSelection_ = function() {
       'fade-right',
       lastIndex < length - 1 && selectedIndex !== lastIndex);
 
-  var oldSelected = this.querySelector('[selected]');
+  const oldSelected = this.querySelector('[selected]');
   if (oldSelected) {
     oldSelected.removeAttribute('selected');
   }
 
-  var newSelected =
+  const newSelected =
       this.renderCache_[this.dataModel_.item(selectedIndex).getEntry().toURL()];
   if (newSelected) {
     newSelected.setAttribute('selected', true);
@@ -408,8 +408,8 @@ Ribbon.prototype.removeVanishing_ = function() {
     clearTimeout(this.removeTimeout_);
     this.removeTimeout_ = 0;
   }
-  var vanishingNodes = this.querySelectorAll('[vanishing]');
-  for (var i = 0; i != vanishingNodes.length; i++) {
+  const vanishingNodes = this.querySelectorAll('[vanishing]');
+  for (let i = 0; i != vanishingNodes.length; i++) {
     vanishingNodes[i].removeAttribute('vanishing');
     this.removeChild(vanishingNodes[i]);
   }
@@ -423,25 +423,25 @@ Ribbon.prototype.removeVanishing_ = function() {
  * @private
  */
 Ribbon.prototype.renderThumbnail_ = function(index) {
-  var item = assertInstanceof(this.dataModel_.item(index), GalleryItem);
-  var url = item.getEntry().toURL();
+  const item = assertInstanceof(this.dataModel_.item(index), GalleryItem);
+  const url = item.getEntry().toURL();
 
-  var cached = this.renderCache_[url];
+  const cached = this.renderCache_[url];
   if (cached) {
-    var img = cached.querySelector('img');
+    const img = cached.querySelector('img');
     if (img) {
       img.classList.add('cached');
     }
     return cached;
   }
 
-  var thumbnail = assertInstanceof(this.ownerDocument.createElement('div'),
-      HTMLDivElement);
+  const thumbnail =
+      assertInstanceof(this.ownerDocument.createElement('div'), HTMLDivElement);
   thumbnail.id = `thumbnail-${this.thumbnailElementId_++}`;
   thumbnail.className = 'ribbon-image';
   thumbnail.setAttribute('role', 'listitem');
   thumbnail.addEventListener('click', function() {
-    var index = this.dataModel_.indexOf(item);
+    const index = this.dataModel_.indexOf(item);
     this.selectionModel_.unselectAll();
     this.selectionModel_.setIndexSelected(index, true);
   }.bind(this));
@@ -473,7 +473,7 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
     return;
   }
 
-  var hideIndicator = function() {
+  const hideIndicator = function() {
     thumbnail.querySelector('.indicator').classList.toggle('loading', false);
   };
 
@@ -499,12 +499,12 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
  * @private
  */
 Ribbon.prototype.onContentChange_ = function(event) {
-  var url = event.item.getEntry().toURL();
+  const url = event.item.getEntry().toURL();
   if (event.oldEntry.toURL() !== url) {
     this.remapCache_(event.oldEntry.toURL(), url);
   }
 
-  var thumbnail = this.renderCache_[url];
+  const thumbnail = this.renderCache_[url];
   if (thumbnail && event.item) {
     this.setThumbnailImage_(thumbnail, event.item);
   }

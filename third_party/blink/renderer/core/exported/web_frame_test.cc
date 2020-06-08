@@ -10595,7 +10595,7 @@ class WebRemoteFrameVisibilityChangeTest : public WebFrameTest {
             ->MainFrameImpl();
     web_view_helper_.Resize(WebSize(640, 480));
     remote_frame_host_.Init(
-        remote_frame_client_.GetAssociatedInterfaceProvider());
+        remote_frame_client_.GetRemoteAssociatedInterfaces());
     web_remote_frame_ = frame_test_helpers::CreateRemote(&remote_frame_client_);
   }
 

@@ -467,7 +467,10 @@ class LenientMockPageObserver : public PageNode::ObserverDefaultImpl {
   LenientMockPageObserver() = default;
   ~LenientMockPageObserver() override = default;
 
+  MOCK_METHOD1(OnBeforePageNodeRemoved, void(const PageNode* page_node));
+
   // Note that opener functionality is actually tested in the
+  // performance_manager_browsertest.
   MOCK_METHOD3(OnOpenerFrameNodeChanged,
                void(const PageNode*, const FrameNode*, OpenedType));
 };
@@ -621,6 +624,30 @@ TEST_F(FrameNodeImplTest, OpenerRelationships) {
   EXPECT_EQ(OpenedType::kInvalid, pageB->opened_type());
   EXPECT_TRUE(frameA1->opened_page_nodes().empty());
   EXPECT_TRUE(frameA2->opened_page_nodes().empty());
+  testing::Mock::VerifyAndClear(&obs);
+
+  // verify that the opener relationship is torn down before any node removal
+  // notification arrives.
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), nullptr,
+                                            OpenedType::kInvalid));
+  pageB->SetOpenerFrameNodeAndOpenedType(frameA2.get(), OpenedType::kPopup);
+  EXPECT_EQ(frameA2.get(), pageB->opener_frame_node());
+  EXPECT_EQ(OpenedType::kPopup, pageB->opened_type());
+  EXPECT_TRUE(frameA1->opened_page_nodes().empty());
+  EXPECT_EQ(1u, frameA2->opened_page_nodes().size());
+  EXPECT_EQ(1u, frameA2->opened_page_nodes().count(pageB.get()));
+  testing::Mock::VerifyAndClear(&obs);
+
+  {
+    ::testing::InSequence seq;
+
+    // These must occur in sequence.
+    EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), frameA2.get(),
+                                              OpenedType::kPopup));
+    EXPECT_CALL(obs, OnBeforePageNodeRemoved(pageB.get()));
+  }
+  frameB1.reset();
+  pageB.reset();
   testing::Mock::VerifyAndClear(&obs);
 
   graph()->RemovePageNodeObserver(&obs);

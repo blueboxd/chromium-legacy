@@ -69,7 +69,7 @@ public class TabCountProvider {
     public void addObserverAndTrigger(TabCountObserver observer) {
         addObserver(observer);
 
-        if (mTabModelSelector != null) {
+        if (mTabModelSelector != null && mTabModelSelector.isTabStateInitialized()) {
             observer.onTabCountChanged(mTabModelSelector.getTabModelFilterProvider()
                                                .getCurrentTabModelFilter()
                                                .getCount(),

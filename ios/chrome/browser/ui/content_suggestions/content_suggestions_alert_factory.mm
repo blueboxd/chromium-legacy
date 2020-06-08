@@ -93,11 +93,6 @@
                                 }
                               }
                                style:UIAlertActionStyleDestructive];
-
-  [alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
-                              action:^{
-                              }
-                               style:UIAlertActionStyleCancel];
   return alertCoordinator;
 }
 

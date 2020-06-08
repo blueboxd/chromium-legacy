@@ -856,21 +856,15 @@ void RasterDecoderImpl::Destroy(bool have_context) {
           shared_context_state_->vk_context_provider(), &flush_info);
       auto result = sk_surface_->flush(
           SkSurface::BackendSurfaceAccess::kPresent, flush_info);
-      DCHECK(gr_context());
-      gr_context()->submit();
       DCHECK(result == GrSemaphoresSubmitted::kYes || end_semaphores_.empty());
       end_semaphores_.clear();
       sk_surface_ = nullptr;
-      if (shared_image_) {
-        scoped_shared_image_write_.reset();
-        shared_image_.reset();
-      } else {
-        sk_surface_for_testing_.reset();
-      }
     }
-    if (gr_context()) {
+    if (gr_context())
       gr_context()->flushAndSubmit();
-    }
+    scoped_shared_image_write_.reset();
+    shared_image_.reset();
+    sk_surface_for_testing_.reset();
   }
 
   copy_tex_image_blit_.reset();

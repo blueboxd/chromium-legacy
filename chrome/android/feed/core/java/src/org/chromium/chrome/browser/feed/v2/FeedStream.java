@@ -32,8 +32,10 @@ public class FeedStream implements Stream {
     private final ObserverList<ScrollListener> mScrollListeners;
 
     private RecyclerView mRecyclerView;
-    // TODO(jianli): To be used.
-    private boolean mIsStreamContentVisible = true;
+    // setStreamContentVisibility() is always called once after onCreate(). So we can assume the
+    // stream content is hidden initially and it can be made visible later when
+    // setStreamContentVisibility() is called.
+    private boolean mIsStreamContentVisible = false;
 
     public FeedStream(
             Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager) {
@@ -87,6 +89,12 @@ public class FeedStream implements Stream {
             return;
         }
         mIsStreamContentVisible = visible;
+
+        if (visible) {
+            mFeedStreamSurface.surfaceOpened();
+        } else {
+            mFeedStreamSurface.surfaceClosed();
+        }
     }
 
     @Override
@@ -159,6 +167,8 @@ public class FeedStream implements Stream {
     public void triggerRefresh() {}
 
     private void setupRecyclerView() {
+        assert (!mIsStreamContentVisible);
+
         mRecyclerView = (RecyclerView) mFeedStreamSurface.getView();
         mRecyclerView.setId(R.id.feed_stream_recycler_view);
         mRecyclerView.setClipToPadding(false);
@@ -170,7 +180,5 @@ public class FeedStream implements Stream {
                 }
             }
         });
-
-        mFeedStreamSurface.surfaceOpened();
     }
 }

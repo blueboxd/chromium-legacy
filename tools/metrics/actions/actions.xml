@@ -13844,12 +13844,33 @@ should be able to be added at any place in this file.
   <description>User closes the tab while preview page is loaded.</description>
 </action>
 
+<action name="MobilePullGestureCloseTab">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Emitted on iOS when over-scroll action touch gesture closes current tab.
+    This fires only after the triggering touch is released while the refresh
+    effect has been pulled beyond the activation threshold.
+  </description>
+</action>
+
+<action name="MobilePullGestureNewTab">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <description>
+    Emitted on iOS when over-scroll action touch gesture opens a new tab. This
+    fires only after the triggering touch is released while the refresh effect
+    has been pulled beyond the activation threshold.
+  </description>
+</action>
+
 <action name="MobilePullGestureReload">
+  <owner>eugenebut@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <description>
-    Emitted on Android when a pull-to-refresh touch gesture initiates a page
-    reload. This fires only after the triggering touch is released while the
-    refresh effect has been pulled beyond the activation threshold.
+    Emitted on Android and iOS when a pull-to-refresh touch gesture initiates a
+    page reload. This fires only after the triggering touch is released while
+    the refresh effect has been pulled beyond the activation threshold.
   </description>
 </action>
 

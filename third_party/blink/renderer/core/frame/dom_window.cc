@@ -361,10 +361,11 @@ void DOMWindow::Close(LocalDOMWindow* incumbent_window) {
 }
 
 void DOMWindow::focus(v8::Isolate* isolate) {
-  if (!GetFrame())
+  Frame* frame = GetFrame();
+  if (!frame)
     return;
 
-  Page* page = GetFrame()->GetPage();
+  Page* page = frame->GetPage();
   if (!page)
     return;
 
@@ -388,9 +389,9 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   }
 
   // If we're a top level window, bring the window to the front.
-  if (GetFrame()->IsMainFrame() && allow_focus) {
-    page->GetChromeClient().Focus(incumbent_window->GetFrame());
-  } else if (auto* local_frame = DynamicTo<LocalFrame>(GetFrame())) {
+  if (frame->IsMainFrame() && allow_focus) {
+    frame->FocusPage(incumbent_window->GetFrame());
+  } else if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     // We are depending on user activation twice since IsFocusAllowed() will
     // check for activation. This should be addressed in
     // https://crbug.com/959815.

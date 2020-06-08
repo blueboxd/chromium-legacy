@@ -2173,6 +2173,107 @@ TEST(AnnotatorTest, DescLanguage) {
                                   mojom::AnnotationType::kOcr, 1.0, "2")));
 }
 
+// Test that annotation works properly when we need to fall back on a
+// different language because the page language isn't available.
+TEST(AnnotatorTest, LanguageFallback) {
+  base::test::TaskEnvironment test_task_env(
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME);
+  TestServerURLLoaderFactory test_url_factory(
+      "https://ia-pa.googleapis.com/v1/");
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder;
+  base::HistogramTester histogram_tester;
+
+  Annotator annotator(GURL(kTestServerUrl), GURL(""),
+                      std::string() /* api_key */, kThrottle,
+                      1 /* batch_size */, 1.0 /* min_ocr_confidence */,
+                      test_url_factory.AsSharedURLLoaderFactory(),
+                      std::make_unique<TestAnnotatorClient>());
+  annotator.server_languages_ = {"en", "it", "fr"};
+
+  TestImageProcessor processor;
+  base::Optional<mojom::AnnotateImageError> error;
+  std::vector<mojom::Annotation> annotations;
+
+  // Send a request in an unsupported language.
+  annotator.AnnotateImage(kImage1Url, "hu", processor.GetPendingRemote(),
+                          base::BindOnce(&ReportResult, &error, &annotations));
+  test_task_env.RunUntilIdle();
+
+  // Send back image data.
+  std::move(processor.callbacks()[0]).Run({1, 2, 3}, kDescDim, kDescDim);
+  processor.callbacks().pop_back();
+  test_task_env.RunUntilIdle();
+
+  // Fast-forward time so that server sends batch.
+  EXPECT_THAT(test_url_factory.requests(), IsEmpty());
+  test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  // A single HTTP request for all images should have been sent.
+  test_url_factory.ExpectRequestAndSimulateResponse(
+      "annotation", {} /* expected_headers */, ReformatJson(R"(
+        {
+          "imageRequests": [
+            {
+              "imageId": "https://www.example.com/image1.jpg en",
+              "imageBytes": "AQID",
+              "engineParameters": [
+                {"ocrParameters": {}},
+                {
+                  "descriptionParameters": {
+                    "preferredLanguages": ["en"]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      )"),
+      R"(
+        {
+          "results": [
+            {
+              "imageId": "https://www.example.com/image1.jpg en",
+              "engineResults": [
+                {
+                  "status": {},
+                  "ocrEngine": {
+                    "ocrRegions": [{
+                      "words": [{
+                        "detectedText": "1",
+                        "confidenceScore": 1.0
+                      }]
+                    }]
+                  }
+                },
+                {
+                  "status": {},
+                  "descriptionEngine": {
+                    "descriptionList": {
+                      "descriptions": [{
+                        "type": "CAPTION",
+                        "text": "Result in fallback language.",
+                        "score": 1.0
+                      }]
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      )",
+      net::HTTP_OK);
+  test_task_env.RunUntilIdle();
+
+  // Annotator should have called each callback with its corresponding results.
+  ASSERT_EQ(error, base::nullopt);
+  EXPECT_THAT(
+      annotations,
+      UnorderedElementsAre(AnnotatorEq(mojom::AnnotationType::kOcr, 1.0, "1"),
+                           AnnotatorEq(mojom::AnnotationType::kCaption, 1.0,
+                                       "Result in fallback language.")));
+}
+
 // Test that the specified API key is sent, but only to Google-associated server
 // domains.
 TEST(AnnotatorTest, ApiKey) {

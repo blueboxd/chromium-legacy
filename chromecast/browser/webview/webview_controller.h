@@ -80,6 +80,9 @@ class WebviewController : public CastWebContents::Delegate,
   // content::WebContentsObserver
   void DidFirstVisuallyNonEmptyPaint() override;
 
+  // WebContentController
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+
   const bool enabled_for_dev_;
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;

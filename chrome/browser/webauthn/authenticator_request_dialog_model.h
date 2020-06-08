@@ -416,6 +416,8 @@ class AuthenticatorRequestDialogModel {
 
   bool offer_try_again_in_ui() const { return offer_try_again_in_ui_; }
 
+  base::WeakPtr<AuthenticatorRequestDialogModel> GetWeakPtr();
+
  private:
   // Contains the state that will be reset when calling StartOver(). StartOver()
   // might be called at an arbitrary point of execution.

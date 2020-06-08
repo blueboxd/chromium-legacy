@@ -8,7 +8,6 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/events/base_event_utils.h"
@@ -28,7 +27,7 @@ class InputEventPredictionTest : public testing::Test {
   InputEventPredictionTest() {
     // Default to enable resampling with empty predictor for testing.
     ConfigureFieldTrialAndInitialize(
-        features::kResamplingInputEvents,
+        blink::features::kResamplingInputEvents,
         blink::features::kScrollPredictorNameEmpty);
   }
 
@@ -70,7 +69,7 @@ class InputEventPredictionTest : public testing::Test {
                                         const std::string& predictor_type) {
     ConfigureFieldTrial(feature, predictor_type);
     event_predictor_ = std::make_unique<InputEventPrediction>(
-        base::FeatureList::IsEnabled(features::kResamplingInputEvents));
+        base::FeatureList::IsEnabled(blink::features::kResamplingInputEvents));
   }
 
  protected:
@@ -87,32 +86,32 @@ TEST_F(InputEventPredictionTest, PredictorType) {
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeEmpty);
 
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents,
+  ConfigureFieldTrialAndInitialize(blink::features::kResamplingInputEvents,
                                    blink::features::kScrollPredictorNameEmpty);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeEmpty);
 
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents,
+  ConfigureFieldTrialAndInitialize(blink::features::kResamplingInputEvents,
                                    blink::features::kScrollPredictorNameKalman);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeKalman);
 
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents,
+  ConfigureFieldTrialAndInitialize(blink::features::kResamplingInputEvents,
                                    blink::features::kScrollPredictorNameKalman);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeKalman);
 
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents,
+  ConfigureFieldTrialAndInitialize(blink::features::kResamplingInputEvents,
                                    blink::features::kScrollPredictorNameLsq);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeLsq);
 
   // Default to Kalman predictor.
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents, "");
+  ConfigureFieldTrialAndInitialize(blink::features::kResamplingInputEvents, "");
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeKalman);
 
-  ConfigureFieldTrialAndInitialize(features::kInputPredictorTypeChoice,
+  ConfigureFieldTrialAndInitialize(blink::features::kInputPredictorTypeChoice,
                                    blink::features::kScrollPredictorNameLsq);
   EXPECT_FALSE(event_predictor_->enable_resampling_);
   // When enable_resampling_ is true, kInputPredictorTypeChoice flag has no
@@ -285,7 +284,8 @@ TEST_F(InputEventPredictionTest, TouchScrollStartedRemoveAllTouchPoints) {
 
 TEST_F(InputEventPredictionTest, ResamplingDisabled) {
   // When resampling is disabled, default to use kalman filter.
-  ConfigureFieldTrialAndInitialize(features::kInputPredictorTypeChoice, "");
+  ConfigureFieldTrialAndInitialize(blink::features::kInputPredictorTypeChoice,
+                                   "");
   EXPECT_FALSE(event_predictor_->enable_resampling_);
   EXPECT_EQ(event_predictor_->selected_predictor_type_,
             PredictorType::kScrollPredictorTypeKalman);
@@ -321,7 +321,7 @@ TEST_F(InputEventPredictionTest, ResamplingDisabled) {
 
 // Test that when dt > maxResampling, resampling is cut off .
 TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents,
+  ConfigureFieldTrialAndInitialize(blink::features::kResamplingInputEvents,
                                    blink::features::kScrollPredictorNameKalman);
 
   base::TimeDelta predictor_max_resample_time =
@@ -397,7 +397,7 @@ TEST_F(InputEventPredictionTest, NoResampleWhenExceedMaxResampleTime) {
 
 // Test that when dt between events is 6ms, first predicted point is 6ms ahead.
 TEST_F(InputEventPredictionTest, PredictedEventsTimeIntervalEqualRealEvents) {
-  ConfigureFieldTrialAndInitialize(features::kResamplingInputEvents,
+  ConfigureFieldTrialAndInitialize(blink::features::kResamplingInputEvents,
                                    blink::features::kScrollPredictorNameKalman);
 
   base::TimeTicks event_time = ui::EventTimeForNow();

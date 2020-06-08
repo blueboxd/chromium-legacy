@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "content/browser/renderer_host/hit_test_debug_key_event_observer.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
@@ -335,6 +336,47 @@ void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     event->SetHandled();
 }
 
+void RenderWidgetHostViewEventHandler::HandleMouseWheelEvent(
+    ui::MouseEvent* event) {
+  DCHECK(event);
+  DCHECK_EQ(event->type(), ui::ET_MOUSEWHEEL);
+
+#if defined(OS_WIN)
+  if (!mouse_locked_) {
+    // We get mouse wheel/scroll messages even if we are not in the foreground.
+    // So here we check if we have any owned popup windows in the foreground and
+    // dismiss them.
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host) {
+      HWND parent = host->GetAcceleratedWidget();
+      HWND toplevel_hwnd = ::GetAncestor(parent, GA_ROOT);
+      EnumThreadWindows(GetCurrentThreadId(), DismissOwnedPopups,
+                        reinterpret_cast<LPARAM>(toplevel_hwnd));
+    }
+  }
+#endif
+
+  blink::WebMouseWheelEvent mouse_wheel_event =
+      ui::MakeWebMouseWheelEvent(*event->AsMouseWheelEvent());
+
+  if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
+    const bool should_route_event = ShouldRouteEvents();
+    // End the touchpad scrolling sequence (if such exists) before handling
+    // a ui::ET_MOUSEWHEEL event.
+    mouse_wheel_phase_handler_.SendWheelEndForTouchpadScrollingIfNeeded(
+        should_route_event);
+
+    mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
+        mouse_wheel_event, should_route_event);
+    if (should_route_event) {
+      host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
+          host_view_, &mouse_wheel_event, *event->latency());
+    } else {
+      ProcessMouseWheelEvent(mouse_wheel_event, *event->latency());
+    }
+  }
+}
+
 void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewBase::OnMouseEvent");
 
@@ -372,39 +414,9 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  if (event->type() == ui::ET_MOUSEWHEEL) {
-#if defined(OS_WIN)
-    // We get mouse wheel/scroll messages even if we are not in the foreground.
-    // So here we check if we have any owned popup windows in the foreground and
-    // dismiss them.
-    aura::WindowTreeHost* host = window_->GetHost();
-    if (host) {
-      HWND parent = host->GetAcceleratedWidget();
-      HWND toplevel_hwnd = ::GetAncestor(parent, GA_ROOT);
-      EnumThreadWindows(GetCurrentThreadId(), DismissOwnedPopups,
-                        reinterpret_cast<LPARAM>(toplevel_hwnd));
-    }
-#endif
-    blink::WebMouseWheelEvent mouse_wheel_event =
-        ui::MakeWebMouseWheelEvent(*event->AsMouseWheelEvent());
-
-    if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
-      const bool should_route_event = ShouldRouteEvents();
-      // End the touchpad scrolling sequence (if such exists) before handling
-      // a ui::ET_MOUSEWHEEL event.
-      mouse_wheel_phase_handler_.SendWheelEndForTouchpadScrollingIfNeeded(
-          should_route_event);
-
-      mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-          mouse_wheel_event, should_route_event);
-      if (should_route_event) {
-        host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
-            host_view_, &mouse_wheel_event, *event->latency());
-      } else {
-        ProcessMouseWheelEvent(mouse_wheel_event, *event->latency());
-      }
-    }
-  } else {
+  if (event->type() == ui::ET_MOUSEWHEEL)
+    HandleMouseWheelEvent(event);
+  else {
     bool is_selection_popup = NeedsInputGrab(popup_child_host_view_);
     if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
         !(event->flags() & ui::EF_FROM_TOUCH)) {
@@ -746,26 +758,9 @@ void RenderWidgetHostViewEventHandler::HandleMouseEventWhileLocked(
 
   DCHECK(!cursor_client || !cursor_client->IsCursorVisible());
 
-  if (event->type() == ui::ET_MOUSEWHEEL) {
-    blink::WebMouseWheelEvent mouse_wheel_event =
-        ui::MakeWebMouseWheelEvent(*event->AsMouseWheelEvent());
-    if (mouse_wheel_event.delta_x != 0 || mouse_wheel_event.delta_y != 0) {
-      const bool should_route_event = ShouldRouteEvents();
-      // End the touchpad scrolling sequence (if such exists) before handling
-      // a ui::ET_MOUSEWHEEL event.
-      mouse_wheel_phase_handler_.SendWheelEndForTouchpadScrollingIfNeeded(
-          should_route_event);
-
-      mouse_wheel_phase_handler_.AddPhaseIfNeededAndScheduleEndEvent(
-          mouse_wheel_event, should_route_event);
-      if (should_route_event) {
-        host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
-            host_view_, &mouse_wheel_event, *event->latency());
-      } else {
-        ProcessMouseWheelEvent(mouse_wheel_event, *event->latency());
-      }
-    }
-  } else {
+  if (event->type() == ui::ET_MOUSEWHEEL)
+    HandleMouseWheelEvent(event);
+  else {
     // If we receive non client mouse messages while we are in the locked state
     // it probably means that the mouse left the borders of our window and
     // needs to be moved back to the center.

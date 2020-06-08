@@ -19,7 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/prerender/prerender_final_status.h"
+#include "components/prerender/common/prerender_final_status.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"

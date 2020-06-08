@@ -107,6 +107,7 @@ class Annotator : public mojom::Annotator {
   FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, ComputePreferredLanguage);
   FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, FetchServerLanguages);
   FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, ServerLanguagesMustContainEnglish);
+  FRIEND_TEST_ALL_PREFIXES(AnnotatorTest, LanguageFallback);
 
   // The relevant info for a request from a client feature for a single image.
   struct ClientRequestInfo {

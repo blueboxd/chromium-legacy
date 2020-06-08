@@ -68,7 +68,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void ChromeDestroyed() override;
   void SetWindowRect(const IntRect&, LocalFrame&) override;
   IntRect RootWindowRect(LocalFrame&) override;
-  void Focus(LocalFrame*) override;
+  void FocusPage() override;
+  void DidFocusPage() override;
   bool CanTakeFocus(mojom::blink::FocusType) override;
   void TakeFocus(mojom::blink::FocusType) override;
   void SetKeyboardFocusURL(Element* new_focus_element) override;

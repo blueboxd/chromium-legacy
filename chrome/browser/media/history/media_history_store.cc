@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/media/feeds/media_feeds_service.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
@@ -27,6 +27,10 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "url/origin.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#endif  // !defined(OS_ANDROID)
 
 namespace {
 
@@ -97,6 +101,14 @@ bool IsCauseFromExpiration(const net::CookieChangeCause& cause) {
          cause == net::CookieChangeCause::EVICTED;
 }
 
+bool IsMediaFeedsEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return media_feeds::MediaFeedsService::IsEnabled();
+#endif  // defined(OS_ANDROID)
+}
+
 }  // namespace
 
 int GetCurrentVersion() {
@@ -128,14 +140,14 @@ MediaHistoryStore::MediaHistoryStore(
       session_images_table_(
           new MediaHistorySessionImagesTable(db_task_runner_)),
       images_table_(new MediaHistoryImagesTable(db_task_runner_)),
-      feeds_table_(media_feeds::MediaFeedsService::IsEnabled()
+      feeds_table_(IsMediaFeedsEnabled()
                        ? new MediaHistoryFeedsTable(db_task_runner_)
                        : nullptr),
-      feed_items_table_(media_feeds::MediaFeedsService::IsEnabled()
+      feed_items_table_(IsMediaFeedsEnabled()
                             ? new MediaHistoryFeedItemsTable(db_task_runner_)
                             : nullptr),
       feed_origins_table_(
-          media_feeds::MediaFeedsService::IsEnabled()
+          IsMediaFeedsEnabled()
               ? new MediaHistoryFeedAssociatedOriginsTable(db_task_runner_)
               : nullptr),
       initialization_successful_(false) {}

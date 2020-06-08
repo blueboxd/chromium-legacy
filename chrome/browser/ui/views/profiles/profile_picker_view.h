@@ -39,9 +39,6 @@ class ProfilePickerView : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 

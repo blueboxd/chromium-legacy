@@ -90,7 +90,7 @@ TEST_F(P2PQuicStreamTest, StreamSendsFinAndCanNoLongerWrite) {
       .WillOnce(InvokeWithoutArgs([this]() {
         return session_->ConsumeData(stream_->id(), 0u, 0u,
                                      quic::StreamSendingState::FIN,
-                                     quic::NOT_RETRANSMISSION, QuicheNullOpt);
+                                     quic::NOT_RETRANSMISSION, QUICHE_NULLOPT);
       }));
 
   stream_->WriteData({}, /*fin=*/true);
@@ -129,7 +129,7 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterSendingThenReceivingFin) {
       .WillOnce(InvokeWithoutArgs([this]() {
         return session_->ConsumeData(stream_->id(), 0u, 0u,
                                      quic::StreamSendingState::FIN,
-                                     quic::NOT_RETRANSMISSION, QuicheNullOpt);
+                                     quic::NOT_RETRANSMISSION, QUICHE_NULLOPT);
       }));
 
   stream_->WriteData({}, /*fin=*/true);
@@ -157,7 +157,7 @@ TEST_F(P2PQuicStreamTest, StreamClosedAfterReceivingThenSendingFin) {
       .WillOnce(InvokeWithoutArgs([this]() {
         return session_->ConsumeData(stream_->id(), 0u, 0u,
                                      quic::StreamSendingState::FIN,
-                                     quic::NOT_RETRANSMISSION, QuicheNullOpt);
+                                     quic::NOT_RETRANSMISSION, QUICHE_NULLOPT);
       }));
 
   stream_->WriteData({}, /*fin=*/true);

@@ -76,6 +76,9 @@ public class EmptyTabObserver implements TabObserver {
     public void onCrash(Tab tab) {}
 
     @Override
+    public void webContentsWillSwap(Tab tab) {}
+
+    @Override
     public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {}
 
     @Override
@@ -149,5 +152,5 @@ public class EmptyTabObserver implements TabObserver {
             int bottomControlsMinHeightOffsetY) {}
 
     @Override
-    public void onContentViewScrollingStateChanged(boolean scrolling) {}
+    public void onContentViewScrollingStateChanged(Tab tab, boolean scrolling) {}
 }

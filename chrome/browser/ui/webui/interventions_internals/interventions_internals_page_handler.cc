@@ -62,7 +62,7 @@ const char kResourceLoadingHintsFlagHtmlId[] = "resource-loading-hints-flag";
 const char kDeferAllScriptFlagHtmlId[] = "defer-all-script-flag";
 const char kNoScriptFlagHtmlId[] = "noscript-flag";
 const char kEctFlagHtmlId[] = "ect-flag";
-const char kIgnorePreviewsBlacklistFlagHtmlId[] = "ignore-previews-blacklist";
+const char kIgnorePreviewsBlocklistFlagHtmlId[] = "ignore-previews-blocklist";
 const char kDataSaverAltConfigHtmlId[] =
     "data-reduction-proxy-server-experiment";
 
@@ -76,8 +76,8 @@ const char kDeferAllScriptFlagLink[] =
     "chrome://flags/#enable-defer-all-script";
 const char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 const char kEctFlagLink[] = "chrome://flags/#force-effective-connection-type";
-const char kIgnorePreviewsBlacklistLink[] =
-    "chrome://flags/#ignore-previews-blacklist";
+const char kIgnorePreviewsBlocklistLink[] =
+    "chrome://flags/#ignore-previews-blocklist";
 const char kDataSaverAltConfigLink[] =
     "chrome://flags/#enable-data-reduction-proxy-server-experiment";
 
@@ -184,35 +184,35 @@ void InterventionsInternalsPageHandler::OnNewMessageLogAdded(
   page_->LogNewMessage(std::move(mojo_message_ptr));
 }
 
-void InterventionsInternalsPageHandler::SetIgnorePreviewsBlacklistDecision(
+void InterventionsInternalsPageHandler::SetIgnorePreviewsBlocklistDecision(
     bool ignored) {
-  previews_ui_service_->SetIgnorePreviewsBlacklistDecision(ignored);
+  previews_ui_service_->SetIgnorePreviewsBlocklistDecision(ignored);
 }
 
 void InterventionsInternalsPageHandler::OnLastObserverRemove() {
-  // Reset the status of ignoring PreviewsBlackList decisions to default value.
-  previews_ui_service_->SetIgnorePreviewsBlacklistDecision(
-      previews::switches::ShouldIgnorePreviewsBlacklist());
+  // Reset the status of ignoring PreviewsBlockList decisions to default value.
+  previews_ui_service_->SetIgnorePreviewsBlocklistDecision(
+      previews::switches::ShouldIgnorePreviewsBlocklist());
 }
 
-void InterventionsInternalsPageHandler::OnIgnoreBlacklistDecisionStatusChanged(
+void InterventionsInternalsPageHandler::OnIgnoreBlocklistDecisionStatusChanged(
     bool ignored) {
-  page_->OnIgnoreBlacklistDecisionStatusChanged(ignored);
+  page_->OnIgnoreBlocklistDecisionStatusChanged(ignored);
 }
 
-void InterventionsInternalsPageHandler::OnNewBlacklistedHost(
+void InterventionsInternalsPageHandler::OnNewBlocklistedHost(
     const std::string& host,
     base::Time time) {
-  page_->OnBlacklistedHost(host, time.ToJavaTime());
+  page_->OnBlocklistedHost(host, time.ToJavaTime());
 }
 
-void InterventionsInternalsPageHandler::OnUserBlacklistedStatusChange(
-    bool blacklisted) {
-  page_->OnUserBlacklistedStatusChange(blacklisted);
+void InterventionsInternalsPageHandler::OnUserBlocklistedStatusChange(
+    bool blocklisted) {
+  page_->OnUserBlocklistedStatusChange(blocklisted);
 }
 
-void InterventionsInternalsPageHandler::OnBlacklistCleared(base::Time time) {
-  page_->OnBlacklistCleared(time.ToJavaTime());
+void InterventionsInternalsPageHandler::OnBlocklistCleared(base::Time time) {
+  page_->OnBlocklistCleared(time.ToJavaTime());
 }
 
 void InterventionsInternalsPageHandler::GetPreviewsEnabled(
@@ -317,14 +317,14 @@ void InterventionsInternalsPageHandler::GetPreviewsFlagsDetails(
   ect_status->htmlId = kEctFlagHtmlId;
   flags.push_back(std::move(ect_status));
 
-  auto ignore_previews_blacklist = mojom::PreviewsFlag::New();
-  ignore_previews_blacklist->description =
-      flag_descriptions::kIgnorePreviewsBlacklistName;
-  ignore_previews_blacklist->link = kIgnorePreviewsBlacklistLink;
-  ignore_previews_blacklist->value =
-      GetEnabledStateForSwitch(previews::switches::kIgnorePreviewsBlacklist);
-  ignore_previews_blacklist->htmlId = kIgnorePreviewsBlacklistFlagHtmlId;
-  flags.push_back(std::move(ignore_previews_blacklist));
+  auto ignore_previews_blocklist = mojom::PreviewsFlag::New();
+  ignore_previews_blocklist->description =
+      flag_descriptions::kIgnorePreviewsBlocklistName;
+  ignore_previews_blocklist->link = kIgnorePreviewsBlocklistLink;
+  ignore_previews_blocklist->value =
+      GetEnabledStateForSwitch(previews::switches::kIgnorePreviewsBlocklist);
+  ignore_previews_blocklist->htmlId = kIgnorePreviewsBlocklistFlagHtmlId;
+  flags.push_back(std::move(ignore_previews_blocklist));
 
   auto alt_config_status = mojom::PreviewsFlag::New();
   alt_config_status->description =

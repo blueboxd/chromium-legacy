@@ -205,6 +205,10 @@ interface LocalFrameHost {
   // Sent by the renderer when the associated frame becomes focused.
   DidFocusFrame();
 
+  // Called to notify the browser process counterpart of this local frame that
+  // |window.focus()| on a page has been invoked in the renderer process.
+  DidCallFocus();
+
   // Notifies the browser process about a new Content Security Policy that needs
   // to be applies to the frame. This message is sent when a frame commits
   // navigation to a new location (reporting accumulated policies from HTTP
@@ -824,8 +828,8 @@ interface LocalMainFrame {
   ZoomToFindInPageRect(gfx.mojom.Rect rect_in_root_frame);
 };
 
-// Implemented in Browser, this interface defines main-frame-specific methods
-// that will be invoked from the renderer process (e.g. WebViewImpl).
+// Implemented in Browser, this interface defines local-main-frame-specific
+// methods that will be invoked from the renderer process (e.g. WebViewImpl).
 interface LocalMainFrameHost {
   // Indicates the scale of the view has changed.
   ScaleFactorChanged(float scale);
@@ -838,4 +842,14 @@ interface LocalMainFrameHost {
   // browser will share this information with other renderers that have frames
   // in the page.
   TextAutosizerPageInfoChanged(TextAutosizerPageInfo page_info);
+
+  // Asks the browser process to activate the page associated to the main frame.
+  FocusPage();
+};
+
+// Implemented in Browser, this interface defines remote-main-frame-specific
+// methods that will be invoked from the renderer process (e.g. WebViewImpl).
+interface RemoteMainFrameHost {
+  // Asks the browser process to activate the page associated to the main frame.
+  FocusPage();
 };

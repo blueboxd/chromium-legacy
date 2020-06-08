@@ -46,6 +46,7 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
   uint32_t Print(const IntRect&, cc::PaintCanvas*) const override;
+  AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
 
   WebRemoteFrameImpl* GetWebFrame() const { return web_frame_; }
 

@@ -37,7 +37,7 @@ class WaylandSurface : public WaylandWindow,
   void StartDrag(const ui::OSExchangeData& data,
                  int operation,
                  gfx::NativeCursor cursor,
-                 base::OnceCallback<void(int)> callback) override;
+                 WmDragHandler::Delegate* delegate) override;
 
   // PlatformWindow
   void Show(bool inactive) override;
@@ -83,7 +83,7 @@ class WaylandSurface : public WaylandWindow,
   // Wrappers around shell surface.
   std::unique_ptr<ShellSurfaceWrapper> shell_surface_;
 
-  base::OnceCallback<void(int)> drag_closed_callback_;
+  WmDragHandler::Delegate* drag_handler_delegate_ = nullptr;
 
   // These bounds attributes below have suffices that indicate units used.
   // Wayland operates in DIP but the platform operates in physical pixels so

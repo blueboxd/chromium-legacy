@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_browser_process.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/metrics/visibility_metrics_logger.h"
 #include "base/base_paths_posix.h"
 #include "base/path_service.h"
@@ -41,6 +42,9 @@ AwBrowserProcess::AwBrowserProcess(
     AwFeatureListCreator* aw_feature_list_creator) {
   g_aw_browser_process = this;
   aw_feature_list_creator_ = aw_feature_list_creator;
+  aw_contents_lifecycle_notifier_ =
+      std::make_unique<AwContentsLifecycleNotifier>(base::BindRepeating(
+          &AwBrowserProcess::OnLoseForeground, base::Unretained(this)));
 }
 
 AwBrowserProcess::~AwBrowserProcess() {
@@ -69,6 +73,11 @@ void AwBrowserProcess::CreateLocalState() {
 
   local_state_ = aw_feature_list_creator_->TakePrefService();
   DCHECK(local_state_);
+}
+
+void AwBrowserProcess::OnLoseForeground() {
+  if (local_state_)
+    local_state_->CommitPendingWrite();
 }
 
 AwBrowserPolicyConnector* AwBrowserProcess::browser_policy_connector() {

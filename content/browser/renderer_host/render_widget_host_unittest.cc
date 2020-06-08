@@ -2072,7 +2072,7 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
 TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
   constexpr uint32_t frame_token = 1;
   std::vector<IPC::Message> messages;
-  messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages.push_back(WidgetHostMsg_Close(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2092,7 +2092,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
 TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
   constexpr uint32_t frame_token = 1;
   std::vector<IPC::Message> messages;
-  messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages.push_back(WidgetHostMsg_Close(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2114,8 +2114,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   constexpr uint32_t frame_token2 = 2;
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_Close(5));
+  messages2.push_back(WidgetHostMsg_Close(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2145,8 +2145,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   constexpr uint32_t frame_token2 = 2;
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_Close(5));
+  messages2.push_back(WidgetHostMsg_Close(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
@@ -2177,8 +2177,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   constexpr uint32_t frame_token2 = 2;
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
-  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages2.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+  messages1.push_back(WidgetHostMsg_Close(5));
+  messages2.push_back(WidgetHostMsg_Close(6));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());

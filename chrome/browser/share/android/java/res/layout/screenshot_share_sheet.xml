@@ -12,6 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+    <!-- TODO (crbug.com/1034733) Fix that this button is being 
+    partially covered by the iamgeview -->
         <org.chromium.ui.widget.ChromeImageButton
             android:id="@+id/close_button"
             style="@style/ToolbarButton"
@@ -19,63 +21,83 @@
             android:contentDescription="@string/close"
             app:tint="@color/default_icon_color_tint_list" />
 
-       <!-- TODO: Add a frame layout to hold the screenshot preview.  -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-       <LinearLayout
-           android:layout_width="match_parent"
-           android:layout_height="56dp"
-           android:layout_marginStart="36dp"
-           android:layout_marginEnd="36dp"
-           android:weightSum="4"
-           android:orientation="horizontal"
-           android:layout_gravity="start|bottom">
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
-           <TextView
-               android:id="@+id/edit"
-               android:text="@string/screenshot_edit_title"
-               style="@style/SplitToolbarButton"
-               android:drawableTop="@drawable/edit"
-               android:layout_weight="1"
-               android:gravity="center"
-               android:layout_gravity="end|bottom"
-               android:background="?attr/selectableItemBackgroundBorderless"
-               app:tint="@color/default_icon_color_tint_list" />
+                <org.chromium.ui.widget.ChromeImageView
+                    android:id="@+id/screenshot"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal"
+                    android:layout_gravity="center_horizontal"
+                    android:padding="16dp" />
 
-           <TextView
-               android:id="@+id/delete"
-               android:text="@string/screenshot_delete_title"
-               style="@style/SplitToolbarButton"
-               android:drawableTop="@drawable/delete"
-               android:layout_weight="1"
-               android:gravity="center"
-               android:layout_gravity="center|bottom"
-               android:background="?attr/selectableItemBackgroundBorderless"
-               app:tint="@color/default_icon_color_tint_list" />
+            </FrameLayout>
 
-           <TextView
-               android:id="@+id/save"
-               android:text="@string/screenshot_save_title"
-               style="@style/SplitToolbarButton"
-               android:drawableTop="@drawable/save"
-               android:layout_weight="1"
-               android:gravity="center"
-               android:layout_gravity="center|bottom"
-               android:background="?attr/selectableItemBackgroundBorderless"
-               app:tint="@color/default_icon_color_tint_list" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginStart="36dp"
+                android:layout_marginEnd="36dp"
+                android:weightSum="4"
+                android:orientation="horizontal"
+                android:gravity="bottom"
+                android:layout_gravity="start|bottom">
 
-           <TextView
-               android:id="@+id/share"
-               android:text="@string/screenshot_share_title"
-               style="@style/SplitToolbarButton"
-               android:drawableTop="@drawable/share"
-               android:layout_weight="1"
-               android:gravity="center"
-               android:layout_gravity="start|bottom"
-               android:background="?attr/selectableItemBackgroundBorderless"
-               app:tint="@color/default_icon_color_tint_list" />
+                <TextView
+                    android:id="@+id/edit"
+                    android:text="@string/screenshot_edit_title"
+                    style="@style/SplitToolbarButton"
+                    android:drawableTop="@drawable/edit"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:layout_gravity="end|bottom"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/default_icon_color_tint_list" />
+
+                <TextView
+                    android:id="@+id/delete"
+                    android:text="@string/screenshot_delete_title"
+                    style="@style/SplitToolbarButton"
+                    android:drawableTop="@drawable/delete"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:layout_gravity="center|bottom"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/default_icon_color_tint_list" />
+
+                <TextView
+                    android:id="@+id/save"
+                    android:text="@string/screenshot_save_title"
+                    style="@style/SplitToolbarButton"
+                    android:drawableTop="@drawable/save"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:layout_gravity="center|bottom"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/default_icon_color_tint_list" />
+
+                <TextView
+                    android:id="@+id/share"
+                    android:text="@string/screenshot_share_title"
+                    style="@style/SplitToolbarButton"
+                    android:drawableTop="@drawable/share"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:layout_gravity="start|bottom"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/default_icon_color_tint_list" />
+
+            </LinearLayout>
 
         </LinearLayout>
-
 
     </RelativeLayout>
 

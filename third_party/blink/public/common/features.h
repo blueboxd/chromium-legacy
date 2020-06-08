@@ -190,6 +190,16 @@ BLINK_COMMON_EXPORT extern const base::Feature kThrottleInstallingServiceWorker;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kInstallingServiceWorkerOutstandingThrottledLimit;
 
+// This flag is used to set field parameters to choose predictor we use when
+// kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
+// on finch and also for choosing predictor type for predictedEvents API without
+// enabling resampling. It does not have any effect when the resampling flag is
+// enabled.
+BLINK_COMMON_EXPORT extern const base::Feature kInputPredictorTypeChoice;
+
+// Enables resampling input events on main thread.
+BLINK_COMMON_EXPORT extern const base::Feature kResamplingInputEvents;
+
 // Enables resampling GestureScroll events on compositor thread.
 BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 

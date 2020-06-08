@@ -21,9 +21,13 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/layout.h"
+#include "ui/display/screen.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -36,7 +40,63 @@ aura::Window* GetTargetWindow(aura::Window* root_window,
   return root_window->GetEventHandlerForPoint(root_location);
 }
 
+// The minimum alpha required so we would treat the pixel as visible.
+constexpr uint32_t kMinAlpha = 32;
+
+// Returns true if |image| has any visible regions (defined as having a pixel
+// with alpha > |kMinAlpha|).
+bool IsValidDragImage(const gfx::ImageSkia& image) {
+  if (image.isNull())
+    return false;
+
+  // Because we need a GL context per window, we do a quick check so that we
+  // don't make another context if the window would just be displaying a mostly
+  // transparent image.
+  const SkBitmap* in_bitmap = image.bitmap();
+  for (int y = 0; y < in_bitmap->height(); ++y) {
+    uint32_t* in_row = in_bitmap->getAddr32(0, y);
+
+    for (int x = 0; x < in_bitmap->width(); ++x) {
+      if (SkColorGetA(in_row[x]) > kMinAlpha)
+        return true;
+    }
+  }
+
+  return false;
+}
+
+std::unique_ptr<views::Widget> CreateDragWidget(
+    const gfx::Point& root_location,
+    const gfx::ImageSkia& image,
+    const gfx::Vector2d& drag_widget_offset) {
+  auto widget = std::make_unique<views::Widget>();
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_DRAG);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.accept_events = false;
+
+  gfx::Point location = root_location - drag_widget_offset;
+  params.bounds = gfx::Rect(location, image.size());
+  widget->set_focus_on_creation(false);
+  widget->set_frame_type(views::Widget::FrameType::kForceNative);
+  widget->Init(std::move(params));
+  widget->GetNativeWindow()->SetName("DragWindow");
+
+  std::unique_ptr<views::ImageView> image_view =
+      std::make_unique<views::ImageView>();
+  image_view->SetImage(image);
+  widget->SetContentsView(std::move(image_view));
+  widget->Show();
+  widget->GetNativeWindow()->layer()->SetFillsBoundsOpaquely(false);
+  widget->StackAtTop();
+
+  return widget;
+}
+
 }  // namespace
+
+DesktopDragDropClientOzone::DragContext::DragContext() = default;
+
+DesktopDragDropClientOzone::DragContext::~DragContext() = default;
 
 DesktopDragDropClientOzone::DesktopDragDropClientOzone(
     aura::Window* root_window,
@@ -49,7 +109,7 @@ DesktopDragDropClientOzone::DesktopDragDropClientOzone(
 DesktopDragDropClientOzone::~DesktopDragDropClientOzone() {
   ResetDragDropTarget();
 
-  if (in_move_loop_)
+  if (IsDragDropInProgress())
     DragCancel();
 }
 
@@ -63,9 +123,11 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
   if (!drag_handler_)
     return ui::DragDropTypes::DragOperation::DRAG_NONE;
 
-  DCHECK(!in_move_loop_);
+  DCHECK(!drag_context_);
+  drag_context_ = std::make_unique<DragContext>();
+
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  quit_closure_ = run_loop.QuitClosure();
+  drag_context_->quit_closure = run_loop.QuitClosure();
 
   // Chrome expects starting drag and drop to release capture.
   aura::Window* capture_window =
@@ -83,15 +145,22 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
         ui::mojom::CursorType::kGrabbing));
   }
 
-  drag_handler_->StartDrag(
-      *data.get(), operation, cursor_client->GetCursor(),
-      base::BindOnce(&DesktopDragDropClientOzone::OnDragSessionClosed,
-                     base::Unretained(this)));
-  in_move_loop_ = true;
+  const auto& provider = data->provider();
+  gfx::ImageSkia drag_image = provider.GetDragImage();
+  if (IsValidDragImage(drag_image)) {
+    drag_context_->size = drag_image.size();
+    drag_context_->offset = provider.GetDragImageOffset();
+    drag_context_->widget =
+        CreateDragWidget(root_location, drag_image, drag_context_->offset);
+  }
+
+  drag_handler_->StartDrag(*data.get(), operation, cursor_client->GetCursor(),
+                           this);
   run_loop.Run();
 
   if (cursor_client)
     cursor_client->SetCursor(initial_cursor);
+  drag_context_.reset();
 
   return drag_operation_;
 }
@@ -101,7 +170,7 @@ void DesktopDragDropClientOzone::DragCancel() {
 }
 
 bool DesktopDragDropClientOzone::IsDragDropInProgress() {
-  return in_move_loop_;
+  return bool(drag_context_) && bool(drag_context_->quit_closure);
 }
 
 void DesktopDragDropClientOzone::AddObserver(
@@ -193,16 +262,35 @@ void DesktopDragDropClientOzone::OnWindowDestroyed(aura::Window* window) {
   drag_drop_delegate_ = nullptr;
 }
 
-void DesktopDragDropClientOzone::OnDragSessionClosed(int dnd_action) {
+void DesktopDragDropClientOzone::OnDragLocationChanged(
+    const gfx::Point& screen_point_px) {
+  DCHECK(drag_context_);
+
+  if (!drag_context_->widget)
+    return;
+
+  const bool dispatch_mouse_event = !drag_context_->last_screen_location_px;
+  drag_context_->last_screen_location_px = screen_point_px;
+  if (dispatch_mouse_event) {
+    // Post a task to dispatch mouse movement event when control returns to the
+    // message loop. This allows smoother dragging since the events are
+    // dispatched without waiting for the drag widget updates.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DesktopDragDropClientOzone::UpdateDragWidgetLocation,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void DesktopDragDropClientOzone::OnDragFinished(int dnd_action) {
   drag_operation_ = dnd_action;
   QuitRunLoop();
 }
 
 void DesktopDragDropClientOzone::QuitRunLoop() {
-  in_move_loop_ = false;
-  if (quit_closure_.is_null())
+  if (!drag_context_->quit_closure)
     return;
-  std::move(quit_closure_).Run();
+  std::move(drag_context_->quit_closure).Run();
 }
 
 std::unique_ptr<ui::DropTargetEvent>
@@ -238,6 +326,20 @@ DesktopDragDropClientOzone::UpdateTargetAndCreateDropEvent(
   if (delegate_has_changed)
     drag_drop_delegate_->OnDragEntered(*event);
   return event;
+}
+
+void DesktopDragDropClientOzone::UpdateDragWidgetLocation() {
+  DCHECK(drag_context_);
+
+  float scale_factor =
+      ui::GetScaleFactorForNativeView(drag_context_->widget->GetNativeWindow());
+  gfx::Point scaled_point = gfx::ScaleToRoundedPoint(
+      *drag_context_->last_screen_location_px, 1.f / scale_factor);
+  drag_context_->widget->SetBounds(
+      gfx::Rect(scaled_point - drag_context_->offset, drag_context_->size));
+  drag_context_->widget->StackAtTop();
+
+  drag_context_->last_screen_location_px.reset();
 }
 
 void DesktopDragDropClientOzone::ResetDragDropTarget() {

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.printing.PrintShareActivity;
+import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -32,6 +33,9 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;
+import org.chromium.printing.PrintManagerDelegateImpl;
+import org.chromium.printing.PrintingController;
+import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
@@ -70,8 +74,8 @@ public class ShareDelegateImpl implements ShareDelegate {
         if (mShareStartTime == 0L) {
             mShareStartTime = System.currentTimeMillis();
         }
-        mDelegate.share(
-                params, chromeShareExtras, mBottomSheetController, mTabProvider, mShareStartTime);
+        mDelegate.share(params, chromeShareExtras, mBottomSheetController, mTabProvider,
+                this::printTab, mShareStartTime);
         mShareStartTime = 0;
     }
 
@@ -255,6 +259,15 @@ public class ShareDelegateImpl implements ShareDelegate {
         }
     }
 
+    private void printTab(Tab tab) {
+        Activity activity = mTabProvider.get().getWindowAndroid().getActivity().get();
+        PrintingController printingController = PrintingControllerImpl.getInstance();
+        if (printingController != null && !printingController.isBusy()) {
+            printingController.startPrint(
+                    new TabPrinter(mTabProvider.get()), new PrintManagerDelegateImpl(activity));
+        }
+    }
+
     /**
      * Delegate for share handling.
      */
@@ -263,7 +276,8 @@ public class ShareDelegateImpl implements ShareDelegate {
          * Trigger the share action for the specified params.
          */
         void share(ShareParams params, ChromeShareExtras chromeShareExtras,
-                BottomSheetController controller, Supplier<Tab> tabProvider, long shareStartTime) {
+                BottomSheetController controller, Supplier<Tab> tabProvider,
+                Callback<Tab> printCallback, long shareStartTime) {
             if (chromeShareExtras.shareDirectly()) {
                 ShareHelper.shareWithLastUsedComponent(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
@@ -271,7 +285,7 @@ public class ShareDelegateImpl implements ShareDelegate {
                         new ShareSheetCoordinator(controller, tabProvider,
                                 new ShareSheetPropertyModelBuilder(controller,
                                         ContextUtils.getApplicationContext().getPackageManager()),
-                                PrefServiceBridge.getInstance());
+                                PrefServiceBridge.getInstance(), printCallback);
                 // TODO(crbug/1009124): open custom share sheet.
                 coordinator.showShareSheet(params, chromeShareExtras, shareStartTime);
             } else {

@@ -100,8 +100,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   // Continue the watchdog after a pause.
   virtual void ResumeWatchdog() = 0;
 
-  virtual void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) = 0;
-
   // For gpu testing only. Return status for the watchdog tests
   virtual bool IsGpuHangDetectedForTesting() = 0;
 
@@ -130,7 +128,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnGpuProcessTearDown() override {}
   void ResumeWatchdog() override {}
   void PauseWatchdog() override {}
-  void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
   bool IsGpuHangDetectedForTesting() override;
 
   // gl::ProgressReporter implementation:
@@ -263,16 +260,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   // This is the time the last check was sent.
   base::Time check_time_;
   base::TimeTicks check_timeticks_;
-
-  // The time in the last OnCheckTimeout()
-  base::TimeTicks last_timeout_timeticks_;
-
-  // After GPU hang detected, whether the GPU thread is allowed to continue due
-  // to not spending enough thread time.
-  bool more_gpu_thread_time_allowed_ = false;
-
-  // whether GpuWatchdogThreadEvent::kGpuWatchdogStart has been recorded.
-  bool is_watchdog_start_histogram_recorded = false;
 
 #if defined(USE_X11)
   FILE* tty_file_;

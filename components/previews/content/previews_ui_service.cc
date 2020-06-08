@@ -14,11 +14,11 @@ namespace previews {
 
 PreviewsUIService::PreviewsUIService(
     std::unique_ptr<PreviewsDeciderImpl> previews_decider_impl,
-    std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+    std::unique_ptr<blocklist::OptOutStore> previews_opt_out_store,
     std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
     const PreviewsIsEnabledCallback& is_enabled_callback,
     std::unique_ptr<PreviewsLogger> logger,
-    blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews,
+    blocklist::BlocklistData::AllowedTypesAndVersions allowed_previews,
     network::NetworkQualityTracker* network_quality_tracker)
     : previews_decider_impl_(std::move(previews_decider_impl)),
       logger_(std::move(logger)),
@@ -66,30 +66,30 @@ void PreviewsUIService::LogPreviewDecisionMade(
                                   std::move(passed_reasons), page_id);
 }
 
-void PreviewsUIService::OnNewBlacklistedHost(const std::string& host,
+void PreviewsUIService::OnNewBlocklistedHost(const std::string& host,
                                              base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  logger_->OnNewBlacklistedHost(host, time);
+  logger_->OnNewBlocklistedHost(host, time);
 }
 
-void PreviewsUIService::OnUserBlacklistedStatusChange(bool blacklisted) {
+void PreviewsUIService::OnUserBlocklistedStatusChange(bool blocklisted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  logger_->OnUserBlacklistedStatusChange(blacklisted);
+  logger_->OnUserBlocklistedStatusChange(blocklisted);
 }
 
-void PreviewsUIService::OnBlacklistCleared(base::Time time) {
+void PreviewsUIService::OnBlocklistCleared(base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  logger_->OnBlacklistCleared(time);
+  logger_->OnBlocklistCleared(time);
 }
 
-void PreviewsUIService::SetIgnorePreviewsBlacklistDecision(bool ignored) {
+void PreviewsUIService::SetIgnorePreviewsBlocklistDecision(bool ignored) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  previews_decider_impl_->SetIgnorePreviewsBlacklistDecision(ignored);
+  previews_decider_impl_->SetIgnorePreviewsBlocklistDecision(ignored);
 }
 
-void PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
+void PreviewsUIService::OnIgnoreBlocklistDecisionStatusChanged(bool ignored) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  logger_->OnIgnoreBlacklistDecisionStatusChanged(ignored);
+  logger_->OnIgnoreBlocklistDecisionStatusChanged(ignored);
 }
 
 PreviewsLogger* PreviewsUIService::previews_logger() const {
@@ -102,19 +102,19 @@ PreviewsDeciderImpl* PreviewsUIService::previews_decider_impl() const {
   return previews_decider_impl_.get();
 }
 
-// When triggering previews, prevent long term black list rules.
-void PreviewsUIService::SetIgnoreLongTermBlackListForServerPreviews(
-    bool ignore_long_term_black_list_rules_allowed) {
+// When triggering previews, prevent long term block list rules.
+void PreviewsUIService::SetIgnoreLongTermBlockListForServerPreviews(
+    bool ignore_long_term_block_list_rules_allowed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  previews_decider_impl_->SetIgnoreLongTermBlackListForServerPreviews(
-      ignore_long_term_black_list_rules_allowed);
+  previews_decider_impl_->SetIgnoreLongTermBlockListForServerPreviews(
+      ignore_long_term_block_list_rules_allowed);
 }
 
-void PreviewsUIService::ClearBlackList(base::Time begin_time,
+void PreviewsUIService::ClearBlockList(base::Time begin_time,
                                        base::Time end_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  previews_decider_impl_->ClearBlackList(begin_time, end_time);
+  previews_decider_impl_->ClearBlockList(begin_time, end_time);
 }
 
 void PreviewsUIService::OnEffectiveConnectionTypeChanged(

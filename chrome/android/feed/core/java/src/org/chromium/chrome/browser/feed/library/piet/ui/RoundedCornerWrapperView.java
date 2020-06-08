@@ -6,14 +6,11 @@ package org.chromium.chrome.browser.feed.library.piet.ui;
 
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Outline;
 import android.graphics.Rect;
 import android.graphics.drawable.shapes.RoundRectShape;
-import android.os.Build;
-import android.os.Build.VERSION;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
@@ -95,23 +92,14 @@ public class RoundedCornerWrapperView extends FrameLayout {
 
         setRoundingStrategy();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Even when not using the outline provider strategy, the outline needs to be set for
-            // shadows to render properly.
-            setupOutlineProvider();
-        }
+        // Even when not using the outline provider strategy, the outline needs to be set for
+        // shadows to render properly.
+        setupOutlineProvider();
         setWillNotDraw(false);
     }
 
     private void setRoundingStrategy() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP && mAllowClipPath) {
-            setRoundingDelegate(RoundingStrategy.CLIP_PATH);
-            if (VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                // clipPath doesn't work with hardware rendering on < 18.
-                setLayerType(LAYER_TYPE_SOFTWARE, null);
-            }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && mAllFourCornersRounded
-                && mAllowOutlineRounding) {
+        if (mAllFourCornersRounded && mAllowOutlineRounding) {
             setRoundingDelegate(RoundingStrategy.OUTLINE_PROVIDER);
         } else {
             setRoundingDelegate(RoundingStrategy.BITMAP_MASKING);
@@ -138,7 +126,6 @@ public class RoundedCornerWrapperView extends FrameLayout {
         mRoundingDelegate.initializeForView(this);
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void setupOutlineProvider() {
         if (mHasRoundedCorners) {
             super.setOutlineProvider(new ViewOutlineProvider() {

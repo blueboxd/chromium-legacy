@@ -144,8 +144,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateTargetURL,
                     GURL)
 
-IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // A renderer sends this to the browser process when it wants to access a PPAPI
 // broker. In contrast to FrameHostMsg_OpenChannelToPpapiBroker, this is called

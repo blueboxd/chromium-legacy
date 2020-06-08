@@ -74,8 +74,8 @@ constexpr char kResourceLoadingHintsFlagHtmlId[] =
 constexpr char kDeferAllScriptFlagHtmlId[] = "defer-all-script-flag";
 constexpr char kNoScriptFlagHtmlId[] = "noscript-flag";
 constexpr char kEctFlagHtmlId[] = "ect-flag";
-constexpr char kIgnorePreviewsBlacklistFlagHtmlId[] =
-    "ignore-previews-blacklist";
+constexpr char kIgnorePreviewsBlocklistFlagHtmlId[] =
+    "ignore-previews-blocklist";
 constexpr char kDataSaverAltConfigHtmlId[] =
     "data-reduction-proxy-server-experiment";
 
@@ -89,8 +89,8 @@ constexpr char kDeferAllScriptFlagLink[] =
 constexpr char kNoScriptFlagLink[] = "chrome://flags/#enable-noscript-previews";
 constexpr char kEctFlagLink[] =
     "chrome://flags/#force-effective-connection-type";
-constexpr char kIgnorePreviewsBlacklistLink[] =
-    "chrome://flags/#ignore-previews-blacklist";
+constexpr char kIgnorePreviewsBlocklistLink[] =
+    "chrome://flags/#ignore-previews-blocklist";
 constexpr char kDataSaverAltConfigLink[] =
     "chrome://flags/#enable-data-reduction-proxy-server-experiment";
 
@@ -141,23 +141,23 @@ class TestInterventionsInternalsPage
  public:
   TestInterventionsInternalsPage(
       mojo::PendingReceiver<mojom::InterventionsInternalsPage> receiver)
-      : receiver_(this, std::move(receiver)), blacklist_ignored_(false) {}
+      : receiver_(this, std::move(receiver)), blocklist_ignored_(false) {}
 
-  ~TestInterventionsInternalsPage() override {}
+  ~TestInterventionsInternalsPage() override = default;
 
   // mojom::InterventionsInternalsPage:
   void LogNewMessage(mojom::MessageLogPtr message) override {
     message_ = std::make_unique<mojom::MessageLogPtr>(std::move(message));
   }
-  void OnBlacklistedHost(const std::string& host, int64_t time) override {
-    host_blacklisted_ = host;
-    host_blacklisted_time_ = time;
+  void OnBlocklistedHost(const std::string& host, int64_t time) override {
+    host_blocklisted_ = host;
+    host_blocklisted_time_ = time;
   }
-  void OnUserBlacklistedStatusChange(bool blacklisted) override {
-    user_blacklisted_ = blacklisted;
+  void OnUserBlocklistedStatusChange(bool blocklisted) override {
+    user_blocklisted_ = blocklisted;
   }
-  void OnBlacklistCleared(int64_t time) override {
-    blacklist_cleared_time_ = time;
+  void OnBlocklistCleared(int64_t time) override {
+    blocklist_cleared_time_ = time;
   }
   void UpdateEffectiveConnectionType(
       const std::string& type,
@@ -166,21 +166,21 @@ class TestInterventionsInternalsPage
     // TODO(thanhdle): Add integration test to test behavior of the pipeline end
     // to end. crbug.com/777936
   }
-  void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) override {
-    blacklist_ignored_ = ignored;
+  void OnIgnoreBlocklistDecisionStatusChanged(bool ignored) override {
+    blocklist_ignored_ = ignored;
   }
 
   // Expose passed in message in LogNewMessage for testing.
   mojom::MessageLogPtr* message() const { return message_.get(); }
 
-  // Expose passed in blacklist events info for testing.
-  std::string host_blacklisted() const { return host_blacklisted_; }
-  int64_t host_blacklisted_time() const { return host_blacklisted_time_; }
-  bool user_blacklisted() const { return user_blacklisted_; }
-  int64_t blacklist_cleared_time() const { return blacklist_cleared_time_; }
+  // Expose passed in blocklist events info for testing.
+  std::string host_blocklisted() const { return host_blocklisted_; }
+  int64_t host_blocklisted_time() const { return host_blocklisted_time_; }
+  bool user_blocklisted() const { return user_blocklisted_; }
+  int64_t blocklist_cleared_time() const { return blocklist_cleared_time_; }
 
-  // Expose the passed in blacklist ignore status for testing.
-  bool blacklist_ignored() const { return blacklist_ignored_; }
+  // Expose the passed in blocklist ignore status for testing.
+  bool blocklist_ignored() const { return blocklist_ignored_; }
 
  private:
   mojo::Receiver<mojom::InterventionsInternalsPage> receiver_;
@@ -188,14 +188,14 @@ class TestInterventionsInternalsPage
   // The MessageLogPtr passed in LogNewMessage method.
   std::unique_ptr<mojom::MessageLogPtr> message_;
 
-  // Received blacklist events info.
-  std::string host_blacklisted_;
-  int64_t host_blacklisted_time_;
-  int64_t user_blacklisted_;
-  int64_t blacklist_cleared_time_;
+  // Received blocklist events info.
+  std::string host_blocklisted_;
+  int64_t host_blocklisted_time_;
+  int64_t user_blocklisted_;
+  int64_t blocklist_cleared_time_;
 
-  // Whether to ignore previews blacklist decisions.
-  bool blacklist_ignored_;
+  // Whether to ignore previews blocklist decisions.
+  bool blocklist_ignored_;
 };
 
 // Mock class to test interaction between the PageHandler and the
@@ -224,10 +224,10 @@ class TestPreviewsDeciderImpl : public previews::PreviewsDeciderImpl {
   // previews::PreviewsDeciderImpl:
   void Initialize(
       previews::PreviewsUIService* previews_ui_service,
-      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      std::unique_ptr<blocklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide,
       const previews::PreviewsIsEnabledCallback& is_enabled_callback,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews)
+      blocklist::BlocklistData::AllowedTypesAndVersions allowed_previews)
       override {}
 };
 
@@ -244,22 +244,22 @@ class TestPreviewsUIService : public previews::PreviewsUIService {
             nullptr, /* previews_opt_guide */
             base::BindRepeating(&MockedPreviewsIsEnabled),
             std::move(logger),
-            blacklist::BlacklistData::AllowedTypesAndVersions(),
+            blocklist::BlocklistData::AllowedTypesAndVersions(),
             test_network_quality_tracker),
-        blacklist_ignored_(false) {}
-  ~TestPreviewsUIService() override {}
+        blocklist_ignored_(false) {}
+  ~TestPreviewsUIService() override = default;
 
   // previews::PreviewsUIService:
-  void SetIgnorePreviewsBlacklistDecision(bool ignored) override {
-    blacklist_ignored_ = ignored;
+  void SetIgnorePreviewsBlocklistDecision(bool ignored) override {
+    blocklist_ignored_ = ignored;
   }
 
-  // Exposed blacklist ignored state.
-  bool blacklist_ignored() const { return blacklist_ignored_; }
+  // Exposed blocklist ignored state.
+  bool blocklist_ignored() const { return blocklist_ignored_; }
 
  private:
-  // Whether the blacklist decisions are ignored or not.
-  bool blacklist_ignored_;
+  // Whether the blocklist decisions are ignored or not.
+  bool blocklist_ignored_;
 };
 
 class InterventionsInternalsPageHandlerTest : public testing::Test {
@@ -534,33 +534,33 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsEctForceFieldtrialValue) {
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest,
-       GetFlagsIgnorePreviewsBlacklistDisabledValue) {
+       GetFlagsIgnorePreviewsBlocklistDisabledValue) {
   // Disabled by default.
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
-  auto ignore_previews_blacklist =
-      passed_in_flags.find(kIgnorePreviewsBlacklistFlagHtmlId);
+  auto ignore_previews_blocklist =
+      passed_in_flags.find(kIgnorePreviewsBlocklistFlagHtmlId);
 
-  ASSERT_NE(passed_in_flags.end(), ignore_previews_blacklist);
-  EXPECT_EQ(flag_descriptions::kIgnorePreviewsBlacklistName,
-            ignore_previews_blacklist->second->description);
-  EXPECT_EQ(kDisabledFlagValue, ignore_previews_blacklist->second->value);
-  EXPECT_EQ(kIgnorePreviewsBlacklistLink,
-            ignore_previews_blacklist->second->link);
+  ASSERT_NE(passed_in_flags.end(), ignore_previews_blocklist);
+  EXPECT_EQ(flag_descriptions::kIgnorePreviewsBlocklistName,
+            ignore_previews_blocklist->second->description);
+  EXPECT_EQ(kDisabledFlagValue, ignore_previews_blocklist->second->value);
+  EXPECT_EQ(kIgnorePreviewsBlocklistLink,
+            ignore_previews_blocklist->second->link);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsNoScriptDisabledValue) {
   page_handler_->GetPreviewsFlagsDetails(
       base::BindOnce(&MockGetPreviewsFlagsCallback));
-  auto ignore_previews_blacklist =
-      passed_in_flags.find(kIgnorePreviewsBlacklistFlagHtmlId);
+  auto ignore_previews_blocklist =
+      passed_in_flags.find(kIgnorePreviewsBlocklistFlagHtmlId);
 
-  ASSERT_NE(passed_in_flags.end(), ignore_previews_blacklist);
-  EXPECT_EQ(flag_descriptions::kIgnorePreviewsBlacklistName,
-            ignore_previews_blacklist->second->description);
-  EXPECT_EQ(kDisabledFlagValue, ignore_previews_blacklist->second->value);
-  EXPECT_EQ(kIgnorePreviewsBlacklistLink,
-            ignore_previews_blacklist->second->link);
+  ASSERT_NE(passed_in_flags.end(), ignore_previews_blocklist);
+  EXPECT_EQ(flag_descriptions::kIgnorePreviewsBlocklistName,
+            ignore_previews_blocklist->second->description);
+  EXPECT_EQ(kDisabledFlagValue, ignore_previews_blocklist->second->value);
+  EXPECT_EQ(kIgnorePreviewsBlocklistLink,
+            ignore_previews_blocklist->second->link);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsNoScriptDefaultValue) {
@@ -844,7 +844,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, ObserverIsRemovedWhenDestroyed) {
   EXPECT_TRUE(logger_->RemovedObserverIsCalled());
 }
 
-TEST_F(InterventionsInternalsPageHandlerTest, OnNewBlacklistedHostPostToPage) {
+TEST_F(InterventionsInternalsPageHandlerTest, OnNewBlocklistedHostPostToPage) {
   const std::string hosts[] = {
       "example_0.com",
       "example_1.com",
@@ -853,75 +853,75 @@ TEST_F(InterventionsInternalsPageHandlerTest, OnNewBlacklistedHostPostToPage) {
 
   for (auto expected_host : hosts) {
     base::Time expected_time = base::Time::Now();
-    page_handler_->OnNewBlacklistedHost(expected_host, expected_time);
+    page_handler_->OnNewBlocklistedHost(expected_host, expected_time);
     base::RunLoop().RunUntilIdle();
 
-    EXPECT_EQ(expected_host, page_->host_blacklisted());
-    EXPECT_EQ(expected_time.ToJavaTime(), page_->host_blacklisted_time());
+    EXPECT_EQ(expected_host, page_->host_blocklisted());
+    EXPECT_EQ(expected_time.ToJavaTime(), page_->host_blocklisted_time());
   }
 }
 
-TEST_F(InterventionsInternalsPageHandlerTest, OnUserBlacklistedPostToPage) {
-  page_handler_->OnUserBlacklistedStatusChange(true /* blacklisted */);
+TEST_F(InterventionsInternalsPageHandlerTest, OnUserBlocklistedPostToPage) {
+  page_handler_->OnUserBlocklistedStatusChange(true /* blocklisted */);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(page_->user_blacklisted());
+  EXPECT_TRUE(page_->user_blocklisted());
 
-  page_handler_->OnUserBlacklistedStatusChange(false /* blacklisted */);
+  page_handler_->OnUserBlocklistedStatusChange(false /* blocklisted */);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(page_->user_blacklisted());
+  EXPECT_FALSE(page_->user_blocklisted());
 }
 
-TEST_F(InterventionsInternalsPageHandlerTest, OnBlacklistClearedPostToPage) {
+TEST_F(InterventionsInternalsPageHandlerTest, OnBlocklistClearedPostToPage) {
   base::Time times[] = {
       base::Time::FromJsTime(-413696806000),  // Nov 21 1956 20:13:14 UTC
       base::Time::FromJsTime(758620800000),   // Jan 15 1994 08:00:00 UTC
       base::Time::FromJsTime(1581696550000),  // Feb 14 2020 16:09:10 UTC
   };
   for (auto expected_time : times) {
-    page_handler_->OnBlacklistCleared(expected_time);
+    page_handler_->OnBlocklistCleared(expected_time);
     base::RunLoop().RunUntilIdle();
 
-    EXPECT_EQ(expected_time.ToJavaTime(), page_->blacklist_cleared_time());
+    EXPECT_EQ(expected_time.ToJavaTime(), page_->blocklist_cleared_time());
   }
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest,
-       SetIgnorePreviewsBlacklistDecisionCallsUIServiceCorrectly) {
-  page_handler_->SetIgnorePreviewsBlacklistDecision(true /* ignored */);
-  EXPECT_TRUE(previews_ui_service_->blacklist_ignored());
+       SetIgnorePreviewsBlocklistDecisionCallsUIServiceCorrectly) {
+  page_handler_->SetIgnorePreviewsBlocklistDecision(true /* ignored */);
+  EXPECT_TRUE(previews_ui_service_->blocklist_ignored());
 
-  page_handler_->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
-  EXPECT_FALSE(previews_ui_service_->blacklist_ignored());
+  page_handler_->SetIgnorePreviewsBlocklistDecision(false /* ignored */);
+  EXPECT_FALSE(previews_ui_service_->blocklist_ignored());
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest,
-       PageUpdateOnBlacklistIgnoredChange) {
-  page_handler_->OnIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
+       PageUpdateOnBlocklistIgnoredChange) {
+  page_handler_->OnIgnoreBlocklistDecisionStatusChanged(true /* ignored */);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(page_->blacklist_ignored());
+  EXPECT_TRUE(page_->blocklist_ignored());
 
-  page_handler_->OnIgnoreBlacklistDecisionStatusChanged(false /* ignored */);
+  page_handler_->OnIgnoreBlocklistDecisionStatusChanged(false /* ignored */);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(page_->blacklist_ignored());
+  EXPECT_FALSE(page_->blocklist_ignored());
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest,
-       IgnoreBlacklistReversedOnLastObserverRemovedCalled) {
-  ASSERT_FALSE(previews::switches::ShouldIgnorePreviewsBlacklist());
+       IgnoreBlocklistReversedOnLastObserverRemovedCalled) {
+  ASSERT_FALSE(previews::switches::ShouldIgnorePreviewsBlocklist());
   page_handler_->OnLastObserverRemove();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(page_->blacklist_ignored());
+  EXPECT_FALSE(page_->blocklist_ignored());
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest,
-       IgnoreBlacklistReversedOnLastObserverRemovedCalledIgnoreViaFlag) {
+       IgnoreBlocklistReversedOnLastObserverRemovedCalledIgnoreViaFlag) {
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
-  command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
-  ASSERT_TRUE(previews::switches::ShouldIgnorePreviewsBlacklist());
+  command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlocklist);
+  ASSERT_TRUE(previews::switches::ShouldIgnorePreviewsBlocklist());
   page_handler_->OnLastObserverRemove();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(page_->blacklist_ignored());
+  EXPECT_FALSE(page_->blocklist_ignored());
 }
 
 }  // namespace

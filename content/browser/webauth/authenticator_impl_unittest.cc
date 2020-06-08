@@ -451,8 +451,6 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
   mojo::Remote<blink::mojom::Authenticator> ConstructAuthenticatorWithTimer(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
-
     // Set up a timer for testing.
     auto timer =
         std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
@@ -531,7 +529,6 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
  protected:
   std::unique_ptr<AuthenticatorImpl> authenticator_impl_;
-  std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
   std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
       bluetooth_global_values_ =
@@ -953,7 +950,7 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialOtherAlgorithms) {
     auto auth_data = device::AuthenticatorData::DecodeAuthenticatorData(
         auth_data_it->second.GetBytestring());
     EXPECT_EQ(static_cast<int32_t>(algorithm),
-              auth_data->attested_data()->public_key()->algorithm());
+              auth_data->attested_data()->public_key()->algorithm);
   }
 }
 
@@ -2899,8 +2896,6 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
   mojo::Remote<blink::mojom::Authenticator> ConstructFakeAuthenticatorWithTimer(
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
-
     // Set up a timer for testing.
     auto timer =
         std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
@@ -3476,6 +3471,38 @@ TEST_F(AuthenticatorImplTest, ExcludeListBatching) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, ResetDiscoveryFactoryOverride) {
+  // This is a regression test for crbug.com/1087158.
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  base::RunLoop run_loop;
+  virtual_device_factory_->SetSupportedProtocol(
+      device::ProtocolVersion::kCtap2);
+  virtual_device_factory_->mutable_state()->simulate_press_callback =
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
+        run_loop.QuitClosure().Run();
+        return false;
+      });
+
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConstructAuthenticatorWithTimer(task_runner);
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  TestMakeCredentialCallback callback;
+  authenticator->MakeCredential(std::move(options), callback.callback());
+
+  // Reset the FidoDiscoveryFactory while the request is processing, then let it
+  // time out.
+  run_loop.Run();
+  ResetVirtualDevice();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+
+  callback.WaitForCallback();
+  EXPECT_EQ(callback.status(), AuthenticatorStatus::NOT_ALLOWED_ERROR);
+}
+
 static constexpr char kTestPIN[] = "1234";
 
 class UVTestAuthenticatorClientDelegate
@@ -3704,7 +3731,7 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
   void TearDown() override {
     SetBrowserClientForTesting(old_client_);
-    AuthenticatorImplTest::TearDown();
+    UVAuthenticatorImplTest::TearDown();
   }
 
  protected:
@@ -4763,7 +4790,7 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
   void TearDown() override {
     SetBrowserClientForTesting(old_client_);
-    AuthenticatorImplTest::TearDown();
+    UVAuthenticatorImplTest::TearDown();
   }
 
  protected:
@@ -5430,8 +5457,6 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
   InternalAuthenticatorImpl* ConstructAuthenticatorWithTimer(
       const url::Origin& effective_origin_url,
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner) {
-    fake_hid_manager_ = std::make_unique<device::FakeFidoHidManager>();
-
     // Set up a timer for testing.
     auto timer =
         std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
@@ -5441,7 +5466,6 @@ class InternalAuthenticatorImplTest : public AuthenticatorTestBase {
 
  protected:
   std::unique_ptr<InternalAuthenticatorImpl> internal_authenticator_impl_;
-  std::unique_ptr<device::FakeFidoHidManager> fake_hid_manager_;
 };
 
 // Verify behavior for various combinations of origins and RP IDs.

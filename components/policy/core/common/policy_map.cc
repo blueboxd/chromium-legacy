@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -224,6 +225,18 @@ void PolicyMap::Set(
   Set(policy, std::move(entry));
 }
 
+void PolicyMap::Set(
+    const std::string& policy,
+    PolicyLevel level,
+    PolicyScope scope,
+    PolicySource source,
+    base::Optional<base::Value> value,
+    std::unique_ptr<ExternalDataFetcher> external_data_fetcher) {
+  Entry entry(level, scope, source, std::move(value),
+              std::move(external_data_fetcher));
+  Set(policy, std::move(entry));
+}
+
 void PolicyMap::Set(const std::string& policy, Entry entry) {
   map_[policy] = std::move(entry);
 }
@@ -334,7 +347,7 @@ void PolicyMap::LoadFrom(const base::DictionaryValue* policies,
                          PolicySource source) {
   for (base::DictionaryValue::Iterator it(*policies); !it.IsAtEnd();
        it.Advance()) {
-    Set(it.key(), level, scope, source, it.value().CreateDeepCopy(), nullptr);
+    Set(it.key(), level, scope, source, it.value().Clone(), nullptr);
   }
 }
 

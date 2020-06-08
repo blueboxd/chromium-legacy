@@ -336,6 +336,45 @@ public class FeedStreamSurfaceTest {
         verify(mSnackbarManager).showSnackbar(any());
     }
 
+    @Test
+    @SmallTest
+    public void testSurfaceClosed() {
+        FeedListContentManager contentManager =
+                mFeedStreamSurface.getFeedListContentManagerForTesting();
+
+        // Set 2 header views first.
+        View v0 = new View(mActivity);
+        View v1 = new View(mActivity);
+        mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
+        assertEquals(2, contentManager.getItemCount());
+        assertEquals(v0,
+                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
+                        .getNativeView());
+        assertEquals(v1,
+                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
+                        .getNativeView());
+        final int headers = 2;
+
+        // Add 3 new slices.
+        StreamUpdate update = StreamUpdate.newBuilder()
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("c"))
+                                      .build();
+        mFeedStreamSurface.onStreamUpdated(update.toByteArray());
+        assertEquals(headers + 3, contentManager.getItemCount());
+
+        // Closing the surface should remove all non-header contents.
+        mFeedStreamSurface.surfaceClosed();
+        assertEquals(headers, contentManager.getItemCount());
+        assertEquals(v0,
+                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
+                        .getNativeView());
+        assertEquals(v1,
+                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
+                        .getNativeView());
+    }
+
     private SliceUpdate createSliceUpdateForExistingSlice(String sliceId) {
         return SliceUpdate.newBuilder().setSliceId(sliceId).build();
     }

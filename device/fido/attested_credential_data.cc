@@ -229,7 +229,7 @@ std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() const {
   fido_parsing_utils::Append(&attestation_data, aaguid_);
   fido_parsing_utils::Append(&attestation_data, credential_id_length_);
   fido_parsing_utils::Append(&attestation_data, credential_id_);
-  fido_parsing_utils::Append(&attestation_data, public_key_->cose_key_bytes());
+  fido_parsing_utils::Append(&attestation_data, public_key_->cose_key_bytes);
   return attestation_data;
 }
 

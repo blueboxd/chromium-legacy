@@ -61,7 +61,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/prefs/pref_service.h"
-#include "components/prerender/prerender_origin.h"
+#include "components/prerender/common/prerender_origin.h"
 #include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"

@@ -6,9 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 
-namespace blacklist {
+namespace blocklist {
 
-BlacklistData::BlacklistData(std::unique_ptr<Policy> session_policy,
+BlocklistData::BlocklistData(std::unique_ptr<Policy> session_policy,
                              std::unique_ptr<Policy> persistent_policy,
                              std::unique_ptr<Policy> host_policy,
                              std::unique_ptr<Policy> type_policy,
@@ -22,46 +22,46 @@ BlacklistData::BlacklistData(std::unique_ptr<Policy> session_policy,
       allowed_types_(std::move(allowed_types)) {
   DCHECK_GE(100u, max_hosts);
 }
-BlacklistData::~BlacklistData() {}
+BlocklistData::~BlocklistData() = default;
 
-void BlacklistData::ClearData() {
-  session_black_list_item_.reset();
-  persistent_black_list_item_.reset();
-  black_list_item_host_map_.clear();
-  black_list_item_type_map_.clear();
+void BlocklistData::ClearData() {
+  session_block_list_item_.reset();
+  persistent_block_list_item_.reset();
+  block_list_item_host_map_.clear();
+  block_list_item_type_map_.clear();
 }
 
-void BlacklistData::AddEntry(const std::string& host_name,
+void BlocklistData::AddEntry(const std::string& host_name,
                              bool opt_out,
                              int type,
                              base::Time time,
                              bool is_from_persistent_storage) {
   // Add to the session based rule if it is enabled.
   if (session_policy_ && !is_from_persistent_storage) {
-    if (!session_black_list_item_) {
-      session_black_list_item_ = std::make_unique<OptOutBlacklistItem>(
+    if (!session_block_list_item_) {
+      session_block_list_item_ = std::make_unique<OptOutBlocklistItem>(
           session_policy_->history, session_policy_->threshold,
           session_policy_->duration);
     }
-    session_black_list_item_->AddEntry(opt_out, time);
+    session_block_list_item_->AddEntry(opt_out, time);
   }
 
   // Add to the persistent rule if it is enabled.
   if (persistent_policy_) {
-    if (!persistent_black_list_item_) {
-      persistent_black_list_item_ = std::make_unique<OptOutBlacklistItem>(
+    if (!persistent_block_list_item_) {
+      persistent_block_list_item_ = std::make_unique<OptOutBlocklistItem>(
           persistent_policy_->history, persistent_policy_->threshold,
           persistent_policy_->duration);
     }
-    persistent_black_list_item_->AddEntry(opt_out, time);
+    persistent_block_list_item_->AddEntry(opt_out, time);
   }
 
   // Add to the host rule if it is enabled. Remove hosts if there are more than
   // |max_hosts_| in the map.
   if (host_policy_) {
-    auto item = black_list_item_host_map_.find(host_name);
-    if (item == black_list_item_host_map_.end()) {
-      auto value = black_list_item_host_map_.emplace(
+    auto item = block_list_item_host_map_.find(host_name);
+    if (item == block_list_item_host_map_.end()) {
+      auto value = block_list_item_host_map_.emplace(
           std::piecewise_construct, std::forward_as_tuple(host_name),
           std::forward_as_tuple(host_policy_->history, host_policy_->threshold,
                                 host_policy_->duration));
@@ -69,14 +69,14 @@ void BlacklistData::AddEntry(const std::string& host_name,
       item = value.first;
     }
     item->second.AddEntry(opt_out, time);
-    if (max_hosts_ > 0 && black_list_item_host_map_.size() > max_hosts_)
+    if (max_hosts_ > 0 && block_list_item_host_map_.size() > max_hosts_)
       EvictOldestHost();
   }
 
   if (type_policy_) {
-    auto item = black_list_item_type_map_.find(type);
-    if (item == black_list_item_type_map_.end()) {
-      auto value = black_list_item_type_map_.emplace(
+    auto item = block_list_item_type_map_.find(type);
+    if (item == block_list_item_type_map_.end()) {
+      auto value = block_list_item_type_map_.emplace(
           std::piecewise_construct, std::forward_as_tuple(type),
           std::forward_as_tuple(type_policy_->history, type_policy_->threshold,
                                 type_policy_->duration));
@@ -87,38 +87,38 @@ void BlacklistData::AddEntry(const std::string& host_name,
   }
 }
 
-BlacklistReason BlacklistData::IsAllowed(
+BlocklistReason BlocklistData::IsAllowed(
     const std::string& host_name,
     int type,
-    bool ignore_long_term_black_list_rules,
+    bool ignore_long_term_block_list_rules,
     base::Time time,
-    std::vector<BlacklistReason>* passed_reasons) const {
+    std::vector<BlocklistReason>* passed_reasons) const {
   // Check the session rule.
   if (session_policy_) {
-    if (session_black_list_item_ &&
-        session_black_list_item_->IsBlackListed(time)) {
-      return BlacklistReason::kUserOptedOutInSession;
+    if (session_block_list_item_ &&
+        session_block_list_item_->IsBlockListed(time)) {
+      return BlocklistReason::kUserOptedOutInSession;
     }
-    passed_reasons->push_back(BlacklistReason::kUserOptedOutInSession);
+    passed_reasons->push_back(BlocklistReason::kUserOptedOutInSession);
   }
 
   // Check whether the persistent rules should be checked this time.
-  if (ignore_long_term_black_list_rules)
-    return BlacklistReason::kAllowed;
+  if (ignore_long_term_block_list_rules)
+    return BlocklistReason::kAllowed;
 
   // Check the persistent rule.
   if (persistent_policy_) {
     if (IsUserOptedOutInGeneral(time)) {
-      return BlacklistReason::kUserOptedOutInGeneral;
+      return BlocklistReason::kUserOptedOutInGeneral;
     }
-    passed_reasons->push_back(BlacklistReason::kUserOptedOutInGeneral);
+    passed_reasons->push_back(BlocklistReason::kUserOptedOutInGeneral);
   }
 
   // Check the host rule.
   if (host_policy_) {
-    if (IsHostBlacklisted(host_name, time))
-      return BlacklistReason::kUserOptedOutOfHost;
-    passed_reasons->push_back(BlacklistReason::kUserOptedOutOfHost);
+    if (IsHostBlocklisted(host_name, time))
+      return BlocklistReason::kUserOptedOutOfHost;
+    passed_reasons->push_back(BlocklistReason::kUserOptedOutOfHost);
   }
 
   // Only allowed types should be recorded.
@@ -126,22 +126,22 @@ BlacklistReason BlacklistData::IsAllowed(
 
   // Check the type rule.
   if (type_policy_) {
-    auto item = black_list_item_type_map_.find(type);
-    if (item != black_list_item_type_map_.end() &&
-        item->second.IsBlackListed(time)) {
-      return BlacklistReason::kUserOptedOutOfType;
+    auto item = block_list_item_type_map_.find(type);
+    if (item != block_list_item_type_map_.end() &&
+        item->second.IsBlockListed(time)) {
+      return BlocklistReason::kUserOptedOutOfType;
     }
-    passed_reasons->push_back(BlacklistReason::kUserOptedOutOfType);
+    passed_reasons->push_back(BlocklistReason::kUserOptedOutOfType);
   }
 
-  return BlacklistReason::kAllowed;
+  return BlocklistReason::kAllowed;
 }
 
-void BlacklistData::EvictOldestHost() {
-  DCHECK_LT(max_hosts_, black_list_item_host_map_.size());
+void BlocklistData::EvictOldestHost() {
+  DCHECK_LT(max_hosts_, block_list_item_host_map_.size());
   base::Optional<base::Time> oldest_opt_out;
   std::string key_to_delete;
-  for (auto& item : black_list_item_host_map_) {
+  for (auto& item : block_list_item_host_map_) {
     base::Optional<base::Time> most_recent_opt_out =
         item.second.most_recent_opt_out_time();
     if (!most_recent_opt_out) {
@@ -155,19 +155,19 @@ void BlacklistData::EvictOldestHost() {
       key_to_delete = item.first;
     }
   }
-  black_list_item_host_map_.erase(key_to_delete);
+  block_list_item_host_map_.erase(key_to_delete);
 }
 
-bool BlacklistData::IsHostBlacklisted(const std::string& host_name,
+bool BlocklistData::IsHostBlocklisted(const std::string& host_name,
                                       base::Time time) const {
-  auto item = black_list_item_host_map_.find(host_name);
-  return item != black_list_item_host_map_.end() &&
-         item->second.IsBlackListed(time);
+  auto item = block_list_item_host_map_.find(host_name);
+  return item != block_list_item_host_map_.end() &&
+         item->second.IsBlockListed(time);
 }
 
-bool BlacklistData::IsUserOptedOutInGeneral(base::Time time) const {
-  return persistent_black_list_item_ &&
-         persistent_black_list_item_->IsBlackListed(time);
+bool BlocklistData::IsUserOptedOutInGeneral(base::Time time) const {
+  return persistent_block_list_item_ &&
+         persistent_block_list_item_->IsBlockListed(time);
 }
 
-}  // namespace blacklist
+}  // namespace blocklist

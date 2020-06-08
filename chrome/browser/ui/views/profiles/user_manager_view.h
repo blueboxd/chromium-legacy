@@ -45,9 +45,6 @@ class UserManagerProfileDialogDelegate
 
   // views::DialogDelegate:
   gfx::Size CalculatePreferredSize() const override;
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
   ui::ModalType GetModalType() const override;
   void DeleteDelegate() override;
   base::string16 GetWindowTitle() const override;
@@ -120,9 +117,6 @@ class UserManagerView : public views::DialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
   // views::DialogDelegateView:
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 

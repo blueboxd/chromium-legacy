@@ -9,9 +9,12 @@
 
 #include "android_webview/browser/lifecycle/webview_app_state_observer.h"
 #include "base/android/jni_android.h"
+#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 
 namespace android_webview {
 
@@ -19,6 +22,8 @@ class AwContents;
 
 class AwContentsLifecycleNotifier {
  public:
+  using OnLoseForegroundCallback = base::RepeatingClosure;
+
   enum class AwContentsState {
     // AwContents isn't attached to a window.
     kDetached,
@@ -29,6 +34,12 @@ class AwContentsLifecycleNotifier {
   };
 
   static AwContentsLifecycleNotifier& GetInstance();
+
+  // The |onLoseForegroundCallback| will be invoked after all observers when app
+  // lose foreground.
+  explicit AwContentsLifecycleNotifier(
+      OnLoseForegroundCallback on_lose_foreground_callback);
+  virtual ~AwContentsLifecycleNotifier();
 
   void OnWebViewCreated(const AwContents* aw_contents);
   void OnWebViewDestroyed(const AwContents* aw_contents);
@@ -60,11 +71,11 @@ class AwContentsLifecycleNotifier {
     DISALLOW_COPY(AwContentsData);
   };
 
-  friend base::NoDestructor<AwContentsLifecycleNotifier>;
   friend class TestAwContentsLifecycleNotifier;
 
-  AwContentsLifecycleNotifier();
-  virtual ~AwContentsLifecycleNotifier();
+  void EnsureOnValidSequence() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
 
   size_t ToIndex(AwContentsState state) const;
   void OnAwContentsStateChanged(
@@ -87,8 +98,13 @@ class AwContentsLifecycleNotifier {
   bool has_aw_contents_ever_created_ = false;
 
   base::ObserverList<WebViewAppStateObserver>::Unchecked observers_;
+
+  OnLoseForegroundCallback on_lose_foreground_callback_;
+
   WebViewAppStateObserver::State app_state_ =
       WebViewAppStateObserver::State::kDestroyed;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AwContentsLifecycleNotifier);
 };

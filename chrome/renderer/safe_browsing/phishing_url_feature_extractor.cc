@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -44,8 +43,8 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
             host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
             net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 
+    // Check if TLD exists for host.
     if (registry_length == 0 || registry_length == std::string::npos) {
-      DVLOG(1) << "Could not find TLD for host: " << host;
       return false;
     }
     DCHECK_LT(registry_length, host.size()) << "Non-zero registry length, but "
@@ -59,8 +58,8 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
     host.erase(tld_start - 1);
     std::vector<std::string> host_tokens = base::SplitString(
         host, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    // Check if domain exists for host.
     if (host_tokens.empty()) {
-      DVLOG(1) << "Could not find domain for host: " << host;
       return false;
     }
     if (!features->AddBooleanFeature(features::kUrlDomainToken +

@@ -30,7 +30,7 @@ class MonitoredVideoStub : public VideoStub {
  public:
   // Callback to be called when channel state changes.  The Callback should not
   // destroy the MonitoredVideoStub object.
-  typedef base::Callback<void(bool connected)> ChannelStateCallback;
+  typedef base::RepeatingCallback<void(bool connected)> ChannelStateCallback;
 
   static const int kConnectivityCheckDelaySeconds = 2;
 

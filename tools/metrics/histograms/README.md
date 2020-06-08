@@ -156,7 +156,7 @@ UmaHistogramEnumeration("NewTabPageAction", action);
 **Note: this method of defining histogram enums is deprecated. Do not use this
 for new enums *in C++*.**
 
-Many legacy enums define a `kCount` sentinel, reying on the compiler to
+Many legacy enums define a `kCount` sentinel, relying on the compiler to
 automatically update it when new entries are added:
 
 ```c++

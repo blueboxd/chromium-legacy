@@ -17,15 +17,15 @@
 #include "base/time/time.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 
-namespace blacklist {
+namespace blocklist {
 
-// The various reasons the Blacklist may tell that the user is blacklisted.
+// The various reasons the Blocklist may tell that the user is blocklisted.
 // This should remain synchronized with enums.xml
-enum class BlacklistReason {
-  // The blacklist may not be loaded very early in the session or when the user
-  // has cleared the blacklist history (usually by clearing their browsing
+enum class BlocklistReason {
+  // The blocklist may not be loaded very early in the session or when the user
+  // has cleared the blocklist history (usually by clearing their browsing
   // history).
-  kBlacklistNotLoaded = 0,
+  kBlocklistNotLoaded = 0,
   kUserOptedOutInSession = 1,
   kUserOptedOutInGeneral = 2,
   kUserOptedOutOfHost = 3,
@@ -37,21 +37,21 @@ enum class BlacklistReason {
 
 // This class describes all of the data used to determine whether an action is
 // allowed based on four possible rules: Session: if the user has opted out
-// of j of the last k entries this session, the action will be blacklisted for a
+// of j of the last k entries this session, the action will be blocklisted for a
 // set duration. Persistent: if the user has opted out of j of the last k
-// entries, the action will be blacklisted for a set duration. Host: if the user
+// entries, the action will be blocklisted for a set duration. Host: if the user
 // has opted out of threshold of the last history entries for a specific host,
-// the action will be blacklisted for a set duration. Type: if the user has
+// the action will be blocklisted for a set duration. Type: if the user has
 // opted out of j of the last k entries for a specific type, the action will be
-// blacklisted for a set duration. This is the in-memory version of the black
+// blocklisted for a set duration. This is the in-memory version of the block
 // list policy. This object is moved from the embedder thread to a background
 // thread, It is not safe to access concurrently on two threads.
-class BlacklistData {
+class BlocklistData {
  public:
-  // A struct describing the general blacklisting pattern used by all of the
-  // blacklisting rules.
+  // A struct describing the general blocklisting pattern used by all of the
+  // blocklisting rules.
   // The most recent |history| entries are looked at and if |threshold| (or
-  // more) of them are opt outs, new actions are considered blacklisted unless
+  // more) of them are opt outs, new actions are considered blocklisted unless
   // the most recent opt out was longer than |duration| ago.
   struct Policy {
     Policy(base::TimeDelta duration, size_t history, int threshold)
@@ -59,16 +59,16 @@ class BlacklistData {
 
     ~Policy() = default;
 
-    // Specifies how long the blacklisting rule lasts after the most recent opt
+    // Specifies how long the blocklisting rule lasts after the most recent opt
     // out.
     const base::TimeDelta duration;
     // Amount of entries evaluated for the rule.
     const size_t history;
-    // The number of opt outs that will trigger blacklisting for the rule.
+    // The number of opt outs that will trigger blocklisting for the rule.
     const int threshold;
   };
 
-  // A map of types that are allowed to be used in the blacklist as well as the
+  // A map of types that are allowed to be used in the blocklist as well as the
   // version that those types are in. Versioning allows removals from persistent
   // memory at session start.
   using AllowedTypesAndVersions = std::map<int, int>;
@@ -83,15 +83,15 @@ class BlacklistData {
   // memory. |allowed_types| contains the action types that are allowed in the
   // session and their corresponding versions. Conversioning is used to clear
   // stale data from the persistent storage.
-  BlacklistData(std::unique_ptr<Policy> session_policy,
+  BlocklistData(std::unique_ptr<Policy> session_policy,
                 std::unique_ptr<Policy> persistent_policy,
                 std::unique_ptr<Policy> host_policy,
                 std::unique_ptr<Policy> type_policy,
                 size_t max_hosts,
                 AllowedTypesAndVersions allowed_types);
-  ~BlacklistData();
+  ~BlocklistData();
 
-  // Adds a new entry for all rules to use when evaluating blacklisting state.
+  // Adds a new entry for all rules to use when evaluating blocklisting state.
   // |is_from_persistent_storage| is used to delineate between data added from
   // this session, and previous sessions.
   void AddEntry(const std::string& host_name,
@@ -101,15 +101,15 @@ class BlacklistData {
                 bool is_from_persistent_storage);
 
   // Whether the user is opted out when considering all enabled rules. if
-  // |ignore_long_term_black_list_rules| is true, this will only check the
+  // |ignore_long_term_block_list_rules| is true, this will only check the
   // session rule. For every reason that is checked, but does not trigger
-  // blacklisting, a new reason will be appended to the end |passed_reasons|.
+  // blocklisting, a new reason will be appended to the end |passed_reasons|.
   // |time| is the time that decision should be evaluated at (usually now).
-  BlacklistReason IsAllowed(const std::string& host_name,
+  BlocklistReason IsAllowed(const std::string& host_name,
                             int type,
-                            bool ignore_long_term_black_list_rules,
+                            bool ignore_long_term_block_list_rules,
                             base::Time time,
-                            std::vector<BlacklistReason>* passed_reasons) const;
+                            std::vector<BlocklistReason>* passed_reasons) const;
 
   // This clears all data in all rules.
   void ClearData();
@@ -121,22 +121,22 @@ class BlacklistData {
     return allowed_types_;
   }
 
-  // Whether the specific |host_name| is blacklisted based only on the host
+  // Whether the specific |host_name| is blocklisted based only on the host
   // rule.
-  bool IsHostBlacklisted(const std::string& host_name, base::Time time) const;
+  bool IsHostBlocklisted(const std::string& host_name, base::Time time) const;
 
-  // Whether the user is opted out based solely on the persistent blacklist
+  // Whether the user is opted out based solely on the persistent blocklist
   // rule.
   bool IsUserOptedOutInGeneral(base::Time time) const;
 
   // Exposed for logging purposes only.
-  const std::map<std::string, OptOutBlacklistItem>& black_list_item_host_map()
+  const std::map<std::string, OptOutBlocklistItem>& block_list_item_host_map()
       const {
-    return black_list_item_host_map_;
+    return block_list_item_host_map_;
   }
 
  private:
-  // Removes the oldest (or safest) host item from |black_list_item_host_map_|.
+  // Removes the oldest (or safest) host item from |block_list_item_host_map_|.
   // Oldest is defined by most recent opt out time, and safest is defined as an
   // item with no opt outs.
   void EvictOldestHost();
@@ -144,33 +144,33 @@ class BlacklistData {
   // The session rule policy. If non-null the session rule is enforced.
   std::unique_ptr<Policy> session_policy_;
   // The session rule history.
-  std::unique_ptr<OptOutBlacklistItem> session_black_list_item_;
+  std::unique_ptr<OptOutBlocklistItem> session_block_list_item_;
 
   // The persistent rule policy. If non-null the persistent rule is enforced.
   std::unique_ptr<Policy> persistent_policy_;
   // The persistent rule history.
-  std::unique_ptr<OptOutBlacklistItem> persistent_black_list_item_;
+  std::unique_ptr<OptOutBlocklistItem> persistent_block_list_item_;
 
   // The host rule policy. If non-null the host rule is enforced.
   std::unique_ptr<Policy> host_policy_;
-  // The maximum number of hosts allowed in the host blacklist.
+  // The maximum number of hosts allowed in the host blocklist.
   size_t max_hosts_;
-  // The host rule history. Each host is stored as a separate blacklist history.
-  std::map<std::string, OptOutBlacklistItem> black_list_item_host_map_;
+  // The host rule history. Each host is stored as a separate blocklist history.
+  std::map<std::string, OptOutBlocklistItem> block_list_item_host_map_;
 
   // The type rule policy. If non-null the type rule is enforced.
   std::unique_ptr<Policy> type_policy_;
-  // The type rule history. Each type is stored as a separate blacklist history.
-  std::map<int, OptOutBlacklistItem> black_list_item_type_map_;
+  // The type rule history. Each type is stored as a separate blocklist history.
+  std::map<int, OptOutBlocklistItem> block_list_item_type_map_;
 
   // The allowed types and what version they are. If it is non-empty, it is used
   // to remove stale entries from the database and to DCHECK that other methods
   // are not using disallowed types.
   AllowedTypesAndVersions allowed_types_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlacklistData);
+  DISALLOW_COPY_AND_ASSIGN(BlocklistData);
 };
 
-}  // namespace blacklist
+}  // namespace blocklist
 
 #endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DATA_H_

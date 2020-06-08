@@ -6,10 +6,29 @@
  * @fileoverview Polymer element for displaying material design Update screen.
  */
 
-Polymer({
-  is: 'oobe-update-md',
+'use strict';
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+(function() {
+
+const USER_ACTION_ACCEPT_UPDATE_OVER_CELLUAR = 'update-accept-cellular';
+const USER_ACTION_REJECT_UPDATE_OVER_CELLUAR = 'update-reject-cellular';
+const USER_ACTION_CANCEL_UPDATE_SHORTCUT = 'cancel-update';
+
+Polymer({
+  is: 'oobe-update',
+
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+
+  EXTERNAL_API: [
+    'setEstimatedTimeLeft',
+    'showEstimatedTimeLeft',
+    'setUpdateCompleted',
+    'showUpdateCurtain',
+    'setProgressMessage',
+    'setUpdateProgress',
+    'setRequiresPermissionForCellular',
+    'setCancelUpdateShortcutEnabled',
+  ],
 
   properties: {
     /**
@@ -85,16 +104,97 @@ Polymer({
     },
   },
 
+  ready() {
+    this.initializeLoginScreen('UpdateScreen', {
+      resetAllowed: true,
+    });
+  },
+
+  /**
+   * Cancels the screen.
+   */
+  cancel() {
+    this.cancelHint = 'cancelledUpdateMessage';
+    this.userActed(USER_ACTION_CANCEL_UPDATE_SHORTCUT);
+  },
+
   onBeforeShow() {
     cr.ui.login.invokePolymerMethod(
         this.$['checking-downloading-update'], 'onBeforeShow');
   },
 
   onBackClicked_() {
-    chrome.send('login.UpdateScreen.userActed', ['update-reject-cellular']);
+    this.userActed(USER_ACTION_REJECT_UPDATE_OVER_CELLUAR);
   },
 
   onNextClicked_() {
-    chrome.send('login.UpdateScreen.userActed', ['update-accept-cellular']);
+    this.userActed(USER_ACTION_ACCEPT_UPDATE_OVER_CELLUAR);
   },
+
+  /** @param {boolean} enabled */
+  setCancelUpdateShortcutEnabled(enabled) {
+    this.cancelAllowed = enabled;
+  },
+
+  /**
+   * Sets update's progress bar value.
+   * @param {number} progress Percentage of the progress bar.
+   */
+  setUpdateProgress(progress) {
+    this.progressValue = progress;
+  },
+
+  /**
+   * Shows or hides the warning that asks the user for permission to update
+   * over celluar.
+   * @param {boolean} requiresPermission Are the warning visible?
+   */
+  setRequiresPermissionForCellular(requiresPermission) {
+    this.requiresPermissionForCellular = requiresPermission;
+  },
+
+  /**
+   * Shows or hides downloading ETA message.
+   * @param {boolean} visible Are ETA message visible?
+   */
+  showEstimatedTimeLeft(visible) {
+    this.estimatedTimeLeftShown = visible;
+  },
+
+  /**
+   * Sets estimated time left until download will complete.
+   * @param {number} seconds Time left in seconds.
+   */
+  setEstimatedTimeLeft(seconds) {
+    this.estimatedTimeLeft = seconds;
+  },
+
+  /**
+   * Sets message below progress bar. Hide the message by setting an empty
+   * string.
+   * @param {string} message Message that should be shown.
+   */
+  setProgressMessage(message) {
+    let visible = !!message;
+    this.progressMessage = message;
+    this.estimatedTimeLeftShown = !visible;
+  },
+
+  /**
+   * Marks update completed. Shows "update completed" message.
+   * @param {boolean} is_completed True if update process is completed.
+   */
+  setUpdateCompleted(is_completed) {
+    this.updateCompleted = is_completed;
+  },
+
+  /**
+   * Shows or hides update curtain.
+   * @param {boolean} visible Are curtains visible?
+   */
+  showUpdateCurtain(visible) {
+    this.checkingForUpdate = visible;
+  },
+
 });
+})();

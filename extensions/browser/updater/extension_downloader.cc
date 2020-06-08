@@ -1300,8 +1300,6 @@ void ExtensionDownloader::OnExtensionLoadComplete(base::FilePath crx_path) {
       RETRY_HISTOGRAM("CrxFetchFailure",
                       extensions_queue_.active_request_failure_count(),
                       url);
-      // net_error is 0 (net::OK) or negative. (See net/base/net_errors.h)
-      base::UmaHistogramSparse("Extensions.CrxFetchError", -net_error);
       delegate_->OnExtensionDownloadStageChanged(
           id, ExtensionDownloaderDelegate::Stage::FINISHED);
       ExtensionDownloaderDelegate::FailureData failure_data(

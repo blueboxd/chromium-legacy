@@ -6,8 +6,8 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
+#include "components/prerender/common/prerender_messages.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"

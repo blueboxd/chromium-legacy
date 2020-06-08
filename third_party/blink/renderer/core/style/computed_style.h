@@ -2617,11 +2617,6 @@ class ComputedStyle : public ComputedStyleBase,
     return DarkColorScheme() ? Color::kWhite : Color::kBlack;
   }
 
-  Color ForcedBackplateColor() const {
-    return LayoutTheme::GetTheme().SystemColor(CSSValueID::kCanvas,
-                                               WebColorScheme::kLight);
-  }
-
   bool GeneratesMarkerImage() const {
     return Display() == EDisplay::kListItem && ListStyleImage() &&
            !ListStyleImage()->ErrorOccurred();

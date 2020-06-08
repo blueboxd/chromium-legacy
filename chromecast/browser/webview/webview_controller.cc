@@ -42,6 +42,14 @@ class WebviewUserData : public base::SupportsUserData::Data {
   WebviewController* controller_;
 };
 
+void UpdateWebkitPreferences(content::RenderViewHost* render_view_host) {
+  content::WebPreferences prefs = render_view_host->GetWebkitPreferences();
+  // Allow Webviews to show scrollbars. These are globally disabled since Cast
+  // Apps are not expected to be scrollable.
+  prefs.hide_scrollbars = false;
+  render_view_host->UpdateWebkitPreferences(prefs);
+}
+
 }  // namespace
 
 WebviewController::WebviewController(content::BrowserContext* browser_context,
@@ -163,6 +171,12 @@ void WebviewController::DidFirstVisuallyNonEmptyPaint() {
     event->set_did_first_visually_non_empty_paint(true);
     client_->EnqueueSend(std::move(response));
   }
+}
+
+void WebviewController::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+  WebContentController::RenderViewCreated(render_view_host);
+  UpdateWebkitPreferences(render_view_host);
 }
 
 void WebviewController::SendNavigationEvent(

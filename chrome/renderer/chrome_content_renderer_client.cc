@@ -86,7 +86,7 @@
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
-#include "components/prerender/prerender_types.h"
+#include "components/prerender/common/prerender_types.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/renderer/threat_dom_details.h"
 #include "components/spellcheck/spellcheck_buildflags.h"

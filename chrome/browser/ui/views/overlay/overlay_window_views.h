@@ -48,7 +48,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   gfx::Rect GetBounds() override;
   void UpdateVideoSize(const gfx::Size& natural_size) override;
   void SetPlaybackState(PlaybackState playback_state) override;
-  void SetAlwaysHidePlayPauseButton(bool is_visible) override;
+  void SetPlayPauseButtonVisibility(bool is_visible) override;
   void SetSkipAdButtonVisibility(bool is_visible) override;
   void SetNextTrackButtonVisibility(bool is_visible) override;
   void SetPreviousTrackButtonVisibility(bool is_visible) override;
@@ -183,9 +183,8 @@ class OverlayWindowViews : public content::OverlayWindow,
   // components has been initialized.
   bool has_been_shown_ = false;
 
-  // Whether or not the play/pause button will always be hidden. This is the
-  // case for media streams video that user is not allowed to play/pause.
-  bool always_hide_play_pause_button_ = false;
+  // Whether or not the play/pause button will be shown.
+  bool show_play_pause_button_ = false;
 
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/updater/extension_update_client_base_browsertest.h"
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -32,7 +33,7 @@ class TestChromeUpdateClientConfig
   TestChromeUpdateClientConfig(content::BrowserContext* context,
                                const std::vector<GURL>& update_url,
                                const std::vector<GURL>& ping_url)
-      : extensions::ChromeUpdateClientConfig(context),
+      : extensions::ChromeUpdateClientConfig(context, base::nullopt),
         update_url_(update_url),
         ping_url_(ping_url) {}
 

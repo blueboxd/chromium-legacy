@@ -661,7 +661,6 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
 
 void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(
     GpuWatchdogThreadEvent thread_event) {
-  base::UmaHistogramEnumeration("GPU.WatchdogThread.Event.V2", thread_event);
   base::UmaHistogramEnumeration("GPU.WatchdogThread.Event", thread_event);
 }
 

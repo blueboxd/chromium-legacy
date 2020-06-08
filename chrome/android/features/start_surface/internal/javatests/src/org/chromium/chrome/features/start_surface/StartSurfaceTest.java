@@ -230,11 +230,6 @@ public class StartSurfaceTest {
 
         TabUiTestHelper.createTabs(cta, true, 1);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 1);
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
         TabUiTestHelper.enterTabSwitcher(cta);
         if (!isInstantReturn()) {
             // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
@@ -322,11 +317,6 @@ public class StartSurfaceTest {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -387,11 +377,6 @@ public class StartSurfaceTest {
             fail("Failed to tap 'more tabs' " + e.toString());
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
@@ -457,11 +442,6 @@ public class StartSurfaceTest {
         }
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
 
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
@@ -544,11 +524,6 @@ public class StartSurfaceTest {
             waitForTabModel();
             // Single surface is shown as homepage. Exit in order to get into tab switcher later.
             pressBack();
-        }
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
         }
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         onViewWaiting(allOf(withId(R.id.secondary_tasks_surface_view), isDisplayed()));
@@ -688,11 +663,6 @@ public class StartSurfaceTest {
         assertThat(
                 mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
                 equalTo(2));
-        if (isInstantReturn()) {
-            // TODO(crbug.com/1076274): fix toolbar to avoid wrongly focusing on the toolbar
-            // omnibox.
-            return;
-        }
         // Press back button should close the tab opened from the Start surface.
         OverviewModeBehaviorWatcher showWatcher =
                 TabUiTestHelper.createOverviewShowWatcher(mActivityTestRule.getActivity());

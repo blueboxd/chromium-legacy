@@ -20,41 +20,41 @@ namespace previews {
 
 namespace {
 
-PreviewsEligibilityReason BlacklistReasonToPreviewsReason(
-    blacklist::BlacklistReason reason) {
+PreviewsEligibilityReason BlocklistReasonToPreviewsReason(
+    blocklist::BlocklistReason reason) {
   switch (reason) {
-    case blacklist::BlacklistReason::kBlacklistNotLoaded:
-      return PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED;
-    case blacklist::BlacklistReason::kUserOptedOutInSession:
+    case blocklist::BlocklistReason::kBlocklistNotLoaded:
+      return PreviewsEligibilityReason::BLOCKLIST_DATA_NOT_LOADED;
+    case blocklist::BlocklistReason::kUserOptedOutInSession:
       return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
-    case blacklist::BlacklistReason::kUserOptedOutInGeneral:
-      return PreviewsEligibilityReason::USER_BLACKLISTED;
-    case blacklist::BlacklistReason::kUserOptedOutOfHost:
-      return PreviewsEligibilityReason::HOST_BLACKLISTED;
-    case blacklist::BlacklistReason::kUserOptedOutOfType:
-      NOTREACHED() << "Previews does not support type-base blacklisting";
+    case blocklist::BlocklistReason::kUserOptedOutInGeneral:
+      return PreviewsEligibilityReason::USER_BLOCKLISTED;
+    case blocklist::BlocklistReason::kUserOptedOutOfHost:
+      return PreviewsEligibilityReason::HOST_BLOCKLISTED;
+    case blocklist::BlocklistReason::kUserOptedOutOfType:
+      NOTREACHED() << "Previews does not support type-base blocklisting";
       return PreviewsEligibilityReason::ALLOWED;
-    case blacklist::BlacklistReason::kAllowed:
+    case blocklist::BlocklistReason::kAllowed:
       return PreviewsEligibilityReason::ALLOWED;
   }
 }
 
-}
+}  // namespace
 
-PreviewsBlackList::PreviewsBlackList(
-    std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+PreviewsBlockList::PreviewsBlockList(
+    std::unique_ptr<blocklist::OptOutStore> opt_out_store,
     base::Clock* clock,
-    blacklist::OptOutBlacklistDelegate* blacklist_delegate,
-    blacklist::BlacklistData::AllowedTypesAndVersions allowed_types)
-    : blacklist::OptOutBlacklist(std::move(opt_out_store),
+    blocklist::OptOutBlocklistDelegate* blocklist_delegate,
+    blocklist::BlocklistData::AllowedTypesAndVersions allowed_types)
+    : blocklist::OptOutBlocklist(std::move(opt_out_store),
                                  clock,
-                                 blacklist_delegate),
+                                 blocklist_delegate),
       allowed_types_(std::move(allowed_types)) {
-  DCHECK(blacklist_delegate);
+  DCHECK(blocklist_delegate);
   Init();
 }
 
-bool PreviewsBlackList::ShouldUseSessionPolicy(base::TimeDelta* duration,
+bool PreviewsBlockList::ShouldUseSessionPolicy(base::TimeDelta* duration,
                                                size_t* history,
                                                int* threshold) const {
   *duration = params::SingleOptOutDuration();
@@ -63,38 +63,38 @@ bool PreviewsBlackList::ShouldUseSessionPolicy(base::TimeDelta* duration,
   return true;
 }
 
-bool PreviewsBlackList::ShouldUsePersistentPolicy(base::TimeDelta* duration,
+bool PreviewsBlockList::ShouldUsePersistentPolicy(base::TimeDelta* duration,
                                                   size_t* history,
                                                   int* threshold) const {
-  *history = params::MaxStoredHistoryLengthForHostIndifferentBlackList();
-  *threshold = params::HostIndifferentBlackListOptOutThreshold();
-  *duration = params::HostIndifferentBlackListPerHostDuration();
+  *history = params::MaxStoredHistoryLengthForHostIndifferentBlockList();
+  *threshold = params::HostIndifferentBlockListOptOutThreshold();
+  *duration = params::HostIndifferentBlockListPerHostDuration();
   return true;
 }
-bool PreviewsBlackList::ShouldUseHostPolicy(base::TimeDelta* duration,
+bool PreviewsBlockList::ShouldUseHostPolicy(base::TimeDelta* duration,
                                             size_t* history,
                                             int* threshold,
                                             size_t* max_hosts) const {
-  *max_hosts = params::MaxInMemoryHostsInBlackList();
-  *history = params::MaxStoredHistoryLengthForPerHostBlackList();
-  *threshold = params::PerHostBlackListOptOutThreshold();
-  *duration = params::PerHostBlackListDuration();
+  *max_hosts = params::MaxInMemoryHostsInBlockList();
+  *history = params::MaxStoredHistoryLengthForPerHostBlockList();
+  *threshold = params::PerHostBlockListOptOutThreshold();
+  *duration = params::PerHostBlockListDuration();
   return true;
 }
-bool PreviewsBlackList::ShouldUseTypePolicy(base::TimeDelta* duration,
+bool PreviewsBlockList::ShouldUseTypePolicy(base::TimeDelta* duration,
                                             size_t* history,
                                             int* threshold) const {
   return false;
 }
 
-blacklist::BlacklistData::AllowedTypesAndVersions
-PreviewsBlackList::GetAllowedTypes() const {
+blocklist::BlocklistData::AllowedTypesAndVersions
+PreviewsBlockList::GetAllowedTypes() const {
   return allowed_types_;
 }
 
-PreviewsBlackList::~PreviewsBlackList() {}
+PreviewsBlockList::~PreviewsBlockList() = default;
 
-base::Time PreviewsBlackList::AddPreviewNavigation(const GURL& url,
+base::Time PreviewsBlockList::AddPreviewNavigation(const GURL& url,
                                                    bool opt_out,
                                                    PreviewsType type) {
   DCHECK(url.has_host());
@@ -105,27 +105,27 @@ base::Time PreviewsBlackList::AddPreviewNavigation(const GURL& url,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(opt_out);
 
-  return blacklist::OptOutBlacklist::AddEntry(url.host(), opt_out,
+  return blocklist::OptOutBlocklist::AddEntry(url.host(), opt_out,
                                               static_cast<int>(type));
 }
 
-PreviewsEligibilityReason PreviewsBlackList::IsLoadedAndAllowed(
+PreviewsEligibilityReason PreviewsBlockList::IsLoadedAndAllowed(
     const GURL& url,
     PreviewsType type,
-    bool ignore_long_term_black_list_rules,
+    bool ignore_long_term_block_list_rules,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
   DCHECK(url.has_host());
 
-  std::vector<blacklist::BlacklistReason> passed_blacklist_reasons;
-  blacklist::BlacklistReason reason =
-      blacklist::OptOutBlacklist::IsLoadedAndAllowed(
-          url.host(), static_cast<int>(type), ignore_long_term_black_list_rules,
-          &passed_blacklist_reasons);
-  for (auto passed_reason : passed_blacklist_reasons) {
-    passed_reasons->push_back(BlacklistReasonToPreviewsReason(passed_reason));
+  std::vector<blocklist::BlocklistReason> passed_blocklist_reasons;
+  blocklist::BlocklistReason reason =
+      blocklist::OptOutBlocklist::IsLoadedAndAllowed(
+          url.host(), static_cast<int>(type), ignore_long_term_block_list_rules,
+          &passed_blocklist_reasons);
+  for (auto passed_reason : passed_blocklist_reasons) {
+    passed_reasons->push_back(BlocklistReasonToPreviewsReason(passed_reason));
   }
 
-  return BlacklistReasonToPreviewsReason(reason);
+  return BlocklistReasonToPreviewsReason(reason);
 }
 
 }  // namespace previews

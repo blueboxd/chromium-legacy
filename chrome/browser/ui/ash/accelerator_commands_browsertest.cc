@@ -33,18 +33,6 @@ using testing::WithParamInterface;
 
 namespace {
 
-// WidgetDelegateView which allows the widget to be maximized.
-class MaximizableWidgetDelegate : public views::WidgetDelegateView {
- public:
-  MaximizableWidgetDelegate() {}
-  ~MaximizableWidgetDelegate() override {}
-
-  bool CanMaximize() const override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MaximizableWidgetDelegate);
-};
-
 bool IsInImmersive(aura::Window* window) {
   return window->GetProperty(ash::kImmersiveIsActive);
 }
@@ -153,7 +141,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   // 5) Miscellaneous windows (e.g. task manager).
   views::Widget::InitParams params;
-  params.delegate = new MaximizableWidgetDelegate();
+  params.delegate = new views::WidgetDelegateView;
+  params.delegate->SetCanMaximize(true);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   views::Widget misc_widget;
   widget = &misc_widget;

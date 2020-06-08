@@ -20,10 +20,6 @@
     fill: currentColor;
   }
 
-  body {
-    background-color: Canvas;
-  }
-
   :focus {
     outline-color: Highlight;
   }

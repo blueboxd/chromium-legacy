@@ -78,7 +78,8 @@ public class ScreenshotCoordinator {
      * Opens the screenshot sharesheet.
      */
     private void launchSharesheet() {
-        ScreenshotShareSheetCoordinator shareSheet = new ScreenshotShareSheetCoordinator(mActivity);
+        ScreenshotShareSheetDialogCoordinator shareSheet =
+                new ScreenshotShareSheetDialogCoordinator(mActivity, mScreenshot);
         shareSheet.showShareSheet();
         mScreenshot = null;
     }

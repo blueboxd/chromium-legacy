@@ -51,6 +51,7 @@ void ProfilePicker::Hide() {
 
 ProfilePickerView::ProfilePickerView()
     : web_view_(nullptr), initialized_(InitState::kNotInitialized) {
+  SetHasWindowSizeControls(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
   // TODO(crbug.com/1063856): Add |RecordDialogCreation|.
@@ -117,18 +118,6 @@ void ProfilePickerView::Init(Profile* system_profile) {
 
 gfx::Size ProfilePickerView::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
-}
-
-bool ProfilePickerView::CanResize() const {
-  return true;
-}
-
-bool ProfilePickerView::CanMaximize() const {
-  return true;
-}
-
-bool ProfilePickerView::CanMinimize() const {
-  return true;
 }
 
 base::string16 ProfilePickerView::GetWindowTitle() const {

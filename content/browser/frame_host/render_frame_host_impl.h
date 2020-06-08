@@ -1534,6 +1534,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
   void DidFailLoadWithError(const GURL& url, int32_t error_code) override;
   void DidFocusFrame() override;
+  void DidCallFocus() override;
   void DidAddContentSecurityPolicies(
       std::vector<network::mojom::ContentSecurityPolicyPtr> policies) override;
   void EnforceInsecureRequestPolicy(
@@ -1613,6 +1614,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ContentsPreferredSizeChanged(const gfx::Size& pref_size) override;
   void TextAutosizerPageInfoChanged(
       blink::mojom::TextAutosizerPageInfoPtr page_info) override;
+  void FocusPage() override;
 
   void ReportNoBinderForInterface(const std::string& error);
 
@@ -1865,7 +1867,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           uint32_t offset,
                           const gfx::Range& range);
   void OnSetNeedsOcclusionTracking(bool needs_tracking);
-  void OnFrameDidCallFocus();
   void OnSaveImageFromDataURL(const std::string& url_str);
 
   // Computes the IsolationInfo for both navigations and subresources.

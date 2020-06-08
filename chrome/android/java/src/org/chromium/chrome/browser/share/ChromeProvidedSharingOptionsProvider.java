@@ -12,6 +12,7 @@ import android.content.Context;
 import androidx.annotation.IntDef;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
@@ -19,7 +20,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.ShareSheetPropertyModelBuilder.ContentType;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
@@ -30,9 +30,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.Shee
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.share.ShareParams;
-import org.chromium.printing.PrintManagerDelegateImpl;
-import org.chromium.printing.PrintingController;
-import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
 
@@ -57,6 +54,7 @@ class ChromeProvidedSharingOptionsProvider {
     private final ShareSheetBottomSheetContent mBottomSheetContent;
     private final PrefServiceBridge mPrefServiceBridge;
     private final ShareParams mShareParams;
+    private final Callback<Tab> mPrintTabCallback;
     private final long mShareStartTime;
     private ScreenshotCoordinator mScreenshotCoordinator;
     private Map<Integer, Set<Integer>> mSharingOptionToContentTypes;
@@ -72,18 +70,20 @@ class ChromeProvidedSharingOptionsProvider {
      * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides printing
      * preferences.
      * @param shareParams The {@link ShareParams} for the current share.
+     * @param printTab A {@link Callback} that will print a given Tab.
      * @param shareStartTime The start time of the current share.
      */
     ChromeProvidedSharingOptionsProvider(Activity activity, Supplier<Tab> tabProvider,
             BottomSheetController bottomSheetController,
             ShareSheetBottomSheetContent bottomSheetContent, PrefServiceBridge prefServiceBridge,
-            ShareParams shareParams, long shareStartTime) {
+            ShareParams shareParams, Callback<Tab> printTab, long shareStartTime) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mBottomSheetController = bottomSheetController;
         mBottomSheetContent = bottomSheetContent;
         mPrefServiceBridge = prefServiceBridge;
         mShareParams = shareParams;
+        mPrintTabCallback = printTab;
         mShareStartTime = shareStartTime;
         mSharingOptionToContentTypes = createSharingOptionToContentTypesMap();
     }
@@ -249,11 +249,7 @@ class ChromeProvidedSharingOptionsProvider {
                             "Sharing.SharingHubAndroid.TimeToShare",
                             System.currentTimeMillis() - mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
-                    PrintingController printingController = PrintingControllerImpl.getInstance();
-                    if (printingController != null && !printingController.isBusy()) {
-                        printingController.startPrint(new TabPrinter(mTabProvider.get()),
-                                new PrintManagerDelegateImpl(mActivity));
-                    }
+                    mPrintTabCallback.onResult(mTabProvider.get());
                 },
                 /*isFirstParty=*/true);
     }

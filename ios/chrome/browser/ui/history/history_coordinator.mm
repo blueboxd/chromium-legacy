@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_mediator.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"

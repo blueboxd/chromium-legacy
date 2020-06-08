@@ -1602,7 +1602,9 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
     const std::vector<std::unique_ptr<CreditCard>>& server_cards,
     base::TimeDelta disused_data_threshold) {
   size_t num_local_cards = 0;
+  size_t num_local_cards_with_nickname = 0;
   size_t num_masked_cards = 0;
+  size_t num_masked_cards_with_nickname = 0;
   size_t num_unmasked_cards = 0;
   size_t num_disused_local_cards = 0;
   size_t num_disused_masked_cards = 0;
@@ -1634,6 +1636,8 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
             days_since_last_use);
         num_local_cards += 1;
         num_disused_local_cards += disused_delta;
+        if (card->HasValidNickname())
+          num_local_cards_with_nickname += 1;
         break;
       case CreditCard::MASKED_SERVER_CARD:
         UMA_HISTOGRAM_COUNTS_1000(
@@ -1644,6 +1648,8 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
             days_since_last_use);
         num_masked_cards += 1;
         num_disused_masked_cards += disused_delta;
+        if (card->HasValidNickname())
+          num_masked_cards_with_nickname += 1;
         break;
       case CreditCard::FULL_SERVER_CARD:
         UMA_HISTOGRAM_COUNTS_1000(
@@ -1670,10 +1676,15 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount", num_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Local",
                             num_local_cards);
+  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Local.WithNickname",
+                            num_local_cards_with_nickname);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server",
                             num_server_cards);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server.Masked",
                             num_masked_cards);
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Autofill.StoredCreditCardCount.Server.Masked.WithNickname",
+      num_masked_cards_with_nickname);
   UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredCreditCardCount.Server.Unmasked",
                             num_unmasked_cards);
 

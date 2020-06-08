@@ -32,7 +32,7 @@ class ECPrivateKey;
 
 namespace device {
 
-class PublicKey;
+struct PublicKey;
 
 constexpr size_t kMaxPinRetries = 8;
 

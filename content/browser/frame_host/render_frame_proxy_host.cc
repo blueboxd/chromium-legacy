@@ -299,6 +299,10 @@ void RenderFrameProxyHost::OnAssociatedInterfaceRequest(
     remote_frame_host_receiver_.Bind(
         mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrameHost>(
             std::move(handle)));
+  } else if (interface_name == blink::mojom::RemoteMainFrameHost::Name_) {
+    remote_main_frame_host_receiver_.Bind(
+        mojo::PendingAssociatedReceiver<blink::mojom::RemoteMainFrameHost>(
+            std::move(handle)));
   }
 }
 
@@ -657,6 +661,10 @@ void RenderFrameProxyHost::RouteMessageEvent(
 
   target_rfh->PostMessageEvent(translated_source_token, source_origin,
                                target_origin, std::move(message));
+}
+
+void RenderFrameProxyHost::FocusPage() {
+  frame_tree_node_->current_frame_host()->FocusPage();
 }
 
 void RenderFrameProxyHost::DidChangeOpener(

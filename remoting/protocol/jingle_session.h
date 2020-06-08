@@ -47,7 +47,8 @@ class JingleSession : public Session {
  private:
   friend class JingleSessionManager;
 
-  typedef base::Callback<void(JingleMessageReply::ErrorType)> ReplyCallback;
+  typedef base::RepeatingCallback<void(JingleMessageReply::ErrorType)>
+      ReplyCallback;
 
   explicit JingleSession(JingleSessionManager* session_manager);
 

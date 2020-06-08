@@ -196,7 +196,7 @@ public final class SigninTestUtil {
         }
     }
 
-    private static void signOut() {
+    static void signOut() {
         ThreadUtils.assertOnBackgroundThread();
         CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

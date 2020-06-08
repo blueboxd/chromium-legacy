@@ -68,7 +68,8 @@ const SwitchAccessPredicate = {
       return true;
     }
 
-    if (SwitchAccessPredicate.isTextInput(node)) {
+    if (AutomationPredicate.comboBox(node) ||
+        SwitchAccessPredicate.isTextInput(node)) {
       return true;
     }
 
@@ -118,6 +119,9 @@ const SwitchAccessPredicate = {
       return false;
     }
     if (node.state[StateType.INVISIBLE]) {
+      return false;
+    }
+    if (AutomationPredicate.comboBox(node)) {
       return false;
     }
 

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
@@ -30,9 +31,11 @@ class DropTargetEvent;
 
 namespace views {
 class DesktopNativeCursorManager;
+class Widget;
 
 class VIEWS_EXPORT DesktopDragDropClientOzone
     : public aura::client::DragDropClient,
+      public ui::WmDragHandler::Delegate,
       public ui::WmDropHandler,
       public aura::WindowObserver {
  public:
@@ -43,6 +46,33 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
 
  private:
   friend class DesktopDragDropClientOzoneTest;
+
+  // Holds data related to the drag operation started by this client.
+  struct DragContext {
+    DragContext();
+    ~DragContext();
+
+    // Exits the drag loop.
+    base::OnceClosure quit_closure;
+
+    // Widget that the user drags around.  May be nullptr.
+    std::unique_ptr<Widget> widget;
+
+    // The size of drag image.
+    gfx::Size size;
+
+    // The offset of |drag_widget_| relative to the mouse position.
+    gfx::Vector2d offset;
+
+    // The last received drag location.  The drag widget is moved asynchronously
+    // so its position is updated when the UI thread has time for that.  When
+    // the first change to the location happens, a call to UpdateDragWidget()
+    // is posted, and this location is set.  The location can be updated a few
+    // more times until the posted task is executed, but no more than a single
+    // call to UpdateDragWidget() is scheduled at any time; this optional is set
+    // means that the task is scheduled.
+    base::Optional<gfx::Point> last_screen_location_px;
+  };
 
   // aura::client::DragDropClient
   int StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
@@ -67,7 +97,10 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   // aura::WindowObserver
   void OnWindowDestroyed(aura::Window* window) override;
 
-  void OnDragSessionClosed(int operation);
+  // ui::WmDragHandler::Delegate
+  void OnDragLocationChanged(const gfx::Point& screen_point_px) override;
+  void OnDragFinished(int operation) override;
+
   void QuitRunLoop();
 
   // Returns a DropTargetEvent to be passed to the DragDropDelegate.
@@ -77,6 +110,12 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   // drop is not possible.
   std::unique_ptr<ui::DropTargetEvent> UpdateTargetAndCreateDropEvent(
       const gfx::PointF& point);
+
+  // Updates |drag_drop_delegate_| along with |window|.
+  void UpdateDragDropDelegate(aura::Window* window);
+
+  // Updates |drag_widget_| so it is aligned with the last drag location.
+  void UpdateDragWidgetLocation();
 
   // Resets |drag_drop_delegate_|.  Calls OnDragExited() before resetting.
   void ResetDragDropTarget();
@@ -95,20 +134,16 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
   // The data to be delivered through the drag and drop.
   std::unique_ptr<ui::OSExchangeData> data_to_drop_;
 
-  // The most recent native coordinates of a drag.
+  // The most recent native coordinates of an incoming drag.  Updated while
+  // the mouse is moved, and used at dropping.
   gfx::PointF last_drag_point_;
-
-  // Cursor in use prior to the move loop starting. Restored when the move loop
-  // quits.
-  gfx::NativeCursor initial_cursor_;
-
-  base::OnceClosure quit_closure_;
 
   // The operation bitfield.
   int drag_operation_ = 0;
 
-  //  The flag that controls whether it has a nested run loop.
-  bool in_move_loop_ = false;
+  std::unique_ptr<DragContext> drag_context_;
+
+  base::WeakPtrFactory<DesktopDragDropClientOzone> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientOzone);
 };

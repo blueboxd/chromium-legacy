@@ -79,6 +79,7 @@ class VIEWS_EXPORT WidgetDelegate {
   };
 
   WidgetDelegate();
+  virtual ~WidgetDelegate();
 
   // Sets the return value of CanActivate(). Default is true.
   void SetCanActivate(bool can_activate);
@@ -285,6 +286,10 @@ class VIEWS_EXPORT WidgetDelegate {
   void SetCenterTitle(bool center_title);
 #endif
 
+  // A convenience wrapper that does all three of SetCanMaximize,
+  // SetCanMinimize, and SetCanResize.
+  void SetHasWindowSizeControls(bool has_controls);
+
   void RegisterWindowWillCloseCallback(base::OnceClosure callback);
   void RegisterWindowClosingCallback(base::OnceClosure callback);
   void RegisterDeleteDelegateCallback(base::OnceClosure callback);
@@ -300,9 +305,6 @@ class VIEWS_EXPORT WidgetDelegate {
   bool ShouldCenterWindowTitleText() const;
 
   bool focus_traverses_out() const { return params_.focus_traverses_out; }
-
- protected:
-  virtual ~WidgetDelegate();
 
  private:
   friend class Widget;

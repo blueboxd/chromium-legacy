@@ -6,11 +6,17 @@ package org.chromium.chrome.browser.share.screenshot;
 
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 
 /** The view binder for the Screenshot Share Sheet. */
-class ScreenshotShareSheetViewBinder
-        implements ViewBinder<PropertyModel, ScreenshotShareSheetView, PropertyKey> {
-    @Override
-    public void bind(PropertyModel model, ScreenshotShareSheetView view, PropertyKey propertyKey) {}
+class ScreenshotShareSheetViewBinder {
+    public static void bind(
+            PropertyModel model, ScreenshotShareSheetView view, PropertyKey propertyKey) {
+        if (ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER == propertyKey) {
+            view.setNoArgOperationsListeners(
+                    model.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER));
+        } else if (ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP == propertyKey) {
+            view.updateScreenshotBitmap(
+                    model.get(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP));
+        }
+    }
 }

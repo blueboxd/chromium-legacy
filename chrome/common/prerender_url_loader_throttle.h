@@ -11,7 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "chrome/common/prerender_canceler.mojom.h"
-#include "components/prerender/prerender_types.h"
+#include "components/prerender/common/prerender_types.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"

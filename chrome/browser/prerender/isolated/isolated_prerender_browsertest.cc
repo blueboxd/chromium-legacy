@@ -46,7 +46,7 @@
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/prerender/prerender_final_status.h"
+#include "components/prerender/common/prerender_final_status.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

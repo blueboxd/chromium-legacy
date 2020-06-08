@@ -44,7 +44,6 @@ source_set("activities") {
     "//ios/chrome/browser/ui/activity_services/data",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/util",
     "//ios/web/common:user_agent",
     "//ios/web/public",

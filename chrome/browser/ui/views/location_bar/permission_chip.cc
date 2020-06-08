@@ -22,6 +22,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -42,8 +43,39 @@ bool IsCameraOrMicPermission(permissions::PermissionRequestType type) {
 }
 }  // namespace
 
+// ButtonController that NotifyClick from being called when the
+// BubbleOwnerDelegate's bubble is showing. Otherwise the bubble will show again
+// immediately after being closed via losing focus.
+class BubbleButtonController : public views::ButtonController {
+ public:
+  BubbleButtonController(
+      views::Button* button,
+      BubbleOwnerDelegate* bubble_owner,
+      std::unique_ptr<views::ButtonControllerDelegate> delegate)
+      : views::ButtonController(button, std::move(delegate)),
+        bubble_owner_(bubble_owner) {}
+
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    suppress_button_release_ = bubble_owner_->IsBubbleShowing();
+    return views::ButtonController::OnMousePressed(event);
+  }
+
+  bool IsTriggerableEvent(const ui::Event& event) override {
+    // TODO(olesiamarukhno): There is the same logic in IconLabelBubbleView,
+    // this class should be reused in the future to avoid duplication.
+    if (event.IsMouseEvent())
+      return !bubble_owner_->IsBubbleShowing() && !suppress_button_release_;
+
+    return views::ButtonController::IsTriggerableEvent(event);
+  }
+
+ private:
+  bool suppress_button_release_ = false;
+  BubbleOwnerDelegate* bubble_owner_ = nullptr;
+};
+
 PermissionChip::PermissionChip(Browser* browser)
-    : views::AnimationDelegateViews(nullptr), browser_(browser) {
+    : views::AnimationDelegateViews(this), browser_(browser) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetVisible(false);
 
@@ -51,7 +83,17 @@ PermissionChip::PermissionChip(Browser* browser)
       this, base::string16(), views::style::CONTEXT_BUTTON_MD));
   chip_button_->SetProminent(true);
   chip_button_->SetCornerRadius(GetIconSize());
+  chip_button_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   chip_button_->SetElideBehavior(gfx::ElideBehavior::FADE_TAIL);
+  chip_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  // Equalizing padding on the left, right and between icon and label.
+  chip_button_->SetImageLabelSpacing(
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left());
+
+  chip_button_->SetButtonController(std::make_unique<BubbleButtonController>(
+      chip_button_, this,
+      std::make_unique<views::Button::DefaultButtonControllerDelegate>(
+          chip_button_)));
 
   constexpr auto kAnimationDuration = base::TimeDelta::FromMilliseconds(350);
   animation_ = std::make_unique<gfx::SlideAnimation>(this);
@@ -125,25 +167,17 @@ void PermissionChip::ButtonPressed(views::Button* sender,
   // deactivation.
   DCHECK(!prompt_bubble_);
 
-  // TODO(olesiamarukhno): Remove ink drop animation when the bubble is opened.
-  if (is_bubble_showing_) {
-    // If the user clicks on the chip when the bubble is open, they probably
-    // don't want to see the chip so we collapse it immediately.
-    animation_->Hide();
-  } else {
-    prompt_bubble_ =
-        new PermissionPromptBubbleView(browser_, delegate_, requested_time_);
-    prompt_bubble_->Show();
-    prompt_bubble_->GetWidget()->AddObserver(this);
-    // Restart the timer after user clicks on the chip to open the bubble.
-    StartCollapseTimer();
-    if (!already_recorded_interaction_) {
-      base::UmaHistogramLongTimes("Permissions.Chip.TimeToInteraction",
-                                  base::TimeTicks::Now() - requested_time_);
-      already_recorded_interaction_ = true;
-    }
+  prompt_bubble_ =
+      new PermissionPromptBubbleView(browser_, delegate_, requested_time_);
+  prompt_bubble_->Show();
+  prompt_bubble_->GetWidget()->AddObserver(this);
+  // Restart the timer after user clicks on the chip to open the bubble.
+  StartCollapseTimer();
+  if (!already_recorded_interaction_) {
+    base::UmaHistogramLongTimes("Permissions.Chip.TimeToInteraction",
+                                base::TimeTicks::Now() - requested_time_);
+    already_recorded_interaction_ = true;
   }
-  is_bubble_showing_ = !is_bubble_showing_;
 }
 
 void PermissionChip::AnimationEnded(const gfx::Animation* animation) {
@@ -157,10 +191,15 @@ void PermissionChip::AnimationProgressed(const gfx::Animation* animation) {
   PreferredSizeChanged();
 }
 
-void PermissionChip::OnWidgetClosing(views::Widget* widget) {
+void PermissionChip::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, prompt_bubble_->GetWidget());
   widget->RemoveObserver(this);
   prompt_bubble_ = nullptr;
+  animation_->Hide();
+}
+
+bool PermissionChip::IsBubbleShowing() const {
+  return prompt_bubble_ != nullptr;
 }
 
 void PermissionChip::Collapse() {

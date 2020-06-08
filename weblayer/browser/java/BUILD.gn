@@ -289,6 +289,7 @@ android_library("interfaces_java") {
     "org/chromium/weblayer_private/interfaces/SiteSettingsIntentHelper.java",
     "org/chromium/weblayer_private/interfaces/StrictModeWorkaround.java",
     "org/chromium/weblayer_private/interfaces/UrlBarOptionsKeys.java",
+    "org/chromium/weblayer_private/interfaces/WebLayerVersionConstants.java",
   ]
 
   deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]

@@ -112,6 +112,10 @@ interface FrameWidgetHost {
 
   // Sent by a widget to the browser to notify the end of the autoscroll.
   AutoscrollEnd();
+
+  // Sent once a paint happens after the first non empty layout. In other words,
+  // after the frame widget has painted something.
+  DidFirstVisuallyNonEmptyPaint();
 };
 
 // Implemented in Blink, this interface defines widget-specific methods that

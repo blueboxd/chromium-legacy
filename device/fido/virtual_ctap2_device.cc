@@ -842,7 +842,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   }
 
   // Our key handles are simple hashes of the public key.
-  const auto key_handle = crypto::SHA256Hash(public_key->cose_key_bytes());
+  const auto key_handle = crypto::SHA256Hash(public_key->cose_key_bytes);
 
   base::Optional<cbor::Value> extensions;
   cbor::Value::MapValue extensions_map;
@@ -1934,7 +1934,7 @@ void VirtualCtap2Device::InitPendingRegistrations(
                                              registration.first)));
 
     base::Optional<cbor::Value> cose_key = cbor::Reader::Read(
-        registration.second.private_key->GetPublicKey()->cose_key_bytes());
+        registration.second.private_key->GetPublicKey()->cose_key_bytes);
     response_map.emplace(
         static_cast<int>(CredentialManagementResponseKey::kPublicKey),
         cose_key->GetMap());

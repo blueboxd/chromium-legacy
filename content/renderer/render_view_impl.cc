@@ -1754,20 +1754,6 @@ void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
   main_render_frame_->GetLocalRootRenderWidget()->DidAutoResize(newSize);
 }
 
-void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
-  // We only allow focus to move to this RenderView when the request comes from
-  // a user gesture. (See also https://bugs.webkit.org/show_bug.cgi?id=33389.)
-  if (calling_frame && calling_frame->HasTransientUserActivation()) {
-    Send(new ViewHostMsg_Focus(GetRoutingID()));
-
-    // Tattle on the frame that called |window.focus()|.
-    RenderFrameImpl* calling_render_frame =
-        RenderFrameImpl::FromWebFrame(calling_frame);
-    if (calling_render_frame)
-      calling_render_frame->FrameDidCallFocus();
-  }
-}
-
 #if defined(OS_ANDROID)
 void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
   if (!main_render_frame_)

@@ -318,14 +318,13 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
 
 class PropertyTestWidgetDelegate : public WidgetDelegate {
  public:
-  explicit PropertyTestWidgetDelegate(Widget* widget) : widget_(widget) {}
+  explicit PropertyTestWidgetDelegate(Widget* widget) : widget_(widget) {
+    SetHasWindowSizeControls(true);
+  }
   ~PropertyTestWidgetDelegate() override = default;
 
  private:
   // WidgetDelegate:
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
-  bool CanResize() const override { return true; }
   void DeleteDelegate() override { delete this; }
   Widget* GetWidget() override { return widget_; }
   const Widget* GetWidget() const override { return widget_; }

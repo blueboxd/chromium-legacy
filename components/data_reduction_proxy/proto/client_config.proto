@@ -28,9 +28,9 @@ message ClientConfig {
   // Configuration information for reporting pageload metrics.
   optional DeprecatedPageloadMetricsConfig pageload_metrics_config = 5
       [deprecated = true];
-  // Prevents the host base and user base blacklisting behaviors for lite pages
+  // Prevents the host base and user base blocklisting behaviors for lite pages
   // and server LoFi.
-  optional bool ignore_long_term_black_list_rules = 7 [deprecated = true];
+  optional bool ignore_long_term_block_list_rules = 7 [deprecated = true];
   // The configuration that the client should use to connect to the prefetch
   // proxy.
   optional PrefetchProxyConfig prefetch_proxy_config = 8;

@@ -457,9 +457,6 @@ class BrowserView : public BrowserWindow,
                                   ui::Accelerator* accelerator) const override;
 
   // views::WidgetDelegate:
-  bool CanResize() const override;
-  bool CanMaximize() const override;
-  bool CanMinimize() const override;
   bool CanActivate() const override;
   base::string16 GetWindowTitle() const override;
   base::string16 GetAccessibleWindowTitle() const override;

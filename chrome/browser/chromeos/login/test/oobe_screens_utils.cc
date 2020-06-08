@@ -65,7 +65,7 @@ void TapNetworkSelectionNext() {
 
 void WaitForUpdateScreen() {
   WaitFor(UpdateView::kScreenId);
-  test::OobeJS().CreateVisibilityWaiter(true, {"update"})->Wait();
+  test::OobeJS().CreateVisibilityWaiter(true, {"oobe-update"})->Wait();
 }
 
 void ExitUpdateScreenNoUpdate() {

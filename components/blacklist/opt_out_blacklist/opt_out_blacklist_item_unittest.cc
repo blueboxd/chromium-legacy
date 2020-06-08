@@ -12,69 +12,69 @@
 
 namespace {
 
-using OptOutBlacklistItemTest = testing::Test;
+using OptOutBlocklistItemTest = testing::Test;
 
 }  // namespace
 
-namespace blacklist {
+namespace blocklist {
 
-TEST_F(OptOutBlacklistItemTest, BlackListState) {
+TEST_F(OptOutBlocklistItemTest, BlockListState) {
   const int history = 4;
   const int threshold = 2;
-  const base::TimeDelta max_blacklist_duration =
+  const base::TimeDelta max_blocklist_duration =
       base::TimeDelta::FromSeconds(30);
   const base::Time now = base::Time::UnixEpoch();
   const base::TimeDelta delay_between_entries = base::TimeDelta::FromSeconds(1);
   const base::Time later =
-      now + max_blacklist_duration + (delay_between_entries * 3);
+      now + max_blocklist_duration + (delay_between_entries * 3);
 
-  OptOutBlacklistItem black_list_item(history, threshold,
-                                      max_blacklist_duration);
+  OptOutBlocklistItem block_list_item(history, threshold,
+                                      max_blocklist_duration);
 
-  // Empty black list item should report that the host is allowed.
-  EXPECT_FALSE(black_list_item.IsBlackListed(now));
-  EXPECT_FALSE(black_list_item.IsBlackListed(later));
+  // Empty block list item should report that the host is allowed.
+  EXPECT_FALSE(block_list_item.IsBlockListed(now));
+  EXPECT_FALSE(block_list_item.IsBlockListed(later));
 
-  EXPECT_FALSE(black_list_item.most_recent_opt_out_time());
-  black_list_item.AddEntry(false, now);
-  EXPECT_FALSE(black_list_item.most_recent_opt_out_time());
+  EXPECT_FALSE(block_list_item.most_recent_opt_out_time());
+  block_list_item.AddEntry(false, now);
+  EXPECT_FALSE(block_list_item.most_recent_opt_out_time());
 
-  black_list_item.AddEntry(true, now);
-  EXPECT_TRUE(black_list_item.most_recent_opt_out_time());
-  EXPECT_EQ(now, black_list_item.most_recent_opt_out_time().value());
-  // Black list item of size less that |threshold| should report that the host
+  block_list_item.AddEntry(true, now);
+  EXPECT_TRUE(block_list_item.most_recent_opt_out_time());
+  EXPECT_EQ(now, block_list_item.most_recent_opt_out_time().value());
+  // Block list item of size less that |threshold| should report that the host
   // is allowed.
-  EXPECT_FALSE(black_list_item.IsBlackListed(now));
-  EXPECT_FALSE(black_list_item.IsBlackListed(later));
+  EXPECT_FALSE(block_list_item.IsBlockListed(now));
+  EXPECT_FALSE(block_list_item.IsBlockListed(later));
 
-  black_list_item.AddEntry(true, now + delay_between_entries);
-  // Black list item with |threshold| fresh entries should report the host as
+  block_list_item.AddEntry(true, now + delay_between_entries);
+  // Block list item with |threshold| fresh entries should report the host as
   // disallowed.
-  EXPECT_TRUE(black_list_item.IsBlackListed(now));
-  // Black list item with only entries from longer than |duration| ago should
+  EXPECT_TRUE(block_list_item.IsBlockListed(now));
+  // Block list item with only entries from longer than |duration| ago should
   // report the host is allowed.
-  EXPECT_FALSE(black_list_item.IsBlackListed(later));
-  black_list_item.AddEntry(true, later - (delay_between_entries * 2));
-  // Black list item with a fresh opt out and total number of opt outs larger
+  EXPECT_FALSE(block_list_item.IsBlockListed(later));
+  block_list_item.AddEntry(true, later - (delay_between_entries * 2));
+  // Block list item with a fresh opt out and total number of opt outs larger
   // than |threshold| should report the host is disallowed.
-  EXPECT_TRUE(black_list_item.IsBlackListed(later));
+  EXPECT_TRUE(block_list_item.IsBlockListed(later));
 
-  // The black list item should maintain entries based on time, so adding
+  // The block list item should maintain entries based on time, so adding
   // |history| entries should not push out newer entries.
-  black_list_item.AddEntry(true, later - delay_between_entries * 2);
-  black_list_item.AddEntry(false, later - delay_between_entries * 3);
-  black_list_item.AddEntry(false, later - delay_between_entries * 3);
-  black_list_item.AddEntry(false, later - delay_between_entries * 3);
-  black_list_item.AddEntry(false, later - delay_between_entries * 3);
-  EXPECT_TRUE(black_list_item.IsBlackListed(later));
+  block_list_item.AddEntry(true, later - delay_between_entries * 2);
+  block_list_item.AddEntry(false, later - delay_between_entries * 3);
+  block_list_item.AddEntry(false, later - delay_between_entries * 3);
+  block_list_item.AddEntry(false, later - delay_between_entries * 3);
+  block_list_item.AddEntry(false, later - delay_between_entries * 3);
+  EXPECT_TRUE(block_list_item.IsBlockListed(later));
 
-  // The black list item should maintain entries based on time, so adding
+  // The block list item should maintain entries based on time, so adding
   // |history| newer entries should push out older entries.
-  black_list_item.AddEntry(false, later - delay_between_entries * 1);
-  black_list_item.AddEntry(false, later - delay_between_entries * 1);
-  black_list_item.AddEntry(false, later - delay_between_entries * 1);
-  black_list_item.AddEntry(false, later - delay_between_entries * 1);
-  EXPECT_FALSE(black_list_item.IsBlackListed(later));
+  block_list_item.AddEntry(false, later - delay_between_entries * 1);
+  block_list_item.AddEntry(false, later - delay_between_entries * 1);
+  block_list_item.AddEntry(false, later - delay_between_entries * 1);
+  block_list_item.AddEntry(false, later - delay_between_entries * 1);
+  EXPECT_FALSE(block_list_item.IsBlockListed(later));
 }
 
-}  // namespace blacklist
+}  // namespace blocklist

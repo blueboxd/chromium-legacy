@@ -13,6 +13,8 @@ namespace ui {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(WmDragHandler*, kWmDragHandlerKey, nullptr)
 
+WmDragHandler::Delegate::~Delegate() = default;
+
 void SetWmDragHandler(PlatformWindow* platform_window,
                       WmDragHandler* drag_handler) {
   platform_window->SetProperty(kWmDragHandlerKey, drag_handler);

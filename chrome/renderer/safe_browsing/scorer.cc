@@ -58,14 +58,12 @@ Scorer::~Scorer() {}
 Scorer* Scorer::Create(const base::StringPiece& model_str) {
   std::unique_ptr<Scorer> scorer(new Scorer());
   ClientSideModel& model = scorer->model_;
+  // Parse the phishing model.
   if (!model.ParseFromArray(model_str.data(), model_str.size())) {
-    DLOG(ERROR) << "Unable to parse phishing model.  This Scorer object is "
-                << "invalid.";
     RecordScorerCreationStatus(SCORER_FAIL_MODEL_PARSE_ERROR);
     return NULL;
   } else if (!model.IsInitialized()) {
-    DLOG(ERROR) << "Unable to parse phishing model.  The model is missing "
-                << "some required fields.  Maybe the .proto file changed?";
+    // The model may be missing some required fields.
     RecordScorerCreationStatus(SCORER_FAIL_MODEL_MISSING_FIELDS);
     return NULL;
   }

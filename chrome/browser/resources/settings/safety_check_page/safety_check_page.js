@@ -187,7 +187,7 @@ Polymer({
    * @private
    */
   showChromeCleanerChild_: function() {
-    return loadTimeData.valueExists('privacySettingsRedesignEnabled') &&
-        loadTimeData.getBoolean('privacySettingsRedesignEnabled');
+    return loadTimeData.valueExists('safetyCheckChromeCleanerChildEnabled') &&
+        loadTimeData.getBoolean('safetyCheckChromeCleanerChildEnabled');
   },
 });

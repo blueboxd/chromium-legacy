@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -58,7 +59,8 @@ class FakeCWS {
   void OverrideGalleryCommandlineSwitches();
 
   bool GetUpdateCheckContent(const std::vector<std::string>& ids,
-                             std::string* update_check_content);
+                             std::string* update_check_content,
+                             bool use_json);
 
   // Request handler for kiosk app update server.
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -66,12 +68,13 @@ class FakeCWS {
 
   GURL web_store_url_;
 
-  std::string has_update_template_;
-  std::string no_update_template_;
+  bool use_private_store_templates_;
   std::string update_check_end_point_;
 
-  // Map keyed by app_id to app_update_content.
-  std::map<std::string, std::string> id_to_update_check_content_map_;
+  // Map keyed by app_id to partially-bound functions that can generate the
+  // app's update content.
+  std::map<std::string, base::RepeatingCallback<std::string(bool, bool)>>
+      id_to_update_check_content_map_;
   int update_check_count_;
 
   // FakeCWS overrides Chrome Web Store URLs, so extensions it provides in tests

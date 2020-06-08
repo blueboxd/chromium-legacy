@@ -212,7 +212,7 @@ PictureInPictureResult PictureInPictureWindowControllerImpl::StartSession(
       std::move(observer));
 
   EmbedSurface(surface_id, natural_size);
-  SetAlwaysHidePlayPauseButton(show_play_pause_button);
+  SetShowPlayPauseButton(show_play_pause_button);
   Show();
 
   *window_size = GetSize();
@@ -228,9 +228,9 @@ void PictureInPictureWindowControllerImpl::OnServiceDeleted(
   active_session_ = nullptr;
 }
 
-void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
-    bool is_visible) {
-  always_hide_play_pause_button_ = is_visible;
+void PictureInPictureWindowControllerImpl::SetShowPlayPauseButton(
+    bool show_play_pause_button) {
+  always_show_play_pause_button_ = show_play_pause_button;
   UpdatePlayPauseButtonVisibility();
 }
 
@@ -363,9 +363,9 @@ void PictureInPictureWindowControllerImpl::UpdatePlayPauseButtonVisibility() {
   if (!window_)
     return;
 
-  window_->SetAlwaysHidePlayPauseButton((media_session_action_pause_handled_ &&
+  window_->SetPlayPauseButtonVisibility((media_session_action_pause_handled_ &&
                                          media_session_action_play_handled_) ||
-                                        always_hide_play_pause_button_);
+                                        always_show_play_pause_button_);
 }
 
 WebContentsImpl* PictureInPictureWindowControllerImpl::GetWebContentsImpl() {

@@ -10,29 +10,29 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace blacklist {
+namespace blocklist {
 
-// An interface for a delegate to the opt out blacklist. This interface is for
-// responding to events occurring in the opt out blacklist (e.g. New blacklisted
-// host and user is blacklisted).
-class OptOutBlacklistDelegate {
+// An interface for a delegate to the opt out blocklist. This interface is for
+// responding to events occurring in the opt out blocklist (e.g. New blocklisted
+// host and user is blocklisted).
+class OptOutBlocklistDelegate {
  public:
-  OptOutBlacklistDelegate() {}
-  virtual ~OptOutBlacklistDelegate() {}
+  OptOutBlocklistDelegate() = default;
+  virtual ~OptOutBlocklistDelegate() = default;
 
-  // Notifies |this| that |host| has been blacklisted at |time|. This method is
-  // guaranteed to be called when a previously whitelisted host is now
-  // blacklisted.
-  virtual void OnNewBlacklistedHost(const std::string& host, base::Time time) {}
+  // Notifies |this| that |host| has been blocklisted at |time|. This method is
+  // guaranteed to be called when a previously allowlisted host is now
+  // blocklisted.
+  virtual void OnNewBlocklistedHost(const std::string& host, base::Time time) {}
 
-  // Notifies |this| that the user blacklisted has changed, and it is
-  // guaranteed to be called when the user blacklisted status is changed.
-  virtual void OnUserBlacklistedStatusChange(bool blacklisted) {}
+  // Notifies |this| that the user blocklisted has changed, and it is
+  // guaranteed to be called when the user blocklisted status is changed.
+  virtual void OnUserBlocklistedStatusChange(bool blocklisted) {}
 
-  // Notifies |this| that the blacklist is cleared at |time|.
-  virtual void OnBlacklistCleared(base::Time time) {}
+  // Notifies |this| that the blocklist is cleared at |time|.
+  virtual void OnBlocklistCleared(base::Time time) {}
 };
 
-}  // namespace blacklist
+}  // namespace blocklist
 
 #endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_DELEGATE_H_

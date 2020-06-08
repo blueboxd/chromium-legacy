@@ -471,15 +471,9 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
         new ItemTouchHelper(new StreamItemTouchCallbacks()).attachToRecyclerView(mRecyclerView);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setClipToPadding(false);
-        if (VERSION.SDK_INT > VERSION_CODES.JELLY_BEAN) {
-            mRecyclerView.setPaddingRelative(mStreamConfiguration.getPaddingStart(),
-                    mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
-                    mStreamConfiguration.getPaddingBottom());
-        } else {
-            mRecyclerView.setPadding(mStreamConfiguration.getPaddingStart(),
-                    mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
-                    mStreamConfiguration.getPaddingBottom());
-        }
+        mRecyclerView.setPaddingRelative(mStreamConfiguration.getPaddingStart(),
+                mStreamConfiguration.getPaddingTop(), mStreamConfiguration.getPaddingEnd(),
+                mStreamConfiguration.getPaddingBottom());
 
         mItemAnimator = new StreamItemAnimator(
                 mStreamContentChangedListener, mActionManager, mRecyclerView);

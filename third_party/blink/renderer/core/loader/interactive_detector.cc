@@ -224,7 +224,6 @@ void InteractiveDetector::HandleForInputDelay(
     event_timestamp = event_platform_timestamp;
   }
 
-  pending_pointerdown_delay_ = base::TimeDelta();
   pending_pointerdown_timestamp_ = base::TimeTicks();
   bool interactive_timing_metrics_changed = false;
 
@@ -260,12 +259,6 @@ void InteractiveDetector::HandleForInputDelay(
     g_num_long_input_events++;
   }
 
-  // Record input delay UKM.
-  ukm::SourceId source_id = GetSupplementable()->UkmSourceID();
-  DCHECK_NE(source_id, ukm::kInvalidSourceId);
-  ukm::builders::InputEvent(source_id)
-      .SetInteractiveTiming_InputDelay(delay.InMilliseconds())
-      .Record(GetUkmRecorder());
   if (GetSupplementable()->Loader()) {
     GetSupplementable()->Loader()->DidObserveInputDelay(delay);
   }
@@ -610,4 +603,49 @@ void InteractiveDetector::SetUkmRecorderForTesting(
     ukm::UkmRecorder* test_ukm_recorder) {
   ukm_recorder_ = test_ukm_recorder;
 }
+
+void InteractiveDetector::RecordInputEventTimingUKM(
+    const Event& event,
+    base::TimeTicks event_timestamp,
+    base::TimeTicks processing_start,
+    base::TimeTicks processing_end) {
+  DCHECK(event.isTrusted());
+
+  // This only happens sometimes on tests unrelated to InteractiveDetector. It
+  // is safe to ignore events that are not properly initialized.
+  if (event_timestamp.is_null())
+    return;
+
+  // We can't report a pointerDown until the pointerUp, in case it turns into a
+  // scroll.
+  if (event.type() == event_type_names::kPointerdown) {
+    pending_pointerdown_processing_time_ = processing_end - processing_start;
+    return;
+  }
+
+  base::TimeDelta input_delay;
+  base::TimeDelta processing_time;
+  if (event.type() == event_type_names::kPointerup) {
+    // PointerUp by itself is not considered a significant input.
+    if (!pending_pointerdown_processing_time_)
+      return;
+
+    input_delay = pending_pointerdown_delay_;
+    processing_time = pending_pointerdown_processing_time_.value();
+  } else {
+    processing_time = processing_end - processing_start;
+    input_delay = processing_start - event_timestamp;
+  }
+  pending_pointerdown_delay_ = base::TimeDelta();
+  pending_pointerdown_processing_time_ = base::nullopt;
+
+  // Record InputDelay and Input Event Processing Time UKM.
+  ukm::SourceId source_id = GetSupplementable()->UkmSourceID();
+  DCHECK_NE(source_id, ukm::kInvalidSourceId);
+  ukm::builders::InputEvent(source_id)
+      .SetInteractiveTiming_InputDelay(input_delay.InMilliseconds())
+      .SetInteractiveTiming_ProcessingTime(processing_time.InMilliseconds())
+      .Record(GetUkmRecorder());
+}
+
 }  // namespace blink

@@ -219,6 +219,7 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/sandbox_file_system_backend.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/disk_allocator.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -3240,7 +3241,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     service_manager::switches::kEnableSandboxLogging,
 #endif
     switches::kAgcStartupMinVolume,
-    switches::kAllowPreCommitInput,
     switches::kAllowLoopbackInPeerConnection,
     switches::kAndroidFontsPath,
     switches::kAudioBufferSize,
@@ -3367,6 +3367,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kVModule,
     switches::kWebglAntialiasingMode,
     switches::kWebglMSAASampleCount,
+    // Please keep these in alphabetical order.
+    blink::switches::kAllowPreCommitInput,
     // Please keep these in alphabetical order. Compositor switches here
     // should also be added to
     // chrome/browser/chromeos/login/chrome_restart_request.cc.

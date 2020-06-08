@@ -50,9 +50,9 @@ class PreviewsService : public KeyedService {
   // Allows members to remove themselves from observed classes.
   void Shutdown() override;
 
-  // Clears the history of the black lists in |previews_ui_service_| and between
+  // Clears the history of the block lists in |previews_ui_service_| and between
   // |begin_time| and |end_time|.
-  void ClearBlackList(base::Time begin_time, base::Time end_time);
+  void ClearBlockList(base::Time begin_time, base::Time end_time);
 
   // The previews UI thread service.
   previews::PreviewsUIService* previews_ui_service() {
@@ -70,7 +70,7 @@ class PreviewsService : public KeyedService {
   }
 
   // Returns the enabled PreviewsTypes with their version.
-  static blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews();
+  static blocklist::BlocklistData::AllowedTypesAndVersions GetAllowedPreviews();
 
   // Called when that there is a redirect from |start_url| to |end_url|. Called
   // only when DeferAllScript preview feature is enabled.

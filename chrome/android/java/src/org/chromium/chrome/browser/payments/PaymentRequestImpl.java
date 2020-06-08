@@ -903,7 +903,8 @@ public class PaymentRequestImpl
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mShippingType), mPaymentUisShowStateReconciler,
                 Profile.fromWebContents(mWebContents));
-        activity.getLifecycleDispatcher().register(mUI);
+        activity.getLifecycleDispatcher().register(
+                mUI); // registered as a PauseResumeWithNativeObserver
 
         final FaviconHelper faviconHelper = new FaviconHelper();
         faviconHelper.getLocalFaviconImageForURL(Profile.fromWebContents(mWebContents),

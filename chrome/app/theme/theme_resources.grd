@@ -133,7 +133,6 @@
       </if>
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="common/help_16.png" />
-        <structure type="chrome_scaled_image" name="IDR_HIDE_PASSWORD_HOVER" file="common/hide_password_hover.png" />
         <if expr="not chromeos">
         <!-- User Manager tutorial -->
         <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_YOUR_CHROME" file="common/user_manager_tutorial/your_chrome.png" />
@@ -270,7 +269,6 @@
       </if>
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
-        <structure type="chrome_scaled_image" name="IDR_SHOW_PASSWORD_HOVER" file="common/show_password_hover.png" />
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_SMB_ICON" file="cros/smb_icon.png" />

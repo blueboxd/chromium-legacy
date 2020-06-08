@@ -1347,9 +1347,6 @@ ProfileImpl::GetNativeFileSystemPermissionContext() {
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {
-  if (IsSameProfileAndType(profile))
-    return true;
-
   return profile && profile->GetOriginalProfile() == this;
 }
 

@@ -15,7 +15,6 @@
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -74,11 +73,8 @@ struct PhishingTermFeatureExtractor::ExtractionState {
     std::unique_ptr<base::i18n::BreakIterator> i(new base::i18n::BreakIterator(
         text, base::i18n::BreakIterator::BREAK_WORD));
 
-    if (i->Init()) {
+    if (i->Init())
       iterator = std::move(i);
-    } else {
-      DLOG(ERROR) << "failed to open iterator";
-    }
   }
 };
 
@@ -103,7 +99,8 @@ PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
 PhishingTermFeatureExtractor::~PhishingTermFeatureExtractor() {
   // The RenderView should have called CancelPendingExtraction() before
   // we are destroyed.
-  CheckNoPendingExtraction();
+  DCHECK(done_callback_.is_null());
+  DCHECK(!state_.get());
 }
 
 void PhishingTermFeatureExtractor::ExtractFeatures(
@@ -113,7 +110,8 @@ void PhishingTermFeatureExtractor::ExtractFeatures(
     DoneCallback done_callback) {
   // The RenderView should have called CancelPendingExtraction() before
   // starting a new extraction, so DCHECK this.
-  CheckNoPendingExtraction();
+  DCHECK(done_callback_.is_null());
+  DCHECK(!state_.get());
   // However, in an opt build, we will go ahead and clean up the pending
   // extraction so that we can start in a known state.
   CancelPendingExtraction();
@@ -161,7 +159,6 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
       base::TimeTicks now = clock_->Now();
       if (now - state_->start_time >=
           base::TimeDelta::FromMilliseconds(kMaxTotalTimeMs)) {
-        DLOG(ERROR) << "Feature extraction took too long, giving up";
         // We expect this to happen infrequently, so record when it does.
         UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.TermFeatureTimeout", 1);
         RunCallback(false);
@@ -258,15 +255,6 @@ void PhishingTermFeatureExtractor::HandleWord(
   if (state_->previous_word_sizes.size() >= max_words_per_term_) {
     state_->previous_words.erase(0, state_->previous_word_sizes.front());
     state_->previous_word_sizes.pop_front();
-  }
-}
-
-void PhishingTermFeatureExtractor::CheckNoPendingExtraction() {
-  DCHECK(done_callback_.is_null());
-  DCHECK(!state_.get());
-  if (!done_callback_.is_null() || state_.get()) {
-    LOG(ERROR) << "Extraction in progress, missing call to "
-               << "CancelPendingExtraction";
   }
 }
 

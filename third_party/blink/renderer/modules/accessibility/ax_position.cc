@@ -510,8 +510,9 @@ const AXPosition AXPosition::CreateNextPosition() const {
     // in the same piece of text.
     const AXObject* next_in_order =
         container_object_->ChildCount()
-            ? container_object_->DeepestLastChild()->NextInTreeObject()
-            : container_object_->NextInTreeObject();
+            ? container_object_->DeepestLastChild()
+                  ->NextInPreOrderIncludingIgnored()
+            : container_object_->NextInPreOrderIncludingIgnored();
     if (!next_in_order || !next_in_order->ParentObjectIncludedInTree())
       return {};
 
@@ -865,8 +866,8 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
   switch (adjustment_behavior) {
     case AXPositionAdjustmentBehavior::kMoveRight: {
       const Node* next_node = &child_node;
-      while ((next_node = NodeTraversal::NextSkippingChildren(
-                  *next_node, container_node))) {
+      while ((next_node = NodeTraversal::NextIncludingPseudo(*next_node,
+                                                             container_node))) {
         const AXObject* next_object =
             ax_object_cache_impl->GetOrCreate(next_node);
         if (next_object && next_object->AccessibilityIsIncludedInTree())
@@ -877,8 +878,14 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
 
     case AXPositionAdjustmentBehavior::kMoveLeft: {
       const Node* previous_node = &child_node;
-      while ((previous_node = NodeTraversal::PreviousSkippingChildren(
-                  *previous_node, container_node))) {
+      // Since this is a pre-order traversal,
+      // "NodeTraversal::PreviousIncludingPseudo" will eventually reach
+      // |container_node| if |container_node| is not nullptr. We should exclude
+      // this as we are strictly interested in |container_node|'s unignored
+      // descendantsin the accessibility tree.
+      while ((previous_node = NodeTraversal::PreviousIncludingPseudo(
+                  *previous_node, container_node)) &&
+             previous_node != container_node) {
         const AXObject* previous_object =
             ax_object_cache_impl->GetOrCreate(previous_node);
         if (previous_object && previous_object->AccessibilityIsIncludedInTree())

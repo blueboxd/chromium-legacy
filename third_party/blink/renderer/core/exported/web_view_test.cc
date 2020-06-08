@@ -590,6 +590,19 @@ TEST_F(WebViewTest, SetBaseBackgroundColorWithColorScheme) {
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
   EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
 
+  color_scheme_helper.SetForcedColors(*(web_view->GetPage()),
+                                      ForcedColors::kActive);
+  UpdateAllLifecyclePhases();
+
+  Color system_background_color = LayoutTheme::GetTheme().SystemColor(
+      CSSValueID::kCanvas, WebColorScheme::kLight);
+  EXPECT_EQ(system_background_color, frame_view->BaseBackgroundColor());
+
+  color_scheme_helper.SetForcedColors(*(web_view->GetPage()),
+                                      ForcedColors::kNone);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(Color::kBlack, frame_view->BaseBackgroundColor());
+
   color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kLight);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(Color(0, 0, 255), frame_view->BaseBackgroundColor());
@@ -3634,7 +3647,7 @@ class ViewCreatingWebViewClient : public frame_test_helpers::TestWebViewClient {
   }
 
   // WebWidgetClient methods
-  void DidFocus(WebLocalFrame*) override { did_focus_called_ = true; }
+  void DidFocus() override { did_focus_called_ = true; }
 
   bool DidFocusCalled() const { return did_focus_called_; }
   WebView* CreatedWebView() const { return web_view_helper_.GetWebView(); }
@@ -4046,6 +4059,7 @@ class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
   void AutoscrollStart(const gfx::PointF& position) override {}
   void AutoscrollFling(const gfx::Vector2dF& position) override {}
   void AutoscrollEnd() override {}
+  void DidFirstVisuallyNonEmptyPaint() override {}
 
  private:
   mojo::AssociatedReceiver<mojom::blink::FrameWidgetHost>

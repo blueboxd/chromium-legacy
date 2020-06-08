@@ -41,6 +41,7 @@ android_library("javatests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//chrome/android:chrome_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_core_core_java",

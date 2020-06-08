@@ -7,10 +7,6 @@ package org.chromium.chrome.browser.feed.library.common.locale;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import android.os.Build.VERSION;
-import android.text.TextUtils;
-
-import androidx.annotation.VisibleForTesting;
 
 import java.util.Locale;
 
@@ -29,33 +25,6 @@ public final class LocaleUtils {
 
     /** Returns a string which represents the top locale and region of the device. */
     public static String getLanguageTag(Context context) {
-        return getLanguageTag(getLocale(context));
-    }
-
-    /** Returns a string representation of a specified locale and region. */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    @VisibleForTesting
-    static String getLanguageTag(Locale locale) {
-        return (VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                ? locale.toLanguageTag()
-                : getLanguageTagPreLollipop(locale);
-    }
-
-    private static String getLanguageTagPreLollipop(Locale locale) {
-        StringBuilder sb = new StringBuilder();
-        String language = locale.getLanguage();
-        if (TextUtils.isEmpty(language)) {
-            language = "und";
-        }
-        sb.append(language);
-        String variant = locale.getVariant();
-        if (!TextUtils.isEmpty(variant)) {
-            sb.append("-").append(variant);
-        }
-        String country = locale.getCountry();
-        if (!TextUtils.isEmpty(country)) {
-            sb.append("-").append(country);
-        }
-        return sb.toString();
+        return getLocale(context).toLanguageTag();
     }
 }

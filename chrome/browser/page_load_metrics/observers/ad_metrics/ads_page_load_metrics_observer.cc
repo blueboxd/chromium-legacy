@@ -1193,13 +1193,13 @@ bool AdsPageLoadMetricsObserver::IsBlocklisted() {
     return true;
   }
 
-  std::vector<blacklist::BlacklistReason> passed_reasons;
+  std::vector<blocklist::BlocklistReason> passed_reasons;
   auto blocklist_reason = blocklist->IsLoadedAndAllowed(
       GetDelegate().GetWebContents()->GetLastCommittedURL().host(),
       static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType),
       false /* opt_out */, &passed_reasons);
   heavy_ads_blocklist_blocklisted_ =
-      (blocklist_reason != blacklist::BlacklistReason::kAllowed);
+      (blocklist_reason != blocklist::BlocklistReason::kAllowed);
 
   // Record whether this intervention hit the blocklist.
   RecordHeavyAdInterventionDisallowedByBlocklist(

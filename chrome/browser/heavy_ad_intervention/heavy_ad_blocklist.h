@@ -15,29 +15,29 @@ namespace base {
 class Clock;
 }
 
-namespace blacklist {
-class OptOutBlacklistDelegate;
+namespace blocklist {
+class OptOutBlocklistDelegate;
 class OptOutStore;
-}  // namespace blacklist
+}  // namespace blocklist
 
 // The heavy ad intervention only supports one type for the blocklist.
 enum class HeavyAdBlocklistType {
   kHeavyAdOnlyType = 0,
 };
 
-// A class that manages opt out blacklist parameters for the heavy ad
+// A class that manages opt out blocklist parameters for the heavy ad
 // intervention. The blocklist is used to allow at most 5 interventions per top
 // frame origin per day. This prevents the intervention from being used as a
 // cross-origin side channel.
-class HeavyAdBlocklist : public blacklist::OptOutBlacklist {
+class HeavyAdBlocklist : public blocklist::OptOutBlocklist {
  public:
-  HeavyAdBlocklist(std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+  HeavyAdBlocklist(std::unique_ptr<blocklist::OptOutStore> opt_out_store,
                    base::Clock* clock,
-                   blacklist::OptOutBlacklistDelegate* blacklist_delegate);
+                   blocklist::OptOutBlocklistDelegate* blocklist_delegate);
   ~HeavyAdBlocklist() override;
 
  protected:
-  // OptOutBlacklist:
+  // OptOutBlocklist:
   bool ShouldUseSessionPolicy(base::TimeDelta* duration,
                               size_t* history,
                               int* threshold) const override;
@@ -51,7 +51,7 @@ class HeavyAdBlocklist : public blacklist::OptOutBlacklist {
   bool ShouldUseTypePolicy(base::TimeDelta* duration,
                            size_t* history,
                            int* threshold) const override;
-  blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedTypes()
+  blocklist::BlocklistData::AllowedTypesAndVersions GetAllowedTypes()
       const override;
 
  private:

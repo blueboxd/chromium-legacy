@@ -519,9 +519,9 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_WithAllowed) {
           false /* origin_opt_out */, true /* save_data_enabled */,
 
           {{PreviewsType::OFFLINE,
-            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+            PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE},
            {PreviewsType::LITE_PAGE,
-            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+            PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE},
            // ALLOWED is equal to zero and should not be recorded.
            {PreviewsType::NOSCRIPT,
             PreviewsEligibilityReason::ALLOWED}} /* eligibility_reasons */);
@@ -533,10 +533,10 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_WithAllowed) {
                       true /* save_data_enabled_expected */,
                       false /* previews_likely */,
                       {{PreviewsType::OFFLINE,
-                        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+                        PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE},
                        {PreviewsType::LITE_PAGE,
                         PreviewsEligibilityReason::
-                            BLACKLIST_UNAVAILABLE}} /* eligibility_reasons */);
+                            BLOCKLIST_UNAVAILABLE}} /* eligibility_reasons */);
 }
 
 TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
@@ -545,12 +545,12 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
           false /* origin_opt_out */, true /* save_data_enabled */,
 
           {{PreviewsType::OFFLINE,
-            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+            PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE},
            {PreviewsType::LITE_PAGE,
-            PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+            PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE},
            {PreviewsType::NOSCRIPT,
             PreviewsEligibilityReason::
-                BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */);
+                BLOCKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */);
 
   tester()->NavigateToUntrackedUrl();
 
@@ -559,12 +559,12 @@ TEST_F(PreviewsUKMObserverTest, LogPreviewsEligibilityReason_NoneAllowed) {
       false /* origin_opt_out_expected */,
       true /* save_data_enabled_expected */, false /* previews_likely */,
       {{PreviewsType::OFFLINE,
-        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+        PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE},
        {PreviewsType::LITE_PAGE,
-        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE},
+        PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE},
        {PreviewsType::NOSCRIPT,
         PreviewsEligibilityReason::
-            BLACKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */);
+            BLOCKLIST_DATA_NOT_LOADED}} /* eligibility_reasons */);
 }
 
 TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {

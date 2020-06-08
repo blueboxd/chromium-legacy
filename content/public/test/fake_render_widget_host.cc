@@ -56,4 +56,6 @@ void FakeRenderWidgetHost::AutoscrollFling(const gfx::Vector2dF& position) {}
 
 void FakeRenderWidgetHost::AutoscrollEnd() {}
 
+void FakeRenderWidgetHost::DidFirstVisuallyNonEmptyPaint() {}
+
 }  // namespace content

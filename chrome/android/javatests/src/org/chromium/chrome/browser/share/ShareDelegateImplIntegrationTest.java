@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -117,7 +118,7 @@ public class ShareDelegateImplIntegrationTest {
                 @Override
                 void share(ShareParams params, ChromeShareExtras chromeShareParams,
                         BottomSheetController controller, Supplier<Tab> tabProvider,
-                        long shareStartTime) {
+                        Callback<Tab> printCallback, long shareStartTime) {
                     paramsRef.set(params);
                     helper.notifyCalled();
                 }

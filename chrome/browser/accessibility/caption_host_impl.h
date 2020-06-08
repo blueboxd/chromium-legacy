@@ -38,7 +38,8 @@ class CaptionHostImpl : public chrome::mojom::CaptionHost,
 
   // chrome::mojom::CaptionHost:
   void OnTranscription(
-      chrome::mojom::TranscriptionResultPtr transcription_result) override;
+      chrome::mojom::TranscriptionResultPtr transcription_result,
+      OnTranscriptionCallback reply) override;
 
   // content::WebContentsObserver:
   void RenderFrameDeleted(content::RenderFrameHost* frame_host) override;

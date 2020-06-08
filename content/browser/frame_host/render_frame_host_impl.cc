@@ -1748,7 +1748,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -2672,6 +2671,10 @@ void RenderFrameHostImpl::DidFocusFrame() {
   delegate_->SetFocusedFrame(frame_tree_node_, GetSiteInstance());
 }
 
+void RenderFrameHostImpl::DidCallFocus() {
+  delegate_->DidCallFocus();
+}
+
 void RenderFrameHostImpl::DidAddContentSecurityPolicies(
     std::vector<network::mojom::ContentSecurityPolicyPtr> policies) {
   TRACE_EVENT1("navigation",
@@ -3398,6 +3401,10 @@ void RenderFrameHostImpl::ContentsPreferredSizeChanged(
 void RenderFrameHostImpl::TextAutosizerPageInfoChanged(
     blink::mojom::TextAutosizerPageInfoPtr page_info) {
   delegate_->OnTextAutosizerPageInfoChanged(this, std::move(page_info));
+}
+
+void RenderFrameHostImpl::FocusPage() {
+  render_view_host_->OnFocus();
 }
 
 void RenderFrameHostImpl::UpdateFaviconURL(
@@ -4482,10 +4489,6 @@ void RenderFrameHostImpl::BubbleLogicalScrollInParentFrame(
 
   proxy->GetAssociatedRemoteFrame()->BubbleLogicalScroll(direction,
                                                          granularity);
-}
-
-void RenderFrameHostImpl::OnFrameDidCallFocus() {
-  delegate_->DidCallFocus();
 }
 
 void RenderFrameHostImpl::RenderFallbackContentInParentProcess() {

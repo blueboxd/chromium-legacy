@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -49,11 +48,13 @@ PhishingClassifier::PhishingClassifier(content::RenderFrame* render_frame,
 PhishingClassifier::~PhishingClassifier() {
   // The RenderView should have called CancelPendingClassification() before
   // we are destroyed.
-  CheckNoPendingClassification();
+  DCHECK(done_callback_.is_null());
+  DCHECK(!page_text_);
 }
 
 void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
-  CheckNoPendingClassification();
+  DCHECK(done_callback_.is_null());
+  DCHECK(!page_text_);
   scorer_ = scorer;
   if (scorer_) {
     url_extractor_.reset(new PhishingUrlFeatureExtractor);
@@ -85,7 +86,8 @@ void PhishingClassifier::BeginClassification(const base::string16* page_text,
 
   // The RenderView should have called CancelPendingClassification() before
   // starting a new classification, so DCHECK this.
-  CheckNoPendingClassification();
+  DCHECK(done_callback_.is_null());
+  DCHECK(!page_text_);
   // However, in an opt build, we will go ahead and clean up the pending
   // classification so that we can start in a known state.
   CancelPendingClassification();
@@ -218,15 +220,6 @@ void PhishingClassifier::VisualExtractionFinished(bool success) {
   }
 
   RunCallback(verdict);
-}
-
-void PhishingClassifier::CheckNoPendingClassification() {
-  DCHECK(done_callback_.is_null());
-  DCHECK(!page_text_);
-  if (!done_callback_.is_null() || page_text_) {
-    LOG(ERROR) << "Classification in progress, missing call to "
-               << "CancelPendingClassification";
-  }
 }
 
 void PhishingClassifier::RunCallback(const ClientPhishingRequest& verdict) {

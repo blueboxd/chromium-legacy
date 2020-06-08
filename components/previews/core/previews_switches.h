@@ -8,12 +8,12 @@
 namespace previews {
 namespace switches {
 
-// Whether the previews blacklist should be ignored, according to command line
+// Whether the previews blocklist should be ignored, according to command line
 // switches.
-bool ShouldIgnorePreviewsBlacklist();
+bool ShouldIgnorePreviewsBlocklist();
 
 extern const char kDoNotRequireLitePageRedirectInfoBar[];
-extern const char kIgnorePreviewsBlacklist[];
+extern const char kIgnorePreviewsBlocklist[];
 extern const char kForceEnablePreviews[];
 extern const char kEnableDeferAllScriptWithoutOptimizationHints[];
 

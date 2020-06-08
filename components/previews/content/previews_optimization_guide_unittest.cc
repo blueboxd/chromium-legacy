@@ -187,7 +187,7 @@ class PreviewsOptimizationGuideTest : public testing::Test {
     optimization_guide_decider()->SetResponses(responses);
   }
 
-  GURL blacklisted_lpr_url() { return GURL("https://blacklistedlpr.com/123"); }
+  GURL blocklisted_lpr_url() { return GURL("https://blocklistedlpr.com/123"); }
 
   GURL hint_not_loaded_url() { return GURL("https://hintnotloaded.com/123"); }
 

@@ -199,6 +199,9 @@ class NodeWrapper extends SAChildNode {
    * @return {!NodeWrapper}
    */
   static create(baseNode, parent) {
+    if (AutomationPredicate.comboBox(baseNode)) {
+      return new ComboBoxNode(baseNode, parent);
+    }
     if (SwitchAccessPredicate.isTextInput(baseNode)) {
       return new EditableTextNode(baseNode, parent);
     }

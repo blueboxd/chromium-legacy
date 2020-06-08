@@ -42,6 +42,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.params.ParameterAnnotations;
@@ -74,6 +75,7 @@ import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -90,7 +92,8 @@ import java.util.List;
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "disable-features=IPH_FeedHeaderMenu"})
 @Features.EnableFeatures(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)
-@Features.DisableFeatures(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)
+@Features.
+DisableFeatures({ChromeFeatureList.REPORT_FEED_USER_ACTIONS, ChromeFeatureList.QUERY_TILES})
 public class FeedNewTabPageTest {
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
     private static final int SIGNIN_PROMO_POSITION = 2;
@@ -101,14 +104,30 @@ public class FeedNewTabPageTest {
     private static final ViewAction SWIPE_LEFT = new GeneralSwipeAction(
             Swipe.FAST, GeneralLocation.CENTER, GeneralLocation.CENTER_LEFT, Press.FINGER);
 
-    @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    private boolean mIsCachePopulatedInAccountManagerFacade = true;
 
     @Rule
-    public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
+    public final SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
 
+    private final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
+    private final AccountManagerTestRule mAccountManagerTestRule =
+            new AccountManagerTestRule(new FakeAccountManagerFacade(null) {
+                @Override
+                public boolean isCachePopulated() {
+                    // Attention. When isCachePopulated() returns false,
+                    // runAfterCacheIsPopulated(...) shouldn't run. If this becomes a problem,
+                    // we can override runAfterCacheIsPopulated(...) as well.
+                    return mIsCachePopulatedInAccountManagerFacade;
+                }
+            });
+
+    // Mock sign-in environment needs to be destroyed after ChromeActivity in case there are
+    // observers registered in the AccountManagerFacade mock.
     @Rule
-    public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mAccountManagerTestRule).around(mActivityTestRule);
 
     /** Parameter provider for enabling/disabling the signin promo card. */
     public static class SigninPromoParams implements ParameterProvider {
@@ -261,14 +280,14 @@ public class FeedNewTabPageTest {
     @MediumTest
     @Feature({"FeedNewTabPage"})
     public void testSignInPromo_AccountsNotReady() {
-        mAccountManagerTestRule.setIsCachePopulated(false);
+        mIsCachePopulatedInAccountManagerFacade = false;
         openNewTabPage();
         // Check that the sign-in promo is not shown if accounts are not ready.
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.scrollToPosition(SIGNIN_PROMO_POSITION));
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
 
-        mAccountManagerTestRule.setIsCachePopulated(true);
+        mIsCachePopulatedInAccountManagerFacade = true;
         TestThreadUtils.runOnUiThreadBlocking(mTab::reload);
         ChromeTabUtils.waitForTabPageLoaded(mTab, mTab.getUrlString());
 

@@ -5961,7 +5961,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DisplayTransformDamageCallback) {
   std::vector<Quad> root_quads = {Quad::SurfaceQuad(
       SurfaceRange(primary_child_surface_id), SK_ColorWHITE, surface_quad_rect,
       /*stretch_content_to_fill_bounds=*/true)};
-  std::vector<Pass> root_passes = {Pass(root_quads, SurfaceSize())};
+
+  constexpr gfx::Size surface_size(60, 100);
+  std::vector<Pass> root_passes = {Pass(root_quads, surface_size)};
 
   MockAggregatedDamageCallback aggregated_damage_callback;
   root_sink_->SetAggregatedDamageCallbackForTesting(
@@ -5972,15 +5974,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, DisplayTransformDamageCallback) {
   SubmitCompositorFrame(root_sink_.get(), root_passes, root_local_surface_id_,
                         0.5f);
 
-  EXPECT_CALL(
-      aggregated_damage_callback,
-      OnAggregatedDamage(root_local_surface_id_, SurfaceSize(),
-                         gfx::Rect(SurfaceSize()), next_display_time()));
+  EXPECT_CALL(aggregated_damage_callback,
+              OnAggregatedDamage(root_local_surface_id_, surface_size,
+                                 gfx::Rect(surface_size), next_display_time()));
 
-  gfx::Rect transformed_rect(SurfaceSize().height(), SurfaceSize().width());
   CompositorFrame frame =
       aggregator_.Aggregate(root_surface_id, GetNextDisplayTimeAndIncrement(),
                             gfx::OVERLAY_TRANSFORM_ROTATE_90);
+  gfx::Rect transformed_rect(surface_size.height(), surface_size.width());
   EXPECT_EQ(frame.render_pass_list.back()->output_rect, transformed_rect);
   EXPECT_EQ(frame.render_pass_list.back()->damage_rect, transformed_rect);
 }

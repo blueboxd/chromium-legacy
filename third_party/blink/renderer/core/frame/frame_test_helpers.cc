@@ -316,7 +316,7 @@ WebRemoteFrameImpl* CreateRemote(TestWebRemoteFrameClient* client) {
   auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
       mojom::blink::TreeScopeType::kDocument, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetAssociatedInterfaceProvider(),
+      client->GetRemoteAssociatedInterfaces(),
       base::UnguessableToken::Create());
   client->Bind(frame, std::move(owned_client));
   return frame;
@@ -389,8 +389,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
       mojom::blink::TreeScopeType::kDocument, name, FramePolicy(),
       mojom::blink::FrameOwnerElementType::kIframe, client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      client->GetAssociatedInterfaceProvider(),
-      base::UnguessableToken::Create(), nullptr));
+      client->GetRemoteAssociatedInterfaces(), base::UnguessableToken::Create(),
+      nullptr));
   client->Bind(frame, std::move(owned_client));
   if (!security_origin)
     security_origin = SecurityOrigin::CreateUniqueOpaque();
@@ -532,7 +532,7 @@ WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
   WebRemoteFrameImpl* frame = WebRemoteFrameImpl::CreateMainFrame(
       web_view_, web_remote_frame_client,
       InterfaceRegistry::GetEmptyInterfaceRegistry(),
-      web_remote_frame_client->GetAssociatedInterfaceProvider(),
+      web_remote_frame_client->GetRemoteAssociatedInterfaces(),
       base::UnguessableToken::Create(), opener);
   web_remote_frame_client->Bind(frame,
                                 std::move(owned_web_remote_frame_client));

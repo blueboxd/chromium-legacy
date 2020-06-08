@@ -156,9 +156,14 @@ void SingletonStatic(CallbackFunc CallOnQuit) {
 }
 
 CallbackFunc* GetStaticSingleton() {
-  return &CallbackSingletonWithStaticTrait::GetInstance()->callback_;
+  CallbackSingletonWithStaticTrait* instance =
+      CallbackSingletonWithStaticTrait::GetInstance();
+  if (instance == nullptr) {
+    return nullptr;
+  } else {
+    return &instance->callback_;
+  }
 }
-
 
 class SingletonTest : public testing::Test {
  public:

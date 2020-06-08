@@ -9,37 +9,37 @@
 
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 
-namespace blacklist {
+namespace blocklist {
 
-OptOutBlacklistItem::OptOutRecord::OptOutRecord(base::Time entry_time,
+OptOutBlocklistItem::OptOutRecord::OptOutRecord(base::Time entry_time,
                                                 bool opt_out)
     : entry_time_(entry_time), opt_out_(opt_out) {}
 
-OptOutBlacklistItem::OptOutRecord::~OptOutRecord() {}
+OptOutBlocklistItem::OptOutRecord::~OptOutRecord() = default;
 
-OptOutBlacklistItem::OptOutRecord::OptOutRecord(OptOutRecord&&) noexcept =
+OptOutBlocklistItem::OptOutRecord::OptOutRecord(OptOutRecord&&) noexcept =
     default;
-OptOutBlacklistItem::OptOutRecord& OptOutBlacklistItem::OptOutRecord::operator=(
+OptOutBlocklistItem::OptOutRecord& OptOutBlocklistItem::OptOutRecord::operator=(
     OptOutRecord&&) noexcept = default;
 
-bool OptOutBlacklistItem::OptOutRecord::operator<(
+bool OptOutBlocklistItem::OptOutRecord::operator<(
     const OptOutRecord& other) const {
   // Fresher entries are lower priority to evict, as are non-opt-outs.
   return std::tie(entry_time_, opt_out_) >
          std::tie(other.entry_time_, other.opt_out_);
 }
 
-OptOutBlacklistItem::OptOutBlacklistItem(size_t stored_history_length,
-                                         int opt_out_black_list_threshold,
-                                         base::TimeDelta black_list_duration)
+OptOutBlocklistItem::OptOutBlocklistItem(size_t stored_history_length,
+                                         int opt_out_block_list_threshold,
+                                         base::TimeDelta block_list_duration)
     : max_stored_history_length_(stored_history_length),
-      opt_out_black_list_threshold_(opt_out_black_list_threshold),
-      max_black_list_duration_(black_list_duration),
+      opt_out_block_list_threshold_(opt_out_block_list_threshold),
+      max_block_list_duration_(block_list_duration),
       total_opt_out_(0) {}
 
-OptOutBlacklistItem::~OptOutBlacklistItem() {}
+OptOutBlocklistItem::~OptOutBlocklistItem() = default;
 
-void OptOutBlacklistItem::AddEntry(bool opt_out, base::Time entry_time) {
+void OptOutBlocklistItem::AddEntry(bool opt_out, base::Time entry_time) {
   DCHECK_LE(opt_out_records_.size(), max_stored_history_length_);
 
   opt_out_records_.emplace(entry_time, opt_out);
@@ -60,15 +60,15 @@ void OptOutBlacklistItem::AddEntry(bool opt_out, base::Time entry_time) {
   DCHECK_LE(opt_out_records_.size(), max_stored_history_length_);
 }
 
-bool OptOutBlacklistItem::IsBlackListed(base::Time now) const {
+bool OptOutBlocklistItem::IsBlockListed(base::Time now) const {
   DCHECK_LE(opt_out_records_.size(), max_stored_history_length_);
   return most_recent_opt_out_time_ &&
-         now - most_recent_opt_out_time_.value() < max_black_list_duration_ &&
-         total_opt_out_ >= opt_out_black_list_threshold_;
+         now - most_recent_opt_out_time_.value() < max_block_list_duration_ &&
+         total_opt_out_ >= opt_out_block_list_threshold_;
 }
 
-size_t OptOutBlacklistItem::OptOutRecordsSizeForTesting() const {
+size_t OptOutBlocklistItem::OptOutRecordsSizeForTesting() const {
   return opt_out_records_.size();
 }
 
-}  // namespace blacklist
+}  // namespace blocklist

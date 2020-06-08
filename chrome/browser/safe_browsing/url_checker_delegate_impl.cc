@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
-#include "components/prerender/prerender_final_status.h"
+#include "components/prerender/common/prerender_final_status.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/triggers/suspicious_site_trigger.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"

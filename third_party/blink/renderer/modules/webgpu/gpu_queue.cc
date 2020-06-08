@@ -238,11 +238,19 @@ void GPUQueue::WriteBufferImpl(GPUBuffer* buffer,
     return;
   }
 
+  // Check that the write size can be cast to a size_t. This should always be
+  // the case since data_byte_length comes from an ArrayBuffer size.
+  if (write_byte_size > uint64_t(std::numeric_limits<size_t>::max())) {
+    exception_state.ThrowRangeError(
+        "writeSize larger than size_t (please report a bug if you see this)");
+    return;
+  }
+
   const uint8_t* data_base_ptr_bytes =
       static_cast<const uint8_t*>(data_base_ptr);
   const uint8_t* data_ptr = data_base_ptr_bytes + data_byte_offset;
-  GetProcs().bufferSetSubData(buffer->GetHandle(), buffer_offset,
-                              write_byte_size, data_ptr);
+  GetProcs().queueWriteBuffer(GetHandle(), buffer->GetHandle(), buffer_offset,
+                              data_ptr, static_cast<size_t>(write_byte_size));
 }
 
 // TODO(shaobo.yan@intel.com): Implement this function

@@ -133,11 +133,11 @@ def xcode_enum(cache_name, cache_path):
 xcode_cache = struct(
    x10e1001 = xcode_enum('xcode_ios_10e1001', 'xcode_ios_10e1001.app'),
    x11a1027 = xcode_enum('xcode_ios_11a1027', 'xcode_ios_11a1027.app'),
-   x11c505wk = xcode_enum('xcode_ios_11c505wk', 'xcode_ios_11c505wk.app'),
    x11c29 = xcode_enum('xcode_ios_11c29', 'xcode_ios_11c29.app'),
    x11m382q = xcode_enum('xcode_ios_11m382q', 'xcode_ios_11m382q.app'),
    x11e146 = xcode_enum('xcode_ios_11e146', 'xcode_ios_11e146.app'),
-   x11n605cwk = xcode_enum('xcode_ios_11n605cwk', 'xcode_ios_11n605cwk.app'),
+   x11e608c = xcode_enum('xcode_ios_11e608c', 'xcode_ios_11e608c.app'),
+   x11e608cwk = xcode_enum('xcode_ios_11e608cwk', 'xcode_ios_11e608cwk.app'),
 )
 
 

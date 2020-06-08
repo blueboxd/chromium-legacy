@@ -27,10 +27,10 @@ int GetBlocklistParamValue(const std::string& param, int default_value) {
 }  // namespace
 
 HeavyAdBlocklist::HeavyAdBlocklist(
-    std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+    std::unique_ptr<blocklist::OptOutStore> opt_out_store,
     base::Clock* clock,
-    blacklist::OptOutBlacklistDelegate* blacklist_delegate)
-    : OptOutBlacklist(std::move(opt_out_store), clock, blacklist_delegate) {
+    blocklist::OptOutBlocklistDelegate* blocklist_delegate)
+    : OptOutBlocklist(std::move(opt_out_store), clock, blocklist_delegate) {
   Init();
 }
 
@@ -69,7 +69,7 @@ bool HeavyAdBlocklist::ShouldUseTypePolicy(base::TimeDelta* duration,
   return false;
 }
 
-blacklist::BlacklistData::AllowedTypesAndVersions
+blocklist::BlocklistData::AllowedTypesAndVersions
 HeavyAdBlocklist::GetAllowedTypes() const {
   return {{static_cast<int>(HeavyAdBlocklistType::kHeavyAdOnlyType),
            GetBlocklistParamValue(kTypeVersion, 0)}};

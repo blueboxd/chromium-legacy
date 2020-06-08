@@ -20,7 +20,7 @@ class HeavyAdBlocklist;
 
 // Keyed service that owns the heavy ad intervention blocklist.
 class HeavyAdService : public KeyedService,
-                       public blacklist::OptOutBlacklistDelegate {
+                       public blocklist::OptOutBlocklistDelegate {
  public:
   HeavyAdService();
   ~HeavyAdService() override;

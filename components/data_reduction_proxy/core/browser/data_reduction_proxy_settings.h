@@ -157,9 +157,9 @@ class DataReductionProxySettings {
   // some of them should have.
   bool IsDataReductionProxyUnreachable();
 
-  // When triggering previews, prevent long term black list rules.
-  virtual void SetIgnoreLongTermBlackListRules(
-      bool ignore_long_term_black_list_rules) {}
+  // When triggering previews, prevent long term block list rules.
+  virtual void SetIgnoreLongTermBlockListRules(
+      bool ignore_long_term_block_list_rules) {}
 
   ContentLengthList GetDailyContentLengths(const char* pref_name);
 

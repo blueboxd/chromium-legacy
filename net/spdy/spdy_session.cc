@@ -3141,7 +3141,7 @@ void SpdySession::OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
   } else if (error_code == spdy::ERROR_CODE_NO_ERROR) {
     StartGoingAway(last_accepted_stream_id, ERR_HTTP2_SERVER_REFUSED_STREAM);
   } else {
-    StartGoingAway(last_accepted_stream_id, ERR_ABORTED);
+    StartGoingAway(last_accepted_stream_id, ERR_HTTP2_PROTOCOL_ERROR);
   }
   // This is to handle the case when we already don't have any active
   // streams (i.e., StartGoingAway() did nothing). Otherwise, we have

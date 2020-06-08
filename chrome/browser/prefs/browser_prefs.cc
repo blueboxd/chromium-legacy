@@ -30,7 +30,6 @@
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
-#include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_storage_id_salt.h"
@@ -395,6 +394,10 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media/feeds/media_feeds_service.h"
 #endif
 
 namespace {
@@ -1084,7 +1087,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RegisterBrowserViewProfilePrefs(registry);
 #endif
 
+#if !defined(OS_ANDROID)
   media_feeds::MediaFeedsService::RegisterProfilePrefs(registry);
+#endif
 
   RegisterProfilePrefsForMigration(registry);
 }

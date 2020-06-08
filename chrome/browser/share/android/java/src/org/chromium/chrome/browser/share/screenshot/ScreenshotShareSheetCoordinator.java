@@ -4,39 +4,41 @@
 
 package org.chromium.chrome.browser.share.screenshot;
 
-import android.app.Activity;
-import android.app.FragmentManager;
+import android.content.Context;
+import android.graphics.Bitmap;
+
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Coordinator for displaying the screenshot share sheet.
  */
 public class ScreenshotShareSheetCoordinator {
-    private final ScreenshotShareSheetDialog mDialog;
-    private final FragmentManager mFragmentManager;
+    private final ScreenshotShareSheetMediator mMediator;
+    private final PropertyModel mModel;
 
     /**
      * Constructs a new ShareSheetCoordinator.
      *
      * @param context The context to use for user permissions.
+     * @param screenshot The screenshot to be shared.
+     * @param deleteRunanble The runnable to be called on cancel or delete.
+     * @param screenshotShareSheetView the view for the screenshot share sheet.
      */
-    public ScreenshotShareSheetCoordinator(Activity activity) {
-        mDialog = new ScreenshotShareSheetDialog();
+    public ScreenshotShareSheetCoordinator(Context context, Bitmap screenshot,
+            Runnable deleteRunnable, ScreenshotShareSheetView screenshotShareSheetView) {
+        ArrayList<PropertyKey> allProperties =
+                new ArrayList<>(Arrays.asList(ScreenshotShareSheetViewProperties.ALL_KEYS));
+        mModel = new PropertyModel(allProperties);
 
-        mFragmentManager = activity.getFragmentManager();
-        // TODO(crbug/1024586) Flesh out MVC for the upstream screenshot MVC.
-    }
+        mModel.set(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP, screenshot);
+        mMediator = new ScreenshotShareSheetMediator(mModel, deleteRunnable);
 
-    /**
-     * Show the main share sheet dialog.
-     */
-    protected void showShareSheet() {
-        mDialog.show(mFragmentManager, null);
-    }
-
-    /**
-     * Dismiss the main dialog.
-     */
-    public void dismiss() {
-        mDialog.dismiss();
+        PropertyModelChangeProcessor.create(
+                mModel, screenshotShareSheetView, ScreenshotShareSheetViewBinder::bind);
     }
 }

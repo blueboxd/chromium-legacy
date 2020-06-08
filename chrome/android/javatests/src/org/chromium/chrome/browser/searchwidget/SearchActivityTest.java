@@ -12,7 +12,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -21,8 +20,6 @@ import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
-
-import androidx.core.content.FileProvider;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -36,7 +33,6 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
@@ -46,6 +42,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -86,7 +83,6 @@ import org.chromium.ui.base.Clipboard;
 import org.chromium.url.GURL;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -175,18 +171,6 @@ public class SearchActivityTest {
         public void onDialogShown(DefaultSearchEnginePromoDialog dialog) {
             shownPromoDialog = dialog;
             onPromoDialogShownCallback.notifyCalled();
-        }
-    }
-
-    // Helper class for clipboard Omnibox test.
-    private class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
-        private static final String API_AUTHORITY_SUFFIX = ".FileProvider";
-
-        @Override
-        public Uri getContentUriFromFile(File file) {
-            Context appContext = ContextUtils.getApplicationContext();
-            return FileProvider.getUriForFile(
-                    appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
         }
     }
 

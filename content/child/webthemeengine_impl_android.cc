@@ -84,6 +84,8 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->slider.thumb_x = extra_params->slider.thumb_x;
       native_theme_extra_params->slider.thumb_y = extra_params->slider.thumb_y;
       native_theme_extra_params->slider.zoom = extra_params->slider.zoom;
+      native_theme_extra_params->slider.right_to_left =
+          extra_params->slider.right_to_left;
       FALLTHROUGH;
     case WebThemeEngine::kPartSliderThumb:
       native_theme_extra_params->slider.vertical =

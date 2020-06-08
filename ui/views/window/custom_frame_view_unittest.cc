@@ -17,44 +17,12 @@
 
 namespace views {
 
-namespace {
-
-// Allows for the control of whether or not the widget can minimize/maximize or
-// not. This can be set after initial setup in order to allow testing of both
-// forms of delegates. By default this can minimize and maximize.
-class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
- public:
-  MinimizeAndMaximizeStateControlDelegate() = default;
-  ~MinimizeAndMaximizeStateControlDelegate() override = default;
-
-  void set_can_maximize(bool can_maximize) { can_maximize_ = can_maximize; }
-
-  void set_can_minimize(bool can_minimize) { can_minimize_ = can_minimize; }
-
-  // WidgetDelegate:
-  bool CanMaximize() const override { return can_maximize_; }
-  bool CanMinimize() const override { return can_minimize_; }
-
- private:
-  bool can_maximize_ = true;
-  bool can_minimize_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(MinimizeAndMaximizeStateControlDelegate);
-};
-
-}  // namespace
-
 class CustomFrameViewTest : public ViewsTestBase {
  public:
   CustomFrameViewTest() = default;
   ~CustomFrameViewTest() override = default;
 
   CustomFrameView* custom_frame_view() { return custom_frame_view_; }
-
-  MinimizeAndMaximizeStateControlDelegate*
-  minimize_and_maximize_state_control_delegate() {
-    return minimize_and_maximize_state_control_delegate_;
-  }
 
   Widget* widget() { return widget_; }
 
@@ -90,15 +58,13 @@ class CustomFrameViewTest : public ViewsTestBase {
       const std::vector<views::FrameButton> trailing_buttons);
 
  private:
+  std::unique_ptr<WidgetDelegate> widget_delegate_;
+
   // Parent container for |custom_frame_view_|
   Widget* widget_;
 
   // Owned by |widget_|
   CustomFrameView* custom_frame_view_;
-
-  // Delegate of |widget_| which controls minimizing and maximizing
-  MinimizeAndMaximizeStateControlDelegate*
-      minimize_and_maximize_state_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewTest);
 };
@@ -106,11 +72,12 @@ class CustomFrameViewTest : public ViewsTestBase {
 void CustomFrameViewTest::SetUp() {
   ViewsTestBase::SetUp();
 
-  minimize_and_maximize_state_control_delegate_ =
-      new MinimizeAndMaximizeStateControlDelegate;
   widget_ = new Widget;
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
-  params.delegate = minimize_and_maximize_state_control_delegate_;
+  widget_delegate_ = std::make_unique<WidgetDelegate>();
+  params.delegate = widget_delegate_.get();
+  params.delegate->SetCanMaximize(true);
+  params.delegate->SetCanMinimize(true);
   params.remove_standard_frame = true;
   widget_->Init(std::move(params));
 
@@ -214,9 +181,7 @@ TEST_F(CustomFrameViewTest, MaximizeRevealsRestoreButton) {
 TEST_F(CustomFrameViewTest, CannotMaximizeHidesButton) {
   Widget* parent = widget();
   CustomFrameView* view = custom_frame_view();
-  MinimizeAndMaximizeStateControlDelegate* delegate =
-      minimize_and_maximize_state_control_delegate();
-  delegate->set_can_maximize(false);
+  widget()->widget_delegate()->SetCanMaximize(false);
 
   view->Init(parent);
   parent->SetBounds(gfx::Rect(0, 0, 300, 100));
@@ -231,9 +196,7 @@ TEST_F(CustomFrameViewTest, CannotMaximizeHidesButton) {
 TEST_F(CustomFrameViewTest, CannotMinimizeHidesButton) {
   Widget* parent = widget();
   CustomFrameView* view = custom_frame_view();
-  MinimizeAndMaximizeStateControlDelegate* delegate =
-      minimize_and_maximize_state_control_delegate();
-  delegate->set_can_minimize(false);
+  widget()->widget_delegate()->SetCanMinimize(false);
 
   view->Init(parent);
   parent->SetBounds(gfx::Rect(0, 0, 300, 100));

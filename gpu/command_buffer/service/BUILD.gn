@@ -227,6 +227,7 @@ target(link_target_type, "gles2_sources") {
     "shared_image_backing_factory.h",
     "shared_image_backing_factory_gl_texture.cc",
     "shared_image_backing_factory_gl_texture.h",
+    "shared_image_backing_factory_gl_texture_internal.h",
     "shared_image_factory.cc",
     "shared_image_factory.h",
     "shared_image_manager.cc",

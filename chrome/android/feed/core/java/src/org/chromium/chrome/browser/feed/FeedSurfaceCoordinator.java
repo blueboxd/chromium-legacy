@@ -39,8 +39,6 @@ import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.NonDismissibleHeader;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
-import org.chromium.chrome.browser.feed.v2.FeedServiceBridge;
-import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -81,7 +79,6 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     private final int mDefaultMargin;
     private final int mWideMargin;
     private final FeedSurfaceMediator mMediator;
-    private FeedStreamSurface mFeedStreamSurface;
 
     private UiConfig mUiConfig;
     private FrameLayout mRootView;
@@ -343,15 +340,6 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mHomepagePromoController =
                     new HomepagePromoController(mActivity, mSnackbarManager, mTracker, mMediator);
             mMediator.onHomepagePromoStateChange();
-        }
-
-        // Native should already have been loaded because of FeedSurfaceMediator.
-        if (FeedServiceBridge.isEnabled()) {
-            // TODO(jianli): Temporary: simulate opening the feed V2 surface. This should probably
-            // move to FeedSurfaceMediator.
-            mFeedStreamSurface = new FeedStreamSurface(
-                    tabModelSelector, tabProvider, mActivity, mSnackbarManager);
-            mFeedStreamSurface.surfaceOpened();
         }
 
         mUserEducationHelper = new UserEducationHelper(mActivity);

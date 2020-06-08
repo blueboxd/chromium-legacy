@@ -21,17 +21,17 @@
 namespace {
 
 // Empty mock class to test the HeavyAdBlocklist.
-class EmptyOptOutBlacklistDelegate : public blacklist::OptOutBlacklistDelegate {
+class EmptyOptOutBlocklistDelegate : public blocklist::OptOutBlocklistDelegate {
  public:
-  EmptyOptOutBlacklistDelegate() = default;
+  EmptyOptOutBlocklistDelegate() = default;
 };
 
 class TestHeavyAdBlocklist : public HeavyAdBlocklist {
  public:
-  TestHeavyAdBlocklist(std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+  TestHeavyAdBlocklist(std::unique_ptr<blocklist::OptOutStore> opt_out_store,
                        base::Clock* clock,
-                       blacklist::OptOutBlacklistDelegate* blacklist_delegate)
-      : HeavyAdBlocklist(std::move(opt_out_store), clock, blacklist_delegate) {}
+                       blocklist::OptOutBlocklistDelegate* blocklist_delegate)
+      : HeavyAdBlocklist(std::move(opt_out_store), clock, blocklist_delegate) {}
   ~TestHeavyAdBlocklist() override = default;
 
   using HeavyAdBlocklist::GetAllowedTypes;
@@ -57,10 +57,10 @@ class HeavyAdBlocklistTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kHeavyAdPrivacyMitigations, params);
     blocklist_ = std::make_unique<TestHeavyAdBlocklist>(nullptr, &test_clock_,
-                                                        &blacklist_delegate_);
+                                                        &blocklist_delegate_);
   }
 
-  blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedTypes() const {
+  blocklist::BlocklistData::AllowedTypesAndVersions GetAllowedTypes() const {
     return blocklist_->GetAllowedTypes();
   }
 
@@ -70,7 +70,7 @@ class HeavyAdBlocklistTest : public testing::Test {
 
  private:
   // Observer to |blocklist_|.
-  EmptyOptOutBlacklistDelegate blacklist_delegate_;
+  EmptyOptOutBlocklistDelegate blocklist_delegate_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -93,7 +93,7 @@ TEST_F(HeavyAdBlocklistTest, DefaultParams) {
 
   EXPECT_FALSE(blocklist_->ShouldUseTypePolicy(nullptr, nullptr, nullptr));
 
-  blacklist::BlacklistData::AllowedTypesAndVersions types = GetAllowedTypes();
+  blocklist::BlocklistData::AllowedTypesAndVersions types = GetAllowedTypes();
   EXPECT_EQ(1u, types.size());
   const auto iter = types.begin();
   EXPECT_EQ(0, iter->first);
@@ -130,7 +130,7 @@ TEST_F(HeavyAdBlocklistTest, TypeParams) {
 TEST_F(HeavyAdBlocklistTest, TypeVersionParam) {
   int version = 17;
   ConfigBlocklistWithParams({{"type-version", base::NumberToString(version)}});
-  blacklist::BlacklistData::AllowedTypesAndVersions types = GetAllowedTypes();
+  blocklist::BlocklistData::AllowedTypesAndVersions types = GetAllowedTypes();
   EXPECT_EQ(1u, types.size());
   const auto iter = types.begin();
   EXPECT_EQ(0, iter->first);

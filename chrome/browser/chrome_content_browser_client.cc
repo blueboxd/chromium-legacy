@@ -228,7 +228,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/prerender/prerender_final_status.h"
+#include "components/prerender/common/prerender_final_status.h"
 #include "components/previews/content/previews_decider.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"

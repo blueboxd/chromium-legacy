@@ -98,7 +98,10 @@ class BrowserState : public base::SupportsUserData {
   // Sets the cookie blocking mode for this browser state. This will only affect
   // WebStates that are loaded after this mode is set. WebStates with live web
   // content will not have the mode correctly setup until they are reloaded.
-  void SetCookieBlockingMode(CookieBlockingMode cookie_blocking_mode);
+  // Some tasks here may be asynchronous, so |callback| will be called after
+  // the cookie blocking mode is set correctly. This may happen immediately.
+  void SetCookieBlockingMode(CookieBlockingMode cookie_blocking_mode,
+                             base::OnceClosure callback);
 
  protected:
   BrowserState();

@@ -40,21 +40,28 @@ CaptionHostImpl::CaptionHostImpl(content::RenderFrameHost* frame_host)
 CaptionHostImpl::~CaptionHostImpl() = default;
 
 void CaptionHostImpl::OnTranscription(
-    chrome::mojom::TranscriptionResultPtr transcription_result) {
-  if (!frame_host_)
+    chrome::mojom::TranscriptionResultPtr transcription_result,
+    OnTranscriptionCallback reply) {
+  if (!frame_host_) {
+    std::move(reply).Run(false);
     return;
+  }
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(frame_host_);
   if (!web_contents) {
     frame_host_ = nullptr;
+    std::move(reply).Run(false);
     return;
   }
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
+  if (!profile) {
+    std::move(reply).Run(false);
     return;
-  CaptionControllerFactory::GetForProfile(profile)->DispatchTranscription(
-      web_contents, transcription_result);
+  }
+  std::move(reply).Run(
+      CaptionControllerFactory::GetForProfile(profile)->DispatchTranscription(
+          web_contents, transcription_result));
 }
 
 void CaptionHostImpl::RenderFrameDeleted(content::RenderFrameHost* frame_host) {

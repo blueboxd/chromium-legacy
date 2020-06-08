@@ -70,7 +70,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
     : public IPC::Listener,
       public IPC::Sender,
       public mojom::RenderFrameProxyHost,
-      public blink::mojom::RemoteFrameHost {
+      public blink::mojom::RemoteFrameHost,
+      public blink::mojom::RemoteMainFrameHost {
  public:
   using CreatedCallback = base::RepeatingCallback<void(RenderFrameProxyHost*)>;
 
@@ -170,6 +171,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
       const base::string16& target_origin,
       blink::TransferableMessage message) override;
 
+  // blink::mojom::RemoteMainFrameHost overrides:
+  void FocusPage() override;
+
   // Returns associated remote for the content::mojom::RenderFrameProxy Mojo
   // interface.
   const mojo::AssociatedRemote<mojom::RenderFrameProxy>&
@@ -258,6 +262,9 @@ class CONTENT_EXPORT RenderFrameProxyHost
 
   mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>
       remote_frame_host_receiver_{this};
+
+  mojo::AssociatedReceiver<blink::mojom::RemoteMainFrameHost>
+      remote_main_frame_host_receiver_{this};
 
   base::UnguessableToken frame_token_ = base::UnguessableToken::Create();
 

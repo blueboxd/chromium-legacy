@@ -14,6 +14,7 @@ class SubresourceRedirect(IntegrationTest):
 
   def enableSubresourceRedirectFeature(self, test_driver):
     test_driver.EnableChromeFeature('SubresourceRedirect<SubresourceRedirect')
+    test_driver.AddChromeArg('--force-variation-ids=-1')
     test_driver.AddChromeArg('--force-fieldtrials=SubresourceRedirect/Enabled')
     test_driver.AddChromeArg(
         '--force-fieldtrial-params='

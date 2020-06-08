@@ -1750,6 +1750,17 @@ TEST_P(ParameterizedAccessibilitySelectionTest, List) {
   ParameterizedAccessibilitySelectionTest::RunSelectionTest("list");
 }
 
+TEST_F(AccessibilitySelectionTest, ParagraphPresentational) {
+  // The focus of the selection is an "after children" position on a paragraph
+  // with role="presentation" and in which the last child is an empty div. In
+  // other words, both the paragraph and its last child are ignored in the
+  // accessibility tree. In order to become valid, the focus should move to
+  // before the next unignored child of the presentational paragraph's unignored
+  // parent, which in this case is another paragraph that comes after the
+  // presentational one.
+  RunSelectionTest("paragraph-presentational");
+}
+
 TEST_F(AccessibilitySelectionTest, SVG) {
   RunSelectionTest("svg");
 }

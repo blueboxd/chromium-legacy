@@ -1994,11 +1994,13 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   // When opening with URLs for GetChromeIdentityService, it is expected that a
   // single URL is passed.
   DCHECK(URLsToOpen.count == URLContexts.count || URLContexts.count == 1);
+  BOOL active =
+      _sceneState.activationLevel >= SceneActivationLevelForegroundActive;
   for (URLOpenerParams* options : URLsToOpen) {
     [URLOpener openURL:options
-         applicationActive:YES
+         applicationActive:active
                  tabOpener:self
-        startupInformation:nil];
+        startupInformation:self.mainController];
   }
 }
 

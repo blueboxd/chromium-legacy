@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 /** The columns that are used to find rows that contain the keyword. */
-const ENABLE_BLACKLIST_BUTTON = 'Enable Blacklist';
-const IGNORE_BLACKLIST_BUTTON = 'Ignore Blacklist';
-const IGNORE_BLACKLIST_MESSAGE = 'Blacklist decisions are ignored.';
+const ENABLE_BLOCKLIST_BUTTON = 'Enable Blocklist';
+const IGNORE_BLOCKLIST_BUTTON = 'Ignore Blocklist';
+const IGNORE_BLOCKLIST_MESSAGE = 'Blocklist decisions are ignored.';
 const URL_THRESHOLD = 40;  // Maximum URL length
 
 window.logTableMap = {};
@@ -469,59 +469,59 @@ InterventionsInternalPageImpl.prototype = {
   },
 
   /**
-   * Update new blacklisted host to the web page.
+   * Update new blocklisted host to the web page.
    *
    * @override
-   * @param {!string} host The blacklisted host.
-   * @param {number} time The time when the host was blacklisted in milliseconds
+   * @param {!string} host The blocklisted host.
+   * @param {number} time The time when the host was blocklisted in milliseconds
    * since Unix epoch.
    */
-  onBlacklistedHost(host, time) {
+  onBlocklistedHost(host, time) {
     const row = document.createElement('tr');
-    row.setAttribute('class', 'blacklisted-host-row');
+    row.setAttribute('class', 'blocklisted-host-row');
 
     const hostTd = document.createElement('td');
-    hostTd.setAttribute('class', 'host-blacklisted');
+    hostTd.setAttribute('class', 'host-blocklisted');
     hostTd.textContent = host;
     row.appendChild(hostTd);
 
     const timeTd = document.createElement('td');
-    timeTd.setAttribute('class', 'host-blacklisted-time');
+    timeTd.setAttribute('class', 'host-blocklisted-time');
     timeTd.textContent = getTimeFormat(time);
     row.appendChild(timeTd);
 
     // TODO(thanhdle): Insert row at correct index. crbug.com/776105.
-    $('blacklisted-hosts-table').appendChild(row);
+    $('blocklisted-hosts-table').appendChild(row);
   },
 
   /**
-   * Update to the page that the user blacklisted status has changed.
+   * Update to the page that the user blocklisted status has changed.
    *
    * @override
-   * @param {boolean} blacklisted The time of the event in milliseconds since
+   * @param {boolean} blocklisted The time of the event in milliseconds since
    * Unix epoch.
    */
-  onUserBlacklistedStatusChange(blacklisted) {
-    const userBlacklistedStatus = $('user-blacklisted-status-value');
-    userBlacklistedStatus.textContent =
-        (blacklisted ? 'Blacklisted' : 'Not blacklisted');
+  onUserBlocklistedStatusChange(blocklisted) {
+    const userBlocklistedStatus = $('user-blocklisted-status-value');
+    userBlocklistedStatus.textContent =
+        (blocklisted ? 'Blocklisted' : 'Not blocklisted');
   },
 
   /**
-   * Update the blacklist cleared status on the page.
+   * Update the blocklist cleared status on the page.
    *
    * @override
    * @param {number} time The time of the event in milliseconds since Unix
    * epoch.
    */
-  onBlacklistCleared(time) {
-    const blacklistClearedStatus = $('blacklist-last-cleared-time');
-    blacklistClearedStatus.textContent = getTimeFormat(time);
+  onBlocklistCleared(time) {
+    const blocklistClearedStatus = $('blocklist-last-cleared-time');
+    blocklistClearedStatus.textContent = getTimeFormat(time);
 
     // Remove hosts from table.
-    const blacklistedHostsTable = $('blacklisted-hosts-table');
-    for (let row = blacklistedHostsTable.rows.length - 1; row > 0; row--) {
-      blacklistedHostsTable.deleteRow(row);
+    const blocklistedHostsTable = $('blocklisted-hosts-table');
+    for (let row = blocklistedHostsTable.rows.length - 1; row > 0; row--) {
+      blocklistedHostsTable.deleteRow(row);
     }
 
     // Remove log message from logs table.
@@ -529,24 +529,24 @@ InterventionsInternalPageImpl.prototype = {
 
     // Log event message.
     insertMessageRowToMessageLogTable(
-        time, 'Blacklist', 'Blacklist Cleared', '' /* URL */, 0 /* pageId */);
+        time, 'Blocklist', 'Blocklist Cleared', '' /* URL */, 0 /* pageId */);
   },
 
   /**
-   * Update the page with the new value of ignored blacklist decision status.
+   * Update the page with the new value of ignored blocklist decision status.
    *
    * @override
-   * @param {boolean} ignored The new status of whether the previews blacklist
-   * decisions is blacklisted or not.
+   * @param {boolean} ignored The new status of whether the previews blocklist
+   * decisions is blocklisted or not.
    */
-  onIgnoreBlacklistDecisionStatusChanged(ignored) {
-    const ignoreButton = $('ignore-blacklist-button');
+  onIgnoreBlocklistDecisionStatusChanged(ignored) {
+    const ignoreButton = $('ignore-blocklist-button');
     ignoreButton.textContent =
-        ignored ? ENABLE_BLACKLIST_BUTTON : IGNORE_BLACKLIST_BUTTON;
+        ignored ? ENABLE_BLOCKLIST_BUTTON : IGNORE_BLOCKLIST_BUTTON;
 
-    // Update the status of blacklist ignored on the page.
-    $('blacklist-ignored-status').textContent =
-        ignored ? IGNORE_BLACKLIST_MESSAGE : '';
+    // Update the status of blocklist ignored on the page.
+    $('blocklist-ignored-status').textContent =
+        ignored ? IGNORE_BLOCKLIST_MESSAGE : '';
   },
 
   /**
@@ -601,12 +601,12 @@ cr.define('interventions_internals', () => {
     getPreviewsEnabled();
     getPreviewsFlagsDetails();
 
-    const ignoreButton = $('ignore-blacklist-button');
+    const ignoreButton = $('ignore-blocklist-button');
     ignoreButton.addEventListener('click', () => {
-      // Whether the blacklist is currently ignored.
-      const ignored = (ignoreButton.textContent == ENABLE_BLACKLIST_BUTTON);
+      // Whether the blocklist is currently ignored.
+      const ignored = (ignoreButton.textContent == ENABLE_BLOCKLIST_BUTTON);
       // Try to reverse the ignore status.
-      pageHandler.setIgnorePreviewsBlacklistDecision(!ignored);
+      pageHandler.setIgnorePreviewsBlocklistDecision(!ignored);
     });
   }
 

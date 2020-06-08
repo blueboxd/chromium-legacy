@@ -11,25 +11,13 @@
 
 namespace device {
 
+PublicKey::PublicKey(int32_t in_algorithm,
+                     base::span<const uint8_t> in_cose_key_bytes,
+                     base::Optional<std::vector<uint8_t>> in_der_bytes)
+    : algorithm(in_algorithm),
+      cose_key_bytes(fido_parsing_utils::Materialize(in_cose_key_bytes)),
+      der_bytes(std::move(in_der_bytes)) {}
+
 PublicKey::~PublicKey() = default;
-
-PublicKey::PublicKey(int32_t algorithm,
-                     base::span<const uint8_t> cbor_bytes,
-                     base::Optional<std::vector<uint8_t>> der_bytes)
-    : algorithm_(algorithm),
-      cbor_bytes_(fido_parsing_utils::Materialize(cbor_bytes)),
-      der_bytes_(std::move(der_bytes)) {}
-
-int32_t PublicKey::algorithm() const {
-  return algorithm_;
-}
-
-const std::vector<uint8_t>& PublicKey::cose_key_bytes() const {
-  return cbor_bytes_;
-}
-
-const base::Optional<std::vector<uint8_t>>& PublicKey::der_bytes() const {
-  return der_bytes_;
-}
 
 }  // namespace device

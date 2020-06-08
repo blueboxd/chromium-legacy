@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -260,8 +259,6 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     request->mutable_population()->set_user_population(
         ChromeUserPopulation::SAFE_BROWSING);
   }
-  DVLOG(2) << "Starting report for hit on model " << request->model_filename();
-
   request->mutable_population()->set_profile_management_status(
       GetProfileManagementStatus(
           g_browser_process->browser_policy_connector()));
@@ -269,7 +266,6 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {
     UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.RequestNotSerialized", 1);
-    DVLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
     if (!callback.is_null())
       callback.Run(GURL(request->url()), false);
     return;
@@ -352,10 +348,6 @@ void ClientSideDetectionService::HandlePhishingVerdict(
     cache_[info->phishing_url] =
         base::WrapUnique(new CacheState(response.phishy(), base::Time::Now()));
     is_phishing = response.phishy();
-  } else {
-    DLOG(ERROR) << "Unable to get the server verdict for URL: "
-                << info->phishing_url << " net_error: " << net_error << " "
-                << "response_code:" << response_code;
   }
   if (!info->callback.is_null())
     info->callback.Run(info->phishing_url, is_phishing);

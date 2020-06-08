@@ -1177,6 +1177,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool ShouldClipOverflow() const { return bitfields_.ShouldClipOverflow(); }
   bool HasClipRelatedProperty() const;
 
+  // Not returning StyleRef().HasTransformRelatedProperty() because some objects
+  // ignore the transform-related styles (e.g. LayoutInline, LayoutSVGBlock).
   bool HasTransformRelatedProperty() const {
     return bitfields_.HasTransformRelatedProperty();
   }
@@ -1192,8 +1194,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // Returns |true| if any property that renders using filter operations is
   // used (including, but not limited to, 'filter' and 'box-reflect').
-  // Not calling style()->hasFilterInducingProperty because some objects force
-  // to ignore reflection style (e.g. LayoutInline).
+  // Not calling StyleRef().HasFilterInducingProperty() because some objects
+  // ignore reflection style (e.g. LayoutInline, LayoutSVGBlock).
   bool HasFilterInducingProperty() const {
     return StyleRef().HasNonInitialFilter() || HasReflection();
   }
@@ -1993,6 +1995,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            !IsLayoutNGOutsideListMarker() && !IsOutsideListMarker();
   }
 
+  // Not returning StyleRef().BoxReflect() because some objects ignore the
+  // reflection style (e.g. LayoutInline, LayoutSVGBlock).
   bool HasReflection() const { return bitfields_.HasReflection(); }
 
   // The current selection state for an object.  For blocks, the state refers to
@@ -3179,8 +3183,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // control clips or contain: paint.
     ADD_BOOLEAN_BITFIELD(should_clip_overflow_, ShouldClipOverflow);
 
-    // This boolean is the cached value from
-    // ComputedStyle::hasTransformRelatedProperty.
+    // The cached value from ComputedStyle::HasTransformRelatedProperty for
+    // objects that do not ignore transform-related styles (e.g. not
+    // LayoutInline, LayoutSVGBlock).
     ADD_BOOLEAN_BITFIELD(has_transform_related_property_,
                          HasTransformRelatedProperty);
     ADD_BOOLEAN_BITFIELD(has_reflection_, HasReflection);

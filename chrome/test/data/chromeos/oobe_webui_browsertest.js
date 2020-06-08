@@ -139,7 +139,7 @@ TEST_F('OobeWebUITest', 'DISABLED_OobeEula', function() {
 
 // Fails on chromeos, http://crbug.com/665315
 TEST_F('OobeWebUITest', 'DISABLED_OobeUpdate', function() {
-  Oobe.getInstance().showScreen({'id':'update'});
+  Oobe.getInstance().showScreen({'id':'oobe-update'});
 });
 
 // Fails on chromeos, http://crbug.com/665315

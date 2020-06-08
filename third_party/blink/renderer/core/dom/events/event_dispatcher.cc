@@ -210,7 +210,7 @@ DispatchEventResult EventDispatcher::Dispatch() {
   DispatchEventPostProcess(activation_target,
                            pre_dispatch_event_handler_result);
   if (eventTiming)
-    eventTiming->DidDispatchEvent(*event_);
+    eventTiming->DidDispatchEvent(*event_, node_->GetDocument());
 
   return EventTarget::GetDispatchEventResult(*event_);
 }

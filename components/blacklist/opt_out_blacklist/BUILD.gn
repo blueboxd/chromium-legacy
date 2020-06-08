@@ -8,6 +8,7 @@ static_library("opt_out_blacklist") {
     "opt_out_blacklist.h",
     "opt_out_blacklist_data.cc",
     "opt_out_blacklist_data.h",
+    "opt_out_blacklist_delegate.h",
     "opt_out_blacklist_item.cc",
     "opt_out_blacklist_item.h",
     "opt_out_store.h",

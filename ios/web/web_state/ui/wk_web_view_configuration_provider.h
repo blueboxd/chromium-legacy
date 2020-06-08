@@ -16,6 +16,7 @@
 namespace web {
 
 class BrowserState;
+class WKContentRuleListProvider;
 class WKWebViewConfigurationProviderObserver;
 
 // A provider class associated with a single web::BrowserState object. Manages
@@ -63,6 +64,10 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   // (this will be enforced in debug builds).
   CRWWKScriptMessageRouter* GetScriptMessageRouter();
 
+  // Returns WKContentRuleListProvider associated with WKWebViewConfiguration.
+  // Callers must not retain the returned object.
+  WKContentRuleListProvider* GetContentRuleListProvider();
+
   // Recreates and re-adds all injected Javascript into the current
   // configuration. This will only affect WebStates that are loaded after a call
   // to this function. All current WebStates will keep their existing Javascript
@@ -87,6 +92,7 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   WKWebViewConfiguration* configuration_ = nil;
   CRWWKScriptMessageRouter* router_;
   BrowserState* browser_state_;
+  std::unique_ptr<WKContentRuleListProvider> content_rule_list_provider_;
 
   // A list of observers notified when WKWebViewConfiguration changes.
   // This observer list has its' check_empty flag set to false, because

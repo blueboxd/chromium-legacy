@@ -350,20 +350,32 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
   auto* input = DynamicTo<HTMLInputElement>(o.GetNode());
   extra_params.slider.thumb_x = 0;
   extra_params.slider.thumb_y = 0;
+  extra_params.slider.right_to_left = !o.StyleRef().IsLeftToRightDirection();
   if (input) {
     Element* thumb_element = input->UserAgentShadowRoot()
                                  ? input->UserAgentShadowRoot()->getElementById(
                                        shadow_element_names::SliderThumb())
                                  : nullptr;
     LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : nullptr;
+    LayoutBox* input_box = input->GetLayoutBox();
     if (thumb) {
       IntRect thumb_rect = PixelSnappedIntRect(thumb->FrameRect());
       if (features::IsFormControlsRefreshEnabled()) {
-        extra_params.slider.thumb_x = thumb_rect.X();
-        extra_params.slider.thumb_y = thumb_rect.Y();
+        extra_params.slider.thumb_x = thumb_rect.X() +
+                                      input_box->PaddingLeft().ToInt() +
+                                      input_box->BorderLeft().ToInt();
+        extra_params.slider.thumb_y = thumb_rect.Y() +
+                                      input_box->PaddingTop().ToInt() +
+                                      input_box->BorderTop().ToInt();
       } else {
-        extra_params.slider.thumb_x = thumb_rect.X() / zoom_level;
-        extra_params.slider.thumb_y = thumb_rect.Y() / zoom_level;
+        extra_params.slider.thumb_x =
+            (thumb_rect.X() + input_box->PaddingLeft().ToInt() +
+             input_box->BorderLeft().ToInt()) /
+            zoom_level;
+        extra_params.slider.thumb_y =
+            (thumb_rect.Y() + input_box->PaddingTop().ToInt() +
+             input_box->BorderTop().ToInt()) /
+            zoom_level;
       }
     }
   }

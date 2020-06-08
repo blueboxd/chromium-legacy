@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/process/process_handle.h"
 #include "base/task/post_task.h"
@@ -21,6 +22,7 @@
 #include "ios/web/public/security/certificate_policy_cache.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web/web_state/ui/wk_content_rule_list_provider.h"
 #include "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "ios/web/webui/url_data_manager_ios_backend.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -193,8 +195,10 @@ CookieBlockingMode BrowserState::GetCookieBlockingMode() const {
 }
 
 void BrowserState::SetCookieBlockingMode(
-    CookieBlockingMode cookie_blocking_mode) {
+    CookieBlockingMode cookie_blocking_mode,
+    base::OnceClosure callback) {
   if (cookie_blocking_mode == cookie_blocking_mode_) {
+    std::move(callback).Run();
     return;
   }
   cookie_blocking_mode_ = cookie_blocking_mode;
@@ -204,6 +208,15 @@ void BrowserState::SetCookieBlockingMode(
   // source of the injected Javascript depends on the current cookie blocking
   // mode to set up the blocking correctly.
   config_provider.UpdateScripts();
+
+  config_provider.GetContentRuleListProvider()->UpdateContentRuleLists(
+      base::BindOnce(
+          [](base::OnceClosure callback, bool success) {
+            base::UmaHistogramBoolean(
+                "IOS.ContentRuleListProviderUpdateSuccess", success);
+            std::move(callback).Run();
+          },
+          std::move(callback)));
 }
 
 }  // namespace web

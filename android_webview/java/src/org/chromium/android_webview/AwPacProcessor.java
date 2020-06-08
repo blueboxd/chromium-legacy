@@ -26,6 +26,11 @@ public class AwPacProcessor {
         mNativePacProcessor = AwPacProcessorJni.get().createNativePacProcessor();
     }
 
+    // The calling code must not call any methods after it called destroy().
+    public void destroy() {
+        AwPacProcessorJni.get().destroyNative(mNativePacProcessor, this);
+    }
+
     public boolean setProxyScript(String script) {
         return AwPacProcessorJni.get().setProxyScript(mNativePacProcessor, this, script);
     }
@@ -44,5 +49,6 @@ public class AwPacProcessor {
         long createNativePacProcessor();
         boolean setProxyScript(long nativeAwPacProcessor, AwPacProcessor caller, String script);
         String makeProxyRequest(long nativeAwPacProcessor, AwPacProcessor caller, String url);
+        void destroyNative(long nativeAwPacProcessor, AwPacProcessor caller);
     }
 }

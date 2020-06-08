@@ -69,7 +69,7 @@ CaptionBubbleControllerViews::~CaptionBubbleControllerViews() {
 
 void CaptionBubbleControllerViews::OnCaptionBubbleCloseClicked() {
   // Hide the caption bubble on the active tab.
-  caption_texts_[active_contents_].clear();
+  caption_bubble_models_[active_contents_].close();
   // TODO(crbug.com/1051150): Ensure that caption bubble disappears on the tab
   // if it is currently displaying an error message.
   SetCaptionBubbleText();
@@ -84,13 +84,14 @@ void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {
   browser_ = nullptr;
 }
 
-void CaptionBubbleControllerViews::OnTranscription(
+bool CaptionBubbleControllerViews::OnTranscription(
     const chrome::mojom::TranscriptionResultPtr& transcription_result,
     content::WebContents* web_contents) {
-  if (!caption_bubble_)
-    return;
-  std::string& partial_text = caption_texts_[web_contents].partial_text;
-  std::string& final_text = caption_texts_[web_contents].final_text;
+  if (!caption_bubble_ || caption_bubble_models_[web_contents].is_closed)
+    return false;
+
+  std::string& partial_text = caption_bubble_models_[web_contents].partial_text;
+  std::string& final_text = caption_bubble_models_[web_contents].final_text;
 
   partial_text = transcription_result->transcription;
   SetCaptionBubbleText();
@@ -117,6 +118,7 @@ void CaptionBubbleControllerViews::OnTranscription(
       SetCaptionBubbleText();
     }
   }
+  return true;
 }
 
 void CaptionBubbleControllerViews::OnTabStripModelChanged(
@@ -128,7 +130,7 @@ void CaptionBubbleControllerViews::OnTabStripModelChanged(
   if (!selection.active_tab_changed())
     return;
   if (selection.selected_tabs_were_removed)
-    caption_texts_.erase(selection.old_contents);
+    caption_bubble_models_.erase(selection.old_contents);
 
   active_contents_ = selection.new_contents;
   SetCaptionBubbleText();
@@ -136,8 +138,8 @@ void CaptionBubbleControllerViews::OnTabStripModelChanged(
 
 void CaptionBubbleControllerViews::SetCaptionBubbleText() {
   std::string text;
-  if (active_contents_ && caption_texts_.count(active_contents_))
-    text = caption_texts_[active_contents_].full_text();
+  if (active_contents_ && caption_bubble_models_.count(active_contents_))
+    text = caption_bubble_models_[active_contents_].full_text();
   caption_bubble_->SetText(text);
 }
 

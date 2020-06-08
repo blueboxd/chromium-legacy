@@ -503,6 +503,7 @@ source_set("ios_web_web_state_ui_unittests") {
     "web_state/ui/crw_web_view_scroll_view_proxy_unittest.mm",
     "web_state/ui/html_element_fetch_request_unittest.mm",
     "web_state/ui/web_view_js_utils_unittest.mm",
+    "web_state/ui/wk_content_rule_list_util_unittest.mm",
     "web_state/ui/wk_web_view_configuration_provider_unittest.mm",
   ]
 }

@@ -41,6 +41,9 @@ class ChromeSpeechRecognitionClient
   media::mojom::AudioDataS16Ptr ConvertToAudioDataS16(
       scoped_refptr<media::AudioBuffer> buffer);
 
+  // Called as a response to sending a transcription to the browser.
+  void OnTranscriptionCallback(bool success);
+
   mojo::Remote<media::mojom::SpeechRecognitionContext>
       speech_recognition_context_;
   mojo::Remote<media::mojom::SpeechRecognitionRecognizer>
@@ -52,6 +55,9 @@ class ChromeSpeechRecognitionClient
   // The temporary audio bus used to convert the raw audio to the appropriate
   // format.
   std::unique_ptr<media::AudioBus> temp_audio_bus_;
+
+  // Whether the browser is still requesting transcriptions.
+  bool is_browser_requesting_transcription_ = true;
 };
 
 #endif  // CHROME_RENDERER_MEDIA_CHROME_SPEECH_RECOGNITION_CLIENT_H_

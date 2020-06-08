@@ -135,6 +135,12 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         }
     }
 
+    void dispatchOnInflationComplete() {
+        for (InflationObserver observer : mInflationObservers) {
+            observer.onInflationComplete();
+        }
+    }
+
     void dispatchPostInflationStartup() {
         for (InflationObserver observer : mInflationObservers) {
             observer.onPostInflationStartup();

@@ -35,62 +35,62 @@ namespace previews {
 
 namespace {
 
-// Mock class to test that PreviewsBlackList notifies the delegate with correct
-// events (e.g. New host blacklisted, user blacklisted, and blacklist cleared).
-class TestOptOutBlacklistDelegate : public blacklist::OptOutBlacklistDelegate {
+// Mock class to test that PreviewsBlockList notifies the delegate with correct
+// events (e.g. New host blocklisted, user blocklisted, and blocklist cleared).
+class TestOptOutBlocklistDelegate : public blocklist::OptOutBlocklistDelegate {
  public:
-  TestOptOutBlacklistDelegate() {}
+  TestOptOutBlocklistDelegate() = default;
 
-  // blacklist::OptOutBlacklistDelegate:
-  void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
+  // blocklist::OptOutBlocklistDelegate:
+  void OnNewBlocklistedHost(const std::string& host, base::Time time) override {
   }
-  void OnUserBlacklistedStatusChange(bool blacklisted) override {}
-  void OnBlacklistCleared(base::Time time) override {}
+  void OnUserBlocklistedStatusChange(bool blocklisted) override {}
+  void OnBlocklistCleared(base::Time time) override {}
 };
 
-class TestPreviewsBlackList : public PreviewsBlackList {
+class TestPreviewsBlockList : public PreviewsBlockList {
  public:
-  TestPreviewsBlackList(
-      std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+  TestPreviewsBlockList(
+      std::unique_ptr<blocklist::OptOutStore> opt_out_store,
       base::Clock* clock,
-      blacklist::OptOutBlacklistDelegate* blacklist_delegate,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types)
-      : PreviewsBlackList(std::move(opt_out_store),
+      blocklist::OptOutBlocklistDelegate* blocklist_delegate,
+      blocklist::BlocklistData::AllowedTypesAndVersions allowed_types)
+      : PreviewsBlockList(std::move(opt_out_store),
                           clock,
-                          blacklist_delegate,
+                          blocklist_delegate,
                           allowed_types) {}
-  ~TestPreviewsBlackList() override {}
+  ~TestPreviewsBlockList() override = default;
 
   bool ShouldUseSessionPolicy(base::TimeDelta* duration,
                               size_t* history,
                               int* threshold) const override {
-    return PreviewsBlackList::ShouldUseSessionPolicy(duration, history,
+    return PreviewsBlockList::ShouldUseSessionPolicy(duration, history,
                                                      threshold);
   }
   bool ShouldUsePersistentPolicy(base::TimeDelta* duration,
                                  size_t* history,
                                  int* threshold) const override {
-    return PreviewsBlackList::ShouldUsePersistentPolicy(duration, history,
+    return PreviewsBlockList::ShouldUsePersistentPolicy(duration, history,
                                                         threshold);
   }
   bool ShouldUseHostPolicy(base::TimeDelta* duration,
                            size_t* history,
                            int* threshold,
                            size_t* max_hosts) const override {
-    return PreviewsBlackList::ShouldUseHostPolicy(duration, history, threshold,
+    return PreviewsBlockList::ShouldUseHostPolicy(duration, history, threshold,
                                                   max_hosts);
   }
   bool ShouldUseTypePolicy(base::TimeDelta* duration,
                            size_t* history,
                            int* threshold) const override {
-    return PreviewsBlackList::ShouldUseTypePolicy(duration, history, threshold);
+    return PreviewsBlockList::ShouldUseTypePolicy(duration, history, threshold);
   }
 };
 
-class PreviewsBlackListTest : public testing::Test {
+class PreviewsBlockListTest : public testing::Test {
  public:
-  PreviewsBlackListTest() : passed_reasons_({}) {}
-  ~PreviewsBlackListTest() override {}
+  PreviewsBlockListTest() : passed_reasons_({}) {}
+  ~PreviewsBlockListTest() override = default;
 
   void TearDown() override { variations::testing::ClearAllVariationParams(); }
 
@@ -103,10 +103,10 @@ class PreviewsBlackListTest : public testing::Test {
       params_.clear();
     }
 
-    blacklist::BlacklistData::AllowedTypesAndVersions allowed_types;
+    blocklist::BlocklistData::AllowedTypesAndVersions allowed_types;
     allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
-    black_list_ = std::make_unique<TestPreviewsBlackList>(
-        nullptr, &test_clock_, &blacklist_delegate_, std::move(allowed_types));
+    block_list_ = std::make_unique<TestPreviewsBlockList>(
+        nullptr, &test_clock_, &blocklist_delegate_, std::move(allowed_types));
 
     passed_reasons_ = {};
   }
@@ -132,11 +132,14 @@ class PreviewsBlackListTest : public testing::Test {
   }
 
   void SetHostDurationParam(int duration_in_days) {
+    // TODO(crbug.com/1092102): Migrate to per_host_black_list_duration_in_days
     params_["per_host_black_list_duration_in_days"] =
         base::NumberToString(duration_in_days);
   }
 
   void SetHostIndifferentDurationParam(int duration_in_days) {
+    // TODO(crbug.com/1092102): Migrate to
+    // host_indifferent_block_list_duration_in_days
     params_["host_indifferent_black_list_duration_in_days"] =
         base::NumberToString(duration_in_days);
   }
@@ -146,44 +149,45 @@ class PreviewsBlackListTest : public testing::Test {
         base::NumberToString(single_opt_out_duration);
   }
 
-  void SetMaxHostInBlackListParam(size_t max_hosts_in_blacklist) {
+  void SetMaxHostInBlockListParam(size_t max_hosts_in_blocklist) {
+    // TODO(crbug.com/1092102): Migrate to max_hosts_in_blocklist
     params_["max_hosts_in_blacklist"] =
-        base::NumberToString(max_hosts_in_blacklist);
+        base::NumberToString(max_hosts_in_blocklist);
   }
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
 
-  // Observer to |black_list_|.
-  TestOptOutBlacklistDelegate blacklist_delegate_;
+  // Observer to |block_list_|.
+  TestOptOutBlocklistDelegate blocklist_delegate_;
 
   base::SimpleTestClock test_clock_;
   std::map<std::string, std::string> params_;
 
-  std::unique_ptr<TestPreviewsBlackList> black_list_;
+  std::unique_ptr<TestPreviewsBlockList> block_list_;
   std::vector<PreviewsEligibilityReason> passed_reasons_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PreviewsBlackListTest);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsBlockListTest);
 };
 
-TEST_F(PreviewsBlackListTest, AddPreviewUMA) {
+TEST_F(PreviewsBlockListTest, AddPreviewUMA) {
   base::HistogramTester histogram_tester;
   const GURL url("http://www.url.com");
 
   StartTest();
 
-  black_list_->AddPreviewNavigation(url, false, PreviewsType::OFFLINE);
+  block_list_->AddPreviewNavigation(url, false, PreviewsType::OFFLINE);
   histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.Offline", 0,
                                       1);
   histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut", 0, 1);
-  black_list_->AddPreviewNavigation(url, true, PreviewsType::OFFLINE);
+  block_list_->AddPreviewNavigation(url, true, PreviewsType::OFFLINE);
   histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut.Offline", 1,
                                      1);
   histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut", 1, 1);
 }
 
-TEST_F(PreviewsBlackListTest, SessionParams) {
+TEST_F(PreviewsBlockListTest, SessionParams) {
   int duration_seconds = 5;
   SetSingleOptOutDurationParam(duration_seconds);
 
@@ -194,13 +198,13 @@ TEST_F(PreviewsBlackListTest, SessionParams) {
   int threshold = 0;
 
   EXPECT_TRUE(
-      black_list_->ShouldUseSessionPolicy(&duration, &history, &threshold));
+      block_list_->ShouldUseSessionPolicy(&duration, &history, &threshold));
   EXPECT_EQ(base::TimeDelta::FromSeconds(duration_seconds), duration);
   EXPECT_EQ(1u, history);
   EXPECT_EQ(1, threshold);
 }
 
-TEST_F(PreviewsBlackListTest, PersistentParams) {
+TEST_F(PreviewsBlockListTest, PersistentParams) {
   int duration_days = 5;
   size_t expected_history = 6;
   int expected_threshold = 4;
@@ -215,13 +219,13 @@ TEST_F(PreviewsBlackListTest, PersistentParams) {
   int threshold = 0;
 
   EXPECT_TRUE(
-      black_list_->ShouldUsePersistentPolicy(&duration, &history, &threshold));
+      block_list_->ShouldUsePersistentPolicy(&duration, &history, &threshold));
   EXPECT_EQ(base::TimeDelta::FromDays(duration_days), duration);
   EXPECT_EQ(expected_history, history);
   EXPECT_EQ(expected_threshold, threshold);
 }
 
-TEST_F(PreviewsBlackListTest, HostParams) {
+TEST_F(PreviewsBlockListTest, HostParams) {
   int duration_days = 5;
   size_t expected_history = 6;
   int expected_threshold = 4;
@@ -229,7 +233,7 @@ TEST_F(PreviewsBlackListTest, HostParams) {
   SetHostThresholdParam(expected_threshold);
   SetHostHistoryParam(expected_history);
   SetHostDurationParam(duration_days);
-  SetMaxHostInBlackListParam(expected_max_hosts);
+  SetMaxHostInBlockListParam(expected_max_hosts);
 
   StartTest();
 
@@ -238,7 +242,7 @@ TEST_F(PreviewsBlackListTest, HostParams) {
   int threshold = 0;
   size_t max_hosts = 0;
 
-  EXPECT_TRUE(black_list_->ShouldUseHostPolicy(&duration, &history, &threshold,
+  EXPECT_TRUE(block_list_->ShouldUseHostPolicy(&duration, &history, &threshold,
                                                &max_hosts));
   EXPECT_EQ(base::TimeDelta::FromDays(duration_days), duration);
   EXPECT_EQ(expected_history, history);
@@ -246,9 +250,9 @@ TEST_F(PreviewsBlackListTest, HostParams) {
   EXPECT_EQ(expected_max_hosts, max_hosts);
 }
 
-TEST_F(PreviewsBlackListTest, TypeParams) {
+TEST_F(PreviewsBlockListTest, TypeParams) {
   StartTest();
-  EXPECT_FALSE(black_list_->ShouldUseTypePolicy(nullptr, nullptr, nullptr));
+  EXPECT_FALSE(block_list_->ShouldUseTypePolicy(nullptr, nullptr, nullptr));
 }
 
 }  // namespace

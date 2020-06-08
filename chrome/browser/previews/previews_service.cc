@@ -140,9 +140,9 @@ bool PreviewsService::HasURLRedirectCycle(
 }
 
 // static
-blacklist::BlacklistData::AllowedTypesAndVersions
+blocklist::BlocklistData::AllowedTypesAndVersions
 PreviewsService::GetAllowedPreviews() {
-  blacklist::BlacklistData::AllowedTypesAndVersions enabled_previews;
+  blocklist::BlocklistData::AllowedTypesAndVersions enabled_previews;
 
   // Loop across all previews types (relies on sequential enum values).
   for (int i = static_cast<int>(previews::PreviewsType::NONE) + 1;
@@ -203,7 +203,7 @@ void PreviewsService::Initialize(
 
   previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
       std::move(previews_decider_impl),
-      std::make_unique<blacklist::OptOutStoreSQL>(
+      std::make_unique<blocklist::OptOutStoreSQL>(
           ui_task_runner, background_task_runner,
           profile_path.Append(chrome::kPreviewsOptOutDBFilename)),
       std::move(previews_opt_guide), base::Bind(&IsPreviewsTypeEnabled),
@@ -219,10 +219,10 @@ void PreviewsService::Shutdown() {
     previews_offline_helper_->Shutdown();
 }
 
-void PreviewsService::ClearBlackList(base::Time begin_time,
+void PreviewsService::ClearBlockList(base::Time begin_time,
                                      base::Time end_time) {
   if (previews_ui_service_)
-    previews_ui_service_->ClearBlackList(begin_time, end_time);
+    previews_ui_service_->ClearBlockList(begin_time, end_time);
 }
 
 void PreviewsService::ReportObservedRedirectWithDeferAllScriptPreview(

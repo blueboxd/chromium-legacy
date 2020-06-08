@@ -790,6 +790,24 @@ void WebFrameWidgetBase::AutoscrollEnd() {
   GetAssociatedFrameWidgetHost()->AutoscrollEnd();
 }
 
+void WebFrameWidgetBase::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
+  if (layout_type == blink::WebMeaningfulLayout::kVisuallyNonEmpty) {
+    NotifySwapAndPresentationTime(
+        base::NullCallback(),
+        WTF::Bind(&WebFrameWidgetBase::PresentationCallbackForMeaningfulLayout,
+                  WrapPersistent(this)));
+  }
+
+  if (client_)
+    client_->DidMeaningfulLayout(layout_type);
+}
+
+void WebFrameWidgetBase::PresentationCallbackForMeaningfulLayout(
+    blink::WebSwapResult,
+    base::TimeTicks) {
+  GetAssociatedFrameWidgetHost()->DidFirstVisuallyNonEmptyPaint();
+}
+
 void WebFrameWidgetBase::RequestAnimationAfterDelay(
     const base::TimeDelta& delay) {
   DCHECK(request_animation_after_delay_timer_.get());

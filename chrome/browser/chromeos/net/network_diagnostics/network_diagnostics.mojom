@@ -66,6 +66,13 @@ enum DnsLatencyProblem {
   kSignificantlyAboveThreshold,
 };
 
+// Messages related to the DnsResolution routine.
+[Extensible]
+enum DnsResolutionProblem {
+  // The routine was unable to successfully resolve the test host
+  kFailedToResolveHost,
+};
+
 // This interface is to be used by any clients that need to run specific
 // network-related diagnostics. Expected clients of this interface are
 // NetworkHealth, cros_healthd, and a connectivity diagnostics Web UI (to name
@@ -97,4 +104,8 @@ interface NetworkDiagnosticsRoutines {
   // Tests whether the DNS latency is below an acceptable threshold.
   DnsLatency() => (RoutineVerdict verdict,
       array<DnsLatencyProblem> problem);
+
+  // Tests whether a DNS resolution can be completed successfully.
+  DnsResolution() => (RoutineVerdict verdict,
+      array<DnsResolutionProblem> problems);
 };

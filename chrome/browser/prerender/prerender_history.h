@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "components/prerender/prerender_final_status.h"
-#include "components/prerender/prerender_origin.h"
+#include "components/prerender/common/prerender_final_status.h"
+#include "components/prerender/common/prerender_origin.h"
 #include "url/gurl.h"
 
 namespace base {

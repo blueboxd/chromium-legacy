@@ -251,6 +251,8 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // Returns true if event is a reserved key for an active KeyboardLock request.
   bool IsKeyLocked(const ui::KeyEvent& event);
 
+  void HandleMouseWheelEvent(ui::MouseEvent* event);
+
   // Whether return characters should be passed on to the RenderWidgetHostImpl.
   bool accept_return_character_ = false;
 

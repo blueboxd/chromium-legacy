@@ -85,8 +85,8 @@ InterventionsInternalsUITest.prototype = {
 
     window.testPageHandler = new TestPageHandler();
 
-    getBlacklistedStatus = function(blacklisted) {
-      return (blacklisted ? 'Blacklisted' : 'Not blacklisted');
+    getBlocklistedStatus = function(blocklisted) {
+      return (blocklisted ? 'Blocklisted' : 'Not blocklisted');
     };
   },
 };
@@ -483,84 +483,84 @@ TEST_F(
       mocha.run();
     });
 
-TEST_F('InterventionsInternalsUITest', 'AddNewBlacklistedHost', function() {
-  test('AddNewBlacklistedHost', () => {
+TEST_F('InterventionsInternalsUITest', 'AddNewBlocklistedHost', function() {
+  test('AddNewBlocklistedHost', () => {
     let pageImpl = new InterventionsInternalPageImpl(null);
     let time = 758675653000;  // Jan 15 1994 23:14:13 UTC
     let expectedHost = 'example.com';
-    pageImpl.onBlacklistedHost(expectedHost, time);
+    pageImpl.onBlocklistedHost(expectedHost, time);
 
-    let blacklistedTable = $('blacklisted-hosts-table');
-    let row = blacklistedTable.querySelector('.blacklisted-host-row');
+    let blocklistedTable = $('blocklisted-hosts-table');
+    let row = blocklistedTable.querySelector('.blocklisted-host-row');
 
     let expectedTime = getTimeFormat(time);
 
     expectEquals(
-        expectedHost, row.querySelector('.host-blacklisted').textContent);
+        expectedHost, row.querySelector('.host-blocklisted').textContent);
     expectEquals(
-        expectedTime, row.querySelector('.host-blacklisted-time').textContent);
+        expectedTime, row.querySelector('.host-blocklisted-time').textContent);
   });
 
   mocha.run();
 });
 
-TEST_F('InterventionsInternalsUITest', 'HostAlreadyBlacklisted', function() {
-  test('HostAlreadyBlacklisted', () => {
+TEST_F('InterventionsInternalsUITest', 'HostAlreadyBlocklisted', function() {
+  test('HostAlreadyBlocklisted', () => {
     let pageImpl = new InterventionsInternalPageImpl(null);
     let time0 = 758675653000;   // Jan 15 1994 23:14:13 UTC
     let time1 = 1507221689240;  // Oct 05 2017 16:41:29 UTC
     let expectedHost = 'example.com';
 
-    pageImpl.onBlacklistedHost(expectedHost, time0);
+    pageImpl.onBlocklistedHost(expectedHost, time0);
 
-    let blacklistedTable = $('blacklisted-hosts-table');
-    let row = blacklistedTable.querySelector('.blacklisted-host-row');
+    let blocklistedTable = $('blocklisted-hosts-table');
+    let row = blocklistedTable.querySelector('.blocklisted-host-row');
     let expectedTime = getTimeFormat(time0);
     expectEquals(
-        expectedHost, row.querySelector('.host-blacklisted').textContent);
+        expectedHost, row.querySelector('.host-blocklisted').textContent);
     expectEquals(
-        expectedTime, row.querySelector('.host-blacklisted-time').textContent);
+        expectedTime, row.querySelector('.host-blocklisted-time').textContent);
 
-    pageImpl.onBlacklistedHost(expectedHost, time1);
+    pageImpl.onBlocklistedHost(expectedHost, time1);
 
     // The row remains the same.
     expectEquals(
-        expectedHost, row.querySelector('.host-blacklisted').textContent);
+        expectedHost, row.querySelector('.host-blocklisted').textContent);
     expectEquals(
-        expectedTime, row.querySelector('.host-blacklisted-time').textContent);
+        expectedTime, row.querySelector('.host-blocklisted-time').textContent);
   });
 
   mocha.run();
 });
 
-TEST_F('InterventionsInternalsUITest', 'UpdateUserBlacklisted', function() {
-  test('UpdateUserBlacklistedDisplayCorrectly', () => {
+TEST_F('InterventionsInternalsUITest', 'UpdateUserBlocklisted', function() {
+  test('UpdateUserBlocklistedDisplayCorrectly', () => {
     let pageImpl = new InterventionsInternalPageImpl(null);
-    let state = $('user-blacklisted-status-value');
+    let state = $('user-blocklisted-status-value');
 
-    pageImpl.onUserBlacklistedStatusChange(true /* blacklisted */);
+    pageImpl.onUserBlocklistedStatusChange(true /* blocklisted */);
     expectEquals(
-        getBlacklistedStatus(true /* blacklisted */), state.textContent);
+        getBlocklistedStatus(true /* blocklisted */), state.textContent);
 
-    pageImpl.onUserBlacklistedStatusChange(false /* blacklisted */);
+    pageImpl.onUserBlocklistedStatusChange(false /* blocklisted */);
     expectEquals(
-        getBlacklistedStatus(false /* blacklisted */), state.textContent);
+        getBlocklistedStatus(false /* blocklisted */), state.textContent);
   });
 
   mocha.run();
 });
 
-TEST_F('InterventionsInternalsUITest', 'OnBlacklistCleared', function() {
-  test('OnBlacklistClearedRemovesAllBlacklistedHostInTable', () => {
+TEST_F('InterventionsInternalsUITest', 'OnBlocklistCleared', function() {
+  test('OnBlocklistClearedRemovesAllBlocklistedHostInTable', () => {
     let pageImpl = new InterventionsInternalPageImpl(null);
-    let state = $('user-blacklisted-status-value');
+    let state = $('user-blocklisted-status-value');
     let time = 758675653000;  // Jan 15 1994 23:14:13 UTC
 
-    pageImpl.onBlacklistCleared(time);
-    let actualClearedTime = $('blacklist-last-cleared-time').textContent;
+    pageImpl.onBlocklistCleared(time);
+    let actualClearedTime = $('blocklist-last-cleared-time').textContent;
     expectEquals(getTimeFormat(time), actualClearedTime);
-    let blacklistedTable = $('blacklisted-hosts-table');
-    let rows = blacklistedTable.querySelectorAll('.blacklisted-host-row');
+    let blocklistedTable = $('blocklisted-hosts-table');
+    let rows = blocklistedTable.querySelectorAll('.blocklisted-host-row');
     expectEquals(0, rows.length);
   });
 
@@ -568,9 +568,9 @@ TEST_F('InterventionsInternalsUITest', 'OnBlacklistCleared', function() {
 });
 
 TEST_F(
-    'InterventionsInternalsUITest', 'ClearLogMessageOnBlacklistCleared',
+    'InterventionsInternalsUITest', 'ClearLogMessageOnBlocklistCleared',
     function() {
-      test('ClearLogsTableOnBlacklistCleared', () => {
+      test('ClearLogsTableOnBlocklistCleared', () => {
         let pageImpl = new InterventionsInternalPageImpl(null);
         let time = 758675653000;  // Jan 15 1994 23:14:13 UTC
         let log = {
@@ -583,12 +583,12 @@ TEST_F(
 
         pageImpl.logNewMessage(log);
         expectGT($('message-logs-table').rows.length, 1 /* header row */);
-        pageImpl.onBlacklistCleared(time);
-        let expectedNumberOfRows = 2;  // header row and clear blacklist log.
+        pageImpl.onBlocklistCleared(time);
+        let expectedNumberOfRows = 2;  // header row and clear blocklist log.
         let rows = $('message-logs-table').rows;
         expectEquals(expectedNumberOfRows, rows.length);
         expectEquals(
-            'Blacklist Cleared',
+            'Blocklist Cleared',
             rows[1].querySelector('.log-description').textContent);
       });
 
@@ -609,18 +609,18 @@ TEST_F('InterventionsInternalsUITest', 'OnECTChanged', function() {
   mocha.run();
 });
 
-TEST_F('InterventionsInternalsUITest', 'OnBlacklistIgnoreChange', function() {
-  test('OnBlacklistIgnoreChangeDisable', () => {
+TEST_F('InterventionsInternalsUITest', 'OnBlocklistIgnoreChange', function() {
+  test('OnBlocklistIgnoreChangeDisable', () => {
     let pageImpl = new InterventionsInternalPageImpl(null);
-    pageImpl.onIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
-    expectEquals('Enable Blacklist', $('ignore-blacklist-button').textContent);
+    pageImpl.onIgnoreBlocklistDecisionStatusChanged(true /* ignored */);
+    expectEquals('Enable Blocklist', $('ignore-blocklist-button').textContent);
     expectEquals(
-        'Blacklist decisions are ignored.',
-        $('blacklist-ignored-status').textContent);
+        'Blocklist decisions are ignored.',
+        $('blocklist-ignored-status').textContent);
 
-    pageImpl.onIgnoreBlacklistDecisionStatusChanged(false /* ignored */);
-    expectEquals('Ignore Blacklist', $('ignore-blacklist-button').textContent);
-    expectEquals('', $('blacklist-ignored-status').textContent);
+    pageImpl.onIgnoreBlocklistDecisionStatusChanged(false /* ignored */);
+    expectEquals('Ignore Blocklist', $('ignore-blocklist-button').textContent);
+    expectEquals('', $('blocklist-ignored-status').textContent);
   });
 
   mocha.run();

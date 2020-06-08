@@ -125,6 +125,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // WebView methods:
   void DidAttachLocalMainFrame() override;
+  void DidDetachLocalMainFrame() override;
+  void DidAttachRemoteMainFrame() override;
+  void DidDetachRemoteMainFrame() override;
   void SetPrerendererClient(WebPrerendererClient*) override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;
@@ -174,6 +177,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebSize ContentsPreferredMinimumSize() override;
   void UpdatePreferredSize() override;
   void EnablePreferredSizeChangedMode() override;
+  void Focus() override;
   void SetDeviceScaleFactor(float) override;
   void SetZoomFactorForDeviceScaleFactor(float) override;
   float ZoomFactorForDeviceScaleFactor() override {
@@ -447,10 +451,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   ViewData& AsView() { return as_view_; }
   const ViewData& AsView() const { return as_view_; }
 
-  // Called while the main LocalFrame is being detached. The MainFrameImpl() is
-  // still valid until after this method is called.
-  void DidDetachLocalMainFrame();
-
   // These are temporary methods to allow WebViewFrameWidget to delegate to
   // WebViewImpl. We expect to eventually move these out.
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
@@ -715,6 +715,11 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // local.
   mojo::AssociatedRemote<mojom::blink::LocalMainFrameHost>
       local_main_frame_host_remote_;
+
+  // Handle to the remote main frame host. Only valid when the MainFrame is
+  // remote.
+  mojo::AssociatedRemote<mojom::blink::RemoteMainFrameHost>
+      remote_main_frame_host_remote_;
 
   // Set when a measurement begins, reset when the measurement is taken.
   base::Optional<base::TimeTicks> update_layers_start_time_;

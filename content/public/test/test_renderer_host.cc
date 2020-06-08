@@ -93,7 +93,7 @@ RenderViewHostTester* RenderViewHostTester::For(RenderViewHost* host) {
 void RenderViewHostTester::SimulateFirstPaint(RenderViewHost* rvh) {
   static_cast<RenderViewHostImpl*>(rvh)
       ->GetWidget()
-      ->OnFirstVisuallyNonEmptyPaint();
+      ->DidFirstVisuallyNonEmptyPaint();
 }
 
 // static

@@ -138,7 +138,6 @@ static_library("common") {
     "pdf_util.h",
     "pref_names_util.cc",
     "pref_names_util.h",
-    "prerender_messages.h",
     "prerender_url_loader_throttle.cc",
     "prerender_url_loader_throttle.h",
     "prerender_util.cc",
@@ -262,7 +261,7 @@ static_library("common") {
     "//components/google/core/common",
     "//components/metrics:call_stack_profile_builder",
     "//components/page_load_metrics/common:common",
-    "//components/prerender",
+    "//components/prerender/common",
   ]
 
   if (enable_plugins) {

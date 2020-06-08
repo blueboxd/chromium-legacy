@@ -1831,11 +1831,16 @@ SkRect NativeThemeBase::AlignSliderTrack(
         std::min(float(slider_rect.right()), mid_x + kAlignment),
         slider_rect.bottom());
   } else {
-    const float right = is_value ? slider_rect.x() + slider.thumb_x + kAlignment
-                                 : slider_rect.right();
+    const float right = is_value && !slider.right_to_left
+                            ? slider_rect.x() + slider.thumb_x + kAlignment
+                            : slider_rect.right();
+    const float left = is_value && slider.right_to_left
+                           ? slider_rect.x() + slider.thumb_x + kAlignment
+                           : slider_rect.x();
+
     aligned_rect.setLTRB(
-        slider_rect.x(), std::max(float(slider_rect.y()), mid_y - kAlignment),
-        right, std::min(float(slider_rect.bottom()), mid_y + kAlignment));
+        left, std::max(float(slider_rect.y()), mid_y - kAlignment), right,
+        std::min(float(slider_rect.bottom()), mid_y + kAlignment));
   }
 
   return aligned_rect;

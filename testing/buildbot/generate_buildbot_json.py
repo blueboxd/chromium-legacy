@@ -833,19 +833,6 @@ class BBJSONGenerator(object):
 
     browser = ('android-webview-instrumentation'
                if is_android_webview else tester_config['browser_config'])
-
-    # TODO(crbug.com/1090071): This exception should not be here, but is only
-    # meant to test if the watchdog is negatively impacting general CrOS
-    # testing. It should be removed after ~1 day, i.e. June 5th 2020 at the
-    # latest.
-    extra_browser_args = \
-        '--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc'
-    if tester_name in ['ChromeOS FYI Release (amd64-generic)',
-                       'ChromeOS FYI Release (kevin)']:
-      extra_browser_args = (  # pragma: no cover
-        '--extra-browser-args=--disable-gpu-watchdog --enable-logging=stderr '
-        '--js-flags=--expose-gc')
-
     args = [
         test_to_run,
         '--show-stdout',
@@ -855,7 +842,7 @@ class BBJSONGenerator(object):
         # being expected to fail, but passing.
         '--passthrough',
         '-v',
-        extra_browser_args,
+        '--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc',
     ] + args
     result['args'] = self.maybe_fixup_args_array(self.substitute_gpu_args(
       tester_config, result['swarming'], args))

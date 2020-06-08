@@ -83,7 +83,7 @@ class Authenticator {
   // Callback used for layered Authenticator implementations, particularly
   // third-party and pairing authenticators. They use this callback to create
   // base SPAKE2 authenticators.
-  typedef base::Callback<std::unique_ptr<Authenticator>(
+  typedef base::RepeatingCallback<std::unique_ptr<Authenticator>(
       const std::string& shared_secret,
       Authenticator::State initial_state)>
       CreateBaseAuthenticatorCallback;

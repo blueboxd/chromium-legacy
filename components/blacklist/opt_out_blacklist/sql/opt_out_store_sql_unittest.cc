@@ -26,7 +26,7 @@
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace blacklist {
+namespace blocklist {
 
 namespace {
 
@@ -40,23 +40,23 @@ class OptOutStoreSQLTest : public testing::Test {
   ~OptOutStoreSQLTest() override {}
 
   // Called when |store_| is done loading.
-  void OnLoaded(std::unique_ptr<BlacklistData> blacklist_data) {
-    blacklist_data_ = std::move(blacklist_data);
+  void OnLoaded(std::unique_ptr<BlocklistData> blocklist_data) {
+    blocklist_data_ = std::move(blocklist_data);
   }
 
   // Initializes the store and get the data from it.
   void Load() {
     // Choose reasonable constants.
-    std::unique_ptr<BlacklistData> data = std::make_unique<BlacklistData>(
-        std::make_unique<BlacklistData::Policy>(base::TimeDelta::FromMinutes(5),
+    std::unique_ptr<BlocklistData> data = std::make_unique<BlocklistData>(
+        std::make_unique<BlocklistData::Policy>(base::TimeDelta::FromMinutes(5),
                                                 1, 1),
-        std::make_unique<BlacklistData::Policy>(base::TimeDelta::FromDays(30),
+        std::make_unique<BlocklistData::Policy>(base::TimeDelta::FromDays(30),
                                                 10, 6u),
-        std::make_unique<BlacklistData::Policy>(base::TimeDelta::FromDays(30),
+        std::make_unique<BlocklistData::Policy>(base::TimeDelta::FromDays(30),
                                                 4, 2u),
         nullptr, 10, allowed_types_);
 
-    store_->LoadBlackList(
+    store_->LoadBlockList(
         std::move(data),
         base::BindOnce(&OptOutStoreSQLTest::OnLoaded, base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
@@ -82,7 +82,7 @@ class OptOutStoreSQLTest : public testing::Test {
     Load();
   }
 
-  void SetEnabledTypes(BlacklistData::AllowedTypesAndVersions allowed_types) {
+  void SetEnabledTypes(BlocklistData::AllowedTypesAndVersions allowed_types) {
     allowed_types_ = std::move(allowed_types);
   }
 
@@ -99,19 +99,19 @@ class OptOutStoreSQLTest : public testing::Test {
   std::unique_ptr<OptOutStoreSQL> store_;
 
   // The map returned from |store_|.
-  std::unique_ptr<BlacklistData> blacklist_data_;
+  std::unique_ptr<BlocklistData> blocklist_data_;
 
   // The directory for the database.
   base::ScopedTempDir temp_dir_;
 
  private:
-  BlacklistData::AllowedTypesAndVersions allowed_types_;
+  BlocklistData::AllowedTypesAndVersions allowed_types_;
 };
 
 TEST_F(OptOutStoreSQLTest, TestErrorRecovery) {
   // Creates the database and corrupt to test the recovery method.
   std::string test_host = "host.com";
-  BlacklistData::AllowedTypesAndVersions allowed_types;
+  BlocklistData::AllowedTypesAndVersions allowed_types;
   allowed_types.insert({1, 0});
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
@@ -129,18 +129,18 @@ TEST_F(OptOutStoreSQLTest, TestErrorRecovery) {
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
   // The data should be recovered.
-  EXPECT_EQ(1U, blacklist_data_->black_list_item_host_map().size());
+  EXPECT_EQ(1U, blocklist_data_->block_list_item_host_map().size());
   const auto& iter =
-      blacklist_data_->black_list_item_host_map().find(test_host);
+      blocklist_data_->block_list_item_host_map().find(test_host);
 
-  EXPECT_NE(blacklist_data_->black_list_item_host_map().end(), iter);
+  EXPECT_NE(blocklist_data_->block_list_item_host_map().end(), iter);
   EXPECT_EQ(1U, iter->second.OptOutRecordsSizeForTesting());
 }
 
 TEST_F(OptOutStoreSQLTest, TestPersistance) {
   // Tests if data is stored as expected in the SQLite database.
   std::string test_host = "host.com";
-  BlacklistData::AllowedTypesAndVersions allowed_types;
+  BlocklistData::AllowedTypesAndVersions allowed_types;
   allowed_types.insert({1, 0});
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
@@ -157,11 +157,11 @@ TEST_F(OptOutStoreSQLTest, TestPersistance) {
   allowed_types.insert({1, 0});
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
-  EXPECT_EQ(1U, blacklist_data_->black_list_item_host_map().size());
+  EXPECT_EQ(1U, blocklist_data_->block_list_item_host_map().size());
   const auto& iter =
-      blacklist_data_->black_list_item_host_map().find(test_host);
+      blocklist_data_->block_list_item_host_map().find(test_host);
 
-  EXPECT_NE(blacklist_data_->black_list_item_host_map().end(), iter);
+  EXPECT_NE(blocklist_data_->block_list_item_host_map().end(), iter);
   EXPECT_EQ(1U, iter->second.OptOutRecordsSizeForTesting());
   EXPECT_EQ(now, iter->second.most_recent_opt_out_time().value());
 }
@@ -176,7 +176,7 @@ TEST_F(OptOutStoreSQLTest, TestMaxRows) {
   size_t row_limit = 2;
   std::string row_limit_string = base::NumberToString(row_limit);
   command_line->AppendSwitchASCII("max-opt-out-rows", row_limit_string);
-  BlacklistData::AllowedTypesAndVersions allowed_types;
+  BlocklistData::AllowedTypesAndVersions allowed_types;
   allowed_types.insert({1, 0});
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
@@ -203,7 +203,7 @@ TEST_F(OptOutStoreSQLTest, TestMaxRows) {
   CreateAndLoad();
   // The delete happens after the load, so it is possible to load more than
   // |row_limit| into the in memory map.
-  EXPECT_EQ(row_limit + 1, blacklist_data_->black_list_item_host_map().size());
+  EXPECT_EQ(row_limit + 1, blocklist_data_->block_list_item_host_map().size());
 
   DestroyStore();
   allowed_types.clear();
@@ -211,16 +211,16 @@ TEST_F(OptOutStoreSQLTest, TestMaxRows) {
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
 
-  EXPECT_EQ(row_limit, blacklist_data_->black_list_item_host_map().size());
+  EXPECT_EQ(row_limit, blocklist_data_->block_list_item_host_map().size());
   const auto& iter_host_b =
-      blacklist_data_->black_list_item_host_map().find(test_host_b);
+      blocklist_data_->block_list_item_host_map().find(test_host_b);
   const auto& iter_host_c =
-      blacklist_data_->black_list_item_host_map().find(test_host_c);
+      blocklist_data_->block_list_item_host_map().find(test_host_c);
 
-  EXPECT_EQ(blacklist_data_->black_list_item_host_map().end(),
-            blacklist_data_->black_list_item_host_map().find(test_host_a));
-  EXPECT_NE(blacklist_data_->black_list_item_host_map().end(), iter_host_b);
-  EXPECT_NE(blacklist_data_->black_list_item_host_map().end(), iter_host_c);
+  EXPECT_EQ(blocklist_data_->block_list_item_host_map().end(),
+            blocklist_data_->block_list_item_host_map().find(test_host_a));
+  EXPECT_NE(blocklist_data_->block_list_item_host_map().end(), iter_host_b);
+  EXPECT_NE(blocklist_data_->block_list_item_host_map().end(), iter_host_c);
   EXPECT_EQ(host_b_time,
             iter_host_b->second.most_recent_opt_out_time().value());
   EXPECT_EQ(1U, iter_host_b->second.OptOutRecordsSizeForTesting());
@@ -234,7 +234,7 @@ TEST_F(OptOutStoreSQLTest, TestMaxRowsPerHost) {
   std::string row_limit_string = base::NumberToString(row_limit);
   command_line->AppendSwitchASCII("max-opt-out-rows-per-host",
                                   row_limit_string);
-  BlacklistData::AllowedTypesAndVersions allowed_types;
+  BlocklistData::AllowedTypesAndVersions allowed_types;
   allowed_types.insert({1, 0});
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
@@ -261,23 +261,23 @@ TEST_F(OptOutStoreSQLTest, TestMaxRowsPerHost) {
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
 
-  EXPECT_EQ(1U, blacklist_data_->black_list_item_host_map().size());
+  EXPECT_EQ(1U, blocklist_data_->block_list_item_host_map().size());
   const auto& iter =
-      blacklist_data_->black_list_item_host_map().find(test_host);
+      blocklist_data_->block_list_item_host_map().find(test_host);
 
-  EXPECT_NE(blacklist_data_->black_list_item_host_map().end(), iter);
+  EXPECT_NE(blocklist_data_->block_list_item_host_map().end(), iter);
   EXPECT_EQ(last_opt_out_time, iter->second.most_recent_opt_out_time().value());
   EXPECT_EQ(row_limit, iter->second.OptOutRecordsSizeForTesting());
   clock.Advance(base::TimeDelta::FromSeconds(1));
   // If both entries' opt out states are stored correctly, then this should not
-  // be black listed.
-  EXPECT_FALSE(iter->second.IsBlackListed(clock.Now()));
+  // be block listed.
+  EXPECT_FALSE(iter->second.IsBlockListed(clock.Now()));
 }
 
-TEST_F(OptOutStoreSQLTest, TestTypesVersionUpdateClearsBlacklistEntry) {
+TEST_F(OptOutStoreSQLTest, TestTypesVersionUpdateClearsBlocklistEntry) {
   // Tests if data is cleared for new version of type.
   std::string test_host = "host.com";
-  BlacklistData::AllowedTypesAndVersions allowed_types;
+  BlocklistData::AllowedTypesAndVersions allowed_types;
   allowed_types.insert({1, 1});
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
@@ -285,7 +285,7 @@ TEST_F(OptOutStoreSQLTest, TestTypesVersionUpdateClearsBlacklistEntry) {
   store_->AddEntry(true, test_host, 1, now);
   base::RunLoop().RunUntilIdle();
 
-  // Force data write to database then reload it and verify black list entry
+  // Force data write to database then reload it and verify block list entry
   // is present.
   DestroyStore();
   allowed_types.clear();
@@ -293,8 +293,8 @@ TEST_F(OptOutStoreSQLTest, TestTypesVersionUpdateClearsBlacklistEntry) {
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
   const auto& iter =
-      blacklist_data_->black_list_item_host_map().find(test_host);
-  EXPECT_NE(blacklist_data_->black_list_item_host_map().end(), iter);
+      blocklist_data_->block_list_item_host_map().find(test_host);
+  EXPECT_NE(blocklist_data_->block_list_item_host_map().end(), iter);
   EXPECT_EQ(1U, iter->second.OptOutRecordsSizeForTesting());
 
   DestroyStore();
@@ -303,8 +303,8 @@ TEST_F(OptOutStoreSQLTest, TestTypesVersionUpdateClearsBlacklistEntry) {
   SetEnabledTypes(std::move(allowed_types));
   CreateAndLoad();
   const auto& iter2 =
-      blacklist_data_->black_list_item_host_map().find(test_host);
-  EXPECT_EQ(blacklist_data_->black_list_item_host_map().end(), iter2);
+      blocklist_data_->block_list_item_host_map().find(test_host);
+  EXPECT_EQ(blocklist_data_->block_list_item_host_map().end(), iter2);
 }
 
-}  // namespace blacklist
+}  // namespace blocklist

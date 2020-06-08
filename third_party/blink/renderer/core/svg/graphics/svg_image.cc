@@ -853,6 +853,11 @@ Image::SizeAvailability SVGImage::DataChanged(bool all_data_received) {
           default_settings.GetDefaultFontSize());
       page->GetSettings().SetDefaultFixedFontSize(
           default_settings.GetDefaultFixedFontSize());
+
+      // Also copy the preferred-color-scheme to ensure a responsiveness to
+      // dark/light color schemes.
+      page->GetSettings().SetPreferredColorScheme(
+          default_settings.GetPreferredColorScheme());
     }
   }
 

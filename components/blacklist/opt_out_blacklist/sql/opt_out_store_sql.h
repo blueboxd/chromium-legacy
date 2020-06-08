@@ -26,7 +26,7 @@ namespace sql {
 class Database;
 }  // namespace sql
 
-namespace blacklist {
+namespace blocklist {
 
 // OptOutStoreSQL is an instance of OptOutStore
 // which is implemented using a SQLite database.
@@ -43,9 +43,9 @@ class OptOutStoreSQL : public OptOutStore {
                 const std::string& host_name,
                 int type,
                 base::Time now) override;
-  void ClearBlackList(base::Time begin_time, base::Time end_time) override;
-  void LoadBlackList(std::unique_ptr<BlacklistData> blacklist_data,
-                     LoadBlackListCallback callback) override;
+  void ClearBlockList(base::Time begin_time, base::Time end_time) override;
+  void LoadBlockList(std::unique_ptr<BlocklistData> blocklist_data,
+                     LoadBlockListCallback callback) override;
 
  private:
   // Thread this object is accessed on.
@@ -63,6 +63,6 @@ class OptOutStoreSQL : public OptOutStore {
   DISALLOW_COPY_AND_ASSIGN(OptOutStoreSQL);
 };
 
-}  // namespace blacklist
+}  // namespace blocklist
 
 #endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_SQL_OPT_OUT_STORE_SQL_H_

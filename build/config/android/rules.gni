@@ -2430,9 +2430,7 @@ if (enable_java_templates) {
 
     _final_deps = []
 
-    _enable_main_dex_list =
-        _enable_multidex &&
-        (!defined(invoker.min_sdk_version) || invoker.min_sdk_version < 21)
+    _enable_main_dex_list = _enable_multidex && _min_sdk_version < 21
     if (_enable_main_dex_list) {
       _generated_proguard_main_dex_config =
           "$_base_path.resources.main-dex-proguard.txt"
@@ -2927,12 +2925,16 @@ if (enable_java_templates) {
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
           proguard_sourcefile_suffix = "$android_channel-$_version_code"
-        } else {
+        } else if (_min_sdk_version >= default_min_sdk_version) {
+          # Enable dex merging only when min_sdk_version is >= what the library
+          # .dex files were created with.
           input_dex_filearg =
               "@FileArg(${_rebased_build_config}:final_dex:all_dex_files)"
           if (_enable_main_dex_list) {
             main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)"
           }
+        } else {
+          input_classes_filearg = "@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)"
         }
 
         if (_is_static_library_provider) {
@@ -3363,6 +3365,8 @@ if (enable_java_templates) {
       android_lint(_android_lint_target) {
         forward_variables_from(invoker,
                                [
+                                 "lint_suppressions_dep",
+                                 "lint_suppressions_file",
                                  "manifest_package",
                                  "min_sdk_version",
                                ])
@@ -3371,7 +3375,12 @@ if (enable_java_templates) {
         deps = [ ":$_java_target" ]
       }
     } else {
-      not_needed(invoker, [ "manifest_package" ])
+      not_needed(invoker,
+                 [
+                   "manifest_package",
+                   "lint_suppressions_dep",
+                   "lint_suppressions_file",
+                 ])
     }
 
     group(target_name) {
@@ -3473,6 +3482,8 @@ if (enable_java_templates) {
                                "keystore_name",
                                "keystore_password",
                                "keystore_path",
+                               "lint_suppressions_dep",
+                               "lint_suppressions_file",
                                "load_library_from_apk",
                                "loadable_modules",
                                "manifest_package",
@@ -4290,37 +4301,37 @@ if (enable_java_templates) {
       not_needed(invoker, [ "strip_drawables" ])
     }
 
-    _java_library_vars = [
-      "enable_bytecode_checks",
-      "enable_jetify",
-      "jar_excluded_patterns",
-      "jar_included_patterns",
-      "missing_classes_allowlist",
-      "requires_android",
-      "testonly",
-    ]
-
-    # Create android_java_prebuilt target for extra jars within jars/.
-    _subjar_targets = []
-    foreach(_tuple, _scanned_files.subjar_tuples) {
-      _current_target = "${target_name}__subjar_${_tuple[0]}"
-      _subjar_targets += [ ":$_current_target" ]
-      java_prebuilt(_current_target) {
-        forward_variables_from(invoker, _java_library_vars)
-        deps = [ ":$_unpack_target_name" ]
-        if (!defined(requires_android)) {
-          requires_android = true
-        }
-        supports_android = true
-        jar_path = "$_output_path/${_tuple[1]}"
-        _base_output_name = get_path_info(jar_path, "name")
-        output_name = "${invoker.target_name}-$_base_output_name"
-        public_target_label = invoker.target_name
-      }
-    }
-
     # Create android_java_prebuilt target for classes.jar.
     if (_scanned_files.has_classes_jar) {
+      _java_library_vars = [
+        "enable_bytecode_checks",
+        "enable_jetify",
+        "jar_excluded_patterns",
+        "jar_included_patterns",
+        "missing_classes_allowlist",
+        "requires_android",
+        "testonly",
+      ]
+
+      # Create android_java_prebuilt target for extra jars within jars/.
+      _subjar_targets = []
+      foreach(_tuple, _scanned_files.subjar_tuples) {
+        _current_target = "${target_name}__subjar_${_tuple[0]}"
+        _subjar_targets += [ ":$_current_target" ]
+        java_prebuilt(_current_target) {
+          forward_variables_from(invoker, _java_library_vars)
+          deps = [ ":$_unpack_target_name" ]
+          if (!defined(requires_android)) {
+            requires_android = true
+          }
+          supports_android = true
+          jar_path = "$_output_path/${_tuple[1]}"
+          _base_output_name = get_path_info(jar_path, "name")
+          output_name = "${invoker.target_name}-$_base_output_name"
+          public_target_label = invoker.target_name
+        }
+      }
+
       _jar_target_name = "${target_name}__classes"
       java_prebuilt(_jar_target_name) {
         forward_variables_from(invoker, _java_library_vars)
@@ -4964,16 +4975,22 @@ if (enable_java_templates) {
       android_lint(_android_lint_target) {
         forward_variables_from(invoker,
                                [
+                                 "lint_suppressions_dep",
+                                 "lint_suppressions_file",
                                  "manifest_package",
                                  "min_sdk_version",
-                                 "lint_suppressions_file",
                                ])
         build_config = _build_config
         build_config_dep = ":$_build_config_target"
         deps = _module_java_targets
       }
     } else {
-      not_needed(invoker, [ "manifest_package" ])
+      not_needed(invoker,
+                 [
+                   "manifest_package",
+                   "lint_suppressions_dep",
+                   "lint_suppressions_file",
+                 ])
     }
 
     group(_target_name) {

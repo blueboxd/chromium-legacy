@@ -21,8 +21,8 @@ namespace protocol {
 
 StreamMessagePipeAdapter::StreamMessagePipeAdapter(
     std::unique_ptr<P2PStreamSocket> socket,
-    const ErrorCallback& error_callback)
-    : socket_(std::move(socket)), error_callback_(error_callback) {
+    ErrorCallback error_callback)
+    : socket_(std::move(socket)), error_callback_(std::move(error_callback)) {
   DCHECK(socket_);
   DCHECK(error_callback_);
 }

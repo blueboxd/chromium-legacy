@@ -115,11 +115,6 @@ class PhishingTermFeatureExtractor {
   // Handles a single word in the page text.
   void HandleWord(const base::StringPiece16& word);
 
-  // Helper to verify that there is no pending feature extraction.  Dies in
-  // debug builds if the state is not as expected.  This is a no-op in release
-  // builds.
-  void CheckNoPendingExtraction();
-
   // Runs |done_callback_| and then clears all internal state.
   void RunCallback(bool success);
 

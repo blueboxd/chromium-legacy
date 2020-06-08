@@ -236,9 +236,9 @@ TestDataReductionProxyService::TestDataReductionProxyService(
 
 TestDataReductionProxyService::~TestDataReductionProxyService() {}
 
-void TestDataReductionProxyService::SetIgnoreLongTermBlackListRules(
-    bool ignore_long_term_black_list_rules) {
-  ignore_blacklist_ = ignore_long_term_black_list_rules;
+void TestDataReductionProxyService::SetIgnoreLongTermBlockListRules(
+    bool ignore_long_term_block_list_rules) {
+  ignore_blocklist_ = ignore_long_term_block_list_rules;
 }
 
 TestDataStore::TestDataStore() {}

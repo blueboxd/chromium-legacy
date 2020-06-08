@@ -36,9 +36,9 @@ class P2PStreamSocket;
 // e.g. when we the sender sends multiple messages in one TCP packet.
 class MessageReader {
  public:
-  typedef base::Callback<void(std::unique_ptr<CompoundBuffer> message)>
+  typedef base::RepeatingCallback<void(std::unique_ptr<CompoundBuffer> message)>
       MessageReceivedCallback;
-  typedef base::Callback<void(int)> ReadFailedCallback;
+  typedef base::RepeatingCallback<void(int)> ReadFailedCallback;
 
   MessageReader();
   virtual ~MessageReader();

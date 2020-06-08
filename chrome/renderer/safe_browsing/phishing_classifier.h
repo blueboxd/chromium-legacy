@@ -124,11 +124,6 @@ class PhishingClassifier {
   // non-phishy verdict.
   void VisualExtractionFinished(bool success);
 
-  // Helper to verify that there is no pending phishing classification.  Dies
-  // in debug builds if the state is not as expected.  This is a no-op in
-  // release builds.
-  void CheckNoPendingClassification();
-
   // Helper method to run the DoneCallback and clear the state.
   void RunCallback(const ClientPhishingRequest& verdict);
 

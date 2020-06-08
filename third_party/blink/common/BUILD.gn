@@ -121,6 +121,7 @@ jumbo_source_set("common") {
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",
     "service_worker/service_worker_utils.cc",
+    "switches.cc",
     "thread_safe_browser_interface_broker_proxy.cc",
     "user_agent/user_agent_metadata.cc",
     "web_package/signed_exchange_consts.cc",

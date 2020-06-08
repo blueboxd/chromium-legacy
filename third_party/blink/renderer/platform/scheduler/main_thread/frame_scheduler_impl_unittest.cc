@@ -390,6 +390,13 @@ class FrameSchedulerImplStopNonTimersInBackgroundDisabledTest
                                {blink::features::kStopNonTimersInBackground}) {}
 };
 
+class FrameSchedulerImplStopInBackgroundDisabledTest
+    : public FrameSchedulerImplTest {
+ public:
+  FrameSchedulerImplStopInBackgroundDisabledTest()
+      : FrameSchedulerImplTest({}, {blink::features::kStopInBackground}) {}
+};
+
 namespace {
 
 class MockLifecycleObserver final : public FrameScheduler::Observer {
@@ -631,6 +638,62 @@ TEST_F(FrameSchedulerImplTest, PauseAndResumeForCooperativeScheduling) {
   EXPECT_TRUE(DeferrableTaskQueue()->IsQueueEnabled());
   EXPECT_TRUE(PausableTaskQueue()->IsQueueEnabled());
   EXPECT_TRUE(UnpausableTaskQueue()->IsQueueEnabled());
+}
+
+namespace {
+
+// A task that re-posts itself with a delay in order until it has run
+// |num_remaining_tasks| times.
+void RePostTask(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                base::TimeDelta delay,
+                int* num_remaining_tasks) {
+  --(*num_remaining_tasks);
+  if (*num_remaining_tasks > 0) {
+    task_runner->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&RePostTask, task_runner, delay,
+                       base::Unretained(num_remaining_tasks)),
+        delay);
+  }
+}
+
+}  // namespace
+
+// Verify that tasks in a throttled task queues run at the expected time, when
+// intensive wake up throttling is disabled. Disable the kStopInBackground
+// feature because it hides the effect of intensive wake up throttling.
+TEST_F(FrameSchedulerImplStopInBackgroundDisabledTest, ThrottledTaskExecution) {
+  // This test posts enough tasks to run past the default intensive wake up
+  // throttling grace period. This allows verifying that intensive wake up
+  // throttling is disabled by default.
+  constexpr int kNumTasks =
+      base::TimeDelta::FromMinutes(10) / base::TimeDelta::FromSeconds(1);
+  // Tasks are posted with a delay shorter than the default throttled wake up
+  // period, to allow verifying that the default throttled wake up period is
+  // correctly enforced.
+  constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromMilliseconds(10);
+  // This TaskRunner is throttled.
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimer);
+
+  // Hide the page. This enables wake up throttling.
+  EXPECT_TRUE(page_scheduler_->IsPageVisible());
+  page_scheduler_->SetPageVisible(false);
+
+  // Post an initial task.
+  int num_remaining_tasks = kNumTasks;
+  task_runner->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&RePostTask, task_runner, kShortDelay,
+                     base::Unretained(&num_remaining_tasks)),
+      kShortDelay);
+
+  // A task should run every second.
+  while (num_remaining_tasks > 0) {
+    int previous_num_remaining_tasks = num_remaining_tasks;
+    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+    EXPECT_EQ(previous_num_remaining_tasks - 1, num_remaining_tasks);
+  }
 }
 
 TEST_F(FrameSchedulerImplTest, FreezeForegroundOnlyTasks) {

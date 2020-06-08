@@ -12,7 +12,7 @@
 class Browser;
 enum class UrlLoadStrategy;
 
-@class ContextMenuCoordinator;
+@class ActionSheetCoordinator;
 @protocol TableViewFaviconDataSource;
 @protocol HistoryUIDelegate;
 @protocol HistoryPresentationDelegate;
@@ -34,8 +34,8 @@ enum class UrlLoadStrategy;
 @property(nonatomic, weak) id<HistoryPresentationDelegate> presentationDelegate;
 // Data source for favicon images.
 @property(nonatomic, weak) id<TableViewFaviconDataSource> imageDataSource;
-// Coordinator for displaying context menus for history entries.
-@property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
+// Coordinator for displaying a context menu for history entries.
+@property(nonatomic, strong) ActionSheetCoordinator* contextMenuCoordinator;
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

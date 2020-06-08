@@ -74,7 +74,8 @@ public final class ShareSheetCoordinatorTest {
                              any(), any(), anyBoolean(), anyLong()))
                 .thenReturn(thirdPartyPropertyModels);
 
-        mShareSheetCoordinator = new ShareSheetCoordinator(null, null, mPropertyModelBuilder, null);
+        mShareSheetCoordinator =
+                new ShareSheetCoordinator(null, null, mPropertyModelBuilder, null, null);
     }
 
     @Test

@@ -14,12 +14,12 @@
 #include "base/time/time.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 
-namespace blacklist {
+namespace blocklist {
 
-typedef base::OnceCallback<void(std::unique_ptr<BlacklistData>)>
-    LoadBlackListCallback;
+typedef base::OnceCallback<void(std::unique_ptr<BlocklistData>)>
+    LoadBlockListCallback;
 
-// OptOutStore keeps opt out information for the blacklist.
+// OptOutStore keeps opt out information for the blocklist.
 // Ability to create multiple instances of the store as well as behavior of
 // asynchronous operations when the object is being destroyed, before such
 // operation finishes will depend on implementation. It is possible to issue
@@ -35,15 +35,15 @@ class OptOutStore {
                         int type,
                         base::Time now) = 0;
 
-  // Asynchronously loads a map of host names to OptOutBlacklistItem for that
+  // Asynchronously loads a map of host names to OptOutBlocklistItem for that
   // host from the store. And runs |callback| once loading is finished.
-  virtual void LoadBlackList(std::unique_ptr<BlacklistData> blacklist_data,
-                             LoadBlackListCallback callback) = 0;
+  virtual void LoadBlockList(std::unique_ptr<BlocklistData> blocklist_data,
+                             LoadBlockListCallback callback) = 0;
 
   // Deletes all history in the store between |begin_time| and |end_time|.
-  virtual void ClearBlackList(base::Time begin_time, base::Time end_time) = 0;
+  virtual void ClearBlockList(base::Time begin_time, base::Time end_time) = 0;
 };
 
-}  // namespace blacklist
+}  // namespace blocklist
 
 #endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_STORE_H_

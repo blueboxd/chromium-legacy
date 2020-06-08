@@ -17,7 +17,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
@@ -168,11 +168,12 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // history content.
   self.tableView.tableFooterView = [[UIView alloc] init];
 
-  // ContextMenu gesture recognizer.
-  UILongPressGestureRecognizer* longPressRecognizer = [
-      [UILongPressGestureRecognizer alloc]
-      initWithTarget:self
-              action:@selector(displayContextMenuInvokedByGestureRecognizer:)];
+  // Long-press gesture recognizer.
+  UILongPressGestureRecognizer* longPressRecognizer =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector
+                  (displayContextMenuInvokedByGestureRecognizer:)];
   [self.tableView addGestureRecognizer:longPressRecognizer];
 
   // NavigationController configuration.
@@ -972,7 +973,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 #pragma mark Context Menu
 
-// Displays context menu on cell pressed with gestureRecognizer.
+// Displays a context menu on the cell pressed with gestureRecognizer.
 - (void)displayContextMenuInvokedByGestureRecognizer:
     (UILongPressGestureRecognizer*)gestureRecognizer {
   if (gestureRecognizer.numberOfTouches != 1 || self.editing ||
@@ -1001,12 +1002,14 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   __weak HistoryTableViewController* weakSelf = self;
   NSString* menuTitle =
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
-  self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
+  self.contextMenuCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.navigationController
                          browser:_browser
                            title:menuTitle
-                          inView:self.tableView
-                      atLocation:touchLocation];
+                         message:nil
+                            rect:CGRectMake(touchLocation.x, touchLocation.y,
+                                            1.0, 1.0)
+                            view:self.tableView];
 
   // Add "Open in New Tab" option.
   NSString* openInNewTabTitle =
@@ -1015,7 +1018,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     [weakSelf openURLInNewTab:entry.URL];
   };
   [self.contextMenuCoordinator addItemWithTitle:openInNewTabTitle
-                                         action:openInNewTabAction];
+                                         action:openInNewTabAction
+                                          style:UIAlertActionStyleDefault];
 
   // Add "Open in New Incognito Tab" option.
   NSString* openInNewIncognitoTabTitle = l10n_util::GetNSStringWithFixup(
@@ -1024,7 +1028,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     [weakSelf openURLInNewIncognitoTab:entry.URL];
   };
   [self.contextMenuCoordinator addItemWithTitle:openInNewIncognitoTabTitle
-                                         action:openInNewIncognitoTabAction];
+                                         action:openInNewIncognitoTabAction
+                                          style:UIAlertActionStyleDefault];
 
   // Add "Copy URL" option.
   NSString* copyURLTitle =
@@ -1033,7 +1038,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     StoreURLInPasteboard(entry.URL);
   };
   [self.contextMenuCoordinator addItemWithTitle:copyURLTitle
-                                         action:copyURLAction];
+                                         action:copyURLAction
+                                          style:UIAlertActionStyleDefault];
   [self.contextMenuCoordinator start];
 }
 

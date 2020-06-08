@@ -5,7 +5,7 @@
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {eventToPromise, whenAttributeIs} from '../test_util.m.js';
+// #import {eventToPromise, isChildVisible, whenAttributeIs} from '../test_util.m.js';
 // #import {assertEquals, assertNotEquals, assertThrows, assertTrue, assertFalse} from '../chai_assert.js';
 // clang-format on
 
@@ -375,4 +375,22 @@ suite('cr-input', function() {
     assertTrue(input.matches(':focus'));
     assertEquals('', window.getSelection().toString());
   });
+
+  test('slots', function() {
+    /* #ignore */ PolymerTest.clearBody();
+    document.body.innerHTML = `
+      <cr-input>
+        <div slot="inline-prefix" id="inline-prefix">One</div>
+        <div slot="suffix" id="suffix">Two</div>
+        <div slot="inline-suffix" id="inline-suffix">Three</div>
+      </cr-input>
+    `;
+    Polymer.dom.flush();
+    crInput =
+        /** @type {!CrInputElement} */ (document.querySelector('cr-input'));
+    assertTrue(test_util.isChildVisible(crInput, '#inline-prefix', true));
+    assertTrue(test_util.isChildVisible(crInput, '#suffix', true));
+    assertTrue(test_util.isChildVisible(crInput, '#inline-suffix', true));
+  });
+
 });

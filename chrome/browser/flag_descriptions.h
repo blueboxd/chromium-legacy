@@ -677,8 +677,8 @@ extern const char kHostedAppShimCreationDescription[];
 extern const char kIgnoreGpuBlacklistName[];
 extern const char kIgnoreGpuBlacklistDescription[];
 
-extern const char kIgnorePreviewsBlacklistName[];
-extern const char kIgnorePreviewsBlacklistDescription[];
+extern const char kIgnorePreviewsBlocklistName[];
+extern const char kIgnorePreviewsBlocklistDescription[];
 
 extern const char kImprovedCookieControlsName[];
 extern const char kImprovedCookieControlsDescription[];

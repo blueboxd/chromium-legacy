@@ -245,10 +245,10 @@ SslHmacChannelAuthenticator::~SslHmacChannelAuthenticator() {
 
 void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     std::unique_ptr<P2PStreamSocket> socket,
-    const DoneCallback& done_callback) {
+    DoneCallback done_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  done_callback_ = done_callback;
+  done_callback_ = std::move(done_callback);
 
   int result;
   if (is_ssl_server()) {

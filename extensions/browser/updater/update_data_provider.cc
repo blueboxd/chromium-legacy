@@ -26,6 +26,7 @@
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/verifier_formats.h"
 
 namespace extensions {
@@ -108,9 +109,11 @@ UpdateDataProvider::GetData(bool install_immediately,
       crx_component->fingerprint = extension->DifferentialFingerprint();
     }
     crx_component->allows_background_download = false;
-    crx_component->requires_network_encryption = true;
+    bool allow_dev = extension_urls::GetWebstoreUpdateUrl() !=
+                     extension_urls::GetDefaultWebstoreUpdateUrl();
+    crx_component->requires_network_encryption = !allow_dev;
     crx_component->crx_format_requirement =
-        extension->from_webstore() ? GetWebstoreVerifierFormat(false)
+        extension->from_webstore() ? GetWebstoreVerifierFormat(allow_dev)
                                    : GetPolicyVerifierFormat();
     crx_component->installer = base::MakeRefCounted<ExtensionInstaller>(
         id, extension->path(), install_immediately,

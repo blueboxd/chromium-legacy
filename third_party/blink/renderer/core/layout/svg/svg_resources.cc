@@ -599,14 +599,20 @@ void SVGResources::ClearClipPathFilterMask(SVGElement& element,
                                            const ComputedStyle* style) {
   if (!style)
     return;
-  SVGResourceClient* client = element.GetSVGResourceClient();
+  SVGElementResourceClient* client = element.GetSVGResourceClient();
   if (!client)
     return;
   if (auto* old_reference_clip =
           DynamicTo<ReferenceClipPathOperation>(style->ClipPath()))
     old_reference_clip->RemoveClient(*client);
-  if (style->HasFilter())
+  if (style->HasFilter()) {
     style->Filter().RemoveClient(*client);
+    if (client->ClearFilterData()) {
+      LayoutObject* layout_object = element.GetLayoutObject();
+      LayoutSVGResourceContainer::MarkClientForInvalidation(
+          *layout_object, SVGResourceClient::kPaintInvalidation);
+    }
+  }
   if (StyleSVGResource* masker_resource = style->SvgStyle().MaskerResource())
     masker_resource->RemoveClient(*client);
 }

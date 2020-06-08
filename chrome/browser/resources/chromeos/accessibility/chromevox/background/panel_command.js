@@ -25,15 +25,42 @@ PanelCommand = class {
   }
 
   /**
-   * Send this command to the ChromeVox Panel window.
+   * @return {Window}
    */
-  send() {
+  getPanelWindow() {
     const views = chrome.extension.getViews();
     for (let i = 0; i < views.length; i++) {
       if (views[i].location.href.indexOf('panel/panel.html') > 0) {
-        views[i].postMessage(JSON.stringify(this), window.location.origin);
+        return views[i];
       }
     }
+    throw new Error('Could not find the panel window');
+  }
+
+  waitForPanel() {
+    return new Promise(resolve => {
+      const panelWindow = this.getPanelWindow();
+      if (panelWindow.document.readyState === 'complete') {
+        // The panel may already have loaded. In this case, resolve() and
+        // do not wait for a load event that has already fired.
+        resolve();
+      }
+      panelWindow.addEventListener('load', () => {
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Send this command to the ChromeVox Panel window.
+   * @return {!Promise}
+   */
+  async send() {
+    // Do not send commands to the ChromeVox Panel window until it has finished
+    // loading and is ready to receive commands.
+    await this.waitForPanel();
+    const panelWindow = this.getPanelWindow();
+    panelWindow.postMessage(JSON.stringify(this), window.location.origin);
   }
 };
 

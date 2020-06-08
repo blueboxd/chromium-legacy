@@ -292,13 +292,6 @@ QUIC_FLAG(bool,
 // If true, server push will be allowed in QUIC versions using HTTP/3.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_server_push, false)
 
-// If true, disable QuicDispatcher workaround that replies to invalid QUIC
-// packets from the Android Conformance Test.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_remove_android_conformance_test_workaround,
-    true)
-
 // The divisor that controls how often MAX_STREAMS frames are sent.
 QUIC_FLAG(int32_t, FLAGS_quic_max_streams_window_divisor, 2)
 
@@ -315,25 +308,10 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr2_fewer_startup_round_trips,
           false)
 
-// If true, remove draining_streams_ from QuicSession.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_deprecate_draining_streams,
-          true)
-
-// If true, break session/stream close loop.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_break_session_stream_close_loop,
-          true)
-
 // Replace the usage of ConnectionData::encryption_level in
 // quic_time_wait_list_manager with a new TimeWaitAction.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_replace_time_wait_list_encryption_level,
-          true)
-
-// If true, move Goolge QUIC stream accounting to LegacyQuicStreamIdManager.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_stream_id_manager_handles_accounting,
           true)
 
 // If true, enables support for TLS resumption in QUIC.
@@ -387,13 +365,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_google_transport_param_send_new,
           true)
-
-// If true, if a buffered MTU packet causes a write to return MSG_TOO_BIG, this
-// error will be ignored.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_ignore_msg_too_big_from_buffered_packets,
-    true)
 
 // If true, check ShouldGeneratePacket for every crypto packet.
 QUIC_FLAG(bool,

@@ -27,6 +27,9 @@ const std::string kRequestUrl = "http://testurl.test";
 }  // namespace
 
 class AwPacProcessorTest : public testing::Test {
+ public:
+  void TearDown() override { delete pac_processor_; }
+
  protected:
   base::test::TaskEnvironment task_environment_{
            base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -55,6 +58,7 @@ TEST_F(AwPacProcessorTest, MultipleProxyRequest) {
 
   EXPECT_EQ("PROXY 127.0.0.1:80",
             other_pac_processor_->MakeProxyRequest(kRequestUrl));
+  delete other_pac_processor_;
 }
 
 }  // namespace android_webview

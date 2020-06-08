@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "net/log/net_log.h"
@@ -62,9 +61,6 @@ void HostCachePersistenceManager::ReadFromDisk() {
   net_log_.AddEntryWithBoolParams(net::NetLogEventType::HOST_CACHE_PREF_READ,
                                   net::NetLogEventPhase::END, "success",
                                   success);
-
-  UMA_HISTOGRAM_BOOLEAN("DNS.HostCache.RestoreSuccess", success);
-  UMA_HISTOGRAM_COUNTS_1000("DNS.HostCache.RestoreSize", pref_value->GetSize());
 }
 
 void HostCachePersistenceManager::ScheduleWrite() {

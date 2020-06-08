@@ -255,9 +255,9 @@ TEST_F(DocumentLoaderSimTest, FramePolicyIntegrityOnNavigationCommit) {
   iframe_resource.Finish();
 
   auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
-  auto* child_window = child_frame->GetFrame()->DomWindow();
+  auto* child_document = child_frame->GetFrame()->GetDocument();
 
-  EXPECT_TRUE(child_window->IsFeatureEnabled(
+  EXPECT_TRUE(child_document->IsFeatureEnabled(
       blink::mojom::blink::FeaturePolicyFeature::kPayment));
 }
 // When runtime feature DocumentPolicy is not enabled, specifying
@@ -286,7 +286,7 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyNoEffectWhenFlagNotSet) {
 
   iframe_resource.Finish();
   auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
-  auto* child_window = child_frame->GetFrame()->DomWindow();
+  auto* child_document = child_frame->GetFrame()->GetDocument();
   auto& console_messages = static_cast<frame_test_helpers::TestWebFrameClient*>(
                                child_frame->Client())
                                ->ConsoleMessages();
@@ -295,24 +295,24 @@ TEST_F(DocumentLoaderSimTest, DocumentPolicyNoEffectWhenFlagNotSet) {
   // violation blocking document load.
   EXPECT_TRUE(console_messages.IsEmpty());
 
-  EXPECT_EQ(child_window->Url(), KURL("https://example.com/foo.html"));
+  EXPECT_EQ(child_document->Url(), KURL("https://example.com/foo.html"));
 
-  EXPECT_FALSE(child_window->document()->IsUseCounted(
+  EXPECT_FALSE(child_document->IsUseCounted(
       mojom::WebFeature::kDocumentPolicyCausedPageUnload));
 
   // Unoptimized-lossless-images should still be allowed in main document.
-  EXPECT_TRUE(Window().IsFeatureEnabled(
+  EXPECT_TRUE(GetDocument().IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
       PolicyValue(2.0)));
-  EXPECT_TRUE(Window().IsFeatureEnabled(
+  EXPECT_TRUE(GetDocument().IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
       PolicyValue(1.0)));
 
   // Unoptimized-lossless-images should still be allowed in child document.
-  EXPECT_TRUE(child_window->IsFeatureEnabled(
+  EXPECT_TRUE(child_document->IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
       PolicyValue(2.0)));
-  EXPECT_TRUE(child_window->IsFeatureEnabled(
+  EXPECT_TRUE(child_document->IsFeatureEnabled(
       mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImages,
       PolicyValue(1.0)));
 }

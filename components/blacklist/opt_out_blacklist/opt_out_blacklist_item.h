@@ -17,27 +17,27 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 
-namespace blacklist {
+namespace blocklist {
 
-// Stores the recent black list history for a single host. Stores
+// Stores the recent block list history for a single host. Stores
 // |stored_history_length| of the most recent actions. To determine action
-// eligibility fewer than |opt_out_black_list_threshold| out of the past
-// |stored_history_length| navigations must be opt outs. |black_list_duration|
-// is the amount of time that elapses until the host is no longer on the black
+// eligibility fewer than |opt_out_block_list_threshold| out of the past
+// |stored_history_length| navigations must be opt outs. |block_list_duration|
+// is the amount of time that elapses until the host is no longer on the block
 // list.
-class OptOutBlacklistItem {
+class OptOutBlocklistItem {
  public:
-  OptOutBlacklistItem(size_t stored_history_length,
-                      int opt_out_black_list_threshold,
-                      base::TimeDelta black_list_duration);
+  OptOutBlocklistItem(size_t stored_history_length,
+                      int opt_out_block_list_threshold,
+                      base::TimeDelta block_list_duration);
 
-  ~OptOutBlacklistItem();
+  ~OptOutBlocklistItem();
 
   // Adds a new navigation at the specified |entry_time|.
   void AddEntry(bool opt_out, base::Time entry_time);
 
   // Whether the action corresponding to |this| should be disallowed.
-  bool IsBlackListed(base::Time now) const;
+  bool IsBlockListed(base::Time now) const;
 
   base::Optional<base::Time> most_recent_opt_out_time() const {
     return most_recent_opt_out_time_;
@@ -75,10 +75,10 @@ class OptOutBlacklistItem {
 
   // The number of entries to store to determine action eligibility.
   const size_t max_stored_history_length_;
-  // The number opt outs in recent history that will trigger blacklisting.
-  const int opt_out_black_list_threshold_;
-  // The amount of time to black list a domain after the most recent opt out.
-  const base::TimeDelta max_black_list_duration_;
+  // The number opt outs in recent history that will trigger blocklisting.
+  const int opt_out_block_list_threshold_;
+  // The amount of time to block list a domain after the most recent opt out.
+  const base::TimeDelta max_block_list_duration_;
 
   // The |max_stored_history_length_| most recent action. Is maintained as a
   // priority queue that has high priority for items that should be evicted
@@ -91,9 +91,9 @@ class OptOutBlacklistItem {
   // The total number of opt outs currently in |opt_out_records_|.
   int total_opt_out_;
 
-  DISALLOW_COPY_AND_ASSIGN(OptOutBlacklistItem);
+  DISALLOW_COPY_AND_ASSIGN(OptOutBlocklistItem);
 };
 
-}  // namespace blacklist
+}  // namespace blocklist
 
 #endif  // COMPONENTS_BLACKLIST_OPT_OUT_BLACKLIST_OPT_OUT_BLACKLIST_ITEM_H_

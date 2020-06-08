@@ -144,11 +144,15 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   if (!parent) {
     // Create a top level WebRemoteFrame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);
+    blink::WebView* web_view = render_view->GetWebView();
     web_frame = blink::WebRemoteFrame::CreateMainFrame(
-        render_view->GetWebView(), proxy.get(),
-        proxy->blink_interface_registry_.get(),
+        web_view, proxy.get(), proxy->blink_interface_registry_.get(),
         proxy->GetRemoteAssociatedInterfaces(), frame_token, opener);
     // Root frame proxy has no ancestors to point to their RenderWidget.
+
+    // The WebRemoteFrame created here was already attached to the Page as its
+    // main frame, so we can call WebView's DidAttachRemoteMainFrame().
+    web_view->DidAttachRemoteMainFrame();
   } else {
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames

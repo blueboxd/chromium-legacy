@@ -390,17 +390,10 @@ void ClientSideDetectionHost::SendModelToRenderFrame(
     if (IsSafeBrowsingEnabled(*profile->GetPrefs())) {
       if (IsExtendedReportingEnabled(*profile->GetPrefs()) ||
           IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
-        DVLOG(2) << "Sending phishing model " << model_loader_extended->name()
-                 << " to RenderFrameHost @" << frame;
         model = model_loader_extended->model_str();
       } else {
-        DVLOG(2) << "Sending phishing model " << model_loader_standard->name()
-                 << " to RenderFrameHost @" << frame;
         model = model_loader_standard->model_str();
       }
-    } else {
-      DVLOG(2) << "Disabling client-side phishing detection for "
-               << "RenderFrameHost @" << frame;
     }
 
     if (phishing_detector_)

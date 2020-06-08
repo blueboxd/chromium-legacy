@@ -30,7 +30,7 @@
 
 namespace {
 
-constexpr uint32_t kEngagedSiteUpdateIntervalInSeconds = 5 * 60;
+constexpr uint32_t kEngagedSiteUpdateIntervalInSeconds = 60;
 
 class LookalikeUrlServiceFactory : public BrowserContextKeyedServiceFactory {
  public:

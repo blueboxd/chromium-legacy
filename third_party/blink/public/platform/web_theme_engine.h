@@ -148,6 +148,7 @@ class WebThemeEngine {
     int thumb_x;
     int thumb_y;
     float zoom;
+    bool right_to_left;
   };
 
   // Extra parameters for PartInnerSpinButton

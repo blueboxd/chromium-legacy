@@ -716,9 +716,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_WebUISend,
                     std::string /* message */,
                     base::ListValue /* args */)
 
-// Sent to notify that a frame called |window.focus()|.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)
-
 // Ask the frame host to print a cross-process subframe.
 // The printed content of this subframe belongs to the document specified by
 // its document cookie. Document cookie is a unique id for a printed document

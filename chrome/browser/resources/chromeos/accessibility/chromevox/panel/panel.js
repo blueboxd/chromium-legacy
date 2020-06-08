@@ -149,16 +149,21 @@ Panel = class {
     /** @type {Window} */
     Panel.ownerWindow = window;
 
-    /**
-     * @type {boolean}
-     * @private
-     */
+    /** @private {boolean} */
     Panel.menuSearchEnabled_ = true;
 
     chrome.commandLinePrivate.hasSwitch(
         'disable-experimental-accessibility-chromevox-search-menus',
         (enabled) => {
           Panel.menuSearchEnabled_ = !enabled;
+        });
+
+    /** @private {boolean} */
+    Panel.iTutorialEnabled_ = false;
+
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-chromevox-tutorial', (enabled) => {
+          Panel.iTutorialEnabled_ = enabled;
         });
   }
 
@@ -279,9 +284,17 @@ Panel = class {
         chrome.extension.getURL('chromevox/panel/panel.html') +
         Panel.ModeInfo[Panel.mode_].location;
 
-    $('main').hidden = (Panel.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL);
+    $('main').hidden =
+        (Panel.mode_ == Panel.Mode.FULLSCREEN_TUTORIAL ||
+         Panel.mode_ == Panel.Mode.FULLSCREEN_I_TUTORIAL);
     $('menus_background').hidden = (Panel.mode_ != Panel.Mode.FULLSCREEN_MENUS);
     $('tutorial').hidden = (Panel.mode_ != Panel.Mode.FULLSCREEN_TUTORIAL);
+    // Interactive tutorial elements may not have been loaded yet.
+    const iTutorialContainer = $('i-tutorial-container');
+    if (iTutorialContainer) {
+      iTutorialContainer.hidden =
+          (Panel.mode_ != Panel.Mode.FULLSCREEN_I_TUTORIAL);
+    }
 
     Panel.updateFromPrefs();
 
@@ -1076,6 +1089,43 @@ Panel = class {
   static onTutorial(opt_page) {
     // Change the url fragment to 'fullscreen', which signals the native
     // host code to make the window fullscreen, revealing the menus.
+    if (Panel.iTutorialEnabled_) {
+      if ($('i-tutorial') === null) {
+        // Load resources if this is the first time opening the tutorial.
+        const tutorialScript = document.createElement('script');
+        tutorialScript.src = '../i_tutorial/i_tutorial.js';
+        tutorialScript.setAttribute('type', 'module');
+        const lessonScript = document.createElement('script');
+        lessonScript.src = '../i_tutorial/tutorial_lesson.js';
+        lessonScript.setAttribute('type', 'module');
+        document.body.appendChild(tutorialScript);
+        document.body.appendChild(lessonScript);
+
+        // Create tutorial container and element.
+        const tutorialContainer = document.createElement('div');
+        tutorialContainer.setAttribute('id', 'i-tutorial-container');
+        tutorialContainer.hidden = true;
+        const tutorialElement = document.createElement('i-tutorial');
+        tutorialElement.setAttribute('id', 'i-tutorial');
+        tutorialContainer.appendChild(tutorialElement);
+        document.body.appendChild(tutorialContainer);
+
+        // Add listeners. These are custom events fired from custom components.
+        $('i-tutorial')
+            .addEventListener('tutorial-close', Panel.onCloseTutorial);
+        $('i-tutorial').addEventListener('request-speech', (evt) => {
+          const text = evt.detail.text;
+          const background = chrome.extension.getBackgroundPage();
+          const cvox = background['ChromeVox'];
+          cvox.tts.speak(
+              text, background.QueueMode.FLUSH, {'doNotInterrupt': true});
+        });
+      }
+
+      Panel.setMode(Panel.Mode.FULLSCREEN_I_TUTORIAL);
+      return;
+    }
+
     Panel.setMode(Panel.Mode.FULLSCREEN_TUTORIAL);
 
     switch (opt_page) {
@@ -1181,8 +1231,9 @@ Panel.Mode = {
   COLLAPSED: 'collapsed',
   FOCUSED: 'focused',
   FULLSCREEN_MENUS: 'menus',
+  FULLSCREEN_I_TUTORIAL: 'i_tutorial',
   FULLSCREEN_TUTORIAL: 'tutorial',
-  SEARCH: 'search'
+  SEARCH: 'search',
 };
 
 /**
@@ -1192,9 +1243,10 @@ Panel.ModeInfo = {
   annotation: {title: 'panel_title', location: '#focus'},
   collapsed: {title: 'panel_title', location: '#'},
   focused: {title: 'panel_title', location: '#focus'},
+  i_tutorial: {title: 'panel_tutorial_title', location: '#fullscreen'},
   menus: {title: 'panel_menus_title', location: '#fullscreen'},
   tutorial: {title: 'panel_tutorial_title', location: '#fullscreen'},
-  search: {title: 'panel_title', location: '#focus'}
+  search: {title: 'panel_title', location: '#focus'},
 };
 
 Panel.ACTION_TO_MSG_ID = {
@@ -1211,7 +1263,6 @@ Panel.ACTION_TO_MSG_ID = {
  * @private {string}
  */
 Panel.lastMenu_ = '';
-
 
 window.addEventListener('load', function() {
   Panel.init();

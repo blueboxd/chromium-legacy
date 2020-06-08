@@ -21,12 +21,12 @@ namespace previews {
 
 namespace {
 
-// The group of client-side previews experiments. This controls paramters of the
-// client side blacklist.
+// The group of client-side previews experiments. This controls parameters of
+// the client side blocklist.
 const char kClientSidePreviewsFieldTrial[] = "ClientSidePreviews";
 
 // Name for the version parameter of a field trial. Version changes will
-// result in older blacklist entries being removed.
+// result in older blocklist entries being removed.
 const char kVersion[] = "version";
 
 // Parameter to clarify that the preview for a UserConsistent study should
@@ -128,38 +128,44 @@ const base::Feature& GetNoScriptPreviewsFeature() {
 
 namespace params {
 
-size_t MaxStoredHistoryLengthForPerHostBlackList() {
+size_t MaxStoredHistoryLengthForPerHostBlockList() {
   return GetParamValueAsSizeT(kClientSidePreviewsFieldTrial,
                               "per_host_max_stored_history_length", 4);
 }
 
-size_t MaxStoredHistoryLengthForHostIndifferentBlackList() {
+size_t MaxStoredHistoryLengthForHostIndifferentBlockList() {
   return GetParamValueAsSizeT(kClientSidePreviewsFieldTrial,
                               "host_indifferent_max_stored_history_length", 10);
 }
 
-size_t MaxInMemoryHostsInBlackList() {
+size_t MaxInMemoryHostsInBlockList() {
+  // TODO(crbug.com/1092102): Migrate exeriment parameter name to
+  // max_hosts_in_blocklist.
   return GetParamValueAsSizeT(kClientSidePreviewsFieldTrial,
                               "max_hosts_in_blacklist", 100);
 }
 
-int PerHostBlackListOptOutThreshold() {
+int PerHostBlockListOptOutThreshold() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                             "per_host_opt_out_threshold", 2);
 }
 
-int HostIndifferentBlackListOptOutThreshold() {
+int HostIndifferentBlockListOptOutThreshold() {
   return GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                             "host_indifferent_opt_out_threshold", 6);
 }
 
-base::TimeDelta PerHostBlackListDuration() {
+base::TimeDelta PerHostBlockListDuration() {
+  // TODO(crbug.com/1092102): Migrate exeriment parameter name to
+  // per_host_block_list_duration_in_days.
   return base::TimeDelta::FromDays(
       GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                          "per_host_black_list_duration_in_days", 30));
 }
 
-base::TimeDelta HostIndifferentBlackListPerHostDuration() {
+base::TimeDelta HostIndifferentBlockListPerHostDuration() {
+  // TODO(crbug.com/1092102): Migrate exeriment parameter name to
+  // host_indifferent_block_list_duration_in_days/
   return base::TimeDelta::FromDays(
       GetParamValueAsInt(kClientSidePreviewsFieldTrial,
                          "host_indifferent_black_list_duration_in_days", 30));
@@ -278,7 +284,7 @@ int DeferAllScriptPreviewsVersion() {
 }
 
 int NoScriptPreviewsInflationPercent() {
-  // The default value was determined from lab experiment data of whitelisted
+  // The default value was determined from lab experiment data of allowlisted
   // URLs. It may be improved once there is enough UKM live experiment data
   // via the field trial param.
   return GetFieldTrialParamByFeatureAsInt(GetNoScriptPreviewsFeature(),

@@ -19,7 +19,7 @@ except NameError:
 class TestSignPart(unittest.TestCase):
 
     def setUp(self):
-        self.paths = model.Paths('$I', '$O', '$W')
+        self.paths = model.Paths('/$I', '/$O', '/$W')
         self.config = test_config.TestConfig()
 
     def test_sign_part(self, run_command):
@@ -27,7 +27,7 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--requirements',
-            '=designated => identifier "test.signing.app"', '$W/Test.app'
+            '=designated => identifier "test.signing.app"', '/$W/Test.app'
         ])
 
     def test_sign_part_no_notary(self, run_command):
@@ -36,7 +36,7 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--requirements',
-            '=designated => identifier "test.signing.app"', '$W/Test.app'
+            '=designated => identifier "test.signing.app"', '/$W/Test.app'
         ])
 
     def test_sign_part_no_identifier_requirement(self, run_command):
@@ -44,7 +44,7 @@ class TestSignPart(unittest.TestCase):
             'Test.app', 'test.signing.app', identifier_requirement=False)
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with(
-            ['codesign', '--sign', '[IDENTITY]', '--timestamp', '$W/Test.app'])
+            ['codesign', '--sign', '[IDENTITY]', '--timestamp', '/$W/Test.app'])
 
     def test_sign_with_identifier(self, run_command):
         part = model.CodeSignedProduct(
@@ -53,7 +53,7 @@ class TestSignPart(unittest.TestCase):
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--identifier',
             'test.signing.app', '--requirements',
-            '=designated => identifier "test.signing.app"', '$W/Test.app'
+            '=designated => identifier "test.signing.app"', '/$W/Test.app'
         ])
 
     def test_sign_with_identifier_no_requirement(self, run_command):
@@ -65,7 +65,7 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--identifier',
-            'test.signing.app', '$W/Test.app'
+            'test.signing.app', '/$W/Test.app'
         ])
 
     def test_sign_part_with_options(self, run_command):
@@ -78,7 +78,7 @@ class TestSignPart(unittest.TestCase):
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--requirements',
             '=designated => identifier "test.signing.app"', '--options',
-            'restrict,library', '$W/Test.app'
+            'restrict,library', '/$W/Test.app'
         ])
 
     def test_sign_part_with_entitlements(self, run_command):
@@ -90,7 +90,7 @@ class TestSignPart(unittest.TestCase):
         signing.sign_part(self.paths, self.config, part)
         run_command.assert_called_once_with([
             'codesign', '--sign', '[IDENTITY]', '--timestamp', '--entitlements',
-            '$W/entitlements.plist', '$W/Test.app'
+            '/$W/entitlements.plist', '/$W/Test.app'
         ])
 
     def test_verify_part(self, run_command):
@@ -99,9 +99,9 @@ class TestSignPart(unittest.TestCase):
         self.assertEqual(run_command.mock_calls, [
             mock.call([
                 'codesign', '--display', '--verbose=5', '--requirements', '-',
-                '$W/Test.app'
+                '/$W/Test.app'
             ]),
-            mock.call(['codesign', '--verify', '--verbose=6', '$W/Test.app']),
+            mock.call(['codesign', '--verify', '--verbose=6', '/$W/Test.app']),
         ])
 
     def test_verify_part_with_options(self, run_command):
@@ -114,10 +114,10 @@ class TestSignPart(unittest.TestCase):
         self.assertEqual(run_command.mock_calls, [
             mock.call([
                 'codesign', '--display', '--verbose=5', '--requirements', '-',
-                '$W/Test.app'
+                '/$W/Test.app'
             ]),
             mock.call([
                 'codesign', '--verify', '--verbose=6', '--deep',
-                '--ignore-resources', '$W/Test.app'
+                '--ignore-resources', '/$W/Test.app'
             ]),
         ])

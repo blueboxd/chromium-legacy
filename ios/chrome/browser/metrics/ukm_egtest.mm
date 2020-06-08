@@ -4,14 +4,10 @@
 
 #include "base/ios/ios_util.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
-#import "base/test/ios/wait_util.h"
-#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
-#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -19,24 +15,13 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::AccountsSyncButton;
-using chrome_test_util::ButtonWithAccessibilityLabel;
-using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::ClearBrowsingDataButton;
-using chrome_test_util::ClearBrowsingDataCell;
-using chrome_test_util::ConfirmClearBrowsingDataButton;
 using chrome_test_util::GoogleServicesSettingsButton;
-using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
-using chrome_test_util::SettingsMenuPrivacyButton;
-using chrome_test_util::SyncSwitchCell;
-using chrome_test_util::TurnSyncSwitchOn;
 
 @interface UKMTestCase : ChromeTestCase
 
@@ -158,23 +143,6 @@ using chrome_test_util::TurnSyncSwitchOn;
   const NSUInteger tabCount = [ChromeEarlGrey mainTabCount];
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey waitForMainTabCount:(tabCount + 1)];
-}
-
-// Waits for browsing data to be cleared.
-- (void)clearBrowsingData {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
-  [ChromeEarlGreyUI tapPrivacyMenuButton:ClearBrowsingDataCell()];
-  [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
-  [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
-      performAction:grey_tap()];
-
-  // Wait until activity indicator modal is cleared, meaning clearing browsing
-  // data has been finished.
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
 }
 
 #pragma mark - Tests
@@ -394,8 +362,8 @@ using chrome_test_util::TurnSyncSwitchOn;
 //
 // Corresponds to HistoryDeleteCheck in //chrome/browser/metrics/
 // ukm_browsertest.cc.
-// TODO(crbug.com/866598): Re-enable this test.
-- (void)DISABLED_testHistoryDelete {
+#if defined(CHROME_EARL_GREY_2)
+- (void)testHistoryDelete {
   const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   const uint64_t kDummySourceId = 0x54321;
@@ -403,9 +371,11 @@ using chrome_test_util::TurnSyncSwitchOn;
   GREYAssert([MetricsAppInterface UKMHasDummySource:kDummySourceId],
              @"Dummy source failed to record.");
 
-  [self clearBrowsingData];
+  [ChromeEarlGrey clearBrowsingHistory];
+  GREYAssertEqual([ChromeEarlGrey getBrowsingHistoryEntryCount], 0,
+                  @"History was unexpectedly non-empty");
 
-  // Other sources may already have been recorded since the data was cleared,
+  // Other sources may have already been recorded since the data was cleared,
   // but the dummy source should be gone.
   GREYAssert(![MetricsAppInterface UKMHasDummySource:kDummySourceId],
              @"Dummy source was not purged.");
@@ -414,5 +384,6 @@ using chrome_test_util::TurnSyncSwitchOn;
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
 }
+#endif  // defined(CHROME_EARL_GREY_2)
 
 @end

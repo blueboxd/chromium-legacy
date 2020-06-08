@@ -70,6 +70,7 @@ class FontFallbackIterator {
     kSegmentedFace,
     kPreferencesFonts,
     kSystemFonts,
+    kFirstCandidateForNotdefGlyph,
     kOutOfLuck
   };
 
@@ -77,10 +78,13 @@ class FontFallbackIterator {
   HashSet<UChar32> previously_asked_for_hint_;
   // FontFallbackIterator is meant for single use by HarfBuzzShaper,
   // traversing through the fonts for shaping only once. We must not return
-  // duplicate FontDataForRangeSet objects from the next() iteration functions
+  // duplicate FontDataForRangeSet objects from the Next() iteration function
   // as returning a duplicate value causes a shaping run that won't return any
-  // results.
+  // results. The exception is that if all fonts fail, we return the first
+  // candidate to be used for rendering the .notdef glyph, and set HasNext() to
+  // false.
   HashSet<uint32_t> unique_font_data_for_range_sets_returned_;
+  scoped_refptr<FontDataForRangeSet> first_candidate_ = nullptr;
   Vector<scoped_refptr<FontDataForRangeSet>> tracked_loading_range_sets_;
   FontFallbackPriority font_fallback_priority_;
 };

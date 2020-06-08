@@ -35,7 +35,7 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "components/prerender/prerender_final_status.h"
+#include "components/prerender/common/prerender_final_status.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"

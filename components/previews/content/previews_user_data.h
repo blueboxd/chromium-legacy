@@ -72,12 +72,12 @@ class PreviewsUserData {
   }
 
   // Whether a lite page preview was prevented from being shown due to the
-  // blacklist.
-  bool black_listed_for_lite_page() const {
-    return black_listed_for_lite_page_;
+  // blocklist.
+  bool block_listed_for_lite_page() const {
+    return block_listed_for_lite_page_;
   }
-  void set_black_listed_for_lite_page(bool black_listed_for_lite_page) {
-    black_listed_for_lite_page_ = black_listed_for_lite_page;
+  void set_block_listed_for_lite_page(bool block_listed_for_lite_page) {
+    block_listed_for_lite_page_ = block_listed_for_lite_page;
   }
 
   // Returns whether the Cache-Control:no-transform directive has been
@@ -176,8 +176,8 @@ class PreviewsUserData {
   bool offline_preview_used_ = false;
 
   // Whether a lite page preview was prevented from being shown due to the
-  // blacklist.
-  bool black_listed_for_lite_page_ = false;
+  // blocklist.
+  bool block_listed_for_lite_page_ = false;
 
   // The committed previews type, if any. Is not influenced by the coin flip
   // holdback.

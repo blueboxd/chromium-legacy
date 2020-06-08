@@ -13,7 +13,7 @@
 /** @const */ var SCREEN_OOBE_HID_DETECTION = 'hid-detection';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
 /** @const */ var SCREEN_OOBE_ENABLE_DEBUGGING = 'debugging';
-/** @const */ var SCREEN_OOBE_UPDATE = 'update';
+/** @const */ var SCREEN_OOBE_UPDATE = 'oobe-update';
 /** @const */ var SCREEN_OOBE_RESET = 'reset';
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
 /** @const */ var SCREEN_OOBE_DEMO_SETUP = 'demo-setup';

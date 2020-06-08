@@ -8,7 +8,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
-#include "content/public/common/content_features.h"
+#include "third_party/blink/public/common/features.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -44,10 +44,10 @@ InputEventPrediction::InputEventPrediction(bool enable_resampling)
   // flag.
   std::string predictor_name =
       enable_resampling_
-          ? GetFieldTrialParamValueByFeature(features::kResamplingInputEvents,
-                                             "predictor")
+          ? GetFieldTrialParamValueByFeature(
+                blink::features::kResamplingInputEvents, "predictor")
           : GetFieldTrialParamValueByFeature(
-                features::kInputPredictorTypeChoice, "predictor");
+                blink::features::kInputPredictorTypeChoice, "predictor");
 
   if (predictor_name.empty())
     selected_predictor_type_ =

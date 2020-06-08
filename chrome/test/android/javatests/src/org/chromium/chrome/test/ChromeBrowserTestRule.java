@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.test;
 
+import android.accounts.Account;
+
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
 /**
@@ -15,14 +17,11 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
  * initializing the AccountManagerFacade.
  */
 public class ChromeBrowserTestRule extends NativeLibraryTestRule {
-    private void setUp() {
-        SigninTestUtil.setUpAuthForTesting();
-        loadNativeLibraryAndInitBrowserProcess();
-    }
+    private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     @Override
     public Statement apply(final Statement base, Description description) {
-        return super.apply(new Statement() {
+        Statement statement = super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
                 /**
@@ -30,17 +29,17 @@ public class ChromeBrowserTestRule extends NativeLibraryTestRule {
                  * UI thread).  After loading the library, this will initialize the browser process
                  * if necessary.
                  */
-                setUp();
-                try {
-                    base.evaluate();
-                } finally {
-                    tearDown();
-                }
+                loadNativeLibraryAndInitBrowserProcess();
+                base.evaluate();
             }
         }, description);
+        return mAccountManagerTestRule.apply(statement, description);
     }
 
-    private void tearDown() {
-        SigninTestUtil.tearDownAuthForTesting();
+    /**
+     * Add and sign in an account with the default name.
+     */
+    public Account addAndSignInTestAccount() {
+        return mAccountManagerTestRule.addAndSignInTestAccount();
     }
 }

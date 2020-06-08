@@ -622,8 +622,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
                         OnFrameSwapMessagesReceived)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint,
-                        OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1981,11 +1979,6 @@ void RenderWidgetHostImpl::OnFrameSwapMessagesReceived(
                                                           std::move(messages));
 }
 
-void RenderWidgetHostImpl::OnFirstVisuallyNonEmptyPaint() {
-  if (owner_delegate_)
-    owner_delegate_->RenderWidgetDidFirstVisuallyNonEmptyPaint();
-}
-
 void RenderWidgetHostImpl::RendererExited() {
   if (!renderer_initialized_)
     return;
@@ -2522,6 +2515,11 @@ void RenderWidgetHostImpl::AutoscrollEnd() {
 
   ForwardGestureEventWithLatencyInfo(
       cancel_event, ui::LatencyInfo(ui::SourceEventType::OTHER));
+}
+
+void RenderWidgetHostImpl::DidFirstVisuallyNonEmptyPaint() {
+  if (owner_delegate_)
+    owner_delegate_->RenderWidgetDidFirstVisuallyNonEmptyPaint();
 }
 
 bool RenderWidgetHostImpl::IsAutoscrollInProgress() {

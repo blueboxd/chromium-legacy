@@ -909,11 +909,13 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   const AXObject* ax_after = GetAXObjectByElementId("after");
   ASSERT_NE(nullptr, ax_after);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
-  ASSERT_NE(nullptr, GetAXObjectByElementId("ariaHidden"));
   const AXObject* ax_hidden = GetAXObjectByElementId("ariaHidden");
+  ASSERT_NE(nullptr, ax_hidden);
   ASSERT_TRUE(ax_hidden->AccessibilityIsIgnored());
 
   const auto position_first = Position::FirstPositionInNode(*hidden);
+  // Since "ax_hidden" has a static text child, the AXPosition should move to an
+  // equivalent position on the static text child.
   auto ax_position_left =
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveLeft);
@@ -921,9 +923,9 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_TRUE(ax_position_left.IsTextPosition());
   EXPECT_EQ(ax_hidden->FirstChild(), ax_position_left.ContainerObject());
   EXPECT_EQ(0, ax_position_left.TextOffset());
-  // This is an "after children" position.
-  EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
 
+  // In this case, the adjustment behavior should not affect the outcome because
+  // there is an equivalent AXPosition in the static text child.
   auto ax_position_right =
       AXPosition::FromPosition(position_first, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveRight);
@@ -931,7 +933,6 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_TRUE(ax_position_right.IsTextPosition());
   EXPECT_EQ(ax_hidden->FirstChild(), ax_position_right.ContainerObject());
   EXPECT_EQ(0, ax_position_right.TextOffset());
-  EXPECT_EQ(nullptr, ax_position_right.ChildAfterTreePosition());
 
   const auto position_before = Position::BeforeNode(*hidden);
   ax_position_left =
@@ -941,9 +942,11 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_FALSE(ax_position_left.IsTextPosition());
   EXPECT_EQ(ax_container, ax_position_left.ContainerObject());
   EXPECT_EQ(1, ax_position_left.ChildIndex());
-  // This is an "after children" position.
   EXPECT_EQ(ax_hidden, ax_position_left.ChildAfterTreePosition());
 
+  // Since an AXPosition before "ax_hidden" is valid, i.e. it does not need to
+  // be adjusted, then adjustment behavior should not make a difference in the
+  // outcome.
   ax_position_right =
       AXPosition::FromPosition(position_before, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveRight);
@@ -953,16 +956,16 @@ TEST_F(AccessibilityTest, FromPositionInARIAHidden) {
   EXPECT_EQ(1, ax_position_right.ChildIndex());
   EXPECT_EQ(ax_hidden, ax_position_right.ChildAfterTreePosition());
 
+  // The DOM node right after "hidden" is accessibility ignored, so we should
+  // see an adjustment in the relevant direction.
   const auto position_after = Position::AfterNode(*hidden);
   ax_position_left =
       AXPosition::FromPosition(position_after, TextAffinity::kDownstream,
                                AXPositionAdjustmentBehavior::kMoveLeft);
   EXPECT_TRUE(ax_position_left.IsValid());
-  EXPECT_FALSE(ax_position_left.IsTextPosition());
-  EXPECT_EQ(ax_hidden, ax_position_left.ContainerObject());
-  EXPECT_EQ(1, ax_position_left.ChildIndex());
-  // This is an "after children" position.
-  EXPECT_EQ(nullptr, ax_position_left.ChildAfterTreePosition());
+  EXPECT_TRUE(ax_position_left.IsTextPosition());
+  EXPECT_EQ(ax_hidden->FirstChild(), ax_position_left.ContainerObject());
+  EXPECT_EQ(12, ax_position_left.TextOffset());
 
   ax_position_right =
       AXPosition::FromPosition(position_after, TextAffinity::kDownstream,

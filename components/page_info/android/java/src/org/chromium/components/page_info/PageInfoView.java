@@ -462,19 +462,19 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         animatableViews.add(mConnectionMessage);
         animatableViews.add(mPerformanceSummary);
         animatableViews.add(mPerformanceMessage);
+        animatableViews.add(mPreviewSeparator);
         animatableViews.add(mPreviewMessage);
         animatableViews.add(mPreviewStaleTimestamp);
         animatableViews.add(mPreviewLoadOriginal);
-        animatableViews.add(mPreviewSeparator);
         animatableViews.add(mInstantAppButton);
-        animatableViews.add(mPermissionsTitle);
+        animatableViews.add(mCookieControlsSeparator);
+        animatableViews.add(mCookieControlsView);
         animatableViews.add(mPermissionsSeparator);
+        animatableViews.add(mPermissionsTitle);
         for (int i = 0; i < mPermissionsList.getChildCount(); i++) {
             animatableViews.add(mPermissionsList.getChildAt(i));
         }
         animatableViews.add(mSiteSettingsButton);
-        animatableViews.add(mCookieControlsSeparator);
-        animatableViews.add(mCookieControlsView);
 
         return animatableViews;
     }

@@ -37,7 +37,6 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
-#include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
@@ -108,6 +107,7 @@
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
+#include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -290,8 +290,8 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   if (MediaEngagementService::IsEnabled())
     MediaEngagementServiceFactory::GetInstance();
-  media_feeds::MediaFeedsServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
+  media_feeds::MediaFeedsServiceFactory::GetInstance();
   MediaGalleriesPreferencesFactory::GetInstance();
 #endif
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))

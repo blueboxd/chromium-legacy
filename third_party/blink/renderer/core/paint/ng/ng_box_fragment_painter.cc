@@ -1475,7 +1475,11 @@ void NGBoxFragmentPainter::PaintBackplate(NGInlineCursor* line_boxes,
 
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
                            DisplayItem::kForcedColorsModeBackplate);
-  Color backplate_color = style.ForcedBackplateColor();
+  Color backplate_color = PhysicalFragment()
+                              .GetLayoutObject()
+                              ->GetDocument()
+                              .GetStyleEngine()
+                              .ForcedBackgroundColor();
   const auto& backplates = BuildBackplate(line_boxes, paint_offset);
   for (const auto backplate : backplates)
     paint_info.context.FillRect(FloatRect(backplate), backplate_color);

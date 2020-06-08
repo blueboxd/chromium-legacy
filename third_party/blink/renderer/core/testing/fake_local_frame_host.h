@@ -48,6 +48,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidFailLoadWithError(const ::blink::KURL& url,
                             int32_t error_code) override;
   void DidFocusFrame() override;
+  void DidCallFocus() override;
   void EnforceInsecureRequestPolicy(
       mojom::InsecureRequestPolicy policy_bitmap) override;
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;

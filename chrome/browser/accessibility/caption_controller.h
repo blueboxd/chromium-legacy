@@ -68,8 +68,9 @@ class CaptionController : public BrowserListObserver, public KeyedService {
   void Init();
 
   // Routes a transcription to the CaptionBubbleController that belongs to the
-  // appropriate browser.
-  void DispatchTranscription(
+  // appropriate browser. Returns whether the transcription result was routed
+  // successfully. Transcriptions will halt if this returns false.
+  bool DispatchTranscription(
       content::WebContents* web_contents,
       const chrome::mojom::TranscriptionResultPtr& transcription_result);
 

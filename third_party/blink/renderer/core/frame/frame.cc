@@ -393,6 +393,23 @@ void Frame::CancelFormSubmission() {
   form_submit_navigation_task_.Cancel();
 }
 
+void Frame::FocusPage(LocalFrame* originating_frame) {
+  // We only allow focus to move to the |frame|'s page when the request comes
+  // from a user gesture. (See https://bugs.webkit.org/show_bug.cgi?id=33389.)
+  if (originating_frame &&
+      LocalFrame::HasTransientUserActivation(originating_frame)) {
+    // Ask the broswer process to focus the page.
+    GetPage()->GetChromeClient().FocusPage();
+
+    // Tattle on the frame that called |window.focus()|.
+    originating_frame->GetLocalFrameHostRemote().DidCallFocus();
+  }
+
+  // Always report the attempt to focus the page to the Chrome client for
+  // testing purposes (i.e. see WebViewTest.FocusExistingFrameOnNavigate()).
+  GetPage()->GetChromeClient().DidFocusPage();
+}
+
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
                    WebLocalFrameClient::DetachType::kRemove);
 STATIC_ASSERT_ENUM(FrameDetachType::kSwap,

@@ -214,6 +214,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
             public void onOverviewModeStartedShowing(boolean showToolbar) {
+                if (!mNativeInitialized) return;
+
                 if (mDataProvider.shouldShowLocationBarInOverviewMode()) {
                     AutocompleteControllerJni.get().prefetchZeroSuggestResults();
                 }

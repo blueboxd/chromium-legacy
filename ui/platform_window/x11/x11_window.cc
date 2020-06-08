@@ -35,6 +35,9 @@ namespace ui {
 
 namespace {
 
+// Opacity for drag widget windows.
+constexpr float kDragWidgetOpacity = .75f;
+
 XWindow::WindowOpacity GetXWindowOpacity(PlatformWindowOpacity opacity) {
   using WindowOpacity = XWindow::WindowOpacity;
   switch (opacity) {
@@ -130,11 +133,21 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   config.override_redirect =
       properties.x11_extension_delegate &&
       properties.x11_extension_delegate->IsOverrideRedirect(IsWmTiling());
+  if (config.type == WindowType::kDrag) {
+    config.opacity = ui::IsCompositingManagerPresent()
+                         ? WindowOpacity::kTranslucentWindow
+                         : WindowOpacity::kOpaqueWindow;
+  }
 
   workspace_extension_delegate_ = properties.workspace_extension_delegate;
   x11_extension_delegate_ = properties.x11_extension_delegate;
 
   Init(config);
+
+  if (config.type == WindowType::kDrag &&
+      config.opacity == WindowOpacity::kTranslucentWindow) {
+    SetOpacity(kDragWidgetOpacity);
+  }
 }
 
 void X11Window::SetXEventDelegate(XEventDelegate* delegate) {

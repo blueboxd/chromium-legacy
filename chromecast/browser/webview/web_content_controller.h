@@ -64,6 +64,17 @@ class WebContentController
   void AttachTo(aura::Window* window, int window_id);
 
  protected:
+  // content::WebContentsObserver
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
+  void MainFrameWasResized(bool width_changed) override;
+  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
+                        const gfx::Size& frame_size) override;
+  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
+
   static void RegisterRenderWidgetInputObserverFromRenderFrameHost(
       WebContentController* web_content_controller,
       content::RenderFrameHost* render_frame_host);
@@ -110,17 +121,6 @@ class WebContentController
 
   // exo::SurfaceObserver
   void OnSurfaceDestroying(exo::Surface* surface) override;
-
-  // content::WebContentsObserver
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
-                              content::RenderFrameHost* new_host) override;
-  void MainFrameWasResized(bool width_changed) override;
-  void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
-                        const gfx::Size& frame_size) override;
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
 
   // JsClientInstance::Observer
   void OnJsClientInstanceRegistered(int process_id,

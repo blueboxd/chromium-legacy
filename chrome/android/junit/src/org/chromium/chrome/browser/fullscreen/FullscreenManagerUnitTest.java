@@ -29,7 +29,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
@@ -57,8 +56,6 @@ public class FullscreenManagerUnitTest {
     private View mContainerView;
     @Mock
     private TabModelSelector mTabModelSelector;
-    @Mock
-    private ActivityTabProvider mActivityTabProvider;
     @Mock
     private android.content.res.Resources mResources;
     @Mock
@@ -93,8 +90,8 @@ public class FullscreenManagerUnitTest {
         ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(
                 mActivity, ChromeFullscreenManager.ControlsPosition.TOP);
         mFullscreenManager = spy(fullscreenManager);
-        mFullscreenManager.initialize(mControlContainer, mActivityTabProvider, mTabModelSelector,
-                R.dimen.control_container_height);
+        mFullscreenManager.initialize(
+                mControlContainer, mTabModelSelector, R.dimen.control_container_height);
         mFullscreenManager.addObserver(mBrowserControlsStateProviderObserver);
         when(mFullscreenManager.getTab()).thenReturn(mTab);
     }

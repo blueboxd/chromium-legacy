@@ -163,7 +163,8 @@ void LineBoxListPainter::PaintBackplate(
 
   DrawingRecorder recorder(paint_info.context, layout_object,
                            DisplayItem::kForcedColorsModeBackplate);
-  Color backplate_color = style.ForcedBackplateColor();
+  Color backplate_color =
+      layout_object.GetDocument().GetStyleEngine().ForcedBackgroundColor();
   const auto& backplates = GetBackplates(paint_offset);
   for (const auto backplate : backplates)
     paint_info.context.FillRect(FloatRect(backplate), backplate_color);

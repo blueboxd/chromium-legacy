@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "chrome/browser/chromeos/net/network_diagnostics/dns_latency_routine.h"
+#include "chrome/browser/chromeos/net/network_diagnostics/dns_resolution_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/dns_resolver_present_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/gateway_can_be_pinged_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/has_secure_wifi_connection_routine.h"
@@ -62,6 +63,11 @@ void NetworkDiagnosticsImpl::DnsResolverPresent(
 void NetworkDiagnosticsImpl::DnsLatency(DnsLatencyCallback callback) {
   DnsLatencyRoutine dns_latency_routine;
   dns_latency_routine.RunTest(std::move(callback));
+}
+
+void NetworkDiagnosticsImpl::DnsResolution(DnsResolutionCallback callback) {
+  DnsResolutionRoutine dns_resolution_routine;
+  dns_resolution_routine.RunTest(std::move(callback));
 }
 
 }  // namespace network_diagnostics

@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
@@ -48,6 +49,10 @@ class WebRemoteFrameClient {
 
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) {}
+
+  // Returns an AssociatedInterfaceProvider the frame can use to request
+  // associated interfaces from the browser.
+  virtual AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() = 0;
 
   // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is

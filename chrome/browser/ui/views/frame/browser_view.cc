@@ -486,6 +486,8 @@ const char BrowserView::kViewClassName[] = "BrowserView";
 
 BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     : views::ClientView(nullptr, nullptr), browser_(std::move(browser)) {
+  SetHasWindowSizeControls(!chrome::IsRunningInForcedAppMode());
+
   browser_->tab_strip_model()->AddObserver(this);
   immersive_mode_controller_ = chrome::CreateImmersiveModeController();
 
@@ -1986,22 +1988,6 @@ bool BrowserView::GetAcceleratorForCommandId(
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, views::WidgetDelegate implementation:
-
-bool BrowserView::CanResize() const {
-  // Windows in forced app mode take the whole screen, should not be resized.
-  return !chrome::IsRunningInForcedAppMode();
-}
-
-bool BrowserView::CanMaximize() const {
-  // Windows in forced app mode take the whole screen, should not be resized.
-  return !chrome::IsRunningInForcedAppMode();
-}
-
-bool BrowserView::CanMinimize() const {
-  // There is no shelf in forced app mode, therefore we should not be able to
-  // minimize windows.
-  return !chrome::IsRunningInForcedAppMode();
-}
 
 bool BrowserView::CanActivate() const {
   javascript_dialogs::AppModalDialogQueue* queue =

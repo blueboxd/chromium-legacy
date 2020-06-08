@@ -532,8 +532,8 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   service_->UpdatePrefetchProxyHosts(
       GetPrefetchProxyHosts(config.prefetch_proxy_config()));
 
-  service_->SetIgnoreLongTermBlackListRules(
-      config.ignore_long_term_black_list_rules());
+  service_->SetIgnoreLongTermBlockListRules(
+      config.ignore_long_term_block_list_rules());
 
   request_options_->SetSecureSession(config.session_key());
   remote_config_applied_ = true;

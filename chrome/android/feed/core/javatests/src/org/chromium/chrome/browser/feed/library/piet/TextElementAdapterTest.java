@@ -24,7 +24,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Build.VERSION_CODES;
 import android.text.Layout;
 import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
@@ -312,21 +311,6 @@ public class TextElementAdapterTest {
         assertThat(extraLineHeight.topPaddingPx()).isEqualTo(20);
     }
 
-    @Config(sdk = VERSION_CODES.KITKAT)
-    @Test
-    public void testGetExtraLineHeight_roundDown_kitkat() {
-        // Extra height is 40.2px. In KitKat and lower, 40 pixels (the amount added between lines)
-        // will have already been added to the bottom. To get to our desired value of 21 bottom
-        // pixels, the actual bottom padding must be -19 (40 - 19 = 21).
-        initializeAdapterWithExtraLineHeightPx(40.2f);
-
-        TextElementAdapter.ExtraLineHeight extraLineHeight = mAdapter.getExtraLineHeight();
-
-        assertThat(extraLineHeight.betweenLinesExtraPx()).isEqualTo(40);
-        assertThat(extraLineHeight.bottomPaddingPx()).isEqualTo(-19);
-        assertThat(extraLineHeight.topPaddingPx()).isEqualTo(20);
-    }
-
     @Test
     public void testGetExtraLineHeight_noRound() {
         // Extra height is 40px. 40 pixels will be added between each line, and that amount is split
@@ -340,21 +324,6 @@ public class TextElementAdapterTest {
         assertThat(extraLineHeight.topPaddingPx()).isEqualTo(20);
     }
 
-    @Config(sdk = VERSION_CODES.KITKAT)
-    @Test
-    public void testGetExtraLineHeight_noRound_kitkat() {
-        // Extra height is 40px. In KitKat and lower, 40 pixels (the amount added between lines)
-        // will have already been added to the bottom. To get to our desired value of 20 bottom
-        // pixels, the actual bottom padding must be -20 (40 - 20 = 20).
-        initializeAdapterWithExtraLineHeightPx(40.0f);
-
-        TextElementAdapter.ExtraLineHeight extraLineHeight = mAdapter.getExtraLineHeight();
-
-        assertThat(extraLineHeight.betweenLinesExtraPx()).isEqualTo(40);
-        assertThat(extraLineHeight.bottomPaddingPx()).isEqualTo(-20);
-        assertThat(extraLineHeight.topPaddingPx()).isEqualTo(20);
-    }
-
     @Test
     public void testGetExtraLineHeight_roundUp() {
         // Extra height is 40.8px. This gets rounded up between the lines (to 41) and rounded down
@@ -365,21 +334,6 @@ public class TextElementAdapterTest {
 
         assertThat(extraLineHeight.betweenLinesExtraPx()).isEqualTo(41);
         assertThat(extraLineHeight.bottomPaddingPx()).isEqualTo(20);
-        assertThat(extraLineHeight.topPaddingPx()).isEqualTo(20);
-    }
-
-    @Config(sdk = VERSION_CODES.KITKAT)
-    @Test
-    public void testGetExtraLineHeight_roundUp_kitkat() {
-        // Extra height is 40.8px. In KitKat and lower, 41 pixels (the amount added between lines)
-        // will have already been added to the bottom. To get to our desired value of 20 bottom
-        // pixels, the actual bottom padding must be -21 (41 - 21 = 20).
-        initializeAdapterWithExtraLineHeightPx(40.8f);
-
-        TextElementAdapter.ExtraLineHeight extraLineHeight = mAdapter.getExtraLineHeight();
-
-        assertThat(extraLineHeight.betweenLinesExtraPx()).isEqualTo(41);
-        assertThat(extraLineHeight.bottomPaddingPx()).isEqualTo(-21);
         assertThat(extraLineHeight.topPaddingPx()).isEqualTo(20);
     }
 

@@ -105,7 +105,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
                            const SimpleFontData*,
                            UScriptCode,
                            CanvasRotationInVertical,
-                           bool is_last_resort,
+                           bool is_last_font,
                            ShapeResult*) const;
 
   bool CollectFallbackHintChars(const Deque<ReshapeQueueItem>&,
@@ -116,7 +116,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
                     const SimpleFontData* current_font,
                     UScriptCode current_run_script,
                     CanvasRotationInVertical,
-                    bool is_last_resort,
+                    bool is_last_font,
                     const BufferSlice&,
                     ShapeResult*) const;
 

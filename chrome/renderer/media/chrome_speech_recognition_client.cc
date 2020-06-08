@@ -36,14 +36,22 @@ void ChromeSpeechRecognitionClient::AddAudio(
 }
 
 bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
-  return speech_recognition_recognizer_.is_bound() &&
+  return is_browser_requesting_transcription_ &&
+         speech_recognition_recognizer_.is_bound() &&
          speech_recognition_recognizer_.is_connected();
 }
 
 void ChromeSpeechRecognitionClient::OnSpeechRecognitionRecognitionEvent(
     media::mojom::SpeechRecognitionResultPtr result) {
-  caption_host_->OnTranscription(chrome::mojom::TranscriptionResult::New(
-      result->transcription, result->is_final));
+  caption_host_->OnTranscription(
+      chrome::mojom::TranscriptionResult::New(result->transcription,
+                                              result->is_final),
+      base::BindOnce(&ChromeSpeechRecognitionClient::OnTranscriptionCallback,
+                     base::Unretained(this)));
+}
+
+void ChromeSpeechRecognitionClient::OnTranscriptionCallback(bool success) {
+  is_browser_requesting_transcription_ = success;
 }
 
 media::mojom::AudioDataS16Ptr

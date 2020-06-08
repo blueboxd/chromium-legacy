@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.feed.library.piet;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Build;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.text.Layout;
 import android.text.TextUtils;
 import android.view.View;
@@ -99,21 +97,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         }
         float letterSpacingDp = textStyle.getFont().getLetterSpacingDp();
         float letterSpacingEm = letterSpacingDp / textSize;
-        if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-            textView.setLetterSpacing(letterSpacingEm);
-        } else {
-            // Letter spacing wasn't supported before L. We substitute SetTextScaleX, which actually
-            // stretches the letters, rather than just adding space between them. It won't look
-            // exactly the same, but we can use it to get close to the same width for a set of
-            // characters.
-            float extraLetterSpaceDp = letterSpacingEm * textSize;
-            // It can vary by font and character, but typically letter width is about half of
-            // height.
-            float approximateLetterwidth = textSize / 2;
-            float textScale =
-                    (approximateLetterwidth + extraLetterSpaceDp) / approximateLetterwidth;
-            textView.setTextScaleX(textScale);
-        }
+        textView.setLetterSpacing(letterSpacingEm);
     }
 
     @Override
@@ -135,10 +119,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
     @Override
     void onUnbindModel() {
         TextView textView = getBaseView();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            textView.setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);
-        }
+        textView.setTextAlignment(View.TEXT_ALIGNMENT_GRAVITY);
         textView.setText("");
     }
 
@@ -183,14 +164,6 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
         }
         int extraPaddingForLineHeightTop = totalExtraPadding / 2;
         int extraPaddingForLineHeightBottom = totalExtraPadding - extraPaddingForLineHeightTop;
-        // In API version 21 (Lollipop), the implementation of lineSpacingMultiplier() changed to
-        // add no extra space beneath a block of text. Before API 21, we need to subtract the extra
-        // padding (so that only half the padding is on the bottom). That means
-        // extraPaddingForLineHeightBottom needs to be negative.
-        if (VERSION.SDK_INT < VERSION_CODES.LOLLIPOP) {
-            extraPaddingForLineHeightBottom =
-                    -(extraLineHeightBetweenLines - extraPaddingForLineHeightBottom);
-        }
 
         mExtraLineHeight = ExtraLineHeight.builder()
                                    .setTopPaddingPx(extraPaddingForLineHeightTop)
@@ -330,7 +303,7 @@ abstract class TextElementAdapter extends ElementAdapter<TextView, Element> {
 
     private static TextView createView(Context context) {
         TextView view = new TextView(context);
-        if (Build.VERSION.SDK_INT >= VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             view.setBreakStrategy(Layout.BREAK_STRATEGY_SIMPLE);
         }
         return view;

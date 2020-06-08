@@ -186,61 +186,42 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& occluding_damage_rect,
       bool occluding_damage_rect_valid);
 
-  // Helper function that uses backtracking on the render pass tree of a surface
-  // to find all surfaces embedded in it. If a surface is embedded multiple
-  // times (due to use of a MirrorLayer), it will be reachable via multiple
-  // paths from the root render pass. For each such a path the appropriate
-  // transform is calculated.
-  //  - |surface_id| specifies the surface to find all child surfaces of.
-  //  - |render_pass_map| is a pre-computed map from render pass id to some info
-  //    about the render pass, including the render pass itself and whether it
-  //    has pixel moving backdrop filter.
-  //  - |current_pass_entry| is the info about the current render pass to
-  //    process.
-  //  - |transform_to_root_target| is the accumulated transform of all render
-  //    passes along the way to the current render pass.
-  //  - |child_surfaces| is the main output of the function containing all child
-  //    surfaces found in the process.
-  //  - |pixel_moving_backdrop_filters_rect| is another output that is union of
-  //    bounds of render passes that have a pixel moving backdrop filter.
-  //  - |has_backdrop_cache_flags_to_update| indicates if any
-  //    RenderPassDrawQuad(s) contained in the surface have
-  //    |can_use_backdrop_filter_cache| flag set to true and having to be
-  //    updated. This is used to avoid iterating through all the render passes
-  //    in the surface frame when not needed (i.e. no flag needs to be
-  //    updated).
-  // TODO(mohsen): Consider refactoring this backtracking algorithm into a
-  // self-contained class.
-  void FindChildSurfaces(
-      SurfaceId surface_id,
-      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
-      RenderPassMapEntry* current_pass_entry,
-      const gfx::Transform& transform_to_root_target,
-      base::flat_map<SurfaceRange, ChildSurfaceInfo>* child_surfaces,
-      std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects,
-      bool* has_backdrop_cache_flags_to_update);
-
-  // Recursively updates the |can_use_backdrop_filter_cache| flag on all
-  // RenderPassDrawQuads(RPDQ) in the specified render pass. The function
-  // recursively traverses any render pass referenced by a RPDQ but doesn't
-  // traverse any render passes in the frame of any embedded surfaces. The
-  // function returns the damage rect of the render pass in its own content
+  // Recursively walks through the render pass and updates the
+  // |can_use_backdrop_filter_cache| flag on all RenderPassDrawQuads(RPDQ).
+  // The function returns the damage rect of the render pass in its own content
   // space.
-  // - |id| specifies the render pass whose quads are to be updated
-  // - |result| is the result of a prewalk of a root surface that contains the
-  //   render pass
-  // - |render_pass_map| is a map that contains all render passes and their
-  // entry data
-  gfx::Rect UpdateRPDQCanUseBackdropFilterCacheWithSurfaceDamage(
-      RenderPassId id,
-      PrewalkResult* result,
-      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map);
+  //  - |render_pass_id| specifies the id of the render pass.
+  //  - |surface| is the surface containing the render pass.
+  //  - |render_pass_map| is a map that contains all render passes and their
+  //    entry data.
+  //  - |will_draw| indicates that the surface can be aggregated into the final
+  //    frame and might be drawn (based on damage/occlusion/etc.) if it is set
+  //    to true. Or the surface isn't in the aggregated frame and is only
+  //    needed for CopyOutputRequests if set to false.
+  //  - |transform_to_root_target| is the accumulated transform of all render
+  //    passes in the containing surface along the way to the current render
+  //    pass.
+  //  - |pixel_moving_backdrop_filters_rects| is a vector of bounds of render
+  //    passes that have a pixel moving backdrop filter.
+  //  - |result| is the result of a prewalk of the surface that contains the
+  //    render pass.
+  gfx::Rect PrewalkRenderPass(
+      RenderPassId render_pass_id,
+      const Surface* surface,
+      base::flat_map<RenderPassId, RenderPassMapEntry>* render_pass_map,
+      bool will_draw,
+      const gfx::Transform& transform_to_root_target,
+      std::vector<gfx::Rect>* pixel_moving_backdrop_filters_rects,
+      PrewalkResult* result);
 
-  gfx::Rect PrewalkTree(Surface* surface,
-                        bool in_moved_pixel_surface,
-                        int parent_pass,
-                        bool will_draw,
-                        PrewalkResult* result);
+  // Walk the Surface tree from |surface|. Validate the resources of the
+  // current surface and its descendants, check if there are any copy requests,
+  // and return the combined damage rect.
+  gfx::Rect PrewalkSurface(Surface* surface,
+                           bool in_moved_pixel_surface,
+                           int parent_pass,
+                           bool will_draw,
+                           PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(const CompositorFrame& frame, Surface* surface);
   void AddColorConversionPass();

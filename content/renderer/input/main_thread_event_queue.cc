@@ -12,6 +12,7 @@
 #include "content/common/input/event_with_latency_info.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/render_widget.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
 
@@ -254,7 +255,7 @@ MainThreadEventQueue::MainThreadEventQueue(
   raf_fallback_timer_.SetTaskRunner(main_task_runner);
 
   event_predictor_ = std::make_unique<InputEventPrediction>(
-      base::FeatureList::IsEnabled(features::kResamplingInputEvents));
+      base::FeatureList::IsEnabled(blink::features::kResamplingInputEvents));
 }
 
 MainThreadEventQueue::~MainThreadEventQueue() {}

@@ -75,7 +75,7 @@ class TestOverlayWindow : public OverlayWindow {
     size_ = natural_size;
   }
   void SetPlaybackState(PlaybackState playback_state) override {}
-  void SetAlwaysHidePlayPauseButton(bool is_visible) override {}
+  void SetPlayPauseButtonVisibility(bool is_visible) override {}
   void SetSkipAdButtonVisibility(bool is_visible) override {}
   void SetNextTrackButtonVisibility(bool is_visible) override {}
   void SetPreviousTrackButtonVisibility(bool is_visible) override {}

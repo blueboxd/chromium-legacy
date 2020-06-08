@@ -1175,6 +1175,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         Rect original = hasWebContents
                 ? new Rect(0, 0, mContentView.getWidth(), mContentView.getHeight())
                 : new Rect();
+        for (TabObserver observer : mObservers) observer.webContentsWillSwap(this);
         if (hasWebContents) mWebContents.onHide();
         Context appContext = ContextUtils.getApplicationContext();
         Rect bounds = original.isEmpty()

@@ -359,20 +359,11 @@ const base::Feature kSmartDimNewMlAgent{"SmartDimNewMlAgent",
 const base::Feature kSmartDimModelV3{"SmartDimModelV3",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// This feature:
-// - Creates a new "Sync your settings" section in Chrome OS settings
-// - Moves app, wallpaper and Wi-Fi sync to OS settings
-// - Provides a separate toggle for OS preferences, distinct from browser
-//   preferences
-// - Makes the OS ModelTypes run in sync transport mode, controlled by a
-//   master pref for the OS sync feature
-// - Updates the OOBE sync consent screen
-//
-// NOTE: The feature is rolling out via a client-side Finch trial, so the actual
-// state will vary. See config in
-// chrome/browser/chromeos/sync/split_settings_sync_field_trial.cc
+// Enables separate sync controls for OS settings (display, keyboard, etc.).
+// For example, the user could choose to sync OS settings but not browser
+// settings.
 const base::Feature kSplitSettingsSync{"SplitSettingsSync",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables a settings UI toggle that controls Suggested Content status. Also
 // enables a corresponding notice in the Launcher about Suggested Content.

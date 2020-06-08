@@ -34,34 +34,34 @@ namespace previews {
 enum class PreviewsEligibilityReason {
   // The preview navigation was allowed.
   ALLOWED = 0,
-  // The black list was not initialized.
-  BLACKLIST_UNAVAILABLE = 1,
-  // The black list has not loaded from disk yet.
-  BLACKLIST_DATA_NOT_LOADED = 2,
+  // The block list was not initialized.
+  BLOCKLIST_UNAVAILABLE = 1,
+  // The block list has not loaded from disk yet.
+  BLOCKLIST_DATA_NOT_LOADED = 2,
   // The user has opted out of a preview recently.
   USER_RECENTLY_OPTED_OUT = 3,
   // The user has opted out of previews often, and is no longer shown previews
   // on any host.
-  USER_BLACKLISTED = 4,
+  USER_BLOCKLISTED = 4,
   // The user has opted out of previews on a specific host often, and was not
   // not shown a previews on that host.
-  HOST_BLACKLISTED = 5,
+  HOST_BLOCKLISTED = 5,
   // The network quality estimate is not available.
   NETWORK_QUALITY_UNAVAILABLE = 6,
   // The network was fast enough to not warrant previews.
   NETWORK_NOT_SLOW = 7,
   // If the page was reloaded, the user should not be shown a stale preview.
   RELOAD_DISALLOWED = 8,
-  // DEPRECATED: The host is explicitly blacklisted by the server, so the user
+  // DEPRECATED: The host is explicitly blocklisted by the server, so the user
   // was not shown
   // a preview.
   // Replaced by NOT_ALLOWED_BY_OPTIMIZATION_GUIDE.
-  DEPRECATED_HOST_BLACKLISTED_BY_SERVER = 9,
-  // DEPRECATED: The host is not whitelisted by the server for a preview
+  DEPRECATED_HOST_BLOCKLISTED_BY_SERVER = 9,
+  // DEPRECATED: The host is not allowlisted by the server for a preview
   // decision that uses
   // server optimization hints.
   // Replaced by NOT_ALLOWED_BY_OPTIMIZATION_GUIDE.
-  DEPRECATED_HOST_NOT_WHITELISTED_BY_SERVER = 10,
+  DEPRECATED_HOST_NOT_ALLOWLISTED_BY_SERVER = 10,
   // The preview is allowed but without an expected check of server optimization
   // hints because they are not enabled (features::kOptimizationHints).
   ALLOWED_WITHOUT_OPTIMIZATION_HINTS = 11,
@@ -95,25 +95,25 @@ enum class PreviewsEligibilityReason {
   LAST,
 };
 
-// Manages the state of black listed domains for the previews experiment. Loads
-// the stored black list from |opt_out_store| and manages an in memory black
-// list on the IO thread. Updates to the black list are stored in memory and
+// Manages the state of block listed domains for the previews experiment. Loads
+// the stored block list from |opt_out_store| and manages an in memory block
+// list on the IO thread. Updates to the block list are stored in memory and
 // pushed to the store. Asynchronous modifications are stored in a queue and
-// executed in order. Reading from the black list is always synchronous, and if
-// the black list is not currently loaded (e.g., at startup, after clearing
-// browsing history), domains are reported as black listed. The list stores no
-// more than previews::params::MaxInMemoryHostsInBlackList hosts in-memory,
+// executed in order. Reading from the block list is always synchronous, and if
+// the block list is not currently loaded (e.g., at startup, after clearing
+// browsing history), domains are reported as block listed. The list stores no
+// more than previews::params::MaxInMemoryHostsInBlockList hosts in-memory,
 // which defaults to 100.
-class PreviewsBlackList : public blacklist::OptOutBlacklist {
+class PreviewsBlockList : public blocklist::OptOutBlocklist {
  public:
-  PreviewsBlackList(
-      std::unique_ptr<blacklist::OptOutStore> opt_out_store,
+  PreviewsBlockList(
+      std::unique_ptr<blocklist::OptOutStore> opt_out_store,
       base::Clock* clock,
-      blacklist::OptOutBlacklistDelegate* blacklist_delegate,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_types);
-  ~PreviewsBlackList() override;
+      blocklist::OptOutBlocklistDelegate* blocklist_delegate,
+      blocklist::BlocklistData::AllowedTypesAndVersions allowed_types);
+  ~PreviewsBlockList() override;
 
-  // Asynchronously adds a new navigation to to the in-memory black list and
+  // Asynchronously adds a new navigation to to the in-memory block list and
   // backing store. |opt_out| is whether the user opted out of the preview or
   // navigated away from the page without opting out. |type| is only passed to
   // the backing store. If the in memory map has reached the max number of hosts
@@ -125,17 +125,17 @@ class PreviewsBlackList : public blacklist::OptOutBlacklist {
                                   PreviewsType type);
 
   // Synchronously determines if |host_name| should be allowed to show previews.
-  // Returns the reason the blacklist disallowed the preview, or
+  // Returns the reason the blocklist disallowed the preview, or
   // PreviewsEligibilityReason::ALLOWED if the preview is allowed. Record
   // checked reasons in |passed_reasons|. Virtualized in testing.
   virtual PreviewsEligibilityReason IsLoadedAndAllowed(
       const GURL& url,
       PreviewsType type,
-      bool ignore_long_term_black_list_rules,
+      bool ignore_long_term_block_list_rules,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
  protected:
-  // blacklist::OptOutBlacklist (virtual for testing):
+  // blocklist::OptOutBlocklist (virtual for testing):
   bool ShouldUseSessionPolicy(base::TimeDelta* duration,
                               size_t* history,
                               int* threshold) const override;
@@ -149,13 +149,13 @@ class PreviewsBlackList : public blacklist::OptOutBlacklist {
   bool ShouldUseTypePolicy(base::TimeDelta* duration,
                            size_t* history,
                            int* threshold) const override;
-  blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedTypes()
+  blocklist::BlocklistData::AllowedTypesAndVersions GetAllowedTypes()
       const override;
 
  private:
-  const blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_;
+  const blocklist::BlocklistData::AllowedTypesAndVersions allowed_types_;
 
-  DISALLOW_COPY_AND_ASSIGN(PreviewsBlackList);
+  DISALLOW_COPY_AND_ASSIGN(PreviewsBlockList);
 };
 
 }  // namespace previews

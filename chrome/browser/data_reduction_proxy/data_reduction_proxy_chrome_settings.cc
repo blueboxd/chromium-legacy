@@ -244,15 +244,15 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
 }
 
-void DataReductionProxyChromeSettings::SetIgnoreLongTermBlackListRules(
-    bool ignore_long_term_black_list_rules) {
+void DataReductionProxyChromeSettings::SetIgnoreLongTermBlockListRules(
+    bool ignore_long_term_block_list_rules) {
   // |previews_service| is null if |profile_| is off the record.
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(profile_);
   if (previews_service && previews_service->previews_ui_service()) {
     previews_service->previews_ui_service()
-        ->SetIgnoreLongTermBlackListForServerPreviews(
-            ignore_long_term_black_list_rules);
+        ->SetIgnoreLongTermBlockListForServerPreviews(
+            ignore_long_term_block_list_rules);
   }
 }
 

@@ -276,6 +276,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     int thumb_x;
     int thumb_y;
     float zoom;
+    bool right_to_left;
   };
 
   struct TextFieldExtraParams {

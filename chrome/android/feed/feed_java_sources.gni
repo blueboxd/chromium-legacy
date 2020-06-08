@@ -384,6 +384,7 @@ if (enable_feed_in_chrome) {
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/tooltip/FeedTooltipUtils.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedListContentManager.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedServiceBridge.java",
+    "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedSliceViewTracker.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedStream.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedStreamSurface.java",
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/v2/NativeViewListRenderer.java",
@@ -646,6 +647,7 @@ if (enable_feed_in_chrome) {
     "junit/src/org/chromium/chrome/browser/feed/NtpStreamLifecycleManagerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/action/FeedActionHandlerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/v2/FeedListContentManagerTest.java",
+    "junit/src/org/chromium/chrome/browser/feed/v2/FeedSliceViewTrackerTest.java",
     "junit/src/org/chromium/chrome/browser/feed/v2/FeedStreamSurfaceTest.java",
     "junit/src/org/chromium/chrome/browser/feed/v2/NativeViewListRendererTest.java",
   ]

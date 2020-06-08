@@ -32,6 +32,7 @@ import org.chromium.weblayer_private.interfaces.IWebLayerClient;
 import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
+import org.chromium.weblayer_private.interfaces.WebLayerVersionConstants;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -278,6 +279,12 @@ public class WebLayer {
                 available = mFactory.isClientSupported();
                 majorVersion = mFactory.getImplementationMajorVersion();
                 version = mFactory.getImplementationVersion();
+                // See comment in WebLayerFactoryImpl.isClientSupported() for details on this.
+                if (available
+                        && WebLayerClientVersionConstants.PRODUCT_MAJOR_VERSION > majorVersion) {
+                    available = WebLayerClientVersionConstants.PRODUCT_MAJOR_VERSION - majorVersion
+                            <= WebLayerVersionConstants.MAX_SKEW;
+                }
             } catch (Exception e) {
                 Log.e(TAG, "Unable to create WebLayerFactory", e);
             }

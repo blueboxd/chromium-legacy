@@ -550,6 +550,12 @@ const base::Feature kThrottleInstallingServiceWorker{
 const base::FeatureParam<int> kInstallingServiceWorkerOutstandingThrottledLimit{
     &kThrottleInstallingServiceWorker, "limit", 5};
 
+const base::Feature kInputPredictorTypeChoice{
+    "InputPredictorTypeChoice", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kResamplingScrollEvents{"ResamplingScrollEvents",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 

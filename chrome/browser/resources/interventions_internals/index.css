@@ -26,7 +26,7 @@ body {
 }
 
 .previews-flag-value {
-  margin-left: 10px;
+  margin-inline-start: 10px;
 }
 
 button {
@@ -138,7 +138,7 @@ table {
 td {
   border: 0;
   padding: 10px;
-  text-align: left;
+  text-align: start;
   vertical-align: middle;
 }
 
@@ -205,14 +205,14 @@ td.log-url .url-tooltip::after {
   bottom: 100%;
   content: ' ';
   left: 50%;
-  margin-left: -5px;
+  margin-inline-start: -5px;
   position: absolute;
 }
 
 .expansion-row {
   background: transparent;
   border: 0;
-  margin-left: 20px;
+  margin-inline-start: 20px;
   padding: 0 0 0 15px;
   width: 80%;
 }
@@ -268,7 +268,7 @@ tr.expansion-row td:nth-child(odd) {
     width: 60%;
   }
 
-  #blacklisted-hosts-table {
+  #blocklisted-hosts-table {
     width: 60%;
   }
 
@@ -354,7 +354,7 @@ i {
   font-style: italic;
 }
 
-#blacklist-ignored-status {
+#blocklist-ignored-status {
   color: red;
   font-style: italic;
   font-weight: bold;

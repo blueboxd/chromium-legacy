@@ -84,7 +84,6 @@ class MockPictureInPictureWindowController
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD2(UpdatePlaybackState, void(bool, bool));
   MOCK_METHOD0(TogglePlayPause, bool());
-  MOCK_METHOD1(SetAlwaysHidePlayPauseButton, void(bool));
   MOCK_METHOD0(SkipAd, void());
   MOCK_METHOD0(NextTrack, void());
   MOCK_METHOD0(PreviousTrack, void());

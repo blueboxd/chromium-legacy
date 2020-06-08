@@ -560,12 +560,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     PreviewsService* previews_service =
         PreviewsServiceFactory::GetForProfile(profile_);
     if (previews_service)
-      previews_service->ClearBlackList(delete_begin_, delete_end_);
+      previews_service->ClearBlockList(delete_begin_, delete_end_);
 
     HeavyAdService* heavy_ad_service =
         HeavyAdServiceFactory::GetForBrowserContext(profile_);
     if (heavy_ad_service && heavy_ad_service->heavy_ad_blocklist()) {
-      heavy_ad_service->heavy_ad_blocklist()->ClearBlackList(delete_begin_,
+      heavy_ad_service->heavy_ad_blocklist()->ClearBlockList(delete_begin_,
                                                              delete_end_);
     }
 

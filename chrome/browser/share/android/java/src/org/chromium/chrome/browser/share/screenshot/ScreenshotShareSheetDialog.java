@@ -7,24 +7,36 @@ package org.chromium.chrome.browser.share.screenshot;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.view.View;
 
 import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.chrome.R;
-import org.chromium.ui.widget.ChromeImageButton;
 
 /**
  * ScreenshotShareSheetDialog is the main view for sharing non edited screenshots.
  */
 public class ScreenshotShareSheetDialog extends DialogFragment {
     private Context mContext;
+    private ScreenshotShareSheetView mDialogView;
+    private Bitmap mScreenshot;
+    private Runnable mDeleteRunnable;
 
     /**
      * The ScreenshotShareSheetDialog constructor.
      */
     public ScreenshotShareSheetDialog() {}
+
+    /**
+     * Initialize the dialog outside of the constructor as fragments require default constructor.
+     * @param screenshot The screenshot image to show.
+     * @param deleteRunnable The function to call on delete.
+     */
+    public void init(Bitmap screenshot, Runnable deleteRunnable) {
+        mScreenshot = screenshot;
+        mDeleteRunnable = deleteRunnable;
+    }
 
     @Override
     public void onAttach(Context context) {
@@ -36,18 +48,13 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_Fullscreen);
-        builder.setView(getDialogView());
-        return builder.create();
-    }
-
-    private View getDialogView() {
-        ScreenshotShareSheetView dialogView =
+        ScreenshotShareSheetView screenshotShareSheetView =
                 (ScreenshotShareSheetView) getActivity().getLayoutInflater().inflate(
                         org.chromium.chrome.browser.share.R.layout.screenshot_share_sheet, null);
-        ChromeImageButton closeButton =
-                (ChromeImageButton) dialogView.findViewById(R.id.close_button);
-        closeButton.setOnClickListener(v -> dismiss());
+        builder.setView(screenshotShareSheetView);
 
-        return dialogView;
+        ScreenshotShareSheetCoordinator shareCoordinator = new ScreenshotShareSheetCoordinator(
+                mContext, mScreenshot, mDeleteRunnable, screenshotShareSheetView);
+        return builder.create();
     }
 }

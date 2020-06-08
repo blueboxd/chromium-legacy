@@ -381,4 +381,5 @@ additional system fonts pulled in to the shaping process.
 In summary, `FontFallbackIterator` feeds fonts from the CSS `font-family` list
 as well as system fallback fonts to `HarfBuzzShaper` for use in the shaping
 iterations until ideally all gaps are filled and the full text run can be drawn
-with the correct glyphs.
+with the correct glyphs.  When there are gaps, and the .notdef tofu character
+must be rendered, the primary font is used for this.

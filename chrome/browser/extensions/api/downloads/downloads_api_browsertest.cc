@@ -1481,21 +1481,13 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_EQ(items[2]->GetTargetFilePath().value(), item_name);
 }
 
-// https://crbug.com/874946, flaky on Win.
-#if defined(OS_WIN)
-#define MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
-  DISABLED_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
-#else
-#define MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito \
-  DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito
-#endif
 // Test that incognito downloads are only visible in incognito contexts, and
 // test that on-record downloads are visible in both incognito and on-record
 // contexts, for DownloadsSearchFunction, DownloadsPauseFunction,
 // DownloadsResumeFunction, and DownloadsCancelFunction.
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    MAYBE_DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
+    DownloadExtensionTest_SearchPauseResumeCancelGetFileIconIncognito) {
   std::unique_ptr<base::Value> result_value;
   base::ListValue* result_list = NULL;
   base::DictionaryValue* result_dict = NULL;
@@ -1873,18 +1865,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                          result_id)));
 }
 
-#if defined(OS_WIN)
-// This test is very flaky on Win. http://crbug.com/248438
-#define MAYBE_DownloadExtensionTest_Download_UnsafeHeaders \
-    DISABLED_DownloadExtensionTest_Download_UnsafeHeaders
-#else
-#define MAYBE_DownloadExtensionTest_Download_UnsafeHeaders \
-    DownloadExtensionTest_Download_UnsafeHeaders
-#endif
-
 // Test that we disallow certain headers case-insensitively.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       MAYBE_DownloadExtensionTest_Download_UnsafeHeaders) {
+                       DownloadExtensionTest_Download_UnsafeHeaders) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   GoOnTheRecord();
@@ -1961,6 +1944,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       download_url.c_str())).c_str());
 }
 
+// This test is very flaky on Win. http://crbug.com/248438
 #if defined(OS_WIN)
 #define MAYBE_DownloadExtensionTest_Download_Subdirectory\
         DISABLED_DownloadExtensionTest_Download_Subdirectory
@@ -4379,12 +4363,14 @@ void OnDangerPromptCreated(DownloadDangerPrompt* prompt) {
   prompt->InvokeActionForTesting(DownloadDangerPrompt::ACCEPT);
 }
 
-#if defined(OS_MACOSX)
-// Flakily triggers and assert on Mac.
+#if defined(OS_MACOSX) && !defined(NDEBUG)
+// Flaky on Mac debug, failing with a timeout.
 // http://crbug.com/180759
-#define MAYBE_DownloadExtensionTest_AcceptDanger DISABLED_DownloadExtensionTest_AcceptDanger
+#define MAYBE_DownloadExtensionTest_AcceptDanger \
+  DISABLED_DownloadExtensionTest_AcceptDanger
 #else
-#define MAYBE_DownloadExtensionTest_AcceptDanger DownloadExtensionTest_AcceptDanger
+#define MAYBE_DownloadExtensionTest_AcceptDanger \
+  DownloadExtensionTest_AcceptDanger
 #endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                        MAYBE_DownloadExtensionTest_AcceptDanger) {

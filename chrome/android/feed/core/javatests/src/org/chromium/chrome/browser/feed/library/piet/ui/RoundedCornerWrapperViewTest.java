@@ -10,7 +10,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.os.Build.VERSION_CODES;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -417,36 +416,6 @@ public class RoundedCornerWrapperViewTest {
         assertThat(view.getClipToOutline()).isTrue();
         assertThat(view.getClipChildren()).isTrue();
         assertThat(view.getRoundingStrategy()).isEqualTo(RoundingStrategy.OUTLINE_PROVIDER);
-    }
-
-    @Config(sdk = VERSION_CODES.KITKAT)
-    @Test
-    public void useClipPathStrategy_kitkat() {
-        int radius = 16;
-        RoundedCorners roundedCorners = RoundedCorners.newBuilder()
-                                                .setBitmask(ALL_CORNERS_BITMASK)
-                                                .setRadiusDp(radius)
-                                                .build();
-        CommonRoundedCornerWrapperView view =
-                CommonRoundedCornerWrapperView.builder().setRoundedCorners(roundedCorners).build();
-
-        assertThat(view.getRoundingStrategy()).isEqualTo(RoundingStrategy.CLIP_PATH);
-    }
-
-    @Config(sdk = VERSION_CODES.KITKAT)
-    @Test
-    public void useMaskingStrategy_kitkat_noClipPathAllowed() {
-        int radius = 16;
-        RoundedCorners roundedCorners = RoundedCorners.newBuilder()
-                                                .setBitmask(ALL_CORNERS_BITMASK)
-                                                .setRadiusDp(radius)
-                                                .build();
-        CommonRoundedCornerWrapperView view = CommonRoundedCornerWrapperView.builder()
-                                                      .setRoundedCorners(roundedCorners)
-                                                      .setAllowClipPath(false)
-                                                      .build();
-
-        assertThat(view.getRoundingStrategy()).isEqualTo(RoundingStrategy.BITMAP_MASKING);
     }
 
     @Test

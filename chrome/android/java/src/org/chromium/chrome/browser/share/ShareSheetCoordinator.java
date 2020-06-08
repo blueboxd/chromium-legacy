@@ -9,6 +9,7 @@ import android.app.Activity;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
@@ -31,6 +32,7 @@ class ShareSheetCoordinator {
     private final Supplier<Tab> mTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
     private final PrefServiceBridge mPrefServiceBridge;
+    private final Callback<Tab> mPrintTabCallback;
     private long mShareStartTime;
     private boolean mExcludeFirstParty;
 
@@ -44,12 +46,14 @@ class ShareSheetCoordinator {
      * for the Chrome-provided property models.
      */
     ShareSheetCoordinator(BottomSheetController controller, Supplier<Tab> tabProvider,
-            ShareSheetPropertyModelBuilder modelBuilder, PrefServiceBridge prefServiceBridge) {
+            ShareSheetPropertyModelBuilder modelBuilder, PrefServiceBridge prefServiceBridge,
+            Callback<Tab> printTab) {
         mBottomSheetController = controller;
         mTabProvider = tabProvider;
         mPropertyModelBuilder = modelBuilder;
         mExcludeFirstParty = false;
         mPrefServiceBridge = prefServiceBridge;
+        mPrintTabCallback = printTab;
     }
 
     void showShareSheet(
@@ -94,7 +98,7 @@ class ShareSheetCoordinator {
         ChromeProvidedSharingOptionsProvider chromeProvidedSharingOptionsProvider =
                 new ChromeProvidedSharingOptionsProvider(activity, mTabProvider,
                         mBottomSheetController, bottomSheet, mPrefServiceBridge, shareParams,
-                        mShareStartTime);
+                        mPrintTabCallback, mShareStartTime);
 
         return chromeProvidedSharingOptionsProvider.createPropertyModels(contentTypes);
     }

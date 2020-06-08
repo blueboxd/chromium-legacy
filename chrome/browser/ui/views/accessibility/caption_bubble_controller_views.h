@@ -20,13 +20,15 @@ namespace captions {
 
 class CaptionBubble;
 
-struct CaptionText {
+struct CaptionBubbleModel {
   std::string final_text;
   std::string partial_text;
+  bool is_closed = false;
 
-  void clear() {
+  void close() {
     final_text.clear();
     partial_text.clear();
+    is_closed = true;
   }
 
   std::string full_text() { return final_text + partial_text; }
@@ -48,8 +50,10 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   CaptionBubbleControllerViews& operator=(const CaptionBubbleControllerViews&) =
       delete;
 
-  // Called when a transcription is received from the service.
-  void OnTranscription(
+  // Called when a transcription is received from the service. Returns whether
+  // the transcription result was set on the caption bubble successfully.
+  // Transcriptions will halt if this returns false.
+  bool OnTranscription(
       const chrome::mojom::TranscriptionResultPtr& transcription_result,
       content::WebContents* web_contents) override;
 
@@ -93,7 +97,8 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   // final texts in order to show the latest partial text to a user when they
   // switch back to the tab in case the speech service has not sent a final
   // transcription in a while.
-  std::unordered_map<content::WebContents*, CaptionText> caption_texts_;
+  std::unordered_map<content::WebContents*, CaptionBubbleModel>
+      caption_bubble_models_;
 };
 }  // namespace captions
 

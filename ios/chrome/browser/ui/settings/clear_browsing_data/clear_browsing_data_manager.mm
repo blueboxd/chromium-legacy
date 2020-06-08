@@ -306,9 +306,6 @@ static NSDictionary* _imageNamesByItemTypes = @{
                   [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
                 }
                  style:UIAlertActionStyleDestructive];
-  [actionCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               action:nil
-                                style:UIAlertActionStyleCancel];
   return actionCoordinator;
 }
 

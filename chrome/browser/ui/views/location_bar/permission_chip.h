@@ -25,12 +25,18 @@ namespace views {
 class Widget;
 }  // namespace views
 
+class BubbleOwnerDelegate {
+ public:
+  virtual bool IsBubbleShowing() const = 0;
+};
+
 // A chip view shown in the location bar to notify user about a permission
 // request. Shows a permission bubble on click.
 class PermissionChip : public views::View,
                        public views::AnimationDelegateViews,
-                       views::ButtonListener,
-                       views::WidgetObserver {
+                       public views::ButtonListener,
+                       public views::WidgetObserver,
+                       public BubbleOwnerDelegate {
  public:
   explicit PermissionChip(Browser* browser);
   PermissionChip(const PermissionChip& mask_layer) = delete;
@@ -56,7 +62,10 @@ class PermissionChip : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
+
+  // BubbleOwnerDelegate:
+  bool IsBubbleShowing() const override;
 
  private:
   void Collapse();
@@ -78,8 +87,6 @@ class PermissionChip : public views::View,
 
   // The button that displays the icon and text.
   views::MdTextButton* chip_button_;
-
-  bool is_bubble_showing_ = false;
 
   // The time when the permission was requested.
   base::TimeTicks requested_time_;

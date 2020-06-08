@@ -33,7 +33,7 @@ class TestPreviewsUIService : public PreviewsUIService {
  public:
   TestPreviewsUIService(
       std::unique_ptr<PreviewsDeciderImpl> previews_decider_impl,
-      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      std::unique_ptr<blocklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       std::unique_ptr<PreviewsLogger> logger,
       network::TestNetworkQualityTracker* test_network_quality_tracker)
@@ -42,7 +42,7 @@ class TestPreviewsUIService : public PreviewsUIService {
                           std::move(previews_opt_guide),
                           base::BindRepeating(&MockedPreviewsIsEnabled),
                           std::move(logger),
-                          blacklist::BlacklistData::AllowedTypesAndVersions(),
+                          blocklist::BlocklistData::AllowedTypesAndVersions(),
                           test_network_quality_tracker) {}
   ~TestPreviewsUIService() override {}
 };
@@ -50,11 +50,7 @@ class TestPreviewsUIService : public PreviewsUIService {
 // Mock class of PreviewsLogger for checking passed in parameters.
 class TestPreviewsLogger : public PreviewsLogger {
  public:
-  TestPreviewsLogger()
-      : decision_page_id_(0),
-        navigation_opt_out_(false),
-        user_blacklisted_(false),
-        blacklist_ignored_(false) {}
+  TestPreviewsLogger() : decision_page_id_(0), navigation_opt_out_(false) {}
 
   // PreviewsLogger:
   void LogPreviewNavigation(const GURL& url,
@@ -84,21 +80,21 @@ class TestPreviewsLogger : public PreviewsLogger {
     decision_page_id_ = page_id;
   }
 
-  void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
-    host_blacklisted_ = host;
-    host_blacklisted_time_ = time;
+  void OnNewBlocklistedHost(const std::string& host, base::Time time) override {
+    host_blocklisted_ = host;
+    host_blocklisted_time_ = time;
   }
 
-  void OnUserBlacklistedStatusChange(bool blacklisted) override {
-    user_blacklisted_ = blacklisted;
+  void OnUserBlocklistedStatusChange(bool blocklisted) override {
+    user_blocklisted_ = blocklisted;
   }
 
-  void OnBlacklistCleared(base::Time time) override {
-    blacklist_cleared_time_ = time;
+  void OnBlocklistCleared(base::Time time) override {
+    blocklist_cleared_time_ = time;
   }
 
-  void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) override {
-    blacklist_ignored_ = ignored;
+  void OnIgnoreBlocklistDecisionStatusChanged(bool ignored) override {
+    blocklist_ignored_ = ignored;
   }
 
   // Return the passed in LogPreviewDecision parameters.
@@ -119,14 +115,14 @@ class TestPreviewsLogger : public PreviewsLogger {
   PreviewsType navigation_type() const { return navigation_type_; }
   uint64_t navigation_page_id() const { return navigation_page_id_; }
 
-  // Return the passed in OnBlacklist events.
-  std::string host_blacklisted() const { return host_blacklisted_; }
-  base::Time host_blacklisted_time() const { return host_blacklisted_time_; }
-  bool user_blacklisted() const { return user_blacklisted_; }
-  base::Time blacklist_cleared_time() const { return blacklist_cleared_time_; }
+  // Return the passed in OnBlocklist events.
+  std::string host_blocklisted() const { return host_blocklisted_; }
+  base::Time host_blocklisted_time() const { return host_blocklisted_time_; }
+  bool user_blocklisted() const { return user_blocklisted_; }
+  base::Time blocklist_cleared_time() const { return blocklist_cleared_time_; }
 
-  // Return the status of blacklist ignored.
-  bool blacklist_ignored() const { return blacklist_ignored_; }
+  // Return the status of blocklist ignored.
+  bool blocklist_ignored() const { return blocklist_ignored_; }
 
  private:
   // Passed in LogPreviewDecision parameters.
@@ -144,34 +140,33 @@ class TestPreviewsLogger : public PreviewsLogger {
   PreviewsType navigation_type_;
   uint64_t navigation_page_id_;
 
-  // Passed in OnBlacklist events.
-  std::string host_blacklisted_;
-  base::Time host_blacklisted_time_;
-  bool user_blacklisted_;
-  base::Time blacklist_cleared_time_;
+  // Passed in OnBlocklist events.
+  std::string host_blocklisted_;
+  base::Time host_blocklisted_time_;
+  bool user_blocklisted_ = false;
+  base::Time blocklist_cleared_time_;
 
-  // Passed in blacklist ignored status.
-  bool blacklist_ignored_;
+  // Passed in blocklist ignored status.
+  bool blocklist_ignored_ = false;
 };
 
 class TestPreviewsDeciderImpl : public PreviewsDeciderImpl {
  public:
   TestPreviewsDeciderImpl()
-      : PreviewsDeciderImpl(base::DefaultClock::GetInstance()),
-        blacklist_ignored_(false) {}
+      : PreviewsDeciderImpl(base::DefaultClock::GetInstance()) {}
 
   // PreviewsDeciderImpl:
-  void SetIgnorePreviewsBlacklistDecision(bool ignored) override {
-    blacklist_ignored_ = ignored;
+  void SetIgnorePreviewsBlocklistDecision(bool ignored) override {
+    blocklist_ignored_ = ignored;
   }
 
-  // Exposed the status of blacklist decisions ignored for testing
+  // Exposed the status of blocklist decisions ignored for testing
   // PreviewsUIService.
-  bool blacklist_ignored() const { return blacklist_ignored_; }
+  bool blocklist_ignored() const { return blocklist_ignored_; }
 
  private:
-  // Whether the blacklist decisions are ignored or not.
-  bool blacklist_ignored_;
+  // Whether the blocklist decisions are ignored or not.
+  bool blocklist_ignored_ = false;
 };
 
 class PreviewsUIServiceTest : public testing::Test {
@@ -256,7 +251,7 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewNavigationPassInCorrectParams) {
 
 TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   PreviewsEligibilityReason reason_a =
-      PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
+      PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE;
   const GURL url_a("http://www.url_a.com/url_a");
   const base::Time time_a = base::Time::Now();
   PreviewsType type_a = PreviewsType::OFFLINE;
@@ -314,47 +309,47 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   }
 }
 
-TEST_F(PreviewsUIServiceTest, TestOnNewBlacklistedHostPassesCorrectParams) {
+TEST_F(PreviewsUIServiceTest, TestOnNewBlocklistedHostPassesCorrectParams) {
   const std::string expected_host = "example.com";
   const base::Time expected_time = base::Time::Now();
-  ui_service()->OnNewBlacklistedHost(expected_host, expected_time);
+  ui_service()->OnNewBlocklistedHost(expected_host, expected_time);
 
-  EXPECT_EQ(expected_host, logger_ptr_->host_blacklisted());
-  EXPECT_EQ(expected_time, logger_ptr_->host_blacklisted_time());
+  EXPECT_EQ(expected_host, logger_ptr_->host_blocklisted());
+  EXPECT_EQ(expected_time, logger_ptr_->host_blocklisted_time());
 }
 
-TEST_F(PreviewsUIServiceTest, TestOnUserBlacklistedPassesCorrectParams) {
-  ui_service()->OnUserBlacklistedStatusChange(true /* blacklisted */);
-  EXPECT_TRUE(logger_ptr_->user_blacklisted());
+TEST_F(PreviewsUIServiceTest, TestOnUserBlocklistedPassesCorrectParams) {
+  ui_service()->OnUserBlocklistedStatusChange(true /* blocklisted */);
+  EXPECT_TRUE(logger_ptr_->user_blocklisted());
 
-  ui_service()->OnUserBlacklistedStatusChange(false /* blacklisted */);
-  EXPECT_FALSE(logger_ptr_->user_blacklisted());
+  ui_service()->OnUserBlocklistedStatusChange(false /* blocklisted */);
+  EXPECT_FALSE(logger_ptr_->user_blocklisted());
 }
 
-TEST_F(PreviewsUIServiceTest, TestOnBlacklistClearedPassesCorrectParams) {
+TEST_F(PreviewsUIServiceTest, TestOnBlocklistClearedPassesCorrectParams) {
   const base::Time expected_time = base::Time::Now();
-  ui_service()->OnBlacklistCleared(expected_time);
+  ui_service()->OnBlocklistCleared(expected_time);
 
-  EXPECT_EQ(expected_time, logger_ptr_->blacklist_cleared_time());
+  EXPECT_EQ(expected_time, logger_ptr_->blocklist_cleared_time());
 }
 
 TEST_F(PreviewsUIServiceTest,
-       TestSetIgnorePreviewsBlacklistDecisionPassesCorrectParams) {
-  ui_service()->SetIgnorePreviewsBlacklistDecision(true /* ignored */);
+       TestSetIgnorePreviewsBlocklistDecisionPassesCorrectParams) {
+  ui_service()->SetIgnorePreviewsBlocklistDecision(true /* ignored */);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(previews_decider_impl()->blacklist_ignored());
+  EXPECT_TRUE(previews_decider_impl()->blocklist_ignored());
 
-  ui_service()->SetIgnorePreviewsBlacklistDecision(false /* ignored */);
+  ui_service()->SetIgnorePreviewsBlocklistDecision(false /* ignored */);
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(previews_decider_impl()->blacklist_ignored());
+  EXPECT_FALSE(previews_decider_impl()->blocklist_ignored());
 }
 
-TEST_F(PreviewsUIServiceTest, TestOnIgnoreBlacklistDecisionStatusChanged) {
-  ui_service()->OnIgnoreBlacklistDecisionStatusChanged(true /* ignored */);
-  EXPECT_TRUE(logger_ptr_->blacklist_ignored());
+TEST_F(PreviewsUIServiceTest, TestOnIgnoreBlocklistDecisionStatusChanged) {
+  ui_service()->OnIgnoreBlocklistDecisionStatusChanged(true /* ignored */);
+  EXPECT_TRUE(logger_ptr_->blocklist_ignored());
 
-  ui_service()->OnIgnoreBlacklistDecisionStatusChanged(false /* ignored */);
-  EXPECT_FALSE(logger_ptr_->blacklist_ignored());
+  ui_service()->OnIgnoreBlocklistDecisionStatusChanged(false /* ignored */);
+  EXPECT_FALSE(logger_ptr_->blocklist_ignored());
 }
 
 }  // namespace previews

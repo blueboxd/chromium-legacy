@@ -65,7 +65,6 @@ CONTENT_EXPORT extern const base::Feature kFtpProtocol;
 CONTENT_EXPORT extern const base::Feature kHistoryManipulationIntervention;
 CONTENT_EXPORT extern const base::Feature kHistoryPreventSandboxedNavigation;
 CONTENT_EXPORT extern const base::Feature kIdleDetection;
-CONTENT_EXPORT extern const base::Feature kInputPredictorTypeChoice;
 CONTENT_EXPORT extern const base::Feature kInstalledApp;
 CONTENT_EXPORT extern const base::Feature kInstalledAppProvider;
 CONTENT_EXPORT extern const base::Feature kInstalledAppsInCbd;
@@ -109,7 +108,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kReloadHiddenTabsWithCrashedSubframes;
 CONTENT_EXPORT extern const base::Feature kRenderDocument;
 CONTENT_EXPORT extern const base::Feature kRequestUnbufferedDispatch;
-CONTENT_EXPORT extern const base::Feature kResamplingInputEvents;
 CONTENT_EXPORT extern const base::Feature kRespectMacLCDTextSetting;
 CONTENT_EXPORT extern const base::Feature
     kRunVideoCaptureServiceInBrowserProcess;

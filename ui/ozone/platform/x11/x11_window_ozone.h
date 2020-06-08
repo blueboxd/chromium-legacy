@@ -36,7 +36,7 @@ class X11WindowOzone : public X11Window,
   void StartDrag(const ui::OSExchangeData& data,
                  int operation,
                  gfx::NativeCursor cursor,
-                 base::OnceCallback<void(int)> callback) override;
+                 WmDragHandler::Delegate* delegate) override;
 
   // ui::XDragDropClient::Delegate
   std::unique_ptr<ui::XTopmostWindowFinder> CreateWindowFinder() override;
@@ -62,7 +62,7 @@ class X11WindowOzone : public X11Window,
   int drag_operation_ = 0;
 
   std::unique_ptr<XDragDropClient> drag_drop_client_;
-  base::OnceCallback<void(int)> end_drag_callback_;
+  WmDragHandler::Delegate* drag_handler_delegate_ = nullptr;
 };
 
 }  // namespace ui

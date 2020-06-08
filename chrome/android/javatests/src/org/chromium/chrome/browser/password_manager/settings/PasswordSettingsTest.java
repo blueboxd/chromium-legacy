@@ -103,7 +103,6 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.sync.ModelType;
@@ -624,7 +623,7 @@ public class PasswordSettingsTest {
         // empty.
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
         overrideProfileSyncService(false, false);
-        SigninTestUtil.addAndSignInTestAccount();
+        mBrowserTestRule.addAndSignInTestAccount();
 
         mSettingsActivityTestRule.startSettingsActivity();
         PasswordSettings savedPasswordPrefs = mSettingsActivityTestRule.getFragment();
@@ -645,7 +644,7 @@ public class PasswordSettingsTest {
         // empty.
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
         overrideProfileSyncService(false, true);
-        SigninTestUtil.addAndSignInTestAccount();
+        mBrowserTestRule.addAndSignInTestAccount();
 
         mSettingsActivityTestRule.startSettingsActivity();
         PasswordSettings savedPasswordPrefs = mSettingsActivityTestRule.getFragment();
@@ -666,7 +665,7 @@ public class PasswordSettingsTest {
         // empty.
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
         overrideProfileSyncService(true, true);
-        SigninTestUtil.addAndSignInTestAccount();
+        mBrowserTestRule.addAndSignInTestAccount();
 
         mSettingsActivityTestRule.startSettingsActivity();
         PasswordSettings savedPasswordPrefs = mSettingsActivityTestRule.getFragment();

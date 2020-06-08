@@ -7,6 +7,7 @@ package org.chromium.components.signin.test.util;
 import android.accounts.Account;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ public class AccountHolder {
         return mAuthTokens.containsKey(authTokenType);
     }
 
-    public String getAuthToken(String authTokenType) {
+    public @Nullable String getAuthToken(String authTokenType) {
         return mAuthTokens.get(authTokenType);
     }
 

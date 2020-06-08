@@ -283,9 +283,9 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
           .BindNewEndpointAndPassDedicatedRemoteForTesting(),
       blink_widget_.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
-  // The WebFrame created here was already attached to the Page as its
-  // main frame, and the WebFrameWidget has been initialized, so we can call
-  // WebViewImpl's DidAttachLocalMainFrame().
+  // The WebFrame created here was already attached to the Page as its main
+  // frame, and the WebFrameWidget has been initialized, so we can call
+  // WebView's DidAttachLocalMainFrame().
   web_view_->DidAttachLocalMainFrame();
 }
 

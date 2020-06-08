@@ -42,10 +42,11 @@ void X11WindowOzone::Initialize(PlatformWindowInitProperties properties) {
 void X11WindowOzone::StartDrag(const ui::OSExchangeData& data,
                                int operation,
                                gfx::NativeCursor cursor,
-                               base::OnceCallback<void(int)> callback) {
+                               WmDragHandler::Delegate* delegate) {
   DCHECK(drag_drop_client_);
+  DCHECK(!drag_handler_delegate_);
 
-  end_drag_callback_ = std::move(callback);
+  drag_handler_delegate_ = delegate;
   drag_drop_client_->InitDrag(operation, &data);
   drag_operation_ = 0;
   notified_enter_ = false;
@@ -118,7 +119,9 @@ int X11WindowOzone::PerformDrop() {
 }
 
 void X11WindowOzone::EndMoveLoop() {
-  std::move(end_drag_callback_).Run(0);
+  DCHECK(drag_handler_delegate_);
+  drag_handler_delegate_->OnDragFinished(0);
+  drag_handler_delegate_ = nullptr;
 }
 
 bool X11WindowOzone::DispatchDraggingUiEvent(ui::Event* event) {
@@ -129,6 +132,8 @@ bool X11WindowOzone::DispatchDraggingUiEvent(ui::Event* event) {
     switch (event->type()) {
       case ui::ET_MOUSE_MOVED:
       case ui::ET_MOUSE_DRAGGED: {
+        drag_handler_delegate_->OnDragLocationChanged(
+            event->AsLocatedEvent()->root_location());
         drag_drop_client_->HandleMouseMovement(
             event->AsLocatedEvent()->root_location(),
             event->AsMouseEvent()->flags(),

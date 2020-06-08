@@ -9,7 +9,9 @@ import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -63,6 +65,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final HybridListRenderer mHybridListRenderer;
     private final SnackbarManager mSnackbarManager;
     private final Activity mActivity;
+    @Nullable
+    private FeedSliceViewTracker mSliceViewTracker;
 
     private int mHeaderCount;
 
@@ -146,6 +150,14 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         if (mHybridListRenderer != null) {
             mRootView = mHybridListRenderer.bind(mContentManager);
+            // XSurface returns a View, but it should be a RecyclerView.
+            assert (mRootView instanceof RecyclerView);
+
+            mSliceViewTracker = new FeedSliceViewTracker(
+                    (RecyclerView) mRootView, mContentManager, (String sliceId) -> {
+                        FeedStreamSurfaceJni.get().reportSliceViewed(
+                                mNativeFeedStreamSurface, FeedStreamSurface.this, sliceId);
+                    });
         } else {
             mRootView = null;
         }
@@ -155,8 +167,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Performs all necessary cleanups.
      */
     public void destroy() {
+        if (mSliceViewTracker != null) {
+            mSliceViewTracker.destroy();
+            mSliceViewTracker = null;
+        }
         mHybridListRenderer.unbind();
-        FeedStreamSurfaceJni.get().surfaceClosed(mNativeFeedStreamSurface, FeedStreamSurface.this);
+        surfaceClosed();
     }
 
     /**
@@ -372,6 +388,17 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      */
     public void surfaceOpened() {
         FeedStreamSurfaceJni.get().surfaceOpened(mNativeFeedStreamSurface, FeedStreamSurface.this);
+    }
+
+    /**
+     * Informs that the surface is closed.
+     */
+    public void surfaceClosed() {
+        int feedCount = mContentManager.getItemCount() - mHeaderCount;
+        if (feedCount > 0) {
+            mContentManager.removeContents(mHeaderCount, feedCount);
+        }
+        FeedStreamSurfaceJni.get().surfaceClosed(mNativeFeedStreamSurface, FeedStreamSurface.this);
     }
 
     @NativeMethods

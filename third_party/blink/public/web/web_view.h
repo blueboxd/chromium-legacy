@@ -120,6 +120,16 @@ class WebView {
   // detached.
   virtual void DidAttachLocalMainFrame() = 0;
 
+  // Called while the main LocalFrame is being detached. The MainFrameImpl() is
+  // still valid until after this method is called.
+  virtual void DidDetachLocalMainFrame() = 0;
+
+  // Called to inform WebViewImpl that a remote main frame has been attached.
+  virtual void DidAttachRemoteMainFrame() = 0;
+
+  // Called to inform WebViewImpl that a remote main frame has been detached.
+  virtual void DidDetachRemoteMainFrame() = 0;
+
   // Initializes the various client interfaces.
   virtual void SetPrerendererClient(WebPrerendererClient*) = 0;
 
@@ -259,6 +269,9 @@ class WebView {
 
   // Indicates that view's preferred size changes will be sent to the browser.
   virtual void EnablePreferredSizeChangedMode() = 0;
+
+  // Asks the browser process to activate this web view.
+  virtual void Focus() = 0;
 
   // Sets the ratio as computed by computePageScaleConstraints.
   // TODO(oshima): Remove this once the device scale factor implementation is

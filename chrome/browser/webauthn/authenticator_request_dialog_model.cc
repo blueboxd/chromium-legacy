@@ -569,3 +569,8 @@ void AuthenticatorRequestDialogModel::set_cable_transport_info(
   have_paired_phones_ = have_paired_phones;
   qr_generator_key_ = std::move(qr_generator_key);
 }
+
+base::WeakPtr<AuthenticatorRequestDialogModel>
+AuthenticatorRequestDialogModel::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}

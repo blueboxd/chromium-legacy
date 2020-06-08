@@ -18,7 +18,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
-import android.os.Build.VERSION_CODES;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -585,22 +584,6 @@ public class StyleProviderTest {
         new StyleProvider(noShadowStyle, mMockAssetProvider).applyElementStyles(mAdapter);
 
         assertThat(mView.getElevation()).isEqualTo(0.0f);
-    }
-
-    @Test
-    @Config(sdk = VERSION_CODES.KITKAT)
-    public void testElementStyles_shadowDoesNotError_KK() {
-        Style shadowStyle = Style.newBuilder()
-                                    .setShadow(Shadow.newBuilder().setElevationShadow(
-                                            ElevationShadow.newBuilder().setElevation(5280)))
-                                    .build();
-        Style noShadowStyle = Style.getDefaultInstance();
-
-        new StyleProvider(shadowStyle, mMockAssetProvider).applyElementStyles(mAdapter);
-
-        new StyleProvider(noShadowStyle, mMockAssetProvider).applyElementStyles(mAdapter);
-
-        // Assert nothing failed.
     }
 
     @Test

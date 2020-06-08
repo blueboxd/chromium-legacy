@@ -36,22 +36,22 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
     case PreviewsEligibilityReason::ALLOWED:
       DCHECK(!want_inverse_description);
       return "Allowed";
-    case PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE:
-      return want_inverse_description ? "Blacklist not null"
-                                      : "Blacklist failed to be created";
-    case PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED:
-      return want_inverse_description ? "Blacklist loaded from disk"
-                                      : "Blacklist not loaded from disk yet";
+    case PreviewsEligibilityReason::BLOCKLIST_UNAVAILABLE:
+      return want_inverse_description ? "Blocklist not null"
+                                      : "Blocklist failed to be created";
+    case PreviewsEligibilityReason::BLOCKLIST_DATA_NOT_LOADED:
+      return want_inverse_description ? "Blocklist loaded from disk"
+                                      : "Blocklist not loaded from disk yet";
     case PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT:
       return want_inverse_description ? "User did not opt out recently"
                                       : "User recently opted out";
-    case PreviewsEligibilityReason::USER_BLACKLISTED:
-      return want_inverse_description ? "Not all previews are blacklisted"
-                                      : "All previews are blacklisted";
-    case PreviewsEligibilityReason::HOST_BLACKLISTED:
+    case PreviewsEligibilityReason::USER_BLOCKLISTED:
+      return want_inverse_description ? "Not all previews are blocklisted"
+                                      : "All previews are blocklisted";
+    case PreviewsEligibilityReason::HOST_BLOCKLISTED:
       return want_inverse_description
-                 ? "Host is not blacklisted on all previews"
-                 : "All previews on this host are blacklisted";
+                 ? "Host is not blocklisted on all previews"
+                 : "All previews on this host are blocklisted";
     case PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE:
       return want_inverse_description ? "Network quality available"
                                       : "Network quality unavailable";
@@ -61,12 +61,12 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
       return want_inverse_description
                  ? "Page reloads allowed"
                  : "Page reloads do not show previews for this preview type";
-    case PreviewsEligibilityReason::DEPRECATED_HOST_BLACKLISTED_BY_SERVER:
-      return want_inverse_description ? "Host not blacklisted by server rules"
-                                      : "Host blacklisted by server rules";
-    case PreviewsEligibilityReason::DEPRECATED_HOST_NOT_WHITELISTED_BY_SERVER:
-      return want_inverse_description ? "Host whitelisted by server rules"
-                                      : "Host not whitelisted by server rules";
+    case PreviewsEligibilityReason::DEPRECATED_HOST_BLOCKLISTED_BY_SERVER:
+      return want_inverse_description ? "Host not blocklisted by server rules"
+                                      : "Host blocklisted by server rules";
+    case PreviewsEligibilityReason::DEPRECATED_HOST_NOT_ALLOWLISTED_BY_SERVER:
+      return want_inverse_description ? "Host allowlisted by server rules"
+                                      : "Host not allowlisted by server rules";
     case PreviewsEligibilityReason::ALLOWED_WITHOUT_OPTIMIZATION_HINTS:
       return want_inverse_description
                  ? "Not allowed (without server rule check)"
@@ -147,15 +147,15 @@ PreviewsLogger::MessageLog::MessageLog(const MessageLog& other)
       page_id(other.page_id) {}
 
 PreviewsLogger::PreviewsLogger()
-    : blacklist_ignored_(switches::ShouldIgnorePreviewsBlacklist()) {}
+    : blocklist_ignored_(switches::ShouldIgnorePreviewsBlocklist()) {}
 
 PreviewsLogger::~PreviewsLogger() {}
 
 void PreviewsLogger::AddAndNotifyObserver(PreviewsLoggerObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.AddObserver(observer);
-  // Notify the status of blacklist decisions ingored.
-  observer->OnIgnoreBlacklistDecisionStatusChanged(blacklist_ignored_);
+  // Notify the status of blocklist decisions ignored.
+  observer->OnIgnoreBlocklistDecisionStatusChanged(blocklist_ignored_);
 
   // Merge navigation logs and decision logs in chronological order, and push
   // them to |observer|.
@@ -182,11 +182,11 @@ void PreviewsLogger::AddAndNotifyObserver(PreviewsLoggerObserver* observer) {
     }
   }
 
-  // Push the current state of blacklist (user blacklisted state and all
-  // blacklisted hosts).
-  observer->OnUserBlacklistedStatusChange(user_blacklisted_status_);
-  for (auto entry : blacklisted_hosts_) {
-    observer->OnNewBlacklistedHost(entry.first, entry.second);
+  // Push the current state of blocklist (user blocklisted state and all
+  // blocklisted hosts).
+  observer->OnUserBlocklistedStatusChange(user_blocklisted_status_);
+  for (auto entry : blocklisted_hosts_) {
+    observer->OnNewBlocklistedHost(entry.first, entry.second);
   }
 }
 
@@ -264,38 +264,38 @@ void PreviewsLogger::LogPreviewDecisionMade(
                                time, page_id);
 }
 
-void PreviewsLogger::OnNewBlacklistedHost(const std::string& host,
+void PreviewsLogger::OnNewBlocklistedHost(const std::string& host,
                                           base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  blacklisted_hosts_[host] = time;
+  blocklisted_hosts_[host] = time;
   for (auto& observer : observer_list_) {
-    observer.OnNewBlacklistedHost(host, time);
+    observer.OnNewBlocklistedHost(host, time);
   }
 }
 
-void PreviewsLogger::OnUserBlacklistedStatusChange(bool blacklisted) {
+void PreviewsLogger::OnUserBlocklistedStatusChange(bool blocklisted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  user_blacklisted_status_ = blacklisted;
+  user_blocklisted_status_ = blocklisted;
   for (auto& observer : observer_list_) {
-    observer.OnUserBlacklistedStatusChange(blacklisted);
+    observer.OnUserBlocklistedStatusChange(blocklisted);
   }
 }
 
-void PreviewsLogger::OnBlacklistCleared(base::Time time) {
+void PreviewsLogger::OnBlocklistCleared(base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  blacklisted_hosts_.clear();
+  blocklisted_hosts_.clear();
   navigations_logs_.clear();
   decisions_logs_.clear();
   for (auto& observer : observer_list_) {
-    observer.OnBlacklistCleared(time);
+    observer.OnBlocklistCleared(time);
   }
 }
 
-void PreviewsLogger::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
+void PreviewsLogger::OnIgnoreBlocklistDecisionStatusChanged(bool ignored) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  blacklist_ignored_ = ignored;
+  blocklist_ignored_ = ignored;
   for (auto& observer : observer_list_) {
-    observer.OnIgnoreBlacklistDecisionStatusChanged(ignored);
+    observer.OnIgnoreBlocklistDecisionStatusChanged(ignored);
   }
 }
 

@@ -745,7 +745,7 @@ class UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl
     auto* command_line = base::CommandLine::ForCurrentProcess();
     // Note: |offstore_extension_|'s update url is the same.
     command_line->AppendSwitchASCII("apps-gallery-update-url",
-                                    "http://localhost/test/updates.xml");
+                                    "http://localhost/test2/updates.xml");
     ExtensionsClient::Get()->InitializeWebStoreUrls(
         base::CommandLine::ForCurrentProcess());
   }
@@ -756,7 +756,7 @@ TEST_F(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
   EXPECT_TRUE(update_service()->CanUpdate(store_extension_->id()));
   // ... and extensions with empty update URL.
   EXPECT_TRUE(update_service()->CanUpdate(emptyurl_extension_->id()));
-  // It can't update off-store extrensions.
+  // It can't update off-store extensions.
   EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
   // ... or extensions with empty update URL converted from user script.
   EXPECT_FALSE(update_service()->CanUpdate(userscript_extension_->id()));
@@ -768,10 +768,10 @@ TEST_F(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
 
 TEST_F(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
        UpdateService_CanUpdate) {
-  // Update service cannot update extensions when the default webstore update
-  // url is changed.
+  // Update service can update extensions when the default webstore update url
+  // is changed.
   EXPECT_FALSE(update_service()->CanUpdate(store_extension_->id()));
-  EXPECT_FALSE(update_service()->CanUpdate(emptyurl_extension_->id()));
+  EXPECT_TRUE(update_service()->CanUpdate(emptyurl_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(userscript_extension_->id()));
   EXPECT_FALSE(update_service()->CanUpdate(std::string(32, 'a')));

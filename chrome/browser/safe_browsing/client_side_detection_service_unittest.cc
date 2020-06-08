@@ -135,12 +135,6 @@ class ClientSideDetectionServiceTest : public testing::Test {
     return csd_service_->phishing_report_times_;
   }
 
-  void SetCache(const GURL& gurl, bool is_phishing, base::Time time) {
-    csd_service_->cache_[gurl] =
-        std::make_unique<ClientSideDetectionService::CacheState>(is_phishing,
-                                                                 time);
-  }
-
   void TestCache() {
     auto& cache = csd_service_->cache_;
     base::Time now = base::Time::Now();
@@ -191,21 +185,6 @@ class ClientSideDetectionServiceTest : public testing::Test {
     EXPECT_TRUE(csd_service_->GetValidCachedResult(
         GURL("http://fourth.url.com"), &is_phishing));
     EXPECT_TRUE(is_phishing);
-  }
-
-  void AddFeature(const std::string& name, double value,
-                  ClientPhishingRequest* request) {
-    ClientPhishingRequest_Feature* feature = request->add_feature_map();
-    feature->set_name(name);
-    feature->set_value(value);
-  }
-
-  void AddNonModelFeature(const std::string& name, double value,
-                          ClientPhishingRequest* request) {
-    ClientPhishingRequest_Feature* feature =
-        request->add_non_model_feature_map();
-    feature->set_name(name);
-    feature->set_value(value);
   }
 
  protected:

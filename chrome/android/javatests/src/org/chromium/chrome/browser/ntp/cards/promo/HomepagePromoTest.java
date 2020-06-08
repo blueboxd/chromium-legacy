@@ -80,6 +80,7 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures(ChromeFeatureList.HOMEPAGE_PROMO_CARD)
+@Features.DisableFeatures(ChromeFeatureList.QUERY_TILES)
 public class HomepagePromoTest {
     public static final String PARTNER_HOMEPAGE_URL = "http://127.0.0.1:8000/foo.html";
     public static final String CUSTOM_TEST_URL = "http://127.0.0.1:8000/bar.html";

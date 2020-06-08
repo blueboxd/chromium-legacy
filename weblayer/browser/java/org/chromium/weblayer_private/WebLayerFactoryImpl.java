@@ -12,6 +12,7 @@ import org.chromium.components.version_info.VersionConstants;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.IWebLayerFactory;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
+import org.chromium.weblayer_private.interfaces.WebLayerVersionConstants;
 
 /**
  * Factory used to create WebLayer as well as verify compatibility.
@@ -49,7 +50,13 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
     @Override
     public boolean isClientSupported() {
         StrictModeWorkaround.apply();
-        return Math.abs(sClientMajorVersion - getImplementationMajorVersion()) <= 4;
+        int implMajorVersion = getImplementationMajorVersion();
+        // While the client always calls this method, the most recently shipped product gets to
+        // decide compatibility. If we instead let the implementation always decide, then we would
+        // not be able to change the allowed skew of older implementations, even if the client could
+        // support it.
+        if (sClientMajorVersion > implMajorVersion) return true;
+        return implMajorVersion - sClientMajorVersion <= WebLayerVersionConstants.MAX_SKEW;
     }
 
     /**

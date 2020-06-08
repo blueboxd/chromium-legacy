@@ -90,8 +90,12 @@ keyboard.onKeyDown_ = function(event) {
   // The networks list in the Chrome OOBE has an iron-list which uses arrow
   // keys to navigate elements. Tab events will remove focus from the list.
   //
+  // $ is defined differently depending on how this file gets executed; we have
+  // to use document.getElementById to get consistent behavior.
+  //
   // See crbug.com/1083145
-  if (document.activeElement === document.$('oobe-network-md') &&
+  // eslint-disable-next-line no-restricted-properties
+  if (document.activeElement === document.getElementById('oobe-network-md') &&
       document.activeElement.shadowRoot.activeElement.tagName ==
       'NETWORK-SELECT-LOGIN') {
     return;

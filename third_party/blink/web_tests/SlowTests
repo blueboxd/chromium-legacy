@@ -496,6 +496,7 @@ crbug.com/994331 compositing/lots-of-img-layers.html [ Slow ]
 crbug.com/1071114 external/wpt/css/css-fonts/test_font_family_parsing.html [ Slow ]
 crbug.com/1071418 external/wpt/css/css-transitions/idlharness.html [ Slow ]
 crbug.com/1048204 external/wpt/selection/idlharness.window.html [ Slow ]
+crbug.com/1047818 external/wpt/css/css-masking/idlharness.html [ Slow ]
 
 # This test contains a slow loading image that results in timeouts.
 crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Slow ]
@@ -534,3 +535,4 @@ crbug.com/1091716 svg/as-object/sizing/svg-in-object-placeholder-percentage-perc
 crbug.com/1091716 svg/as-object/sizing/svg-in-object-placeholder-percentage-percentage-no-intrinsic-ratio.html [ Slow ]
 
 crbug.com/1043669 [ Mac ] inspector-protocol/emulation/set-vision-deficiency.js [ Slow ]
+crbug.com/1092121 fast/css/large-list-of-rules-crash.html [ Slow ]

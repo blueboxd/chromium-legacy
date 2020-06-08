@@ -1643,10 +1643,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                            [weakSelf moveNodes:nodes];
                          }
                           style:UIAlertActionStyleDefault];
-
-  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                         action:nil
-                          style:UIAlertActionStyleCancel];
 }
 
 - (void)configureCoordinator:(AlertCoordinator*)coordinator
@@ -1696,10 +1692,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                   [weakSelf setTableViewEditing:NO];
                 }
                  style:UIAlertActionStyleDefault];
-
-  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                         action:nil
-                          style:UIAlertActionStyleCancel];
 }
 
 - (void)configureCoordinator:(AlertCoordinator*)coordinator
@@ -1731,10 +1723,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     coordinator.alertController.actions[0].enabled = NO;
     coordinator.alertController.actions[1].enabled = NO;
   }
-
-  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                         action:nil
-                          style:UIAlertActionStyleCancel];
 }
 
 - (void)configureCoordinator:(AlertCoordinator*)coordinator
@@ -1750,10 +1738,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                            [weakSelf moveNodes:nodes];
                          }
                           style:UIAlertActionStyleDefault];
-
-  [coordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                         action:nil
-                          style:UIAlertActionStyleCancel];
 }
 
 #pragma mark - UIGestureRecognizerDelegate and gesture handling

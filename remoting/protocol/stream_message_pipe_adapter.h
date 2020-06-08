@@ -22,10 +22,10 @@ class StreamChannelFactory;
 // P2PStreamSocket.
 class StreamMessagePipeAdapter : public MessagePipe {
  public:
-  typedef base::Callback<void(int)> ErrorCallback;
+  typedef base::OnceCallback<void(int)> ErrorCallback;
 
   StreamMessagePipeAdapter(std::unique_ptr<P2PStreamSocket> socket,
-                           const ErrorCallback& error_callback);
+                           ErrorCallback error_callback);
   ~StreamMessagePipeAdapter() override;
 
   // MessagePipe interface.
@@ -49,7 +49,7 @@ class StreamMessagePipeAdapter : public MessagePipe {
 
 class StreamMessageChannelFactoryAdapter : public MessageChannelFactory {
  public:
-  typedef base::Callback<void(int)> ErrorCallback;
+  typedef base::RepeatingCallback<void(int)> ErrorCallback;
 
   StreamMessageChannelFactoryAdapter(
       StreamChannelFactory* stream_channel_factory,

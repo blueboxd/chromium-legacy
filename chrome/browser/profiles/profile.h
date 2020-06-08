@@ -319,11 +319,6 @@ class Profile : public content::BrowserContext {
   // versa).
   virtual bool IsSameProfile(Profile* profile) = 0;
 
-  // Returns whether two profiles are the same and of the same type.
-  bool IsSameProfileAndType(Profile* profile) {
-    return profile == static_cast<Profile*>(this);
-  }
-
   // Returns the time the profile was started. This is not the time the profile
   // was created, rather it is the time the user started chrome and logged into
   // this profile. For the single profile case, this corresponds to the time

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * FakeAccountManagerFacade is an {@link AccountManagerFacade} stub intended
@@ -32,9 +33,6 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
 
     @GuardedBy("mLock")
     private final Set<AccountHolder> mAccountHolders = new LinkedHashSet<>();
-
-    @GuardedBy("mLock")
-    private boolean mIsCachePopulated = true;
 
     private final @Nullable FakeProfileDataSource mFakeProfileDataSource;
 
@@ -62,13 +60,13 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     public void removeObserver(AccountsChangeObserver observer) {}
 
     @Override
-    public void runAfterCacheIsPopulated(Runnable runnable) {}
+    public void runAfterCacheIsPopulated(Runnable runnable) {
+        runnable.run();
+    }
 
     @Override
     public boolean isCachePopulated() {
-        synchronized (mLock) {
-            return mIsCachePopulated;
-        }
+        return true;
     }
 
     @Override
@@ -92,11 +90,25 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
 
     @Override
     public String getAccessToken(Account account, String scope) {
-        return "";
+        synchronized (mLock) {
+            AccountHolder accountHolder = getAccountHolder(account);
+            if (accountHolder.getAuthToken(scope) == null) {
+                accountHolder.withAuthToken(scope, UUID.randomUUID().toString());
+            }
+            return accountHolder.getAuthToken(scope);
+        }
     }
 
     @Override
-    public void invalidateAccessToken(String accessToken) {}
+    public void invalidateAccessToken(String accessToken) {
+        synchronized (mLock) {
+            for (AccountHolder accountHolder : mAccountHolders) {
+                if (accountHolder.removeAuthToken(accessToken)) {
+                    break;
+                }
+            }
+        }
+    }
 
     @Override
     public void checkChildAccountStatus(Account account, Callback<Integer> callback) {}
@@ -119,15 +131,6 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     /**
-     * Sets the boolean for whether the account cache has already been populated.
-     */
-    public void setIsCachePopulated(boolean isCachePopulated) {
-        synchronized (mLock) {
-            mIsCachePopulated = isCachePopulated;
-        }
-    }
-
-    /**
      * Adds an account to the fake AccountManagerFacade.
      */
     public void addAccount(Account account) {
@@ -147,5 +150,15 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
         assert mFakeProfileDataSource != null : "ProfileDataSource was disabled!";
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mFakeProfileDataSource.setProfileData(accountId, profileData));
+    }
+
+    @GuardedBy("mLock")
+    private AccountHolder getAccountHolder(Account account) {
+        for (AccountHolder accountHolder : mAccountHolders) {
+            if (accountHolder.getAccount().equals(account)) {
+                return accountHolder;
+            }
+        }
+        throw new IllegalArgumentException("Cannot find account:" + account);
     }
 }

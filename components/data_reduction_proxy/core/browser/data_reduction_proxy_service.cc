@@ -298,10 +298,10 @@ void DataReductionProxyService::OnProxyConfigUpdated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-void DataReductionProxyService::SetIgnoreLongTermBlackListRules(
-    bool ignore_long_term_black_list_rules) {
+void DataReductionProxyService::SetIgnoreLongTermBlockListRules(
+    bool ignore_long_term_block_list_rules) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  settings_->SetIgnoreLongTermBlackListRules(ignore_long_term_black_list_rules);
+  settings_->SetIgnoreLongTermBlockListRules(ignore_long_term_block_list_rules);
 }
 
 void DataReductionProxyService::AddCustomProxyConfigClient(

@@ -154,7 +154,10 @@ def main():
   if args.command == 'extract':
     if args.assert_info_file:
       cached_info = args.assert_info_file.read()
-      if formatted_info != cached_info:
+      # Relax comparisons by indiscriminately removing whitespaces. This reduces
+      # noise during migration to pretty-print.
+      # TODO(huangs): Return to direct comparison once migration is complete.
+      if ''.join(formatted_info.split()) != ''.join(cached_info.split()):
         raise Exception('android_aar_prebuilt() cached .info file is '
                         'out-of-date. Run gn gen with '
                         'update_android_aar_prebuilts=true to update it.')

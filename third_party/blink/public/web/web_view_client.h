@@ -146,7 +146,7 @@ class WebViewClient {
   virtual void DidAutoResize(const WebSize& new_size) {}
 
   // Called when the View acquires focus.
-  virtual void DidFocus(WebLocalFrame* calling_frame) {}
+  virtual void DidFocus() {}
 
   // Session history -----------------------------------------------------
 

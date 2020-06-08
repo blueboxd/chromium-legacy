@@ -31,8 +31,6 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
-#include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/history/media_history_contents_observer.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_observer.h"
@@ -149,6 +147,11 @@
 #include "chrome/browser/ui/hats/hats_helper.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media/feeds/media_feeds_contents_observer.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
+#endif
+
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
 #endif
@@ -259,8 +262,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   IsolatedPrerenderTabHelper::CreateForWebContents(web_contents);
   if (MediaEngagementService::IsEnabled())
     MediaEngagementService::CreateWebContentsObserver(web_contents);
-  if (media_feeds::MediaFeedsService::IsEnabled())
-    MediaFeedsContentsObserver::CreateForWebContents(web_contents);
   if (base::FeatureList::IsEnabled(media::kUseMediaHistoryStore))
     MediaHistoryContentsObserver::CreateForWebContents(web_contents);
   metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
@@ -360,6 +361,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       std::make_unique<JavaScriptTabModalDialogManagerDelegateDesktop>(
           web_contents));
   ManagePasswordsUIController::CreateForWebContents(web_contents);
+  if (media_feeds::MediaFeedsService::IsEnabled())
+    MediaFeedsContentsObserver::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
   SadTabHelper::CreateForWebContents(web_contents);

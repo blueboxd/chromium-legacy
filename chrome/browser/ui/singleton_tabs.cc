@@ -132,7 +132,7 @@ std::pair<Browser*, int> GetIndexAndBrowserOfExistingTab(
        ++browser_it) {
     Browser* browser = *browser_it;
     // When tab switching, only look at same profile and anonymity level.
-    if (browser->profile()->IsSameProfileAndType(profile)) {
+    if (profile == browser->profile()) {
       int index = GetIndexOfExistingTab(browser, params);
       if (index >= 0)
         return {browser, index};

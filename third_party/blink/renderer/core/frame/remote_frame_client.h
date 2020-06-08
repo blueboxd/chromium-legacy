@@ -20,6 +20,7 @@ class PaintCanvas;
 }
 
 namespace blink {
+class AssociatedInterfaceProvider;
 class IntRect;
 class ResourceRequest;
 class WebLocalFrame;
@@ -49,6 +50,8 @@ class RemoteFrameClient : public FrameClient {
       const ViewportIntersectionState& intersection_state) = 0;
 
   virtual uint32_t Print(const IntRect&, cc::PaintCanvas*) const = 0;
+
+  virtual AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() = 0;
 };
 
 }  // namespace blink

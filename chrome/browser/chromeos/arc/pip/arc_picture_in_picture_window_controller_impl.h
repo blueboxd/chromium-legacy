@@ -41,7 +41,6 @@ class ArcPictureInPictureWindowControllerImpl
   bool TogglePlayPause() override;
   void UpdatePlaybackState(bool is_playing,
                            bool reached_end_of_stream) override;
-  void SetAlwaysHidePlayPauseButton(bool is_visible) override;
   void SkipAd() override;
   void NextTrack() override;
   void PreviousTrack() override;

@@ -87,26 +87,19 @@ void UpdateService::SendUninstallPing(const std::string& id,
 }
 
 bool UpdateService::CanUpdate(const std::string& extension_id) const {
-  // It's possible to change Webstore update URL from command line (through
-  // apps-gallery-update-url command line switch). When Webstore update URL is
-  // different the default Webstore update URL, we won't support updating
-  // extensions through UpdateService.
-  if (extension_urls::GetDefaultWebstoreUpdateUrl() !=
-      extension_urls::GetWebstoreUpdateUrl())
-    return false;
-
   // Won't update extensions with empty IDs.
   if (extension_id.empty())
     return false;
 
   // We can only update extensions that have been installed on the system.
-  // Furthermore, we can only update extensions that were installed from the
-  // webstore or extensions with empty update URLs not converted from user
-  // scripts.
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   const Extension* extension = registry->GetInstalledExtension(extension_id);
   if (extension == nullptr)
     return false;
+
+  // Furthermore, we can only update extensions that were installed from the
+  // default webstore or extensions with empty update URLs not converted from
+  // user scripts.
   const GURL& update_url = ManifestURL::GetUpdateURL(extension);
   if (update_url.is_empty())
     return !extension->converted_from_user_script();

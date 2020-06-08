@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
@@ -185,8 +184,8 @@ void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
   have_page_text_ = true;
 
   GURL stripped_last_load_url(StripRef(last_finished_load_url_));
+  // Check if toplevel URL has changed.
   if (stripped_last_load_url == StripRef(last_url_sent_to_classifier_)) {
-    DVLOG(2) << "Toplevel URL is unchanged, not starting classification.";
     return;
   }
 
@@ -214,8 +213,6 @@ void PhishingClassifierDelegate::CancelPendingClassification(
 
 void PhishingClassifierDelegate::ClassificationDone(
     const ClientPhishingRequest& verdict) {
-  DVLOG(2) << "Phishy verdict = " << verdict.is_phishing()
-           << " score = " << verdict.client_score();
   is_phishing_detection_running_ = false;
   if (callback_.is_null())
     return;
@@ -244,7 +241,6 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   // classified at all (as opposed to deferring it until we get an IPC or
   // the load completes), we discard the page text since it won't be needed.
   if (!classifier_->is_ready()) {
-    DVLOG(2) << "Not starting classification, no Scorer created.";
     is_phishing_detection_running_ = false;
     // Keep classifier_page_text_, in case a Scorer is set later.
     if (!callback_.is_null())
@@ -257,7 +253,6 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     // Skip loads from session history navigation.  However, update the
     // last URL sent to the classifier, so that we'll properly detect
     // same-document navigations.
-    DVLOG(2) << "Not starting classification for back/forward navigation";
     last_url_sent_to_classifier_ = last_finished_load_url_;
     classifier_page_text_.clear();  // we won't need this.
     have_page_text_ = false;
@@ -270,7 +265,6 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
 
   GURL stripped_last_load_url(StripRef(last_finished_load_url_));
   if (!have_page_text_) {
-    DVLOG(2) << "Not starting classification, there is no page text ready.";
     RecordEvent(SBPhishingClassifierEvent::kPageTextNotLoaded);
     return;
   }
@@ -281,15 +275,11 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     // so defer classification for now.  Note: the ref does not affect
     // any of the browser's preclassification checks, so we don't require it
     // to match.
-    DVLOG(2) << "Not starting classification, last url from browser is "
-             << last_url_received_from_browser_ << ", last finished load is "
-             << last_finished_load_url_;
     // Keep classifier_page_text_, in case the browser notifies us later that
     // we should classify the URL.
     return;
   }
 
-  DVLOG(2) << "Starting classification for " << last_finished_load_url_;
   last_url_sent_to_classifier_ = last_finished_load_url_;
   is_classifying_ = true;
   classifier_->BeginClassification(

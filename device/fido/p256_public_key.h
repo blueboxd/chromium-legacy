@@ -15,7 +15,7 @@
 
 namespace device {
 
-class PublicKey;
+struct PublicKey;
 
 struct COMPONENT_EXPORT(DEVICE_FIDO) P256PublicKey {
   static std::unique_ptr<PublicKey> ExtractFromU2fRegistrationResponse(

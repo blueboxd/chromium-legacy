@@ -921,7 +921,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUpdateDragCursor(blink::WebDragOperation current_op);
   void OnFrameSwapMessagesReceived(uint32_t frame_token,
                                    std::vector<IPC::Message> messages);
-  void OnFirstVisuallyNonEmptyPaint();
 
   // blink::mojom::FrameWidgetHost overrides.
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
@@ -933,6 +932,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AutoscrollStart(const gfx::PointF& position) override;
   void AutoscrollFling(const gfx::Vector2dF& velocity) override;
   void AutoscrollEnd() override;
+  void DidFirstVisuallyNonEmptyPaint() override;
 
   // When the RenderWidget is destroyed and recreated, this resets states in the
   // browser to match the clean start for the renderer side.

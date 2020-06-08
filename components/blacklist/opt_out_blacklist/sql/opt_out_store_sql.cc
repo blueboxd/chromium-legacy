@@ -26,7 +26,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-namespace blacklist {
+namespace blocklist {
 
 namespace {
 
@@ -46,7 +46,7 @@ int MaxRowsPerHostInOptOutDB() {
   return base::StringToInt(max_rows, &value) ? value : 32;
 }
 
-// Returns the maximum number of table rows allowed for the blacklist opt out
+// Returns the maximum number of table rows allowed for the blocklist opt out
 // store. This is enforced during load time; thus the database can grow
 // larger than this temporarily.
 int MaxRowsInOptOutDB() {
@@ -126,6 +126,8 @@ void InitDatabase(sql::Database* db, base::FilePath path) {
   // The total size of the database will be capped at 3200 entries.
   db->set_page_size(4096);
   db->set_cache_size(250);
+  // TODO(crbug.com/1092101): Migrate to OptOutBlocklist and update any backend
+  // code that may depend on this tag.
   db->set_histogram_tag("OptOutBlacklist");
   db->set_exclusive_locking();
 
@@ -186,7 +188,7 @@ void MaybeEvictHostEntryFromDataBase(sql::Database* db,
 }
 
 // Deletes every entry for |type|.
-void ClearBlacklistForTypeInDataBase(sql::Database* db, int type) {
+void ClearBlocklistForTypeInDataBase(sql::Database* db, int type) {
   static const char kSql[] =
       "DELETE FROM " OPT_OUT_TABLE_NAME " WHERE type == ?";
   sql::Statement statement(db->GetUniqueStatement(kSql));
@@ -196,14 +198,14 @@ void ClearBlacklistForTypeInDataBase(sql::Database* db, int type) {
 
 // Retrieves the list of previously enabled types with their version from the
 // Enabled table.
-BlacklistData::AllowedTypesAndVersions GetStoredEntries(sql::Database* db) {
+BlocklistData::AllowedTypesAndVersions GetStoredEntries(sql::Database* db) {
   static const char kSqlLoadEnabledTypesVersions[] =
       "SELECT type, version FROM " ENABLED_TYPES_TABLE_NAME;
 
   sql::Statement statement(
       db->GetUniqueStatement(kSqlLoadEnabledTypesVersions));
 
-  BlacklistData::AllowedTypesAndVersions stored_entries;
+  BlocklistData::AllowedTypesAndVersions stored_entries;
   while (statement.Step()) {
     int type = statement.ColumnInt(0);
     int version = statement.ColumnInt(1);
@@ -240,11 +242,11 @@ void UpdateEnabledTypesInDataBase(sql::Database* db, int type, int version) {
 
 // Checks the current set of enabled types (with their current version)
 // and where a type is now disabled or has a different version, cleans up
-// any associated blacklist entries.
+// any associated blocklist entries.
 void CheckAndReconcileEnabledTypesWithDataBase(
     sql::Database* db,
-    const BlacklistData::AllowedTypesAndVersions& allowed_types) {
-  BlacklistData::AllowedTypesAndVersions stored_entries = GetStoredEntries(db);
+    const BlocklistData::AllowedTypesAndVersions& allowed_types) {
+  BlocklistData::AllowedTypesAndVersions stored_entries = GetStoredEntries(db);
 
   for (auto enabled_it : allowed_types) {
     int type = enabled_it.first;
@@ -255,7 +257,7 @@ void CheckAndReconcileEnabledTypesWithDataBase(
     } else {
       if (stored_it->second != current_version) {
         DCHECK_GE(current_version, stored_it->second);
-        ClearBlacklistForTypeInDataBase(db, type);
+        ClearBlocklistForTypeInDataBase(db, type);
         UpdateEnabledTypesInDataBase(db, type, current_version);
       }
     }
@@ -266,14 +268,14 @@ void CheckAndReconcileEnabledTypesWithDataBase(
   // it'll still be around for the next time it is used.
 }
 
-void LoadBlackListFromDataBase(
+void LoadBlockListFromDataBase(
     sql::Database* db,
-    std::unique_ptr<BlacklistData> blacklist_data,
+    std::unique_ptr<BlocklistData> blocklist_data,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
-    LoadBlackListCallback callback) {
+    LoadBlockListCallback callback) {
   // First handle any update needed wrt enabled types and their versions.
   CheckAndReconcileEnabledTypesWithDataBase(db,
-                                            blacklist_data->allowed_types());
+                                            blocklist_data->allowed_types());
 
   // Gets the table sorted by host and time. Limits the number of hosts using
   // most recent opt_out time as the limiting function. Sorting is free due to
@@ -287,7 +289,7 @@ void LoadBlackListFromDataBase(
   int count = 0;
   while (statement.Step()) {
     ++count;
-    blacklist_data->AddEntry(statement.ColumnString(0), statement.ColumnBool(2),
+    blocklist_data->AddEntry(statement.ColumnString(0), statement.ColumnBool(2),
                              statement.ColumnInt64(3),
                              base::Time() + base::TimeDelta::FromMicroseconds(
                                                 statement.ColumnInt64(1)),
@@ -311,26 +313,26 @@ void LoadBlackListFromDataBase(
   }
 
   runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback),
-                                             std::move(blacklist_data)));
+                                             std::move(blocklist_data)));
 }
 
 // Synchronous implementations, these are run on the background thread
 // and actually do the work to access the SQL data base.
-void LoadBlackListSync(sql::Database* db,
+void LoadBlockListSync(sql::Database* db,
                        const base::FilePath& path,
-                       std::unique_ptr<BlacklistData> blacklist_data,
+                       std::unique_ptr<BlocklistData> blocklist_data,
                        scoped_refptr<base::SingleThreadTaskRunner> runner,
-                       LoadBlackListCallback callback) {
+                       LoadBlockListCallback callback) {
   if (!db->is_open())
     InitDatabase(db, path);
 
-  LoadBlackListFromDataBase(db, std::move(blacklist_data), runner,
+  LoadBlockListFromDataBase(db, std::move(blocklist_data), runner,
                             std::move(callback));
 }
 
 // Deletes every row in the table that has entry time between |begin_time| and
 // |end_time|.
-void ClearBlackListSync(sql::Database* db,
+void ClearBlockListSync(sql::Database* db,
                         base::Time begin_time,
                         base::Time end_time) {
   static const char kSql[] =
@@ -383,26 +385,26 @@ void OptOutStoreSQL::AddEntry(bool opt_out,
       base::BindOnce(&AddEntrySync, opt_out, host_name, type, now, db_.get()));
 }
 
-void OptOutStoreSQL::ClearBlackList(base::Time begin_time,
+void OptOutStoreSQL::ClearBlockList(base::Time begin_time,
                                     base::Time end_time) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(db_);
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&ClearBlackListSync, db_.get(), begin_time, end_time));
+      base::BindOnce(&ClearBlockListSync, db_.get(), begin_time, end_time));
 }
 
-void OptOutStoreSQL::LoadBlackList(
-    std::unique_ptr<BlacklistData> blacklist_data,
-    LoadBlackListCallback callback) {
+void OptOutStoreSQL::LoadBlockList(
+    std::unique_ptr<BlocklistData> blocklist_data,
+    LoadBlockListCallback callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!db_)
     db_ = std::make_unique<sql::Database>();
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&LoadBlackListSync, db_.get(), db_file_path_,
-                     std::move(blacklist_data),
+      base::BindOnce(&LoadBlockListSync, db_.get(), db_file_path_,
+                     std::move(blocklist_data),
                      base::ThreadTaskRunnerHandle::Get(), std::move(callback)));
 }
 
-}  // namespace blacklist
+}  // namespace blocklist

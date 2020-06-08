@@ -74,9 +74,6 @@ class PresentationReceiverWindowView final
   content::WebContents* GetActiveWebContents() const final;
 
   // views::WidgetDelegateView overrides.
-  bool CanResize() const final;
-  bool CanMaximize() const final;
-  bool CanMinimize() const final;
   void DeleteDelegate() final;
   base::string16 GetWindowTitle() const final;
 

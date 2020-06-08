@@ -26,9 +26,28 @@ class TestWebViewAppObserver : public WebViewAppStateObserver {
   WebViewAppStateObserver::State state_;
 };
 
+class TestOnLoseForegroundCallback {
+ public:
+  explicit TestOnLoseForegroundCallback(const TestWebViewAppObserver* other)
+      : other_(other) {}
+
+  ~TestOnLoseForegroundCallback() = default;
+
+  void OnLoseForeground() {
+    ASSERT_NE(other_->state(), WebViewAppStateObserver::State::kForeground);
+    called_ = true;
+  }
+  bool called() const { return called_; }
+
+ private:
+  bool called_ = false;
+  const TestWebViewAppObserver* other_;
+};
+
 class TestAwContentsLifecycleNotifier : public AwContentsLifecycleNotifier {
  public:
-  TestAwContentsLifecycleNotifier() = default;
+  explicit TestAwContentsLifecycleNotifier(OnLoseForegroundCallback callback)
+      : AwContentsLifecycleNotifier(callback) {}
   ~TestAwContentsLifecycleNotifier() override = default;
 
   size_t GetAwContentsStateCount(AwContentsState state) const {
@@ -72,11 +91,20 @@ class AwContentsLifecycleNotifierTest : public testing::Test {
               background_count);
   }
 
+  const TestWebViewAppObserver* observer() const { return observer_.get(); }
+  const TestOnLoseForegroundCallback* callback() const {
+    return callback_.get();
+  }
+
  protected:
   // testing::Test.
   void SetUp() override {
     observer_ = std::make_unique<TestWebViewAppObserver>();
-    notifier_ = std::make_unique<TestAwContentsLifecycleNotifier>();
+    callback_ = std::make_unique<TestOnLoseForegroundCallback>(observer_.get());
+    notifier_ = std::make_unique<TestAwContentsLifecycleNotifier>(
+        base::BindRepeating(&TestOnLoseForegroundCallback::OnLoseForeground,
+                            base::Unretained(callback_.get())));
+
     notifier_->AddObserver(observer_.get());
   }
 
@@ -85,6 +113,7 @@ class AwContentsLifecycleNotifierTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestWebViewAppObserver> observer_;
+  std::unique_ptr<TestOnLoseForegroundCallback> callback_;
   std::unique_ptr<TestAwContentsLifecycleNotifier> notifier_;
 };
 
@@ -280,6 +309,15 @@ TEST_F(AwContentsLifecycleNotifierTest, GetAllAwContents) {
   notifier()->OnWebViewDestroyed(fake_aw_contents2);
   all_aw_contents = notifier()->GetAllAwContents();
   ASSERT_TRUE(all_aw_contents.empty());
+}
+
+TEST_F(AwContentsLifecycleNotifierTest, LoseForegroundCallback) {
+  const AwContents* fake_aw_contents = reinterpret_cast<const AwContents*>(1);
+  notifier()->OnWebViewCreated(fake_aw_contents);
+  notifier()->OnWebViewAttachedToWindow(fake_aw_contents);
+  notifier()->OnWebViewWindowBeVisible(fake_aw_contents);
+  notifier()->OnWebViewWindowBeInvisible(fake_aw_contents);
+  EXPECT_TRUE(callback()->called());
 }
 
 }  // namespace android_webview

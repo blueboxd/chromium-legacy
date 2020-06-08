@@ -241,8 +241,6 @@ static_library("ui") {
     "webui/log_web_ui_url.h",
     "webui/media/media_engagement_ui.cc",
     "webui/media/media_engagement_ui.h",
-    "webui/media/media_feeds_ui.cc",
-    "webui/media/media_feeds_ui.h",
     "webui/media/media_history_ui.cc",
     "webui/media/media_history_ui.h",
     "webui/media/webrtc_logs_ui.cc",
@@ -614,6 +612,12 @@ static_library("ui") {
     }
   } else {
     # !is_android
+
+    sources += [
+      "webui/media/media_feeds_ui.cc",
+      "webui/media/media_feeds_ui.h",
+    ]
+
     deps += [ "//components/autofill/content/browser/webauthn" ]
   }
 

@@ -348,7 +348,7 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
       url, *input, GetTemplateURLService(), base::string16());
   for (auto* browser : *BrowserList::GetInstance()) {
     // Only look at same profile (and anonymity level).
-    if (browser->profile()->IsSameProfileAndType(profile_)) {
+    if (profile_ == browser->profile()) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         content::WebContents* web_contents =
             browser->tab_strip_model()->GetWebContentsAt(i);

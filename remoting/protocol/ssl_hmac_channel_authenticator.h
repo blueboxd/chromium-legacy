@@ -64,7 +64,7 @@ class SslHmacChannelAuthenticator : public ChannelAuthenticator {
 
   // ChannelAuthenticator interface.
   void SecureAndAuthenticate(std::unique_ptr<P2PStreamSocket> socket,
-                             const DoneCallback& done_callback) override;
+                             DoneCallback done_callback) override;
 
  private:
   class P2PStreamSocketAdapter;

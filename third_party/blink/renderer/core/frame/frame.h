@@ -291,6 +291,11 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
                               FormSubmission* form_submission);
   void CancelFormSubmission();
 
+  // Asks the browser process to activate the page associated to the current
+  // Frame, reporting |originating_frame| as the local frame originating this
+  // request.
+  void FocusPage(LocalFrame* originating_frame);
+
   // Called when the focus controller changes the focus to this frame.
   virtual void DidFocus() = 0;
 

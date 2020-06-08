@@ -454,8 +454,7 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
 
   // WebRemoteFrameClient:
   void FrameDetached(DetachType) override;
-
-  AssociatedInterfaceProvider* GetAssociatedInterfaceProvider() {
+  AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
     return associated_interface_provider_.get();
   }
 

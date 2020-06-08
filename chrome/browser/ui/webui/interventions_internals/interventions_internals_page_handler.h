@@ -37,15 +37,15 @@ class InterventionsInternalsPageHandler
       GetPreviewsFlagsDetailsCallback callback) override;
   void SetClientPage(
       mojo::PendingRemote<mojom::InterventionsInternalsPage> page) override;
-  void SetIgnorePreviewsBlacklistDecision(bool ignore) override;
+  void SetIgnorePreviewsBlocklistDecision(bool ignore) override;
 
   // previews::PreviewsLoggerObserver:
   void OnNewMessageLogAdded(
       const previews::PreviewsLogger::MessageLog& message) override;
-  void OnNewBlacklistedHost(const std::string& host, base::Time time) override;
-  void OnUserBlacklistedStatusChange(bool blacklisted) override;
-  void OnBlacklistCleared(base::Time time) override;
-  void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) override;
+  void OnNewBlocklistedHost(const std::string& host, base::Time time) override;
+  void OnUserBlocklistedStatusChange(bool blocklisted) override;
+  void OnBlocklistCleared(base::Time time) override;
+  void OnIgnoreBlocklistDecisionStatusChanged(bool ignored) override;
   void OnLastObserverRemove() override;
 
  private:

@@ -305,7 +305,8 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
 
     case HeaderDisposition::SAMEORIGIN: {
       // Block the request when any ancestor is not same-origin.
-      RenderFrameHostImpl* parent = request->GetParentFrame();
+      RenderFrameHostImpl* parent = ParentForAncestorThrottle(
+          request->frame_tree_node()->current_frame_host());
       url::Origin current_origin =
           url::Origin::Create(navigation_handle()->GetURL());
       while (parent) {
@@ -327,7 +328,7 @@ AncestorThrottle::CheckResult AncestorThrottle::EvaluateXFrameOptions(
 
           return CheckResult::BLOCK;
         }
-        parent = parent->GetParent();
+        parent = ParentForAncestorThrottle(parent);
       }
       RecordXFrameOptionsUsage(XFrameOptionsHistogram::SAMEORIGIN);
       return CheckResult::PROCEED;

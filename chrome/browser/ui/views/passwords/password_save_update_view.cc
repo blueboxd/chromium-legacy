@@ -11,6 +11,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
@@ -33,6 +34,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/editable_combobox/editable_combobox.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -163,13 +165,6 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_SHOW_PASSWORD));
   button->SetToggledTooltipText(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_HIDE_PASSWORD));
-  button->SetImage(views::ImageButton::STATE_NORMAL,
-                   *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                       IDR_SHOW_PASSWORD_HOVER));
-  button->SetToggledImage(
-      views::ImageButton::STATE_NORMAL,
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_HIDE_PASSWORD_HOVER));
   button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   button->SetToggled(are_passwords_revealed);
@@ -421,6 +416,15 @@ void PasswordSaveUpdateView::OnThemeChanged() {
                ? IDR_SAVE_PASSWORD_DARK
                : IDR_SAVE_PASSWORD;
   GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
+
+  const SkColor icon_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
+  views::SetImageFromVectorIconWithColor(password_view_button_, kEyeIcon,
+                                         GetDefaultSizeOfVectorIcon(kEyeIcon),
+                                         icon_color);
+  views::SetToggledImageFromVectorIconWithColor(
+      password_view_button_, kEyeCrossedIcon,
+      GetDefaultSizeOfVectorIcon(kEyeCrossedIcon), icon_color);
 }
 
 void PasswordSaveUpdateView::TogglePasswordVisibility() {

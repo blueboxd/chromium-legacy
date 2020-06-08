@@ -7,8 +7,10 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   sources = [
     "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModel.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModelFilter.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabList.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModel.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelFilter.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelObserver.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelUtils.java",
   ]

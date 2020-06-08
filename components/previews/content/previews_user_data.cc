@@ -24,7 +24,7 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
       cache_control_no_transform_directive_(
           other.cache_control_no_transform_directive_),
       offline_preview_used_(other.offline_preview_used_),
-      black_listed_for_lite_page_(other.black_listed_for_lite_page_),
+      block_listed_for_lite_page_(other.block_listed_for_lite_page_),
       committed_previews_type_without_holdback_(
           other.committed_previews_type_without_holdback_),
       allowed_previews_state_without_holdback_(

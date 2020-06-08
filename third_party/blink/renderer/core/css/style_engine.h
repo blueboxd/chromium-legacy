@@ -382,7 +382,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
     return preferred_color_scheme_;
   }
   ForcedColors GetForcedColors() const { return forced_colors_; }
-  void UpdateColorSchemeBackground();
+  void UpdateColorSchemeBackground(bool color_scheme_changed = false);
+  Color ForcedBackgroundColor() const { return forced_background_color_; }
+  Color ColorAdjustBackgroundColor() const;
 
   void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "StyleEngine"; }
@@ -492,6 +494,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void UpdateColorScheme();
   bool SupportsDarkColorScheme();
+  void UpdateForcedBackgroundColor();
 
   void ViewportDefiningElementDidChange();
   void PropagateWritingModeAndDirectionToHTMLRoot();
@@ -606,9 +609,11 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // kNoPreference to avoid dark styling to be applied before auto darkening.
   PreferredColorScheme preferred_color_scheme_ =
       PreferredColorScheme::kNoPreference;
+  bool use_dark_background_ = false;
 
   // Forced colors is set in WebThemeEngine.
   ForcedColors forced_colors_ = ForcedColors::kNone;
+  Color forced_background_color_;
 
   friend class NodeTest;
   friend class StyleEngineTest;

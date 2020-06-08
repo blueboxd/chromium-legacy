@@ -36,11 +36,11 @@ class PreviewsUIService
  public:
   PreviewsUIService(
       std::unique_ptr<PreviewsDeciderImpl> previews_decider_impl,
-      std::unique_ptr<blacklist::OptOutStore> previews_opt_out_store,
+      std::unique_ptr<blocklist::OptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
       std::unique_ptr<PreviewsLogger> logger,
-      blacklist::BlacklistData::AllowedTypesAndVersions allowed_previews,
+      blocklist::BlocklistData::AllowedTypesAndVersions allowed_previews,
       network::NetworkQualityTracker* network_quality_tracker);
   ~PreviewsUIService() override;
 
@@ -48,39 +48,39 @@ class PreviewsUIService
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
 
-  // Adds a navigation to |url| to the black list with result |opt_out|.
+  // Adds a navigation to |url| to the block list with result |opt_out|.
   void AddPreviewNavigation(const GURL& url,
                             PreviewsType type,
                             bool opt_out,
                             uint64_t page_id);
 
-  // Clears the history of the black list between |begin_time| and |end_time|.
-  void ClearBlackList(base::Time begin_time, base::Time end_time);
+  // Clears the history of the block list between |begin_time| and |end_time|.
+  void ClearBlockList(base::Time begin_time, base::Time end_time);
 
-  // Notifies |logger_| that |host| has been blacklisted at |time|. Virtualized
+  // Notifies |logger_| that |host| has been blocklisted at |time|. Virtualized
   // in testing.
-  virtual void OnNewBlacklistedHost(const std::string& host, base::Time time);
+  virtual void OnNewBlocklistedHost(const std::string& host, base::Time time);
 
-  // Notifies |logger_| that the user blacklisted state has changed. Where
-  // |blacklisted| is the new user blacklisted status. Virtualized in testing.
-  virtual void OnUserBlacklistedStatusChange(bool blacklisted);
+  // Notifies |logger_| that the user blocklisted state has changed. Where
+  // |blocklisted| is the new user blocklisted status. Virtualized in testing.
+  virtual void OnUserBlocklistedStatusChange(bool blocklisted);
 
-  // Notifies |logger_| that the blacklist is cleared at |time|. Virtualized in
+  // Notifies |logger_| that the blocklist is cleared at |time|. Virtualized in
   // testing.
-  virtual void OnBlacklistCleared(base::Time time);
+  virtual void OnBlocklistCleared(base::Time time);
 
-  // Change the status of whether to ignored or consider PreviewsBlackList
+  // Change the status of whether to ignored or consider PreviewsBlockList
   // decisions in |previews_decider_impl_|. This method is called when users
-  // interact with the UI (i.e. click on the "Ignore Blacklist" button).
+  // interact with the UI (i.e. click on the "Ignore Blocklist" button).
   // Virtualized in testing.
-  virtual void SetIgnorePreviewsBlacklistDecision(bool ignored);
+  virtual void SetIgnorePreviewsBlocklistDecision(bool ignored);
 
-  // Notifies |logger_| whether PreviewsBlackList decisions are ignored or not.
+  // Notifies |logger_| whether PreviewsBlockList decisions are ignored or not.
   // This method is listening for notification from PreviewsDeciderImpl for when
-  // the blacklist ignore status is changed so that |logger_| can update all
+  // the blocklist ignore status is changed so that |logger_| can update all
   // PreviewsLoggerObservers so that multiple instances of the page have the
   // same status. Virtualized in testing.
-  virtual void OnIgnoreBlacklistDecisionStatusChanged(bool ignored);
+  virtual void OnIgnoreBlocklistDecisionStatusChanged(bool ignored);
 
   // Log the navigation to PreviewsLogger. Virtualized in testing.
   virtual void LogPreviewNavigation(const GURL& url,
@@ -120,9 +120,9 @@ class PreviewsUIService
   // non-null.
   PreviewsDeciderImpl* previews_decider_impl() const;
 
-  // When triggering previews, prevent long term black list rules.
-  void SetIgnoreLongTermBlackListForServerPreviews(
-      bool ignore_long_term_black_list_rules_allowed);
+  // When triggering previews, prevent long term block list rules.
+  void SetIgnoreLongTermBlockListForServerPreviews(
+      bool ignore_long_term_block_list_rules_allowed);
 
  private:
   // The decision making object for Previews triggering. Guaranteed to be
@@ -130,7 +130,7 @@ class PreviewsUIService
   std::unique_ptr<previews::PreviewsDeciderImpl> previews_decider_impl_;
 
   // A log object to keep track of events such as previews navigations,
-  // blacklist actions, etc.
+  // blocklist actions, etc.
   std::unique_ptr<PreviewsLogger> logger_;
 
   // Used to remove |this| from observing.

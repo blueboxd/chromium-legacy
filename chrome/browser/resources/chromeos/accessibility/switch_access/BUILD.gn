@@ -65,6 +65,7 @@ run_jsbundler("switch_access_copied_files") {
     "metrics.js",
     "navigation_manager.js",
     "nodes/back_button_node.js",
+    "nodes/combo_box_node.js",
     "nodes/desktop_node.js",
     "nodes/editable_text_node.js",
     "nodes/group_node.js",
@@ -134,6 +135,7 @@ js_type_check("closure_compile") {
     ":auto_scan_manager",
     ":back_button_node",
     ":background",
+    ":combo_box_node",
     ":commands",
     ":desktop_node",
     ":editable_text_node",
@@ -157,6 +159,7 @@ js_type_check("closure_compile") {
     ":system_menu_node",
     ":tab_node",
     ":text_navigation_manager",
+    "../common:automation_predicate",
     "../common:closure_shim",
     "../common:constants",
     "../common:tree_walker",
@@ -183,6 +186,16 @@ js_library("back_button_node") {
     "$externs_path/accessibility_private.js",
     "$externs_path/automation.js",
   ]
+}
+
+js_library("combo_box_node") {
+  sources = [ "nodes/combo_box_node.js" ]
+  deps = [
+    ":event_helper",
+    ":node_wrapper",
+    ":switch_access_constants",
+  ]
+  externs_list = []
 }
 
 js_library("commands") {
@@ -327,6 +340,7 @@ js_library("node_wrapper") {
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
+    "../common:automation_predicate",
     "../common:constants",
     "../common:tree_walker",
   ]
@@ -381,6 +395,7 @@ js_library("switch_access_predicate") {
   deps = [
     ":switch_access_constants",
     ":switch_access_node",
+    "../common:automation_predicate",
   ]
   externs_list = [ "$externs_path/automation.js" ]
 }

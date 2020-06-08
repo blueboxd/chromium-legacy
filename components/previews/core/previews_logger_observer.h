@@ -19,19 +19,19 @@ class PreviewsLoggerObserver {
   virtual void OnNewMessageLogAdded(
       const PreviewsLogger::MessageLog& message) = 0;
 
-  // Notifies this observer that |host| is blacklisted at |time|.
-  virtual void OnNewBlacklistedHost(const std::string& host,
+  // Notifies this observer that |host| is blocklisted at |time|.
+  virtual void OnNewBlocklistedHost(const std::string& host,
                                     base::Time time) = 0;
 
-  // Notifies this observer that the user blacklisted state has changed to
-  // |blacklisted|.
-  virtual void OnUserBlacklistedStatusChange(bool blacklisted) = 0;
+  // Notifies this observer that the user blocklisted state has changed to
+  // |blocklisted|.
+  virtual void OnUserBlocklistedStatusChange(bool blocklisted) = 0;
 
-  // Notifies this observer that the blacklist is cleared at |time|.
-  virtual void OnBlacklistCleared(base::Time time) = 0;
+  // Notifies this observer that the blocklist is cleared at |time|.
+  virtual void OnBlocklistCleared(base::Time time) = 0;
 
-  // Notify this observer that PreviewsBlackList decisions is ignored or not.
-  virtual void OnIgnoreBlacklistDecisionStatusChanged(bool ignored) = 0;
+  // Notify this observer that PreviewsBlockList decisions is ignored or not.
+  virtual void OnIgnoreBlocklistDecisionStatusChanged(bool ignored) = 0;
 
   // Notify this observer that |this| is the last observer to be removed from
   // the Logger's observers list.

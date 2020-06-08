@@ -282,6 +282,12 @@ void WidgetDelegate::SetCenterTitle(bool center_title) {
 }
 #endif
 
+void WidgetDelegate::SetHasWindowSizeControls(bool has_controls) {
+  SetCanMaximize(has_controls);
+  SetCanMinimize(has_controls);
+  SetCanResize(has_controls);
+}
+
 void WidgetDelegate::RegisterWindowWillCloseCallback(
     base::OnceClosure callback) {
   window_will_close_callbacks_.emplace_back(std::move(callback));

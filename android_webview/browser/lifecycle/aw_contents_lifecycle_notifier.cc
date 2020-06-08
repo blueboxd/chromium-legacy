@@ -16,18 +16,20 @@ namespace android_webview {
 
 namespace {
 
-AwContentsLifecycleNotifier::AwContentsState CalcuateState(
-    bool is_atached_to_window,
+AwContentsLifecycleNotifier::AwContentsState CalculateState(
+    bool is_attached_to_window,
     bool is_window_visible) {
   // Can't assume the sequence of Attached, Detached, Visible, Invisible event
   // because the app could changed it; Calculate the state here.
-  if (is_atached_to_window) {
+  if (is_attached_to_window) {
     return is_window_visible
                ? AwContentsLifecycleNotifier::AwContentsState::kForeground
                : AwContentsLifecycleNotifier::AwContentsState::kBackground;
   }
   return AwContentsLifecycleNotifier::AwContentsState::kDetached;
 }
+
+AwContentsLifecycleNotifier* g_instance = nullptr;
 
 }  // namespace
 
@@ -40,8 +42,23 @@ AwContentsLifecycleNotifier::AwContentsData::~AwContentsData() = default;
 
 // static
 AwContentsLifecycleNotifier& AwContentsLifecycleNotifier::GetInstance() {
-  static base::NoDestructor<AwContentsLifecycleNotifier> instance;
-  return *instance;
+  DCHECK(g_instance);
+  g_instance->EnsureOnValidSequence();
+  return *g_instance;
+}
+
+AwContentsLifecycleNotifier::AwContentsLifecycleNotifier(
+    OnLoseForegroundCallback on_lose_foreground_callback)
+    : on_lose_foreground_callback_(std::move(on_lose_foreground_callback)) {
+  EnsureOnValidSequence();
+  DCHECK(!g_instance);
+  g_instance = this;
+}
+
+AwContentsLifecycleNotifier::~AwContentsLifecycleNotifier() {
+  EnsureOnValidSequence();
+  DCHECK(g_instance);
+  g_instance = nullptr;
 }
 
 void AwContentsLifecycleNotifier::OnWebViewCreated(
@@ -133,10 +150,6 @@ std::vector<const AwContents*> AwContentsLifecycleNotifier::GetAllAwContents()
   return result;
 }
 
-AwContentsLifecycleNotifier::AwContentsLifecycleNotifier() = default;
-
-AwContentsLifecycleNotifier::~AwContentsLifecycleNotifier() = default;
-
 size_t AwContentsLifecycleNotifier::ToIndex(AwContentsState state) const {
   size_t index = static_cast<size_t>(state);
   DCHECK(index < base::size(state_count_));
@@ -146,7 +159,7 @@ size_t AwContentsLifecycleNotifier::ToIndex(AwContentsState state) const {
 void AwContentsLifecycleNotifier::OnAwContentsStateChanged(
     AwContentsLifecycleNotifier::AwContentsData* data) {
   AwContentsLifecycleNotifier::AwContentsState state =
-      CalcuateState(data->attached_to_window, data->window_visible);
+      CalculateState(data->attached_to_window, data->window_visible);
   if (data->aw_content_state == state)
     return;
   state_count_[ToIndex(data->aw_content_state)]--;
@@ -167,9 +180,15 @@ void AwContentsLifecycleNotifier::UpdateAppState() {
   else
     state = WebViewAppStateObserver::State::kDestroyed;
   if (state != app_state_) {
+    bool previous_in_foreground =
+        app_state_ == WebViewAppStateObserver::State::kForeground;
+
     app_state_ = state;
     for (auto& observer : observers_) {
       observer.OnAppStateChanged(app_state_);
+    }
+    if (previous_in_foreground && on_lose_foreground_callback_) {
+      on_lose_foreground_callback_.Run();
     }
   }
 }

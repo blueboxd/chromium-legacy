@@ -6232,7 +6232,11 @@ class AltSvcFrameTest : public SpdySessionTest {
                              "alternative.example.org",
                              443,
                              86400,
-                             spdy::SpdyAltSvcWireFormat::VersionVector()) {}
+                             spdy::SpdyAltSvcWireFormat::VersionVector()) {
+    // Since the default |alternative_service_| is QUIC, need to enable QUIC for
+    // the not added tests to be meaningful.
+    session_deps_.enable_quic = true;
+  }
 
   void AddSocketData(const spdy::SpdyAltSvcIR& altsvc_ir) {
     altsvc_frame_ = spdy_util_.SerializeFrame(altsvc_ir);
@@ -6258,8 +6262,6 @@ class AltSvcFrameTest : public SpdySessionTest {
 };
 
 TEST_F(AltSvcFrameTest, ProcessAltSvcFrame) {
-  session_deps_.enable_quic = true;
-
   const char origin[] = "https://mail.example.org";
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
   altsvc_ir.add_altsvc(alternative_service_);
@@ -6391,8 +6393,6 @@ TEST_F(AltSvcFrameTest,
 }
 
 TEST_F(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
-  session_deps_.enable_quic = true;
-
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);
 
@@ -6450,8 +6450,6 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
 
 TEST_F(AltSvcFrameTest,
        ProcessAltSvcFrameOnActiveStreamWithNetworkIsolationKey) {
-  session_deps_.enable_quic = true;
-
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       // enabled_features

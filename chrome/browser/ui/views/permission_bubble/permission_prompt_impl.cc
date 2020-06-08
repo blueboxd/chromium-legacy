@@ -52,7 +52,8 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
   } else {
     LocationBarView* lbv = GetLocationBarView();
     if (base::FeatureList::IsEnabled(features::kPermissionChip) && lbv) {
-      lbv->permission_chip()->Show(delegate);
+      permission_chip_ = lbv->permission_chip();
+      permission_chip_->Show(delegate);
       prompt_style_ = PromptStyle::kChip;
     } else {
       prompt_bubble_ = new PermissionPromptBubbleView(browser, delegate,
@@ -72,10 +73,8 @@ PermissionPromptImpl::~PermissionPromptImpl() {
     content_settings::UpdateLocationBarUiForWebContents(web_contents_);
   }
 
-  if (prompt_style_ == PromptStyle::kChip) {
-    LocationBarView* lbv = GetLocationBarView();
-    DCHECK(lbv);
-    lbv->permission_chip()->Hide();
+  if (prompt_style_ == PromptStyle::kChip && permission_chip_) {
+    permission_chip_->Hide();
   }
 }
 

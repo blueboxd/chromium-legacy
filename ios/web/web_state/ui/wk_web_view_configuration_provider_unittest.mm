@@ -252,5 +252,13 @@ TEST_F(WKWebViewConfigurationProviderTest, ResetConfiguration) {
   EXPECT_NE(config, actual);
 }
 
+TEST_F(WKWebViewConfigurationProviderTest, GetContentRuleListProvider) {
+  std::unique_ptr<TestBrowserState> browser_state =
+      std::make_unique<TestBrowserState>();
+  WKWebViewConfigurationProvider& provider = GetProvider(browser_state.get());
+
+  EXPECT_NE(nil, provider.GetContentRuleListProvider());
+}
+
 }  // namespace
 }  // namespace web

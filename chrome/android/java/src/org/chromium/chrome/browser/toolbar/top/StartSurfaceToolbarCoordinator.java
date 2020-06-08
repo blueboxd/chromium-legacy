@@ -223,6 +223,7 @@ public class StartSurfaceToolbarCoordinator {
         // It is possible that the {@link mIncognitoSwitchCoordinator} isn't created because
         // inflate() is called when the native library isn't ready. So create it now.
         if (isInflated()) {
+            assert mTabModelSelector != null;
             maybeCreateIncognitoSwitchCoordinator();
         }
         mToolbarMediator.onNativeLibraryReady();
@@ -259,7 +260,9 @@ public class StartSurfaceToolbarCoordinator {
     }
 
     private void maybeCreateIncognitoSwitchCoordinator() {
-        if (mIncognitoSwitchCoordinator != null) return;
+        if (mIncognitoSwitchCoordinator != null || mTabModelSelector == null) {
+            return;
+        }
 
         if (IncognitoUtils.isIncognitoModeEnabled()
                 && !StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue()) {

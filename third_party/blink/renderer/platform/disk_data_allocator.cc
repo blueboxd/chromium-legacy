@@ -182,8 +182,8 @@ int DiskDataAllocator::DoWrite(int64_t offset, const char* data, int size) {
 void DiskDataAllocator::DoRead(int64_t offset, char* data, int size) {
   // This happens on the main thread, which is typically not allowed. This is
   // fine as this is expected to happen rarely, and only be slow with memory
-  // pressure, in which case writing to disk is better than swapping out random
-  // parts of the memory. See the linked bug for details.
+  // pressure, in which case writing to/reading from disk is better than
+  // swapping out random parts of the memory. See crbug.com/1029320 for details.
   base::ScopedAllowBlocking allow_blocking;
   int rv = file_.Read(offset, data, size);
   // Can only crash, since we cannot continue without the data.

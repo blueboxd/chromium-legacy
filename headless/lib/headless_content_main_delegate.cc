@@ -36,6 +36,7 @@
 #include "headless/lib/utility/headless_content_utility_client.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -228,7 +229,7 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
 
   // When running headless there is no need to suppress input until content
   // is ready for display (because it isn't displayed to users).
-  command_line->AppendSwitch(::switches::kAllowPreCommitInput);
+  command_line->AppendSwitch(::blink::switches::kAllowPreCommitInput);
 
 #if defined(OS_WIN)
   command_line->AppendSwitch(

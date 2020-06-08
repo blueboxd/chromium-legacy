@@ -90,6 +90,7 @@ FONT_FILES = [
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansCJKjp-Regular.otf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansKhmer-Regular.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'NotoSansSymbols2-Regular.ttf', None],
+    [[CONTENT_SHELL_FONTS_DIR], 'NotoSansTibetan-Regular.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Tinos-Bold.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Tinos-BoldItalic.ttf', None],
     [[CONTENT_SHELL_FONTS_DIR], 'Tinos-Italic.ttf', None],
@@ -966,6 +967,16 @@ class Port(object):
         return self.wpt_manifest(wpt_path).is_crash_test(path_in_wpt)
 
     def is_slow_wpt_test(self, test_file):
+        # When DCHECK is enabled, idlharness tests run 5-6x slower due to the
+        # amount of JavaScript they use (most web_tests run very little JS).
+        # This causes flaky timeouts for a lot of them, as a 0.5-1s test becomes
+        # close to the default 6s timeout.
+        #
+        # Since we can't detect DCHECK being enabled, we instead always consider
+        # idlharness tests to be slow. See https://crbug.com/1047818
+        if self.is_wpt_idlharness_test(test_file):
+            return True
+
         match = self.WPT_REGEX.match(test_file)
         if not match:
             return False

@@ -62,6 +62,7 @@
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
@@ -77,7 +78,6 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
@@ -360,8 +360,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Controller for edge swipe gestures for page and tab navigation.
   SideSwipeController* _sideSwipeController;
 
-  // Handles displaying the context menu for all form factors.
-  ContextMenuCoordinator* _contextMenuCoordinator;
+  // Handles displaying the action sheet for all form factors.
+  ActionSheetCoordinator* _contextMenuCoordinator;
 
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<web::JavaScriptDialogPresenter> _javaScriptDialogPresenter;
@@ -2936,12 +2936,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   DCHECK(self.browserState);
 
-  _contextMenuCoordinator = [[ContextMenuCoordinator alloc]
+  _contextMenuCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
                          browser:self.browser
                            title:params.menu_title
-                          inView:params.view
-                      atLocation:params.location];
+                         message:nil
+                            rect:CGRectMake(params.location.x,
+                                            params.location.y, 1.0, 1.0)
+                            view:params.view];
 
   NSString* title = nil;
   ProceduralBlock action = nil;
@@ -2966,7 +2968,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         Record(ACTION_OPEN_JAVASCRIPT, isImage, isLink);
         [weakSelf openJavascript:base::SysUTF8ToNSString(link.GetContent())];
       };
-      [_contextMenuCoordinator addItemWithTitle:title action:action];
+      [_contextMenuCoordinator addItemWithTitle:title
+                                         action:action
+                                          style:UIAlertActionStyleDefault];
     }
 
     if (web::UrlHasWebScheme(link)) {
@@ -2994,7 +2998,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         params.origin_point = originPoint;
         UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
       };
-      [_contextMenuCoordinator addItemWithTitle:title action:action];
+      [_contextMenuCoordinator addItemWithTitle:title
+                                         action:action
+                                          style:UIAlertActionStyleDefault];
 
       if (IsMultiwindowSupported()) {
         // Open in New Window.
@@ -3016,7 +3022,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                 strongSelf.isOffTheRecord);
           [strongSelf.dispatcher openNewWindowWithActivity:loadURLActivity];
         };
-        [_contextMenuCoordinator addItemWithTitle:title action:action];
+        [_contextMenuCoordinator addItemWithTitle:title
+                                           action:action
+                                            style:UIAlertActionStyleDefault];
       }
       if (!_isOffTheRecord) {
         // Open in Incognito Tab.
@@ -3037,7 +3045,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           params.append_to = kCurrentTab;
           UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
         };
-        [_contextMenuCoordinator addItemWithTitle:title action:action];
+        [_contextMenuCoordinator addItemWithTitle:title
+                                           action:action
+                                            style:UIAlertActionStyleDefault];
       }
     }
     if (link.SchemeIsHTTPOrHTTPS()) {
@@ -3052,7 +3062,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           Record(ACTION_READ_LATER, isImage, isLink);
           [weakSelf addToReadingListURL:link title:innerText];
         };
-        [_contextMenuCoordinator addItemWithTitle:title action:action];
+        [_contextMenuCoordinator addItemWithTitle:title
+                                           action:action
+                                            style:UIAlertActionStyleDefault];
       }
     }
     // Copy Link.
@@ -3063,7 +3075,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       Record(ACTION_COPY_LINK_ADDRESS, isImage, isLink);
       StoreURLInPasteboard(link);
     };
-    [_contextMenuCoordinator addItemWithTitle:title action:action];
+    [_contextMenuCoordinator addItemWithTitle:title
+                                       action:action
+                                        style:UIAlertActionStyleDefault];
   }
   if (isImage) {
     base::RecordAction(
@@ -3079,7 +3093,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                  referrer:referrer
                                  webState:weakSelf.currentWebState];
     };
-    [_contextMenuCoordinator addItemWithTitle:title action:action];
+    [_contextMenuCoordinator addItemWithTitle:title
+                                       action:action
+                                        style:UIAlertActionStyleDefault];
     // Copy Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPYIMAGE);
     action = ^{
@@ -3091,7 +3107,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                   referrer:referrer
                                   webState:weakSelf.currentWebState];
     };
-    [_contextMenuCoordinator addItemWithTitle:title action:action];
+    [_contextMenuCoordinator addItemWithTitle:title
+                                       action:action
+                                        style:UIAlertActionStyleDefault];
     // Open Image.
     title = l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENIMAGE);
     action = ^{
@@ -3105,7 +3123,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       UrlLoadingBrowserAgent::FromBrowser(self.browser)
           ->Load(UrlLoadParams::InCurrentTab(imageUrl));
     };
-    [_contextMenuCoordinator addItemWithTitle:title action:action];
+    [_contextMenuCoordinator addItemWithTitle:title
+                                       action:action
+                                        style:UIAlertActionStyleDefault];
     // Open Image In New Tab.
     title = l10n_util::GetNSStringWithFixup(
         IDS_IOS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
@@ -3125,7 +3145,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       params.origin_point = originPoint;
       UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
     };
-    [_contextMenuCoordinator addItemWithTitle:title action:action];
+    [_contextMenuCoordinator addItemWithTitle:title
+                                       action:action
+                                        style:UIAlertActionStyleDefault];
 
     TemplateURLService* service =
         ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
@@ -3144,7 +3166,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           [weakSelf searchByImageData:data atURL:imageUrl];
         });
       };
-      [_contextMenuCoordinator addItemWithTitle:title action:action];
+      [_contextMenuCoordinator addItemWithTitle:title
+                                         action:action
+                                          style:UIAlertActionStyleDefault];
     }
   }
 
@@ -3414,14 +3438,17 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                    didTriggerAction:(OverscrollAction)action {
   switch (action) {
     case OverscrollAction::NEW_TAB:
+      base::RecordAction(base::UserMetricsAction("MobilePullGestureNewTab"));
       [self.dispatcher
           openURLInNewTab:[OpenNewTabCommand
                               commandWithIncognito:self.isOffTheRecord]];
       break;
     case OverscrollAction::CLOSE_TAB:
+      base::RecordAction(base::UserMetricsAction("MobilePullGestureCloseTab"));
       [self.dispatcher closeCurrentTab];
       break;
     case OverscrollAction::REFRESH:
+      base::RecordAction(base::UserMetricsAction("MobilePullGestureReload"));
       // Instruct the SnapshotTabHelper to ignore the next load event.
       // Attempting to snapshot while the overscroll "bounce back" animation is
       // occurring will cut the animation short.

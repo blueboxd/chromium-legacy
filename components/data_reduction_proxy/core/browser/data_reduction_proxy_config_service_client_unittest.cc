@@ -137,9 +137,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kPersistedSessionKey, kConfigRefreshDurationSeconds, 0);
     loaded_config_ = EncodeConfig(persisted);
 
-    ClientConfig ignore_black_list_config = CreateClientConfig(
+    ClientConfig ignore_block_list_config = CreateClientConfig(
         kSuccessSessionKey, kConfigRefreshDurationSeconds, 0);
-    ignore_black_list_encoded_config_ = EncodeConfig(ignore_black_list_config);
+    ignore_block_list_encoded_config_ = EncodeConfig(ignore_block_list_config);
 
     ClientConfig no_proxies_config;
     no_proxies_config.set_session_key(kSuccessSessionKey);
@@ -179,11 +179,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->mock_request_options();
   }
 
-  bool ignore_blacklist() const {
-    return test_context_->test_data_reduction_proxy_service()
-        ->ignore_blacklist();
-  }
-
   void RunUntilIdle() { test_context_->RunUntilIdle(); }
 
   void AddMockSuccess() {
@@ -217,8 +212,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   const std::string& previous_success_response() const {
     return previous_config_;
   }
-  const std::string& ignore_black_list_encoded_config() const {
-    return ignore_black_list_encoded_config_;
+  const std::string& ignore_block_list_encoded_config() const {
+    return ignore_block_list_encoded_config_;
   }
   const std::string& no_proxies_config() const { return no_proxies_config_; }
 
@@ -249,8 +244,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   // An encoded config that represents a previously saved configuration.
   std::string loaded_config_;
 
-  // A configuration where the black list rules are ignored.
-  std::string ignore_black_list_encoded_config_;
+  // A configuration where the block list rules are ignored.
+  std::string ignore_block_list_encoded_config_;
 
   // A configuration where no proxies are configured.
   std::string no_proxies_config_;

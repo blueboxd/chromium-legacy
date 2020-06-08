@@ -3634,6 +3634,67 @@ TEST_F(AutofillMetricsTest, LogStoredCreditCardMetrics) {
       "Autofill.DaysSinceLastUse.StoredCreditCard.Server.Unmasked", 200, 3);
 }
 
+TEST_F(AutofillMetricsTest, LogStoredCreditCardWithNicknameMetrics) {
+  std::vector<std::unique_ptr<CreditCard>> local_cards;
+  std::vector<std::unique_ptr<CreditCard>> server_cards;
+  local_cards.reserve(2);
+  server_cards.reserve(4);
+
+  // Create cards with and without nickname of each record type: 1 of each for
+  // local, 2 of each for masked.
+  const std::vector<CreditCard::RecordType> record_types{
+      CreditCard::LOCAL_CARD, CreditCard::MASKED_SERVER_CARD};
+  int num_cards_of_type = 0;
+  for (auto record_type : record_types) {
+    num_cards_of_type += 1;
+    for (int i = 0; i < num_cards_of_type; ++i) {
+      // Create a card with a nickname.
+      CreditCard card_with_nickname = test::GetRandomCreditCard(record_type);
+      card_with_nickname.SetNickname(ASCIIToUTF16("Valid nickname"));
+
+      // Create a card that doesn't have a nickname.
+      CreditCard card_without_nickname = test::GetRandomCreditCard(record_type);
+      // Set nickname to empty.
+      card_without_nickname.SetNickname(ASCIIToUTF16(""));
+
+      // Add the cards to the personal data manager in the appropriate way.
+      auto& repo =
+          (record_type == CreditCard::LOCAL_CARD) ? local_cards : server_cards;
+      repo.push_back(
+          std::make_unique<CreditCard>(std::move(card_with_nickname)));
+      repo.push_back(
+          std::make_unique<CreditCard>(std::move(card_without_nickname)));
+    }
+  }
+
+  // Log the stored credit card metrics for the cards configured above.
+  base::HistogramTester histogram_tester;
+  AutofillMetrics::LogStoredCreditCardMetrics(local_cards, server_cards,
+                                              base::TimeDelta::FromDays(180));
+
+  // Validate the count metrics.
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount", 1);
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount.Local", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardCount.Local.WithNickname", 1);
+  histogram_tester.ExpectTotalCount("Autofill.StoredCreditCardCount.Server", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardCount.Server.Masked", 1);
+  histogram_tester.ExpectTotalCount(
+      "Autofill.StoredCreditCardCount.Server.Masked.WithNickname", 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount", 6, 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Local", 2,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Local.WithNickname", 1, 1);
+  histogram_tester.ExpectBucketCount("Autofill.StoredCreditCardCount.Server", 4,
+                                     1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Server.Masked", 4, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.StoredCreditCardCount.Server.Masked.WithNickname", 2, 1);
+}
+
 // Test that we correctly log when Profile Autofill is enabled at startup.
 TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;

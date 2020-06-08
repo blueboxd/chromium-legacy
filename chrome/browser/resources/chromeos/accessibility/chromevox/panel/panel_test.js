@@ -96,6 +96,13 @@ ChromeVoxPanelTest = class extends ChromeVoxNextE2ETest {
     assertEquals(menuItemTitle, menuItem.menuItemTitle);
   }
 
+  assertActiveSearchMenuItem(menuItemTitle) {
+    const searchMenu = this.getPanel().searchMenu;
+    const activeIndex = searchMenu.activeIndex_;
+    const activeItem = searchMenu.items_[activeIndex];
+    assertEquals(menuItemTitle, activeItem.menuItemTitle);
+  }
+
   get linksDoc() {
     return `
       <p>start</p>
@@ -145,26 +152,18 @@ TEST_F('ChromeVoxPanelTest', 'FormControlsMenu', function() {
 
 TEST_F('ChromeVoxPanelTest', 'SearchMenu', function() {
   const mockFeedback = this.createMockFeedback();
-  this.runWithLoadedTree(this.linksDoc, function(root) {
-    const openMenus = new PanelCommand(PanelCommandType.OPEN_MENUS);
-    mockFeedback.call(openMenus.send.bind(openMenus))
-        .expectSpeech(
-            'Search the menus', 'Search',
-            'Type to search the menus. Use the up and down arrows to cycle' +
-                ' through results. Use the left and right arrows to adjust' +
-                ' the text caret, and to move between menus.');
-    // Enter query into search box. ChromeVox should announce the first result.
-    mockFeedback.call(this.fireMockQuery('announce'))
-        .expectSpeech(/announce/i, 'Menu item', /1 of [0-9]+/);
-    // Using ArrowUp and ArrowDown should navigate through results.
-    mockFeedback.call(this.fireMockEvent('ArrowDown'))
-        .expectSpeech(/announce/i, 'Menu item', /2 of [0-9]+/);
-    mockFeedback.call(this.fireMockEvent('ArrowDown'))
-        .expectSpeech(/announce/i, 'Menu item', /3 of [0-9]+/);
-    mockFeedback.call(this.fireMockEvent('ArrowUp'))
-        .expectSpeech(/announce/i, 'Menu item', /2 of [0-9]+/);
-    mockFeedback.replay();
-  });
+  this.runWithLoadedTree(this.linksDoc, async function(root) {
+    new PanelCommand(PanelCommandType.OPEN_MENUS).send();
+    await this.waitForMenu('panel_search_menu');
+    this.fireMockQuery('jump')();
+    this.assertActiveSearchMenuItem('Jump To Details');
+    this.fireMockEvent('ArrowDown')();
+    this.assertActiveSearchMenuItem('Jump To The Bottom Of The Page');
+    this.fireMockEvent('ArrowDown')();
+    this.assertActiveSearchMenuItem('Jump To The Top Of The Page');
+    this.fireMockEvent('ArrowDown')();
+    this.assertActiveSearchMenuItem('Jump To Details');
+  }, {isAsync: true});
 });
 
 // TODO(crbug.com/1088438): flaky crashes.

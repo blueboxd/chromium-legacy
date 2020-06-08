@@ -179,6 +179,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // blink::WebRemoteFrameClient implementation:
   void FrameDetached(DetachType type) override;
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override;
 
   void Navigate(
       const blink::WebURLRequest& request,
@@ -220,7 +221,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void ResendVisualProperties();
 
   mojom::RenderFrameProxyHost* GetFrameProxyHost();
-  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces();
 
   // IPC handlers
   void OnDeleteProxy();

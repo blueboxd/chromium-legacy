@@ -90,7 +90,8 @@ public class PaymentHandlerCoordinator {
         PaymentHandlerMediator mediator = new PaymentHandlerMediator(model, this::hide,
                 mWebContents, uiObserver, activity.getActivityTab().getView(),
                 mToolbarCoordinator.getToolbarHeightPx(),
-                calculateBottomSheetToolbarContainerTopPadding(activity));
+                calculateBottomSheetToolbarContainerTopPadding(activity),
+                activity.getLifecycleDispatcher());
         activity.getWindow().getDecorView().addOnLayoutChangeListener(mediator);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);

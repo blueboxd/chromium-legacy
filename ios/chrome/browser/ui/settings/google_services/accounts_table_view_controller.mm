@@ -490,9 +490,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
                   }
                    style:UIAlertActionStyleDestructive];
 
-    [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                                 action:nil
-                                  style:UIAlertActionStyleCancel];
     [_alertCoordinator start];
   } else {
     _dimissAccountDetailsViewControllerBlock =

@@ -200,11 +200,13 @@ IntRect ChromeClientImpl::RootWindowRect(LocalFrame& frame) {
   return IntRect(client->WindowRect());
 }
 
-void ChromeClientImpl::Focus(LocalFrame* calling_frame) {
-  if (web_view_->Client()) {
-    web_view_->Client()->DidFocus(
-        calling_frame ? WebLocalFrameImpl::FromFrame(calling_frame) : nullptr);
-  }
+void ChromeClientImpl::FocusPage() {
+  web_view_->Focus();
+}
+
+void ChromeClientImpl::DidFocusPage() {
+  if (web_view_->Client())
+    web_view_->Client()->DidFocus();
 }
 
 bool ChromeClientImpl::CanTakeFocus(mojom::blink::FocusType) {

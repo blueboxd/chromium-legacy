@@ -31,9 +31,9 @@ WaylandSurface::WaylandSurface(PlatformWindowDelegate* delegate,
 }
 
 WaylandSurface::~WaylandSurface() {
-  if (drag_closed_callback_) {
-    std::move(drag_closed_callback_)
-        .Run(DragDropTypes::DragOperation::DRAG_NONE);
+  if (drag_handler_delegate_) {
+    drag_handler_delegate_->OnDragFinished(
+        DragDropTypes::DragOperation::DRAG_NONE);
   }
 }
 
@@ -80,9 +80,9 @@ void WaylandSurface::DispatchHostWindowDragMovement(
 void WaylandSurface::StartDrag(const ui::OSExchangeData& data,
                                int operation,
                                gfx::NativeCursor cursor,
-                               base::OnceCallback<void(int)> callback) {
-  DCHECK(!drag_closed_callback_);
-  drag_closed_callback_ = std::move(callback);
+                               WmDragHandler::Delegate* delegate) {
+  DCHECK(!drag_handler_delegate_);
+  drag_handler_delegate_ = delegate;
   connection()->data_drag_controller()->StartSession(data, operation);
 }
 
@@ -284,7 +284,9 @@ void WaylandSurface::OnDragLeave() {
 }
 
 void WaylandSurface::OnDragSessionClose(uint32_t dnd_action) {
-  std::move(drag_closed_callback_).Run(dnd_action);
+  DCHECK(drag_handler_delegate_);
+  drag_handler_delegate_->OnDragFinished(dnd_action);
+  drag_handler_delegate_ = nullptr;
   connection()->event_source()->ResetPointerFlags();
 }
 

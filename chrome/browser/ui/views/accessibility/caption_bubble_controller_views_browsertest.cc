@@ -106,14 +106,14 @@ class CaptionBubbleControllerViewsTest : public InProcessBrowserTest {
     EXPECT_EQ(bubble_bounds.bottom(), anchor_bounds.bottom() - 48);
   }
 
-  void OnPartialTranscription(std::string text, int tab_index = 0) {
-    GetController()->OnTranscription(
+  bool OnPartialTranscription(std::string text, int tab_index = 0) {
+    return GetController()->OnTranscription(
         chrome::mojom::TranscriptionResult::New(text, false),
         browser()->tab_strip_model()->GetWebContentsAt(tab_index));
   }
 
-  void OnFinalTranscription(std::string text, int tab_index = 0) {
-    GetController()->OnTranscription(
+  bool OnFinalTranscription(std::string text, int tab_index = 0) {
+    return GetController()->OnTranscription(
         chrome::mojom::TranscriptionResult::New(text, true),
         browser()->tab_strip_model()->GetWebContentsAt(tab_index));
   }
@@ -343,12 +343,21 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesError) {
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, CloseButtonCloses) {
-  OnPartialTranscription("Elephants have 3-4 toenails per foot");
+  bool success = OnFinalTranscription("Elephants have 3-4 toenails per foot");
+  EXPECT_TRUE(success);
   EXPECT_TRUE(GetCaptionWidget());
   EXPECT_TRUE(GetCaptionWidget()->IsVisible());
+  EXPECT_EQ("Elephants have 3-4 toenails per foot", GetLabelText());
   ClickCloseButton();
   EXPECT_TRUE(GetCaptionWidget());
   EXPECT_FALSE(GetCaptionWidget()->IsVisible());
+  success = OnFinalTranscription(
+      "Elephants wander 35 miles a day in search of water");
+  EXPECT_FALSE(success);
+  EXPECT_EQ("", GetLabelText());
+
+  // TODO(crbug.com/1055150): The caption bubble should reappear when the tab
+  // refreshes.
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,

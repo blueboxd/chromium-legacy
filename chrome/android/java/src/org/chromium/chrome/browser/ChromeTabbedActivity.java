@@ -1558,6 +1558,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mInactivityTracker = new ChromeInactivityTracker(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
+    }
+
+    @Override
+    protected final void dispatchOnInflationComplete() {
+        super.dispatchOnInflationComplete();
 
         // When the feature flag {@link ChromeFeatureList.INSTANT_START} turns on phones (not
         // tablet), a view-only start page created on Java will be shown before native is

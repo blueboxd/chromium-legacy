@@ -645,7 +645,8 @@ void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
           FROM_HERE, do_throttle_cpu_time_callback_.GetCallback(),
           kThrottlingDelayAfterBackgrounding);
     }
-    if (wake_up_budget_pool_) {
+    if (wake_up_budget_pool_ &&
+        base::FeatureList::IsEnabled(kIntensiveWakeUpThrottling)) {
       main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
           FROM_HERE, do_intensively_throttle_wake_ups_callback_.GetCallback(),
           base::TimeDelta::FromSeconds(
@@ -667,6 +668,8 @@ void PageSchedulerImpl::DoThrottleCPUTime() {
 }
 
 void PageSchedulerImpl::DoIntensivelyThrottleWakeUps() {
+  DCHECK(base::FeatureList::IsEnabled(kIntensiveWakeUpThrottling));
+
   do_intensively_throttle_wake_ups_callback_.Cancel();
   are_wake_ups_intensively_throttled_ = true;
 

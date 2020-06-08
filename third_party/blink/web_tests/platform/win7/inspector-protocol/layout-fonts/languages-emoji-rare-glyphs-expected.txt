@@ -25,12 +25,11 @@
 🌱🌲🌳🌴🌵🌷🌸🌹🌺🌻🌼💐🌾🌿🍀🍁🍂🍃🍄🌰☺️😀👪
 #emoji:
 "Segoe UI Symbol" : 19,
-"Arial" : 3,
-"Times New Roman" : 2
+"Times New Roman" : 5
 
 𓀀𓀁𓀂𓀃𓀄𓀅𓀆𓀇𓀈𓀉𓀊𓀋𓀌𓀍𓀎𓀏
 #egyptian_hieroglyphs:
-"Arial" : 16
+"Times New Roman" : 16
 
 ខ្ញុំអាចញុំកញ្ចក់បាន ដោយគ្មានបញ្ហារ
 #khmer:
@@ -49,6 +48,6 @@
 #text_presentation_arrows_maths:
 "MS PGothic" : 4,
 "Cambria Math" : 4,
-"Arial" : 1
+"Times New Roman" : 1
 
 

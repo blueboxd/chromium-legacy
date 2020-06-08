@@ -6,12 +6,13 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
-<dom-module id="oobe-update-md">
+<dom-module id="oobe-update">
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="oobe_update.css">
     <checking-downloading-update id="checking-downloading-update"
         full-screen-dialog
+        aria-label$="[[i18nDynamic(locale, 'updateScreenAccessibleTitle')]]"
         hidden="[[requiresPermissionForCellular]]"
         checking-for-update="[[checkingForUpdate]]"
         cancel-allowed="[[cancelAllowed]]"

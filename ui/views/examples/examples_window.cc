@@ -114,6 +114,8 @@ class ExamplesWindowContents : public WidgetDelegateView,
  public:
   ExamplesWindowContents(base::OnceClosure on_close, ExampleVector examples)
       : on_close_(std::move(on_close)) {
+    SetHasWindowSizeControls(true);
+
     auto combobox_model = std::make_unique<ComboboxModelExampleList>();
     combobox_model_ = combobox_model.get();
     combobox_model_->SetExamples(std::move(examples));
@@ -161,9 +163,6 @@ class ExamplesWindowContents : public WidgetDelegateView,
 
  private:
   // WidgetDelegateView:
-  bool CanResize() const override { return true; }
-  bool CanMaximize() const override { return true; }
-  bool CanMinimize() const override { return true; }
   base::string16 GetWindowTitle() const override {
     return base::ASCIIToUTF16("Views Examples");
   }

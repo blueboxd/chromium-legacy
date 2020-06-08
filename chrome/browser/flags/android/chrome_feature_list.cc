@@ -75,6 +75,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillTouchToFill,
     &device::kWebAuthPhoneSupport,
     &download::features::kDownloadAutoResumptionNative,
+    &download::features::kDownloadLater,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kClearOldBrowsingData,
     &features::kDownloadsLocationChange,

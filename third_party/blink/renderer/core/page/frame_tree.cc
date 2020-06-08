@@ -217,7 +217,8 @@ FrameTree::FindResult FrameTree::FindOrCreateFrameForNavigation(
 
   if (frame && !new_window) {
     if (frame->GetPage() != current_frame->GetPage())
-      frame->GetPage()->GetChromeClient().Focus(current_frame);
+      frame->FocusPage(current_frame);
+
     // Focusing can fire onblur, so check for detach.
     if (!frame->GetPage())
       frame = nullptr;

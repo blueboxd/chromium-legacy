@@ -569,9 +569,9 @@ void DeepScanningDialogDelegate::PrepareRequest(
     request->set_request_malware_scan(std::move(malware_request));
   }
 
-  request->set_dm_token(GetDMToken(Profile::FromBrowserContext(
-                                       web_contents_->GetBrowserContext()))
-                            .value());
+  request->set_device_token(GetDMToken(Profile::FromBrowserContext(
+                                           web_contents_->GetBrowserContext()))
+                                .value());
 }
 
 void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {

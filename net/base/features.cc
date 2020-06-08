@@ -43,6 +43,9 @@ const base::FeatureParam<std::string> kDnsHttpssvcControlDomains{
 const base::FeatureParam<bool> kDnsHttpssvcControlDomainWildcard{
     &kDnsHttpssvc, "DnsHttpssvcControlDomainWildcard", false};
 
+const base::Feature kAvoidH2Reprioritization{"AvoidH2Reprioritization",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace dns_httpssvc_experiment {
 namespace {
 bool ListContainsDomain(const std::string& domain_list,

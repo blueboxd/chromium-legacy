@@ -44,7 +44,7 @@ bool IsEmpty(const page_load_metrics::mojom::ParseTiming& timing) {
 }
 
 bool IsEmpty(const page_load_metrics::mojom::BackForwardCacheTiming& timing) {
-  return !timing.first_paint_after_back_forward_cache_restore;
+  return timing.first_paint_after_back_forward_cache_restore.empty();
 }
 
 bool IsEmpty(const page_load_metrics::mojom::PageLoadTiming& timing) {

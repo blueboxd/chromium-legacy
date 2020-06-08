@@ -16,9 +16,9 @@
 #include "media/base/reentrancy_checker.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 
 namespace media {
 class AudioBus;
@@ -48,7 +48,7 @@ class MODULES_EXPORT WebAudioMediaStreamAudioSink
  public:
   static const size_t kWebAudioRenderBufferSize;
 
-  explicit WebAudioMediaStreamAudioSink(const WebMediaStreamTrack& track,
+  explicit WebAudioMediaStreamAudioSink(MediaStreamComponent* component,
                                         int context_sample_rate);
   ~WebAudioMediaStreamAudioSink() override;
 
@@ -95,7 +95,7 @@ class MODULES_EXPORT WebAudioMediaStreamAudioSink
   // The audio track that this source provider is connected to.
   // No lock protection needed since only accessed in constructor and
   // destructor.
-  WebMediaStreamTrack track_;
+  Persistent<MediaStreamComponent> component_;
 
   // Flag to tell if the track has been stopped or not.
   // No lock protection needed since only accessed in constructor, destructor

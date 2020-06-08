@@ -220,6 +220,55 @@ TEST(PasswordFeatureManagerUtil, AccountStoragePerAccountSettings) {
             autofill::PasswordForm::Store::kProfileStore);
 }
 
+TEST(PasswordFeatureManagerUtil, AccountStorageKeepSettingsOnlyForUsers) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
+
+  TestingPrefServiceSimple pref_service;
+  pref_service.registry()->RegisterDictionaryPref(
+      prefs::kAccountStoragePerAccountSettings);
+
+  CoreAccountInfo first_account;
+  first_account.email = "first@account.com";
+  first_account.gaia = "first";
+  first_account.account_id = CoreAccountId::FromGaiaId(first_account.gaia);
+
+  CoreAccountInfo second_account;
+  second_account.email = "second@account.com";
+  second_account.gaia = "second";
+  second_account.account_id = CoreAccountId::FromGaiaId(second_account.gaia);
+
+  syncer::TestSyncService sync_service;
+  sync_service.SetDisableReasons({});
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+  sync_service.SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+
+  // Let SyncService run in transport mode with |first_account| and opt in.
+  sync_service.SetAuthenticatedAccountInfo(first_account);
+  OptInToAccountStorage(&pref_service, &sync_service);
+  ASSERT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+
+  // Switch to |second_account| and again opt in.
+  sync_service.SetAuthenticatedAccountInfo(second_account);
+  OptInToAccountStorage(&pref_service, &sync_service);
+  ASSERT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+
+  // Sign out. The opt-in still exists, but doesn't apply anymore.
+  sync_service.SetAuthenticatedAccountInfo(CoreAccountInfo());
+  ASSERT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+
+  // Keep the opt-in only for |first_account| (and some unknown other user).
+  KeepAccountStorageSettingsOnlyForUsers(&pref_service,
+                                         {first_account.gaia, "other_gaia_id"});
+
+  // The first account should still be opted in, but not the second.
+  sync_service.SetAuthenticatedAccountInfo(first_account);
+  EXPECT_TRUE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+
+  sync_service.SetAuthenticatedAccountInfo(second_account);
+  EXPECT_FALSE(IsOptedInForAccountStorage(&pref_service, &sync_service));
+}
+
 TEST(PasswordFeatureManagerUtil, SyncSuppressesAccountStorageOptIn) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);

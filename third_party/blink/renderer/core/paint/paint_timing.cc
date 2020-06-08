@@ -280,7 +280,13 @@ void PaintTiming::SetFirstImagePaintSwap(base::TimeTicks stamp) {
 
 void PaintTiming::SetFirstPaintAfterBackForwardCacheRestoreSwap(
     base::TimeTicks stamp) {
-  first_paint_after_back_forward_cache_restore_swap_ = stamp;
+  // The last element is already allocated when the page is restored from the
+  // cache.
+  size_t last_index =
+      first_paints_after_back_forward_cache_restore_swap_.size() - 1;
+  DCHECK(first_paints_after_back_forward_cache_restore_swap_[last_index]
+             .is_null());
+  first_paints_after_back_forward_cache_restore_swap_[last_index] = stamp;
   NotifyPaintTimingChanged();
 }
 
@@ -293,7 +299,10 @@ void PaintTiming::ReportSwapResultHistogram(WebSwapResult result) {
 }
 
 void PaintTiming::OnRestoredFromBackForwardCache() {
-  first_paint_after_back_forward_cache_restore_swap_ = base::TimeTicks();
+  // Allocate the last element with 0, which indicates that the first paint
+  // after this navigation doesn't happen yet.
+  first_paints_after_back_forward_cache_restore_swap_.push_back(
+      base::TimeTicks());
   RegisterNotifySwapTime(PaintEvent::kFirstPaintAfterBackForwardCacheRestore);
 }
 

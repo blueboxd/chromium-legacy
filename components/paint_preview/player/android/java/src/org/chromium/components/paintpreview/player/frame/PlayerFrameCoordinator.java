@@ -7,7 +7,8 @@ package org.chromium.components.paintpreview.player.frame;
 import android.content.Context;
 import android.graphics.Rect;
 import android.view.View;
-import android.widget.Scroller;
+import android.view.ViewConfiguration;
+import android.widget.OverScroller;
 
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.OverscrollHandler;
@@ -32,8 +33,10 @@ public class PlayerFrameCoordinator {
             UnguessableToken frameGuid, int contentWidth, int contentHeight, boolean canDetectZoom,
             @Nullable OverscrollHandler overscrollHandler) {
         PropertyModel model = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
-        mMediator = new PlayerFrameMediator(model, compositorDelegate, new Scroller(context),
-                frameGuid, contentWidth, contentHeight);
+        OverScroller scroller = new OverScroller(context);
+        scroller.setFriction(ViewConfiguration.getScrollFriction() / 2);
+        mMediator = new PlayerFrameMediator(
+                model, compositorDelegate, scroller, frameGuid, contentWidth, contentHeight);
         mView = new PlayerFrameView(context, canDetectZoom, mMediator);
         if (overscrollHandler != null) {
             mMediator.setOverscrollHandler(overscrollHandler);

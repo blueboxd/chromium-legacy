@@ -24,9 +24,9 @@ namespace blink {
 const size_t WebAudioMediaStreamAudioSink::kWebAudioRenderBufferSize = 128;
 
 WebAudioMediaStreamAudioSink::WebAudioMediaStreamAudioSink(
-    const WebMediaStreamTrack& track,
+    MediaStreamComponent* component,
     int context_sample_rate)
-    : is_enabled_(false), track_(track), track_stopped_(false) {
+    : is_enabled_(false), component_(component), track_stopped_(false) {
   // Get the native audio output hardware sample-rate for the sink.
   // We need to check if there is a valid frame since the unittests
   // do not have one and they will inject their own |sink_params_| for testing.
@@ -37,7 +37,8 @@ WebAudioMediaStreamAudioSink::WebAudioMediaStreamAudioSink(
                        kWebAudioRenderBufferSize);
   }
   // Connect the source provider to the track as a sink.
-  WebMediaStreamAudioSink::AddToAudioTrack(this, track_);
+  WebMediaStreamAudioSink::AddToAudioTrack(
+      this, WebMediaStreamTrack(component_.Get()));
 }
 
 WebAudioMediaStreamAudioSink::~WebAudioMediaStreamAudioSink() {
@@ -46,8 +47,10 @@ WebAudioMediaStreamAudioSink::~WebAudioMediaStreamAudioSink() {
 
   // If the track is still active, it is necessary to notify the track before
   // the source provider goes away.
-  if (!track_stopped_)
-    WebMediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
+  if (!track_stopped_) {
+    WebMediaStreamAudioSink::RemoveFromAudioTrack(
+        this, WebMediaStreamTrack(component_.Get()));
+  }
 }
 
 void WebAudioMediaStreamAudioSink::OnSetFormat(

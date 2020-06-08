@@ -108,20 +108,15 @@
              desc="Option shown on printer drop-down list for saving previewed document to Google Drive.">
       Save to Google Drive
     </message>
-    <message name="IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT" desc="Print summary, explaining to the user how many pages will be printed.">
-      <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
+    <message name="IDS_PRINT_PREVIEW_SHEET_SUMMARY_LABEL" desc="Print summary, explaining to the user how many pages will be printed.">
+    {COUNT, plural,
+      =1 {1 sheet of paper}
+      other {{COUNT} sheets of paper}}
     </message>
-    <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL" desc="Label shown in the print preview summary.">
-      sheets of paper
-    </message>
-    <message name="IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
-      sheet of paper
-    </message>
-    <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR" desc="Label shown in the print preview summary.">
-      page
-    </message>
-    <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL" desc="Label shown in the print preview summary.">
-      pages
+    <message name="IDS_PRINT_PREVIEW_PAGE_SUMMARY_LABEL" desc="Print summary, explaining to the user how many pages will be saved.">
+    {COUNT, plural,
+      =1 {1 page}
+      other {{COUNT} pages}}
     </message>
     <message name="IDS_PRINT_PREVIEW_PAGE_RANGE_SYNTAX_INSTRUCTION" desc="Instruction shown when the user enters an invalid page range.">
       Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE">$1<ex>e.g. 1-5, 8, 11-13</ex></ph>
@@ -326,15 +321,10 @@
         End User License Agreement
       </message>
       <message name="IDS_PRINT_PREVIEW_SHEETS_LIMIT_ERROR_MESSAGE" desc="Sheets limit error message, explaining to the user why printing is blocked.">
-        Exceeds limit of <ph name="NUMBER_OF_SHEETS">$1<ex>10</ex></ph> <ph name="SHEETS_LABEL">$2<ex>sheets of paper</ex></ph>
+      {COUNT, plural,
+        =1 {Exceeds limit of 1 sheet of paper}
+        other {Exceeds limit of {COUNT} sheets of paper}}
       </message>
-      <message name="IDS_PRINT_PREVIEW_SHEETS_LIMIT_LABEL_SINGULAR" desc="Label shown in the sheets limit error message.">
-        sheet of paper
-      </message>
-      <message name="IDS_PRINT_PREVIEW_SHEETS_LIMIT_LABEL_PLURAL" desc="Label shown in the sheets limit error message.">
-        sheets of paper
-      </message>
-
     </if>
     <if expr="not chromeos">
       <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the native print system dialog instead of printing through the print preview mechanism. Shortcut key is not translated">

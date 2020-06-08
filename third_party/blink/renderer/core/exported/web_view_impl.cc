@@ -2436,7 +2436,7 @@ void WebViewImpl::DispatchPageshow(base::TimeTicks navigation_start) {
         PaintTiming::From(*document).OnRestoredFromBackForwardCache();
       DocumentLoader* loader = local_frame->Loader().GetDocumentLoader();
       if (loader) {
-        loader->GetTiming().MarkLastBackForwardCacheRestoreNavigationStart(
+        loader->GetTiming().MarkBackForwardCacheRestoreNavigationStart(
             navigation_start);
       }
     }

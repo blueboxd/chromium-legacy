@@ -354,7 +354,7 @@ class ChromePasswordManagerClient
   base::string16 last_composing_text_;
 
   // Whether a leak warning was shown. Used only for tests or when
-  // ENABLE_PASSWORD_CHANGE is defined.
+  // kPasswordChange feature is enabled.
   bool was_leak_dialog_shown_ = false;
 #endif
 

@@ -27,6 +27,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "net/base/features.h"
 #include "net/base/url_util.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
@@ -1316,6 +1317,9 @@ void SpdySession::UpdateStreamPriority(SpdyStream* stream,
     return;
 
   DCHECK(IsStreamActive(stream_id));
+
+  if (base::FeatureList::IsEnabled(features::kAvoidH2Reprioritization))
+    return;
 
   auto updates = priority_dependency_state_.OnStreamUpdate(
       stream_id, ConvertRequestPriorityToSpdyPriority(new_priority));

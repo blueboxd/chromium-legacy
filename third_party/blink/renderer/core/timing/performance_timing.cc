@@ -321,13 +321,31 @@ base::TimeTicks PerformanceTiming::NavigationStartAsMonotonicTime() const {
   return timing->NavigationStart();
 }
 
-uint64_t PerformanceTiming::LastBackForwardCacheRestoreNavigationStart() const {
-  DocumentLoadTiming* timing = GetDocumentLoadTiming();
-  if (!timing)
-    return 0;
+PerformanceTiming::BackForwardCacheRestoreTimings
+PerformanceTiming::BackForwardCacheRestore() const {
+  DocumentLoadTiming* load_timing = GetDocumentLoadTiming();
+  if (!load_timing)
+    return {};
 
-  return MonotonicTimeToIntegerMilliseconds(
-      timing->LastBackForwardCacheRestoreNavigationStart());
+  const PaintTiming* paint_timing = GetPaintTiming();
+  if (!paint_timing)
+    return {};
+
+  WTF::Vector<base::TimeTicks> navigation_starts =
+      load_timing->BackForwardCacheRestoreNavigationStarts();
+  WTF::Vector<base::TimeTicks> first_paints =
+      paint_timing->FirstPaintsAfterBackForwardCacheRestore();
+  DCHECK(navigation_starts.size() == first_paints.size());
+
+  WTF::Vector<BackForwardCacheRestoreTiming> restore_timings(
+      navigation_starts.size());
+  for (size_t i = 0; i < restore_timings.size(); i++) {
+    restore_timings[i].navigation_start =
+        MonotonicTimeToIntegerMilliseconds(navigation_starts[i]);
+    restore_timings[i].first_paint =
+        MonotonicTimeToIntegerMilliseconds(first_paints[i]);
+  }
+  return restore_timings;
 }
 
 uint64_t PerformanceTiming::FirstPaint() const {
@@ -336,15 +354,6 @@ uint64_t PerformanceTiming::FirstPaint() const {
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(timing->FirstPaint());
-}
-
-uint64_t PerformanceTiming::FirstPaintAfterBackForwardCacheRestore() const {
-  const PaintTiming* timing = GetPaintTiming();
-  if (!timing)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(
-      timing->FirstPaintAfterBackForwardCacheRestore());
 }
 
 uint64_t PerformanceTiming::FirstImagePaint() const {

@@ -345,7 +345,8 @@ interface PageLoadMetrics {
 // TimeDeltas below relative to the navigation restoring page from the back-
 // forward cache.
 struct BackForwardCacheTiming {
-  // Time when the first paint is performed after the last time when the
-  // page is restored from the back-forward cache.
-  mojo_base.mojom.TimeDelta? first_paint_after_back_forward_cache_restore;
+  // Times when the first paint is performed after the time when the page
+  // is restored from the back-forward cache.
+  array<mojo_base.mojom.TimeDelta>
+      first_paint_after_back_forward_cache_restore;
 };

@@ -56,8 +56,6 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
     // Test that the OTR objects are (a) OTR and (b) not the same as the non-OTR
     // objects.
     EXPECT_NE(bvc, wrangler.incognitoInterface.viewController);
-    EXPECT_NE(wrangler.mainInterface.tabModel,
-              wrangler.incognitoInterface.tabModel);
     EXPECT_TRUE(wrangler.incognitoInterface.browserState->IsOffTheRecord());
 
     [wrangler shutdown];

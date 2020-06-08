@@ -1121,6 +1121,12 @@
                   'content/test/data/indexeddb|'\
                   'components/services/storage/indexed_db',
     },
+    'infobars_for_weblayer': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/banners/'\
+                  '|chrome/android/java/src/org/chromium/chrome/browser/infobar/'\
+                  '|chrome/browser/ui/messages/android/java/src/org/chromium/chrome/browser/ui/messages/infobar/'\
+                  '|chrome/browser/ui/android/infobars/',
+    },
     'infra_docs': {
       'filepath': 'docs/infra',
     },
@@ -2505,6 +2511,7 @@
     'incident_reporting': ['grt+watch@chromium.org'],
     'indexed_db': ['jsbell+idb@chromium.org',
                    'dmurph+watching-idb@chromium.org'],
+    'infobars_for_weblayer': ['blundell+infobars-watch@chromium.org'],
     'infra_docs': ['martiniss+watch@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org'],
     'input_devices': ['spang+watch@chromium.org'],

@@ -64,16 +64,30 @@ TEST_F(MultipartUploadRequestTest, GeneratesCorrectBody) {
 }
 
 TEST_F(MultipartUploadRequestTest, RetriesCorrectly) {
-  MockMultipartUploadRequest mock_request;
+  {
+    MockMultipartUploadRequest mock_request;
 
-  EXPECT_CALL(mock_request, SendRequest())
-      .Times(3)
-      .WillRepeatedly(Invoke([&mock_request]() {
-        mock_request.RetryOrFinish(net::OK, net::HTTP_BAD_REQUEST,
-                                   std::make_unique<std::string>("response"));
-      }));
-  mock_request.Start();
-  task_environment_.FastForwardUntilNoTasksRemain();
+    EXPECT_CALL(mock_request, SendRequest())
+        .Times(1)
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_BAD_REQUEST,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+  }
+  {
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .Times(3)
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_SERVICE_UNAVAILABLE,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+  }
 }
 
 TEST_F(MultipartUploadRequestTest,
@@ -109,7 +123,7 @@ TEST_F(MultipartUploadRequestTest,
 
     histograms.ExpectUniqueSample(
         "SBMultipartUploader.NetworkRequestResponseCodeOrError",
-        net::HTTP_FORBIDDEN, 3);
+        net::HTTP_FORBIDDEN, 1);
   }
 
   {
@@ -126,7 +140,24 @@ TEST_F(MultipartUploadRequestTest,
 
     histograms.ExpectUniqueSample(
         "SBMultipartUploader.NetworkRequestResponseCodeOrError",
-        net::ERR_FAILED, 3);
+        net::ERR_FAILED, 1);
+  }
+
+  {
+    base::HistogramTester histograms;
+    MockMultipartUploadRequest mock_request;
+
+    EXPECT_CALL(mock_request, SendRequest())
+        .WillRepeatedly(Invoke([&mock_request]() {
+          mock_request.RetryOrFinish(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
+                                     std::make_unique<std::string>("response"));
+        }));
+    mock_request.Start();
+    task_environment_.FastForwardUntilNoTasksRemain();
+
+    histograms.ExpectUniqueSample(
+        "SBMultipartUploader.NetworkRequestResponseCodeOrError",
+        net::HTTP_INTERNAL_SERVER_ERROR, 3);
   }
 }
 

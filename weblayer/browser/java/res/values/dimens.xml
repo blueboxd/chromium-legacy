@@ -6,4 +6,21 @@
 <resources>
     <dimen name="security_status_icon_size">18dp</dimen>
     <dimen name="url_text_edge_padding">5dp</dimen>
+  
+    <!-- Infobar dimensions -->
+    <!-- Maximum width of an infobar. -->
+    <dimen name="infobar_max_width">600dp</dimen>
+    <!-- Width of side shadows on floating infobars. -->
+    <dimen name="infobar_shadow_width">8dp</dimen>
+    <!-- Height of top shadow on each infobar. -->
+    <dimen name="infobar_shadow_height">8dp</dimen>
+    <!-- Distance that a back infobar peeks out above the front infobar. -->
+    <dimen name="infobar_peeking_height">10dp</dimen>
+
+    <!-- Dimensions for compact infobars are a little shorter. -->
+    <dimen name="infobar_compact_size">56dp</dimen>
+    <dimen name="infobar_compact_message_vertical_padding">8dp</dimen>
+
+    <!-- Dimensions applied to InfoBars with differently sized icons. -->
+    <dimen name="infobar_big_icon_size">48dp</dimen>
 </resources>

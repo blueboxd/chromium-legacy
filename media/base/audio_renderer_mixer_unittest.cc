@@ -25,10 +25,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-void LogUma(int value) {}
-}
-
 namespace media {
 
 // Parameters which control the many input case tests.
@@ -77,8 +73,7 @@ class AudioRendererMixerTest
     EXPECT_CALL(*sink_.get(), Start());
     EXPECT_CALL(*sink_.get(), Stop());
 
-    mixer_.reset(new AudioRendererMixer(output_parameters_, sink_,
-                                        base::BindRepeating(&LogUma)));
+    mixer_ = std::make_unique<AudioRendererMixer>(output_parameters_, sink_);
     mixer_callback_ = sink_->callback();
 
     audio_bus_ = AudioBus::Create(output_parameters_);

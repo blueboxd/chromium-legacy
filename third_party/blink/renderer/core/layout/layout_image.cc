@@ -116,7 +116,7 @@ void LayoutImage::ImageChanged(WrappedImagePtr new_image,
 
   // If error occurred, image marker should be replaced by a LayoutText.
   // NotifyOfSubtreeChange to make list item updating its marker content.
-  if (IsLayoutNGListMarkerImage() && image_resource_->ErrorOccurred())
+  if (IsListMarkerImage() && image_resource_->ErrorOccurred())
     NotifyOfSubtreeChange();
 
   // Per the spec, we let the server-sent header override srcset/other sources
@@ -380,7 +380,7 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
     // Our intrinsicSize is empty if we're laying out generated images with
     // relative width/height. Figure out the right intrinsic size to use.
     if (intrinsic_sizing_info.size.IsEmpty() &&
-        !image_resource_->HasIntrinsicSize() && !IsLayoutNGListMarkerImage()) {
+        !image_resource_->HasIntrinsicSize() && !IsListMarkerImage()) {
       if (HasOverrideContainingBlockContentLogicalWidth() &&
           HasOverrideContainingBlockContentLogicalHeight()) {
         intrinsic_sizing_info.size.SetWidth(

@@ -87,9 +87,6 @@ class MetricsWebContentsObserver
   static MetricsWebContentsObserver* CreateForWebContents(
       content::WebContents* web_contents,
       std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
-  MetricsWebContentsObserver(
-      content::WebContents* web_contents,
-      std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
   ~MetricsWebContentsObserver() override;
 
   // Any visibility changes that occur after this method should be ignored since
@@ -174,6 +171,10 @@ class MetricsWebContentsObserver
 
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
+
+  MetricsWebContentsObserver(
+      content::WebContents* web_contents,
+      std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface);
 
   void WillStartNavigationRequestImpl(
       content::NavigationHandle* navigation_handle);

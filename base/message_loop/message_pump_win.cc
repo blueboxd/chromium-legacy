@@ -255,8 +255,6 @@ void MessagePumpForUI::DoRunLoop() {
     if (more_work_is_plausible)
       continue;
 
-    // WaitForWork() does some work itself, so notify the delegate of it.
-    state_->delegate->BeforeWait();
     WaitForWork(next_work_info);
   }
 }
@@ -270,6 +268,8 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
   for (DWORD delay = GetSleepTimeoutMs(next_work_info.delayed_run_time,
                                        next_work_info.recent_now);
        delay != 0; delay = GetSleepTimeoutMs(next_work_info.delayed_run_time)) {
+    state_->delegate->BeforeWait();
+
     // Tell the optimizer to retain these values to simplify analyzing hangs.
     base::debug::Alias(&delay);
     base::debug::Alias(&wait_flags);
@@ -299,6 +299,11 @@ void MessagePumpForUI::WaitForWork(Delegate::NextWorkInfo next_work_info) {
       }
 
       {
+        // ::GetQueueStatus() above may racily miss a sent-message and
+        // ::PeekMessage() below may thus process one and/or internal events per
+        // its doc.
+        state_->delegate->BeforeDoInternalWork();
+
         MSG msg;
         // Trace as in ProcessNextWindowsMessage().
         TRACE_EVENT0("base", "MessagePumpForUI::WaitForWork PeekMessage");

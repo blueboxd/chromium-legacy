@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "components/policy/core/common/policy_merger.h"
 #include "components/strings/grit/components_strings.h"
 
@@ -38,19 +38,6 @@ const base::string16 GetLocalizedString(
 }  // namespace
 
 PolicyMap::Entry::Entry() = default;
-PolicyMap::Entry::Entry(
-    PolicyLevel level,
-    PolicyScope scope,
-    PolicySource source,
-    std::unique_ptr<base::Value> value,
-    std::unique_ptr<ExternalDataFetcher> external_data_fetcher)
-    : Entry(level,
-            scope,
-            source,
-            value ? base::make_optional<base::Value>(std::move(*value))
-                  : base::nullopt,
-            std::move(external_data_fetcher)) {}
-
 PolicyMap::Entry::Entry(
     PolicyLevel level,
     PolicyScope scope,
@@ -231,7 +218,8 @@ void PolicyMap::Set(
     PolicySource source,
     std::unique_ptr<base::Value> value,
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher) {
-  Entry entry(level, scope, source, std::move(value),
+  Entry entry(level, scope, source,
+              value ? base::make_optional(std::move(*value)) : base::nullopt,
               std::move(external_data_fetcher));
   Set(policy, std::move(entry));
 }

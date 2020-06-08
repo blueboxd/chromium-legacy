@@ -697,6 +697,12 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
     const NGFragmentItem* child_item = CurrentItem();
     DCHECK(child_item);
     if (child_item->Type() == NGFragmentItem::kLine) {
+      if (!CursorForDescendants().TryToMoveToFirstInlineLeafChild()) {
+        // editing/selection/last-empty-inline.html requires this to skip
+        // empty <span> with padding.
+        MoveToNextItemSkippingChildren();
+        continue;
+      }
       // Try to resolve if |point| falls in a line box in block direction.
       const LayoutUnit child_block_offset =
           child_item->OffsetInContainerBlock()
@@ -1222,6 +1228,15 @@ bool NGInlineCursor::TryToMoveToFirstChild() {
   }
   MoveToItem(current_.item_iter_ + 1);
   return true;
+}
+
+bool NGInlineCursor::TryToMoveToFirstInlineLeafChild() {
+  while (IsNotNull()) {
+    if (Current().IsInlineLeaf())
+      return true;
+    MoveToNext();
+  }
+  return false;
 }
 
 bool NGInlineCursor::TryToMoveToLastChild() {

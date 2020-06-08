@@ -2380,6 +2380,8 @@ static_library("browser") {
       "android/autofill_assistant/ui_controller_android.h",
       "android/autofill_assistant/ui_controller_android_utils.cc",
       "android/autofill_assistant/ui_controller_android_utils.h",
+      "android/autofill_assistant/view_handler_android.cc",
+      "android/autofill_assistant/view_handler_android.h",
       "android/background_sync_launcher_android.cc",
       "android/background_sync_launcher_android.h",
       "android/background_tab_manager.cc",
@@ -3123,15 +3125,6 @@ static_library("browser") {
         "dev_ui/android/dev_ui_loader_throttle.h",
       ]
       deps += [ "//chrome/android/modules/dev_ui/provider:native" ]
-    }
-
-    if (enable_password_change_in_leaked_dialog) {
-      sources += [
-        "password_manager/credential_leak_password_change_controller_android.cc",
-        "password_manager/credential_leak_password_change_controller_android.h",
-      ]
-
-      defines += [ "ENABLE_PASSWORD_CHANGE" ]
     }
   } else {  # !is_android
     sources += [
@@ -4745,6 +4738,8 @@ static_library("browser") {
       "signin/dice_tab_helper.h",
       "signin/dice_web_signin_interceptor.cc",
       "signin/dice_web_signin_interceptor.h",
+      "signin/dice_web_signin_interceptor_delegate.cc",
+      "signin/dice_web_signin_interceptor_delegate.h",
       "signin/dice_web_signin_interceptor_factory.cc",
       "signin/dice_web_signin_interceptor_factory.h",
       "signin/logout_tab_helper.cc",

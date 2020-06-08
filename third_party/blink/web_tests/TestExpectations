@@ -2232,10 +2232,6 @@ crbug.com/626703 crbug.com/946710 http/tests/devtools/extensions/extensions-side
 crbug.com/751952 virtual/text-antialias/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 [ Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 
-# Websockets
-# Cannot be rebaselined because the output contains a timestamp and a random number.
-crbug.com/803200 external/wpt/websockets/opening-handshake/005.html?wss [ Pass Failure Timeout ]
-
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
 crbug.com/828506 [ Win ] fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
@@ -2870,9 +2866,6 @@ crbug.com/626703 [ Win ] external/wpt/webrtc/RTCPeerConnection-operations.https.
 crbug.com/626703 [ Linux ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/content-dpr/content-dpr-various-elements.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/websockets/opening-handshake/005.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/websockets/opening-handshake/005.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/websockets/opening-handshake/005.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/workers/abrupt-completion.html [ Timeout ]
@@ -4508,6 +4501,12 @@ crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/scrolled-grid-pain
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/scrolled-grid-painting.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/mozilla/grid-repeat-auto-fill-fit-005-part-1.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/fast/css-grid-layout/mozilla/grid-repeat-auto-fill-fit-005-part-2.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/baseline-alignment-affects-intrinsic-size-001.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/baseline-alignment-affects-intrinsic-size-002.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/baseline-alignment-affects-intrinsic-size-003.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/baseline-alignment-affects-intrinsic-size-004.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/baseline-alignment-affects-intrinsic-size-005.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/baseline-alignment-affects-intrinsic-size-006.html [ Failure ]
 
 # [css-logical]
 crbug.com/865579 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]

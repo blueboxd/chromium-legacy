@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_interactions_android.h"
+#include "chrome/browser/android/autofill_assistant/view_handler_android.h"
 #include "components/autofill_assistant/browser/basic_interactions.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 #include "components/autofill_assistant/browser/ui_delegate.h"
@@ -24,7 +25,6 @@ namespace {
 
 base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
     const EventProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   switch (proto.kind_case()) {
     case EventProto::kOnValueChanged:
@@ -89,13 +89,13 @@ InteractionHandlerAndroid::InteractionHandlerAndroid(
     EventHandler* event_handler,
     UserModel* user_model,
     BasicInteractions* basic_interactions,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+    ViewHandlerAndroid* view_handler,
     base::android::ScopedJavaGlobalRef<jobject> jcontext,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate)
     : event_handler_(event_handler),
       user_model_(user_model),
       basic_interactions_(basic_interactions),
-      views_(views),
+      view_handler_(view_handler),
       jcontext_(jcontext),
       jdelegate_(jdelegate) {}
 
@@ -132,7 +132,7 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     NOTREACHED() << "Interactions can not be added while listening to events!";
     return false;
   }
-  auto key = CreateEventKeyFromProto(proto.trigger_event(), views_, jdelegate_);
+  auto key = CreateEventKeyFromProto(proto.trigger_event(), jdelegate_);
   if (!key) {
     VLOG(1) << "Invalid trigger event for interaction";
     return false;
@@ -265,7 +265,7 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
       }
       return base::Optional<InteractionCallback>(base::BindRepeating(
           &android_interactions::SetViewText, user_model_->GetWeakPtr(),
-          proto.set_text(), views_, jdelegate_));
+          proto.set_text(), view_handler_, jdelegate_));
     case CallbackProto::kToggleUserAction:
       if (proto.toggle_user_action().user_actions_model_identifier().empty()) {
         VLOG(1) << "Error creating ToggleUserAction interaction: "
@@ -298,7 +298,7 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
       }
       return base::Optional<InteractionCallback>(base::BindRepeating(
           &android_interactions::SetViewVisibility, user_model_->GetWeakPtr(),
-          proto.set_view_visibility(), views_));
+          proto.set_view_visibility(), view_handler_));
     case CallbackProto::kSetViewEnabled:
       if (proto.set_view_enabled().view_identifier().empty()) {
         VLOG(1) << "Error creating SetViewEnabled interaction: "
@@ -312,7 +312,7 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
       }
       return base::Optional<InteractionCallback>(base::BindRepeating(
           &android_interactions::SetViewEnabled, user_model_->GetWeakPtr(),
-          proto.set_view_enabled(), views_));
+          proto.set_view_enabled(), view_handler_));
     case CallbackProto::kShowGenericPopup:
       if (proto.show_generic_popup().popup_identifier().empty()) {
         VLOG(1) << "Error creating ShowGenericPopup interaction: "
@@ -337,9 +337,10 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
                    "view_identifier not set";
         return base::nullopt;
       }
-      return base::Optional<InteractionCallback>(base::BindRepeating(
-          &android_interactions::ClearViewContainer,
-          proto.clear_view_container().view_identifier(), views_, jdelegate_));
+      return base::Optional<InteractionCallback>(
+          base::BindRepeating(&android_interactions::ClearViewContainer,
+                              proto.clear_view_container().view_identifier(),
+                              view_handler_, jdelegate_));
     case CallbackProto::KIND_NOT_SET:
       VLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;
@@ -383,8 +384,9 @@ void InteractionHandlerAndroid::CreateAndAttachNestedGenericUi(
     return;
   }
 
-  if (!android_interactions::AttachViewToParent(
-          nested_ui->GetRootView(), proto.parent_view_identifier(), views_)) {
+  if (!android_interactions::AttachViewToParent(nested_ui->GetRootView(),
+                                                proto.parent_view_identifier(),
+                                                view_handler_)) {
     DeleteNestedUi(proto.generic_ui_identifier());
     return;
   }

@@ -102,9 +102,6 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 - (void)start {
   [super start];
   self.viewController = [[UserSigninViewController alloc] init];
-  if (@available(iOS 13, *)) {
-    self.viewController.presentationController.delegate = self;
-  }
   self.viewController.delegate = self;
   self.viewController.useFirstRunSkipButton =
       self.signinIntent == UserSigninIntentFirstRun;
@@ -396,7 +393,12 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 // controller. First run requires an additional transitional fade animation when
 // presenting this view.
 - (void)presentUserSigninViewController {
+  // Always set the -UIViewController.modalPresentationStyle before accessing
+  // -UIViewController.presentationController.
   self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
+  if (@available(iOS 13, *)) {
+    self.viewController.presentationController.delegate = self;
+  }
   switch (self.signinIntent) {
     case UserSigninIntentFirstRun: {
       // Displays the sign-in screen with transitions specific to first-run.

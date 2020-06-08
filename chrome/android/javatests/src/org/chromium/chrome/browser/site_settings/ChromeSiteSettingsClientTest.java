@@ -48,6 +48,8 @@ public class ChromeSiteSettingsClientTest {
         ChromeSiteSettingsClient client =
                 new ChromeSiteSettingsClient(mActivityTestRule.getActivity());
 
+        // Hold the Bitmap in an array because it gets assigned to in a closure, and all captured
+        // variables have to be effectively final.
         Bitmap[] holder = new Bitmap[1];
         CallbackHelper helper = new CallbackHelper();
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {

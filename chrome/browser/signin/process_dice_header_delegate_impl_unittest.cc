@@ -35,10 +35,26 @@ signin_metrics::AccessPoint kTestAccessPoint =
 signin_metrics::PromoAction kTestPromoAction =
     signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
 
+// Dummy delegate that declines all interceptions.
+class TestDiceWebSigninInterceptorDelegate
+    : public DiceWebSigninInterceptor::Delegate {
+ public:
+  ~TestDiceWebSigninInterceptorDelegate() override = default;
+  void ShowSigninInterceptionBubble(
+      DiceWebSigninInterceptor::SigninInterceptionType signin_interception_type,
+      content::WebContents* web_contents,
+      const AccountInfo& account_info,
+      base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(false);
+  }
+};
+
 class MockDiceWebSigninInterceptor : public DiceWebSigninInterceptor {
  public:
   explicit MockDiceWebSigninInterceptor(Profile* profile)
-      : DiceWebSigninInterceptor(profile) {}
+      : DiceWebSigninInterceptor(
+            profile,
+            std::make_unique<TestDiceWebSigninInterceptorDelegate>()) {}
   ~MockDiceWebSigninInterceptor() override = default;
 
   MOCK_METHOD(void,

@@ -15,6 +15,8 @@
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 
 namespace autofill_assistant {
+class ViewHandlerAndroid;
+
 namespace android_interactions {
 
 // Writes a value to the model.
@@ -61,23 +63,20 @@ void ShowGenericPopup(const ShowGenericUiPopupProto& proto,
                       base::android::ScopedJavaGlobalRef<jobject> jdelegate);
 
 // Sets the text of a view.
-void SetViewText(
-    base::WeakPtr<UserModel> user_model,
-    const SetTextProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
-    base::android::ScopedJavaGlobalRef<jobject> jdelegate);
+void SetViewText(base::WeakPtr<UserModel> user_model,
+                 const SetTextProto& proto,
+                 ViewHandlerAndroid* view_handler,
+                 base::android::ScopedJavaGlobalRef<jobject> jdelegate);
 
 // Sets the visibility of a view.
-void SetViewVisibility(
-    base::WeakPtr<UserModel> user_model,
-    const SetViewVisibilityProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+void SetViewVisibility(base::WeakPtr<UserModel> user_model,
+                       const SetViewVisibilityProto& proto,
+                       ViewHandlerAndroid* view_handler);
 
 // Enables or disables a view.
-void SetViewEnabled(
-    base::WeakPtr<UserModel> user_model,
-    const SetViewEnabledProto& proto,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+void SetViewEnabled(base::WeakPtr<UserModel> user_model,
+                    const SetViewEnabledProto& proto,
+                    ViewHandlerAndroid* view_handler);
 
 // A simple wrapper around a basic interaction, needed because we can't directly
 // bind a repeating callback to a method with non-void return value.
@@ -87,23 +86,20 @@ void RunConditionalCallback(
     InteractionHandlerAndroid::InteractionCallback callback);
 
 // Sets the checked state of a toggle button.
-void SetToggleButtonChecked(
-    base::WeakPtr<UserModel> user_model,
-    const std::string& view_identifier,
-    const std::string& model_identifier,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+void SetToggleButtonChecked(base::WeakPtr<UserModel> user_model,
+                            const std::string& view_identifier,
+                            const std::string& model_identifier,
+                            ViewHandlerAndroid* view_handler);
 
 // Removes all child views from |view_identifier|.
-void ClearViewContainer(
-    const std::string& view_identifier,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
-    base::android::ScopedJavaGlobalRef<jobject> jdelegate);
+void ClearViewContainer(const std::string& view_identifier,
+                        ViewHandlerAndroid* view_handler,
+                        base::android::ScopedJavaGlobalRef<jobject> jdelegate);
 
 // Attaches |jview| to a parent view.
-bool AttachViewToParent(
-    base::android::ScopedJavaGlobalRef<jobject> jview,
-    const std::string& parent_view_identifier,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views);
+bool AttachViewToParent(base::android::ScopedJavaGlobalRef<jobject> jview,
+                        const std::string& parent_view_identifier,
+                        ViewHandlerAndroid* view_handler);
 
 }  // namespace android_interactions
 }  // namespace autofill_assistant

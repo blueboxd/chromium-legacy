@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
-
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/browser_view/browser_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -24,6 +23,7 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -55,10 +55,6 @@
 
 - (BrowserViewController*)bvc {
   return self.coordinator.viewController;
-}
-
-- (TabModel*)tabModel {
-  return self.browser->GetTabModel();
 }
 
 - (Browser*)browser {
@@ -109,8 +105,6 @@
 // Backing objects.
 @property(nonatomic) BrowserCoordinator* mainBrowserCoordinator;
 @property(nonatomic) BrowserCoordinator* incognitoBrowserCoordinator;
-//@property(nonatomic, readonly) TabModel* mainTabModel;
-//@property(nonatomic, readonly) TabModel* otrTabModel;
 @property(nonatomic, readonly) Browser* mainBrowser;
 @property(nonatomic, readonly) Browser* otrBrowser;
 
@@ -233,11 +227,10 @@
 
 - (void)setMainBrowser:(std::unique_ptr<Browser>)mainBrowser {
   if (_mainBrowser.get()) {
-    TabModel* tabModel = self.mainBrowser->GetTabModel();
     WebStateList* webStateList = self.mainBrowser->GetWebStateList();
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     breakpad::StopMonitoringURLsForWebStateList(webStateList);
-    [tabModel disconnect];
+    [self.mainBrowser->GetTabModel() disconnect];
   }
 
   _mainBrowser = std::move(mainBrowser);
@@ -245,10 +238,9 @@
 
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)otrBrowser {
   if (_otrBrowser.get()) {
-    TabModel* tabModel = self.otrBrowser->GetTabModel();
     WebStateList* webStateList = self.otrBrowser->GetWebStateList();
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
-    [tabModel disconnect];
+    [self.otrBrowser->GetTabModel() disconnect];
   }
 
   _otrBrowser = std::move(otrBrowser);
@@ -278,10 +270,10 @@
 #pragma mark - Other public methods
 
 - (void)willDestroyIncognitoBrowserState {
-  // It is theoretically possible that a Tab has been added to |_otrTabModel|
+  // It is theoretically possible that a Tab has been added to the webStateList
   // since the deletion has been scheduled. It is unlikely to happen for real
   // because it would require superhuman speed.
-  DCHECK(![self.otrBrowser->GetTabModel() count]);
+  DCHECK(self.otrBrowser->GetWebStateList()->empty());
   DCHECK(_browserState);
 
   // Remove the OTR browser from the browser list. The browser itself is
@@ -317,12 +309,12 @@
   DCHECK(_browserState);
   DCHECK(_browserState->HasOffTheRecordChromeBrowserState());
 
-  // An empty _otrTabModel must be created at this point, because it is then
+  // An empty _otrBrowser must be created at this point, because it is then
   // possible to prevent the tabChanged notification being sent. Otherwise,
   // when it is created, a notification with no tabs will be sent, and it will
   // be immediately deleted.
   [self setOtrBrowser:[self buildOtrBrowser:NO]];
-  DCHECK(![self.otrBrowser->GetTabModel() count]);
+  DCHECK(self.otrBrowser->GetWebStateList()->empty());
 
   if (_currentInterface == nil) {
     self.currentInterface = self.incognitoInterface;

@@ -32,8 +32,8 @@ void BackForwardCachePageLoadMetricsObserver::
   // the tab wasn't backgrounded between
   // |back_forward_cache_restore_navigation_start| and
   // |first_paint_after_restore|.
+  auto first_paint = timing.back_forward_cache_timing
+                         ->first_paint_after_back_forward_cache_restore.back();
   PAGE_LOAD_HISTOGRAM(
-      internal::kHistogramFirstPaintAfterBackForwardCacheRestore,
-      timing.back_forward_cache_timing
-          ->first_paint_after_back_forward_cache_restore.value());
+      internal::kHistogramFirstPaintAfterBackForwardCacheRestore, first_paint);
 }

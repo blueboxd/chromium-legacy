@@ -1162,6 +1162,8 @@ gfx::Size Widget::GetMaximumSize() const {
 }
 
 void Widget::OnNativeWidgetMove() {
+  TRACE_EVENT0("ui", "Widget::OnNativeWidgetMove");
+
   widget_delegate_->OnWidgetMove();
   NotifyCaretBoundsChanged(GetInputMethod());
 
@@ -1170,6 +1172,8 @@ void Widget::OnNativeWidgetMove() {
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
+  TRACE_EVENT0("ui", "Widget::OnNativeWidgetSizeChanged");
+
   View* root = GetRootView();
   if (root)
     root->SetSize(new_size);
@@ -1229,6 +1233,8 @@ void Widget::OnKeyEvent(ui::KeyEvent* event) {
 //                   RootView from anywhere in Widget. Use
 //                   SendEventToSink() instead. See crbug.com/348087.
 void Widget::OnMouseEvent(ui::MouseEvent* event) {
+  TRACE_EVENT0("ui", "Widget::OnMouseEvent");
+
   View* root_view = GetRootView();
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
@@ -1472,6 +1478,8 @@ View* Widget::GetFocusTraversableParentView() {
 // Widget, ui::NativeThemeObserver implementation:
 
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+  TRACE_EVENT0("ui", "Widget::OnNativeThemeUpdated");
+
   DCHECK(observer_manager_.IsObserving(observed_theme));
 
 #if defined(OS_MACOSX) || defined(OS_WIN)

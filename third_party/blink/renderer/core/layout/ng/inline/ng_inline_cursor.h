@@ -399,6 +399,9 @@ class CORE_EXPORT NGInlineCursor {
   // Returns true if the current position moves to first child.
   bool TryToMoveToFirstChild();
 
+  // Returns true if the current position moves to first inline leaf child.
+  bool TryToMoveToFirstInlineLeafChild();
+
   // Returns true if the current position moves to last child.
   bool TryToMoveToLastChild();
 

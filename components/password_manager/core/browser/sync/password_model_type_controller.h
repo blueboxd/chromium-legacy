@@ -50,6 +50,9 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   void OnStateChanged(syncer::SyncService* sync) override;
 
   // IdentityManager::Observer overrides.
+  void OnAccountsInCookieUpdated(
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
   void OnAccountsCookieDeletedByUserAction() override;
 
  private:

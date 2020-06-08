@@ -107,6 +107,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/feature_list.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -134,11 +135,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#if defined(ENABLE_PASSWORD_CHANGE)
-#include "chrome/browser/password_manager/credential_leak_password_change_controller_android.h"
-#else
 #include "chrome/browser/password_manager/android/credential_leak_controller_android.h"
-#endif
 using password_manager::CredentialCache;
 #endif
 
@@ -547,17 +544,14 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     const GURL& origin,
     const base::string16& username) {
 #if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordChange)) {
+    was_leak_dialog_shown_ = true;
+  }
   HideSavePasswordInfobar(web_contents());
-#if defined(ENABLE_PASSWORD_CHANGE)
-  was_leak_dialog_shown_ = true;
-  (new CredentialLeakPasswordChangeControllerAndroid(
-       leak_type, origin, username, web_contents()->GetTopLevelNativeWindow()))
-      ->ShowDialog();
-#else
   (new CredentialLeakControllerAndroid(
        leak_type, origin, web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();
-#endif
 #else   // !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());

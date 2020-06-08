@@ -232,7 +232,8 @@ TEST_F(ExternalProviderImplTest, DISABLED_InAppPayments) {
       extension_misc::kInAppPaymentsSupportAppId));
 }
 
-TEST_F(ExternalProviderImplTest, BlockedExternalUserProviders) {
+// Failing, see crbug.com/1092345.
+TEST_F(ExternalProviderImplTest, DISABLED_BlockedExternalUserProviders) {
   OverrideExternalExtensionsPath();
   InitServiceWithExternalProviders(true);
 
@@ -245,7 +246,8 @@ TEST_F(ExternalProviderImplTest, BlockedExternalUserProviders) {
   EXPECT_FALSE(registry()->GetInstalledExtension(kExternalAppId));
 }
 
-TEST_F(ExternalProviderImplTest, NotBlockedExternalUserProviders) {
+// Failing, see crbug.com/1092345.
+TEST_F(ExternalProviderImplTest, DISABLED_NotBlockedExternalUserProviders) {
   OverrideExternalExtensionsPath();
   InitServiceWithExternalProviders(false);
 

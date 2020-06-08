@@ -43,13 +43,14 @@ ThemedVectorIcon::ThemedVectorIcon(ThemedVectorIcon&&) = default;
 
 ThemedVectorIcon& ThemedVectorIcon::operator=(ThemedVectorIcon&&) = default;
 
-const gfx::ImageSkia ThemedVectorIcon::GetImageSkia(NativeTheme* theme) const {
+const gfx::ImageSkia ThemedVectorIcon::GetImageSkia(
+    const NativeTheme* theme) const {
   DCHECK(!empty());
   return icon_size_ > 0 ? CreateVectorIcon(*icon_, icon_size_, GetColor(theme))
                         : CreateVectorIcon(*icon_, GetColor(theme));
 }
 
-const gfx::ImageSkia ThemedVectorIcon::GetImageSkia(NativeTheme* theme,
+const gfx::ImageSkia ThemedVectorIcon::GetImageSkia(const NativeTheme* theme,
                                                     int icon_size) const {
   DCHECK(!empty());
   return CreateVectorIcon(*icon_, icon_size, GetColor(theme));
@@ -61,7 +62,7 @@ const gfx::ImageSkia ThemedVectorIcon::GetImageSkia(SkColor color) const {
                         : CreateVectorIcon(*icon_, color);
 }
 
-SkColor ThemedVectorIcon::GetColor(NativeTheme* theme) const {
+SkColor ThemedVectorIcon::GetColor(const NativeTheme* theme) const {
   DCHECK(color_id_ || color_);
   return color_id_ ? theme->GetSystemColor(color_id_.value()) : color_.value();
 }

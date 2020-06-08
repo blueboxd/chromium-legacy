@@ -54,29 +54,6 @@ grit("network_health_resources") {
   ]
 }
 
-grit("camera_resources") {
-  source = "camera/camera_resources.grd"
-
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/camera_resources.h",
-    "grit/camera_resources_map.cc",
-    "grit/camera_resources_map.h",
-    "camera_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-
-  deps = [
-    "//components/arc/mojom:camera_intent_js",
-    "//media/capture/video/chromeos/mojom:cros_camera_js",
-  ]
-
-  grit_flags = [
-    "-E",
-    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
-}
-
 group("closure_compile") {
   deps = [
     "accessibility/braille_ime:closure_compile",
@@ -84,7 +61,6 @@ group("closure_compile") {
     "accessibility/switch_access:closure_compile",
     "add_supervision:closure_compile",
     "bluetooth_pairing_dialog:closure_compile",
-    "camera/src/js:closure_compile",
     "crostini_installer:closure_compile",
     "edu_login:closure_compile",
     "emulator:closure_compile",

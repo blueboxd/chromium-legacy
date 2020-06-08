@@ -48,11 +48,6 @@ class POLICY_EXPORT PolicyMap {
     Entry(PolicyLevel level,
           PolicyScope scope,
           PolicySource source,
-          std::unique_ptr<base::Value> value,
-          std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
-    Entry(PolicyLevel level,
-          PolicyScope scope,
-          PolicySource source,
           base::Optional<base::Value> value,
           std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
     ~Entry();

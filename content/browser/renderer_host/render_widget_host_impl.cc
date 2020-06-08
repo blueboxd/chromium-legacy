@@ -1756,7 +1756,15 @@ void RenderWidgetHostImpl::DragTargetDragOver(
 void RenderWidgetHostImpl::DragTargetDragLeave(
     const gfx::PointF& client_point,
     const gfx::PointF& screen_point) {
-  Send(new DragMsg_TargetDragLeave(GetRoutingID(), client_point, screen_point));
+  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
+  // come over the mojo channels. It will be guaranteed that this
+  // will be non-null.
+  if (blink_frame_widget_) {
+    gfx::PointF viewport_point = client_point;
+    if (IsUseZoomForDSFEnabled())
+      viewport_point.Scale(GetScaleFactorForView(GetView()));
+    blink_frame_widget_->DragTargetDragLeave(viewport_point, screen_point);
+  }
 }
 
 void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,

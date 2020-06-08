@@ -5,7 +5,7 @@
 package org.chromium.components.paintpreview.player.frame;
 
 import android.content.Context;
-import android.widget.Scroller;
+import android.widget.OverScroller;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -13,7 +13,7 @@ import org.robolectric.annotation.Implements;
 /**
  * A custom shadow of {@link Scroller} that supports fake flinging.
  */
-@Implements(Scroller.class)
+@Implements(OverScroller.class)
 public class PaintPreviewCustomFlingingShadowScroller {
     private int mFinalX;
     private int mFinalY;

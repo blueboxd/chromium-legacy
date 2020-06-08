@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/extensions/api/identity/identity_get_accounts_function.h"
+#include "chrome/browser/extensions/api/identity/identity_get_auth_token_error.h"
 #include "chrome/browser/extensions/api/identity/identity_get_auth_token_function.h"
 #include "chrome/browser/extensions/api/identity/identity_get_profile_user_info_function.h"
 #include "chrome/browser/extensions/api/identity/identity_launch_web_auth_flow_function.h"
@@ -91,8 +93,11 @@ namespace {
 namespace errors = identity_constants;
 namespace utils = extension_function_test_utils;
 
-static const char kAccessToken[] = "auth_token";
-static const char kExtensionId[] = "ext_id";
+const char kAccessToken[] = "auth_token";
+const char kExtensionId[] = "ext_id";
+
+const char kGetAuthTokenResultHistogramName[] =
+    "Signin.Extensions.GetAuthTokenResult";
 
 #if defined(OS_CHROMEOS)
 void InitNetwork() {
@@ -910,6 +915,8 @@ class GetAuthTokenFunctionTest
     id_api()->mint_queue()->RequestComplete(type, key, request);
   }
 
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
   base::OnceClosure on_access_token_requested_;
 
  private:
@@ -922,6 +929,7 @@ class GetAuthTokenFunctionTest
     std::move(on_access_token_requested_).Run();
   }
 
+  base::HistogramTester histogram_tester_;
   std::string extension_id_;
   std::set<std::string> oauth_scopes_;
 };
@@ -934,6 +942,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoClientId) {
   EXPECT_EQ(std::string(errors::kInvalidClientId), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kInvalidClientId, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoScopes) {
@@ -944,6 +955,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoScopes) {
   EXPECT_EQ(std::string(errors::kInvalidScopes), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kEmptyScopes, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveNotSignedIn) {
@@ -954,6 +968,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveNotSignedIn) {
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kUserNotSignedIn, 1);
 }
 
 // The signin flow is simply not used on ChromeOS.
@@ -968,6 +985,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kSignInFailed, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -990,6 +1010,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kBrowserSigninNotAllowed), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kBrowserSigninNotAllowed, 1);
 }
 #endif
 
@@ -1004,6 +1027,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveMintFailure) {
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1016,6 +1042,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       utils::RunFunctionAndReturnError(func.get(), "[{}]", browser());
   EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
                                base::CompareCase::INSENSITIVE_ASCII));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGetAccessTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1033,6 +1062,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_ADVICE,
             GetCachedToken(CoreAccountId()).status());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaConsentInteractionRequired, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1048,6 +1080,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1063,6 +1098,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1081,6 +1119,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   // in a valid state.
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 // The signin flow is simply not used on ChromeOS.
@@ -1101,6 +1142,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 #endif
 
@@ -1119,6 +1163,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoOptionsSuccess) {
   EXPECT_FALSE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             GetCachedToken(CoreAccountId()).status());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveSuccess) {
@@ -1136,6 +1183,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveSuccess) {
   EXPECT_FALSE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             GetCachedToken(CoreAccountId()).status());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveLoginCanceled) {
@@ -1151,6 +1201,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveLoginCanceled) {
   EXPECT_TRUE(func->login_ui_shown());
 #endif
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kSignInFailed, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1167,6 +1220,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 // The interactive login flow is always short-circuited out with failure on
@@ -1185,6 +1241,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1200,6 +1259,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1214,6 +1276,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGetAccessTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1231,6 +1296,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1245,6 +1313,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowRejected, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1262,6 +1333,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 #endif
 
@@ -1276,6 +1350,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveApprovalAborted) {
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowRejected, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1290,6 +1367,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kPageLoadFailure), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kPageLoadFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1304,6 +1384,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kInvalidRedirect), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kInvalidRedirect, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1320,6 +1403,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1338,6 +1424,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   // The login UI should not be shown as the account is in a valid state.
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowAuthFailure, 1);
 }
 
 // The signin flow is simply not used on ChromeOS.
@@ -1360,6 +1449,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowAuthFailure, 1);
 }
 #endif
 
@@ -1368,15 +1460,24 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   SignIn("primary@example.com");
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
 
-  std::map<std::string, std::string> error_map;
-  error_map.insert(std::make_pair("access_denied", errors::kUserRejected));
-  error_map.insert(std::make_pair("invalid_scope", errors::kInvalidScopes));
-  error_map.insert(std::make_pair(
-      "unmapped_error", std::string(errors::kAuthFailure) + "unmapped_error"));
+  struct TestCase {
+    std::string oauth_error;
+    std::string error_message;
+    IdentityGetAuthTokenError::State error_state;
+  };
 
-  for (std::map<std::string, std::string>::const_iterator it =
-           error_map.begin();
-       it != error_map.end(); ++it) {
+  std::vector<TestCase> test_cases;
+  test_cases.push_back({"access_denied", errors::kUserRejected,
+                        IdentityGetAuthTokenError::State::kOAuth2AccessDenied});
+  test_cases.push_back(
+      {"invalid_scope", errors::kInvalidScopes,
+       IdentityGetAuthTokenError::State::kOAuth2InvalidScopes});
+  test_cases.push_back({"unmapped_error",
+                        std::string(errors::kAuthFailure) + "unmapped_error",
+                        IdentityGetAuthTokenError::State::kOAuth2Failure});
+
+  for (const auto& test_case : test_cases) {
+    base::HistogramTester histogram_tester;
     scoped_refptr<FakeGetAuthTokenFunction> func(
         new FakeGetAuthTokenFunction());
     func->set_extension(extension.get());
@@ -1384,12 +1485,14 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     // flow to be leaked.
     id_api()->EraseAllCachedTokens();
     func->push_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
-    func->set_scope_ui_oauth_error(it->first);
+    func->set_scope_ui_oauth_error(test_case.oauth_error);
     std::string error = utils::RunFunctionAndReturnError(
         func.get(), "[{\"interactive\": true}]", browser());
-    EXPECT_EQ(it->second, error);
+    EXPECT_EQ(test_case.error_message, error);
     EXPECT_FALSE(func->login_ui_shown());
     EXPECT_TRUE(func->scope_ui_shown());
+    histogram_tester.ExpectUniqueSample(kGetAuthTokenResultHistogramName,
+                                        test_case.error_state, 1);
   }
 }
 
@@ -1410,6 +1513,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveApprovalSuccess) {
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
             GetCachedToken(CoreAccountId()).status());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 #if !defined(OS_MACOSX)
@@ -1444,6 +1550,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   // The login screen should not be shown when the browser process is shutting
   // down.
   EXPECT_FALSE(func->login_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowAuthFailure, 1);
 }
 #endif  // !defined(OS_MACOSX)
 
@@ -1478,6 +1587,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
@@ -1512,6 +1624,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueueShutdown) {
@@ -1543,6 +1658,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueueShutdown) {
   EXPECT_FALSE(func->scope_ui_shown());
 
   QueueRequestComplete(type, &queued_request);
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kCanceled, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveShutdown) {
@@ -1557,6 +1675,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveShutdown) {
   // After the request is canceled, the function will complete.
   func->OnIdentityAPIShutdown();
   EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kCanceled, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1583,6 +1704,10 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->scope_ui_shown());
 
   QueueRequestComplete(type, &queued_request);
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaConsentInteractionAlreadyRunning,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveCacheHit) {
@@ -1604,6 +1729,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NonInteractiveCacheHit) {
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 // Checks that the first account in Gaia cookie can be used when extensions are
@@ -1637,6 +1765,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     std::string error =
         utils::RunFunctionAndReturnError(func.get(), "[{}]", browser());
     EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kUserNotSignedIn, 1);
   } else {
     // Use the account from Gaia cookies.
     std::unique_ptr<base::Value> value(
@@ -1644,6 +1775,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     std::string access_token;
     EXPECT_TRUE(value->GetAsString(&access_token));
     EXPECT_EQ(std::string(kAccessToken), access_token);
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kNone, 1);
   }
 
   EXPECT_FALSE(func->login_ui_shown());
@@ -1669,6 +1803,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kNoGrant), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaConsentInteractionRequired, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveCacheHit) {
@@ -1706,6 +1843,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveCacheHit) {
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 // The interactive login UI is never shown on ChromeOS, so tests of the
@@ -1735,6 +1875,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, LoginInvalidatesTokenCache) {
   EXPECT_TRUE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
             GetCachedToken(CoreAccountId()).status());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 #endif
 
@@ -1761,6 +1904,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(kAccessToken, value->GetString());
   EXPECT_TRUE(func->scope_ui_shown());
   EXPECT_FALSE(GetCachedGaiaId().has_value());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1786,6 +1932,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_TRUE(func->scope_ui_shown());
   EXPECT_FALSE(GetCachedGaiaId().has_value());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowRejected, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithChromeClientId) {
@@ -1824,6 +1973,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, IdentityAPIShutdown) {
 
   id_api()->Shutdown();
   EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kCanceled, 1);
 }
 
 // Ensure that when there are multiple active function calls, IdentityAPI
@@ -1892,6 +2044,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueToken) {
             GetCachedToken(CoreAccountId()).status());
   EXPECT_THAT(func->login_access_tokens(),
               testing::ElementsAre(primary_account_access_token));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueTokenFailure) {
@@ -1919,6 +2074,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueTokenFailure) {
           GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE)
               .ToString(),
       WaitForError(func.get()));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGetAccessTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1948,6 +2106,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
             GetCachedToken(CoreAccountId()).status());
   EXPECT_THAT(func->login_access_tokens(),
               testing::ElementsAre(primary_account_access_token));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -1979,6 +2140,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
             GetCachedToken(CoreAccountId()).status());
   EXPECT_THAT(func->login_access_tokens(),
               testing::ElementsAre(primary_account_access_token));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -2005,6 +2169,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     EXPECT_EQ(std::string(errors::kUserNonPrimary), error);
     EXPECT_FALSE(func->login_ui_shown());
     EXPECT_FALSE(func->scope_ui_shown());
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kUserNonPrimary, 1);
     return;
   }
 
@@ -2024,6 +2191,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
             GetCachedToken(secondary_account_id).status());
   EXPECT_THAT(func->login_access_tokens(),
               testing::ElementsAre(secondary_account_access_token));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -2040,10 +2210,17 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       func.get(), "[{\"account\": { \"id\": \"unknown@example.com\" } }]",
       browser());
   std::string expected_error;
-  if (id_api()->AreExtensionsRestrictedToPrimaryAccount())
+  if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
     EXPECT_EQ(errors::kUserNonPrimary, error);
-  else
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kUserNonPrimary, 1);
+  } else {
     EXPECT_EQ(errors::kUserNotSignedIn, error);
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kUserNotSignedIn, 1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -2066,6 +2243,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kMintTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -2086,6 +2266,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
       browser());
   EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
                                base::CompareCase::INSENSITIVE_ASCII));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGetAccessTokenAuthFailure, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -2109,6 +2292,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kGaiaFlowRejected, 1);
 }
 
 // Tests that Chrome remembers user's choice of an account at the end of the
@@ -2144,6 +2330,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
     if (id_api()->AreExtensionsRestrictedToPrimaryAccount()) {
       EXPECT_EQ(std::string(errors::kUserNonPrimary), WaitForError(func.get()));
+      histogram_tester()->ExpectUniqueSample(
+          kGetAuthTokenResultHistogramName,
+          IdentityGetAuthTokenError::State::kRemoteConsentUserNonPrimary, 1);
       return;
     }
 
@@ -2161,6 +2350,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     EXPECT_THAT(func->login_access_tokens(),
                 testing::ElementsAre(primary_account_access_token,
                                      secondary_account_access_token));
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kNone, 1);
   }
 
   {
@@ -2176,6 +2368,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     EXPECT_EQ(std::string(kAccessToken), access_token);
     EXPECT_FALSE(func->login_ui_shown());
     EXPECT_FALSE(func->scope_ui_shown());
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kNone, 2);
   }
 }
 
@@ -2208,6 +2403,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     EXPECT_EQ(std::string(errors::kUserNonPrimary), error);
     EXPECT_FALSE(func->login_ui_shown());
     EXPECT_FALSE(func->scope_ui_shown());
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kUserNonPrimary, 1);
   } else {
     // Extensions can show the login UI for secondary accounts, and get the auth
     // token.
@@ -2218,6 +2416,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
     EXPECT_EQ(std::string(kAccessToken), access_token);
     EXPECT_TRUE(func->login_ui_shown());
     EXPECT_TRUE(func->scope_ui_shown());
+    histogram_tester()->ExpectUniqueSample(
+        kGetAuthTokenResultHistogramName,
+        IdentityGetAuthTokenError::State::kNone, 1);
   }
 }
 #endif
@@ -2238,6 +2439,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesDefault) {
   EXPECT_EQ(2ul, token_key->scopes.size());
   EXPECT_TRUE(base::Contains(token_key->scopes, "scope1"));
   EXPECT_TRUE(base::Contains(token_key->scopes, "scope2"));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmpty) {
@@ -2249,6 +2453,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmpty) {
       func.get(), "[{\"scopes\": []}]", browser()));
 
   EXPECT_EQ(errors::kInvalidScopes, error);
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kEmptyScopes, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmail) {
@@ -2266,6 +2473,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmail) {
   const ExtensionTokenKey* token_key = func->GetExtensionTokenKeyForTest();
   EXPECT_EQ(1ul, token_key->scopes.size());
   EXPECT_TRUE(base::Contains(token_key->scopes, "email"));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
@@ -2285,6 +2495,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
   EXPECT_TRUE(base::Contains(token_key->scopes, "email"));
   EXPECT_TRUE(base::Contains(token_key->scopes, "foo"));
   EXPECT_TRUE(base::Contains(token_key->scopes, "bar"));
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 #if defined(OS_CHROMEOS)
@@ -2340,6 +2553,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonWhitelisted) {
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName,
+      IdentityGetAuthTokenError::State::kNotWhitelistedInPublicSession, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
@@ -2354,6 +2570,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
   std::string access_token;
   EXPECT_TRUE(value->GetAsString(&access_token));
   EXPECT_EQ(std::string(kAccessToken), access_token);
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      1);
 }
 
 #endif

@@ -446,11 +446,19 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
   }
   if (perf.FirstPaint() > 0.0)
     timing->paint_timing->first_paint = ClampDelta(perf.FirstPaint(), start);
-  if (perf.FirstPaintAfterBackForwardCacheRestore() > 0.0) {
-    double start = perf.LastBackForwardCacheRestoreNavigationStart();
-    timing->back_forward_cache_timing
-        ->first_paint_after_back_forward_cache_restore =
-        ClampDelta(perf.FirstPaintAfterBackForwardCacheRestore(), start);
+  if (!perf.BackForwardCacheRestore().empty()) {
+    blink::WebPerformance::BackForwardCacheRestoreTimings restore_timings =
+        perf.BackForwardCacheRestore();
+    for (const auto& restore_timing : restore_timings) {
+      double navigation_start = restore_timing.navigation_start;
+      double first_paint = restore_timing.first_paint;
+      if (!first_paint) {
+        continue;
+      }
+      timing->back_forward_cache_timing
+          ->first_paint_after_back_forward_cache_restore.push_back(
+              ClampDelta(first_paint, navigation_start));
+    }
   }
   if (perf.FirstImagePaint() > 0.0) {
     timing->paint_timing->first_image_paint =

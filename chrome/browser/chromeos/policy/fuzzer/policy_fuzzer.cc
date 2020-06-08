@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -42,6 +43,7 @@ struct Environment {
     CHECK(scoped_temp_dir.CreateUniqueTempDir());
     CHECK(base::PathService::Override(chrome::DIR_USER_DATA,
                                       scoped_temp_dir.GetPath()));
+    CHECK(base::i18n::InitializeICU());
   }
 
   base::ScopedTempDir scoped_temp_dir;

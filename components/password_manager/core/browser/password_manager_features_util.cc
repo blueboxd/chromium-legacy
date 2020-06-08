@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 
+#include "base/containers/flat_set.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/gaia_id_hash.h"
@@ -294,6 +295,31 @@ void SetDefaultPasswordStore(PrefService* pref_service,
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
       .SetDefaultStore(default_store);
+}
+
+void KeepAccountStorageSettingsOnlyForUsers(
+    PrefService* pref_service,
+    const std::vector<std::string>& gaia_ids) {
+  DCHECK(pref_service);
+
+  // Build a set of hashes of all the Gaia IDs.
+  std::vector<std::string> hashes_to_keep_list;
+  for (const std::string& gaia_id : gaia_ids)
+    hashes_to_keep_list.push_back(GaiaIdHash::FromGaiaId(gaia_id).ToBase64());
+  base::flat_set<std::string> hashes_to_keep(std::move(hashes_to_keep_list));
+
+  // Now remove any settings for account that are *not* in the set of hashes.
+  // DictionaryValue doesn't allow removing elements while iterating, so first
+  // collect all the keys to remove, then actually remove them in a second pass.
+  DictionaryPrefUpdate update(pref_service,
+                              prefs::kAccountStoragePerAccountSettings);
+  std::vector<std::string> keys_to_remove;
+  for (auto kv : update->DictItems()) {
+    if (!hashes_to_keep.contains(kv.first))
+      keys_to_remove.push_back(kv.first);
+  }
+  for (const std::string& key_to_remove : keys_to_remove)
+    update->RemoveKey(key_to_remove);
 }
 
 void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service) {

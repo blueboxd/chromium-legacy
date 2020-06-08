@@ -688,9 +688,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGInsideListMarker() const {
     return IsOfType(kLayoutObjectNGInsideListMarker);
   }
-  bool IsLayoutNGListMarkerImage() const {
-    return IsOfType(kLayoutObjectNGListMarkerImage);
-  }
   bool IsLayoutNGOutsideListMarker() const {
     return IsOfType(kLayoutObjectNGOutsideListMarker);
   }
@@ -703,6 +700,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsOfType(kLayoutObjectLayoutNGTableCol);
   }
   bool IsListItem() const { return IsOfType(kLayoutObjectListItem); }
+  bool IsListMarkerImage() const {
+    return IsOfType(kLayoutObjectListMarkerImage);
+  }
   bool IsMathML() const { return IsOfType(kLayoutObjectMathML); }
   bool IsMathMLRoot() const { return IsOfType(kLayoutObjectMathMLRoot); }
   bool IsMedia() const { return IsOfType(kLayoutObjectMedia); }
@@ -2600,6 +2600,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     node_ = document;
   }
 
+  bool IsLayoutNGObjectForListMarkerImage() const {
+    DCHECK(IsListMarkerImage());
+    return bitfields_.IsLayoutNGObjectForListMarkerImage();
+  }
+  void SetIsLayoutNGObjectForListMarkerImage(bool b) {
+    DCHECK(IsListMarkerImage());
+    bitfields_.SetIsLayoutNGObjectForListMarkerImage(b);
+  }
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
@@ -2615,6 +2624,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectLayoutTableCol,
     kLayoutObjectLayoutNGTableCol,
     kLayoutObjectListItem,
+    kLayoutObjectListMarkerImage,
     kLayoutObjectMathML,
     kLayoutObjectMathMLRoot,
     kLayoutObjectMedia,
@@ -2626,7 +2636,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectNGListItem,
     kLayoutObjectNGInsideListMarker,
     kLayoutObjectNGOutsideListMarker,
-    kLayoutObjectNGListMarkerImage,
     kLayoutObjectNGProgress,
     kLayoutObjectNGText,
     kLayoutObjectOutsideListMarker,
@@ -3281,6 +3290,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     // True at start of |Destroy()| before calling |WillBeDestroyed()|.
     ADD_BOOLEAN_BITFIELD(being_destroyed_, BeingDestroyed);
+
+    // From LayoutListMarkerImage
+    ADD_BOOLEAN_BITFIELD(is_layout_ng_object_for_list_marker_image,
+                         IsLayoutNGObjectForListMarkerImage);
 
    private:
     // This is the cached 'position' value of this object

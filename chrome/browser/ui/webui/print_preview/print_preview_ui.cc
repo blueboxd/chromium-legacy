@@ -36,6 +36,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -288,12 +289,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"printButton", IDS_PRINT_PREVIEW_PRINT_BUTTON},
     {"printDestinationsTitle", IDS_PRINT_PREVIEW_PRINT_DESTINATIONS_TITLE},
     {"printPagesLabel", IDS_PRINT_PREVIEW_PRINT_PAGES_LABEL},
-    {"printPreviewPageLabelPlural", IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL},
-    {"printPreviewPageLabelSingular", IDS_PRINT_PREVIEW_PAGE_LABEL_SINGULAR},
-    {"printPreviewSheetsLabelPlural", IDS_PRINT_PREVIEW_SHEETS_LABEL_PLURAL},
-    {"printPreviewSheetsLabelSingular",
-     IDS_PRINT_PREVIEW_SHEETS_LABEL_SINGULAR},
-    {"printPreviewSummaryFormatShort", IDS_PRINT_PREVIEW_SUMMARY_FORMAT_SHORT},
     {"printToGoogleDrive", IDS_PRINT_PREVIEW_PRINT_TO_GOOGLE_DRIVE},
     {"printToPDF", IDS_PRINT_PREVIEW_PRINT_TO_PDF},
     {"printerSharingInviteText", IDS_PRINT_PREVIEW_INVITE_TEXT},
@@ -329,9 +324,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"pinErrorMessage", IDS_PRINT_PREVIEW_PIN_ERROR_MESSAGE},
     {"pinPlaceholder", IDS_PRINT_PREVIEW_PIN_PLACEHOLDER},
     {"printerEulaURL", IDS_PRINT_PREVIEW_EULA_URL},
-    {"sheetsLimitErrorMessage", IDS_PRINT_PREVIEW_SHEETS_LIMIT_ERROR_MESSAGE},
-    {"sheetsLimitLabelSingular", IDS_PRINT_PREVIEW_SHEETS_LIMIT_LABEL_SINGULAR},
-    {"sheetsLimitLabelPlural", IDS_PRINT_PREVIEW_SHEETS_LIMIT_LABEL_PLURAL},
 #endif
 #if defined(OS_MACOSX)
     {"openPdfInPreviewOption", IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP},
@@ -438,6 +430,19 @@ PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
   PrintPreviewHandler* handler_ptr = handler.get();
   web_ui->AddMessageHandler(std::move(handler));
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
+
+  // Add a handler to provide pluralized strings.
+  auto plural_string_handler = std::make_unique<PluralStringHandler>();
+  plural_string_handler->AddLocalizedString(
+      "printPreviewPageSummaryLabel", IDS_PRINT_PREVIEW_PAGE_SUMMARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "printPreviewSheetSummaryLabel", IDS_PRINT_PREVIEW_SHEET_SUMMARY_LABEL);
+#if defined(OS_CHROMEOS)
+  plural_string_handler->AddLocalizedString(
+      "sheetsLimitErrorMessage", IDS_PRINT_PREVIEW_SHEETS_LIMIT_ERROR_MESSAGE);
+#endif
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
+
   return handler_ptr;
 }
 

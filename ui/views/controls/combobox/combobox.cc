@@ -23,6 +23,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/themed_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
@@ -52,6 +53,15 @@ constexpr int kNoSelection = -1;
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
   const int style = enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
   return style::GetColor(combobox, style::CONTEXT_TEXTFIELD, style);
+}
+
+gfx::ImageSkia GetImageSkiaFromImageModel(const ui::ImageModel* model,
+                                          const ui::NativeTheme* native_theme) {
+  DCHECK(model);
+  DCHECK(!model->IsEmpty());
+  return model->IsImage() ? model->GetImage().AsImageSkia()
+                          : ui::ThemedVectorIcon(model->GetVectorIcon())
+                                .GetImageSkia(native_theme);
 }
 
 // The transparent button which holds a button state but is not rendered.
@@ -570,11 +580,12 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   // Draw the icon.
   ui::ImageModel icon = model()->GetIconAt(selected_index_);
   if (!icon.IsEmpty()) {
-    gfx::Image icon_image = icon.GetImage();
-    int icon_y = y + (contents_height - icon_image.Height()) / 2;
-    canvas->DrawImageInt(icon_image.AsImageSkia(), x, icon_y);
-    x += icon_image.Width() + LayoutProvider::Get()->GetDistanceMetric(
-                                  DISTANCE_RELATED_LABEL_HORIZONTAL);
+    gfx::ImageSkia icon_skia =
+        GetImageSkiaFromImageModel(&icon, GetNativeTheme());
+    int icon_y = y + (contents_height - icon_skia.height()) / 2;
+    canvas->DrawImageInt(icon_skia, x, icon_y);
+    x += icon_skia.width() + LayoutProvider::Get()->GetDistanceMetric(
+                                 DISTANCE_RELATED_LABEL_HORIZONTAL);
   }
 
   // Draw the text.
@@ -665,11 +676,14 @@ gfx::Size Combobox::GetContentSize() const {
 
     if (size_to_largest_label_ || i == selected_index_) {
       int item_width = gfx::GetStringWidth(model()->GetItemAt(i), font_list);
-      if (!model()->GetIconAt(i).IsEmpty()) {
-        gfx::Image icon = model()->GetIconAt(i).GetImage();
-        item_width += icon.Width() + LayoutProvider::Get()->GetDistanceMetric(
-                                         DISTANCE_RELATED_LABEL_HORIZONTAL);
-        height = std::max(height, icon.Height());
+      ui::ImageModel icon = model()->GetIconAt(i);
+      if (!icon.IsEmpty()) {
+        gfx::ImageSkia icon_skia =
+            GetImageSkiaFromImageModel(&icon, GetNativeTheme());
+        item_width +=
+            icon_skia.width() + LayoutProvider::Get()->GetDistanceMetric(
+                                    DISTANCE_RELATED_LABEL_HORIZONTAL);
+        height = std::max(height, icon_skia.height());
       }
       width = std::max(width, item_width);
     }

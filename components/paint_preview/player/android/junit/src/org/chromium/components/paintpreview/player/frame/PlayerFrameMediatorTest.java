@@ -9,7 +9,7 @@ import android.graphics.Rect;
 import android.os.Parcel;
 import android.util.Pair;
 import android.view.View;
-import android.widget.Scroller;
+import android.widget.OverScroller;
 
 import androidx.annotation.NonNull;
 
@@ -44,7 +44,7 @@ public class PlayerFrameMediatorTest {
     private UnguessableToken mFrameGuid;
     private PropertyModel mModel;
     private TestPlayerCompositorDelegate mCompositorDelegate;
-    private Scroller mScroller;
+    private OverScroller mScroller;
     private PlayerFrameMediator mMediator;
 
     /**
@@ -165,7 +165,7 @@ public class PlayerFrameMediatorTest {
         mFrameGuid = frameGuid();
         mModel = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         mCompositorDelegate = new TestPlayerCompositorDelegate();
-        mScroller = new Scroller(ContextUtils.getApplicationContext());
+        mScroller = new OverScroller(ContextUtils.getApplicationContext());
         mMediator = new PlayerFrameMediator(
                 mModel, mCompositorDelegate, mScroller, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT);
     }

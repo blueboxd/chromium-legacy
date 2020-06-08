@@ -41,10 +41,9 @@ class BrowserImpl : public Browser {
   void RemoveObserver(BrowserObserver* observer) override;
 
  private:
-  // Exposed to allow unittests to inject a TabModel and WebStateList
+  // Exposed to allow unittests to inject a WebStateList
   FRIEND_TEST_ALL_PREFIXES(BrowserImplTest, TestAccessors);
   BrowserImpl(ChromeBrowserState* browser_state,
-              TabModel* tab_model,
               std::unique_ptr<WebStateList> web_state_list);
 
   ChromeBrowserState* browser_state_;

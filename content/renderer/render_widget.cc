@@ -597,7 +597,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
-    IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDrop, OnDragTargetDrop)
     IPC_MESSAGE_HANDLER(DragMsg_SourceEnded, OnDragSourceEnded)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -2192,17 +2191,6 @@ void RenderWidget::OnDragTargetDragOver(const gfx::PointF& client_point,
       key_modifiers);
 
   Send(new DragHostMsg_UpdateDragCursor(routing_id(), operation));
-}
-
-void RenderWidget::OnDragTargetDragLeave(const gfx::PointF& client_point,
-                                         const gfx::PointF& screen_point) {
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  if (!frame_widget)
-    return;
-
-  frame_widget
-      ->DragTargetDragLeave(ConvertWindowPointToViewport(client_point),
-                            screen_point);
 }
 
 void RenderWidget::OnDragTargetDrop(const DropData& drop_data,

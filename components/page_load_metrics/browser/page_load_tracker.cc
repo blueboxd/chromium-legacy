@@ -144,13 +144,10 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
     observer->OnFirstPaintInPage(new_timing);
   }
   if (new_timing.back_forward_cache_timing
-          ->first_paint_after_back_forward_cache_restore !=
+          ->first_paint_after_back_forward_cache_restore.size() !=
       last_timing.back_forward_cache_timing
-          ->first_paint_after_back_forward_cache_restore) {
-    if (new_timing.back_forward_cache_timing
-            ->first_paint_after_back_forward_cache_restore) {
-      observer->OnFirstPaintAfterBackForwardCacheRestoreInPage(new_timing);
-    }
+          ->first_paint_after_back_forward_cache_restore.size()) {
+    observer->OnFirstPaintAfterBackForwardCacheRestoreInPage(new_timing);
   }
   if (new_timing.paint_timing->first_image_paint &&
       !last_timing.paint_timing->first_image_paint) {

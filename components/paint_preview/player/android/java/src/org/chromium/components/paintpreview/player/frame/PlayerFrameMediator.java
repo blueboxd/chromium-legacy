@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.view.View;
-import android.widget.Scroller;
+import android.widget.OverScroller;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -66,7 +66,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private final List<Rect> mVisibleSubFrameScaledRects = new ArrayList<>();
     private final PropertyModel mModel;
     private final PlayerCompositorDelegate mCompositorDelegate;
-    private final Scroller mScroller;
+    private final OverScroller mScroller;
     private final Handler mScrollerHandler;
     /** The user-visible area for this frame. */
     private final Rect mViewportRect = new Rect();
@@ -96,7 +96,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private float mOverscrollAmount = 0.0f;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
-            Scroller scroller, UnguessableToken frameGuid, int contentWidth, int contentHeight) {
+            OverScroller scroller, UnguessableToken frameGuid, int contentWidth,
+            int contentHeight) {
         mModel = model;
         mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mVisibleSubFrameViews);
         mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mVisibleSubFrameScaledRects);

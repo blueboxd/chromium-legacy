@@ -19,6 +19,7 @@ class InteractionHandlerAndroid;
 class BasicInteractions;
 class EventHandler;
 class UserModel;
+class ViewHandlerAndroid;
 
 class GenericUiControllerAndroid {
  public:
@@ -39,19 +40,13 @@ class GenericUiControllerAndroid {
 
   GenericUiControllerAndroid(
       base::android::ScopedJavaGlobalRef<jobject> jroot_view,
-      std::unique_ptr<
-          std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>>
-          views,
+      std::unique_ptr<ViewHandlerAndroid> view_handler,
       std::unique_ptr<InteractionHandlerAndroid> interaction_handler);
   ~GenericUiControllerAndroid();
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> jroot_view_;
-
-  // Maps view-ids to android views.
-  std::unique_ptr<
-      std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>>
-      views_;
+  std::unique_ptr<ViewHandlerAndroid> view_handler_;
   std::unique_ptr<InteractionHandlerAndroid> interaction_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericUiControllerAndroid);

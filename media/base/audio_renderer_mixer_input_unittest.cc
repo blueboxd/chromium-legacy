@@ -21,10 +21,6 @@
 
 using testing::_;
 
-namespace {
-void LogUma(int value) {}
-}
-
 namespace media {
 
 static const int kSampleRate = 48000;
@@ -67,8 +63,8 @@ class AudioRendererMixerInputTest : public testing::Test,
       EXPECT_CALL(*reinterpret_cast<MockAudioRendererSink*>(sink.get()),
                   Start());
 
-      mixers_[idx].reset(new AudioRendererMixer(
-          audio_parameters_, std::move(sink), base::BindRepeating(&LogUma)));
+      mixers_[idx] = std::make_unique<AudioRendererMixer>(audio_parameters_,
+                                                          std::move(sink));
     }
     EXPECT_CALL(*this, ReturnMixer(mixers_[idx].get()));
     return mixers_[idx].get();

@@ -118,6 +118,7 @@ js_library("button_strip") {
     "../data:destination",
     "../data:state",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:plural_string_proxy",
   ]
 
   if (is_chromeos) {
@@ -132,6 +133,7 @@ js_library("header") {
     "../data:state",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:plural_string_proxy",
   ]
 }
 

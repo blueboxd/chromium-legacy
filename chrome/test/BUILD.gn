@@ -3908,9 +3908,6 @@ test("unit_tests") {
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
     ]
 
-    if (enable_password_change_in_leaked_dialog) {
-      sources += [ "../browser/password_manager/credential_leak_password_change_controller_android_unittest.cc" ]
-    }
     deps += [
       "//base:base_java",
       "//chrome:chrome_android_core",

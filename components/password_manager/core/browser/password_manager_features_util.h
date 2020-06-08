@@ -91,6 +91,14 @@ autofill::PasswordForm::Store GetDefaultPasswordStore(
     const PrefService* pref_service,
     const syncer::SyncService* sync_service);
 
+// Clears all account-storage-related settings for all users *except* the ones
+// in the passed-in |gaia_ids|. Most notably, this includes the opt-in, but also
+// all other related settings like the default password store.
+// |pref_service| must not be null.
+void KeepAccountStorageSettingsOnlyForUsers(
+    PrefService* pref_service,
+    const std::vector<std::string>& gaia_ids);
+
 // Clears all account-storage-related settings for all users. Most notably, this
 // includes the opt-in, but also all other related settings like the default
 // password store. Meant to be called when account cookies were cleared.

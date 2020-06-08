@@ -34,6 +34,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 
 #if INSIDE_BLINK
@@ -46,6 +47,14 @@ class WindowPerformance;
 
 class WebPerformance {
  public:
+  struct BackForwardCacheRestoreTiming {
+    double navigation_start = 0;
+    double first_paint = 0;
+  };
+
+  using BackForwardCacheRestoreTimings =
+      WebVector<BackForwardCacheRestoreTiming>;
+
   ~WebPerformance() { Reset(); }
 
   WebPerformance() = default;
@@ -68,7 +77,7 @@ class WebPerformance {
   BLINK_EXPORT double InputForNavigationStart() const;
   BLINK_EXPORT double NavigationStart() const;
   BLINK_EXPORT base::TimeTicks NavigationStartAsMonotonicTime() const;
-  BLINK_EXPORT double LastBackForwardCacheRestoreNavigationStart() const;
+  BLINK_EXPORT BackForwardCacheRestoreTimings BackForwardCacheRestore() const;
   BLINK_EXPORT double UnloadEventEnd() const;
   BLINK_EXPORT double RedirectStart() const;
   BLINK_EXPORT double RedirectEnd() const;
@@ -89,7 +98,6 @@ class WebPerformance {
   BLINK_EXPORT double LoadEventStart() const;
   BLINK_EXPORT double LoadEventEnd() const;
   BLINK_EXPORT double FirstPaint() const;
-  BLINK_EXPORT double FirstPaintAfterBackForwardCacheRestore() const;
   BLINK_EXPORT double FirstImagePaint() const;
   BLINK_EXPORT double FirstContentfulPaint() const;
   BLINK_EXPORT base::TimeTicks FirstContentfulPaintAsMonotonicTime() const;

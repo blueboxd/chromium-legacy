@@ -74,8 +74,11 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // current document.
   base::TimeTicks FirstPaint() const { return first_paint_swap_; }
 
-  base::TimeTicks FirstPaintAfterBackForwardCacheRestore() const {
-    return first_paint_after_back_forward_cache_restore_swap_;
+  // Times when the first paint happens after the page is restored from the
+  // back-forward cache. If the element value is zero time tick, the first paint
+  // event did not happen for that navigation.
+  WTF::Vector<base::TimeTicks> FirstPaintsAfterBackForwardCacheRestore() const {
+    return first_paints_after_back_forward_cache_restore_swap_;
   }
 
   // FirstContentfulPaint returns the first time that 'contentful' content was
@@ -163,7 +166,8 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // confirm the deltas and discrepancies look reasonable.
   base::TimeTicks first_paint_;
   base::TimeTicks first_paint_swap_;
-  base::TimeTicks first_paint_after_back_forward_cache_restore_swap_;
+  WTF::Vector<base::TimeTicks>
+      first_paints_after_back_forward_cache_restore_swap_;
   base::TimeTicks first_image_paint_;
   base::TimeTicks first_image_paint_swap_;
   base::TimeTicks first_contentful_paint_;

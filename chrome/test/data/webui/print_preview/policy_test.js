@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BackgroundGraphicsModeRestriction, NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
+import {BackgroundGraphicsModeRestriction, NativeLayer, NativeLayerImpl, PluginProxy, PrintPreviewPluralStringProxyImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
 import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
 import {getCddTemplate, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {TestPluralStringProxy} from 'chrome://test/test_plural_string_proxy.js';
 
 window.policy_tests = {};
 policy_tests.suiteName = 'PolicyTest';
@@ -18,6 +19,17 @@ policy_tests.TestNames = {
   MediaSizePolicy: 'media size policy',
   SheetsPolicy: 'sheets policy',
 };
+
+class PolicyTestPluralStringProxy extends TestPluralStringProxy {
+  /** override */
+  getPluralString(messageName, itemCount) {
+    if (messageName === 'sheetsLimitErrorMessage') {
+      this.methodCalled('getPluralString', {messageName, itemCount});
+    }
+    return Promise.resolve(this.text);
+  }
+}
+
 
 suite(policy_tests.suiteName, function() {
   /** @type {?PrintPreviewAppElement} */
@@ -255,6 +267,10 @@ suite(policy_tests.suiteName, function() {
   });
 
   test(assert(policy_tests.TestNames.SheetsPolicy), async () => {
+    const pluralString = new PolicyTestPluralStringProxy();
+    PrintPreviewPluralStringProxyImpl.instance_ = pluralString;
+    pluralString.text = 'Exceeds limit of 1 sheet of paper';
+
     const tests = [
       {
         // No policy.
@@ -262,7 +278,7 @@ suite(policy_tests.suiteName, function() {
         pages: [1, 2, 3],
         expectedDisabled: false,
         expectedHidden: true,
-        expectedErrorMessage: '',
+        expectedNonEmptyErrorMessage: false,
       },
       {
         // Policy is set, actual pages are not calculated yet.
@@ -270,7 +286,7 @@ suite(policy_tests.suiteName, function() {
         pages: [],
         expectedDisabled: true,
         expectedHidden: true,
-        expectedErrorMessage: '',
+        expectedNonEmptyErrorMessage: false,
       },
       {
         // Policy is set, but the limit is not hit.
@@ -278,7 +294,7 @@ suite(policy_tests.suiteName, function() {
         pages: [1, 2],
         expectedDisabled: false,
         expectedHidden: true,
-        expectedErrorMessage: '',
+        expectedNonEmptyErrorMessage: false,
       },
       {
         // Policy is set, the limit is hit, singular form is used.
@@ -286,20 +302,25 @@ suite(policy_tests.suiteName, function() {
         pages: [1, 2],
         expectedDisabled: true,
         expectedHidden: false,
-        expectedErrorMessage: 'Exceeds limit of 1 sheet of paper',
+        expectedNonEmptyErrorMessage: true,
       },
       {
         // Policy is set, the limit is hit, plural form is used.
         maxSheets: 2,
-        pages: [1, 2, 3],
+        pages: [1, 2, 3, 4],
         expectedDisabled: true,
         expectedHidden: false,
-        expectedErrorMessage: 'Exceeds limit of 2 sheets of paper',
+        expectedNonEmptyErrorMessage: true,
       }
     ];
     for (const subtestParams of tests) {
       await doValuePolicySetup('sheets', subtestParams.maxSheets);
+      pluralString.resetResolver('getPluralString');
       page.setSetting('pages', subtestParams.pages);
+      if (subtestParams.expectedNonEmptyErrorMessage) {
+        const {_, itemCount} = await pluralString.whenCalled('getPluralString');
+        assertEquals(subtestParams.maxSheets, itemCount);
+      }
       const printButton = page.$$('print-preview-sidebar')
                               .$$('print-preview-button-strip')
                               .$$('cr-button.action-button');
@@ -308,10 +329,9 @@ suite(policy_tests.suiteName, function() {
                                .$$('div.error-message');
       assertEquals(subtestParams.expectedDisabled, printButton.disabled);
       assertEquals(subtestParams.expectedHidden, errorMessage.hidden);
-      if (!errorMessage.hidden) {
-        assertEquals(
-            subtestParams.expectedErrorMessage, errorMessage.innerText);
-      }
+      assertEquals(
+          subtestParams.expectedNonEmptyErrorMessage,
+          !errorMessage.hidden && !!errorMessage.innerText);
     }
   });
 });

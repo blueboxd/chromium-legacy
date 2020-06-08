@@ -106,7 +106,7 @@ class MockPolicyMigrator : public ExtensionPolicyMigrator {
 
 class PolicyServiceTest : public testing::Test {
  public:
-  PolicyServiceTest() {}
+  PolicyServiceTest() = default;
   void SetUp() override {
     EXPECT_CALL(provider0_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
@@ -941,19 +941,16 @@ TEST_F(PolicyServiceTest, SeparateProxyPoliciesMerging) {
 TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
-  std::unique_ptr<base::Value> dict1 =
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  dict1->SetBoolKey("google.com", false);
-  dict1->SetBoolKey("gmail.com", true);
-  std::unique_ptr<base::Value> dict2 =
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  dict2->SetBoolKey("example.com", true);
-  dict2->SetBoolKey("gmail.com", false);
-  std::unique_ptr<base::Value> result =
-      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
-  result->SetBoolKey("google.com", false);
-  result->SetBoolKey("gmail.com", false);
-  result->SetBoolKey("example.com", true);
+  base::Value dict1(base::Value::Type::DICTIONARY);
+  dict1.SetBoolKey("google.com", false);
+  dict1.SetBoolKey("gmail.com", true);
+  base::Value dict2 = base::Value(base::Value::Type::DICTIONARY);
+  dict2.SetBoolKey("example.com", true);
+  dict2.SetBoolKey("gmail.com", false);
+  base::Value result = base::Value(base::Value::Type::DICTIONARY);
+  result.SetBoolKey("google.com", false);
+  result.SetBoolKey("gmail.com", false);
+  result.SetBoolKey("example.com", true);
 
   std::unique_ptr<base::Value> policy =
       std::make_unique<base::Value>(base::Value::Type::LIST);
@@ -1003,16 +1000,16 @@ TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
 TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
-  std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
-  list1->Append(base::Value("google.com"));
-  list1->Append(base::Value("gmail.com"));
-  std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
-  list2->Append(base::Value("example.com"));
-  list2->Append(base::Value("gmail.com"));
-  std::unique_ptr<base::ListValue> result = std::make_unique<base::ListValue>();
-  result->Append(base::Value("google.com"));
-  result->Append(base::Value("gmail.com"));
-  result->Append(base::Value("example.com"));
+  base::Value list1(base::Value::Type::LIST);
+  list1.Append(base::Value("google.com"));
+  list1.Append(base::Value("gmail.com"));
+  base::Value list2 = base::Value(base::Value::Type::LIST);
+  list2.Append(base::Value("example.com"));
+  list2.Append(base::Value("gmail.com"));
+  base::Value result = base::Value(base::Value::Type::LIST);
+  result.Append(base::Value("google.com"));
+  result.Append(base::Value("gmail.com"));
+  result.Append(base::Value("example.com"));
 
   std::unique_ptr<base::ListValue> policy = std::make_unique<base::ListValue>();
   policy->Append(base::Value(policy::key::kExtensionInstallForcelist));
@@ -1060,15 +1057,15 @@ TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
 TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
-  std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
-  list1->Append(base::Value("google.com"));
-  std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
-  list2->Append(base::Value("example.com"));
-  std::unique_ptr<base::ListValue> list3 = std::make_unique<base::ListValue>();
-  list3->Append(base::Value("example_xyz.com"));
-  std::unique_ptr<base::ListValue> result = std::make_unique<base::ListValue>();
-  result->Append(base::Value("google.com"));
-  result->Append(base::Value("example.com"));
+  base::Value list1(base::Value::Type::LIST);
+  list1.Append(base::Value("google.com"));
+  base::Value list2(base::Value::Type::LIST);
+  list2.Append(base::Value("example.com"));
+  base::Value list3(base::Value::Type::LIST);
+  list3.Append(base::Value("example_xyz.com"));
+  base::Value result(base::Value::Type::LIST);
+  result.Append(base::Value("google.com"));
+  result.Append(base::Value("example.com"));
 
   std::unique_ptr<base::ListValue> policy = std::make_unique<base::ListValue>();
   policy->Append(base::Value(policy::key::kExtensionInstallForcelist));
@@ -1085,9 +1082,9 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
                                 nullptr);
   policy_map1.Set(key::kExtensionInstallForcelist, entry_list_1.DeepCopy());
   policy_map1.Set(key::kExtensionInstallBlacklist, entry_list_1.DeepCopy());
-  PolicyMap::Entry atomic_policy_enabled(
-      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(true), nullptr);
+  PolicyMap::Entry atomic_policy_enabled(POLICY_LEVEL_MANDATORY,
+                                         POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                                         base::Value(true), nullptr);
   policy_map1.Set(key::kPolicyAtomicGroupsEnabled,
                   atomic_policy_enabled.DeepCopy());
 
@@ -1131,15 +1128,15 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
 TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
   const PolicyNamespace chrome_namespace(POLICY_DOMAIN_CHROME, std::string());
 
-  std::unique_ptr<base::ListValue> list1 = std::make_unique<base::ListValue>();
-  list1->Append(base::Value("google.com"));
-  std::unique_ptr<base::ListValue> list2 = std::make_unique<base::ListValue>();
-  list2->Append(base::Value("example.com"));
-  std::unique_ptr<base::ListValue> list3 = std::make_unique<base::ListValue>();
-  list3->Append(base::Value("example_xyz.com"));
-  std::unique_ptr<base::ListValue> result = std::make_unique<base::ListValue>();
-  result->Append(base::Value("google.com"));
-  result->Append(base::Value("example.com"));
+  base::Value list1(base::Value::Type::LIST);
+  list1.Append(base::Value("google.com"));
+  base::Value list2(base::Value::Type::LIST);
+  list2.Append(base::Value("example.com"));
+  base::Value list3(base::Value::Type::LIST);
+  list3.Append(base::Value("example_xyz.com"));
+  base::Value result(base::Value::Type::LIST);
+  result.Append(base::Value("google.com"));
+  result.Append(base::Value("example.com"));
 
   std::unique_ptr<base::ListValue> policy = std::make_unique<base::ListValue>();
   policy->Append(base::Value(policy::key::kExtensionInstallForcelist));
@@ -1158,7 +1155,7 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
   policy_map1.Set(key::kExtensionInstallBlacklist, entry_list_1.DeepCopy());
   PolicyMap::Entry atomic_policy_enabled(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
-      std::make_unique<base::Value>(true), nullptr);
+      base::Value(true), nullptr);
   policy_map1.Set(key::kPolicyAtomicGroupsEnabled,
                   atomic_policy_enabled.DeepCopy());
 

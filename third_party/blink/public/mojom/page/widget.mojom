@@ -39,6 +39,15 @@ struct AllowedDragOperations {
 // Implemented in Blink, this interface defines frame-widget-specific methods that
 // will be invoked from the browser process (e.g. blink::WebFrameWidget).
 interface FrameWidget {
+  // Drag-and-drop methods:
+  // |point_in_viewport| is the position of the drag event in the viewport
+  // coordinates.
+  // |screen_point| is the absolute position of the mouse pointer.
+
+  // Notifies the Widget of a drag leave operation.
+  DragTargetDragLeave(gfx.mojom.PointF point_in_viewport,
+                      gfx.mojom.PointF screen_point);
+
   // Notifies the Widget that the system drag and drop operation has ended.
   DragSourceSystemDragEnded();
 

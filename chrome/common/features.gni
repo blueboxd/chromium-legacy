@@ -51,9 +51,6 @@ declare_args() {
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
 
-  # Enables password change in leaked password dialog, disabled by default.
-  enable_password_change_in_leaked_dialog = false
-
   enable_service_discovery = (enable_mdns && !is_android) || is_mac
 
   # Enables use of the session service, which is enabled by default.

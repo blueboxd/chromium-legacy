@@ -9,6 +9,7 @@ import './print_preview_vars_css.js';
 import '../strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination} from '../data/destination.js';
@@ -40,11 +41,12 @@ Polymer({
     sheetCount: Number,
 
     /** @private {?string} */
-    summary_: {
-      type: String,
-      computed: 'computeSummary_(sheetCount, state, destination.id)',
-    },
+    summary_: String,
   },
+
+  observers: [
+    'updateSummary_(sheetCount, state, destination.id)',
+  ],
 
   /**
    * @return {boolean}
@@ -56,21 +58,22 @@ Polymer({
          this.destination.id === Destination.GooglePromotedId.DOCS);
   },
 
-  /**
-   * @return {?string}
-   * @private
-   */
-  computeSummary_() {
+  /** @private */
+  updateSummary_() {
     switch (this.state) {
       case (State.PRINTING):
-        return loadTimeData.getString(
+        this.summary_ = loadTimeData.getString(
             this.isPdfOrDrive_() ? 'saving' : 'printing');
+        break;
       case (State.READY):
-        return this.getSheetsSummary_();
+        this.updateSheetsSummary_();
+        break;
       case (State.FATAL_ERROR):
-        return this.getErrorMessage_();
+        this.summary_ = this.getErrorMessage_();
+        break;
       default:
-        return null;
+        this.summary_ = null;
+        break;
     }
   },
 
@@ -89,21 +92,19 @@ Polymer({
     }
   },
 
-  /**
-   * @return {string}
-   * @private
-   */
-  getSheetsSummary_() {
+  /** @private */
+  updateSheetsSummary_() {
     if (this.sheetCount === 0) {
-      return '';
+      this.summary_ = '';
+      return;
     }
 
-    const pageOrSheets = this.isPdfOrDrive_() ? 'Page' : 'Sheets';
-    const singularOrPlural = this.sheetCount > 1 ? 'Plural' : 'Singular';
-    const label = loadTimeData.getString(
-        `printPreview${pageOrSheets}Label${singularOrPlural}`);
-    return loadTimeData.getStringF(
-        'printPreviewSummaryFormatShort', this.sheetCount.toLocaleString(),
-        label);
+    const pageOrSheet = this.isPdfOrDrive_() ? 'Page' : 'Sheet';
+    PluralStringProxyImpl.getInstance()
+        .getPluralString(
+            `printPreview${pageOrSheet}SummaryLabel`, this.sheetCount)
+        .then(label => {
+          this.summary_ = label;
+        });
   },
 });

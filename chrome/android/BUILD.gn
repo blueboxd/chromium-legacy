@@ -229,15 +229,6 @@ if (enable_vr) {
   }
 }
 
-# TODO (crbug/1058764) Unfork credential leak dialog password change when prototype is done.
-if (enable_password_change_in_leaked_dialog) {
-  android_resources("password_change_resources") {
-    sources = [ "//chrome/android/java/res_password_change/layout/password_manager_dialog_with_help_button_password_change.xml" ]
-    deps = [ ":chrome_app_java_resources" ]
-    custom_package = "org.chromium.chrome.password_change"
-  }
-}
-
 # TODO(chouinard): Remove this wrapper target after downstream dependencies on it are replaced.
 android_resources("chrome_download_java_resources") {
   sources = []
@@ -535,9 +526,6 @@ android_library("chrome_java") {
     deps += [ ":chrome_vr_java_resources" ]
   }
 
-  if (enable_password_change_in_leaked_dialog) {
-    deps += [ ":password_change_resources" ]
-  }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (enable_feed_in_chrome) {
     deps += [ "//chrome/android/feed:chrome_feed_java_resources" ]
@@ -2722,6 +2710,28 @@ if (public_android_sdk) {
     verify_native_libs_and_assets = _enable_libs_and_assets_verification
   }
 
+  if (is_official_build) {
+    # Used for binary size monitoring.
+    create_app_bundle_minimal_apks("trichrome_chrome_minimal_apks") {
+      deps = [ ":trichrome_chrome_bundle" ]
+      bundle_path = "$root_build_dir/apks/TrichromeChrome.aab"
+    }
+
+    android_resource_sizes_test("resource_sizes_trichrome") {
+      apk_name = "Trichrome"
+      trichrome_chrome_path =
+          "$root_build_dir/apks/TrichromeChrome.minimal.apks"
+      trichrome_webview_path =
+          "$root_build_dir/apks/TrichromeWebView.minimal.apks"
+      trichrome_library_path = "$root_build_dir/apks/TrichromeLibrary.apk"
+      data_deps = [
+        ":trichrome_chrome_minimal_apks",
+        ":trichrome_library_apk",
+        "//android_webview:trichrome_webview_minimal_apks",
+      ]
+    }
+  }
+
   if (android_64bit_target_cpu) {
     monochrome_or_trichrome_public_bundle_tmpl("monochrome_32_public_bundle") {
       bundle_suffix = "32"
@@ -3074,10 +3084,6 @@ generate_jni("chrome_jni_headers") {
 
   if (enable_vr) {
     sources += [ "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java" ]
-  }
-
-  if (enable_password_change_in_leaked_dialog) {
-    sources += [ "java/src/org/chromium/chrome/browser/password_manager/CredentialLeakDialogPasswordChangeBridge.java" ]
   }
 }
 

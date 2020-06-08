@@ -29,6 +29,9 @@ NET_EXPORT extern const base::Feature kEnableTLS13EarlyData;
 // cause us to upgrade the URL to HTTPS and/or to attempt QUIC.
 NET_EXPORT extern const base::Feature kDnsHttpssvc;
 
+// Disable H2 reprioritization, in order to measure its impact.
+NET_EXPORT extern const base::Feature kAvoidH2Reprioritization;
+
 // Determine which kind of record should be queried: HTTPSSVC or INTEGRITY. No
 // more than one of these feature parameters should be enabled at once. In the
 // event that both are enabled, |kDnsHttpssvcUseIntegrity| takes priority, and

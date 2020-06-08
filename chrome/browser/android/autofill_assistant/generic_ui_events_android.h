@@ -12,6 +12,8 @@
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 
 namespace autofill_assistant {
+class ViewHandlerAndroid;
+
 namespace android_events {
 
 // Creates java listeners for all view events in |proto| such that |jdelegate|
@@ -19,7 +21,7 @@ namespace android_events {
 // success, false on failure.
 bool CreateJavaListenersFromProto(
     JNIEnv* env,
-    std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+    ViewHandlerAndroid* view_handler,
     base::android::ScopedJavaGlobalRef<jobject> jdelegate,
     const InteractionsProto& proto);
 

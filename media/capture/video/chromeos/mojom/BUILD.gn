@@ -17,7 +17,6 @@ mojom("cros_camera") {
   deps = [
     "//components/chromeos_camera/common",
     "//media/capture/mojom:image_capture",
-    "//media/mojo/mojom",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/range/mojom",
   ]

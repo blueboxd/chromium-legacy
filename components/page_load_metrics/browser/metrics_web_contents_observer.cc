@@ -76,23 +76,6 @@ void MetricsWebContentsObserver::RecordFeatureUsage(
     observer->OnBrowserFeatureUsage(render_frame_host, new_features);
 }
 
-MetricsWebContentsObserver::MetricsWebContentsObserver(
-    content::WebContents* web_contents,
-    std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
-    : content::WebContentsObserver(web_contents),
-      in_foreground_(web_contents->GetVisibility() !=
-                     content::Visibility::HIDDEN),
-      embedder_interface_(std::move(embedder_interface)),
-      has_navigated_(false),
-      page_load_metrics_receiver_(web_contents, this) {
-  // Prerenders erroneously report that they are initially visible, so we
-  // manually override visibility state for prerender.
-  if (embedder_interface_->IsPrerender(web_contents))
-    in_foreground_ = false;
-
-  RegisterInputEventObserver(web_contents->GetRenderViewHost());
-}
-
 // static
 MetricsWebContentsObserver* MetricsWebContentsObserver::CreateForWebContents(
     content::WebContents* web_contents,
@@ -186,6 +169,23 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
 
   WillStartNavigationRequestImpl(navigation_handle);
   has_navigated_ = true;
+}
+
+MetricsWebContentsObserver::MetricsWebContentsObserver(
+    content::WebContents* web_contents,
+    std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
+    : content::WebContentsObserver(web_contents),
+      in_foreground_(web_contents->GetVisibility() !=
+                     content::Visibility::HIDDEN),
+      embedder_interface_(std::move(embedder_interface)),
+      has_navigated_(false),
+      page_load_metrics_receiver_(web_contents, this) {
+  // Prerenders erroneously report that they are initially visible, so we
+  // manually override visibility state for prerender.
+  if (embedder_interface_->IsPrerender(web_contents))
+    in_foreground_ = false;
+
+  RegisterInputEventObserver(web_contents->GetRenderViewHost());
 }
 
 void MetricsWebContentsObserver::WillStartNavigationRequestImpl(

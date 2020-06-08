@@ -13,13 +13,7 @@
 
 class TestBrowser : public Browser {
  public:
-  // Constructor that takes a TabModel.  TestBrowsers created using this
-  // constructor will return return the |tab_model|'s WebStateList for
-  // GetWebStateList().  DEPRECATED: Use this constructor only to test legacy
-  // code that has not been updated to use WebStateList.
-  TestBrowser(ChromeBrowserState* browser_state, TabModel* tab_model);
-  // Constructor that takes a WebStateList.  TestBrowsers created using this
-  // constructor will return nil for GetTabModel().
+  // Constructor that takes a WebStateList.
   TestBrowser(ChromeBrowserState* browser_state, WebStateList* web_state_list);
 
   // Constructor that takes only a BrowserState; an empty web state list will be

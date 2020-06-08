@@ -22,6 +22,7 @@ namespace autofill_assistant {
 class BasicInteractions;
 class GenericUiControllerAndroid;
 class UserModel;
+class ViewHandlerAndroid;
 
 // Receives incoming events and runs the corresponding set of callbacks.
 //
@@ -33,13 +34,12 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
  public:
   using InteractionCallback = base::RepeatingCallback<void()>;
 
-  // Constructor. |event_handler|, |user_model|, |basic_interactions|,
-  // |views|, |jcontext| and |jdelegate| must outlive this instance.
+  // Constructor. All dependencies must outlive this instance.
   InteractionHandlerAndroid(
       EventHandler* event_handler,
       UserModel* user_model,
       BasicInteractions* basic_interactions,
-      std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views,
+      ViewHandlerAndroid* view_handler,
       base::android::ScopedJavaGlobalRef<jobject> jcontext,
       base::android::ScopedJavaGlobalRef<jobject> jdelegate);
   ~InteractionHandlerAndroid() override;
@@ -101,7 +101,7 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   EventHandler* event_handler_ = nullptr;
   UserModel* user_model_ = nullptr;
   BasicInteractions* basic_interactions_ = nullptr;
-  std::map<std::string, base::android::ScopedJavaGlobalRef<jobject>>* views_;
+  ViewHandlerAndroid* view_handler_;
   base::android::ScopedJavaGlobalRef<jobject> jcontext_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_ = nullptr;
   bool is_listening_ = false;

@@ -15,6 +15,7 @@
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/display/display.h"
@@ -817,6 +818,8 @@ void ScreenWin::OnWndProc(HWND hwnd,
       (message != WM_SETTINGCHANGE || wparam != SPI_SETWORKAREA))
     return;
 
+  TRACE_EVENT1("ui", "ScreenWin::OnWndProc", "message", message);
+
   color_profile_reader_->UpdateIfNeeded();
   if (request_hdr_status_callback_)
     request_hdr_status_callback_.Run();
@@ -836,6 +839,8 @@ void ScreenWin::OnColorProfilesChanged() {
 }
 
 void ScreenWin::UpdateAllDisplaysAndNotify() {
+  TRACE_EVENT0("ui", "ScreenWin::UpdateAllDisplaysAndNotify");
+
   std::vector<Display> old_displays = std::move(displays_);
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);

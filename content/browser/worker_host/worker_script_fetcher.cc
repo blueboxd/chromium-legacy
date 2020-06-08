@@ -90,15 +90,11 @@ void WorkerScriptFetcher::Start(
   // workers (https://crbug.com/906991).
   int32_t routing_id = MSG_ROUTING_NONE;
 
-  // Get a unique request id across browser-initiated navigations and navigation
-  // preloads.
-  int request_id = GlobalRequestID::MakeBrowserInitiated().request_id;
-
   url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory), std::move(throttles), routing_id,
-      request_id, network::mojom::kURLLoadOptionNone, resource_request_.get(),
-      this, kWorkerScriptLoadTrafficAnnotation,
-      base::ThreadTaskRunnerHandle::Get());
+      GlobalRequestID::MakeBrowserInitiated().request_id,
+      network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
+      kWorkerScriptLoadTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }
 
 void WorkerScriptFetcher::OnReceiveResponse(

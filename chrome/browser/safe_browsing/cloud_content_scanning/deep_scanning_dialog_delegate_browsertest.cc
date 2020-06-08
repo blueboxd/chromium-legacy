@@ -46,8 +46,8 @@ class FakeBinaryUploadService : public BinaryUploadService {
   // Finish the authentication request. Called after ShowForWebContents to
   // simulate an async callback.
   void ReturnAuthorizedResponse() {
-    authorization_request_->FinishRequest(authorization_result_,
-                                          DeepScanningClientResponse());
+    FinishRequest(authorization_request_.get(), authorization_result_,
+                  DeepScanningClientResponse());
   }
 
   void SetResponseForText(BinaryUploadService::Result result,

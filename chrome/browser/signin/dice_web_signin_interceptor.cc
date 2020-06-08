@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/i18n/case_conversion.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -19,11 +20,15 @@
 #include "chrome/browser/signin/signin_features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
-DiceWebSigninInterceptor::DiceWebSigninInterceptor(Profile* profile)
+DiceWebSigninInterceptor::DiceWebSigninInterceptor(
+    Profile* profile,
+    std::unique_ptr<Delegate> delegate)
     : profile_(profile),
-      identity_manager_(IdentityManagerFactory::GetForProfile(profile)) {
+      identity_manager_(IdentityManagerFactory::GetForProfile(profile)),
+      delegate_(std::move(delegate)) {
   DCHECK(profile_);
   DCHECK(identity_manager_);
+  DCHECK(delegate_);
 }
 
 DiceWebSigninInterceptor::~DiceWebSigninInterceptor() = default;
@@ -49,6 +54,7 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
 
   account_id_ = account_id;
   is_interception_in_progress_ = true;
+  Observe(web_contents);
 
   base::Optional<AccountInfo> account_info =
       identity_manager_
@@ -56,12 +62,14 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
               account_id_);
   DCHECK(account_info) << "Intercepting unknown account.";
 
-  if (IsAccountInAnotherProfile(*account_info,
-                                &g_browser_process->profile_manager()
-                                     ->GetProfileAttributesStorage())) {
-    // TODO(https://crbug.com/1076880): implement profile switch bubble.
-    NOTIMPLEMENTED();
-    Reset();
+  if (ShouldShowProfileSwitchBubble(*account_info,
+                                    &g_browser_process->profile_manager()
+                                         ->GetProfileAttributesStorage())) {
+    delegate_->ShowSigninInterceptionBubble(
+        SigninInterceptionType::kProfileSwitch, web_contents, *account_info,
+        base::BindOnce(&DiceWebSigninInterceptor::OnProfileSwitchChoice,
+                       base::Unretained(this)));
+
     return;
   }
 
@@ -89,13 +97,14 @@ void DiceWebSigninInterceptor::Shutdown() {
 }
 
 void DiceWebSigninInterceptor::Reset() {
+  Observe(/*web_contents=*/nullptr);
   account_info_update_observer_.RemoveAll();
   on_account_info_update_timeout_.Cancel();
   is_interception_in_progress_ = false;
   account_id_ = CoreAccountId();
 }
 
-bool DiceWebSigninInterceptor::IsAccountInAnotherProfile(
+bool DiceWebSigninInterceptor::ShouldShowProfileSwitchBubble(
     const CoreAccountInfo& intercepted_account_info,
     ProfileAttributesStorage* profile_attribute_storage) {
   // Check if there is already an existing profile with this account.
@@ -166,19 +175,44 @@ void DiceWebSigninInterceptor::OnExtendedAccountInfoUpdated(
   account_info_update_observer_.RemoveAll();
   on_account_info_update_timeout_.Cancel();
 
-  if (ShouldShowEnterpriseBubble(info)) {
-    // TODO(https://crbug.com/1076880): Implement enterprise interception.
-    NOTIMPLEMENTED();
-    Reset();
-    return;
-  }
-  if (ShouldShowMultiUserBubble(info)) {
-    // TODO(https://crbug.com/1076880): Implement multiuser interception.
-    NOTIMPLEMENTED();
+  base::Optional<SigninInterceptionType> interception_type;
+
+  if (ShouldShowEnterpriseBubble(info))
+    interception_type = SigninInterceptionType::kEnterprise;
+  else if (ShouldShowMultiUserBubble(info))
+    interception_type = SigninInterceptionType::kMultiUser;
+
+  if (!interception_type) {
+    // Signin should not be intercepted.
     Reset();
     return;
   }
 
-  // Signin should not be intercepted.
+  delegate_->ShowSigninInterceptionBubble(
+      *interception_type, web_contents(), info,
+      base::BindOnce(&DiceWebSigninInterceptor::OnProfileCreationChoice,
+                     base::Unretained(this)));
+}
+
+void DiceWebSigninInterceptor::OnProfileCreationChoice(bool create) {
+  if (!create) {
+    Reset();
+    return;
+  }
+
+  // TODO(https://crbug.com/1076880): Create a new profile, and move the account
+  // to it.
+  NOTIMPLEMENTED();
+  Reset();
+}
+
+void DiceWebSigninInterceptor::OnProfileSwitchChoice(bool switch_profile) {
+  if (!switch_profile) {
+    Reset();
+    return;
+  }
+
+  // TODO(https://crbug.com/1076880): Switch to the other profile.
+  NOTIMPLEMENTED();
   Reset();
 }

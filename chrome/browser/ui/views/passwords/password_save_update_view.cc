@@ -43,11 +43,6 @@
 
 namespace {
 
-// Controls whether we should update the bubble title when transitioning
-// between Save and Update states.
-const base::Feature kUpdatePasswordSaveUpdateBubbleTitle{
-    "UpdatePasswordSaveUpdateBubbleTitle", base::FEATURE_ENABLED_BY_DEFAULT};
-
 enum PasswordSaveUpdateViewColumnSetType {
   // | | (LEADING, FILL) | | (FILL, FILL) | |
   // Used for the username/password line of the bubble, for the pending view.
@@ -496,8 +491,7 @@ void PasswordSaveUpdateView::UpdateBubbleUIElements() {
           is_update_bubble_ ? IDS_PASSWORD_MANAGER_CANCEL_BUTTON
                             : IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
 
-  if (base::FeatureList::IsEnabled(kUpdatePasswordSaveUpdateBubbleTitle))
-    SetTitle(controller_.GetTitle());
+  SetTitle(controller_.GetTitle());
 }
 
 std::unique_ptr<views::View> PasswordSaveUpdateView::CreateFooterView() {

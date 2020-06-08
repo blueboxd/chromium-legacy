@@ -35,13 +35,10 @@ void BrowserImpl::CreateTabModel() {
 }
 
 BrowserImpl::BrowserImpl(ChromeBrowserState* browser_state,
-                         TabModel* tab_model,
                          std::unique_ptr<WebStateList> web_state_list)
     : browser_state_(browser_state),
-      tab_model_(tab_model),
       web_state_list_(std::move(web_state_list)) {
   DCHECK(browser_state_);
-  DCHECK(tab_model.webStateList == web_state_list_.get());
 }
 
 BrowserImpl::~BrowserImpl() {

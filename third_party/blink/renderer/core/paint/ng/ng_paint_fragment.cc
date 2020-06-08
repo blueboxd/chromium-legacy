@@ -912,8 +912,13 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
   LayoutUnit closest_line_after_block_offset = LayoutUnit::Max();
 
   for (const NGPaintFragment* child : Children()) {
-    if (!child->PhysicalFragment().IsLineBox() || child->Children().IsEmpty())
+    if (!child->PhysicalFragment().IsLineBox())
       continue;
+    if (!NGInlineCursor(*child).TryToMoveToFirstInlineLeafChild()) {
+      // editing/selection/last-empty-inline.html requires this to skip
+      // empty <span> with padding.
+      continue;
+    }
 
     const LogicalRect logical_child_rect = PhysicalFragment().ConvertToLogical(
         PhysicalRect(child->Offset(), child->Size()), child->Size());

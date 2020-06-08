@@ -31,6 +31,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/navigation_policy.h"
@@ -732,10 +733,6 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(inner_url_loader_client), resource_request);
 
-  // Get a unique request id across browser-initiated navigations and navigation
-  // preloads.
-  int request_id = GlobalRequestID::MakeBrowserInitiated().request_id;
-
   // Start the network request for the URL using the network factory.
   // TODO(falken): What to do about routing_id.
   mojo::PendingRemote<network::mojom::URLLoaderClient>
@@ -745,7 +742,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   factory->CreateLoaderAndStart(
       url_loader.InitWithNewPipeAndPassReceiver(), -1 /* routing_id? */,
-      request_id, network::mojom::kURLLoadOptionNone, resource_request,
+      GlobalRequestID::MakeBrowserInitiated().request_id,
+      network::mojom::kURLLoadOptionNone, resource_request,
       std::move(url_loader_client_to_pass),
       net::MutableNetworkTrafficAnnotationTag(
           kNavigationPreloadTrafficAnnotation));

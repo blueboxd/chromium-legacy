@@ -13,7 +13,6 @@ class Browser;
 @class BrowserCoordinator;
 @class BrowserViewController;
 class ChromeBrowserState;
-@class TabModel;
 
 // A BrowserInterface is an abstraction that exposes an interface to the Chrome
 // user interface (and related model objects) to the application layer. Each
@@ -33,8 +32,6 @@ class ChromeBrowserState;
 // The BrowserViewController showing the current tab. The API surface this
 // property exposes will be refactored so that the BVC class isn't exposed.
 @property(nonatomic, readonly) BrowserViewController* bvc;
-// The tab model to which the current tab belongs.
-@property(nonatomic, readonly) TabModel* tabModel;
 // The active browser. This can never be nullptr.
 @property(nonatomic, readonly) Browser* browser;
 // The browser state for this interface. This can never be nullptr.

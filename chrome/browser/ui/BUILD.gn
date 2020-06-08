@@ -798,12 +798,6 @@ static_library("ui") {
       ]
     }
 
-    if (enable_password_change_in_leaked_dialog) {
-      sources += [
-        "android/passwords/credential_leak_dialog_password_change_view_android.cc",
-        "android/passwords/credential_leak_dialog_password_change_view_android.h",
-      ]
-    }
     deps += [
       "//chrome/android:jni_headers",
       "//chrome/android/features/dev_ui:buildflags",
@@ -1756,8 +1750,6 @@ static_library("ui") {
       "webui/chromeos/bluetooth_dialog_localized_strings_provider.h",
       "webui/chromeos/bluetooth_pairing_dialog.cc",
       "webui/chromeos/bluetooth_pairing_dialog.h",
-      "webui/chromeos/camera/camera_ui.cc",
-      "webui/chromeos/camera/camera_ui.h",
       "webui/chromeos/cellular_setup/cellular_setup_dialog.cc",
       "webui/chromeos/cellular_setup/cellular_setup_dialog.h",
       "webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.cc",
@@ -2120,7 +2112,6 @@ static_library("ui") {
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos:backdrop_wallpaper_proto",
       "//chrome/browser/chromeos/net/network_health/public/mojom:mojom",
-      "//chrome/browser/resources/chromeos:camera_resources",
       "//chrome/browser/resources/chromeos:network_health_resources",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
@@ -2134,6 +2125,7 @@ static_library("ui") {
       "//chromeos/assistant:buildflags",
       "//chromeos/audio",
       "//chromeos/components/account_manager",
+      "//chromeos/components/camera_app_ui",
       "//chromeos/components/help_app_ui",
       "//chromeos/components/media_app_ui",
       "//chromeos/components/multidevice",

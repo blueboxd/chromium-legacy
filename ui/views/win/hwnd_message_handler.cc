@@ -988,6 +988,8 @@ HICON HWNDMessageHandler::GetSmallWindowIcon() const {
 LRESULT HWNDMessageHandler::OnWndProc(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) {
+  TRACE_EVENT1("ui", "HWNDMessageHandler::OnWndProc", "message_id", message);
+
   HWND window = hwnd();
   LRESULT result = 0;
   if (delegate_ && delegate_->PreHandleMSG(message, w_param, l_param, &result))
@@ -1657,6 +1659,8 @@ void HWNDMessageHandler::OnDestroy() {
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
                                          const gfx::Size& screen_size) {
+  TRACE_EVENT0("ui", "HWNDMessageHandler::OnDisplayChange");
+
   delegate_->HandleDisplayChange();
   // Force a WM_NCCALCSIZE to occur to ensure that we handle auto hide
   // taskbars correctly.
@@ -1664,8 +1668,10 @@ void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
 }
 
 LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
-                                                    WPARAM w_param,
-                                                    LPARAM l_param) {
+                                                    WPARAM /* w_param */,
+                                                    LPARAM /* l_param */) {
+  TRACE_EVENT0("ui", "HWNDMessageHandler::OnDwmCompositionChanged");
+
   if (!delegate_->HasNonClientView()) {
     SetMsgHandled(FALSE);
     return 0;
@@ -1689,6 +1695,9 @@ LRESULT HWNDMessageHandler::OnDpiChanged(UINT msg,
                                          LPARAM l_param) {
   if (LOWORD(w_param) != HIWORD(w_param))
     NOTIMPLEMENTED() << "Received non-square scaling factors";
+
+  TRACE_EVENT1("ui", "HWNDMessageHandler::OnDwmCompositionChanged", "dpi",
+               LOWORD(w_param));
 
   int dpi;
   float scaling_factor;
@@ -2726,6 +2735,8 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
 }
 
 void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
+  TRACE_EVENT0("ui", "HWNDMessageHandler::OnWindowPosChanging");
+
   if (ignore_window_pos_changes_) {
     // If somebody's trying to toggle our visibility, change the nonclient area,
     // change our Z-order, or activate us, we should probably let it go through.
@@ -2877,6 +2888,8 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
 }
 
 void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
+  TRACE_EVENT0("ui", "HWNDMessageHandler::OnWindowPosChanged");
+
   if (DidClientAreaSizeChange(window_pos))
     ClientAreaSizeChanged();
   if (window_pos->flags & SWP_FRAMECHANGED)
@@ -3301,6 +3314,8 @@ void HWNDMessageHandler::PerformDwmTransition() {
 }
 
 void HWNDMessageHandler::UpdateDwmFrame() {
+  TRACE_EVENT0("ui", "HWNDMessageHandler::UpdateDwmFrame");
+
   gfx::Insets insets;
   if (ui::win::IsAeroGlassEnabled() &&
       delegate_->GetDwmFrameInsetsInPixels(&insets)) {

@@ -4,6 +4,7 @@
 
 import './ui/app.js';
 
+export {PluralStringProxyImpl as PrintPreviewPluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 export {CloudPrintInterface, CloudPrintInterfaceEventType} from './cloud_print_interface.js';
 export {CloudPrintInterfaceImpl} from './cloud_print_interface_impl.js';
 export {ColorMode, createDestinationKey, Destination, DestinationCertificateStatus, DestinationConnectionStatus, DestinationOrigin, DestinationType, makeRecentDestination, RecentDestination} from './data/destination.js';

@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/layout/ng/list/list_marker.h"
 
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker_image.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker_image.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 
 namespace blink {
@@ -209,8 +209,9 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
       }
     }
     if (!child) {
-      LayoutNGListMarkerImage* image =
-          LayoutNGListMarkerImage::CreateAnonymous(&marker.GetDocument());
+      LayoutListMarkerImage* image =
+          LayoutListMarkerImage::CreateAnonymous(&marker.GetDocument());
+      image->SetIsLayoutNGObjectForListMarkerImage(true);
       scoped_refptr<ComputedStyle> image_style =
           ComputedStyle::CreateAnonymousStyleWithDisplay(marker.StyleRef(),
                                                          EDisplay::kInline);

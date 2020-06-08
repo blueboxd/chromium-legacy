@@ -98,30 +98,6 @@ media::AudioParameters GetMixerOutputParams(
   return params;
 }
 
-void LogMixerUmaHistogram(media::AudioLatency::LatencyType latency, int value) {
-  switch (latency) {
-    case media::AudioLatency::LATENCY_EXACT_MS:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Media.Audio.Render.AudioInputsPerMixer.LatencyExact", value, 1, 20,
-          21);
-      return;
-    case media::AudioLatency::LATENCY_INTERACTIVE:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Media.Audio.Render.AudioInputsPerMixer.LatencyInteractive", value, 1,
-          20, 21);
-      return;
-    case media::AudioLatency::LATENCY_RTC:
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Media.Audio.Render.AudioInputsPerMixer.LatencyRtc", value, 1, 20,
-          21);
-      return;
-    case media::AudioLatency::LATENCY_PLAYBACK:
-      return;
-    default:
-      NOTREACHED();
-  }
-}
-
 }  // namespace
 
 namespace content {
@@ -193,9 +169,8 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 
   const media::AudioParameters& mixer_output_params =
       GetMixerOutputParams(input_params, sink_info.output_params(), latency);
-  media::AudioRendererMixer* mixer = new media::AudioRendererMixer(
-      mixer_output_params, std::move(sink),
-      base::BindRepeating(&LogMixerUmaHistogram, latency));
+  media::AudioRendererMixer* mixer =
+      new media::AudioRendererMixer(mixer_output_params, std::move(sink));
   mixers_[key] = {mixer, 1};
   DVLOG(1) << __func__ << " mixer: " << mixer << " latency: " << latency
            << "\n input: " << input_params.AsHumanReadableString()

@@ -138,9 +138,9 @@ void DocumentLoadTiming::SetNavigationStart(base::TimeTicks navigation_start) {
   NotifyDocumentTimingChanged();
 }
 
-void DocumentLoadTiming::MarkLastBackForwardCacheRestoreNavigationStart(
+void DocumentLoadTiming::MarkBackForwardCacheRestoreNavigationStart(
     base::TimeTicks navigation_start) {
-  last_bfcache_restore_navigation_start_ = navigation_start;
+  bfcache_restore_navigation_starts_.push_back(navigation_start);
   NotifyDocumentTimingChanged();
 }
 

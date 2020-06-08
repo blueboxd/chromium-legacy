@@ -14,10 +14,6 @@
 namespace views {
 class EditableCombobox;
 class ToggleImageButton;
-
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
-class Checkbox;
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 }  // namespace views
 
 class PasswordSignInPromoView;
@@ -85,10 +81,6 @@ class PasswordSaveUpdateView : public PasswordBubbleViewBase,
 
   // The view for the password value.
   views::EditableCombobox* password_dropdown_;
-
-#if defined(PASSWORD_STORE_SELECT_ENABLED)
-  views::Checkbox* account_store_checkbox_ = nullptr;
-#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
   bool are_passwords_revealed_;
 };

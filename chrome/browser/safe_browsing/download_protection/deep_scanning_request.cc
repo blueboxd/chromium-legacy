@@ -213,7 +213,7 @@ void DeepScanningRequest::Start() {
     request->set_request_malware_scan(std::move(malware_request));
   } else if (trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
     policy::DMToken dm_token = GetDMToken(profile);
-    request->set_dm_token(dm_token.value());
+    request->set_device_token(dm_token.value());
 
     if (base::FeatureList::IsEnabled(kContentComplianceEnabled) &&
         (analysis_settings_.tags.count("dlp") == 1)) {

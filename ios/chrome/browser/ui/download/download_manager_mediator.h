@@ -57,6 +57,10 @@ class DownloadManagerMediator : public web::DownloadTaskObserver {
   // Updates consumer from web::DownloadTask.
   void UpdateConsumer();
 
+  // Moves the downloaded file to user's Documents if it exists.
+  void MoveToUserDocumentsIfFileExists(base::FilePath download_path_,
+                                       bool file_exists);
+
   // Restores the download path once the downloaded file has been moved to
   // user's Documents.
   void RestoreDownloadPath(base::FilePath user_download_path,

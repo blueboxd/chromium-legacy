@@ -27,6 +27,9 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                          WritingMode writing_mode,
                          TextDirection direction);
 
+  WritingDirectionMode GetWritingDirection() const {
+    return {writing_mode_, direction_};
+  }
   WritingMode GetWritingMode() const { return writing_mode_; }
   TextDirection Direction() const { return direction_; }
 

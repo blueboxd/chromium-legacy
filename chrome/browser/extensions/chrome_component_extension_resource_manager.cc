@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 
+#include <string>
+
 #include "base/check.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
@@ -13,16 +15,22 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources_map.h"
 #include "chrome/grit/theme_resources.h"
+#include "extensions/common/constants.h"
+#include "pdf/buildflags.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/keyboard/ui/resources/keyboard_resource_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
-#include "extensions/common/constants.h"
 #include "third_party/ink/grit/ink_resources.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PDF)
+#include <utility>
+#include "chrome/browser/pdf/pdf_extension_util.h"
 #endif
 
 namespace extensions {
@@ -77,6 +85,21 @@ ChromeComponentExtensionResourceManager() {
   AddComponentResourceEntries(
       keyboard_resources,
       keyboard_resource_size);
+#endif
+
+#if BUILDFLAG(ENABLE_PDF)
+  // ResourceBundle is not always initialized in unit tests.
+  if (ui::ResourceBundle::HasSharedInstance()) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    pdf_extension_util::AddStrings(&dict);
+    pdf_extension_util::AddAdditionalData(&dict);
+
+    ui::TemplateReplacements pdf_viewer_replacements;
+    ui::TemplateReplacementsFromDictionaryValue(
+        base::Value::AsDictionaryValue(dict), &pdf_viewer_replacements);
+    extension_template_replacements_[extension_misc::kPdfExtensionId] =
+        std::move(pdf_viewer_replacements);
+  }
 #endif
 }
 

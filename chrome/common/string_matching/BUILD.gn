@@ -9,6 +9,8 @@ source_set("string_matching") {
   sources = [
     "fuzzy_tokenized_string_match.cc",
     "fuzzy_tokenized_string_match.h",
+    "prefix_matcher.cc",
+    "prefix_matcher.h",
     "sequence_matcher.cc",
     "sequence_matcher.h",
     "term_break_iterator.cc",

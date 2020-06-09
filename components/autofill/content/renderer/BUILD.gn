@@ -80,6 +80,7 @@ jumbo_static_library("test_support") {
     "//components/autofill/content/renderer",
     "//services/service_manager/public/cpp",
     "//skia",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/public:blink",
   ]

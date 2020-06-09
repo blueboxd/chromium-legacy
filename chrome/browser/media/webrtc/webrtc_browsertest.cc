@@ -257,9 +257,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                                     kKeygenAlgorithmEcdsa, kKeygenAlgorithmRsa);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    MAYBE_WebRtcBrowserTest,
-    DISABLED_RunsAudioVideoWebRTCCallInTwoTabsGetStatsCallback) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsGetStatsCallback) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);
@@ -287,9 +286,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
   EXPECT_EQ(0u, GetPeerToPeerConnectionsCountChangeFromNetworkService());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    MAYBE_WebRtcBrowserTest,
-    DISABLED_RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);

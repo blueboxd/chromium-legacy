@@ -752,6 +752,12 @@ class PersonalDataManager : public KeyedService,
   // migrating from using email to Gaia ID as th account identifier.
   void MigrateUserOptedInWalletSyncTransportIfNeeded();
 
+  // Return a nickname for the |card| to display. This is generally the nickname
+  // stored in |card|, unless |card| exists as a local and a server copy. In
+  // this case, we prefer the nickname of the local if it is defined. If only
+  // one copy has a nickname, take that.
+  base::string16 GetDisplayNicknameForCreditCard(const CreditCard& card) const;
+
   // Stores the |app_locale| supplied on construction.
   const std::string app_locale_;
 

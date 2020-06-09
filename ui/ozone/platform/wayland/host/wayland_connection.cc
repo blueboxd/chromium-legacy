@@ -43,6 +43,7 @@ namespace ui {
 namespace {
 constexpr uint32_t kMaxCompositorVersion = 4;
 constexpr uint32_t kMaxGtkPrimarySelectionDeviceManagerVersion = 1;
+constexpr uint32_t kMaxKeyboardExtensionVersion = 1;
 constexpr uint32_t kMaxLinuxDmabufVersion = 3;
 constexpr uint32_t kMaxSeatVersion = 4;
 constexpr uint32_t kMaxShmVersion = 1;
@@ -165,13 +166,8 @@ void WaylandConnection::UpdateInputDevices(wl_seat* seat,
 
   if (!has_keyboard) {
     keyboard_.reset();
-  } else if (wl_keyboard* keyboard = wl_seat_get_keyboard(seat)) {
-    auto* layout_engine =
-        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
-    keyboard_ = std::make_unique<WaylandKeyboard>(keyboard, this, layout_engine,
-                                                  event_source());
-  } else {
-    LOG(ERROR) << "Failed to get wl_keyboard from seat";
+  } else if (!CreateKeyboard()) {
+    LOG(ERROR) << "Failed to create WaylandKeyboard";
   }
 
   if (!has_touch) {
@@ -181,6 +177,20 @@ void WaylandConnection::UpdateInputDevices(wl_seat* seat,
   } else {
     LOG(ERROR) << "Failed to get wl_touch from seat";
   }
+}
+
+bool WaylandConnection::CreateKeyboard() {
+  wl_keyboard* keyboard = wl_seat_get_keyboard(seat_.get());
+  if (!keyboard)
+    return false;
+
+  auto* layout_engine = KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
+  // Make sure to destroy the old WaylandKeyboard (if it exists) before creating
+  // the new one.
+  keyboard_.reset();
+  keyboard_.reset(new WaylandKeyboard(keyboard, keyboard_extension_v1_.get(),
+                                      this, layout_engine, event_source()));
+  return true;
 }
 
 void WaylandConnection::CreateDataObjectsIfReady() {
@@ -313,6 +323,17 @@ void WaylandConnection::Global(void* data,
              (strcmp(interface, "wp_presentation") == 0)) {
     connection->presentation_ =
         wl::Bind<wp_presentation>(registry, name, kMaxWpPresentationVersion);
+  } else if (!connection->keyboard_extension_v1_ &&
+             strcmp(interface, "zcr_keyboard_extension_v1") == 0) {
+    connection->keyboard_extension_v1_ = wl::Bind<zcr_keyboard_extension_v1>(
+        registry, name, kMaxKeyboardExtensionVersion);
+    if (!connection->keyboard_extension_v1_) {
+      LOG(ERROR) << "Failed to bind zcr_keyboard_extension_v1";
+      return;
+    }
+    // CreateKeyboard may fail if we do not have keyboard seat capabilities yet.
+    // We will create the keyboard when get them in that case.
+    connection->CreateKeyboard();
   } else if (!connection->text_input_manager_v1_ &&
              strcmp(interface, "zwp_text_input_manager_v1") == 0) {
     connection->text_input_manager_v1_ = wl::Bind<zwp_text_input_manager_v1>(

@@ -84,19 +84,6 @@ void ReportCompletionStatusMetric(bool fetch_cors_flag,
 
 constexpr const char kTimingAllowOrigin[] = "Timing-Allow-Origin";
 
-bool IsBodyNotNullAndSourceNull(const ResourceRequestBody* request_body) {
-  if (!request_body)
-    return false;
-  const std::vector<DataElement>* elements = request_body->elements();
-  if (elements->size() == 0u)
-    return false;
-  // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
-  // Body's source is null means the body is not extracted from ReadableStream.
-  if (elements->size() > 1u)
-    return false;
-  return elements->at(0).type() == mojom::DataElementType::kChunkedDataPipe;
-}
-
 }  // namespace
 
 CorsURLLoader::CorsURLLoader(
@@ -382,7 +369,7 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   // If |actualResponse|’s status is not 303, |request|’s body is non-null, and
   // |request|’s body’s source is null, then return a network error.
   if (redirect_info.status_code != net::HTTP_SEE_OTHER &&
-      IsBodyNotNullAndSourceNull(request_.request_body.get())) {
+      network::URLLoader::HasStreamingUploadBody(&request_)) {
     HandleComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
   }

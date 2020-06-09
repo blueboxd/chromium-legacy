@@ -33,6 +33,7 @@ namespace blink {
 class ExceptionState;
 class HTMLDataListElement;
 class HTMLSelectElement;
+class OptionTextObserver;
 
 class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
@@ -53,6 +54,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
                                                    ExceptionState&);
 
   explicit HTMLOptionElement(Document&);
+  void Trace(Visitor* visitor) const override;
 
   // A text to be shown to users.  The difference from |label()| is |label()|
   // returns an empty string if |label| content attribute is empty.
@@ -101,6 +103,9 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   void SetMultiSelectFocusedState(bool);
   bool IsMultiSelectFocused() const;
 
+  // Callback for OptionTextObserver.
+  void DidChangeTextContent();
+
  private:
   ~HTMLOptionElement() override;
 
@@ -116,6 +121,8 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   String CollectOptionInnerText() const;
 
   void UpdateLabel();
+
+  Member<OptionTextObserver> text_observer_;
 
   // Represents 'selectedness'.
   // https://html.spec.whatwg.org/C/#concept-option-selectedness

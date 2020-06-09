@@ -23,9 +23,11 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
   ~WebAppLinkCapturingBrowserTest() override = default;
 
   void SetUp() override {
+    // TODO(crbug.com/1092789): Migrate the implementation to make web app link
+    // capturing feature to work with AppServiceIntentHandling.
     features_.InitWithFeatures({features::kDesktopPWAsTabStrip,
                                 features::kDesktopPWAsTabStripLinkCapturing},
-                               {});
+                               {features::kAppServiceIntentHandling});
     WebAppNavigationBrowserTest::SetUp();
   }
 

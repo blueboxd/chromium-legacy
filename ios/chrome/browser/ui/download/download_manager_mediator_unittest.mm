@@ -131,6 +131,9 @@ TEST_F(DownloadManagerMediatorTest, StartDownload) {
         base::RunLoop().RunUntilIdle();
         return download_dir.IsParent(mediator_.GetDownloadPath());
       }));
+
+  // Updates the consumer once the file has been moved.
+  mediator_.SetDownloadTask(task());
 }
 
 // Tests starting and failing the download. Simulates download failure from

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/base/ui_base_types.h"
@@ -75,6 +78,10 @@ bool CrostiniInstallerDialog::ShouldCloseDialogOnEscape() const {
 void CrostiniInstallerDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
   params->z_order = ui::ZOrderLevel::kNormal;
+
+  const ash::ShelfID shelf_id(crostini::kCrostiniInstallerShelfId);
+  params->init_properties_container.SetProperty(ash::kShelfIDKey,
+                                                shelf_id.Serialize());
 }
 
 bool CrostiniInstallerDialog::CanCloseDialog() const {

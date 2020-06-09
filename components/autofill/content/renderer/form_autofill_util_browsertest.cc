@@ -4,12 +4,15 @@
 
 #include "components/autofill/content/renderer/form_autofill_util.h"
 
+#include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "content/public/test/render_view_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -137,6 +140,14 @@ const char kDivTableExample6[] =
     "</div>";
 // TODO(crbug.com/796918): Should be "label" or "label-"
 const char kDivTableExample6Expected[] = "";
+
+void VerifyButtonTitleCache(const WebFormElement& form_target,
+                            const ButtonTitleList& expected_button_titles,
+                            const ButtonTitlesCache& actual_cache) {
+  EXPECT_THAT(actual_cache,
+              testing::ElementsAre(testing::Pair(GetFormRendererId(form_target),
+                                                 expected_button_titles)));
+}
 
 class FormAutofillUtilsTest : public content::RenderViewTest {
  public:
@@ -272,8 +283,8 @@ TEST_F(FormAutofillUtilsTest, InferLabelSourceTest) {
   }
 }
 
-TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
-  const char kHtml[] =
+TEST_F(FormAutofillUtilsTest, GetButtonTitles) {
+  constexpr char kHtml[] =
       "<form id='target'>"
       "  <input type='button' value='Clear field'>"
       "  <input type='button' value='Clear field'>"
@@ -294,8 +305,11 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
   ASSERT_FALSE(target.IsNull());
   const WebFormElement& form_target = target.ToConst<WebFormElement>();
   ASSERT_FALSE(form_target.IsNull());
+  ButtonTitlesCache cache;
 
-  autofill::ButtonTitleList actual = InferButtonTitlesForTesting(form_target);
+  autofill::ButtonTitleList actual =
+      GetButtonTitles(form_target, web_frame->GetDocument(), &cache);
+
   autofill::ButtonTitleList expected = {
       {base::UTF8ToUTF16("Clear field"),
        ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
@@ -309,9 +323,11 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest) {
       {base::UTF8ToUTF16("Join"), ButtonTitleType::DIV},
       {base::UTF8ToUTF16("Start"), ButtonTitleType::SPAN}};
   EXPECT_EQ(expected, actual);
+
+  VerifyButtonTitleCache(form_target, expected, cache);
 }
 
-TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest_TooLongTitle) {
+TEST_F(FormAutofillUtilsTest, GetButtonTitles_TooLongTitle) {
   std::string title;
   for (int i = 0; i < 300; ++i)
     title += "a";
@@ -330,8 +346,10 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest_TooLongTitle) {
   ASSERT_FALSE(target.IsNull());
   const WebFormElement& form_target = target.ToConst<WebFormElement>();
   ASSERT_FALSE(form_target.IsNull());
+  ButtonTitlesCache cache;
 
-  autofill::ButtonTitleList actual = InferButtonTitlesForTesting(form_target);
+  autofill::ButtonTitleList actual =
+      GetButtonTitles(form_target, web_frame->GetDocument(), &cache);
 
   int total_length = 0;
   for (auto title : actual) {
@@ -341,8 +359,14 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitleForFormTest_TooLongTitle) {
   EXPECT_EQ(200, total_length);
 }
 
-TEST_F(FormAutofillUtilsTest, InferButtonTitle_Formless) {
-  const char kNoFormHtml[] =
+TEST_F(FormAutofillUtilsTest, GetButtonTitles_Formless) {
+  // Button titles computation and crowdsourcing for <form>less forms are
+  // enabled only if |AutofillFieldMetadata| (Dev and Canary) is enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.Init();
+  base::FieldTrialList::CreateFieldTrial("AutofillFieldMetadata", "Enabled");
+
+  constexpr char kNoFormHtml[] =
       "<div class='reg-form'>"
       "  <input type='button' value='\n Show\t password '>"
       "  <button>Sign Up</button>"
@@ -358,10 +382,12 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitle_Formless) {
   LoadHTML(kNoFormHtml);
   WebLocalFrame* web_frame = GetMainFrame();
   ASSERT_NE(nullptr, web_frame);
-  const WebElement& body = web_frame->GetDocument().Body();
-  ASSERT_FALSE(body.IsNull());
+  WebFormElement form_target;
+  ASSERT_FALSE(web_frame->GetDocument().Body().IsNull());
+  ButtonTitlesCache cache;
 
-  autofill::ButtonTitleList actual = InferButtonTitlesForTesting(body);
+  autofill::ButtonTitleList actual =
+      GetButtonTitles(form_target, web_frame->GetDocument(), &cache);
   autofill::ButtonTitleList expected = {
       {base::UTF8ToUTF16("Show password"),
        ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE},
@@ -370,6 +396,42 @@ TEST_F(FormAutofillUtilsTest, InferButtonTitle_Formless) {
       {base::UTF8ToUTF16("Register"),
        ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE}};
   EXPECT_EQ(expected, actual);
+
+  VerifyButtonTitleCache(form_target, expected, cache);
+}
+
+TEST_F(FormAutofillUtilsTest, GetButtonTitles_Formless_DisabledByDefault) {
+  // Button titles computation and crowdsourcing for <form>less forms should be
+  // disabled if |AutofillFieldMetadata| is disabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.Init();
+  base::FieldTrialList::CreateFieldTrial("AutofillFieldMetadata", "Disabled");
+
+  constexpr char kNoFormHtml[] =
+      "<div class='reg-form'>"
+      "  <input type='button' value='\n Show\t password '>"
+      "  <button>Sign Up</button>"
+      "  <button type='button'>Register</button>"
+      "</div>"
+      "<form id='ignored-form'>"
+      "  <input type='button' value='Ignore this'>"
+      "  <button>Ignore this</button>"
+      "  <a id='Submit' value='Ignore this'>"
+      "  <div name='BTN'>Ignore this</div>"
+      "</form>";
+
+  LoadHTML(kNoFormHtml);
+  WebLocalFrame* web_frame = GetMainFrame();
+  ASSERT_NE(nullptr, web_frame);
+  WebFormElement form_target;
+  ASSERT_FALSE(web_frame->GetDocument().Body().IsNull());
+  ButtonTitlesCache cache;
+
+  autofill::ButtonTitleList actual =
+      GetButtonTitles(form_target, web_frame->GetDocument(), &cache);
+
+  EXPECT_TRUE(actual.empty());
+  EXPECT_TRUE(cache.empty());
 }
 
 TEST_F(FormAutofillUtilsTest, IsEnabled) {

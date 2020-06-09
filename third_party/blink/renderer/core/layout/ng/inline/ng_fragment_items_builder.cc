@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
@@ -159,7 +160,9 @@ NGFragmentItemsBuilder::AddPreviousItems(
   // This is needed because the container size may be different, in that case,
   // the physical offsets are different when `writing-mode: vertial-rl`.
   DCHECK(!is_converted_to_physical_);
-  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode_);
+  const WritingModeConverter converter(GetWritingDirection(), container_size);
+  WritingModeConverter line_converter(
+      {ToLineWritingMode(GetWritingMode()), TextDirection::kLtr});
 
   const NGFragmentItem* const end_item =
       stop_at_dirty ? items.EndOfReusableItems() : nullptr;
@@ -174,8 +177,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
     DCHECK(!item.IsDirty());
 
     const LogicalOffset item_offset =
-        item.OffsetInContainerBlock().ConvertToLogical(
-            writing_mode_, direction_, container_size, item.Size());
+        converter.ToLogical(item.OffsetInContainerBlock(), item.Size());
 
     if (item.Type() == NGFragmentItem::kLine) {
       DCHECK(item.LineBoxFragment());
@@ -189,14 +191,15 @@ NGFragmentItemsBuilder::AddPreviousItems(
       items_.emplace_back(item_offset,
                           std::move(const_cast<NGFragmentItem&>(item)));
       const PhysicalRect line_box_bounds = item.RectInContainerBlock();
+      line_converter.SetOuterSize(line_box_bounds.size);
       for (NGInlineCursor line = cursor.CursorForDescendants(); line;
            line.MoveToNext()) {
         const NGFragmentItem& line_child = *line.Current().Item();
         DCHECK(line_child.CanReuse());
         items_.emplace_back(
-            (line_child.OffsetInContainerBlock() - line_box_bounds.offset)
-                .ConvertToLogical(line_writing_mode, TextDirection::kLtr,
-                                  line_box_bounds.size, line_child.Size()),
+            line_converter.ToLogical(
+                line_child.OffsetInContainerBlock() - line_box_bounds.offset,
+                line_child.Size()),
             std::move(const_cast<NGFragmentItem&>(line_child)));
       }
       cursor.MoveToNextSkippingChildren();
@@ -235,14 +238,16 @@ void NGFragmentItemsBuilder::ConvertToPhysical(const PhysicalSize& outer_size) {
   if (is_converted_to_physical_)
     return;
 
+  const WritingModeConverter converter(GetWritingDirection(), outer_size);
   // Children of lines have line-relative offsets. Use line-writing mode to
-  // convert their logical offsets.
-  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode_);
+  // convert their logical offsets. Use `kLtr` because inline items are after
+  // bidi-reoder, and that their offset is visual, not logical.
+  WritingModeConverter line_converter(
+      {ToLineWritingMode(GetWritingMode()), TextDirection::kLtr});
 
   for (ItemWithOffset* iter = items_.begin(); iter != items_.end(); ++iter) {
     NGFragmentItem* item = &iter->item;
-    item->SetOffset(iter->offset.ConvertToPhysical(writing_mode_, direction_,
-                                                   outer_size, item->Size()));
+    item->SetOffset(converter.ToPhysical(iter->offset, item->Size()));
 
     // Transform children of lines separately from children of the block,
     // because they may have different directions from the block. To do
@@ -252,16 +257,14 @@ void NGFragmentItemsBuilder::ConvertToPhysical(const PhysicalSize& outer_size) {
       DCHECK(descendants_count);
       if (descendants_count) {
         const PhysicalRect line_box_bounds = item->RectInContainerBlock();
+        line_converter.SetOuterSize(line_box_bounds.size);
         while (--descendants_count) {
           ++iter;
           DCHECK_NE(iter, items_.end());
           item = &iter->item;
-          // Use `kLtr` because inline items are after bidi-reoder, and that
-          // their offset is visual, not logical.
-          item->SetOffset(iter->offset.ConvertToPhysical(
-                              line_writing_mode, TextDirection::kLtr,
-                              line_box_bounds.size, item->Size()) +
-                          line_box_bounds.offset);
+          item->SetOffset(
+              line_converter.ToPhysical(iter->offset, item->Size()) +
+              line_box_bounds.offset);
         }
       }
     }

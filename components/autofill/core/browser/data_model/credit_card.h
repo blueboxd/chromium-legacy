@@ -260,14 +260,16 @@ class CreditCard : public AutofillDataModel {
   // available and valid;  otherwise, formatted as 'IssuerNetwork - ****2345'.
   // Google-issued cards have their own specific identifier, instead of
   // displaying the issuer network name.
-  base::string16 CardIdentifierStringForAutofillDisplay() const;
+  base::string16 CardIdentifierStringForAutofillDisplay(
+      base::string16 customized_nickname = base::string16()) const;
   // A label for this card formatted as 'Nickname - ****2345, expires on MM/YY'
   // if nickname experiment is turned on and nickname is available; otherwise,
   // formatted as 'IssuerNetwork - ****2345, expires on MM/YY'.
   // This label is used as a second line label when the cardholder
   // name/expiration date field is selected.
   base::string16 CardIdentifierStringAndDescriptiveExpiration(
-      const std::string& app_locale) const;
+      const std::string& app_locale,
+      base::string16 customized_nickname = base::string16()) const;
   // A label for this card formatted as 'Expires on MM/YY'.
   // This label is used as a second line label when the autofill dropdown
   // uses a two line layout and the credit card number is selected.
@@ -314,7 +316,8 @@ class CreditCard : public AutofillDataModel {
 
   // A label for this card formatted as 'Nickname - ****2345'. Always call
   // HasValidNickname() before calling this.
-  base::string16 NicknameAndLastFourDigits() const;
+  base::string16 NicknameAndLastFourDigits(
+      base::string16 customized_nickname = base::string16()) const;
 
   // Sets the name_on_card_ value based on the saved name parts.
   void SetNameOnCardFromSeparateParts();

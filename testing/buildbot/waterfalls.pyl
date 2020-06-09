@@ -2760,7 +2760,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_linux_telemetry_tests',
         },
       },
       'Linux Release (NVIDIA)': {
@@ -2771,7 +2771,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_desktop_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_linux_telemetry_tests',
         },
       },
       'Mac Debug (Intel)': {
@@ -2854,7 +2854,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_win_telemetry_tests',
         },
       },
       'Win10 x64 Release (NVIDIA)': {
@@ -2866,7 +2866,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_win_telemetry_tests',
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
@@ -2881,7 +2881,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
-          'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_common_win_telemetry_tests',
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
       },
@@ -4987,7 +4987,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_passthrough_telemetry_tests',
         },
       },
       'Linux V8 FYI Release - pointer compression (NVIDIA)': {
@@ -4997,7 +4997,7 @@
           'linux_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_passthrough_telemetry_tests',
         },
       },
       'Mac V8 FYI Release (Intel)': {
@@ -5007,7 +5007,7 @@
           'mac_mini_intel_gpu_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_validating_telemetry_tests',
         },
       },
       'V8 Android GN (dbg)': {
@@ -5134,7 +5134,7 @@
           'win10_nvidia_quadro_p400_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_v8_desktop_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_v8_desktop_passthrough_telemetry_tests',
         },
       },
     },

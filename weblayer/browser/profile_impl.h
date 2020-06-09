@@ -65,6 +65,8 @@ class ProfileImpl : public Profile {
   void SetDownloadDirectory(const base::FilePath& directory) override;
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
   CookieManager* GetCookieManager() override;
+  void SetBooleanSetting(SettingType type, bool value) override;
+  bool GetBooleanSetting(SettingType type) override;
 
 #if defined(OS_ANDROID)
   ProfileImpl(JNIEnv* env,
@@ -87,6 +89,8 @@ class ProfileImpl : public Profile {
       const base::android::JavaParamRef<jstring>& directory);
   jlong GetCookieManager(JNIEnv* env);
   void EnsureBrowserContextInitialized(JNIEnv* env);
+  void SetBooleanSetting(JNIEnv* env, jint j_type, jboolean j_value);
+  jboolean GetBooleanSetting(JNIEnv* env, jint j_type);
 #endif
 
   void IncrementBrowserImplCount();
@@ -124,6 +128,8 @@ class ProfileImpl : public Profile {
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
 
   size_t num_browser_impl_ = 0u;
+
+  bool basic_safe_browsing_enabled_ = true;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_profile_;

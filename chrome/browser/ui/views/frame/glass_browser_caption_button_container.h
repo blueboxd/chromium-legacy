@@ -43,6 +43,10 @@ class GlassBrowserCaptionButtonContainer : public CaptionButtonContainer,
   void ResetWindowControls();
   void ButtonPressed(views::Button* sender);
 
+  // Sets caption button visibility based on window state. Only one of maximize
+  // or restore button should ever be visible at the same time.
+  void UpdateButtonVisibility();
+
   GlassBrowserFrameView* const frame_view_;
   Windows10CaptionButton* const minimize_button_;
   Windows10CaptionButton* const maximize_button_;

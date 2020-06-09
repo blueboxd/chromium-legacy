@@ -989,9 +989,12 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
   MediaCapabilitiesKeySystemAccessInitializer* initializer =
       MakeGarbageCollected<MediaCapabilitiesKeySystemAccessInitializer>(
           script_state, key_system_config->keySystem(), config_vector,
-          WTF::Bind(&MediaCapabilities::GetPerfInfo, WrapPersistent(this),
-                    video_codec, video_profile,
-                    WrapPersistent(configuration->video()), request_time));
+          WTF::Bind(
+              &MediaCapabilities::GetPerfInfo, WrapPersistent(this),
+              video_codec, video_profile,
+              WrapPersistent(configuration->hasVideo() ? configuration->video()
+                                                       : nullptr),
+              request_time));
 
   // IMPORTANT: Acquire the promise before potentially synchronously resolving
   // it in the code that follows. Otherwise the promise returned to JS will be

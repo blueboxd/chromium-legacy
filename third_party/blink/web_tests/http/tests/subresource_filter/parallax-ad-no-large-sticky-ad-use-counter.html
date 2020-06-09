@@ -33,12 +33,18 @@ iframe {
   border: 0px;
   background-color: blue;
 }
+p {
+  position: fixed;
+}
 </style>
 
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 </head>
 <body marginwidth="0" marginheight="0">
+
+<!-- To trigger the first contentful paint at the very start -->
+<p>some content</p>
 
 <div class="content1">some content</div>
 <div class="empty"></div>

@@ -10,14 +10,14 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "context_lost_tests",
+        "name": "context_lost_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -32,7 +32,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_validating_tests/"
       },
       {
         "args": [
@@ -134,7 +134,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -145,7 +145,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "maps_pixel_test",
+        "name": "maps_pixel_validating_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -165,7 +165,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_validating_test/"
       },
       {
         "args": [
@@ -174,7 +174,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -185,7 +185,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_skia_gold_test",
+        "name": "pixel_skia_gold_validating_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -205,7 +205,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_validating_test/"
       },
       {
         "args": [
@@ -214,7 +214,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -222,7 +222,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "screenshot_sync_tests",
+        "name": "screenshot_sync_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -237,7 +237,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_validating_tests/"
       },
       {
         "args": [
@@ -1494,14 +1494,14 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "context_lost_tests",
+        "name": "context_lost_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1515,7 +1515,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_passthrough_tests/"
       },
       {
         "args": [
@@ -1614,7 +1614,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -1625,7 +1625,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "maps_pixel_test",
+        "name": "maps_pixel_passthrough_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -1644,7 +1644,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_passthrough_test/"
       },
       {
         "args": [
@@ -1653,7 +1653,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -1664,7 +1664,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_skia_gold_test",
+        "name": "pixel_skia_gold_passthrough_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -1683,7 +1683,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_passthrough_test/"
       },
       {
         "args": [
@@ -1692,7 +1692,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -1700,7 +1700,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "screenshot_sync_tests",
+        "name": "screenshot_sync_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1714,7 +1714,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_passthrough_tests/"
       },
       {
         "args": [
@@ -1822,14 +1822,14 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "context_lost_tests",
+        "name": "context_lost_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1843,7 +1843,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_passthrough_tests/"
       },
       {
         "args": [
@@ -1942,7 +1942,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -1953,7 +1953,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "maps_pixel_test",
+        "name": "maps_pixel_passthrough_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -1972,7 +1972,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_passthrough_test/"
       },
       {
         "args": [
@@ -1981,7 +1981,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -1992,7 +1992,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_skia_gold_test",
+        "name": "pixel_skia_gold_passthrough_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -2011,7 +2011,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_passthrough_test/"
       },
       {
         "args": [
@@ -2020,7 +2020,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -2028,7 +2028,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "screenshot_sync_tests",
+        "name": "screenshot_sync_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2042,7 +2042,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_passthrough_tests/"
       },
       {
         "args": [
@@ -2150,14 +2150,14 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "context_lost_tests",
+        "name": "context_lost_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2170,7 +2170,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_validating_tests/"
       },
       {
         "args": [
@@ -2266,7 +2266,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -2277,7 +2277,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "maps_pixel_test",
+        "name": "maps_pixel_validating_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -2295,7 +2295,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_validating_test/"
       },
       {
         "args": [
@@ -2304,7 +2304,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -2315,7 +2315,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_skia_gold_test",
+        "name": "pixel_skia_gold_validating_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -2333,7 +2333,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_validating_test/"
       },
       {
         "args": [
@@ -2342,7 +2342,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -2350,7 +2350,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "screenshot_sync_tests",
+        "name": "screenshot_sync_validating_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2363,7 +2363,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_validating_tests/"
       },
       {
         "args": [
@@ -2816,14 +2816,14 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "context_lost_tests",
+        "name": "context_lost_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2837,7 +2837,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_passthrough_tests/"
       },
       {
         "args": [
@@ -2936,7 +2936,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -2947,7 +2947,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "maps_pixel_test",
+        "name": "maps_pixel_passthrough_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -2966,7 +2966,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_passthrough_test/"
       },
       {
         "args": [
@@ -2975,7 +2975,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test",
           "--test-machine-name",
           "${buildername}",
@@ -2986,7 +2986,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "pixel_skia_gold_test",
+        "name": "pixel_skia_gold_passthrough_test",
         "precommit_args": [
           "--gerrit-issue=${patch_issue}",
           "--gerrit-patchset=${patch_set}",
@@ -3005,7 +3005,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_passthrough_test/"
       },
       {
         "args": [
@@ -3014,7 +3014,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=passthrough --use-gl=angle",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -3022,7 +3022,7 @@
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "screenshot_sync_tests",
+        "name": "screenshot_sync_passthrough_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -3036,7 +3036,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/"
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_passthrough_tests/"
       },
       {
         "args": [

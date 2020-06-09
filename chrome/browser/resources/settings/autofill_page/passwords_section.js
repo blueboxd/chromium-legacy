@@ -15,7 +15,6 @@ let ExceptionEntryEntryEvent;
 import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
@@ -44,6 +43,8 @@ import '../prefs/prefs.m.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.js';
 import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
+import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
+import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
 import {Router} from '../router.m.js';
 import '../settings_shared_css.m.js';
 import '../site_favicon.js';
@@ -102,7 +103,7 @@ Polymer({
 
     /**
      * An array of sites to display.
-     * @type {!Array<!PasswordManagerProxy.ExceptionEntry>}
+     * @type {!Array<!MultiStoreExceptionEntry>}
      */
     passwordExceptions: {
       type: Array,
@@ -329,7 +330,7 @@ Polymer({
     };
 
     const setPasswordExceptionsListener = list => {
-      this.passwordExceptions = list;
+      this.passwordExceptions = this.mergeExceptionsStoreDuplicates_(list);
     };
 
     this.setIsOptedInForAccountStorageListener_ =
@@ -398,6 +399,28 @@ Polymer({
         assert(this.setPasswordExceptionsListener_));
     this.passwordManager_.removeAccountStorageOptInStateListener(
         assert(this.setIsOptedInForAccountStorageListener_));
+  },
+
+  /**
+   * @param {!Array<!PasswordManagerProxy.ExceptionEntry>} exceptionList
+   * @return {!Array<!MultiStoreExceptionEntry>}
+   * @private
+   */
+  mergeExceptionsStoreDuplicates_(exceptionList) {
+    /** @type {!Array<!MultiStoreExceptionEntry>} */
+    const multiStoreEntries = [];
+    /** @type {!Map<number, !MultiStoreExceptionEntry>} */
+    const frontendIdToMergedEntry = new Map();
+    for (const entry of exceptionList) {
+      if (frontendIdToMergedEntry.has(entry.frontendId)) {
+        frontendIdToMergedEntry.get(entry.frontendId).merge(entry);
+      } else {
+        const multiStoreEntry = new MultiStoreExceptionEntry(entry);
+        frontendIdToMergedEntry.set(entry.frontendId, multiStoreEntry);
+        multiStoreEntries.push(multiStoreEntry);
+      }
+    }
+    return multiStoreEntries;
   },
 
   /**
@@ -577,11 +600,21 @@ Polymer({
 
   /**
    * Fires an event that should delete the password exception.
-   * @param {!ExceptionEntryEntryEvent} e The polymer event.
+   * @param {!{model: !{item: !chrome.passwordsPrivate.ExceptionEntry}}} e
+   * The polymer event.
    * @private
    */
   onRemoveExceptionButtonTap_(e) {
-    this.passwordManager_.removeException(e.model.item.id);
+    const exception = e.model.item;
+    /** @type {!Array<number>} */
+    const allExceptionIds = [];
+    if (exception.isPresentInAccount()) {
+      allExceptionIds.push(exception.accountId);
+    }
+    if (exception.isPresentOnDevice()) {
+      allExceptionIds.push(exception.deviceId);
+    }
+    this.passwordManager_.removeExceptions(allExceptionIds);
   },
 
   /**

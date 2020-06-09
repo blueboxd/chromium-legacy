@@ -1524,6 +1524,7 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
           .setTitle(style_sheet->title())
           .setFrameId(frame ? IdentifiersFactory::FrameId(frame) : "")
           .setIsInline(style_sheet->IsInline() && !StartsAtZero())
+          .setIsMutable(style_sheet->Contents()->IsMutable())
           .setStartLine(start.line_.ZeroBasedInt())
           .setStartColumn(start.column_.ZeroBasedInt())
           .setLength(text_length)

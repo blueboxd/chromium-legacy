@@ -9,7 +9,7 @@
 
 #include "ash/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
-#include "ash/shortcut_viewer/strings/grit/ash_components_strings.h"
+#include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/shortcut_viewer/views/bubble_view.h"
 #include "base/i18n/rtl.h"

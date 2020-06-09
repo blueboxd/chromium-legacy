@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
 namespace blink {
@@ -68,101 +68,106 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   DCHECK(main_frame->GetDocument());
   DCHECK(main_frame->ContentLayoutObject());
 
+  // Skip any measurement before the FCP.
+  if (PaintTiming::From(*main_frame->GetDocument())
+          .FirstContentfulPaint()
+          .is_null()) {
+    return;
+  }
+
   base::Time current_time = base::Time::Now();
+  if (started_detection_ && current_time < last_detection_time_ + kFireInterval)
+    return;
 
-  if (!started_detection_ ||
-      current_time - last_detection_time_ >= kFireInterval) {
-    IntSize main_frame_size = main_frame->GetMainFrameViewportSize();
+  TRACE_EVENT0("blink,benchmark",
+               "OverlayInterstitialAdDetector::MaybeFireDetection");
 
-    if (started_detection_ &&
-        main_frame_size != last_detection_main_frame_size_) {
-      // Reset the candidate when the the viewport size has changed. Changing
-      // the viewport size could influence the layout and may trick the detector
-      // into believing that an element appeared and was dismissed, but what
-      // could have happened is that the element no longer covers the center,
-      // but still exists (e.g. a sticky ad at the top).
-      candidate_id_ = kInvalidDOMNodeId;
+  started_detection_ = true;
+  last_detection_time_ = current_time;
+
+  IntSize main_frame_size = main_frame->GetMainFrameViewportSize();
+  last_detection_main_frame_size_ = main_frame_size;
+
+  if (main_frame_size != last_detection_main_frame_size_) {
+    // Reset the candidate when the the viewport size has changed. Changing
+    // the viewport size could influence the layout and may trick the detector
+    // into believing that an element appeared and was dismissed, but what
+    // could have happened is that the element no longer covers the center,
+    // but still exists (e.g. a sticky ad at the top).
+    candidate_id_ = kInvalidDOMNodeId;
+  }
+
+  HitTestLocation location(DoublePoint(main_frame_size.Width() / 2.0,
+                                       main_frame_size.Height() / 2.0));
+  HitTestResult result;
+  main_frame->ContentLayoutObject()->HitTestNoLifecycleUpdate(location, result);
+
+  Element* element = result.InnerElement();
+  if (!element)
+    return;
+
+  DOMNodeId element_id = DOMNodeIds::IdForNode(element);
+
+  // Skip considering the overlay for a pop-up candidate if we haven't seen or
+  // have just seen the first meaningful paint. If we have just seen the first
+  // meaningful paint, however, we would consider future overlays for pop-up
+  // candidates.
+  if (!main_content_has_loaded_) {
+    if (!PaintTiming::From(*main_frame->GetDocument())
+             .FirstMeaningfulPaint()
+             .is_null()) {
+      main_content_has_loaded_ = true;
     }
 
-    HitTestLocation location(DoublePoint(main_frame_size.Width() / 2.0,
-                                         main_frame_size.Height() / 2.0));
-    HitTestResult result;
-    main_frame->ContentLayoutObject()->HitTestNoLifecycleUpdate(location,
-                                                                result);
-    started_detection_ = true;
+    last_unqualified_element_id_ = element_id;
+    return;
+  }
 
-    last_detection_time_ = current_time;
-    last_detection_main_frame_size_ = main_frame_size;
+  bool is_new_element = (element_id != candidate_id_);
 
-    Element* element = result.InnerElement();
-    if (!element)
-      return;
-
-    DOMNodeId element_id = DOMNodeIds::IdForNode(element);
-
-    bool is_new_element = (element_id != candidate_id_);
-
-    if (is_new_element && candidate_id_ != kInvalidDOMNodeId) {
-      // If the main frame scrolling offset hasn't changed since the candidate's
-      // appearance, we consider it to be a overlay interstitial; otherwise, we
-      // skip that candidate because it could be a parallax/scroller ad.
-      if (main_frame->GetMainFrameScrollOffset().Y() ==
-          candidate_start_main_frame_scroll_offset_) {
-        OnPopupAdDetected(main_frame);
-        return;
-      }
-      last_unqualified_element_id_ = candidate_id_;
-      candidate_id_ = kInvalidDOMNodeId;
-    }
-
-    if (!is_new_element)
-      return;
-
-    if (element_id == last_unqualified_element_id_)
-      return;
-
-    if (!element->GetLayoutObject())
-      return;
-
-    // Skip considering the overlay for a pop-up candidate if we haven't seen or
-    // have just seen the first meaningful paint. If we have just seen the first
-    // meaningful paint, however, we would consider future overlays for pop-up
-    // candidates.
-    if (!main_content_has_loaded_) {
-      if (FirstMeaningfulPaintDetector::From(*(main_frame->GetDocument()))
-              .SeenFirstMeaningfulPaint()) {
-        main_content_has_loaded_ = true;
-      }
-      last_unqualified_element_id_ = element_id;
+  if (is_new_element && candidate_id_ != kInvalidDOMNodeId) {
+    // If the main frame scrolling offset hasn't changed since the candidate's
+    // appearance, we consider it to be a overlay interstitial; otherwise, we
+    // skip that candidate because it could be a parallax/scroller ad.
+    if (main_frame->GetMainFrameScrollOffset().Y() ==
+        candidate_start_main_frame_scroll_offset_) {
+      OnPopupAdDetected(main_frame);
       return;
     }
+    last_unqualified_element_id_ = candidate_id_;
+    candidate_id_ = kInvalidDOMNodeId;
+  }
 
-    IntRect overlay_rect =
-        element->GetLayoutObject()->AbsoluteBoundingBoxRect();
+  if (!is_new_element)
+    return;
 
-    bool is_large =
-        !overlay_rect.IsEmpty() &&
-        (overlay_rect.Size().Area() >
-         main_frame_size.Area() * kLargeAdSizeToViewportSizeThreshold);
+  if (element_id == last_unqualified_element_id_)
+    return;
 
-    bool has_gesture = LocalFrame::HasTransientUserActivation(main_frame);
+  if (!element->GetLayoutObject())
+    return;
 
-    if (!has_gesture && is_large && IsOverlayAdCandidate(element)) {
-      // If main page is not scrollable, immediately determinine the overlay
-      // to be a popup. There's is no need to check any state at the dismissal
-      // time.
-      if (!main_frame->GetDocument()
-               ->GetLayoutView()
-               ->HasScrollableOverflowY()) {
-        OnPopupAdDetected(main_frame);
-        return;
-      }
-      candidate_id_ = element_id;
-      candidate_start_main_frame_scroll_offset_ =
-          main_frame->GetMainFrameScrollOffset().Y();
-    } else {
-      last_unqualified_element_id_ = element_id;
+  IntRect overlay_rect = element->GetLayoutObject()->AbsoluteBoundingBoxRect();
+
+  bool is_large =
+      (overlay_rect.Size().Area() >
+       main_frame_size.Area() * kLargeAdSizeToViewportSizeThreshold);
+
+  bool has_gesture = LocalFrame::HasTransientUserActivation(main_frame);
+
+  if (!has_gesture && is_large && IsOverlayAdCandidate(element)) {
+    // If main page is not scrollable, immediately determinine the overlay
+    // to be a popup. There's is no need to check any state at the dismissal
+    // time.
+    if (!main_frame->GetDocument()->GetLayoutView()->HasScrollableOverflowY()) {
+      OnPopupAdDetected(main_frame);
+      return;
     }
+    candidate_id_ = element_id;
+    candidate_start_main_frame_scroll_offset_ =
+        main_frame->GetMainFrameScrollOffset().Y();
+  } else {
+    last_unqualified_element_id_ = element_id;
   }
 }
 

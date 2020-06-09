@@ -80,12 +80,12 @@ class WaylandEventSource : public PlatformEventSource,
   void OnKeyboardDestroyed(WaylandKeyboard* keyboard) override;
   void OnKeyboardFocusChanged(WaylandWindow* window, bool focused) override;
   void OnKeyboardModifiersChanged(int modifiers) override;
-  void OnKeyboardKeyEvent(EventType type,
-                          DomCode dom_code,
-                          DomKey dom_key,
-                          KeyboardCode key_code,
-                          bool repeat,
-                          base::TimeTicks timestamp) override;
+  uint32_t OnKeyboardKeyEvent(EventType type,
+                              DomCode dom_code,
+                              DomKey dom_key,
+                              KeyboardCode key_code,
+                              bool repeat,
+                              base::TimeTicks timestamp) override;
 
   // WaylandPointer::Delegate
   void OnPointerCreated(WaylandPointer* pointer) override;

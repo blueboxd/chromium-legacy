@@ -539,6 +539,15 @@ class ArcBluetoothBridge
 
   void SendDevice(const device::BluetoothDevice* device) const;
 
+  // Detects the pairing state change from DeviceChanged(). Two actions will be
+  // taken in this function:
+  // - Updates |devices_pairing_| to reflect the set of ongoing pairing requests
+  //   initiated by ARC;
+  // - Notifies Android of the pairing failure.
+  // Note that notifying Android of the pairing success is handled in
+  // DevicePairedChange() but not in this function.
+  void TrackPairingState(const device::BluetoothDevice* device);
+
   // Data structures for RFCOMM listening/connecting sockets that live in
   // Chrome.
   struct RfcommListeningSocket {
@@ -617,6 +626,12 @@ class ArcBluetoothBridge
   // connection when Android BT service goes down, otherwise these links will be
   // lingering.
   std::set<std::string> devices_paired_by_arc_;
+
+  // The devices that ARC has tried to pair by CreateBond() and is in pairing
+  // state. This should be a subset of |devices_paired_by_arc_|. We maintain
+  // this set to detect the pairing failure signal. Please refer to
+  // TrackPairingState() for more details.
+  std::set<std::string> devices_pairing_;
 
   // {state, connection}
   // - For established connection from remote device, this is {CONNECTED, null}.

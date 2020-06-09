@@ -436,7 +436,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
-                R.id.contextmenu_share_image};
+                R.id.contextmenu_share_image, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -455,7 +455,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
-                R.id.contextmenu_share_image};
+                R.id.contextmenu_share_image, R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -494,7 +494,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
         ContextMenu menu = ContextMenuUtils.openContextMenu(tab, "testImage");
 
         Integer[] expectedItems = {R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
+                R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -515,7 +516,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
         // Search with Google Lens is only supported when Google is the default search provider.
         Integer[] expectedItems = {R.id.contextmenu_save_image,
-                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image};
+                R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_share_image,
+                R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
                 addItemsIf(EphemeralTabCoordinator.isSupported(), expectedItems, featureItems);
@@ -534,7 +536,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
                 R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_by_image,
-                R.id.contextmenu_share_image, R.id.contextmenu_share_link};
+                R.id.contextmenu_share_image, R.id.contextmenu_share_link,
+                R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =
@@ -557,7 +560,8 @@ public class ContextMenuTest implements CustomMainActivityStart {
                 R.id.contextmenu_open_in_incognito_tab, R.id.contextmenu_copy_link_address,
                 R.id.contextmenu_save_link_as, R.id.contextmenu_save_image,
                 R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_search_with_google_lens,
-                R.id.contextmenu_share_image, R.id.contextmenu_share_link};
+                R.id.contextmenu_share_image, R.id.contextmenu_share_link,
+                R.id.contextmenu_copy_image};
         Integer[] featureItems = {R.id.contextmenu_open_in_ephemeral_tab,
                 R.id.contextmenu_open_image_in_ephemeral_tab};
         expectedItems =

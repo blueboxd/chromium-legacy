@@ -40,14 +40,6 @@ class DataObject;
 class DocumentFragment;
 class LocalFrame;
 
-enum DragApplicationFlags {
-  kDragApplicationNone = 0,
-  kDragApplicationIsModal = 1,
-  kDragApplicationIsSource = 2,
-  kDragApplicationHasAttachedSheet = 4,
-  kDragApplicationIsCopyKeyDown = 8
-};
-
 class CORE_EXPORT DragData {
   STACK_ALLOCATED();
 
@@ -59,11 +51,9 @@ class CORE_EXPORT DragData {
   DragData(DataObject*,
            const FloatPoint& client_position,
            const FloatPoint& global_position,
-           DragOperation,
-           DragApplicationFlags = kDragApplicationNone);
+           DragOperation);
   const FloatPoint& ClientPosition() const { return client_position_; }
   const FloatPoint& GlobalPosition() const { return global_position_; }
-  DragApplicationFlags Flags() const { return application_flags_; }
   DataObject* PlatformData() const { return platform_drag_data_; }
   DragOperation DraggingSourceOperationMask() const {
     return dragging_source_operation_mask_;
@@ -89,7 +79,6 @@ class CORE_EXPORT DragData {
   const FloatPoint global_position_;
   DataObject* const platform_drag_data_;
   const DragOperation dragging_source_operation_mask_;
-  const DragApplicationFlags application_flags_;
 
   bool ContainsHTML() const;
 };

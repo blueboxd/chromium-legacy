@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/containers/flat_tree.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -205,6 +206,13 @@ std::string AppServiceAppWindowCrostiniTracker::GetShelfAppId(
     return std::string();
   }
 
+  ash::ShelfID shelf_id =
+      ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  if (shelf_id.app_id == crostini::kCrostiniInstallerShelfId ||
+      shelf_id.app_id == crostini::kCrostiniUpgraderShelfId) {
+    return shelf_id.app_id;
+  }
+
   // Handle browser windows, such as the Crostini terminal.
   Browser* browser = chrome::FindBrowserWithWindow(window);
   if (browser) {
@@ -219,7 +227,7 @@ std::string AppServiceAppWindowCrostiniTracker::GetShelfAppId(
     // cause inconsistent error.
     auto* proxy_ = apps::AppServiceProxyFactory::GetForProfile(
         app_service_controller_->owner()->profile());
-    const ash::ShelfID shelf_id = proxy_->InstanceRegistry().GetShelfId(window);
+    shelf_id = proxy_->InstanceRegistry().GetShelfId(window);
     if (shelf_id.app_id != app_id) {
       app_service_controller_->app_service_instance_helper()->OnInstances(
           shelf_id.app_id, window, std::string(),

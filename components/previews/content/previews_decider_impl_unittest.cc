@@ -860,22 +860,11 @@ TEST_F(PreviewsDeciderImplTest, NoScriptFeatureDefaultBehavior) {
   PreviewsUserData user_data(kDefaultPageId);
   content::MockNavigationHandle navigation_handle;
   navigation_handle.set_url(GURL("https://www.google.com"));
-#if defined(OS_ANDROID)
-  // Enabled by default on Android. NOSCRIPT always allowed at navigation start
-  // to handle asynchronous loading of page hints; non-allowlisted ones are
-  // later blocked on commit.
-  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
-      &user_data, &navigation_handle, false, PreviewsType::NOSCRIPT));
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 1);
-  histogram_tester.ExpectBucketCount(
-      "Previews.EligibilityReason.NoScript",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
-#else   // !defined(OS_ANDROID)
+
   // Disabled by default on non-Android.
   EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
       &user_data, &navigation_handle, false, PreviewsType::NOSCRIPT));
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
-#endif  // defined(OS_ANDROID)
 }
 
 TEST_F(PreviewsDeciderImplTest, NoScriptNotAllowedWithoutOptimizationHints) {

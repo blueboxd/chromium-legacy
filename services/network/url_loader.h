@@ -210,6 +210,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       const net::HttpRequestHeaders& request_headers,
       bool added_during_redirect);
 
+  static bool HasStreamingUploadBody(const ResourceRequest*);
+
  private:
   // This class is used to set the URLLoader as user data on a URLRequest. This
   // is used instead of URLLoader directly because SetUserData requires a
@@ -492,6 +494,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // Observer listening to all cookie reads and writes made by this request.
   mojo::Remote<mojom::CookieAccessObserver> cookie_observer_;
+
+  const bool has_streaming_upload_body_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 

@@ -33,7 +33,10 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/java/jni/ProfileImpl_jni.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_service.h"
+#include "weblayer/browser/user_agent.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -382,6 +385,17 @@ jlong ProfileImpl::GetCookieManager(JNIEnv* env) {
 void ProfileImpl::EnsureBrowserContextInitialized(JNIEnv* env) {
   content::BrowserContext::GetDownloadManager(GetBrowserContext());
 }
+
+void ProfileImpl::SetBooleanSetting(JNIEnv* env,
+                                    jint j_type,
+                                    jboolean j_value) {
+  SetBooleanSetting(static_cast<SettingType>(j_type), j_value);
+}
+
+jboolean ProfileImpl::GetBooleanSetting(JNIEnv* env, jint j_type) {
+  return GetBooleanSetting(static_cast<SettingType>(j_type));
+}
+
 #endif  // OS_ANDROID
 
 void ProfileImpl::IncrementBrowserImplCount() {
@@ -395,6 +409,26 @@ void ProfileImpl::DecrementBrowserImplCount() {
 
 base::FilePath ProfileImpl::GetBrowserPersisterDataBaseDir() const {
   return ComputeBrowserPersisterDataBaseDir(info_);
+}
+
+void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
+  switch (type) {
+    case SettingType::BASIC_SAFE_BROWSING_ENABLED:
+      basic_safe_browsing_enabled_ = value;
+#if defined(OS_ANDROID)
+      BrowserProcess::GetInstance()
+          ->GetSafeBrowsingService(weblayer::GetUserAgent())
+          ->SetSafeBrowsingDisabled(!basic_safe_browsing_enabled_);
+#endif
+  }
+}
+
+bool ProfileImpl::GetBooleanSetting(SettingType type) {
+  switch (type) {
+    case SettingType::BASIC_SAFE_BROWSING_ENABLED:
+      return basic_safe_browsing_enabled_;
+  }
+  NOTREACHED();
 }
 
 }  // namespace weblayer

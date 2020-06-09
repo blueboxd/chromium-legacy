@@ -677,6 +677,24 @@ int main(int argc, const char* argv[]) {
   match_finder.addMatcher(affected_ternary_operator_arg_matcher,
                           &affected_expr_rewriter);
 
+  // Calls to templated functions =========
+  // Given
+  //   struct S { int* y; };
+  //   template <typename T>
+  //   void templatedFunc(T* arg) {}
+  //   void foo(const S& s) {
+  //     templatedFunc(s.y);
+  //   }
+  // binds the |s.y| expr if it matches the |affected_expr_matcher| above.
+  auto templated_function_arg_matcher = forEachArgumentWithParam(
+      affected_expr_matcher, parmVarDecl(hasType(qualType(allOf(
+                                 findAll(qualType(substTemplateTypeParmType())),
+                                 unless(referenceType()))))));
+  match_finder.addMatcher(callExpr(templated_function_arg_matcher),
+                          &affected_expr_rewriter);
+  match_finder.addMatcher(cxxConstructExpr(templated_function_arg_matcher),
+                          &affected_expr_rewriter);
+
   // |auto| type declarations =========
   // Given
   //   struct S { int* y; };

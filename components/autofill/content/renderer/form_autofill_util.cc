@@ -1470,11 +1470,6 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     FormData* form,
     FormFieldData* field) {
   form->url = GetCanonicalOriginForDocument(document);
-  if (IsAutofillFieldMetadataEnabled() && !document.Body().IsNull()) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "PasswordManager.ButtonTitlePerformance.NoFormTag");
-    form->button_titles = InferButtonTitlesForForm(document.Body());
-  }
   if (document.GetFrame() && document.GetFrame()->Top()) {
     form->main_frame_origin = document.GetFrame()->Top()->GetSecurityOrigin();
   } else {
@@ -1611,7 +1606,7 @@ GURL GetCanonicalOriginForDocument(const WebDocument& document) {
   return StripAuthAndParams(full_origin);
 }
 
-GURL GetOriginWithoutAuthForDocument(const WebDocument& document) {
+GURL GetDocumentUrlWithoutAuth(const WebDocument& document) {
   GURL::Replacements rep;
   rep.ClearUsername();
   rep.ClearPassword();
@@ -1673,6 +1668,11 @@ base::string16 GetFormIdentifier(const WebFormElement& form) {
     identifier = form.GetAttribute(*kId).Utf16();
 
   return identifier;
+}
+
+FormRendererId GetFormRendererId(const blink::WebFormElement& form) {
+  return form.IsNull() ? FormRendererId()
+                       : FormRendererId(form.UniqueRendererFormId());
 }
 
 base::i18n::TextDirection GetTextDirectionForElement(
@@ -1868,11 +1868,6 @@ bool WebFormElementToFormData(
   form->action = GetCanonicalActionForForm(form_element);
   form->is_action_empty =
       form_element.Action().IsNull() || form_element.Action().IsEmpty();
-  if (IsAutofillFieldMetadataEnabled()) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "PasswordManager.ButtonTitlePerformance.HasFormTag");
-    form->button_titles = InferButtonTitlesForForm(form_element);
-  }
   if (frame->Top()) {
     form->main_frame_origin = frame->Top()->GetSecurityOrigin();
   } else {
@@ -2213,6 +2208,41 @@ base::string16 FindChildText(const WebNode& node) {
   return FindChildTextWithIgnoreList(node, std::set<WebNode>());
 }
 
+ButtonTitleList GetButtonTitles(const WebFormElement& web_form,
+                                const WebDocument& document,
+                                ButtonTitlesCache* button_titles_cache) {
+  DCHECK(button_titles_cache);
+  if (!IsAutofillFieldMetadataEnabled() && web_form.IsNull())
+    return ButtonTitleList();
+
+  // True if the cache has no entry for |web_form|.
+  bool cache_miss = true;
+  // Iterator pointing to the entry for |web_form| if the entry for |web_form|
+  // is found.
+  ButtonTitlesCache::iterator form_position;
+  std::tie(form_position, cache_miss) = button_titles_cache->emplace(
+      GetFormRendererId(web_form), ButtonTitleList());
+  if (!cache_miss)
+    return form_position->second;
+
+  ButtonTitleList button_titles;
+  DCHECK(!web_form.IsNull() || !document.IsNull());
+  if (web_form.IsNull()) {
+    const WebElement& body = document.Body();
+    if (!body.IsNull()) {
+      SCOPED_UMA_HISTOGRAM_TIMER(
+          "PasswordManager.ButtonTitlePerformance.NoFormTag");
+      button_titles = InferButtonTitlesForForm(body);
+    }
+  } else {
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "PasswordManager.ButtonTitlePerformance.HasFormTag");
+    button_titles = InferButtonTitlesForForm(web_form);
+  }
+  form_position->second = std::move(button_titles);
+  return form_position->second;
+}
+
 base::string16 FindChildTextWithIgnoreListForTesting(
     const WebNode& node,
     const std::set<WebNode>& divs_to_skip) {
@@ -2224,10 +2254,6 @@ bool InferLabelForElementForTesting(const WebFormControlElement& element,
                                     base::string16* label,
                                     FormFieldData::LabelSource* label_source) {
   return InferLabelForElement(element, stop_words, label, label_source);
-}
-
-ButtonTitleList InferButtonTitlesForTesting(const WebElement& form_element) {
-  return InferButtonTitlesForForm(form_element);
 }
 
 WebFormElement FindFormByUniqueRendererId(WebDocument doc,

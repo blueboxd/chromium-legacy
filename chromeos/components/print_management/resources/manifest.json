@@ -3,7 +3,7 @@
     "short_name": "Print Management",
     "start_url": "/",
     "display": "standalone",
-    "theme_color": "#4285F4",
+    "theme_color": "#ffffff",
     "background_color": "#ffffff",
     "scope": "./",
     "icons": [

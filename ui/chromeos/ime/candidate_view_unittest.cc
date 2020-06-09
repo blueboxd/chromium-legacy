@@ -33,7 +33,7 @@ const char* const kDummyCandidates[] = {
 class CandidateViewTest : public views::ViewsTestBase,
                           public views::ButtonListener {
  public:
-  CandidateViewTest() : widget_(NULL), last_pressed_(NULL) {}
+  CandidateViewTest() : widget_(nullptr), last_pressed_(nullptr) {}
   ~CandidateViewTest() override {}
 
   void SetUp() override {

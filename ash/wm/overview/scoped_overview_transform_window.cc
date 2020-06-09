@@ -98,16 +98,18 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 
     transient->SetProperty(kIsShowingInOverviewKey, true);
 
+    // Add this as |aura::WindowObserver| for observing |kHideInOverviewKey|
+    // property changes.
+    transient->AddObserver(this);
+
     // Hide transient children which have been specified to be hidden in
     // overview mode.
     if (transient != window && transient->GetProperty(kHideInOverviewKey))
       transient_children_to_hide.push_back(transient);
   }
 
-  if (!transient_children_to_hide.empty()) {
-    hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
-        std::move(transient_children_to_hide), /*forced_hidden=*/true);
-  }
+  if (!transient_children_to_hide.empty())
+    AddHiddenTransientWindows(std::move(transient_children_to_hide));
 
   aura::client::GetTransientWindowClient()->AddObserver(this);
 
@@ -146,6 +148,7 @@ ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
     transient->ClearProperty(kIsShowingInOverviewKey);
     DCHECK(event_targeting_blocker_map_.contains(transient));
     event_targeting_blocker_map_.erase(transient);
+    transient->RemoveObserver(this);
   }
 
   // Remove rounded corners and clipping.
@@ -454,6 +457,45 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowAdded(
       std::make_unique<aura::ScopedWindowEventTargetingBlocker>(
           transient_child);
   transient_child->SetProperty(kIsShowingInOverviewKey, true);
+
+  // Hide transient children which have been specified to be hidden in
+  // overview mode.
+  if (transient_child != window_ &&
+      transient_child->GetProperty(kHideInOverviewKey))
+    AddHiddenTransientWindows({transient_child});
+
+  // Add this as |aura::WindowObserver| for observing |kHideInOverviewKey|
+  // property changes.
+  transient_child->AddObserver(this);
+}
+
+void ScopedOverviewTransformWindow::OnWindowPropertyChanged(
+    aura::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (key != kHideInOverviewKey)
+    return;
+
+  const auto current_value = window->GetProperty(kHideInOverviewKey);
+  if (current_value == old)
+    return;
+
+  if (current_value) {
+    AddHiddenTransientWindows({window});
+  } else {
+    hidden_transient_children_->RemoveWindow(window);
+  }
+}
+
+void ScopedOverviewTransformWindow::AddHiddenTransientWindows(
+    const std::vector<aura::Window*>& transient_windows) {
+  if (!hidden_transient_children_) {
+    hidden_transient_children_ = std::make_unique<ScopedOverviewHideWindows>(
+        std::move(transient_windows), /*forced_hidden=*/true);
+  } else {
+    for (auto* window : transient_windows)
+      hidden_transient_children_->AddWindow(window);
+  }
 }
 
 void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
@@ -465,6 +507,7 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
   transient_child->ClearProperty(kIsShowingInOverviewKey);
   DCHECK(event_targeting_blocker_map_.contains(transient_child));
   event_targeting_blocker_map_.erase(transient_child);
+  transient_child->RemoveObserver(this);
 }
 
 // static

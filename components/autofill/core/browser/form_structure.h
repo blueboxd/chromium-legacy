@@ -241,6 +241,8 @@ class FormStructure {
 
   const url::Origin& main_frame_origin() const { return main_frame_origin_; }
 
+  const ButtonTitleList& button_titles() const { return button_titles_; }
+
   bool has_author_specified_types() const {
     return has_author_specified_types_;
   }

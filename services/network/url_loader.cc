@@ -479,7 +479,8 @@ URLLoader::URLLoader(
       origin_policy_manager_(nullptr),
       trust_token_helper_factory_(std::move(trust_token_helper_factory)),
       isolated_world_origin_(request.isolated_world_origin),
-      cookie_observer_(std::move(cookie_observer)) {
+      cookie_observer_(std::move(cookie_observer)),
+      has_streaming_upload_body_(HasStreamingUploadBody(&request)) {
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
   if (url_loader_header_client &&
@@ -992,8 +993,29 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   url_loader_client_->OnReceiveRedirect(redirect_info, std::move(response));
 }
 
+// static
+bool URLLoader::HasStreamingUploadBody(const ResourceRequest* request) {
+  const ResourceRequestBody* request_body = request->request_body.get();
+  if (!request_body)
+    return false;
+  const std::vector<DataElement>* elements = request_body->elements();
+  if (elements->size() == 0u)
+    return false;
+  // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
+  // Body's source is null means the body is not extracted from ReadableStream.
+  // See blink::PopulateResourceRequest() for actual construction.
+  if (elements->size() > 1u)
+    return false;
+  return elements->at(0).type() == mojom::DataElementType::kChunkedDataPipe;
+}
+
 void URLLoader::OnAuthRequired(net::URLRequest* url_request,
                                const net::AuthChallengeInfo& auth_info) {
+  if (has_streaming_upload_body_) {
+    NotifyCompleted(net::ERR_FAILED);
+    // |this| may have been deleted.
+    return;
+  }
   if (!network_context_client_) {
     OnAuthCredentials(base::nullopt);
     return;

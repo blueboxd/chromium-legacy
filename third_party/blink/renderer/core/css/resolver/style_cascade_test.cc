@@ -269,15 +269,16 @@ class TestCascadeAutoLock {
   CascadeResolver::AutoLock lock_;
 };
 
-class StyleCascadeTest : public PageTestBase,
-                         private ScopedCSSCascadeForTest,
-                         private ScopedCSSRevertForTest,
-                         private ScopedMPCDependenciesForTest {
+class StyleCascadeTest
+    : public PageTestBase,
+      private ScopedCSSCascadeForTest,
+      private ScopedCSSRevertForTest,
+      private ScopedCSSMatchedPropertiesCacheDependenciesForTest {
  public:
   StyleCascadeTest()
       : ScopedCSSCascadeForTest(true),
         ScopedCSSRevertForTest(true),
-        ScopedMPCDependenciesForTest(true) {}
+        ScopedCSSMatchedPropertiesCacheDependenciesForTest(true) {}
 
   CSSStyleSheet* CreateSheet(const String& css_text) {
     auto* init = MakeGarbageCollected<CSSStyleSheetInit>();

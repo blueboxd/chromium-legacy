@@ -20,6 +20,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadSchedule {
   DownloadSchedule(const DownloadSchedule&);
   ~DownloadSchedule();
 
+  bool operator==(const DownloadSchedule&) const;
+
   bool only_on_wifi() const { return only_on_wifi_; }
 
   const base::Optional<base::Time>& start_time() const { return start_time_; }

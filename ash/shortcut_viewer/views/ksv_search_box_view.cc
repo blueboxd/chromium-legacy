@@ -4,7 +4,7 @@
 
 #include "ash/shortcut_viewer/views/ksv_search_box_view.h"
 
-#include "ash/shortcut_viewer/strings/grit/ash_components_strings.h"
+#include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"

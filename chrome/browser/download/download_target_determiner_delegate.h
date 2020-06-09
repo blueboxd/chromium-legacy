@@ -8,11 +8,13 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "chrome/browser/download/download_confirmation_reason.h"
 #include "chrome/browser/download/download_confirmation_result.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_path_reservation_tracker.h"
+#include "components/download/public/common/download_schedule.h"
 
 namespace base {
 class FilePath;
@@ -48,8 +50,10 @@ class DownloadTargetDeterminerDelegate {
   //    selection, then this parameter will be the empty path. On Chrome OS,
   //    this path may contain virtual mount points if the user chose a virtual
   //    path (e.g. Google Drive).
-  typedef base::Callback<void(DownloadConfirmationResult,
-                              const base::FilePath& virtual_path)>
+  typedef base::Callback<void(
+      DownloadConfirmationResult,
+      const base::FilePath& virtual_path,
+      base::Optional<download::DownloadSchedule> download_schedule)>
       ConfirmationCallback;
 
   // Callback to be invoked when DetermineLocalPath() completes. The argument

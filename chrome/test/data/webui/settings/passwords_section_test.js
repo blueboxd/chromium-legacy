@@ -9,8 +9,8 @@ import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getToastManager} from 'chrome://settings/lazy_load.js';
-import {MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, ProfileInfoBrowserProxyImpl, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
-import {createExceptionEntry, createMultiStorePasswordEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
+import {MultiStoreExceptionEntry, MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, ProfileInfoBrowserProxyImpl, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
+import {createExceptionEntry, createMultiStoreExceptionEntry, createMultiStorePasswordEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {runCancelExportTest, runExportFlowErrorRetryTest, runExportFlowErrorTest, runExportFlowFastTest, runExportFlowSlowTest, runFireCloseEventAfterExportCompleteTest,runStartExportTest} from 'chrome://test/settings/passwords_export_test.js';
 import {getSyncAllPrefs, simulateStoredAccounts, simulateSyncStatus} from 'chrome://test/settings/sync_test_util.m.js';
 import {TestPasswordManagerProxy} from 'chrome://test/settings/test_password_manager_proxy.js';
@@ -65,11 +65,10 @@ function validatePasswordList(passwordsSection, passwordList) {
  * Helper method that validates a that elements in the exception list match
  * the expected data.
  * @param {!Array<!Element>} nodes The nodes that will be checked.
- * @param {!Array<!chrome.passwordsPrivate.ExceptionEntry>} exceptionList The
- *     expected data.
+ * @param {!Array<!MultiStoreExceptionEntry>} exceptionList The expected data.
  * @private
  */
-function validateExceptionList(nodes, exceptionList) {
+function validateMultiStoreExceptionList(nodes, exceptionList) {
   assertEquals(exceptionList.length, nodes.length);
   for (let index = 0; index < exceptionList.length; ++index) {
     const node = nodes[index];
@@ -81,6 +80,19 @@ function validateExceptionList(nodes, exceptionList) {
         exception.urls.link.toLowerCase(),
         node.querySelector('#exception').href);
   }
+}
+
+/**
+ * Convenience version of validateMultiStoreExceptionList() for when store
+ * duplicates do not exist.
+ * @param {!Array<!Element>} nodes The nodes that will be checked.
+ * @param {!Array<!chrome.passwordsPrivate.ExceptionEntry>} exceptionList The
+ *     expected data.
+ * @private
+ */
+function validateExceptionList(nodes, exceptionList) {
+  validateMultiStoreExceptionList(
+      nodes, exceptionList.map(entry => new MultiStoreExceptionEntry(entry)));
 }
 
 /**
@@ -628,6 +640,48 @@ suite('PasswordsSection', function() {
     assertTrue(passwordsSection.$.noExceptionsLabel.hidden);
   });
 
+  // Test verifies that exceptions duplicated across stores get properly merged
+  // in the UI.
+  test('verifyPasswordExceptionsWithMultiStore', function() {
+    // Entries with duplicates.
+    const accountException1 = createExceptionEntry(
+        {url: '1.com', frontendId: 1, id: 10, fromAccountStore: true});
+    const deviceException1 = createExceptionEntry(
+        {url: '1.com', frontendId: 1, id: 11, fromAccountStore: false});
+    const accountException2 = createExceptionEntry(
+        {url: '2.com', frontendId: 2, id: 20, fromAccountStore: true});
+    const deviceException2 = createExceptionEntry(
+        {url: '2.com', frontendId: 2, id: 21, fromAccountStore: false});
+    // Entries without duplicate.
+    const deviceException3 = createExceptionEntry(
+        {url: '3.com', frontendId: 3, id: 3, fromAccountStore: false});
+    const accountException4 = createExceptionEntry(
+        {url: '4.com', frontendId: 4, id: 4, fromAccountStore: true});
+
+    // Shuffle entries a little.
+    const passwordsSection =
+        elementFactory.createPasswordsSection(passwordManager, [], [
+          deviceException3, accountException1, deviceException2,
+          accountException4, deviceException1, accountException2
+        ]);
+
+    // Expected list keeping relative order.
+    const expectedList = [
+      createMultiStoreExceptionEntry({url: '3.com', deviceId: 3}),
+      createMultiStoreExceptionEntry(
+          {url: '1.com', accountId: 10, deviceId: 11}),
+      createMultiStoreExceptionEntry(
+          {url: '2.com', accountId: 20, deviceId: 21}),
+      createMultiStoreExceptionEntry({url: '4.com', accountId: 4}),
+    ];
+
+    validateMultiStoreExceptionList(
+        getDomRepeatChildren(passwordsSection.$.passwordExceptionsList),
+        expectedList);
+
+    assertTrue(passwordsSection.$.noExceptionsLabel.hidden);
+  });
+
   // Test verifies that removing an exception will update the elements.
   test('verifyPasswordExceptionRemove', function() {
     const exceptionList = [
@@ -694,12 +748,12 @@ suite('PasswordsSection', function() {
     // called on |passwordManager| and continues recursively until no more items
     // exist.
     function removeNextRecursive() {
-      passwordManager.resetResolver('removeException');
+      passwordManager.resetResolver('removeExceptions');
       clickRemoveButton();
-      return passwordManager.whenCalled('removeException').then(id => {
+      return passwordManager.whenCalled('removeExceptions').then(ids => {
         // Verify that the event matches the expected value.
         assertTrue(item < exceptionList.length);
-        assertEquals(id, exceptionList[item].id);
+        assertDeepEquals(ids, [exceptionList[item].id]);
 
         if (++item < exceptionList.length) {
           return removeNextRecursive();
@@ -709,6 +763,28 @@ suite('PasswordsSection', function() {
 
     // Click 'remove' on all passwords, one by one.
     return removeNextRecursive();
+  });
+
+  // Test verifies that pressing the 'remove' button for a duplicated exception
+  // will remove both the device and account copies.
+  test('verifyDuplicatedExceptionRemoveButton', async function() {
+    // Create a duplicated exception that will be merged into a single entry.
+    const deviceCopy =
+        createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: false});
+    const accountCopy =
+        createPasswordEntry({frontendId: 42, id: 1, fromAccountStore: true});
+
+    const passwordsSection = elementFactory.createPasswordsSection(
+        passwordManager, [], [deviceCopy, accountCopy]);
+
+    const [mergedEntry] =
+        getDomRepeatChildren(passwordsSection.$.passwordExceptionsList);
+    mergedEntry.querySelector('#removeExceptionButton').click();
+
+    // Verify both ids get passed to the proxy.
+    const ids = await passwordManager.whenCalled('removeExceptions');
+    assertTrue(ids.includes(deviceCopy.id));
+    assertTrue(ids.includes(accountCopy.id));
   });
 
   test('verifyFederatedPassword', function() {

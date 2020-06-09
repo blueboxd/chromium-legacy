@@ -9,6 +9,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/base_export.h"
+#include "base/bits.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
@@ -20,35 +21,40 @@ namespace internal {
 // The address space reservation is supported only on 64-bit architecture.
 #if defined(ARCH_CPU_64_BITS)
 
-static_assert(sizeof(size_t) >= 8, "Need 64-bit address space");
-
 // Reserves address space for PartitionAllocator.
 class BASE_EXPORT PartitionAddressSpace {
  public:
-  static PartitionAddressSpace* Instance();
-
-  internal::pool_handle GetDirectMapPool() { return direct_map_pool_; }
-  internal::pool_handle GetNormalBucketPool() { return normal_bucket_pool_; }
-
-  void Init();
-  void UninitForTesting();
-
-  // TODO(tasak): This method should be as cheap as possible. So we can make
-  // this cheaper since the range size is a power of two, but just checking that
-  // the high order bits of the address are the right ones.
-  bool Contains(const void* address) const {
-    return reserved_address_start_ <= address &&
-           address < reserved_address_end_;
+  static ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
+    return direct_map_pool_;
+  }
+  static ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
+    return normal_bucket_pool_;
   }
 
- private:
+  static void Init();
+  static void UninitForTesting();
+
+  static ALWAYS_INLINE bool Contains(const void* address) {
+    return (reinterpret_cast<uintptr_t>(address) &
+            kReservedAddressSpaceBaseMask) == reserved_base_address_;
+  }
+
+  // PartitionAddressSpace is static_only class.
+  PartitionAddressSpace() = delete;
+  PartitionAddressSpace(const PartitionAddressSpace&) = delete;
+  void* operator new(size_t) = delete;
+  void* operator new(size_t, void*) = delete;
+
   // Partition Alloc Address Space
-  // Reserves 32Gbytes address space for 1 direct map space(16G) and 1 normal
-  // bucket space(16G).
+  // Reserves 64Gbytes address space for 1 direct map space(16G) and 1 normal
+  // bucket space(16G). The remaining 32G is for padding, so that we can
+  // guarantee a 32G alignment somewhere within the reserved region. Address
+  // space is cheap and abundant on 64-bit systems.
+  // TODO(tasak): release unused address space.
   //
   // +----------------+ reserved address start
   // |  (unused)      |
-  // +----------------+ kSuperPageSize-aligned reserved address: X
+  // +----------------+ 32G-aligned reserved address: X
   // |                |
   // |  direct map    |
   // |    space       |
@@ -59,30 +65,46 @@ class BASE_EXPORT PartitionAddressSpace {
   // +----------------+ X + 32G bytes
   // | (unused)       |
   // +----------------+ reserved address end
+  //
+  // The static member variables:
+  // - reserved_address_starts_ points the "reserved address start" address, and
+  // - reserved_base_address_ points the "32G-aligned reserved address: X".
 
   static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
   static constexpr size_t kDirectMapPoolSize = 16 * kGigaBytes;
   static constexpr size_t kNormalBucketPoolSize = 16 * kGigaBytes;
-  // kSuperPageSize padding is added to be able to align to kSuperPageSize
-  // boundary.
+  // Reserves 32GB aligned address space.
+  // Alignment should be the smallest power of two greater than or equal to the
+  // desired size, so that we can check containment with a single bitmask
+  // operation.
+  static constexpr size_t kDesiredAddressSpaceSize =
+      kDirectMapPoolSize + kNormalBucketPoolSize;
+  static constexpr size_t kReservedAddressSpaceAlignment =
+      kDesiredAddressSpaceSize;
   static constexpr size_t kReservedAddressSpaceSize =
-      kDirectMapPoolSize + kNormalBucketPoolSize + kSuperPageSize;
+      kReservedAddressSpaceAlignment * 2;
+  static constexpr uintptr_t kReservedAddressSpaceOffsetMask =
+      static_cast<uintptr_t>(kReservedAddressSpaceAlignment) - 1;
+  static constexpr uintptr_t kReservedAddressSpaceBaseMask =
+      ~kReservedAddressSpaceOffsetMask;
 
-  char* reserved_address_start_;
-  char* reserved_address_end_;
+ private:
+  // See the comment describing the address layout above.
+  static uintptr_t reserved_address_start_;
+  static uintptr_t reserved_base_address_;
 
-  internal::pool_handle direct_map_pool_;
-  internal::pool_handle normal_bucket_pool_;
+  static internal::pool_handle direct_map_pool_;
+  static internal::pool_handle normal_bucket_pool_;
 };
 
 ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
   DCHECK(IsPartitionAllocGigaCageEnabled());
-  return PartitionAddressSpace::Instance()->GetDirectMapPool();
+  return PartitionAddressSpace::GetDirectMapPool();
 }
 
 ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
   DCHECK(IsPartitionAllocGigaCageEnabled());
-  return PartitionAddressSpace::Instance()->GetNormalBucketPool();
+  return PartitionAddressSpace::GetNormalBucketPool();
 }
 
 #else  // !defined(ARCH_CPU_64_BITS)

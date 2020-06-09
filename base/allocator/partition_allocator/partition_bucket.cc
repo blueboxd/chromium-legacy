@@ -24,8 +24,8 @@ namespace {
 
 char* CommitPages(internal::pool_handle pool, size_t map_size) {
 #if defined(ARCH_CPU_64_BITS)
-  char* ptr = reinterpret_cast<char*>(
-      internal::AddressPoolManager::GetInstance()->Alloc(pool, map_size));
+  char* ptr =
+      internal::AddressPoolManager::GetInstance()->Alloc(pool, map_size);
   if (UNLIKELY(!ptr))
     return nullptr;
   DCHECK(!(map_size & kSystemPageOffsetMask));

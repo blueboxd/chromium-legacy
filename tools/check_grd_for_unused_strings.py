@@ -140,7 +140,7 @@ def main():
     ui_chromeos_dir = os.path.join(ui_dir, 'chromeos')
     grd_files = [
       os.path.join(ash_base_dir, 'ash_strings.grd'),
-      os.path.join(ash_shortcut_viewer_dir, 'ash_components_strings.grd'),
+      os.path.join(ash_shortcut_viewer_dir, 'shortcut_viewer_strings.grd'),
       os.path.join(chrome_app_dir, 'chromium_strings.grd'),
       os.path.join(chrome_app_dir, 'generated_resources.grd'),
       os.path.join(chrome_app_dir, 'google_chrome_strings.grd'),

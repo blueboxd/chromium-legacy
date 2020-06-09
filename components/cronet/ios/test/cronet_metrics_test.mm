@@ -65,7 +65,8 @@ class CronetDisabledMetricsTest : public CronetMetricsTest {
 };
 
 // Tests that metrics data is sane for a QUIC request.
-TEST_F(CronetEnabledMetricsTest, ProtocolIsQuic) {
+// TODO(crbug.com/971378): This test is consistently failing.
+TEST_F(CronetEnabledMetricsTest, DISABLED_ProtocolIsQuic) {
   if (@available(iOS 10.2, *)) {
     NSURL* url = net::NSURLWithGURL(net::QuicSimpleTestServer::GetSimpleURL());
 

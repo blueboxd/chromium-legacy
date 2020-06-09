@@ -65,6 +65,7 @@
 
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
@@ -425,6 +426,14 @@ class BASE_EXPORT PartitionAllocatorGeneric {
  private:
   PartitionRootGeneric partition_root_;
 };
+
+ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
+#if defined(ARCH_CPU_64_BITS)
+  return internal::PartitionAddressSpace::Contains(address);
+#else
+  return false;
+#endif
+}
 
 }  // namespace base
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {$$, BackgroundManager, BackgroundSelectionType, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertNotStyle, assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
@@ -151,6 +152,34 @@ suite('NewTabPageAppTest', () => {
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
   });
+
+  test('keyboard shortcut opens voice search overlay', async () => {
+    // Act.
+    window.dispatchEvent(new KeyboardEvent('keydown', {
+      ctrlKey: true,
+      shiftKey: true,
+      code: 'Period',
+    }));
+    await flushTasks();
+
+    // Assert.
+    assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+  });
+
+  if (isMac) {
+    test('keyboard shortcut opens voice search overlay on mac', async () => {
+      // Act.
+      window.dispatchEvent(new KeyboardEvent('keydown', {
+        metaKey: true,
+        shiftKey: true,
+        code: 'Period',
+      }));
+      await flushTasks();
+
+      // Assert.
+      assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+    });
+  }
 
   test('setting background image shows image, disallows doodle', async () => {
     // Arrange.

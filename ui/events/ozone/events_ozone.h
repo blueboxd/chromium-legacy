@@ -30,7 +30,8 @@ class Event;
 // We are trying to fix both of these issues, but in the meantime we
 // define NativeEvent == ui::Event.
 //
-EVENTS_EXPORT void DispatchEventFromNativeUiEvent(
+// Returns true iff the event was handled.
+EVENTS_EXPORT bool DispatchEventFromNativeUiEvent(
     const PlatformEvent& native_event,
     base::OnceCallback<void(ui::Event*)> callback);
 

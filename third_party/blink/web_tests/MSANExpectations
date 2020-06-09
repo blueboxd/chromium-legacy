@@ -67,7 +67,6 @@ crbug.com/729136 [ Linux ] external/wpt/mimesniff/mime-types/parsing.any.worker.
 crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/forced-layout-in-microtask.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/tracing/timeline-xhr-response-type-blob-event.js [ Timeout ]
-crbug.com/729136 [ Linux ] http/tests/devtools/components/file-path-scoring.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/elements/styles-4/styles-should-not-force-sync-style-recalc.js [ Timeout ]
 crbug.com/729136 [ Linux ] webaudio/mixing.html [ Timeout ]
 

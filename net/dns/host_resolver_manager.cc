@@ -2523,7 +2523,7 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
       query_types.push_back(query_type_);
     }
 
-    MDnsClient* client;
+    MDnsClient* client = nullptr;
     int rv = resolver_->GetOrCreateMdnsClient(&client);
     mdns_task_ =
         std::make_unique<HostResolverMdnsTask>(client, hostname_, query_types);

@@ -254,17 +254,18 @@ void OnDownloadDialogClosed(
   switch (result.location_result) {
     case DownloadLocationDialogResult::USER_CONFIRMED:
       callback.Run(DownloadConfirmationResult::CONFIRMED_WITH_DIALOG,
-                   result.file_path);
+                   result.file_path, std::move(result.download_schedule));
       break;
     case DownloadLocationDialogResult::USER_CANCELED:
-      callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+      callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath(),
+                   base::nullopt);
       break;
     case DownloadLocationDialogResult::DUPLICATE_DIALOG:
       // TODO(xingliu): Figure out the dialog behavior on multiple downloads.
       // Currently we just let other downloads continue, which doesn't make
       // sense.
       callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-                   result.file_path);
+                   result.file_path, std::move(result.download_schedule));
       break;
   }
 }
@@ -851,6 +852,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download->IsTransient());
 
+// TODO(xingliu): We should abstract a DownloadFilePicker interface and make all
+// platform use it.
 #if defined(OS_ANDROID)
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(download);
@@ -858,20 +861,21 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
     if (reason == DownloadConfirmationReason::SAVE_AS) {
       // If this is a 'Save As' download, just run without confirmation.
       callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-                   suggested_path);
+                   suggested_path, base::nullopt /*download_schedule*/);
     } else if (!web_contents ||
                reason == DownloadConfirmationReason::UNEXPECTED) {
       // If there are no web_contents and there are no errors (ie. location
       // dialog is only being requested because of a user preference), continue.
       if (reason == DownloadConfirmationReason::PREFERENCE) {
         callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-                     suggested_path);
+                     suggested_path, base::nullopt /*download_schedule*/);
         return;
       }
 
       if (reason == DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE) {
         OnDownloadCanceled(download, true /* has_no_external_storage */);
-        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath(),
+                     base::nullopt /*download_schedule*/);
         return;
       }
 
@@ -880,13 +884,15 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       // gets killed, and user tries to resume a download while another app has
       // created the target file (not the temporary .crdownload file).
       OnDownloadCanceled(download, false /* has_no_external_storage */);
-      callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+      callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath(),
+                   base::nullopt /*download_schedule*/);
     } else if (reason == DownloadConfirmationReason::TARGET_CONFLICT) {
       // If there is a file that already has the same name, try to generate a
       // unique name for the new download (ie. "image (1).png" vs "image.png").
       base::FilePath download_dir;
       if (!base::android::GetDownloadsDirectory(&download_dir)) {
-        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath(),
+                     base::nullopt /*download_schedule*/);
         return;
       }
 
@@ -941,7 +947,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 
       case DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE:
         OnDownloadCanceled(download, true /* has_no_external_storage */);
-        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath(),
+                     base::nullopt /*download_schedule*/);
         return;
 
       case DownloadConfirmationReason::PREFERENCE:
@@ -957,7 +964,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 
       case DownloadConfirmationReason::SAVE_AS:
         callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-                     suggested_path);
+                     suggested_path, base::nullopt /*download_schedule*/);
         return;
 
       case DownloadConfirmationReason::TARGET_CONFLICT:
@@ -975,7 +982,8 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       // created the target file (not the temporary .crdownload file).
       case DownloadConfirmationReason::UNEXPECTED:
         OnDownloadCanceled(download, false /* has_no_external_storage */);
-        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath(),
+                     base::nullopt /*download_schedule*/);
         return;
     }
   }
@@ -999,7 +1007,7 @@ void ChromeDownloadManagerDelegate::OnConfirmationCallbackComplete(
     const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
     DownloadConfirmationResult result,
     const base::FilePath& virtual_path) {
-  callback.Run(result, virtual_path);
+  callback.Run(result, virtual_path, base::nullopt /*download_schedule*/);
   if (!file_picker_callbacks_.empty()) {
     base::OnceClosure callback = std::move(file_picker_callbacks_.front());
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1055,10 +1063,11 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
     // If user chose not to show download location dialog, uses current unique
     // target path.
     callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-                 target_path);
+                 target_path, base::nullopt /*download_schedule*/);
   } else {
     // If the name generation failed, fail the download.
-    callback.Run(DownloadConfirmationResult::FAILED, base::FilePath());
+    callback.Run(DownloadConfirmationResult::FAILED, base::FilePath(),
+                 base::nullopt /*download_schedule*/);
   }
 }
 

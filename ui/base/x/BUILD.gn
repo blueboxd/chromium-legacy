@@ -46,7 +46,7 @@ jumbo_component("x") {
     "x11_workspace_handler.h",
   ]
 
-  if (is_desktop_linux) {
+  if (is_desktop_linux || is_chromeos) {
     sources += [
       "selection_owner.cc",
       "selection_owner.h",

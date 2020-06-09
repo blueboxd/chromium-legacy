@@ -13,12 +13,23 @@
 #error "PDF must be enabled"
 #endif
 
+namespace base {
+class Value;
+}
+
 namespace pdf_extension_util {
 
 // Return the extensions manifest for PDF. The manifest is loaded from
 // browser_resources.grd and certain fields are replaced based on what chrome
 // flags are enabled.
 std::string GetManifest();
+
+// Adds all strings used by the PDF Viewer UI in |dict|.
+void AddStrings(base::Value* dict);
+
+// Adds additional data used by the PDF Viewer UI in |dict|, for example
+// whether certain features are enabled/disabled.
+void AddAdditionalData(base::Value* dict);
 
 }  // namespace pdf_extension_util
 

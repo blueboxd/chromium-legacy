@@ -117,6 +117,20 @@ message AutofillRandomizedValue {
   optional bytes encoded_bits = 2;
 }
 
+// Describes how the button is implemented in HTML source. Corresponds to
+// the mojo ButtonTitleType enum defined in
+// components/autofill/core/common/mojom/autofill_types.mojom.h
+enum ButtonTitleType {
+  NONE = 0;
+  BUTTON_ELEMENT_SUBMIT_TYPE = 1;  // <button type='submit'>
+  BUTTON_ELEMENT_BUTTON_TYPE = 2;  // <button type='button'>
+  INPUT_ELEMENT_SUBMIT_TYPE = 3;   // <input type='submit'>
+  INPUT_ELEMENT_BUTTON_TYPE = 4;   // <input type='button'>
+  HYPERLINK = 5;                   // e.g. <a class='button'>
+  DIV = 6;                         // e.g. <div id='submit'>
+  SPAN = 7;                        // e.g. <span name='btn'>
+}
+
 // The collection of autofill field metadata to be sent using randomization.
 message AutofillRandomizedFormMetadata {
   // Form element id. Example: <form id="XXXXXXXX">
@@ -130,6 +144,18 @@ message AutofillRandomizedFormMetadata {
 
   // Location of form as URL.
   optional AutofillRandomizedValue url = 4;
+
+  // Information about a button's title (sync with another ButtonTitle in this
+  // proto).
+  message ButtonTitle {
+    // Text showed on the button.
+    optional AutofillRandomizedValue title = 1;
+
+    // Describes how the button is implemented in HTML source.
+    optional ButtonTitleType type = 2;
+  }
+  // Titles of form's buttons. Example: <input type="submit" value="XXXXX">
+  repeated ButtonTitle button_title = 5;
 }
 
 // The collection of autofill field metadata to be sent using randomization.
@@ -386,24 +412,13 @@ message AutofillUploadContents {
   // Form-level metadata observed by the client, randomized.
   optional AutofillRandomizedFormMetadata randomized_form_metadata = 32;
 
-  // Information about a button's title.
+  // Information about a button's title (sync with another ButtonTitle in this
+  // proto).
   message ButtonTitle {
     // Text showed on the button.
     optional string title = 1;
 
-    // Describes how the button is implemented in HTML source. Corresponds to
-    // the mojo ButtonTitleType enum defined in
-    // components/autofill/core/common/mojom/autofill_types.mojom.h
-    enum ButtonTitleType {
-      NONE = 0;
-      BUTTON_ELEMENT_SUBMIT_TYPE = 1;  // <button type='submit'>
-      BUTTON_ELEMENT_BUTTON_TYPE = 2;  // <button type='button'>
-      INPUT_ELEMENT_SUBMIT_TYPE = 3;   // <input type='submit'>
-      INPUT_ELEMENT_BUTTON_TYPE = 4;   // <input type='button'>
-      HYPERLINK = 5;                   // e.g. <a class='button'>
-      DIV = 6;                         // e.g. <div id='submit'>
-      SPAN = 7;                        // e.g. <span name='btn'>
-    }
+    // Describes how the button is implemented in HTML source.
     optional ButtonTitleType type = 2;
   }
   // Titles of form's buttons.

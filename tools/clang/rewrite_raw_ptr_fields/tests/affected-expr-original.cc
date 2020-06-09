@@ -4,6 +4,9 @@
 
 #include <stdint.h>  // for uintptr_t
 
+#include <tuple>    // for std::tie
+#include <utility>  // for std::swap
+
 #include "gen/generated_header.h"
 
 class SomeClass {};
@@ -182,6 +185,79 @@ void foo() {
 }
 
 }  // namespace generated_code_tests
+
+namespace templated_functions {
+
+template <typename T>
+void AffectedFunction(T* t) {}
+
+template <typename T>
+void TemplatedFunction_NonTemplatedParam(SomeClass* arg, T t) {}
+
+template <typename T>
+class MyTemplate {
+ public:
+  template <typename U>
+  MyTemplate(U* u) {}
+
+  void AffectedMethod(T* t) {}
+};
+
+// We also want to append |.get()| for |T| parameters (i.e. not just for |T*|
+// parameters).
+//
+// One motivating example is ActivityLogDatabasePolicy::ScheduleAndForget which
+// passes its argument to base::Unretained.
+//
+// Another motivating example, is the following pattern from
+// //components/variations/service/ui_string_overrider.cc where the type of the
+// 2 arguments needs to be kept consistent:
+//     const uint32_t* end = ptr_field_ + num_resources_;
+//     const uint32_t* element = std::lower_bound(ptr_field_, end, hash);
+template <typename T>
+void AffectedNonPointerFunction(T t) {}
+
+// AffectedFunctionWithDeepT mimics ConvertPPResourceArrayToObjects from
+// //ppapi/cpp/array_output.h
+template <typename T>
+void AffectedFunctionWithDeepT(MyTemplate<T>* blah) {}
+
+// StructWithPointerToTemplate is used to test AffectedFunctionWithDeepT.
+// StructWithPointerToTemplate mimics ResourceArrayOutputAdapter<T>
+// (and its |output_| field that will be converted to a CheckedPtr)
+// from //ppapi/cpp/array_output.h
+template <typename T>
+struct StructWithPointerToTemplate {
+  MyTemplate<T>* ptr_to_template;
+};
+
+void foo() {
+  MyStruct my_struct;
+
+  // Expected rewrite - appending: .get()
+  AffectedFunction(my_struct.ptr);
+
+  // Expected rewrite - appending: .get()
+  MyTemplate<SomeClass> mt(my_struct.ptr);
+  // Expected rewrite - appending: .get()
+  mt.AffectedMethod(my_struct.ptr);
+
+  // No rewrite expected.
+  TemplatedFunction_NonTemplatedParam(my_struct.ptr, 123);
+
+  // Expected rewrite - appending: .get()
+  AffectedNonPointerFunction(my_struct.ptr);
+
+  // Expected rewrite - appending: .get()
+  StructWithPointerToTemplate<SomeClass> swptt;
+  AffectedFunctionWithDeepT(swptt.ptr_to_template);
+
+  // No rewrite expected - T& parameter.
+  std::swap(my_struct.ptr, my_struct.ptr2);
+  std::tie(my_struct.ptr, my_struct.ptr2) = std::make_pair(nullptr, nullptr);
+}
+
+}  // namespace templated_functions
 
 namespace affected_implicit_template_specialization {
 

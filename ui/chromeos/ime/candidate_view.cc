@@ -88,7 +88,7 @@ std::unique_ptr<views::Label> CreateShortcutLabel(
   return shortcut_label;
 }
 
-// Creates the candidate label, and returns it (never returns NULL).
+// Creates the candidate label, and returns it (never returns nullptr).
 // The label text is not set in this function.
 std::unique_ptr<views::Label> CreateCandidateLabel(
     ui::CandidateWindow::Orientation orientation) {
@@ -109,7 +109,7 @@ std::unique_ptr<views::Label> CreateCandidateLabel(
   return candidate_label;
 }
 
-// Creates the annotation label, and return it (never returns NULL).
+// Creates the annotation label, and return it (never returns nullptr).
 // The label text is not set in this function.
 std::unique_ptr<views::Label> CreateAnnotationLabel(
     ui::CandidateWindow::Orientation orientation,

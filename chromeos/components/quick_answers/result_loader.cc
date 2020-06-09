@@ -91,12 +91,10 @@ void ResultLoader::OnResultParserComplete(
     std::unique_ptr<QuickAnswer> quick_answer) {
   // Record quick answer result.
   base::TimeDelta duration = base::TimeTicks::Now() - fetch_start_time_;
-  if (!quick_answer) {
-    RecordLoadingStatus(LoadStatus::kNoResult, duration);
-  } else {
-    RecordLoadingStatus(LoadStatus::kSuccess, duration);
-    RecordResult(quick_answer->result_type, duration);
-  }
+  RecordLoadingStatus(
+      quick_answer ? LoadStatus::kSuccess : LoadStatus::kNoResult, duration);
+  RecordResult(quick_answer ? quick_answer->result_type : ResultType::kNoResult,
+               duration);
   delegate_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 }  // namespace quick_answers

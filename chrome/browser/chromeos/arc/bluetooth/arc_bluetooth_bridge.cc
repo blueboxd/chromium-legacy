@@ -540,6 +540,50 @@ void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
           GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device));
     }
   }
+
+  TrackPairingState(device);
+}
+
+void ArcBluetoothBridge::TrackPairingState(const BluetoothDevice* device) {
+  const std::string addr = device->GetAddress();
+
+  // A device in pairing is in |devices_paired_by_arc_| from CreateBond() is
+  // called until at least pairing is finished (either succeed or fail), so we
+  // don't need to do anything here if the device is not in the list.
+  if (devices_paired_by_arc_.find(addr) == devices_paired_by_arc_.end())
+    return;
+
+  const auto itr = devices_pairing_.find(addr);
+  bool was_pairing = itr != devices_pairing_.end();
+
+  // The actions we need to take depends on the combination of |was_pairing|,
+  // IsConnecting() and IsPaired():
+  // If not |was_pairing|:
+  // - !IsConnecting() means device is not pairing, do nothing;
+  // - IsPaired() means device has already been paired, do nothing;
+  // - IsConnecting() && !IsPaired() means device is pairing now, we should add
+  //   it into our list.
+  // If |was_pairing|:
+  // - IsPaired() means pairing succeeded, we should remove the device from our
+  //   list.
+  // - IsConnecting() && !IsPaired() means device is still in pairing, do
+  //   nothing;
+  // - !IsConnecting() && !IsPaired() means pairing failed, we should notify
+  //   Android, and remove the device from our list;
+  if (!was_pairing) {
+    if (device->IsConnecting() && !device->IsPaired())
+      devices_pairing_.insert(addr);
+    return;
+  }
+
+  if (device->IsPaired()) {
+    devices_pairing_.erase(itr);
+  } else if (!device->IsConnecting()) {
+    LOG(WARNING) << "Pairing failed for device " << addr;
+    OnPairedError(mojom::BluetoothAddress::From(addr),
+                  BluetoothDevice::ERROR_FAILED);
+    devices_pairing_.erase(itr);
+  }
 }
 
 void ArcBluetoothBridge::DeviceAddressChanged(BluetoothAdapter* adapter,
@@ -3166,6 +3210,7 @@ void ArcBluetoothBridge::BluetoothArcConnectionObserver::OnConnectionClosed() {
     }
   }
   arc_bluetooth_bridge_->devices_paired_by_arc_.clear();
+  arc_bluetooth_bridge_->devices_pairing_.clear();
 
   // Cleanup for GATT connections.
   // TODO(b/151573141): Remove the following loops when Chrome can perform hard

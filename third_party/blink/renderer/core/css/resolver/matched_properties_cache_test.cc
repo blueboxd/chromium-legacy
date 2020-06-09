@@ -82,10 +82,12 @@ class MatchedPropertiesCacheTestCache {
 
 using TestCache = MatchedPropertiesCacheTestCache;
 
-class MatchedPropertiesCacheTest : public PageTestBase,
-                                   private ScopedMPCDependenciesForTest {
+class MatchedPropertiesCacheTest
+    : public PageTestBase,
+      private ScopedCSSMatchedPropertiesCacheDependenciesForTest {
  public:
-  MatchedPropertiesCacheTest() : ScopedMPCDependenciesForTest(true) {}
+  MatchedPropertiesCacheTest()
+      : ScopedCSSMatchedPropertiesCacheDependenciesForTest(true) {}
 
   scoped_refptr<ComputedStyle> CreateStyle() {
     return StyleResolver::InitialStyleForElement(GetDocument());
@@ -455,7 +457,7 @@ TEST_F(MatchedPropertiesCacheTest, MaxDependencies) {
 
 TEST_F(MatchedPropertiesCacheTest,
        ExplicitlyInheritedNotCacheableWithoutFeature) {
-  ScopedMPCDependenciesForTest scoped_feature(false);
+  ScopedCSSMatchedPropertiesCacheDependenciesForTest scoped_feature(false);
 
   TestCache cache(GetDocument());
 
@@ -472,7 +474,7 @@ TEST_F(MatchedPropertiesCacheTest,
 
 TEST_F(MatchedPropertiesCacheTest,
        VarInNonInheritedPropertyNotCachableWithoutFeature) {
-  ScopedMPCDependenciesForTest scoped_feature(false);
+  ScopedCSSMatchedPropertiesCacheDependenciesForTest scoped_feature(false);
 
   TestCache cache(GetDocument());
 
@@ -489,7 +491,7 @@ TEST_F(MatchedPropertiesCacheTest,
 }
 
 TEST_F(MatchedPropertiesCacheTest, WritingModeNotCacheableWithoutFeature) {
-  ScopedMPCDependenciesForTest scoped_feature(false);
+  ScopedCSSMatchedPropertiesCacheDependenciesForTest scoped_feature(false);
 
   ASSERT_NE(WritingMode::kVerticalRl,
             ComputedStyleInitialValues::InitialWritingMode());
@@ -508,7 +510,7 @@ TEST_F(MatchedPropertiesCacheTest, WritingModeNotCacheableWithoutFeature) {
 }
 
 TEST_F(MatchedPropertiesCacheTest, DirectionNotCacheableWithoutFeature) {
-  ScopedMPCDependenciesForTest scoped_feature(false);
+  ScopedCSSMatchedPropertiesCacheDependenciesForTest scoped_feature(false);
 
   ASSERT_NE(TextDirection::kRtl,
             ComputedStyleInitialValues::InitialDirection());

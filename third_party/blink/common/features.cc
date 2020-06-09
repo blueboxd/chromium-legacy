@@ -604,5 +604,10 @@ const char kSkipTouchEventFilterFilteringProcessParamValueBrowserAndRenderer[] =
 const base::Feature kWebXrMultiGpu{"WebXRMultiGpu",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables dependency support in blink::MatchedPropertiesCache, which allows
+// caching of previously uncachable objects.
+const base::Feature kCSSMatchedPropertiesCacheDependencies{
+    "CSSMatchedPropertiesCacheDependencies", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

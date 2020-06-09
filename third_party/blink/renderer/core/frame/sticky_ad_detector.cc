@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 
 #include <cstdlib>
@@ -57,10 +58,18 @@ void StickyAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   DCHECK(main_frame->GetDocument());
   DCHECK(main_frame->ContentLayoutObject());
 
+  // Skip any measurement before the FCP.
+  if (PaintTiming::From(*main_frame->GetDocument())
+          .FirstContentfulPaint()
+          .is_null()) {
+    return;
+  }
+
   base::Time current_time = base::Time::Now();
   if (last_detection_time_.has_value() &&
-      current_time < last_detection_time_.value() + kFireInterval)
+      current_time < last_detection_time_.value() + kFireInterval) {
     return;
+  }
 
   TRACE_EVENT0("blink,benchmark", "StickyAdDetector::MaybeFireDetection");
 

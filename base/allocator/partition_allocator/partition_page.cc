@@ -5,7 +5,7 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
-#include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_root_base.h"
@@ -201,7 +201,7 @@ void PartitionPage<thread_safe>::DecommitIfPossible(
 
 void DeferredUnmap::Unmap() {
   DCHECK(ptr && size > 0);
-  if (IsPartitionAllocGigaCageEnabled()) {
+  if (IsManagedByPartitionAlloc(ptr)) {
     DecommitPages(ptr, size);
   } else {
     FreePages(ptr, size);

@@ -524,12 +524,14 @@ DownloadTargetDeterminer::DoRequestConfirmation() {
 
 void DownloadTargetDeterminer::RequestConfirmationDone(
     DownloadConfirmationResult result,
-    const base::FilePath& virtual_path) {
+    const base::FilePath& virtual_path,
+    base::Optional<download::DownloadSchedule> download_schedule) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_->IsTransient());
   DVLOG(20) << "User selected path:" << virtual_path.AsUTF8Unsafe();
 #if defined(OS_ANDROID)
   is_checking_dialog_confirmed_path_ = false;
+  download_schedule_ = std::move(download_schedule);
 #endif
   if (result == DownloadConfirmationResult::CANCELED) {
     RecordDownloadCancelReason(DownloadCancelReason::kTargetConfirmationResult);
@@ -980,6 +982,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
   target_info->mime_type = mime_type_;
   target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
   target_info->mixed_content_status = mixed_content_status_;
+  target_info->download_schedule = std::move(download_schedule_);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

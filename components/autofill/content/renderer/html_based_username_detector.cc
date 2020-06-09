@@ -284,13 +284,6 @@ void FindUsernameFieldInternal(
   }
 }
 
-// Returns the |unique_renderer_id| of a given |WebFormElement|. If
-// |WebFormElement::IsNull()| return a null renderer ID.
-FormRendererId GetFormRendererId(WebFormElement form) {
-  return form.IsNull() ? FormRendererId()
-                       : FormRendererId(form.UniqueRendererFormId());
-}
-
 }  // namespace
 
 const std::vector<FieldRendererId>& GetPredictionsFieldBasedOnHtmlAttributes(
@@ -311,8 +304,8 @@ const std::vector<FieldRendererId>& GetPredictionsFieldBasedOnHtmlAttributes(
   bool cache_miss = true;
   // Iterator pointing to the entry for |form| if the entry for |form| is found.
   UsernameDetectorCache::iterator form_position;
-  std::tie(form_position, cache_miss) = username_detector_cache->insert(
-      std::make_pair(GetFormRendererId(form), std::vector<FieldRendererId>()));
+  std::tie(form_position, cache_miss) = username_detector_cache->emplace(
+      form_util::GetFormRendererId(form), std::vector<FieldRendererId>());
 
   if (cache_miss) {
     std::vector<FieldRendererId> username_predictions;

@@ -12,6 +12,11 @@ class Profile;
 
 namespace crostini {
 
+// The installer/upgrader should set the id on the window so that it will appear
+// on the shelf.
+extern const char kCrostiniInstallerShelfId[];
+extern const char kCrostiniUpgraderShelfId[];
+
 // Returns a shelf app id for an exo window startup id or app id.
 //
 // First try to return a desktop file id matching the |window_startup_id|.

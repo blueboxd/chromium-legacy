@@ -13,11 +13,8 @@ ScopedOverviewHideWindows::ScopedOverviewHideWindows(
     const std::vector<aura::Window*>& windows,
     bool force_hidden)
     : force_hidden_(force_hidden) {
-  for (auto* window : windows) {
-    window->AddObserver(this);
-    window_visibility_.emplace(window, window->IsVisible());
-    window->Hide();
-  }
+  for (auto* window : windows)
+    AddWindow(window);
 }
 
 ScopedOverviewHideWindows::~ScopedOverviewHideWindows() {
@@ -26,6 +23,20 @@ ScopedOverviewHideWindows::~ScopedOverviewHideWindows() {
     if (element.second)
       element.first->Show();
   }
+}
+
+void ScopedOverviewHideWindows::AddWindow(aura::Window* window) {
+  window->AddObserver(this);
+  window_visibility_.emplace(window, window->IsVisible());
+  window->Hide();
+}
+
+void ScopedOverviewHideWindows::RemoveWindow(aura::Window* window) {
+  DCHECK(base::Contains(window_visibility_, window));
+  window->RemoveObserver(this);
+  if (window_visibility_[window])
+    window->Show();
+  window_visibility_.erase(window);
 }
 
 void ScopedOverviewHideWindows::OnWindowDestroying(aura::Window* window) {

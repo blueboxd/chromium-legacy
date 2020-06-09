@@ -1367,8 +1367,11 @@
         "args": [
           "--stop-ui",
           "--env-var",
+          "LIBVA_DRIVERS_PATH",
+          "/usr/local/lib64",
+          "--env-var",
           "LIBVA_DRIVER_NAME",
-          "i965",
+          "fake",
           "--env-var",
           "LIBVA_FOOL_DECODE",
           "1",

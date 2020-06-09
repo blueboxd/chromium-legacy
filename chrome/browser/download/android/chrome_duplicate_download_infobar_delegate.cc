@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "chrome/browser/download/android/download_controller.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/android/infobars/duplicate_download_infobar.h"
@@ -26,10 +27,14 @@ void CreateNewFileDone(
     download::PathValidationResult result,
     const base::FilePath& target_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (result == download::PathValidationResult::SUCCESS)
-    callback.Run(DownloadConfirmationResult::CONFIRMED, target_path);
-  else
-    callback.Run(DownloadConfirmationResult::FAILED, base::FilePath());
+  if (result == download::PathValidationResult::SUCCESS) {
+    callback.Run(DownloadConfirmationResult::CONFIRMED, target_path,
+                 base::nullopt /*download_schedule*/);
+
+  } else {
+    callback.Run(DownloadConfirmationResult::FAILED, base::FilePath(),
+                 base::nullopt /*download_schedule*/);
+  }
 }
 
 }  // namespace
@@ -101,7 +106,8 @@ bool ChromeDuplicateDownloadInfoBarDelegate::Cancel() {
     return true;
 
   file_selected_callback_.Run(DownloadConfirmationResult::CANCELED,
-                              base::FilePath());
+                              base::FilePath(),
+                              base::nullopt /*download_schedule*/);
   return true;
 }
 

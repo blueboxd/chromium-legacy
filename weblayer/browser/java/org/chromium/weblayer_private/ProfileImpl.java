@@ -21,6 +21,7 @@ import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.SettingType;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
@@ -206,6 +207,16 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         mDownloadNotificationIntents.clear();
     }
 
+    @Override
+    public void setBooleanSetting(@SettingType int type, boolean value) {
+        ProfileImplJni.get().setBooleanSetting(mNativeProfile, type, value);
+    }
+
+    @Override
+    public boolean getBooleanSetting(@SettingType int type) {
+        return ProfileImplJni.get().getBooleanSetting(mNativeProfile, type);
+    }
+
     @NativeMethods
     interface Natives {
         void enumerateAllProfileNames(Callback<String[]> callback);
@@ -219,5 +230,7 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         void setDownloadDirectory(long nativeProfileImpl, String directory);
         long getCookieManager(long nativeProfileImpl);
         void ensureBrowserContextInitialized(long nativeProfileImpl);
+        void setBooleanSetting(long nativeProfileImpl, int type, boolean value);
+        boolean getBooleanSetting(long nativeProfileImpl, int type);
     }
 }

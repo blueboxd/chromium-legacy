@@ -2062,12 +2062,17 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
                               ? Suggestion::PREFIX_MATCH
                               : Suggestion::SUBSTRING_MATCH;
 
+      // Possibly there is a nickname to be shared between the card and its
+      // duplicates.
+      base::string16 shared_nickname =
+          GetDisplayNicknameForCreditCard(*credit_card);
+
       // If the value is the card number, the label is the expiration date.
       // Otherwise the label is the card number, or if that is empty the
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-        suggestion->value =
-            credit_card->CardIdentifierStringForAutofillDisplay();
+        suggestion->value = credit_card->CardIdentifierStringForAutofillDisplay(
+            shared_nickname);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
         suggestion->label = credit_card->GetInfo(
@@ -2091,7 +2096,8 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         suggestion->label =
             base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)
                 ? credit_card->ObfuscatedLastFourDigits()
-                : credit_card->CardIdentifierStringForAutofillDisplay();
+                : credit_card->CardIdentifierStringForAutofillDisplay(
+                      shared_nickname);
 #elif defined(OS_IOS)
         // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
@@ -2644,6 +2650,24 @@ void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
                                            /*opted_in=*/false);
   prefs::SetUserOptedInWalletSyncTransport(pref_service_, primary_account_id,
                                            /*opted_in=*/true);
+}
+
+base::string16 PersonalDataManager::GetDisplayNicknameForCreditCard(
+    const CreditCard& card) const {
+  // Always prefer a local nickname if available.
+  if (card.HasValidNickname() && card.record_type() == CreditCard::LOCAL_CARD)
+    return card.nickname();
+  // Either the card a) has no nickname or b) is a server card and we would
+  // prefer to use the nickname of a local card.
+  std::vector<CreditCard*> candidates = GetCreditCards();
+  for (CreditCard* candidate : candidates) {
+    if (candidate->guid() != card.guid() && candidate->HasSameNumberAs(card) &&
+        candidate->HasValidNickname()) {
+      return candidate->nickname();
+    }
+  }
+  // Fall back to nickname of |card|, which may be empty.
+  return card.nickname();
 }
 
 }  // namespace autofill

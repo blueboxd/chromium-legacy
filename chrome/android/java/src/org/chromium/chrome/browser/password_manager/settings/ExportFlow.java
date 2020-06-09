@@ -19,6 +19,7 @@ import androidx.fragment.app.FragmentManager;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
 import org.chromium.ui.widget.Toast;
 
@@ -267,7 +268,9 @@ public class ExportFlow {
      */
     @VisibleForTesting
     public static String getTargetDirectory() {
-        return ContextUtils.getApplicationContext().getCacheDir() + PASSWORDS_CACHE_DIR;
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            return ContextUtils.getApplicationContext().getCacheDir() + PASSWORDS_CACHE_DIR;
+        }
     }
 
     /**

@@ -2403,6 +2403,10 @@ bool LayoutBlockFlow::GeneratesLineBoxesForInlineChild(LayoutObject* inline_obj)
 }
 
 void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
+  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
+  CHECK(!NeedsLayout());
+  DCHECK(!PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
+
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {
     for (const NGPaintFragment* child : paint_fragment->Children()) {
       if (child->HasSelfPaintingLayer())
@@ -2465,6 +2469,8 @@ void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
 }
 
 void LayoutBlockFlow::AddLayoutOverflowFromInlineChildren() {
+  DCHECK(!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
+
   LayoutUnit end_padding = HasOverflowClip() ? PaddingEnd() : LayoutUnit();
   // FIXME: Need to find another way to do this, since scrollbars could show
   // when we don't want them to.

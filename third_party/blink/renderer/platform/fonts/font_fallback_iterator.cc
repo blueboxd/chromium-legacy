@@ -33,7 +33,7 @@ bool FontFallbackIterator::AlreadyLoadingRangeForHintChar(UChar32 hint_char) {
 }
 
 bool FontFallbackIterator::RangeSetContributesForHint(
-    const Vector<UChar32> hint_list,
+    const Vector<UChar32>& hint_list,
     const FontDataForRangeSet* segmented_face) {
   for (auto* it = hint_list.begin(); it != hint_list.end(); ++it) {
     if (segmented_face->Contains(*it)) {

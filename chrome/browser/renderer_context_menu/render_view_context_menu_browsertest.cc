@@ -69,6 +69,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
@@ -936,22 +937,28 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
               testing::Not(testing::Contains(IDC_CONTENT_CONTEXT_RELOADFRAME)));
 }
 
-#if defined(OS_MACOSX)
-// TODO(lukasza): https://crbug.com/1090891: Subframe behavior is unexpected on
-// some Mac bots.
-#define MAYBE_MenuContentsVerification_Subframe \
-  DISABLED_MenuContentsVerification_Subframe
-#else
-#define MAYBE_MenuContentsVerification_Subframe \
-  MenuContentsVerification_Subframe
-#endif
 // Check which commands are present after opening the context menu for a
 // subframe.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       MAYBE_MenuContentsVerification_Subframe) {
+                       MenuContentsVerification_Subframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/iframe.html"));
   ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Make sure the subframe doesn't contain any text, because the context menu
+  // may behave differently when opened over text selection.  See also
+  // https://crbug.com/1090891.
+  {
+    content::TestNavigationObserver nav_observer(tab, 1);
+    const char kScript[] = R"(
+        var frame = document.getElementsByTagName('iframe')[0];
+        frame.src = 'data:text/html;charset=utf-8,%3Cbody%3E%3C%2Fbody%3E';
+    )";
+    ASSERT_TRUE(content::ExecJs(tab, kScript));
+    nav_observer.Wait();
+  }
 
   // Open a context menu.
   ContextMenuWaiter menu_observer;
@@ -961,8 +968,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   mouse_event.button = blink::WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(25, 25);  // This is over the subframe.
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
   tab->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(mouse_event);

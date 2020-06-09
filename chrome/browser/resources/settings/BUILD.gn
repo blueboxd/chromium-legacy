@@ -212,6 +212,7 @@ js_library("settings") {
     ":metrics_browser_proxy",
     ":open_window_proxy",
     "about_page:about_page_browser_proxy.m",
+    "autofill_page:multi_store_exception_entry",
     "autofill_page:multi_store_password_ui_entry",
     "autofill_page:password_manager_proxy",
     "people_page:sync_browser_proxy.m",

@@ -233,6 +233,7 @@ js_library("passwords_export_dialog") {
 js_library("passwords_section") {
   deps = [
     ":merge_passwords_store_copies_behavior",
+    ":multi_store_exception_entry",
     ":multi_store_password_ui_entry",
     ":password_list_item",
     ":password_manager_proxy",

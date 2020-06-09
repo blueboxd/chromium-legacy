@@ -33,6 +33,7 @@ class RandomizedEncoder {
   static const char FORM_ACTION[];
   static const char FORM_URL[];
   static const char FORM_CSS_CLASS[];
+  static const char FORM_BUTTON_TITLES[];
 
   // Field-level data-type identifiers.
   static const char FIELD_ID[];

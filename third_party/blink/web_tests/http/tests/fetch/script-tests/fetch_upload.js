@@ -94,15 +94,18 @@ promise_test(async (t) => {
   await promise_rejects_js(t, TypeError, fetch_echo(stream));
 }, 'Fetch with ReadableStream body containing number should fail');
 
+function create_foo_stream() {
+  return create_stream(['Foo']).pipeThrough(new TextEncoderStream());
+}
+
 function fetch_redirect(status) {
   const redirect_target_url =
       BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
   const redirect_original_url = BASE_ORIGIN +
       '/serviceworker/resources/redirect.php?Redirect=' + redirect_target_url;
-  const stream = create_stream(['Foo']).pipeThrough(new TextEncoderStream());
   return fetch(
       redirect_original_url + `&Status=${status}`,
-      {method: 'POST', body: stream});
+      {method: 'POST', body: create_foo_stream()});
 }
 
 promise_test(async (t) => {
@@ -112,5 +115,21 @@ promise_test(async (t) => {
 promise_test(async (t) => {
   await promise_rejects_js(t, TypeError, fetch_redirect(307));
 }, 'Fetch upload stream should fail on non-303 redirect code');
+
+promise_test(async () => {
+  await fetch('/serviceworker/resources/fetch-access-control.php?AuthFail', {
+    method: 'POST',
+    body: 'foo',
+  });
+}, 'Upload text with 401 Unauthorized response should success.');
+
+promise_test(async (t) => {
+  await promise_rejects_js(
+      t, TypeError,
+      fetch('/serviceworker/resources/fetch-access-control.php?AuthFail', {
+        method: 'POST',
+        body: create_foo_stream(),
+      }));
+}, 'Upload streaming with 401 Unauthorized response should fail.');
 
 done();

@@ -23,6 +23,10 @@ enum class BrowsingDataType {
   CACHE = 1,
 };
 
+enum class SettingType {
+  BASIC_SAFE_BROWSING_ENABLED = 0,
+};
+
 class Profile {
  public:
   // Pass an empty |name| for an in-memory profile.
@@ -56,6 +60,12 @@ class Profile {
 
   // Gets the cookie manager for this profile.
   virtual CookieManager* GetCookieManager() = 0;
+
+  // Set the boolean value of the given setting type.
+  virtual void SetBooleanSetting(SettingType type, bool value) = 0;
+
+  // Get the boolean value of the given setting type.
+  virtual bool GetBooleanSetting(SettingType type) = 0;
 };
 
 }  // namespace weblayer

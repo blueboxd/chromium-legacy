@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -71,11 +72,12 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
   // Because flexible arrays need to be the last member in a class, we need to
   // have the buffer passed as a constructor argument and have the actual
   // storage be part of the subclass.
+  const WritingModeConverter converter(
+      {block_or_line_writing_mode, builder->Direction()}, size);
   wtf_size_t i = 0;
   for (auto& child : builder->children_) {
-    buffer[i].offset = child.offset.ConvertToPhysical(
-        block_or_line_writing_mode, builder->Direction(), size,
-        child.fragment->Size());
+    buffer[i].offset =
+        converter.ToPhysical(child.offset, child.fragment->Size());
     // Call the move constructor to move without |AddRef|. Fragments in
     // |builder| are not used after |this| was constructed.
     static_assert(

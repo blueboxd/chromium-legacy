@@ -24,7 +24,15 @@
 #include "ui/platform_window/x11/x11_window_manager.h"
 
 #if defined(USE_OZONE)
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/x/x11_os_exchange_data_provider.h"
+#include "ui/base/x/x11_pointer_grab.h"
+#include "ui/base/x/x11_topmost_window_finder.h"
 #include "ui/events/ozone/events_ozone.h"
+#include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
+#include "ui/platform_window/x11/x11_topmost_window_finder.h"
+#else
+#include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
 #endif  // defined(USE_OZONE)
 
 #if BUILDFLAG(USE_ATK)
@@ -148,6 +156,13 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
       config.opacity == WindowOpacity::kTranslucentWindow) {
     SetOpacity(kDragWidgetOpacity);
   }
+
+#if defined(USE_OZONE)
+  SetWmDragHandler(this, this);
+
+  drag_drop_client_ =
+      std::make_unique<XDragDropClient>(this, display(), window());
+#endif
 }
 
 void X11Window::SetXEventDelegate(XEventDelegate* delegate) {
@@ -654,10 +669,6 @@ void X11Window::OnXWindowCreated() {
   platform_window_delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 }
 
-bool X11Window::DispatchDraggingUiEvent(ui::Event* event) {
-  return false;
-}
-
 void X11Window::OnXWindowStateChanged() {
   // Determine the new window state information to be propagated to the client.
   // Note that the order of checks is important here, because window can have
@@ -745,11 +756,19 @@ void X11Window::OnXWindowLostPointerGrab() {
 void X11Window::OnXWindowSelectionEvent(XEvent* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowSelectionEvent(xev);
+#if defined(USE_OZONE)
+  DCHECK(drag_drop_client_);
+  drag_drop_client_->OnSelectionNotify(xev->xselection);
+#endif
 }
 
 void X11Window::OnXWindowDragDropEvent(XEvent* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowDragDropEvent(xev);
+#if defined(USE_OZONE)
+  DCHECK(drag_drop_client_);
+  drag_drop_client_->HandleXdndEvent(xev->xclient);
+#endif
 }
 
 base::Optional<gfx::Size> X11Window::GetMinimumSizeForXWindow() {
@@ -778,6 +797,135 @@ bool X11Window::RunMoveLoop(const gfx::Vector2d& drag_offset) {
 
 void X11Window::EndMoveLoop() {
   x11_window_move_client_->EndMoveLoop();
+}
+
+#if defined(USE_OZONE)
+void X11Window::StartDrag(const OSExchangeData& data,
+                          int operation,
+                          gfx::NativeCursor cursor,
+                          WmDragHandler::Delegate* delegate) {
+  DCHECK(drag_drop_client_);
+  DCHECK(!drag_handler_delegate_);
+
+  drag_handler_delegate_ = delegate;
+  drag_drop_client_->InitDrag(operation, &data);
+  drag_operation_ = 0;
+  notified_enter_ = false;
+
+  SetCapture();
+
+  dragging_ = true;
+}
+
+std::unique_ptr<XTopmostWindowFinder> X11Window::CreateWindowFinder() {
+  return std::make_unique<X11TopmostWindowFinder>();
+}
+
+int X11Window::UpdateDrag(const gfx::Point& screen_point) {
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return DragDropTypes::DRAG_NONE;
+  if (!notified_enter_) {
+    DCHECK(drag_drop_client_);
+    auto* target_current_context = drag_drop_client_->target_current_context();
+    DCHECK(target_current_context);
+    drop_handler->OnDragEnter(
+        gfx::PointF(screen_point),
+        std::make_unique<ui::OSExchangeData>(
+            std::make_unique<ui::XOSExchangeDataProvider>(
+                drag_drop_client_->xwindow(),
+                target_current_context->fetched_targets())),
+        ui::DragDropTypes::DRAG_COPY);
+    notified_enter_ = true;
+  }
+
+  drag_operation_ = drop_handler->OnDragMotion(gfx::PointF(screen_point),
+                                               ui::DragDropTypes::DRAG_COPY);
+  return drag_operation_;
+}
+
+void X11Window::UpdateCursor(
+    DragDropTypes::DragOperation negotiated_operation) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void X11Window::OnBeginForeignDrag(XID window) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void X11Window::OnEndForeignDrag() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void X11Window::OnBeforeDragLeave() {
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return;
+  drop_handler->OnDragLeave();
+  notified_enter_ = false;
+}
+
+int X11Window::PerformDrop() {
+  WmDropHandler* drop_handler = GetWmDropHandler(*this);
+  if (!drop_handler)
+    return DragDropTypes::DRAG_NONE;
+
+  DCHECK(notified_enter_);
+
+  // The drop data has been supplied on entering the window.  The drop handler
+  // should have it since then.
+  drop_handler->OnDragDrop({});
+  notified_enter_ = false;
+  return drag_operation_;
+}
+
+void X11Window::EndDragLoop() {
+  DCHECK(drag_handler_delegate_);
+  drag_handler_delegate_->OnDragFinished(0);
+  drag_handler_delegate_ = nullptr;
+}
+#endif  // defined(USE_OZONE)
+
+bool X11Window::DispatchDraggingUiEvent(Event* event) {
+#if defined(USE_OZONE)
+  // Drag and drop have a priority over other processing.
+  if (dragging_) {
+    DCHECK(drag_drop_client_);
+
+    switch (event->type()) {
+      case ET_MOUSE_MOVED:
+      case ET_MOUSE_DRAGGED: {
+        drag_handler_delegate_->OnDragLocationChanged(
+            event->AsLocatedEvent()->root_location());
+        drag_drop_client_->HandleMouseMovement(
+            event->AsLocatedEvent()->root_location(),
+            event->AsMouseEvent()->flags(),
+            event->AsMouseEvent()->time_stamp());
+        return true;
+      }
+      case ET_MOUSE_RELEASED:
+        if (!event->AsMouseEvent()->IsLeftMouseButton())
+          break;
+        // Assume that drags are being done with the left mouse button. Only
+        // break the drag if the left mouse button was released.
+        drag_drop_client_->HandleMouseReleased();
+        dragging_ = false;
+        ReleaseCapture();
+        return true;
+      case ET_KEY_PRESSED:
+        if (event->AsKeyEvent()->key_code() != VKEY_ESCAPE)
+          break;
+        EndMoveLoop();
+        drag_drop_client_->HandleMoveLoopEnded();
+        dragging_ = false;
+        ReleaseCapture();
+        return true;
+      default:
+        break;
+    }
+  }
+#endif  // defined(USE_OZONE)
+  return false;
 }
 
 gfx::Size X11Window::AdjustSizeForDisplay(
@@ -809,7 +957,7 @@ gfx::Size X11Window::AdjustSizeForDisplay(
 void X11Window::ConvertEventLocationToTargetLocation(
     const gfx::Rect& target_window_bounds,
     const gfx::Rect& current_window_bounds,
-    ui::LocatedEvent* located_event) {
+    LocatedEvent* located_event) {
   // TODO(msisov): for ozone, we need to access PlatformScreen instead and get
   // the displays.
   auto* display = display::Screen::GetScreen();

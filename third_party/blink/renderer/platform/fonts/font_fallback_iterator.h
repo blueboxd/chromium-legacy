@@ -46,7 +46,7 @@ class FontFallbackIterator {
   scoped_refptr<FontDataForRangeSet> Next(const Vector<UChar32>& hint_list);
 
  private:
-  bool RangeSetContributesForHint(const Vector<UChar32> hint_list,
+  bool RangeSetContributesForHint(const Vector<UChar32>& hint_list,
                                   const FontDataForRangeSet*);
   bool AlreadyLoadingRangeForHintChar(UChar32 hint_char);
   void WillUseRange(const AtomicString& family, const FontDataForRangeSet&);

@@ -96,6 +96,7 @@ void GlassBrowserCaptionButtonContainer::AddedToWidget() {
   views::Widget* const widget = GetWidget();
   if (!widget_observer_.IsObserving(widget))
     widget_observer_.Add(widget);
+  UpdateButtonVisibility();
 }
 
 void GlassBrowserCaptionButtonContainer::OnPaintBackground(
@@ -111,6 +112,10 @@ void GlassBrowserCaptionButtonContainer::OnPaintBackground(
 void GlassBrowserCaptionButtonContainer::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
+  UpdateButtonVisibility();
+}
+
+void GlassBrowserCaptionButtonContainer::UpdateButtonVisibility() {
   const bool is_maximized = frame_view_->IsMaximized();
   restore_button_->SetVisible(is_maximized);
   maximize_button_->SetVisible(!is_maximized);

@@ -29,11 +29,7 @@ const base::Feature kOfflinePreviews{"OfflinePreviews",
 // Support for enabling NoScript previews which includes a base feature
 // and a UserConsistent-specific experiment feature.
 const base::FeatureState kNoScriptDefaultFeatureState =
-#if defined(OS_ANDROID)
-    base::FEATURE_ENABLED_BY_DEFAULT;
-#else   // !defined(OS_ANDROID)
     base::FEATURE_DISABLED_BY_DEFAULT;
-#endif  // defined(OS_ANDROID)
 const base::Feature kNoScriptPreviews{"NoScriptPreviews",
                                       kNoScriptDefaultFeatureState};
 const base::Feature kNoScriptPreviewsUserConsistentStudy{

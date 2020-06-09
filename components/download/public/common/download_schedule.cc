@@ -18,4 +18,9 @@ DownloadSchedule::DownloadSchedule(const DownloadSchedule&) = default;
 
 DownloadSchedule::~DownloadSchedule() = default;
 
+bool DownloadSchedule::operator==(const DownloadSchedule& other) const {
+  return only_on_wifi_ == other.only_on_wifi() &&
+         start_time_ == other.start_time();
+}
+
 }  // namespace download

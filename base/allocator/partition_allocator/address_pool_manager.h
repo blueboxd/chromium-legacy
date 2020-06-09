@@ -33,9 +33,9 @@ class BASE_EXPORT AddressPoolManager {
  public:
   static AddressPoolManager* GetInstance();
 
-  pool_handle Add(const void* address, size_t length, size_t align);
+  pool_handle Add(uintptr_t address, size_t length, size_t align);
   void Remove(pool_handle handle);
-  void* Alloc(pool_handle handle, size_t length);
+  char* Alloc(pool_handle handle, size_t length);
   void Free(pool_handle handle, void* ptr, size_t length);
   void ResetForTesting();
 
@@ -50,7 +50,7 @@ class BASE_EXPORT AddressPoolManager {
     Pool(uintptr_t ptr, size_t length, size_t align);
     ~Pool();
 
-    void* FindChunk(size_t size);
+    uintptr_t FindChunk(size_t size);
     void FreeChunk(uintptr_t address, size_t size);
 
    private:

@@ -129,6 +129,48 @@ export function createExceptionEntry(params) {
 }
 
 /**
+ * Creates a multi-store password item with the same mock data as
+ * createExceptionEntry(), so it can be used for verifying deduplication result.
+ * At least one of |accountId| and |deviceId| must be set.
+ * @param {!{ url: (string|undefined),
+ *           accountId: (number|undefined),
+ *           deviceId: (number|undefined),
+ *         }} params
+ * @return {MultiStoreExceptionEntry}
+ */
+export function createMultiStoreExceptionEntry(params) {
+  const dummyFrontendId = 42;
+  let deviceEntry, accountEntry;
+  if (params.deviceId !== undefined) {
+    deviceEntry = createExceptionEntry({
+      url: params.url,
+      id: params.deviceId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: false
+    });
+  }
+  if (params.accountId !== undefined) {
+    accountEntry = createExceptionEntry({
+      url: params.url,
+      id: params.accountId,
+      frontendId: dummyFrontendId,
+      fromAccountStore: true
+    });
+  }
+
+  if (deviceEntry) {
+    return new MultiStoreExceptionEntry(deviceEntry, accountEntry);
+  }
+  if (accountEntry) {
+    return new MultiStoreExceptionEntry(accountEntry);
+  }
+
+  assertNotReached();
+  return new MultiStoreExceptionEntry(createExceptionEntry());
+}
+
+
+/**
  * Creates a new fake address entry for testing.
  * @return {!chrome.autofillPrivate.AddressEntry}
  */

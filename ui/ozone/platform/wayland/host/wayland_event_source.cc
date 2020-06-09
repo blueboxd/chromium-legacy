@@ -96,21 +96,21 @@ void WaylandEventSource::OnKeyboardModifiersChanged(int modifiers) {
   keyboard_modifiers_ = modifiers;
 }
 
-void WaylandEventSource::OnKeyboardKeyEvent(EventType type,
-                                            DomCode dom_code,
-                                            DomKey dom_key,
-                                            KeyboardCode key_code,
-                                            bool repeat,
-                                            base::TimeTicks timestamp) {
+uint32_t WaylandEventSource::OnKeyboardKeyEvent(EventType type,
+                                                DomCode dom_code,
+                                                DomKey dom_key,
+                                                KeyboardCode key_code,
+                                                bool repeat,
+                                                base::TimeTicks timestamp) {
   DCHECK(type == ET_KEY_PRESSED || type == ET_KEY_RELEASED);
   if (!keyboard_)
-    return;
+    return POST_DISPATCH_NONE;
 
   // try to decode key, if not yet.
   if (dom_key == DomKey::NONE &&
       !keyboard_->Decode(dom_code, keyboard_modifiers_, &dom_key, &key_code)) {
     LOG(ERROR) << "Failed to decode key event.";
-    return;
+    return POST_DISPATCH_NONE;
   }
 
   if (!repeat) {
@@ -121,7 +121,7 @@ void WaylandEventSource::OnKeyboardKeyEvent(EventType type,
   KeyEvent event(type, key_code, dom_code, keyboard_modifiers_, dom_key,
                  timestamp);
   event.set_source_device_id(keyboard_->device_id());
-  DispatchEvent(&event);
+  return DispatchEvent(&event);
 }
 
 void WaylandEventSource::OnPointerCreated(WaylandPointer* pointer) {

@@ -39,7 +39,6 @@ namespace autofill {
 using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using features::kAutofillEnforceMinRequiredFieldsForQuery;
 using features::kAutofillEnforceMinRequiredFieldsForUpload;
-using mojom::ButtonTitleType;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
 
@@ -2507,44 +2506,43 @@ TEST_F(FormStructureTest, EncodeUploadRequest_SubmissionIndicatorEvents_Match) {
 }
 
 TEST_F(FormStructureTest, ButtonTitleType_Match) {
-  // Statically assert that the mojo ButtonTitleType enum matches the
-  // corresponding entries the in proto AutofillUploadContents::ButtonTitle
-  // ButtonTitleType enum.
-  static_assert(AutofillUploadContents::ButtonTitle::NONE ==
-                    static_cast<int>(ButtonTitleType::NONE),
-                "NONE enumerator does not match!");
+  // Statically assert that the mojom::ButtonTitleType enum matches the
+  // corresponding entries in the proto - ButtonTitleType enum.
+  static_assert(
+      ButtonTitleType::NONE == static_cast<int>(mojom::ButtonTitleType::NONE),
+      "NONE enumerator does not match!");
 
   static_assert(
-      AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_SUBMIT_TYPE ==
-          static_cast<int>(ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE),
+      ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE ==
+          static_cast<int>(mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE),
       "BUTTON_ELEMENT_SUBMIT_TYPE enumerator does not match!");
 
   static_assert(
-      AutofillUploadContents::ButtonTitle::BUTTON_ELEMENT_BUTTON_TYPE ==
-          static_cast<int>(ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE),
+      ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE ==
+          static_cast<int>(mojom::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE),
       "BUTTON_ELEMENT_BUTTON_TYPE enumerator does not match!");
 
   static_assert(
-      AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_SUBMIT_TYPE ==
-          static_cast<int>(ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE),
+      ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE ==
+          static_cast<int>(mojom::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE),
       "INPUT_ELEMENT_SUBMIT_TYPE enumerator does not match!");
 
   static_assert(
-      AutofillUploadContents::ButtonTitle::INPUT_ELEMENT_BUTTON_TYPE ==
-          static_cast<int>(ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE),
+      ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE ==
+          static_cast<int>(mojom::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE),
       "INPUT_ELEMENT_BUTTON_TYPE enumerator does not match!");
 
-  static_assert(AutofillUploadContents::ButtonTitle::HYPERLINK ==
-                    static_cast<int>(ButtonTitleType::HYPERLINK),
+  static_assert(ButtonTitleType::HYPERLINK ==
+                    static_cast<int>(mojom::ButtonTitleType::HYPERLINK),
                 "HYPERLINK enumerator does not match!");
 
-  static_assert(AutofillUploadContents::ButtonTitle::DIV ==
-                    static_cast<int>(ButtonTitleType::DIV),
-                "DIV enumerator does not match!");
+  static_assert(
+      ButtonTitleType::DIV == static_cast<int>(mojom::ButtonTitleType::DIV),
+      "DIV enumerator does not match!");
 
-  static_assert(AutofillUploadContents::ButtonTitle::SPAN ==
-                    static_cast<int>(ButtonTitleType::SPAN),
-                "SPAN enumerator does not match!");
+  static_assert(
+      ButtonTitleType::SPAN == static_cast<int>(mojom::ButtonTitleType::SPAN),
+      "SPAN enumerator does not match!");
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
@@ -4518,6 +4516,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
   FormData form;
   form.id_attribute = ASCIIToUTF16("form-id");
   form.url = GURL("http://www.foo.com/");
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.full_url = GURL("http://www.foo.com/?foo=bar");
   for (const auto& f : kFieldMetadata) {
     FormFieldData field;
@@ -4571,6 +4572,18 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
                            RandomizedEncoder::FORM_URL, full_url));
   ASSERT_EQ(static_cast<size_t>(upload.field_size()),
             base::size(kFieldMetadata));
+
+  ASSERT_EQ(1, upload.randomized_form_metadata().button_title().size());
+  EXPECT_EQ(upload.randomized_form_metadata()
+                .button_title()[0]
+                .title()
+                .encoded_bits(),
+            encoder.EncodeForTesting(form_signature, FieldSignature(),
+                                     RandomizedEncoder::FORM_BUTTON_TITLES,
+                                     form.button_titles[0].first));
+  EXPECT_EQ(ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE,
+            upload.randomized_form_metadata().button_title()[0].type());
+
   for (int i = 0; i < upload.field_size(); ++i) {
     const auto& metadata = upload.field(i).randomized_field_metadata();
     const auto& field = *form_structure.field(i);

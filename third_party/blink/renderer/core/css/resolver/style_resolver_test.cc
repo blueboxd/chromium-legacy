@@ -262,7 +262,7 @@ TEST_F(StyleResolverTest, AnimationMaskedByImportant) {
 }
 
 TEST_F(StyleResolverTest, CachedExplicitInheritanceFlags) {
-  ScopedMPCDependenciesForTest scoped_feature(true);
+  ScopedCSSMatchedPropertiesCacheDependenciesForTest scoped_feature(true);
 
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>

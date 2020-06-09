@@ -126,7 +126,6 @@ public abstract class CommandLine {
     }
 
     // Equivalent to CommandLine::ForCurrentProcess in C++.
-    @VisibleForTesting
     public static CommandLine getInstance() {
         CommandLine commandLine = sCommandLine.get();
         assert commandLine != null;
@@ -415,7 +414,7 @@ public abstract class CommandLine {
 
         @Override
         public void appendSwitchWithValue(String switchString, String value) {
-            CommandLineJni.get().appendSwitchWithValue(switchString, value);
+            CommandLineJni.get().appendSwitchWithValue(switchString, value == null ? "" : value);
         }
 
         @Override

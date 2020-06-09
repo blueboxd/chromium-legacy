@@ -922,10 +922,13 @@ void AppListView::UpdateWidget() {
 }
 
 void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
-  // If the virtual keyboard is visible, dismiss the keyboard and return early.
+  // If the virtual keyboard is visible, dismiss the keyboard. If there is some
+  // text in the search box or the embedded assistant UI is shown, return early
+  // so they don't get closed.
   if (CloseKeyboardIfVisible()) {
     search_box_view_->NotifyGestureEvent();
-    return;
+    if (search_box_view_->HasSearch() || IsShowingEmbeddedAssistantUI())
+      return;
   }
 
   // Close embedded Assistant UI if it is shown.

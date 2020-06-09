@@ -55,10 +55,8 @@ void InitCandidateWindowWithCandidatesFilled(
   InitCandidateWindow(page_size, candidate_window);
   for (size_t i = 0; i < page_size; ++i) {
     ui::CandidateWindow::Entry entry;
-    entry.value = base::UTF8ToUTF16(base::StringPrintf(
-        "value %lld", static_cast<unsigned long long>(i)));
-    entry.label = base::UTF8ToUTF16(base::StringPrintf(
-        "%lld", static_cast<unsigned long long>(i)));
+    entry.value = base::UTF8ToUTF16(base::StringPrintf("value %zu", i));
+    entry.label = base::UTF8ToUTF16(base::StringPrintf("%zu", i));
     candidate_window->mutable_candidates()->push_back(entry);
   }
 }

@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -118,10 +119,14 @@ ACTION_P(ScheduleCallback, result0) {
       FROM_HERE, base::BindOnce(std::move(arg0), result0));
 }
 
-// Similar to ScheduleCallback, but binds 2 arguments.
 ACTION_P2(ScheduleCallback2, result0, result1) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), result0, result1));
+}
+
+ACTION_P3(ScheduleCallback3, result0, result1, result2) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(arg0), result0, result1, result2));
 }
 
 // Used with DownloadTestCase. Indicates the type of test case. The expectations
@@ -572,7 +577,8 @@ void MockDownloadTargetDeterminerDelegate::NullPromptUser(
     const base::FilePath& suggested_path,
     DownloadConfirmationReason reason,
     const ConfirmationCallback& callback) {
-  callback.Run(DownloadConfirmationResult::CONFIRMED, suggested_path);
+  callback.Run(DownloadConfirmationResult::CONFIRMED, suggested_path,
+               base::nullopt);
 }
 
 // static
@@ -659,8 +665,9 @@ TEST_F(DownloadTargetDeterminerTest, CancelSaveAs) {
 
        EXPECT_LOCAL_PATH}};
   ON_CALL(*delegate(), RequestConfirmation(_, _, _, _))
-      .WillByDefault(WithArg<3>(ScheduleCallback2(
-          DownloadConfirmationResult::CANCELED, base::FilePath())));
+      .WillByDefault(
+          WithArg<3>(ScheduleCallback3(DownloadConfirmationResult::CANCELED,
+                                       base::FilePath(), base::nullopt)));
   RunTestCasesWithActiveItem(kCancelSaveAsTestCases,
                              base::size(kCancelSaveAsTestCases));
 }
@@ -931,9 +938,9 @@ TEST_F(DownloadTargetDeterminerTest, DefaultVirtual) {
     EXPECT_CALL(*delegate(), RequestConfirmation(
                                  _, test_virtual_dir().AppendASCII("bar.txt"),
                                  DownloadConfirmationReason::SAVE_AS, _))
-        .WillOnce(WithArg<3>(
-            ScheduleCallback2(DownloadConfirmationResult::CONFIRMED,
-                              test_virtual_dir().AppendASCII("prompted.txt"))));
+        .WillOnce(WithArg<3>(ScheduleCallback3(
+            DownloadConfirmationResult::CONFIRMED,
+            test_virtual_dir().AppendASCII("prompted.txt"), base::nullopt)));
     RunTestCasesWithActiveItem(&kSaveAsToVirtualDir, 1);
   }
 
@@ -955,9 +962,10 @@ TEST_F(DownloadTargetDeterminerTest, DefaultVirtual) {
     EXPECT_CALL(*delegate(), RequestConfirmation(
                                  _, test_virtual_dir().AppendASCII("bar.txt"),
                                  DownloadConfirmationReason::SAVE_AS, _))
-        .WillOnce(WithArg<3>(ScheduleCallback2(
+        .WillOnce(WithArg<3>(ScheduleCallback3(
             DownloadConfirmationResult::CONFIRMED,
-            GetPathInDownloadDir(FILE_PATH_LITERAL("foo-x.txt")))));
+            GetPathInDownloadDir(FILE_PATH_LITERAL("foo-x.txt")),
+            base::nullopt)));
     RunTestCasesWithActiveItem(&kSaveAsToLocalDir, 1);
   }
 
@@ -1399,9 +1407,10 @@ TEST_F(DownloadTargetDeterminerTest, ContinueWithoutConfirmation_SaveAs) {
       RequestConfirmation(
           _, GetPathInDownloadDir(FILE_PATH_LITERAL("save-as.kindabad")),
           DownloadConfirmationReason::SAVE_AS, _))
-      .WillOnce(WithArg<3>(ScheduleCallback2(
+      .WillOnce(WithArg<3>(ScheduleCallback3(
           DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-          GetPathInDownloadDir(FILE_PATH_LITERAL("foo.kindabad")))));
+          GetPathInDownloadDir(FILE_PATH_LITERAL("foo.kindabad")),
+          base::nullopt)));
   RunTestCasesWithActiveItem(&kTestCase, 1);
 }
 
@@ -1425,9 +1434,10 @@ TEST_F(DownloadTargetDeterminerTest, ContinueWithConfirmation_SaveAs) {
       RequestConfirmation(
           _, GetPathInDownloadDir(FILE_PATH_LITERAL("save-as.kindabad")),
           DownloadConfirmationReason::SAVE_AS, _))
-      .WillOnce(WithArg<3>(ScheduleCallback2(
+      .WillOnce(WithArg<3>(ScheduleCallback3(
           DownloadConfirmationResult::CONFIRMED,
-          GetPathInDownloadDir(FILE_PATH_LITERAL("foo.kindabad")))));
+          GetPathInDownloadDir(FILE_PATH_LITERAL("foo.kindabad")),
+          base::nullopt)));
   RunTestCasesWithActiveItem(&kTestCase, 1);
 }
 

@@ -945,7 +945,18 @@
       },
     },
   },
-  'context_lost_tests': {
+  'context_lost_passthrough_tests': {
+    'modifications': {
+      'Win10 x64 Debug (NVIDIA)': {
+        'args': [
+          # TODO(https://crbug.com/1007013): Remove this flag when it's no
+          # longer necessary to figure out why the renderer process is hanging.
+          '--extra-browser-args=--no-sandbox',
+        ],
+      },
+    },
+  },
+  'context_lost_validating_tests': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
     'remove_from': [
@@ -957,13 +968,6 @@
         'args': [
           '--is-asan',
         ]
-      },
-      'Win10 x64 Debug (NVIDIA)': {
-        'args': [
-          # TODO(https://crbug.com/1007013): Remove this flag when it's no
-          # longer necessary to figure out why the renderer process is hanging.
-          '--extra-browser-args=--no-sandbox',
-        ],
       },
     },
   },
@@ -1290,7 +1294,28 @@
       },
     },
   },
-  'maps_pixel_test': {
+  'maps_pixel_passthrough_test': {
+    'replacements': {
+      # The V8 builders pass the V8 revision for ${got_revision}, so instead
+      # use ${got_cr_revision}, which is only set on the V8 bots.
+      'Linux V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Win V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+    },
+  },
+  'maps_pixel_validating_test': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
     # exception once there is enough capacity to run these tests.
     'remove_from': [
@@ -1315,11 +1340,6 @@
         },
       },
       'Mac V8 FYI Release (Intel)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
-      'Win V8 FYI Release (NVIDIA)': {
         'args': {
           '--git-revision': '${got_cr_revision}',
         },
@@ -1891,7 +1911,28 @@
       },
     },
   },
-  'pixel_skia_gold_test': {
+  'pixel_skia_gold_passthrough_test': {
+    'replacements': {
+      # The V8 builders pass the V8 revision for ${got_revision}, so instead
+      # use ${got_cr_revision}, which is only set on the V8 bots.
+      'Linux V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Linux V8 FYI Release - pointer compression (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Win V8 FYI Release (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+    },
+  },
+  'pixel_skia_gold_validating_test': {
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
       # use ${got_cr_revision}, which is only set on the V8 bots.
@@ -1911,11 +1952,6 @@
         },
       },
       'Mac V8 FYI Release (Intel)': {
-        'args': {
-          '--git-revision': '${got_cr_revision}',
-        },
-      },
-      'Win V8 FYI Release (NVIDIA)': {
         'args': {
           '--git-revision': '${got_cr_revision}',
         },

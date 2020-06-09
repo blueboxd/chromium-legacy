@@ -124,6 +124,10 @@ class WaylandConnection {
   // in place, i.e: wl_seat and wl_data_device_manager.
   void CreateDataObjectsIfReady();
 
+  // Creates WaylandKeyboard with the currently acquired protocol objects, if
+  // possible. Returns true iff WaylandKeyboard was created.
+  bool CreateKeyboard();
+
   // wl_registry_listener
   static void Global(void* data,
                      wl_registry* registry,
@@ -151,6 +155,7 @@ class WaylandConnection {
   wl::Object<xdg_wm_base> shell_;
   wl::Object<zxdg_shell_v6> shell_v6_;
   wl::Object<wp_presentation> presentation_;
+  wl::Object<zcr_keyboard_extension_v1> keyboard_extension_v1_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
 
   // Event source instance. Must be declared before input objects so it

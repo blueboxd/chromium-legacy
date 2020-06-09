@@ -17,6 +17,7 @@ mojom("test_interfaces") {
     "export4.test-mojom",
     "import.test-mojom",
     "module.test-mojom",
+    "structs.test-mojom",
   ]
   use_typescript_sources = true
 }

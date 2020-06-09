@@ -39,6 +39,9 @@ class TypescriptStylizer(generator.Stylizer):
     return '.'.join(generator.ToCamel(word, lower_initial=True)
                         for word in mojom_namespace.split('.'))
 
+  def StylizeField(self, mojom_name):
+    return generator.ToCamel(mojom_name, lower_initial=True)
+
   def StylizeConstant(self, mojom_name):
     return generator.ToUpperSnakeCase(mojom_name)
 
@@ -46,9 +49,10 @@ class TypescriptStylizer(generator.Stylizer):
 class Generator(generator.Generator):
   def _GetParameters(self, use_es_modules=False):
     return {
-      "module": self.module,
-      "use_es_modules": use_es_modules,
-      "enums": self.module.enums,
+        "module": self.module,
+        "use_es_modules": use_es_modules,
+        "enums": self.module.enums,
+        "structs": self.module.structs,
     }
 
   @staticmethod

@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
 #include <gtk-primary-selection-client-protocol.h>
+#include <keyboard-extension-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
 #include <presentation-time-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
@@ -188,6 +189,16 @@ const wl_interface* ObjectTraits<xdg_positioner>::interface =
     &xdg_positioner_interface;
 void (*ObjectTraits<xdg_positioner>::deleter)(xdg_positioner*) =
     &xdg_positioner_destroy;
+
+const wl_interface* ObjectTraits<zcr_keyboard_extension_v1>::interface =
+    &zcr_keyboard_extension_v1_interface;
+void (*ObjectTraits<zcr_keyboard_extension_v1>::deleter)(
+    zcr_keyboard_extension_v1*) = &zcr_keyboard_extension_v1_destroy;
+
+const wl_interface* ObjectTraits<zcr_extended_keyboard_v1>::interface =
+    &zcr_extended_keyboard_v1_interface;
+void (*ObjectTraits<zcr_extended_keyboard_v1>::deleter)(
+    zcr_extended_keyboard_v1*) = &zcr_extended_keyboard_v1_destroy;
 
 const wl_interface* ObjectTraits<zwp_linux_dmabuf_v1>::interface =
     &zwp_linux_dmabuf_v1_interface;

@@ -130,7 +130,9 @@ Polymer({
       this.$.pageselector.classList.toggle('invisible', !loaded);
       this.$.buttons.classList.toggle('invisible', !loaded);
       this.$.progress.style.opacity = loaded ? 0 : 1;
+      // <if expr="chromeos">
       this.$['annotations-bar'].hidden = !loaded || !this.annotationMode;
+      // </if>
     }
   },
 
@@ -189,6 +191,7 @@ Polymer({
       this.$.bookmarks.toggleDropdown();
       result = true;
     }
+    // <if expr="chromeos">
     if (this.$.pen.dropdownOpen) {
       this.$.pen.toggleDropdown();
       result = true;
@@ -197,6 +200,7 @@ Polymer({
       this.$.highlighter.toggleDropdown();
       result = true;
     }
+    // </if>
     return result;
   },
 

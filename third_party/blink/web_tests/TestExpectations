@@ -1385,6 +1385,8 @@ crbug.com/891427 animations/responsive/viewport-unit-translate-responsive.html [
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 # Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1547
 crbug.com/891427 virtual/threaded/external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Pass Failure Timeout Crash ]
+# Next 1 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win7-blink-rel/1504
+crbug.com/891427 tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ Pass Failure Timeout Crash ]
 # ====== OOPIF-mode failures until here ======
 
 # ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
@@ -1887,6 +1889,7 @@ crbug.com/1075869 http/tests/devtools/elements/styles-1/color-swatch.js [ Pass F
 crbug.com/1075869 http/tests/devtools/elements/styles-3/spectrum.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/elements/styles-4/styles-invalid-color-values.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Failure Timeout ]
+crbug.com/946975 http/tests/devtools/sources/autocomplete-css.js [ Pass Failure ]
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
@@ -4774,11 +4777,9 @@ crbug.com/1069817 fast/ruby/base-shorter-than-text.html [ Failure ]
 crbug.com/1069817 fast/ruby/float-overhang-from-ruby-text.html [ Failure ]
 crbug.com/1069817 fast/ruby/line-break-ruby.html [ Failure ]
 crbug.com/1069817 fast/ruby/position-after.html [ Failure ]
-crbug.com/1069817 fast/ruby/select-ruby.html [ Failure ]
 crbug.com/1069817 [ Linux ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/1069817 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/1069817 [ Win10 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
-crbug.com/1069817 fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Failure ]
 crbug.com/1069817 fast/writing-mode/japanese-ruby-vertical-lr.html [ Failure ]
 crbug.com/1069817 fast/writing-mode/japanese-ruby-vertical-rl.html [ Failure ]
 crbug.com/1069817 virtual/text-antialias/emphasis-avoid-ruby.html [ Failure ]
@@ -6711,10 +6712,6 @@ crbug.com/1085564 [ Debug ] virtual/threaded-no-composited-antialiasing/animatio
 crbug.com/1084637 compositing/video/video-reflection.html [ Pass Failure ]
 crbug.com/1083362 compositing/reflections/load-video-in-reflection.html [ Pass Failure ]
 crbug.com/1087471 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Pass Failure ]
-
-# Temporary disabling to allow landing https://webrtc-review.googlesource.com/c/src/+/176509
-crbug.com/webrtc/8787 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
-crbug.com/webrtc/8787 external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Pass Failure ]
 
 # Sheriff 2020-06-01
 # Also see crbug.com/626703, these timed-out before but now fail as well.

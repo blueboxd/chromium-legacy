@@ -206,8 +206,10 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
 
   // Callback invoked after the file picker completes. Cancels the download if
   // the user cancels the file picker.
-  void RequestConfirmationDone(DownloadConfirmationResult result,
-                               const base::FilePath& virtual_path);
+  void RequestConfirmationDone(
+      DownloadConfirmationResult result,
+      const base::FilePath& virtual_path,
+      base::Optional<download::DownloadSchedule> download_schedule);
 
   // Up until this point, the path that was used is considered to be a virtual
   // path. This step determines the local file system path corresponding to this
@@ -356,6 +358,7 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   DownloadTargetDeterminerDelegate* delegate_;
   CompletionCallback completion_callback_;
   base::CancelableTaskTracker history_tracker_;
+  base::Optional<download::DownloadSchedule> download_schedule_;
 
   base::WeakPtrFactory<DownloadTargetDeterminer> weak_ptr_factory_{this};
 

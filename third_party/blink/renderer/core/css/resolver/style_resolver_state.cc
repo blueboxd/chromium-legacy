@@ -240,7 +240,7 @@ const CSSValue& StyleResolverState::ResolveLightDarkPair(
 }
 
 void StyleResolverState::MarkDependency(const CSSProperty& property) {
-  if (!RuntimeEnabledFeatures::MPCDependenciesEnabled())
+  if (!RuntimeEnabledFeatures::CSSMatchedPropertiesCacheDependenciesEnabled())
     return;
   has_incomparable_dependency_ |= !property.IsComputedValueComparable();
   dependencies_.insert(property.GetCSSPropertyName());

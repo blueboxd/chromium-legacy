@@ -487,6 +487,11 @@
       name: "CSSMaskSourceType",
       status: "experimental",
     },
+    // Enables dependency support for the MatchedPropertiesCache.
+    {
+      name: "CSSMatchedPropertiesCacheDependencies",
+      depends_on: ["CSSCascade"]
+    },
     {
       name: "CSSMathStyle",
       status: "experimental",
@@ -1155,11 +1160,6 @@
     {
       // When enabled, iframes are not capturing mouse events by default.
       name: "MouseSubframeNoImplicitCapture",
-    },
-    // Enables dependency support for the MatchedPropertiesCache.
-    {
-      name: "MPCDependencies",
-      depends_on: ["CSSCascade"]
     },
     {
       // Named pages for pagination (the "page" CSS property).

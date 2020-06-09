@@ -1849,6 +1849,52 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_FALSE(child_layer->NeedsVisualOverflowRecalc());
 }
 
+TEST_F(DisplayLockContextRenderingTest, FloatChildLocked) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .hidden { content-visibility: hidden }
+      #floating { float: left; width: 100px; height: 100px }
+    </style>
+    <div id=lockable style="width: 200px; height: 50px; position: absolute">
+      <div id=floating></div>
+    </div>
+  )HTML");
+
+  auto* lockable = GetDocument().getElementById("lockable");
+  auto* lockable_box = lockable->GetLayoutBox();
+  auto* floating = GetDocument().getElementById("floating");
+  EXPECT_EQ(LayoutRect(0, 0, 200, 100), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(LayoutRect(0, 0, 200, 100), lockable_box->LayoutOverflowRect());
+
+  lockable->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  // Verify that the display lock knows that the descendant dependent flags
+  // update was blocked.
+  ASSERT_TRUE(lockable->GetDisplayLockContext());
+  EXPECT_TRUE(DescendantDependentFlagUpdateWasBlocked(
+      lockable->GetDisplayLockContext()));
+  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->LayoutOverflowRect());
+
+  floating->setAttribute(html_names::kStyleAttr, "height: 200px");
+  // The following should not crash/DCHECK.
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(lockable->GetDisplayLockContext());
+  EXPECT_TRUE(DescendantDependentFlagUpdateWasBlocked(
+      lockable->GetDisplayLockContext()));
+  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(LayoutRect(0, 0, 200, 50), lockable_box->LayoutOverflowRect());
+
+  // After unlocking, we should process the pending visual overflow recalc.
+  lockable->classList().Remove("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), lockable_box->VisualOverflowRect());
+  EXPECT_EQ(LayoutRect(0, 0, 200, 200), lockable_box->LayoutOverflowRect());
+}
+
 TEST_F(DisplayLockContextRenderingTest,
        VisualOverflowCalculateOnChildPaintLayerInForcedLock) {
   SetHtmlInnerHTML(R"HTML(

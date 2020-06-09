@@ -96,7 +96,6 @@ using features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using features::kAutofillEnforceMinRequiredFieldsForQuery;
 using features::kAutofillEnforceMinRequiredFieldsForUpload;
 using features::kAutofillRestrictUnownedFieldsToFormlessCheckout;
-using mojom::ButtonTitleType;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
 
@@ -7656,8 +7655,9 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressOnly) {
   // Create a form with name and address fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -7699,8 +7699,9 @@ TEST_F(AutofillManagerTest,
   // Create a form with address fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -7741,8 +7742,9 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_ContactOnly) {
   // Create a form with name and contact fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -7783,8 +7785,9 @@ TEST_F(AutofillManagerTest,
   // Create a form with contact fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -7824,8 +7827,9 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_Other) {
   // Create a form with name fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -7865,8 +7869,9 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusEmail) {
   // Create a form with name, address, and email fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -7916,8 +7921,9 @@ TEST_F(AutofillManagerTest,
   // Create a form with address and email fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -7964,8 +7970,9 @@ TEST_F(AutofillManagerTest, DidShowSuggestions_LogByType_AddressPlusPhone) {
   // Create a form with name fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -8015,8 +8022,9 @@ TEST_F(AutofillManagerTest,
   // Create a form with name, address, and phone fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -8064,8 +8072,9 @@ TEST_F(AutofillManagerTest,
   // Create a form with name, address, phone, and email fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =
@@ -8116,8 +8125,9 @@ TEST_F(AutofillManagerTest,
   // Create a form with address, phone, and email fields.
   FormData form;
   form.name = ASCIIToUTF16("MyForm");
-  form.button_titles = {std::make_pair(
-      ASCIIToUTF16("Submit"), ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
+  form.button_titles = {
+      std::make_pair(ASCIIToUTF16("Submit"),
+                     mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE)};
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
   form.main_frame_origin =

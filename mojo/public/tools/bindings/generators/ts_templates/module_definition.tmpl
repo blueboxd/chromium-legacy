@@ -1,4 +1,4 @@
-{%- if not use_es_modules %}
+{%- if not use_es_modules -%}
 namespace {{module.namespace}} {
 {% endif %}
 {#--- Constants #}
@@ -8,7 +8,7 @@ export const {{constant.name}}: {{constant.kind|typescript_type_with_nullability
 {%- endfor %}
 
 {#--- Enums #}
-{% for enum in enums %}
+{%- for enum in enums %}
 export enum {{enum.name}} {
 {%- for field in enum.fields %}
   {{field.name}} = {{field.numeric_value}},
@@ -19,6 +19,15 @@ export enum {{enum.name}} {
 {%- if enum.max_value is not none %}
   MAX_VALUE = {{enum.max_value}},
 {%- endif %}
+}
+{% endfor %}
+
+{#--- Structs #}
+{%- for struct in structs %}
+export interface {{struct.name}} {
+{%- for packed_field in struct.packed.packed_fields %}
+    {{packed_field.field.name}}: {{packed_field.field.kind|typescript_type_with_nullability}};
+{%- endfor %}
 }
 {% endfor %}
 

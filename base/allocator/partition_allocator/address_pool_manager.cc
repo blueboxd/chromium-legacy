@@ -24,18 +24,17 @@ AddressPoolManager* AddressPoolManager::GetInstance() {
   return instance.get();
 }
 
-pool_handle AddressPoolManager::Add(const void* ptr,
+pool_handle AddressPoolManager::Add(uintptr_t ptr,
                                     size_t length,
                                     size_t align) {
   DCHECK(base::bits::IsPowerOfTwo(align));
   const uintptr_t align_offset_mask = align - 1;
-  const uintptr_t ptr_as_uintptr = reinterpret_cast<uintptr_t>(ptr);
-  DCHECK(!(ptr_as_uintptr & align_offset_mask));
-  DCHECK(!((ptr_as_uintptr + length) & align_offset_mask));
+  DCHECK(!(ptr & align_offset_mask));
+  DCHECK(!((ptr + length) & align_offset_mask));
 
   for (pool_handle i = 0; i < base::size(pools_); ++i) {
     if (!pools_[i]) {
-      pools_[i] = std::make_unique<Pool>(ptr_as_uintptr, length, align);
+      pools_[i] = std::make_unique<Pool>(ptr, length, align);
       return i + 1;
     }
   }
@@ -53,11 +52,11 @@ void AddressPoolManager::Remove(pool_handle handle) {
   pools_[handle - 1].reset();
 }
 
-void* AddressPoolManager::Alloc(pool_handle handle, size_t length) {
+char* AddressPoolManager::Alloc(pool_handle handle, size_t length) {
   DCHECK(0 < handle && handle <= kNumPools);
   Pool* pool = pools_[handle - 1].get();
   DCHECK(pool);
-  return pool->FindChunk(length);
+  return reinterpret_cast<char*>(pool->FindChunk(length));
 }
 
 void AddressPoolManager::Free(pool_handle handle, void* ptr, size_t length) {
@@ -81,7 +80,7 @@ AddressPoolManager::Pool::Pool(uintptr_t ptr, size_t length, size_t align)
 #endif
 }
 
-void* AddressPoolManager::Pool::FindChunk(size_t requested_size) {
+uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
   base::AutoLock scoped_lock(lock_);
 
   const uintptr_t align_offset_mask = align_ - 1;
@@ -99,7 +98,7 @@ void* AddressPoolManager::Pool::FindChunk(size_t requested_size) {
     }
   }
   if (!chosen_chunk)
-    return nullptr;
+    return 0;
 
   free_chunks_.erase(chosen_chunk);
   if (chosen_chunk_size > required_size) {
@@ -115,7 +114,7 @@ void* AddressPoolManager::Pool::FindChunk(size_t requested_size) {
   DCHECK_LE(address_begin_, chosen_chunk);
   DCHECK_LE(chosen_chunk + required_size, address_end_);
 #endif
-  return reinterpret_cast<void*>(chosen_chunk);
+  return chosen_chunk;
 }
 
 void AddressPoolManager::Pool::FreeChunk(uintptr_t address, size_t free_size) {

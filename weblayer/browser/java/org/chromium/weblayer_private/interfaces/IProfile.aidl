@@ -26,4 +26,8 @@ interface IProfile {
 
   // Added in Version 83.
   ICookieManager getCookieManager() = 6;
+
+  // Added in Version 84.
+  void setBooleanSetting(int type, boolean value) = 7;
+  boolean getBooleanSetting(int type) = 8;
 }

@@ -676,7 +676,7 @@ void XDragDropClient::SendXdndDrop(XID dest_window) {
 
 void XDragDropClient::EndMoveLoop() {
   StopEndMoveLoopTimer();
-  delegate_->EndMoveLoop();
+  delegate_->EndDragLoop();
 }
 
 }  // namespace ui

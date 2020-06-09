@@ -127,17 +127,12 @@ void DownloadManagerMediator::UpdateConsumer() {
 
     if (base::FeatureList::IsEnabled(
             web::features::kEnablePersistentDownloads)) {
-      base::FilePath user_download_path;
-      GetDownloadsDirectory(&user_download_path);
-      user_download_path = user_download_path.Append(
-          base::UTF16ToUTF8(task_->GetSuggestedFilename()));
-
       base::ThreadPool::PostTaskAndReplyWithResult(
           FROM_HERE,
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-          base::Bind(&base::Move, download_path_, user_download_path),
-          base::Bind(&DownloadManagerMediator::RestoreDownloadPath,
-                     weak_ptr_factory_.GetWeakPtr(), user_download_path));
+          base::Bind(base::PathExists, download_path_),
+          base::Bind(&DownloadManagerMediator::MoveToUserDocumentsIfFileExists,
+                     weak_ptr_factory_.GetWeakPtr(), download_path_));
     }
   }
 
@@ -156,6 +151,25 @@ void DownloadManagerMediator::UpdateConsumer() {
     UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
                                     l10n_util::GetNSString(a11y_announcement));
   }
+}
+
+void DownloadManagerMediator::MoveToUserDocumentsIfFileExists(
+    base::FilePath download_path_,
+    bool file_exists) {
+  if (!file_exists)
+    return;
+
+  base::FilePath user_download_path;
+  GetDownloadsDirectory(&user_download_path);
+  user_download_path = user_download_path.Append(
+      base::UTF16ToUTF8(task_->GetSuggestedFilename()));
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::Bind(&base::Move, download_path_, user_download_path),
+      base::Bind(&DownloadManagerMediator::RestoreDownloadPath,
+                 weak_ptr_factory_.GetWeakPtr(), user_download_path));
 }
 
 void DownloadManagerMediator::RestoreDownloadPath(

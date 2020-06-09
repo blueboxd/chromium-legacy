@@ -11,7 +11,7 @@ specific_include_rules = {
   ".*test.*": [
    "!ash",
    "+ash/shortcut_viewer",
-   "+ash/shortcut_viewer/strings/grit/ash_components_strings.h",
+   "+ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h",
    "+ash/keyboard/ui",
    "+ash/public",
    "+ash/assistant/ui/assistant_ui_constants.h",

@@ -86,7 +86,8 @@ TEST_F(QuicTest, ValidQuicHost) {
 
 // Tests a request with enabled "enable_socket_recv_optimization" QUIC
 // experimental option.
-TEST_F(QuicTest, RequestWithSocketOptimizationEnabled) {
+// TODO(crbug.com/971378): This test is consistently failing.
+TEST_F(QuicTest, DISABLED_RequestWithSocketOptimizationEnabled) {
   // Apply test specific Cronet configuration and start it.
   [Cronet setExperimentalOptions:
               @"{\"QUIC\" : {\"enable_socket_recv_optimization\" : true} }"];

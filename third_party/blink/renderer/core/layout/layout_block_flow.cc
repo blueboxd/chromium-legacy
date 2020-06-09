@@ -2385,8 +2385,12 @@ EBreakBetween LayoutBlockFlow::BreakAfter() const {
 }
 
 void LayoutBlockFlow::AddVisualOverflowFromFloats() {
-  if (!floating_objects_)
+  if (PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren) ||
+      !floating_objects_)
     return;
+
+  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
+  CHECK(!NeedsLayout());
 
   for (auto& floating_object : floating_objects_->Set()) {
     if (floating_object->IsDescendant()) {
@@ -2400,7 +2404,11 @@ void LayoutBlockFlow::AddVisualOverflowFromFloats() {
 
 void LayoutBlockFlow::AddVisualOverflowFromFloats(
     const NGPhysicalContainerFragment& fragment) {
+  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
+  CHECK(!NeedsLayout());
+  DCHECK(!PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   DCHECK(fragment.HasFloatingDescendantsForPaint());
+
   for (const NGLink& child : fragment.Children()) {
     if (child->HasSelfPaintingLayer())
       continue;
@@ -2420,7 +2428,8 @@ void LayoutBlockFlow::AddVisualOverflowFromFloats(
 }
 
 void LayoutBlockFlow::AddLayoutOverflowFromFloats() {
-  if (!floating_objects_)
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren) ||
+      !floating_objects_)
     return;
 
   for (auto& floating_object : floating_objects_->Set()) {
@@ -2445,6 +2454,9 @@ const NGFragmentItems* LayoutBlockFlow::FragmentItems() const {
 
 void LayoutBlockFlow::ComputeVisualOverflow(
     bool recompute_floats) {
+  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
+  CHECK(!SelfNeedsLayout());
+
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();
   AddVisualOverflowFromChildren();
@@ -2456,6 +2468,7 @@ void LayoutBlockFlow::ComputeVisualOverflow(
       (recompute_floats || CreatesNewFormattingContext() ||
        HasSelfPaintingLayer()))
     AddVisualOverflowFromFloats();
+
   if (VisualOverflowRect() != previous_visual_overflow_rect) {
     InvalidateIntersectionObserverCachedRects();
     SetShouldCheckForPaintInvalidation();

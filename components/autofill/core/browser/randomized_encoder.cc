@@ -204,6 +204,7 @@ const char RandomizedEncoder::FORM_NAME[] = "form-name";
 const char RandomizedEncoder::FORM_ACTION[] = "form-action";
 const char RandomizedEncoder::FORM_URL[] = "form-url";
 const char RandomizedEncoder::FORM_CSS_CLASS[] = "form-css-class";
+const char RandomizedEncoder::FORM_BUTTON_TITLES[] = "button-titles";
 
 const char RandomizedEncoder::FIELD_ID[] = "field-id";
 const char RandomizedEncoder::FIELD_NAME[] = "field-name";

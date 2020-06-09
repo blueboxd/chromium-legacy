@@ -79,6 +79,22 @@
             ]
         }
     ],
+    "AndroidCopyImageAndClipboardImageSuggstions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AndroidCopyImageAndClipboardImageSuggstions",
+                    "enable_features": [
+                        "ContextMenuCopyImage",
+                        "OmniboxEnableClipboardProviderImageSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidDarkSearch": [
         {
             "platforms": [
@@ -1179,6 +1195,27 @@
             "experiments": [
                 {
                     "name": "DetachTimeFg16x"
+                }
+            ]
+        }
+    ],
+    "CSSMatchedPropertiesCacheDependencies": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CSSMatchedPropertiesCacheDependencies"
+                    ]
                 }
             ]
         }

@@ -25,15 +25,14 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
-import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.params.MethodParamAnnotationRule;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.MinAndroidSdkLevelSkipCheck;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,34 +58,43 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
     private static final String DURATION_BUNDLE_ID = "duration_ms";
 
     /**
+     * An interface for classes that have some code to run before (or after) the class is
+     * instantiated. They run after {@Link BeforeClass} (or before @AfterClass) methods are called.
+     * Provides access to the test class (and the annotations defined for it) and the
+     * instrumentation context.
+     *
+     * The only reason to use a ClassHook instead of a TestRule is because @BeforeClass/@AfterClass
+     * run during test listing, or multiple times for parameterized tests. See
+     * https://crbug.com/1090043.
+     *
+     * TODO(https://crbug.com/1092646): Migrate all Class/Test Hooks to TestRules.
+     */
+    public interface ClassHook {
+        /**
+         * @param targetContext the instrumentation context that will be used during the test.
+         * @param testMethod the test method to be run.
+         */
+        public void run(Context targetContext, Class<?> testClass);
+    }
+
+    /**
+     * An interface for classes that have some code to run before a test. They run after
+     * {@link SkipCheck}s and before {@Link Before} (or after @After). Provides access to the test
+     * method (and the annotations defined for it) and the instrumentation context.
+     *
+     * Do not use TestHooks unless you also require ClassHooks. Otherwise, you should use TestRules
+     * and {@link #getDefaultTestRules}.
+     */
+    public interface TestHook {
+        /**
+         * @param targetContext the instrumentation context that will be used during the test.
+         * @param testMethod the test method to be run.
+         */
+        public void run(Context targetContext, FrameworkMethod testMethod);
+    }
+
+    /**
      * Create a BaseJUnit4ClassRunner to run {@code klass} and initialize values.
-     *
-     * To add more SkipCheck or PreTestHook in subclass, create Lists of checks and hooks,
-     * pass them into the super constructors. If you want make a subclass extendable by other
-     * class runners, you also have to create a constructor similar to the following one that
-     * merges default checks or hooks with this checks and hooks passed in by constructor.
-     *
-     * <pre>
-     * <code>
-     * e.g.
-     * public ChildRunner extends BaseJUnit4ClassRunner {
-     *     public ChildRunner(final Class<?> klass) {
-     *             throws InitializationError {
-     *         this(klass, Collections.emptyList(), Collections.emptyList(),
-     * Collections.emptyList());
-     *     }
-     *
-     *     public ChildRunner(
-     *             final Class<?> klass, List<SkipCheck> checks, List<PreTestHook> hook,
-     * List<TestRule> rules) { throws InitializationError { super(klass, mergeList( checks,
-     * getSkipChecks()), mergeList(hooks, getPreTestHooks()));
-     *     }
-     *
-     *     public List<SkipCheck> getSkipChecks() {...}
-     *
-     *     public List<PreTestHook> getPreTestHooks() {...}
-     * </code>
-     * </pre>
      *
      * @throws InitializationError if the test class malformed
      */
@@ -160,15 +168,51 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
     }
 
     /**
-     * Override this method to return a list of {@link PreTestHook}s.
+     * See {@link ClassHook}. Prefer to use TestRules over this.
      *
-     * Additional hooks can be added to the list using {@link #addToList}:
-     * {@code return addToList(super.getPreTestHooks(), hook1, hook2);}
-     * TODO(bauerb): Migrate PreTestHook to TestRule.
+     * Additional hooks can be added to the list by overriding this method and using {@link
+     * #addToList}:
+     * {@code return addToList(super.getPreClassHooks(), hook1, hook2);}
      */
     @CallSuper
-    protected List<PreTestHook> getPreTestHooks() {
-        return Collections.emptyList();
+    protected List<ClassHook> getPreClassHooks() {
+        return Arrays.asList(CommandLineFlags.getPreClassHook());
+    }
+
+    /**
+     * See {@link ClassHook}. Prefer to use TestRules over this.
+     *
+     * Additional hooks can be added to the list by overriding this method and using {@link
+     * #addToList}:
+     * {@code return addToList(super.getPostClassHooks(), hook1, hook2);}
+     */
+    @CallSuper
+    protected List<ClassHook> getPostClassHooks() {
+        return Arrays.asList(CommandLineFlags.getPostClassHook());
+    }
+
+    /**
+     * See {@link TestHook}. Prefer to use TestRules over this.
+     *
+     * Additional hooks can be added to the list by overriding this method and using {@link
+     * #addToList}:
+     * {@code return addToList(super.getPreTestHooks(), hook1, hook2);}
+     */
+    @CallSuper
+    protected List<TestHook> getPreTestHooks() {
+        return Arrays.asList(CommandLineFlags.getPreTestHook());
+    }
+
+    /**
+     * See {@link TestHook}. Prefer to use TestRules over this.
+     *
+     * Additional hooks can be added to the list by overriding this method and using {@link
+     * #addToList}:
+     * {@code return addToList(super.getPostTestHooks(), hook1, hook2);}
+     */
+    @CallSuper
+    protected List<TestHook> getPostTestHooks() {
+        return Arrays.asList(CommandLineFlags.getPostTestHook());
     }
 
     /**
@@ -237,17 +281,12 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
             return;
         }
 
-        if (!CommandLine.isInitialized()) {
-            initCommandLineForTest();
-        }
-        super.run(notifier);
-    }
+        runPreClassHooks(getDescription().getTestClass());
+        assert CommandLine.isInitialized();
 
-    /**
-     * Override this method to change how test class runner initiate commandline flags
-     */
-    protected void initCommandLineForTest() {
-        CommandLine.init(null);
+        super.run(notifier);
+
+        runPostClassHooks(getDescription().getTestClass());
     }
 
     @Override
@@ -255,11 +294,13 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
         String testName = method.getName();
         TestTraceEvent.begin(testName);
 
-        runPreTestHooks(method);
-
         long start = SystemClock.uptimeMillis();
 
+        runPreTestHooks(method);
+
         super.runChild(method, notifier);
+
+        runPostTestHooks(method);
 
         Bundle b = new Bundle();
         b.putLong(DURATION_BUNDLE_ID, SystemClock.uptimeMillis() - start);
@@ -277,10 +318,30 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
      * Loop through all the {@code PreTestHook}s to run them
      */
     private void runPreTestHooks(FrameworkMethod frameworkMethod) {
-        Method testMethod = frameworkMethod.getMethod();
         Context targetContext = InstrumentationRegistry.getTargetContext();
-        for (PreTestHook hook : getPreTestHooks()) {
-            hook.run(targetContext, testMethod);
+        for (TestHook hook : getPreTestHooks()) {
+            hook.run(targetContext, frameworkMethod);
+        }
+    }
+
+    private void runPreClassHooks(Class<?> klass) {
+        Context targetContext = InstrumentationRegistry.getTargetContext();
+        for (ClassHook hook : getPreClassHooks()) {
+            hook.run(targetContext, klass);
+        }
+    }
+
+    private void runPostTestHooks(FrameworkMethod frameworkMethod) {
+        Context targetContext = InstrumentationRegistry.getTargetContext();
+        for (TestHook hook : getPostTestHooks()) {
+            hook.run(targetContext, frameworkMethod);
+        }
+    }
+
+    private void runPostClassHooks(Class<?> klass) {
+        Context targetContext = InstrumentationRegistry.getTargetContext();
+        for (ClassHook hook : getPostClassHooks()) {
+            hook.run(targetContext, klass);
         }
     }
 

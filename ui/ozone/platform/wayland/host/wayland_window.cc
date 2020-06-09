@@ -499,10 +499,10 @@ uint32_t WaylandWindow::DispatchEventToDelegate(
   if (event->IsLocatedEvent())
     UpdateCursorPositionFromEvent(Event::Clone(*event));
 
-  DispatchEventFromNativeUiEvent(
+  bool handled = DispatchEventFromNativeUiEvent(
       native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
                                    base::Unretained(delegate_)));
-  return POST_DISPATCH_STOP_PROPAGATION;
+  return handled ? POST_DISPATCH_STOP_PROPAGATION : POST_DISPATCH_NONE;
 }
 
 // static

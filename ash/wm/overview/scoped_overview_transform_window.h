@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "ui/aura/client/transient_window_client_observer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -36,7 +37,8 @@ class ScopedOverviewHideWindows;
 // fit in certain bounds. The window's state is restored when this object is
 // destroyed.
 class ASH_EXPORT ScopedOverviewTransformWindow
-    : public aura::client::TransientWindowClientObserver {
+    : public aura::client::TransientWindowClientObserver,
+      public aura::WindowObserver {
  public:
   using ScopedAnimationSettings =
       std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
@@ -139,6 +141,11 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   void OnTransientChildWindowRemoved(aura::Window* parent,
                                      aura::Window* transient_child) override;
 
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
+
   aura::Window* window() const { return window_; }
 
   OverviewGridWindowFillMode type() const { return type_; }
@@ -154,6 +161,12 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   // Closes the window managed by |this|.
   void CloseWidget();
+
+  // Adds transient windows that should be hidden to the hidden window list. The
+  // windows are hidden in overview mode and the visibility of the windows is
+  // recovered after overview mode.
+  void AddHiddenTransientWindows(
+      const std::vector<aura::Window*>& transient_windows);
 
   // A weak pointer to the overview item that owns |this|. Guaranteed to be not
   // null for the lifetime of |this|.

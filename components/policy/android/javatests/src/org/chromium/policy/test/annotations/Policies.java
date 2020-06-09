@@ -10,8 +10,9 @@ import android.os.Bundle;
 import androidx.annotation.VisibleForTesting;
 
 import org.junit.Assert;
+import org.junit.runners.model.FrameworkMethod;
 
-import org.chromium.base.test.BaseTestResult.PreTestHook;
+import org.chromium.base.test.BaseJUnit4ClassRunner.TestHook;
 import org.chromium.policy.AbstractAppRestrictionsProvider;
 import org.chromium.policy.test.PolicyData;
 
@@ -106,8 +107,8 @@ public final class Policies {
         return result;
     }
 
-    /** @see PreTestHook */
-    public static PreTestHook getRegistrationHook() {
+    /** see {@link TestHook} */
+    public static TestHook getRegistrationHook() {
         return new RegistrationHook();
     }
 
@@ -136,10 +137,10 @@ public final class Policies {
      * Registration hook for the {@link Policies} annotation family. Before a test, will parse
      * the declared policies and use them as cached policies.
      */
-    public static class RegistrationHook implements PreTestHook {
+    public static class RegistrationHook implements TestHook {
         @Override
-        public void run(Context targetContext, Method testMethod) {
-            Map<String, PolicyData> policyMap = getPolicies(testMethod);
+        public void run(Context targetContext, FrameworkMethod testMethod) {
+            Map<String, PolicyData> policyMap = getPolicies(testMethod.getMethod());
             if (policyMap.isEmpty()) {
                 AbstractAppRestrictionsProvider.setTestRestrictions(null);
             } else {

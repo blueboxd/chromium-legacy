@@ -9,10 +9,12 @@
 
 namespace blink {
 
-class StyleResolverStateTest : public PageTestBase,
-                               private ScopedMPCDependenciesForTest {
+class StyleResolverStateTest
+    : public PageTestBase,
+      private ScopedCSSMatchedPropertiesCacheDependenciesForTest {
  public:
-  StyleResolverStateTest() : ScopedMPCDependenciesForTest(true) {}
+  StyleResolverStateTest()
+      : ScopedCSSMatchedPropertiesCacheDependenciesForTest(true) {}
 };
 
 TEST_F(StyleResolverStateTest, Dependencies) {

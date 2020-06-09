@@ -2455,7 +2455,7 @@ bool PrintRenderFrameHelper::PreviewPageRendered(
   // http://crbug.com/1039817
   if (snapshotter_ && page_number == 0) {
     ui::AXTreeUpdate accessibility_tree;
-    snapshotter_->Snapshot(ui::kAXModeComplete, 0, &accessibility_tree);
+    snapshotter_->Snapshot(ui::AXMode::kPDF, 0, &accessibility_tree);
     Send(new PrintHostMsg_AccessibilityTree(
         routing_id(), print_pages_params_->params.document_cookie,
         accessibility_tree));

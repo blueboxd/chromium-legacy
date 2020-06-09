@@ -18,7 +18,6 @@ import org.junit.runners.model.InitializationError;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -53,7 +52,7 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
     }
 
     @Override
-    protected List<PreTestHook> getPreTestHooks() {
+    protected List<TestHook> getPreTestHooks() {
         return addToList(super.getPreTestHooks(), Policies.getRegistrationHook());
     }
 

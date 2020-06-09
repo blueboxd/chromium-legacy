@@ -20,6 +20,7 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/field_data_manager.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
@@ -98,10 +99,6 @@ enum class FillingResult {
   kNoFillableElementsFound = 7,
   kMaxValue = kNoFillableElementsFound,
 };
-
-// Names of HTML attributes to show form and field signatures for debugging.
-extern const char kDebugAttributeForFormSignature[];
-extern const char kDebugAttributeForFieldSignature[];
 
 class FieldDataManager;
 class RendererSavePasswordProgressLogger;
@@ -345,6 +342,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
     DISALLOW_COPY_AND_ASSIGN(PasswordValueGatekeeper);
   };
 
+  // Annotate |forms| and all fields in the current frame with form and field
+  // signatures as HTML attributes. Used by
+  // chrome://flags/#enable-show-autofill-signatures only.
+  void AnnotateFormsAndFieldsWithSignatures(
+      blink::WebVector<blink::WebFormElement>& forms);
+
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
   void SendPasswordForms(bool only_visible);
@@ -513,10 +516,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Records the username typed before suggestions preview.
   base::string16 username_query_prefix_;
 
-  // The HTML based username detector's cache which maps form elements to
-  // username predictions.
-  UsernameDetectorCache username_detector_cache_;
-
   // This notifier is used to avoid sending redundant messages to the password
   // manager driver mojo interface.
   FocusStateNotifier focus_state_notifier_;
@@ -542,6 +541,14 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // TODO(crbug/898109): It's too expensive to keep the whole FormData
   // structure. Replace FormData with a smaller structure.
   std::map<FormRendererId, FormStructureInfo> forms_structure_cache_;
+
+  // The HTML based username detector's cache which maps form elements to
+  // username predictions.
+  UsernameDetectorCache username_detector_cache_;
+
+  // Stores the mapping from a form element's ID to results of button titles
+  // heuristics for that form.
+  form_util::ButtonTitlesCache button_titles_cache_;
 
   // Flag to prevent that multiple PasswordManager.FirstRendererFillingResult
   // UMA metrics are recorded per page load. This is reset on

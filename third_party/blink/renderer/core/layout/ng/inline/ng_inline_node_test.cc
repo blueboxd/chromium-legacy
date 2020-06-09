@@ -1035,9 +1035,11 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   // Keep the text fragment to compare later.
   Element* inner_span = GetElementById("inner_span");
   Node* text = inner_span->firstChild();
-  scoped_refptr<NGPaintFragment> text_fragment_before_split =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_NE(text_fragment_before_split.get(), nullptr);
+  NGInlineCursor before_split;
+  before_split.MoveTo(*text->GetLayoutObject());
+  EXPECT_TRUE(before_split);
+  scoped_refptr<const NGPaintFragment> text_fragment_before_split =
+      before_split.Current().PaintFragment();
 
   // Append <div> to <span>. causing SplitFlow().
   Element* outer_span = GetElementById("outer_span");
@@ -1053,23 +1055,32 @@ TEST_F(NGInlineNodeTest, ClearFirstInlineFragmentOnSplitFlow) {
   // destroyed, and should not be accessible.
   GetDocument().UpdateStyleAndLayoutTree();
   EXPECT_FALSE(text->GetLayoutObject()->IsInLayoutNGInlineFormattingContext());
-  scoped_refptr<NGPaintFragment> text_fragment_before_layout =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_EQ(text_fragment_before_layout, nullptr);
+  EXPECT_FALSE(text->GetLayoutObject()->HasInlineFragments());
 
   // Update layout. There should be a different instance of the text fragment.
   UpdateAllLifecyclePhasesForTest();
-  scoped_refptr<NGPaintFragment> text_fragment_after_layout =
-      text->GetLayoutObject()->FirstInlineFragment();
-  EXPECT_NE(text_fragment_before_split, text_fragment_after_layout);
+  NGInlineCursor after_layout;
+  after_layout.MoveTo(*text->GetLayoutObject());
+  EXPECT_TRUE(after_layout);
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    EXPECT_NE(text_fragment_before_split.get(),
+              after_layout.Current().PaintFragment());
+  }
 
   // Check it is the one owned by the new root inline formatting context.
   LayoutBlock* anonymous_block =
       inner_span->GetLayoutObject()->ContainingBlock();
   EXPECT_TRUE(anonymous_block->IsAnonymous());
-  const NGPaintFragment* block_fragment = anonymous_block->PaintFragment();
-  const NGPaintFragment* line_box_fragment = block_fragment->FirstChild();
-  EXPECT_EQ(line_box_fragment->FirstChild(), text_fragment_after_layout);
+  NGInlineCursor anonymous_block_cursor(*To<LayoutBlockFlow>(anonymous_block));
+  anonymous_block_cursor.MoveToFirstLine();
+  anonymous_block_cursor.MoveToFirstChild();
+  EXPECT_TRUE(anonymous_block_cursor);
+  EXPECT_EQ(anonymous_block_cursor.Current().GetLayoutObject(),
+            text->GetLayoutObject());
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    EXPECT_EQ(anonymous_block_cursor.Current().PaintFragment(),
+              after_layout.Current().PaintFragment());
+  }
 }
 
 TEST_F(NGInlineNodeTest, AddChildToSVGRoot) {

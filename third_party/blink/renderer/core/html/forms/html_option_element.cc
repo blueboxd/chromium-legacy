@@ -26,8 +26,10 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_mutation_observer_init.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -43,6 +45,37 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+
+class OptionTextObserver : public MutationObserver::Delegate {
+ public:
+  explicit OptionTextObserver(HTMLOptionElement& option)
+      : option_(option), observer_(MutationObserver::Create(this)) {
+    MutationObserverInit* init = MutationObserverInit::Create();
+    init->setCharacterData(true);
+    init->setChildList(true);
+    init->setSubtree(true);
+    observer_->observe(option_, init, ASSERT_NO_EXCEPTION);
+  }
+
+  ExecutionContext* GetExecutionContext() const override {
+    return option_->GetExecutionContext();
+  }
+
+  void Deliver(const MutationRecordVector& records,
+               MutationObserver&) override {
+    option_->DidChangeTextContent();
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(option_);
+    visitor->Trace(observer_);
+    MutationObserver::Delegate::Trace(visitor);
+  }
+
+ private:
+  Member<HTMLOptionElement> option_;
+  Member<MutationObserver> observer_;
+};
 
 HTMLOptionElement::HTMLOptionElement(Document& document)
     : HTMLElement(html_names::kOptionTag, document), is_selected_(false) {
@@ -79,6 +112,11 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
   element->SetSelected(selected);
 
   return element;
+}
+
+void HTMLOptionElement::Trace(Visitor* visitor) const {
+  visitor->Trace(text_observer_);
+  HTMLElement::Trace(visitor);
 }
 
 bool HTMLOptionElement::SupportsFocus() const {
@@ -280,6 +318,15 @@ void HTMLOptionElement::SetDirty(bool value) {
 
 void HTMLOptionElement::ChildrenChanged(const ChildrenChange& change) {
   HTMLElement::ChildrenChanged(change);
+  DidChangeTextContent();
+
+  // If an element is inserted, We need to use MutationObserver to detect
+  // textContent changes.
+  if (change.type == ChildrenChangeType::kElementInserted && !text_observer_)
+    text_observer_ = MakeGarbageCollected<OptionTextObserver>(*this);
+}
+
+void HTMLOptionElement::DidChangeTextContent() {
   if (HTMLDataListElement* data_list = OwnerDataListElement())
     data_list->OptionElementChildrenChanged();
   else if (HTMLSelectElement* select = OwnerSelectElement())

@@ -231,6 +231,7 @@ class AppElement extends PolymerElement {
         }
       }
     });
+    this.eventTracker_.add(window, 'keydown', e => this.onWindowKeydown_(e));
     if (this.shouldPrintPerformance_) {
       // It is possible that the background image has already loaded by now.
       // If it has, we request it to re-send the load time so that we can
@@ -453,6 +454,21 @@ class AppElement extends PolymerElement {
   /** @private */
   onVoiceSearchOverlayClose_() {
     this.showVoiceSearchOverlay_ = false;
+  }
+
+  /**
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onWindowKeydown_(e) {
+    // Open voice search with <CTRL> + <SHIFT> + <.> (also <CMD> + <SHIFT> + <.>
+    // on mac) keyboard shortcut.
+    let ctrlKeyPressed = e.ctrlKey;
+    // <if expr="is_macosx">
+    ctrlKeyPressed = ctrlKeyPressed || e.metaKey;
+    // </if>
+    this.showVoiceSearchOverlay_ =
+        ctrlKeyPressed && e.code === 'Period' && e.shiftKey;
   }
 
   /**

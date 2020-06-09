@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_KEYBOARD_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_KEYBOARD_H_
 
+#include <keyboard-extension-unstable-v1-client-protocol.h>
 #include <wayland-client.h>
 
 #include "base/time/time.h"
@@ -30,6 +31,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
   class Delegate;
 
   WaylandKeyboard(wl_keyboard* keyboard,
+                  zcr_keyboard_extension_v1* keyboard_extension_v1,
                   WaylandConnection* connection,
                   KeyboardLayoutEngine* keyboard_layout_engine,
                   Delegate* delegate);
@@ -88,6 +90,7 @@ class WaylandKeyboard : public EventAutoRepeatHandler::Delegate {
                    int flags) override;
 
   wl::Object<wl_keyboard> obj_;
+  wl::Object<zcr_extended_keyboard_v1> extended_keyboard_v1_;
   WaylandConnection* const connection_;
   Delegate* const delegate_;
 
@@ -110,12 +113,18 @@ class WaylandKeyboard::Delegate {
   virtual void OnKeyboardDestroyed(WaylandKeyboard* keyboard) = 0;
   virtual void OnKeyboardFocusChanged(WaylandWindow* window, bool focused) = 0;
   virtual void OnKeyboardModifiersChanged(int modifiers) = 0;
-  virtual void OnKeyboardKeyEvent(EventType type,
-                                  DomCode dom_code,
-                                  DomKey dom_key,
-                                  KeyboardCode key_code,
-                                  bool repeat,
-                                  base::TimeTicks timestamp) = 0;
+  // Returns a mask of ui::PostDispatchAction indicating how the event was
+  // dispatched.
+  virtual uint32_t OnKeyboardKeyEvent(EventType type,
+                                      DomCode dom_code,
+                                      DomKey dom_key,
+                                      KeyboardCode key_code,
+                                      bool repeat,
+                                      base::TimeTicks timestamp) = 0;
+
+ protected:
+  // Prevent deletion through a WaylandKeyboard::Delegate pointer.
+  virtual ~Delegate() = default;
 };
 
 }  // namespace ui

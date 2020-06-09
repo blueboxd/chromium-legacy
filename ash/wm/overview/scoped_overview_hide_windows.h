@@ -29,6 +29,9 @@ class ScopedOverviewHideWindows : public aura::WindowObserver {
       delete;
   ~ScopedOverviewHideWindows() override;
 
+  void AddWindow(aura::Window* window);
+  void RemoveWindow(aura::Window* window);
+
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;

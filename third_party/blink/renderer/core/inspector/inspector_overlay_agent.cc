@@ -1268,7 +1268,7 @@ void InspectorOverlayAgent::EnsureEnableFrameOverlay() {
 void InspectorOverlayAgent::SetInspectTool(InspectTool* inspect_tool) {
   LocalFrameView* view = frame_impl_->GetFrameView();
   LocalFrame* frame = GetFrame();
-  if (!view || !frame)
+  if (!view || !frame || !enabled_.Get())
     return;
 
   if (inspect_tool_)

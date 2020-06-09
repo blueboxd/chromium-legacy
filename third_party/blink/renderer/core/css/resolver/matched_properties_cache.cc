@@ -61,8 +61,9 @@ void CachedMatchedProperties::Set(
   this->computed_style = ComputedStyle::Clone(style);
   this->parent_computed_style = ComputedStyle::Clone(parent_style);
 
-  DCHECK(RuntimeEnabledFeatures::MPCDependenciesEnabled() ||
-         dependencies.IsEmpty());
+  DCHECK(
+      RuntimeEnabledFeatures::CSSMatchedPropertiesCacheDependenciesEnabled() ||
+      dependencies.IsEmpty());
   if (dependencies.size()) {
     DCHECK(dependencies.size() <= MatchedPropertiesCache::kMaxDependencies);
     // Plus one for g_null_atom.
@@ -219,7 +220,7 @@ bool MatchedPropertiesCache::IsStyleCacheable(const ComputedStyle& style) {
     return false;
   if (style.TextAutosizingMultiplier() != 1)
     return false;
-  if (!RuntimeEnabledFeatures::MPCDependenciesEnabled()) {
+  if (!RuntimeEnabledFeatures::CSSMatchedPropertiesCacheDependenciesEnabled()) {
     if (style.GetWritingMode() !=
             ComputedStyleInitialValues::InitialWritingMode() ||
         style.Direction() != ComputedStyleInitialValues::InitialDirection()) {
@@ -245,7 +246,7 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
   if (!IsStyleCacheable(style))
     return false;
 
-  if (!RuntimeEnabledFeatures::MPCDependenciesEnabled()) {
+  if (!RuntimeEnabledFeatures::CSSMatchedPropertiesCacheDependenciesEnabled()) {
     // The cache assumes static knowledge about which properties are inherited.
     // Without a flat tree parent, StyleBuilder::ApplyProperty will not
     // SetChildHasExplicitInheritance on the parent style.

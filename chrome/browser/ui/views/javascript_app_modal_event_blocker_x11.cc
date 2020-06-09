@@ -25,8 +25,7 @@ aura::Window* GetTopmostTransientParent(aura::Window* window) {
 
 JavascriptAppModalEventBlockerX11::JavascriptAppModalEventBlockerX11(
     aura::Window* modal_window)
-    : modal_window_(modal_window),
-      browser_view_with_modal_dialog_(NULL) {
+    : modal_window_(modal_window), browser_view_with_modal_dialog_(nullptr) {
   aura::Window* topmost_transient_parent =
       GetTopmostTransientParent(modal_window);
   browser_view_with_modal_dialog_ =

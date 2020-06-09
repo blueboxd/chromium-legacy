@@ -59,7 +59,7 @@ class CC_EXPORT OcclusionTracker {
 
  protected:
   struct StackObject {
-    StackObject() : target(0) {}
+    StackObject() : target(nullptr) {}
     explicit StackObject(const RenderSurfaceImpl* target) : target(target) {}
     const RenderSurfaceImpl* target;
     SimpleEnclosedRegion occlusion_from_outside_target;

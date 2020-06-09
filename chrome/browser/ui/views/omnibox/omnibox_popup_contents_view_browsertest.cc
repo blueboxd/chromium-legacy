@@ -393,10 +393,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   // Each time the selection changes, we should have a text/name change event.
   // This makes it possible for screen readers to have the updated match content
   // when they are notified the selection changed.
-  popup_view()->model()->SetSelectedLine(1, false, false);
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 1);
 
-  popup_view()->model()->SetSelectedLine(2, false, false);
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(2));
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 2);
 }
 
@@ -436,13 +436,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(observer.selected_children_changed_count(), 0);
   EXPECT_EQ(observer.active_descendant_changed_count(), 0);
 
-  // This is equivalent of the user arrowing down in the omnibox.
-  popup_view()->model()->SetSelectedLine(1, false, false);
+  // This is equiverlent of the user arrowing down in the omnibox.
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
   EXPECT_EQ(observer.selected_children_changed_count(), 1);
   EXPECT_EQ(observer.active_descendant_changed_count(), 1);
 
   // This is equivalent of the user arrowing up in the omnibox.
-  popup_view()->model()->SetSelectedLine(0, false, false);
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(0));
   EXPECT_EQ(observer.selected_children_changed_count(), 2);
   EXPECT_EQ(observer.active_descendant_changed_count(), 2);
 

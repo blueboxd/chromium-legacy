@@ -34,6 +34,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/ukm_manager.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -547,6 +548,12 @@ void WebPagePopupImpl::DidHandleKeyEvent() {
 void WebPagePopupImpl::QueueSyntheticEvent(
     std::unique_ptr<blink::WebCoalescedInputEvent> event) {
   WidgetClient()->QueueSyntheticEvent(std::move(event));
+}
+
+void WebPagePopupImpl::GetWidgetInputHandler(
+    mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+    mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
+  WidgetClient()->GetWidgetInputHandler(std::move(request), std::move(host));
 }
 
 WebInputEventResult WebPagePopupImpl::HandleCharEvent(

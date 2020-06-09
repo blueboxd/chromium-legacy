@@ -56,7 +56,7 @@ bool ShouldIncludeForRequestUrl(NSHTTPCookie* cookie, const GURL& url) {
   }
   return canonical_cookie
       .IncludeForRequestURL(url, options, cookie_access_semantics)
-      .IsInclude();
+      .status.IsInclude();
 }
 
 }  // namespace

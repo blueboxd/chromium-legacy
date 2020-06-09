@@ -294,6 +294,9 @@ void CoreOobeHandler::SetShelfHeight(int height) {
 }
 
 void CoreOobeHandler::HandleInitialized() {
+  // TODO(crbug.com/1082670): Remove excessive logging after investigation.
+  LOG(ERROR) << "1082670 : CoreOobeHandler::HandleInitialized";
+
   GetOobeUI()->InitializeHandlers();
   AllowJavascript();
 }

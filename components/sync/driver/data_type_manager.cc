@@ -24,8 +24,6 @@ std::string DataTypeManager::ConfigureStatusToString(ConfigureStatus status) {
       return "Ok";
     case ABORTED:
       return "Aborted";
-    case UNRECOVERABLE_ERROR:
-      return "Unrecoverable Error";
     case UNKNOWN:
       NOTREACHED();
       return std::string();

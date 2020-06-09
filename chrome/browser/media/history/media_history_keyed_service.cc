@@ -250,14 +250,53 @@ void MediaHistoryKeyedService::SavePlaybackSession(
   }
 }
 
-void MediaHistoryKeyedService::GetItemsForMediaFeedForDebug(
-    const int64_t feed_id,
+MediaHistoryKeyedService::GetMediaFeedItemsRequest
+MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForDebug(
+    int64_t feed_id) {
+  GetMediaFeedItemsRequest request;
+  request.type = Type::kDebugAll;
+  request.feed_id = feed_id;
+  return request;
+}
+
+MediaHistoryKeyedService::GetMediaFeedItemsRequest
+MediaHistoryKeyedService::GetMediaFeedItemsRequest::CreateItemsForFeed(
+    int64_t feed_id,
+    unsigned limit,
+    bool fetched_items_should_be_safe) {
+  GetMediaFeedItemsRequest request;
+  request.type = Type::kItemsForFeed;
+  request.limit = limit;
+  request.feed_id = feed_id;
+  request.fetched_items_should_be_safe = fetched_items_should_be_safe;
+  return request;
+}
+
+MediaHistoryKeyedService::GetMediaFeedItemsRequest MediaHistoryKeyedService::
+    GetMediaFeedItemsRequest::CreateItemsForContinueWatching(
+        unsigned limit,
+        bool fetched_items_should_be_safe) {
+  GetMediaFeedItemsRequest request;
+  request.type = Type::kContinueWatching;
+  request.limit = limit;
+  request.fetched_items_should_be_safe = fetched_items_should_be_safe;
+  return request;
+}
+
+MediaHistoryKeyedService::GetMediaFeedItemsRequest::GetMediaFeedItemsRequest() =
+    default;
+
+MediaHistoryKeyedService::GetMediaFeedItemsRequest::GetMediaFeedItemsRequest(
+    const GetMediaFeedItemsRequest& t) = default;
+
+void MediaHistoryKeyedService::GetMediaFeedItems(
+    const GetMediaFeedItemsRequest& request,
     base::OnceCallback<void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)>
         callback) {
   base::PostTaskAndReplyWithResult(
       store_->GetForRead()->db_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&MediaHistoryStore::GetItemsForMediaFeedForDebug,
-                     store_->GetForRead(), feed_id),
+      base::BindOnce(&MediaHistoryStore::GetMediaFeedItems,
+                     store_->GetForRead(), request),
       std::move(callback));
 }
 

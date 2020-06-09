@@ -527,7 +527,7 @@ TEST_F('OSSettingsCrostiniPageTest', 'MainPage', function() {
   mocha.grep('\\bMainPage\\b').run();
 });
 
-TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_SubPageDefault', function() {
+TEST_F('OSSettingsCrostiniPageTest', 'SubPageDefault', function() {
   mocha.grep('\\bSubPageDefault\\b').run();
 });
 
@@ -535,7 +535,7 @@ TEST_F('OSSettingsCrostiniPageTest', 'SubPagePortForwarding', function() {
   mocha.grep('\\bSubPagePortForwarding\\b').run();
 });
 
-TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_DiskResize', function() {
+TEST_F('OSSettingsCrostiniPageTest', 'DiskResize', function() {
   mocha.grep('\\bDiskResize\\b').run();
 });
 

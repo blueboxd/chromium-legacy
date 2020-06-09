@@ -291,12 +291,14 @@ TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStarting) {
   EXPECT_EQ(client()->status(), AssistantStatus::NOT_READY);
 }
 
-TEST_F(AssistantServiceTest, ShouldSetClientStatusToReadyWhenStarted) {
+TEST_F(AssistantServiceTest, ShouldKeepClientStatusNotReadyWhenStarted) {
+  // Note: even though we've started, we are not ready to handle the queries
+  // until LibAssistant tells us we are.
   assistant_manager()->SetStateAndInformObservers(
       AssistantManagerService::State::STARTED);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(client()->status(), AssistantStatus::READY);
+  EXPECT_EQ(client()->status(), AssistantStatus::NOT_READY);
 }
 
 TEST_F(AssistantServiceTest, ShouldSetClientStatusToNewReadyWhenRunning) {

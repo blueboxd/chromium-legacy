@@ -217,6 +217,7 @@ class CHROMEOS_EXPORT Uri {
     kInvalidUTF8Character,      // error when tried to parse UTF-8 character
     kInvalidScheme,             // invalid Scheme format or no ':' in input
     kInvalidPortNumber,
+    kRelativePathsNotAllowed,  // non-empty Path that does not start with '/'
     kEmptySegmentInPath,
     kEmptyParameterNameInQuery
   };

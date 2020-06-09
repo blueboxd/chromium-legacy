@@ -215,9 +215,10 @@ bool DoesCreationTimeGrantLegacySemantics(base::Time creation_date);
 NET_EXPORT base::OnceCallback<void(CookieInclusionStatus)>
 AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback);
 
-// Turn a CookieStatusList into a CookieList by stripping out the statuses
-// (for callers who don't care about the statuses).
-NET_EXPORT CookieList StripStatuses(const CookieStatusList& cookie_status_list);
+// Turn a CookieAccessResultList into a CookieList by stripping out access
+// results (for callers who only care about cookies).
+NET_EXPORT CookieList
+StripAccessResults(const CookieAccessResultList& cookie_access_result_list);
 
 }  // namespace cookie_util
 }  // namespace net

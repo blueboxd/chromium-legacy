@@ -239,8 +239,94 @@ interface WidgetInputHandlerHost {
           pending_remote<blink.mojom.PointerLockContext>? context);
 };
 
+// This interface provides the input actions associated with the FrameWidget.
+// Other input actions may also be dispatched via the WidgetInputHandler
+// interface. If frame input actions are dispatched the WidgetInputHandler
+// should be fetched via the associated interface request so that input calls
+// remain in order. See https://goo.gl/x4ee8A for more details.
+interface FrameWidgetInputHandler {
+  // Sets the text composition to be between the given start and end offsets in
+  // the currently focused editable field.
+  SetCompositionFromExistingText(
+      int32 start, int32 end, array<ui.mojom.ImeTextSpan> ime_text_spans);
+
+  // Deletes the current selection plus the specified number of characters
+  // before and after the selection or caret.
+  ExtendSelectionAndDelete(int32 before, int32 after);
+
+  // Deletes text before and after the current cursor position, excluding the
+  // selection. The lengths are supplied in Java chars (UTF-16 Code Unit),
+  // not in code points or in glyphs.
+  DeleteSurroundingText(int32 before, int32 after);
+
+  // Deletes text before and after the current cursor position, excluding the
+  // selection. The lengths are supplied in code points, not in Java chars
+  // (UTF-16 Code Unit) or in glyphs. Does nothing if there are one or more
+  // invalid surrogate pairs in the requested range
+  DeleteSurroundingTextInCodePoints(int32 before, int32 after);
+
+  // Selects between the given start and end offsets in the currently focused
+  // editable field.
+  SetEditableSelectionOffsets(int32 start, int32 end);
+
+  // Message payload is the name/value of a WebCore edit command to execute.
+  ExecuteEditCommand(string command, mojo_base.mojom.String16? value);
+
+  // These messages are typically generated from context menus and request the
+  // renderer to apply the specified operation to the current selection.
+  Undo();
+  Redo();
+  Cut();
+  Copy();
+  CopyToFindPboard();
+  Paste();
+  PasteAndMatchStyle();
+  Delete();
+  SelectAll();
+  CollapseSelection();
+
+  // Replaces the selected region or a word around the cursor with the
+  // specified string.
+  Replace(mojo_base.mojom.String16 word);
+
+  // Replaces the misspelling in the selected region with the specified string.
+  ReplaceMisspelling(mojo_base.mojom.String16 word);
+
+  // Requests the renderer to select the region between two points.
+  // Expects a SelectRange_ACK message when finished.
+  SelectRange(gfx.mojom.Point base, gfx.mojom.Point extent);
+
+  // Sent by the browser to ask the renderer to adjust the selection start and
+  // end points by the given amounts. A negative amount moves the selection
+  // towards the beginning of the document, a positive amount moves the
+  // selection towards the end of the document. Will send show selection menu
+  // event when needed.
+  AdjustSelectionByCharacterOffset(
+      int32 start, int32 end, SelectionMenuBehavior behavior);
+
+  // Requests the renderer to select word around caret.
+  // Expects ack with new selection information when finished. |start_adjust|
+  // and |end_adjust| are the start and end offset difference between the
+  // current selection and the previous selection (which is a caret).
+  [EnableIf=is_android]
+  SelectWordAroundCaret()
+      => (bool did_select, int32 start_adjust, int32 end_adjust);
+
+  // Requests the renderer to move the selection extent point to a new position.
+  // Expects a MoveRangeSelectionExtent_ACK message when finished.
+  MoveRangeSelectionExtent(gfx.mojom.Point extent);
+
+  // Tells the renderer to scroll the currently focused node into rect only if
+  // the currently focused node is a Text node (textfield, text area or content
+  // editable divs).
+  ScrollFocusedEditableNodeIntoRect(gfx.mojom.Rect rect);
+
+  // Requests the renderer to move the caret selection toward the point.
+  MoveCaret(gfx.mojom.Point point);
+};
+
 // Interface exposed by the renderer to the browser. This class represents
-// an input interface for an associated Widget object. See FrameInputHandler
+// an input interface for an associated Widget object. See FrameWidgetInputHandler
 // for an interface at the frame level.
 interface WidgetInputHandler {
   // Tells widget focus has been changed.
@@ -321,97 +407,11 @@ interface WidgetInputHandler {
       pending_remote<SynchronousCompositorControlHost> control_host,
       pending_associated_remote<SynchronousCompositorHost> host,
       pending_associated_receiver<SynchronousCompositor> compositor_request);
-};
 
-// This interface provides the input actions associated with the RenderFrame.
-// Other input actions may also be dispatched via the WidgetInputHandler
-// interface. If frame input actions are dispatched the WidgetInputHandler
-// should be fetched via the associated interface request so that input calls
-// remain in order. See https://goo.gl/x4ee8A for more details.
-interface FrameInputHandler {
-  // Sets the text composition to be between the given start and end offsets in
-  // the currently focused editable field.
-  SetCompositionFromExistingText(
-      int32 start, int32 end, array<ui.mojom.ImeTextSpan> ime_text_spans);
-
-  // Deletes the current selection plus the specified number of characters
-  // before and after the selection or caret.
-  ExtendSelectionAndDelete(int32 before, int32 after);
-
-  // Deletes text before and after the current cursor position, excluding the
-  // selection. The lengths are supplied in Java chars (UTF-16 Code Unit),
-  // not in code points or in glyphs.
-  DeleteSurroundingText(int32 before, int32 after);
-
-  // Deletes text before and after the current cursor position, excluding the
-  // selection. The lengths are supplied in code points, not in Java chars
-  // (UTF-16 Code Unit) or in glyphs. Does nothing if there are one or more
-  // invalid surrogate pairs in the requested range
-  DeleteSurroundingTextInCodePoints(int32 before, int32 after);
-
-  // Selects between the given start and end offsets in the currently focused
-  // editable field.
-  SetEditableSelectionOffsets(int32 start, int32 end);
-
-  // Message payload is the name/value of a WebCore edit command to execute.
-  ExecuteEditCommand(string command, mojo_base.mojom.String16? value);
-
-  // These messages are typically generated from context menus and request the
-  // renderer to apply the specified operation to the current selection.
-  Undo();
-  Redo();
-  Cut();
-  Copy();
-  CopyToFindPboard();
-  Paste();
-  PasteAndMatchStyle();
-  Delete();
-  SelectAll();
-  CollapseSelection();
-
-  // Replaces the selected region or a word around the cursor with the
-  // specified string.
-  Replace(mojo_base.mojom.String16 word);
-
-  // Replaces the misspelling in the selected region with the specified string.
-  ReplaceMisspelling(mojo_base.mojom.String16 word);
-
-  // Requests the renderer to select the region between two points.
-  // Expects a SelectRange_ACK message when finished.
-  SelectRange(gfx.mojom.Point base, gfx.mojom.Point extent);
-
-  // Sent by the browser to ask the renderer to adjust the selection start and
-  // end points by the given amounts. A negative amount moves the selection
-  // towards the beginning of the document, a positive amount moves the
-  // selection towards the end of the document. Will send show selection menu
-  // event when needed.
-  AdjustSelectionByCharacterOffset(
-      int32 start, int32 end, SelectionMenuBehavior behavior);
-
-  // Requests the renderer to select word around caret.
-  // Expects ack with new selection information when finished. |start_adjust|
-  // and |end_adjust| are the start and end offset difference between the
-  // current selection and the previous selection (which is a caret).
-  [EnableIf=is_android]
-  SelectWordAroundCaret()
-      => (bool did_select, int32 start_adjust, int32 end_adjust);
-
-  // Requests the renderer to move the selection extent point to a new position.
-  // Expects a MoveRangeSelectionExtent_ACK message when finished.
-  MoveRangeSelectionExtent(gfx.mojom.Point extent);
-
-  // Tells the renderer to scroll the currently focused node into rect only if
-  // the currently focused node is a Text node (textfield, text area or content
-  // editable divs).
-  ScrollFocusedEditableNodeIntoRect(gfx.mojom.Rect rect);
-
-  // Requests the renderer to move the caret selection toward the point.
-  MoveCaret(gfx.mojom.Point point);
-
-  // Return an associated WidgetInputHandler interface so that input
-  // messages to the widget associated with this frame can be sent
+  // Return an associated FrameWidgetInputHandler interface so that input
+  // messages to the frame associated with this widget can be sent
   // serially.
-  GetWidgetInputHandler(
-      pending_associated_receiver<WidgetInputHandler> interface_request,
-      pending_remote<WidgetInputHandlerHost> host);
+  GetFrameWidgetInputHandler(
+      pending_associated_receiver<FrameWidgetInputHandler> interface_request);
 };
+

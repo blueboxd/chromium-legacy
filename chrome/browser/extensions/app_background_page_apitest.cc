@@ -145,8 +145,7 @@ namespace {
 // Native Client embeds.
 class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
  public:
-  AppBackgroundPageNaClTest()
-      : extension_(NULL) {}
+  AppBackgroundPageNaClTest() : extension_(nullptr) {}
   ~AppBackgroundPageNaClTest() override {}
 
   void SetUpOnMainThread() override {

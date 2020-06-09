@@ -6,9 +6,12 @@
 
 #include "ash/quick_answers/ui/quick_answers_view.h"
 #include "ash/quick_answers/ui/user_consent_view.h"
-#include "ash/shell.h"
 #include "base/containers/adapters.h"
+#include "ui/aura/env.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 
@@ -27,19 +30,30 @@ QuickAnswersPreTargetHandler::QuickAnswersPreTargetHandler(
 }
 
 QuickAnswersPreTargetHandler::~QuickAnswersPreTargetHandler() {
-  Shell::Get()->RemovePreTargetHandler(this);
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
 }
 
 void QuickAnswersPreTargetHandler::Init() {
   // QuickAnswersView is a companion view of a menu. Menu host widget sets
   // mouse capture as well as a pre-target handler, so we need to register one
   // here as well to intercept events for QuickAnswersView.
-  Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
   view_observer_.Add(view_);
+  external_focus_tracker_ =
+      std::make_unique<views::ExternalFocusTracker>(view_, nullptr);
 }
 
 void QuickAnswersPreTargetHandler::OnEvent(ui::Event* event) {
-  if (!view_observer_.IsObservingSources() || !event->IsLocatedEvent())
+  if (!view_observer_.IsObservingSources())
+    return;
+
+  if (event->IsKeyEvent()) {
+    ProcessKeyEvent(static_cast<ui::KeyEvent*>(event));
+    return;
+  }
+
+  if (!event->IsLocatedEvent())
     return;
 
   // Clone event to forward down the view-hierarchy.
@@ -131,6 +145,91 @@ bool QuickAnswersPreTargetHandler::DoDispatchEvent(views::View* view,
 
   view->OnEvent(event);
   return event->handled();
+}
+
+void QuickAnswersPreTargetHandler::ProcessKeyEvent(ui::KeyEvent* key_event) {
+  if (key_event->type() != ui::ET_KEY_PRESSED)
+    return;
+
+  auto* focus_manager = view_->GetFocusManager();
+  auto* currently_focused_view = focus_manager->GetFocusedView();
+  bool view_has_pane_focus = view_->Contains(currently_focused_view);
+
+  // |view_| will insert itself between the cyclic keyboard traversal order of
+  // the last and the first menu items of the active menu by commandeering the
+  // selection from these terminal items.
+
+  auto key_code = key_event->key_code();
+  switch (key_code) {
+    case ui::VKEY_UP:
+    case ui::VKEY_DOWN: {
+      if (view_has_pane_focus) {
+        // Allow key-events to pass on as-usual to the context menu and restore
+        // focus to wherever |view_| borrowed it from.
+        external_focus_tracker_->FocusLastFocusedExternalView();
+        external_focus_tracker_->SetFocusManager(nullptr);
+
+        // Explicitly lose focus if restoring to last focused did not work.
+        if (view_->Contains(focus_manager->GetFocusedView()))
+          focus_manager->SetFocusedView(nullptr);
+
+        return;
+      }
+
+      // Get the selected item, if any, in the currently active menu.
+      auto* const active_menu = views::MenuController::GetActiveInstance();
+      auto* const selected_item = active_menu->GetSelectedMenuItem();
+      if (!selected_item || !selected_item->GetParentMenuItem())
+        return;
+
+      // Check if the item is within the outer-most menu, since we do not want
+      // the selection to loop back to |view_| for submenus.
+      const auto* const parent = selected_item->GetParentMenuItem();
+      if (parent->GetParentMenuItem())
+        return;
+
+      // Check if the selected item is first or last within the menu.
+      bool is_first = selected_item == parent->GetSubmenu()->children().front();
+      bool is_last = selected_item == parent->GetSubmenu()->children().back();
+      if (!is_first && !is_last)
+        return;
+
+      // Focus |view_| if compatible key-event should transfer the selection to
+      // it from within the menu.
+      if (is_first == (key_code == ui::VKEY_UP)) {
+        // Track currently focused view to restore back to later and send focus
+        // to |view_|.
+        external_focus_tracker_->SetFocusManager(focus_manager);
+        view_->RequestFocus();
+        key_event->StopPropagation();
+
+        // Deselect the selected boundary menu-item.
+        selected_item->SetSelected(false);
+      }
+
+      return;
+    }
+    case ui::VKEY_RETURN: {
+      if (view_has_pane_focus) {
+        auto* button_in_focus = views::Button::AsButton(currently_focused_view);
+        if (button_in_focus)
+          button_in_focus->OnKeyPressed(*key_event);
+        key_event->StopPropagation();
+      }
+      return;
+    }
+    case ui::VKEY_LEFT:
+    case ui::VKEY_RIGHT: {
+      if (view_has_pane_focus) {
+        bool reverse = key_code == ui::VKEY_LEFT;
+        focus_manager->AdvanceFocus(reverse);
+        key_event->StopPropagation();
+      }
+      return;
+    }
+    default:
+      return;
+  }
 }
 
 }  // namespace ash

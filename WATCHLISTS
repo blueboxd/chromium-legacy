@@ -1818,8 +1818,7 @@
                   '|chromeos/components/tether/'
     },
     'textinput': {
-      'filepath': 'chrome/browser/ui/input_method'\
-                  '|content/browser/renderer_host/render_widget_host_view'\
+      'filepath': 'content/browser/renderer_host/render_widget_host_view'\
                   '|content/browser/renderer_host/text_input'\
                   '|ui/base/ime/'\
                   '|ui/views/controls/textfield/'\

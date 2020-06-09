@@ -4973,9 +4973,9 @@ class ExtensionCookieCallback {
     result_ = result.IsInclude();
   }
 
-  void GetAllCookiesCallback(const net::CookieStatusList& list,
-                             const net::CookieStatusList& excluded_list) {
-    list_ = net::cookie_util::StripStatuses(list);
+  void GetAllCookiesCallback(const net::CookieAccessResultList& list,
+                             const net::CookieAccessResultList& excluded_list) {
+    list_ = net::cookie_util::StripAccessResults(list);
   }
   net::CookieList list_;
   bool result_;
@@ -5120,9 +5120,9 @@ void SetCookieSaveData(bool* result_out,
 
 void GetCookiesSaveData(std::vector<net::CanonicalCookie>* result_out,
                         base::OnceClosure callback,
-                        const net::CookieStatusList& result,
-                        const net::CookieStatusList& excluded_cookies) {
-  *result_out = net::cookie_util::StripStatuses(result);
+                        const net::CookieAccessResultList& result,
+                        const net::CookieAccessResultList& excluded_cookies) {
+  *result_out = net::cookie_util::StripAccessResults(result);
   std::move(callback).Run();
 }
 

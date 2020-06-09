@@ -117,6 +117,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
                     break;
             }
         }
+        // TODO(crbug.com/1085452): Sort the suggestion based on priority.
         Collections.shuffle(aggregated);
         return aggregated;
     }

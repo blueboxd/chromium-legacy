@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/apps_section.h"
 
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -320,6 +322,10 @@ void AppsSection::AddPluginVmLoadTimeData(
 
   html_source->AddBoolean("showPluginVm",
                           ShowPluginVm(profile(), *pref_service_));
+  html_source->AddBoolean(
+      "showPluginVmCameraPermissions",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kPluginVmShowCameraPermissions));
 }
 
 void AppsSection::UpdateAndroidSearchTags() {

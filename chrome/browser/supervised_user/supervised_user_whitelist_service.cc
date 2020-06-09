@@ -339,21 +339,16 @@ void SupervisedUserWhitelistService::OnWhitelistReady(
   SupervisedUserSiteList::Load(
       id, title, large_icon_path, whitelist_path,
       base::Bind(&SupervisedUserWhitelistService::OnWhitelistLoaded,
-                 weak_ptr_factory_.GetWeakPtr(), id, base::TimeTicks::Now()));
+                 weak_ptr_factory_.GetWeakPtr(), id));
 }
 
 void SupervisedUserWhitelistService::OnWhitelistLoaded(
     const std::string& id,
-    base::TimeTicks start_time,
     const scoped_refptr<SupervisedUserSiteList>& whitelist) {
   if (!whitelist) {
     LOG(WARNING) << "Couldn't load whitelist " << id;
     return;
   }
-
-  UMA_HISTOGRAM_TIMES("ManagedUsers.Whitelist.TotalLoadDuration",
-                      base::TimeTicks::Now() - start_time);
-
   // If the whitelist has been unregistered in the mean time, ignore it.
   if (registered_whitelists_.count(id) == 0u)
     return;

@@ -87,11 +87,10 @@ class PngDecoderState {
         output_channels(0),
         is_opaque(true),
         output(o),
-        row_converter(NULL),
+        row_converter(nullptr),
         width(0),
         height(0),
-        done(false) {
-  }
+        done(false) {}
 
   ColorFormat output_format;
   int output_channels;

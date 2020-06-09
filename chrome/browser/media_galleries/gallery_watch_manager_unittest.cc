@@ -61,10 +61,10 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
         test_user_manager_(std::make_unique<chromeos::ScopedTestUserManager>()),
 #endif
         profile_(new TestingProfile()),
-        gallery_prefs_(NULL),
+        gallery_prefs_(nullptr),
         expect_gallery_changed_(false),
         expect_gallery_watch_dropped_(false),
-        pending_loop_(NULL) {
+        pending_loop_(nullptr) {
   }
 
   ~GalleryWatchManagerTest() override {}

@@ -17,7 +17,7 @@ class NativeFileSystemAccessIconView : public PageActionIconView {
       PageActionIconView::Delegate* page_action_icon_delegate);
 
   // PageActionIconView:
-  views::BubbleDialogDelegateView* GetBubble() const override;
+  views::BubbleDialogDelegate* GetBubble() const override;
   void UpdateImpl() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
   void OnExecuting(ExecuteSource execute_source) override;

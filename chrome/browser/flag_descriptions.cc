@@ -1444,6 +1444,22 @@ const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[] =
     "In the omnibox, hide the path, query and ref from steady state displayed "
     "URLs. Hidden portions are restored during editing.";
 
+const char kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverName[] =
+    "Omnibox UI Reveal Steady-State URL Path, Query, and Ref On Hover";
+const char kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverDescription[] =
+    "In the omnibox, reveal the path, query and ref from steady state "
+    "displayed URLs on hover. Only has an effect when "
+    "omnibox-ui-hide-steady-state-url-path-query-and-ref is enabled.";
+
+const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionName[] =
+    "Omnibox UI Hide Steady-State URL Path, Query, and Ref On Interaction";
+const char
+    kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionDescription[] =
+        "In the omnibox, hide the path, query and ref from steady state "
+        "displayed URLs when the user interacts with the page. Only has an "
+        "effect when "
+        "omnibox-ui-hide-steady-state-url-path-query-and-ref is enabled.";
+
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
@@ -3858,6 +3874,11 @@ const char kTerminalSystemAppLegacySettingsName[] =
     "Terminal System App Legacy Settings";
 const char kTerminalSystemAppLegacySettingsDescription[] =
     "Use the legacy settings page for Terminal System App.";
+
+const char kPluginVmShowCameraPermissionsName[] =
+    "Show Plugin VM camera permissions";
+const char kPluginVmShowCameraPermissionsDescription[] =
+    "Displays camera permissions for Plugin VM in the app settings.";
 
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =

@@ -8,6 +8,7 @@ import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
+import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "ui/base/cursor/mojom/cursor.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -125,6 +126,14 @@ interface Widget {
   // can happen in renderer (abortion of the commit or draw, loss of output
   // surface etc.).
   ForceRedraw() => ();
+
+  // Setup the input channel for this widget. If the widget is a frame,
+  // then it can also obtain a FrameWidgetInputHandler from the
+  // WidgetInputHandler interface.
+  GetWidgetInputHandler(
+    pending_receiver<blink.mojom.WidgetInputHandler> request,
+    pending_remote<blink.mojom.WidgetInputHandlerHost> host);
+
 };
 
 // Implemented in Browser, this interface defines widget-specific methods that

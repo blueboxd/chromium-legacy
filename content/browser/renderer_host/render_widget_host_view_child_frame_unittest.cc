@@ -33,7 +33,6 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_render_widget_host_delegate.h"
-#include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -122,11 +121,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     int32_t routing_id = process_host->GetNextRoutingID();
     sink_ = &process_host->sink();
 
-    mojo::PendingRemote<mojom::Widget> widget;
-    widget_impl_ = std::make_unique<MockWidgetImpl>(
-        widget.InitWithNewPipeAndPassReceiver());
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, routing_id, std::move(widget),
+        &delegate_, process_host, routing_id,
         /*hidden=*/false, std::make_unique<FrameTokenMessageQueue>());
 
     mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;
@@ -187,7 +183,6 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 
   // Tests should set these to NULL if they've already triggered their
   // destruction.
-  std::unique_ptr<MockWidgetImpl> widget_impl_;
   RenderWidgetHostImpl* widget_host_;
   RenderWidgetHostViewChildFrame* view_;
   MockFrameConnectorDelegate* test_frame_connector_;

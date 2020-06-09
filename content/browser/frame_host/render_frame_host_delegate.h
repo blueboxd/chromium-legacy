@@ -550,7 +550,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void CreateNewWidget(
       int32_t render_process_id,
       int32_t widget_route_id,
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {}
@@ -559,7 +558,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void CreateNewFullscreenWidget(
       int32_t render_process_id,
       int32_t widget_route_id,
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {}

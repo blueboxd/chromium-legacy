@@ -419,6 +419,9 @@ public class AutofillProviderImpl extends AutofillProvider {
                 focusOnForm, focusField, x, y, width, height, false /*causedByValueChange*/);
     }
 
+    @Override
+    protected void hidePopup() {}
+
     private void notifyViewExitBeforeDestoryRequest() {
         if (mRequest == null) return;
         FocusField focusField = mRequest.getFocusField();

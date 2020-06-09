@@ -40,7 +40,6 @@ class DataTypeManager {
     OK,                  // Configuration finished some or all types.
     ABORTED,             // Start was aborted by calling Stop() before
                          // all types were started.
-    UNRECOVERABLE_ERROR  // We got an unrecoverable error during startup.
   };
 
   // Note: |errors| is only filled when status is not OK.

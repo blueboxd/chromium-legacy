@@ -43,7 +43,7 @@ namespace extensions {
 class ExtensionUserScriptLoaderTest : public testing::Test,
                                       public content::NotificationObserver {
  public:
-  ExtensionUserScriptLoaderTest() : shared_memory_(NULL) {}
+  ExtensionUserScriptLoaderTest() : shared_memory_(nullptr) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

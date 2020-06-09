@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
@@ -26,11 +27,13 @@ class ParsedCookie;
 class CanonicalCookie;
 
 struct CookieWithStatus;
+struct CookieWithAccessResult;
 struct CookieAndLineWithStatus;
 
 using CookieList = std::vector<CanonicalCookie>;
 using CookieStatusList = std::vector<CookieWithStatus>;
 using CookieAndLineStatusList = std::vector<CookieAndLineWithStatus>;
+using CookieAccessResultList = std::vector<CookieWithAccessResult>;
 
 class NET_EXPORT CanonicalCookie {
  public:
@@ -228,7 +231,7 @@ class NET_EXPORT CanonicalCookie {
   // request |url| using the CookieInclusionStatus enum. HTTP only cookies can
   // be filter by using appropriate cookie |options|. PLEASE NOTE that this
   // method does not check whether a cookie is expired or not!
-  CookieInclusionStatus IncludeForRequestURL(
+  CookieAccessResult IncludeForRequestURL(
       const GURL& url,
       const CookieOptions& options,
       CookieAccessSemantics access_semantics =
@@ -294,8 +297,9 @@ class NET_EXPORT CanonicalCookie {
   // by |cookies|. The string is built in the same order as the given list.
   static std::string BuildCookieLine(const CookieList& cookies);
 
-  // Same as above but takes a CookieStatusList (ignores the statuses).
-  static std::string BuildCookieLine(const CookieStatusList& cookies);
+  // Same as above but takes a CookieAccessResultList
+  // (ignores the access result).
+  static std::string BuildCookieLine(const CookieAccessResultList& cookies);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestPrefixHistograms);
@@ -386,6 +390,11 @@ struct NET_EXPORT CookieAndLineWithStatus {
   base::Optional<CanonicalCookie> cookie;
   std::string cookie_string;
   CookieInclusionStatus status;
+};
+
+struct CookieWithAccessResult {
+  CanonicalCookie cookie;
+  CookieAccessResult access_result;
 };
 
 }  // namespace net

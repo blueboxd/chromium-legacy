@@ -626,10 +626,12 @@ AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
       std::move(callback));
 }
 
-CookieList StripStatuses(const CookieStatusList& cookie_status_list) {
+CookieList StripAccessResults(
+    const CookieAccessResultList& cookie_access_results_list) {
   CookieList cookies;
-  for (const CookieWithStatus& cookie_with_status : cookie_status_list) {
-    cookies.push_back(cookie_with_status.cookie);
+  for (const CookieWithAccessResult& cookie_with_access_result :
+       cookie_access_results_list) {
+    cookies.push_back(cookie_with_access_result.cookie);
   }
   return cookies;
 }

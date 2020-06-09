@@ -202,25 +202,6 @@ void WidgetInputHandlerManager::InitInputHandler() {
 
 WidgetInputHandlerManager::~WidgetInputHandlerManager() = default;
 
-void WidgetInputHandlerManager::AddAssociatedInterface(
-    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
-  if (compositor_task_runner_) {
-    associated_host_ = mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost>(
-        std::move(host), compositor_task_runner_);
-    // Mojo channel bound on compositor thread.
-    compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WidgetInputHandlerManager::BindAssociatedChannel, this,
-                       std::move(receiver)));
-  } else {
-    associated_host_ = mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost>(
-        std::move(host));
-    // Mojo channel bound on main thread.
-    BindAssociatedChannel(std::move(receiver));
-  }
-}
-
 void WidgetInputHandlerManager::AddInterface(
     mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
     mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
@@ -549,19 +530,6 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
     synchronous_compositor_registry_->CreateProxy(input_handler_proxy_.get());
   }
 #endif
-}
-
-void WidgetInputHandlerManager::BindAssociatedChannel(
-    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
-        receiver) {
-  if (!receiver.is_valid())
-    return;
-  // Don't pass the |input_event_queue_| on if we don't have a
-  // |compositor_task_runner_| as events might get out of order.
-  WidgetInputHandlerImpl* handler = new WidgetInputHandlerImpl(
-      this, main_thread_task_runner_,
-      compositor_task_runner_ ? input_event_queue_ : nullptr, render_widget_);
-  handler->SetAssociatedReceiver(std::move(receiver));
 }
 
 void WidgetInputHandlerManager::BindChannel(

@@ -56,6 +56,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
       'removeSavedPassword',
       'removeSavedPasswords',
       'removeException',
+      'removeExceptions',
     ]);
 
     /** @private {!PasswordManagerExpectations} */
@@ -139,6 +140,12 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
   removeException(id) {
     this.actual_.removed.exceptions++;
     this.methodCalled('removeException', id);
+  }
+
+  /** @override */
+  removeExceptions(ids) {
+    this.actual_.removed.exceptions += ids.length;
+    this.methodCalled('removeExceptions', ids);
   }
 
   /** @override */

@@ -67,12 +67,13 @@ class CookiesIteratorImpl : public fuchsia::web::CookiesIterator,
   }
   // Same as above except it takes CookieStatusList instead of just CookieList.
   CookiesIteratorImpl(
-      const std::vector<net::CookieWithStatus>& cookies_with_statuses,
+      const std::vector<net::CookieWithAccessResult>&
+          cookies_with_access_results,
       fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator)
       : CookiesIteratorImpl(std::move(iterator)) {
-    for (const auto& cookie_with_status : cookies_with_statuses) {
-      queued_cookies_[cookie_with_status.cookie.UniqueKey()] =
-          ConvertCanonicalCookie(cookie_with_status.cookie,
+    for (const auto& cookie_with_access_result : cookies_with_access_results) {
+      queued_cookies_[cookie_with_access_result.cookie.UniqueKey()] =
+          ConvertCanonicalCookie(cookie_with_access_result.cookie,
                                  net::CookieChangeCause::INSERTED);
     }
   }
@@ -159,12 +160,12 @@ void OnAllCookiesReceived(
 
 void OnCookiesAndExcludedReceived(
     fidl::InterfaceRequest<fuchsia::web::CookiesIterator> iterator,
-    const std::vector<net::CookieWithStatus>& cookies_with_statuses,
-    const std::vector<net::CookieWithStatus>& excluded_cookies) {
+    const std::vector<net::CookieWithAccessResult>& cookies_with_access_results,
+    const std::vector<net::CookieWithAccessResult>& excluded_cookies) {
   // Since CookieOptions::set_return_excluded_cookies() is not used when calling
   // the Mojo GetCookieList() API, |excluded_cookies| should be empty.
   DCHECK(excluded_cookies.empty());
-  new CookiesIteratorImpl(cookies_with_statuses, std::move(iterator));
+  new CookiesIteratorImpl(cookies_with_access_results, std::move(iterator));
 }
 
 }  // namespace

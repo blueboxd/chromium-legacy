@@ -73,7 +73,7 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     this.methodCalled('moveTab', [tabId, newIndex]);
   }
 
-  /** @param {!Array<!TabGroupVisualData>} groupVisualData */
+  /** @param {!Object<!TabGroupVisualData>} groupVisualData */
   setGroupVisualData(groupVisualData) {
     this.groupVisualData_ = groupVisualData;
   }

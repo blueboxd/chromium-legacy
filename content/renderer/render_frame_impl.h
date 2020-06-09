@@ -40,7 +40,6 @@
 #include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
-#include "content/common/widget.mojom.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
 #include "content/public/common/previews_state.h"
@@ -812,12 +811,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void NotifyObserversOfFailedProvisionalLoad();
 
-  bool handling_select_range() const { return handling_select_range_; }
-
-  void set_is_pasting(bool value) { is_pasting_ = value; }
-
-  void set_handling_select_range(bool value) { handling_select_range_ = value; }
-
   // Plugin-related functions --------------------------------------------------
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -1139,8 +1132,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // call |callback| before returning.
   void RequestOverlayRoutingToken(media::RoutingTokenCallback callback);
 
-  void BindWidget(mojo::PendingReceiver<mojom::Widget> receiver);
-
   void ShowDeferredContextMenu(const UntrustworthyContextMenuParams& params);
 
   // Build DidCommitProvisionalLoad_Params based on the frame internal state.
@@ -1363,9 +1354,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Range over the document corresponding to the actual selected text (which
   // could correspond to a substring of |selection_text_|; see above).
   gfx::Range selection_range_;
-  // Used to inform didChangeSelection() when it is called in the context
-  // of handling a FrameInputHandler::SelectRange IPC.
-  bool handling_select_range_;
 
   // Implements getUserMedia() and related functionality.
   std::unique_ptr<blink::WebMediaStreamDeviceObserver>
@@ -1385,9 +1373,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Valid during the entire life time of the RenderFrame.
   std::unique_ptr<RenderAccessibilityManager> render_accessibility_manager_;
-
-  // Whether or not this RenderFrame is currently pasting.
-  bool is_pasting_;
 
   std::unique_ptr<FrameBlameContext> blame_context_;
 

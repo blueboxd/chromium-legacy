@@ -114,7 +114,7 @@ bool OmniboxPopupViewIOS::IsStarredMatch(const AutocompleteMatch& match) const {
 }
 
 void OmniboxPopupViewIOS::OnMatchHighlighted(size_t row) {
-  model_->SetSelectedLine(row, false, true);
+  model_->SetSelection(OmniboxPopupModel::Selection(row), false, true);
   if ([mediator_ isOpen]) {
     UpdateEditViewIcon();
   }

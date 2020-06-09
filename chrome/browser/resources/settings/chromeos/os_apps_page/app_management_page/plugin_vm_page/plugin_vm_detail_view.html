@@ -32,6 +32,13 @@
               permission-label="$i18n{appManagementPrintingPermissionLabel}"
               permission-type="PRINTING">
           </app-management-permission-item>
+          <template is="dom-if" if="[[showCameraPermissions_]]">
+            <app-management-permission-item
+                class="subpermission-row" icon="app-management:camera"
+                permission-label="$i18n{appManagementCameraPermissionLabel}"
+                permission-type="CAMERA">
+            </app-management-permission-item>
+          </template>
         </div>
       </div>
 

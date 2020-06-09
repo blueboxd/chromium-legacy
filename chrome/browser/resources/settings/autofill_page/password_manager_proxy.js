@@ -87,6 +87,13 @@ export class PasswordManagerProxy {
   removeException(id) {}
 
   /**
+   * Should remove the password exceptions and notify that the list has changed.
+   * @param {!Array<number>} ids The ids for the exception url entries being
+   * removed. Any |id| not in the list is ignored.
+   */
+  removeExceptions(ids) {}
+
+  /**
    * Should undo the last saved password or exception removal and notify that
    * the list has changed.
    */
@@ -379,6 +386,11 @@ export class PasswordManagerImpl {
   /** @override */
   removeException(id) {
     chrome.passwordsPrivate.removePasswordException(id);
+  }
+
+  /** @override */
+  removeExceptions(ids) {
+    chrome.passwordsPrivate.removePasswordExceptions(ids);
   }
 
   /** @override */

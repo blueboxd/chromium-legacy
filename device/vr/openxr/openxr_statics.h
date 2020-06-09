@@ -8,6 +8,7 @@
 #include <d3d11.h>
 #include <memory>
 
+#include "build/build_config.h"
 #include "device/vr/vr_export.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "third_party/openxr/src/include/openxr/openxr_platform.h"
@@ -21,6 +22,10 @@ class DEVICE_VR_EXPORT OpenXrStatics {
 
   bool IsHardwareAvailable();
   bool IsApiAvailable();
+
+#if defined(OS_WIN)
+  LUID GetLuid();
+#endif
 
  private:
   XrInstance instance_;

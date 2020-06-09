@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/optional.h"
 #include "cc/layers/layer.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_feature_list.h"
@@ -309,7 +310,7 @@ void WebContentsViewAndroid::StartDragging(
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info,
     RenderWidgetHostImpl* source_rwh) {
-  if (drop_data.text.is_null()) {
+  if (!drop_data.text) {
     // Need to clear drag and drop state in blink.
     OnSystemDragEnded();
     return;
@@ -337,7 +338,7 @@ void WebContentsViewAndroid::StartDragging(
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jtext =
-      ConvertUTF16ToJavaString(env, drop_data.text.string());
+      ConvertUTF16ToJavaString(env, *drop_data.text);
 
   if (!native_view->StartDragAndDrop(jtext, gfx::ConvertToJavaBitmap(bitmap))) {
     // Need to clear drag and drop state in blink.
@@ -382,9 +383,9 @@ bool WebContentsViewAndroid::OnDragEvent(const ui::DragEventAndroid& event) {
         if (base::EqualsASCII(mime_type, ui::kMimeTypeURIList)) {
           drop_data.url = GURL(drop_content);
         } else if (base::EqualsASCII(mime_type, ui::kMimeTypeText)) {
-          drop_data.text = base::NullableString16(drop_content, false);
+          drop_data.text = drop_content;
         } else {
-          drop_data.html = base::NullableString16(drop_content, false);
+          drop_data.html = drop_content;
         }
       }
 

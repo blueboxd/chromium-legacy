@@ -18,7 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -314,13 +314,15 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   if (!args->Get(0, &profile_path_value))
     return;
 
-  base::FilePath profile_path;
-  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
+  base::Optional<base::FilePath> profile_path =
+      util::ValueToFilePath(*profile_path_value);
+  if (!profile_path)
     return;
 
   ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_path, &entry)) {
+  if (!g_browser_process->profile_manager()
+           ->GetProfileAttributesStorage()
+           .GetProfileAttributesWithPath(*profile_path, &entry)) {
     return;
   }
 
@@ -332,7 +334,7 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
   if (!args->GetString(2, &password))
     return;
 
-  authenticating_profile_path_ = profile_path;
+  authenticating_profile_path_ = *profile_path;
   email_address_ = base::UTF16ToUTF8(email_address);
 
   // Only try to validate locally or check the password change detection
@@ -371,7 +373,7 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     RecordAuthenticatedLaunchUserEvent(
         AuthenticatedLaunchUserEvent::GAIA_REAUTH_DIALOG);
     UserManagerProfileDialog::ShowUnlockDialogWithProfilePath(
-        browser_context, email_address_, profile_path);
+        browser_context, email_address_, *profile_path);
   } else if (entry->IsSigninRequired() && entry->IsSupervised()) {
     // Supervised profile will only be locked when force-sign-in is enabled
     // and it shouldn't be unlocked. Display the error message directly via
@@ -401,7 +403,7 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     RecordAuthenticatedLaunchUserEvent(
         AuthenticatedLaunchUserEvent::FORCED_PRIMARY_SIGNIN_DIALOG);
     UserManagerProfileDialog::ShowForceSigninDialog(browser_context,
-                                                    profile_path);
+                                                    *profile_path);
   }
 }
 
@@ -413,8 +415,9 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
     return;
   }
 
-  base::FilePath profile_path;
-  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path)) {
+  base::Optional<base::FilePath> profile_path =
+      util::ValueToFilePath(*profile_path_value);
+  if (!profile_path) {
     NOTREACHED();
     return;
   }
@@ -432,7 +435,7 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 
   // The callback is run if the only profile has been deleted, and a new
   // profile has been created to replace it.
-  webui::DeleteProfileAtPath(profile_path,
+  webui::DeleteProfileAtPath(*profile_path,
                              ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 }
 
@@ -466,13 +469,15 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
   if (!args->Get(0, &profile_path_value))
     return;
 
-  base::FilePath profile_path;
-  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
+  base::Optional<base::FilePath> profile_path =
+      util::ValueToFilePath(*profile_path_value);
+  if (!profile_path)
     return;
 
   ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(profile_path, &entry)) {
+  if (!g_browser_process->profile_manager()
+           ->GetProfileAttributesStorage()
+           .GetProfileAttributesWithPath(*profile_path, &entry)) {
     NOTREACHED();
     return;
   }
@@ -486,7 +491,7 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
     return;
 
   profiles::SwitchToProfile(
-      profile_path, false, /* reuse any existing windows */
+      *profile_path, false, /* reuse any existing windows */
       base::Bind(&UserManagerScreenHandler::OnSwitchToProfileComplete,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -499,20 +504,20 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
     return;
 
   base::Time start_time = base::Time::Now();
-  base::FilePath profile_path;
-
-  if (!base::GetValueAsFilePath(*profile_path_value, &profile_path))
+  base::Optional<base::FilePath> profile_path =
+      util::ValueToFilePath(*profile_path_value);
+  if (!profile_path)
     return;
 
-  base::Value return_profile_path(profile_path.value());
-  Profile* profile = g_browser_process->profile_manager()->
-      GetProfileByPath(profile_path);
+  base::Value return_profile_path(profile_path->value());
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(*profile_path);
 
   if (profile) {
     GatherStatistics(start_time, profile);
   } else {
     g_browser_process->profile_manager()->LoadProfileByPath(
-        profile_path, false,
+        *profile_path, false,
         base::BindOnce(&UserManagerScreenHandler::GatherStatistics,
                        weak_ptr_factory_.GetWeakPtr(), start_time));
   }
@@ -796,8 +801,7 @@ void UserManagerScreenHandler::SendUserList() {
     profile_value->SetString(kKeyEmailAddress, entry->GetUserName());
     profile_value->SetString(kKeyDisplayName,
                              profiles::GetAvatarNameForProfile(profile_path));
-    profile_value->SetKey(kKeyProfilePath,
-                          base::CreateFilePathValue(profile_path));
+    profile_value->SetKey(kKeyProfilePath, util::FilePathToValue(profile_path));
     profile_value->SetBoolean(kKeyPublicAccount, false);
     profile_value->SetBoolean(kKeyLegacySupervisedUser,
                               entry->IsLegacySupervised());

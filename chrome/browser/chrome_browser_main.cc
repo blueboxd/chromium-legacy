@@ -486,7 +486,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
-      profile_(NULL),
+      profile_(nullptr),
       run_message_loop_(true),
       startup_data_(startup_data) {
   DCHECK(startup_data_);

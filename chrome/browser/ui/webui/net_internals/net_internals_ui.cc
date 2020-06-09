@@ -320,12 +320,17 @@ void NetInternalsMessageHandler::OnHSTSAdd(const base::ListValue* list) {
 void NetInternalsMessageHandler::OnExpectCTQuery(const base::ListValue* list) {
   // |list| should be: [<domain to query>].
   std::string domain;
-  bool domain_result = list->GetString(0, &domain);
-  DCHECK(domain_result);
+  bool result = list->GetString(0, &domain);
+  DCHECK(result);
+
+  url::Origin origin = url::Origin::Create(GURL("https://" + domain));
 
   GetNetworkContext()->GetExpectCTState(
-      domain, base::BindOnce(&NetInternalsMessageHandler::SendJavascriptCommand,
-                             this->AsWeakPtr(), "receivedExpectCTResult"));
+      domain,
+      net::NetworkIsolationKey(origin /* top_frame_site */,
+                               origin /* frame_site */),
+      base::BindOnce(&NetInternalsMessageHandler::SendJavascriptCommand,
+                     this->AsWeakPtr(), "receivedExpectCTResult"));
 }
 
 void NetInternalsMessageHandler::OnExpectCTAdd(const base::ListValue* list) {
@@ -338,6 +343,7 @@ void NetInternalsMessageHandler::OnExpectCTAdd(const base::ListValue* list) {
     // name.
     return;
   }
+
   std::string report_uri_str;
   result = list->GetString(1, &report_uri_str);
   DCHECK(result);
@@ -345,9 +351,14 @@ void NetInternalsMessageHandler::OnExpectCTAdd(const base::ListValue* list) {
   result = list->GetBoolean(2, &enforce);
   DCHECK(result);
 
+  url::Origin origin = url::Origin::Create(GURL("https://" + domain));
+
   base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-  GetNetworkContext()->AddExpectCT(domain, expiry, enforce,
-                                   GURL(report_uri_str), base::DoNothing());
+  GetNetworkContext()->AddExpectCT(
+      domain, expiry, enforce, GURL(report_uri_str),
+      net::NetworkIsolationKey(origin /* top_frame_site */,
+                               origin /* frame_site */),
+      base::DoNothing());
 }
 
 void NetInternalsMessageHandler::OnExpectCTTestReport(

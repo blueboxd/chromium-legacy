@@ -24,9 +24,11 @@ const char kPolicyCommentPrefix[] = "_comment";
 
 ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList(
     const PopulatePolicyHandlerParametersCallback& parameters_callback,
-    const GetChromePolicyDetailsCallback& details_callback)
+    const GetChromePolicyDetailsCallback& details_callback,
+    bool allow_future_policies)
     : parameters_callback_(parameters_callback),
-      details_callback_(details_callback) {}
+      details_callback_(details_callback),
+      allow_future_policies_(allow_future_policies) {}
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {
 }
@@ -47,11 +49,11 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
   // TODO(aberent): split into two functions.
   // TODO(crbug.com/1076560): Returns filtered out future policies for better
   // user interface.
-  // TODO(crbug.com/1076560): Provides a way to all whitelist experimental
-  // policies in Canary/Dev and test.
   std::unique_ptr<PolicyMap> filtered_policies = policies.DeepCopy();
   base::flat_set<std::string> enabled_future_policies =
-      ValueToStringSet(policies.GetValue(key::kEnableExperimentalPolicies));
+      allow_future_policies_ ? base::flat_set<std::string>()
+                             : ValueToStringSet(policies.GetValue(
+                                   key::kEnableExperimentalPolicies));
   filtered_policies->EraseMatching(base::BindRepeating(
       &ConfigurationPolicyHandlerList::FilterOutUnsupportedPolicies,
       base::Unretained(this), enabled_future_policies));
@@ -123,7 +125,7 @@ bool ConfigurationPolicyHandlerList::IsFuturePolicy(
     const base::flat_set<std::string>& enabled_future_policies,
     const PolicyDetails& policy_details,
     const PolicyMap::const_iterator iter) const {
-  return policy_details.is_future &&
+  return !allow_future_policies_ && policy_details.is_future &&
          !enabled_future_policies.contains(iter->first);
 }
 

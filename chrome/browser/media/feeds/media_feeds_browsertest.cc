@@ -182,8 +182,9 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     std::vector<media_feeds::mojom::MediaFeedItemPtr> out;
 
-    GetMediaHistoryService()->GetItemsForMediaFeedForDebug(
-        feed_id,
+    GetMediaHistoryService()->GetMediaFeedItems(
+        media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+            CreateItemsForDebug(feed_id),
         base::BindLambdaForTesting(
             [&](std::vector<media_feeds::mojom::MediaFeedItemPtr> items) {
               out = std::move(items);
@@ -366,6 +367,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   // Check each feed item and all fields one-by-one.
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 1;
     expected_item->name =
         base::ASCIIToUTF16("Anatomy of a Web Media Experience");
     expected_item->type = mojom::MediaFeedItemType::kVideo;
@@ -406,6 +408,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 2;
     expected_item->name = base::ASCIIToUTF16(
         "Building Modern Web Media Experiences: Picture-in-Picture and AV1");
     expected_item->type = mojom::MediaFeedItemType::kVideo;
@@ -457,6 +460,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 3;
     expected_item->name = base::ASCIIToUTF16("Chrome Releases");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
@@ -527,6 +531,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 4;
     expected_item->name = base::ASCIIToUTF16("Chrome University");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
@@ -592,6 +597,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 5;
     expected_item->name = base::ASCIIToUTF16("JAM stack");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
@@ -624,6 +630,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 6;
     expected_item->name = base::ASCIIToUTF16("Ask Chrome");
     expected_item->type = mojom::MediaFeedItemType::kVideo;
     expected_item->author = mojom::Author::New();
@@ -664,6 +671,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 7;
     expected_item->name = base::ASCIIToUTF16("Big Buck Bunny");
     expected_item->type = mojom::MediaFeedItemType::kMovie;
     ASSERT_TRUE(
@@ -763,6 +771,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
   // the correct fields are set. Don't assume or require any specific ordering.
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 1;
     expected_item->name =
         base::ASCIIToUTF16("Anatomy of a Web Media Experience");
     expected_item->type = mojom::MediaFeedItemType::kVideo;
@@ -796,6 +805,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 2;
     expected_item->name = base::ASCIIToUTF16("Chrome Releases");
     expected_item->type = mojom::MediaFeedItemType::kTVSeries;
     ASSERT_TRUE(
@@ -837,6 +847,7 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
 
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
+    expected_item->id = 3;
     expected_item->name = base::ASCIIToUTF16("Big Buck Bunny");
     expected_item->type = mojom::MediaFeedItemType::kMovie;
     ASSERT_TRUE(

@@ -1876,9 +1876,9 @@ TEST_F(OverrideRPIDAuthenticatorTest, ChromeExtensions) {
   }
 }
 
-enum class IndividualAttestation {
-  REQUESTED,
-  NOT_REQUESTED,
+enum class EnterprisePolicy {
+  LISTED,
+  NOT_LISTED,
 };
 
 enum class AttestationConsent {
@@ -1917,13 +1917,13 @@ class TestAuthenticatorRequestDelegate
   TestAuthenticatorRequestDelegate(
       RenderFrameHost* render_frame_host,
       base::OnceClosure action_callbacks_registered_callback,
-      IndividualAttestation individual_attestation,
+      EnterprisePolicy enterprise_policy,
       AttestationConsent attestation_consent,
       bool is_focused,
       bool is_uvpaa)
       : action_callbacks_registered_callback_(
             std::move(action_callbacks_registered_callback)),
-        individual_attestation_(individual_attestation),
+        enterprise_policy_(enterprise_policy),
         attestation_consent_(attestation_consent),
         is_focused_(is_focused),
         is_uvpaa_(is_uvpaa) {}
@@ -1942,7 +1942,7 @@ class TestAuthenticatorRequestDelegate
 
   bool ShouldPermitIndividualAttestation(
       const std::string& relying_party_id) override {
-    return individual_attestation_ == IndividualAttestation::REQUESTED;
+    return enterprise_policy_ == EnterprisePolicy::LISTED;
   }
 
   void ShouldReturnAttestation(
@@ -1973,7 +1973,7 @@ class TestAuthenticatorRequestDelegate
 
   base::OnceClosure action_callbacks_registered_callback_;
   base::Optional<base::OnceClosure> cancel_callback_;
-  const IndividualAttestation individual_attestation_;
+  const EnterprisePolicy enterprise_policy_;
   const AttestationConsent attestation_consent_;
   const bool is_focused_;
   const bool is_uvpaa_;
@@ -1994,15 +1994,14 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
         action_callbacks_registered_callback
             ? std::move(action_callbacks_registered_callback)
             : base::DoNothing(),
-        individual_attestation, attestation_consent, is_focused, is_uvpaa);
+        enterprise_policy, attestation_consent, is_focused, is_uvpaa);
   }
 
   // If set, this closure will be called when the subsequently constructed
   // delegate is informed that the request has started.
   base::OnceClosure action_callbacks_registered_callback;
 
-  IndividualAttestation individual_attestation =
-      IndividualAttestation::NOT_REQUESTED;
+  EnterprisePolicy enterprise_policy = EnterprisePolicy::NOT_LISTED;
   AttestationConsent attestation_consent = AttestationConsent::DENIED;
   bool is_focused = true;
 
@@ -2022,7 +2021,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
 
   struct TestCase {
     AttestationConveyancePreference attestation_requested;
-    IndividualAttestation individual_attestation;
+    EnterprisePolicy enterprise_policy;
     AttestationConsent attestation_consent;
     AuthenticatorStatus expected_status;
     AttestationType expected_attestation;
@@ -2048,15 +2047,14 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
       SCOPED_TRACE(test.attestation_consent == AttestationConsent::GRANTED
                        ? "consent granted"
                        : "consent denied");
-      SCOPED_TRACE(test.individual_attestation ==
-                           IndividualAttestation::REQUESTED
+      SCOPED_TRACE(test.enterprise_policy == EnterprisePolicy::LISTED
                        ? "individual attestation"
                        : "no individual attestation");
       SCOPED_TRACE(
           AttestationConveyancePreferenceToString(test.attestation_requested));
       SCOPED_TRACE(i);
 
-      test_client_.individual_attestation = test.individual_attestation;
+      test_client_.enterprise_policy = test.enterprise_policy;
       test_client_.attestation_consent = test.attestation_consent;
 
       PublicKeyCredentialCreationOptionsPtr options =
@@ -2226,7 +2224,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
   const std::vector<TestCase> kTests = {
       {
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2234,7 +2232,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2242,7 +2240,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2250,7 +2248,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2258,7 +2256,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::U2F,
@@ -2266,7 +2264,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::INDIRECT,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::U2F,
@@ -2274,7 +2272,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2282,7 +2280,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2290,7 +2288,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::U2F,
@@ -2298,7 +2296,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::U2F,
@@ -2306,7 +2304,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2314,7 +2312,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2322,7 +2320,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::U2F,
@@ -2330,7 +2328,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, AttestationBehaviour) {
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::U2F,
@@ -2356,7 +2354,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   const std::vector<TestCase> kTests = {
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2364,7 +2362,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       },
       {
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           // If individual attestation was not requested then the attestation
@@ -2375,7 +2373,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
       },
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           // If individual attestation was not requested then the attestation
@@ -2387,7 +2385,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 
       {
           AttestationConveyancePreference::ENTERPRISE,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::U2F,
@@ -2425,7 +2423,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // attestation is requested, the self-attestation will be removed but,
           // because the transport is kInternal, the AAGUID will be preserved.
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE_WITH_NONZERO_AAGUID,
@@ -2436,7 +2434,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // attestation. But because the transport is kInternal, the AAGUID
           // will be preserved.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE_WITH_NONZERO_AAGUID,
@@ -2446,7 +2444,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // If attestation is requested and granted, the self attestation
           // will be returned.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::SELF_WITH_NONZERO_AAGUID,
@@ -2468,7 +2466,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
           // If no attestation is requested, we'll return the self attestation
           // rather than erasing it.
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::SELF,
@@ -2478,7 +2476,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
           // If attestation is requested, but denied, we'll return none
           // attestation.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2488,7 +2486,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, Ctap2SelfAttestation) {
           // If attestation is requested and granted, the self attestation will
           // be returned.
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::GRANTED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::SELF,
@@ -2514,7 +2512,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
           // self-attestation should still be replaced with a "none"
           // attestation.
           AttestationConveyancePreference::NONE,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationConsent::DENIED,
           AuthenticatorStatus::SUCCESS,
           AttestationType::NONE,
@@ -2531,62 +2529,62 @@ TEST_F(AuthenticatorContentBrowserClientTest, BlockedAttestation) {
   static constexpr struct {
     const char* domains;
     AttestationConveyancePreference attestation;
-    IndividualAttestation individual_attestation;
+    EnterprisePolicy enterprise_policy;
     AttestationType result;
   } kTests[] = {
       // Empty or nonsense parameter doesn't block anything.
       {
           "",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationType::U2F,
       },
       {
           " ,,   ,, ",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationType::U2F,
       },
       // Direct listing of domain blocks...
       {
           "foo.example.com",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationType::NONE,
       },
       // ... unless attestation is permitted by policy.
       {
           "foo.example.com",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationType::U2F,
       },
       // Additional stuff in the string doesn't break the blocking.
       {
           "other,foo.example.com,,nonsenseXYZ123",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationType::NONE,
       },
       // The whole domain can be blocked.
       {
           "(*.)example.com",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationType::NONE,
       },
       // Policy again overrides
       {
           "(*.)example.com",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::REQUESTED,
+          EnterprisePolicy::LISTED,
           AttestationType::U2F,
       },
       // Trying to block everything doesn't work.
       {
           "(*.)",
           AttestationConveyancePreference::DIRECT,
-          IndividualAttestation::NOT_REQUESTED,
+          EnterprisePolicy::NOT_LISTED,
           AttestationType::U2F,
       },
   };
@@ -2606,7 +2604,7 @@ TEST_F(AuthenticatorContentBrowserClientTest, BlockedAttestation) {
     const std::vector<TestCase> kTestCase = {
         {
             test.attestation,
-            test.individual_attestation,
+            test.enterprise_policy,
             AttestationConsent::GRANTED,
             AuthenticatorStatus::SUCCESS,
             test.result,
@@ -2816,7 +2814,7 @@ class MockAuthenticatorRequestDelegateObserver
       : TestAuthenticatorRequestDelegate(
             nullptr /* render_frame_host */,
             base::DoNothing() /* did_start_request_callback */,
-            IndividualAttestation::NOT_REQUESTED,
+            EnterprisePolicy::NOT_LISTED,
             AttestationConsent::DENIED,
             true /* is_focused */,
             /*is_uvpaa=*/false),

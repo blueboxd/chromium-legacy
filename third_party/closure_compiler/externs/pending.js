@@ -153,3 +153,9 @@ class StylePropertyMap {
 
 /** @type {!StylePropertyMap} */
 HTMLElement.prototype.attributeStyleMap;
+
+/** @return {!AnimationEffectTimingProperties} */
+AnimationEffectReadOnly.prototype.getTiming = function() {};
+
+/** @return {!Array<!Object>} */
+AnimationEffectReadOnly.prototype.getKeyframes = function() {};

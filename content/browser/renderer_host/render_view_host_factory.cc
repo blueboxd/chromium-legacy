@@ -38,7 +38,7 @@ RenderViewHost* RenderViewHostFactory::Create(
   RenderViewHostImpl* view_host = new RenderViewHostImpl(
       instance,
       RenderWidgetHostFactory::Create(widget_delegate, instance->GetProcess(),
-                                      widget_routing_id, mojo::NullRemote(),
+                                      widget_routing_id,
                                       /*hidden=*/true),
       delegate, routing_id, main_frame_routing_id, swapped_out,
       true /* has_initialized_audio_host */);

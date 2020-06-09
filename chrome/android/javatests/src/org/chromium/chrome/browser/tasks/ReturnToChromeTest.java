@@ -75,8 +75,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-        ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
-        ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+        ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study"})
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "force-fieldtrials=Study/Group"})
@@ -134,6 +133,7 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
@@ -168,6 +168,7 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
@@ -205,6 +206,7 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single/open_ntp_instead_of_start/true"})
@@ -237,6 +239,7 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/100000"
             + "/start_surface_variation/single"})
@@ -272,11 +275,8 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
-        // clang-format on
         InstantStartTest.createTabStateFile(new int[] {0, 1});
         startMainActivityWithURLWithoutCurrentTab(null);
 
@@ -299,12 +299,9 @@ public class ReturnToChromeTest {
     @SmallTest
     @Feature({"ReturnToChrome"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_UMA() throws Exception {
-        // clang-format on
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -334,11 +331,8 @@ public class ReturnToChromeTest {
     @Test
     @MediumTest
     @Feature({"ReturnToChrome"})
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart() throws Exception {
-        // clang-format on
         testTabSwitcherModeTriggeredBeyondThreshold();
 
         // Redo to trigger warm startup UMA.
@@ -366,12 +360,9 @@ public class ReturnToChromeTest {
     @MediumTest
     @Feature({"ReturnToChrome"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart_UMA() throws Exception {
-        // clang-format on
         testTabSwitcherModeTriggeredBeyondThreshold_WarmStart();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -401,11 +392,8 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs() {
-        // clang-format on
         // Cannot use ChromeTabbedActivityTestRule.startMainActivityFromLauncher() because
         // there's no tab.
         startMainActivityWithURLWithoutCurrentTab(null);
@@ -429,12 +417,9 @@ public class ReturnToChromeTest {
     @SmallTest
     @Feature({"ReturnToChrome"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @DisabledTest(message = "http://crbug.com/1027315")
     public void testTabSwitcherModeTriggeredBeyondThreshold_NoTabs_UMA() {
-        // clang-format on
         testTabSwitcherModeTriggeredBeyondThreshold_NoTabs();
 
         assertThat(mActivityTestRule.getActivity().isTablet()).isFalse();
@@ -470,8 +455,7 @@ public class ReturnToChromeTest {
     @SmallTest
     @Feature({"ReturnToChrome", "RenderTest"})
     // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/omniboxonly"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testInitialScrollIndex() throws Exception {
         // clang-format on

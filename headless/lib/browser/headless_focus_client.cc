@@ -10,7 +10,7 @@
 namespace headless {
 
 HeadlessFocusClient::HeadlessFocusClient()
-    : focused_window_(NULL), observer_manager_(this) {}
+    : focused_window_(nullptr), observer_manager_(this) {}
 
 HeadlessFocusClient::~HeadlessFocusClient() = default;
 

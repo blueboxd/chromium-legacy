@@ -213,9 +213,11 @@ bool ContainsFeature(
 
 BrowserXRRuntimeImpl::BrowserXRRuntimeImpl(
     device::mojom::XRDeviceId id,
+    device::mojom::XRDeviceDataPtr device_data,
     mojo::PendingRemote<device::mojom::XRRuntime> runtime,
     device::mojom::VRDisplayInfoPtr display_info)
     : id_(id),
+      device_data_(std::move(device_data)),
       runtime_(std::move(runtime)),
       display_info_(ValidateVRDisplayInfo(display_info.get(), id)) {
   DVLOG(2) << __func__ << ": id=" << id;
@@ -557,5 +559,11 @@ void BrowserXRRuntimeImpl::BeforeRuntimeRemoved() {
   // any immersive session we may be currently responsible for.
   StopImmersiveSession(base::DoNothing());
 }
+
+#if defined(OS_WIN)
+base::Optional<LUID> BrowserXRRuntimeImpl::GetLuid() const {
+  return device_data_->luid;
+}
+#endif
 
 }  // namespace content

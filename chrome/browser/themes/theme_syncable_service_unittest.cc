@@ -176,7 +176,7 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
 
 class ThemeSyncableServiceTest : public testing::Test {
  protected:
-  ThemeSyncableServiceTest() : fake_theme_service_(NULL) {}
+  ThemeSyncableServiceTest() : fake_theme_service_(nullptr) {}
 
   ~ThemeSyncableServiceTest() override {}
 

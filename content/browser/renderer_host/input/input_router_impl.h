@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/input/touch_action_filter.h"
 #include "content/browser/renderer_host/input/touchpad_pinch_event_queue.h"
 #include "content/common/input/input_event_stream_validator.h"
-#include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -85,8 +84,6 @@ class CONTENT_EXPORT InputRouterImpl
   base::Optional<cc::TouchAction> ActiveTouchAction() override;
   mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost()
       override;
-  mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewFrameHost()
-      override;
   void StopFling() override;
   void OnSetTouchAction(cc::TouchAction touch_action) override;
   void ForceSetTouchActionAuto() override;
@@ -110,8 +107,8 @@ class CONTENT_EXPORT InputRouterImpl
 
   // Exposed so that tests can swap out the implementation and intercept calls.
   mojo::Receiver<blink::mojom::WidgetInputHandlerHost>&
-  frame_host_receiver_for_testing() {
-    return frame_host_receiver_;
+  host_receiver_for_testing() {
+    return host_receiver_;
   }
 
   void ForceResetTouchActionForTest();
@@ -257,11 +254,6 @@ class CONTENT_EXPORT InputRouterImpl
   // The host receiver associated with the widget input handler from
   // the widget.
   mojo::Receiver<blink::mojom::WidgetInputHandlerHost> host_receiver_{this};
-
-  // The host receiver associated with the widget input handler from
-  // the frame.
-  mojo::Receiver<blink::mojom::WidgetInputHandlerHost> frame_host_receiver_{
-      this};
 
   base::WeakPtr<InputRouterImpl> weak_this_;
   base::WeakPtrFactory<InputRouterImpl> weak_ptr_factory_{this};

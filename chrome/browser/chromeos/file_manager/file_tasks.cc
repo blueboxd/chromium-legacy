@@ -789,7 +789,7 @@ void FindExtensionAndAppTasks(
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
   // 5. Find and append Guest OS tasks.
-  FindGuestOsTasks(profile, entries, result_list_ptr,
+  FindGuestOsTasks(profile, entries, file_urls, result_list_ptr,
                    // Done. Apply post-filtering and callback.
                    base::BindOnce(PostProcessFoundTasks, profile, entries,
                                   std::move(callback), std::move(result_list)));

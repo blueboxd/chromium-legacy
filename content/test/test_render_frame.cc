@@ -135,7 +135,6 @@ class MockFrameHost : public mojom::FrameHost {
   }
 
   bool CreateNewWidget(
-      mojo::PendingRemote<::content::mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
@@ -147,7 +146,6 @@ class MockFrameHost : public mojom::FrameHost {
   }
 
   void CreateNewWidget(
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
@@ -156,7 +154,6 @@ class MockFrameHost : public mojom::FrameHost {
   }
 
   void CreateNewFullscreenWidget(
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
@@ -324,34 +321,6 @@ void TestRenderFrame::Unload(
   OnUnload(proxy_routing_id, is_loading, replicated_frame_state, frame_token);
 }
 
-void TestRenderFrame::SetEditableSelectionOffsets(int start, int end) {
-  GetFrameInputHandler()->SetEditableSelectionOffsets(start, end);
-}
-
-void TestRenderFrame::ExtendSelectionAndDelete(int before, int after) {
-  GetFrameInputHandler()->ExtendSelectionAndDelete(before, after);
-}
-
-void TestRenderFrame::DeleteSurroundingText(int before, int after) {
-  GetFrameInputHandler()->DeleteSurroundingText(before, after);
-}
-
-void TestRenderFrame::DeleteSurroundingTextInCodePoints(int before, int after) {
-  GetFrameInputHandler()->DeleteSurroundingTextInCodePoints(before, after);
-}
-
-void TestRenderFrame::CollapseSelection() {
-  GetFrameInputHandler()->CollapseSelection();
-}
-
-void TestRenderFrame::SetCompositionFromExistingText(
-    int start,
-    int end,
-    const std::vector<ui::ImeTextSpan>& ime_text_spans) {
-  GetFrameInputHandler()->SetCompositionFromExistingText(start, end,
-                                                         ime_text_spans);
-}
-
 void TestRenderFrame::BeginNavigation(
     std::unique_ptr<blink::WebNavigationInfo> info) {
   if (next_navigation_html_override_.has_value()) {
@@ -451,17 +420,6 @@ mojom::FrameHost* TestRenderFrame::GetFrameHost() {
   // a message loop already, pumping messags before 1.2 would constitute a
   // nested message loop and is therefore undesired.
   return mock_frame_host_.get();
-}
-
-blink::mojom::FrameInputHandler* TestRenderFrame::GetFrameInputHandler() {
-  if (!frame_input_handler_) {
-    mojo::PendingReceiver<blink::mojom::FrameInputHandler>
-        frame_input_handler_receiver =
-            frame_input_handler_.BindNewPipeAndPassReceiver();
-    FrameInputHandlerImpl::CreateMojoService(
-        weak_factory_.GetWeakPtr(), std::move(frame_input_handler_receiver));
-  }
-  return frame_input_handler_.get();
 }
 
 }  // namespace content

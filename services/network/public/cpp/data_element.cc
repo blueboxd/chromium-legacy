@@ -20,7 +20,7 @@ const uint64_t DataElement::kUnknownSize;
 
 DataElement::DataElement()
     : type_(mojom::DataElementType::kUnknown),
-      bytes_(NULL),
+      bytes_(nullptr),
       offset_(0),
       length_(std::numeric_limits<uint64_t>::max()) {}
 

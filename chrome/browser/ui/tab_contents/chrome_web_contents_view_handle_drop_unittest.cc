@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -189,7 +189,7 @@ TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, UrlTitle) {
 // Make sure DropData::text is handled correctly.
 TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, Text) {
   content::DropData data;
-  data.text = base::NullableString16(base::UTF8ToUTF16("text"), false);
+  data.text = base::UTF8ToUTF16("text");
 
   SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);
@@ -202,7 +202,7 @@ TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, Text) {
 // Make sure DropData::html is handled correctly.
 TEST_P(ChromeWebContentsViewDelegateHandleOnPerformDrop, Html) {
   content::DropData data;
-  data.html = base::NullableString16(base::UTF8ToUTF16("<html></html>"), false);
+  data.html = base::UTF8ToUTF16("<html></html>");
 
   SetExpectedRequestsCount(0);
   RunTest(data, /*enable=*/false, /*scan_succeeds=*/true);

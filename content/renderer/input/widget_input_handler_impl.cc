@@ -10,9 +10,11 @@
 #include "base/check.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/ime_event_guard.h"
+#include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -46,20 +48,6 @@ WidgetInputHandlerImpl::WidgetInputHandlerImpl(
       render_widget_(render_widget) {}
 
 WidgetInputHandlerImpl::~WidgetInputHandlerImpl() {}
-
-void WidgetInputHandlerImpl::SetAssociatedReceiver(
-    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
-        receiver) {
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  if (content::RenderThreadImpl::current()) {
-    blink::scheduler::WebThreadScheduler* scheduler =
-        content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
-    task_runner = scheduler->DeprecatedDefaultTaskRunner();
-  }
-  associated_receiver_.Bind(std::move(receiver), std::move(task_runner));
-  associated_receiver_.set_disconnect_handler(
-      base::BindOnce(&WidgetInputHandlerImpl::Release, base::Unretained(this)));
-}
 
 void WidgetInputHandlerImpl::SetReceiver(
     mojo::PendingReceiver<blink::mojom::WidgetInputHandler>
@@ -194,6 +182,15 @@ void WidgetInputHandlerImpl::AttachSynchronousCompositor(
       std::move(control_host), std::move(host), std::move(compositor_receiver));
 }
 
+void WidgetInputHandlerImpl::GetFrameWidgetInputHandler(
+    mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetInputHandler>
+        frame_receiver) {
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      std::make_unique<FrameInputHandlerImpl>(
+          render_widget_, main_thread_task_runner_, input_event_queue_),
+      std::move(frame_receiver));
+}
+
 void WidgetInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
   if (input_event_queue_) {
     input_event_queue_->QueueClosure(base::BindOnce(
@@ -216,7 +213,6 @@ void WidgetInputHandlerImpl::Release() {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     // Close the binding on the compositor thread first before telling the main
     // thread to delete this object.
-    associated_receiver_.reset();
     receiver_.reset();
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WidgetInputHandlerImpl::Release,

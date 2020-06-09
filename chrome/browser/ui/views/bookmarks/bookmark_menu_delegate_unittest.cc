@@ -23,7 +23,7 @@ using bookmarks::BookmarkNode;
 
 class BookmarkMenuDelegateTest : public BrowserWithTestWindowTest {
  public:
-  BookmarkMenuDelegateTest() : model_(NULL) {}
+  BookmarkMenuDelegateTest() : model_(nullptr) {}
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();

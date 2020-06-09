@@ -389,9 +389,7 @@ bool ExtensionDevToolsClientHost::MayWriteLocalFiles() {
 
 // DebuggerFunction -----------------------------------------------------------
 
-DebuggerFunction::DebuggerFunction()
-    : client_host_(NULL) {
-}
+DebuggerFunction::DebuggerFunction() : client_host_(nullptr) {}
 
 DebuggerFunction::~DebuggerFunction() = default;
 

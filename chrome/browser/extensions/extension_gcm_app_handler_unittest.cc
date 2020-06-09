@@ -245,7 +245,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   ExtensionGCMAppHandlerTest()
       : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
-        extension_service_(NULL),
+        extension_service_(nullptr),
         registration_result_(gcm::GCMClient::UNKNOWN_ERROR),
         unregistration_result_(gcm::GCMClient::UNKNOWN_ERROR) {}
 

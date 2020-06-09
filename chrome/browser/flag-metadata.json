@@ -1864,8 +1864,8 @@
   },
   {
     "name": "enable-notification-indicator",
-    "owners": [ "newcomer" ],
-    "expiry_milestone": 83
+    "owners": [ "mmourgos", "newcomer" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-offer-store-unmasked-wallet-cards",
@@ -3397,8 +3397,13 @@
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "tommycli", "estark", "carlosil", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 89
+  },
+  {
+    "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction",
+    "owners": [ "estark", "carlosil", "chrome-security-enamel@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-scheme",
@@ -3414,6 +3419,11 @@
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",
+    "owners": [ "estark", "carlosil", "chrome-security-enamel@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
@@ -3586,6 +3596,11 @@
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
     "expiry_milestone": 83
+  },
+  {
+    "name": "pluginvm-show-camera-permissions",
+    "owners": [ "danielng"],
+    "expiry_milestone": 87
   },
   {
     "name": "pointer-support",

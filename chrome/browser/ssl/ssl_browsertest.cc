@@ -2097,7 +2097,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithHttpDangerous, MarkBlobAsNonSecure) {
 #if defined(USE_NSS_CERTS)
 class SSLUITestWithClientCert : public SSLUITestBase {
  public:
-  SSLUITestWithClientCert() : cert_db_(NULL) {}
+  SSLUITestWithClientCert() : cert_db_(nullptr) {}
 
   void SetUpOnMainThread() override {
     SSLUITestBase::SetUpOnMainThread();

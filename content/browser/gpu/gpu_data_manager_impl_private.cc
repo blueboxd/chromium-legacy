@@ -405,9 +405,8 @@ bool ALLOW_UNUSED_TYPE VulkanAllowed() {
   // be used for other purposes, such as WebGPU.
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
-  gpu::GrContextType gr_context_type = gpu::gles2::ParseGrContextType();
   gpu::VulkanImplementationName use_vulkan =
-      gpu::gles2::ParseVulkanImplementationName(command_line, gr_context_type);
+      gpu::gles2::ParseVulkanImplementationName(command_line);
   return use_vulkan != gpu::VulkanImplementationName::kNone;
 #else
   return false;

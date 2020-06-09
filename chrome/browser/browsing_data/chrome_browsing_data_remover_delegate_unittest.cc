@@ -295,8 +295,8 @@ class RemoveCookieTester {
     cookie_manager_->GetCookieList(
         Origin1(), net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
-            [&](const net::CookieStatusList& cookie_list,
-                const net::CookieStatusList& excluded_cookies) {
+            [&](const net::CookieAccessResultList& cookie_list,
+                const net::CookieAccessResultList& excluded_cookies) {
               std::string cookie_line =
                   net::CanonicalCookie::BuildCookieLine(cookie_list);
               if (cookie_line == "A=1") {

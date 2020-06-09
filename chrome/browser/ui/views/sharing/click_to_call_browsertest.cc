@@ -449,13 +449,14 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, OpenNewTabAndShowBubble) {
 
   // Wait until the bubble is visible.
   run_loop.Run();
-  views::BubbleDialogDelegateView* bubble =
+  views::BubbleDialogDelegate* bubble =
       GetPageActionIconView(PageActionIconType::kClickToCall)->GetBubble();
   ASSERT_NE(nullptr, bubble);
 
 #if defined(OS_CHROMEOS)
   // Ensure that the dialog shows the origin in column id 1.
-  EXPECT_NE(nullptr, static_cast<views::GridLayout*>(bubble->GetLayoutManager())
+  EXPECT_NE(nullptr, static_cast<views::GridLayout*>(
+                         bubble->GetContentsView()->GetLayoutManager())
                          ->GetColumnSet(1));
 #else
   // Ensure that the dialog shows the origin in the footnote.

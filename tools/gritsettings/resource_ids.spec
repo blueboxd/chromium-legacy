@@ -113,6 +113,13 @@
   "chrome/browser/resources/bookmarks/bookmarks_resources_vulcanized.grd": {
     "includes": [1300],
   },
+  "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
+    "includes": [1320],
+    "structures": [1340],
+  },
+  "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
+    "messages": [1360],
+  },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
     "structures": [1380],
   },
@@ -276,13 +283,6 @@
     # Big alignment at start of section.
     "META": {"align": 100},
     "messages": [2500],
-  },
-  "chromeos/components/camera_app_ui/resources/camera_app_resources.grd": {
-    "includes": [2505],
-    "structures": [2510],
-  },
-  "chromeos/components/camera_app_ui/resources/src/strings/camera_strings.grd": {
-    "messages": [2515],
   },
   "chromeos/components/help_app_ui/resources/help_app_resources.grd": {
     "includes": [2520],

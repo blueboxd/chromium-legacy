@@ -98,8 +98,9 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
   }
 
   // If the container is not a text object, creating a position inside an
-  // ignored container might result in an invalid position, because child count
-  // is inaccurate.
+  // object that is excluded from the accessibility tree will result in an
+  // invalid position, because child count is not always accurate for such
+  // objects.
   const AXObject* unignored_container =
       !container.AccessibilityIsIncludedInTree()
           ? container.ParentObjectIncludedInTree()
@@ -132,15 +133,17 @@ const AXPosition AXPosition::CreateLastPositionInObject(
   }
 
   // If the container is not a text object, creating a position inside an
-  // ignored container might result in an invalid position, because child count
-  // is inaccurate.
+  // object that is excluded from the accessibility tree will result in an
+  // invalid position, because child count is not always accurate for such
+  // objects.
   const AXObject* unignored_container =
       !container.AccessibilityIsIncludedInTree()
           ? container.ParentObjectIncludedInTree()
           : &container;
   DCHECK(unignored_container);
   AXPosition position(*unignored_container);
-  position.text_offset_or_child_index_ = unignored_container->ChildCount();
+  position.text_offset_or_child_index_ =
+      unignored_container->ChildCountIncludingIgnored();
 #if DCHECK_IS_ON()
   String failure_reason;
   DCHECK(position.IsValid(&failure_reason)) << failure_reason;
@@ -270,7 +273,8 @@ const AXPosition AXPosition::FromPosition(
   // positions.
   const Node* node_after_position = position.ComputeNodeAfterPosition();
   if (!node_after_position) {
-    ax_position.text_offset_or_child_index_ = container->ChildCount();
+    ax_position.text_offset_or_child_index_ =
+        container->ChildCountIncludingIgnored();
 
     } else {
       const AXObject* ax_child =
@@ -312,7 +316,7 @@ const AXPosition AXPosition::FromPosition(
         }
       }
 
-      if (!container->Children().Contains(ax_child)) {
+      if (!container->ChildrenIncludingIgnored().Contains(ax_child)) {
         // The |ax_child| is aria-owned by another object.
         return CreatePositionBeforeObject(*ax_child, adjustment_behavior);
       }
@@ -365,9 +369,7 @@ AXPosition::AXPosition(const AXObject& container)
 const AXObject* AXPosition::ChildAfterTreePosition() const {
   if (!IsValid() || IsTextPosition())
     return nullptr;
-  if (container_object_->ChildCount() <= ChildIndex())
-    return nullptr;
-  return *(container_object_->Children().begin() + ChildIndex());
+  return container_object_->ChildAtIncludingIgnored(ChildIndex());
 }
 
 int AXPosition::ChildIndex() const {
@@ -463,11 +465,13 @@ bool AXPosition::IsValid(String* failure_reason) const {
       return false;
     }
   } else {
-    if (text_offset_or_child_index_ > container_object_->ChildCount()) {
+    if (text_offset_or_child_index_ >
+        container_object_->ChildCountIncludingIgnored()) {
       if (failure_reason) {
         *failure_reason = String::Format(
             "\nPosition invalid: child index too large.\n%d vs. %d",
-            text_offset_or_child_index_, container_object_->ChildCount());
+            text_offset_or_child_index_,
+            container_object_->ChildCountIncludingIgnored());
       }
       return false;
     }
@@ -509,8 +513,8 @@ const AXPosition AXPosition::CreateNextPosition() const {
     // text boxes when present, because we'll just be creating a text position
     // in the same piece of text.
     const AXObject* next_in_order =
-        container_object_->ChildCount()
-            ? container_object_->DeepestLastChild()
+        container_object_->ChildCountIncludingIgnored()
+            ? container_object_->DeepestLastChildIncludingIgnored()
                   ->NextInPreOrderIncludingIgnored()
             : container_object_->NextInPreOrderIncludingIgnored();
     if (!next_in_order || !next_in_order->ParentObjectIncludedInTree())
@@ -545,8 +549,10 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
     // If this is a static text object, we should not descend into its inline
     // text boxes when present, because we'll just be creating a text position
     // in the same piece of text.
-    if (!container_object_->IsTextObject() && container_object_->ChildCount()) {
-      const AXObject* last_child = container_object_->LastChild();
+    if (!container_object_->IsTextObject() &&
+        container_object_->ChildCountIncludingIgnored()) {
+      const AXObject* last_child =
+          container_object_->LastChildIncludingIgnored();
       // Dont skip over any intervening text.
       if (last_child->IsTextObject() || last_child->IsNativeTextControl()) {
         return CreatePositionAfterObject(
@@ -557,9 +563,10 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
           *last_child, AXPositionAdjustmentBehavior::kMoveLeft);
     }
 
-    object_before_position = container_object_->PreviousInTreeObject();
+    object_before_position =
+        container_object_->PreviousInPreOrderIncludingIgnored();
   } else {
-    object_before_position = child->PreviousInTreeObject();
+    object_before_position = child->PreviousInPreOrderIncludingIgnored();
   }
 
   if (!object_before_position ||
@@ -696,7 +703,7 @@ const AXPosition AXPosition::AsValidDOMPosition(
   const AXObject* container = container_object_;
   DCHECK(container);
   const AXObject* child = ChildAfterTreePosition();
-  const AXObject* last_child = container->LastChild();
+  const AXObject* last_child = container->LastChildIncludingIgnored();
   if ((IsTextPosition() && (!container->GetNode() ||
                             container->GetNode()->IsMarkerPseudoElement())) ||
       container->IsMockObject() || container->IsVirtualObject() ||
@@ -738,7 +745,8 @@ const AXPosition AXPosition::AsValidDOMPosition(
   } else {
     switch (adjustment_behavior) {
       case AXPositionAdjustmentBehavior::kMoveRight:
-        position.text_offset_or_child_index_ = new_container->ChildCount();
+        position.text_offset_or_child_index_ =
+            new_container->ChildCountIncludingIgnored();
         break;
       case AXPositionAdjustmentBehavior::kMoveLeft:
         position.text_offset_or_child_index_ = 0;
@@ -789,7 +797,7 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
     }
 
     // "After children" positions.
-    const AXObject* last_child = container_object_->LastChild();
+    const AXObject* last_child = container_object_->LastChildIncludingIgnored();
     if (last_child) {
       const Node* last_child_node = last_child->GetNode();
       DCHECK(last_child_node) << "AX objects used in AX positions that are "

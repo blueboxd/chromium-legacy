@@ -464,8 +464,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void PerformAction(const ui::AXActionData& data) override;
   bool RequiresPerformActionPointInPixels() const override;
 
-  blink::mojom::FrameInputHandler* GetFrameInputHandler();
-
   viz::mojom::InputTargetClient* GetInputTargetClient() {
     return input_target_client_;
   }
@@ -1892,13 +1890,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AdoptPortal(const base::UnguessableToken& portal_token,
                    AdoptPortalCallback callback) override;
   void CreateNewWidget(
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
       CreateNewWidgetCallback callback) override;
   void CreateNewFullscreenWidget(
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget,
@@ -2853,7 +2849,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const base::UnguessableToken frame_token_;
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
-  mojo::Remote<blink::mojom::FrameInputHandler> frame_input_handler_;
 
   // Binding to remote implementation of mojom::RenderAccessibility. Note that
   // this binding is done on-demand (in UpdateAccessibilityMode()) and will only

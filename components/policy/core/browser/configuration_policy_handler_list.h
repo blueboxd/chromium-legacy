@@ -37,7 +37,8 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
   explicit ConfigurationPolicyHandlerList(
       const PopulatePolicyHandlerParametersCallback& parameters_callback,
-      const GetChromePolicyDetailsCallback& details_callback);
+      const GetChromePolicyDetailsCallback& details_callback,
+      bool allow_future_policies);
   ~ConfigurationPolicyHandlerList();
 
   // Adds a policy handler to the list.
@@ -72,6 +73,8 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>> handlers_;
   const PopulatePolicyHandlerParametersCallback parameters_callback_;
   const GetChromePolicyDetailsCallback details_callback_;
+
+  bool allow_future_policies_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyHandlerList);
 };

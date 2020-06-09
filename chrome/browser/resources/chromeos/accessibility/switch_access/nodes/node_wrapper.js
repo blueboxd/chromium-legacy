@@ -207,6 +207,8 @@ class NodeWrapper extends SAChildNode {
     }
 
     switch (baseNode.role) {
+      case chrome.automation.RoleType.SLIDER:
+        return new SliderNode(baseNode, parent);
       case chrome.automation.RoleType.TAB:
         return TabNode.create(baseNode, parent);
       default:
@@ -338,9 +340,8 @@ class RootNodeWrapper extends SARootNode {
       }
     }
 
-    // If the previously focused node no longer exists, focus the first node in
-    // the group.
-    NavigationManager.forceFocusedNode(this.children[0]);
+    // If we didn't find a match, fall back and reset.
+    NavigationManager.moveToValidNode();
   }
 
   // ================= Static methods =================

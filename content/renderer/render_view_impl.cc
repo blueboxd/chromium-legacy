@@ -65,7 +65,6 @@
 #include "content/public/renderer/window_features_converter.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/history_serialization.h"
-#include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
@@ -1345,10 +1344,6 @@ WebView* RenderViewImpl::CreateView(
 
 blink::WebPagePopup* RenderViewImpl::CreatePopup(
     blink::WebLocalFrame* creator) {
-  mojo::PendingRemote<mojom::Widget> widget_channel;
-  mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
-      widget_channel.InitWithNewPipeAndPassReceiver();
-
   mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget;
   mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget_receiver =
       blink_widget.InitWithNewEndpointAndPassReceiver();
@@ -1362,8 +1357,8 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   int32_t widget_routing_id = MSG_ROUTING_NONE;
   bool success =
       RenderFrameImpl::FromWebFrame(creator)->GetFrameHost()->CreateNewWidget(
-          std::move(widget_channel), std::move(blink_widget_host_receiver),
-          std::move(blink_widget), &widget_routing_id);
+          std::move(blink_widget_host_receiver), std::move(blink_widget),
+          &widget_routing_id);
   if (!success) {
     // When the renderer is being killed the mojo message will fail.
     return nullptr;
@@ -1378,7 +1373,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, opener_render_widget->compositor_deps(),
       /*hidden=*/false,
-      /*never_composited=*/false, std::move(widget_channel_receiver));
+      /*never_composited=*/false);
 
   // The returned WebPagePopup is self-referencing, so the pointer here is not
   // an owning pointer. It is de-referenced by calling Close().

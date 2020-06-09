@@ -12,6 +12,8 @@ buildflag_header("buildflags") {
 
 source_set("lib") {
   sources = [
+    "cloud_speech_recognition_client.cc",
+    "cloud_speech_recognition_client.h",
     "speech_recognition_recognizer_impl.cc",
     "speech_recognition_recognizer_impl.h",
     "speech_recognition_service_impl.cc",
@@ -27,10 +29,32 @@ source_set("lib") {
   deps = [
     ":buildflags",
     "//base",
-    "//services/service_manager/public/cpp",
+    "//components/speech",
+    "//content/browser/speech/proto",
+    "//mojo/public/cpp/bindings",
+    "//net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
   ]
 
   if (enable_soda) {
     deps += [ "//chrome/services/soda/internal" ]
   }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "cloud_speech_recognition_client_unittest.cc" ]
+
+  deps = [
+    ":lib",
+    "//base",
+    "//base/test:test_support",
+    "//chrome/test:test_support",
+    "//components/speech",
+    "//content/browser/speech/proto",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }

@@ -101,6 +101,7 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   void AddRuntime(device::mojom::XRDeviceId id,
                   device::mojom::VRDisplayInfoPtr info,
+                  device::mojom::XRDeviceDataPtr device_data,
                   mojo::PendingRemote<device::mojom::XRRuntime> runtime);
   void RemoveRuntime(device::mojom::XRDeviceId id);
 

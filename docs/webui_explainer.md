@@ -583,7 +583,7 @@ WebUI listeners are a convenient way for C++ to inform JavaScript of events.
 
 Older WebUI code exposed public methods for event notification, similar to how
 responses to [chrome.send()](#chrome_send) used to work. They both
-resulted in global namespace polution, but it was additionally hard to stop
+resulted in global namespace pollution, but it was additionally hard to stop
 listening for events in some cases. **cr.addWebUIListener** is preferred in new
 code.
 

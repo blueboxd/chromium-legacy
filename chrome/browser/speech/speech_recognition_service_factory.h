@@ -34,7 +34,7 @@ class SpeechRecognitionServiceFactory
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
+      content::BrowserContext* context) const override;
 };
 
 #endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_SERVICE_FACTORY_H_

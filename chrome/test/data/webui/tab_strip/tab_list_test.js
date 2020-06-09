@@ -5,22 +5,29 @@
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {setScrollAnimationEnabledForTesting} from 'chrome://tab-strip/tab_list.js';
+import {TabElement} from 'chrome://tab-strip/tab.js';
+import {TabGroupElement} from 'chrome://tab-strip/tab_group.js';
+import {setScrollAnimationEnabledForTesting, TabListElement} from 'chrome://tab-strip/tab_list.js';
 import {TabStripEmbedderProxyImpl} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
-import {TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {TabData, TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
 
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {eventToPromise} from '../test_util.m.js';
 
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('TabList', () => {
-  let callbackRouter;
-  let optionsCalled;
+  /** @type {!TabListElement} */
   let tabList;
+
+  /** @type {!TestTabStripEmbedderProxy} */
   let testTabStripEmbedderProxy;
+
+  /** @type {!TestTabsApiProxy} */
   let testTabsApiProxy;
 
+  /** @type {!Array<!TabData>} */
   const tabs = [
     {
       active: true,
@@ -48,28 +55,42 @@ suite('TabList', () => {
     },
   ];
 
+  /**
+   * @param {!TabData} tab
+   * @param {number} index
+   */
   function pinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: true};
     const updatedTab = Object.assign({}, tab, changeInfo);
     webUIListenerCallback('tab-updated', updatedTab);
   }
 
+  /**
+   * @param {!TabData} tab
+   * @param {number} index
+   */
   function unpinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: false};
     const updatedTab = Object.assign({}, tab, changeInfo);
     webUIListenerCallback('tab-updated', updatedTab);
   }
 
+  /** @return {!NodeList<!TabElement>} */
   function getUnpinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll('#unpinnedTabs tabstrip-tab');
+    return /** @type {!NodeList<!TabElement>} */ (
+        tabList.shadowRoot.querySelectorAll('#unpinnedTabs tabstrip-tab'));
   }
 
+  /** @return {!NodeList<!TabElement>} */
   function getPinnedTabs() {
-    return tabList.shadowRoot.querySelectorAll('#pinnedTabs tabstrip-tab');
+    return /** @type {!NodeList<!TabElement>} */ (
+        tabList.shadowRoot.querySelectorAll('#pinnedTabs tabstrip-tab'));
   }
 
+  /** @return {!NodeList<!TabGroupElement>} */
   function getTabGroups() {
-    return tabList.shadowRoot.querySelectorAll('tabstrip-tab-group');
+    return /** @type {!NodeList<!TabGroupElement>} */ (
+        tabList.shadowRoot.querySelectorAll('tabstrip-tab-group'));
   }
 
   setup(() => {
@@ -79,7 +100,6 @@ suite('TabList', () => {
     testTabsApiProxy = new TestTabsApiProxy();
     testTabsApiProxy.setTabs(tabs);
     TabsApiProxyImpl.instance_ = testTabsApiProxy;
-    callbackRouter = testTabsApiProxy.callbackRouter;
 
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
     testTabStripEmbedderProxy.setColors({
@@ -95,7 +115,8 @@ suite('TabList', () => {
 
     setScrollAnimationEnabledForTesting(false);
 
-    tabList = document.createElement('tabstrip-tab-list');
+    tabList = /** @type {!TabListElement} */ (
+        document.createElement('tabstrip-tab-list'));
     document.body.appendChild(tabList);
 
     return testTabsApiProxy.whenCalled('getTabs');
@@ -224,17 +245,20 @@ suite('TabList', () => {
   });
 
   test('PlacesTabElement', () => {
-    const pinnedTab = document.createElement('tabstrip-tab');
+    const pinnedTab =
+        /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
     tabList.placeTabElement(pinnedTab, 0, true, undefined);
     assertEquals(pinnedTab, getPinnedTabs()[0]);
 
-    const unpinnedUngroupedTab = document.createElement('tabstrip-tab');
+    const unpinnedUngroupedTab =
+        /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
     tabList.placeTabElement(unpinnedUngroupedTab, 1, false, undefined);
     let unpinnedTabs = getUnpinnedTabs();
     assertEquals(4, unpinnedTabs.length);
     assertEquals(unpinnedUngroupedTab, unpinnedTabs[0]);
 
-    const groupedTab = document.createElement('tabstrip-tab');
+    const groupedTab =
+        /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
     tabList.placeTabElement(groupedTab, 1, false, 'group0');
     unpinnedTabs = getUnpinnedTabs();
     assertEquals(5, unpinnedTabs.length);
@@ -305,7 +329,8 @@ suite('TabList', () => {
   });
 
   test('PlacesTabGroupElement', () => {
-    const tabGroupElement = document.createElement('tabstrip-tab-group');
+    const tabGroupElement = /** @type {!TabGroupElement} */ (
+        document.createElement('tabstrip-tab-group'));
     tabList.placeTabGroupElement(tabGroupElement, 2);
 
     const tabGroupElements = getTabGroups();

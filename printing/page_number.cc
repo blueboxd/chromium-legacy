@@ -18,7 +18,7 @@ PageNumber::PageNumber(const PrintSettings& settings, int document_page_count) {
 }
 
 PageNumber::PageNumber()
-    : ranges_(NULL),
+    : ranges_(nullptr),
       page_number_(-1),
       page_range_index_(-1),
       document_page_count_(0) {}

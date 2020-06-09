@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/value_conversions.h"
 #include "base/values.h"
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/v2/scheduling.h"

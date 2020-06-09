@@ -226,6 +226,9 @@ class MockWidgetInputHandler : public blink::mojom::WidgetInputHandler {
           host,
       mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
           compositor_request) override;
+  void GetFrameWidgetInputHandler(
+      mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetInputHandler>
+          interface_request) override;
 
   using MessageVector = std::vector<std::unique_ptr<DispatchedMessage>>;
   MessageVector GetAndResetDispatchedMessages();

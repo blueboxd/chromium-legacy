@@ -158,6 +158,26 @@ bool RealTimePolicyEngine::CanPerformFullURLLookupWithToken(
 }
 
 // static
+bool RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
+    bool has_valid_dm_token,
+    bool is_off_the_record) {
+  if (is_off_the_record) {
+    return false;
+  }
+
+  if (!base::FeatureList::IsEnabled(kRealTimeUrlLookupEnabledForEnterprise)) {
+    return false;
+  }
+
+  if (!has_valid_dm_token) {
+    return false;
+  }
+
+  // TODO(crbug.com/1085261): Check the enterprise real time URL check policy.
+  return false;
+}
+
+// static
 bool RealTimePolicyEngine::CanPerformFullURLLookupForResourceType(
     ResourceType resource_type,
     bool can_rt_check_subresource_url) {

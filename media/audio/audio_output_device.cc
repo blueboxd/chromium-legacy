@@ -33,7 +33,7 @@ AudioOutputDevice::AudioOutputDevice(
     const AudioSinkParameters& sink_params,
     base::TimeDelta authorization_timeout)
     : io_task_runner_(io_task_runner),
-      callback_(NULL),
+      callback_(nullptr),
       ipc_(std::move(ipc)),
       state_(IDLE),
       session_id_(sink_params.session_id),

@@ -647,9 +647,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // 3. User commits current composition text.
   if (((new_composition_start > last_composition_start &&
         text_input_client_->HasCompositionText()) ||
-       (wparam_keydown_fired_ == 0 && !has_composition_range_ &&
-        !text_input_client_->HasCompositionText()) ||
-       (wparam_keydown_fired_ != 0 && !has_composition_range_)) &&
+       !has_composition_range_) &&
       text_input_client_) {
     CommitTextAndEndCompositionIfAny(last_composition_start,
                                      new_composition_start);
@@ -1355,8 +1353,11 @@ void TSFTextStore::CommitTextAndEndCompositionIfAny(size_t old_size,
             : new_committed_string_size);
     // TODO(crbug.com/978678): Unify the behavior of
     //     |TextInputClient::InsertText(text)| for the empty text.
-    if (!new_committed_string.empty())
+    if (!new_committed_string.empty()) {
       text_input_client_->InsertText(new_committed_string);
+    } else {
+      text_input_client_->ClearCompositionText();
+    }
     // Notify accessibility about this committed composition
     text_input_client_->SetActiveCompositionForAccessibility(
         replace_text_range_, new_committed_string,

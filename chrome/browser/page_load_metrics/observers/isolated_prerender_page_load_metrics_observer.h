@@ -52,8 +52,8 @@ class IsolatedPrerenderPageLoadMetricsObserver
 
   // Used as a callback for the cookie manager query.
   void OnCookieResult(base::Time query_start_time,
-                      const net::CookieStatusList& cookies,
-                      const net::CookieStatusList& excluded_cookies);
+                      const net::CookieAccessResultList& cookies,
+                      const net::CookieAccessResultList& excluded_cookies);
 
   // Sets |prefetch_metrics_| for this page load. Done in a separate method so
   // that this can be done in an event notification.

@@ -204,8 +204,7 @@ class InteractiveRenderWidget : public RenderWidget {
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
                      /*is_hidden=*/false,
-                     /*never_composited=*/false,
-                     mojo::NullReceiver()) {}
+                     /*never_composited=*/false) {}
 
   void Init(blink::WebWidget* widget, const ScreenInfo& screen_info) {
     Initialize(base::NullCallback(), widget, screen_info);

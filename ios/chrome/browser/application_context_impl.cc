@@ -40,6 +40,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/update_query_params.h"
 #include "components/variations/service/variations_service.h"
+#include "components/version_info/channel.h"
 #include "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -422,8 +423,11 @@ BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
       // BrowserPolicyConnector::OnResourceBundleCreated() will need to be added
       // later in the startup sequence, after the ResourceBundle is initialized.
       DCHECK(ui::ResourceBundle::HasSharedInstance());
+      version_info::Channel channel = ::GetChannel();
       browser_policy_connector_ = std::make_unique<BrowserPolicyConnectorIOS>(
-          base::Bind(&BuildPolicyHandlerList));
+          base::Bind(&BuildPolicyHandlerList,
+                     channel != version_info::Channel::STABLE &&
+                         channel != version_info::Channel::BETA));
 
       // Install a mock platform policy provider, if running under EG2 and one
       // is supplied.

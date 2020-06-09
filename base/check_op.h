@@ -161,9 +161,13 @@ class CheckOpResult {
 
 #endif
 
-// The int-int overload avoids address-taking static int members.
+// The second overload avoids address-taking of static members for
+// fundamental types.
 #define DEFINE_CHECK_OP_IMPL(name, op)                                         \
-  template <typename T, typename U>                                            \
+  template <typename T, typename U,                                            \
+            std::enable_if_t<!std::is_fundamental<T>::value ||                 \
+                                 !std::is_fundamental<U>::value,               \
+                             int> = 0>                                         \
   constexpr ::logging::CheckOpResult Check##name##Impl(                        \
       const T& v1, const U& v2, const char* expr_str) {                        \
     if (ANALYZER_ASSUME_TRUE(v1 op v2))                                        \
@@ -171,7 +175,11 @@ class CheckOpResult {
     return ::logging::CheckOpResult(expr_str, CheckOpValueStr(v1),             \
                                     CheckOpValueStr(v2));                      \
   }                                                                            \
-  constexpr ::logging::CheckOpResult Check##name##Impl(int v1, int v2,         \
+  template <typename T, typename U,                                            \
+            std::enable_if_t<std::is_fundamental<T>::value &&                  \
+                                 std::is_fundamental<U>::value,                \
+                             int> = 0>                                         \
+  constexpr ::logging::CheckOpResult Check##name##Impl(T v1, U v2,             \
                                                        const char* expr_str) { \
     if (ANALYZER_ASSUME_TRUE(v1 op v2))                                        \
       return ::logging::CheckOpResult();                                       \

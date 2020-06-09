@@ -53,6 +53,20 @@ const base::Feature kHideSteadyStateUrlPathQueryAndRef {
 #endif
 };
 
+// Feature used to reveal the path, query and ref from steady state URLs
+// on hover. Only has any effect when
+// OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef is enabled.
+const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover{
+    "OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Feature used to hide the path, query and ref from steady state URLs
+// on interaction with the page. Only has any effect when
+// OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef is enabled.
+const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction{
+    "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to enable local entity suggestions. Similar to rich entities but
 // but location specific. E.g., typing 'starbucks near' could display the local
 // entity suggestion 'starbucks near disneyland \n starbucks * Anaheim, CA'.

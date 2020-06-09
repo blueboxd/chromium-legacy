@@ -11,9 +11,9 @@ namespace media {
 namespace cast {
 
 TestRtcpPacketBuilder::TestRtcpPacketBuilder()
-    : ptr_of_length_(NULL),
+    : ptr_of_length_(nullptr),
       big_endian_writer_(reinterpret_cast<char*>(buffer_), kMaxIpPacketSize),
-      big_endian_reader_(NULL, 0) {}
+      big_endian_reader_(nullptr, 0) {}
 
 void TestRtcpPacketBuilder::AddSr(uint32_t remote_ssrc,
                                   int number_of_report_blocks) {
@@ -255,7 +255,7 @@ void TestRtcpPacketBuilder::PatchLengthField() {
         << "Packets must be a multiple of 32 bits long";
     *ptr_of_length_ = this_packet_length >> 10;
     *(ptr_of_length_ + 1) = (this_packet_length >> 2) & 0xFF;
-    ptr_of_length_ = NULL;
+    ptr_of_length_ = nullptr;
   }
 }
 

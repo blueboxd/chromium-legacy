@@ -324,8 +324,8 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       network::mojom::CookieManager::GetCookieListCallback callback);
   void NotifyClientWithCookies(
       std::unique_ptr<InterceptedRequestInfo> request_info,
-      const net::CookieStatusList& cookie_list_with_statuses,
-      const net::CookieStatusList& excluded_cookies);
+      const net::CookieAccessResultList& cookies_with_access_result,
+      const net::CookieAccessResultList& excluded_cookies);
 
   void ResponseBodyComplete();
 
@@ -1271,14 +1271,14 @@ void InterceptionJob::NotifyClient(
 
 void InterceptionJob::NotifyClientWithCookies(
     std::unique_ptr<InterceptedRequestInfo> request_info,
-    const net::CookieStatusList& cookie_list_with_statuses,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies_with_access_result,
+    const net::CookieAccessResultList& excluded_cookies) {
   if (!interceptor_)
     return;
   std::string cookie_line;
-  if (!cookie_list_with_statuses.empty()) {
+  if (!cookies_with_access_result.empty()) {
     cookie_line =
-        net::CanonicalCookie::BuildCookieLine(cookie_list_with_statuses);
+        net::CanonicalCookie::BuildCookieLine(cookies_with_access_result);
   }
   request_info->network_request =
       protocol::NetworkHandler::CreateRequestFromResourceRequest(

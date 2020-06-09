@@ -31,6 +31,6 @@ SpeechRecognitionServiceFactory::SpeechRecognitionServiceFactory()
 SpeechRecognitionServiceFactory::~SpeechRecognitionServiceFactory() = default;
 
 KeyedService* SpeechRecognitionServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new speech::SpeechRecognitionService();
+    content::BrowserContext* context) const {
+  return new speech::SpeechRecognitionService(context);
 }

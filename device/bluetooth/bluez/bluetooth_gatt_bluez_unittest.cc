@@ -97,7 +97,7 @@ void AddDeviceFilterWithUUID(BluetoothDiscoveryFilter* filter,
 class BluetoothGattBlueZTest : public testing::Test {
  public:
   BluetoothGattBlueZTest()
-      : fake_bluetooth_gatt_service_client_(NULL),
+      : fake_bluetooth_gatt_service_client_(nullptr),
         success_callback_count_(0),
         error_callback_count_(0) {}
 

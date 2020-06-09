@@ -59,7 +59,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
     const std::string& source_extension_id,
     const std::string& native_host_name,
     std::unique_ptr<NativeProcessLauncher> launcher)
-    : client_(NULL),
+    : client_(nullptr),
       source_extension_id_(source_extension_id),
       native_host_name_(native_host_name),
       launcher_(std::move(launcher)),

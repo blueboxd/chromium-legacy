@@ -320,11 +320,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption, false)
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
 
-// If true, notify handshakers when connection closes.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_notify_handshaker_on_connection_close,
-          true)
-
 // If true, for QUIC + TLS, change default encryption level when new encryption
 // key is available.
 QUIC_FLAG(bool,
@@ -382,7 +377,7 @@ QUIC_FLAG(
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_fix_write_pending_crypto_retransmission,
-    false)
+    true)
 
 // If true, clear last_inflight_packets_sent_time_ of a packet number space when
 // there is no bytes in flight.
@@ -410,7 +405,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_limit_inflight_hi, false)
 
 // When true, always check the amplification limit before writing, not just for
 // handshake packets.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_move_amplification_limit, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_move_amplification_limit, true)
 
 // If true, SendAllPendingAcks always send the earliest ACK.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, false)
@@ -427,3 +422,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_t050, false)
 // If true, do not arm PTO on half RTT packets if they are the only ones in
 // flight.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_server_pto_timeout, false)
+
+// If true, default-enable 5RTO blachole detection.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_default_enable_5rto_blackhole_detection,
+    true)

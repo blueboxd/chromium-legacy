@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
+#include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
 
 namespace reporting {
@@ -25,8 +25,8 @@ class StorageModule : public base::RefCounted<StorageModule> {
 
   // AddRecord will add |record| to the |StorageModule| according to the
   // provided |priority|. On completion, |callback| will be called.
-  virtual void AddRecord(reporting_messaging_layer::EncryptedRecord record,
-                         reporting_messaging_layer::Priority priority,
+  virtual void AddRecord(reporting::EncryptedRecord record,
+                         reporting::Priority priority,
                          base::OnceCallback<void(Status)> callback);
 
  protected:

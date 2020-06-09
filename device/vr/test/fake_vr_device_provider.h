@@ -28,6 +28,7 @@ class DEVICE_VR_EXPORT FakeVRDeviceProvider : public VRDeviceProvider {
   void Initialize(
       base::RepeatingCallback<void(mojom::XRDeviceId,
                                    mojom::VRDisplayInfoPtr,
+                                   mojom::XRDeviceDataPtr,
                                    mojo::PendingRemote<mojom::XRRuntime>)>
           add_device_callback,
       base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
@@ -39,6 +40,7 @@ class DEVICE_VR_EXPORT FakeVRDeviceProvider : public VRDeviceProvider {
   bool initialized_;
   base::RepeatingCallback<void(mojom::XRDeviceId,
                                mojom::VRDisplayInfoPtr,
+                               mojom::XRDeviceDataPtr,
                                mojo::PendingRemote<mojom::XRRuntime>)>
       add_device_callback_;
   base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback_;

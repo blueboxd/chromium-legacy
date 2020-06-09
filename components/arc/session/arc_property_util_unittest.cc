@@ -342,6 +342,19 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles) {
       base::ReadFileToString(dest_dir.Append("default.prop"), &content));
   EXPECT_EQ(std::string(kDefaultProp) + "\n", content);
 
+  // If default.prop does not exist in the source path, it should still process
+  // the other files, while also ensuring that default.prop is removed from the
+  // destination path.
+  base::DeleteFile(dest_dir.Append("default.prop"), /*recursive=*/false);
+
+  EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_dir, false));
+
+  EXPECT_TRUE(base::ReadFileToString(dest_dir.Append("build.prop"), &content));
+  EXPECT_EQ(std::string(kBuildProp) + "\n", content);
+  EXPECT_TRUE(
+      base::ReadFileToString(dest_dir.Append("vendor_build.prop"), &content));
+  EXPECT_EQ(std::string(kVendorBuildProp) + "\n", content);
+
   // Finally, test the case where source is valid but the dest is not.
   EXPECT_FALSE(
       ExpandPropertyFiles(source_dir, base::FilePath("/nonexistent"), false));
@@ -403,6 +416,15 @@ TEST_F(ArcPropertyUtilTest, ExpandPropertyFiles_SingleFile) {
   EXPECT_TRUE(base::ReadFileToString(dest_prop_file, &content));
   EXPECT_EQ(base::StringPrintf("%s\n%s\n%s\n", kDefaultProp, kBuildProp,
                                kVendorBuildProp),
+            content);
+
+  // If default.prop does not exist in the source path, it should still process
+  // the other files.
+  base::DeleteFile(source_dir.Append("default.prop"),
+                   /*recursive=*/false);
+  EXPECT_TRUE(ExpandPropertyFiles(source_dir, dest_prop_file, true));
+  EXPECT_TRUE(base::ReadFileToString(dest_prop_file, &content));
+  EXPECT_EQ(base::StringPrintf("%s\n%s\n", kBuildProp, kVendorBuildProp),
             content);
 
   // Finally, test the case where source is valid but the dest is not.

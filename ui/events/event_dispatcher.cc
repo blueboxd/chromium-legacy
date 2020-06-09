@@ -31,9 +31,7 @@ class ScopedDispatchHelper : public Event::DispatcherApi {
 
 }  // namespace
 
-EventDispatcherDelegate::EventDispatcherDelegate()
-    : dispatcher_(NULL) {
-}
+EventDispatcherDelegate::EventDispatcherDelegate() : dispatcher_(nullptr) {}
 
 EventDispatcherDelegate::~EventDispatcherDelegate() {
   if (dispatcher_)

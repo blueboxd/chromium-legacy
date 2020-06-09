@@ -35,6 +35,8 @@ struct PermissionInfo {
 constexpr PermissionInfo permission_infos[] = {
     {app_management::mojom::PluginVmPermissionType::PRINTING,
      plugin_vm::prefs::kPluginVmPrintersAllowed},
+    {app_management::mojom::PluginVmPermissionType::CAMERA,
+     plugin_vm::prefs::kPluginVmCameraSharing},
 };
 
 const char* PermissionToPrefName(

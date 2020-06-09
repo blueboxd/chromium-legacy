@@ -777,7 +777,7 @@ void DataTypeManagerImpl::OnModelAssociationDone(
     return;
   }
 
-  if (result.status == ABORTED || result.status == UNRECOVERABLE_ERROR) {
+  if (result.status == ABORTED) {
     Abort(result.status);
     return;
   }
@@ -878,11 +878,6 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& raw_result) {
     case DataTypeManager::ABORTED:
       DVLOG(1) << "NotifyDone called with result: ABORTED";
       base::UmaHistogramLongTimes(prefix_uma + ".ABORTED", configure_time);
-      break;
-    case DataTypeManager::UNRECOVERABLE_ERROR:
-      DVLOG(1) << "NotifyDone called with result: UNRECOVERABLE_ERROR";
-      base::UmaHistogramLongTimes(prefix_uma + ".UNRECOVERABLE_ERROR",
-                                  configure_time);
       break;
     case DataTypeManager::UNKNOWN:
       NOTREACHED();

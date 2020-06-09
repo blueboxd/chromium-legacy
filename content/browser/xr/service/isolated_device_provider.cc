@@ -18,6 +18,7 @@ namespace content {
 void IsolatedVRDeviceProvider::Initialize(
     base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                  device::mojom::VRDisplayInfoPtr,
+                                 device::mojom::XRDeviceDataPtr,
                                  mojo::PendingRemote<device::mojom::XRRuntime>)>
         add_device_callback,
     base::RepeatingCallback<void(device::mojom::XRDeviceId)>
@@ -37,8 +38,10 @@ bool IsolatedVRDeviceProvider::Initialized() {
 void IsolatedVRDeviceProvider::OnDeviceAdded(
     mojo::PendingRemote<device::mojom::XRRuntime> device,
     mojo::PendingRemote<device::mojom::XRCompositorHost> compositor_host,
+    device::mojom::XRDeviceDataPtr device_data,
     device::mojom::XRDeviceId device_id) {
-  add_device_callback_.Run(device_id, nullptr, std::move(device));
+  add_device_callback_.Run(device_id, nullptr, std::move(device_data),
+                           std::move(device));
 
   auto* integration_client = GetXrIntegrationClient();
   if (!integration_client)

@@ -122,11 +122,6 @@ SearchResultTileItemView* SearchResultTileItemListView::GetResultViewAt(
   return tile_views_[index];
 }
 
-void SearchResultTileItemListView::NotifyFirstResultYIndex(int y_index) {
-  for (size_t i = 0; i < static_cast<size_t>(num_results()); ++i)
-    GetResultViewAt(i)->result()->set_distance_from_origin(i + y_index);
-}
-
 int SearchResultTileItemListView::GetYSize() {
   return num_results() ? 1 : 0;
 }

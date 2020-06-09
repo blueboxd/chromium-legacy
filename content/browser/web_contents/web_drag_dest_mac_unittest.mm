@@ -141,6 +141,6 @@ TEST_F(WebDragDestTest, Data) {
   [pboard->get() setString:textString forType:NSStringPboardType];
   content::PopulateDropDataFromPasteboard(&data, pboard->get());
   EXPECT_EQ(data.url.spec(), "http://www.google.com/");
-  EXPECT_EQ(base::SysNSStringToUTF16(textString), data.text.string());
-  EXPECT_EQ(base::SysNSStringToUTF16(htmlString), data.html.string());
+  EXPECT_EQ(base::SysNSStringToUTF16(textString), data.text);
+  EXPECT_EQ(base::SysNSStringToUTF16(htmlString), data.html);
 }

@@ -122,10 +122,10 @@ class WebSocketStreamServerSetCookieTest
       base::OnceClosure task,
       base::WeakPtr<bool> weak_is_called,
       base::WeakPtr<CookieList> weak_result,
-      const CookieStatusList& cookie_list,
-      const CookieStatusList& excluded_cookies) {
+      const CookieAccessResultList& cookie_list,
+      const CookieAccessResultList& excluded_cookies) {
     *weak_is_called = true;
-    *weak_result = cookie_util::StripStatuses(cookie_list);
+    *weak_result = cookie_util::StripAccessResults(cookie_list);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
   }
 };

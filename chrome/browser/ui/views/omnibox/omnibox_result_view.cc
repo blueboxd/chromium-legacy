@@ -376,7 +376,7 @@ void OmniboxResultView::Layout() {
 
 bool OmniboxResultView::OnMousePressed(const ui::MouseEvent& event) {
   if (event.IsOnlyLeftMouseButton())
-    popup_contents_view_->SetSelectedLine(model_index_);
+    popup_contents_view_->SetSelectedLineForMouseOrTouch(model_index_);
   return true;
 }
 
@@ -386,7 +386,7 @@ bool OmniboxResultView::OnMouseDragged(const ui::MouseEvent& event) {
     // set the state to be selected or hovered, depending on the mouse button.
     if (event.IsOnlyLeftMouseButton()) {
       if (!IsMatchSelected())
-        popup_contents_view_->SetSelectedLine(model_index_);
+        popup_contents_view_->SetSelectedLineForMouseOrTouch(model_index_);
       if (suggestion_tab_switch_button_) {
         gfx::Point point_in_child_coords(event.location());
         View::ConvertPointToTarget(this, suggestion_tab_switch_button_,

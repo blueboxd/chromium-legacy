@@ -48,9 +48,9 @@ Logging::Logging()
       enabled_on_stderr_(false),
       enabled_color_(false),
       queue_invoke_later_pending_(false),
-      sender_(NULL),
+      sender_(nullptr),
       main_thread_(base::ThreadTaskRunnerHandle::Get()),
-      consumer_(NULL) {
+      consumer_(nullptr) {
 #if defined(OS_WIN)
   // getenv triggers an unsafe warning. Simply check how big of a buffer
   // would be needed to fetch the value to see if the enviornment variable is

@@ -20,6 +20,7 @@
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/command_line_top_host_provider.h"
 #include "components/optimization_guide/hints_processing_util.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/top_host_provider.h"
@@ -275,4 +276,17 @@ void OptimizationGuideKeyedService::Shutdown() {
 void OptimizationGuideKeyedService::UpdateSessionFCP(base::TimeDelta fcp) {
   if (prediction_manager_)
     prediction_manager_->UpdateFCPSessionStatistics(fcp);
+}
+
+void OptimizationGuideKeyedService::OverrideTargetDecisionForTesting(
+    optimization_guide::proto::OptimizationTarget optimization_target,
+    optimization_guide::OptimizationGuideDecision optimization_guide_decision) {
+  if (prediction_manager_) {
+    prediction_manager_->OverrideTargetDecisionForTesting(
+        optimization_target, optimization_guide_decision);
+  } else {
+    DCHECK(hints_manager_);
+    hints_manager_->OverrideTargetDecisionForTesting(
+        optimization_target, optimization_guide_decision);
+  }
 }

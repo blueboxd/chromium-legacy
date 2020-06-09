@@ -108,7 +108,7 @@ void StarView::ExecuteCommand(ExecuteSource source) {
   chrome::BookmarkCurrentTab(browser_);
 }
 
-views::BubbleDialogDelegateView* StarView::GetBubble() const {
+views::BubbleDialogDelegate* StarView::GetBubble() const {
   return BookmarkBubbleView::bookmark_bubble();
 }
 

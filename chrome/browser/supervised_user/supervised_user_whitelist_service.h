@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/time/time.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/sync/model/syncable_service.h"
 
@@ -122,7 +121,6 @@ class SupervisedUserWhitelistService : public syncer::SyncableService {
                         const base::FilePath& whitelist_path);
   void OnWhitelistLoaded(
       const std::string& id,
-      base::TimeTicks start_time,
       const scoped_refptr<SupervisedUserSiteList>& whitelist);
 
   PrefService* prefs_;

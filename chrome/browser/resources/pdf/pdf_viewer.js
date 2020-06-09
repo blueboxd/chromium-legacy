@@ -18,50 +18,11 @@ import {PDFMetrics} from './metrics.js';
 import {NavigatorDelegate, PdfNavigator} from './navigator.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
+import {createPlugin, DestinationMessageData, DocumentDimensionsMessageData, getFilenameFromURL, getScrollbarWidth, MessageObject, NavigateMessageData, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
 import {LayoutOptions, Point, Viewport} from './viewport.js';
 import {ViewportScroller} from './viewport_scroller.js';
 import {ZoomManager} from './zoom_manager.js';
-
-/**
- * @typedef {{
- *   source: Object,
- *   origin: string,
- *   data: !MessageData,
- * }}
- */
-let MessageObject;
-
-/**
- * @typedef {{
- *   type: string,
- *   height: number,
- *   width: number,
- *   layoutOptions: (!LayoutOptions|undefined),
- *   pageDimensions: Array
- * }}
- */
-let DocumentDimensionsMessageData;
-
-/**
- * @typedef {{
- *   type: string,
- *   url: string,
- *   disposition: !PdfNavigator.WindowOpenDisposition,
- * }}
- */
-let NavigateMessageData;
-
-/**
- * @typedef {{
- *   type: string,
- *   page: number,
- *   x: number,
- *   y: number,
- *   zoom: number
- * }}
- */
-let DestinationMessageData;
 
 /**
  * @typedef {{
@@ -81,58 +42,6 @@ let MetadataMessageData;
  * }}
  */
 let RequiredSaveResult;
-
-/** @return {number} Width of a scrollbar in pixels */
-function getScrollbarWidth() {
-  const div = document.createElement('div');
-  div.style.visibility = 'hidden';
-  div.style.overflow = 'scroll';
-  div.style.width = '50px';
-  div.style.height = '50px';
-  div.style.position = 'absolute';
-  document.body.appendChild(div);
-  const result = div.offsetWidth - div.clientWidth;
-  div.parentNode.removeChild(div);
-  return result;
-}
-
-/**
- * Return the filename component of a URL, percent decoded if possible.
- * @param {string} url The URL to get the filename from.
- * @return {string} The filename component.
- */
-export function getFilenameFromURL(url) {
-  // Ignore the query and fragment.
-  const mainUrl = url.split(/#|\?/)[0];
-  const components = mainUrl.split(/\/|\\/);
-  const filename = components[components.length - 1];
-  try {
-    return decodeURIComponent(filename);
-  } catch (e) {
-    if (e instanceof URIError) {
-      return filename;
-    }
-    throw e;
-  }
-}
-
-/**
- * Whether keydown events should currently be ignored. Events are ignored when
- * an editable element has focus, to allow for proper editing controls.
- * @param {Element} activeElement The currently selected DOM node.
- * @return {boolean} True if keydown events should be ignored.
- */
-export function shouldIgnoreKeyEvents(activeElement) {
-  while (activeElement.shadowRoot != null &&
-         activeElement.shadowRoot.activeElement != null) {
-    activeElement = activeElement.shadowRoot.activeElement;
-  }
-
-  return (
-      activeElement.isContentEditable ||
-      (activeElement.tagName === 'INPUT' && activeElement.type !== 'radio') ||
-      activeElement.tagName === 'TEXTAREA');
-}
 
 // There should only be one of these objects per document.
 export class PDFViewer {
@@ -259,20 +168,6 @@ export class PDFViewer {
         userInitiated => this.setUserInitiated_(userInitiated));
     window.addEventListener('beforeunload', () => this.resetTrackers_());
 
-    // Create the plugin object dynamically so we can set its src. The plugin
-    // element is sized to fill the entire window and is set to be fixed
-    // positioning, acting as a viewport. The plugin renders into this viewport
-    // according to the scroll position of the window.
-    /** @private {!HTMLEmbedElement} */
-    this.plugin_ =
-        /** @type {!HTMLEmbedElement} */ (document.createElement('embed'));
-
-    // NOTE: The plugin's 'id' field must be set to 'plugin' since
-    // chrome/renderer/printing/print_render_frame_helper.cc actually
-    // references it.
-    this.plugin_.id = 'plugin';
-    this.plugin_.type = 'application/x-google-chrome-pdf';
-
     // Handle scripting messages from outside the extension that wish to
     // interact with it. We also send a message indicating that extension has
     // loaded and is ready to receive messages.
@@ -280,27 +175,14 @@ export class PDFViewer {
       this.handleScriptingMessage(/** @type {!MessageObject} */ (message));
     }, false);
 
-    this.plugin_.setAttribute('src', this.originalUrl_);
-    this.plugin_.setAttribute(
-        'stream-url', this.browserApi_.getStreamInfo().streamUrl);
-    let headers = '';
-    for (const header in this.browserApi_.getStreamInfo().responseHeaders) {
-      headers += header + ': ' +
-          this.browserApi_.getStreamInfo().responseHeaders[header] + '\n';
-    }
-    this.plugin_.setAttribute('headers', headers);
-
-    this.plugin_.setAttribute('background-color', PDFViewer.BACKGROUND_COLOR);
-    this.plugin_.setAttribute('top-toolbar-height', topToolbarHeight);
-    this.plugin_.setAttribute('javascript', this.javascript_);
-
-    if (this.browserApi_.getStreamInfo().embedded) {
-      this.plugin_.setAttribute(
-          'top-level-url', this.browserApi_.getStreamInfo().tabUrl);
-    } else {
-      this.plugin_.setAttribute('full-frame', '');
-    }
-
+    // Create the plugin object dynamically so we can set its src. The plugin
+    // element is sized to fill the entire window and is set to be fixed
+    // positioning, acting as a viewport. The plugin renders into this viewport
+    // according to the scroll position of the window.
+    /** @private {!HTMLEmbedElement} */
+    this.plugin_ = createPlugin(
+        this.browserApi_, topToolbarHeight, PDFViewer.BACKGROUND_COLOR,
+        this.originalUrl_);
     $('content').appendChild(this.plugin_);
 
     /** @private {!PluginController} */

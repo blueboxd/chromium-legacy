@@ -12,6 +12,23 @@
 namespace chromeos {
 namespace tts {
 
+// Simple helper to bridge logging in the shared library to Chrome's logging.
+void HandleLibraryLogging(int severity, const char* message) {
+  switch (severity) {
+    case logging::LOG_INFO:
+      // Suppressed.
+      break;
+    case logging::LOG_WARNING:
+      LOG(WARNING) << message;
+      break;
+    case logging::LOG_ERROR:
+      LOG(ERROR) << message;
+      break;
+    default:
+      break;
+  }
+}
+
 // TtsService is mostly glue code that adapts the TtsStream interface into a
 // form needed by libchrometts.so. As is convention with shared objects, the
 // lifetime of all arguments passed to the library is scoped to the function.
@@ -24,6 +41,8 @@ TtsService::TtsService(mojo::PendingReceiver<mojom::TtsService> receiver)
   bool loaded = libchrometts_.Load(kLibchromettsPath);
   if (!loaded)
     LOG(ERROR) << "Unable to load libchrometts.so: " << dlerror();
+  else
+    libchrometts_.GoogleTtsSetLogger(HandleLibraryLogging);
 }
 
 TtsService::~TtsService() = default;

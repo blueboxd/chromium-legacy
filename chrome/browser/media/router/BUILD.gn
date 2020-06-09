@@ -88,6 +88,8 @@ static_library("router") {
       "//ui/base:buildflags",
     ]
 
+    public_deps += [ "//chrome/common/media_router/mojom:logger" ]
+
     sources += [
       "data_decoder_util.cc",
       "data_decoder_util.h",
@@ -95,6 +97,8 @@ static_library("router") {
       "event_page_request_manager.h",
       "event_page_request_manager_factory.cc",
       "event_page_request_manager_factory.h",
+      "logger_impl.cc",
+      "logger_impl.h",
       "mojo/media_route_provider_util_win.cc",
       "mojo/media_route_provider_util_win.h",
       "mojo/media_router_desktop.cc",
@@ -248,6 +252,7 @@ source_set("unittests") {
       "discovery/mdns/dns_sd_registry_unittest.cc",
       "discovery/media_sink_discovery_metrics_unittest.cc",
       "event_page_request_manager_unittest.cc",
+      "logger_impl_unittest.cc",
       "media_router_feature_unittest.cc",
       "mojo/media_router_desktop_unittest.cc",
       "mojo/media_router_mojo_impl_unittest.cc",

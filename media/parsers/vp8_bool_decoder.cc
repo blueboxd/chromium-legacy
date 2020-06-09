@@ -82,15 +82,14 @@ static const unsigned char kVp8Norm[256] = {
 };
 
 Vp8BoolDecoder::Vp8BoolDecoder()
-    : user_buffer_(NULL),
-      user_buffer_end_(NULL),
+    : user_buffer_(nullptr),
+      user_buffer_end_(nullptr),
       value_(0),
       count_(-8),
-      range_(255) {
-}
+      range_(255) {}
 
 bool Vp8BoolDecoder::Initialize(const uint8_t* data, size_t size) {
-  if (data == NULL || size == 0)
+  if (data == nullptr || size == 0)
     return false;
   user_buffer_start_ = data;
   user_buffer_ = data;
@@ -102,7 +101,7 @@ bool Vp8BoolDecoder::Initialize(const uint8_t* data, size_t size) {
 }
 
 void Vp8BoolDecoder::FillDecoder() {
-  DCHECK(user_buffer_ != NULL);
+  DCHECK(user_buffer_ != nullptr);
   int shift = VP8_BD_VALUE_BIT - CHAR_BIT - (count_ + CHAR_BIT);
   size_t bytes_left = user_buffer_end_ - user_buffer_;
   size_t bits_left = bytes_left * CHAR_BIT;

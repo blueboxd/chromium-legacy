@@ -205,14 +205,8 @@ SearchHandler::AddSubpageResultIfPossible(
 
 mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
     const local_search_service::Result& result) const {
-  int message_id;
-
-  // The result's ID is expected to be a stringified int.
-  if (!base::StringToInt(result.id, &message_id))
-    return nullptr;
-
   const SearchConcept* concept =
-      search_tag_registry_->GetTagMetadata(message_id);
+      search_tag_registry_->GetTagMetadata(result.id);
 
   // If the concept was not registered, no metadata is available. This can occur
   // if the search tag was dynamically unregistered during the asynchronous
@@ -258,7 +252,8 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
 
   return mojom::SearchResult::New(
       /*result_text=*/l10n_util::GetStringUTF16(content_id),
-      /*canonical_result_text=*/l10n_util::GetStringUTF16(message_id), url,
+      /*canonical_result_text=*/
+      l10n_util::GetStringUTF16(concept->canonical_message_id), url,
       concept->icon, result.score, hierarchy_strings, concept->default_rank,
       concept->type, std::move(result_id));
 }

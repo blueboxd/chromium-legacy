@@ -82,6 +82,7 @@ source_set("feed_core_v2") {
 
   public_deps = [
     "//base",
+    "//base/util/values:values_util",
     "//components/feed/core/common:feed_core_common",
     "//components/feed/core/proto:proto_v2",
   ]

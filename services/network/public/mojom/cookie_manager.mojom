@@ -78,6 +78,13 @@ enum CookieSameSite {
   // Reserved 3 (was EXTENDED_MODE), next number is 4.
 };
 
+enum CookieEffectiveSameSite {
+  kNoRestriction = 0,
+  kLaxMode = 1,
+  kStrictMode = 2,
+  kLaxModeAllowUnsafe = 3,
+};
+
 enum ContextType {
   CROSS_SITE,
   SAME_SITE_LAX_METHOD_UNSAFE,
@@ -143,6 +150,16 @@ struct CookieAndLineWithStatus {
   CanonicalCookie? cookie;
   string cookie_string;
   CookieInclusionStatus status;
+};
+
+struct CookieAccessResult {
+  CookieEffectiveSameSite effective_same_site;
+  CookieInclusionStatus status;
+};
+
+struct CookieWithAccessResult {
+  CanonicalCookie cookie;
+  CookieAccessResult access_result;
 };
 
 // Keep values here in sync with net::CookieChangeCause.
@@ -276,8 +293,8 @@ interface CookieManager {
   // blocked from being sent along with the reason each cookie was blocked. By
   // default, that option is not set and |excluded_cookies| is an empty list.
   GetCookieList(url.mojom.Url url, CookieOptions cookie_options)
-      => (array<CookieWithStatus> cookies,
-          array<CookieWithStatus> excluded_cookies);
+      => (array<CookieWithAccessResult> cookies,
+          array<CookieWithAccessResult> excluded_cookies);
 
   // Set a cookie.  |source_url| is used to check whether existing secure
   // cookies can be overwritten (secure cookies may be created from a

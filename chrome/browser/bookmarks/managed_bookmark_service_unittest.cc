@@ -58,7 +58,7 @@ TEST(ManagedBookmarkServiceNoPolicyTest, EmptyManagedNode) {
 
 class ManagedBookmarkServiceTest : public testing::Test {
  public:
-  ManagedBookmarkServiceTest() : managed_(NULL), model_(NULL) {}
+  ManagedBookmarkServiceTest() : managed_(nullptr), model_(nullptr) {}
   ~ManagedBookmarkServiceTest() override {}
 
   void SetUp() override {

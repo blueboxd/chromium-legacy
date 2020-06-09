@@ -169,6 +169,21 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             return idEquality && TextUtils.equals(message, other.message)
                     && TextUtils.equals(link, other.link) && icon == other.icon;
         }
+
+        /** Called to update the value of this object from a given object. */
+        public void update(DownloadProgressInfoBarData other) {
+            id = other.id;
+            message = other.message;
+            accessibilityMessage = other.accessibilityMessage;
+            link = other.link;
+            icon = other.icon;
+            hasVectorDrawable = other.hasVectorDrawable;
+            hasAnimation = other.hasAnimation;
+            dontRepeat = other.dontRepeat;
+            forceReparent = other.forceReparent;
+            downloadCount = other.downloadCount;
+            resultState = other.resultState;
+        }
     }
 
     /**

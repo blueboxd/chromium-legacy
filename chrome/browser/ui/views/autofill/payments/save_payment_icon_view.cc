@@ -39,7 +39,7 @@ SavePaymentIconView::SavePaymentIconView(
 
 SavePaymentIconView::~SavePaymentIconView() = default;
 
-views::BubbleDialogDelegateView* SavePaymentIconView::GetBubble() const {
+views::BubbleDialogDelegate* SavePaymentIconView::GetBubble() const {
   SavePaymentIconController* controller = GetController();
   if (!controller)
     return nullptr;

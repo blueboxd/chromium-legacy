@@ -45,20 +45,26 @@ class MockOptimizationGuideKeyedService : public OptimizationGuideKeyedService {
                void(content::NavigationHandle*,
                     optimization_guide::proto::OptimizationType,
                     optimization_guide::OptimizationGuideDecisionCallback));
+  MOCK_METHOD3(CanApplyOptimization,
+               optimization_guide::OptimizationGuideDecision(
+                   const GURL& gurl,
+                   optimization_guide::proto::OptimizationType,
+                   optimization_guide::OptimizationMetadata* metadata));
 };
 
 class PerformanceHintsObserverTest : public ChromeRenderViewHostTestHarness {
  public:
-  PerformanceHintsObserverTest() = default;
-  ~PerformanceHintsObserverTest() override = default;
-
-  void SetUp() override {
+  PerformanceHintsObserverTest() {
     scoped_feature_list_.InitWithFeatures(
         {kPerformanceHintsObserver,
          // Need to enable kOptimizationHints or GetForProfile will return
          // nullptr.
          optimization_guide::features::kOptimizationHints},
         {});
+  }
+  ~PerformanceHintsObserverTest() override = default;
+
+  void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         optimization_guide::switches::
             kDisableCheckingUserPermissionsForTesting);
@@ -77,6 +83,12 @@ class PerformanceHintsObserverTest : public ChromeRenderViewHostTestHarness {
                       return std::make_unique<
                           MockOptimizationGuideKeyedService>(context);
                     })));
+    ON_CALL(*mock_optimization_guide_keyed_service_,
+            CanApplyOptimization(testing::_,
+                                 optimization_guide::proto::PERFORMANCE_HINTS,
+                                 testing::_))
+        .WillByDefault(testing::Return(
+            optimization_guide::OptimizationGuideDecision::kFalse));
 
     test_handle_ = std::make_unique<content::MockNavigationHandle>(
         GURL(kTestUrl), main_rfh());
@@ -102,13 +114,17 @@ class PerformanceHintsObserverTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(PerformanceHintsObserverTest);
 };
 
-TEST_F(PerformanceHintsObserverTest, HasPerformanceHints) {
+TEST_F(PerformanceHintsObserverTest, RegisterPerformanceHints) {
   EXPECT_CALL(*mock_optimization_guide_keyed_service_,
               RegisterOptimizationTypesAndTargets(
                   testing::UnorderedElementsAre(
                       optimization_guide::proto::PERFORMANCE_HINTS),
                   testing::IsEmpty()));
 
+  PerformanceHintsObserver::CreateForWebContents(web_contents());
+}
+
+TEST_F(PerformanceHintsObserverTest, HasPerformanceHints) {
   optimization_guide::proto::PerformanceHintsMetadata hints_metadata;
   auto* hint = hints_metadata.add_performance_hints();
   hint->set_wildcard_pattern("test.com");
@@ -132,26 +148,282 @@ TEST_F(PerformanceHintsObserverTest, HasPerformanceHints) {
   base::HistogramTester histogram_tester;
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("http://www.test.com")),
+                  web_contents(), GURL("http://www.test.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_SLOW));
   histogram_tester.ExpectUniqueSample(
       "PerformanceHints.Observer.HintForURLResult", /*kHintFound*/ 3, 1);
   histogram_tester.ExpectUniqueSample(
       "PerformanceHints.Observer.PerformanceClassForURL", /*kSlow*/ 1, 1);
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("https://www.othersite.net/this/link")),
+                  web_contents(), GURL("https://www.othersite.net/this/link"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_FAST));
   histogram_tester.ExpectUniqueSample(
       "PerformanceHints.Observer.HintForURLResult", /*kHintFound*/ 3, 2);
   histogram_tester.ExpectBucketCount(
       "PerformanceHints.Observer.PerformanceClassForURL", /*kFast*/ 2, 1);
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("https://www.nohint.com")),
+                  web_contents(), GURL("https://www.nohint.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
   histogram_tester.ExpectBucketCount(
       "PerformanceHints.Observer.HintForURLResult", /*kHintNotFound*/ 0, 1);
   histogram_tester.ExpectBucketCount(
       "PerformanceHints.Observer.PerformanceClassForURL", /*kUnknown*/ 0, 1);
+}
+
+TEST_F(PerformanceHintsObserverTest, FallbackToPageHint) {
+  optimization_guide::proto::PerformanceHintsMetadata hints_metadata;
+  auto* hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("linkhint.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_SLOW);
+  optimization_guide::OptimizationMetadata metadata;
+  metadata.set_performance_hints_metadata(hints_metadata);
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimizationAsync(
+                  testing::_, optimization_guide::proto::PERFORMANCE_HINTS,
+                  base::test::IsNotNullCallback()))
+      .WillOnce(base::test::RunOnceCallback<2>(
+          optimization_guide::OptimizationGuideDecision::kTrue,
+          testing::ByRef(metadata)));
+
+  PerformanceHintsObserver::CreateForWebContents(web_contents());
+  CallDidFinishNavigation(web_contents());
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(
+      *mock_optimization_guide_keyed_service_,
+      CanApplyOptimization(
+          testing::_, optimization_guide::proto::PERFORMANCE_HINTS, testing::_))
+      .Times(0);
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(), GURL("http://www.linkhint.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_SLOW));
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintFound*/ 3, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.SourceLookupStatus.LinkHint", /*kHintFound*/ 3,
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.SourceLookupStatus.PageHint",
+      /*kNotQueried*/ 0, 1);
+
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimization(GURL("https://www.nohint.com"),
+                                   optimization_guide::proto::PERFORMANCE_HINTS,
+                                   testing::_))
+      .WillOnce(testing::Return(
+          optimization_guide::OptimizationGuideDecision::kFalse));
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(), GURL("https://www.nohint.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintNotFound*/ 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.SourceLookupStatus.LinkHint", /*kNoMatch*/ 2,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.SourceLookupStatus.PageHint", /*kNoMatch*/ 2,
+      1);
+
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimization(GURL("https://www.notready.com"),
+                                   optimization_guide::proto::PERFORMANCE_HINTS,
+                                   testing::_))
+      .WillOnce(testing::Return(
+          optimization_guide::OptimizationGuideDecision::kUnknown));
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(), GURL("https://www.notready.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintNotReady*/ 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.SourceLookupStatus.LinkHint", /*kNoMatch*/ 2,
+      2);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.SourceLookupStatus.PageHint", /*kNotReady*/ 1,
+      1);
+
+  optimization_guide::proto::PerformanceHintsMetadata pagehint_metadata;
+  pagehint_metadata.mutable_page_hint()->set_performance_class(
+      optimization_guide::proto::PERFORMANCE_FAST);
+  metadata.set_performance_hints_metadata(pagehint_metadata);
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimization(GURL("https://www.pagehint.com"),
+                                   optimization_guide::proto::PERFORMANCE_HINTS,
+                                   testing::NotNull()))
+      .WillOnce(testing::DoAll(
+          testing::SetArgPointee<2>(metadata),
+          testing::Return(
+              optimization_guide::OptimizationGuideDecision::kTrue)));
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(), GURL("https://www.pagehint.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_FAST));
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintFound*/ 3, 2);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.SourceLookupStatus.LinkHint", /*kNoMatch*/ 2,
+      3);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.SourceLookupStatus.PageHint", /*kHintFound*/ 3,
+      1);
+}
+
+// If any sources are NotReady and the rest are NotFound, NotReady should be
+// returned.
+TEST_F(PerformanceHintsObserverTest, SomeSourcesNotReady) {
+  // Link hints callback will not be called, so kNotReady.
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimizationAsync(
+                  testing::_, optimization_guide::proto::PERFORMANCE_HINTS,
+                  base::test::IsNotNullCallback()));
+
+  PerformanceHintsObserver::CreateForWebContents(web_contents());
+  CallDidFinishNavigation(web_contents());
+
+  // No page hint for URL.
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimization(GURL("https://www.nohint.com"),
+                                   optimization_guide::proto::PERFORMANCE_HINTS,
+                                   testing::_))
+      .WillOnce(testing::Return(
+          optimization_guide::OptimizationGuideDecision::kFalse));
+
+  base::HistogramTester histogram_tester;
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(), GURL("https://www.nohint.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult", /*kHintNotReady*/ 1, 1);
+}
+
+TEST_F(PerformanceHintsObserverTest, RewrittenUrl) {
+  optimization_guide::proto::PerformanceHintsMetadata hints_metadata;
+  auto* hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("www.google.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_FAST);
+  hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("www.test.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_SLOW);
+  optimization_guide::OptimizationMetadata metadata;
+  metadata.set_performance_hints_metadata(hints_metadata);
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimizationAsync(
+                  testing::_, optimization_guide::proto::PERFORMANCE_HINTS,
+                  base::test::IsNotNullCallback()))
+      .WillOnce(base::test::RunOnceCallback<2>(
+          optimization_guide::OptimizationGuideDecision::kTrue,
+          testing::ByRef(metadata)));
+
+  PerformanceHintsObserver::CreateForWebContents(web_contents());
+  CallDidFinishNavigation(web_contents());
+
+  base::HistogramTester histogram_tester;
+
+  // There is a FAST hint that should match all www.google.com URLs, but not
+  // those that fit the redirect pattern.
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(),
+                  GURL("https://www.google.com/url?url=http://www.test.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_SLOW));
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult",
+      /*kHintFound*/ 3, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult.Rewritten",
+      /*kHintFound*/ 3, 1);
+
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(), GURL("https://www.google.com/other/link"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_FAST));
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult",
+      /*kHintFound*/ 3, 2);
+  // Still only one sample in .Rewritten.
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.HintForURLResult.Rewritten",
+      /*kHintFound*/ 3, 1);
+
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(),
+                  GURL("https://www.google.com/url?url=https://www.nohint.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult",
+      /*kHintNotFound*/ 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult.Rewritten",
+      /*kHintNotFound*/ 0, 1);
+
+  EXPECT_THAT(
+      PerformanceHintsObserver::PerformanceClassForURL(
+          web_contents(), GURL("https://www.google.com/url?url=notaurl"),
+          /*record_metrics=*/true),
+      Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult", /*kInvalidURL*/ 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "PerformanceHints.Observer.HintForURLResult.Rewritten", /*kInvalidURL*/ 2,
+      1);
+}
+
+class RewritesDisabledPerformanceHintsObserverTest
+    : public PerformanceHintsObserverTest {
+ public:
+  RewritesDisabledPerformanceHintsObserverTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {kPerformanceHintsObserver,
+         // Need to enable kOptimizationHints or GetForProfile will return
+         // nullptr.
+         optimization_guide::features::kOptimizationHints},
+        {kPerformanceHintsHandleRewrites});
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(RewritesDisabledPerformanceHintsObserverTest, RewritesDisabled) {
+  optimization_guide::proto::PerformanceHintsMetadata hints_metadata;
+  auto* hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("www.google.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_FAST);
+  hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("www.test.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_SLOW);
+  optimization_guide::OptimizationMetadata metadata;
+  metadata.set_performance_hints_metadata(hints_metadata);
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimizationAsync(
+                  testing::_, optimization_guide::proto::PERFORMANCE_HINTS,
+                  base::test::IsNotNullCallback()))
+      .WillOnce(base::test::RunOnceCallback<2>(
+          optimization_guide::OptimizationGuideDecision::kTrue,
+          testing::ByRef(metadata)));
+
+  PerformanceHintsObserver::CreateForWebContents(web_contents());
+  CallDidFinishNavigation(web_contents());
+
+  base::HistogramTester histogram_tester;
+
+  // The rewrite handling should not happen here and the link should be badged
+  // as though it were google.com.
+  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
+                  web_contents(),
+                  GURL("https://www.google.com/url?url=http://www.test.com"),
+                  /*record_metrics=*/true),
+              Eq(optimization_guide::proto::PERFORMANCE_FAST));
+  histogram_tester.ExpectTotalCount(
+      "PerformanceHints.Observer.HintForURLResult.Rewritten", 0);
 }
 
 TEST_F(PerformanceHintsObserverTest, PerformanceHintsMetadataNotPresent) {
@@ -170,7 +442,8 @@ TEST_F(PerformanceHintsObserverTest, PerformanceHintsMetadataNotPresent) {
   base::HistogramTester histogram_tester;
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("https://www.nohint.com")),
+                  web_contents(), GURL("https://www.nohint.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
   histogram_tester.ExpectUniqueSample(
@@ -192,11 +465,13 @@ TEST_F(PerformanceHintsObserverTest, InvalidURL) {
 
   base::HistogramTester histogram_tester;
 
-  EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(web_contents(),
-                                                               GURL("")),
-              Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
+  EXPECT_THAT(
+      PerformanceHintsObserver::PerformanceClassForURL(web_contents(), GURL(""),
+                                                       /*record_metrics=*/true),
+      Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("ftp://notsupported.com")),
+                  web_contents(), GURL("ftp://notsupported.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
   histogram_tester.ExpectUniqueSample(
@@ -221,11 +496,48 @@ TEST_F(PerformanceHintsObserverTest, NoHintsForPage) {
   base::HistogramTester histogram_tester;
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("https://www.nohint.com")),
+                  web_contents(), GURL("https://www.nohint.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
   histogram_tester.ExpectUniqueSample(
       "PerformanceHints.Observer.HintForURLResult", /*kHintNotFound*/ 0, 1);
+}
+
+TEST_F(PerformanceHintsObserverTest, DontMatchQueryParams) {
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              RegisterOptimizationTypesAndTargets(
+                  testing::UnorderedElementsAre(
+                      optimization_guide::proto::PERFORMANCE_HINTS),
+                  testing::IsEmpty()));
+
+  optimization_guide::proto::PerformanceHintsMetadata hints_metadata;
+  auto* hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("www.test.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_SLOW);
+  hint = hints_metadata.add_performance_hints();
+  hint->set_wildcard_pattern("www.google.com");
+  hint->set_performance_class(optimization_guide::proto::PERFORMANCE_FAST);
+  optimization_guide::OptimizationMetadata metadata;
+  metadata.set_performance_hints_metadata(hints_metadata);
+  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
+              CanApplyOptimizationAsync(
+                  testing::_, optimization_guide::proto::PERFORMANCE_HINTS,
+                  base::test::IsNotNullCallback()))
+      .WillOnce(base::test::RunOnceCallback<2>(
+          optimization_guide::OptimizationGuideDecision::kTrue,
+          testing::ByRef(metadata)));
+
+  PerformanceHintsObserver::CreateForWebContents(web_contents());
+  CallDidFinishNavigation(web_contents());
+
+  base::HistogramTester histogram_tester;
+
+  EXPECT_THAT(
+      PerformanceHintsObserver::PerformanceClassForURL(
+          web_contents(), GURL("http://www.google.com/search?q=www.test.com"),
+          /*record_metrics=*/true),
+      Eq(optimization_guide::proto::PERFORMANCE_FAST));
 }
 
 TEST_F(PerformanceHintsObserverTest, PerformanceInfoRequestedBeforeCallback) {
@@ -240,11 +552,15 @@ TEST_F(PerformanceHintsObserverTest, PerformanceInfoRequestedBeforeCallback) {
   base::HistogramTester histogram_tester;
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("https://www.nohint.com")),
+                  web_contents(), GURL("https://www.nohint.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
   histogram_tester.ExpectUniqueSample(
       "PerformanceHints.Observer.HintForURLResult", /*kHintNotReady*/ 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PerformanceHints.Observer.SourceLookupStatus.LinkHint", /*kNotReady*/ 1,
+      1);
 }
 
 TEST_F(PerformanceHintsObserverTest, OptimizationGuideDisabled) {
@@ -256,7 +572,8 @@ TEST_F(PerformanceHintsObserverTest, OptimizationGuideDisabled) {
   CallDidFinishNavigation(web_contents());
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("http://www.test.com")),
+                  web_contents(), GURL("http://www.test.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 }
 
@@ -271,7 +588,8 @@ TEST_F(PerformanceHintsObserverTest, NoErrorPageHints) {
   CallDidFinishNavigation(web_contents());
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("http://www.test.com")),
+                  web_contents(), GURL("http://www.test.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 }
 
@@ -294,25 +612,28 @@ TEST_F(PerformanceHintsObserverTest, DontFetchForSubframe) {
   CallDidFinishNavigation(web_contents());
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("http://www.test.com")),
+                  web_contents(), GURL("http://www.test.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 }
 
-TEST_F(PerformanceHintsObserverTest, OverrideUnknownPerformanceToFast) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kPerformanceHintsObserver, kPerformanceHintsTreatUnknownAsFast,
-       // Need to enable kOptimizationHints or GetForProfile will return
-       // nullptr.
-       optimization_guide::features::kOptimizationHints},
-      {});
+class OverrideUnknownPerformanceHintsObserverTest
+    : public PerformanceHintsObserverTest {
+ public:
+  OverrideUnknownPerformanceHintsObserverTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {kPerformanceHintsObserver, kPerformanceHintsTreatUnknownAsFast,
+         // Need to enable kOptimizationHints or GetForProfile will return
+         // nullptr.
+         optimization_guide::features::kOptimizationHints},
+        {});
+  }
 
-  EXPECT_CALL(*mock_optimization_guide_keyed_service_,
-              RegisterOptimizationTypesAndTargets(
-                  testing::UnorderedElementsAre(
-                      optimization_guide::proto::PERFORMANCE_HINTS),
-                  testing::IsEmpty()));
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
+TEST_F(OverrideUnknownPerformanceHintsObserverTest,
+       OverrideUnknownPerformanceToFast) {
   optimization_guide::proto::PerformanceHintsMetadata hints_metadata;
   auto* hint = hints_metadata.add_performance_hints();
   hint->set_wildcard_pattern("test.com");
@@ -339,39 +660,36 @@ TEST_F(PerformanceHintsObserverTest, OverrideUnknownPerformanceToFast) {
   base::HistogramTester histogram_tester;
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("http://www.test.com")),
+                  web_contents(), GURL("http://www.test.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_SLOW));
   histogram_tester.ExpectBucketCount(
       "PerformanceHints.Observer.PerformanceClassForURL", /*kSlow*/ 1, 1);
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("http://www.fastsite.org")),
+                  web_contents(), GURL("http://www.fastsite.org"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_FAST));
   histogram_tester.ExpectBucketCount(
       "PerformanceHints.Observer.PerformanceClassForURL", /*kFast*/ 2, 1);
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("https://www.othersite.net/this/link")),
+                  web_contents(), GURL("https://www.othersite.net/this/link"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_FAST));
   histogram_tester.ExpectBucketCount(
       "PerformanceHints.Observer.PerformanceClassForURL", /*kUnknown*/ 0, 1);
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("https://www.nohint.com")),
+                  web_contents(), GURL("https://www.nohint.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_FAST));
   histogram_tester.ExpectBucketCount(
       "PerformanceHints.Observer.PerformanceClassForURL", /*kUnknown*/ 0, 2);
 }
 
-TEST_F(PerformanceHintsObserverTest, HintFetchingNotEnabled) {
+// Uses OverrideUnknownPerformanceHintsObserverTest to ensure
+// PERFORMANCE_UNKNOWN is not overridden to FAST when fetching is disabled.
+TEST_F(OverrideUnknownPerformanceHintsObserverTest, HintFetchingNotEnabled) {
   base::CommandLine::ForCurrentProcess()->RemoveSwitch(
       optimization_guide::switches::kDisableCheckingUserPermissionsForTesting);
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {kPerformanceHintsObserver,
-       optimization_guide::features::kOptimizationHints,
-       // Ensure PERFORMANCE_UNKNOWN is not overridden to FAST when fetching is
-       // disabled.
-       kPerformanceHintsTreatUnknownAsFast},
-      {});
 
   ON_CALL(*mock_optimization_guide_keyed_service_,
           CanApplyOptimizationAsync(testing::_, testing::_, testing::_))
@@ -383,7 +701,8 @@ TEST_F(PerformanceHintsObserverTest, HintFetchingNotEnabled) {
   CallDidFinishNavigation(web_contents());
 
   EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                  web_contents(), GURL("http://www.test.com")),
+                  web_contents(), GURL("http://www.test.com"),
+                  /*record_metrics=*/true),
               Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 }
 
@@ -407,7 +726,8 @@ TEST_F(PerformanceHintsObserverTest, ResetObserverForNextNavigation) {
   {
     base::HistogramTester histogram_tester;
     EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                    web_contents(), GURL("https://www.nohint.com")),
+                    web_contents(), GURL("https://www.nohint.com"),
+                    /*record_metrics=*/true),
                 Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
     histogram_tester.ExpectUniqueSample(
@@ -420,7 +740,8 @@ TEST_F(PerformanceHintsObserverTest, ResetObserverForNextNavigation) {
     std::move(finished_callback)
         .Run(optimization_guide::OptimizationGuideDecision::kTrue, {});
     EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                    web_contents(), GURL("https://www.nohint.com")),
+                    web_contents(), GURL("https://www.nohint.com"),
+                    /*record_metrics=*/true),
                 Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
     histogram_tester.ExpectUniqueSample(
@@ -434,7 +755,8 @@ TEST_F(PerformanceHintsObserverTest, ResetObserverForNextNavigation) {
     CallDidFinishNavigation(web_contents());
 
     EXPECT_THAT(PerformanceHintsObserver::PerformanceClassForURL(
-                    web_contents(), GURL("https://www.nohint.com")),
+                    web_contents(), GURL("https://www.nohint.com"),
+                    /*record_metrics=*/true),
                 Eq(optimization_guide::proto::PERFORMANCE_UNKNOWN));
 
     histogram_tester.ExpectUniqueSample(

@@ -113,6 +113,10 @@ const sk_sp<SkImage>& PaintImage::GetSkImage() const {
   return cached_sk_image_;
 }
 
+const sk_sp<SkImage>& PaintImage::GetRasterSkImage() const {
+  return cached_sk_image_;
+}
+
 PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
   DCHECK(!subset.IsEmpty());
 
@@ -133,7 +137,7 @@ PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
   // PaintImage is an optimization to allow re-use of the original decode for
   // image subsets in skia, for cases that rely on skia's image decode cache.
   result.cached_sk_image_ =
-      GetSkImage()->makeSubset(gfx::RectToSkIRect(subset));
+      GetRasterSkImage()->makeSubset(gfx::RectToSkIRect(subset));
   return result;
 }
 
@@ -361,18 +365,19 @@ sk_sp<SkImage> PaintImage::GetSkImageForFrame(
     size_t index,
     GeneratorClientId client_id) const {
   DCHECK_LT(index, FrameCount());
+  DCHECK(!IsTextureBacked());
 
   // |client_id| and |index| are only relevant for generator backed images which
   // perform lazy decoding and can be multi-frame.
   if (!paint_image_generator_) {
     DCHECK_EQ(index, kDefaultFrameIndex);
-    return GetSkImage();
+    return GetRasterSkImage();
   }
 
   // The internally cached SkImage is constructed using the default frame index
   // and GeneratorClientId. Avoid creating a new SkImage.
   if (index == kDefaultFrameIndex && client_id == kDefaultGeneratorClientId)
-    return GetSkImage();
+    return GetRasterSkImage();
 
   sk_sp<SkImage> image =
       SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(

@@ -36,7 +36,7 @@ void Sleep(int duration_ms) {
 
 class XScopedDisplay {
  public:
-  XScopedDisplay() : display_(NULL) {}
+  XScopedDisplay() : display_(nullptr) {}
   ~XScopedDisplay() {
     if (display_) XCloseDisplay(display_);
   }

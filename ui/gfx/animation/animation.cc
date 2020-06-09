@@ -26,8 +26,7 @@ base::Optional<bool> Animation::prefers_reduced_motion_;
 Animation::Animation(base::TimeDelta timer_interval)
     : timer_interval_(timer_interval),
       is_animating_(false),
-      delegate_(NULL) {
-}
+      delegate_(nullptr) {}
 
 Animation::~Animation() {
   // Don't send out notification from the destructor. Chances are the delegate

@@ -98,9 +98,7 @@
 #include "content/renderer/gpu_benchmarking_extension.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
-#include "content/renderer/ime_event_guard.h"
 #include "content/renderer/impression_conversions.h"
-#include "content/renderer/input/frame_input_handler_impl.h"
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/internal_document_state_data.h"
@@ -1816,10 +1814,8 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 #endif
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
-      handling_select_range_(false),
       render_accessibility_manager_(
           std::make_unique<RenderAccessibilityManager>(this)),
-      is_pasting_(false),
       blame_context_(nullptr),
 #if BUILDFLAG(ENABLE_PLUGINS)
       focused_pepper_plugin_(nullptr),
@@ -2043,10 +2039,6 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   if (main_frame->IsWebLocalFrame())
     main_frame_url = main_frame->ToWebLocalFrame()->GetDocument().Url();
 
-  mojo::PendingRemote<mojom::Widget> widget_channel;
-  mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
-      widget_channel.InitWithNewPipeAndPassReceiver();
-
   mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget;
   mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget_receiver =
       blink_widget.InitWithNewEndpointAndPassReceiver();
@@ -2059,8 +2051,8 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
   // Synchronous IPC to obtain a routing id for the fullscreen widget.
   int32_t fullscreen_widget_routing_id = MSG_ROUTING_NONE;
   if (!GetFrameHost()->CreateNewFullscreenWidget(
-          std::move(widget_channel), std::move(blink_widget_host_receiver),
-          std::move(blink_widget), &fullscreen_widget_routing_id)) {
+          std::move(blink_widget_host_receiver), std::move(blink_widget),
+          &fullscreen_widget_routing_id)) {
     return nullptr;
   }
   RenderWidget::ShowCallback show_callback =
@@ -2071,8 +2063,8 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
       fullscreen_widget_routing_id, std::move(show_callback),
       GetLocalRootRenderWidget()->compositor_deps(),
       GetLocalRootRenderWidget()->GetOriginalScreenInfo(), plugin,
-      std::move(main_frame_url), std::move(widget_channel_receiver),
-      std::move(blink_widget_host), std::move(blink_widget_receiver));
+      std::move(main_frame_url), std::move(blink_widget_host),
+      std::move(blink_widget_receiver));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and
   // ShowCreatedFullscreenWidget. Would it be simpler to have the
@@ -2944,7 +2936,7 @@ PreviewsState RenderFrameImpl::GetPreviewsState() {
 }
 
 bool RenderFrameImpl::IsPasting() {
-  return is_pasting_;
+  return GetLocalRootRenderWidget()->is_pasting();
 }
 
 // blink::mojom::FullscreenVideoElementHandler implementation ------------------
@@ -4431,7 +4423,7 @@ void RenderFrameImpl::AbortClientNavigation() {
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
   if (!GetLocalRootRenderWidget()->GetWebWidget()->HandlingInputEvent() &&
-      !handling_select_range_)
+      !GetLocalRootRenderWidget()->handling_select_range())
     return;
 
   if (is_empty_selection)
@@ -6227,15 +6219,9 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindFullscreen, weak_factory_.GetWeakPtr()));
 
-  registry_.AddInterface(base::BindRepeating(
-      &FrameInputHandlerImpl::CreateMojoService, weak_factory_.GetWeakPtr()));
-
   registry_.AddInterface(
       base::BindRepeating(&InputTargetClientImpl::BindToReceiver,
                           base::Unretained(&input_target_client_impl_)));
-
-  registry_.AddInterface(base::BindRepeating(&RenderFrameImpl::BindWidget,
-                                             weak_factory_.GetWeakPtr()));
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
@@ -6462,11 +6448,6 @@ void RenderFrameImpl::RenderWidgetWillHandleMouseEvent() {
   // |pepper_last_mouse_event_target_|.
   pepper_last_mouse_event_target_ = nullptr;
 #endif
-}
-
-void RenderFrameImpl::BindWidget(
-    mojo::PendingReceiver<mojom::Widget> receiver) {
-  GetLocalRootRenderWidget()->SetWidgetReceiver(std::move(receiver));
 }
 
 blink::WebComputedAXTree* RenderFrameImpl::GetOrCreateWebComputedAXTree() {

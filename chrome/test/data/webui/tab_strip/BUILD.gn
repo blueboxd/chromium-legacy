@@ -11,17 +11,14 @@ js_type_check("closure_compile") {
                     "js_module_root=../../chrome/test/data/webui/",
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
-
-  # TODO(crbug.com/1000989): Add JS type checking for all commented out targets.
   deps = [
-    #":alert_indicator_test",
-    #":alert_indicators_test",
+    ":alert_indicator_test",
+    ":alert_indicators_test",
     ":drag_manager_test",
-
-    #":tab_group_test",
-    #":tab_list_test",
-    #":tab_swiper_test",
-    #":tab_test",
+    ":tab_group_test",
+    ":tab_list_test",
+    ":tab_swiper_test",
+    ":tab_test",
     ":test_tab_strip_embedder_proxy",
     ":test_tabs_api_proxy",
   ]
@@ -41,6 +38,24 @@ js_library("test_tabs_api_proxy") {
   ]
 }
 
+js_library("alert_indicator_test") {
+  deps = [
+    "..:chai_assert",
+    "//chrome/browser/resources/tab_strip:alert_indicator",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("alert_indicators_test") {
+  deps = [
+    "..:chai_assert",
+    "//chrome/browser/resources/tab_strip:alert_indicator",
+    "//chrome/browser/resources/tab_strip:alert_indicators",
+    "//chrome/browser/resources/tab_strip:tabs_api_proxy",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
 js_library("drag_manager_test") {
   deps = [
     ":test_tabs_api_proxy",
@@ -50,6 +65,62 @@ js_library("drag_manager_test") {
     "//chrome/browser/resources/tab_strip:tab_group",
     "//chrome/browser/resources/tab_strip:tabs_api_proxy",
     "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("tab_group_test") {
+  deps = [
+    ":test_tab_strip_embedder_proxy",
+    "..:chai_assert",
+    "//chrome/browser/resources/tab_strip:tab",
+    "//chrome/browser/resources/tab_strip:tab_group",
+    "//chrome/browser/resources/tab_strip:tab_strip_embedder_proxy",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("tab_list_test") {
+  deps = [
+    ":test_tab_strip_embedder_proxy",
+    ":test_tabs_api_proxy",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/tab_strip:tab",
+    "//chrome/browser/resources/tab_strip:tab_group",
+    "//chrome/browser/resources/tab_strip:tab_list",
+    "//chrome/browser/resources/tab_strip:tab_strip_embedder_proxy",
+    "//chrome/browser/resources/tab_strip:tabs_api_proxy",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js/cr/ui:focus_outline_manager.m",
+  ]
+  externs_list = [
+    "$externs_path/mocha-2.5.js",
+    "$externs_path/pending.js",
+  ]
+}
+
+js_library("tab_swiper_test") {
+  deps = [
+    ":test_tabs_api_proxy",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/tab_strip:tab_swiper",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("tab_test") {
+  deps = [
+    ":test_tab_strip_embedder_proxy",
+    ":test_tabs_api_proxy",
+    "..:chai_assert",
+    "//chrome/browser/resources/tab_strip:tab",
+    "//chrome/browser/resources/tab_strip:tab_strip_embedder_proxy",
+    "//chrome/browser/resources/tab_strip:tabs_api_proxy",
+    "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]

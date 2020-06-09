@@ -73,13 +73,9 @@ class AssistantOnboardingViewTest : public AshTestBase {
 // Tests -----------------------------------------------------------------------
 
 TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedGreeting) {
-  // Advance clock to midnight.
-  base::Time::Exploded now;
-  base::Time::Now().LocalExplode(&now);
-  AdvanceClock(base::TimeDelta::FromHours((24 - now.hour) % 24) -
-               base::TimeDelta::FromMinutes(now.minute) -
-               base::TimeDelta::FromSeconds(now.second) -
-               base::TimeDelta::FromMilliseconds(now.millisecond));
+  // Advance clock to midnight tomorrow.
+  AdvanceClock(base::Time::Now().LocalMidnight() +
+               base::TimeDelta::FromHours(24) - base::Time::Now());
 
   // Verify 4:59 AM.
   AdvanceClock(base::TimeDelta::FromHours(4) +

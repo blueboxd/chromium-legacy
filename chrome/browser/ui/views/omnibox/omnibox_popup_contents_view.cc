@@ -193,9 +193,14 @@ gfx::Image OmniboxPopupContentsView::GetMatchIcon(
   return model_->GetMatchIcon(match, vector_icon_color);
 }
 
-void OmniboxPopupContentsView::SetSelectedLine(size_t index) {
+void OmniboxPopupContentsView::SetSelectedLineForMouseOrTouch(size_t index) {
   DCHECK(HasMatchAt(index));
-  model_->SetSelectedLine(index, false, false);
+  // We do this to prevent de-focusing auxiliary buttons due to drag.
+  if (index == model_->selected_line())
+    return;
+
+  OmniboxPopupModel::LineState line_state = OmniboxPopupModel::NORMAL;
+  model_->SetSelection(OmniboxPopupModel::Selection(index, line_state));
 }
 
 bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
@@ -433,7 +438,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP_DOWN:
     case ui::ET_GESTURE_SCROLL_BEGIN:
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      SetSelectedLine(index);
+      SetSelectedLineForMouseOrTouch(index);
       break;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:

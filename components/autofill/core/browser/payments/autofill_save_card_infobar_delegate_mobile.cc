@@ -72,6 +72,15 @@ AutofillSaveCardInfoBarDelegateMobile::
   }
 }
 
+// static
+AutofillSaveCardInfoBarDelegateMobile*
+AutofillSaveCardInfoBarDelegateMobile::FromInfobarDelegate(
+    infobars::InfoBarDelegate* delegate) {
+  return delegate->GetIdentifier() == AUTOFILL_CC_INFOBAR_DELEGATE_MOBILE
+             ? static_cast<AutofillSaveCardInfoBarDelegateMobile*>(delegate)
+             : nullptr;
+}
+
 void AutofillSaveCardInfoBarDelegateMobile::OnLegalMessageLinkClicked(
     GURL url) {
   infobar()->owner()->OpenURL(url, WindowOpenDisposition::NEW_FOREGROUND_TAB);

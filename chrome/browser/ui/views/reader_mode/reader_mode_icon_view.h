@@ -15,9 +15,6 @@
 namespace content {
 class NavigationHandle;
 }
-namespace views {
-class BubbleDialogDelegateView;
-}
 class CommandUpdater;
 class PrefService;
 
@@ -51,7 +48,7 @@ class ReaderModeIconView : public PageActionIconView,
 
   // GetBubble() is required by PageActionIconView; however, the icon
   // intentionally does not display a bubble when activated.
-  views::BubbleDialogDelegateView* GetBubble() const override;
+  views::BubbleDialogDelegate* GetBubble() const override;
 
   // dom_distiller::DistillabilityObserver overrides:
   void OnResult(const dom_distiller::DistillabilityResult& result) override;

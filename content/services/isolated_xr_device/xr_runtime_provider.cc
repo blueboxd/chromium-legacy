@@ -41,15 +41,21 @@ constexpr base::TimeDelta kTimeBetweenPollingEvents =
     base::TimeDelta::FromSecondsD(5);
 
 template <typename VrDeviceT>
+std::unique_ptr<VrDeviceT> CreateDevice() {
+  return std::make_unique<VrDeviceT>();
+}
+
+template <typename VrDeviceT>
 std::unique_ptr<VrDeviceT> EnableRuntime(
-    device::mojom::IsolatedXRRuntimeProviderClient* client) {
-  auto device = std::make_unique<VrDeviceT>();
+    device::mojom::IsolatedXRRuntimeProviderClient* client,
+    base::OnceCallback<std::unique_ptr<VrDeviceT>()> create_device) {
+  auto device = std::move(create_device).Run();
   TRACE_EVENT_INSTANT1("xr", "HardwareAdded", TRACE_EVENT_SCOPE_THREAD, "id",
                        static_cast<int>(device->GetId()));
   // "Device" here refers to a runtime + hardware pair, not necessarily
   // a physical device.
   client->OnDeviceAdded(device->BindXRRuntime(), device->BindCompositorHost(),
-                        device->GetId());
+                        device->GetDeviceData(), device->GetId());
   return device;
 }
 
@@ -64,12 +70,14 @@ void DisableRuntime(device::mojom::IsolatedXRRuntimeProviderClient* client,
 }
 
 template <typename VrHardwareT>
-void SetRuntimeStatus(device::mojom::IsolatedXRRuntimeProviderClient* client,
-                      IsolatedXRRuntimeProvider::RuntimeStatus status,
-                      std::unique_ptr<VrHardwareT>* out_device) {
+void SetRuntimeStatus(
+    device::mojom::IsolatedXRRuntimeProviderClient* client,
+    IsolatedXRRuntimeProvider::RuntimeStatus status,
+    base::OnceCallback<std::unique_ptr<VrHardwareT>()> create_device,
+    std::unique_ptr<VrHardwareT>* out_device) {
   if (status == IsolatedXRRuntimeProvider::RuntimeStatus::kEnable &&
       !*out_device) {
-    *out_device = EnableRuntime<VrHardwareT>(client);
+    *out_device = EnableRuntime<VrHardwareT>(client, std::move(create_device));
   } else if (status == IsolatedXRRuntimeProvider::RuntimeStatus::kDisable &&
              *out_device) {
     DisableRuntime(client, std::move(*out_device));
@@ -211,7 +219,9 @@ bool IsolatedXRRuntimeProvider::IsOculusVrHardwareAvailable() {
 }
 
 void IsolatedXRRuntimeProvider::SetOculusVrRuntimeStatus(RuntimeStatus status) {
-  SetRuntimeStatus(client_.get(), status, &oculus_device_);
+  SetRuntimeStatus(client_.get(), status,
+                   base::BindOnce(&CreateDevice<device::OculusDevice>),
+                   &oculus_device_);
 }
 #endif  // BUILDFLAG(ENABLE_OCULUS_VR)
 
@@ -223,7 +233,9 @@ bool IsolatedXRRuntimeProvider::IsOpenVrHardwareAvailable() {
 }
 
 void IsolatedXRRuntimeProvider::SetOpenVrRuntimeStatus(RuntimeStatus status) {
-  SetRuntimeStatus(client_.get(), status, &openvr_device_);
+  SetRuntimeStatus(client_.get(), status,
+                   base::BindOnce(&CreateDevice<device::OpenVRDevice>),
+                   &openvr_device_);
 }
 #endif  // BUILDFLAG(ENABLE_OPENVR)
 
@@ -233,7 +245,9 @@ bool IsolatedXRRuntimeProvider::IsWMRHardwareAvailable() {
 }
 
 void IsolatedXRRuntimeProvider::SetWMRRuntimeStatus(RuntimeStatus status) {
-  SetRuntimeStatus(client_.get(), status, &wmr_device_);
+  SetRuntimeStatus(client_.get(), status,
+                   base::BindOnce(&CreateDevice<device::MixedRealityDevice>),
+                   &wmr_device_);
 }
 #endif  // BUILDFLAG(ENABLE_WINDOWS_MR)
 
@@ -243,7 +257,17 @@ bool IsolatedXRRuntimeProvider::IsOpenXrHardwareAvailable() {
 }
 
 void IsolatedXRRuntimeProvider::SetOpenXrRuntimeStatus(RuntimeStatus status) {
-  SetRuntimeStatus(client_.get(), status, &openxr_device_);
+  SetRuntimeStatus(
+      client_.get(), status,
+      base::BindOnce(
+          [](device::OpenXrStatics* openxr_statics) {
+            // This does not give any ownership of the OpenXrStatics object to
+            // OpenXrDevice. The OpenXrStatics is only used in the constructor
+            // and a reference is not kept.
+            return std::make_unique<device::OpenXrDevice>(openxr_statics);
+          },
+          openxr_statics_.get()),
+      &openxr_device_);
 }
 #endif  // BUILDFLAG(ENABLE_OPENXR)
 

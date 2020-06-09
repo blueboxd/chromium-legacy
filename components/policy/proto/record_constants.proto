@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package reporting_messaging_layer;
+package reporting;
 
 // |Destination| indicates which handler a |Record| should be delivered to.
 enum Destination {

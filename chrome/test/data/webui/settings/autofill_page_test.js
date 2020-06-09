@@ -207,7 +207,10 @@ suite('PasswordsAndForms', function() {
     return createPrefs(true, true).then(function(prefs) {
       const element = createAutofillElement(prefs);
 
-      const list = [createExceptionEntry(), createExceptionEntry()];
+      const list = [
+        createExceptionEntry({url: 'one.com', id: 0}),
+        createExceptionEntry({url: 'two.com', id: 1})
+      ];
       passwordManager.lastCallback.addExceptionListChangedListener(list);
       flush();
 

@@ -474,6 +474,16 @@ MediaHistoryStore::GetMediaHistoryPlaybackRowsForDebug() {
   return playback_table_->GetPlaybackRows();
 }
 
+std::vector<media_feeds::mojom::MediaFeedItemPtr>
+MediaHistoryStore::GetMediaFeedItems(
+    const MediaHistoryKeyedService::GetMediaFeedItemsRequest& request) {
+  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+  if (!CanAccessDatabase() || !feed_items_table_)
+    return std::vector<media_feeds::mojom::MediaFeedItemPtr>();
+
+  return feed_items_table_->GetItems(request);
+}
+
 std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryStore::GetMediaFeeds(
     const MediaHistoryKeyedService::GetMediaFeedsRequest& request) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
@@ -827,16 +837,6 @@ void MediaHistoryStore::StoreMediaFeedFetchResultInternal(
   }
 
   DB()->CommitTransaction();
-}
-
-std::vector<media_feeds::mojom::MediaFeedItemPtr>
-MediaHistoryStore::GetItemsForMediaFeedForDebug(const int64_t feed_id) {
-  DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-
-  if (!CanAccessDatabase() || !feed_items_table_)
-    return std::vector<media_feeds::mojom::MediaFeedItemPtr>();
-
-  return feed_items_table_->GetItemsForFeed(feed_id);
 }
 
 MediaHistoryKeyedService::PendingSafeSearchCheckList

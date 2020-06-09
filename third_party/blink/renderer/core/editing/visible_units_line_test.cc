@@ -51,6 +51,20 @@ class VisibleUnitsLineTest : public EditingTestBase {
   static bool LayoutNGEnabled() {
     return RuntimeEnabledFeatures::LayoutNGEnabled();
   }
+
+  std::string TestEndOfLine(const std::string& input) {
+    const Position& caret = SetCaretTextToBody(input);
+    const Position& result =
+        EndOfLine(CreateVisiblePosition(caret)).DeepEquivalent();
+    return GetCaretTextFromBody(result);
+  }
+
+  std::string TestLogicalEndOfLine(const std::string& input) {
+    const Position& caret = SetCaretTextToBody(input);
+    const Position& result =
+        LogicalEndOfLine(CreateVisiblePosition(caret)).DeepEquivalent();
+    return GetCaretTextFromBody(result);
+  }
 };
 
 class ParameterizedVisibleUnitsLineTest
@@ -649,6 +663,139 @@ TEST_F(VisibleUnitsLineTest, startOfLine) {
       StartOfLine(CreateVisiblePositionInFlatTree(*seven, 1)).DeepEquivalent());
 }
 
+TEST_P(ParameterizedVisibleUnitsLineTest, EndOfLineWithSoftLineWrap3) {
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "font: 10px/1 Ahem; width: 3ch; word-break: break-all; }");
+
+  EXPECT_EQ("<div>abc|def</div>", TestEndOfLine("<div>|abcdef</div>"));
+  EXPECT_EQ(
+      "<div dir=\"rtl\"><bdo dir=\"rtl\">abc|def</bdo></div>",
+      TestEndOfLine("<div dir=\"rtl\"><bdo dir=\"rtl\">|abcdef</bdo></div>"));
+
+  // Note: Both legacy and NG layout don't have text boxes for spaces cause
+  // soft line wrap.
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestEndOfLine("<div>abc |def ghi</div>"));
+
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">|abc def ghi</bdo></div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">ab|c def ghi</bdo></div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">abc| def ghi</bdo></div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc def| ghi</bdo></div>",
+            TestEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">abc |def ghi</bdo></div>"));
+
+  // On content editable, caret is after a space.
+  // Note: Legacy layout has text boxes at end of line for space cause soft line
+  // wrap for editable text, e.g.
+  //   LayoutText {#text} at (10,9) size 18x32
+  //     text run at (10,9) width 18: "abc"
+  //     text run at (28,9) width 0: " "
+  //     text run at (10,19) width 18: "def"
+  //     text run at (28,19) width 0: " "
+  //     text run at (10,29) width 18: "ghi"
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, EndOfLineWithSoftLineWrap4) {
+  LoadAhem();
+  InsertStyleElement("div { font: 10px/1 Ahem; width: 4ch; }");
+
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestEndOfLine("<div>abc |def ghi</div>"));
+
+  // On content editable, caret is after a space.
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, LogicalEndOfLineWithSoftLineWrap3) {
+  LoadAhem();
+  InsertStyleElement(
+      "div {"
+      "font: 10px/1 Ahem; width: 3ch; word-break: break-all; }");
+
+  EXPECT_EQ("<div>abc|def</div>", TestLogicalEndOfLine("<div>|abcdef</div>"));
+  EXPECT_EQ("<div dir=\"rtl\"><bdo dir=\"rtl\">abc|def</bdo></div>",
+            TestLogicalEndOfLine(
+                "<div dir=\"rtl\"><bdo dir=\"rtl\">|abcdef</bdo></div>"));
+
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestLogicalEndOfLine("<div>abc |def ghi</div>"));
+
+  // On content editable, caret is after a space.
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
+TEST_P(ParameterizedVisibleUnitsLineTest, LogicalEndOfLineWithSoftLineWrap4) {
+  LoadAhem();
+  InsertStyleElement("div { font: 10px/1 Ahem; width: 4ch; }");
+
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>|abc def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>ab|c def ghi</div>"));
+  EXPECT_EQ("<div>abc| def ghi</div>",
+            TestLogicalEndOfLine("<div>abc| def ghi</div>"));
+  EXPECT_EQ("<div>abc def| ghi</div>",
+            TestLogicalEndOfLine("<div>abc |def ghi</div>"));
+
+  // On content editable, caret is after a space.
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>|abc def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>ab|c def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc |def ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc| def ghi</div>"));
+  EXPECT_EQ("<div contenteditable>abc def |ghi</div>",
+            TestLogicalEndOfLine("<div contenteditable>abc |def ghi</div>"));
+}
+
 TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {
   // This test records the InSameLine() results in
   // editing/selection/skip-over-contenteditable.html
@@ -680,8 +827,6 @@ TEST_P(ParameterizedVisibleUnitsLineTest, InSameLineWithMixedEditability) {
   PositionWithAffinity position1(selection.Base());
   PositionWithAffinity position2(selection.Extent());
   // "Same line" is restricted by editability boundaries.
-  // TODO(editing-dev): Make sure this test doesn't fail when we stop wrapping
-  // inline contenteditables with inline blocks.
   EXPECT_FALSE(InSameLine(position1, position2));
 }
 

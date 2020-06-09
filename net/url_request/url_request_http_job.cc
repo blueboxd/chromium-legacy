@@ -552,14 +552,14 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 
 void URLRequestHttpJob::SetCookieHeaderAndStart(
     const CookieOptions& options,
-    const CookieStatusList& cookies_with_status_list,
-    const CookieStatusList& excluded_list) {
+    const CookieAccessResultList& cookies_with_access_result_list,
+    const CookieAccessResultList& excluded_list) {
   DCHECK(request_->maybe_sent_cookies().empty());
 
   bool can_get_cookies = CanGetCookies();
-  if (!cookies_with_status_list.empty() && can_get_cookies) {
+  if (!cookies_with_access_result_list.empty() && can_get_cookies) {
     std::string cookie_line =
-        CanonicalCookie::BuildCookieLine(cookies_with_status_list);
+        CanonicalCookie::BuildCookieLine(cookies_with_access_result_list);
     UMA_HISTOGRAM_COUNTS_10000("Cookie.HeaderLength", cookie_line.length());
     request_info_.extra_headers.SetHeader(HttpRequestHeaders::kCookie,
                                           cookie_line);
@@ -569,7 +569,7 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
 
     // TODO(crbug.com/1031664): Reduce the number of times the cookie list is
     // iterated over. Get metrics for every cookie which is included.
-    for (const auto& c : cookies_with_status_list) {
+    for (const auto& c : cookies_with_access_result_list) {
       bool request_is_secure = request_->url().SchemeIsCryptographic();
       net::CookieSourceScheme cookie_scheme = c.cookie.SourceScheme();
       CookieRequestScheme cookie_request_schemes;
@@ -599,36 +599,40 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     }
   }
 
-  // Report status for things in |excluded_list| and |cookies_with_status_list|
+  // Report status for things in |excluded_list| and
+  // |cookies_with_access_result_list|
   // after the delegate got a chance to block them.
-  CookieStatusList maybe_sent_cookies = excluded_list;
+  CookieAccessResultList maybe_sent_cookies = excluded_list;
 
   if (!can_get_cookies) {
-    for (CookieStatusList::iterator it = maybe_sent_cookies.begin();
+    for (CookieAccessResultList::iterator it = maybe_sent_cookies.begin();
          it != maybe_sent_cookies.end(); ++it) {
-      it->status.AddExclusionReason(
+      it->access_result.status.AddExclusionReason(
           CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
   }
-  for (const auto& cookie_with_status : cookies_with_status_list) {
-    CookieInclusionStatus status = cookie_with_status.status;
+
+  for (const auto& cookie_with_access_result :
+       cookies_with_access_result_list) {
+    CookieAccessResult access_result = cookie_with_access_result.access_result;
     if (!can_get_cookies) {
-      status.AddExclusionReason(
+      access_result.status.AddExclusionReason(
           CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
-    maybe_sent_cookies.push_back({cookie_with_status.cookie, status});
+    maybe_sent_cookies.push_back(
+        {cookie_with_access_result.cookie, access_result});
   }
 
   if (request_->net_log().IsCapturing()) {
-    for (const auto& cookie_and_status : maybe_sent_cookies) {
+    for (const auto& cookie_with_access_result : maybe_sent_cookies) {
       request_->net_log().AddEvent(
           NetLogEventType::COOKIE_INCLUSION_STATUS,
           [&](NetLogCaptureMode capture_mode) {
             return CookieInclusionStatusNetLogParams(
-                "send", cookie_and_status.cookie.Name(),
-                cookie_and_status.cookie.Domain(),
-                cookie_and_status.cookie.Path(), cookie_and_status.status,
-                capture_mode);
+                "send", cookie_with_access_result.cookie.Name(),
+                cookie_with_access_result.cookie.Domain(),
+                cookie_with_access_result.cookie.Path(),
+                cookie_with_access_result.access_result.status, capture_mode);
           });
     }
   }

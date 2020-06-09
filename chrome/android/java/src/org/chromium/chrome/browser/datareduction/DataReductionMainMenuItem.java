@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.datareduction.settings.DataReductionPreferenc
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -69,6 +70,18 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
             itemText.setText(
                     getContext().getString(R.string.data_reduction_saved_label, dataSaved));
             itemSummary.setText(getContext().getString(R.string.data_reduction_date_label, date));
+            // TODO (https://crbug.com/1048632): Use the TabModel-specific profile instead of
+            // calling Profile.getLastUsedRegularProfile().
+            Profile profile =
+                    ProfileManager.isInitialized() ? Profile.getLastUsedRegularProfile() : null;
+            if (profile != null) {
+                Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
+                tracker.addOnInitializedCallback((success) -> {
+                    if (success) {
+                        tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
+                    }
+                });
+            }
         } else {
             DataReductionProxyUma.dataReductionProxyUIAction(
                     DataReductionProxyUma.ACTION_MAIN_MENU_DISPLAYED_OFF);

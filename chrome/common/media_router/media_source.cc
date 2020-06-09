@@ -155,4 +155,16 @@ std::string MediaSource::AppNameFromDialSource() const {
   return IsDialSource() ? url_.path() : "";
 }
 
+std::string MediaSource::TruncateForLogging(size_t max_length) const {
+  const std::string origin = url_.GetOrigin().spec();
+  if (!origin.empty())
+    return origin.substr(0, max_length);
+  // TODO(takumif): Keep the query string by redacting PII. The query string may
+  // contain info useful for debugging such as the required capabilities.
+  const size_t query_start_index = id_.find("?");
+  const size_t length =
+      query_start_index == std::string::npos ? max_length : query_start_index;
+  return id_.substr(0, length);
+}
+
 }  // namespace media_router

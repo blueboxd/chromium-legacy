@@ -1138,7 +1138,7 @@ void ContentSecurityPolicy::ReportViolation(
   // |delegate_|.
   ContentSecurityPolicyDelegate* relevant_delegate =
       context_frame
-          ? &context_frame->GetDocument()->GetContentSecurityPolicyDelegate()
+          ? &context_frame->DomWindow()->GetContentSecurityPolicyDelegate()
           : delegate_.Get();
   DCHECK(relevant_delegate);
   GatherSecurityPolicyViolationEventData(
@@ -1219,7 +1219,7 @@ void ContentSecurityPolicy::PostViolationReport(
     bool is_frame_ancestors_violation = !!context_frame;
     ContentSecurityPolicyDelegate* relevant_delegate =
         is_frame_ancestors_violation
-            ? &context_frame->GetDocument()->GetContentSecurityPolicyDelegate()
+            ? &context_frame->DomWindow()->GetContentSecurityPolicyDelegate()
             : delegate_.Get();
     DCHECK(relevant_delegate);
 

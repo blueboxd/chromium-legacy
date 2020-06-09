@@ -128,6 +128,7 @@ class SpellChecker;
 class TextSuggestionController;
 class VirtualKeyboardOverlayChangedObserver;
 class WebContentSettingsClient;
+class WebInputEventAttribution;
 class WebPluginContainerImpl;
 class WebPrescientNetworking;
 class WebURLLoaderFactory;
@@ -611,6 +612,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Returns the first URL loaded in this frame that is cross-origin to the
   // parent frame.
   base::Optional<String> FirstUrlCrossOriginToParent() const;
+
+  // Return true if the frame is able to access an event with the given
+  // attribution (i.e. the event is targeted for an origin that the frame may
+  // access).
+  bool CanAccessEvent(const WebInputEventAttribution&) const;
 
  private:
   friend class FrameNavigationDisabler;

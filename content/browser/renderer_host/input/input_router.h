@@ -10,11 +10,11 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
-#include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
 namespace content {
 
@@ -88,10 +88,6 @@ class InputRouter {
   // Create and bind a new host channel.
   virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
   BindNewHost() = 0;
-
-  // Create and bind a new frame based host channel.
-  virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
-  BindNewFrameHost() = 0;
 
   // Used to stop an active fling if such exists.
   virtual void StopFling() = 0;

@@ -47,6 +47,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -1774,10 +1775,39 @@ TEST_P(TabletModeControllerScreenshotTest, EnterTabletModeWhileAnimating) {
   EXPECT_TRUE(IsShelfOpaque());
 }
 
+namespace {
+
+class LayerStartAnimationWaiter : public ui::LayerAnimationObserver {
+ public:
+  explicit LayerStartAnimationWaiter(ui::LayerAnimator* animator)
+      : animator_(animator) {
+    animator_->AddObserver(this);
+    run_loop_.Run();
+  }
+  LayerStartAnimationWaiter(const LayerStartAnimationWaiter&) = delete;
+  LayerStartAnimationWaiter& operator=(const LayerStartAnimationWaiter&) =
+      delete;
+  ~LayerStartAnimationWaiter() override { animator_->RemoveObserver(this); }
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {
+    run_loop_.Quit();
+  }
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+ private:
+  ui::LayerAnimator* animator_;
+  base::RunLoop run_loop_;
+};
+
+}  // namespace
+
 // Tests that the screenshot is visible when a window animation happens when
 // entering tablet mode.
-// Crashes on Linux Chrome OS.  http://crbug.com/1091085
-TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
+TEST_P(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(300, 200));
 
@@ -1786,27 +1816,23 @@ TEST_P(TabletModeControllerScreenshotTest, DISABLED_ScreenshotVisibility) {
   ASSERT_FALSE(IsScreenshotShown());
   EXPECT_TRUE(IsShelfOpaque());
 
-  TabletMode::Waiter waiter(/*enable=*/true);
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_FALSE(IsShelfOpaque());
 
-  EXPECT_FALSE(window2->layer()->GetAnimator()->is_animating());
-  // The layer we observer is actually the windows layer before starting the
+  // The layer we observe is actually the windows layer before starting the
   // animation. The animation performed is a cross-fade animation which
   // copies the window layer to another layer host. So cache them here for
-  // later use.
-  ui::Layer* old_layer = window2->layer();
-
-  // Tests that after waiting for the async tablet mode entry, the screenshot is
-  // shown.
-  waiter.Wait();
+  // later use. Wait until the animation has started, at this point the
+  // screenshot should be visible.
+  ui::LayerAnimator* old_animator = window2->layer()->GetAnimator();
+  ASSERT_FALSE(old_animator->is_animating());
+  { LayerStartAnimationWaiter waiter(old_animator); }
   EXPECT_TRUE(IsScreenshotShown());
-  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
   EXPECT_TRUE(IsShelfOpaque());
 
   // Tests that the screenshot is destroyed after the window is done animating.
-  old_layer->GetAnimator()->StopAnimating();
+  old_animator->StopAnimating();
   window2->layer()->GetAnimator()->StopAnimating();
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_TRUE(IsShelfOpaque());

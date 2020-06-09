@@ -71,6 +71,7 @@ run_jsbundler("switch_access_copied_files") {
     "nodes/group_node.js",
     "nodes/keyboard_node.js",
     "nodes/node_wrapper.js",
+    "nodes/slider_node.js",
     "nodes/switch_access_node.js",
     "nodes/system_menu_node.js",
     "nodes/tab_node.js",
@@ -152,6 +153,7 @@ js_type_check("closure_compile") {
     ":node_wrapper",
     ":preferences",
     ":rect_helper",
+    ":slider_node",
     ":switch_access",
     ":switch_access_constants",
     ":switch_access_node",
@@ -357,6 +359,16 @@ js_library("preferences") {
 
 js_library("rect_helper") {
   externs_list = [ "$externs_path/accessibility_private.js" ]
+}
+
+js_library("slider_node") {
+  sources = [ "nodes/slider_node.js" ]
+  deps = [
+    ":event_helper",
+    ":node_wrapper",
+    ":switch_access_constants",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
 }
 
 js_library("switch_access") {

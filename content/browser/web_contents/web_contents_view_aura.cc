@@ -248,12 +248,12 @@ void PrepareDragData(const DropData& drop_data,
   // SetURL() will itself do SetString() when a string hasn't been set yet,
   // but we want to prefer drop_data.text.string() over the URL string if it
   // exists.
-  if (!drop_data.text.string().empty())
-    provider->SetString(drop_data.text.string());
+  if (drop_data.text && !drop_data.text->empty())
+    provider->SetString(*drop_data.text);
   if (drop_data.url.is_valid())
     provider->SetURL(drop_data.url, drop_data.url_title);
-  if (!drop_data.html.string().empty())
-    provider->SetHtml(drop_data.html.string(), drop_data.html_base_url);
+  if (drop_data.html && !drop_data.html->empty())
+    provider->SetHtml(*drop_data.html, drop_data.html_base_url);
   if (!drop_data.filenames.empty())
     provider->SetFilenames(drop_data.filenames);
   if (!drop_data.file_system_files.empty()) {
@@ -309,7 +309,7 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
   base::string16 plain_text;
   data.GetString(&plain_text);
   if (!plain_text.empty())
-    drop_data->text = base::NullableString16(plain_text, false);
+    drop_data->text = plain_text;
 
   GURL url;
   base::string16 url_title;
@@ -324,7 +324,7 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
   GURL html_base_url;
   data.GetHtml(&html, &html_base_url);
   if (!html.empty())
-    drop_data->html = base::NullableString16(html, false);
+    drop_data->html = html;
   if (html_base_url.is_valid())
     drop_data->html_base_url = html_base_url;
 

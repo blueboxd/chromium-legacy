@@ -84,9 +84,7 @@ class FullscreenControllerTestWindow : public TestBrowserWindow,
 };
 
 FullscreenControllerTestWindow::FullscreenControllerTestWindow()
-    : state_(NORMAL),
-      browser_(NULL) {
-}
+    : state_(NORMAL), browser_(nullptr) {}
 
 void FullscreenControllerTestWindow::EnterFullscreen(
     const GURL& url,

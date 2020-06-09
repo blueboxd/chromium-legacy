@@ -9,6 +9,8 @@ import android.accounts.Account;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.components.signin.AccessTokenData;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -47,8 +49,9 @@ public class AccountHolder {
         return mAuthTokens.containsKey(authTokenType);
     }
 
-    public @Nullable String getAuthToken(String authTokenType) {
-        return mAuthTokens.get(authTokenType);
+    public @Nullable AccessTokenData getAuthToken(String authTokenType) {
+        String authTokenString = mAuthTokens.get(authTokenType);
+        return authTokenString == null ? null : new AccessTokenData(authTokenString);
     }
 
     public boolean hasBeenAccepted(String authTokenType) {

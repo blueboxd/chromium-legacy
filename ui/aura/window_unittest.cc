@@ -203,8 +203,7 @@ class ChildWindowDelegateImpl : public DestroyTrackingDelegateImpl {
 // OnWindowDestroyed is called.
 class DestroyOrphanDelegate : public TestWindowDelegate {
  public:
-  DestroyOrphanDelegate() : window_(NULL) {
-  }
+  DestroyOrphanDelegate() : window_(nullptr) {}
 
   void set_window(Window* window) { window_ = window; }
 

@@ -44,6 +44,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
@@ -77,6 +78,7 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/ignore_opens_during_unload_count_incrementer.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -143,6 +145,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
+#include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -643,6 +646,52 @@ void LocalFrame::DidAttachDocument() {
 
 base::Optional<String> LocalFrame::FirstUrlCrossOriginToParent() const {
   return first_url_cross_origin_to_parent_;
+}
+
+bool LocalFrame::CanAccessEvent(
+    const WebInputEventAttribution& attribution) const {
+  switch (attribution.type()) {
+    case WebInputEventAttribution::kTargetedFrame: {
+      auto* frame_document = GetDocument();
+      if (!frame_document)
+        return false;
+
+      // FIXME(acomminos): In the presence of a pointer lock, bail out. We
+      // currently do not propagate which frame had the lock at the time of
+      // event dispatch in the compositor. See https://crbug.com/1092617.
+      if (auto* page = frame_document->GetPage()) {
+        auto& pointer_lock_controller = page->GetPointerLockController();
+        if (pointer_lock_controller.GetElement()) {
+          return false;
+        }
+      }
+
+      auto* frame_origin =
+          frame_document->GetSecurityContext().GetSecurityOrigin();
+
+      cc::ElementId element_id = attribution.target_frame_id();
+      if (!element_id)
+        return false;
+
+      DOMNodeId target_document_id =
+          DOMNodeIdFromCompositorElementId(element_id);
+      Document* target_document =
+          DynamicTo<Document>(DOMNodeIds::NodeForId(target_document_id));
+      if (!target_document || !target_document->IsActive())
+        return false;
+
+      const auto* target_document_origin = target_document->GetSecurityOrigin();
+      if (!target_document_origin)
+        return false;
+
+      return frame_origin->CanAccess(target_document_origin);
+    }
+    case WebInputEventAttribution::kFocusedFrame:
+      return GetPage() ? GetPage()->GetFocusController().FocusedFrame() == this
+                       : false;
+    case WebInputEventAttribution::kUnknown:
+      return false;
+  }
 }
 
 void LocalFrame::Reload(WebFrameLoadType load_type) {

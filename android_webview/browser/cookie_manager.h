@@ -198,10 +198,11 @@ class CookieManager {
   void GetCookieListAsyncHelper(const GURL& host,
                                 net::CookieList* result,
                                 base::OnceClosure complete);
-  void GetCookieListCompleted(base::OnceClosure complete,
-                              net::CookieList* result,
-                              const net::CookieStatusList& value,
-                              const net::CookieStatusList& excluded_cookies);
+  void GetCookieListCompleted(
+      base::OnceClosure complete,
+      net::CookieList* result,
+      const net::CookieAccessResultList& value,
+      const net::CookieAccessResultList& excluded_cookies);
 
   void RemoveSessionCookiesHelper(base::OnceCallback<void(bool)> callback);
   void RemoveAllCookiesHelper(base::OnceCallback<void(bool)> callback);

@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/check.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "weblayer/browser/profile_disk_operations.h"
@@ -19,20 +19,10 @@
 namespace weblayer {
 
 class ProfileDiskOperationsTest : public testing::Test {
- public:
-  void SetUp() override {
-    CHECK(data_temp_dir_.CreateUniqueTempDir());
-    base::PathService::Override(DIR_USER_DATA, data_temp_dir_.GetPath());
-#if defined(OS_POSIX)
-    CHECK(cache_temp_dir_.CreateUniqueTempDir());
-    base::PathService::Override(base::DIR_CACHE, cache_temp_dir_.GetPath());
-#endif
-  }
-
  protected:
-  base::ScopedTempDir data_temp_dir_;
+  base::ScopedPathOverride data_dir_override_{DIR_USER_DATA};
 #if defined(OS_POSIX)
-  base::ScopedTempDir cache_temp_dir_;
+  base::ScopedPathOverride cache_dir_override_{base::DIR_CACHE};
 #endif
 };
 

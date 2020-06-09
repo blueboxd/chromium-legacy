@@ -67,7 +67,7 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   base::TimeTicks before_collect_context_graphics_info = base::TimeTicks::Now();
   bool success = CollectContextGraphicsInfo(gpu_info);
   if (!success)
-    LOG(ERROR) << "gpu::CollectGraphicsInfo failed.";
+    LOG(ERROR) << "CollectGraphicsInfo failed.";
 
   if (success) {
     base::TimeDelta collect_context_time =
@@ -113,17 +113,18 @@ class GpuWatchdogInit {
       watchdog_ptr_->OnInitComplete();
   }
 
-  void SetGpuWatchdogPtr(gpu::GpuWatchdogThread* ptr) { watchdog_ptr_ = ptr; }
+  void SetGpuWatchdogPtr(GpuWatchdogThread* ptr) { watchdog_ptr_ = ptr; }
 
  private:
-  gpu::GpuWatchdogThread* watchdog_ptr_ = nullptr;
+  GpuWatchdogThread* watchdog_ptr_ = nullptr;
 };
+
 }  // namespace
 
 GpuInit::GpuInit() = default;
 
 GpuInit::~GpuInit() {
-  gpu::StopForceDiscreteGPU();
+  StopForceDiscreteGPU();
 }
 
 bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
@@ -146,7 +147,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   // Set keys for crash logging based on preliminary gpu info, in case we
   // crash during feature collection.
-  gpu::SetKeysForCrashLogging(gpu_info_);
+  SetKeysForCrashLogging(gpu_info_);
 #if defined(SUBPIXEL_FONT_RENDERING_DISABLED)
   gpu_info_.subpixel_font_rendering = false;
 #else
@@ -168,31 +169,31 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
     // Compute blacklist and driver bug workaround decisions based on basic GPU
     // info.
-    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
-        gpu_info_, gpu_preferences_, command_line, &needs_more_info);
+    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
+                                              command_line, &needs_more_info);
   }
 #endif  // !OS_ANDROID && !BUILDFLAG(IS_CHROMECAST)
 
   gpu_info_.in_process_gpu = false;
-  bool use_swiftshader = false;
+  gl_use_swiftshader_ = false;
 
   // GL bindings may have already been initialized, specifically on MacOSX.
   bool gl_initialized = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (!gl_initialized) {
     // If GL has already been initialized, then it's too late to select GPU.
-    if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
-      gpu::InitializeSwitchableGPUs(
+    if (SwitchableGPUsSupported(gpu_info_, *command_line)) {
+      InitializeSwitchableGPUs(
           gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
     }
   } else if (gl::GetGLImplementation() == gl::kGLImplementationSwiftShaderGL &&
              command_line->GetSwitchValueASCII(switches::kUseGL) !=
                  gl::kGLImplementationSwiftShaderName) {
-    use_swiftshader = true;
+    gl_use_swiftshader_ = true;
   }
 
   bool enable_watchdog = !gpu_preferences_.disable_gpu_watchdog &&
                          !command_line->HasSwitch(switches::kHeadless) &&
-                         !use_swiftshader;
+                         !gl_use_swiftshader_;
 
   // Disable the watchdog in debug builds because they tend to only be run by
   // developers who will not appreciate the watchdog killing the GPU process.
@@ -233,11 +234,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
     if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
-      watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
+      watchdog_thread_ = GpuWatchdogThreadImplV2::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
       watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
     } else {
-      watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
+      watchdog_thread_ = GpuWatchdogThreadImplV1::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
     }
 
@@ -282,12 +283,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
           ->GetSupportedFormatsForTexturing();
 #endif
 
-  if (!use_swiftshader) {
-    use_swiftshader = EnableSwiftShaderIfNeeded(
+  if (!gl_use_swiftshader_) {
+    gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, needs_more_info);
   }
-  if (gl_initialized && use_swiftshader &&
+  if (gl_initialized && gl_use_swiftshader_ &&
       gl::GetGLImplementation() != gl::kGLImplementationSwiftShaderGL) {
 #if defined(OS_LINUX)
     VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
@@ -324,7 +325,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
 #if defined(OS_LINUX)
   // The ContentSandboxHelper is currently the only one implementation of
-  // gpu::GpuSandboxHelper and it has no dependency. Except on Linux where
+  // GpuSandboxHelper and it has no dependency. Except on Linux where
   // VaapiWrapper checks the GL implementation to determine which display
   // to use. So call PreSandboxStartup after GL initialization. But make
   // sure the watchdog is paused as loadLibrary may take a long time and
@@ -350,7 +351,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #if defined(OS_MACOSX)
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader) {
-    gpu::SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
+    SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
   }
 #endif  // defined(OS_MACOSX)
 
@@ -363,16 +364,17 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
   if (!gl_disabled) {
-    if (!use_swiftshader) {
+    if (!gl_use_swiftshader_) {
       if (!CollectGraphicsInfo(&gpu_info_))
         return false;
-      gpu::SetKeysForCrashLogging(gpu_info_);
-      gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
-          gpu_info_, gpu_preferences_, command_line, nullptr);
-      use_swiftshader = EnableSwiftShaderIfNeeded(
+
+      SetKeysForCrashLogging(gpu_info_);
+      gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
+                                                command_line, nullptr);
+      gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
           command_line, gpu_feature_info_,
           gpu_preferences_.disable_software_rasterizer, false);
-      if (use_swiftshader) {
+      if (gl_use_swiftshader_) {
 #if defined(OS_LINUX)
         VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
                 << "on Linux";
@@ -389,34 +391,48 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         }
 #endif  // OS_LINUX
       }
-    } else {  // use_swiftshader == true
+    } else {  // gl_use_swiftshader_ == true
       switch (gpu_preferences_.use_vulkan) {
-        case gpu::VulkanImplementationName::kNative: {
+        case VulkanImplementationName::kNative: {
           // Collect GPU info, so we can use blacklist to disable vulkan if it
           // is needed.
-          gpu::GPUInfo gpu_info;
+          GPUInfo gpu_info;
           if (!CollectGraphicsInfo(&gpu_info))
             return false;
-          auto gpu_feature_info = gpu::ComputeGpuFeatureInfo(
+          auto gpu_feature_info = ComputeGpuFeatureInfo(
               gpu_info, gpu_preferences_, command_line, nullptr);
-          gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
-              gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_VULKAN];
+          gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] =
+              gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN];
           break;
         }
-        case gpu::VulkanImplementationName::kForcedNative:
-        case gpu::VulkanImplementationName::kSwiftshader:
-          gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
-              gpu::kGpuFeatureStatusEnabled;
+        case VulkanImplementationName::kForcedNative:
+        case VulkanImplementationName::kSwiftshader:
+          gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] =
+              kGpuFeatureStatusEnabled;
           break;
-        case gpu::VulkanImplementationName::kNone:
-          gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
-              gpu::kGpuFeatureStatusDisabled;
+        case VulkanImplementationName::kNone:
+          gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] =
+              kGpuFeatureStatusDisabled;
           break;
       }
     }
   }
 
-  InitializeVulkan();
+  if (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] !=
+          kGpuFeatureStatusEnabled ||
+      !InitializeVulkan()) {
+    gpu_preferences_.use_vulkan = VulkanImplementationName::kNone;
+    gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] =
+        kGpuFeatureStatusDisabled;
+    if (gpu_preferences_.gr_context_type == GrContextType::kVulkan) {
+#if defined(OS_FUCHSIA)
+      // Fuchsia uses ANGLE for GL which requires Vulkan, so don't fall
+      // back to GL if Vulkan init fails.
+      LOG(FATAL) << "Vulkan initialization failed";
+#endif
+      gpu_preferences_.gr_context_type = GrContextType::kGL;
+    }
+  }
 
   // Collect GPU process info
   if (!gl_disabled) {
@@ -447,16 +463,16 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Driver may create a compatibility profile context when collect graphics
   // information on Linux platform. Try to collect graphics information
   // based on core profile context after disabling platform extensions.
-  if (!gl_disabled && !use_swiftshader) {
+  if (!gl_disabled && !gl_use_swiftshader_) {
     if (!CollectGraphicsInfo(&gpu_info_))
       return false;
-    gpu::SetKeysForCrashLogging(gpu_info_);
-    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
-                                                   command_line, nullptr);
-    use_swiftshader = EnableSwiftShaderIfNeeded(
+    SetKeysForCrashLogging(gpu_info_);
+    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
+                                              command_line, nullptr);
+    gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
-    if (use_swiftshader) {
+    if (gl_use_swiftshader_) {
       VLOG(1) << "Quit GPU process launch to fallback to SwiftShader cleanly "
               << "on Linux";
       return false;
@@ -464,7 +480,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
 #endif  // defined(OS_LINUX)
 
-  if (use_swiftshader) {
+  if (gl_use_swiftshader_) {
     AdjustInfoToSwiftShader();
   }
 
@@ -482,14 +498,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Software GL is expected to run slowly, so disable the watchdog
   // in that case.
   // In SwiftShader case, the implementation is actually EGLGLES2.
-  if (!use_swiftshader && command_line->HasSwitch(switches::kUseGL)) {
+  if (!gl_use_swiftshader_ && command_line->HasSwitch(switches::kUseGL)) {
     std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
     if (use_gl == gl::kGLImplementationSwiftShaderName ||
         use_gl == gl::kGLImplementationSwiftShaderForWebGLName) {
-      use_swiftshader = true;
+      gl_use_swiftshader_ = true;
     }
   }
-  if (use_swiftshader ||
+  if (gl_use_swiftshader_ ||
       gl::GetGLImplementation() == gl::GetSoftwareGLImplementation()) {
     gpu_info_.software_rendering = true;
     watchdog_thread_ = nullptr;
@@ -499,11 +515,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     watchdog_init.SetGpuWatchdogPtr(nullptr);
   } else if (enable_watchdog && delayed_watchdog_enable) {
     if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
-      watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
+      watchdog_thread_ = GpuWatchdogThreadImplV2::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
       watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
     } else {
-      watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
+      watchdog_thread_ = GpuWatchdogThreadImplV1::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
     }
   }
@@ -544,7 +560,16 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 
   InitializeGLThreadSafe(command_line, gpu_preferences_, &gpu_info_,
                          &gpu_feature_info_);
-  InitializeVulkan();
+
+  if (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] !=
+          kGpuFeatureStatusEnabled ||
+      !InitializeVulkan()) {
+    gpu_preferences_.use_vulkan = VulkanImplementationName::kNone;
+    gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] =
+        kGpuFeatureStatusDisabled;
+    if (gpu_preferences_.gr_context_type == GrContextType::kVulkan)
+      gpu_preferences_.gr_context_type = GrContextType::kGL;
+  }
 
   default_offscreen_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
 
@@ -585,7 +610,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
 #endif  // !BUILDFLAG(IS_CHROMECAST)
 
-  bool use_swiftshader = EnableSwiftShaderIfNeeded(
+  gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
       command_line, gpu_feature_info_,
       gpu_preferences_.disable_software_rasterizer, needs_more_info);
   if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
@@ -594,14 +619,14 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
-  if (!gl_disabled && !use_swiftshader) {
+  if (!gl_disabled && !gl_use_swiftshader_) {
     CollectContextGraphicsInfo(&gpu_info_);
     gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, nullptr);
-    use_swiftshader = EnableSwiftShaderIfNeeded(
+    gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
-    if (use_swiftshader) {
+    if (gl_use_swiftshader_) {
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
@@ -632,14 +657,14 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   // Driver may create a compatibility profile context when collect graphics
   // information on Linux platform. Try to collect graphics information
   // based on core profile context after disabling platform extensions.
-  if (!gl_disabled && !use_swiftshader) {
+  if (!gl_disabled && !gl_use_swiftshader_) {
     CollectContextGraphicsInfo(&gpu_info_);
     gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, nullptr);
-    use_swiftshader = EnableSwiftShaderIfNeeded(
+    gl_use_swiftshader_ = EnableSwiftShaderIfNeeded(
         command_line, gpu_feature_info_,
         gpu_preferences_.disable_software_rasterizer, false);
-    if (use_swiftshader) {
+    if (gl_use_swiftshader_) {
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
@@ -650,7 +675,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
 #endif  // defined(OS_LINUX)
 
-  if (use_swiftshader) {
+  if (gl_use_swiftshader_) {
     AdjustInfoToSwiftShader();
   }
 
@@ -675,63 +700,76 @@ scoped_refptr<gl::GLSurface> GpuInit::TakeDefaultOffscreenSurface() {
   return std::move(default_offscreen_surface_);
 }
 
-void GpuInit::InitializeVulkan() {
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] ==
-      gpu::kGpuFeatureStatusEnabled) {
-    DCHECK_NE(gpu_preferences_.use_vulkan,
-              gpu::VulkanImplementationName::kNone);
-    bool vulkan_use_swiftshader = gpu_preferences_.use_vulkan ==
-                                  gpu::VulkanImplementationName::kSwiftshader;
-    const bool enforce_protected_memory =
-        gpu_preferences_.enforce_vulkan_protected_memory;
-    vulkan_implementation_ = gpu::CreateVulkanImplementation(
-        vulkan_use_swiftshader,
-        enforce_protected_memory ? true : false /* allow_protected_memory */,
-        enforce_protected_memory);
-    if (!vulkan_implementation_ ||
-        !vulkan_implementation_->InitializeVulkanInstance(
-            !gpu_preferences_.disable_vulkan_surface)) {
-      DLOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
-      vulkan_implementation_ = nullptr;
-      CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
-    }
-    // TODO(penghuang): Remove GPU.SupportsVulkan and GPU.VulkanVersion from
-    // //gpu/config/gpu_info_collector_win.cc when we are finch vulkan on
-    // Windows.
-    if (!vulkan_use_swiftshader) {
-      const bool supports_vulkan = !!vulkan_implementation_;
-      UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", supports_vulkan);
-      uint32_t vulkan_version = 0;
-      if (supports_vulkan) {
-        const auto& vulkan_info =
-            vulkan_implementation_->GetVulkanInstance()->vulkan_info();
-        vulkan_version = vulkan_info.used_api_version;
-      }
-      UMA_HISTOGRAM_ENUMERATION(
-          "GPU.VulkanVersion", ConvertToHistogramVulkanVersion(vulkan_version));
-    }
-  }
-  if (!vulkan_implementation_) {
-    if (gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan) {
-#if defined(OS_FUCHSIA)
-      // Fuchsia uses ANGLE for GL which requires Vulkan, so don't fall
-      // back to GL if Vulkan init fails.
-      LOG(FATAL) << "Vulkan initialization failed";
-#endif
-      gpu_preferences_.gr_context_type = gpu::GrContextType::kGL;
-    }
-    gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
-    gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
-        gpu::kGpuFeatureStatusDisabled;
-  } else {
-    gpu_info_.vulkan_info =
-        vulkan_implementation_->GetVulkanInstance()->vulkan_info();
-  }
+bool GpuInit::InitializeVulkan() {
+  DCHECK_EQ(gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN],
+            kGpuFeatureStatusEnabled);
+  DCHECK_NE(gpu_preferences_.use_vulkan, VulkanImplementationName::kNone);
+  bool vulkan_use_swiftshader =
+      gpu_preferences_.use_vulkan == VulkanImplementationName::kSwiftshader;
+  bool forced_native =
+      gpu_preferences_.use_vulkan == VulkanImplementationName::kForcedNative;
+  bool use_swiftshader = gl_use_swiftshader_ || vulkan_use_swiftshader;
+  if (!use_swiftshader && !forced_native) {
+#if defined(OS_WIN)
+    constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_win32";
+    constexpr char kSemaphoreExtension[] = "GL_EXT_semaphore_win32";
+#elif defined(OS_FUCHSIA)
+    constexpr char kMemoryObjectExtension[] = "GL_ANGLE_memory_object_fuchsia";
+    constexpr char kSemaphoreExtension[] = "GL_ANGLE_semaphore_fuchsia";
 #else
-  gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
-  gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
-      gpu::kGpuFeatureStatusDisabled;
-#endif  // BUILDFLAG(ENABLE_VULKAN)
+    constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_fd";
+    constexpr char kSemaphoreExtension[] = "GL_EXT_semaphore_fd";
+#endif
+    // If both Vulkan and GL are using native GPU (non swiftshader), check
+    // necessary extensions for GL and Vulkan interop.
+    const auto extensions = gfx::MakeExtensionSet(gpu_info_.gl_extensions);
+    if (!gfx::HasExtension(extensions, kMemoryObjectExtension) ||
+        !gfx::HasExtension(extensions, kSemaphoreExtension)) {
+      DLOG(ERROR) << kMemoryObjectExtension << " or " << kSemaphoreExtension
+                  << " is not supported.";
+      return false;
+    }
+  }
+
+  const bool enforce_protected_memory =
+      gpu_preferences_.enforce_vulkan_protected_memory;
+  vulkan_implementation_ = CreateVulkanImplementation(
+      vulkan_use_swiftshader,
+      enforce_protected_memory ? true : false /* allow_protected_memory */,
+      enforce_protected_memory);
+  if (!vulkan_implementation_ ||
+      !vulkan_implementation_->InitializeVulkanInstance(
+          !gpu_preferences_.disable_vulkan_surface)) {
+    DLOG(ERROR) << "Failed to create and initialize Vulkan implementation.";
+    vulkan_implementation_ = nullptr;
+    CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
+  }
+  // TODO(penghuang): Remove GPU.SupportsVulkan and GPU.VulkanVersion from
+  // //gpu/config/gpu_info_collector_win.cc when we are finch vulkan on
+  // Windows.
+  if (!vulkan_use_swiftshader) {
+    const bool supports_vulkan = !!vulkan_implementation_;
+    UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", supports_vulkan);
+    uint32_t vulkan_version = 0;
+    if (supports_vulkan) {
+      const auto& vulkan_info =
+          vulkan_implementation_->GetVulkanInstance()->vulkan_info();
+      vulkan_version = vulkan_info.used_api_version;
+    }
+    UMA_HISTOGRAM_ENUMERATION("GPU.VulkanVersion",
+                              ConvertToHistogramVulkanVersion(vulkan_version));
+  }
+  if (!vulkan_implementation_)
+    return false;
+  gpu_info_.vulkan_info =
+      vulkan_implementation_->GetVulkanInstance()->vulkan_info();
+  return true;
 }
+#else   // BUILDFLAG(ENABLE_VULKAN)
+bool GpuInit::InitializeVulkan() {
+  return false;
+}
+#endif  // !BUILDFLAG(ENABLE_VULKAN)
+
 }  // namespace gpu

@@ -39,6 +39,11 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
 
   ~AutofillSaveCardInfoBarDelegateMobile() override;
 
+  // Returns |delegate| as an AutofillSaveCardInfoBarDelegateMobile, or nullptr
+  // if it is of another type.
+  static AutofillSaveCardInfoBarDelegateMobile* FromInfobarDelegate(
+      infobars::InfoBarDelegate* delegate);
+
   bool upload() const { return upload_; }
   int issuer_icon_id() const { return issuer_icon_id_; }
   const base::string16& card_label() const { return card_label_; }

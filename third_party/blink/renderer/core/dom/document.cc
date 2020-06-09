@@ -1069,10 +1069,6 @@ PublicURLManager& Document::GetPublicURLManager() {
   return GetExecutionContext()->GetPublicURLManager();
 }
 
-ContentSecurityPolicyDelegate& Document::GetContentSecurityPolicyDelegate() {
-  return GetExecutionContext()->GetContentSecurityPolicyDelegate();
-}
-
 SecureContextMode Document::GetSecureContextMode() const {
   return GetSecurityContext().GetSecureContextMode();
 }
@@ -7248,7 +7244,7 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
 void Document::InitContentSecurityPolicy(ContentSecurityPolicy* csp) {
   GetSecurityContext().SetContentSecurityPolicy(csp);
   GetContentSecurityPolicy()->BindToDelegate(
-      GetContentSecurityPolicyDelegate());
+      GetExecutionContext()->GetContentSecurityPolicyDelegate());
 }
 
 void Document::InitSecurityContext(const DocumentInit& initializer) {
@@ -7287,7 +7283,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
 void Document::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
   GetContentSecurityPolicy()->BindToDelegate(
-      GetContentSecurityPolicyDelegate());
+      GetExecutionContext()->GetContentSecurityPolicyDelegate());
 }
 
 bool Document::AllowInlineEventHandler(Node* node,

@@ -320,7 +320,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
 
         mAppMenuManager = new ToolbarAppMenuManager(appMenuCoordinatorSupplier,
-                mControlsVisibilityDelegate, mActivity, mToolbar, mProfileSupplier,
+                mControlsVisibilityDelegate, mActivity, mToolbar,
                 (focus, type)
                         -> setUrlBarFocus(focus, type),
                 mActivity.getCompositorViewHolder()::requestFocus, shouldShowUpdateBadge,

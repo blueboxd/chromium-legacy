@@ -165,11 +165,10 @@ DownloadUIControllerTest::TestingDownloadCoreServiceFactory(
 }
 
 DownloadUIControllerTest::DownloadUIControllerTest()
-    : download_history_manager_observer_(NULL),
-      manager_observer_(NULL),
-      notified_item_(NULL),
-      notified_item_receiver_factory_(&notified_item_) {
-}
+    : download_history_manager_observer_(nullptr),
+      manager_observer_(nullptr),
+      notified_item_(nullptr),
+      notified_item_receiver_factory_(&notified_item_) {}
 
 void DownloadUIControllerTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();

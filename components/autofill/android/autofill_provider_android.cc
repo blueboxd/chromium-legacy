@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
@@ -138,6 +139,16 @@ void AutofillProviderAndroid::OnAutofillAvailable(JNIEnv* env,
   if (handler_) {
     const FormData& form = form_->GetAutofillValues();
     SendFormDataToRenderer(handler_.get(), id_, form);
+  }
+}
+
+void AutofillProviderAndroid::OnAcceptDataListSuggestion(JNIEnv* env,
+                                                         jobject jcaller,
+                                                         jstring value) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (auto* handler = handler_.get()) {
+    RendererShouldAcceptDataListSuggestion(
+        handler, ConvertJavaStringToUTF16(env, value));
   }
 }
 
@@ -312,6 +323,18 @@ void AutofillProviderAndroid::OnFormsSeen(AutofillHandlerProxy* handler,
   // The form_ disappeared after it was submitted, we consider the submission
   // succeeded.
   FireSuccessfulSubmission(pending_submission_source_);
+}
+
+void AutofillProviderAndroid::OnHidePopup(AutofillHandlerProxy* handler) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (handler == handler_.get()) {
+    JNIEnv* env = AttachCurrentThread();
+    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+    if (obj.is_null())
+      return;
+
+    Java_AutofillProvider_hidePopup(env, obj);
+  }
 }
 
 void AutofillProviderAndroid::Reset(AutofillHandlerProxy* handler) {

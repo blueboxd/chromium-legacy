@@ -40,17 +40,29 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   }
 
   getNewPromiseFor(name) {
-    return new Promise((resolve, reject) => {
-      this.methodCalls_[name] = {name, resolve, reject};
-    });
+    if (name in this.methodCalls_) {
+      return new Promise((resolve, reject) => {
+        this.methodCalls_[name].push({name, resolve, reject});
+      });
+    } else {
+      return new Promise((resolve, reject) => {
+        this.methodCalls_[name] = [{name, resolve, reject}];
+      });
+    }
   }
 
-  async resolvePromise(name, ...args) {
-    await this.methodCalls_[name].resolve(...args);
+  async resolvePromises(name, ...args) {
+    for (const o of this.methodCalls_[name]) {
+      await o.resolve(...args);
+    }
+    this.methodCalls_[name] = [];
   }
 
-  async rejectPromise(name, ...args) {
-    await this.methodCalls_[name].reject(...args);
+  async rejectPromises(name, ...args) {
+    for (const o of this.methodCalls_[name]) {
+      await o.reject(...args);
+    }
+    this.methodCalls_[name] = [];
   }
 
   /** @override */

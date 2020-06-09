@@ -132,6 +132,9 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void DidHandleKeyEvent() override;
   void QueueSyntheticEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent>) override;
+  void GetWidgetInputHandler(
+      mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+      mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
 
   // WebWidget implementation.
   // NOTE: The WebWidget may still be used after requesting the popup to be

@@ -329,13 +329,13 @@ void OmniboxView::TextChanged() {
     model_->OnChanged();
 }
 
-bool OmniboxView::UpdateTextStyle(
+void OmniboxView::UpdateTextStyle(
     const base::string16& display_text,
     const bool text_is_url,
     const AutocompleteSchemeClassifier& classifier) {
   if (!text_is_url) {
     SetEmphasis(true, gfx::Range::InvalidRange());
-    return false;  // Path not eligible for fading if it's not even a URL.
+    return;
   }
 
   enum DemphasizeComponents {
@@ -387,7 +387,4 @@ bool OmniboxView::UpdateTextStyle(
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model()->user_input_in_progress() && scheme_range.IsValid())
     UpdateSchemeStyle(scheme_range);
-
-  // Path is eligible for fading only when the host is the only emphasized part.
-  return deemphasize == ALL_BUT_HOST;
 }

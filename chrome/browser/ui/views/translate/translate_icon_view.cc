@@ -31,7 +31,7 @@ TranslateIconView::TranslateIconView(
 
 TranslateIconView::~TranslateIconView() {}
 
-views::BubbleDialogDelegateView* TranslateIconView::GetBubble() const {
+views::BubbleDialogDelegate* TranslateIconView::GetBubble() const {
   return TranslateBubbleView::GetCurrentBubble();
 }
 

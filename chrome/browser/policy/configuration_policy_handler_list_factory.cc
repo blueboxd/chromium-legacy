@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/spellchecker/spellcheck_language_policy_handler.h"
 #include "chrome/browser/ssl/secure_origin_policy_handler.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -83,6 +85,8 @@
 #include "components/unified_consent/pref_names.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
+#include "components/version_info/channel.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -1311,6 +1315,16 @@ void GetDeprecatedFeaturesMap(
   // re-enable them.
 }
 
+// Future policies are not supported on Stable and Beta by default.
+bool AreFuturePoliciesSupported() {
+  // Enable future policies for branded browser tests.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+    return true;
+  version_info::Channel channel = chrome::GetChannel();
+  return channel != version_info::Channel::STABLE &&
+         channel != version_info::Channel::BETA;
+}
+
 }  // namespace
 
 void PopulatePolicyHandlerParameters(PolicyHandlerParameters* parameters) {
@@ -1329,7 +1343,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   std::unique_ptr<ConfigurationPolicyHandlerList> handlers(
       new ConfigurationPolicyHandlerList(
           base::Bind(&PopulatePolicyHandlerParameters),
-          base::Bind(&GetChromePolicyDetails)));
+          base::Bind(&GetChromePolicyDetails), AreFuturePoliciesSupported()));
   for (size_t i = 0; i < base::size(kSimplePolicyMap); ++i) {
     handlers->AddHandler(std::make_unique<SimplePolicyHandler>(
         kSimplePolicyMap[i].policy_name, kSimplePolicyMap[i].preference_path,

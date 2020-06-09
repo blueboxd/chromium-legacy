@@ -169,7 +169,7 @@ bool CookieChangeSubscription::ShouldObserveChangeTo(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
   return cookie.IncludeForRequestURL(url_, net_options, access_semantics)
-      .IsInclude();
+      .status.IsInclude();
 }
 
 bool operator==(const CookieChangeSubscription& lhs,

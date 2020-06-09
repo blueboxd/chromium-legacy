@@ -98,9 +98,9 @@ TEST_F(OmniboxPopupModelTest, SetSelectedLine) {
   result->SortAndCull(input, nullptr);
   popup_model()->OnResultChanged();
   EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
-  popup_model()->SetSelectedLine(0, true, false);
+  popup_model()->SetSelection(OmniboxPopupModel::Selection(0), true, false);
   EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
-  popup_model()->SetSelectedLine(0, false, false);
+  popup_model()->SetSelection(OmniboxPopupModel::Selection(0), false, false);
   EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
 }
 
@@ -124,11 +124,11 @@ TEST_F(OmniboxPopupModelTest, SetSelectedLineWithNoDefaultMatches) {
   EXPECT_EQ(OmniboxPopupModel::kNoMatch, popup_model()->selected_line());
   EXPECT_TRUE(popup_model()->SelectionOnInitialLine());
 
-  popup_model()->SetSelectedLine(0, false, false);
+  popup_model()->SetSelection(OmniboxPopupModel::Selection(0), false, false);
   EXPECT_EQ(0U, popup_model()->selected_line());
   EXPECT_FALSE(popup_model()->SelectionOnInitialLine());
 
-  popup_model()->SetSelectedLine(1, false, false);
+  popup_model()->SetSelection(OmniboxPopupModel::Selection(1), false, false);
   EXPECT_EQ(1U, popup_model()->selected_line());
   EXPECT_FALSE(popup_model()->SelectionOnInitialLine());
 
@@ -512,12 +512,12 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
   result->AppendMatches(input, matches);
   result->SortAndCull(input, nullptr);
   popup_model()->OnResultChanged();
-  popup_model()->SetSelectedLine(0, true, false);
+  popup_model()->SetSelection(OmniboxPopupModel::Selection(0), true, false);
   // The default state should be unfocused.
   EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
 
   // Focus the selection.
-  popup_model()->SetSelectedLine(0, false, false);
+  popup_model()->SetSelection(OmniboxPopupModel::Selection(0));
   popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
   EXPECT_EQ(OmniboxPopupModel::BUTTON_FOCUSED,
             popup_model()->selected_line_state());
@@ -535,17 +535,7 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
             popup_model()->selected_line_state());
 
   // Changing selection should change focused state.
-  popup_model()->SetSelectedLine(1, false, false);
-  EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
-
-  // Changing selection to same selection might change state.
-  popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
-  // Letting routine filter selecting same line should not change it.
-  popup_model()->SetSelectedLine(1, false, false);
-  EXPECT_EQ(OmniboxPopupModel::BUTTON_FOCUSED,
-            popup_model()->selected_line_state());
-  // Forcing routine to handle selecting same line should change it.
-  popup_model()->SetSelectedLine(1, false, true);
+  popup_model()->SetSelection(OmniboxPopupModel::Selection(1));
   EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
 
   // Adding a match at end will reset selection to first, so should change
@@ -574,7 +564,8 @@ TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
 
   // Selecting |kNoMatch| should clear focus.
   popup_model()->SetSelectedLineState(OmniboxPopupModel::BUTTON_FOCUSED);
-  popup_model()->SetSelectedLine(OmniboxPopupModel::kNoMatch, false, false);
+  popup_model()->SetSelection(
+      OmniboxPopupModel::Selection(OmniboxPopupModel::kNoMatch));
   popup_model()->OnResultChanged();
   EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
 }

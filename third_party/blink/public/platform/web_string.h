@@ -35,7 +35,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/latin1_string_conversions.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
 #include "third_party/blink/public/platform/web_common.h"
 
@@ -56,7 +55,6 @@ namespace blink {
 // * WebString::FromLatin1(const std::string& latin1)
 // * WebString::FromUTF8(const std::string& utf8)
 // * WebString::FromUTF16(const base::string16& utf16)
-// * WebString::FromUTF16(const base::NullableString16& utf16)
 // * WebString::FromUTF16(const base::Optional<base::string16>& utf16)
 //
 // Similarly, use either of following methods to convert WebString to
@@ -66,7 +64,6 @@ namespace blink {
 // * webstring.Latin1()
 // * webstring.Utf8()
 // * webstring.Utf16()
-// * WebString::ToNullableString16(webstring)
 // * WebString::ToOptionalString16(webstring)
 //
 // Note that if you need to convert the UTF8 string converted from WebString
@@ -135,13 +132,7 @@ class WebString {
 
   BLINK_PLATFORM_EXPORT static WebString FromUTF16(const base::string16&);
   BLINK_PLATFORM_EXPORT static WebString FromUTF16(
-      const base::NullableString16&);
-  BLINK_PLATFORM_EXPORT static WebString FromUTF16(
       const base::Optional<base::string16>&);
-
-  static base::NullableString16 ToNullableString16(const WebString& s) {
-    return base::NullableString16(ToOptionalString16(s));
-  }
 
   static base::Optional<base::string16> ToOptionalString16(const WebString& s) {
     return s.IsNull() ? base::nullopt : base::make_optional(s.Utf16());

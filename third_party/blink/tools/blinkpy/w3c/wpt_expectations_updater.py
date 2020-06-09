@@ -18,7 +18,9 @@ from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.web_tests.port.android import PRODUCTS
+from blinkpy.web_tests.models.test_expectations import TestExpectations
+from blinkpy.web_tests.port.android import (
+    PRODUCTS, PRODUCTS_TO_EXPECTATION_FILE_PATHS)
 
 _log = logging.getLogger(__name__)
 
@@ -38,8 +40,9 @@ class WPTExpectationsUpdater(object):
     def __init__(self, host, args=None):
         self.host = host
         self.port = self.host.port_factory.get()
-        self.git_cl = GitCL(host)
         self.finder = PathFinder(self.host.filesystem)
+        self.git_cl = GitCL(host)
+        self.git = self.host.git(self.finder.chromium_base())
         self.configs_with_no_results = []
         self.configs_with_all_pass = []
         self.patchset = None
@@ -49,14 +52,39 @@ class WPTExpectationsUpdater(object):
         self.add_arguments(parser)
         self.options = parser.parse_args(args or [])
 
+        # Set up TestExpectations instance which contains all
+        # expectations files associated with the platform.
+        expectations_dict = {p: self.host.filesystem.read_text_file(p)
+                             for p in self.expectations_files()}
+        self._test_expectations = TestExpectations(
+            self.port, expectations_dict=expectations_dict)
+
+    def expectations_files(self):
+        """Returns list of expectations files.
+
+        Each expectation file in the list will be cleaned of expectations
+        for tests that were removed and will also have test names renamed
+        for tests that were renamed. Also the files may have their expectations
+        updated using builder results.
+        """
+        return (self.port.all_expectations_dict().keys() +
+                PRODUCTS_TO_EXPECTATION_FILE_PATHS.values())
+
     def run(self):
         """Does required setup before calling update_expectations().
+
         Do not override this function!
         """
         log_level = logging.DEBUG if self.options.verbose else logging.INFO
         configure_logging(logging_level=log_level, include_time=True)
 
         self.patchset = self.options.patchset
+
+        # Remove expectations for deleted tests and rename tests in expectations
+        # for renamed tests.
+        self.cleanup_test_expectations_files()
+
+        # Use try job results to update expectations and baselines
         self.update_expectations()
 
         return 0
@@ -71,6 +99,12 @@ class WPTExpectationsUpdater(object):
             '--verbose',
             action='store_true',
             help='More verbose logging.')
+        parser.add_argument(
+            '--clean-up-affected-tests-only',
+            action='store_true',
+            help='Only cleanup expectations deleted or renamed in current CL. '
+                 'If flag is not used then a full cleanup of deleted or '
+                 'renamed tests will be done in expectations.')
         # TODO(rmhasan): Move this argument to the
         # AndroidWPTExpectationsUpdater add_arguments implementation.
         # Also look into using sub parsers to separate android and
@@ -264,7 +298,9 @@ class WPTExpectationsUpdater(object):
         return test_dict
 
     def _is_wpt_test(self, test_name):
-        """In blink web tests results, each test name is relative to
+        """Check if a web test is a WPT tests.
+
+        In blink web tests results, each test name is relative to
         the web_tests directory instead of the wpt directory. We
         need to use the port.is_wpt_test() function to find out if a test
         is from the WPT suite.
@@ -642,6 +678,161 @@ class WPTExpectationsUpdater(object):
             self.host.filesystem.write_text_file(wont_fix_path,
                                                  wont_fix_file_content)
         return line_dict
+
+    def cleanup_test_expectations_files(self):
+        """Removes deleted tests from expectations files.
+
+        Removes expectations for deleted tests or renames test names in
+        expectation files for tests that were renamed. If the
+        --clean-up-affected-tests-only command line argument is used then
+        only tests deleted in the CL will have their expectations removed
+        through this script. If that command line argument is not used then
+        expectations for test files that no longer exist will be deleted.
+        """
+        deleted_test_files = self._list_deleted_test_files()
+        renamed_test_files = self._list_renamed_test_files()
+
+        for path in self._test_expectations.expectations_dict:
+            _log.info(
+                'Updating %s for any removed or renamed tests.' %
+                self.host.filesystem.basename(path))
+            self._clean_single_test_expectations_file(
+                path, deleted_test_files, renamed_test_files)
+        self._test_expectations.commit_changes()
+
+    def _clean_single_test_expectations_file(
+            self, path, deleted_files, renamed_files):
+        """Cleans up a single test expectations file.
+
+        Args:
+            path: Path of expectations file that is being cleaned up.
+            deleted_files: List of test file paths relative to the web tests
+                directory which were deleted.
+            renamed_files: Dictionary mapping test file paths to their new file
+                name after renaming.
+        """
+        for line in self._test_expectations.get_updated_lines(path):
+            # if a test is a glob type expectation or empty line or comment then
+            # add it to the updated expectations file without modifications
+            if not line.test or line.is_glob:
+                continue
+            root_test_file = self._get_root_file(line.test)
+            if root_test_file in deleted_files:
+                self._test_expectations.remove_expectations(
+                    path, [line])
+
+            if root_test_file in renamed_files:
+                self._test_expectations.remove_expectations(path, [line])
+                new_file_name = renamed_files[root_test_file]
+                if self.finder.is_webdriver_test_path(root_test_file):
+                    _, subtest_suffix = self.port.split_webdriver_test_name(
+                        line.test)
+                    line.test = self.port.add_webdriver_subtest_suffix(
+                        new_file_name, subtest_suffix)
+                elif '?' in line.test:
+                    line.test = (
+                        new_file_name + line.test[line.test.find('?'):])
+                else:
+                    line.test = new_file_name
+                self._test_expectations.add_expectations(
+                    path, [line], lineno=line.lineno)
+
+    @memoized
+    def _get_root_file(self, test_name):
+        """Strips arguments from a web test name in order to get the file name.
+
+        It also removes the arguments for web driver tests. For instances for
+        the test test1/example.html?Hello this function will return
+        test1/example.html. For a webdriver test it would include arguments and
+        would have the following format, {test file}>>{argument}.
+
+        Args:
+            test_name: Test name which may include test arguments.
+
+        Returns:
+            Returns the test file which is the root of a test.
+        """
+        if self.finder.is_webdriver_test_path(test_name):
+            root_test_file, _ = (
+                self.port.split_webdriver_test_name(test_name))
+        elif '?' in test_name:
+            root_test_file = test_name[:test_name.find('?')]
+        else:
+            root_test_file = test_name
+        return root_test_file
+
+    def _list_deleted_test_files(self):
+        """Returns a list of web tests that have been deleted.
+
+        If --clean-up-affected-tests-only is true then only test files deleted
+        in the current CL may be removed from expectations. Otherwise, any test
+        file may be removed from expectations if it has been deleted.
+
+        Returns: A list of web test files that have been deleted.
+        """
+        # TODO(robertma): Improve Git.changed_files so that we can use it here.
+        paths = set(self.git.run(
+            ['diff', 'origin/master', '-M100%', '--diff-filter=D',
+             '--name-only']).splitlines())
+        if not self.options.clean_up_affected_tests_only:
+            # Remove expectations for all test which have files that
+            # were deleted.
+            paths.update(self._deleted_test_files_in_expectations())
+
+        deleted_tests = set()
+        for path in paths:
+            test = self._relative_to_web_test_dir(path)
+            if test:
+                deleted_tests.add(test)
+        return deleted_tests
+
+    def _list_renamed_test_files(self):
+        """Returns a dictionary mapping tests to their new name.
+
+        Regardless of the command line arguments used this test will only
+        return a dictionary for tests affected in the current CL.
+
+        Returns a dictionary mapping source name to destination name.
+        """
+        out = self.git.run(
+            ['diff', 'origin/master', '-M100%', '--diff-filter=R',
+             '--name-status'])
+        renamed_tests = {}
+        for line in out.splitlines():
+            _, source_path, dest_path = line.split()
+            source_test = self._relative_to_web_test_dir(source_path)
+            dest_test = self._relative_to_web_test_dir(dest_path)
+            if source_test and dest_test:
+                renamed_tests[source_test] = dest_test
+        return renamed_tests
+
+    def _relative_to_web_test_dir(self, path_relative_to_repo_root):
+        """Returns a path that's relative to the web tests directory."""
+        abs_path = self.finder.path_from_chromium_base(
+            path_relative_to_repo_root)
+        if not abs_path.startswith(self.finder.web_tests_dir()):
+            return None
+        return self.host.filesystem.relpath(
+            abs_path, self.finder.web_tests_dir())
+
+    def _deleted_test_files_in_expectations(self):
+        """Returns a list of test files that were deleted.
+
+        Returns a list of test file names that are still in the expectations
+        files but no longer exists in the web tests directory.
+        """
+        deleted_files = set()
+        existing_files = {
+            self._get_root_file(p)
+            for p in self.port.tests()}
+        for path in self._test_expectations.expectations_dict:
+            for line in self._test_expectations.get_updated_lines(path):
+                if not line.test or line.is_glob:
+                    continue
+                root_test_file = self._get_root_file(line.test)
+                if root_test_file not in existing_files:
+                    deleted_files.add(root_test_file)
+        return deleted_files
 
     # TODO(robertma): Unit test this method.
     def download_text_baselines(self, test_results):

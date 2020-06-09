@@ -61,7 +61,7 @@ void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
       !cookie
            .IncludeForRequestURL(url_, CookieOptions::MakeAllInclusive(),
                                  change.access_semantics)
-           .IsInclude()) {
+           .status.IsInclude()) {
     return;
   }
 

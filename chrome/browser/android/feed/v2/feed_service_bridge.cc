@@ -41,8 +41,7 @@ DisplayMetrics FeedServiceBridge::GetDisplayMetrics() {
 
 bool FeedServiceBridge::IsEnabled() {
   Profile* profile = ProfileManager::GetLastUsedProfile();
-  return FeedServiceFactory::GetForBrowserContext(profile)->IsEnabled(
-      *profile->GetPrefs());
+  return FeedService::IsEnabled(*profile->GetPrefs());
 }
 
 }  // namespace feed

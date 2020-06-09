@@ -1295,7 +1295,15 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
     MaybeUpdateShelfBackground(change_type);
 
   CalculateTargetBoundsAndUpdateWorkArea();
-  shelf_->hotseat_widget()->SetState(new_hotseat_state);
+  HotseatWidget* hotseat_widget = shelf_->hotseat_widget();
+  hotseat_widget->SetState(new_hotseat_state);
+
+  // Called before UpdateBoundsAndOpacity(). Because creation of the hotseat
+  // bounds animation which is triggered by hotseat state update requires the
+  // state transition type.
+  HotseatWidget::ScopedInStateTransition scoped_in_state_transition(
+      hotseat_widget, previous_hotseat_state, new_hotseat_state);
+
   UpdateBoundsAndOpacity(true /* animate */);
 
   // OnAutoHideStateChanged Should be emitted when:

@@ -143,11 +143,10 @@ class GCMProfileServiceTest : public testing::Test {
 };
 
 GCMProfileServiceTest::GCMProfileServiceTest()
-    : gcm_profile_service_(NULL),
+    : gcm_profile_service_(nullptr),
       gcm_app_handler_(new FakeGCMAppHandler),
       registration_result_(GCMClient::UNKNOWN_ERROR),
-      send_result_(GCMClient::UNKNOWN_ERROR) {
-}
+      send_result_(GCMClient::UNKNOWN_ERROR) {}
 
 GCMProfileServiceTest::~GCMProfileServiceTest() {
 }

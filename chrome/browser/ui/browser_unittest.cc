@@ -333,7 +333,7 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
   class BookmarkBarStateTestBrowserWindow : public TestBrowserWindow {
    public:
     BookmarkBarStateTestBrowserWindow()
-        : browser_(NULL), bookmark_bar_state_(BookmarkBar::HIDDEN) {}
+        : browser_(nullptr), bookmark_bar_state_(BookmarkBar::HIDDEN) {}
     ~BookmarkBarStateTestBrowserWindow() override {}
 
     void set_browser(Browser* browser) { browser_ = browser; }

@@ -16,7 +16,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/main/browser.h"
@@ -487,11 +486,9 @@ UIColor* BackgroundColor() {
                       action:@selector(recordUserMetrics:)
             forControlEvents:UIControlEventTouchUpInside];
 
-    if (DragAndDropIsEnabled()) {
-      _buttonNewTabInteraction =
-          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-      [_buttonNewTab addInteraction:_buttonNewTabInteraction];
-    }
+    _buttonNewTabInteraction =
+        [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+    [_buttonNewTab addInteraction:_buttonNewTabInteraction];
 
 #if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {

@@ -127,6 +127,12 @@ void WidgetBase::ForceRedraw(
   client_->ScheduleAnimationForWebTests();
 }
 
+void WidgetBase::GetWidgetInputHandler(
+    mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+    mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
+  client_->GetWidgetInputHandler(std::move(request), std::move(host));
+}
+
 void WidgetBase::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
   client_->ApplyViewportChanges(args);

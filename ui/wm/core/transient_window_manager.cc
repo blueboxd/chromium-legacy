@@ -114,8 +114,8 @@ bool TransientWindowManager::IsStackingTransient(
 
 TransientWindowManager::TransientWindowManager(Window* window)
     : window_(window),
-      transient_parent_(NULL),
-      stacking_target_(NULL),
+      transient_parent_(nullptr),
+      stacking_target_(nullptr),
       parent_controls_visibility_(false),
       show_on_parent_visible_(false),
       ignore_visibility_changed_event_(false) {

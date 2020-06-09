@@ -222,7 +222,7 @@ NaClProcessHost::NaClProcessHost(
 #if defined(OS_WIN)
       process_launched_by_broker_(false),
 #endif
-      reply_msg_(NULL),
+      reply_msg_(nullptr),
 #if defined(OS_WIN)
       debug_exception_handler_requested_(false),
 #endif

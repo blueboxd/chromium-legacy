@@ -53,13 +53,13 @@ public interface AccountManagerDelegate {
      *
      * @param account The {@link Account} for which the auth token is requested.
      * @param authTokenScope The scope of the authToken being requested.
-     * @return The auth token fetched from the authenticator.
+     * @return The access token data fetched from the authenticator.
      * @throws AuthException Indicates a failure in fetching the auth token perhaps due to a
      * transient error or when user intervention is required (like confirming the credentials)
      * which is expressed as an {@link Intent} to the handler.
      */
     @WorkerThread
-    String getAuthToken(Account account, String authTokenScope) throws AuthException;
+    AccessTokenData getAuthToken(Account account, String authTokenScope) throws AuthException;
 
     /**
      * @param authToken The auth token to invalidate.

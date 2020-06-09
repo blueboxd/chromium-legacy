@@ -88,6 +88,11 @@
     color: var(--cr-link-color);
     text-decoration: none;
   }
+
+  #low-free-space-warning {
+    --iron-icon-fill-color: var(--google-yellow-500);
+    display: flex;
+  }
 </style>
 
 <div id="main">
@@ -133,7 +138,7 @@
           </cr-radio-group>
         </template>
         <div id='low-free-space-warning' hidden="[[!isLowSpaceAvailable_]]">
-          <iron-icon icon="cr:warning"></iron-icon>
+          <iron-icon icon="cr:warning" class="warning"></iron-icon>
           $i18n{lowSpaceAvailableWarning}
         </div>
         <template is="dom-if" if="[[showDiskSlider_]]">

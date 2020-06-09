@@ -710,7 +710,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool HasSeenRecentScreenOrientationChange() override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
-                       mojo::PendingRemote<mojom::Widget> widget,
                        mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
                            blink_widget_host,
                        mojo::PendingAssociatedRemote<blink::mojom::Widget>
@@ -718,7 +717,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void CreateNewFullscreenWidget(
       int32_t render_process_id,
       int32_t widget_route_id,
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget)
@@ -1202,7 +1200,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   }
 
   // Returns the focused frame's input handler.
-  blink::mojom::FrameInputHandler* GetFocusedFrameInputHandler();
+  blink::mojom::FrameWidgetInputHandler* GetFocusedFrameWidgetInputHandler();
 
   // A render view-originated drag has ended. Informs the render view host and
   // WebContentsDelegate.
@@ -1517,7 +1515,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       int32_t render_process_id,
       int32_t route_id,
       bool is_fullscreen,
-      mojo::PendingRemote<mojom::Widget> widget,
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
           blink_widget_host,
       mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget);

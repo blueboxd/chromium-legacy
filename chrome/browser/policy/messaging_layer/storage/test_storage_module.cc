@@ -7,16 +7,16 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
+#include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace reporting {
 namespace test {
 
-using reporting_messaging_layer::EncryptedRecord;
-using reporting_messaging_layer::Priority;
+using reporting::EncryptedRecord;
+using reporting::Priority;
 
 void TestStorageModule::AddRecord(EncryptedRecord record,
                                   Priority priority,

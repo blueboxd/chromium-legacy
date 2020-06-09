@@ -18,13 +18,14 @@
 namespace device {
 
 class OpenXrRenderLoop;
+class OpenXrStatics;
 
 class DEVICE_VR_EXPORT OpenXrDevice
     : public VRDeviceBase,
       public mojom::XRSessionController,
       public mojom::XRCompositorHost {
  public:
-  OpenXrDevice();
+  OpenXrDevice(OpenXrStatics* openxr_statics);
   ~OpenXrDevice() override;
 
   // VRDeviceBase

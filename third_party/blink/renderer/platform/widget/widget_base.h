@@ -75,6 +75,9 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   // mojom::blink::Widget overrides:
   void ForceRedraw(mojom::blink::Widget::ForceRedrawCallback callback) override;
+  void GetWidgetInputHandler(
+      mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+      mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
 
   // LayerTreeDelegate overrides:
   // Applies viewport related properties during a commit from the compositor

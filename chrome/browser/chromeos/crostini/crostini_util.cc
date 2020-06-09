@@ -49,6 +49,28 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
+namespace crostini {
+
+// We use an arbitrary well-formed extension id for the Terminal app, this
+// is equal to GenerateId("Terminal").
+const char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
+// web_app::GenerateAppIdFromURL(
+//     GURL("chrome-untrusted://terminal/html/terminal.html"))
+const char kCrostiniTerminalSystemAppId[] = "fhicihalidkgcimdmhpohldehjmcabcf";
+
+const char kCrostiniDefaultVmName[] = "termina";
+const char kCrostiniDefaultContainerName[] = "penguin";
+const char kCrostiniDefaultUsername[] = "emperor";
+// In order to be compatible with sync folder id must match standard.
+// Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
+const char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
+const char kCrostiniDefaultImageServerUrl[] =
+    "https://storage.googleapis.com/cros-containers/%d";
+const char kCrostiniStretchImageAlias[] = "debian/stretch";
+const char kCrostiniBusterImageAlias[] = "debian/buster";
+
+const base::FilePath::CharType kHomeDirectory[] = FILE_PATH_LITERAL("/home");
+
 namespace {
 
 constexpr char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
@@ -191,8 +213,9 @@ void LaunchApplication(
     base::FilePath path;
     if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
             profile, url, &path)) {
-      return std::move(callback).Run(false,
-                                     "Invalid file: " + url.DebugString());
+      OnLaunchFailed(app_id, crostini::CrostiniResult::UNKNOWN_ERROR);
+      return std::move(callback).Run(
+          false, "Cannot share file with crostini: " + url.DebugString());
     }
     if (url.mount_filesystem_id() !=
         file_manager::util::GetCrostiniMountPointName(profile)) {
@@ -298,8 +321,6 @@ class IconLoadWaiter : public CrostiniAppIcon::Observer {
 };
 
 }  // namespace
-
-namespace crostini {
 
 ContainerId::ContainerId(std::string vm_name,
                          std::string container_name) noexcept

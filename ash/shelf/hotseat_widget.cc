@@ -52,6 +52,39 @@ void DoScopedAnimationSetting(
   }
 }
 
+// Calculates the state transition type for the given previous state and
+// the target state.
+HotseatWidget::StateTransition CalculateHotseatStateTransition(
+    HotseatState previous_state,
+    HotseatState target_state) {
+  if (previous_state == HotseatState::kNone ||
+      target_state == HotseatState::kNone) {
+    return HotseatWidget::StateTransition::kOther;
+  }
+
+  if (previous_state == target_state)
+    return HotseatWidget::StateTransition::kOther;
+
+  const bool related_to_homelauncher =
+      (previous_state == HotseatState::kShownHomeLauncher ||
+       target_state == HotseatState::kShownHomeLauncher);
+  const bool related_to_extended = (previous_state == HotseatState::kExtended ||
+                                    target_state == HotseatState::kExtended);
+  const bool related_to_hidden = (previous_state == HotseatState::kHidden ||
+                                  target_state == HotseatState::kHidden);
+
+  if (related_to_homelauncher && related_to_extended)
+    return HotseatWidget::StateTransition::kHomeLauncherAndExtended;
+
+  if (related_to_homelauncher && related_to_hidden)
+    return HotseatWidget::StateTransition::kHomeLauncherAndHidden;
+
+  if (related_to_extended && related_to_hidden)
+    return HotseatWidget::StateTransition::kHiddenAndExtended;
+
+  return HotseatWidget::StateTransition::kOther;
+}
+
 // Custom window targeter for the hotseat. Used so the hotseat only processes
 // events that land on the visible portion of the hotseat, and only while the
 // hotseat is not animating.
@@ -324,6 +357,25 @@ void HotseatWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(&translucent_background_);
   ReorderLayers();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ScopedInStateTransition
+
+HotseatWidget::ScopedInStateTransition::ScopedInStateTransition(
+    HotseatWidget* hotseat_widget,
+    HotseatState old_state,
+    HotseatState target_state)
+    : hotseat_widget_(hotseat_widget) {
+  hotseat_widget_->state_transition_in_progress_ =
+      CalculateHotseatStateTransition(old_state, target_state);
+}
+
+HotseatWidget::ScopedInStateTransition::~ScopedInStateTransition() {
+  hotseat_widget_->state_transition_in_progress_.reset();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HotseatWidget
 
 HotseatWidget::HotseatWidget() : delegate_view_(new DelegateView()) {
   ShelfConfig::Get()->AddObserver(this);
@@ -643,7 +695,6 @@ void HotseatWidget::SetState(HotseatState state) {
   if (state_ == state)
     return;
 
-  old_state_ = state_;
   state_ = state;
 
   // If the hotseat is not extended we can use the normal targeting as the
@@ -732,34 +783,6 @@ void HotseatWidget::LayoutHotseatByAnimation(double target_opacity,
 
   hotseat_layer->SetOpacity(target_opacity);
   SetBounds(target_bounds);
-}
-
-HotseatWidget::StateTransition HotseatWidget::CalculateHotseatStateTransition()
-    const {
-  if (old_state_ == HotseatState::kNone || state_ == HotseatState::kNone)
-    return StateTransition::kOther;
-
-  if (old_state_ == state_)
-    return StateTransition::kOther;
-
-  const bool related_to_homelauncher =
-      (old_state_ == HotseatState::kShownHomeLauncher ||
-       state_ == HotseatState::kShownHomeLauncher);
-  const bool related_to_extended = (old_state_ == HotseatState::kExtended ||
-                                    state_ == HotseatState::kExtended);
-  const bool related_to_hidden =
-      (old_state_ == HotseatState::kHidden || state_ == HotseatState::kHidden);
-
-  if (related_to_homelauncher && related_to_extended)
-    return StateTransition::kHomeLauncherAndExtended;
-
-  if (related_to_homelauncher && related_to_hidden)
-    return StateTransition::kHomeLauncherAndHidden;
-
-  if (related_to_extended && related_to_hidden)
-    return StateTransition::kHiddenAndExtended;
-
-  return StateTransition::kOther;
 }
 
 }  // namespace ash

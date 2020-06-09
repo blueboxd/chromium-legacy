@@ -98,7 +98,7 @@ function slideElement(element, scale) {
 }
 
 /** @implements {DragManagerDelegate} */
-class TabListElement extends CustomElement {
+export class TabListElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
   }

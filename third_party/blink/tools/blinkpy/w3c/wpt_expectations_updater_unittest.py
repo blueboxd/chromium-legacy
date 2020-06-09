@@ -12,6 +12,7 @@ from blinkpy.common.net.results_fetcher import Build
 from blinkpy.common.net.results_fetcher_mock import (
     MockTestResultsFetcher, BuilderStep)
 from blinkpy.common.net.web_test_results import WebTestResult, WebTestResults
+from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_testing import LoggingTestCase
 
@@ -20,14 +21,17 @@ from blinkpy.w3c.wpt_expectations_updater import (
 from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 
 from blinkpy.web_tests.builder_list import BuilderList
+from blinkpy.web_tests.port.android import PRODUCTS_TO_EXPECTATION_FILE_PATHS
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 
+MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
 
 class WPTExpectationsUpdaterTest(LoggingTestCase):
     def mock_host(self):
         """Returns a mock host with fake values set up for testing."""
         host = MockHost()
         host.port_factory = MockPortFactory(host)
+        host.executive._output = ''
 
         # Set up a fake list of try builders.
         host.builders = BuilderList({
@@ -87,6 +91,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 },
             }))
 
+        for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
+            host.filesystem.write_text_file(path, '')
         return host
 
     def test_run_single_platform_failure(self):
@@ -749,6 +755,53 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
              ' webdriverexpectations or neverfixtests.'),
             logs)
 
+    def test_write_to_test_expectations_and_cleanup_expectations(self):
+        host = self.mock_host()
+        expectations_path = \
+            host.port_factory.get().path_to_generic_test_expectations_file()
+        host.filesystem.write_text_file(
+            expectations_path,
+            '# tags: [ Linux ]\n' +
+            '# results: [ Pass Failure ]\n' +
+            WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
+            '[ linux ] external/wpt/fake/some_test.html?HelloWorld [ Failure ]\n' +
+            'external/wpt/fake/file/deleted_path.html [ Pass ]\n')
+        updater = WPTExpectationsUpdater(
+            host, ['--clean-up-affected-tests-only'])
+
+        def _git_command_return_val(cmd):
+            if '--diff-filter=D' in cmd:
+                return 'external/wpt/fake/file/deleted_path.html'
+            if '--diff-filter=R' in cmd:
+                return 'C external/wpt/fake/some_test.html external/wpt/fake/new.html'
+            return ''
+
+        updater.git.run = _git_command_return_val
+        updater._relative_to_web_test_dir = lambda test_path: test_path
+        updater.cleanup_test_expectations_files()
+
+        test_expectations = {'external/wpt/fake/file/path.html': {
+            tuple([DesktopConfig(port_name='test-linux-trusty')]):
+            SimpleTestResult(actual='PASS', expected='', bug='crbug.com/123')}}
+        skip_path = host.port_factory.get().path_to_never_fix_tests_file()
+        skip_value_origin = host.filesystem.read_text_file(skip_path)
+
+        updater.write_to_test_expectations(test_expectations)
+        value = host.filesystem.read_text_file(expectations_path)
+        print ('# tags: [ Linux ]\n' +
+               '# results: [ Pass Failure ]\n' +
+               WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
+               'crbug.com/123 [ Trusty ] external/wpt/fake/file/path.html [ Pass ]\n' +
+               '[ linux ] external/wpt/fake/some_test.html?HelloWorld [ Failure ]')
+        self.assertMultiLineEqual(
+            value, ('# tags: [ Linux ]\n' +
+                    '# results: [ Pass Failure ]\n' +
+                    WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
+                    'crbug.com/123 [ Trusty ] external/wpt/fake/file/path.html [ Pass ]\n' +
+                    '[ linux ] external/wpt/fake/new.html?HelloWorld [ Failure ]\n'))
+        skip_value = host.filesystem.read_text_file(skip_path)
+        self.assertMultiLineEqual(skip_value, skip_value_origin)
+
     def test_write_to_test_expectations_with_marker_comment(self):
         host = self.mock_host()
         expectations_path = \
@@ -811,8 +864,10 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         host = self.mock_host()
         expectations_path = \
             host.port_factory.get().path_to_generic_test_expectations_file()
+        raw_exps = '# tags: [ Trusty ]\n# results: [ Pass Failure ]\n'
         host.filesystem.write_text_file(
             expectations_path,
+            raw_exps + '\n' +
             'crbug.com/111 [ Trusty ] foo/bar.html [ Failure ]\n')
         updater = WPTExpectationsUpdater(host)
         test_expectations = {'external/wpt/fake/file/path.html': {
@@ -825,7 +880,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         value = host.filesystem.read_text_file(expectations_path)
 
         self.assertMultiLineEqual(
-            value, ('crbug.com/111 [ Trusty ] foo/bar.html [ Failure ]\n'
+            value, (raw_exps + '\n' +
+                    'crbug.com/111 [ Trusty ] foo/bar.html [ Failure ]\n'
                     '\n' + WPTExpectationsUpdater.MARKER_COMMENT + '\n'
                     'crbug.com/123 [ Trusty ] external/wpt/fake/file/path.html [ Pass ]'))
         skip_value = host.filesystem.read_text_file(skip_path)
@@ -835,8 +891,11 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         host = self.mock_host()
         expectations_path = \
             host.port_factory.get().path_to_generic_test_expectations_file()
+        raw_exps = '# tags: [ Trusty ]\n# results: [ Pass ]\n'
         host.filesystem.write_text_file(
-            expectations_path, WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
+            expectations_path,
+            raw_exps + '\n' +
+            WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
             'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]\n')
         skip_path = host.port_factory.get().path_to_never_fix_tests_file()
         skip_value_origin = host.filesystem.read_text_file(skip_path)
@@ -846,7 +905,9 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
         value = host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
-            value, WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
+            value,
+            raw_exps + '\n' +
+            WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
             'crbug.com/123 [ Trusty ] fake/file/path.html [ Pass ]\n')
         skip_value = host.filesystem.read_text_file(skip_path)
         self.assertMultiLineEqual(skip_value, skip_value_origin)
@@ -856,14 +917,16 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         expectations_path = \
             host.port_factory.get().path_to_generic_test_expectations_file()
         skip_path = host.port_factory.get().path_to_never_fix_tests_file()
-
+        raw_exps = '# tags: [ Trusty ]\n# results: [ Skip ]\n'
         test_expectations = {'external/wpt/fake/file/path-manual.html': {
             tuple([DesktopConfig(port_name='test-linux-trusty')]):
             SimpleTestResult(actual='TIMEOUT', expected={}, bug='')}}
         host.filesystem.write_text_file(expectations_path,
                                         WPTExpectationsUpdater.MARKER_COMMENT + '\n')
         host.filesystem.write_text_file(
-            skip_path, '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n')
+            skip_path,
+            raw_exps +
+            '\n[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n')
         updater = WPTExpectationsUpdater(host)
 
         updater.write_to_test_expectations(test_expectations)
@@ -872,7 +935,9 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         skip_value = host.filesystem.read_text_file(skip_path)
         self.assertMultiLineEqual(expectations_value, WPTExpectationsUpdater.MARKER_COMMENT + '\n')
         self.assertMultiLineEqual(
-            skip_value, '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n'
+            skip_value,
+            raw_exps + '\n'
+            '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n'
             '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n')
 
     def test_write_to_test_expectations_without_newline(self):
@@ -883,10 +948,13 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         test_expectations = {'external/wpt/fake/file/path-manual.html': {
             tuple([DesktopConfig(port_name='test-linux-trusty')]):
             SimpleTestResult(actual='TIMEOUT', expected={}, bug='')}}
-        host.filesystem.write_text_file(expectations_path,
-                                        WPTExpectationsUpdater.MARKER_COMMENT + '\n')
+        raw_exps = '# tags: [ Trusty ]\n# results: [ Skip ]\n'
         host.filesystem.write_text_file(
-            skip_path, '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]')
+            expectations_path,
+            WPTExpectationsUpdater.MARKER_COMMENT + '\n')
+        host.filesystem.write_text_file(
+            skip_path,
+            raw_exps + '\n[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]')
         updater = WPTExpectationsUpdater(host)
 
         updater.write_to_test_expectations(test_expectations)
@@ -895,7 +963,8 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         skip_value = host.filesystem.read_text_file(skip_path)
         self.assertMultiLineEqual(expectations_value, WPTExpectationsUpdater.MARKER_COMMENT + '\n')
         self.assertMultiLineEqual(
-            skip_value, '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n'
+            skip_value,
+            raw_exps + '\n[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n'
             '[ Trusty ] external/wpt/fake/file/path-manual.html [ Skip ]\n')
 
     def test_is_reference_test_given_testharness_test(self):
@@ -1098,6 +1167,100 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                     'crbug.com/test [ Mac ] external/wpt/x.html [ Failure ]',
                 ]
             })
+
+    def test_cleanup_all_deleted_tests_in_expectations_files(self):
+        host = MockHost()
+
+        host.filesystem.files[MOCK_WEB_TESTS + 'TestExpectations'] = (
+            '# results: [ Failure ]\n'
+            'some/test/a.html?hello%20world [ Failure ]\n'
+            'some/test/b.html [ Failure ]\n'
+            '# line below should exist in new file\n'
+            'some/test/d.html [ Failure ]\n')
+        host.filesystem.files[MOCK_WEB_TESTS + 'VirtualTestSuites'] = '[]'
+        host.filesystem.files[MOCK_WEB_TESTS + 'new/a.html'] = ''
+        host.filesystem.files[MOCK_WEB_TESTS + 'new/b.html'] = ''
+        # TODO(rmhasan): Remove creation of Android files within
+        # tests.
+        for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
+            host.filesystem.write_text_file(path, '')
+
+        updater = WPTExpectationsUpdater(host)
+
+        def _git_command_return_val(cmd):
+            if '--diff-filter=D' in cmd:
+                return 'some/test/b.html'
+            return ''
+
+        updater.git.run = _git_command_return_val
+        updater.port.tests = lambda: [
+            'some/test/b.html?Goodbye', 'some/test/d.html']
+        updater._relative_to_web_test_dir = lambda test_path: test_path
+        updater.cleanup_test_expectations_files()
+        self.assertMultiLineEqual(
+            host.filesystem.read_text_file(MOCK_WEB_TESTS +
+                                           'TestExpectations'),
+            ('# results: [ Failure ]\n'
+             '# line below should exist in new file\n'
+             'some/test/d.html [ Failure ]\n'))
+
+    def test_cleanup_all_test_expectations_files(self):
+        host = MockHost()
+        host.filesystem.files[MOCK_WEB_TESTS + 'TestExpectations'] = (
+            '# results: [ Failure ]\n'
+            'some/test/a.html [ Failure ]\n'
+            'some/test/b.html [ Failure ]\n'
+            'ignore/globs/* [ Failure ]\n'
+            'some/test/c\*.html [ Failure ]\n'
+            # default test case, line below should exist in new file
+            'some/test/d.html [ Failure ]\n')
+        host.filesystem.files[MOCK_WEB_TESTS + 'WebDriverExpectations'] = (
+            '# results: [ Failure ]\n'
+            'external/wpt/webdriver/some/test/a\*.html>>foo\* [ Failure ]\n'
+            'external/wpt/webdriver/some/test/a\*.html>>bar [ Failure ]\n'
+            'external/wpt/webdriver/some/test/b.html>>foo [ Failure ]\n'
+            'external/wpt/webdriver/some/test/c.html>>a [ Failure ]\n'
+            # default test case, line below should exist in new file
+            'external/wpt/webdriver/some/test/d.html>>foo [ Failure ]\n')
+        host.filesystem.files[MOCK_WEB_TESTS + 'VirtualTestSuites'] = '[]'
+        host.filesystem.files[MOCK_WEB_TESTS + 'new/a.html'] = ''
+        host.filesystem.files[MOCK_WEB_TESTS + 'new/b.html'] = ''
+
+        # TODO(rmhasan): Remove creation of Android files within
+        # tests.
+        for path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
+            host.filesystem.write_text_file(path, '')
+
+        updater = WPTExpectationsUpdater(
+            host, ['--clean-up-affected-tests-only'])
+        deleted_files = [
+            'some/test/b.html', 'external/wpt/webdriver/some/test/b.html'
+        ]
+        renamed_file_pairs = {
+            'some/test/a.html': 'new/a.html',
+            'some/test/c*.html': 'new/c*.html',
+            'external/wpt/webdriver/some/test/a*.html': 'old/a*.html',
+            'external/wpt/webdriver/some/test/c.html': 'old/c.html',
+        }
+        updater._list_deleted_test_files = lambda: deleted_files
+        updater._list_renamed_test_files = lambda: renamed_file_pairs
+        updater.cleanup_test_expectations_files()
+        self.assertMultiLineEqual(
+            host.filesystem.read_text_file(MOCK_WEB_TESTS +
+                                           'TestExpectations'),
+            ('# results: [ Failure ]\n'
+             'new/a.html [ Failure ]\n'
+             'ignore/globs/* [ Failure ]\n'
+             'new/c\*.html [ Failure ]\n'
+             'some/test/d.html [ Failure ]\n'))
+        self.assertMultiLineEqual(
+            host.filesystem.read_text_file(MOCK_WEB_TESTS +
+                                           'WebDriverExpectations'),
+            ('# results: [ Failure ]\n'
+             'old/a\*.html>>foo\* [ Failure ]\n'
+             'old/a\*.html>>bar [ Failure ]\n'
+             'old/c.html>>a [ Failure ]\n'
+             'external/wpt/webdriver/some/test/d.html>>foo [ Failure ]\n'))
 
     def test_merging_platforms_if_possible(self):
         host = self.mock_host()

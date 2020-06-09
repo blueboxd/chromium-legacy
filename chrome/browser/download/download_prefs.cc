@@ -36,6 +36,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_item.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -303,6 +304,14 @@ void DownloadPrefs::RegisterProfilePrefs(
       prefs::kPromptForDownloadAndroid,
       static_cast<int>(download_prompt_status),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  if (base::FeatureList::IsEnabled(download::features::kDownloadLater)) {
+    registry->RegisterIntegerPref(
+        prefs::kDownloadLaterPromptStatus,
+        static_cast<int>(DownloadLaterPromptStatus::SHOW_INITIAL),
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  }
+
   registry->RegisterBooleanPref(
       prefs::kShowMissingSdCardErrorAndroid,
       base::FeatureList::IsEnabled(features::kDownloadsLocationChange));

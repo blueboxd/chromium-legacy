@@ -347,13 +347,19 @@ bool Uri::Pim::ParsePort(const Iter& begin, const Iter& end) {
 }
 
 bool Uri::Pim::ParsePath(const Iter& begin, const Iter& end) {
+  // Path must be empty or start with '/'.
+  if (begin < end && *begin != '/') {
+    parser_error_.status = ParserStatus::kRelativePathsNotAllowed;
+    parser_error_.parsed_chars = 0;
+    parser_error_.parsed_strings = 0;
+    return false;
+  }
   // This holds Path's segments.
   std::vector<std::string> path;
   // This stores offset from begin of every segment.
   std::vector<size_t> strings_positions;
   // Parsing...
   for (Iter it1 = begin; it1 < end;) {
-    DCHECK_EQ(*it1, '/');
     if (++it1 == end)  // omit '/' character
       break;
     Iter it2 = std::find(it1, end, '/');
@@ -449,7 +455,7 @@ bool Uri::Pim::ParseUri(const Iter& begin, const Iter end) {
   }
   // The Path is terminated by the first question mark ("?") or number
   // sign ("#") character, or by the end of the URI.
-  if (it1 < end && *it1 == '/') {
+  if (it1 < end) {
     auto it2 = FindFirstOf(it1, end, "?#");
     if (!ParsePath(it1, it2)) {
       parser_error_.parsed_chars += it1 - begin;

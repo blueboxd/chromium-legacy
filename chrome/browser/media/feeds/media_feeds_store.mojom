@@ -362,6 +362,9 @@ enum IsFamilyFriendly {
 // represents a single recommendation such as a video or TV show.
 // https://wicg.github.io/media-feeds/index.html#media-feed-item
 struct MediaFeedItem {
+  // The ID of the feed item in storage.
+  int64 id;
+
   // The type of this feed item such as a video or TV show.
   MediaFeedItemType type;
 

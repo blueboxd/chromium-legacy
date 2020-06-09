@@ -273,9 +273,10 @@ const base::Feature kNewOsSettingsSearch{"NewOsSettingsSearch",
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables the option to share the camera with PluginVm or not
-const base::Feature kPluginVmShowCameraSetting{
-    "PluginVmShowCameraSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+// Controls whether the camera permissions should be shown in the Plugin
+// VM app settings.
+const base::Feature kPluginVmShowCameraPermissions{
+    "PluginVmShowCameraPermissions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to show printer statuses.
 const base::Feature kPrinterStatus{"PrinterStatus",
@@ -359,9 +360,18 @@ const base::Feature kSmartDimNewMlAgent{"SmartDimNewMlAgent",
 const base::Feature kSmartDimModelV3{"SmartDimModelV3",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables separate sync controls for OS settings (display, keyboard, etc.).
-// For example, the user could choose to sync OS settings but not browser
-// settings.
+// This feature:
+// - Creates a new "Sync your settings" section in Chrome OS settings
+// - Moves app, wallpaper and Wi-Fi sync to OS settings
+// - Provides a separate toggle for OS preferences, distinct from browser
+//   preferences
+// - Makes the OS ModelTypes run in sync transport mode, controlled by a
+//   master pref for the OS sync feature
+// - Updates the OOBE sync consent screen
+//
+// NOTE: The feature is rolling out via a client-side Finch trial, so the actual
+// state will vary. See config in
+// chrome/browser/chromeos/sync/split_settings_sync_field_trial.cc
 const base::Feature kSplitSettingsSync{"SplitSettingsSync",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 

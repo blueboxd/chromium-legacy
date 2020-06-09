@@ -32,7 +32,7 @@ class StarView : public PageActionIconView, public views::WidgetObserver {
   void UpdateImpl() override;
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   void ExecuteCommand(ExecuteSource source) override;
-  views::BubbleDialogDelegateView* GetBubble() const override;
+  views::BubbleDialogDelegate* GetBubble() const override;
   SkColor GetInkDropBaseColor() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;

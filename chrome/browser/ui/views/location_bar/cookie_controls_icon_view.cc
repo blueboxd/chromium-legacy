@@ -99,7 +99,7 @@ void CookieControlsIconView::OnExecuting(
       controller_.get(), status_);
 }
 
-views::BubbleDialogDelegateView* CookieControlsIconView::GetBubble() const {
+views::BubbleDialogDelegate* CookieControlsIconView::GetBubble() const {
   return CookieControlsBubbleView::GetCookieBubble();
 }
 

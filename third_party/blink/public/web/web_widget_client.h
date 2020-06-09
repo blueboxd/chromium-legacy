@@ -39,10 +39,12 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
-#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-forward.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -298,6 +300,13 @@ class WebWidgetClient {
   // for when handling scrollbars.
   virtual void QueueSyntheticEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent>) {}
+
+  // Connect the Widget Input Handler to the channels provided.
+  virtual void GetWidgetInputHandler(
+      CrossVariantMojoReceiver<mojom::WidgetInputHandlerInterfaceBase>
+          widget_input_receiver,
+      CrossVariantMojoRemote<mojom::WidgetInputHandlerHostInterfaceBase>
+          widget_input_host_remote) {}
 };
 
 }  // namespace blink

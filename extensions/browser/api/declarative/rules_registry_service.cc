@@ -42,7 +42,7 @@ const int RulesRegistryService::kInvalidRulesRegistryID = -1;
 
 RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
     : current_rules_registry_id_(kDefaultRulesRegistryID),
-      content_rules_registry_(NULL),
+      content_rules_registry_(nullptr),
       browser_context_(context) {
   if (browser_context_) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));

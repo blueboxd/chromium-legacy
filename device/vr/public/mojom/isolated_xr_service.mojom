@@ -6,6 +6,8 @@ module device.mojom;
 
 import "device/vr/public/mojom/browser_test_interfaces.mojom";
 import "device/vr/public/mojom/vr_service.mojom";
+[EnableIf=is_win]
+import "gpu/ipc/common/luid.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -110,6 +112,15 @@ interface XRCompositorHost {
   CreateImmersiveOverlay(pending_receiver<ImmersiveOverlay> overlay);
 };
 
+// Information about a particular XR device that is available. All information
+// about an available XR device should be wrapped in this struct.
+// TODO(crbug.com/1090029): Wrap XRDeviceId + VRDisplayInfo in this struct
+struct XRDeviceData {
+  [EnableIf=is_win]
+  // The LUID of the GPU that the device is plugged into.
+  gpu.mojom.Luid? luid;
+};
+
 // Notify the browser process about a set of runtimes.  The browser process
 // implements this interface to be notified about runtime changes from the XR
 // device service.
@@ -118,6 +129,7 @@ interface IsolatedXRRuntimeProviderClient {
   // attached and become available.
   OnDeviceAdded(pending_remote<XRRuntime> runtime,
       pending_remote<XRCompositorHost> compositor_host,
+      XRDeviceData device_data,
       device.mojom.XRDeviceId device_id);
 
   // Called when runtimes become unavailable - for example if the hardware is

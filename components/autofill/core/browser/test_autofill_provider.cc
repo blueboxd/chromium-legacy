@@ -50,6 +50,8 @@ void TestAutofillProvider::OnFormsSeen(AutofillHandlerProxy* handler,
                                        const std::vector<FormData>& forms,
                                        const base::TimeTicks timestamp) {}
 
+void TestAutofillProvider::OnHidePopup(AutofillHandlerProxy* handler) {}
+
 void TestAutofillProvider::Reset(AutofillHandlerProxy* handler) {}
 
 }  // namespace autofill

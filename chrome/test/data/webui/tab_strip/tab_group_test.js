@@ -3,15 +3,21 @@
 // found in the LICENSE file.
 
 import 'chrome://tab-strip/tab.js';
-import 'chrome://tab-strip/tab_group.js';
+import {TabGroupElement} from 'chrome://tab-strip/tab_group.js';
 
 import {TabStripEmbedderProxyImpl} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
+
+import {assertEquals} from '../chai_assert.js';
+
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 
 suite('TabGroup', () => {
   const groupId = 'my-group-id';
 
+  /** @type {!TabGroupElement} */
   let tabGroupElement;
+
+  /** @type {!TestTabStripEmbedderProxy} */
   let testTabStripEmbedderProxy;
 
   setup(() => {
@@ -19,7 +25,8 @@ suite('TabGroup', () => {
     TabStripEmbedderProxyImpl.instance_ = testTabStripEmbedderProxy;
 
     document.body.innerHTML = '';
-    tabGroupElement = document.createElement('tabstrip-tab-group');
+    tabGroupElement = /** @type {!TabGroupElement} */ (
+        document.createElement('tabstrip-tab-group'));
     tabGroupElement.dataset.groupId = groupId;
     tabGroupElement.appendChild(document.createElement('tabstrip-tab'));
     document.body.appendChild(tabGroupElement);

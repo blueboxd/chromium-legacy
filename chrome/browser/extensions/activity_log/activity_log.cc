@@ -460,7 +460,7 @@ ActivityLog* ActivityLog::GetInstance(content::BrowserContext* context) {
 
 // Use GetInstance instead of directly creating an ActivityLog.
 ActivityLog::ActivityLog(content::BrowserContext* context)
-    : database_policy_(NULL),
+    : database_policy_(nullptr),
       database_policy_type_(ActivityLogPolicy::POLICY_INVALID),
       profile_(Profile::FromBrowserContext(context)),
       extension_system_(ExtensionSystem::Get(context)),

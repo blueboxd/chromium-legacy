@@ -240,11 +240,10 @@ void ExtensionActionAPI::Shutdown() {
 //
 
 ExtensionActionFunction::ExtensionActionFunction()
-    : details_(NULL),
+    : details_(nullptr),
       tab_id_(ExtensionAction::kDefaultTabId),
-      contents_(NULL),
-      extension_action_(NULL) {
-}
+      contents_(nullptr),
+      extension_action_(nullptr) {}
 
 ExtensionActionFunction::~ExtensionActionFunction() {
 }

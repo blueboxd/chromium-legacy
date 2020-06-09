@@ -122,11 +122,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->result_subtype = result_subtype;
   }
 
-  int distance_from_origin() { return distance_from_origin_; }
-  void set_distance_from_origin(int distance) {
-    distance_from_origin_ = distance;
-  }
-
   const Actions& actions() const { return metadata_->actions; }
   void SetActions(const Actions& sets);
 
@@ -173,10 +168,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
 
   // Opens the result. Clients should use AppListViewDelegate::OpenSearchResult.
   virtual void Open(int event_flags);
-
-  // The Manhattan distance from the origin of all search results to this
-  // result. This is logged for UMA.
-  int distance_from_origin_ = -1;
 
   bool is_visible_ = true;
 

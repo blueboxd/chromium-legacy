@@ -24,6 +24,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -198,7 +199,7 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
 std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   std::vector<DropData::Metadata> metadata;
-  if (!drop_data.text.is_null()) {
+  if (drop_data.text) {
     metadata.push_back(DropData::Metadata::CreateForMimeType(
         DropData::Kind::STRING, base::ASCIIToUTF16(ui::kMimeTypeText)));
   }
@@ -208,7 +209,7 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
         DropData::Kind::STRING, base::ASCIIToUTF16(ui::kMimeTypeURIList)));
   }
 
-  if (!drop_data.html.is_null()) {
+  if (drop_data.html) {
     metadata.push_back(DropData::Metadata::CreateForMimeType(
         DropData::Kind::STRING, base::ASCIIToUTF16(ui::kMimeTypeHTML)));
   }
@@ -302,6 +303,11 @@ class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
           compositor_request) override {
     NOTREACHED() << "Input request on unbound interface";
   }
+  void GetFrameWidgetInputHandler(
+      mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetInputHandler>
+          request) override {
+    NOTREACHED() << "Input request on unbound interface";
+  }
 };
 
 base::LazyInstance<UnboundWidgetInputHandler>::Leaky g_unbound_input_handler =
@@ -316,7 +322,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
     RenderWidgetHostDelegate* delegate,
     RenderProcessHost* process,
     int32_t routing_id,
-    mojo::PendingRemote<mojom::Widget> widget,
     bool hidden,
     std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue)
     : delegate_(delegate),
@@ -365,7 +370,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
   process_->AddPriorityClient(this);
 
   SetupInputRouter();
-  SetWidget(std::move(widget));
 
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableNewContentRenderingTimeout)) {
@@ -518,6 +522,15 @@ void RenderWidgetHostImpl::Init() {
 
   set_renderer_initialized(true);
 
+  blink_widget_->GetWidgetInputHandler(
+      widget_input_handler_.BindNewPipeAndPassReceiver(),
+      input_router_->BindNewHost());
+  // If this is for a frame be sure to connect that handler too.
+  if (blink_frame_widget_) {
+    widget_input_handler_->GetFrameWidgetInputHandler(
+        frame_widget_input_handler_.BindNewEndpointAndPassReceiver());
+  }
+
   SendScreenRects();
   SynchronizeVisualProperties();
 
@@ -535,6 +548,7 @@ RenderWidgetHostImpl::BindNewWidgetInterfaces() {
   // reused RenderViewHostImpl so we need to ensure old channels are dropped.
   blink_widget_host_receiver_.reset();
   blink_widget_.reset();
+  widget_input_handler_.reset();
   return std::make_pair(
       blink_widget_host_receiver_.BindNewEndpointAndPassRemote(),
       blink_widget_.BindNewEndpointAndPassReceiver());
@@ -547,6 +561,7 @@ void RenderWidgetHostImpl::BindWidgetInterfaces(
   // reused RenderViewHostImpl so we need to ensure old channels are dropped.
   blink_widget_host_receiver_.reset();
   blink_widget_.reset();
+  widget_input_handler_.reset();
   blink_widget_host_receiver_.Bind(std::move(widget_host));
   blink_widget_.Bind(std::move(widget));
 }
@@ -558,6 +573,7 @@ RenderWidgetHostImpl::BindNewFrameWidgetInterfaces() {
   // reused RenderViewHostImpl so we need to ensure old channels are dropped.
   blink_frame_widget_host_receiver_.reset();
   blink_frame_widget_.reset();
+  frame_widget_input_handler_.reset();
   return std::make_pair(
       blink_frame_widget_host_receiver_.BindNewEndpointAndPassRemote(),
       blink_frame_widget_.BindNewEndpointAndPassReceiver());
@@ -571,6 +587,7 @@ void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
   // reused RenderViewHostImpl so we need to ensure old channels are dropped.
   blink_frame_widget_host_receiver_.reset();
   blink_frame_widget_.reset();
+  frame_widget_input_handler_.reset();
   blink_frame_widget_host_receiver_.Bind(std::move(frame_widget_host));
   blink_frame_widget_.Bind(std::move(frame_widget));
 }
@@ -578,6 +595,18 @@ void RenderWidgetHostImpl::BindFrameWidgetInterfaces(
 void RenderWidgetHostImpl::InitForFrame() {
   DCHECK(process_->IsInitializedAndNotDead());
   set_renderer_initialized(true);
+
+  // In situations where RenderFrameHostImpl::CreateNewFrame calls this
+  // the |blink_widget_| will not be bound before this method is called.
+  // However RenderWidgetHostImpl::Init will be called once the widget
+  // is shown and these handlers will be bound there.
+  if (blink_widget_) {
+    blink_widget_->GetWidgetInputHandler(
+        widget_input_handler_.BindNewPipeAndPassReceiver(),
+        input_router_->BindNewHost());
+    widget_input_handler_->GetFrameWidgetInputHandler(
+        frame_widget_input_handler_.BindNewEndpointAndPassReceiver());
+  }
 
   if (view_)
     view_->OnRenderWidgetInit();
@@ -1112,8 +1141,6 @@ void RenderWidgetHostImpl::Blur() {
 }
 
 void RenderWidgetHostImpl::FlushForTesting() {
-  if (associated_widget_input_handler_)
-    return associated_widget_input_handler_.FlushForTesting();
   if (widget_input_handler_)
     return widget_input_handler_.FlushForTesting();
 }
@@ -1846,8 +1873,6 @@ void RenderWidgetHostImpl::RenderProcessExited(
 
 blink::mojom::WidgetInputHandler*
 RenderWidgetHostImpl::GetWidgetInputHandler() {
-  if (associated_widget_input_handler_)
-    return associated_widget_input_handler_.get();
   if (widget_input_handler_)
     return widget_input_handler_.get();
   // TODO(dtapuska): Remove the need for the unbound interface. It is
@@ -2828,6 +2853,13 @@ RenderWidgetHostImpl::GetAssociatedFrameWidget() {
   return blink_frame_widget_;
 }
 
+blink::mojom::FrameWidgetInputHandler*
+RenderWidgetHostImpl::GetFrameWidgetInputHandler() {
+  if (!frame_widget_input_handler_)
+    return nullptr;
+  return frame_widget_input_handler_.get();
+}
+
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
     const blink::WebInputEvent& event,
     ui::LatencyInfo* latency) {
@@ -3161,8 +3193,6 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   suppress_events_until_keydown_ = false;
   monitoring_composition_info_ = false;
   StopInputEventAckTimeout();
-  associated_widget_input_handler_.reset();
-  widget_input_handler_.reset();
 
   input_router_ = std::make_unique<InputRouterImpl>(
       this, this, fling_scheduler_.get(), GetInputRouterConfigForPlatform());
@@ -3180,34 +3210,9 @@ void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
   input_router_->SetForceEnableZoom(enabled);
 }
 
-void RenderWidgetHostImpl::SetFrameInputHandler(
-    blink::mojom::FrameInputHandler* frame_input_handler) {
-  if (!frame_input_handler)
-    return;
-  frame_input_handler->GetWidgetInputHandler(
-      associated_widget_input_handler_.BindNewEndpointAndPassReceiver(),
-      input_router_->BindNewFrameHost());
-}
-
 void RenderWidgetHostImpl::SetInputTargetClient(
     mojo::Remote<viz::mojom::InputTargetClient> input_target_client) {
   input_target_client_ = std::move(input_target_client);
-}
-
-void RenderWidgetHostImpl::SetWidget(
-    mojo::PendingRemote<mojom::Widget> widget_remote) {
-  if (!widget_remote)
-    return;
-
-  // If we have a bound handler ensure that we destroy the old input router
-  // while we reset the |widget_input_handler_|.
-  if (widget_input_handler_.is_bound())
-    SetupInputRouter();
-
-  mojo::Remote<mojom::Widget> widget(std::move(widget_remote));
-  widget->SetupWidgetInputHandler(
-      widget_input_handler_.BindNewPipeAndPassReceiver(),
-      input_router_->BindNewHost());
 }
 
 void RenderWidgetHostImpl::ProgressFlingIfNeeded(TimeTicks current_time) {

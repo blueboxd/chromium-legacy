@@ -211,20 +211,25 @@ class Target(object):
   def _AssertIsStarted(self):
     assert self.IsStarted()
 
-  def _WaitUntilReady(self):
+  def _WaitUntilReady(self, ssh_diagnostic_log_file=open(os.devnull, 'w')):
     logging.info('Connecting to Fuchsia using SSH.')
 
     host, port = self._GetEndpoint()
     end_time = time.time() + _ATTACH_RETRY_SECONDS
     while time.time() < end_time:
       runner = remote_cmd.CommandRunner(self._GetSshConfigPath(), host, port)
-      if runner.RunCommand(['true'], True) == 0:
+      ssh_proc = runner.RunCommandPiped(['true'],
+                                        ssh_args=['-v'],
+                                        stdout=ssh_diagnostic_log_file,
+                                        stderr=subprocess.STDOUT)
+      if ssh_proc.wait() == 0:
         logging.info('Connected!')
         self._started = True
         return True
       time.sleep(_ATTACH_RETRY_INTERVAL)
 
     logging.error('Timeout limit reached.')
+    ssh_diagnostic_log_file.flush()
 
     raise FuchsiaTargetException('Couldn\'t connect using SSH.')
 

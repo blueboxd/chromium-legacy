@@ -482,7 +482,8 @@ const FeatureEntry::FeatureVariation kForceDarkVariations[] = {
 
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_Immediate[] = {
-    {"baseline_tab_suggestions", "true"}};
+    {"baseline_tab_suggestions", "true"},
+    {"baseline_close_tab_suggestions", "true"}};
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_4Hours[] = {
     {"close_tab_suggestions_stale_time_ms", "14400000"}};
 const FeatureEntry::FeatureParam kCloseTabSuggestionsStale_8Hours[] = {
@@ -497,10 +498,16 @@ const FeatureEntry::FeatureParam kCloseTabSuggestionsTimeSiteEngagement[] = {
     {"close_tab_features_site_engagement_enabled", "true"},
     {"close_tab_features_site_engagement_threshold", "90.0"},
 };
+const FeatureEntry::FeatureParam kGroupAndCloseTabSuggestions_Immediate[] = {
+    {"baseline_tab_suggestions", "true"},
+    {"baseline_group_tab_suggestions", "true"},
+    {"baseline_close_tab_suggestions", "true"}};
 
 const FeatureEntry::FeatureVariation kCloseTabSuggestionsStaleVariations[] = {
-    {"Immediate", kCloseTabSuggestionsStale_Immediate,
+    {"Close Immediate", kCloseTabSuggestionsStale_Immediate,
      base::size(kCloseTabSuggestionsStale_Immediate), nullptr},
+    {"Group+Close Immediate", kGroupAndCloseTabSuggestions_Immediate,
+     base::size(kGroupAndCloseTabSuggestions_Immediate), nullptr},
     {"4 hours", kCloseTabSuggestionsStale_4Hours,
      base::size(kCloseTabSuggestionsStale_4Hours), nullptr},
     {"8 hours", kCloseTabSuggestionsStale_8Hours,
@@ -2634,6 +2641,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTerminalSystemAppLegacySettingsName,
      flag_descriptions::kTerminalSystemAppLegacySettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kTerminalSystemAppLegacySettings)},
+    {"pluginvm-show-camera-permissions",
+     flag_descriptions::kPluginVmShowCameraPermissionsName,
+     flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPluginVmShowCameraPermissions)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)
@@ -3568,6 +3579,23 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefName,
      flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlPathQueryAndRef)},
+
+    {"omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",
+     flag_descriptions::
+         kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverName,
+     flag_descriptions::
+         kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover)},
+
+    {"omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction",
+     flag_descriptions::
+         kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionName,
+     flag_descriptions::
+         kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction)},
 
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,

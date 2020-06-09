@@ -8,6 +8,8 @@
 #include <cstddef>
 #include <cstdint>
 
+void GoogleTtsSetLogger(void (*logger_func)(int severity, const char* message));
+
 bool GoogleTtsInit(const char* pipeline_path, const char* path_prefix);
 
 void GoogleTtsShutdown();

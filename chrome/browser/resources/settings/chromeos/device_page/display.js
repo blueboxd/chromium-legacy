@@ -538,6 +538,7 @@ cr.define('settings.display', function() {
       // Clear the mappings before recalculating.
       this.modeToParentModeMap_ = new Map();
       this.parentModeToRefreshRateMap_ = new Map();
+      this.displayModeList_ = new Array();
 
       // Build the modes into a nested map of width => height => refresh rate.
       const modes = this.createModeMap_(selectedDisplay);
@@ -601,7 +602,7 @@ cr.define('settings.display', function() {
 
       // Only store one entry in the |resolutionList| per resolution,
       // mapping it to the parentModeIndex for that resolution.
-      this.displayModeList_.push({
+      this.push('displayModeList_', {
         name: resolutionOption,
         value: parentModeIndex,
       });

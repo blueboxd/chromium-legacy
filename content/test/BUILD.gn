@@ -289,8 +289,6 @@ jumbo_static_library("test_support") {
     "mock_render_widget_host_delegate.h",
     "mock_ssl_host_state_delegate.cc",
     "mock_ssl_host_state_delegate.h",
-    "mock_widget_impl.cc",
-    "mock_widget_impl.h",
     "mock_widget_input_handler.cc",
     "mock_widget_input_handler.h",
     "navigation_simulator_impl.cc",

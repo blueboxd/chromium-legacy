@@ -844,7 +844,7 @@ class Port(object):
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
-    def tests(self, paths):
+    def tests(self, paths=None):
         """Returns all tests or tests matching supplied paths.
 
         Args:

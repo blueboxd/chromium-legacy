@@ -6,9 +6,11 @@
 
 #include "base/files/file_path.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/download/download_prompt_status.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/download/public/common/download_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/file_type_policies.h"
@@ -40,18 +42,29 @@ TEST(DownloadPrefsTest, RegisterPrefs) {
   content::BrowserTaskEnvironment task_environment_;
   base::HistogramTester histogram_tester;
 
+#ifdef OS_ANDROID
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(download::features::kDownloadLater);
+#endif  // OS_ANDROID
+
   // Download prefs are registered when creating the profile.
   TestingProfile profile;
   DownloadPrefs prefs(&profile);
 
 #ifdef OS_ANDROID
-  // Download prompt pref should be registered correctly.
+  // Download prompt prefs should be registered correctly.
   histogram_tester.ExpectBucketCount("MobileDownload.DownloadPromptStatus",
                                      DownloadPromptStatus::SHOW_INITIAL, 1);
   int prompt_status = profile.GetTestingPrefService()->GetInteger(
       prefs::kPromptForDownloadAndroid);
   EXPECT_EQ(prompt_status,
             static_cast<int>(DownloadPromptStatus::SHOW_INITIAL));
+
+  int download_later_prompt_status =
+      profile.GetTestingPrefService()->GetInteger(
+          prefs::kDownloadLaterPromptStatus);
+  EXPECT_EQ(download_later_prompt_status,
+            static_cast<int>(DownloadLaterPromptStatus::SHOW_INITIAL));
 #endif  // OS_ANDROID
 }
 

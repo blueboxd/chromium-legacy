@@ -46,7 +46,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
       : io_loop_finished_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        selector_(NULL) {}
+        selector_(nullptr) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     base::FilePath certs_dir = net::GetTestCertsDirectory();

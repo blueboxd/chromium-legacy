@@ -25,7 +25,7 @@ class SendTabToSelfIconView : public PageActionIconView {
   ~SendTabToSelfIconView() override;
 
   // PageActionIconView:
-  views::BubbleDialogDelegateView* GetBubble() const override;
+  views::BubbleDialogDelegate* GetBubble() const override;
   void UpdateImpl() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 

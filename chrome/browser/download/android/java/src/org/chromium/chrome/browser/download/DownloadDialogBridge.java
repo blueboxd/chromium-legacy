@@ -254,6 +254,22 @@ public class DownloadDialogBridge implements ModalDialogProperties.Controller {
         PrefServiceBridge.getInstance().setInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID, status);
     }
 
+    /**
+     * @return The prompt status for download later dialog.
+     */
+    @DownloadLaterPromptStatus
+    public static int getDownloadLaterPromptStatus() {
+        return PrefServiceBridge.getInstance().getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
+    }
+
+    /**
+     * Sets the prompt status for download later dialog.
+     * @param status New status to update the download later prmopt status.
+     */
+    public static void setDownloadLaterPromptStatus(@DownloadLaterPromptStatus int status) {
+        PrefServiceBridge.getInstance().setInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS, status);
+    }
+
     @NativeMethods
     interface Natives {
         void onComplete(long nativeDownloadDialogBridge, DownloadDialogBridge caller,

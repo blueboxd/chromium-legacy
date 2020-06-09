@@ -18,7 +18,7 @@ NullAudioSink::NullAudioSink(
     : initialized_(false),
       started_(false),
       playing_(false),
-      callback_(NULL),
+      callback_(nullptr),
       task_runner_(task_runner) {}
 
 NullAudioSink::~NullAudioSink() = default;

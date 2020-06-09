@@ -13,10 +13,15 @@ from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 from blinkpy.web_tests.port.android import (
-    PRODUCTS_TO_EXPECTATION_FILE_PATHS, ANDROID_DISABLED_TESTS)
+    PRODUCTS_TO_EXPECTATION_FILE_PATHS, ANDROID_DISABLED_TESTS,
+    ANDROID_WEBLAYER, ANDROID_WEBVIEW, CHROME_ANDROID,
+    PRODUCTS_TO_STEPNAMES)
 from blinkpy.w3c.android_wpt_expectations_updater import (
     AndroidWPTExpectationsUpdater)
 
+WEBLAYER_WPT_STEP = PRODUCTS_TO_STEPNAMES[ANDROID_WEBLAYER]
+WEBVIEW_WPT_STEP = PRODUCTS_TO_STEPNAMES[ANDROID_WEBVIEW]
+CHROME_ANDROID_WPT_STEP = PRODUCTS_TO_STEPNAMES[CHROME_ANDROID]
 
 class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
 
@@ -48,6 +53,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
         self.set_logging_level(logging.DEBUG)
         host = MockHost()
         host.port_factory = MockPortFactory(host)
+        host.executive._output = ''
 
         # Set up a fake list of try builders.
         host.builders = BuilderList({
@@ -105,10 +111,10 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                         'is_unexpected': True,
                     },
                 },
-            }, step_name='system_webview_wpt (with patch)'),
-            step_name='system_webview_wpt (with patch)')
+            }, step_name=WEBVIEW_WPT_STEP + ' (with patch)'),
+            step_name=WEBVIEW_WPT_STEP + ' (with patch)')
         updater = AndroidWPTExpectationsUpdater(
-            host, ['-vvv',  '--android-product', 'android_webview'])
+            host, ['-vvv',  '--android-product', ANDROID_WEBVIEW])
         updater.git_cl = MockGitCL(host, {
             Build('MOCK Android Pie', 123):
             TryJobStatus('COMPLETED', 'FAILURE')})
@@ -116,7 +122,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
         updater.run()
         # Get new expectations
         content = host.filesystem.read_text_file(
-            PRODUCTS_TO_EXPECTATION_FILE_PATHS['android_webview'])
+            PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBVIEW])
         self.assertEqual(
             content,
             ('# results: [ Failure Crash Timeout]\n'
@@ -149,12 +155,21 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
         # expectations
         self.assertEqual(
             host.filesystem.read_text_file(
-                PRODUCTS_TO_EXPECTATION_FILE_PATHS['chrome_android']),
+                PRODUCTS_TO_EXPECTATION_FILE_PATHS[CHROME_ANDROID]),
             self._raw_android_expectations)
         # Check logs
         logs = ''.join(self.logMessages()).lower()
-        self.assertNotIn('weblayer', logs)
-        self.assertNotIn('chrome', logs)
+        self.assertNotIn(WEBLAYER_WPT_STEP, logs)
+        self.assertNotIn(CHROME_ANDROID_WPT_STEP, logs)
+        # Check that weblayer and chrome expectation files were not changed
+        self.assertEqual(
+            self._raw_android_expectations,
+            host.filesystem.read_text_file(
+                PRODUCTS_TO_EXPECTATION_FILE_PATHS[CHROME_ANDROID]))
+        self.assertEqual(
+            self._raw_android_expectations,
+            host.filesystem.read_text_file(
+                PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBLAYER]))
 
     def testUpdateTestExpectationsForWeblayer(self):
         host = self._setup_host()
@@ -183,10 +198,10 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                         'is_unexpected': True,
                     },
                 },
-            }, step_name='weblayer_shell_wpt (with patch)'),
-            step_name='weblayer_shell_wpt (with patch)')
+            }, step_name=WEBLAYER_WPT_STEP + ' (with patch)'),
+            step_name=WEBLAYER_WPT_STEP + ' (with patch)')
         updater = AndroidWPTExpectationsUpdater(
-            host, ['-vvv', '--android-product', 'android_weblayer'])
+            host, ['-vvv', '--android-product', ANDROID_WEBLAYER])
         updater.git_cl = MockGitCL(host, {
             Build('MOCK Android Weblayer - Pie', 123):
             TryJobStatus('COMPLETED', 'FAILURE')})
@@ -194,7 +209,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
         updater.run()
         # Get new expectations
         content = host.filesystem.read_text_file(
-            PRODUCTS_TO_EXPECTATION_FILE_PATHS['android_weblayer'])
+            PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBLAYER])
         self.assertEqual(
             content,
             ('# results: [ Failure Crash Timeout]\n'
@@ -215,10 +230,24 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              'crbug.com/111111 external/wpt/hello_world.html [ Crash ]\n'))
         # Check logs
         logs = ''.join(self.logMessages()).lower()
-        self.assertNotIn('webview', logs)
-        self.assertNotIn('chrome', logs)
+        self.assertNotIn(WEBVIEW_WPT_STEP, logs)
+        self.assertNotIn(CHROME_ANDROID_WPT_STEP, logs)
+        # Check that webview and chrome expectation files were not changed
+        self.assertEqual(
+            self._raw_android_expectations,
+            host.filesystem.read_text_file(
+                PRODUCTS_TO_EXPECTATION_FILE_PATHS[CHROME_ANDROID]))
+        self.assertEqual(
+            self._raw_android_expectations,
+            host.filesystem.read_text_file(
+                PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBVIEW]))
+        self.assertEqual(
+            self._raw_android_never_fix_tests,
+            host.filesystem.read_text_file(ANDROID_DISABLED_TESTS))
 
-    def testUpdateTestExpectationsForAll(self):
+    def testCleanupAndUpdateTestExpectationsForAll(self):
+        # Full integration test for expectations cleanup and update
+        # using builder results.
         host = self._setup_host()
         # Add results for Weblayer
         host.results_fetcher.set_results(
@@ -241,8 +270,8 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                         'is_unexpected': True,
                     },
                 },
-            }, step_name='weblayer_shell_wpt (with patch)'),
-            step_name='weblayer_shell_wpt (with patch)')
+            }, step_name=WEBLAYER_WPT_STEP + ' (with patch)'),
+            step_name=WEBLAYER_WPT_STEP + ' (with patch)')
         # Add Results for Webview
         host.results_fetcher.set_results(
             Build('MOCK Android Pie', 101),
@@ -263,8 +292,8 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                         'actual': 'SKIP',
                     },
                 },
-            }, step_name='system_webview_wpt (with patch)'),
-            step_name='system_webview_wpt (with patch)')
+            }, step_name=WEBVIEW_WPT_STEP + ' (with patch)'),
+            step_name=WEBVIEW_WPT_STEP + ' (with patch)')
         # Add Results for Chrome
         host.results_fetcher.set_results(
             Build('MOCK Android Pie', 101),
@@ -286,23 +315,36 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
                         'is_unexpected': True,
                     },
                 },
-            }, step_name='chrome_public_wpt (with patch)'),
-            step_name='chrome_public_wpt (with patch)')
+            }, step_name=CHROME_ANDROID_WPT_STEP + ' (with patch)'),
+            step_name=CHROME_ANDROID_WPT_STEP + ' (with patch)')
         updater = AndroidWPTExpectationsUpdater(
             host, ['-vvv',
-                   '--android-product', 'android_weblayer',
-                   '--android-product', 'chrome_android',
-                   '--android-product', 'android_webview'])
+                   '--clean-up-affected-tests-only',
+                   '--android-product', ANDROID_WEBLAYER,
+                   '--android-product', CHROME_ANDROID,
+                   '--android-product', ANDROID_WEBVIEW])
+
+        def _git_command_return_val(cmd):
+            if '--diff-filter=D' in cmd:
+                return 'external/wpt/ghi.html'
+            if '--diff-filter=R' in cmd:
+                return 'C external/wpt/van.html external/wpt/wagon.html'
+            return ''
+
         updater.git_cl = MockGitCL(host, {
             Build('MOCK Android Weblayer - Pie', 123):
             TryJobStatus('COMPLETED', 'FAILURE'),
             Build('MOCK Android Pie', 101):
             TryJobStatus('COMPLETED', 'FAILURE')})
+
+        updater.git.run = _git_command_return_val
+        updater._relative_to_web_test_dir = lambda test_path: test_path
+
         # Run command
         updater.run()
         # Check expectations for weblayer
         content = host.filesystem.read_text_file(
-            PRODUCTS_TO_EXPECTATION_FILE_PATHS['android_weblayer'])
+            PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBLAYER])
         self.assertEqual(
             content,
             ('# results: [ Failure Crash Timeout]\n'
@@ -312,9 +354,8 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              'crbug.com/1050754 external/wpt/cat.html [ Failure ]\n'
              'crbug.com/1050754 external/wpt/def.html [ Crash ]\n'
              'external/wpt/dog.html [ Crash Timeout ]\n'
-             'crbug.com/1050754 external/wpt/ghi.html [ Timeout ]\n'
              'crbug.com/1111111 external/wpt/jkl.html [ Failure ]\n'
-             'crbug.com/6789043 external/wpt/van.html [ Failure ]\n'
+             'crbug.com/6789043 external/wpt/wagon.html [ Failure ]\n'
              'crbug.com/1050754 external/wpt/weblayer_only.html [ Failure Crash ]\n'
              'external/wpt/www.html [ Crash Failure ]\n'
              '\n'
@@ -322,7 +363,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              'crbug.com/111111 external/wpt/hello_world.html [ Crash ]\n'))
         # Check expectations for webview
         content = host.filesystem.read_text_file(
-            PRODUCTS_TO_EXPECTATION_FILE_PATHS['android_webview'])
+            PRODUCTS_TO_EXPECTATION_FILE_PATHS[ANDROID_WEBVIEW])
         self.assertEqual(
             content,
             ('# results: [ Failure Crash Timeout]\n'
@@ -332,9 +373,8 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              'crbug.com/1050754 external/wpt/cat.html [ Crash Failure Timeout ]\n'
              'crbug.com/1050754 external/wpt/def.html [ Crash ]\n'
              'external/wpt/dog.html [ Crash Timeout ]\n'
-             'crbug.com/1050754 external/wpt/ghi.html [ Timeout ]\n'
              'crbug.com/1111111 external/wpt/jkl.html [ Failure ]\n'
-             'crbug.com/6789043 external/wpt/van.html [ Failure ]\n'
+             'crbug.com/6789043 external/wpt/wagon.html [ Failure ]\n'
              'crbug.com/1050754 external/wpt/webview_only.html [ Timeout ]\n'
              'external/wpt/www.html [ Crash Failure ]\n'
              '\n'
@@ -342,7 +382,7 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              'crbug.com/111111 external/wpt/hello_world.html [ Crash ]\n'))
         # Check expectations chrome
         content = host.filesystem.read_text_file(
-            PRODUCTS_TO_EXPECTATION_FILE_PATHS['chrome_android'])
+            PRODUCTS_TO_EXPECTATION_FILE_PATHS[CHROME_ANDROID])
         self.assertEqual(
             content,
             ('# results: [ Failure Crash Timeout]\n'
@@ -353,10 +393,9 @@ class AndroidWPTExpectationsUpdaterTest(LoggingTestCase):
              'crbug.com/1050754 external/wpt/chrome_only.html [ Crash Timeout ]\n'
              'crbug.com/1050754 external/wpt/def.html [ Crash ]\n'
              'external/wpt/dog.html [ Crash Timeout ]\n'
-             'crbug.com/1050754 external/wpt/ghi.html [ Timeout ]\n'
              'crbug.com/1111111 crbug.com/1050754'
              ' external/wpt/jkl.html [ Failure ]\n'
-             'crbug.com/6789043 external/wpt/van.html [ Failure ]\n'
+             'crbug.com/6789043 external/wpt/wagon.html [ Failure ]\n'
              'external/wpt/www.html [ Crash Failure ]\n'
              '\n'
              '# This comment will not be deleted\n'

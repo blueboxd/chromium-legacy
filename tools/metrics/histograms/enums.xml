@@ -39149,6 +39149,8 @@ from previous Chrome versions.
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
+  <int value="-1525129540"
+      label="OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover:disabled"/>
   <int value="-1524323669" label="InstalledAppsInCbd:enabled"/>
   <int value="-1521296022"
       label="UpdateNotificationScheduleServiceImmediateShowOption:disabled"/>
@@ -39751,6 +39753,8 @@ from previous Chrome versions.
   <int value="-898594349" label="ash-enable-stable-overview-order"/>
   <int value="-898499262" label="ImprovedA2HS:enabled"/>
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>
+  <int value="-897994913"
+      label="OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover:enabled"/>
   <int value="-897069393"
       label="kAutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-894214299" label="fill-on-account-select:enabled"/>
@@ -40025,6 +40029,7 @@ from previous Chrome versions.
   <int value="-596337171" label="disable-ash-sidebar"/>
   <int value="-595819071"
       label="OmniboxUIExperimentBlueTitlesOnPageSuggestions:disabled"/>
+  <int value="-594076614" label="PluginVmShowCameraPermissions:disabled"/>
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-582870536" label="BluetoothNextHandsfreeProfile:enabled"/>
@@ -40193,6 +40198,8 @@ from previous Chrome versions.
   <int value="-396046249" label="PhotoPickerVideoSupport:enabled"/>
   <int value="-395606844" label="enable-site-settings"/>
   <int value="-395454065" label="DisablePostScriptPrinting:disabled"/>
+  <int value="-389664522"
+      label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction:enabled"/>
   <int value="-387606010" label="ArcBootCompletedBroadcast:enabled"/>
   <int value="-386971711" label="ChromeSharingHubV15:disabled"/>
   <int value="-385337473" label="enable-fast-unload"/>
@@ -41164,6 +41171,8 @@ from previous Chrome versions.
   <int value="724427456" label="WebAuthenticationPINSupport:disabled"/>
   <int value="725067265" label="enable-experimental-cookie-features"/>
   <int value="725270017" label="ScrollAnchorSerialization:disabled"/>
+  <int value="725579946"
+      label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction:disabled"/>
   <int value="725870294" label="RequestUnbufferedDispatch:disabled"/>
   <int value="726764779" label="WebXRGamepadSupport:enabled"/>
   <int value="727270087" label="PromosOnLocalNtp:enabled"/>
@@ -41519,6 +41528,7 @@ from previous Chrome versions.
   <int value="1129888794" label="ash-touch-hud"/>
   <int value="1133207726" label="MediaInspectorLogging:enabled"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
+  <int value="1135728116" label="PluginVmShowCameraPermissions:enabled"/>
   <int value="1138349838" label="EnableMDRoundedCornersOnDialogs:disabled"/>
   <int value="1138690502" label="PreconnectToSearch:enabled"/>
   <int value="1139226452" label="enable-nacl-debug"/>
@@ -53634,9 +53644,16 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="PerformanceHintsObserverHintForURLResult">
   <int value="0" label="Hint not found for URL"/>
-  <int value="1" label="Hint not yet processed"/>
+  <int value="1" label="One or more sources were not yet ready"/>
   <int value="2" label="Invalid URL"/>
   <int value="3" label="Hint found for URL"/>
+</enum>
+
+<enum name="PerformanceHintsObserverSourceLookupStatus">
+  <int value="0" label="Source was not queried (a hint was already found)"/>
+  <int value="1" label="Source was not ready in time"/>
+  <int value="2" label="Source did not have a hint for URL"/>
+  <int value="3" label="Source had a hint for the URL"/>
 </enum>
 
 <enum name="PerformanceHintsPerformanceClass">

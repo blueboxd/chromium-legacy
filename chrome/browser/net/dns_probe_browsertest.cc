@@ -423,8 +423,8 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
 
 DnsProbeBrowserTest::DnsProbeBrowserTest()
     : helper_(new DnsProbeBrowserTestIOThreadHelper()),
-      active_browser_(NULL),
-      monitored_tab_helper_(NULL) {
+      active_browser_(nullptr),
+      monitored_tab_helper_(nullptr) {
   NavigationCorrectionTabObserver::SetAllowEnableCorrectionsForTesting(true);
 }
 

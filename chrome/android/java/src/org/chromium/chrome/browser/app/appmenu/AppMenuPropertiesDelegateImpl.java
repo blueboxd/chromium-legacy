@@ -635,7 +635,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         boolean itemVisible = canShowRequestDesktopSite
                 && (!isChromeScheme || currentTab.isNativePage())
-                && !shouldShowReaderModePrefs(currentTab);
+                && !shouldShowReaderModePrefs(currentTab) && currentTab.getWebContents() != null;
         requestMenuRow.setVisible(itemVisible);
         if (!itemVisible) return;
 

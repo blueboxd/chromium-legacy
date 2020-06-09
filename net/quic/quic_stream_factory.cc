@@ -253,7 +253,7 @@ class QuicStreamFactory::CertVerifierJob {
     auto* verify_callback_ptr = verify_callback.get();
     quic::QuicAsyncStatus status =
         crypto_config->proof_verifier()->VerifyCertChain(
-            server_id_.host(), cached->certs(),
+            server_id_.host(), server_id_.port(), cached->certs(),
             /*ocsp_response=*/std::string(), cached->cert_sct(),
             verify_context_.get(), &verify_error_details_, &verify_details_,
             std::move(verify_callback));

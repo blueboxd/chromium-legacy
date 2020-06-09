@@ -348,7 +348,7 @@ std::unique_ptr<PacketPipe> NewNetworkGlitchPipe(double average_work_time,
 class InterruptedPoissonProcess::InternalBuffer : public PacketPipe {
  public:
   InternalBuffer(base::WeakPtr<InterruptedPoissonProcess> ipp, size_t size)
-      : ipp_(ipp), stored_size_(0), stored_limit_(size), clock_(NULL) {}
+      : ipp_(ipp), stored_size_(0), stored_limit_(size), clock_(nullptr) {}
 
   void Send(std::unique_ptr<Packet> packet) final {
     // Drop if buffer is full.
@@ -409,7 +409,7 @@ InterruptedPoissonProcess::InterruptedPoissonProcess(
     double coef_burstiness,
     double coef_variance,
     uint32_t rand_seed)
-    : clock_(NULL),
+    : clock_(nullptr),
       average_rates_(average_rates),
       coef_burstiness_(coef_burstiness),
       coef_variance_(coef_variance),

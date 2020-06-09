@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -80,6 +82,9 @@ class TestButton : public Button, public ButtonListener {
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     pressed_ = true;
+
+    if (!on_button_pressed_handler_.is_null())
+      on_button_pressed_handler_.Run();
   }
 
   void OnClickCanceled(const ui::Event& event) override { canceled_ = true; }
@@ -103,6 +108,10 @@ class TestButton : public Button, public ButtonListener {
     custom_key_click_action_ = custom_key_click_action;
   }
 
+  void set_on_button_pressed_handler(const base::RepeatingClosure& callback) {
+    on_button_pressed_handler_ = callback;
+  }
+
   void Reset() {
     pressed_ = false;
     canceled_ = false;
@@ -119,6 +128,9 @@ class TestButton : public Button, public ButtonListener {
   int ink_drop_layer_remove_count_ = 0;
 
   KeyClickAction custom_key_click_action_ = KeyClickAction::kNone;
+
+  // If available, will be triggered when the button is pressed.
+  base::RepeatingClosure on_button_pressed_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestButton);
 };
@@ -418,6 +430,18 @@ TEST_F(ButtonTest, GestureEventsSetState) {
 
   PerformGesture(button(), ui::ET_GESTURE_TAP_CANCEL);
   EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+}
+
+// Tests that if the button was disabled in its button press handler, gesture
+// events will not revert the disabled state back to normal.
+// https://crbug.com/1084241.
+TEST_F(ButtonTest, GestureEventsRespectDisabledState) {
+  button()->set_on_button_pressed_handler(base::BindRepeating(
+      [](TestButton* button) { button->SetEnabled(false); }, button()));
+
+  EXPECT_EQ(Button::STATE_NORMAL, button()->state());
+  event_generator()->GestureTapAt(button()->GetBoundsInScreen().CenterPoint());
+  EXPECT_EQ(Button::STATE_DISABLED, button()->state());
 }
 
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)

@@ -27,6 +27,7 @@
 #include "android_webview/browser/gfx/java_browser_view_renderer_helper.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
+#include "android_webview/browser/js_java_interaction/aw_web_message_host_factory.h"
 #include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "android_webview/browser/permission/aw_permission_request.h"
@@ -1326,15 +1327,26 @@ jint AwContents::AddDocumentStartJavascript(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& script,
     const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
-  return GetJsJavaConfiguratorHost()->AddDocumentStartJavascript(
-      env, script, allowed_origin_rules);
+  std::vector<std::string> native_allowed_origin_rule_strings;
+  AppendJavaStringArrayToStringVector(env, allowed_origin_rules,
+                                      &native_allowed_origin_rule_strings);
+  auto result = GetJsJavaConfiguratorHost()->AddDocumentStartJavascript(
+      base::android::ConvertJavaStringToUTF16(env, script),
+      native_allowed_origin_rule_strings);
+  if (result.error_message) {
+    env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                  result.error_message->data());
+    return -1;
+  }
+  DCHECK(result.script_id);
+  return result.script_id.value();
 }
 
 void AwContents::RemoveDocumentStartJavascript(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jint script_id) {
-  GetJsJavaConfiguratorHost()->RemoveDocumentStartJavascript(env, script_id);
+  GetJsJavaConfiguratorHost()->RemoveDocumentStartJavascript(script_id);
 }
 
 base::android::ScopedJavaLocalRef<jstring> AwContents::AddWebMessageListener(
@@ -1343,15 +1355,26 @@ base::android::ScopedJavaLocalRef<jstring> AwContents::AddWebMessageListener(
     const base::android::JavaParamRef<jobject>& listener,
     const base::android::JavaParamRef<jstring>& js_object_name,
     const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
-  return GetJsJavaConfiguratorHost()->AddWebMessageListener(
-      env, listener, js_object_name, allowed_origin_rules);
+  base::string16 native_js_object_name =
+      base::android::ConvertJavaStringToUTF16(env, js_object_name);
+  std::vector<std::string> native_allowed_origin_rule_strings;
+  AppendJavaStringArrayToStringVector(env, allowed_origin_rules,
+                                      &native_allowed_origin_rule_strings);
+  const base::string16 error_message =
+      GetJsJavaConfiguratorHost()->AddWebMessageHostFactory(
+          std::make_unique<AwWebMessageHostFactory>(listener),
+          native_js_object_name, native_allowed_origin_rule_strings);
+  if (error_message.empty())
+    return nullptr;
+  return base::android::ConvertUTF16ToJavaString(env, error_message);
 }
 
 void AwContents::RemoveWebMessageListener(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& js_object_name) {
-  GetJsJavaConfiguratorHost()->RemoveWebMessageListener(env, js_object_name);
+  GetJsJavaConfiguratorHost()->RemoveWebMessageHostFactory(
+      ConvertJavaStringToUTF16(env, js_object_name));
 }
 
 base::android::ScopedJavaLocalRef<jobjectArray> AwContents::GetJsObjectsInfo(
@@ -1359,7 +1382,8 @@ base::android::ScopedJavaLocalRef<jobjectArray> AwContents::GetJsObjectsInfo(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jclass>& clazz) {
   if (js_java_configurator_host_.get()) {
-    return GetJsJavaConfiguratorHost()->GetJsObjectsInfo(env, clazz);
+    return AwWebMessageHostFactory::GetWebMessageListenerInfo(
+        GetJsJavaConfiguratorHost(), env, clazz);
   }
   return nullptr;
 }

@@ -7,10 +7,9 @@
 
 #include <vector>
 
-#include "android_webview/browser/js_java_interaction/js_reply_proxy.h"
 #include "android_webview/common/aw_origin_matcher.h"
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
-#include "base/android/scoped_java_ref.h"
+#include "base/check.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -24,6 +23,9 @@ class RenderFrameHost;
 
 namespace android_webview {
 
+class WebMessageHost;
+class WebMessageHostFactory;
+
 // Implementation of mojo::JsToJavaMessaging interface. Receives PostMessage()
 // call from renderer JsBinding.
 class JsToJavaMessaging : public mojom::JsToJavaMessaging {
@@ -31,7 +33,7 @@ class JsToJavaMessaging : public mojom::JsToJavaMessaging {
   JsToJavaMessaging(
       content::RenderFrameHost* rfh,
       mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging> receiver,
-      base::android::ScopedJavaGlobalRef<jobject> listener_ref,
+      WebMessageHostFactory* factory,
       const AwOriginMatcher& origin_matcher);
   ~JsToJavaMessaging() override;
 
@@ -43,11 +45,18 @@ class JsToJavaMessaging : public mojom::JsToJavaMessaging {
           java_to_js_messaging) override;
 
  private:
+  class ReplyProxyImpl;
+
   content::RenderFrameHost* render_frame_host_;
-  std::unique_ptr<JsReplyProxy> reply_proxy_;
-  base::android::ScopedJavaGlobalRef<jobject> listener_ref_;
+  std::unique_ptr<ReplyProxyImpl> reply_proxy_;
+  WebMessageHostFactory* connection_factory_;
   AwOriginMatcher origin_matcher_;
   mojo::AssociatedReceiver<mojom::JsToJavaMessaging> receiver_{this};
+  std::unique_ptr<WebMessageHost> host_;
+#if DCHECK_IS_ON()
+  std::string origin_string_;
+  bool is_main_frame_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(JsToJavaMessaging);
 };

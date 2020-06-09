@@ -55,7 +55,7 @@
         net::CanonicalCookieFromSystemCookie(cookie, base::Time());
     if (canonical_cookie
             .IncludeForRequestURL(gURL, options, cookieAccessSemantics)
-            .IsInclude())
+            .status.IsInclude())
       [result addObject:cookie];
   }
   return [result copy];

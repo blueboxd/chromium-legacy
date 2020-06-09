@@ -84,17 +84,15 @@ class StackAllocator : public std::allocator<T> {
   // for Us.
   // TODO: If we were fancy pants, perhaps we could share storage
   // iff sizeof(T) == sizeof(U).
-  template<typename U, size_t other_capacity>
+  template <typename U, size_t other_capacity>
   StackAllocator(const StackAllocator<U, other_capacity>& other)
-      : source_(NULL) {
-  }
+      : source_(nullptr) {}
 
   // This constructor must exist. It creates a default allocator that doesn't
   // actually have a stack buffer. glibc's std::string() will compare the
   // current allocator against the default-constructed allocator, so this
   // should be fast.
-  StackAllocator() : source_(NULL) {
-  }
+  StackAllocator() : source_(nullptr) {}
 
   explicit StackAllocator(Source* source) : source_(source) {
   }

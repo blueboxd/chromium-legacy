@@ -17,10 +17,20 @@ component("proto") {
 proto_library("policy_record_constants") {
   visibility = [
     "//chrome/browser:browser",
-    "//chrome/browser:reporting_record_proto",
-    "//chrome/browser:reporting_record_proto_gen",
+    ":reporting_record_proto",
+    ":reporting_record_proto_gen",
   ]
   sources = [ "record_constants.proto" ]
+
+  proto_out_dir = "components/policy/proto"
+}
+
+# Record definitions for reporting.
+proto_library("reporting_record_proto") {
+  visibility = [ "//chrome/browser:browser" ]
+  sources = [ "record.proto" ]
+
+  deps = [ ":policy_record_constants" ]
 
   proto_out_dir = "components/policy/proto"
 }

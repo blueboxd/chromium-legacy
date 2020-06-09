@@ -14,7 +14,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "crypto/nss_util.h"
 
-NSSDecryptor::NSSDecryptor() : is_nss_initialized_(false), db_slot_(NULL) {}
+NSSDecryptor::NSSDecryptor() : is_nss_initialized_(false), db_slot_(nullptr) {}
 NSSDecryptor::~NSSDecryptor() {
   if (db_slot_) {
     // Deliberately leave the user db open, just in case we need to open more

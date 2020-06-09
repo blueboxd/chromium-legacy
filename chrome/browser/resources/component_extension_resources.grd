@@ -103,6 +103,7 @@
         <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" preprocess="true" />
         <include name="IDR_PDF_MAIN_UTIL_JS" file="pdf/main_util.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_VIEWER_JS" file="pdf/pdf_viewer.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_VIEWER_UTILS_JS" file="pdf/pdf_viewer_utils.js" type="BINDATA" />
         <include name="IDR_PDF_BOOKMARK_TYPE_JS" file="pdf/bookmark_type.js" type="BINDATA" />
         <include name="IDR_PDF_CONSTANTS_JS" file="pdf/constants.js" type="BINDATA" />
         <include name="IDR_PDF_CONTROLLER_JS" file="pdf/controller.js" type="BINDATA" />

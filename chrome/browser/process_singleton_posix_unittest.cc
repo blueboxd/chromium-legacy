@@ -74,7 +74,7 @@ class ProcessSingletonPosixTest : public testing::Test {
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         signal_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-        process_singleton_on_thread_(NULL) {}
+        process_singleton_on_thread_(nullptr) {}
 
   void SetUp() override {
     testing::Test::SetUp();

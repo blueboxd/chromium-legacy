@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -38,22 +37,6 @@
 namespace blink {
 
 namespace {
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class MetadataAvailabilityMetrics {
-  kAvailable = 0,  // Available when lock was attempted.
-  kMissing = 1,    // Missing when lock was attempted.
-  kReceived = 2,   // Received after being missing in order to lock.
-
-  // Keep at the end.
-  kMaxValue = kReceived,
-};
-
-void RecordMetadataAvailability(MetadataAvailabilityMetrics metrics) {
-  base::UmaHistogramEnumeration(
-      "Media.Video.FullscreenOrientationLock.MetadataAvailability", metrics);
-}
 
 // WebLockOrientationCallback implementation that will not react to a success
 // nor a failure.
@@ -100,15 +83,9 @@ void MediaControlsOrientationLockDelegate::MaybeLockOrientation() {
   DCHECK(state_ != State::kMaybeLockedFullscreen);
 
   if (VideoElement().getReadyState() == HTMLMediaElement::kHaveNothing) {
-    RecordMetadataAvailability(MetadataAvailabilityMetrics::kMissing);
     state_ = State::kPendingMetadata;
     return;
   }
-
-  if (state_ == State::kPendingMetadata)
-    RecordMetadataAvailability(MetadataAvailabilityMetrics::kReceived);
-  else
-    RecordMetadataAvailability(MetadataAvailabilityMetrics::kAvailable);
 
   state_ = State::kMaybeLockedFullscreen;
 

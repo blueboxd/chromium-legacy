@@ -320,10 +320,9 @@ class DownloadOpenObserver : public download::DownloadItem::Observer {
 class DownloadExtensionTest : public ExtensionApiTest {
  public:
   DownloadExtensionTest()
-    : extension_(NULL),
-      incognito_browser_(NULL),
-      current_browser_(NULL) {
-  }
+      : extension_(nullptr),
+        incognito_browser_(nullptr),
+        current_browser_(nullptr) {}
 
  protected:
   // Used with CreateHistoryDownloads

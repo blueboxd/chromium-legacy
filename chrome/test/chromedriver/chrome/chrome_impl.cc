@@ -282,13 +282,21 @@ Status ChromeImpl::SetWindowBounds(
 
   base::DictionaryValue params;
   params.SetInteger("windowId", window->id);
-  if (window->state != "normal") {
-    params.SetString("bounds.windowState", "normal");
+  const std::string normal = "normal";
+  if (window->state != normal) {
+    params.SetString("bounds.windowState", normal);
     status = devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                      params);
     if (status.IsError())
       return status;
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+    status = GetWindowBounds(window->id, window);
+    if (status.IsError())
+      return status;
+
+    if (window->state != normal)
+      return MakeFailedStatus(normal, window->state);
   }
 
   std::string desired_state;

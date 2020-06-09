@@ -75,7 +75,8 @@ void MockWidgetInputHandler::ImeCommitText(
   dispatched_messages_.emplace_back(std::make_unique<DispatchedIMEMessage>(
       "CommitText", text, ime_text_spans, range, relative_cursor_position,
       relative_cursor_position));
-  std::move(callback).Run();
+  if (callback)
+    std::move(callback).Run();
 }
 
 void MockWidgetInputHandler::ImeFinishComposingText(bool keep_selection) {
@@ -126,6 +127,10 @@ void MockWidgetInputHandler::AttachSynchronousCompositor(
     mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost> host,
     mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
         compositor_request) {}
+
+void MockWidgetInputHandler::GetFrameWidgetInputHandler(
+    mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetInputHandler>
+        interface_request) {}
 
 MockWidgetInputHandler::DispatchedMessage::DispatchedMessage(
     const std::string& name)

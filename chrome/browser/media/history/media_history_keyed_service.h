@@ -88,9 +88,52 @@ class MediaHistoryKeyedService : public KeyedService,
       const base::Optional<media_session::MediaPosition>& position,
       const std::vector<media_session::MediaImage>& artwork);
 
-  // Gets the media items in |feed_id|.
-  void GetItemsForMediaFeedForDebug(
-      const int64_t feed_id,
+  // Returns Media Feeds items.
+  struct GetMediaFeedItemsRequest {
+    enum class Type {
+      // Return all the feed items for a feed for debugging.
+      kDebugAll,
+
+      // Returns items across all feeds that either have an active action status
+      // or a play next candidate. Ordered by most recent first.
+      kContinueWatching,
+
+      // Returns all the items for a single feed. Ordered by clicked and shown
+      // count so items that have been clicked and shown a lot will be at the
+      // end. Items must not be continue watching items.
+      kItemsForFeed
+    };
+
+    static GetMediaFeedItemsRequest CreateItemsForDebug(int64_t feed_id);
+
+    static GetMediaFeedItemsRequest CreateItemsForFeed(
+        int64_t feed_id,
+        unsigned limit,
+        bool fetched_items_should_be_safe);
+
+    static GetMediaFeedItemsRequest CreateItemsForContinueWatching(
+        unsigned limit,
+        bool fetched_items_should_be_safe);
+
+    GetMediaFeedItemsRequest();
+    GetMediaFeedItemsRequest(const GetMediaFeedItemsRequest& t);
+
+    Type type = Type::kDebugAll;
+
+    // The ID of the feed to retrieve items for. Only valid for |kDebugAll| and
+    // |kItemsForFeed|.
+    base::Optional<int64_t> feed_id;
+
+    // The maximum number of feeds to return. Only valid for |kContinueWatching|
+    // and |kItemsForFeed|.
+    base::Optional<unsigned> limit;
+
+    // True if the item should have passed Safe Search checks. Only valid for
+    // |kContinueWatching| and |kItemsForFeed|.
+    bool fetched_items_should_be_safe = false;
+  };
+  void GetMediaFeedItems(
+      const GetMediaFeedItemsRequest& request,
       base::OnceCallback<
           void(std::vector<media_feeds::mojom::MediaFeedItemPtr>)> callback);
 

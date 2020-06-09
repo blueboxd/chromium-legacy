@@ -6,18 +6,13 @@
 module gpu.mojom;
 
 import "gpu/ipc/common/dx_diag_node.mojom";
+[EnableIf=is_win]
+import "gpu/ipc/common/luid.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 [EnableIf=supports_vulkan]
 import "gpu/ipc/common/vulkan_info.mojom";
-
-// Corresponds to LUID in dxgi.h
-[EnableIf=is_win]
-struct Luid {
-  int32 high;
-  uint32 low;
-};
 
 // gpu::GPUInfo::GPUDevice
 struct GpuDevice {

@@ -628,6 +628,9 @@ Here are some examples:
 *   A change to Blink's memory purging primitive which caused intermittent
     timeouts of WebGL conformance tests on all platforms ([Issue
     840988](http://crbug.com/840988)).
+*   Screen DPI being inconsistent across seemingly identical Linux machines,
+    causing the Maps pixel test to flakily produce incorrectly sized images
+    ([Issue 1091410](https://crbug.com/1091410)).
 
 If you notice flaky test failures either on the GPU waterfalls or try servers,
 please file bugs right away with the component Internals>GPU>Testing and

@@ -23,7 +23,6 @@ logging.basicConfig(
 def _call_profdata_tool(profile_input_file_paths,
                         profile_output_file_path,
                         profdata_tool_path,
-                        retries=3,
                         sparse=True):
   """Calls the llvm-profdata tool.
 
@@ -59,34 +58,6 @@ def _call_profdata_tool(profile_input_file_paths,
     output = subprocess.check_output(subprocess_cmd, stderr=subprocess.STDOUT)
     logging.info('Merge succeeded with output: %r', output)
   except subprocess.CalledProcessError as error:
-    if len(profile_input_file_paths) > 1 and retries >= 0:
-      logging.warning('Merge failed with error output: %r', error.output)
-
-      # The output of the llvm-profdata command will include the path of
-      # malformed files, such as
-      # `error: /.../default.profraw: Malformed instrumentation profile data`
-      invalid_profiles = [
-          f for f in profile_input_file_paths if f in error.output
-      ]
-
-      if not invalid_profiles:
-        logging.info(
-            'Merge failed, but wasn\'t able to figure out the culprit invalid '
-            'profiles from the output, so skip retry and bail out.')
-        raise error
-
-      valid_profiles = list(
-          set(profile_input_file_paths) - set(invalid_profiles))
-      if valid_profiles:
-        logging.warning(
-            'Following invalid profiles are removed as they were mentioned in '
-            'the merge error output: %r', invalid_profiles)
-        logging.info('Retry merging with the remaining profiles: %r',
-                     valid_profiles)
-        return invalid_profiles + _call_profdata_tool(
-            valid_profiles, profile_output_file_path, profdata_tool_path,
-            retries - 1)
-
     logging.error('Failed to merge profiles, return code (%d), output: %r' %
                   (error.returncode, error.output))
     raise error

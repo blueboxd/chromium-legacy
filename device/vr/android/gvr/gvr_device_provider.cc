@@ -17,6 +17,7 @@ GvrDeviceProvider::~GvrDeviceProvider() = default;
 void GvrDeviceProvider::Initialize(
     base::RepeatingCallback<void(mojom::XRDeviceId,
                                  mojom::VRDisplayInfoPtr,
+                                 mojom::XRDeviceDataPtr,
                                  mojo::PendingRemote<mojom::XRRuntime>)>
         add_device_callback,
     base::RepeatingCallback<void(mojom::XRDeviceId)> remove_device_callback,
@@ -32,6 +33,7 @@ void GvrDeviceProvider::Initialize(
   }
   if (vr_device_) {
     add_device_callback.Run(vr_device_->GetId(), vr_device_->GetVRDisplayInfo(),
+                            vr_device_->GetDeviceData(),
                             vr_device_->BindXRRuntime());
   }
   initialized_ = true;

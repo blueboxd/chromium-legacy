@@ -32,7 +32,7 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
       case WebDragData::Item::kStorageTypeString: {
         base::string16 str_type(item.string_type.Utf16());
         if (base::EqualsASCII(str_type, ui::kMimeTypeText)) {
-          result.text = WebString::ToNullableString16(item.string_data);
+          result.text = WebString::ToOptionalString16(item.string_data);
           break;
         }
         if (base::EqualsASCII(str_type, ui::kMimeTypeURIList)) {
@@ -45,7 +45,7 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
           break;
         }
         if (base::EqualsASCII(str_type, ui::kMimeTypeHTML)) {
-          result.html = WebString::ToNullableString16(item.string_data);
+          result.html = WebString::ToOptionalString16(item.string_data);
           result.html_base_url = item.base_url;
           break;
         }

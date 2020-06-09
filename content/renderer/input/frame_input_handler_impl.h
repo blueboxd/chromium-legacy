@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/renderer/render_frame_impl.h"
+#include "content/renderer/render_widget.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
@@ -16,11 +16,11 @@
 namespace content {
 class MainThreadEventQueue;
 
-// This class provides an implementation of FrameInputHandler mojo interface.
-// When a compositor thread is being used in the renderer the mojo channel
-// is bound on the compositor thread. Method calls, and events received on the
-// compositor thread are then placed in the MainThreadEventQueue for
-// the associated RenderWidget. This is done as to ensure that input related
+// This class provides an implementation of FrameWidgetInputHandler mojo
+// interface. When a compositor thread is being used in the renderer the mojo
+// channel is bound on the compositor thread. Method calls, and events received
+// on the compositor thread are then placed in the MainThreadEventQueue for the
+// associated RenderWidget. This is done as to ensure that input related
 // messages and events that are handled on the compositor thread aren't
 // executed before other input events that need to be processed on the
 // main thread. ie. Since some messages flow to the compositor thread
@@ -39,11 +39,13 @@ class MainThreadEventQueue;
 // When a compositor thread isn't used the mojo channel is just bound
 // on the main thread and messages are handled right away.
 class CONTENT_EXPORT FrameInputHandlerImpl
-    : public blink::mojom::FrameInputHandler {
+    : public blink::mojom::FrameWidgetInputHandler {
  public:
-  static void CreateMojoService(
-      base::WeakPtr<RenderFrameImpl> render_frame,
-      mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver);
+  FrameInputHandlerImpl(
+      base::WeakPtr<RenderWidget> widget,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+      scoped_refptr<MainThreadEventQueue> input_event_queue);
+  ~FrameInputHandlerImpl() override;
 
   void SetCompositionFromExistingText(
       int32_t start,
@@ -79,48 +81,33 @@ class CONTENT_EXPORT FrameInputHandlerImpl
   void MoveRangeSelectionExtent(const gfx::Point& extent) override;
   void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) override;
   void MoveCaret(const gfx::Point& point) override;
-  void GetWidgetInputHandler(
-      mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
-          receiver,
-      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) override;
 
  private:
-  ~FrameInputHandlerImpl() override;
   enum class UpdateState { kNone, kIsPasting, kIsSelectingRange };
 
   class HandlingState {
    public:
-    HandlingState(const base::WeakPtr<RenderFrameImpl>& render_frame,
+    HandlingState(const base::WeakPtr<RenderWidget>& render_widget,
                   UpdateState state);
     ~HandlingState();
 
    private:
-    base::WeakPtr<RenderFrameImpl> render_frame_;
+    base::WeakPtr<RenderWidget> render_widget_;
     bool original_select_range_value_;
     bool original_pasting_value_;
   };
 
-  FrameInputHandlerImpl(
-      base::WeakPtr<RenderFrameImpl> render_frame,
-      mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver);
-
   void RunOnMainThread(base::OnceClosure closure);
-  void BindNow(mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver);
-  void ExecuteCommandOnMainThread(const std::string& command,
-                                  UpdateState state);
+  static void ExecuteCommandOnMainThread(base::WeakPtr<RenderWidget> widget,
+                                         const std::string& command,
+                                         UpdateState state);
   void Release();
 
-  mojo::Receiver<blink::mojom::FrameInputHandler> receiver_{this};
-
-  // |render_frame_| should only be accessed on the main thread. Use
-  // GetRenderFrame so that it will DCHECK this for you.
-  base::WeakPtr<RenderFrameImpl> render_frame_;
+  // |render_widget_| should only be accessed on the main thread.
+  base::WeakPtr<RenderWidget> widget_;
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
-  base::WeakPtr<FrameInputHandlerImpl> weak_this_;
-  base::WeakPtrFactory<FrameInputHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FrameInputHandlerImpl);
 };

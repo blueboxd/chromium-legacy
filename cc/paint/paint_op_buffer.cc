@@ -1272,7 +1272,8 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
       canvas->scale(1.f / op->scale_adjustment.width(),
                     1.f / op->scale_adjustment.height());
     }
-    canvas->drawImage(op->image.GetSkImage().get(), op->left, op->top, &paint);
+    canvas->drawImage(op->image.GetRasterSkImage().get(), op->left, op->top,
+                      &paint);
     return;
   }
 
@@ -1342,8 +1343,8 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
   if (!params.image_provider) {
     SkRect adjusted_src = AdjustSrcRectForScale(op->src, op->scale_adjustment);
     flags->DrawToSk(canvas, [op, adjusted_src](SkCanvas* c, const SkPaint& p) {
-      c->drawImageRect(op->image.GetSkImage().get(), adjusted_src, op->dst, &p,
-                       op->constraint);
+      c->drawImageRect(op->image.GetRasterSkImage().get(), adjusted_src,
+                       op->dst, &p, op->constraint);
     });
     return;
   }

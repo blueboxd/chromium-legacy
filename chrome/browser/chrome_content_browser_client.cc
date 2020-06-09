@@ -115,6 +115,8 @@
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
+#include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.h"
+#include "chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/delayed_warning_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_throttle.h"
@@ -447,6 +449,7 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
+#include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/serial/chrome_serial_delegate.h"
@@ -4329,16 +4332,27 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {
     // |url_lookup_service| is used when real time url check is enabled.
-    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service =
-        // |safe_browsing_service_| may be unavailable in tests.
-        safe_browsing_service_ &&
-                safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
-                    profile->GetPrefs(), profile->IsOffTheRecord(),
-                    g_browser_process->variations_service())
-            ? safe_browsing::RealTimeUrlLookupServiceFactory::GetForProfile(
-                  profile)
-            : nullptr;
+    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service = nullptr;
 
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
+    if (safe_browsing::RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
+            safe_browsing::GetDMToken(profile).is_valid(),
+            profile->IsOffTheRecord())) {
+      url_lookup_service =
+          safe_browsing::ChromeEnterpriseRealTimeUrlLookupServiceFactory::
+              GetForProfile(profile);
+    }
+#endif
+
+    // |safe_browsing_service_| may be unavailable in tests.
+    if (!url_lookup_service && safe_browsing_service_ &&
+        safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
+            profile->GetPrefs(), profile->IsOffTheRecord(),
+            g_browser_process->variations_service())) {
+      url_lookup_service =
+          safe_browsing::RealTimeUrlLookupServiceFactory::GetForProfile(
+              profile);
+    }
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,

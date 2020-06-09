@@ -23,13 +23,13 @@ using content::BrowserThread;
 
 ExternalProcessImporterHost::ExternalProcessImporterHost()
     : headless_(false),
-      parent_window_(NULL),
-      observer_(NULL),
-      profile_(NULL),
+      parent_window_(nullptr),
+      observer_(nullptr),
+      profile_(nullptr),
       waiting_for_bookmarkbar_model_(false),
       installed_bookmark_observer_(false),
       is_source_readable_(true),
-      client_(NULL),
+      client_(nullptr),
       items_(0),
       cancelled_(false) {}
 

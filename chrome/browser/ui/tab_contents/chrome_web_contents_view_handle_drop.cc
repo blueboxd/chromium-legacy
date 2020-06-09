@@ -6,6 +6,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -95,10 +96,10 @@ void HandleOnPerformDrop(
   // Collect the data that needs to be scanned.
   if (!drop_data.url_title.empty())
     data.text.push_back(drop_data.url_title);
-  if (!drop_data.text.is_null())
-    data.text.push_back(drop_data.text.string());
-  if (!drop_data.html.is_null())
-    data.text.push_back(drop_data.html.string());
+  if (drop_data.text)
+    data.text.push_back(*drop_data.text);
+  if (drop_data.html)
+    data.text.push_back(*drop_data.html);
   if (!drop_data.file_contents.empty())
     data.text.push_back(base::UTF8ToUTF16(drop_data.file_contents));
 

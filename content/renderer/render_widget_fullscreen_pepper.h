@@ -43,7 +43,6 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       const ScreenInfo& screen_info,
       PepperPluginInstanceImpl* plugin,
       const blink::WebURL& local_main_frame_url,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host,
       mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget);
 
@@ -64,7 +63,6 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       int32_t routing_id,
       CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host,
       mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget,
       blink::WebURL main_frame_url);

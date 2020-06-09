@@ -22,7 +22,7 @@ namespace network_diagnostics {
 class LanConnectivityRoutine : public NetworkDiagnosticsRoutine {
  public:
   using LanConnectivityRoutineCallback =
-      base::OnceCallback<void(mojom::RoutineVerdict)>;
+      mojom::NetworkDiagnosticsRoutines::LanConnectivityCallback;
 
   LanConnectivityRoutine();
   ~LanConnectivityRoutine() override;

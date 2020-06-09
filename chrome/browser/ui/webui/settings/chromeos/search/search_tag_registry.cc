@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 
+#include <sstream>
+
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -31,28 +32,6 @@ std::vector<int> GetMessageIds(const SearchConcept& concept) {
   return alt_tag_message_ids;
 }
 
-std::vector<local_search_service::Data> ConceptVectorToDataVector(
-    const std::vector<SearchConcept>& search_tags) {
-  std::vector<local_search_service::Data> data_list;
-
-  for (const auto& concept : search_tags) {
-    // Create a list of Content objects, which use the stringified version of
-    // message IDs as identifiers.
-    std::vector<local_search_service::Content> content_list;
-    for (int message_id : GetMessageIds(concept)) {
-      content_list.emplace_back(
-          /*id=*/base::NumberToString(message_id),
-          /*content=*/l10n_util::GetStringUTF16(message_id));
-    }
-
-    // Use the stringified version of the canonical message ID as an identifier.
-    data_list.emplace_back(base::NumberToString(concept.canonical_message_id),
-                           content_list);
-  }
-
-  return data_list;
-}
-
 }  // namespace
 
 SearchTagRegistry::SearchTagRegistry(
@@ -73,8 +52,7 @@ void SearchTagRegistry::AddSearchTags(
   // each concept because all concepts are allocated via static
   // base::NoDestructor objects in the Get*SearchConcepts() helper functions.
   for (const auto& concept : search_tags) {
-    for (int message_id : GetMessageIds(concept))
-      message_id_to_metadata_map_[message_id] = &concept;
+    result_id_to_metadata_list_map_[ToResultId(concept)] = &concept;
   }
 }
 
@@ -83,22 +61,63 @@ void SearchTagRegistry::RemoveSearchTags(
   if (!base::FeatureList::IsEnabled(features::kNewOsSettingsSearch))
     return;
 
-  std::vector<std::string> ids;
+  std::vector<std::string> data_ids;
   for (const auto& concept : search_tags) {
-    for (int message_id : GetMessageIds(concept))
-      message_id_to_metadata_map_.erase(message_id);
-    ids.push_back(base::NumberToString(concept.canonical_message_id));
+    std::string result_id = ToResultId(concept);
+    result_id_to_metadata_list_map_.erase(result_id);
+    data_ids.push_back(std::move(result_id));
   }
 
-  index_->Delete(ids);
+  index_->Delete(data_ids);
 }
 
 const SearchConcept* SearchTagRegistry::GetTagMetadata(
-    int canonical_message_id) const {
-  const auto it = message_id_to_metadata_map_.find(canonical_message_id);
-  if (it == message_id_to_metadata_map_.end())
+    const std::string& result_id) const {
+  const auto it = result_id_to_metadata_list_map_.find(result_id);
+  if (it == result_id_to_metadata_list_map_.end())
     return nullptr;
   return it->second;
+}
+
+// static
+std::string SearchTagRegistry::ToResultId(const SearchConcept& concept) {
+  std::stringstream ss;
+  switch (concept.type) {
+    case mojom::SearchResultType::kSection:
+      ss << concept.id.section;
+      break;
+    case mojom::SearchResultType::kSubpage:
+      ss << concept.id.subpage;
+      break;
+    case mojom::SearchResultType::kSetting:
+      ss << concept.id.setting;
+      break;
+  }
+  ss << "," << concept.canonical_message_id;
+  return ss.str();
+}
+
+std::vector<local_search_service::Data>
+SearchTagRegistry::ConceptVectorToDataVector(
+    const std::vector<SearchConcept>& search_tags) {
+  std::vector<local_search_service::Data> data_list;
+
+  for (const auto& concept : search_tags) {
+    // Create a list of Content objects, which use the stringified version of
+    // message IDs as identifiers.
+    std::vector<local_search_service::Content> content_list;
+    for (int message_id : GetMessageIds(concept)) {
+      content_list.emplace_back(
+          /*id=*/base::NumberToString(message_id),
+          /*content=*/l10n_util::GetStringUTF16(message_id));
+    }
+
+    // Compute an identifier for this result; the same ID format it used in
+    // GetTagMetadata().
+    data_list.emplace_back(ToResultId(concept), std::move(content_list));
+  }
+
+  return data_list;
 }
 
 }  // namespace settings

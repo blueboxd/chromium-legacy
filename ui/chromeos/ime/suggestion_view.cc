@@ -35,7 +35,9 @@ std::unique_ptr<views::StyledLabel> CreateSuggestionLabel() {
 std::unique_ptr<views::Label> CreateAnnotationLabel() {
   std::unique_ptr<views::Label> annotation_label =
       std::make_unique<views::Label>();
-  annotation_label->SetFontList(kAnnotationFont);
+  annotation_label->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::NORMAL,
+                                              kAnnotationFontSize,
+                                              gfx::Font::Weight::NORMAL));
   annotation_label->SetEnabledColor(kSuggestionColor);
   annotation_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
@@ -74,6 +76,8 @@ void SuggestionView::SetSuggestionText(const base::string16& text,
   // the previous one.
   suggestion_label_->SetText(base::EmptyString16());
   suggestion_label_->SetText(text);
+  gfx::FontList kSuggestionFont({kFontStyle}, gfx::Font::NORMAL,
+                                kSuggestionFontSize, gfx::Font::Weight::NORMAL);
   if (confirmed_length != 0) {
     views::StyledLabel::RangeStyleInfo confirmed_style;
     confirmed_style.custom_font = kSuggestionFont;

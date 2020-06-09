@@ -1548,6 +1548,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
 void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
     std::unique_ptr<Canvas2DLayerBridge> new_layer_bridge) {
   scoped_refptr<StaticBitmapImage> image;
+  std::unique_ptr<Canvas2DLayerBridge> old_layer_bridge;
   if (canvas2d_bridge_) {
     image = canvas2d_bridge_->NewImageSnapshot(kPreferNoAcceleration);
     // image can be null if allocation failed in which case we should just
@@ -1555,15 +1556,32 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
     // functional.
     if (!image)
       return;
+    old_layer_bridge = std::move(canvas2d_bridge_);
+    // Removing connection between old_layer_bridge and CanvasResourceHost;
+    // otherwise, the CanvasResourceHost checks for the old one before
+    // assigning the new canvas layer bridge.
+    old_layer_bridge->SetCanvasResourceHost(nullptr);
   }
   ReplaceResourceProvider(nullptr);
   canvas2d_bridge_ = std::move(new_layer_bridge);
   canvas2d_bridge_->SetCanvasResourceHost(this);
 
+  // If PaintCanvas cannot be get from the new layer bridge, revert the
+  // replacement.
   cc::PaintCanvas* canvas = canvas2d_bridge_->GetPaintCanvas();
-  // Paint canvas automatically has the clip re-applied. Since image already
-  // contains clip, it needs to be drawn before the clip stack is re-applied.
-  // Remove clip from canvas and restore it after the image is drawn.
+  if (!canvas) {
+    if (old_layer_bridge) {
+      canvas2d_bridge_ = std::move(old_layer_bridge);
+      canvas2d_bridge_->SetCanvasResourceHost(this);
+    }
+    return;
+  }
+
+  // After validating paint canvas on new layer bridge, removes the clip from
+  // the canvas. Since clips is automatically applied to paint canvas, the image
+  // already contains clip and the image needs to be drawn before the clip stack
+  // is re-applied, it needs to remove clip from canvas and restore it after the
+  // image is drawn.
   canvas->restoreToCount(1);
   canvas->save();
 

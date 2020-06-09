@@ -143,6 +143,9 @@ class MediaSource {
   // valid DIAL media source.
   std::string AppNameFromDialSource() const;
 
+  // Returns a shortened copy of the media source ID suitable for logging.
+  std::string TruncateForLogging(size_t max_length) const;
+
  private:
   MediaSource::Id id_;
   GURL url_;

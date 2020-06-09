@@ -4,6 +4,11 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
+mojom("logger") {
+  sources = [ "logger.mojom" ]
+  public_deps = [ "//mojo/public/mojom/base" ]
+}
+
 mojom("media_controller") {
   sources = [
     "media_controller.mojom",

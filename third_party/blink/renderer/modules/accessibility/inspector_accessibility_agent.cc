@@ -732,7 +732,8 @@ Response InspectorAccessibilityAgent::getFullAXTree(
         BuildProtocolAXObject(*ax_object, nullptr, false, *nodes, cache);
 
     auto child_ids = std::make_unique<protocol::Array<AXNodeId>>();
-    const AXObject::AXObjectVector& children = ax_object->Children();
+    const AXObject::AXObjectVector& children =
+        ax_object->ChildrenIncludingIgnored();
     for (unsigned i = 0; i < children.size(); i++) {
       AXObject& child_ax_object = *children[i].Get();
       child_ids->emplace_back(String::Number(child_ax_object.AXObjectID()));
@@ -815,7 +816,8 @@ void InspectorAccessibilityAgent::AddChildren(
     return;
   }
 
-  const AXObject::AXObjectVector& children = ax_object.Children();
+  const AXObject::AXObjectVector& children =
+      ax_object.ChildrenIncludingIgnored();
   for (unsigned i = 0; i < children.size(); i++) {
     AXObject& child_ax_object = *children[i].Get();
     child_ids->emplace_back(String::Number(child_ax_object.AXObjectID()));

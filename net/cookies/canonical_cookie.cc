@@ -570,7 +570,7 @@ bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
   return cookie_util::IsDomainMatch(domain_, host);
 }
 
-CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
+CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     const GURL& url,
     const CookieOptions& options,
     CookieAccessSemantics access_semantics) const {
@@ -689,7 +689,7 @@ CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   }
 
   // TODO(chlily): Log metrics.
-  return status;
+  return CookieAccessResult(effective_same_site, status);
 }
 
 CookieInclusionStatus CanonicalCookie::IsSetPermittedInContext(
@@ -856,10 +856,10 @@ std::string CanonicalCookie::BuildCookieLine(const CookieList& cookies) {
 
 // static
 std::string CanonicalCookie::BuildCookieLine(
-    const CookieStatusList& cookie_status_list) {
+    const CookieAccessResultList& cookie_access_result_list) {
   std::string cookie_line;
-  for (const auto& cookie_with_status : cookie_status_list) {
-    const CanonicalCookie& cookie = cookie_with_status.cookie;
+  for (const auto& cookie_with_access_result : cookie_access_result_list) {
+    const CanonicalCookie& cookie = cookie_with_access_result.cookie;
     AppendCookieLineEntry(cookie, &cookie_line);
   }
   return cookie_line;

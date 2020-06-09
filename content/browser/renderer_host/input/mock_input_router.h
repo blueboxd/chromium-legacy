@@ -46,8 +46,6 @@ class MockInputRouter : public InputRouter {
   void SetForceEnableZoom(bool enabled) override {}
   mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewHost()
       override;
-  mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> BindNewFrameHost()
-      override;
   void StopFling() override {}
   void OnSetTouchAction(cc::TouchAction touch_action) override {}
   void ForceSetTouchActionAuto() override {}

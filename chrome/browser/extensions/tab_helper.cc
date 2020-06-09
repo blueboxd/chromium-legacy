@@ -78,7 +78,7 @@ TabHelper::~TabHelper() = default;
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
-      extension_app_(NULL),
+      extension_app_(nullptr),
       script_executor_(new ScriptExecutor(web_contents)),
       extension_action_runner_(new ExtensionActionRunner(web_contents)),
       declarative_net_request_helper_(web_contents) {

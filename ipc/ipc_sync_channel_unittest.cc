@@ -56,7 +56,7 @@ class Worker : public Listener, public Sender {
         mode_(mode),
         ipc_thread_((thread_name + "_ipc").c_str()),
         listener_thread_((thread_name + "_listener").c_str()),
-        overrided_thread_(NULL),
+        overrided_thread_(nullptr),
         shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
         is_shutdown_(false) {}
@@ -73,7 +73,7 @@ class Worker : public Listener, public Sender {
         mode_(mode),
         ipc_thread_("ipc thread"),
         listener_thread_("listener thread"),
-        overrided_thread_(NULL),
+        overrided_thread_(nullptr),
         shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
         is_shutdown_(false) {}
@@ -1770,7 +1770,8 @@ class ReentrantReplyServer1 : public Worker {
 class ReentrantReplyServer2 : public Worker {
  public:
   ReentrantReplyServer2(mojo::ScopedMessagePipeHandle channel_handle)
-      : Worker(std::move(channel_handle), Channel::MODE_SERVER), reply_(NULL) {}
+      : Worker(std::move(channel_handle), Channel::MODE_SERVER),
+        reply_(nullptr) {}
 
  private:
   bool OnMessageReceived(const Message& message) override {

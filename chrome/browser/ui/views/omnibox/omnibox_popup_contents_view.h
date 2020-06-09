@@ -50,8 +50,9 @@ class OmniboxPopupContentsView : public views::View,
   gfx::Image GetMatchIcon(const AutocompleteMatch& match,
                           SkColor vector_icon_color) const;
 
-  // Sets the line specified by |index| as selected.
-  virtual void SetSelectedLine(size_t index);
+  // Sets the line specified by |index| as selected and, if |index| is
+  // different than the previous index, sets the line state to NORMAL.
+  virtual void SetSelectedLineForMouseOrTouch(size_t index);
 
   // Returns true if the line specified by |index| is selected.
   virtual bool IsSelectedIndex(size_t index) const;

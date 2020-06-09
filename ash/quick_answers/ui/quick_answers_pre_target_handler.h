@@ -14,6 +14,10 @@ namespace ui {
 class LocatedEvent;
 }  // namespace ui
 
+namespace views {
+class ExternalFocusTracker;
+}  // namespace views
+
 namespace ash {
 
 class QuickAnswersView;
@@ -50,6 +54,7 @@ class QuickAnswersPreTargetHandler : public ui::EventHandler,
 
  private:
   void Init();
+  void ProcessKeyEvent(ui::KeyEvent* key_event);
 
   // Returns true if event was consumed by |view| or its children.
   bool DoDispatchEvent(views::View* view, ui::LocatedEvent* event);
@@ -61,6 +66,8 @@ class QuickAnswersPreTargetHandler : public ui::EventHandler,
   // Whether any active menus, |view_| is a companion Quick-Answers related view
   // of which, should be dismissed when it is deleted.
   bool dismiss_anchor_menu_on_view_closed_ = true;
+
+  std::unique_ptr<views::ExternalFocusTracker> external_focus_tracker_;
 };
 
 }  // namespace ash

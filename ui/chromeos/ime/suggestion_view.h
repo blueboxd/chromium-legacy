@@ -18,14 +18,6 @@ namespace ime {
 constexpr char kFontStyle[] = "Roboto";
 constexpr int kSuggestionFontSize = 14;
 constexpr int kAnnotationFontSize = 10;
-const gfx::FontList kSuggestionFont({kFontStyle},
-                                    gfx::Font::NORMAL,
-                                    kSuggestionFontSize,
-                                    gfx::Font::Weight::NORMAL);
-const gfx::FontList kAnnotationFont({kFontStyle},
-                                    gfx::Font::NORMAL,
-                                    kAnnotationFontSize,
-                                    gfx::Font::Weight::NORMAL);
 
 // Style-related constants
 constexpr int kAnnotationBorderThickness = 1;

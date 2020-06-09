@@ -87,11 +87,6 @@ void SafeBrowsingTabObserver::UpdateSafebrowsingDetectionHost() {
   } else {
     safebrowsing_detection_host_.reset();
   }
-
-  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
-  mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> client;
-  rfh->GetRemoteAssociatedInterfaces()->GetInterface(&client);
-  client->SetClientSidePhishingDetection(safe_browsing);
 #endif
 }
 

@@ -28,8 +28,7 @@ NativeFileSystemAccessIconView::NativeFileSystemAccessIconView(
   SetVisible(false);
 }
 
-views::BubbleDialogDelegateView* NativeFileSystemAccessIconView::GetBubble()
-    const {
+views::BubbleDialogDelegate* NativeFileSystemAccessIconView::GetBubble() const {
   return NativeFileSystemUsageBubbleView::GetBubble();
 }
 

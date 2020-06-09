@@ -70,6 +70,9 @@ class TestImporter(object):
         self.new_test_expectations = {}
         self.verbose = False
 
+        args = ['--clean-up-affected-tests-only']
+        self._expectations_updater = WPTExpectationsUpdater(self.host, args)
+
     def main(self, argv=None):
         # TODO(robertma): Test this method! Split it to make it easier to test
         # if necessary.
@@ -156,10 +159,9 @@ class TestImporter(object):
         # TODO(crbug.com/800570 robertma): Re-enable it once we fix the bug.
         # self._delete_orphaned_baselines()
 
-        _log.info(
-            'Updating TestExpectations for any removed or renamed tests.')
-        self.update_all_test_expectations_files(self._list_deleted_tests(),
-                                                self._list_renamed_tests())
+        # Remove expectations for tests that were deleted and rename tests
+        # in expectations for renamed tests.
+        self._expectations_updater.cleanup_test_expectations_files()
 
         if not self.chromium_git.has_working_directory_changes():
             _log.info('Done: no changes to import.')
@@ -601,91 +603,8 @@ class TestImporter(object):
         This is the same as invoking the `wpt-update-expectations` script.
         """
         _log.info('Adding test expectations lines to TestExpectations.')
-        expectation_updater = WPTExpectationsUpdater(self.host)
-        self.rebaselined_tests, self.new_test_expectations = expectation_updater.update_expectations(
-        )
-
-    def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
-        """Updates all test expectations files for tests that have been deleted or renamed.
-
-        This is only for deleted or renamed tests in the initial import,
-        not for tests that have failures in try jobs.
-        """
-        port = self.host.port_factory.get()
-        for path, file_contents in port.all_expectations_dict().iteritems():
-            self._update_single_test_expectations_file(
-                port, path, file_contents, deleted_tests, renamed_tests)
-
-    def _update_single_test_expectations_file(self, port, path, file_contents,
-                                              deleted_tests, renamed_tests):
-        """Updates a single test expectations file."""
-        test_expectations = TestExpectations(
-            port, expectations_dict={path: file_contents})
-
-        new_lines = []
-        for line in test_expectations.get_updated_lines(path):
-            # if a test is a glob type expectation or empty line or comment then add it to the updated
-            # expectations file without modifications
-            if not line.test or line.is_glob:
-                new_lines.append(line.to_string())
-                continue
-            test_name = line.test
-            if self.finder.is_webdriver_test_path(test_name):
-                root_test_file, subtest_suffix = port.split_webdriver_test_name(
-                    test_name)
-            else:
-                root_test_file = test_name
-            if root_test_file in deleted_tests:
-                continue
-            if root_test_file in renamed_tests:
-                if self.finder.is_webdriver_test_path(root_test_file):
-                    renamed_test = renamed_tests[root_test_file]
-                    test_name = port.add_webdriver_subtest_suffix(
-                        renamed_test, subtest_suffix)
-                else:
-                    test_name = renamed_tests[root_test_file]
-            line.test = test_name
-            new_lines.append(line.to_string())
-        self.host.filesystem.write_text_file(path, '\n'.join(new_lines) + '\n')
-
-    def _list_deleted_tests(self):
-        """List of web tests that have been deleted."""
-        # TODO(robertma): Improve Git.changed_files so that we can use it here.
-        out = self.chromium_git.run([
-            'diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'
-        ])
-        deleted_tests = []
-        for path in out.splitlines():
-            test = self._relative_to_web_test_dir(path)
-            if test:
-                deleted_tests.append(test)
-        return deleted_tests
-
-    def _list_renamed_tests(self):
-        """Lists tests that have been renamed.
-
-        Returns a dict mapping source name to destination name.
-        """
-        out = self.chromium_git.run([
-            'diff', 'origin/master', '-M100%', '--diff-filter=R',
-            '--name-status'
-        ])
-        renamed_tests = {}
-        for line in out.splitlines():
-            _, source_path, dest_path = line.split()
-            source_test = self._relative_to_web_test_dir(source_path)
-            dest_test = self._relative_to_web_test_dir(dest_path)
-            if source_test and dest_test:
-                renamed_tests[source_test] = dest_test
-        return renamed_tests
-
-    def _relative_to_web_test_dir(self, path_relative_to_repo_root):
-        """Returns a path that's relative to the web tests directory."""
-        abs_path = self.finder.path_from_chromium_base(
-            path_relative_to_repo_root)
-        if not abs_path.startswith(self.finder.web_tests_dir()):
-            return None
-        return self.fs.relpath(abs_path, self.finder.web_tests_dir())
+        self.rebaselined_tests, self.new_test_expectations = (
+            self._expectation_updater.update_expectations())
 
     def _get_last_imported_wpt_revision(self):
         """Finds the last imported WPT revision."""

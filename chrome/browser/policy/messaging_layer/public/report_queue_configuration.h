@@ -35,14 +35,12 @@ class ReportQueueConfiguration {
   // Priority::UNDEFINED_PRIORITY.
   static StatusOr<std::unique_ptr<ReportQueueConfiguration>> Create(
       const policy::DMToken& dm_token,
-      reporting_messaging_layer::Destination destination,
-      reporting_messaging_layer::Priority priority);
+      reporting::Destination destination,
+      reporting::Priority priority);
 
-  reporting_messaging_layer::Destination destination() const {
-    return destination_;
-  }
+  reporting::Destination destination() const { return destination_; }
 
-  reporting_messaging_layer::Priority priority() const { return priority_; }
+  reporting::Priority priority() const { return priority_; }
 
   policy::DMToken dm_token() const { return dm_token_; }
 
@@ -50,12 +48,12 @@ class ReportQueueConfiguration {
   ReportQueueConfiguration() = default;
 
   Status SetDMToken(const policy::DMToken& dm_token);
-  Status SetDestination(reporting_messaging_layer::Destination destination);
-  Status SetPriority(reporting_messaging_layer::Priority priority);
+  Status SetDestination(reporting::Destination destination);
+  Status SetPriority(reporting::Priority priority);
 
   policy::DMToken dm_token_;
-  reporting_messaging_layer::Destination destination_;
-  reporting_messaging_layer::Priority priority_;
+  reporting::Destination destination_;
+  reporting::Priority priority_;
 };
 
 }  // namespace reporting

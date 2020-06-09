@@ -66,9 +66,7 @@ class TestPageActionIconView : public PageActionIconView {
     SetUpForInOutAnimation();
   }
 
-  views::BubbleDialogDelegateView* GetBubble() const override {
-    return nullptr;
-  }
+  views::BubbleDialogDelegate* GetBubble() const override { return nullptr; }
   base::string16 GetTextForTooltipAndAccessibleName() const override {
     return base::ASCIIToUTF16("TestTooltip");
   }

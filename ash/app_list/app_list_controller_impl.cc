@@ -1069,11 +1069,6 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
       UMA_HISTOGRAM_COUNTS_100(kSearchQueryLengthInClamshell,
                                GetLastQueryLength());
     }
-
-    if (result->distance_from_origin() >= 0) {
-      UMA_HISTOGRAM_COUNTS_100(kSearchResultDistanceFromOrigin,
-                               result->distance_from_origin());
-    }
   }
 
   auto* notifier = GetNotifier();

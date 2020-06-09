@@ -1805,8 +1805,8 @@ std::string GetCookies(BrowserContext* browser_context,
       url, options,
       base::BindOnce(
           [](std::string* cookies_out, base::RunLoop* run_loop,
-             const net::CookieStatusList& cookies,
-             const net::CookieStatusList& excluded_cookies) {
+             const net::CookieAccessResultList& cookies,
+             const net::CookieAccessResultList& excluded_cookies) {
             *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
             run_loop->Quit();
           },
@@ -1833,9 +1833,9 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
       base::BindOnce(
           [](base::RunLoop* run_loop,
              std::vector<net::CanonicalCookie>* cookies_out,
-             const net::CookieStatusList& cookies,
-             const net::CookieStatusList& excluded_cookies) {
-            *cookies_out = net::cookie_util::StripStatuses(cookies);
+             const net::CookieAccessResultList& cookies,
+             const net::CookieAccessResultList& excluded_cookies) {
+            *cookies_out = net::cookie_util::StripAccessResults(cookies);
             run_loop->Quit();
           },
           &run_loop, &cookies));

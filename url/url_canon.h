@@ -28,8 +28,7 @@ namespace url {
 template<typename T>
 class CanonOutputT {
  public:
-  CanonOutputT() : buffer_(NULL), buffer_len_(0), cur_len_(0) {
-  }
+  CanonOutputT() : buffer_(nullptr), buffer_len_(0), cur_len_(0) {}
   virtual ~CanonOutputT() {
   }
 
@@ -698,15 +697,14 @@ struct URLComponentSource {
   // will make them all NULL, which is no replacement. The caller would then
   // override the components they want to replace.
   URLComponentSource()
-      : scheme(NULL),
-        username(NULL),
-        password(NULL),
-        host(NULL),
-        port(NULL),
-        path(NULL),
-        query(NULL),
-        ref(NULL) {
-  }
+      : scheme(nullptr),
+        username(nullptr),
+        password(nullptr),
+        host(nullptr),
+        port(nullptr),
+        path(nullptr),
+        query(nullptr),
+        ref(nullptr) {}
 
   // Constructor normally used internally to initialize all the components to
   // point to the same spec.

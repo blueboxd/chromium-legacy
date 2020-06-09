@@ -1845,7 +1845,8 @@ bool AXObject::IsSubWidget() const {
       // Otherwise it's only a subwidget if it's in a grid or treegrid,
       // not in a table.
       return std::any_of(
-          AncestorsBegin(), AncestorsEnd(), [](const AXObject& ancestor) {
+          UnignoredAncestorsBegin(), UnignoredAncestorsEnd(),
+          [](const AXObject& ancestor) {
             return ancestor.RoleValue() == ax::mojom::blink::Role::kGrid ||
                    ancestor.RoleValue() == ax::mojom::blink::Role::kTreeGrid;
           });
@@ -1879,7 +1880,7 @@ String AXObject::CollapseWhitespace(const String& str) {
 
 String AXObject::ComputedName() const {
   ax::mojom::blink::NameFrom name_from;
-  AXObject::AXObjectVector name_objects;
+  AXObjectVector name_objects;
   return GetName(name_from, &name_objects);
 }
 
@@ -2391,7 +2392,8 @@ int AXObject::IndexInParent() const {
   if (!ParentObjectIncludedInTree())
     return 0;
 
-  const AXObjectVector& siblings = ParentObjectIncludedInTree()->Children();
+  const AXObjectVector& siblings =
+      ParentObjectIncludedInTree()->ChildrenIncludingIgnored();
   wtf_size_t index = siblings.Find(this);
   DCHECK(index != kNotFound);
   return (index == kNotFound) ? 0 : static_cast<int>(index);
@@ -2617,14 +2619,14 @@ AXObject* AXObject::ElementAccessibilityHitTest(const IntPoint& point) const {
   return const_cast<AXObject*>(this);
 }
 
-AXObject::AncestorsIterator AXObject::AncestorsBegin() const {
+AXObject::AncestorsIterator AXObject::UnignoredAncestorsBegin() const {
   AXObject* parent = ParentObjectUnignored();
   if (parent)
     return AXObject::AncestorsIterator(*parent);
-  return AncestorsEnd();
+  return UnignoredAncestorsEnd();
 }
 
-AXObject::AncestorsIterator AXObject::AncestorsEnd() const {
+AXObject::AncestorsIterator AXObject::UnignoredAncestorsEnd() const {
   return AXObject::AncestorsIterator();
 }
 
@@ -2632,46 +2634,109 @@ AXObject::InOrderTraversalIterator AXObject::GetInOrderTraversalIterator() {
   return InOrderTraversalIterator(*this);
 }
 
-int AXObject::ChildCount() const {
-  return HasIndirectChildren() ? 0 : static_cast<int>(Children().size());
+int AXObject::ChildCountIncludingIgnored() const {
+  return HasIndirectChildren() ? 0 : int{ChildrenIncludingIgnored().size()};
 }
 
-const AXObject::AXObjectVector& AXObject::Children() const {
-  return const_cast<AXObject*>(this)->Children();
+AXObject* AXObject::ChildAtIncludingIgnored(int index) const {
+  // We need to use "ChildCountIncludingIgnored()" and
+  // "ChildrenIncludingIgnored()" instead of using the "children_" member
+  // directly, because we might need to update children and check for the
+  // presence of indirect children.
+  if (index < 0 || index >= ChildCountIncludingIgnored())
+    return nullptr;
+  return ChildrenIncludingIgnored()[index];
 }
 
-const AXObject::AXObjectVector& AXObject::Children() {
+const AXObject::AXObjectVector& AXObject::ChildrenIncludingIgnored() const {
+  return const_cast<AXObject*>(this)->ChildrenIncludingIgnored();
+}
+
+const AXObject::AXObjectVector& AXObject::ChildrenIncludingIgnored() {
   UpdateChildrenIfNecessary();
-
   return children_;
 }
 
-AXObject* AXObject::FirstChild() const {
-  return ChildCount() ? *Children().begin() : nullptr;
+const AXObject::AXObjectVector AXObject::UnignoredChildren() const {
+  return const_cast<AXObject*>(this)->UnignoredChildren();
 }
 
-AXObject* AXObject::LastChild() const {
-  return ChildCount() ? *(Children().end() - 1) : nullptr;
+const AXObject::AXObjectVector AXObject::UnignoredChildren() {
+  if (!AccessibilityIsIncludedInTree()) {
+    NOTREACHED() << "We don't support finding the unignored children of "
+                    "objects excluded from the accessibility tree.";
+    return {};
+  }
+
+  UpdateChildrenIfNecessary();
+
+  // Capture only descendants that are not accessibility ignored, and that are
+  // one level deeper than the current object after flattening any accessibility
+  // ignored descendants.
+  //
+  // For example :
+  // ++A
+  // ++++B
+  // ++++C IGNORED
+  // ++++++F
+  // ++++D
+  // ++++++G
+  // ++++E IGNORED
+  // ++++++H IGNORED
+  // ++++++++J
+  // ++++++I
+  //
+  // Objects [B, F, D, I, J] will be returned, since after flattening all
+  // ignored objects ,those are the ones that are one level deep.
+
+  AXObjectVector unignored_children;
+  AXObject* child = FirstChildIncludingIgnored();
+  while (child && child != this) {
+    if (child->AccessibilityIsIgnored()) {
+      child = child->NextInPreOrderIncludingIgnored(this);
+      continue;
+    }
+
+    unignored_children.push_back(child);
+    for (; child != this; child = child->ParentObjectIncludedInTree()) {
+      if (AXObject* sibling = child->NextSiblingIncludingIgnored()) {
+        child = sibling;
+        break;
+      }
+    }
+  }
+
+  return unignored_children;
 }
 
-AXObject* AXObject::DeepestFirstChild() const {
-  if (!ChildCount())
+AXObject* AXObject::FirstChildIncludingIgnored() const {
+  return ChildCountIncludingIgnored() ? *ChildrenIncludingIgnored().begin()
+                                      : nullptr;
+}
+
+AXObject* AXObject::LastChildIncludingIgnored() const {
+  return ChildCountIncludingIgnored() ? *(ChildrenIncludingIgnored().end() - 1)
+                                      : nullptr;
+}
+
+AXObject* AXObject::DeepestFirstChildIncludingIgnored() const {
+  if (!ChildCountIncludingIgnored())
     return nullptr;
 
-  AXObject* deepest_child = FirstChild();
-  while (deepest_child->ChildCount())
-    deepest_child = deepest_child->FirstChild();
+  AXObject* deepest_child = FirstChildIncludingIgnored();
+  while (deepest_child->ChildCountIncludingIgnored())
+    deepest_child = deepest_child->FirstChildIncludingIgnored();
 
   return deepest_child;
 }
 
-AXObject* AXObject::DeepestLastChild() const {
-  if (!ChildCount())
+AXObject* AXObject::DeepestLastChildIncludingIgnored() const {
+  if (!ChildCountIncludingIgnored())
     return nullptr;
 
-  AXObject* deepest_child = LastChild();
-  while (deepest_child->ChildCount())
-    deepest_child = deepest_child->LastChild();
+  AXObject* deepest_child = LastChildIncludingIgnored();
+  while (deepest_child->ChildCountIncludingIgnored())
+    deepest_child = deepest_child->LastChildIncludingIgnored();
 
   return deepest_child;
 }
@@ -2690,7 +2755,7 @@ bool AXObject::IsDescendantOf(const AXObject& ancestor) const {
 AXObject* AXObject::NextSiblingIncludingIgnored() const {
   if (!AccessibilityIsIncludedInTree()) {
     NOTREACHED() << "We don't support iterating over objects excluded "
-                    "from the accessibility tree";
+                    "from the accessibility tree.";
     return nullptr;
   }
 
@@ -2699,15 +2764,15 @@ AXObject* AXObject::NextSiblingIncludingIgnored() const {
     return nullptr;
 
   const int index_in_parent = IndexInParent();
-  if (index_in_parent < parent_in_tree->ChildCount() - 1)
-    return *(parent_in_tree->Children().begin() + index_in_parent + 1);
+  if (index_in_parent < parent_in_tree->ChildCountIncludingIgnored() - 1)
+    return parent_in_tree->ChildAtIncludingIgnored(index_in_parent + 1);
   return nullptr;
 }
 
 AXObject* AXObject::PreviousSiblingIncludingIgnored() const {
   if (!AccessibilityIsIncludedInTree()) {
     NOTREACHED() << "We don't support iterating over objects excluded "
-                    "from the accessibility tree";
+                    "from the accessibility tree.";
     return nullptr;
   }
 
@@ -2717,7 +2782,7 @@ AXObject* AXObject::PreviousSiblingIncludingIgnored() const {
 
   const int index_in_parent = IndexInParent();
   if (index_in_parent > 0)
-    return *(parent_in_tree->Children().begin() + index_in_parent - 1);
+    return parent_in_tree->ChildAtIncludingIgnored(index_in_parent - 1);
   return nullptr;
 }
 
@@ -2725,12 +2790,12 @@ AXObject* AXObject::NextInPreOrderIncludingIgnored(
     const AXObject* within) const {
   if (!AccessibilityIsIncludedInTree()) {
     NOTREACHED() << "We don't support iterating over objects excluded "
-                    "from the accessibility tree";
+                    "from the accessibility tree.";
     return nullptr;
   }
 
-  if (ChildCount())
-    return FirstChild();
+  if (ChildCountIncludingIgnored())
+    return FirstChildIncludingIgnored();
 
   if (within == this)
     return nullptr;
@@ -2749,15 +2814,15 @@ AXObject* AXObject::PreviousInPreOrderIncludingIgnored(
     const AXObject* within) const {
   if (!AccessibilityIsIncludedInTree()) {
     NOTREACHED() << "We don't support iterating over objects excluded "
-                    "from the accessibility tree";
+                    "from the accessibility tree.";
     return nullptr;
   }
   if (within == this)
     return nullptr;
 
   if (AXObject* sibling = PreviousSiblingIncludingIgnored()) {
-    if (sibling->ChildCount())
-      return sibling->DeepestLastChild();
+    if (sibling->ChildCountIncludingIgnored())
+      return sibling->DeepestLastChildIncludingIgnored();
     return sibling;
   }
 
@@ -2768,12 +2833,12 @@ AXObject* AXObject::PreviousInPostOrderIncludingIgnored(
     const AXObject* within) const {
   if (!AccessibilityIsIncludedInTree()) {
     NOTREACHED() << "We don't support iterating over objects excluded "
-                    "from the accessibility tree";
+                    "from the accessibility tree.";
     return nullptr;
   }
 
-  if (ChildCount())
-    return LastChild();
+  if (ChildCountIncludingIgnored())
+    return LastChildIncludingIgnored();
 
   if (within == this)
     return nullptr;
@@ -2788,9 +2853,22 @@ AXObject* AXObject::PreviousInPostOrderIncludingIgnored(
   return previous;
 }
 
-AXObject* AXObject::NextSibling() const {
+int AXObject::UnignoredChildCount() const {
+  return int{UnignoredChildren().size()};
+}
+
+AXObject* AXObject::UnignoredChildAt(int index) const {
+  const AXObjectVector unignored_children = UnignoredChildren();
+  if (index < 0 || index >= int{unignored_children.size()})
+    return nullptr;
+  return unignored_children[index];
+}
+
+AXObject* AXObject::UnignoredNextSibling() const {
   if (AccessibilityIsIgnored()) {
-    NOTREACHED() << "We don't support finding siblings for ignored objects.";
+    NOTREACHED() << "We don't support finding unignored siblings for ignored "
+                    "objects because it is not clear whether to search for the "
+                    "sibling in the unignored tree or in the whole tree.";
     return nullptr;
   }
 
@@ -2827,9 +2905,11 @@ AXObject* AXObject::NextSibling() const {
   return nullptr;
 }
 
-AXObject* AXObject::PreviousSibling() const {
+AXObject* AXObject::UnignoredPreviousSibling() const {
   if (AccessibilityIsIgnored()) {
-    NOTREACHED() << "We don't support finding siblings for ignored objects.";
+    NOTREACHED() << "We don't support finding unignored siblings for ignored "
+                    "objects because it is not clear whether to search for the "
+                    "sibling in the unignored tree or in the whole tree.";
     return nullptr;
   }
 
@@ -2867,7 +2947,7 @@ AXObject* AXObject::PreviousSibling() const {
   return nullptr;
 }
 
-AXObject* AXObject::NextInTreeObject() const {
+AXObject* AXObject::UnignoredNextInPreOrder() const {
   AXObject* next = NextInPreOrderIncludingIgnored();
   while (next && next->AccessibilityIsIgnored()) {
     next = next->NextInPreOrderIncludingIgnored();
@@ -2875,7 +2955,7 @@ AXObject* AXObject::NextInTreeObject() const {
   return next;
 }
 
-AXObject* AXObject::PreviousInTreeObject() const {
+AXObject* AXObject::UnignoredPreviousInPreOrder() const {
   AXObject* previous = PreviousInPreOrderIncludingIgnored();
   while (previous && previous->AccessibilityIsIgnored()) {
     previous = previous->PreviousInPreOrderIncludingIgnored();
@@ -3321,7 +3401,7 @@ unsigned AXObject::ComputeAriaRowIndex() const {
 
 AXObject::AXObjectVector AXObject::TableRowChildren() const {
   AXObjectVector result;
-  for (const auto& child : Children()) {
+  for (const auto& child : ChildrenIncludingIgnored()) {
     if (child->IsTableRowLikeRole())
       result.push_back(child);
     else if (child->RoleValue() == ax::mojom::blink::Role::kRowGroup)
@@ -3332,7 +3412,7 @@ AXObject::AXObjectVector AXObject::TableRowChildren() const {
 
 AXObject::AXObjectVector AXObject::TableCellChildren() const {
   AXObjectVector result;
-  for (const auto& child : Children()) {
+  for (const auto& child : ChildrenIncludingIgnored()) {
     if (child->IsTableCellLikeRole())
       result.push_back(child);
     else if (child->RoleValue() == ax::mojom::blink::Role::kGenericContainer)
@@ -4080,7 +4160,8 @@ bool AXObject::SupportsARIAReadOnly() const {
   if (ui::IsCellOrTableHeader(RoleValue())) {
     // For cells and row/column headers, readonly is supported within a grid.
     return std::any_of(
-        AncestorsBegin(), AncestorsEnd(), [](const AXObject& ancestor) {
+        UnignoredAncestorsBegin(), UnignoredAncestorsEnd(),
+        [](const AXObject& ancestor) {
           return ancestor.RoleValue() == ax::mojom::blink::Role::kGrid ||
                  ancestor.RoleValue() == ax::mojom::blink::Role::kTreeGrid;
         });

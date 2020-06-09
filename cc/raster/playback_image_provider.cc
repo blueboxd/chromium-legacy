@@ -57,9 +57,10 @@ ImageProvider::ScopedResult PlaybackImageProvider::GetRasterContent(
 
   DrawImage adjusted_image(draw_image, 1.f, frame_index, target_color_space_);
   if (!cache_->UseCacheForDrawImage(adjusted_image)) {
-    return ScopedResult(DecodedDrawImage(
-        paint_image.GetSkImage(), SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
-        draw_image.filter_quality(), true /* is_budgeted */));
+    return ScopedResult(
+        DecodedDrawImage(paint_image.GetRasterSkImage(), SkSize::Make(0, 0),
+                         SkSize::Make(1.f, 1.f), draw_image.filter_quality(),
+                         true /* is_budgeted */));
   }
 
   auto decoded_draw_image = cache_->GetDecodedImageForDraw(adjusted_image);

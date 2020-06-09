@@ -231,8 +231,9 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     base::RunLoop run_loop;
     std::vector<media_feeds::mojom::MediaFeedItemPtr> out;
 
-    GetMediaHistoryService()->GetItemsForMediaFeedForDebug(
-        feed_id,
+    GetMediaHistoryService()->GetMediaFeedItems(
+        media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+            CreateItemsForDebug(feed_id),
         base::BindLambdaForTesting(
             [&](std::vector<media_feeds::mojom::MediaFeedItemPtr> rows) {
               out = std::move(rows);
@@ -298,8 +299,10 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     return media_history::MediaHistoryKeyedService::Get(profile());
   }
 
-  static media_feeds::mojom::MediaFeedItemPtr GetSingleExpectedItem() {
+  static media_feeds::mojom::MediaFeedItemPtr GetSingleExpectedItem(
+      int id_start = 0) {
     auto item = media_feeds::mojom::MediaFeedItem::New();
+    item->id = ++id_start;
     item->name = base::ASCIIToUTF16("The Movie");
     item->type = media_feeds::mojom::MediaFeedItemType::kMovie;
     item->date_published = base::Time::FromDeltaSinceWindowsEpoch(
@@ -315,12 +318,16 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     return item;
   }
 
-  static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
+  static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems(
+      int id_start = 0) {
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
-    items.push_back(GetSingleExpectedItem());
+
+    items.push_back(GetSingleExpectedItem(id_start));
+    id_start++;
 
     {
       auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->id = ++id_start;
       item->type = media_feeds::mojom::MediaFeedItemType::kTVSeries;
       item->name = base::ASCIIToUTF16("The TV Series");
       item->action_status =
@@ -334,6 +341,7 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
     {
       auto item = media_feeds::mojom::MediaFeedItem::New();
+      item->id = ++id_start;
       item->type = media_feeds::mojom::MediaFeedItemType::kTVSeries;
       item->name = base::ASCIIToUTF16("The Live TV Series");
       item->action_status =

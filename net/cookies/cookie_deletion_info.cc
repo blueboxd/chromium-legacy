@@ -116,7 +116,7 @@ bool CookieDeletionInfo::Matches(const CanonicalCookie& cookie,
       !cookie
            .IncludeForRequestURL(url.value(), CookieOptions::MakeAllInclusive(),
                                  access_semantics)
-           .IsInclude()) {
+           .status.IsInclude()) {
     return false;
   }
 

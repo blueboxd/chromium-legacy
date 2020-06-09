@@ -24,7 +24,7 @@ declare_args() {
   enable_distro_version_check = true
 
   # Enable building snap packages
-  enable_snap_package = false
+  enable_snap_package = is_official_build
 }
 
 assert(is_linux)

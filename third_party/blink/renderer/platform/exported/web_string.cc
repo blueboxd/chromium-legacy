@@ -90,12 +90,6 @@ WebString WebString::FromUTF16(const base::string16& s) {
   return WebString(s.data(), s.length());
 }
 
-WebString WebString::FromUTF16(const base::NullableString16& s) {
-  if (s.is_null())
-    return WebString();
-  return WebString(s.string().data(), s.string().length());
-}
-
 WebString WebString::FromUTF16(const base::Optional<base::string16>& s) {
   if (!s.has_value())
     return WebString();

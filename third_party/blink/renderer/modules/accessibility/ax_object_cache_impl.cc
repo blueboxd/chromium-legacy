@@ -240,7 +240,8 @@ AXObject* AXObjectCacheImpl::FocusedImageMapUIElement(
   if (!ax_layout_image)
     return nullptr;
 
-  const AXObject::AXObjectVector& image_children = ax_layout_image->Children();
+  const AXObject::AXObjectVector& image_children =
+      ax_layout_image->ChildrenIncludingIgnored();
   unsigned count = image_children.size();
   for (unsigned k = 0; k < count; ++k) {
     AXObject* child = image_children[k];

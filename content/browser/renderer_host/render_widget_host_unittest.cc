@@ -47,7 +47,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/mock_widget_impl.h"
 #include "content/test/mock_widget_input_handler.h"
 #include "content/test/stub_render_widget_host_owner_delegate.h"
 #include "content/test/test_render_view_host.h"
@@ -2196,26 +2195,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   view_->OnFrameTokenChanged(frame_token2);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
-}
-
-TEST_F(RenderWidgetHostTest, ForceEnableZoomShouldUpdateAfterRebind) {
-  SCOPED_TRACE("force_enable_zoom is false at start.");
-  host_->ExpectForceEnableZoom(false);
-
-  // Set force_enable_zoom true.
-  host_->SetForceEnableZoom(true);
-
-  SCOPED_TRACE("force_enable_zoom is true after set.");
-  host_->ExpectForceEnableZoom(true);
-
-  // Rebind should also update to the latest force_enable_zoom state.
-  mojo::PendingRemote<mojom::Widget> widget;
-  std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
-  host_->SetWidget(std::move(widget));
-
-  SCOPED_TRACE("force_enable_zoom is true after rebind.");
-  host_->ExpectForceEnableZoom(true);
 }
 
 // If a navigation happens while the widget is hidden, we shouldn't show

@@ -14,7 +14,7 @@
 using content::DesktopMediaID;
 
 FakeDesktopMediaList::FakeDesktopMediaList(DesktopMediaID::Type type)
-    : observer_(NULL), type_(type) {}
+    : observer_(nullptr), type_(type) {}
 FakeDesktopMediaList::~FakeDesktopMediaList() {}
 
 void FakeDesktopMediaList::AddSource(int id) {

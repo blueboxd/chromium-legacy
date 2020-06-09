@@ -83,9 +83,10 @@ class GPU_IPC_SERVICE_EXPORT GpuInit {
 #endif
 
  private:
-  void InitializeVulkan();
+  bool InitializeVulkan();
 
   GpuSandboxHelper* sandbox_helper_ = nullptr;
+  bool gl_use_swiftshader_ = false;
   std::unique_ptr<GpuWatchdogThread> watchdog_thread_;
   GPUInfo gpu_info_;
   GpuFeatureInfo gpu_feature_info_;

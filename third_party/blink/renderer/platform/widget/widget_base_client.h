@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/input/input_handler_proxy.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_lifecycle_update.h"
@@ -140,6 +141,10 @@ class WidgetBaseClient {
   virtual WebTextInputType GetTextInputType() {
     return WebTextInputType::kWebTextInputTypeNone;
   }
+
+  virtual void GetWidgetInputHandler(
+      mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+      mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) = 0;
 
   // Test-specific methods below this point.
   virtual void ScheduleAnimationForWebTests() {}

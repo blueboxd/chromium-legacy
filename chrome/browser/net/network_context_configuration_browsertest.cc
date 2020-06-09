@@ -633,8 +633,8 @@ class NetworkContextConfigurationBrowserTest
         url, net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(
             [](std::string* cookies_out, base::RunLoop* run_loop,
-               const net::CookieStatusList& cookies,
-               const net::CookieStatusList& excluded_cookies) {
+               const net::CookieAccessResultList& cookies,
+               const net::CookieAccessResultList& excluded_cookies) {
               *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
               run_loop->Quit();
             },

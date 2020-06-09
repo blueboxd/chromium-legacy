@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -35,6 +36,7 @@ class COMPONENT_EXPORT(DEVICE_VR_BASE) VRDeviceBase : public mojom::XRRuntime {
   void ShutdownSession(mojom::XRRuntime::ShutdownSessionCallback) override;
 
   device::mojom::XRDeviceId GetId() const;
+  device::mojom::XRDeviceDataPtr GetDeviceData() const;
 
   bool HasExclusiveSession();
 
@@ -61,6 +63,9 @@ class COMPONENT_EXPORT(DEVICE_VR_BASE) VRDeviceBase : public mojom::XRRuntime {
   bool IsPresenting() { return presenting_; }  // Exposed for test.
   void SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info);
   void OnVisibilityStateChanged(mojom::XRVisibilityState visibility_state);
+#if defined(OS_WIN)
+  void SetLuid(const LUID& luid);
+#endif
 
   mojom::VRDisplayInfoPtr display_info_;
 
@@ -72,6 +77,8 @@ class COMPONENT_EXPORT(DEVICE_VR_BASE) VRDeviceBase : public mojom::XRRuntime {
   bool presenting_ = false;
 
   device::mojom::XRDeviceId id_;
+
+  device::mojom::XRDeviceData device_data_;
 
   mojo::Receiver<mojom::XRRuntime> runtime_receiver_{this};
 

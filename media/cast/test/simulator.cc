@@ -128,7 +128,7 @@ void LogVideoOperationalStatus(OperationalStatus status) {
 }
 
 struct PacketProxy {
-  PacketProxy() : receiver(NULL) {}
+  PacketProxy() : receiver(nullptr) {}
   void ReceivePacket(std::unique_ptr<Packet> packet) {
     if (receiver)
       receiver->ReceivePacket(std::move(packet));

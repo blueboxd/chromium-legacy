@@ -9,6 +9,8 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 /**
  * This is the coordinator for MessageCardProvider component. This component is used to build a
  * TabGridMessageCardView for each {@link MessageService.MessageType}. This coordinator manages the
@@ -36,11 +38,21 @@ public class MessageCardProviderCoordinator {
 
     /**
      * Get all messages.
-     * @return a list of {@link
-     *         MessageCardProviderMediator.Message}.
+     * @return a list of {@link MessageCardProviderMediator.Message}.
      */
     public List<MessageCardProviderMediator.Message> getMessageItems() {
         return mMediator.getMessageItems();
+    }
+
+    /**
+     * @param messageType The {@link MessageService#mMessageType} associates with the message.
+     * @return The next {@link MessageCardProviderMediator.Message} for the given messageType, if
+     *         there is any. Otherwise returns null.
+     */
+    @Nullable
+    public MessageCardProviderMediator.Message getNextMessageItemForType(
+            @MessageService.MessageType int messageType) {
+        return mMediator.getNextMessageItemForType(messageType);
     }
 
     /**

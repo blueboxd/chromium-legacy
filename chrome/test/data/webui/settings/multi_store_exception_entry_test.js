@@ -11,9 +11,9 @@ import {createExceptionEntry} from 'chrome://test/settings/passwords_and_autofil
 
 suite('MultiStoreExceptionEntry', function() {
   test('verifyIds', function() {
-    const deviceEntry = createExceptionEntry('g.com', 0);
+    const deviceEntry = createExceptionEntry({url: 'g.com', id: 0});
     deviceEntry.fromAccountStore = false;
-    const accountEntry = createExceptionEntry('g.com', 1);
+    const accountEntry = createExceptionEntry({url: 'g.com', id: 1});
     accountEntry.fromAccountStore = true;
 
     const multiStoreDeviceEntry = new MultiStoreExceptionEntry(deviceEntry);

@@ -86,7 +86,7 @@ DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
       id_(id),
       frontend_closer_func_(base::Bind(&FakeCloseFrontends)),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
-      unnotified_event_(NULL),
+      unnotified_event_(nullptr),
       next_id_(1),
       stack_count_(0) {
   socket_->SetId(id_);
@@ -106,7 +106,7 @@ DevToolsClientImpl::DevToolsClientImpl(
       id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
-      unnotified_event_(NULL),
+      unnotified_event_(nullptr),
       next_id_(1),
       stack_count_(0) {
   socket_->SetId(id_);
@@ -122,7 +122,7 @@ DevToolsClientImpl::DevToolsClientImpl(DevToolsClientImpl* parent,
       id_(session_id),
       frontend_closer_func_(base::BindRepeating(&FakeCloseFrontends)),
       parser_func_(base::BindRepeating(&internal::ParseInspectorMessage)),
-      unnotified_event_(NULL),
+      unnotified_event_(nullptr),
       next_id_(1),
       stack_count_(0) {
   parent->children_[session_id] = this;
@@ -143,7 +143,7 @@ DevToolsClientImpl::DevToolsClientImpl(
       id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(parser_func),
-      unnotified_event_(NULL),
+      unnotified_event_(nullptr),
       next_id_(1),
       stack_count_(0) {
   socket_->SetId(id_);

@@ -41,8 +41,9 @@ class RemoveCookieTester {
                  const std::string& value);
 
  private:
-  void GetCookieListCallback(const net::CookieStatusList& cookies,
-                             const net::CookieStatusList& excluded_cookies);
+  void GetCookieListCallback(
+      const net::CookieAccessResultList& cookies,
+      const net::CookieAccessResultList& excluded_cookies);
   void SetCanonicalCookieCallback(net::CookieInclusionStatus result);
 
   void BlockUntilNotified();
@@ -108,9 +109,9 @@ void RemoveCookieTester::AddCookie(const std::string& host,
 }
 
 void RemoveCookieTester::GetCookieListCallback(
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
-  last_cookies_ = net::cookie_util::StripStatuses(cookies);
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
+  last_cookies_ = net::cookie_util::StripAccessResults(cookies);
   Notify();
 }
 

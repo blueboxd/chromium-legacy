@@ -20,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -103,7 +102,6 @@ class SupervisedUserSiteList
       const base::string16& title,
       const base::FilePath& large_icon_path,
       const base::FilePath& path,
-      base::TimeTicks start_time,
       const SupervisedUserSiteList::LoadedCallback& callback,
       std::unique_ptr<base::Value> value);
 

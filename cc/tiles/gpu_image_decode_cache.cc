@@ -1922,7 +1922,8 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
       DLOG(ERROR) << "YUV + Bitmap is unknown and unimplemented!";
       NOTREACHED();
     } else {
-      image_data->decode.SetBitmapImage(draw_image.paint_image().GetSkImage());
+      image_data->decode.SetBitmapImage(
+          draw_image.paint_image().GetRasterSkImage());
     }
     return;
   }
@@ -2086,7 +2087,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
 
       // Get the encoded data in a contiguous form.
       sk_sp<SkData> encoded_data =
-          draw_image.paint_image().GetSkImage()->refEncodedData();
+          draw_image.paint_image().GetRasterSkImage()->refEncodedData();
       DCHECK(encoded_data);
       const uint32_t transfer_cache_id =
           ClientImageTransferCacheEntry::GetNextId();

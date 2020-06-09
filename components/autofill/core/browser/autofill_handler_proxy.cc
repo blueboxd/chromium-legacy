@@ -88,7 +88,9 @@ void AutofillHandlerProxy::OnDidPreviewAutofillFormData() {}
 
 void AutofillHandlerProxy::OnDidEndTextFieldEditing() {}
 
-void AutofillHandlerProxy::OnHidePopup() {}
+void AutofillHandlerProxy::OnHidePopup() {
+  provider_->OnHidePopup(this);
+}
 
 void AutofillHandlerProxy::SelectFieldOptionsDidChange(const FormData& form) {}
 

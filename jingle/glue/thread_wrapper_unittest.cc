@@ -80,9 +80,7 @@ class ThreadWrapperTest : public testing::Test {
   }
 
  protected:
-  ThreadWrapperTest()
-      : thread_(NULL) {
-  }
+  ThreadWrapperTest() : thread_(nullptr) {}
 
   void SetUp() override {
     JingleThreadWrapper::EnsureForCurrentMessageLoop();

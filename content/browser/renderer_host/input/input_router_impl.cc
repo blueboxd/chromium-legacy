@@ -262,12 +262,6 @@ InputRouterImpl::BindNewHost() {
   return host_receiver_.BindNewPipeAndPassRemote();
 }
 
-mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
-InputRouterImpl::BindNewFrameHost() {
-  frame_host_receiver_.reset();
-  return frame_host_receiver_.BindNewPipeAndPassRemote();
-}
-
 void InputRouterImpl::StopFling() {
   gesture_event_queue_.StopFling();
 }

@@ -32,6 +32,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private PlayerManager mPlayerManager;
     private Runnable mOnShown;
     private Runnable mOnDismissed;
+    private Boolean mInitializing;
 
     public static TabbedPaintPreviewPlayer get(Tab tab) {
         if (tab.getUserDataHost().getUserData(USER_DATA_KEY) == null) {
@@ -46,24 +47,27 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     }
 
     /**
-     * Shows a Paint Preview for the provided tab if it exists.
+     * Shows a Paint Preview for the provided tab if it exists and has not been displayed for this
+     * Tab before.
      * @param onShown The callback for when the Paint Preview is shown.
      * @param onDismissed The callback for when the Paint Preview is dismissed.
-     * @return a boolean indicating whether a Paint Preview exists for the tab.
+     * @return Whether the Paint Preview started to initialize or is already initializating.
+     * Note that if the Paint Preview is already showing, this will return false.
      */
-    public boolean showIfExists(@Nullable Runnable onShown, @Nullable Runnable onDismissed) {
-        if (isShowing()) return true;
+    public boolean maybeShow(@Nullable Runnable onShown, @Nullable Runnable onDismissed) {
+        if (mInitializing != null) return mInitializing;
 
         // Check if a capture exists. This is a quick check using a cache.
         boolean hasCapture = mPaintPreviewTabService.hasCaptureForTab(mTab.getId());
-        mOnShown = onShown;
-        mOnDismissed = onDismissed;
+        mInitializing = hasCapture;
         if (hasCapture) {
             mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                     mPaintPreviewTabService, String.valueOf(mTab.getId()), this::onLinkClicked,
                     this::removePaintPreview,
                     () -> TabViewManager.get(mTab).addTabViewProvider(this),
                     TabThemeColorHelper.getBackgroundColor(mTab), this::removePaintPreview);
+            mOnShown = onShown;
+            mOnDismissed = onDismissed;
         }
 
         return hasCapture;
@@ -74,13 +78,14 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
      * nothing if there is no view showing.
      */
     private void removePaintPreview() {
+        mOnShown = null;
+        mOnDismissed = null;
+        mInitializing = false;
         if (mTab == null || mPlayerManager == null) return;
 
         TabViewManager.get(mTab).removeTabViewProvider(this);
         mPlayerManager.destroy();
         mPlayerManager = null;
-        mOnShown = null;
-        mOnDismissed = null;
     }
 
     public boolean isShowing() {
@@ -106,6 +111,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
 
     @Override
     public void onShown() {
+        mInitializing = false;
         if (mOnShown != null) mOnShown.run();
     }
 

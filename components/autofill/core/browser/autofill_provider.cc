@@ -19,4 +19,10 @@ void AutofillProvider::SendFormDataToRenderer(AutofillHandlerProxy* handler,
       requestId, AutofillDriver::FORM_DATA_ACTION_FILL, formData);
 }
 
-}  // namespace autofil
+void AutofillProvider::RendererShouldAcceptDataListSuggestion(
+    AutofillHandlerProxy* handler,
+    const base::string16& value) {
+  handler->driver()->RendererShouldAcceptDataListSuggestion(value);
+}
+
+}  // namespace autofill

@@ -18,8 +18,8 @@ namespace reporting {
 namespace {
 
 using policy::DMToken;
-using reporting_messaging_layer::Destination;
-using reporting_messaging_layer::Priority;
+using reporting::Destination;
+using reporting::Priority;
 
 class ReportingClientTest : public testing::Test {
  protected:

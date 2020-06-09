@@ -332,8 +332,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   void ContinueAuthenticationWhenCookiesAvailable();
   void OnGetCookiesForCompleteAuthentication(
-      const net::CookieStatusList& cookies,
-      const net::CookieStatusList& excluded_cookies);
+      const net::CookieAccessResultList& cookies,
+      const net::CookieAccessResultList& excluded_cookies);
 
   void OnCookieWaitTimeout();
 

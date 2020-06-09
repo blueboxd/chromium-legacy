@@ -403,7 +403,7 @@ class TestAddAppWindowObserver
 
 TestAddAppWindowObserver::TestAddAppWindowObserver(
     extensions::AppWindowRegistry* registry)
-    : registry_(registry), window_(NULL) {
+    : registry_(registry), window_(nullptr) {
   registry_->AddObserver(this);
 }
 

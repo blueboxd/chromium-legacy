@@ -509,11 +509,16 @@ ProfileOAuth2TokenServiceDelegateAndroid::MapAccountNameToAccountId(
 }
 
 namespace signin {
+
 // Called from Java when fetching of an OAuth2 token is finished. The
 // |authToken| param is only valid when |result| is true.
+// |expiration_time_secs| param is the number of seconds (NOT milliseconds)
+// after the Unix epoch when the token is scheduled to expire.
+// It is set to 0 if there's no known expiration time.
 void JNI_ProfileOAuth2TokenServiceDelegate_OnOAuth2TokenFetched(
     JNIEnv* env,
     const JavaParamRef<jstring>& authToken,
+    const jlong expiration_time_secs,
     jboolean isTransientError,
     jlong nativeCallback) {
   std::string token;
@@ -530,6 +535,12 @@ void JNI_ProfileOAuth2TokenServiceDelegate_OnOAuth2TokenFetched(
                   GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                       CREDENTIALS_REJECTED_BY_SERVER);
   }
-  std::move(*heap_callback).Run(err, token, base::Time());
+
+  const base::Time expiration_time =
+      expiration_time_secs == 0
+          ? base::Time()
+          : base::Time::FromJavaTime(expiration_time_secs * 1000);
+
+  std::move(*heap_callback).Run(err, token, expiration_time);
 }
 }  // namespace signin

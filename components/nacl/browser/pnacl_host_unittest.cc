@@ -36,7 +36,7 @@ const size_t kBufferSize = 16u;
 class PnaclHostTest : public testing::Test {
  protected:
   PnaclHostTest()
-      : host_(NULL),
+      : host_(nullptr),
         temp_callback_count_(0),
         write_callback_count_(0),
         task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}

@@ -550,9 +550,9 @@ void CookieManager::GetCookieListAsyncHelper(const GURL& host,
 void CookieManager::GetCookieListCompleted(
     base::OnceClosure complete,
     net::CookieList* result,
-    const net::CookieStatusList& value,
-    const net::CookieStatusList& excluded_cookies) {
-  *result = net::cookie_util::StripStatuses(value);
+    const net::CookieAccessResultList& value,
+    const net::CookieAccessResultList& excluded_cookies) {
+  *result = net::cookie_util::StripAccessResults(value);
   std::move(complete).Run();
 }
 

@@ -210,5 +210,8 @@ test("weblayer_unittests") {
     ":run_all_unittests",
     "//weblayer:weblayer_lib_base",
   ]
+  if (is_android) {
+    deps += [ ":weblayer_test_assets" ]
+  }
   sources = [ "../browser/profile_disk_operations_unittests.cc" ]
 }

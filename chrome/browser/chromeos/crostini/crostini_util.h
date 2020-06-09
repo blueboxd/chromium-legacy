@@ -32,9 +32,26 @@ class Widget;
 
 class Profile;
 
-// TODO(crbug.com/1004708): Move Is*[Enabled|Allowed] functions to
-// CrostiniFeatures.
 namespace crostini {
+
+// We use an arbitrary well-formed extension id for the Terminal app, this
+// is equal to GenerateId("Terminal").
+extern const char kCrostiniTerminalId[];
+// web_app::GenerateAppIdFromURL(
+//     GURL("chrome-untrusted://terminal/html/terminal.html"))
+extern const char kCrostiniTerminalSystemAppId[];
+
+extern const char kCrostiniDefaultVmName[];
+extern const char kCrostiniDefaultContainerName[];
+extern const char kCrostiniDefaultUsername[];
+// In order to be compatible with sync folder id must match standard.
+// Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
+extern const char kCrostiniFolderId[];
+extern const char kCrostiniDefaultImageServerUrl[];
+extern const char kCrostiniStretchImageAlias[];
+extern const char kCrostiniBusterImageAlias[];
+
+extern const base::FilePath::CharType kHomeDirectory[];
 
 struct LinuxPackageInfo;
 
@@ -188,28 +205,6 @@ const std::string& GetTerminalId();
 // Returns the alternative terminal ID to |GetTerminalId|.  This is used when
 // migrating terminals when TerminalSystemApp feature changes.
 const std::string& GetDeletedTerminalId();
-
-// We use an arbitrary well-formed extension id for the Terminal app, this
-// is equal to GenerateId("Terminal").
-constexpr char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
-// web_app::GenerateAppIdFromURL(
-//     GURL("chrome-untrusted://terminal/html/terminal.html"))
-constexpr char kCrostiniTerminalSystemAppId[] =
-    "fhicihalidkgcimdmhpohldehjmcabcf";
-
-constexpr char kCrostiniDefaultVmName[] = "termina";
-constexpr char kCrostiniDefaultContainerName[] = "penguin";
-constexpr char kCrostiniDefaultUsername[] = "emperor";
-// In order to be compatible with sync folder id must match standard.
-// Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
-constexpr char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
-constexpr char kCrostiniDefaultImageServerUrl[] =
-    "https://storage.googleapis.com/cros-containers/%d";
-constexpr char kCrostiniStretchImageAlias[] = "debian/stretch";
-constexpr char kCrostiniBusterImageAlias[] = "debian/buster";
-
-constexpr base::FilePath::CharType kHomeDirectory[] =
-    FILE_PATH_LITERAL("/home");
 
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,

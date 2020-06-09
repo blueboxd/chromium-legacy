@@ -67,6 +67,21 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
         return new ArrayList<>(mShownMessageItems.values());
     }
 
+    Message getNextMessageItemForType(@MessageService.MessageType int messageType) {
+        if (mShownMessageItems.containsKey(messageType)) return mShownMessageItems.get(messageType);
+
+        if (!mMessageItems.containsKey(messageType)) return null;
+
+        List<Message> messages = mMessageItems.get(messageType);
+
+        assert messages.size() > 0;
+        mShownMessageItems.put(messageType, messages.remove(0));
+
+        if (messages.size() == 0) mMessageItems.remove(messageType);
+
+        return mShownMessageItems.get(messageType);
+    }
+
     private PropertyModel buildModel(int messageType, MessageService.MessageData data) {
         switch (messageType) {
             case TAB_SUGGESTION:
@@ -109,8 +124,8 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
 
     @VisibleForTesting
     void invalidateShownMessage(@MessageService.MessageType int type) {
-        mUiDismissActionProvider.dismiss(type);
         mShownMessageItems.remove(type);
+        mUiDismissActionProvider.dismiss(type);
     }
 
     @VisibleForTesting

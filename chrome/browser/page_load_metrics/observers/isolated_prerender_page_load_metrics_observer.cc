@@ -182,8 +182,8 @@ void IsolatedPrerenderPageLoadMetricsObserver::CheckForCookiesOnURL(
 
 void IsolatedPrerenderPageLoadMetricsObserver::OnCookieResult(
     base::Time query_start_time,
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
   cookie_query_times_.push_back(base::Time::Now() - query_start_time);
   mainframe_had_cookies_ =
       mainframe_had_cookies_.value_or(false) || !cookies.empty();

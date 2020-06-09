@@ -171,7 +171,8 @@ class CookieStoreTest : public testing::Test {
   }
 
   // This does not update the access time on the cookies.
-  CookieStatusList GetExcludedCookiesForURL(CookieStore* cs, const GURL& url) {
+  CookieAccessResultList GetExcludedCookiesForURL(CookieStore* cs,
+                                                  const GURL& url) {
     DCHECK(cs);
     GetCookieListCallback callback;
     CookieOptions options = CookieOptions::MakeAllInclusive();

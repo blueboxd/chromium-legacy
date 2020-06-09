@@ -78,6 +78,9 @@ class WebExternalWidgetImpl : public WebExternalWidget,
   void DidHandleKeyEvent() override;
   void QueueSyntheticEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent>) override;
+  void GetWidgetInputHandler(
+      mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+      mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
 
  private:
   WebExternalWidgetClient* const client_;

@@ -162,6 +162,16 @@ class PepperExternalWidgetClient : public blink::WebExternalWidgetClient {
     widget_->DidInitiatePaint();
   }
 
+  void GetWidgetInputHandler(
+      blink::CrossVariantMojoReceiver<
+          blink::mojom::WidgetInputHandlerInterfaceBase> widget_input_receiver,
+      blink::CrossVariantMojoRemote<
+          blink::mojom::WidgetInputHandlerHostInterfaceBase>
+          widget_input_host_remote) override {
+    widget_->GetWidgetInputHandler(std::move(widget_input_receiver),
+                                   std::move(widget_input_host_remote));
+  }
+
  private:
   RenderWidgetFullscreenPepper* widget_;
 };
@@ -174,16 +184,14 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     const ScreenInfo& screen_info,
     PepperPluginInstanceImpl* plugin,
     const blink::WebURL& local_main_frame_url,
-    mojo::PendingReceiver<mojom::Widget> widget_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget) {
   DCHECK_NE(MSG_ROUTING_NONE, routing_id);
   DCHECK(show_callback);
   RenderWidgetFullscreenPepper* render_widget =
       new RenderWidgetFullscreenPepper(
-          routing_id, compositor_deps, plugin, std::move(widget_receiver),
-          std::move(blink_widget_host), std::move(blink_widget),
-          local_main_frame_url);
+          routing_id, compositor_deps, plugin, std::move(blink_widget_host),
+          std::move(blink_widget), local_main_frame_url);
   render_widget->InitForPepperFullscreen(std::move(show_callback),
                                          render_widget->blink_widget_.get(),
                                          screen_info);
@@ -194,15 +202,13 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     PepperPluginInstanceImpl* plugin,
-    mojo::PendingReceiver<mojom::Widget> widget_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> mojo_widget_host,
     mojo::PendingAssociatedReceiver<blink::mojom::Widget> mojo_widget,
     blink::WebURL main_frame_url)
     : RenderWidget(routing_id,
                    compositor_deps,
                    /*hidden=*/false,
-                   /*never_composited=*/false,
-                   std::move(widget_receiver)),
+                   /*never_composited=*/false),
       plugin_(plugin),
       mouse_lock_dispatcher_(
           std::make_unique<FullscreenMouseLockDispatcher>(this)),

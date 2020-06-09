@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_test_util.h"
@@ -53,6 +56,10 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
         {previews::features::kPreviews,
          previews::features::kDeferAllScriptPreviews,
          optimization_guide::features::kOptimizationHints,
+         // TODO(crbug/1021364): Remove the following two features after the
+         // model rollout
+         optimization_guide::features::kRemoteOptimizationGuideFetching,
+         optimization_guide::features::kOptimizationTargetPrediction,
          features::kBackForwardCache},
         {});
   }
@@ -61,11 +68,12 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_2G);
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->OverrideTargetDecisionForTesting(
+            optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+            optimization_guide::OptimizationGuideDecision::kTrue);
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
     ASSERT_TRUE(https_server_->Start());
 
@@ -556,11 +564,12 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   histogram_tester.ExpectBucketCount("Previews.PreviewShown.DeferAllScript",
                                      true, 1);
 
-  // Now adjust the network triggering condition to not choose preview for a
+  // Override the target decision to |kFalse| to not trigger a preview for the
   // new decision.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_4G);
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->OverrideTargetDecisionForTesting(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          optimization_guide::OptimizationGuideDecision::kFalse);
 
   // Navigate to another host on same tab (to cause previous navigation
   // to be saved in BackForward cache).
@@ -620,11 +629,12 @@ IN_PROC_BROWSER_TEST_F(
   // Wait for initial page load to complete.
   content::WaitForLoadStop(web_contents());
 
-  // Adjust the network triggering condition to not choose preview for this
-  // navigation.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_4G);
+  // Override the target decision to |kFalse| to choose not to trigger a
+  // preview this navigation.
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->OverrideTargetDecisionForTesting(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          optimization_guide::OptimizationGuideDecision::kFalse);
 
   // Navigate to DeferAllScript url.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -637,11 +647,12 @@ IN_PROC_BROWSER_TEST_F(
       "Previews.EligibilityReason.DeferAllScript",
       static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 0);
 
-  // Now adjust the network triggering condition to allow a preview for a
+  // Now override the model decision to |kTrue| to allow a preview for a
   // new decision.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_2G);
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->OverrideTargetDecisionForTesting(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          optimization_guide::OptimizationGuideDecision::kTrue);
 
   // Navigate to another host on same tab (to cause previous navigation
   // to be saved in BackForward cache).

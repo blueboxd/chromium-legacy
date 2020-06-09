@@ -813,6 +813,23 @@ std::string OmniboxFieldTrial::OnDeviceHeadSuggestDemoteMode() {
       kOnDeviceHeadSuggestDemoteMode);
 }
 
+bool OmniboxFieldTrial::IsHidePathQueryRefEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kHideSteadyStateUrlPathQueryAndRef);
+}
+
+bool OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() {
+  return IsHidePathQueryRefEnabled() &&
+         base::FeatureList::IsEnabled(
+             omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover);
+}
+
+bool OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() {
+  return IsHidePathQueryRefEnabled() &&
+         base::FeatureList::IsEnabled(
+             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";

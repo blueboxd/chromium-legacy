@@ -271,11 +271,11 @@ class TextInputClientForTesting : public DummyTextInputClient {
 class InputMethodAuraLinuxTest : public testing::Test {
  protected:
   InputMethodAuraLinuxTest()
-      : factory_(NULL),
-        input_method_auralinux_(NULL),
-        delegate_(NULL),
-        context_(NULL),
-        context_simple_(NULL) {
+      : factory_(nullptr),
+        input_method_auralinux_(nullptr),
+        delegate_(nullptr),
+        context_(nullptr),
+        context_simple_(nullptr) {
     factory_ = new LinuxInputMethodContextFactoryForTesting();
     LinuxInputMethodContextFactory::SetInstance(factory_);
     test_result_ = TestResult::GetInstance();

@@ -656,22 +656,22 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
 
   std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "A=2", creation_time, server_time));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options).IsInclude());
+  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options).status.IsInclude());
   EXPECT_TRUE(cookie
                   ->IncludeForRequestURL(GURL("http://www.example.com/foo/bar"),
                                          options)
-                  .IsInclude());
+                  .status.IsInclude());
   EXPECT_TRUE(cookie
                   ->IncludeForRequestURL(
                       GURL("https://www.example.com/foo/bar"), options)
-                  .IsInclude());
+                  .status.IsInclude());
   EXPECT_TRUE(
       cookie->IncludeForRequestURL(GURL("https://sub.example.com"), options)
-          .HasExactlyExclusionReasonsForTesting(
+          .status.HasExactlyExclusionReasonsForTesting(
               {CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH}));
   EXPECT_TRUE(
       cookie->IncludeForRequestURL(GURL("https://sub.www.example.com"), options)
-          .HasExactlyExclusionReasonsForTesting(
+          .status.HasExactlyExclusionReasonsForTesting(
               {CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH}));
 
   // Test that cookie with a cookie path that does not match the url path are
@@ -679,22 +679,23 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
   cookie = CanonicalCookie::Create(url, "A=2; Path=/foo/bar", creation_time,
                                    server_time);
   EXPECT_TRUE(cookie->IncludeForRequestURL(url, options)
-                  .HasExactlyExclusionReasonsForTesting(
+                  .status.HasExactlyExclusionReasonsForTesting(
                       {CookieInclusionStatus::EXCLUDE_NOT_ON_PATH}));
   EXPECT_TRUE(
       cookie
           ->IncludeForRequestURL(
               GURL("http://www.example.com/foo/bar/index.html"), options)
-          .IsInclude());
+          .status.IsInclude());
 
   // Test that a secure cookie is not included for a non secure URL.
   GURL secure_url("https://www.example.com");
   cookie = CanonicalCookie::Create(secure_url, "A=2; Secure", creation_time,
                                    server_time);
   EXPECT_TRUE(cookie->IsSecure());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options).IsInclude());
+  EXPECT_TRUE(
+      cookie->IncludeForRequestURL(secure_url, options).status.IsInclude());
   EXPECT_TRUE(cookie->IncludeForRequestURL(url, options)
-                  .HasExactlyExclusionReasonsForTesting(
+                  .status.HasExactlyExclusionReasonsForTesting(
                       {CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
 
   // Test that http only cookies are only included if the include httponly flag
@@ -703,10 +704,10 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
   cookie =
       CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time, server_time);
   EXPECT_TRUE(cookie->IsHttpOnly());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options).IsInclude());
+  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options).status.IsInclude());
   options.set_exclude_httponly();
   EXPECT_TRUE(cookie->IncludeForRequestURL(url, options)
-                  .HasExactlyExclusionReasonsForTesting(
+                  .status.HasExactlyExclusionReasonsForTesting(
                       {CookieInclusionStatus::EXCLUDE_HTTP_ONLY}));
 }
 
@@ -737,16 +738,16 @@ void VerifyIncludeForRequestURLTestCases(
     std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
         url, test.cookie_line, creation_time, base::nullopt /* server_time */);
     EXPECT_EQ(test.expected_samesite, cookie->SameSite());
-    EXPECT_EQ(test.expected_effective_samesite,
-              cookie->GetEffectiveSameSiteForTesting(access_semantics));
 
     CookieOptions request_options;
     request_options.set_same_site_cookie_context(
         test.request_options_samesite_context);
+    net::CookieAccessResult access_result =
+        cookie->IncludeForRequestURL(url, request_options, access_semantics);
 
-    EXPECT_EQ(
-        test.expected_inclusion_status,
-        cookie->IncludeForRequestURL(url, request_options, access_semantics));
+    EXPECT_EQ(test.expected_inclusion_status, access_result.status);
+    EXPECT_EQ(test.expected_effective_samesite,
+              access_result.effective_same_site);
   }
 }
 
@@ -1016,17 +1017,17 @@ TEST(CanonicalCookieTest, IncludeCookiesWithoutSameSiteMustBeSecure) {
     EXPECT_TRUE(
         cookie
             ->IncludeForRequestURL(url, options, CookieAccessSemantics::UNKNOWN)
-            .HasExactlyExclusionReasonsForTesting(
+            .status.HasExactlyExclusionReasonsForTesting(
                 {CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE}));
     EXPECT_TRUE(
         cookie
             ->IncludeForRequestURL(url, options, CookieAccessSemantics::LEGACY)
-            .IsInclude());
+            .status.IsInclude());
     EXPECT_TRUE(
         cookie
             ->IncludeForRequestURL(url, options,
                                    CookieAccessSemantics::NONLEGACY)
-            .HasExactlyExclusionReasonsForTesting(
+            .status.HasExactlyExclusionReasonsForTesting(
                 {CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE}));
   }
   // Features off:
@@ -1041,17 +1042,17 @@ TEST(CanonicalCookieTest, IncludeCookiesWithoutSameSiteMustBeSecure) {
     EXPECT_TRUE(
         cookie
             ->IncludeForRequestURL(url, options, CookieAccessSemantics::UNKNOWN)
-            .IsInclude());
+            .status.IsInclude());
     EXPECT_TRUE(
         cookie
             ->IncludeForRequestURL(url, options, CookieAccessSemantics::LEGACY)
-            .IsInclude());
+            .status.IsInclude());
     // If the semantics is Nonlegacy, only reject the cookie if the
     // SameSite=None-must-be-Secure feature is enabled.
     EXPECT_TRUE(cookie
                     ->IncludeForRequestURL(url, options,
                                            CookieAccessSemantics::NONLEGACY)
-                    .IsInclude());
+                    .status.IsInclude());
   }
 }
 
@@ -1072,7 +1073,7 @@ TEST(CanonicalCookieTest, MultipleExclusionReasons) {
       base::Time(), true /* secure */, true /* httponly */,
       CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT);
   EXPECT_TRUE(cookie1.IncludeForRequestURL(url, options)
-                  .HasExactlyExclusionReasonsForTesting(
+                  .status.HasExactlyExclusionReasonsForTesting(
                       {CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
                        CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
                        CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH,

@@ -581,8 +581,8 @@ void CookieMonster::GetCookieListWithOptions(const GURL& url,
                                              GetCookieListCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  CookieStatusList included_cookies;
-  CookieStatusList excluded_cookies;
+  CookieAccessResultList included_cookies;
+  CookieAccessResultList excluded_cookies;
   if (HasCookieableScheme(url)) {
     std::vector<CanonicalCookie*> cookie_ptrs;
     FindCookiesForRegistryControlledHost(url, &cookie_ptrs);
@@ -953,8 +953,8 @@ void CookieMonster::FilterCookiesWithOptions(
     const GURL url,
     const CookieOptions options,
     std::vector<CanonicalCookie*>* cookie_ptrs,
-    CookieStatusList* included_cookies,
-    CookieStatusList* excluded_cookies) {
+    CookieAccessResultList* included_cookies,
+    CookieAccessResultList* excluded_cookies) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Probe to save statistics relatively frequently.  We do it here rather
@@ -968,12 +968,12 @@ void CookieMonster::FilterCookiesWithOptions(
     // Filter out cookies that should not be included for a request to the
     // given |url|. HTTP only cookies are filtered depending on the passed
     // cookie |options|.
-    CookieInclusionStatus status = (*it)->IncludeForRequestURL(
+    CookieAccessResult access_result = (*it)->IncludeForRequestURL(
         url, options, GetAccessSemanticsForCookieGet(**it));
 
-    if (!status.IsInclude()) {
+    if (!access_result.status.IsInclude()) {
       if (options.return_excluded_cookies())
-        excluded_cookies->push_back({**it, status});
+        excluded_cookies->push_back({**it, access_result});
       continue;
     }
 
@@ -982,7 +982,7 @@ void CookieMonster::FilterCookiesWithOptions(
 
     MaybeRecordCookieAccessWithOptions(**it, options, false);
 
-    included_cookies->push_back({**it, status});
+    included_cookies->push_back({**it, access_result});
   }
 }
 

@@ -42,7 +42,7 @@ class PerformanceChannelListener : public Listener {
  public:
   explicit PerformanceChannelListener(const std::string& label)
       : label_(label),
-        sender_(NULL),
+        sender_(nullptr),
         msg_count_(0),
         msg_size_(0),
         sync_(false),

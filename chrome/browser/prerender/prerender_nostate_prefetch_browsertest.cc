@@ -571,11 +571,11 @@ IN_PROC_BROWSER_TEST_F(HTMLCSSScriptNoStatePrefetchBrowserTest,
 }
 
 void GetCookieCallback(base::RepeatingClosure callback,
-                       const net::CookieStatusList& cookie_with_status_list,
-                       const net::CookieStatusList& excluded_cookies) {
+                       const net::CookieAccessResultList& cookie_list,
+                       const net::CookieAccessResultList& excluded_cookies) {
   bool found_chocolate = false;
   bool found_oatmeal = false;
-  for (const auto& c : cookie_with_status_list) {
+  for (const auto& c : cookie_list) {
     if (c.cookie.Name() == "chocolate-chip") {
       EXPECT_EQ("the-best", c.cookie.Value());
       found_chocolate = true;

@@ -25,8 +25,9 @@ void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
                                              blink::mojom::StorageType type,
                                              GetUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
 
-  if (!DoesSupport(type) || !CacheStorageManager::IsValidQuotaOrigin(origin)) {
+  if (!CacheStorageManager::IsValidQuotaOrigin(origin)) {
     std::move(callback).Run(0);
     return;
   }
@@ -37,11 +38,7 @@ void CacheStorageQuotaClient::GetOriginUsage(const url::Origin& origin,
 void CacheStorageQuotaClient::GetOriginsForType(blink::mojom::StorageType type,
                                                 GetOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!DoesSupport(type)) {
-    std::move(callback).Run(std::set<url::Origin>());
-    return;
-  }
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
 
   cache_manager_->GetOrigins(owner_, std::move(callback));
 }
@@ -50,11 +47,7 @@ void CacheStorageQuotaClient::GetOriginsForHost(blink::mojom::StorageType type,
                                                 const std::string& host,
                                                 GetOriginsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!DoesSupport(type)) {
-    std::move(callback).Run(std::set<url::Origin>());
-    return;
-  }
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
 
   cache_manager_->GetOriginsForHost(host, owner_, std::move(callback));
 }
@@ -63,8 +56,9 @@ void CacheStorageQuotaClient::DeleteOriginData(const url::Origin& origin,
                                                blink::mojom::StorageType type,
                                                DeletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
 
-  if (!DoesSupport(type) || !CacheStorageManager::IsValidQuotaOrigin(origin)) {
+  if (!CacheStorageManager::IsValidQuotaOrigin(origin)) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }

@@ -41,18 +41,17 @@ class AndroidWPTExpectationsUpdater(WPTExpectationsUpdater):
 
     def __init__(self, host, args=None):
         super(AndroidWPTExpectationsUpdater, self).__init__(host, args)
-        expectations_dict = {}
-        for product in self.options.android_product:
-            path = PRODUCTS_TO_EXPECTATION_FILE_PATHS[product]
-            expectations_dict.update(
-                {path: self.host.filesystem.read_text_file(path)})
-
-        self._test_expectations = TestExpectations(
-            self.port, expectations_dict=expectations_dict)
         self._never_fix_expectations = TestExpectations(
             self.port, {
                 ANDROID_DISABLED_TESTS:
                 host.filesystem.read_text_file(ANDROID_DISABLED_TESTS)})
+
+    def expectations_files(self):
+        # We need to put all the Android expectation files in
+        # the _test_expectations member variable so that the
+        # files get cleaned in cleanup_test_expectations_files()
+        return (PRODUCTS_TO_EXPECTATION_FILE_PATHS.values() +
+                [ANDROID_DISABLED_TESTS])
 
     def _get_web_test_results(self, build):
         """Gets web tests results for Android builders. We need to
@@ -128,9 +127,9 @@ class AndroidWPTExpectationsUpdater(WPTExpectationsUpdater):
         raise ScriptError('Marker comment does not exist in %s' % path)
 
     def _get_untriaged_test_expectations(
-            self, test_expectations, marker_comment):
+            self, test_expectations, paths, marker_comment):
         untriaged_exps = defaultdict(dict)
-        for path in test_expectations.expectations_dict:
+        for path in paths:
             marker_lineno = self._get_marker_line_number(
                 test_expectations, path, marker_comment)
             exp_lines = test_expectations.get_updated_lines(path)
@@ -170,11 +169,13 @@ class AndroidWPTExpectationsUpdater(WPTExpectationsUpdater):
         browser_to_exp_path = {
             browser: PRODUCTS_TO_EXPECTATION_FILE_PATHS[product]
             for product, browser in PRODUCTS_TO_BROWSER_TAGS.items()}
+        product_exp_paths = {PRODUCTS_TO_EXPECTATION_FILE_PATHS[prod]
+                             for prod in self.options.android_product}
         untriaged_exps = self._get_untriaged_test_expectations(
-            self._test_expectations, self.MARKER_COMMENT)
+            self._test_expectations, product_exp_paths, self.MARKER_COMMENT)
         neverfix_tests = self._get_untriaged_test_expectations(
-            self._never_fix_expectations, self.NEVER_FIX_MARKER_COMMENT)[
-                ANDROID_DISABLED_TESTS]
+            self._never_fix_expectations, [ANDROID_DISABLED_TESTS],
+            self.NEVER_FIX_MARKER_COMMENT)[ANDROID_DISABLED_TESTS]
 
         for path, test_exps in untriaged_exps.items():
             self._test_expectations.remove_expectations(

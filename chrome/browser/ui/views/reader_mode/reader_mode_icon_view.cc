@@ -136,7 +136,7 @@ const char* ReaderModeIconView::GetClassName() const {
 
 // TODO(gilmanmh): Consider displaying a bubble the first time a user
 // activates the icon to explain what Reader Mode is.
-views::BubbleDialogDelegateView* ReaderModeIconView::GetBubble() const {
+views::BubbleDialogDelegate* ReaderModeIconView::GetBubble() const {
   return nullptr;
 }
 

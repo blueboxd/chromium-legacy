@@ -81,14 +81,13 @@ PnaclHost* PnaclHost::GetInstance() {
 PnaclHost::PendingTranslation::PendingTranslation()
     : process_handle(base::kNullProcessHandle),
       render_view_id(0),
-      nexe_fd(NULL),
+      nexe_fd(nullptr),
       got_nexe_fd(false),
       got_cache_reply(false),
       got_cache_hit(false),
       is_incognito(false),
       callback(NexeFdCallback()),
-      cache_info(nacl::PnaclCacheInfo()) {
-}
+      cache_info(nacl::PnaclCacheInfo()) {}
 
 PnaclHost::PendingTranslation::PendingTranslation(
     const PendingTranslation& other) = default;

@@ -361,7 +361,7 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    public void startSurfaceToolbarInflatedPreAndWithNativeTest() {
+    public void startSurfaceIncognitoSwitchCoordinatorInflatedWithNativeTest() {
         // clang-format on
         startMainActivityFromLauncher();
         Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
@@ -380,6 +380,11 @@ public class InstantStartTest {
                         .getToolbarManager()
                         .getToolbar();
 
+        // TODO(https://crbug.com/1077022): Removes the call of
+        // {@link TopToolbarCoordinator#setTabSwithcherMode()} once ToolbarManager shows
+        // the StartSurfaceToolbar in instant start.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { topToolbarCoordinator.setTabSwitcherMode(true, true, false); });
         onViewWaiting(allOf(withId(R.id.tab_switcher_toolbar), isDisplayed()));
 
         StartSurfaceToolbarCoordinator startSurfaceToolbarCoordinator =

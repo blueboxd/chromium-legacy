@@ -50,11 +50,6 @@ MockInputRouter::BindNewHost() {
   return mojo::NullRemote();
 }
 
-mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
-MockInputRouter::BindNewFrameHost() {
-  return mojo::NullRemote();
-}
-
 void MockInputRouter::OnHasTouchEventHandlers(bool has_handlers) {
   has_handlers_ = has_handlers;
 }

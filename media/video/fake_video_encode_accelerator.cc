@@ -17,7 +17,7 @@ FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
       will_initialization_succeed_(true),
-      client_(NULL),
+      client_(nullptr),
       next_frame_is_first_frame_(true) {}
 
 FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {

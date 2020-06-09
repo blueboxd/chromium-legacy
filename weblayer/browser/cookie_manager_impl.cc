@@ -19,9 +19,9 @@ namespace weblayer {
 namespace {
 
 void GetCookieComplete(CookieManager::GetCookieCallback callback,
-                       const net::CookieStatusList& cookies,
-                       const net::CookieStatusList& excluded_cookies) {
-  net::CookieList cookie_list = net::cookie_util::StripStatuses(cookies);
+                       const net::CookieAccessResultList& cookies,
+                       const net::CookieAccessResultList& excluded_cookies) {
+  net::CookieList cookie_list = net::cookie_util::StripAccessResults(cookies);
   std::move(callback).Run(net::CanonicalCookie::BuildCookieLine(cookie_list));
 }
 

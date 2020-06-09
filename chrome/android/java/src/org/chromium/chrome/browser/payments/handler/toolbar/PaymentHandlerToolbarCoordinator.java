@@ -60,14 +60,18 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
         assert url != null;
         mWebContents = webContents;
         mActivity = context;
-        PropertyModel model = new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
-                                      .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
-                                      .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS,
-                                              PaymentHandlerToolbarMediator.MINIMUM_LOAD_PROGRESS)
-                                      .with(PaymentHandlerToolbarProperties.SECURITY_ICON,
-                                              ConnectionSecurityLevel.NONE)
-                                      .with(PaymentHandlerToolbarProperties.URL, url)
-                                      .build();
+        int defaultSecurityLevel = ConnectionSecurityLevel.NONE;
+        PropertyModel model =
+                new PropertyModel.Builder(PaymentHandlerToolbarProperties.ALL_KEYS)
+                        .with(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, true)
+                        .with(PaymentHandlerToolbarProperties.LOAD_PROGRESS,
+                                PaymentHandlerToolbarMediator.MINIMUM_LOAD_PROGRESS)
+                        .with(PaymentHandlerToolbarProperties.SECURITY_ICON,
+                                getSecurityIconResource(defaultSecurityLevel))
+                        .with(PaymentHandlerToolbarProperties.SECURITY_ICON_CONTENT_DESCRIPTION,
+                                getSecurityIconContentDescription(defaultSecurityLevel))
+                        .with(PaymentHandlerToolbarProperties.URL, url)
+                        .build();
         mIsSmallDevice = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
         mMediator = new PaymentHandlerToolbarMediator(model, webContents, /*delegate=*/this);
         mToolbarView =
@@ -116,7 +120,7 @@ public class PaymentHandlerToolbarCoordinator implements PaymentHandlerToolbarMe
     public int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
         return SecurityStatusIcon.getSecurityIconResource(securityLevel,
                 SecurityStateModel.shouldShowDangerTriangleForWarningLevel(), mIsSmallDevice,
-                /*skipIconForNeutralState=*/true);
+                /*skipIconForNeutralState=*/false);
     }
 
     // Implement PaymentHandlerToolbarMediatorDelegate.

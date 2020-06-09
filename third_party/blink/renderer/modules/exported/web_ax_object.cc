@@ -234,17 +234,14 @@ unsigned WebAXObject::ChildCount() const {
   if (IsDetached())
     return 0;
 
-  return private_->Children().size();
+  return private_->ChildCountIncludingIgnored();
 }
 
 WebAXObject WebAXObject::ChildAt(unsigned index) const {
   if (IsDetached())
     return WebAXObject();
 
-  if (private_->Children().size() <= index)
-    return WebAXObject();
-
-  return WebAXObject(private_->Children()[index]);
+  return WebAXObject(private_->ChildAtIncludingIgnored(int{index}));
 }
 
 WebAXObject WebAXObject::ParentObject() const {

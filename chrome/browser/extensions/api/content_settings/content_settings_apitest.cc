@@ -45,7 +45,7 @@ namespace extensions {
 
 class ExtensionContentSettingsApiTest : public ExtensionApiTest {
  public:
-  ExtensionContentSettingsApiTest() : profile_(NULL) {}
+  ExtensionContentSettingsApiTest() : profile_(nullptr) {}
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();

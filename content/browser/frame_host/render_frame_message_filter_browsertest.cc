@@ -92,14 +92,14 @@ std::string GetCookiesDirect(WebContentsImpl* tab, const GURL& url) {
   base::RunLoop run_loop;
   BrowserContext::GetDefaultStoragePartition(tab->GetBrowserContext())
       ->GetCookieManagerForBrowserProcess()
-      ->GetCookieList(url, options,
-                      base::BindLambdaForTesting(
-                          [&](const net::CookieStatusList& cookie_list,
-                              const net::CookieStatusList& excluded_cookies) {
-                            result =
-                                net::cookie_util::StripStatuses(cookie_list);
-                            run_loop.Quit();
-                          }));
+      ->GetCookieList(
+          url, options,
+          base::BindLambdaForTesting(
+              [&](const net::CookieAccessResultList& cookie_list,
+                  const net::CookieAccessResultList& excluded_cookies) {
+                result = net::cookie_util::StripAccessResults(cookie_list);
+                run_loop.Quit();
+              }));
   run_loop.Run();
   return net::CanonicalCookie::BuildCookieLine(result);
 }

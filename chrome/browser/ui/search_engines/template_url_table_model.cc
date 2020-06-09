@@ -18,7 +18,7 @@
 
 TemplateURLTableModel::TemplateURLTableModel(
     TemplateURLService* template_url_service)
-    : observer_(NULL), template_url_service_(template_url_service) {
+    : observer_(nullptr), template_url_service_(template_url_service) {
   DCHECK(template_url_service);
   template_url_service_->AddObserver(this);
   template_url_service_->Load();

@@ -8,17 +8,15 @@
 
 namespace media {
 
-WebInbandTextTrackImpl::WebInbandTextTrackImpl(
-    Kind kind,
-    const blink::WebString& label,
-    const blink::WebString& language,
-    const blink::WebString& id)
-    : client_(NULL),
+WebInbandTextTrackImpl::WebInbandTextTrackImpl(Kind kind,
+                                               const blink::WebString& label,
+                                               const blink::WebString& language,
+                                               const blink::WebString& id)
+    : client_(nullptr),
       kind_(kind),
       label_(label),
       language_(language),
-      id_(id) {
-}
+      id_(id) {}
 
 WebInbandTextTrackImpl::~WebInbandTextTrackImpl() {
   DCHECK(!client_);

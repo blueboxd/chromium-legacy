@@ -18,6 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.WebContents;
@@ -285,10 +286,10 @@ class AutofillAssistantClient {
         IdentityServicesProvider.get().getIdentityManager().getAccessToken(
                 mAccount, AUTH_TOKEN_TYPE, new IdentityManager.GetAccessTokenCallback() {
                     @Override
-                    public void onGetTokenSuccess(String token) {
+                    public void onGetTokenSuccess(AccessTokenData token) {
                         if (mNativeClientAndroid != 0) {
                             AutofillAssistantClientJni.get().onAccessToken(mNativeClientAndroid,
-                                    AutofillAssistantClient.this, true, token);
+                                    AutofillAssistantClient.this, true, token.getToken());
                         }
                     }
 

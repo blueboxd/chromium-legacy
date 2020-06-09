@@ -27,8 +27,7 @@ base::LazyInstance<base::ThreadLocalPointer<PlatformEventSource>>::Leaky
 bool PlatformEventSource::ignore_native_platform_events_ = false;
 
 PlatformEventSource::PlatformEventSource()
-    : overridden_dispatcher_(NULL),
-      overridden_dispatcher_restored_(false) {
+    : overridden_dispatcher_(nullptr), overridden_dispatcher_restored_(false) {
   CHECK(!lazy_tls_ptr.Pointer()->Get())
       << "Only one platform event source can be created.";
   lazy_tls_ptr.Pointer()->Set(this);

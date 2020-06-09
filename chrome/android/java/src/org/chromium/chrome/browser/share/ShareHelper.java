@@ -85,7 +85,8 @@ public class ShareHelper extends org.chromium.components.browser_ui.share.ShareH
      * @param params The share parameters.
      * @param saveLastUsed True if the chosen share component should be saved for future reuse.
      */
-    static void showDefaultShareUi(ShareParams params, boolean saveLastUsed) {
+    // TODO(crbug/1022172): Should be package-protected once modularization is complete.
+    public static void showDefaultShareUi(ShareParams params, boolean saveLastUsed) {
         if (saveLastUsed) {
             params.setCallback(new SaveComponentCallback(params.getCallback()));
         }

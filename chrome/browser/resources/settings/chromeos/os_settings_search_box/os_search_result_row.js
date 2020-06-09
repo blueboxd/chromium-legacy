@@ -7,24 +7,31 @@
  */
 cr.define('settings', function() {
   /**
-   * A list of characters that will be ignored during the tokenization and
-   * comparison of search result text.
-   * TODO(crbug/1072912): Ask linguist for a list of delimiters that make sense.
+   * A list of hyphens in all languages that will be ignored during the
+   * tokenization and comparison of search result text.
+   * Hyphen characters list is taken from here: http://jkorpela.fi/dashes.html.
+   * U+002D(-), U+007E(~), U+058A(֊), U+05BE(־), U+1806(᠆), U+2010(‐),
+   * U+2011(‑), U+2012(‒), U+2013(–), U+2014(—), U+2015(―), U+2053(⁓),
+   * U+207B(⁻), U+208B(₋), U+2212(−), U+2E3A(⸺ ), U+2E3B(⸻  ), U+301C(〜),
+   * U+3030(〰), U+30A0(゠), U+FE58(﹘), U+FE63(﹣), U+FF0D(－).
    * @type {!Array<string>}
    */
-  const IGNORED_CHARS = ['-'];
+  const HYPHENS = [
+    '-', '~', '֊', '־', '᠆', '‐',  '‑',  '‒',  '–',  '—',  '―', '⁓',
+    '⁻', '₋', '−', '⸺', '⸻', '〜', '〰', '゠', '﹘', '﹣', '－'
+  ];
 
   /**
-   * String form of the regexp expressing ignored chars.
+   * String form of the regexp expressing hyphen chars.
    * @type {string}
    */
-  const IGNORED_CHARS_REGEX_STR = `[${IGNORED_CHARS.join('')}]`;
+  const HYPHENS_REGEX_STR = `[${HYPHENS.join('')}]`;
 
   /**
-   * Regexp expressing ignored chars.
+   * Regexp expressing hyphen chars.
    * @type {!RegExp}
    */
-  const IGNORED_CHARS_REGEX = new RegExp(IGNORED_CHARS_REGEX_STR, 'g');
+  const HYPHENS_REGEX = new RegExp(HYPHENS_REGEX_STR, 'g');
 
   /**
    * @param {string} sourceString The string to be modified.
@@ -37,15 +44,15 @@ cr.define('settings', function() {
   }
 
   /**
-   * Used to convert the query and result into the same format without ignored
-   * characters and accents so that easy string comparisons can be performed.
-   *     e.g. |sourceString| = 'BRÛLÉE' returns "brulee"
+   * Used to convert the query and result into the same format without hyphens
+   * and accents so that easy string comparisons can be performed. e.g.
+   * |sourceString| = 'BRÛLÉE' returns "brulee"
    * @param {string} sourceString The string to be normalized.
    * @return {string} The sourceString lowercased with accents in the range
-   *     \u0300 - \u036f removed, and with ignored characters removed.
+   *     \u0300 - \u036f removed, and with hyphens removed.
    */
   function normalizeString(sourceString) {
-    return removeAccents(sourceString).replace(IGNORED_CHARS_REGEX, '');
+    return removeAccents(sourceString).replace(HYPHENS_REGEX, '');
   }
 
   /**
@@ -155,20 +162,20 @@ cr.define('settings', function() {
 
     /**
      * @param {string} innerHtmlToken A case sensitive segment of the result
-     *     text which may or may not contain ignored characters or accents on
+     *     text which may or may not contain hyphens or accents on
      *     characters, and does not contain blank spaces.
      * @param {string} normalizedQuery A lowercased query which does not contain
      *     punctuation.
      * @param {!Array<string>} queryTokens |normalizedQuery| tokenized by
      *     blankspaces of any kind.
      * @return {string} The innerHtmlToken with <b> tags around segments that
-     *     match queryTokens, but also includes ignored characters and accents
+     *     match queryTokens, but also includes hyphens and accents
      *     on characters.
      * @private
      */
     getModifiedInnerHtmlToken_(innerHtmlToken, normalizedQuery, queryTokens) {
       // For comparison purposes with query tokens, lowercase the html token to
-      // be displayed and remove ignored characters. The resulting
+      // be displayed and remove hyphens. The resulting
       // |normalizedToken| will not be the displayed token.
       const normalizedToken = normalizeString(innerHtmlToken);
       if (normalizedQuery.includes(normalizedToken)) {
@@ -185,14 +192,13 @@ cr.define('settings', function() {
       };
 
       // Maps the queryToken to the segment(s) of the html token that contain
-      // the queryToken interweaved with any of the ignored characters that were
+      // the queryToken interweaved with any of the hyphens that were
       // filtered out during normalization. For example, |innerHtmlToken| =
       // 'Wi-Fi-no-blankspsc-WiFi', (i.e. |normalizedToken| =
       // 'WiFinoblankspcWiFi') and |queryTokenLowerCaseNoSpecial| = 'wif', the
       // resulting mapping would be ['Wi-F', 'WiF'].
       const queryTokenToSegment = (queryToken) => {
-        const regExpStr =
-            queryToken.split('').join(`${IGNORED_CHARS_REGEX_STR}*`);
+        const regExpStr = queryToken.split('').join(`${HYPHENS_REGEX_STR}*`);
 
         // Since |queryToken| does not contain accents and |innerHtmlToken| may
         // have accents matches must be made without accents on characters.
@@ -207,7 +213,7 @@ cr.define('settings', function() {
       };
 
       // Contains lowercase segments of the innerHtmlToken that may or may not
-      // contain ignored characters and accents on characters.
+      // contain hyphens and accents on characters.
       const matches =
           queryTokens.filter(queryTokenFilter).map(queryTokenToSegment).flat();
 
@@ -230,7 +236,7 @@ cr.define('settings', function() {
     /**
      * Tokenize the result and query text, and match the tokens even if they
      * are out of order. Both the result and query text are tokenized by
-     * blankspaces, and compared without ignored characters or accents on
+     * blankspaces, and compared without hyphens or accents on
      * characters. As each result token is processed, it is compared with every
      * query token. Bold the segment of the result token that is a substring of
      * a query token. e.g. Smaller query block: if "wif on" is queried, a result
@@ -241,10 +247,10 @@ cr.define('settings', function() {
      * @private
      */
     getTokenizeMatchedBoldTagged_() {
-      // Lowercase and remove ignored characters from the query.
+      // Lowercase and remove hyphens from the query.
       const normalizedQuery = normalizeString(this.searchQuery);
 
-      // Use blankspace to tokenize the query without ignored characters.
+      // Use blankspace to tokenize the query without hyphens.
       const queryTokens = normalizedQuery.split(/\s/);
 
       // Get innerHtmlTokens with bold tags around matching segments.

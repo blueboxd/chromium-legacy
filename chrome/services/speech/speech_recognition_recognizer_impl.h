@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "build/branding_buildflags.h"
 #include "chrome/services/speech/buildflags.h"
+#include "chrome/services/speech/cloud_speech_recognition_client.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -20,6 +20,7 @@ class SodaClient;
 }  // namespace soda
 
 namespace speech {
+class SpeechRecognitionServiceImpl;
 
 class SpeechRecognitionRecognizerImpl
     : public media::mojom::SpeechRecognitionRecognizer {
@@ -27,23 +28,27 @@ class SpeechRecognitionRecognizerImpl
   using OnRecognitionEventCallback =
       base::RepeatingCallback<void(const std::string& result,
                                    const bool is_final)>;
-
+  SpeechRecognitionRecognizerImpl(
+      mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
+          remote,
+      base::WeakPtr<SpeechRecognitionServiceImpl>
+          speech_recognition_service_impl);
   ~SpeechRecognitionRecognizerImpl() override;
 
   static void Create(
       mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
-          remote);
+          remote,
+      base::WeakPtr<SpeechRecognitionServiceImpl>
+          speech_recognition_service_impl);
+
+  static bool IsMultichannelSupported();
 
   OnRecognitionEventCallback recognition_event_callback() const {
     return recognition_event_callback_;
   }
 
  private:
-  explicit SpeechRecognitionRecognizerImpl(
-      mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
-          remote);
-
   // Convert the audio buffer into the appropriate format and feed the raw audio
   // into the speech recognition instance.
   void SendAudioToSpeechRecognitionService(
@@ -60,6 +65,8 @@ class SpeechRecognitionRecognizerImpl
 #if BUILDFLAG(ENABLE_SODA)
   std::unique_ptr<soda::SodaClient> soda_client_;
 #endif  // BUILDFLAG(ENABLE_SODA)
+
+  std::unique_ptr<CloudSpeechRecognitionClient> cloud_client_;
 
   // The callback that is eventually executed on a speech recognition event
   // which passes the transcribed audio back to the caller via the speech

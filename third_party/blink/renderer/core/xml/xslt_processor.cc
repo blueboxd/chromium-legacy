@@ -68,6 +68,9 @@ Document* XSLTProcessor::CreateDocumentFromSource(
     const String& source_mime_type,
     Node* source_node,
     LocalFrame* frame) {
+  if (!source_node->GetExecutionContext())
+    return nullptr;
+
   KURL url = NullURL();
   Document* owner_document = &source_node->GetDocument();
   if (owner_document == source_node)

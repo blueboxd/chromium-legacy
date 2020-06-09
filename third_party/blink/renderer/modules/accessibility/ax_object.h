@@ -179,7 +179,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   typedef HeapVector<Member<AXObject>> AXObjectVector;
 
   // Iterator for doing an in-order traversal of the accessibility tree.
-  // Includes ignored objects in the traversal.
+  //
+  // Includes objects that are ignored but included in the accessibility tree in
+  // the traversal.
   class MODULES_EXPORT InOrderTraversalIterator final
       : public GarbageCollected<InOrderTraversalIterator> {
    public:
@@ -197,7 +199,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
     InOrderTraversalIterator& operator++() {
       previous_ = current_;
       current_ = (current_ && !current_->IsDetached())
-                     ? current_->NextInTreeObject()
+                     ? current_->NextInPreOrderIncludingIgnored()
                      : nullptr;
       return *this;
     }
@@ -211,7 +213,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
     InOrderTraversalIterator& operator--() {
       current_ = previous_;
       previous_ = (current_ && !current_->IsDetached())
-                      ? current_->PreviousInTreeObject()
+                      ? current_->PreviousInPreOrderIncludingIgnored()
                       : nullptr;
       return *this;
     }
@@ -805,89 +807,197 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // AXLayoutObject.
   virtual AXObject* ElementAccessibilityHitTest(const IntPoint&) const;
 
+  //
   // High-level accessibility tree access. Other modules should only use these
-  // functions.
-  AncestorsIterator AncestorsBegin() const;
-  AncestorsIterator AncestorsEnd() const;
+  // methods.
+  //
+  // The following methods may support one or more kinds of objects. There are
+  // three kinds: Objects that are excluded from the accessibility tree by
+  // default, such as white space found in HTML, objects that are included in
+  // the tree but that are ignored, such as an empty div, and unignored objects.
+
+  // Iterates through the node's unignored ancestors up to the root, starting
+  // from the node's unignored parent, i.e. does not include the node itself in
+  // the list of ancestors.
+  //
+  // Initially, it can be called on all nodes, including those that are
+  // accessibility ignored, but only traverses through the list of ancestors
+  // that are unignored and included in the accessibility tree.
+  AncestorsIterator UnignoredAncestorsBegin() const;
+  AncestorsIterator UnignoredAncestorsEnd() const;
+
+  // Iterator for doing an in-order traversal of the accessibility tree.
+  //
+  // Includes nodes that are accessibility ignored but "included in tree" in the
+  // traversal.
   InOrderTraversalIterator GetInOrderTraversalIterator();
-  int ChildCount() const;
-  const AXObjectVector& Children() const;
-  const AXObjectVector& Children();
+
+  // Returns the number of children, including children that are included in the
+  // accessibility tree but are accessibility ignored.
+  //
+  // Can be called on all nodes, even on nodes that are excluded from the
+  // accessibility tree.
+  int ChildCountIncludingIgnored() const;
+
+  // Returns the child with the given index in the list of all children,
+  // including those that are accessibility ignored.
+  //
+  // Can be called on all nodes, even on nodes that are excluded from the
+  // accessibility tree.
+  AXObject* ChildAtIncludingIgnored(int index) const;
+
+  // Returns the node's children, including any children that are included in
+  // the accessibility tree but are accessibility ignored.
+  //
+  // Can be called on all nodes, including nodes that are excluded from the
+  // accessibility tree.
+  const AXObjectVector& ChildrenIncludingIgnored() const;
+  const AXObjectVector& ChildrenIncludingIgnored();
+
+  // Returns the node's unignored descendants that are one level deeper than
+  // this node, after removing all accessibility ignored nodes from the tree.
+  //
+  // Flattens accessibility ignored nodes, so each unignored child will have the
+  // same unignored parent, but may have a different parent in tree.
+  //
+  // Can be called on all nodes that are included in the accessibility tree,
+  // including those that are accessibility ignored.
+  const AXObjectVector UnignoredChildren() const;
+  const AXObjectVector UnignoredChildren();
+
   // Returns the first child for this object.
-  // Works for all nodes, and may return nodes that are accessibility ignored.
-  AXObject* FirstChild() const;
+  // Works for all nodes that are included in the accessibility tree, and may
+  // return nodes that are accessibility ignored.
+  AXObject* FirstChildIncludingIgnored() const;
+
   // Returns the last child for this object.
-  // Works for all nodes, and may return nodes that are accessibility ignored.
-  AXObject* LastChild() const;
+  // Works for all nodes that are included in the accessibility tree, and may
+  // return nodes that are accessibility ignored.
+  AXObject* LastChildIncludingIgnored() const;
+
   // Returns the deepest first child for this object.
-  // Works for all nodes, and may return nodes that are accessibility ignored.
-  AXObject* DeepestFirstChild() const;
+  // Works for all nodes that are included in the accessibility tree, and may
+  // return nodes that are accessibility ignored.
+  AXObject* DeepestFirstChildIncludingIgnored() const;
+
   // Returns the deepest last child for this object.
-  // Works for all nodes, and may return nodes that are accessibility ignored.
-  AXObject* DeepestLastChild() const;
+  // Works for all nodes that are included in the accessibility tree, and may
+  // return nodes that are accessibility ignored.
+  AXObject* DeepestLastChildIncludingIgnored() const;
+
+  // Returns true if this node is strictly an ancestor of the given node, i.e.
+  // doesn't include the current node in the list of its ancestors. Works for
+  // all nodes that are included in the accessibility tree, including nodes that
+  // are accessibility ignored.
   bool IsAncestorOf(const AXObject&) const;
+
+  // Returns true if this node is strictly a descendant of the given node, i.e.
+  // doesn't include the current node in the list of its descendants. Works for
+  // all nodes that are included in the accessibility tree, including nodes that
+  // are accessibility ignored.
   bool IsDescendantOf(const AXObject&) const;
+
   // Next sibling for this object, where the sibling may be
   // an accessibility ignored object.
   // Works for all nodes that are included in the accessibility tree,
   // and may return nodes that are accessibility ignored.
   AXObject* NextSiblingIncludingIgnored() const;
+
   // Previous sibling for this object, where the sibling may be
   // an accessibility ignored object.
   // Works for all nodes that are included in the accessibility tree,
   // and may return nodes that are accessibility ignored.
   AXObject* PreviousSiblingIncludingIgnored() const;
+
   // Returns the next object in tree using depth-first pre-order traversal,
   // optionally staying within a specified AXObject.
   // Works for all nodes that are included in the accessibility tree,
   // and may return nodes that are accessibility ignored.
   AXObject* NextInPreOrderIncludingIgnored(
       const AXObject* within = nullptr) const;
+
   // Returns the previous object in tree using depth-first pre-order traversal,
   // optionally staying within a specified AXObject.
   // Works for all nodes that are included in the accessibility tree,
   // and may return nodes that are accessibility ignored.
   AXObject* PreviousInPreOrderIncludingIgnored(
       const AXObject* within = nullptr) const;
+
   // Returns the previous object in tree using depth-first post-order traversal,
   // optionally staying within a specified AXObject.
   // Works for all nodes that are included in the accessibility tree,
   // and may return nodes that are accessibility ignored.
   AXObject* PreviousInPostOrderIncludingIgnored(
       const AXObject* within = nullptr) const;
+
+  // Returns the number of children that are not accessibility ignored.
+  //
+  // Unignored children are the objects that are one level deeper than the
+  // current object after all accessibility ignored descendants are removed.
+  //
+  // Can be called on all nodes that are included in the accessibility tree,
+  // including those that are accessibility ignored.
+  int UnignoredChildCount() const;
+
+  // Returns the unignored child with the given index.
+  //
+  // Unignored children are the objects that are one level deeper than the
+  // current object after all accessibility ignored descendants are removed.
+  //
+  // Can be called on all nodes that are included in the accessibility tree,
+  // including those that are accessibility ignored.
+  AXObject* UnignoredChildAt(int index) const;
+
   // Next sibling for this object that's not accessibility ignored.
+  //
   // Flattens accessibility ignored nodes, so the sibling will have the
   // same unignored parent, but may have a different parent in tree.
+  //
   // Doesn't work with nodes that are accessibility ignored.
-  AXObject* NextSibling() const;
+  AXObject* UnignoredNextSibling() const;
+
   // Previous sibling for this object that's not accessibility ignored.
+  //
   // Flattens accessibility ignored nodes, so the sibling will have the
   // same unignored parent, but may have a different parent in tree.
+  //
   // Doesn't work with nodes that are accessibility ignored.
-  AXObject* PreviousSibling() const;
+  AXObject* UnignoredPreviousSibling() const;
+
   // Next object in tree using depth-first pre-order traversal that's
   // not accessibility ignored.
   // Doesn't work with nodes that are accessibility ignored.
-  AXObject* NextInTreeObject() const;
+  AXObject* UnignoredNextInPreOrder() const;
+
   // Previous object in tree using depth-first pre-order traversal that's
   // not accessibility ignored.
   // Doesn't work with nodes that are accessibility ignored.
-  AXObject* PreviousInTreeObject() const;
+  AXObject* UnignoredPreviousInPreOrder() const;
+
   // Get or create the parent of this object.
-  // Works for all nodes, and may return nodes that are accessibility ignored.
+  //
+  // Works for all nodes, and may return nodes that are accessibility ignored,
+  // including nodes that might not be in the tree.
   AXObject* ParentObject() const;
+
   // Get the parent of this object if it has already been created.
-  // Works for all nodes, and may return nodes that are accessibility ignored.
+  //
+  // Works for all nodes, and may return nodes that are accessibility ignored,
+  // including nodes that might not be in the tree.
   AXObject* ParentObjectIfExists() const;
+
   virtual AXObject* ComputeParent() const = 0;
   virtual AXObject* ComputeParentIfExists() const { return nullptr; }
   AXObject* CachedParentObject() const { return parent_; }
+
   // Get or create the first ancestor that's not accessibility ignored.
   // Works for all nodes.
   AXObject* ParentObjectUnignored() const;
+
   // Get or create the first ancestor that's included in the accessibility tree.
   // Works for all nodes, and may return nodes that are accessibility ignored.
   AXObject* ParentObjectIncludedInTree() const;
+
   AXObject* ContainerWidget() const;
   bool IsContainerWidget() const;
 

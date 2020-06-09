@@ -1338,8 +1338,8 @@ AXObject* AXLayoutObject::NextOnLine() const {
 
   // For consistency between the forward and backward directions, try to always
   // return leaf nodes.
-  if (result && result->ChildCount())
-    return result->DeepestFirstChild();
+  if (result && result->ChildCountIncludingIgnored())
+    return result->DeepestFirstChildIncludingIgnored();
   return result;
 }
 
@@ -1453,8 +1453,8 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
 
   // For consistency between the forward and backward directions, try to always
   // return leaf nodes.
-  if (result && result->ChildCount())
-    return result->DeepestLastChild();
+  if (result && result->ChildCountIncludingIgnored())
+    return result->DeepestLastChildIncludingIgnored();
   return result;
 }
 
@@ -2891,7 +2891,7 @@ AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
   if (!parent)
     return nullptr;
 
-  for (const auto& child : parent->Children()) {
+  for (const auto& child : parent->ChildrenIncludingIgnored()) {
     if (child->GetBoundsInFrameCoordinates().Contains(point))
       return child.Get();
   }

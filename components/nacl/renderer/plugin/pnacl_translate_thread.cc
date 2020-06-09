@@ -59,18 +59,18 @@ void GetSubzeroCommandLine(std::vector<std::string>* args,
 }  // namespace
 
 PnaclTranslateThread::PnaclTranslateThread()
-    : compiler_subprocess_(NULL),
-      ld_subprocess_(NULL),
+    : compiler_subprocess_(nullptr),
+      ld_subprocess_(nullptr),
       compiler_subprocess_active_(false),
       ld_subprocess_active_(false),
       buffer_cond_(&cond_mu_),
       done_(false),
       compile_time_(0),
-      obj_files_(NULL),
+      obj_files_(nullptr),
       num_threads_(0),
-      nexe_file_(NULL),
-      coordinator_error_info_(NULL),
-      coordinator_(NULL) {}
+      nexe_file_(nullptr),
+      coordinator_error_info_(nullptr),
+      coordinator_(nullptr) {}
 
 void PnaclTranslateThread::SetupState(
     const pp::CompletionCallback& finish_callback,

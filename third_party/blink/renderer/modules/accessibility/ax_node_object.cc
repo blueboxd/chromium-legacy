@@ -1750,7 +1750,7 @@ AXObject::AXObjectVector AXNodeObject::RadioButtonsInGroup() const {
   // radio buttons.
   AXObject* parent = ParentObject();
   if (parent && parent->RoleValue() == ax::mojom::blink::Role::kRadioGroup) {
-    for (AXObject* child : parent->Children()) {
+    for (AXObject* child : parent->ChildrenIncludingIgnored()) {
       DCHECK(child);
       if (child->RoleValue() == ax::mojom::blink::Role::kRadioButton &&
           child->AccessibilityIsIncludedInTree()) {
@@ -2805,7 +2805,7 @@ void AXNodeObject::AddHiddenChildren() {
       if (AXObject* child_object =
               AXObjectCache().Get(child.GetLayoutObject())) {
         if (!child_object->AccessibilityIsIncludedInTree()) {
-          const auto& children = child_object->Children();
+          const auto& children = child_object->ChildrenIncludingIgnored();
           child_object = children.size() ? children.back().Get() : nullptr;
         }
         if (child_object)
@@ -2874,7 +2874,7 @@ void AXNodeObject::AddRemoteSVGChildren() {
   root->SetParent(this);
 
   if (!root->AccessibilityIsIncludedInTree()) {
-    for (const auto& child : root->Children())
+    for (const auto& child : root->ChildrenIncludingIgnored())
       children_.push_back(child);
   } else {
     children_.push_back(root);
@@ -2982,7 +2982,7 @@ void AXNodeObject::InsertChild(AXObject* child, unsigned index) {
   child->ClearChildren();
 
   if (!child->AccessibilityIsIncludedInTree()) {
-    const auto& children = child->Children();
+    const auto& children = child->ChildrenIncludingIgnored();
     wtf_size_t length = children.size();
     for (wtf_size_t i = 0; i < length; ++i)
       children_.insert(index + i, children[i]);

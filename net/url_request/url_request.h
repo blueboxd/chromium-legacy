@@ -541,7 +541,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Returns whether secure DNS should be disabled for the request.
   bool disable_secure_dns() { return disable_secure_dns_; }
 
-  void set_maybe_sent_cookies(CookieStatusList cookies);
+  void set_maybe_sent_cookies(CookieAccessResultList cookies);
   void set_maybe_stored_cookies(CookieAndLineStatusList cookies);
 
   // These lists contain a list of cookies that are associated with the given
@@ -555,7 +555,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // and only contain the cookies relevant to the most recent roundtrip.
 
   // Populated while the http request is being built.
-  const CookieStatusList& maybe_sent_cookies() const {
+  const CookieAccessResultList& maybe_sent_cookies() const {
     return maybe_sent_cookies_;
   }
   // Populated after the response headers are received.
@@ -864,7 +864,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   PrivacyMode privacy_mode_;
   bool disable_secure_dns_;
 
-  CookieStatusList maybe_sent_cookies_;
+  CookieAccessResultList maybe_sent_cookies_;
   CookieAndLineStatusList maybe_stored_cookies_;
 
 #if BUILDFLAG(ENABLE_REPORTING)

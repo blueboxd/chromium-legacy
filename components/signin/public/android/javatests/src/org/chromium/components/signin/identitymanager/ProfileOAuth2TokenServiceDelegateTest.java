@@ -19,6 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -59,8 +60,8 @@ public class ProfileOAuth2TokenServiceDelegateTest {
         }
 
         @Override
-        public void onGetTokenSuccess(String token) {
-            mToken = token;
+        public void onGetTokenSuccess(AccessTokenData token) {
+            mToken = token.getToken();
             mTokenRetrievedCountDown.countDown();
         }
 

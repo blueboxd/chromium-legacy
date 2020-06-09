@@ -3045,30 +3045,25 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
 void WebContentsImpl::CreateNewWidget(
     int32_t render_process_id,
     int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/false,
-                  std::move(widget), std::move(blink_widget_host),
-                  std::move(blink_widget));
+                  std::move(blink_widget_host), std::move(blink_widget));
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(
     int32_t render_process_id,
     int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/true,
-                  std::move(widget), std::move(blink_widget_host),
-                  std::move(blink_widget));
+                  std::move(blink_widget_host), std::move(blink_widget));
 }
 
 void WebContentsImpl::CreateNewWidget(
     int32_t render_process_id,
     int32_t route_id,
     bool is_fullscreen,
-    mojo::PendingRemote<mojom::Widget> widget,
     mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost> blink_widget_host,
     mojo::PendingAssociatedRemote<blink::mojom::Widget> blink_widget) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
@@ -3080,9 +3075,9 @@ void WebContentsImpl::CreateNewWidget(
     return;
   }
 
-  RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
-      this, process, route_id, std::move(widget), IsHidden(),
-      std::make_unique<FrameTokenMessageQueue>());
+  RenderWidgetHostImpl* widget_host =
+      new RenderWidgetHostImpl(this, process, route_id, IsHidden(),
+                               std::make_unique<FrameTokenMessageQueue>());
 
   widget_host->BindWidgetInterfaces(std::move(blink_widget_host),
                                     std::move(blink_widget));
@@ -3495,7 +3490,7 @@ BrowserAccessibilityManager*
 void WebContentsImpl::ExecuteEditCommand(
     const std::string& command,
     const base::Optional<base::string16>& value) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3503,7 +3498,7 @@ void WebContentsImpl::ExecuteEditCommand(
 }
 
 void WebContentsImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3512,7 +3507,7 @@ void WebContentsImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
 
 void WebContentsImpl::SelectRange(const gfx::Point& base,
                                   const gfx::Point& extent) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3520,7 +3515,7 @@ void WebContentsImpl::SelectRange(const gfx::Point& base,
 }
 
 void WebContentsImpl::MoveCaret(const gfx::Point& extent) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3531,7 +3526,7 @@ void WebContentsImpl::AdjustSelectionByCharacterOffset(
     int start_adjust,
     int end_adjust,
     bool show_selection_menu) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3622,7 +3617,7 @@ void WebContentsImpl::ReloadFocusedFrame() {
 }
 
 void WebContentsImpl::Undo() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3631,7 +3626,7 @@ void WebContentsImpl::Undo() {
 }
 
 void WebContentsImpl::Redo() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3640,7 +3635,7 @@ void WebContentsImpl::Redo() {
 }
 
 void WebContentsImpl::Cut() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3649,7 +3644,7 @@ void WebContentsImpl::Cut() {
 }
 
 void WebContentsImpl::Copy() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3659,7 +3654,7 @@ void WebContentsImpl::Copy() {
 
 void WebContentsImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3670,7 +3665,7 @@ void WebContentsImpl::CopyToFindPboard() {
 }
 
 void WebContentsImpl::Paste() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3681,7 +3676,7 @@ void WebContentsImpl::Paste() {
 }
 
 void WebContentsImpl::PasteAndMatchStyle() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3692,7 +3687,7 @@ void WebContentsImpl::PasteAndMatchStyle() {
 }
 
 void WebContentsImpl::Delete() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3701,7 +3696,7 @@ void WebContentsImpl::Delete() {
 }
 
 void WebContentsImpl::SelectAll() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3710,7 +3705,7 @@ void WebContentsImpl::SelectAll() {
 }
 
 void WebContentsImpl::CollapseSelection() {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3718,7 +3713,7 @@ void WebContentsImpl::CollapseSelection() {
 }
 
 void WebContentsImpl::Replace(const base::string16& word) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -3726,7 +3721,7 @@ void WebContentsImpl::Replace(const base::string16& word) {
 }
 
 void WebContentsImpl::ReplaceMisspelling(const base::string16& word) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -7463,12 +7458,13 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
     NotifyPreferencesChanged();
 }
 
-blink::mojom::FrameInputHandler*
-WebContentsImpl::GetFocusedFrameInputHandler() {
-  auto* focused_frame = GetFocusedFrame();
-  if (!focused_frame)
+blink::mojom::FrameWidgetInputHandler*
+WebContentsImpl::GetFocusedFrameWidgetInputHandler() {
+  auto* focused_render_widget_host =
+      GetFocusedRenderWidgetHost(GetMainFrame()->GetRenderWidgetHost());
+  if (!focused_render_widget_host)
     return nullptr;
-  return focused_frame->GetFrameInputHandler();
+  return focused_render_widget_host->GetFrameWidgetInputHandler();
 }
 
 ukm::SourceId WebContentsImpl::GetCurrentPageUkmSourceId() {

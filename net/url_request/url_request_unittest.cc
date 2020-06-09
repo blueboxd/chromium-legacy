@@ -6824,13 +6824,13 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     EXPECT_EQ("path_cookie", req->maybe_sent_cookies()[0].cookie.Name());
     EXPECT_TRUE(
         req->maybe_sent_cookies()[0]
-            .status.HasExactlyExclusionReasonsForTesting(
+            .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
                  net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
     EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
     EXPECT_TRUE(
         req->maybe_sent_cookies()[1]
-            .status.HasExactlyExclusionReasonsForTesting(
+            .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
@@ -6894,10 +6894,10 @@ TEST_F(URLRequestTest, ReportCookieActivity) {
     ASSERT_EQ(2u, req->maybe_sent_cookies().size());
     EXPECT_EQ("path_cookie", req->maybe_sent_cookies()[0].cookie.Name());
     EXPECT_TRUE(req->maybe_sent_cookies()[0]
-                    .status.HasExactlyExclusionReasonsForTesting(
+                    .access_result.status.HasExactlyExclusionReasonsForTesting(
                         {net::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH}));
     EXPECT_EQ("stored_cookie", req->maybe_sent_cookies()[1].cookie.Name());
-    EXPECT_TRUE(req->maybe_sent_cookies()[1].status.IsInclude());
+    EXPECT_TRUE(req->maybe_sent_cookies()[1].access_result.status.IsInclude());
     auto entries =
         net_log.GetEntriesWithType(NetLogEventType::COOKIE_INCLUSION_STATUS);
     EXPECT_EQ(2u, entries.size());
@@ -7018,13 +7018,14 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
     ASSERT_EQ(1u, req->maybe_sent_cookies().size());
     EXPECT_EQ("cookienosamesite", req->maybe_sent_cookies()[0].cookie.Name());
     EXPECT_TRUE(req->maybe_sent_cookies()[0]
-                    .status.HasExactlyExclusionReasonsForTesting(
+                    .access_result.status.HasExactlyExclusionReasonsForTesting(
                         {CookieInclusionStatus::EXCLUDE_USER_PREFERENCES,
                          CookieInclusionStatus::
                              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
     // Cookie should not be warned about because it was blocked because of user
     // preferences.
-    EXPECT_FALSE(req->maybe_sent_cookies()[0].status.ShouldWarn());
+    EXPECT_FALSE(
+        req->maybe_sent_cookies()[0].access_result.status.ShouldWarn());
   }
   network_delegate.unset_block_get_cookies();
 
@@ -7064,22 +7065,23 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
     // with longest first. See CookieSorter() in cookie_monster.cc.
     EXPECT_EQ("cookiewithpath", req->maybe_sent_cookies()[0].cookie.Name());
     EXPECT_TRUE(req->maybe_sent_cookies()[0]
-                    .status.HasExactlyExclusionReasonsForTesting(
+                    .access_result.status.HasExactlyExclusionReasonsForTesting(
                         {CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
                          CookieInclusionStatus::
                              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-    EXPECT_FALSE(req->maybe_sent_cookies()[0].status.ShouldWarn());
+    EXPECT_FALSE(
+        req->maybe_sent_cookies()[0].access_result.status.ShouldWarn());
     // Cookie that was only blocked because of unspecified SameSite should be
     // warned about.
     EXPECT_EQ("cookienosamesite", req->maybe_sent_cookies()[1].cookie.Name());
     EXPECT_TRUE(req->maybe_sent_cookies()[1]
-                    .status.HasExactlyExclusionReasonsForTesting(
+                    .access_result.status.HasExactlyExclusionReasonsForTesting(
                         {CookieInclusionStatus::
                              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-    EXPECT_TRUE(
-        req->maybe_sent_cookies()[1].status.HasExactlyWarningReasonsForTesting(
-            {CookieInclusionStatus::
-                 WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT}));
+    EXPECT_TRUE(req->maybe_sent_cookies()[1]
+                    .access_result.status.HasExactlyWarningReasonsForTesting(
+                        {CookieInclusionStatus::
+                             WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT}));
   }
 }
 
@@ -7200,7 +7202,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     EXPECT_TRUE(
         request->maybe_sent_cookies()
             .front()
-            .status.HasExactlyExclusionReasonsForTesting(
+            .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
 
     // Check maybe_sent_cookies on second roundtrip.
@@ -7235,7 +7237,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeWithFilteredCookies) {
     EXPECT_TRUE(
         request->maybe_sent_cookies()
             .front()
-            .status.HasExactlyExclusionReasonsForTesting(
+            .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
   }
 }
@@ -7608,7 +7610,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     EXPECT_TRUE(
         request->maybe_sent_cookies()
             .front()
-            .status.HasExactlyExclusionReasonsForTesting(
+            .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
 
     // Check maybe_sent_cookies on second round trip
@@ -7639,7 +7641,7 @@ TEST_F(URLRequestTestHTTP, RedirectWithFilteredCookies) {
     EXPECT_TRUE(
         request->maybe_sent_cookies()
             .front()
-            .status.HasExactlyExclusionReasonsForTesting(
+            .access_result.status.HasExactlyExclusionReasonsForTesting(
                 {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
   }
 }

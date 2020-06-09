@@ -70,10 +70,12 @@ TEST_F(SearchTagRegistryTest, AddAndRemove) {
   search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
   EXPECT_EQ(3u, index_->GetSize());
 
+  std::string first_tag_id =
+      SearchTagRegistry::ToResultId(GetPrintingSearchConcepts()[0]);
+
   // Tags added should be available via GetTagMetadata().
   const SearchConcept* add_printer_concept =
-      search_tag_registry_.GetTagMetadata(
-          IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER);
+      search_tag_registry_.GetTagMetadata(first_tag_id);
   ASSERT_TRUE(add_printer_concept);
   EXPECT_EQ(mojom::Setting::kAddPrinter, add_printer_concept->id.setting);
 
@@ -82,8 +84,7 @@ TEST_F(SearchTagRegistryTest, AddAndRemove) {
   EXPECT_EQ(0u, index_->GetSize());
 
   // The tag should no longer be accessible via GetTagMetadata().
-  add_printer_concept = search_tag_registry_.GetTagMetadata(
-      IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER);
+  add_printer_concept = search_tag_registry_.GetTagMetadata(first_tag_id);
   ASSERT_FALSE(add_printer_concept);
 }
 

@@ -27,7 +27,6 @@ class TestRenderWidgetHostFactory : public RenderWidgetHostFactory {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int32_t routing_id,
-      mojo::PendingRemote<mojom::Widget> widget_interface,
       bool hidden) override;
 
  private:

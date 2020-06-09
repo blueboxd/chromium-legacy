@@ -67,6 +67,9 @@ class WidgetInputHandlerImpl : public blink::mojom::WidgetInputHandler {
           host,
       mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
           compositor_receiver) override;
+  void GetFrameWidgetInputHandler(
+      mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetInputHandler>
+          interface_request) override;
   void InputWasProcessed();
 
  private:
@@ -85,8 +88,6 @@ class WidgetInputHandlerImpl : public blink::mojom::WidgetInputHandler {
   WaitForInputProcessedCallback input_processed_ack_;
 
   mojo::Receiver<blink::mojom::WidgetInputHandler> receiver_{this};
-  mojo::AssociatedReceiver<blink::mojom::WidgetInputHandler>
-      associated_receiver_{this};
 
   base::WeakPtrFactory<WidgetInputHandlerImpl> weak_ptr_factory_{this};
 

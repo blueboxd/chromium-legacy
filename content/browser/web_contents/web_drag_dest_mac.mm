@@ -6,6 +6,7 @@
 
 #import <Carbon/Carbon.h>
 
+#include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -410,21 +411,20 @@ void PopulateDropDataFromPasteboard(content::DropData* data,
 
   // Get plain text.
   if ([types containsObject:NSStringPboardType]) {
-    data->text = base::NullableString16(
-        base::SysNSStringToUTF16([pboard stringForType:NSStringPboardType]),
-        false);
+    data->text =
+        base::SysNSStringToUTF16([pboard stringForType:NSStringPboardType]);
   }
 
   // Get HTML. If there's no HTML, try RTF.
   if ([types containsObject:NSHTMLPboardType]) {
     NSString* html = [pboard stringForType:NSHTMLPboardType];
-    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::SysNSStringToUTF16(html);
   } else if ([types containsObject:ui::kChromeDragImageHTMLPboardType]) {
     NSString* html = [pboard stringForType:ui::kChromeDragImageHTMLPboardType];
-    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::SysNSStringToUTF16(html);
   } else if ([types containsObject:NSRTFPboardType]) {
     NSString* html = ui::ClipboardUtil::GetHTMLFromRTFOnPasteboard(pboard);
-    data->html = base::NullableString16(base::SysNSStringToUTF16(html), false);
+    data->html = base::SysNSStringToUTF16(html);
   }
 
   // Get files.

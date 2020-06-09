@@ -78,12 +78,10 @@ class TracingRenderWidgetHost : public RenderWidgetHostImpl {
   TracingRenderWidgetHost(RenderWidgetHostDelegate* delegate,
                           RenderProcessHost* process,
                           int32_t routing_id,
-                          mojo::PendingRemote<mojom::Widget> widget,
                           bool hidden)
       : RenderWidgetHostImpl(delegate,
                              process,
                              routing_id,
-                             std::move(widget),
                              hidden,
                              std::make_unique<FrameTokenMessageQueue>()) {
   }
@@ -112,10 +110,9 @@ class TracingRenderWidgetHostFactory : public RenderWidgetHostFactory {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int32_t routing_id,
-      mojo::PendingRemote<mojom::Widget> widget_interface,
       bool hidden) override {
-    return std::make_unique<TracingRenderWidgetHost>(
-        delegate, process, routing_id, std::move(widget_interface), hidden);
+    return std::make_unique<TracingRenderWidgetHost>(delegate, process,
+                                                     routing_id, hidden);
   }
 
  private:

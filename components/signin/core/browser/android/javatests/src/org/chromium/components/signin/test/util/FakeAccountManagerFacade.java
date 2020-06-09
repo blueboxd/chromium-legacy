@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerResult;
 import org.chromium.components.signin.AccountsChangeObserver;
@@ -89,7 +90,7 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     }
 
     @Override
-    public String getAccessToken(Account account, String scope) {
+    public AccessTokenData getAccessToken(Account account, String scope) {
         synchronized (mLock) {
             AccountHolder accountHolder = getAccountHolder(account);
             if (accountHolder.getAuthToken(scope) == null) {

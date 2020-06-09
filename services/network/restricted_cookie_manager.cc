@@ -127,7 +127,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!change.cookie
              .IncludeForRequestURL(url_, options_, change.access_semantics)
-             .IsInclude()) {
+             .status.IsInclude()) {
       return;
     }
 
@@ -236,8 +236,8 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const net::CookieOptions& net_options,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback,
-    const net::CookieStatusList& cookie_list,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookie_list,
+    const net::CookieAccessResultList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool blocked = !cookie_settings_->IsCookieAccessAllowed(
@@ -248,10 +248,11 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
 
   // TODO(https://crbug.com/977040): Remove once samesite tightening up is
   // rolled out.
-  for (const auto& cookie_and_status : excluded_cookies) {
-    if (cookie_and_status.status.ShouldWarn()) {
+  for (const auto& cookie_and_access_result : excluded_cookies) {
+    if (cookie_and_access_result.access_result.status.ShouldWarn()) {
       result_with_status.push_back(
-          {cookie_and_status.cookie, cookie_and_status.status});
+          {cookie_and_access_result.cookie,
+           cookie_and_access_result.access_result.status});
     }
   }
 
@@ -260,9 +261,9 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   mojom::CookieMatchType match_type = options->match_type;
   const std::string& match_name = options->name;
   // TODO(https://crbug.com/993843): Use the statuses passed in |cookie_list|.
-  for (size_t i = 0; i < cookie_list.size(); ++i) {
-    const net::CanonicalCookie& cookie = cookie_list[i].cookie;
-    net::CookieInclusionStatus status = cookie_list[i].status;
+  for (const net::CookieWithAccessResult& cookie_item : cookie_list) {
+    const net::CanonicalCookie& cookie = cookie_item.cookie;
+    net::CookieInclusionStatus status = cookie_item.access_result.status;
     const std::string& cookie_name = cookie.Name();
 
     if (match_type == mojom::CookieMatchType::EQUALS) {

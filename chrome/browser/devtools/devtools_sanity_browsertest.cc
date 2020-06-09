@@ -216,7 +216,7 @@ void SwitchToExtensionPanel(DevToolsWindow* window,
 
 class DevToolsSanityTest : public InProcessBrowserTest {
  public:
-  DevToolsSanityTest() : window_(NULL) {}
+  DevToolsSanityTest() : window_(nullptr) {}
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -618,7 +618,7 @@ class DevToolsExperimentalExtensionTest : public DevToolsExtensionTest {
 
 class WorkerDevToolsSanityTest : public InProcessBrowserTest {
  public:
-  WorkerDevToolsSanityTest() : window_(NULL) {}
+  WorkerDevToolsSanityTest() : window_(nullptr) {}
 
  protected:
   class WorkerCreationObserver : public DevToolsAgentHostObserver {

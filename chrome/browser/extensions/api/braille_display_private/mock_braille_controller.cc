@@ -9,7 +9,7 @@ namespace api {
 namespace braille_display_private {
 
 MockBrailleController::MockBrailleController()
-    : available_(false), observer_(NULL) {}
+    : available_(false), observer_(nullptr) {}
 
 std::unique_ptr<DisplayState> MockBrailleController::GetDisplayState() {
   std::unique_ptr<DisplayState> state(new DisplayState());

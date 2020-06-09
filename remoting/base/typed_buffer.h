@@ -25,7 +25,7 @@ class TypedBuffer {
   TypedBuffer() : TypedBuffer(0) {}
 
   // Creates an instance of the object allocating a buffer of the given size.
-  explicit TypedBuffer(uint32_t length) : buffer_(NULL), length_(length) {
+  explicit TypedBuffer(uint32_t length) : buffer_(nullptr), length_(length) {
     if (length_ > 0)
       buffer_ = reinterpret_cast<T*>(new uint8_t[length_]);
   }

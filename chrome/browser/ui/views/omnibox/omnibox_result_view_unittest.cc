@@ -39,7 +39,9 @@ class TestOmniboxPopupContentsView : public OmniboxPopupContentsView {
             /*location_bar_view=*/nullptr),
         selected_index_(0) {}
 
-  void SetSelectedLine(size_t index) override { selected_index_ = index; }
+  void SetSelectedLineForMouseOrTouch(size_t index) override {
+    selected_index_ = index;
+  }
 
   bool IsSelectedIndex(size_t index) const override {
     return selected_index_ == index;

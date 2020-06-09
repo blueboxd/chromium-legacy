@@ -153,8 +153,8 @@ class NewSubViewAddedObserver : content::RenderWidgetHostViewCocoaObserver {
 class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
  public:
   WebViewInteractiveTest()
-      : guest_web_contents_(NULL),
-        embedder_web_contents_(NULL),
+      : guest_web_contents_(nullptr),
+        embedder_web_contents_(nullptr),
         corner_(gfx::Point()),
         mouse_click_result_(false),
         first_click_(true) {
@@ -410,8 +410,7 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
   class PopupCreatedObserver {
    public:
     PopupCreatedObserver()
-        : initial_widget_count_(0),
-          last_render_widget_host_(NULL) {}
+        : initial_widget_count_(0), last_render_widget_host_(nullptr) {}
 
     ~PopupCreatedObserver() {}
 

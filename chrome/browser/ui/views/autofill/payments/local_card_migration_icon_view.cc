@@ -40,7 +40,7 @@ LocalCardMigrationIconView::LocalCardMigrationIconView(
 
 LocalCardMigrationIconView::~LocalCardMigrationIconView() {}
 
-views::BubbleDialogDelegateView* LocalCardMigrationIconView::GetBubble() const {
+views::BubbleDialogDelegate* LocalCardMigrationIconView::GetBubble() const {
   ManageMigrationUiController* controller = GetController();
   if (!controller)
     return nullptr;

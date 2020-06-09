@@ -127,9 +127,7 @@ static scoped_refptr<extensions::Extension> CreateExtension(
 class ProfileSigninConfirmationHelperTest : public testing::Test {
  public:
   ProfileSigninConfirmationHelperTest()
-      : user_prefs_(NULL),
-        model_(NULL) {
-  }
+      : user_prefs_(nullptr), model_(nullptr) {}
 
   void SetUp() override {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());

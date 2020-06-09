@@ -34,7 +34,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_to_visible_time_reporter.h"
 #include "content/common/drag_event_source_info.h"
-#include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/input/main_thread_event_queue.h"
@@ -135,15 +134,13 @@ class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
       public blink::WebPagePopupClient,  // Is-a WebWidgetClient also.
-      public mojom::Widget,
       public RenderWidgetScreenMetricsEmulatorDelegate,
       public MainThreadEventQueueClient {
  public:
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
                bool hidden,
-               bool never_composited,
-               mojo::PendingReceiver<mojom::Widget> widget_receiver);
+               bool never_composited);
 
   ~RenderWidget() override;
 
@@ -160,12 +157,11 @@ class CONTENT_EXPORT RenderWidget
 
   // Convenience type for creation method taken by InstallCreateForFrameHook().
   // The method signature matches the RenderWidget constructor.
-  using CreateRenderWidgetFunction = std::unique_ptr<RenderWidget> (*)(
-      int32_t routing_id,
-      CompositorDependencies*,
-      bool hidden,
-      bool never_composited,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver);
+  using CreateRenderWidgetFunction =
+      std::unique_ptr<RenderWidget> (*)(int32_t routing_id,
+                                        CompositorDependencies*,
+                                        bool hidden,
+                                        bool never_composited);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
   static void InstallCreateForFrameHook(
@@ -184,12 +180,10 @@ class CONTENT_EXPORT RenderWidget
   // A RenderWidget popup is owned by the browser process. The object will be
   // destroyed by the WidgetMsg_Close message. The object can request its own
   // destruction via ClosePopupWidgetSoon().
-  static RenderWidget* CreateForPopup(
-      int32_t widget_routing_id,
-      CompositorDependencies* compositor_deps,
-      bool hidden,
-      bool never_composited,
-      mojo::PendingReceiver<mojom::Widget> widget_receiver);
+  static RenderWidget* CreateForPopup(int32_t widget_routing_id,
+                                      CompositorDependencies* compositor_deps,
+                                      bool hidden,
+                                      bool never_composited);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. The |opener_widget| is the local root
@@ -365,6 +359,12 @@ class CONTENT_EXPORT RenderWidget
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
   void QueueSyntheticEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent>) override;
+  void GetWidgetInputHandler(
+      blink::CrossVariantMojoReceiver<
+          blink::mojom::WidgetInputHandlerInterfaceBase> widget_input_receiver,
+      blink::CrossVariantMojoRemote<
+          blink::mojom::WidgetInputHandlerHostInterfaceBase>
+          widget_input_host_remote) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -472,11 +472,6 @@ class CONTENT_EXPORT RenderWidget
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
 
-  // Widget mojom overrides.
-  void SetupWidgetInputHandler(
-      mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
-      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) override;
-
   blink::mojom::WidgetInputHandlerHost* GetInputHandlerHost();
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
@@ -510,7 +505,6 @@ class CONTENT_EXPORT RenderWidget
   // composition info (when in monitor mode).
   void OnRequestCompositionUpdates(bool immediate_request,
                                    bool monitor_updates);
-  void SetWidgetReceiver(mojo::PendingReceiver<mojom::Widget> receiver);
 
   void SetMouseCapture(bool capture);
 
@@ -539,6 +533,18 @@ class CONTENT_EXPORT RenderWidget
       PresentationTimeCallback callback);
 
   base::WeakPtr<RenderWidget> AsWeakPtr();
+
+  // This method returns the WebLocalFrame which is currently focused and
+  // belongs to the frame tree associated with this RenderWidget.
+  blink::WebLocalFrame* GetFocusedWebLocalFrameInWidget() const;
+
+  bool handling_select_range() const { return handling_select_range_; }
+
+  bool is_pasting() const { return is_pasting_; }
+
+  void set_is_pasting(bool value) { is_pasting_ = value; }
+
+  void set_handling_select_range(bool value) { handling_select_range_ = value; }
 
  protected:
   // Notify subclasses that we handled OnUpdateVisualProperties.
@@ -717,10 +723,6 @@ class CONTENT_EXPORT RenderWidget
   // local root associated with this RenderWidget.
   PepperPluginInstanceImpl* GetFocusedPepperPluginInsideWidget();
 #endif
-
-  // This method returns the WebLocalFrame which is currently focused and
-  // belongs to the frame tree associated with this RenderWidget.
-  blink::WebLocalFrame* GetFocusedWebLocalFrameInWidget() const;
 
   // Whether this widget is for a frame. This excludes widgets that are not for
   // a frame (eg popups, pepper), but includes both the main frame
@@ -969,12 +971,16 @@ class CONTENT_EXPORT RenderWidget
   bool is_pinch_gesture_active_from_mainframe_ = false;
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
-
-  mojo::Receiver<mojom::Widget> widget_receiver_;
-
   gfx::Rect compositor_visible_rect_;
 
   uint32_t last_capture_sequence_number_ = 0u;
+
+  // Used to inform didChangeSelection() when it is called in the context
+  // of handling a FrameInputHandler::SelectRange IPC.
+  bool handling_select_range_ = false;
+
+  // Whether or not this RenderWidget is currently pasting.
+  bool is_pasting_ = false;
 
   std::unique_ptr<blink::scheduler::WebWidgetScheduler> widget_scheduler_;
 

@@ -10,8 +10,8 @@
 #include "base/check.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -21,39 +21,14 @@
 namespace content {
 
 FrameInputHandlerImpl::FrameInputHandlerImpl(
-    base::WeakPtr<RenderFrameImpl> render_frame,
-    mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver)
-    : render_frame_(render_frame),
-      input_event_queue_(
-          render_frame->GetLocalRootRenderWidget()->GetInputEventQueue()),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  weak_this_ = weak_ptr_factory_.GetWeakPtr();
-  // If we have created an input event queue move the mojo request over to the
-  // compositor thread.
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->compositor_task_runner() &&
-      input_event_queue_) {
-    // Mojo channel bound on compositor thread.
-    RenderThreadImpl::current()->compositor_task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&FrameInputHandlerImpl::BindNow,
-                                  base::Unretained(this), std::move(receiver)));
-  } else {
-    // Mojo channel bound on main thread.
-    BindNow(std::move(receiver));
-  }
-}
+    base::WeakPtr<RenderWidget> widget,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
+    scoped_refptr<MainThreadEventQueue> input_event_queue)
+    : widget_(widget),
+      input_event_queue_(input_event_queue),
+      main_thread_task_runner_(main_thread_task_runner) {}
 
 FrameInputHandlerImpl::~FrameInputHandlerImpl() {}
-
-// static
-void FrameInputHandlerImpl::CreateMojoService(
-    base::WeakPtr<RenderFrameImpl> render_frame,
-    mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver) {
-  DCHECK(render_frame);
-
-  // Owns itself. Will be deleted when message pipe is destroyed.
-  new FrameInputHandlerImpl(render_frame, std::move(receiver));
-}
 
 void FrameInputHandlerImpl::RunOnMainThread(base::OnceClosure closure) {
   if (input_event_queue_) {
@@ -67,269 +42,316 @@ void FrameInputHandlerImpl::SetCompositionFromExistingText(
     int32_t start,
     int32_t end,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::SetCompositionFromExistingText,
-                       weak_this_, start, end, ui_ime_text_spans));
-    return;
-  }
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, int32_t start, int32_t end,
+         const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+        if (!widget)
+          return;
 
-  if (!render_frame_)
-    return;
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        ImeEventGuard guard(widget);
 
-  ImeEventGuard guard(render_frame_->GetLocalRootRenderWidget()->AsWeakPtr());
-
-  render_frame_->GetWebFrame()->SetCompositionFromExistingText(
-      start, end, ui_ime_text_spans);
+        focused_frame->SetCompositionFromExistingText(start, end,
+                                                      ui_ime_text_spans);
+      },
+      widget_, start, end, ui_ime_text_spans));
 }
 
 void FrameInputHandlerImpl::ExtendSelectionAndDelete(int32_t before,
                                                      int32_t after) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::ExtendSelectionAndDelete,
-                       weak_this_, before, after));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  render_frame_->GetWebFrame()->ExtendSelectionAndDelete(before, after);
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, int32_t before, int32_t after) {
+        if (!widget)
+          return;
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        focused_frame->ExtendSelectionAndDelete(before, after);
+      },
+      widget_, before, after));
 }
 
 void FrameInputHandlerImpl::DeleteSurroundingText(int32_t before,
                                                   int32_t after) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::DeleteSurroundingText,
-                       weak_this_, before, after));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  render_frame_->GetWebFrame()->DeleteSurroundingText(before, after);
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, int32_t before, int32_t after) {
+        if (!widget)
+          return;
+
+        if (!widget)
+          return;
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        focused_frame->DeleteSurroundingText(before, after);
+      },
+      widget_, before, after));
 }
 
 void FrameInputHandlerImpl::DeleteSurroundingTextInCodePoints(int32_t before,
                                                               int32_t after) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(base::BindOnce(
-        &FrameInputHandlerImpl::DeleteSurroundingTextInCodePoints, weak_this_,
-        before, after));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  render_frame_->GetWebFrame()->DeleteSurroundingTextInCodePoints(before,
-                                                                  after);
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, int32_t before, int32_t after) {
+        if (!widget)
+          return;
+
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        focused_frame->DeleteSurroundingTextInCodePoints(before, after);
+      },
+      widget_, before, after));
 }
 
 void FrameInputHandlerImpl::SetEditableSelectionOffsets(int32_t start,
                                                         int32_t end) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::SetEditableSelectionOffsets,
-                       weak_this_, start, end));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
-  render_frame_->GetWebFrame()->SetEditableSelectionOffsets(start, end);
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, int32_t start, int32_t end) {
+        if (!widget)
+          return;
+
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        HandlingState handling_state(widget, UpdateState::kIsSelectingRange);
+        focused_frame->SetEditableSelectionOffsets(start, end);
+      },
+      widget_, start, end));
 }
 
 void FrameInputHandlerImpl::ExecuteEditCommand(
     const std::string& command,
     const base::Optional<base::string16>& value) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(base::BindOnce(&FrameInputHandlerImpl::ExecuteEditCommand,
-                                   weak_this_, command, value));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  if (value) {
-    render_frame_->GetWebFrame()->ExecuteCommand(
-        blink::WebString::FromUTF8(command),
-        blink::WebString::FromUTF16(value.value()));
-    return;
-  }
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, const std::string& command,
+         const base::Optional<base::string16>& value) {
+        if (!widget)
+          return;
 
-  render_frame_->GetWebFrame()->ExecuteCommand(
-      blink::WebString::FromUTF8(command));
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+
+        if (value) {
+          focused_frame->ExecuteCommand(
+              blink::WebString::FromUTF8(command),
+              blink::WebString::FromUTF16(value.value()));
+          return;
+        }
+
+        focused_frame->ExecuteCommand(blink::WebString::FromUTF8(command));
+      },
+      widget_, command, value));
 }
 
 void FrameInputHandlerImpl::Undo() {
   RunOnMainThread(
       base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
-                     weak_this_, "Undo", UpdateState::kNone));
+                     widget_, "Undo", UpdateState::kNone));
 }
 
 void FrameInputHandlerImpl::Redo() {
   RunOnMainThread(
       base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
-                     weak_this_, "Redo", UpdateState::kNone));
+                     widget_, "Redo", UpdateState::kNone));
 }
 
 void FrameInputHandlerImpl::Cut() {
   RunOnMainThread(
       base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
-                     weak_this_, "Cut", UpdateState::kIsSelectingRange));
+                     widget_, "Cut", UpdateState::kIsSelectingRange));
 }
 
 void FrameInputHandlerImpl::Copy() {
   RunOnMainThread(
       base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
-                     weak_this_, "Copy", UpdateState::kIsSelectingRange));
+                     widget_, "Copy", UpdateState::kIsSelectingRange));
 }
 
 void FrameInputHandlerImpl::CopyToFindPboard() {
 #if defined(OS_MACOSX)
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::CopyToFindPboard, weak_this_));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  render_frame_->OnCopyToFindPboard();
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget) {
+        if (!widget)
+          return;
+
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+
+        RenderFrameImpl* render_frame =
+            RenderFrameImpl::FromWebFrame(focused_frame);
+
+        if (!render_frame)
+          return;
+
+        render_frame->OnCopyToFindPboard();
+      },
+      widget_));
 #endif
 }
 
 void FrameInputHandlerImpl::Paste() {
   RunOnMainThread(
       base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
-                     weak_this_, "Paste", UpdateState::kIsPasting));
+                     widget_, "Paste", UpdateState::kIsPasting));
 }
 
 void FrameInputHandlerImpl::PasteAndMatchStyle() {
-  RunOnMainThread(base::BindOnce(
-      &FrameInputHandlerImpl::ExecuteCommandOnMainThread, weak_this_,
-      "PasteAndMatchStyle", UpdateState::kIsPasting));
+  RunOnMainThread(
+      base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
+                     widget_, "PasteAndMatchStyle", UpdateState::kIsPasting));
 }
 
 void FrameInputHandlerImpl::Replace(const base::string16& word) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::Replace, weak_this_, word));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
-  if (!frame->HasSelection())
-    frame->SelectWordAroundCaret();
-  frame->ReplaceSelection(blink::WebString::FromUTF16(word));
-  render_frame_->SyncSelectionIfRequired();
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, const base::string16& word) {
+        if (!widget)
+          return;
+
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+
+        RenderFrameImpl* render_frame =
+            RenderFrameImpl::FromWebFrame(focused_frame);
+
+        if (!render_frame)
+          return;
+
+        if (!focused_frame->HasSelection())
+          focused_frame->SelectWordAroundCaret();
+        focused_frame->ReplaceSelection(blink::WebString::FromUTF16(word));
+        render_frame->SyncSelectionIfRequired();
+      },
+      widget_, word));
 }
 
 void FrameInputHandlerImpl::ReplaceMisspelling(const base::string16& word) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(base::BindOnce(&FrameInputHandlerImpl::ReplaceMisspelling,
-                                   weak_this_, word));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
-  if (!frame->HasSelection())
-    return;
-  frame->ReplaceMisspelledRange(blink::WebString::FromUTF16(word));
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, const base::string16& word) {
+        if (!widget)
+          return;
+
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        if (!focused_frame->HasSelection())
+          return;
+        focused_frame->ReplaceMisspelledRange(
+            blink::WebString::FromUTF16(word));
+      },
+      widget_, word));
 }
 
 void FrameInputHandlerImpl::Delete() {
   RunOnMainThread(
       base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
-                     weak_this_, "Delete", UpdateState::kNone));
+                     widget_, "Delete", UpdateState::kNone));
 }
 
 void FrameInputHandlerImpl::SelectAll() {
   RunOnMainThread(
       base::BindOnce(&FrameInputHandlerImpl::ExecuteCommandOnMainThread,
-                     weak_this_, "SelectAll", UpdateState::kIsSelectingRange));
+                     widget_, "SelectAll", UpdateState::kIsSelectingRange));
 }
 
 void FrameInputHandlerImpl::CollapseSelection() {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::CollapseSelection, weak_this_));
-    return;
-  }
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget) {
+        if (!widget)
+          return;
 
-  if (!render_frame_)
-    return;
-  const blink::WebRange& range = render_frame_->GetWebFrame()
-                                     ->GetInputMethodController()
-                                     ->GetSelectionOffsets();
-  if (range.IsNull())
-    return;
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        const blink::WebRange& range =
+            focused_frame->GetInputMethodController()->GetSelectionOffsets();
+        if (range.IsNull())
+          return;
 
-  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
-  render_frame_->GetWebFrame()->SelectRange(
-      blink::WebRange(range.EndOffset(), 0),
-      blink::WebLocalFrame::kHideSelectionHandle,
-      blink::mojom::SelectionMenuBehavior::kHide);
+        HandlingState handling_state(widget, UpdateState::kIsSelectingRange);
+        focused_frame->SelectRange(blink::WebRange(range.EndOffset(), 0),
+                                   blink::WebLocalFrame::kHideSelectionHandle,
+                                   blink::mojom::SelectionMenuBehavior::kHide);
+      },
+      widget_));
 }
 
 void FrameInputHandlerImpl::SelectRange(const gfx::Point& base,
                                         const gfx::Point& extent) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     // TODO(dtapuska): This event should be coalesced. Chrome IPC uses
     // one outstanding event and an ACK to handle coalescing on the browser
     // side. We should be able to clobber them in the main thread event queue.
-    RunOnMainThread(base::BindOnce(&FrameInputHandlerImpl::SelectRange,
-                                   weak_this_, base, extent));
-    return;
-  }
+    RunOnMainThread(base::BindOnce(
+        [](base::WeakPtr<RenderWidget> widget, const gfx::Point& base,
+           const gfx::Point& extent) {
+          if (!widget)
+            return;
 
-  if (!render_frame_)
-    return;
-  RenderWidget* window_widget = render_frame_->GetLocalRootRenderWidget();
-  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
-  render_frame_->GetWebFrame()->SelectRange(
-      window_widget->ConvertWindowPointToViewport(base),
-      window_widget->ConvertWindowPointToViewport(extent));
+          auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+          if (!focused_frame)
+            return;
+
+          HandlingState handling_state(widget, UpdateState::kIsSelectingRange);
+          focused_frame->SelectRange(
+              widget->ConvertWindowPointToViewport(base),
+              widget->ConvertWindowPointToViewport(extent));
+        },
+        widget_, base, extent));
 }
 
 #if defined(OS_ANDROID)
 void FrameInputHandlerImpl::SelectWordAroundCaret(
     SelectWordAroundCaretCallback callback) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::SelectWordAroundCaret,
-                       weak_this_, std::move(callback)));
-    return;
-  }
-
-  bool did_select = false;
-  int start_adjust = 0;
-  int end_adjust = 0;
-  if (render_frame_) {
-    blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
-    blink::WebRange initial_range = frame->SelectionRange();
-    render_frame_->GetLocalRootRenderWidget()->SetHandlingInputEvent(true);
-    if (!initial_range.IsNull())
-      did_select = frame->SelectWordAroundCaret();
-    if (did_select) {
-      blink::WebRange adjusted_range = frame->SelectionRange();
-      DCHECK(!adjusted_range.IsNull());
-      start_adjust = adjusted_range.StartOffset() - initial_range.StartOffset();
-      end_adjust = adjusted_range.EndOffset() - initial_range.EndOffset();
-    }
-    render_frame_->GetLocalRootRenderWidget()->SetHandlingInputEvent(false);
-  }
-
   // If the mojom channel is registered with compositor thread, we have to run
   // the callback on compositor thread. Otherwise run it on main thread. Mojom
   // requires the callback runs on the same thread.
-  if (RenderThreadImpl::current() &&
-      RenderThreadImpl::current()->compositor_task_runner() &&
-      input_event_queue_) {
-    RenderThreadImpl::current()->compositor_task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), did_select, start_adjust,
-                                  end_adjust));
-  } else {
-    std::move(callback).Run(did_select, start_adjust, end_adjust);
+  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
+    callback = base::BindOnce(
+        [](scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
+           SelectWordAroundCaretCallback callback, bool did_select,
+           int32_t start_adjust, int32_t end_adjust) {
+          compositor_task_runner->PostTask(
+              FROM_HERE, base::BindOnce(std::move(callback), did_select,
+                                        start_adjust, end_adjust));
+        },
+        base::ThreadTaskRunnerHandle::Get(), std::move(callback));
   }
+
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget,
+         SelectWordAroundCaretCallback callback) {
+        if (!widget) {
+          std::move(callback).Run(false, 0, 0);
+          return;
+        }
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame) {
+          std::move(callback).Run(false, 0, 0);
+          return;
+        }
+
+        bool did_select = false;
+        int start_adjust = 0;
+        int end_adjust = 0;
+        blink::WebRange initial_range = focused_frame->SelectionRange();
+        widget->SetHandlingInputEvent(true);
+        if (!initial_range.IsNull())
+          did_select = focused_frame->SelectWordAroundCaret();
+        if (did_select) {
+          blink::WebRange adjusted_range = focused_frame->SelectionRange();
+          DCHECK(!adjusted_range.IsNull());
+          start_adjust =
+              adjusted_range.StartOffset() - initial_range.StartOffset();
+          end_adjust = adjusted_range.EndOffset() - initial_range.EndOffset();
+        }
+        widget->SetHandlingInputEvent(false);
+        std::move(callback).Run(did_select, start_adjust, end_adjust);
+      },
+      widget_, std::move(callback)));
 }
 #endif  // defined(OS_ANDROID)
 
@@ -337,147 +359,126 @@ void FrameInputHandlerImpl::AdjustSelectionByCharacterOffset(
     int32_t start,
     int32_t end,
     blink::mojom::SelectionMenuBehavior selection_menu_behavior) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::AdjustSelectionByCharacterOffset,
-                       weak_this_, start, end, selection_menu_behavior));
-    return;
-  }
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, int32_t start, int32_t end,
+         blink::mojom::SelectionMenuBehavior selection_menu_behavior) {
+        if (!widget)
+          return;
 
-  if (!render_frame_)
-    return;
-  blink::WebRange range = render_frame_->GetWebFrame()
-                              ->GetInputMethodController()
-                              ->GetSelectionOffsets();
-  if (range.IsNull())
-    return;
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
 
-  // Sanity checks to disallow empty and out of range selections.
-  if (start - end > range.length() || range.StartOffset() + start < 0)
-    return;
+        blink::WebRange range =
+            focused_frame->GetInputMethodController()->GetSelectionOffsets();
+        if (range.IsNull())
+          return;
 
-  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
-  // A negative adjust amount moves the selection towards the beginning of
-  // the document, a positive amount moves the selection towards the end of
-  // the document.
-  render_frame_->GetWebFrame()->SelectRange(
-      blink::WebRange(range.StartOffset() + start,
-                      range.length() + end - start),
-      blink::WebLocalFrame::kPreserveHandleVisibility, selection_menu_behavior);
+        // Sanity checks to disallow empty and out of range selections.
+        if (start - end > range.length() || range.StartOffset() + start < 0)
+          return;
+
+        HandlingState handling_state(widget, UpdateState::kIsSelectingRange);
+        // A negative adjust amount moves the selection towards the beginning of
+        // the document, a positive amount moves the selection towards the end
+        // of the document.
+        focused_frame->SelectRange(
+            blink::WebRange(range.StartOffset() + start,
+                            range.length() + end - start),
+            blink::WebLocalFrame::kPreserveHandleVisibility,
+            selection_menu_behavior);
+      },
+      widget_, start, end, selection_menu_behavior));
 }
 
 void FrameInputHandlerImpl::MoveRangeSelectionExtent(const gfx::Point& extent) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    // TODO(dtapuska): This event should be coalesced. Chrome IPC uses
-    // one outstanding event and an ACK to handle coalescing on the browser
-    // side. We should be able to clobber them in the main thread event queue.
-    RunOnMainThread(base::BindOnce(
-        &FrameInputHandlerImpl::MoveRangeSelectionExtent, weak_this_, extent));
-    return;
-  }
+  // TODO(dtapuska): This event should be coalesced. Chrome IPC uses
+  // one outstanding event and an ACK to handle coalescing on the browser
+  // side. We should be able to clobber them in the main thread event queue.
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, const gfx::Point& extent) {
+        if (!widget)
+          return;
 
-  if (!render_frame_)
-    return;
-  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
-  render_frame_->GetWebFrame()->MoveRangeSelectionExtent(
-      render_frame_->GetLocalRootRenderWidget()->ConvertWindowPointToViewport(
-          extent));
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+
+        HandlingState handling_state(widget, UpdateState::kIsSelectingRange);
+        focused_frame->MoveRangeSelectionExtent(
+            widget->ConvertWindowPointToViewport(extent));
+      },
+      widget_, extent));
 }
 
 void FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(base::BindOnce(
-        &FrameInputHandlerImpl::ScrollFocusedEditableNodeIntoRect, weak_this_,
-        rect));
-    return;
-  }
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, const gfx::Rect& rect) {
+        if (!widget)
+          return;
 
-  if (!render_frame_)
-    return;
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
 
-  // OnSynchronizeVisualProperties does not call DidChangeVisibleViewport
-  // on OOPIFs. Since we are starting a new scroll operation now, call
-  // DidChangeVisibleViewport to ensure that we don't assume the element
-  // is already in view and ignore the scroll.
-  render_frame_->ResetHasScrolledFocusedEditableIntoView();
-  render_frame_->ScrollFocusedEditableElementIntoRect(rect);
+        RenderFrameImpl* render_frame =
+            RenderFrameImpl::FromWebFrame(focused_frame);
+
+        if (!render_frame)
+          return;
+
+        // OnSynchronizeVisualProperties does not call DidChangeVisibleViewport
+        // on OOPIFs. Since we are starting a new scroll operation now, call
+        // DidChangeVisibleViewport to ensure that we don't assume the element
+        // is already in view and ignore the scroll.
+        render_frame->ResetHasScrolledFocusedEditableIntoView();
+        render_frame->ScrollFocusedEditableElementIntoRect(rect);
+      },
+      widget_, rect));
 }
 
 void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    RunOnMainThread(
-        base::BindOnce(&FrameInputHandlerImpl::MoveCaret, weak_this_, point));
-    return;
-  }
+  RunOnMainThread(base::BindOnce(
+      [](base::WeakPtr<RenderWidget> widget, const gfx::Point& point) {
+        if (!widget)
+          return;
 
-  if (!render_frame_)
-    return;
-
-  render_frame_->GetWebFrame()->MoveCaretSelection(
-      render_frame_->GetLocalRootRenderWidget()->ConvertWindowPointToViewport(
-          point));
-}
-
-void FrameInputHandlerImpl::GetWidgetInputHandler(
-    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FrameInputHandlerImpl::GetWidgetInputHandler,
-                       weak_this_, std::move(receiver), std::move(host)));
-    return;
-  }
-  if (!render_frame_)
-    return;
-  render_frame_->GetLocalRootRenderWidget()
-      ->widget_input_handler_manager()
-      ->AddAssociatedInterface(std::move(receiver), std::move(host));
+        auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+        if (!focused_frame)
+          return;
+        focused_frame->MoveCaretSelection(
+            widget->ConvertWindowPointToViewport(point));
+      },
+      widget_, point));
 }
 
 void FrameInputHandlerImpl::ExecuteCommandOnMainThread(
+    base::WeakPtr<RenderWidget> widget,
     const std::string& command,
     UpdateState update_state) {
-  if (!render_frame_)
+  if (!widget)
     return;
 
-  HandlingState handling_state(render_frame_, update_state);
-  render_frame_->GetWebFrame()->ExecuteCommand(
-      blink::WebString::FromUTF8(command));
-}
-
-void FrameInputHandlerImpl::Release() {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    // Close the receiver on the compositor thread first before telling the main
-    // thread to delete this object.
-    receiver_.reset();
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&FrameInputHandlerImpl::Release, weak_this_));
+  HandlingState handling_state(widget, update_state);
+  auto* focused_frame = widget->GetFocusedWebLocalFrameInWidget();
+  if (!focused_frame)
     return;
-  }
-  delete this;
-}
-
-void FrameInputHandlerImpl::BindNow(
-    mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver) {
-  receiver_.Bind(std::move(receiver));
-  receiver_.set_disconnect_handler(
-      base::BindOnce(&FrameInputHandlerImpl::Release, base::Unretained(this)));
+  focused_frame->ExecuteCommand(blink::WebString::FromUTF8(command));
 }
 
 FrameInputHandlerImpl::HandlingState::HandlingState(
-    const base::WeakPtr<RenderFrameImpl>& render_frame,
+    const base::WeakPtr<RenderWidget>& render_widget,
     UpdateState state)
-    : render_frame_(render_frame),
-      original_select_range_value_(render_frame->handling_select_range()),
-      original_pasting_value_(render_frame->IsPasting()) {
+    : render_widget_(render_widget),
+      original_select_range_value_(render_widget->handling_select_range()),
+      original_pasting_value_(render_widget->is_pasting()) {
   switch (state) {
     case UpdateState::kIsPasting:
-      render_frame->set_is_pasting(true);
+      render_widget->set_is_pasting(true);
       FALLTHROUGH;  // Matches RenderFrameImpl::OnPaste() which sets both.
     case UpdateState::kIsSelectingRange:
-      render_frame->set_handling_select_range(true);
+      render_widget->set_handling_select_range(true);
       break;
     case UpdateState::kNone:
       break;
@@ -486,10 +487,10 @@ FrameInputHandlerImpl::HandlingState::HandlingState(
 
 FrameInputHandlerImpl::HandlingState::~HandlingState() {
   // RenderFrame may have been destroyed while this object was on the stack.
-  if (!render_frame_)
+  if (!render_widget_)
     return;
-  render_frame_->set_handling_select_range(original_select_range_value_);
-  render_frame_->set_is_pasting(original_pasting_value_);
+  render_widget_->set_handling_select_range(original_select_range_value_);
+  render_widget_->set_is_pasting(original_pasting_value_);
 }
 
 }  // namespace content

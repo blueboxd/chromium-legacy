@@ -14,6 +14,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -744,6 +745,12 @@ WebTextInputType WebFrameWidgetBase::GetTextInputType() {
   if (!controller)
     return WebTextInputType::kWebTextInputTypeNone;
   return controller->TextInputType();
+}
+
+void WebFrameWidgetBase::GetWidgetInputHandler(
+    mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+    mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
+  Client()->GetWidgetInputHandler(std::move(request), std::move(host));
 }
 
 void WebFrameWidgetBase::ApplyViewportChangesForTesting(

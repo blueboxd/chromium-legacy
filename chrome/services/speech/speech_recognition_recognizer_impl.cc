@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "components/soda/constants.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_sample_types.h"
@@ -21,6 +22,8 @@
 #endif  // BUILDFLAG(ENABLE_SODA)
 
 namespace speech {
+
+constexpr char kInvalidAudioDataError[] = "Invalid audio data received.";
 
 namespace {
 
@@ -47,11 +50,21 @@ SpeechRecognitionRecognizerImpl::~SpeechRecognitionRecognizerImpl() = default;
 
 void SpeechRecognitionRecognizerImpl::Create(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
-    mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
-        remote) {
+    mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
+    base::WeakPtr<SpeechRecognitionServiceImpl>
+        speech_recognition_service_impl) {
   mojo::MakeSelfOwnedReceiver(
-      base::WrapUnique(new SpeechRecognitionRecognizerImpl(std::move(remote))),
+      std::make_unique<SpeechRecognitionRecognizerImpl>(
+          std::move(remote), std::move(speech_recognition_service_impl)),
       std::move(receiver));
+}
+
+bool SpeechRecognitionRecognizerImpl::IsMultichannelSupported() {
+#if BUILDFLAG(ENABLE_SODA)
+  return true;
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_SODA)
 }
 
 void SpeechRecognitionRecognizerImpl::OnRecognitionEvent(
@@ -62,13 +75,17 @@ void SpeechRecognitionRecognizerImpl::OnRecognitionEvent(
 }
 
 SpeechRecognitionRecognizerImpl::SpeechRecognitionRecognizerImpl(
-    mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote)
+    mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient> remote,
+    base::WeakPtr<SpeechRecognitionServiceImpl> speech_recognition_service_impl)
     : client_remote_(std::move(remote)) {
   recognition_event_callback_ = media::BindToCurrentLoop(
       base::Bind(&SpeechRecognitionRecognizerImpl::OnRecognitionEvent,
                  weak_factory_.GetWeakPtr()));
 #if BUILDFLAG(ENABLE_SODA)
   soda_client_ = std::make_unique<soda::SodaClient>(GetSodaBinaryPath());
+#else
+  cloud_client_ = std::make_unique<CloudSpeechRecognitionClient>(
+      recognition_event_callback(), std::move(speech_recognition_service_impl));
 #endif  // BUILDFLAG(ENABLE_SODA)
 }
 
@@ -77,13 +94,27 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
   int channel_count = buffer->channel_count;
   int frame_count = buffer->frame_count;
   int sample_rate = buffer->sample_rate;
-  int num_samples;
-  int data_size;
-  if (channel_count <= 0 || channel_count > media::limits::kMaxChannels ||
-      sample_rate <= 0 || frame_count <= 0 ||
+  size_t num_samples = 0;
+  size_t buffer_size = 0;
+
+  // Verify the channel count.
+  if (channel_count <= 0 || channel_count > media::limits::kMaxChannels) {
+    mojo::ReportBadMessage(kInvalidAudioDataError);
+    return;
+  }
+
+  // Verify and calculate the number of samples.
+  if (sample_rate <= 0 || frame_count <= 0 ||
       !base::CheckMul(frame_count, channel_count).AssignIfValid(&num_samples) ||
-      !base::CheckMul(num_samples, sizeof(int16_t)).AssignIfValid(&data_size)) {
-    mojo::ReportBadMessage("Invalid audio data received.");
+      num_samples != buffer->data.size()) {
+    mojo::ReportBadMessage(kInvalidAudioDataError);
+    return;
+  }
+
+  // Verify and calculate the buffer size.
+  if (!base::CheckMul(buffer->data.size(), sizeof(buffer->data[0]))
+           .AssignIfValid(&buffer_size)) {
+    mojo::ReportBadMessage(kInvalidAudioDataError);
     return;
   }
 
@@ -103,7 +134,21 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
   }
 
   soda_client_->AddAudio(reinterpret_cast<char*>(buffer->data.data()),
-                         data_size);
+                         buffer_size);
+#else
+  DCHECK(cloud_client_);
+  if (!cloud_client_->IsInitialized() ||
+      cloud_client_->DidAudioPropertyChange(sample_rate, channel_count)) {
+    // Initialize the stream.
+    CloudSpeechConfig config;
+    config.sample_rate = sample_rate;
+    config.channel_count = channel_count;
+    config.language_code = "en-US";
+    cloud_client_->Initialize(config);
+  }
+
+  cloud_client_->AddAudio(base::span<const char>(
+      reinterpret_cast<char*>(buffer->data.data()), buffer_size));
 #endif  // BUILDFLAG(ENABLE_SODA)
 }
 

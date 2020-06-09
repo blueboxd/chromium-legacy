@@ -10,7 +10,6 @@ import "content/common/frame_messages.mojom";
 import "content/common/native_types.mojom";
 import "content/common/navigation_client.mojom";
 import "content/common/navigation_params.mojom";
-import "content/common/widget.mojom";
 import "content/public/common/browser_controls_state.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
@@ -382,13 +381,13 @@ interface FrameHost {
 
   // Similar to CreateNewWindow, except used for sub-widgets, like <select>
   // dropdowns.
-  [Sync] CreateNewWidget(pending_remote<Widget> widget,
+  [Sync] CreateNewWidget(
          pending_associated_receiver<blink.mojom.WidgetHost> blink_widget_host,
          pending_associated_remote<blink.mojom.Widget> blink_widget)
       => (int32 routing_id);
 
   // Similar to CreateNewWidget except the widget is a full screen window.
-  [Sync] CreateNewFullscreenWidget(pending_remote<Widget> widget,
+  [Sync] CreateNewFullscreenWidget(
          pending_associated_receiver<blink.mojom.WidgetHost> blink_widget_host,
          pending_associated_remote<blink.mojom.Widget> blink_widget)
       => (int32 routing_id);

@@ -214,6 +214,10 @@ mojom("interfaces") {
     "vulkan_ycbcr_info.mojom",
   ]
 
+  if (is_win) {
+    sources += [ "luid.mojom" ]
+  }
+
   public_deps = [
     ":gpu_preferences_interface",
     "//mojo/public/mojom/base",
@@ -268,6 +272,24 @@ mojom("interfaces") {
       ]
     },
   ]
+
+  if (is_win) {
+    shared_cpp_typemaps += [
+      {
+        types = [
+          {
+            mojom = "gpu.mojom.Luid"
+            cpp = "::LUID"
+          },
+        ]
+        traits_headers = [ "luid_mojom_traits.h" ]
+        traits_public_deps = [
+          ":mojom_traits",
+          "//gpu/config",
+        ]
+      },
+    ]
+  }
 
   cpp_typemaps = shared_cpp_typemaps
   blink_cpp_typemaps = shared_cpp_typemaps
@@ -398,10 +420,6 @@ mojom("interfaces") {
         {
           mojom = "gpu.mojom.ImageDecodeAcceleratorSupportedProfile"
           cpp = "::gpu::ImageDecodeAcceleratorSupportedProfile"
-        },
-        {
-          mojom = "gpu.mojom.Luid"
-          cpp = "::LUID"
         },
       ]
       traits_sources = [ "gpu_info_mojom_traits.cc" ]
@@ -583,6 +601,9 @@ source_set("mojom_traits") {
   ]
   if (is_android) {
     sources += [ "vulkan_ycbcr_info_mojom_traits.h" ]
+  }
+  if (is_win) {
+    sources += [ "luid_mojom_traits.h" ]
   }
   if (enable_vulkan) {
     deps += [ ":vulkan_types_mojom_traits" ]

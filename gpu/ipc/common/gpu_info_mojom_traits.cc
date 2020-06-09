@@ -378,15 +378,6 @@ bool StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo>::Read(
   return data.ReadYuy2OverlaySupport(&out->yuy2_overlay_support) &&
          data.ReadNv12OverlaySupport(&out->nv12_overlay_support);
 }
-
-// static
-bool StructTraits<gpu::mojom::LuidDataView, LUID>::Read(
-    gpu::mojom::LuidDataView data,
-    LUID* out) {
-  out->HighPart = data.high();
-  out->LowPart = data.low();
-  return true;
-}
 #endif
 
 bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(

@@ -164,7 +164,6 @@ void PluginMetricsProvider::ProvideStabilityMetrics(
     }
 
     if (!system_profile_plugin) {
-      NOTREACHED();
       continue;
     }
 

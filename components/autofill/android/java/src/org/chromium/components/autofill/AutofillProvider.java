@@ -137,6 +137,11 @@ public abstract class AutofillProvider {
                 nativeAutofillProvider, AutofillProvider.this, formData);
     }
 
+    protected void acceptDataListSuggestion(long nativeAutofillProvider, String value) {
+        AutofillProviderJni.get().onAcceptDataListSuggestion(
+                nativeAutofillProvider, AutofillProvider.this, value);
+    }
+
     /**
      * Invoked when current query need to be reset.
      */
@@ -149,9 +154,15 @@ public abstract class AutofillProvider {
     @CalledByNative
     protected abstract void onDidFillAutofillFormData();
 
+    @CalledByNative
+    protected abstract void hidePopup();
+
     @NativeMethods
     interface Natives {
         void onAutofillAvailable(
                 long nativeAutofillProviderAndroid, AutofillProvider caller, FormData formData);
+
+        void onAcceptDataListSuggestion(
+                long nativeAutofillProviderAndroid, AutofillProvider caller, String value);
     }
 }

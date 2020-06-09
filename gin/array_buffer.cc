@@ -151,10 +151,7 @@ void ArrayBuffer::Private::SecondWeakCallback(
 
 // ArrayBuffer ----------------------------------------------------------------
 
-ArrayBuffer::ArrayBuffer()
-    : bytes_(0),
-      num_bytes_(0) {
-}
+ArrayBuffer::ArrayBuffer() : bytes_(nullptr), num_bytes_(0) {}
 
 ArrayBuffer::ArrayBuffer(v8::Isolate* isolate,
                          v8::Local<v8::ArrayBuffer> array) {

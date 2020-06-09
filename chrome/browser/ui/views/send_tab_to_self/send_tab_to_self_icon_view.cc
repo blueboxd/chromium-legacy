@@ -34,7 +34,7 @@ SendTabToSelfIconView::SendTabToSelfIconView(
 
 SendTabToSelfIconView::~SendTabToSelfIconView() {}
 
-views::BubbleDialogDelegateView* SendTabToSelfIconView::GetBubble() const {
+views::BubbleDialogDelegate* SendTabToSelfIconView::GetBubble() const {
   SendTabToSelfBubbleController* controller = GetController();
   if (!controller) {
     return nullptr;

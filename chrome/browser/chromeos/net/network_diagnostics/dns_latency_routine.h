@@ -30,8 +30,7 @@ class DnsLatencyRoutine : public NetworkDiagnosticsRoutine,
                           public network::ResolveHostClientBase {
  public:
   using DnsLatencyRoutineCallback =
-      base::OnceCallback<void(mojom::RoutineVerdict,
-                              const std::vector<mojom::DnsLatencyProblem>&)>;
+      mojom::NetworkDiagnosticsRoutines::DnsLatencyCallback;
 
   DnsLatencyRoutine();
   ~DnsLatencyRoutine() override;

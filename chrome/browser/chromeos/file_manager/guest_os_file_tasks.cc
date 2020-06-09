@@ -20,12 +20,14 @@
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "extensions/browser/entry_info.h"
+#include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/layout.h"
 #include "ui/display/types/display_constants.h"
@@ -205,9 +207,21 @@ auto ConvertLaunchPluginVmAppResultToTaskResult(
 void FindGuestOsApps(
     Profile* profile,
     const std::vector<extensions::EntryInfo>& entries,
+    const std::vector<GURL>& file_urls,
     std::vector<std::string>* app_ids,
     std::vector<std::string>* app_names,
     std::vector<guest_os::GuestOsRegistryService::VmType>* vm_types) {
+  // Ensure all files can be shared with VMs.
+  storage::FileSystemContext* file_system_context =
+      util::GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
+  base::FilePath not_used;
+  for (const GURL& file_url : file_urls) {
+    if (!file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+            profile, file_system_context->CrackURL(file_url), &not_used)) {
+      return;
+    }
+  }
+
   auto* registry_service =
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
   crostini::CrostiniMimeTypesService* mime_types_service =
@@ -227,6 +241,7 @@ void FindGuestOsApps(
 
 void FindGuestOsTasks(Profile* profile,
                       const std::vector<extensions::EntryInfo>& entries,
+                      const std::vector<GURL>& file_urls,
                       std::vector<FullTaskDescriptor>* result_list,
                       base::OnceClosure completion_closure) {
   if (!crostini::CrostiniFeatures::Get()->IsUIAllowed(profile) &&
@@ -238,8 +253,8 @@ void FindGuestOsTasks(Profile* profile,
   std::vector<std::string> result_app_ids;
   std::vector<std::string> result_app_names;
   std::vector<guest_os::GuestOsRegistryService::VmType> result_vm_types;
-  FindGuestOsApps(profile, entries, &result_app_ids, &result_app_names,
-                  &result_vm_types);
+  FindGuestOsApps(profile, entries, file_urls, &result_app_ids,
+                  &result_app_names, &result_vm_types);
 
   if (result_app_ids.empty()) {
     std::move(completion_closure).Run();

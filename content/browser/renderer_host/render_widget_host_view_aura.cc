@@ -136,22 +136,6 @@ using blink::WebTouchEvent;
 
 namespace content {
 
-namespace {
-
-blink::mojom::FrameInputHandler* GetFrameInputHandlerForFocusedFrame(
-    RenderWidgetHostImpl* host) {
-  if (!host || !host->delegate()) {
-    return nullptr;
-  }
-  RenderFrameHostImpl* render_frame_host =
-      host->delegate()->GetFocusedFrameFromFocusedDelegate();
-  if (!render_frame_host)
-    return nullptr;
-  return render_frame_host->GetFrameInputHandler();
-}
-
-}  // namespace
-
 // We need to watch for mouse events outside a Web Popup or its parent
 // and dismiss the popup for certain events.
 class RenderWidgetHostViewAura::EventObserverForPopupExit
@@ -1358,10 +1342,7 @@ bool RenderWidgetHostViewAura::GetEditableSelectionRange(
 bool RenderWidgetHostViewAura::SetEditableSelectionRange(
     const gfx::Range& range) {
   // TODO(crbug.com/915630): Write an unit test for this method.
-  RenderFrameHostImpl* rfh = GetFocusedFrame();
-  if (!rfh)
-    return false;
-  auto* input_handler = rfh->GetFrameInputHandler();
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
   if (!input_handler)
     return false;
   input_handler->SetEditableSelectionOffsets(range.start(), range.end());
@@ -1417,7 +1398,7 @@ bool RenderWidgetHostViewAura::ChangeTextDirectionAndLayoutAlignment(
 
 void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
     size_t before, size_t after) {
-  auto* input_handler = GetFrameInputHandlerForFocusedFrame(host());
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
   if (!input_handler)
     return;
   input_handler->ExtendSelectionAndDelete(before, after);
@@ -1467,7 +1448,7 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
 bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  auto* input_handler = GetFrameInputHandlerForFocusedFrame(host());
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
   if (!input_handler)
     return false;
   input_handler->SetCompositionFromExistingText(range.start(), range.end(),
@@ -2492,11 +2473,7 @@ void RenderWidgetHostViewAura::SetPopupChild(
 
 void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& node_rect) {
-  RenderFrameHostImpl* rfh = GetFocusedFrame();
-  if (!rfh)
-    return;
-
-  auto* input_handler = rfh->GetFrameInputHandler();
+  auto* input_handler = GetFrameWidgetInputHandlerForFocusedWidget();
   if (!input_handler)
     return;
   input_handler->ScrollFocusedEditableNodeIntoRect(node_rect);
@@ -2593,6 +2570,14 @@ void RenderWidgetHostViewAura::ProcessDisplayMetricsChanged() {
 void RenderWidgetHostViewAura::CancelActiveTouches() {
   aura::Env* env = aura::Env::GetInstance();
   env->gesture_recognizer()->CancelActiveTouches(window());
+}
+
+blink::mojom::FrameWidgetInputHandler*
+RenderWidgetHostViewAura::GetFrameWidgetInputHandlerForFocusedWidget() {
+  auto* focused_widget = GetFocusedWidget();
+  if (!focused_widget)
+    return nullptr;
+  return focused_widget->GetFrameWidgetInputHandler();
 }
 
 }  // namespace content

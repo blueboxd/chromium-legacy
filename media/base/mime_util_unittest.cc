@@ -148,11 +148,7 @@ TEST(MimeUtilTest, CommonMediaMimeType) {
 
   EXPECT_TRUE(IsSupportedMediaMimeType("audio/ogg"));
   EXPECT_TRUE(IsSupportedMediaMimeType("application/ogg"));
-#if defined(OS_ANDROID)
-  EXPECT_FALSE(IsSupportedMediaMimeType("video/ogg"));
-#else
   EXPECT_TRUE(IsSupportedMediaMimeType("video/ogg"));
-#endif  // OS_ANDROID
 
   EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("application/x-mpegurl"));
   EXPECT_EQ(kHlsSupported, IsSupportedMediaMimeType("Application/X-MPEGURL"));

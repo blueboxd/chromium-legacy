@@ -90,8 +90,8 @@ class DelayedCookieMonster : public CookieStore {
 
   void GetCookiesWithOptionsInternalCallback(const std::string& cookie);
   void GetCookieListWithOptionsInternalCallback(
-      const CookieStatusList& cookie,
-      const CookieStatusList& excluded_cookies);
+      const CookieAccessResultList& cookie,
+      const CookieAccessResultList& excluded_cookies);
 
   // Invoke the original callbacks.
 
@@ -109,7 +109,7 @@ class DelayedCookieMonster : public CookieStore {
   CookieInclusionStatus result_;
   std::string cookie_;
   std::string cookie_line_;
-  CookieStatusList cookie_status_list_;
+  CookieAccessResultList cookie_access_result_list_;
   CookieList cookie_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedCookieMonster);

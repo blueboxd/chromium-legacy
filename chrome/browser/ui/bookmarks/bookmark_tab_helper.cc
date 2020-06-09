@@ -89,8 +89,8 @@ bool BookmarkTabHelper::HasObserver(BookmarkTabHelperObserver* observer) const {
 BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       is_starred_(false),
-      bookmark_model_(NULL),
-      bookmark_drag_(NULL) {
+      bookmark_model_(nullptr),
+      bookmark_drag_(nullptr) {
   bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(
       web_contents->GetBrowserContext());
   if (bookmark_model_)

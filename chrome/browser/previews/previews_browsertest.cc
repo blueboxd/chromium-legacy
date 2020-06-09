@@ -12,6 +12,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -26,6 +28,7 @@
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
@@ -46,10 +49,6 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   ~PreviewsBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_2G);
-
     // Set up https server with resource monitor.
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
@@ -70,8 +69,8 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     ASSERT_EQ(https_hint_setup_url_.host(), https_url_.host());
 
     // Set up http server with resource monitor and redirect handler.
-    http_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTP));
+    http_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTP);
     http_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
     http_server_->RegisterRequestMonitor(base::BindRepeating(
         &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
@@ -205,6 +204,14 @@ class PreviewsNoScriptBrowserTest : public ::testing::WithParamInterface<bool>,
         },
         {});
     PreviewsBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->OverrideTargetDecisionForTesting(
+            optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+            optimization_guide::OptimizationGuideDecision::kTrue);
+    PreviewsBrowserTest::SetUpOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -412,10 +419,12 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(
                            NoScriptPreviewsEnabledShouldSkipPreviewCheck)) {
-  // Set ECT to 4G so that the Preview should not be shown in the regular case.
-  g_browser_process->network_quality_tracker()
-      ->ReportEffectiveConnectionTypeForTesting(
-          net::EFFECTIVE_CONNECTION_TYPE_4G);
+  // Override the decision to |kFalse| so that the Preview should not be shown
+  // in the regular case.
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->OverrideTargetDecisionForTesting(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
+          optimization_guide::OptimizationGuideDecision::kFalse);
 
   GURL url = https_url();
 

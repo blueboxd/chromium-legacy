@@ -45,8 +45,8 @@ class AndroidSmsPairingStateTrackerImpl
   network::mojom::CookieManager* GetCookieManager();
 
   void AttemptFetchMessagesPairingState();
-  void OnCookiesRetrieved(const net::CookieStatusList& cookies,
-                          const net::CookieStatusList& excluded_cookies);
+  void OnCookiesRetrieved(const net::CookieAccessResultList& cookies,
+                          const net::CookieAccessResultList& excluded_cookies);
 
   void AddCookieChangeListener();
 

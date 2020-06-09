@@ -64,8 +64,10 @@ void MediaFeedsUI::GetMediaFeeds(GetMediaFeedsCallback callback) {
 
 void MediaFeedsUI::GetItemsForMediaFeed(int64_t feed_id,
                                         GetItemsForMediaFeedCallback callback) {
-  GetMediaHistoryService()->GetItemsForMediaFeedForDebug(feed_id,
-                                                         std::move(callback));
+  GetMediaHistoryService()->GetMediaFeedItems(
+      media_history::MediaHistoryKeyedService::GetMediaFeedItemsRequest::
+          CreateItemsForDebug(feed_id),
+      std::move(callback));
 }
 
 void MediaFeedsUI::FetchMediaFeed(int64_t feed_id,

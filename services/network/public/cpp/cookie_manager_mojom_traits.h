@@ -8,6 +8,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_inclusion_status.h"
@@ -28,6 +29,15 @@ struct EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite> {
   static network::mojom::CookieSameSite ToMojom(net::CookieSameSite input);
   static bool FromMojom(network::mojom::CookieSameSite input,
                         net::CookieSameSite* output);
+};
+
+template <>
+struct EnumTraits<network::mojom::CookieEffectiveSameSite,
+                  net::CookieEffectiveSameSite> {
+  static network::mojom::CookieEffectiveSameSite ToMojom(
+      net::CookieEffectiveSameSite input);
+  static bool FromMojom(network::mojom::CookieEffectiveSameSite input,
+                        net::CookieEffectiveSameSite* output);
 };
 
 template <>
@@ -188,6 +198,36 @@ struct StructTraits<network::mojom::CookieAndLineWithStatusDataView,
   }
   static bool Read(network::mojom::CookieAndLineWithStatusDataView cookie,
                    net::CookieAndLineWithStatus* out);
+};
+
+template <>
+struct StructTraits<network::mojom::CookieAccessResultDataView,
+                    net::CookieAccessResult> {
+  static const net::CookieEffectiveSameSite& effective_same_site(
+      const net::CookieAccessResult& c) {
+    return c.effective_same_site;
+  }
+  static const net::CookieInclusionStatus& status(
+      const net::CookieAccessResult& c) {
+    return c.status;
+  }
+  static bool Read(network::mojom::CookieAccessResultDataView access_result,
+                   net::CookieAccessResult* out);
+};
+
+template <>
+struct StructTraits<network::mojom::CookieWithAccessResultDataView,
+                    net::CookieWithAccessResult> {
+  static const net::CanonicalCookie& cookie(
+      const net::CookieWithAccessResult& c) {
+    return c.cookie;
+  }
+  static const net::CookieAccessResult& access_result(
+      const net::CookieWithAccessResult& c) {
+    return c.access_result;
+  }
+  static bool Read(network::mojom::CookieWithAccessResultDataView cookie,
+                   net::CookieWithAccessResult* out);
 };
 
 template <>

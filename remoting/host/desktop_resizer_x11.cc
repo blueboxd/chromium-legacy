@@ -144,7 +144,6 @@ class DesktopResizerX11 : public DesktopResizer {
   // its resolution.
   void SwitchToMode(const char* name);
 
-  XDisplay* const display_;
   x11::Connection connection_;
   x11::RandR* const randr_ = nullptr;
   const x11::Screen* const screen_ = nullptr;
@@ -157,8 +156,7 @@ class DesktopResizerX11 : public DesktopResizer {
 };
 
 DesktopResizerX11::DesktopResizerX11()
-    : display_(XOpenDisplay(nullptr)),
-      randr_(connection_.randr()),
+    : randr_(connection_.randr()),
       screen_(connection_.default_screen()),
       root_(screen_->root),
       exact_resize_(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -181,16 +179,18 @@ ScreenResolution DesktopResizerX11::GetCurrentResolution() {
   // X server socket by the time the resize function returns, hence the
   // file descriptor is never seen as readable.
   if (has_randr_) {
-    while (XEventsQueued(display_, QueuedAlready)) {
+    while (XEventsQueued(connection_.display(), QueuedAlready)) {
       XEvent event;
-      XNextEvent(display_, &event);
+      XNextEvent(connection_.display(), &event);
       XRRUpdateConfiguration(&event);
     }
   }
 
   ScreenResolution result(
-      webrtc::DesktopSize(DisplayWidth(display_, DefaultScreen(display_)),
-                          DisplayHeight(display_, DefaultScreen(display_))),
+      webrtc::DesktopSize(DisplayWidth(connection_.display(),
+                                       DefaultScreen(connection_.display())),
+                          DisplayHeight(connection_.display(),
+                                        DefaultScreen(connection_.display()))),
       webrtc::DesktopVector(kDefaultDPI, kDefaultDPI));
   return result;
 }
@@ -240,7 +240,7 @@ void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
 
   // Grab the X server while we're changing the display resolution. This ensures
   // that the display configuration doesn't change under our feet.
-  ScopedXGrabServer grabber(display_);
+  ScopedXGrabServer grabber(connection_.display());
 
   if (exact_resize_)
     SetResolutionNewMode(resolution);
@@ -319,7 +319,7 @@ void DesktopResizerX11::CreateMode(const char* name, int width, int height) {
   if (!resources_.Refresh(randr_, root_))
     return;
   x11::RandR::Mode mode_id = resources_.GetIdForMode(name);
-  if (mode_id != kInvalidMode)
+  if (mode_id == kInvalidMode)
     return;
   randr_->AddOutputMode({
       resources_.GetOutput(),

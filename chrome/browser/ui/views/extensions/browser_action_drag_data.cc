@@ -21,13 +21,10 @@ const char kClipboardFormatString[] = "chromium/x-browser-actions";
 }
 
 BrowserActionDragData::BrowserActionDragData()
-    : profile_(NULL), index_(static_cast<size_t>(-1)) {
-}
+    : profile_(nullptr), index_(static_cast<size_t>(-1)) {}
 
-BrowserActionDragData::BrowserActionDragData(
-    const std::string& id, int index)
-    : profile_(NULL), id_(id), index_(index) {
-}
+BrowserActionDragData::BrowserActionDragData(const std::string& id, int index)
+    : profile_(nullptr), id_(id), index_(index) {}
 
 bool BrowserActionDragData::GetDropFormats(
     std::set<ui::ClipboardFormatType>* format_types) {

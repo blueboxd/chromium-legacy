@@ -61,7 +61,7 @@ BookmarkContextMenu::BookmarkContextMenu(
                                          views::MenuRunner::HAS_MNEMONICS |
                                              views::MenuRunner::IS_NESTED |
                                              views::MenuRunner::CONTEXT_MENU)),
-      observer_(NULL),
+      observer_(nullptr),
       close_on_remove_(close_on_remove) {
   ui::SimpleMenuModel* menu_model = controller_->menu_model();
   for (int i = 0; i < menu_model->GetItemCount(); ++i) {

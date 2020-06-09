@@ -18,6 +18,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
@@ -220,7 +221,8 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public String getAuthToken(Account account, String authTokenScope) throws AuthException {
+    public AccessTokenData getAuthToken(Account account, String authTokenScope)
+            throws AuthException {
         AccountHolder ah = tryGetAccountHolder(account);
         if (ah == null) {
             throw new AuthException(AuthException.NONTRANSIENT,

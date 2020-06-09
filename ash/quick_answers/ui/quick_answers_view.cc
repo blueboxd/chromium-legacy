@@ -23,6 +23,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
@@ -114,6 +115,66 @@ View* AddHorizontalUiElements(
 
 }  // namespace
 
+// QuickAnswersFocusSearch ----------------------------------------------------
+
+// This class manages the focus traversal order for elements inside
+// QuickAnswersView.
+// TODO(siabhijeet): QuickAnswersView is a menu-companion, so ideally should
+// avoid disturbing existing focus. Explore other ways for keyboard
+// accessibility.
+class QuickAnswersFocusSearch : public views::FocusSearch {
+ public:
+  explicit QuickAnswersFocusSearch(QuickAnswersView* view)
+      : FocusSearch(/*root=*/view, /*cycle=*/true, /*accessibility_mode=*/true),
+        view_(view) {}
+
+  ~QuickAnswersFocusSearch() override = default;
+
+  // views::FocusSearch:
+  views::View* FindNextFocusableView(
+      views::View* starting_view,
+      SearchDirection search_direction,
+      TraversalDirection traversal_direction,
+      StartingViewPolicy check_starting_view,
+      AnchoredDialogPolicy can_go_into_anchored_dialog,
+      views::FocusTraversable** focus_traversable,
+      views::View** focus_traversable_view) override {
+    DCHECK_EQ(root(), view_);
+
+    std::vector<views::View*> focusable_views;
+    // |view_| is not included in focus loop for retry-view.
+    if (!view_->retry_label_)
+      focusable_views.push_back(view_);
+    if (view_->retry_label_ && view_->retry_label_->GetVisible())
+      focusable_views.push_back(view_->retry_label_);
+    if (view_->dogfood_button_ && view_->dogfood_button_->GetVisible())
+      focusable_views.push_back(view_->dogfood_button_);
+    if (focusable_views.empty())
+      return nullptr;
+
+    int delta =
+        search_direction == FocusSearch::SearchDirection::kForwards ? 1 : -1;
+    int focusable_views_size = int{focusable_views.size()};
+    for (int i = 0; i < focusable_views_size; ++i) {
+      // If current view from the set is found to be focused, return the view
+      // next (or previous) to it as next focusable view.
+      if (focusable_views[i] == starting_view) {
+        int next_index =
+            (i + delta + focusable_views_size) % focusable_views_size;
+        return focusable_views[next_index];
+      }
+    }
+
+    // Case when none of the views are already focused.
+    return (search_direction == FocusSearch::SearchDirection::kForwards)
+               ? focusable_views.front()
+               : focusable_views.back();
+  }
+
+ private:
+  QuickAnswersView* const view_;
+};
+
 // QuickAnswersView -----------------------------------------------------------
 
 QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
@@ -124,7 +185,8 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
       controller_(controller),
       title_(title),
       quick_answers_view_handler_(
-          std::make_unique<QuickAnswersPreTargetHandler>(this)) {
+          std::make_unique<QuickAnswersPreTargetHandler>(this)),
+      focus_search_(std::make_unique<QuickAnswersFocusSearch>(this)) {
   InitLayout();
   InitWidget();
 
@@ -150,10 +212,22 @@ const char* QuickAnswersView::GetClassName() const {
 
 void QuickAnswersView::OnFocus() {
   SetBackgroundState(true);
+  View* wants_focus = focus_search_->FindNextFocusableView(
+      nullptr, views::FocusSearch::SearchDirection::kForwards,
+      views::FocusSearch::TraversalDirection::kDown,
+      views::FocusSearch::StartingViewPolicy::kCheckStartingView,
+      views::FocusSearch::AnchoredDialogPolicy::kSkipAnchoredDialog, nullptr,
+      nullptr);
+  if (wants_focus != this)
+    wants_focus->RequestFocus();
 }
 
 void QuickAnswersView::OnBlur() {
   SetBackgroundState(false);
+}
+
+views::FocusTraversable* QuickAnswersView::GetPaneFocusTraversable() {
+  return this;
 }
 
 void QuickAnswersView::StateChanged(views::Button::ButtonState old_state) {
@@ -191,6 +265,18 @@ void QuickAnswersView::SetButtonNotifyActionToOnPress(views::Button* button) {
   DCHECK(button);
   button->button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
+}
+
+views::FocusSearch* QuickAnswersView::GetFocusSearch() {
+  return focus_search_.get();
+}
+
+views::FocusTraversable* QuickAnswersView::GetFocusTraversableParent() {
+  return nullptr;
+}
+
+views::View* QuickAnswersView::GetFocusTraversableParentView() {
+  return nullptr;
 }
 
 void QuickAnswersView::SendQuickAnswersQuery() {
@@ -235,6 +321,7 @@ void QuickAnswersView::ShowRetryView() {
       description_container->AddChildView(std::make_unique<views::LabelButton>(
           /*listener=*/this, base::UTF8ToUTF16(kDefaultRetryStr)));
   retry_label_->SetEnabledTextColors(gfx::kGoogleBlue600);
+  retry_label_->SetFocusForPlatform();
   SetButtonNotifyActionToOnPress(retry_label_);
 }
 

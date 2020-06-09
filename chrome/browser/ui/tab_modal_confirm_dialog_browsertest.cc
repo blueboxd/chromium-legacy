@@ -54,8 +54,8 @@ void MockTabModalConfirmDialogDelegate::OnClosed() {
 }
 
 TabModalConfirmDialogTest::TabModalConfirmDialogTest()
-    : delegate_(NULL),
-      dialog_(NULL),
+    : delegate_(nullptr),
+      dialog_(nullptr),
       accepted_count_(0),
       canceled_count_(0),
       closed_count_(0) {}

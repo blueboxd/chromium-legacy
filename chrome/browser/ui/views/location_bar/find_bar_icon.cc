@@ -51,7 +51,7 @@ const char* FindBarIcon::GetClassName() const {
 
 void FindBarIcon::OnExecuting(ExecuteSource execute_source) {}
 
-views::BubbleDialogDelegateView* FindBarIcon::GetBubble() const {
+views::BubbleDialogDelegate* FindBarIcon::GetBubble() const {
   return nullptr;
 }
 

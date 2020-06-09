@@ -25,7 +25,8 @@ ConfigurationPolicyPrefStoreTest::ConfigurationPolicyPrefStoreTest()
     : handler_list_(base::BindRepeating(&ConfigurationPolicyPrefStoreTest::
                                             PopulatePolicyHandlerParameters,
                                         base::Unretained(this)),
-                    GetChromePolicyDetailsCallback()) {
+                    GetChromePolicyDetailsCallback(),
+                    /* allow_all_future_policies*/ true) {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(false));
   provider_.Init();

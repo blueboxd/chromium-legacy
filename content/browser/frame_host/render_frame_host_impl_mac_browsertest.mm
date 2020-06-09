@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
@@ -33,8 +34,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserMacTest,
   [pboard setFindText:@"test"];
   EXPECT_NSEQ(@"test", [pboard findText]);
 
-  auto* rfhi = static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
-  auto* input_handler = rfhi->GetFrameInputHandler();
+  auto* input_handler = static_cast<WebContentsImpl*>(web_contents)
+                            ->GetFocusedFrameWidgetInputHandler();
   input_handler->SelectAll();
   input_handler->CopyToFindPboard();
 

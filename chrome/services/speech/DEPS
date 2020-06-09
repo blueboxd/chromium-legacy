@@ -1,5 +1,11 @@
 include_rules = [
   "+chrome/services/soda/internal",
+  "+chrome/services/speech",
   "+components/soda/constants.h",
+  "+components/speech",
+  "+content/browser/speech",
+  "+google_apis",
   "+media",
+  "+services/network",
+  "+third_party/blink/public/mojom/speech",
 ]

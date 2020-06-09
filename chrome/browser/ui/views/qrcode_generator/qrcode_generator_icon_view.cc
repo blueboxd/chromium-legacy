@@ -32,7 +32,7 @@ QRCodeGeneratorIconView::QRCodeGeneratorIconView(
 
 QRCodeGeneratorIconView::~QRCodeGeneratorIconView() = default;
 
-views::BubbleDialogDelegateView* QRCodeGeneratorIconView::GetBubble() const {
+views::BubbleDialogDelegate* QRCodeGeneratorIconView::GetBubble() const {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return nullptr;

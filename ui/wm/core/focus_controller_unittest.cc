@@ -45,8 +45,8 @@ class FocusNotificationObserver : public ActivationChangeObserver,
         activation_changed_count_(0),
         focus_changed_count_(0),
         reactivation_count_(0),
-        reactivation_requested_window_(NULL),
-        reactivation_actual_window_(NULL) {}
+        reactivation_requested_window_(nullptr),
+        reactivation_actual_window_(nullptr) {}
   ~FocusNotificationObserver() override {}
 
   void ExpectCounts(int activation_changed_count, int focus_changed_count) {
@@ -367,8 +367,7 @@ class SimpleEventHandler : public ui::EventHandler {
 class FocusShiftingActivationObserver : public ActivationChangeObserver {
  public:
   explicit FocusShiftingActivationObserver(aura::Window* activated_window)
-      : activated_window_(activated_window),
-        shift_focus_to_(NULL) {}
+      : activated_window_(activated_window), shift_focus_to_(nullptr) {}
   ~FocusShiftingActivationObserver() override {}
 
   void set_shift_focus_to(aura::Window* shift_focus_to) {
@@ -448,7 +447,7 @@ class ActivateWhileActivatingObserver : public ActivationChangeObserver {
 // in tests for those FocusRules implementations.
 class TestFocusRules : public BaseFocusRules {
  public:
-  TestFocusRules() : focus_restriction_(NULL) {}
+  TestFocusRules() : focus_restriction_(nullptr) {}
 
   // Restricts focus and activation to this window and its child hierarchy.
   void set_focus_restriction(aura::Window* focus_restriction) {

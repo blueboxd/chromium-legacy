@@ -965,11 +965,11 @@ void GaiaScreenHandler::ContinueAuthenticationWhenCookiesAvailable() {
 }
 
 void GaiaScreenHandler::OnGetCookiesForCompleteAuthentication(
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
   std::string auth_code, gaps_cookie;
-  for (const auto& cookie_with_status : cookies) {
-    const auto& cookie = cookie_with_status.cookie;
+  for (const auto& cookie_with_access_result : cookies) {
+    const auto& cookie = cookie_with_access_result.cookie;
     if (cookie.Name() == kOAUTHCodeCookie)
       auth_code = cookie.Value();
     else if (cookie.Name() == kGAPSCookie)

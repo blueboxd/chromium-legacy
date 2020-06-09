@@ -55,11 +55,11 @@ void AndroidSmsPairingStateTrackerImpl::AttemptFetchMessagesPairingState() {
 }
 
 void AndroidSmsPairingStateTrackerImpl::OnCookiesRetrieved(
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
   bool was_previously_paired = was_paired_on_last_update_;
-  for (const auto& cookie_with_status : cookies) {
-    const net::CanonicalCookie& cookie = cookie_with_status.cookie;
+  for (const auto& cookie_with_access_result : cookies) {
+    const net::CanonicalCookie& cookie = cookie_with_access_result.cookie;
     if (cookie.Name() == kMessagesPairStateCookieName) {
       PA_LOG(VERBOSE) << "Cookie says Messages paired: " << cookie.Value();
       was_paired_on_last_update_ = cookie.Value() == kPairedCookieValue;

@@ -1051,7 +1051,8 @@ interface NetworkContext {
   // header.
   [EnableIf=is_ct_supported]
   AddExpectCT(string host, mojo_base.mojom.Time expiry,
-              bool enforce, url.mojom.Url report_uri) => (bool success);
+              bool enforce, url.mojom.Url report_uri,
+              NetworkIsolationKey network_isolation_key) => (bool success);
 
   // Send a test CT report with dummy data for test purposes.
   [EnableIf=is_ct_supported]
@@ -1060,7 +1061,9 @@ interface NetworkContext {
   // Retrieves the expect CT state from the associated network context
   // transport security state.
   [EnableIf=is_ct_supported]
-  GetExpectCTState(string domain) => (mojo_base.mojom.DictionaryValue state);
+  GetExpectCTState(string domain,
+                   NetworkIsolationKey network_isolation_key)
+                   => (mojo_base.mojom.DictionaryValue state);
 
   // Creates a UDP socket. Caller can supply a |listener| interface pointer
   // to listen for incoming datagrams. A null |listener| is acceptable if caller

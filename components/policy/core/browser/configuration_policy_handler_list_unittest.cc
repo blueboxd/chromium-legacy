@@ -52,6 +52,8 @@ class StubPolicyHandler : public ConfigurationPolicyHandler {
 
 class ConfigurationPolicyHandlerListTest : public ::testing::Test {
  public:
+  void SetUp() override { CreateHandlerList(); }
+
   void AddSimplePolicy() {
     AddPolicy(kPolicyName, /* is_cloud */ true,
               std::make_unique<base::Value>(kPolicyValue));
@@ -66,14 +68,24 @@ class ConfigurationPolicyHandlerListTest : public ::testing::Test {
                            : PolicySource::POLICY_SOURCE_PLATFORM,
                   std::move(value), nullptr);
     if (policy_name != key::kEnableExperimentalPolicies) {
-      handler_list_.AddHandler(
+      handler_list_->AddHandler(
           std::make_unique<StubPolicyHandler>(policy_name));
     }
   }
 
   void ApplySettings() {
-    handler_list_.ApplyPolicySettings(policies_, &prefs_, &errors_,
-                                      &deprecated_policies_);
+    handler_list_->ApplyPolicySettings(policies_, &prefs_, &errors_,
+                                       &deprecated_policies_);
+  }
+
+  void CreateHandlerList(bool allow_all_future_policies = false) {
+    handler_list_ = std::make_unique<ConfigurationPolicyHandlerList>(
+        ConfigurationPolicyHandlerList::
+            PopulatePolicyHandlerParametersCallback(),
+        base::BindRepeating(
+            &ConfigurationPolicyHandlerListTest::GetPolicyDetails,
+            base::Unretained(this)),
+        allow_all_future_policies);
   }
 
   PrefValueMap* prefs() { return &prefs_; }
@@ -108,10 +120,7 @@ class ConfigurationPolicyHandlerListTest : public ::testing::Test {
   DeprecatedPoliciesSet deprecated_policies_;
   PolicyDetails details_{false, false, false, 0, 0, {}};
 
-  ConfigurationPolicyHandlerList handler_list_{
-      ConfigurationPolicyHandlerList::PopulatePolicyHandlerParametersCallback(),
-      base::BindRepeating(&ConfigurationPolicyHandlerListTest::GetPolicyDetails,
-                          base::Unretained(this))};
+  std::unique_ptr<ConfigurationPolicyHandlerList> handler_list_;
 };
 
 TEST_F(ConfigurationPolicyHandlerListTest, ApplySettingsWithNormalPolicy) {
@@ -150,6 +159,16 @@ TEST_F(ConfigurationPolicyHandlerListTest, ApplySettingsWithFuturePolicy) {
   VerifyPolicyAndPref(kPolicyName, /* in_pref */ true);
 }
 
+TEST_F(ConfigurationPolicyHandlerListTest,
+       ApplySettingsWithoutFutureFilterPolicy) {
+  CreateHandlerList(true);
+  AddSimplePolicy();
+  details()->is_future = true;
+
+  ApplySettings();
+
+  VerifyPolicyAndPref(kPolicyName, /* in_pref */ true);
+}
 // Device platform policy will be fitered out.
 TEST_F(ConfigurationPolicyHandlerListTest,
        ApplySettingsWithPlatformDevicePolicy) {

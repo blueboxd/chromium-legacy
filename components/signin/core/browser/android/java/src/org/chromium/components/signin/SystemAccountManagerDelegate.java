@@ -134,12 +134,13 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public String getAuthToken(Account account, String authTokenScope) throws AuthException {
+    public AccessTokenData getAuthToken(Account account, String authTokenScope)
+            throws AuthException {
         assert !ThreadUtils.runningOnUiThread();
         assert AccountUtils.GOOGLE_ACCOUNT_TYPE.equals(account.type);
         try {
-            return GoogleAuthUtil.getTokenWithNotification(
-                    ContextUtils.getApplicationContext(), account, authTokenScope, null);
+            return new AccessTokenData(GoogleAuthUtil.getTokenWithNotification(
+                    ContextUtils.getApplicationContext(), account, authTokenScope, null));
         } catch (GoogleAuthException ex) {
             // This case includes a UserRecoverableNotifiedException, but most clients will have
             // their own retry mechanism anyway.

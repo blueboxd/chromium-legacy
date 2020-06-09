@@ -815,8 +815,11 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_dismiss() throws InterruptedException {
+        // clang-format on
         prepareTabs(3, 0, null);
 
         // TODO(meiliang): Avoid using static variable for tracking state,
@@ -841,8 +844,11 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_review() throws InterruptedException {
+        // clang-format on
         prepareTabs(3, 0, null);
 
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
@@ -867,9 +873,12 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
     public void testShowOnlyOneTabSuggestionMessageCard_withSoftCleanup()
             throws InterruptedException {
+        // clang-format on
         verifyOnlyOneTabSuggestionMessageCardIsShowing();
     }
 
@@ -877,9 +886,12 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
     public void testShowOnlyOneTabSuggestionMessageCard_withHardCleanup()
             throws InterruptedException {
+        // clang-format on
         verifyOnlyOneTabSuggestionMessageCardIsShowing();
     }
 
@@ -887,8 +899,11 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures({ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
     public void testTabSuggestionMessageCardDismissAfterTabClosing() throws InterruptedException {
+        // clang-format on
         prepareTabs(3, 0, mUrl);
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
         CriteriaHelper.pollUiThread(Criteria.equals(3, this::getTabCountInCurrentTabModel));
@@ -968,8 +983,11 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature("TabSuggestion")
     @EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
     public void testTabSuggestionMessageCard_orientation() throws InterruptedException {
+        // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         prepareTabs(3, 0, null);
 
@@ -1646,7 +1664,8 @@ public class StartSurfaceLayoutTest {
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study"})
     @DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
     public void testTabGroupManualSelection_AfterReviewTabSuggestion() throws InterruptedException {
         // clang-format on
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();

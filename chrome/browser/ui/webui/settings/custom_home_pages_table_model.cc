@@ -45,9 +45,8 @@ struct CustomHomePagesTableModel::Entry {
 
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
     : profile_(profile),
-      observer_(NULL),
-      num_outstanding_title_lookups_(0) {
-}
+      observer_(nullptr),
+      num_outstanding_title_lookups_(0) {}
 
 CustomHomePagesTableModel::~CustomHomePagesTableModel() {
 }

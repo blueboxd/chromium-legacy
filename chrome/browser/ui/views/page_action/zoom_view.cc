@@ -100,7 +100,7 @@ void ZoomView::OnExecuting(PageActionIconView::ExecuteSource source) {
   ZoomBubbleView::ShowBubble(GetWebContents(), ZoomBubbleView::USER_GESTURE);
 }
 
-views::BubbleDialogDelegateView* ZoomView::GetBubble() const {
+views::BubbleDialogDelegate* ZoomView::GetBubble() const {
   return ZoomBubbleView::GetZoomBubble();
 }
 

@@ -58,7 +58,7 @@ class NaClFileHostTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NaClFileHostTest);
 };
 
-NaClFileHostTest::NaClFileHostTest() : nacl_browser_delegate_(NULL) {}
+NaClFileHostTest::NaClFileHostTest() : nacl_browser_delegate_(nullptr) {}
 
 NaClFileHostTest::~NaClFileHostTest() {
 }

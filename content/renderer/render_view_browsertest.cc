@@ -42,6 +42,7 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/fake_render_widget_host.h"
 #include "content/public/test/frame_load_waiter.h"
 #include "content/public/test/local_frame_host_interceptor.h"
 #include "content/public/test/render_view_test.h"
@@ -254,6 +255,10 @@ class RenderViewImplTest : public RenderViewTest {
 
   TestRenderFrame* frame() {
     return static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
+  }
+
+  blink::mojom::FrameWidgetInputHandler* GetFrameWidgetInputHandler() {
+    return render_widget_host_->GetFrameWidgetInputHandler();
   }
 
   RenderAccessibilityManager* GetRenderAccessibilityManager() {
@@ -2205,10 +2210,12 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
            "<input id=\"test1\" value=\"some test text hello\"></input>"
            "</body>"
            "</html>");
+  auto* frame_widget_input_handler = GetFrameWidgetInputHandler();
   ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
-  frame()->SetEditableSelectionOffsets(4, 8);
+  frame_widget_input_handler->SetEditableSelectionOffsets(4, 8);
   const std::vector<ui::ImeTextSpan> empty_ime_text_span;
-  frame()->SetCompositionFromExistingText(7, 10, empty_ime_text_span);
+  frame_widget_input_handler->SetCompositionFromExistingText(
+      7, 10, empty_ime_text_span);
   base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
@@ -2217,7 +2224,7 @@ TEST_F(RenderViewImplTest, SetEditableSelectionAndComposition) {
   EXPECT_EQ(8, info.selection_end);
   EXPECT_EQ(7, info.composition_start);
   EXPECT_EQ(10, info.composition_end);
-  frame()->CollapseSelection();
+  frame_widget_input_handler->CollapseSelection();
   base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ(8, info.selection_start);
@@ -2233,9 +2240,10 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
            "<input id=\"test1\" value=\"abcdefghijklmnopqrstuvwxyz\"></input>"
            "</body>"
            "</html>");
+  auto* frame_widget_input_handler = GetFrameWidgetInputHandler();
   ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
-  frame()->SetEditableSelectionOffsets(10, 10);
-  frame()->ExtendSelectionAndDelete(3, 4);
+  frame_widget_input_handler->SetEditableSelectionOffsets(10, 10);
+  frame_widget_input_handler->ExtendSelectionAndDelete(3, 4);
   base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
@@ -2243,8 +2251,8 @@ TEST_F(RenderViewImplTest, OnExtendSelectionAndDelete) {
   EXPECT_EQ("abcdefgopqrstuvwxyz", info.value);
   EXPECT_EQ(7, info.selection_start);
   EXPECT_EQ(7, info.selection_end);
-  frame()->SetEditableSelectionOffsets(4, 8);
-  frame()->ExtendSelectionAndDelete(2, 5);
+  frame_widget_input_handler->SetEditableSelectionOffsets(4, 8);
+  frame_widget_input_handler->ExtendSelectionAndDelete(2, 5);
   base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("abuvwxyz", info.value);
@@ -2264,8 +2272,9 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
       "</html>");
   ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
 
-  frame()->SetEditableSelectionOffsets(10, 10);
-  frame()->DeleteSurroundingText(3, 4);
+  auto* frame_widget_input_handler = GetFrameWidgetInputHandler();
+  frame_widget_input_handler->SetEditableSelectionOffsets(10, 10);
+  frame_widget_input_handler->DeleteSurroundingText(3, 4);
   base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
@@ -2274,30 +2283,30 @@ TEST_F(RenderViewImplTest, OnDeleteSurroundingText) {
   EXPECT_EQ(7, info.selection_start);
   EXPECT_EQ(7, info.selection_end);
 
-  frame()->SetEditableSelectionOffsets(4, 8);
-  frame()->DeleteSurroundingText(2, 5);
+  frame_widget_input_handler->SetEditableSelectionOffsets(4, 8);
+  frame_widget_input_handler->DeleteSurroundingText(2, 5);
   base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("abefgouvwxyz", info.value);
   EXPECT_EQ(2, info.selection_start);
   EXPECT_EQ(6, info.selection_end);
 
-  frame()->SetEditableSelectionOffsets(5, 5);
-  frame()->DeleteSurroundingText(10, 0);
+  frame_widget_input_handler->SetEditableSelectionOffsets(5, 5);
+  frame_widget_input_handler->DeleteSurroundingText(10, 0);
   base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("ouvwxyz", info.value);
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
-  frame()->DeleteSurroundingText(0, 10);
+  frame_widget_input_handler->DeleteSurroundingText(0, 10);
   base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("", info.value);
   EXPECT_EQ(0, info.selection_start);
   EXPECT_EQ(0, info.selection_end);
 
-  frame()->DeleteSurroundingText(10, 10);
+  frame_widget_input_handler->DeleteSurroundingText(10, 10);
   base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("", info.value);
@@ -2321,8 +2330,9 @@ TEST_F(RenderViewImplTest, MAYBE_OnDeleteSurroundingTextInCodePoints) {
       "<input id=\"test1\" value=\"ab&#x1f3c6; cdef&#x1f3c6; gh\">");
   ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
 
-  frame()->SetEditableSelectionOffsets(4, 4);
-  frame()->DeleteSurroundingTextInCodePoints(2, 2);
+  auto* frame_widget_input_handler = GetFrameWidgetInputHandler();
+  frame_widget_input_handler->SetEditableSelectionOffsets(4, 4);
+  frame_widget_input_handler->DeleteSurroundingTextInCodePoints(2, 2);
   base::RunLoop().RunUntilIdle();
   blink::WebInputMethodController* controller =
       frame()->GetWebFrame()->GetInputMethodController();
@@ -2332,8 +2342,8 @@ TEST_F(RenderViewImplTest, MAYBE_OnDeleteSurroundingTextInCodePoints) {
   EXPECT_EQ(1, info.selection_start);
   EXPECT_EQ(1, info.selection_end);
 
-  frame()->SetEditableSelectionOffsets(1, 3);
-  frame()->DeleteSurroundingTextInCodePoints(1, 4);
+  frame_widget_input_handler->SetEditableSelectionOffsets(1, 3);
+  frame_widget_input_handler->DeleteSurroundingTextInCodePoints(1, 4);
   base::RunLoop().RunUntilIdle();
   info = controller->TextInputInfo();
   EXPECT_EQ("deh", info.value);

@@ -4,8 +4,6 @@
 
 import unittest
 
-import xml.dom.minidom
-
 import histogram_paths
 import merge_xml
 
@@ -14,21 +12,23 @@ class MergeXmlTest(unittest.TestCase):
 
   def testMergeFiles(self):
     """Checks that enums.xml and histograms.xml can merge successfully."""
-    merged = merge_xml.MergeFiles(
+    merged = merge_xml.PrettyPrintMergedFiles(
         [histogram_paths.TEST_ENUMS_XML, histogram_paths.TEST_HISTOGRAMS_XML])
     # If ukm.xml is not provided, there is no need to populate the
     # UkmEventNameHash enum.
-    expected_merged = xml.dom.minidom.parseString("""
-<histogram-configuration><enums>
+    expected_merged_xml = """
+<histogram-configuration>
+
+<enums>
 
 <enum name="Enum1">
-  <int label="Value0" value="0"/>
-  <int label="Value1" value="1"/>
+  <int value="0" label="Value0"/>
+  <int value="1" label="Value1"/>
 </enum>
 
 <enum name="TestEnum">
-  <int label="Value0" value="0"/>
-  <int label="Value1" value="1"/>
+  <int value="0" label="Value0"/>
+  <int value="1" label="Value1"/>
 </enum>
 
 <enum name="UkmEventNameHash">
@@ -38,7 +38,9 @@ class MergeXmlTest(unittest.TestCase):
 
 </enum>
 
-</enums><histograms>
+</enums>
+
+<histograms>
 
 <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
   <summary>Foo</summary>
@@ -46,37 +48,37 @@ class MergeXmlTest(unittest.TestCase):
   <component>Component</component>
 </histogram>
 
-<histogram name="Test.Histogram" units="microseconds">
-  <obsolete>
-    Removed 6/2020.
-  </obsolete>
-  <owner>person@chromium.org</owner>
-  <summary>
-    Summary 2
-  </summary>
-</histogram>
-
 <histogram name="Test.EnumHistogram" enum="TestEnum" expires_after="M81">
   <owner>uma@chromium.org</owner>
   <obsolete>
     Obsolete message
   </obsolete>
-  <summary>
-    A enum histogram.
-  </summary>
+  <summary>A enum histogram.</summary>
 </histogram>
 
-</histograms><histogram_suffixes_list>
+<histogram name="Test.Histogram" units="microseconds">
+  <obsolete>
+    Removed 6/2020.
+  </obsolete>
+  <owner>person@chromium.org</owner>
+  <summary>Summary 2</summary>
+</histogram>
+
+</histograms>
+
+<histogram_suffixes_list>
 
 <histogram_suffixes name="Test.HistogramSuffixes" separator=".">
-  <suffix label="A histogram_suffixes" name="TestSuffix"/>
+  <suffix name="TestSuffix" label="A histogram_suffixes"/>
   <affected-histogram name="Test.Histogram"/>
 </histogram_suffixes>
 
-</histogram_suffixes_list></histogram-configuration>
-""")
+</histogram_suffixes_list>
+
+</histogram-configuration>
+"""
     self.maxDiff = None
-    self.assertEqual(expected_merged.toxml(), merged.toxml())
+    self.assertEqual(expected_merged_xml.strip(), merged.strip())
 
   def testMergeFiles_WithXmlEvents(self):
     """Checks that the UkmEventNameHash enum is populated correctly.
@@ -85,18 +87,20 @@ class MergeXmlTest(unittest.TestCase):
     where where each value is a xml event name hash truncated to 31 bits and
     each label is the corresponding event name.
     """
-    merged = merge_xml.MergeFiles(histogram_paths.ALL_TEST_XMLS)
-    expected_merged = xml.dom.minidom.parseString("""
-<histogram-configuration><enums>
+    merged = merge_xml.PrettyPrintMergedFiles(histogram_paths.ALL_TEST_XMLS)
+    expected_merged_xml = """
+<histogram-configuration>
+
+<enums>
 
 <enum name="Enum1">
-  <int label="Value0" value="0"/>
-  <int label="Value1" value="1"/>
+  <int value="0" label="Value0"/>
+  <int value="1" label="Value1"/>
 </enum>
 
 <enum name="TestEnum">
-  <int label="Value0" value="0"/>
-  <int label="Value1" value="1"/>
+  <int value="0" label="Value0"/>
+  <int value="1" label="Value1"/>
 </enum>
 
 <enum name="UkmEventNameHash">
@@ -104,12 +108,14 @@ class MergeXmlTest(unittest.TestCase):
      bits. This gets populated by the GetEnumsNodes function in merge_xml.py
      when producing the merged XML file. -->
 
-<int label="AbusiveExperienceHeuristic.WindowOpen" value="324605288"/>\
-<int label="AbusiveExperienceHeuristic.TabUnder" value="1621538456"/>\
-<int label="Autofill.SelectedMaskedServerCard (Obsolete)" value="1913876024"/>\
+  <int value="324605288" label="AbusiveExperienceHeuristic.WindowOpen"/>
+  <int value="1621538456" label="AbusiveExperienceHeuristic.TabUnder"/>
+  <int value="1913876024" label="Autofill.SelectedMaskedServerCard (Obsolete)"/>
 </enum>
 
-</enums><histograms>
+</enums>
+
+<histograms>
 
 <histogram name="Foo.Bar" units="xxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyzzzz">
   <summary>Foo</summary>
@@ -117,37 +123,37 @@ class MergeXmlTest(unittest.TestCase):
   <component>Component</component>
 </histogram>
 
-<histogram name="Test.Histogram" units="microseconds">
-  <obsolete>
-    Removed 6/2020.
-  </obsolete>
-  <owner>person@chromium.org</owner>
-  <summary>
-    Summary 2
-  </summary>
-</histogram>
-
 <histogram name="Test.EnumHistogram" enum="TestEnum" expires_after="M81">
   <owner>uma@chromium.org</owner>
   <obsolete>
     Obsolete message
   </obsolete>
-  <summary>
-    A enum histogram.
-  </summary>
+  <summary>A enum histogram.</summary>
 </histogram>
 
-</histograms><histogram_suffixes_list>
+<histogram name="Test.Histogram" units="microseconds">
+  <obsolete>
+    Removed 6/2020.
+  </obsolete>
+  <owner>person@chromium.org</owner>
+  <summary>Summary 2</summary>
+</histogram>
+
+</histograms>
+
+<histogram_suffixes_list>
 
 <histogram_suffixes name="Test.HistogramSuffixes" separator=".">
-  <suffix label="A histogram_suffixes" name="TestSuffix"/>
+  <suffix name="TestSuffix" label="A histogram_suffixes"/>
   <affected-histogram name="Test.Histogram"/>
 </histogram_suffixes>
 
-</histogram_suffixes_list></histogram-configuration>
-""")
+</histogram_suffixes_list>
+
+</histogram-configuration>
+"""
     self.maxDiff = None
-    self.assertEqual(expected_merged.toxml(), merged.toxml())
+    self.assertEqual(expected_merged_xml.strip(), merged.strip())
 
 
 if __name__ == '__main__':

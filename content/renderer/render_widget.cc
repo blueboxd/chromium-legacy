@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -275,11 +276,11 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
   DCHECK(drop_data.file_contents.empty());
   DCHECK(drop_data.file_contents_content_disposition.empty());
 
-  if (!drop_data.text.is_null()) {
+  if (drop_data.text) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeString;
     item.string_type = WebString::FromUTF8(ui::kMimeTypeText);
-    item.string_data = WebString::FromUTF16(drop_data.text.string());
+    item.string_data = WebString::FromUTF16(*drop_data.text);
     item_list.push_back(item);
   }
 
@@ -292,11 +293,11 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item_list.push_back(item);
   }
 
-  if (!drop_data.html.is_null()) {
+  if (drop_data.html) {
     WebDragData::Item item;
     item.storage_type = WebDragData::Item::kStorageTypeString;
     item.string_type = WebString::FromUTF8(ui::kMimeTypeHTML);
-    item.string_data = WebString::FromUTF16(drop_data.html.string());
+    item.string_data = WebString::FromUTF16(*drop_data.html);
     item.base_url = drop_data.html_base_url;
     item_list.push_back(item);
   }
@@ -415,37 +416,32 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     bool never_composited) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(widget_routing_id, compositor_deps,
-                                            /*hidden=*/true, never_composited,
-                                            mojo::NullReceiver());
+                                            /*hidden=*/true, never_composited);
   }
 
   return std::make_unique<RenderWidget>(widget_routing_id, compositor_deps,
-                                        /*hidden=*/true, never_composited,
-                                        mojo::NullReceiver());
+                                        /*hidden=*/true, never_composited);
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     bool hidden,
-    bool never_composited,
-    mojo::PendingReceiver<mojom::Widget> widget_receiver) {
+    bool never_composited) {
   return new RenderWidget(widget_routing_id, compositor_deps, hidden,
-                          never_composited, std::move(widget_receiver));
+                          never_composited);
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
                            bool hidden,
-                           bool never_composited,
-                           mojo::PendingReceiver<mojom::Widget> widget_receiver)
+                           bool never_composited)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       is_hidden_(hidden),
       never_composited_(never_composited),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
-      frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
-      widget_receiver_(this, std::move(widget_receiver)) {
+      frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
   DCHECK(compositor_deps_);
@@ -1322,6 +1318,16 @@ void RenderWidget::QueueSyntheticEvent(
       std::move(event), DISPATCH_TYPE_NON_BLOCKING,
       blink::mojom::InputEventResultState::kNotConsumed, attribution,
       HandledEventCallback());
+}
+
+void RenderWidget::GetWidgetInputHandler(
+    blink::CrossVariantMojoReceiver<
+        blink::mojom::WidgetInputHandlerInterfaceBase> widget_input_receiver,
+    blink::CrossVariantMojoRemote<
+        blink::mojom::WidgetInputHandlerHostInterfaceBase>
+        widget_input_host_remote) {
+  widget_input_handler_manager_->AddInterface(
+      std::move(widget_input_receiver), std::move(widget_input_host_remote));
 }
 
 void RenderWidget::ShowVirtualKeyboard() {
@@ -3169,21 +3175,6 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
     return frame_widget->GetActiveWebInputMethodController();
 
   return nullptr;
-}
-
-void RenderWidget::SetupWidgetInputHandler(
-    mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
-  widget_input_handler_manager_->AddInterface(std::move(receiver),
-                                              std::move(host));
-}
-
-void RenderWidget::SetWidgetReceiver(
-    mojo::PendingReceiver<mojom::Widget> recevier) {
-  // Close the old receiver if there was one.
-  // A RenderWidgetHost should not need more than one channel.
-  widget_receiver_.reset();
-  widget_receiver_.Bind(std::move(recevier));
 }
 
 blink::mojom::WidgetInputHandlerHost* RenderWidget::GetInputHandlerHost() {

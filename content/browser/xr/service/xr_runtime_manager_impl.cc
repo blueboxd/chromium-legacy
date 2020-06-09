@@ -392,14 +392,15 @@ bool XRRuntimeManagerImpl::AreAllProvidersInitialized() {
 void XRRuntimeManagerImpl::AddRuntime(
     device::mojom::XRDeviceId id,
     device::mojom::VRDisplayInfoPtr info,
+    device::mojom::XRDeviceDataPtr device_data,
     mojo::PendingRemote<device::mojom::XRRuntime> runtime) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(runtimes_.find(id) == runtimes_.end());
 
   TRACE_EVENT_INSTANT1("xr", "AddRuntime", TRACE_EVENT_SCOPE_THREAD, "id", id);
 
-  runtimes_[id] = std::make_unique<BrowserXRRuntimeImpl>(id, std::move(runtime),
-                                                         std::move(info));
+  runtimes_[id] = std::make_unique<BrowserXRRuntimeImpl>(
+      id, std::move(device_data), std::move(runtime), std::move(info));
 
   for (Observer& obs : g_xr_runtime_manager_observers.Get())
     obs.OnRuntimeAdded(runtimes_[id].get());

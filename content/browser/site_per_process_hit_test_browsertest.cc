@@ -633,7 +633,7 @@ class SetMouseCaptureInterceptor
 
   mojo::Receiver<blink::mojom::WidgetInputHandlerHost>& receiver() {
     return static_cast<InputRouterImpl*>(host_->input_router())
-        ->frame_host_receiver_for_testing();
+        ->host_receiver_for_testing();
   }
 
   std::unique_ptr<base::RunLoop> run_loop_;

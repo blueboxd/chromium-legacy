@@ -34,7 +34,7 @@ using storage_monitor::TestStorageMonitor;
 
 class SystemStorageEjectApiTest : public extensions::ShellApiTest {
  public:
-  SystemStorageEjectApiTest() : monitor_(NULL) {}
+  SystemStorageEjectApiTest() : monitor_(nullptr) {}
   ~SystemStorageEjectApiTest() override {}
 
  protected:

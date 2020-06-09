@@ -80,9 +80,8 @@ AssistantStatus ToAssistantStatus(AssistantManagerService::State state) {
   switch (state) {
     case State::STOPPED:
     case State::STARTING:
-      return AssistantStatus::NOT_READY;
     case State::STARTED:
-      return AssistantStatus::READY;
+      return AssistantStatus::NOT_READY;
     case State::RUNNING:
       return AssistantStatus::NEW_READY;
   }

@@ -121,9 +121,6 @@ declare_args() {
   thin_lto_enable_optimizations =
       (is_chromeos || is_android || is_win) && is_official_build
 
-  # By default only the binaries in official builds get build IDs.
-  force_local_build_id = false
-
   # Initialize all local variables with a pattern. This flag will fill
   # uninitialized floating-point types (and 32-bit pointers) with 0xFF and the
   # rest with 0xAA. This makes behavior of uninitialized memory bugs consistent,
@@ -332,14 +329,16 @@ config("compiler") {
       }
     }
 
-    if (is_official_build || force_local_build_id) {
-      # Explicitly pass --build-id to ld. Compilers used to always pass this
-      # implicitly but don't any more (in particular clang when built without
-      # ENABLE_LINKER_BUILD_ID=ON). The crash infrastructure does need a build
-      # id, so explicitly enable it in official builds. It's not needed in
-      # unofficial builds and computing it does slow down the link, so go with
-      # faster links in unofficial builds.
+    # Explicitly pass --build-id to ld. Compilers used to always pass this
+    # implicitly but don't any more (in particular clang when built without
+    # ENABLE_LINKER_BUILD_ID=ON).
+    if (is_official_build) {
+      # The sha1 build id has lower risk of collision but is more expensive to
+      # compute, so only use it in the official build to avoid slowing down
+      # links.
       ldflags += [ "-Wl,--build-id=sha1" ]
+    } else {
+      ldflags += [ "-Wl,--build-id" ]
     }
 
     if (!is_android) {
@@ -2023,6 +2022,12 @@ config("no_optimize") {
     } else {
       cflags = [ "-Os" ] + common_optimize_on_cflags
     }
+
+    if (!is_component_build) {
+      # Required for library partitions. Without this all symbols just end up
+      # in the base partition.
+      ldflags = [ "-Wl,--gc-sections" ]
+    }
   } else if (is_fuchsia) {
     # On Fuchsia, we optimize for size here to reduce the size of debug build
     # packages so they can be run in a KVM. See crbug.com/910243 for details.
@@ -2274,7 +2279,8 @@ config("symbols") {
       cflags += [ "-g2" ]
     }
 
-    if (is_clang && !is_nacl && !use_xcode_clang) {
+    # TODO(https://crbug.com/1050118): Investigate missing debug info on mac.
+    if (is_clang && !is_nacl && !use_xcode_clang && !is_mac && !is_ios) {
       cflags += [
         "-Xclang",
         "-debug-info-kind=constructor",

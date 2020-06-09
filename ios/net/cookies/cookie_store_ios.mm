@@ -115,12 +115,12 @@ base::OnceClosure BindSetCookiesCallback(
 }
 
 // Adds cookies in |cookies| with name |name| to |filtered|.
-void OnlyCookiesWithName(const net::CookieStatusList& cookies,
+void OnlyCookiesWithName(const net::CookieAccessResultList& cookies,
                          const std::string& name,
                          net::CookieList* filtered) {
-  for (const auto& cookie_with_status : cookies) {
-    if (cookie_with_status.cookie.Name() == name)
-      filtered->push_back(cookie_with_status.cookie);
+  for (const auto& cookie_with_access_result : cookies) {
+    if (cookie_with_access_result.cookie.Name() == name)
+      filtered->push_back(cookie_with_access_result.cookie);
   }
 }
 
@@ -613,8 +613,8 @@ void CookieStoreIOS::RunCallbacksForCookies(
 
 void CookieStoreIOS::GotCookieListFor(
     const std::pair<GURL, std::string> key,
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   net::CookieList filtered;
@@ -676,15 +676,15 @@ CookieStoreIOS::CanonicalCookieListFromSystemCookies(NSArray* cookies) {
   return cookie_list;
 }
 
-net::CookieStatusList
-CookieStoreIOS::CanonicalCookieWithStatusListFromSystemCookies(
+net::CookieAccessResultList
+CookieStoreIOS::CanonicalCookieWithAccessResultListFromSystemCookies(
     NSArray* cookies) {
-  net::CookieStatusList cookie_list;
+  net::CookieAccessResultList cookie_list;
   cookie_list.reserve([cookies count]);
   for (NSHTTPCookie* cookie in cookies) {
     base::Time created = system_store_->GetCookieCreationTime(cookie);
     cookie_list.push_back({CanonicalCookieFromSystemCookie(cookie, created),
-                           net::CookieInclusionStatus()});
+                           net::CookieAccessResult()});
   }
   return cookie_list;
 }
@@ -693,9 +693,9 @@ void CookieStoreIOS::RunGetCookieListCallbackOnSystemCookies(
     CookieStoreIOS::GetCookieListCallback callback,
     NSArray<NSHTTPCookie*>* cookies) {
   if (!callback.is_null()) {
-    net::CookieStatusList excluded_cookies;
+    net::CookieAccessResultList excluded_cookies;
     std::move(callback).Run(
-        CanonicalCookieWithStatusListFromSystemCookies(cookies),
+        CanonicalCookieWithAccessResultListFromSystemCookies(cookies),
         excluded_cookies);
   }
 }

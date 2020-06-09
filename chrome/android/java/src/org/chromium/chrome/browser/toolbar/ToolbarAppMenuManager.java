@@ -14,20 +14,15 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.util.TokenHolder;
 
 /**
@@ -48,7 +43,6 @@ class ToolbarAppMenuManager implements AppMenuObserver {
     private int mFullscreenMenuToken = TokenHolder.INVALID_TOKEN;
     private int mFullscreenHighlightToken = TokenHolder.INVALID_TOKEN;
     private final TopToolbarCoordinator mToolbar;
-    private final Supplier<Profile> mProfileSupplier;
     private final SetFocusFunction mSetUrlBarFocusFunction;
     private Runnable mRequestRenderRunnable;
     private Runnable mUpdateStateChangedListener;
@@ -63,7 +57,6 @@ class ToolbarAppMenuManager implements AppMenuObserver {
      *         controls.
      * @param activity Activity in which this object lives.
      * @param toolbar Toolbar object that hosts the app menu button.
-     * @param profileSupplier Supplier of the current profile.
      * @param setUrlBarFocusFunction Function that allows setting focus on the url bar.
      * @param requestRenderRunnable Runnable that requests a re-rendering of the compositor view
      *         containing the app menu button.
@@ -72,13 +65,12 @@ class ToolbarAppMenuManager implements AppMenuObserver {
      */
     public ToolbarAppMenuManager(ObservableSupplier<AppMenuCoordinator> appMenuCoordinatorSupplier,
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
-            Activity activity, TopToolbarCoordinator toolbar, Supplier<Profile> profileSupplier,
+            Activity activity, TopToolbarCoordinator toolbar,
             SetFocusFunction setUrlBarFocusFunction, Runnable requestRenderRunnable,
             boolean shouldShowAppUpdateBadge, Supplier<Boolean> isInOverviewModeSupplier) {
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
         mActivity = activity;
         mToolbar = toolbar;
-        mProfileSupplier = profileSupplier;
         mSetUrlBarFocusFunction = setUrlBarFocusFunction;
         mAppMenuCoordinatorSupplier = appMenuCoordinatorSupplier;
         mAppMenuCoordinatorSupplierObserver = this::onAppMenuInitialized;
@@ -173,13 +165,6 @@ class ToolbarAppMenuManager implements AppMenuObserver {
         mAppMenuButtonHelper.setOnAppMenuShownListener(() -> {
             RecordUserAction.record("MobileToolbarShowMenu");
             mToolbar.onMenuShown();
-
-            // Assume data saver footer is shown only if data reduction proxy is enabled.
-            if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
-                Profile profile = mProfileSupplier.get();
-                Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-                tracker.notifyEvent(EventConstants.OVERFLOW_OPENED_WITH_DATA_SAVER_SHOWN);
-            }
         });
         mToolbar.setAppMenuButtonHelper(mAppMenuButtonHelper);
         mAppMenuPropertiesDelegate = appMenuCoordinator.getAppMenuPropertiesDelegate();

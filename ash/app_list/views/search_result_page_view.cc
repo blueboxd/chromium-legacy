@@ -303,29 +303,19 @@ void SearchResultPageView::ReorderSearchResultContainers() {
               return a->container_score() > b->container_score();
             });
 
-  int result_y_index = 0;
   for (size_t i = 0; i < result_container_views_.size(); ++i) {
     SearchResultContainerView* view = result_container_views_[i];
 
     if (i > 0) {
       HorizontalSeparator* separator = separators_[i - 1];
       // Hides the separator above the container that has no results.
-      if (!view->num_results())
-        separator->SetVisible(false);
-      else
-        separator->SetVisible(true);
+      separator->SetVisible(view->num_results());
 
       contents_view_->ReorderChildView(separator, i * 2 - 1 + view_offset);
       contents_view_->ReorderChildView(view->parent(), i * 2 + view_offset);
-
-      result_y_index += kSeparatorThickness;
     } else {
       contents_view_->ReorderChildView(view->parent(), i + view_offset);
     }
-
-    view->NotifyFirstResultYIndex(result_y_index);
-
-    result_y_index += view->GetYSize();
   }
 
   Layout();

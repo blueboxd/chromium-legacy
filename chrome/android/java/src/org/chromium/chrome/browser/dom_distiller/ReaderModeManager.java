@@ -202,8 +202,9 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         }
 
         // Make sure there is a WebContentsObserver on this tab's WebContents.
-        if (mWebContentsObserver == null) mWebContentsObserver = createWebContentsObserver();
-
+        if (mWebContentsObserver == null && mTab.getWebContents() != null) {
+            mWebContentsObserver = createWebContentsObserver();
+        }
         tryShowingInfoBar();
     }
 

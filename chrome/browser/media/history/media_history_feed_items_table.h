@@ -67,9 +67,9 @@ class MediaHistoryFeedItemsTable : public MediaHistoryTableBase {
   // Deletes all items from a feed.
   bool DeleteItems(const int64_t feed_id);
 
-  // Gets all the items associated with |feed_id|.
-  std::vector<media_feeds::mojom::MediaFeedItemPtr> GetItemsForFeed(
-      const int64_t feed_id);
+  // Returns the feed rows in the database.
+  std::vector<media_feeds::mojom::MediaFeedItemPtr> GetItems(
+      const MediaHistoryKeyedService::GetMediaFeedItemsRequest& request);
 
   // Returns all the Media Feed Items that have an unknown safe search result.
   MediaHistoryKeyedService::PendingSafeSearchCheckList

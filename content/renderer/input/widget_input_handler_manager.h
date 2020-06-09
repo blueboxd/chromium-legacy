@@ -67,10 +67,6 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       blink::scheduler::WebThreadScheduler* main_thread_scheduler,
       bool needs_input_handler);
-  void AddAssociatedInterface(
-      mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
-          receiver,
-      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host);
 
   void AddInterface(
       mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
@@ -157,9 +153,6 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void InitOnInputHandlingThread(
       const base::WeakPtr<cc::InputHandler>& input_handler,
       bool sync_compositing);
-  void BindAssociatedChannel(
-      mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
-          receiver);
   void BindChannel(
       mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver);
 

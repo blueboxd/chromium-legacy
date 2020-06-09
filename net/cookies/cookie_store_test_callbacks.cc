@@ -60,10 +60,11 @@ GetCookieListCallback::GetCookieListCallback(base::Thread* run_in_thread)
 
 GetCookieListCallback::~GetCookieListCallback() = default;
 
-void GetCookieListCallback::Run(const CookieStatusList& cookies,
-                                const CookieStatusList& excluded_cookies) {
-  cookies_with_statuses_ = cookies;
-  cookies_ = cookie_util::StripStatuses(cookies);
+void GetCookieListCallback::Run(
+    const CookieAccessResultList& cookies,
+    const CookieAccessResultList& excluded_cookies) {
+  cookies_with_access_results_ = cookies;
+  cookies_ = cookie_util::StripAccessResults(cookies);
   excluded_cookies_ = excluded_cookies;
   CallbackEpilogue();
 }

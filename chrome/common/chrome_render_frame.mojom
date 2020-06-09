@@ -49,9 +49,6 @@ interface ChromeRenderFrame {
   // before onload events are fired.
   ExecuteWebUIJavaScript(mojo_base.mojom.String16 javascript);
 
-  // Sent when the profile changes the kSafeBrowsingEnabled preference.
-  SetClientSidePhishingDetection(bool enable_phishing_detection);
-
   // Requests the web application info from the renderer.
   GetWebApplicationInfo() => (WebApplicationInfo web_application_info);
 

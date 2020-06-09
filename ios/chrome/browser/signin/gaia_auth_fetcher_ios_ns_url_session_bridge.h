@@ -42,8 +42,8 @@ class GaiaAuthFetcherIOSNSURLSessionBridge : public GaiaAuthFetcherIOSBridge {
 
   // Starts the NSURLRequest with the cookie list.
   void FetchPendingRequestWithCookies(
-      const net::CookieStatusList& cookies,
-      const net::CookieStatusList& excluded_cookies);
+      const net::CookieAccessResultList& cookies_with_access_results,
+      const net::CookieAccessResultList& excluded_cookies);
   // Creates a NSURLSession, and sets its delegate.
   virtual NSURLSession* CreateNSURLSession(
       id<NSURLSessionTaskDelegate> url_session_delegate);

@@ -12,6 +12,7 @@ import xml.dom.minidom
 
 import expand_owners
 import extract_histograms
+import histograms_print_style
 import populate_enums
 
 
@@ -104,12 +105,18 @@ def MergeFiles(filenames=[], files=[]):
   return MergeTrees(trees)
 
 
+def PrettyPrintMergedFiles(filenames=[], files=[]):
+  return histograms_print_style.GetPrintStyle().PrettyPrintXml(
+      MergeFiles(filenames=filenames, files=files))
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('inputs', nargs="+")
   parser.add_argument('--output', required=True)
   args = parser.parse_args()
-  MergeFiles(args.inputs).writexml(open(args.output, 'w'))
+  with open(args.output, 'w') as f:
+    f.write(PrettyPrintMergedFiles(args.inputs))
 
 
 if __name__ == '__main__':

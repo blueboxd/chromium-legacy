@@ -66,6 +66,13 @@ class WebExternalWidgetClient {
       const gfx::Vector2dF& unused_delta,
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) {}
+
+  // Connect the Widget Input Handler to the channels provided.
+  virtual void GetWidgetInputHandler(
+      CrossVariantMojoReceiver<mojom::WidgetInputHandlerInterfaceBase>
+          widget_input_receiver,
+      CrossVariantMojoRemote<mojom::WidgetInputHandlerHostInterfaceBase>
+          widget_input_host_remote) {}
 };
 
 }  // namespace blink

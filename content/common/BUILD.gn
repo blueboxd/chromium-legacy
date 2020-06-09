@@ -458,7 +458,6 @@ mojom("mojo_bindings") {
     "renderer.mojom",
     "renderer_host.mojom",
     "renderer_variations_configuration.mojom",
-    "widget.mojom",
   ]
 
   enabled_features = []

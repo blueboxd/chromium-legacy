@@ -31,10 +31,10 @@ namespace {
 
 using base::MakeRefCounted;
 using policy::DMToken;
-using reporting_messaging_layer::Destination;
-using reporting_messaging_layer::EncryptedRecord;
-using reporting_messaging_layer::Priority;
-using reporting_messaging_layer::WrappedRecord;
+using reporting::Destination;
+using reporting::EncryptedRecord;
+using reporting::Priority;
+using reporting::WrappedRecord;
 
 // A |StorageModule| that stores the wrapped record and priority and calls the
 // callback with an OK status.
@@ -197,7 +197,7 @@ TEST_F(ReportQueueTest, SuccessfulBaseValueRecord) {
 // Enqueues a |TestMessage| and ensures that it arrives unaltered in the
 // |StorageModule|.
 TEST_F(ReportQueueTest, SuccessfulProtoRecord) {
-  reporting_messaging_layer::test::TestMessage test_message;
+  reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
   Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
   ASSERT_TRUE(status.ok());
@@ -208,7 +208,7 @@ TEST_F(ReportQueueTest, SuccessfulProtoRecord) {
 
   EXPECT_EQ(storage_module_->priority(), priority_);
 
-  reporting_messaging_layer::test::TestMessage result_message;
+  reporting::test::TestMessage result_message;
   ASSERT_TRUE(result_message.ParseFromString(
       storage_module_->wrapped_record().record().data()));
   ASSERT_EQ(result_message.test(), test_message.test());
@@ -240,7 +240,7 @@ class StorageFailsReportQueueTest : public ReportQueueTest {
 // been scheduled. The callback should fail, indicating that storage was
 // unsuccessful.
 TEST_F(StorageFailsReportQueueTest, CallSuccessCallbackFailure) {
-  reporting_messaging_layer::test::TestMessage test_message;
+  reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
   Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
   ASSERT_TRUE(status.ok());
@@ -275,7 +275,7 @@ class EncryptionFailsReportQueueTest : public ReportQueueTest {
 // has been scheduled. The callback should fail, indicating that encryption was
 // unsuccessful.
 TEST_F(EncryptionFailsReportQueueTest, CallSuccessCallFailure) {
-  reporting_messaging_layer::test::TestMessage test_message;
+  reporting::test::TestMessage test_message;
   test_message.set_test("TEST_MESSAGE");
   Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
   ASSERT_TRUE(status.ok());

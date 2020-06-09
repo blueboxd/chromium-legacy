@@ -176,7 +176,7 @@ AXObject* AXMenuListPopup::ActiveDescendant() {
   if (parent_ && !parent_->IsFocused())
     return nullptr;
 
-  if (active_index_ < 0 || active_index_ >= static_cast<int>(Children().size()))
+  if (active_index_ < 0 || active_index_ >= ChildCountIncludingIgnored())
     return nullptr;
 
   return children_[active_index_].Get();

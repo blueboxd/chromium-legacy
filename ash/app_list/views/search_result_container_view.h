@@ -62,11 +62,6 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   void set_container_score(double score) { container_score_ = score; }
   double container_score() const { return container_score_; }
 
-  // Updates the distance_from_origin() properties of the results in this
-  // container. |y_index| is the absolute y-index of the first result of this
-  // container (counting from the top of the app list).
-  virtual void NotifyFirstResultYIndex(int y_index);
-
   // Gets the number of down keystrokes from the beginning to the end of this
   // container.
   virtual int GetYSize();

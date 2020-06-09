@@ -37,7 +37,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_host_view.h"
@@ -65,8 +64,7 @@ namespace {
 
 class Arrow : public Button {
  public:
-  Arrow(const SkColor color, ButtonListener* listener)
-      : Button(listener), color_(color) {
+  explicit Arrow(ButtonListener* listener) : Button(listener) {
     // Similar to Combobox's TransparentButton.
     SetFocusBehavior(FocusBehavior::NEVER);
     button_controller()->set_notify_action(
@@ -93,8 +91,7 @@ class Arrow : public Button {
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override {
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetInkDropCenterBasedOnLastEvent(),
-        GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_LabelEnabledColor),
+        style::GetColor(*this, style::CONTEXT_TEXTFIELD, style::STYLE_PRIMARY),
         ink_drop_visible_opacity());
   }
 
@@ -104,7 +101,11 @@ class Arrow : public Button {
     canvas->ClipRect(GetContentsBounds());
     gfx::Rect arrow_bounds = GetLocalBounds();
     arrow_bounds.ClampToCenteredSize(ComboboxArrowSize());
-    PaintComboboxArrow(color_, arrow_bounds, canvas);
+    // Make sure the arrow use the same color as the text in the combobox.
+    PaintComboboxArrow(style::GetColor(*this, style::CONTEXT_TEXTFIELD,
+                                       GetEnabled() ? style::STYLE_PRIMARY
+                                                    : style::STYLE_DISABLED),
+                       arrow_bounds, canvas);
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -114,8 +115,6 @@ class Arrow : public Button {
     if (GetEnabled())
       node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
   }
-
-  const SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(Arrow);
 };
@@ -334,8 +333,7 @@ EditableCombobox::EditableCombobox(
     textfield_->SetExtraInsets(gfx::Insets(
         /*top=*/0, /*left=*/0, /*bottom=*/0,
         /*right=*/kComboboxArrowContainerWidth - kComboboxArrowPaddingWidth));
-    arrow_ = new Arrow(textfield_->GetTextColor(), this);
-    AddChildView(arrow_);
+    arrow_ = AddChildView(std::make_unique<Arrow>(this));
   }
   SetLayoutManager(std::make_unique<views::FillLayout>());
 }
@@ -399,11 +397,6 @@ void EditableCombobox::Layout() {
                            /*y=*/0, kComboboxArrowContainerWidth, height());
     arrow_->SetBoundsRect(arrow_bounds);
   }
-}
-
-void EditableCombobox::OnThemeChanged() {
-  View::OnThemeChanged();
-  textfield_->OnThemeChanged();
 }
 
 void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {

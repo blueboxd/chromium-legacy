@@ -2,24 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://tab-strip/alert_indicators.js';
-
+import {AlertIndicatorElement} from 'chrome://tab-strip/alert_indicator.js';
+import {AlertIndicatorsElement} from 'chrome://tab-strip/alert_indicators.js';
 import {TabAlertState} from 'chrome://tab-strip/tabs_api_proxy.js';
 
+import {assertEquals} from '../chai_assert.js';
+
 suite('AlertIndicators', () => {
+  /** @type {!AlertIndicatorsElement} */
   let alertIndicatorsElement;
 
+  /** @return {!NodeList<!AlertIndicatorElement>} */
   const getAlertIndicators = () => {
-    return alertIndicatorsElement.shadowRoot.querySelectorAll(
-        'tabstrip-alert-indicator');
+    return /** @type {!NodeList<!AlertIndicatorElement>} */ (
+        alertIndicatorsElement.shadowRoot.querySelectorAll(
+            'tabstrip-alert-indicator'));
   };
 
   setup(() => {
     document.body.innerHTML = '';
 
-    alertIndicatorsElement =
-        document.createElement('tabstrip-alert-indicators');
-    alertIndicatorsElement.onAlertIndicatorCountChange = () => {};
+    alertIndicatorsElement = /** @type {!AlertIndicatorsElement} */
+        (document.createElement('tabstrip-alert-indicators'));
     document.body.appendChild(alertIndicatorsElement);
   });
 

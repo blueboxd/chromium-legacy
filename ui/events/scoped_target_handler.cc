@@ -12,7 +12,7 @@ namespace ui {
 
 ScopedTargetHandler::ScopedTargetHandler(EventTarget* target,
                                          EventHandler* handler)
-    : destroyed_flag_(NULL), target_(target), new_handler_(handler) {
+    : destroyed_flag_(nullptr), target_(target), new_handler_(handler) {
   original_handler_ = target_->SetTargetHandler(this);
 }
 

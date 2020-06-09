@@ -116,6 +116,9 @@ bool ButtonController::OnKeyReleased(const ui::KeyEvent& event) {
 }
 
 void ButtonController::OnGestureEvent(ui::GestureEvent* event) {
+  if (button_->state() == Button::STATE_DISABLED)
+    return;
+
   if (event->type() == ui::ET_GESTURE_TAP &&
       button_controller_delegate_->IsTriggerableEvent(*event)) {
     // A GESTURE_END event is issued immediately after ET_GESTURE_TAP and will

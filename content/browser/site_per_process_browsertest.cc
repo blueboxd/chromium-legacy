@@ -2380,7 +2380,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
       GetBoundingClientRect(root, kIframeSelector)));
   root->child_at(0)
       ->current_frame_host()
-      ->GetFrameInputHandler()
+      ->GetRenderWidgetHost()
+      ->GetFrameWidgetInputHandler()
       ->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
   WaitForElementVisible(root, kIframeSelector);
 #if defined(OS_ANDROID)
@@ -2412,7 +2413,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
       GetBoundingClientRect(root, kIframeSelector)));
   root->child_at(0)
       ->current_frame_host()
-      ->GetFrameInputHandler()
+      ->GetRenderWidgetHost()
+      ->GetFrameWidgetInputHandler()
       ->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
   WaitForElementVisible(root, kIframeSelector);
 #if defined(OS_ANDROID)
@@ -2455,7 +2457,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
   // simulate the scroll into view we do when an input box is tapped.
   root->child_at(0)
       ->current_frame_host()
-      ->GetFrameInputHandler()
+      ->GetRenderWidgetHost()
+      ->GetFrameWidgetInputHandler()
       ->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
 
   // The scroll into view is animated on the compositor. Make sure we wait
@@ -7476,7 +7479,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // "Select all" in the subframe.  The bug only happens if there's a selection
   // change, which triggers the path through didChangeSelection.
-  root->child_at(0)->current_frame_host()->GetFrameInputHandler()->SelectAll();
+  root->child_at(0)
+      ->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->GetFrameWidgetInputHandler()
+      ->SelectAll();
 
   // Prevent b.com process from terminating right away once the subframe
   // navigates away from b.com below.  This is necessary so that the renderer

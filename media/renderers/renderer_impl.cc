@@ -93,7 +93,7 @@ RendererImpl::RendererImpl(
       video_renderer_(std::move(video_renderer)),
       current_audio_stream_(nullptr),
       current_video_stream_(nullptr),
-      time_source_(NULL),
+      time_source_(nullptr),
       time_ticking_(false),
       playback_rate_(0.0),
       audio_buffering_state_(BUFFERING_HAVE_NOTHING),

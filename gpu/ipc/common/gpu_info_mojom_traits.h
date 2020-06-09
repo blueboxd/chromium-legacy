@@ -257,15 +257,6 @@ struct StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo> {
   }
 };
 
-template <>
-struct StructTraits<gpu::mojom::LuidDataView, LUID> {
-  static bool Read(gpu::mojom::LuidDataView data, LUID* out);
-
-  static int32_t high(const LUID& input) { return input.HighPart; }
-
-  static uint32_t low(const LUID& input) { return input.LowPart; }
-};
-
 #endif
 
 template <>

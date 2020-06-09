@@ -73,7 +73,7 @@ void IntentPickerView::OnExecuting(
 #endif  //  defined(OS_CHROMEOS)
 }
 
-views::BubbleDialogDelegateView* IntentPickerView::GetBubble() const {
+views::BubbleDialogDelegate* IntentPickerView::GetBubble() const {
   return IntentPickerBubbleView::intent_picker_bubble();
 }
 

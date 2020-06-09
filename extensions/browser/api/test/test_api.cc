@@ -129,7 +129,7 @@ void TestGetConfigFunction::set_test_config_state(
 }
 
 TestGetConfigFunction::TestConfigState::TestConfigState()
-    : config_state_(NULL) {}
+    : config_state_(nullptr) {}
 
 // static
 TestGetConfigFunction::TestConfigState*

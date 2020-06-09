@@ -77,12 +77,13 @@ void PopulatePolicyHandlerParameters(
 }  // namespace
 
 std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildPolicyHandlerList(
+    bool allow_future_policies,
     const policy::Schema& chrome_schema) {
   DCHECK(IsEnterprisePolicyEnabled());
   std::unique_ptr<policy::ConfigurationPolicyHandlerList> handlers =
       std::make_unique<policy::ConfigurationPolicyHandlerList>(
           base::Bind(&PopulatePolicyHandlerParameters),
-          base::Bind(&policy::GetChromePolicyDetails));
+          base::Bind(&policy::GetChromePolicyDetails), allow_future_policies);
 
   // Check the feature flag before adding handlers to the list.
   if (!ShouldInstallEnterprisePolicyHandlers()) {

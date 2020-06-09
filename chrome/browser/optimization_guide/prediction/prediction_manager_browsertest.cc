@@ -13,6 +13,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
+#include "chrome/browser/optimization_guide/optimization_guide_test_util.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -71,16 +72,14 @@ void RetryForHistogramUntilCountReached(
 std::unique_ptr<optimization_guide::proto::PredictionModel>
 GetValidDecisionTreePredictionModel() {
   std::unique_ptr<optimization_guide::proto::PredictionModel> prediction_model =
-      std::make_unique<optimization_guide::proto::PredictionModel>();
-  prediction_model->mutable_model()->mutable_threshold()->set_value(5.0);
+      GetMinimalDecisionTreePredictionModel(/* threshold= */ 5.0,
+                                            /* weight= */ 2.0);
 
-  optimization_guide::proto::DecisionTree decision_tree_model =
-      optimization_guide::proto::DecisionTree();
-  decision_tree_model.set_weight(2.0);
+  optimization_guide::proto::DecisionTree* decision_tree_model =
+      prediction_model->mutable_model()->mutable_decision_tree();
 
   optimization_guide::proto::TreeNode* tree_node =
-      decision_tree_model.add_nodes();
-  tree_node->mutable_node_id()->set_value(0);
+      decision_tree_model->mutable_nodes(0);
   tree_node->mutable_binary_node()->mutable_left_child_id()->set_value(1);
   tree_node->mutable_binary_node()->mutable_right_child_id()->set_value(2);
   tree_node->mutable_binary_node()
@@ -96,18 +95,16 @@ GetValidDecisionTreePredictionModel() {
       ->mutable_threshold()
       ->set_float_value(1.0);
 
-  tree_node = decision_tree_model.add_nodes();
+  tree_node = decision_tree_model->add_nodes();
   tree_node->mutable_node_id()->set_value(1);
   tree_node->mutable_leaf()->mutable_vector()->add_value()->set_double_value(
       2.);
 
-  tree_node = decision_tree_model.add_nodes();
+  tree_node = decision_tree_model->add_nodes();
   tree_node->mutable_node_id()->set_value(2);
   tree_node->mutable_leaf()->mutable_vector()->add_value()->set_double_value(
       4.);
 
-  *prediction_model->mutable_model()->mutable_decision_tree() =
-      decision_tree_model;
   return prediction_model;
 }
 

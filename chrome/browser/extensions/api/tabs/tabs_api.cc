@@ -1211,8 +1211,7 @@ bool TabsHighlightFunction::HighlightTab(TabStripModel* tabstrip,
   return true;
 }
 
-TabsUpdateFunction::TabsUpdateFunction() : web_contents_(NULL) {
-}
+TabsUpdateFunction::TabsUpdateFunction() : web_contents_(nullptr) {}
 
 ExtensionFunction::ResponseAction TabsUpdateFunction::Run() {
   std::unique_ptr<tabs::Update::Params> params(

@@ -14,7 +14,7 @@ namespace media_router {
 
 class MockDnsSdDeviceLister : public DnsSdDeviceLister {
  public:
-  MockDnsSdDeviceLister() : DnsSdDeviceLister(NULL, NULL, "") {}
+  MockDnsSdDeviceLister() : DnsSdDeviceLister(nullptr, nullptr, "") {}
   ~MockDnsSdDeviceLister() override {}
 
   MOCK_METHOD0(Discover, void());
@@ -22,7 +22,7 @@ class MockDnsSdDeviceLister : public DnsSdDeviceLister {
 
 class TestDnsSdRegistry : public DnsSdRegistry {
  public:
-  TestDnsSdRegistry() : DnsSdRegistry(NULL), delegate_(NULL) {}
+  TestDnsSdRegistry() : DnsSdRegistry(nullptr), delegate_(nullptr) {}
   ~TestDnsSdRegistry() override {}
 
   MockDnsSdDeviceLister* GetListerForService(const std::string& service_type) {

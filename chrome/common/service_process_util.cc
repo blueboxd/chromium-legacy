@@ -153,7 +153,7 @@ std::unique_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   return command_line;
 }
 
-ServiceProcessState::ServiceProcessState() : state_(NULL) {
+ServiceProcessState::ServiceProcessState() : state_(nullptr) {
   autorun_command_line_ = CreateServiceProcessCommandLine();
   CreateState();
 }

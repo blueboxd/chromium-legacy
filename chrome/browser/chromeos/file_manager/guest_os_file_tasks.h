@@ -33,6 +33,7 @@ constexpr char kGuestOsAppActionID[] = "open-with";
 void FindGuestOsApps(
     Profile* profile,
     const std::vector<extensions::EntryInfo>& entries,
+    const std::vector<GURL>& file_urls,
     std::vector<std::string>* app_ids,
     std::vector<std::string>* app_names,
     std::vector<guest_os::GuestOsRegistryService::VmType>* vm_types);
@@ -41,6 +42,7 @@ void FindGuestOsApps(
 // |result_list|, and calls back to |callback| once finished.
 void FindGuestOsTasks(Profile* profile,
                       const std::vector<extensions::EntryInfo>& entries,
+                      const std::vector<GURL>& file_urls,
                       std::vector<FullTaskDescriptor>* result_list,
                       base::OnceClosure completion_closure);
 

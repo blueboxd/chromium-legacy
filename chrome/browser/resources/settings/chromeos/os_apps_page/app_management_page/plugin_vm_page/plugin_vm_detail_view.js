@@ -14,6 +14,17 @@ Polymer({
      * @private {App}
      */
     app_: Object,
+
+    /**
+     * Whether the camera permissions should be shown.
+     * @private {boolean}
+     */
+    showCameraPermissions_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showPluginVmCameraPermissions');
+      },
+    },
   },
 
   attached() {

@@ -67,11 +67,13 @@ class AutofillProviderAndroid : public AutofillProvider {
   void OnFormsSeen(AutofillHandlerProxy* handler,
                    const std::vector<FormData>& forms,
                    const base::TimeTicks timestamp) override;
+  void OnHidePopup(AutofillHandlerProxy* handler) override;
 
   void Reset(AutofillHandlerProxy* handler) override;
 
   // Methods called by Java.
   void OnAutofillAvailable(JNIEnv* env, jobject jcaller, jobject form_data);
+  void OnAcceptDataListSuggestion(JNIEnv* env, jobject jcaller, jstring value);
 
  private:
   void FireSuccessfulSubmission(mojom::SubmissionSource source);

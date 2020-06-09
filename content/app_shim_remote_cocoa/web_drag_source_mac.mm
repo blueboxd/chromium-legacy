@@ -103,9 +103,9 @@ using content::DropData;
   // HTML.
   if ([type isEqualToString:NSHTMLPboardType] ||
       [type isEqualToString:ui::kChromeDragImageHTMLPboardType]) {
-    DCHECK(!_dropData->html.string().empty());
+    DCHECK(_dropData->html && !_dropData->html->empty());
     // See comment on |kHtmlHeader| above.
-    [pboard setString:SysUTF16ToNSString(kHtmlHeader + _dropData->html.string())
+    [pboard setString:SysUTF16ToNSString(kHtmlHeader + *_dropData->html)
               forType:type];
 
   // URL.
@@ -136,8 +136,8 @@ using content::DropData;
 
   // Plain text.
   } else if ([type isEqualToString:NSStringPboardType]) {
-    DCHECK(!_dropData->text.string().empty());
-    [pboard setString:SysUTF16ToNSString(_dropData->text.string())
+    DCHECK(_dropData->text && !_dropData->text->empty());
+    [pboard setString:SysUTF16ToNSString(*_dropData->text)
               forType:NSStringPboardType];
 
   // Custom MIME data.
@@ -348,7 +348,7 @@ using content::DropData;
   }
 
   // HTML.
-  bool hasHTMLData = !_dropData->html.string().empty();
+  bool hasHTMLData = _dropData->html && !_dropData->html->empty();
   // Mail.app and TextEdit accept drags that have both HTML and image flavors on
   // them, but don't process them correctly <http://crbug.com/55879>. Therefore,
   // if there is an image flavor, don't put the HTML data on as HTML, but rather
@@ -369,7 +369,7 @@ using content::DropData;
   }
 
   // Plain text.
-  if (!_dropData->text.string().empty()) {
+  if (_dropData->text && !_dropData->text->empty()) {
     [_pasteboard addTypes:@[ NSStringPboardType ]
                     owner:_contentsView];
   }

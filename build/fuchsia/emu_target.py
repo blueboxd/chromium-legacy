@@ -74,7 +74,7 @@ class EmuTarget(target.Target):
                                          env=emu_env)
 
     try:
-      self._WaitUntilReady();
+      self._WaitUntilReady(ssh_diagnostic_log_file=stdout)
     except target.FuchsiaTargetException:
       if temporary_system_log_file:
         logging.info('Kernel logs:\n' +

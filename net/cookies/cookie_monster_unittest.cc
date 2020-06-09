@@ -135,7 +135,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.cookies();
   }
 
-  CookieStatusList GetExcludedCookiesForURLWithOptions(
+  CookieAccessResultList GetExcludedCookiesForURLWithOptions(
       CookieMonster* cm,
       const GURL& url,
       const CookieOptions& options) {
@@ -1236,25 +1236,26 @@ TEST_F(DeferredCookieTaskTest, DeferredTaskOrder) {
   base::RunLoop run_loop;
   cookie_monster_->GetCookieListWithOptionsAsync(
       http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-      base::BindLambdaForTesting([&](const CookieStatusList& cookies,
-                                     const CookieStatusList& excluded_list) {
-        // This should complete before the set.
-        get_cookie_list_callback_was_run = true;
-        EXPECT_FALSE(set_cookies_callback.was_run());
-        EXPECT_THAT(cookies, MatchesCookieLine("X=1"));
-        // Can't use TakeCommandSummary here since ExecuteLoads is walking
-        // through the data it takes.
-        EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ",
-                  CommandSummary(persistent_store_->commands()));
+      base::BindLambdaForTesting(
+          [&](const CookieAccessResultList& cookies,
+              const CookieAccessResultList& excluded_list) {
+            // This should complete before the set.
+            get_cookie_list_callback_was_run = true;
+            EXPECT_FALSE(set_cookies_callback.was_run());
+            EXPECT_THAT(cookies, MatchesCookieLine("X=1"));
+            // Can't use TakeCommandSummary here since ExecuteLoads is walking
+            // through the data it takes.
+            EXPECT_EQ("LOAD; LOAD_FOR_KEY:foo.com; ",
+                      CommandSummary(persistent_store_->commands()));
 
-        // Queue up a second get. It should see the result of the set queued
-        // before it.
-        cookie_monster_->GetCookieListWithOptionsAsync(
-            http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
-            get_cookie_list_callback_deferred.MakeCallback());
+            // Queue up a second get. It should see the result of the set queued
+            // before it.
+            cookie_monster_->GetCookieListWithOptionsAsync(
+                http_www_foo_.url(), CookieOptions::MakeAllInclusive(),
+                get_cookie_list_callback_deferred.MakeCallback());
 
-        run_loop.Quit();
-      }));
+            run_loop.Quit();
+          }));
 
   cookie_monster_->SetCanonicalCookieAsync(
       CanonicalCookie::Create(http_www_foo_.url(), "A=B", base::Time::Now(),
@@ -1617,7 +1618,7 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
   CookieOptions do_not_return_excluded;
   do_not_return_excluded.unset_return_excluded_cookies();
 
-  CookieStatusList excluded_cookies = GetExcludedCookiesForURLWithOptions(
+  CookieAccessResultList excluded_cookies = GetExcludedCookiesForURLWithOptions(
       cm.get(), http_www_foo_.url(), do_not_return_excluded);
   auto iter = excluded_cookies.begin();
 
@@ -1631,7 +1632,7 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
   ASSERT_TRUE(iter != excluded_cookies.end());
   EXPECT_EQ(http_www_foo_.Format(".%D"), iter->cookie.Domain());
   EXPECT_EQ("E", iter->cookie.Name());
-  EXPECT_TRUE(iter->status.HasExactlyExclusionReasonsForTesting(
+  EXPECT_TRUE(iter->access_result.status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
 
   ASSERT_TRUE(++iter == excluded_cookies.end());
@@ -1651,13 +1652,13 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURL) {
   ASSERT_TRUE(iter != excluded_cookies.end());
   EXPECT_EQ(http_www_foo_.host(), iter->cookie.Domain());
   EXPECT_EQ("A", iter->cookie.Name());
-  EXPECT_TRUE(iter->status.HasExactlyExclusionReasonsForTesting(
+  EXPECT_TRUE(iter->access_result.status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_HTTP_ONLY}));
 
   ASSERT_TRUE(++iter != excluded_cookies.end());
   EXPECT_EQ(http_www_foo_.Format(".%D"), iter->cookie.Domain());
   EXPECT_EQ("E", iter->cookie.Name());
-  EXPECT_TRUE(iter->status.HasExactlyExclusionReasonsForTesting(
+  EXPECT_TRUE(iter->access_result.status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
 
   ASSERT_TRUE(++iter == excluded_cookies.end());
@@ -1718,14 +1719,14 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURLPathMatching) {
   EXPECT_TRUE(
       CreateAndSetCookie(cm.get(), http_www_foo_.url(), "E=F;", options));
 
-  CookieStatusList excluded_cookies =
+  CookieAccessResultList excluded_cookies =
       GetExcludedCookiesForURL(cm.get(), www_foo_foo_.url());
   auto it = excluded_cookies.begin();
 
   ASSERT_TRUE(it != excluded_cookies.end());
   EXPECT_EQ("C", it->cookie.Name());
   EXPECT_EQ("/bar", it->cookie.Path());
-  EXPECT_TRUE(it->status.HasExactlyExclusionReasonsForTesting(
+  EXPECT_TRUE(it->access_result.status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_NOT_ON_PATH}));
 
   ASSERT_TRUE(++it == excluded_cookies.end());
@@ -1736,7 +1737,7 @@ TEST_F(CookieMonsterTest, GetExcludedCookiesForURLPathMatching) {
   ASSERT_TRUE(it != excluded_cookies.end());
   EXPECT_EQ("A", it->cookie.Name());
   EXPECT_EQ("/foo", it->cookie.Path());
-  EXPECT_TRUE(it->status.HasExactlyExclusionReasonsForTesting(
+  EXPECT_TRUE(it->access_result.status.HasExactlyExclusionReasonsForTesting(
       {CookieInclusionStatus::EXCLUDE_NOT_ON_PATH}));
 
   ASSERT_TRUE(++it == excluded_cookies.end());

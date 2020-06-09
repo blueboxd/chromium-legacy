@@ -60,16 +60,6 @@ class TestRenderFrame : public RenderFrameImpl {
               bool is_loading,
               const FrameReplicationState& replicated_frame_state,
               const base::UnguessableToken& frame_token);
-  void SetEditableSelectionOffsets(int start, int end);
-  void ExtendSelectionAndDelete(int before, int after);
-  void DeleteSurroundingText(int before, int after);
-  void DeleteSurroundingTextInCodePoints(int before, int after);
-  void CollapseSelection();
-  void SetCompositionFromExistingText(
-      int start,
-      int end,
-      const std::vector<ui::ImeTextSpan>& ime_text_spans);
-
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
 
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
@@ -98,11 +88,8 @@ class TestRenderFrame : public RenderFrameImpl {
  private:
   mojom::FrameHost* GetFrameHost() override;
 
-  blink::mojom::FrameInputHandler* GetFrameInputHandler();
-
   std::unique_ptr<MockFrameHost> mock_frame_host_;
   base::Optional<std::string> next_navigation_html_override_;
-  mojo::Remote<blink::mojom::FrameInputHandler> frame_input_handler_;
 
   mojo::AssociatedRemote<mojom::NavigationClient> mock_navigation_client_;
 

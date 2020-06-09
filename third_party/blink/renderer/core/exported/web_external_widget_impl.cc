@@ -6,6 +6,7 @@
 
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/ukm_manager.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
@@ -167,5 +168,11 @@ void WebExternalWidgetImpl::DidHandleKeyEvent() {}
 
 void WebExternalWidgetImpl::QueueSyntheticEvent(
     std::unique_ptr<blink::WebCoalescedInputEvent>) {}
+
+void WebExternalWidgetImpl::GetWidgetInputHandler(
+    mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
+    mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
+  client_->GetWidgetInputHandler(std::move(request), std::move(host));
+}
 
 }  // namespace blink

@@ -141,8 +141,7 @@ TEST(IPCMessageIntegrity, DISABLED_ReadVectorTooLarge3) {
 
 class SimpleListener : public IPC::Listener {
  public:
-  SimpleListener() : other_(NULL) {
-  }
+  SimpleListener() : other_(nullptr) {}
   void Init(IPC::Sender* s) {
     other_ = s;
   }
@@ -223,8 +222,7 @@ class FuzzerServerListener : public SimpleListener {
 
 class FuzzerClientListener : public SimpleListener {
  public:
-  FuzzerClientListener() : last_msg_(NULL) {
-  }
+  FuzzerClientListener() : last_msg_(nullptr) {}
 
   bool OnMessageReceived(const IPC::Message& msg) override {
     last_msg_ = new IPC::Message(msg);

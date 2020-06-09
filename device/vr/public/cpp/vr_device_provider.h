@@ -23,6 +23,7 @@ class COMPONENT_EXPORT(VR_PUBLIC_CPP) VRDeviceProvider {
   virtual void Initialize(
       base::RepeatingCallback<void(mojom::XRDeviceId id,
                                    mojom::VRDisplayInfoPtr,
+                                   mojom::XRDeviceDataPtr,
                                    mojo::PendingRemote<mojom::XRRuntime>)>
           add_device_callback,
       base::RepeatingCallback<void(mojom::XRDeviceId id)>

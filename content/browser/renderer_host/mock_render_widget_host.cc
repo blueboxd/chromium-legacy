@@ -71,12 +71,7 @@ MockRenderWidgetHost* MockRenderWidgetHost::Create(
     RenderWidgetHostDelegate* delegate,
     RenderProcessHost* process,
     int32_t routing_id) {
-  mojo::PendingRemote<mojom::Widget> widget;
-  std::unique_ptr<MockWidgetImpl> widget_impl =
-      std::make_unique<MockWidgetImpl>(widget.InitWithNewPipeAndPassReceiver());
-
-  return new MockRenderWidgetHost(delegate, process, routing_id,
-                                  std::move(widget_impl), std::move(widget));
+  return new MockRenderWidgetHost(delegate, process, routing_id);
 }
 
 blink::mojom::WidgetInputHandler*
@@ -88,20 +83,15 @@ void MockRenderWidgetHost::NotifyNewContentRenderingTimeoutForTesting() {
   new_content_rendering_timeout_fired_ = true;
 }
 
-MockRenderWidgetHost::MockRenderWidgetHost(
-    RenderWidgetHostDelegate* delegate,
-    RenderProcessHost* process,
-    int routing_id,
-    std::unique_ptr<MockWidgetImpl> widget_impl,
-    mojo::PendingRemote<mojom::Widget> widget)
+MockRenderWidgetHost::MockRenderWidgetHost(RenderWidgetHostDelegate* delegate,
+                                           RenderProcessHost* process,
+                                           int routing_id)
     : RenderWidgetHostImpl(delegate,
                            process,
                            routing_id,
-                           std::move(widget),
                            /*hidden=*/false,
                            std::make_unique<TestFrameTokenMessageQueue>()),
       new_content_rendering_timeout_fired_(false),
-      widget_impl_(std::move(widget_impl)),
       fling_scheduler_(std::make_unique<FlingScheduler>(this)) {
   acked_touch_event_type_ = blink::WebInputEvent::Type::kUndefined;
   mojo::AssociatedRemote<blink::mojom::WidgetHost> blink_widget_host;

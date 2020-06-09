@@ -18,12 +18,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
@@ -42,8 +40,6 @@ public class ToolbarAppMenuManagerTest {
     private Activity mActivity;
     @Mock
     private TopToolbarCoordinator mToolbar;
-    @Mock
-    private Supplier<Profile> mProfileSupplier;
     @Mock
     private ToolbarAppMenuManager.SetFocusFunction mFocusFunction;
     @Mock
@@ -79,9 +75,9 @@ public class ToolbarAppMenuManagerTest {
         mMenuUiState = new UpdateMenuItemHelper.MenuUiState();
         doReturn(mMenuUiState).when(mUpdateMenuItemHelper).getUiState();
 
-        mToolbarAppMenuManager = new ToolbarAppMenuManager(mAppMenuSupplier,
-                mControlsVisibilityDelegate, mActivity, mToolbar, mProfileSupplier, mFocusFunction,
-                mRequestRenderRunnable, true, () -> false);
+        mToolbarAppMenuManager =
+                new ToolbarAppMenuManager(mAppMenuSupplier, mControlsVisibilityDelegate, mActivity,
+                        mToolbar, mFocusFunction, mRequestRenderRunnable, true, () -> false);
     }
 
     @Test
@@ -153,9 +149,9 @@ public class ToolbarAppMenuManagerTest {
 
     @Test
     public void testAppMenuUpdateBadge_activityShouldNotShow() {
-        ToolbarAppMenuManager newManager = new ToolbarAppMenuManager(mAppMenuSupplier,
-                mControlsVisibilityDelegate, mActivity, mToolbar, mProfileSupplier, mFocusFunction,
-                mRequestRenderRunnable, false, () -> false);
+        ToolbarAppMenuManager newManager =
+                new ToolbarAppMenuManager(mAppMenuSupplier, mControlsVisibilityDelegate, mActivity,
+                        mToolbar, mFocusFunction, mRequestRenderRunnable, false, () -> false);
 
         doReturn(true).when(mActivity).isDestroyed();
         newManager.updateStateChanged();

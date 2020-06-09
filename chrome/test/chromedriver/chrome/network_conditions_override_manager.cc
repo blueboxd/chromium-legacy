@@ -11,8 +11,7 @@
 
 NetworkConditionsOverrideManager::NetworkConditionsOverrideManager(
     DevToolsClient* client)
-    : client_(client),
-      overridden_network_conditions_(NULL) {
+    : client_(client), overridden_network_conditions_(nullptr) {
   client_->AddListener(this);
 }
 

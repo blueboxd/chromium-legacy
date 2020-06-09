@@ -6,7 +6,7 @@
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManager, PaymentsManager} from 'chrome://settings/lazy_load.js';
-import {MultiStorePasswordUiEntry} from 'chrome://settings/settings.js';
+import {MultiStoreExceptionEntry, MultiStorePasswordUiEntry} from 'chrome://settings/settings.js';
 
 import {assertEquals} from '../chai_assert.js';
 
@@ -18,7 +18,7 @@ import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
  * password manager native code. If no |id| is passed, it is set to a default,
  * value so this should probably not be done in tests with multiple entries
  * (|id| is unique). If no |frontendId| is passed, it is set to the same value
- * as |id|.
+ * set for |id|.
  * @param {{ url: (string|undefined),
  *            username: (string|undefined),
  *            federationText: (string|undefined),
@@ -31,24 +31,23 @@ import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 export function createPasswordEntry(params) {
   // Generate fake data if param is undefined.
   params = params || {};
-  params.url = params.url !== undefined ? params.url : 'www.foo.com';
-  params.username = params.username || 'user';
-  params.id = params.id !== undefined ? params.id : 42;
-  params.frontendId =
-      params.frontendId !== undefined ? params.frontendId : params.id;
-  params.fromAccountStore = params.fromAccountStore || false;
+  const url = params.url !== undefined ? params.url : 'www.foo.com';
+  const username = params.username !== undefined ? params.username : 'user';
+  const id = params.id !== undefined ? params.id : 42;
+  const frontendId = params.frontendId !== undefined ? params.frontendId : id;
+  const fromAccountStore = params.fromAccountStore || false;
 
   return {
     urls: {
-      origin: 'http://' + params.url + '/login',
-      shown: params.url,
-      link: 'http://' + params.url + '/login',
+      origin: 'http://' + url + '/login',
+      shown: url,
+      link: 'http://' + url + '/login',
     },
-    username: params.username,
+    username: username,
     federationText: params.federationText,
-    id: params.id,
-    frontendId: params.frontendId,
-    fromAccountStore: params.fromAccountStore,
+    id: id,
+    frontendId: frontendId,
+    fromAccountStore: fromAccountStore,
   };
 }
 
@@ -100,14 +99,23 @@ export function createMultiStorePasswordEntry(params) {
 }
 
 /**
- * Creates a single item for the list of password exceptions.
- * @param {string=} url
- * @param {number=} id
+ * Creates a single item for the list of password exceptions. If no |id| is
+ * passed, it is set to a default, value so this should probably not be done in
+ * tests with multiple entries (|id| is unique). If no |frontendId| is passed,
+ * it is set to the same value set for |id|.
+ * @param {{ url: (string|undefined),
+ *           id: (number|undefined),
+ *           frontendId: (number|undefined),
+ *           fromAccountStore: (boolean|undefined)
+ *         }=} params
  * @return {chrome.passwordsPrivate.ExceptionEntry}
  */
-export function createExceptionEntry(url, id) {
-  url = url || patternMaker_('www.xxxxxx.com', 16);
-  id = id || 0;
+export function createExceptionEntry(params) {
+  params = params || {};
+  const url = params.url !== undefined ? params.url : 'www.foo.com';
+  const id = params.id !== undefined ? params.id : 42;
+  const frontendId = params.frontendId !== undefined ? params.frontendId : id;
+  const fromAccountStore = params.fromAccountStore || false;
   return {
     urls: {
       origin: 'http://' + url + '/login',
@@ -115,8 +123,8 @@ export function createExceptionEntry(url, id) {
       link: 'http://' + url + '/login',
     },
     id: id,
-    frontendId: id,
-    fromAccountStore: false,
+    frontendId: frontendId,
+    fromAccountStore: fromAccountStore,
   };
 }
 

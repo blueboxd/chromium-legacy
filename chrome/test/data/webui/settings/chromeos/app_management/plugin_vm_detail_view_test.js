@@ -27,8 +27,13 @@ suite('<app-management-plugin-vm-detail-view>', function() {
     fakeHandler = setupFakeHandler();
     replaceStore();
 
+    loadTimeData.overrideValues({
+      showPluginVmCameraPermissions: true,
+    });
+
     const permissions = {};
-    const permissionIds = [PluginVmPermissionType.PRINTING];
+    const permissionIds =
+        [PluginVmPermissionType.PRINTING, PluginVmPermissionType.CAMERA];
     for (const permissionId of permissionIds) {
       permissions[permissionId] = app_management.util.createPermission(
           permissionId, PermissionValueType.kBool, Bool.kTrue,
@@ -76,6 +81,7 @@ suite('<app-management-plugin-vm-detail-view>', function() {
     };
 
     await checkToggle('PRINTING');
+    await checkToggle('CAMERA');
   });
 
   test('Pin to shelf toggle', async function() {

@@ -125,11 +125,6 @@ constexpr char kSearchQueryLengthInClamshell[] =
 constexpr char kSearchQueryLengthInTablet[] =
     "Apps.AppListSearchQueryLength.TabletMode";
 
-// The UMA histogram that logs the Manhattan distance from the origin of the
-// search results to the selected result.
-constexpr char kSearchResultDistanceFromOrigin[] =
-    "Apps.AppListSearchResultDistanceFromOrigin";
-
 // The different ways to create a new page in the apps grid. These values are
 // written to logs. New enum values can be added, but existing enums must never
 // be renumbered or deleted and reused.

@@ -100,7 +100,7 @@ MediaGalleriesPermissionController::MediaGalleriesPermissionController(
     MediaGalleriesPreferences* preferences,
     const CreateDialogCallback& create_dialog_callback,
     const base::Closure& on_finish)
-    : web_contents_(NULL),
+    : web_contents_(nullptr),
       extension_(&extension),
       on_finish_(on_finish),
       preferences_(preferences),

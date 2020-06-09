@@ -53,6 +53,12 @@ class RealTimePolicyEngineTest : public PlatformTest {
         /*variations_service=*/nullptr);
   }
 
+  bool CanPerformEnterpriseFullURLLookup(bool has_valid_dm_token,
+                                         bool is_off_the_record) {
+    return RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
+        has_valid_dm_token, is_off_the_record);
+  }
+
   bool IsInExcludedCountry(const std::string& country_code) {
     return RealTimePolicyEngine::IsInExcludedCountry(country_code);
   }
@@ -326,6 +332,30 @@ TEST_F(RealTimePolicyEngineTest,
       /* sync_everything */ false, {});
   EXPECT_TRUE(CanPerformFullURLLookupWithToken(
       /*is_off_the_record=*/false, &sync_service, identity_manager));
+}
+
+TEST_F(RealTimePolicyEngineTest, TestCanPerformEnterpriseFullURLLookup) {
+  // Is off the record profile.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(/*has_valid_dm_token=*/true,
+                                                   /*is_off_the_record=*/true));
+  }
+  // Feature flag disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/true, /*is_off_the_record=*/false));
+  }
+  // No valid DM token.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(kRealTimeUrlLookupEnabledForEnterprise);
+    EXPECT_FALSE(CanPerformEnterpriseFullURLLookup(
+        /*has_valid_dm_token=*/false, /*is_off_the_record=*/false));
+  }
 }
 
 TEST_F(

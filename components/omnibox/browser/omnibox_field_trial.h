@@ -435,6 +435,11 @@ int OnDeviceHeadSuggestDelaySuggestRequestMs(bool is_incognito);
 // Function only works in non-incognito when server suggestions are available.
 std::string OnDeviceHeadSuggestDemoteMode();
 
+// Experiment to hide the path, query, and ref in the steady state.
+bool IsHidePathQueryRefEnabled();
+bool ShouldRevealPathQueryRefOnHover();
+bool ShouldHidePathQueryRefOnInteraction();
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 

@@ -453,9 +453,9 @@ namespace {
 
 void GetCookieCallback(base::RepeatingClosure callback,
                        net::CookieList* cookies,
-                       const net::CookieStatusList& cookie_list,
-                       const net::CookieStatusList& excluded_cookies) {
-  *cookies = net::cookie_util::StripStatuses(cookie_list);
+                       const net::CookieAccessResultList& cookie_list,
+                       const net::CookieAccessResultList& excluded_cookies) {
+  *cookies = net::cookie_util::StripAccessResults(cookie_list);
   callback.Run();
 }
 

@@ -19,7 +19,7 @@ scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() {
       static_cast<base::SingleThreadTaskRunner*>(runner.get()));
 }
 
-ChannelReflectorListener::ChannelReflectorListener() : channel_(NULL) {
+ChannelReflectorListener::ChannelReflectorListener() : channel_(nullptr) {
   VLOG(1) << "Client listener up";
 }
 

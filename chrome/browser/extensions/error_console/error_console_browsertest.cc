@@ -132,7 +132,7 @@ void CheckManifestError(const ExtensionError* error,
 
 class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
  public:
-  ErrorConsoleBrowserTest() : error_console_(NULL) { }
+  ErrorConsoleBrowserTest() : error_console_(nullptr) {}
   ~ErrorConsoleBrowserTest() override {}
 
  protected:

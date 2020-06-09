@@ -42,7 +42,7 @@
 
 class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
  protected:
-  ExtensionPreferenceApiTest() : profile_(NULL) {}
+  ExtensionPreferenceApiTest() : profile_(nullptr) {}
 
   void CheckPreferencesSet() {
     PrefService* prefs = profile_->GetPrefs();

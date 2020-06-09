@@ -310,8 +310,8 @@ class OmniboxView {
   // everything is emphasized equally, whereas for URLs the scheme may be styled
   // based on the current security state, with parts of the URL de-emphasized to
   // draw attention to whatever best represents the "identity" of the current
-  // URL. Returns true if the path component is eligible for fadeout.
-  bool UpdateTextStyle(const base::string16& display_text,
+  // URL.
+  void UpdateTextStyle(const base::string16& display_text,
                        const bool text_is_url,
                        const AutocompleteSchemeClassifier& classifier);
 

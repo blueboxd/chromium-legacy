@@ -269,7 +269,7 @@ public class RootUiCoordinator
     }
 
     @Override
-    public void onInflationComplete() {
+    public void onPostInflationStartup() {
         ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
         StatusBarColorController statusBarColorController = mActivity.getStatusBarColorController();
         mScrimView = new ScrimView(mActivity,
@@ -287,10 +287,6 @@ public class RootUiCoordinator
 
         initFindToolbarManager();
         initializeToolbar();
-    }
-
-    @Override
-    public void onPostInflationStartup() {
         initAppMenu();
         initDirectActionInitializer();
         initContextualSearchSuppressor();

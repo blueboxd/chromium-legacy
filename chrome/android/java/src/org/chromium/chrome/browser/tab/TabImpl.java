@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.paint_preview.PaintPreviewHelper;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.tab.TabState.WebContentsState;
@@ -618,7 +619,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             updateInteractableState();
 
             loadIfNeeded();
-            assert !isFrozen();
 
             if (getWebContents() != null) getWebContents().onShow();
 
@@ -1395,6 +1395,14 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * history load are used.
      */
     private final void restoreIfNeeded() {
+        // Attempts to display the Paint Preview representation of this Tab instead of fully
+        // restoring. Please note that this is behind an experimental flag.
+        if (isFrozen()
+                && PaintPreviewHelper.showPaintPreviewOnRestore(
+                        this, () -> restoreIfNeeded(), () -> restoreIfNeeded())) {
+            return;
+        }
+
         try {
             TraceEvent.begin("Tab.restoreIfNeeded");
             // Restore is needed for a tab that is loaded for the first time. WebContents will

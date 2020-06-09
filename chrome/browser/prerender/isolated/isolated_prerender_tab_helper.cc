@@ -99,9 +99,9 @@ void InformPLMOfLikelyPrefetching(content::WebContents* web_contents) {
 void OnGotCookieList(
     const GURL& url,
     IsolatedPrerenderTabHelper::OnEligibilityResultCallback result_callback,
-    const net::CookieStatusList& cookie_with_status_list,
-    const net::CookieStatusList& excluded_cookies) {
-  if (!cookie_with_status_list.empty()) {
+    const net::CookieAccessResultList& cookie_list,
+    const net::CookieAccessResultList& excluded_cookies) {
+  if (!cookie_list.empty()) {
     std::move(result_callback)
         .Run(url, false,
              IsolatedPrerenderTabHelper::PrefetchStatus::

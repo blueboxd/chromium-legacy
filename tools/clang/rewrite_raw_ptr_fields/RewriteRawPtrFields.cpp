@@ -50,13 +50,76 @@ const char kIncludePath[] = "base/memory/checked_ptr.h";
 
 // Name of a cmdline parameter that can be used to specify a file listing fields
 // that should not be rewritten to use CheckedPtr<T>.
+//
+// See also:
+// - FilterEmitterHelper
+// - FieldDeclFilterFile
 const char kExcludeFieldsParamName[] = "exclude-fields";
 
-// Output format is documented in //docs/clang_tool_refactoring.md
-class ReplacementsPrinter : public clang::tooling::SourceFileCallbacks {
+// Helper for an out-of-band output that
+//
+// 1. Is delimited in a way that makes it easy to extract it with sed like so:
+//    $ DELIM = ...
+//    $ cat ~/scratch/rewriter.out \
+//        | sed '/^==== BEGIN $DELIM ====$/,/^==== END $DELIM ====$/{//!b};d' \
+//        | sort | uniq > ~/scratch/some-out-of-band-output.txt
+//
+// 2. Contains one filter-string per line of output, accompanied with a comment
+//    listing a set of tags that help describe why this line of output was
+//    emitted:
+//        Some filter # tag1, tag2
+//        Another filter # tag1, tag2, tag3
+//
+// See also:
+// - FieldDeclFilterFile
+class FilterEmitterHelper {
  public:
-  ReplacementsPrinter() = default;
-  ~ReplacementsPrinter() = default;
+  explicit FilterEmitterHelper(llvm::StringRef output_delimiter)
+      : output_delimiter_(output_delimiter.str()) {}
+
+  void Add(llvm::StringRef filter, llvm::StringRef tag) {
+    filter_to_tags_[filter].insert(tag);
+  }
+
+  void Emit() {
+    if (filter_to_tags_.empty())
+      return;
+
+    llvm::outs() << "==== BEGIN " << output_delimiter_ << " ====\n";
+    for (const llvm::StringRef& filter : GetSortedKeys(filter_to_tags_)) {
+      llvm::outs() << filter;
+
+      const llvm::StringSet<>& tags = filter_to_tags_[filter];
+      if (!tags.empty()) {
+        std::vector<llvm::StringRef> sorted_tags = GetSortedKeys(tags);
+        std::string tags_comment =
+            llvm::join(sorted_tags.begin(), sorted_tags.end(), ", ");
+        llvm::outs() << "  # " << tags_comment;
+      }
+
+      llvm::outs() << "\n";
+    }
+    llvm::outs() << "==== END " << output_delimiter_ << " ====\n";
+  }
+
+ private:
+  template <typename TValue>
+  std::vector<llvm::StringRef> GetSortedKeys(
+      const llvm::StringMap<TValue>& map) {
+    std::vector<llvm::StringRef> sorted(map.keys().begin(), map.keys().end());
+    std::sort(sorted.begin(), sorted.end());
+    return sorted;
+  }
+
+  std::string output_delimiter_;
+  llvm::StringMap<llvm::StringSet<>> filter_to_tags_;
+};
+
+// Output format is documented in //docs/clang_tool_refactoring.md
+class OutputHelper : public clang::tooling::SourceFileCallbacks {
+ public:
+  OutputHelper() : field_decl_filter_helper_("FIELD FILTERS") {}
+  ~OutputHelper() = default;
 
   void PrintReplacement(const clang::SourceManager& source_manager,
                         const clang::SourceRange& replacement_range,
@@ -86,6 +149,12 @@ class ReplacementsPrinter : public clang::tooling::SourceFileCallbacks {
     }
   }
 
+  void AddFilteredField(const clang::FieldDecl& field_decl,
+                        llvm::StringRef filter_tag) {
+    std::string qualified_name = field_decl.getQualifiedNameAsString();
+    field_decl_filter_helper_.Add(qualified_name, filter_tag);
+  }
+
  private:
   // clang::tooling::SourceFileCallbacks override:
   bool handleBeginSource(clang::CompilerInstance& compiler) override {
@@ -107,8 +176,11 @@ class ReplacementsPrinter : public clang::tooling::SourceFileCallbacks {
 
   // clang::tooling::SourceFileCallbacks override:
   void handleEndSource() override {
-    if (!ShouldSuppressOutput())
-      llvm::outs() << "==== END EDITS ====\n";
+    if (ShouldSuppressOutput())
+      return;
+
+    llvm::outs() << "==== END EDITS ====\n";
+    field_decl_filter_helper_.Emit();
   }
 
   bool ShouldSuppressOutput() {
@@ -139,7 +211,8 @@ class ReplacementsPrinter : public clang::tooling::SourceFileCallbacks {
     return true;
   }
 
-  std::set<std::string> files_with_already_added_includes_;
+  llvm::StringSet<> files_with_already_added_includes_;
+  FilterEmitterHelper field_decl_filter_helper_;
   clang::Language current_language_ = clang::Language::Unknown;
 };
 
@@ -190,6 +263,12 @@ AST_MATCHER(clang::FieldDecl, isInGeneratedLocation) {
   return file_path.startswith("gen/") || file_path.contains("/gen/");
 }
 
+// Represents a filter file specified via cmdline, that can be used to filter
+// out specific FieldDecls.
+//
+// See also:
+// - kExcludeFieldsParamName
+// - FilterEmitterHelper
 class FieldDeclFilterFile {
  public:
   explicit FieldDeclFilterFile(const std::string& filepath) {
@@ -341,20 +420,20 @@ AST_MATCHER(clang::FieldDecl, hasUniqueTypeLoc) {
   return !has_sibling_with_same_type_loc;
 }
 
-// Rewrites |SomeClass* field| (matched as "fieldDecl") into
+// Rewrites |SomeClass* field| (matched as "affectedFieldDecl") into
 // |CheckedPtr<SomeClass> field| and for each file rewritten in such way adds an
 // |#include "base/memory/checked_ptr.h"|.
 class FieldDeclRewriter : public MatchFinder::MatchCallback {
  public:
-  explicit FieldDeclRewriter(ReplacementsPrinter* replacements_printer)
-      : replacements_printer_(replacements_printer) {}
+  explicit FieldDeclRewriter(OutputHelper* output_helper)
+      : output_helper_(output_helper) {}
 
   void run(const MatchFinder::MatchResult& result) override {
     const clang::ASTContext& ast_context = *result.Context;
     const clang::SourceManager& source_manager = *result.SourceManager;
 
     const clang::FieldDecl* field_decl =
-        result.Nodes.getNodeAs<clang::FieldDecl>("fieldDecl");
+        result.Nodes.getNodeAs<clang::FieldDecl>("affectedFieldDecl");
     assert(field_decl && "matcher should bind 'fieldDecl'");
 
     const clang::TypeSourceInfo* type_source_info =
@@ -387,9 +466,9 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
       replacement_text.insert(0, "mutable ");
 
     // Generate and print a replacement.
-    replacements_printer_->PrintReplacement(source_manager, replacement_range,
-                                            replacement_text,
-                                            true /* should_add_include */);
+    output_helper_->PrintReplacement(source_manager, replacement_range,
+                                     replacement_text,
+                                     true /* should_add_include */);
   }
 
  private:
@@ -418,15 +497,15 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     return result;
   }
 
-  ReplacementsPrinter* const replacements_printer_;
+  OutputHelper* const output_helper_;
 };
 
 // Rewrites |my_struct.ptr_field| (matched as "affectedMemberExpr") into
 // |my_struct.ptr_field.get()|.
 class AffectedExprRewriter : public MatchFinder::MatchCallback {
  public:
-  AffectedExprRewriter(ReplacementsPrinter* replacements_printer)
-      : replacements_printer_(replacements_printer) {}
+  explicit AffectedExprRewriter(OutputHelper* output_helper)
+      : output_helper_(output_helper) {}
 
   void run(const MatchFinder::MatchResult& result) override {
     const clang::SourceManager& source_manager = *result.SourceManager;
@@ -442,12 +521,31 @@ class AffectedExprRewriter : public MatchFinder::MatchCallback {
 
     clang::SourceRange replacement_range(insertion_loc, insertion_loc);
 
-    replacements_printer_->PrintReplacement(source_manager, replacement_range,
-                                            ".get()");
+    output_helper_->PrintReplacement(source_manager, replacement_range,
+                                     ".get()");
   }
 
  private:
-  ReplacementsPrinter* const replacements_printer_;
+  OutputHelper* const output_helper_;
+};
+
+// Emits problematic fields (matched as "affectedFieldDecl") as filtered fields.
+class FilteredExprWriter : public MatchFinder::MatchCallback {
+ public:
+  FilteredExprWriter(OutputHelper* output_helper, llvm::StringRef filter_tag)
+      : output_helper_(output_helper), filter_tag_(filter_tag) {}
+
+  void run(const MatchFinder::MatchResult& result) override {
+    const clang::FieldDecl* field_decl =
+        result.Nodes.getNodeAs<clang::FieldDecl>("affectedFieldDecl");
+    assert(field_decl && "matcher should bind 'affectedFieldDecl'");
+
+    output_helper_->AddFilteredField(*field_decl, filter_tag_);
+  }
+
+ private:
+  OutputHelper* const output_helper_;
+  llvm::StringRef filter_tag_;
 };
 
 }  // namespace
@@ -467,7 +565,7 @@ int main(int argc, const char* argv[]) {
                                  options.getSourcePathList());
 
   MatchFinder match_finder;
-  ReplacementsPrinter replacements_printer;
+  OutputHelper output_helper;
 
   // Supported pointer types =========
   // Given
@@ -525,8 +623,8 @@ int main(int argc, const char* argv[]) {
                              isInExternCContext(),
                              isListedInFilterFile(fields_to_exclude),
                              implicit_field_decl_matcher))))
-          .bind("fieldDecl");
-  FieldDeclRewriter field_decl_rewriter(&replacements_printer);
+          .bind("affectedFieldDecl");
+  FieldDeclRewriter field_decl_rewriter(&output_helper);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
 
   // Matches expressions that used to return a value of type |SomeClass*|
@@ -563,7 +661,7 @@ int main(int argc, const char* argv[]) {
       affected_expr_matcher,
       hasParent(expr(anyOf(callExpr(callee(functionDecl(isVariadic()))),
                            cxxConstCastExpr(), cxxReinterpretCastExpr())))));
-  AffectedExprRewriter affected_expr_rewriter(&replacements_printer);
+  AffectedExprRewriter affected_expr_rewriter(&output_helper);
   match_finder.addMatcher(affected_expr_that_needs_fixing_matcher,
                           &affected_expr_rewriter);
 
@@ -593,10 +691,39 @@ int main(int argc, const char* argv[]) {
                 initListExpr(hasInit(0, affected_implicit_expr_matcher))))))));
   match_finder.addMatcher(auto_var_decl_matcher, &affected_expr_rewriter);
 
+  // address-of(affected-expr) =========
+  // Given
+  //   ... &s.y ...
+  // matches the |s.y| expr if it matches the |affected_member_expr_matcher|
+  // above.
+  auto affected_addr_of_expr_matcher = expr(allOf(
+      affected_expr_matcher, hasParent(unaryOperator(hasOperatorName("&")))));
+  FilteredExprWriter filtered_addr_of_expr_writer(&output_helper, "addr-of");
+  match_finder.addMatcher(affected_addr_of_expr_matcher,
+                          &filtered_addr_of_expr_writer);
+
+  // in-out reference arg =========
+  // Given
+  //   struct S { SomeClass* ptr_field; };
+  //   void foo(SomeClass*& in_out_arg) { ... }
+  //   void bar() {
+  //     S s;
+  //     foo(s.ptr_field)
+  //   }
+  // matches the |s.ptr_field| expr if it matches the
+  // |affected_member_expr_matcher| and is passed as a function argument that
+  // has |FooBar*&| type.
+  auto affected_in_out_ref_arg_matcher = callExpr(forEachArgumentWithParam(
+      affected_expr_matcher.bind("expr"),
+      parmVarDecl(hasType(referenceType(pointee(pointerType()))))));
+  FilteredExprWriter filtered_in_out_ref_arg_writer(&output_helper,
+                                                    "in-out-param-ref");
+  match_finder.addMatcher(affected_in_out_ref_arg_matcher,
+                          &filtered_in_out_ref_arg_writer);
+
   // Prepare and run the tool.
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
-      clang::tooling::newFrontendActionFactory(&match_finder,
-                                               &replacements_printer);
+      clang::tooling::newFrontendActionFactory(&match_finder, &output_helper);
   int result = tool.run(factory.get());
   if (result != 0)
     return result;

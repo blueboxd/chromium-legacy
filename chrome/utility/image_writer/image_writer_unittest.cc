@@ -70,7 +70,7 @@ class MockHandler : public ImageWriterHandler {
 // the write completes.
 class VerifyingHandler : public MockHandler {
  public:
-  VerifyingHandler() : image_writer_(NULL), verified_(false) {}
+  VerifyingHandler() : image_writer_(nullptr), verified_(false) {}
 
   void SendSucceeded() override {
     MockHandler::SendSucceeded();

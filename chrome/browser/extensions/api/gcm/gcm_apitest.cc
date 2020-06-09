@@ -60,7 +60,7 @@ namespace extensions {
 
 class GcmApiTest : public ExtensionApiTest {
  public:
-  GcmApiTest() : fake_gcm_profile_service_(NULL) {}
+  GcmApiTest() : fake_gcm_profile_service_(nullptr) {}
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;

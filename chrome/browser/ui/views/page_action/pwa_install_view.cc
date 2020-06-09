@@ -62,7 +62,7 @@ void PwaInstallView::OnExecuting(PageActionIconView::ExecuteSource source) {
                                     base::DoNothing());
 }
 
-views::BubbleDialogDelegateView* PwaInstallView::GetBubble() const {
+views::BubbleDialogDelegate* PwaInstallView::GetBubble() const {
   // TODO(https://907351): Implement.
   return nullptr;
 }

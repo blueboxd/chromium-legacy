@@ -18,21 +18,21 @@
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
-#include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
 #include "crypto/sha2.h"
 
 namespace reporting {
 
-using reporting_messaging_layer::EncryptedRecord;
-using reporting_messaging_layer::Record;
-using reporting_messaging_layer::WrappedRecord;
+using reporting::EncryptedRecord;
+using reporting::Record;
+using reporting::WrappedRecord;
 
 std::unique_ptr<ReportQueue> ReportQueue::Create(
     std::unique_ptr<ReportQueueConfiguration> config,

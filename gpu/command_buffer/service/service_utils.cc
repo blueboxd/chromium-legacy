@@ -165,8 +165,7 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   gpu_preferences.enable_dawn_backend_validation =
       command_line->HasSwitch(switches::kEnableDawnBackendValidation);
   gpu_preferences.gr_context_type = ParseGrContextType();
-  gpu_preferences.use_vulkan = ParseVulkanImplementationName(
-      command_line, gpu_preferences.gr_context_type);
+  gpu_preferences.use_vulkan = ParseVulkanImplementationName(command_line);
   gpu_preferences.disable_vulkan_surface =
       command_line->HasSwitch(switches::kDisableVulkanSurface);
 
@@ -192,8 +191,7 @@ GrContextType ParseGrContextType() {
 }
 
 VulkanImplementationName ParseVulkanImplementationName(
-    const base::CommandLine* command_line,
-    GrContextType gr_context_type) {
+    const base::CommandLine* command_line) {
   if (command_line->HasSwitch(switches::kUseVulkan)) {
     auto value = command_line->GetSwitchValueASCII(switches::kUseVulkan);
     if (value.empty() || value == switches::kVulkanImplementationNameNative) {
@@ -202,11 +200,17 @@ VulkanImplementationName ParseVulkanImplementationName(
       return VulkanImplementationName::kSwiftshader;
     }
   }
-  // If the vulkan implementation is not set from --use-vulkan, the native
-  // vulkan implementation will be used by default.
-  return gr_context_type == GrContextType::kVulkan
-             ? VulkanImplementationName::kNative
-             : VulkanImplementationName::kNone;
+
+  // GrContext is not going to use Vulkan.
+  if (!base::FeatureList::IsEnabled(features::kVulkan))
+    return VulkanImplementationName::kNone;
+
+  // If the vulkan feature is enabled from command line, we will force to use
+  // vulkan even if it is blacklisted.
+  return base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+             features::kVulkan.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE)
+             ? VulkanImplementationName::kForcedNative
+             : VulkanImplementationName::kNative;
 }
 
 }  // namespace gles2

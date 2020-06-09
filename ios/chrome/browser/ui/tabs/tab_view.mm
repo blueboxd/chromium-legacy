@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -138,11 +137,9 @@ UIImage* DefaultFaviconImage() {
                   action:@selector(tabWasTapped)
         forControlEvents:UIControlEventTouchUpInside];
 
-    if (DragAndDropIsEnabled()) {
-      _dropInteraction =
-          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-      [self addInteraction:_dropInteraction];
-    }
+    _dropInteraction =
+        [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+    [self addInteraction:_dropInteraction];
   }
   return self;
 }

@@ -1725,10 +1725,13 @@ void URLLoader::SetRawRequestHeadersAndNotify(
 
   if (cookie_observer_) {
     net::CookieStatusList reported_cookies;
-    for (const auto& cookie_and_status : url_request_->maybe_sent_cookies()) {
-      if (ShouldNotifyAboutCookie(cookie_and_status.status)) {
+    for (const auto& cookie_with_access_result :
+         url_request_->maybe_sent_cookies()) {
+      if (ShouldNotifyAboutCookie(
+              cookie_with_access_result.access_result.status)) {
         reported_cookies.push_back(
-            {cookie_and_status.cookie, cookie_and_status.status});
+            {cookie_with_access_result.cookie,
+             cookie_with_access_result.access_result.status});
       }
     }
 

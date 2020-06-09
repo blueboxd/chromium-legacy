@@ -182,10 +182,10 @@ class CookieRetrieverNetworkService
   CookieRetrieverNetworkService(std::unique_ptr<GetCookiesCallback> callback)
       : callback_(std::move(callback)) {}
 
-  void GotCookies(const net::CookieStatusList& cookies,
-                  const net::CookieStatusList& excluded_cookies) {
-    for (const auto& cookie_with_status : cookies) {
-      const net::CanonicalCookie& cookie = cookie_with_status.cookie;
+  void GotCookies(const net::CookieAccessResultList& cookies,
+                  const net::CookieAccessResultList& excluded_cookies) {
+    for (const auto& cookie_with_access_result : cookies) {
+      const net::CanonicalCookie& cookie = cookie_with_access_result.cookie;
       std::string key = base::StringPrintf(
           "%s::%s::%s::%d", cookie.Name().c_str(), cookie.Domain().c_str(),
           cookie.Path().c_str(), cookie.IsSecure());
@@ -687,16 +687,16 @@ BuildProtocolBlockedSetCookies(const net::CookieAndLineStatusList& net_list) {
 }
 
 std::unique_ptr<Array<Network::BlockedCookieWithReason>>
-BuildProtocolAssociatedCookies(const net::CookieStatusList& net_list) {
+BuildProtocolAssociatedCookies(const net::CookieAccessResultList& net_list) {
   auto protocol_list =
       std::make_unique<Array<Network::BlockedCookieWithReason>>();
 
-  for (const net::CookieWithStatus& cookie : net_list) {
+  for (const net::CookieWithAccessResult& cookie : net_list) {
     std::unique_ptr<Array<Network::CookieBlockedReason>> blocked_reasons =
-        GetProtocolBlockedCookieReason(cookie.status);
+        GetProtocolBlockedCookieReason(cookie.access_result.status);
     // Note that the condition below is not always true,
     // as there might be blocked reasons that we do not report.
-    if (blocked_reasons->size() || cookie.status.IsInclude()) {
+    if (blocked_reasons->size() || cookie.access_result.status.IsInclude()) {
       protocol_list->push_back(
           Network::BlockedCookieWithReason::Create()
               .SetBlockedReasons(std::move(blocked_reasons))
@@ -2123,7 +2123,7 @@ void NetworkHandler::SetNetworkConditions(
 
 void NetworkHandler::OnRequestWillBeSentExtraInfo(
     const std::string& devtools_request_id,
-    const net::CookieStatusList& request_cookie_list,
+    const net::CookieAccessResultList& request_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers) {
   if (!enabled_)
     return;

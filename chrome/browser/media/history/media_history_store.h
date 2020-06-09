@@ -131,6 +131,9 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   std::vector<mojom::MediaHistoryPlaybackRowPtr>
   GetMediaHistoryPlaybackRowsForDebug();
 
+  std::vector<media_feeds::mojom::MediaFeedItemPtr> GetMediaFeedItems(
+      const MediaHistoryKeyedService::GetMediaFeedItemsRequest& request);
+
   std::vector<media_feeds::mojom::MediaFeedPtr> GetMediaFeeds(
       const MediaHistoryKeyedService::GetMediaFeedsRequest& request);
 
@@ -153,9 +156,6 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
 
   void StoreMediaFeedFetchResult(
       MediaHistoryKeyedService::MediaFeedFetchResult result);
-
-  std::vector<media_feeds::mojom::MediaFeedItemPtr>
-  GetItemsForMediaFeedForDebug(const int64_t feed_id);
 
   MediaHistoryKeyedService::PendingSafeSearchCheckList
   GetPendingSafeSearchCheckMediaFeedItems();

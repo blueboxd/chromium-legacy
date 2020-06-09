@@ -377,7 +377,7 @@ suite('CrostiniPageTests', function() {
 
       test('DiskResizeOpensWhenClicked', async function() {
         assertTrue(!!subpage.$$('#showDiskResizeButton'));
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo',
             {succeeded: true, canResize: true, isUserChosenSize: true});
         subpage.$$('#showDiskResizeButton').click();
@@ -675,9 +675,13 @@ suite('CrostiniPageTests', function() {
 
       async function clickShowDiskResize(userChosen) {
         console.log('Awaiting getDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
-            'getCrostiniDiskInfo',
-            {succeeded: true, canResize: true, isUserChosenSize: userChosen});
+        await crostiniBrowserProxy.resolvePromises('getCrostiniDiskInfo', {
+          succeeded: true,
+          canResize: true,
+          isUserChosenSize: userChosen,
+          ticks: ticks,
+          defaultIndex: 2
+        });
         subpage.$$('#showDiskResizeButton').click();
         console.log('Awaiting flushAsync');
         await flushAsync();
@@ -698,7 +702,7 @@ suite('CrostiniPageTests', function() {
 
       test('ResizeUnsupported', async function() {
         console.log(`Starting test ${this.test.title}`);
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', {succeeded: true, canResize: false});
         assertFalse(isVisible(subpage.$$('#showDiskResizeButton')));
         assertEquals(
@@ -709,7 +713,7 @@ suite('CrostiniPageTests', function() {
 
       test('ResizeButtonAndSubtextCorrectlySet', async function() {
         console.log(`Starting test ${this.test.title}`);
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', resizeableData);
         const button = subpage.$$('#showDiskResizeButton');
         const subtext = subpage.$$('#diskSizeDescription');
@@ -723,7 +727,7 @@ suite('CrostiniPageTests', function() {
 
       test('ReserveSizeButtonAndSubtextCorrectlySet', async function() {
         console.log(`Starting test ${this.test.title}`);
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', sparseDiskData);
         const button = subpage.$$('#showDiskResizeButton');
         const subtext = subpage.$$('#diskSizeDescription');
@@ -743,7 +747,7 @@ suite('CrostiniPageTests', function() {
         await clickShowDiskResize(true);
         const diskInfo = resizeableData;
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', diskInfo);
 
         assertTrue(isVisible(dialog.$$('#recommended-size')));
@@ -757,7 +761,7 @@ suite('CrostiniPageTests', function() {
         const diskInfo = resizeableData;
         diskInfo.isLowSpaceAvailable = true;
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', diskInfo);
 
         assertFalse(isVisible(dialog.$$('#recommended-size')));
@@ -769,7 +773,7 @@ suite('CrostiniPageTests', function() {
         console.log(`Starting test ${this.test.title}`);
         await clickShowDiskResize(true);
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', {succeeded: false, isUserChosenSize: true});
 
         // We failed, should have a retry button.
@@ -789,7 +793,7 @@ suite('CrostiniPageTests', function() {
 
         // And failure page again.
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.rejectPromise('getCrostiniDiskInfo');
+        await crostiniBrowserProxy.rejectPromises('getCrostiniDiskInfo');
         button = dialog.$$('#retry');
         assertTrue(isVisible(button));
         assertVisibleBlockIs('#error');
@@ -804,7 +808,7 @@ suite('CrostiniPageTests', function() {
         console.log(`Starting test ${this.test.title}`);
         await clickShowDiskResize(true);
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo',
             {succeeded: true, canResize: false, isUserChosenSize: true});
         assertVisibleBlockIs('#unsupported');
@@ -817,7 +821,7 @@ suite('CrostiniPageTests', function() {
         console.log(`Starting test ${this.test.title}`);
         await clickShowDiskResize(true);
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', resizeableData);
         assertVisibleBlockIs('#resize-block');
 
@@ -834,7 +838,7 @@ suite('CrostiniPageTests', function() {
         console.log(`Starting test ${this.test.title}`);
         await clickShowDiskResize(true);
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', resizeableData);
         const button = dialog.$$('#resize');
         button.click();
@@ -852,12 +856,12 @@ suite('CrostiniPageTests', function() {
         console.log(`Starting test ${this.test.title}`);
         await clickShowDiskResize(true);
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', resizeableData);
         const button = dialog.$$('#resize');
         button.click();
         console.log('Awaiting resizeCrostiniDisk');
-        await crostiniBrowserProxy.resolvePromise('resizeCrostiniDisk', false);
+        await crostiniBrowserProxy.resolvePromises('resizeCrostiniDisk', false);
         assertFalse(button.disabled);
         assertFalse(isVisible(dialog.$$('#done')));
         assertFalse(isVisible(dialog.$$('#resizing')));
@@ -870,12 +874,12 @@ suite('CrostiniPageTests', function() {
         console.log(`Starting test ${this.test.title}`);
         await clickShowDiskResize(true);
         console.log('Awaiting getCrostiniDiskInfo');
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', resizeableData);
         const button = dialog.$$('#resize');
         button.click();
         console.log('Awaiting resizeCrostiniDisk');
-        await crostiniBrowserProxy.resolvePromise('resizeCrostiniDisk', true);
+        await crostiniBrowserProxy.resolvePromises('resizeCrostiniDisk', true);
         // Dialog should close itself.
         console.log('Awaiting close');
         await test_util.eventToPromise('close', dialog);
@@ -884,7 +888,7 @@ suite('CrostiniPageTests', function() {
 
       test('DiskResizeConfirmationDialogShownAndAccepted', async function() {
         console.log(`Starting test ${this.test.title}`);
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', sparseDiskData);
         console.log('Awaiting show');
         await clickShowDiskResize(false);
@@ -929,7 +933,7 @@ suite('CrostiniPageTests', function() {
 
       test('DiskResizeConfirmationDialogShownAndCanceled', async function() {
         console.log(`Starting test ${this.test.title}`);
-        await crostiniBrowserProxy.resolvePromise(
+        await crostiniBrowserProxy.resolvePromises(
             'getCrostiniDiskInfo', sparseDiskData);
         console.log('Awaiting click show');
         await clickShowDiskResize(false);

@@ -17,7 +17,7 @@
 
 #include "base/files/file_path.h"
 #include "base/optional.h"
-#include "base/strings/nullable_string16.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "services/network/public/mojom/referrer_policy.mojom.h"
@@ -103,12 +103,12 @@ struct CONTENT_EXPORT DropData {
   std::vector<FileSystemFileInfo> file_system_files;
 
   // User is dragging plain text into the webview.
-  base::NullableString16 text;
+  base::Optional<base::string16> text;
 
   // User is dragging text/html into the webview (e.g., out of Firefox).
   // |html_base_url| is the URL that the html fragment is taken from (used to
   // resolve relative links).  It's ok for |html_base_url| to be empty.
-  base::NullableString16 html;
+  base::Optional<base::string16> html;
   GURL html_base_url;
 
   // User is dragging an image out of the WebView.

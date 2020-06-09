@@ -34,10 +34,6 @@ void SearchResultContainerView::SetResults(
   Update();
 }
 
-void SearchResultContainerView::NotifyFirstResultYIndex(int /*y_index*/) {
-  NOTREACHED();
-}
-
 int SearchResultContainerView::GetYSize() {
   NOTREACHED();
   return 0;

@@ -4,21 +4,23 @@
 
 import {SWIPE_FINISH_THRESHOLD_PX, SWIPE_START_THRESHOLD_PX, TabSwiper, TRANSLATE_ANIMATION_THRESHOLD_PX} from 'chrome://tab-strip/tab_swiper.js';
 
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {eventToPromise} from '../test_util.m.js';
 
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('TabSwiper', () => {
+  /** @type {!HTMLElement} */
   let tabElement;
-  let tabSwiper;
 
-  const tab = {id: 1001};
+  /** @type {!TabSwiper} */
+  let tabSwiper;
 
   setup(() => {
     document.body.innerHTML = '';
 
-    tabElement = document.createElement('div');
-    tabElement.tab = tab;
+    tabElement =
+        /** @type {!HTMLElement} */ (document.createElement('div'));
     document.body.appendChild(tabElement);
 
     tabSwiper = new TabSwiper(tabElement);
@@ -58,8 +60,8 @@ suite('TabSwiper', () => {
     pointerState.clientY = startY - (SWIPE_START_THRESHOLD_PX + 1);
     tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
     assertTrue(
-        parseInt(tabElStyle.maxWidth) > 0 &&
-        parseInt(tabElStyle.maxWidth) < tabWidth);
+        parseInt(tabElStyle.maxWidth, 10) > 0 &&
+        parseInt(tabElStyle.maxWidth, 10) < tabWidth);
     assertTrue(
         parseFloat(tabElStyle.opacity) > 0 &&
         parseFloat(tabElStyle.opacity) < 1);

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
@@ -43,6 +44,7 @@
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/optimization_metadata.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -1303,4 +1305,29 @@ void OptimizationGuideHintsManager::AddHintForTesting(
   }
   hint_cache_->AddHintForTesting(url, std::move(hint));
   PrepareToInvokeRegisteredCallbacks(url);
+}
+
+void OptimizationGuideHintsManager::OverrideTargetDecisionForTesting(
+    optimization_guide::proto::OptimizationTarget optimization_target,
+    optimization_guide::OptimizationGuideDecision optimization_guide_decision) {
+  if (optimization_target !=
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
+    return;
+  }
+
+  // Manipulate ECTs to effectively change the target decision.
+  switch (optimization_guide_decision) {
+    case optimization_guide::OptimizationGuideDecision::kTrue:
+      current_effective_connection_type_ =
+          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+      break;
+    case optimization_guide::OptimizationGuideDecision::kFalse:
+      current_effective_connection_type_ =
+          net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
+      break;
+    case optimization_guide::OptimizationGuideDecision::kUnknown:
+      // No way to override for |kUnknown|. Should not be used in tests.
+      NOTREACHED();
+      break;
+  }
 }

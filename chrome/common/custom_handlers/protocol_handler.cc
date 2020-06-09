@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
@@ -86,10 +86,11 @@ ProtocolHandler ProtocolHandler::CreateProtocolHandler(
   base::Time time;
   value->GetString("protocol", &protocol);
   value->GetString("url", &url);
-  const base::Value* time_value = value->FindKey("last_modified");
+  base::Optional<base::Time> time_value =
+      util::ValueToTime(value->FindKey("last_modified"));
   // Treat invalid times as the default value.
   if (time_value)
-    ignore_result(base::GetValueAsTime(*time_value, &time));
+    time = *time_value;
   return ProtocolHandler(protocol, GURL(url), time);
 }
 
@@ -105,7 +106,7 @@ std::unique_ptr<base::DictionaryValue> ProtocolHandler::Encode() const {
   auto d = std::make_unique<base::DictionaryValue>();
   d->SetString("protocol", protocol_);
   d->SetString("url", url_.spec());
-  d->SetKey("last_modified", base::CreateTimeValue(last_modified_));
+  d->SetKey("last_modified", util::TimeToValue(last_modified_));
   return d;
 }
 

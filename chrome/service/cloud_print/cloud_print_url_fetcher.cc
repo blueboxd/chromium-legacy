@@ -129,7 +129,7 @@ CloudPrintURLFetcher::Delegate::HandleJSONData(const net::URLFetcher* source,
 
 CloudPrintURLFetcher::CloudPrintURLFetcher(
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
-    : delegate_(NULL),
+    : delegate_(nullptr),
       num_retries_(0),
       type_(REQUEST_MAX),
       partial_traffic_annotation_(partial_traffic_annotation) {}

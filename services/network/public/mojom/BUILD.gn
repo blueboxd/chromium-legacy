@@ -356,6 +356,10 @@ mojom("cookies_mojom") {
           cpp = "::net::CookieSameSite"
         },
         {
+          mojom = "network.mojom.CookieEffectiveSameSite"
+          cpp = "::net::CookieEffectiveSameSite"
+        },
+        {
           mojom = "network.mojom.CookieSameSiteContext"
           cpp = "::net::CookieOptions::SameSiteCookieContext"
         },
@@ -383,6 +387,10 @@ mojom("cookies_mojom") {
         {
           mojom = "network.mojom.CookieWithStatus"
           cpp = "::net::CookieWithStatus"
+        },
+        {
+          mojom = "network.mojom.CookieWithAccessResult"
+          cpp = "::net::CookieWithAccessResult"
         },
         {
           mojom = "network.mojom.CookieAndLineWithStatus"

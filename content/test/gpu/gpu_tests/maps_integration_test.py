@@ -95,12 +95,14 @@ class MapsIntegrationTest(
     print 'Maps\' devicePixelRatio is ' + str(dpr)
 
     page = _GetMapsPageForUrl(url)
-    if page.test_rect:
+    # The bottom corners of Mac screenshots have black triangles due to the rounded corners of Mac
+    # windows. So, crop the bottom few rows off now to get rid of those. The triangles appear to be
+    # 5 pixels wide and tall regardless of DPI, so 10 pixels should be sufficient.
+    if self.browser.platform.GetOSName() == 'mac':
       img_height, img_width = screenshot.shape[:2]
-      screenshot = image_util.Crop(screenshot, int(page.test_rect[0] * dpr),
-                                   int(page.test_rect[1] * dpr),
-                                   min(int(page.test_rect[2] * dpr), img_width),
-                                   min(int(page.test_rect[3] * dpr), img_height))
+      screenshot = image_util.Crop(screenshot, 0, 0, img_width, img_height - 10)
+    x1, y1, x2, y2 = _GetCropBoundaries(screenshot)
+    screenshot = image_util.Crop(screenshot, x1, y1, x2 - x1, y2 - y1)
 
     self._UploadTestResultToSkiaGold(_TEST_NAME, screenshot, page,
                                      self._GetBuildIdArgs())
@@ -124,6 +126,60 @@ def _GetMapsPageForUrl(url):
       grace_period_end=datetime.date(2020, 6, 22),
       matching_algorithm=pixel_test_pages.VERY_PERMISSIVE_SOBEL_ALGO)
   return page
+
+
+def _GetCropBoundaries(screenshot):
+  """Returns the boundaries to crop the screenshot to.
+
+  Specifically, we look for the boundaries where the white background
+  transitions into the (non-white) content we care about.
+
+  Args:
+    screenshot: A screenshot returned by Tab.Screenshot() (numpy ndarray?)
+
+  Returns:
+    A 4-tuple (x1, y1, x2, y2) denoting the top left and bottom right
+    coordinates to crop to.
+  """
+  img_height, img_width = screenshot.shape[:2]
+
+  def RowIsWhite(row):
+    for col in xrange(img_width):
+      pixel = image_util.GetPixelColor(screenshot, col, row)
+      if pixel.r != 255 or pixel.g != 255 or pixel.b != 255:
+        return False
+    return True
+
+  def ColumnIsWhite(column):
+    for row in xrange(img_height):
+      pixel = image_util.GetPixelColor(screenshot, column, row)
+      if pixel.r != 255 or pixel.g != 255 or pixel.b != 255:
+        return False
+    return True
+
+  x1 = y1 = 0
+  x2 = img_width
+  y2 = img_height
+  for column in xrange(img_width):
+    if not ColumnIsWhite(column):
+      x1 = column
+      break
+
+  for row in xrange(img_height):
+    if not RowIsWhite(row):
+      y1 = row
+      break
+
+  for column in xrange(x1 + 1, img_width):
+    if ColumnIsWhite(column):
+      x2 = column
+      break
+
+  for row in xrange(y1 + 1, img_height):
+    if RowIsWhite(row):
+      y2 = row
+      break
+  return x1, y1, x2, y2
 
 
 def load_tests(loader, tests, pattern):

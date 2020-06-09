@@ -87,4 +87,5 @@ enum PwaPermissionType {
 // The Plugin VM app publisher uses this enum directly.
 enum PluginVmPermissionType {
   PRINTING = 0,
+  CAMERA = 1,
 };

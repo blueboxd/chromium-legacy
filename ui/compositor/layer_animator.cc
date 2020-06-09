@@ -46,7 +46,7 @@ const int kLayerAnimatorDefaultTransitionDurationMs = 120;
 // LayerAnimator public --------------------------------------------------------
 
 LayerAnimator::LayerAnimator(base::TimeDelta transition_duration)
-    : delegate_(NULL),
+    : delegate_(nullptr),
       preemption_strategy_(IMMEDIATELY_SET_NEW_TARGET),
       is_transition_duration_locked_(false),
       transition_duration_(transition_duration),

@@ -6,7 +6,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
-package reporting_messaging_layer.test;
+package reporting.test;
 
 // A simple test proto with a string in it.
 message TestMessage {

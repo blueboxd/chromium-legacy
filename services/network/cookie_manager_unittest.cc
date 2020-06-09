@@ -110,25 +110,26 @@ class SynchronousCookieManager {
         url, options,
         base::BindLambdaForTesting(
             [&run_loop, &cookies_out](
-                const net::CookieStatusList& cookies,
-                const net::CookieStatusList& excluded_cookies) {
-              cookies_out = net::cookie_util::StripStatuses(cookies);
+                const net::CookieAccessResultList& cookies,
+                const net::CookieAccessResultList& excluded_cookies) {
+              cookies_out = net::cookie_util::StripAccessResults(cookies);
               run_loop.Quit();
             }));
     run_loop.Run();
     return cookies_out;
   }
 
-  net::CookieStatusList GetExcludedCookieList(const GURL& url,
-                                              net::CookieOptions options) {
+  net::CookieAccessResultList GetExcludedCookieList(
+      const GURL& url,
+      net::CookieOptions options) {
     base::RunLoop run_loop;
-    net::CookieStatusList cookies_out;
+    net::CookieAccessResultList cookies_out;
     cookie_service_->GetCookieList(
         url, options,
         base::BindLambdaForTesting(
             [&run_loop, &cookies_out](
-                const net::CookieStatusList& cookies,
-                const net::CookieStatusList& excluded_cookies) {
+                const net::CookieAccessResultList& cookies,
+                const net::CookieAccessResultList& excluded_cookies) {
               cookies_out = excluded_cookies;
               run_loop.Quit();
             }));
@@ -587,7 +588,7 @@ TEST_F(CookieManagerTest, GetCookieList) {
 
   net::CookieOptions excluded_options = options;
   excluded_options.set_return_excluded_cookies();
-  net::CookieStatusList excluded_cookies =
+  net::CookieAccessResultList excluded_cookies =
       service_wrapper()->GetExcludedCookieList(
           GURL("https://foo_host.com/with/path"), excluded_options);
 
@@ -595,8 +596,9 @@ TEST_F(CookieManagerTest, GetCookieList) {
 
   EXPECT_EQ("HttpOnly", excluded_cookies[0].cookie.Name());
   EXPECT_EQ("F", excluded_cookies[0].cookie.Value());
-  EXPECT_TRUE(excluded_cookies[0].status.HasExactlyExclusionReasonsForTesting(
-      {net::CookieInclusionStatus::EXCLUDE_HTTP_ONLY}));
+  EXPECT_TRUE(excluded_cookies[0]
+                  .access_result.status.HasExactlyExclusionReasonsForTesting(
+                      {net::CookieInclusionStatus::EXCLUDE_HTTP_ONLY}));
 }
 
 TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
@@ -632,7 +634,7 @@ TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
 
   options.set_return_excluded_cookies();
 
-  net::CookieStatusList excluded_cookies =
+  net::CookieAccessResultList excluded_cookies =
       service_wrapper()->GetExcludedCookieList(
           GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(1u, excluded_cookies.size());
@@ -688,7 +690,7 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
 
   options.set_return_excluded_cookies();
 
-  net::CookieStatusList excluded_cookies =
+  net::CookieAccessResultList excluded_cookies =
       service_wrapper()->GetExcludedCookieList(
           GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(2u, excluded_cookies.size());

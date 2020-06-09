@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
@@ -85,7 +86,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     security_context.SetSecurityOriginForTesting(secure_origin);
 
     csp->BindToDelegate(
-        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+        dummy->GetFrame().DomWindow()->GetContentSecurityPolicyDelegate());
     EXPECT_EQ(test.expected_policy,
               security_context.GetInsecureRequestPolicy());
     bool expect_upgrade =
@@ -414,8 +415,8 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
   // We need document for HTMLScriptElement tests.
   auto dummy = std::make_unique<DummyPageHolder>();
-  auto& document = dummy->GetDocument();
-  document.GetSecurityContext().SetSecurityOriginForTesting(secure_origin);
+  auto* window = dummy->GetFrame().DomWindow();
+  window->GetSecurityContext().SetSecurityOriginForTesting(secure_origin);
 
   for (const auto& test : cases) {
     SCOPED_TRACE(testing::Message() << "Policy: `" << test.policy
@@ -423,12 +424,12 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     unsigned expected_reports = test.allowed ? 0u : 1u;
     auto* element = MakeGarbageCollected<HTMLScriptElement>(
-        document, CreateElementFlags::ByParser());
+        *window->document(), CreateElementFlags::ByParser());
 
     // Enforce 'script-src'
     Persistent<ContentSecurityPolicy> policy =
         MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(window->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              ContentSecurityPolicyType::kEnforce,
                              ContentSecurityPolicySource::kHTTP);
@@ -440,7 +441,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Enforce 'style-src'
     policy = MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(window->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              ContentSecurityPolicyType::kEnforce,
                              ContentSecurityPolicySource::kHTTP);
@@ -452,7 +453,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Report 'script-src'
     policy = MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(window->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("script-src ") + test.policy,
                              ContentSecurityPolicyType::kReport,
                              ContentSecurityPolicySource::kHTTP);
@@ -463,7 +464,7 @@ TEST_F(ContentSecurityPolicyTest, NonceInline) {
 
     // Report 'style-src'
     policy = MakeGarbageCollected<ContentSecurityPolicy>();
-    policy->BindToDelegate(document.GetContentSecurityPolicyDelegate());
+    policy->BindToDelegate(window->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(String("style-src ") + test.policy,
                              ContentSecurityPolicyType::kReport,
                              ContentSecurityPolicySource::kHTTP);
@@ -1436,7 +1437,7 @@ TEST_F(ContentSecurityPolicyTest, ReasonableRestrictionMetrics) {
                           ContentSecurityPolicySource::kHTTP);
     auto dummy = std::make_unique<DummyPageHolder>();
     csp->BindToDelegate(
-        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+        dummy->GetFrame().DomWindow()->GetContentSecurityPolicyDelegate());
 
     EXPECT_EQ(test.expected_object,
               dummy->GetDocument().IsUseCounted(
@@ -1462,7 +1463,7 @@ TEST_F(ContentSecurityPolicyTest, ReasonableRestrictionMetrics) {
                           ContentSecurityPolicySource::kHTTP);
     auto dummy = std::make_unique<DummyPageHolder>();
     csp->BindToDelegate(
-        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+        dummy->GetFrame().DomWindow()->GetContentSecurityPolicyDelegate());
 
     EXPECT_EQ(test.expected_object,
               dummy->GetDocument().IsUseCounted(
@@ -1512,7 +1513,7 @@ TEST_F(ContentSecurityPolicyTest, BetterThanReasonableRestrictionMetrics) {
                           ContentSecurityPolicySource::kHTTP);
     auto dummy = std::make_unique<DummyPageHolder>();
     csp->BindToDelegate(
-        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+        dummy->GetFrame().DomWindow()->GetContentSecurityPolicyDelegate());
 
     EXPECT_EQ(test.expected,
               dummy->GetDocument().IsUseCounted(
@@ -1528,7 +1529,7 @@ TEST_F(ContentSecurityPolicyTest, BetterThanReasonableRestrictionMetrics) {
                           ContentSecurityPolicySource::kHTTP);
     auto dummy = std::make_unique<DummyPageHolder>();
     csp->BindToDelegate(
-        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+        dummy->GetFrame().DomWindow()->GetContentSecurityPolicyDelegate());
 
     EXPECT_EQ(test.expected,
               dummy->GetDocument().IsUseCounted(

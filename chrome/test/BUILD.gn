@@ -4286,6 +4286,7 @@ test("unit_tests") {
       "//chrome/browser/resource_coordinator/tab_ranker:tab_features_test_helper",
       "//chrome/services/sharing:unit_tests",
       "//chrome/services/sharing/nearby_decoder:unit_tests",
+      "//chrome/services/speech:unit_tests",
       "//components/chrome_cleaner/test:test_name_helper",
       "//components/feature_engagement/test:test_support",
       "//components/safety_check:test_support",

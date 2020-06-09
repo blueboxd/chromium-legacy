@@ -337,7 +337,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
 class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
  public:
   explicit QueueTouchEventDelegate(WindowEventDispatcher* dispatcher)
-      : window_(NULL),
+      : window_(nullptr),
         dispatcher_(dispatcher),
         synchronous_ack_for_next_event_(AckState::PENDING) {}
 
@@ -2264,7 +2264,7 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
   // A touch too far from other touches won't be locked to anything
   target =
       gesture_recognizer->GetTargetForLocation(gfx::PointF(1000.f, 1000.f), -1);
-  EXPECT_TRUE(target == NULL);
+  EXPECT_TRUE(target == nullptr);
 
   // Move a touch associated with windows[2] to 1000, 1000
   ui::TouchEvent move2(
@@ -3066,11 +3066,11 @@ TEST_F(GestureRecognizerTest, FlushAllOnHide) {
   DispatchEventUsingWindowDispatcher(&press2);
   window->Hide();
   EXPECT_EQ(
-      NULL,
+      nullptr,
       aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
           press1));
   EXPECT_EQ(
-      NULL,
+      nullptr,
       aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
           press2));
 }
@@ -3766,7 +3766,7 @@ TEST_F(GestureRecognizerTest, CancelAllActiveTouches) {
   aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouchesExcept(
       nullptr);
 
-  EXPECT_EQ(NULL, gesture_recognizer->GetTouchLockedTarget(press));
+  EXPECT_EQ(nullptr, gesture_recognizer->GetTouchLockedTarget(press));
   EXPECT_4_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_END,
                   ui::ET_GESTURE_SCROLL_END,
@@ -4249,8 +4249,7 @@ TEST_F(GestureRecognizerTest, GestureEventFlagsPassedFromTouchEvent) {
 // A delegate that deletes a window on long press.
 class GestureEventDeleteWindowOnLongPress : public GestureEventConsumeDelegate {
  public:
-  GestureEventDeleteWindowOnLongPress()
-      : window_(NULL) {}
+  GestureEventDeleteWindowOnLongPress() : window_(nullptr) {}
 
   void set_window(aura::Window** window) { window_ = window; }
 
@@ -4259,7 +4258,7 @@ class GestureEventDeleteWindowOnLongPress : public GestureEventConsumeDelegate {
     if (gesture->type() != ui::ET_GESTURE_LONG_PRESS)
       return;
     delete *window_;
-    *window_ = NULL;
+    *window_ = nullptr;
   }
 
  private:
@@ -4283,11 +4282,11 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressDeletingWindow) {
       ui::ET_TOUCH_PRESSED, gfx::Point(101, 201), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::kTouch, kTouchId));
   DispatchEventUsingWindowDispatcher(&press1);
-  EXPECT_TRUE(window != NULL);
+  EXPECT_TRUE(window != nullptr);
 
   // Wait until the timer runs out.
   delegate.WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
-  EXPECT_EQ(NULL, window);
+  EXPECT_EQ(nullptr, window);
 }
 
 TEST_F(GestureRecognizerWithSwitchTest, GestureEventSmallPinchDisabled) {

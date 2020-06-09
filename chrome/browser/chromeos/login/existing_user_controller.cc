@@ -17,12 +17,14 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -508,7 +510,7 @@ ExistingUserController::ExistingUserController()
 }
 
 void ExistingUserController::Init(const user_manager::UserList& users) {
-  time_init_ = base::Time::Now();
+  timer_init_ = std::make_unique<base::ElapsedTimer>();
   UpdateLoginDisplay(users);
   ConfigureAutoLogin();
 }
@@ -798,10 +800,10 @@ void ExistingUserController::PerformLogin(
   }
   SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
-  if (!time_init_.is_null()) {
-    base::TimeDelta delta = base::Time::Now() - time_init_;
-    UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToLoginTime", delta);
-    time_init_ = base::Time();  // Reset to null.
+  if (timer_init_) {
+    base::UmaHistogramMediumTimes("Login.PromptToLoginTime",
+                                  timer_init_->Elapsed());
+    timer_init_.reset();
   }
   // Stop screen refresh timer - will be restarted on login screen again
   screen_refresh_timer_->Stop();
@@ -1889,10 +1891,10 @@ void ExistingUserController::DoCompleteLogin(
 
   PerformPreLoginActions(user_context);
 
-  if (!time_init_.is_null()) {
-    base::TimeDelta delta = base::Time::Now() - time_init_;
-    UMA_HISTOGRAM_MEDIUM_TIMES("Login.PromptToCompleteLoginTime", delta);
-    time_init_ = base::Time();  // Reset to null.
+  if (timer_init_) {
+    base::UmaHistogramMediumTimes("Login.PromptToCompleteLoginTime",
+                                  timer_init_->Elapsed());
+    timer_init_.reset();
   }
 
   // Fetch OAuth2 tokens if we have an auth code.

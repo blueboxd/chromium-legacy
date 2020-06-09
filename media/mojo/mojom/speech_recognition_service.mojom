@@ -5,15 +5,18 @@
 module media.mojom;
 
 import "media/mojo/mojom/media_types.mojom";
+import "services/network/public/mojom/url_loader_factory.mojom";
 
 // The main interface a client uses to interact with a speech recognition
 // service process. Every renderer can own one or more
 // Remote<SpeechRecognitionContext>, with the receiver bound through the
-// BrowserInterfaceBroker.
+// BrowserInterfaceBroker. Returns a flag indicating whether multichannel
+// audio is supported by the speech recognition service.
 interface SpeechRecognitionContext {
   // Bind the recognizers to the speech recognition service.
   BindRecognizer(pending_receiver<SpeechRecognitionRecognizer> receiver,
-                 pending_remote<SpeechRecognitionRecognizerClient> client);
+                 pending_remote<SpeechRecognitionRecognizerClient> client)
+                 => (bool is_multichannel_supported);
 };
 
 // The main interface to a speech secognition service process.
@@ -22,6 +25,23 @@ interface SpeechRecognitionContext {
 interface SpeechRecognitionService {
   // Bind the context to a new instance of the speech recognition.
   BindContext(pending_receiver<SpeechRecognitionContext> context);
+
+  // Sets the URL loader factory used to create network requests.
+  SetUrlLoaderFactory(
+      pending_remote<network.mojom.URLLoaderFactory> url_loader_factory);
+
+  // Binds the speech recognition service client used by the speech
+  // recognition service to send messages back to the client.
+  BindSpeechRecognitionServiceClient(
+      pending_remote<SpeechRecognitionServiceClient> client);
+};
+
+// The interface used to send messages from the speech recognition service
+// back to the consumer of the service.
+interface SpeechRecognitionServiceClient {
+  // Executed when the network service crashes, prompting the client to
+  // reset the URL loader factory.
+  OnNetworkServiceDisconnect();
 };
 
 // The interface used to pass raw audio from the renderer to the speech

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/containers/flat_map.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_permissions_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
+#include "chrome/browser/optimization_guide/optimization_guide_test_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
@@ -885,6 +887,43 @@ PredictionManager::GetHostModelFeaturesForHost(const std::string& host) const {
   if (it == host_model_features_cache_.end())
     return base::nullopt;
   return it->second;
+}
+
+void PredictionManager::OverrideTargetDecisionForTesting(
+    proto::OptimizationTarget optimization_target,
+    OptimizationGuideDecision optimization_guide_decision) {
+  auto it = optimization_target_prediction_model_map_.find(optimization_target);
+  if (it != optimization_target_prediction_model_map_.end())
+    optimization_target_prediction_model_map_.erase(it);
+
+  // No model for |kUnknown|. This will make |ShouldTargetNavigation|
+  // return an |OptimizationTargetDecision::kModelNotAvailableOnClient|,
+  // which in turn yields an |OptimizationGuideDecision::kUnknown| in
+  // |OptimizationGuideKeyedService::ShouldTargetNavigation|.
+  if (optimization_guide_decision == OptimizationGuideDecision::kUnknown)
+    return;
+
+  // Construct a simple model that will return the provided
+  // |optimization_guide_decision|.
+  const double threshold = 5.0;
+  const double weight = 1.0;
+  double leaf_value =
+      (optimization_guide_decision == OptimizationGuideDecision::kTrue)
+          ? threshold + 1.0  // Value is greater than |threshold| to get |kTrue|
+          : threshold - 1.0;  // Value is less than |threshold| to get |kFalse|
+
+  std::unique_ptr<proto::PredictionModel> prediction_model =
+      GetSingleLeafDecisionTreePredictionModel(threshold, weight,
+                                               leaf_value / weight);
+
+  proto::ModelInfo* model_info = prediction_model->mutable_model_info();
+
+  model_info->set_version(1);
+  model_info->set_optimization_target(optimization_target);
+  model_info->add_supported_model_types(proto::MODEL_TYPE_DECISION_TREE);
+
+  optimization_target_prediction_model_map_.emplace(
+      optimization_target, CreatePredictionModel(*prediction_model));
 }
 
 }  // namespace optimization_guide

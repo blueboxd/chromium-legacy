@@ -305,7 +305,16 @@ bool ExpandPropertyFiles(const base::FilePath& source_path,
   if (single_file)
     base::DeleteFile(dest_path, /*recursive=*/false);
 
-  for (const char* file : {"default.prop", "build.prop", "vendor_build.prop"}) {
+  // default.prop may not exist. Silently skip it if not found.
+  for (const auto& pair : {std::pair<const char*, bool>{"default.prop", true},
+                           {"build.prop", false},
+                           {"vendor_build.prop", false}}) {
+    const char* file = pair.first;
+    const bool is_optional = pair.second;
+
+    if (is_optional && !base::PathExists(source_path.Append(file)))
+      continue;
+
     if (!ExpandPropertyFile(source_path.Append(file),
                             single_file ? dest_path : dest_path.Append(file),
                             &config,

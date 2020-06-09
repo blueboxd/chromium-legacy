@@ -113,7 +113,7 @@ class RequestContentScriptAPITest : public ExtensionBrowserTest {
 };
 
 RequestContentScriptAPITest::RequestContentScriptAPITest()
-    : extension_(NULL) {}
+    : extension_(nullptr) {}
 
 testing::AssertionResult RequestContentScriptAPITest::RunTest(
     PermissionOrMatcherType manifest_permission,

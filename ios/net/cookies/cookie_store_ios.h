@@ -238,8 +238,8 @@ class CookieStoreIOS : public net::CookieStore,
   // UpdateCachesFromCookieMonster completes. Updates the cookie cache and runs
   // callbacks if the cache changed.
   void GotCookieListFor(const std::pair<GURL, std::string> key,
-                        const net::CookieStatusList& cookies,
-                        const net::CookieStatusList& excluded_cookies);
+                        const net::CookieAccessResultList& cookies,
+                        const net::CookieAccessResultList& excluded_cookies);
 
   // Fetches new values for all (url, name) pairs that have hooks registered,
   // asynchronously invoking callbacks if necessary.
@@ -273,12 +273,12 @@ class CookieStoreIOS : public net::CookieStore,
   // creation date.
   net::CookieList CanonicalCookieListFromSystemCookies(NSArray* cookies);
 
-  // Takes an NSArray of NSHTTPCookies as returns a net::CookieStatusList.
+  // Takes an NSArray of NSHTTPCookies as returns a net::CookieAccessResultList.
   // A status of "INCLUDE" is assigned to each cookie.
   // The returned cookies are ordered by longest path, then earliest
   // creation date.
-  net::CookieStatusList CanonicalCookieWithStatusListFromSystemCookies(
-      NSArray* cookies);
+  net::CookieAccessResultList
+  CanonicalCookieWithAccessResultListFromSystemCookies(NSArray* cookies);
 
   // Runs |callback| on CanonicalCookie with status List converted from cookies.
   void RunGetCookieListCallbackOnSystemCookies(GetCookieListCallback callback,

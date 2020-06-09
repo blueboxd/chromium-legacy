@@ -11,8 +11,7 @@
 
 namespace extensions {
 
-ResultCatcher::ResultCatcher()
-    : browser_context_restriction_(NULL) {
+ResultCatcher::ResultCatcher() : browser_context_restriction_(nullptr) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_TEST_PASSED,
                  content::NotificationService::AllSources());

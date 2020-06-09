@@ -145,7 +145,7 @@ PnaclTranslationCacheEntry::PnaclTranslationCacheEntry(
     bool is_read)
     : cache_(cache),
       key_(key),
-      entry_(NULL),
+      entry_(nullptr),
       step_(UNINITIALIZED),
       is_read_(is_read) {}
 

@@ -182,14 +182,14 @@ void AppendMatchingCookiesFromCookieListToVector(
   }
 }
 
-void AppendMatchingCookiesFromCookieStatusListToVector(
-    const net::CookieStatusList& all_cookies_with_statuses,
+void AppendMatchingCookiesFromCookieAccessResultListToVector(
+    const net::CookieAccessResultList& all_cookies_with_access_result,
     const GetAll::Params::Details* details,
     const Extension* extension,
     std::vector<Cookie>* match_vector) {
-  for (const net::CookieWithStatus& cookie_with_status :
-       all_cookies_with_statuses) {
-    const net::CanonicalCookie& cookie = cookie_with_status.cookie;
+  for (const net::CookieWithAccessResult& cookie_with_access_result :
+       all_cookies_with_access_result) {
+    const net::CanonicalCookie& cookie = cookie_with_access_result.cookie;
     AppendCookieToVectorIfMatchAndHasHostPermission(cookie, details, extension,
                                                     match_vector);
   }

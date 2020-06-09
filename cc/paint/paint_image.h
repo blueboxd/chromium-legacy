@@ -229,6 +229,13 @@ class CC_PAINT_EXPORT PaintImage {
                  const SkYUVASizeInfo& yuva_size_info,
                  SkYUVAIndex* plane_indices) const;
 
+  // Returns the SkImage associated with this PaintImage. If PaintImage is
+  // texture backed, this API may do a readback from GPU to CPU memory.
+  // Avoid using this API unless actual pixels are needed.
+  // For other cases, prefer using PaintImage APIs directly or use
+  // GetSkImageInfo() for metadata about the SkImage.
+  const sk_sp<SkImage>& GetRasterSkImage() const;
+
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;
   AnimationType animation_type() const { return animation_type_; }

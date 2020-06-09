@@ -42,6 +42,7 @@ generate_library_loader("libchrometts") {
   bundled_header = "\"chromeos/services/tts/chrome_tts.h\""
 
   functions = [
+    "GoogleTtsSetLogger",
     "GoogleTtsInit",
     "GoogleTtsShutdown",
     "GoogleTtsInstallVoice",

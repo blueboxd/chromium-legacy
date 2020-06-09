@@ -41,6 +41,7 @@
 #include "url/gurl.h"
 
 namespace base {
+class ElapsedTimer;
 class ListValue;
 }
 
@@ -404,9 +405,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Indicates use of local (not GAIA) authentication.
   bool auth_flow_offline_ = false;
 
-  // Time when the signin screen was first displayed. Used to measure the time
+  // Timer when the signin screen was first displayed. Used to measure the time
   // from showing the screen until a successful login is performed.
-  base::Time time_init_;
+  std::unique_ptr<base::ElapsedTimer> timer_init_;
 
   // Timer for the interval to wait for the reboot after TPM error UI was shown.
   base::OneShotTimer reboot_timer_;

@@ -15,11 +15,11 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
-#include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
+#include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
@@ -80,11 +80,10 @@ class ReportQueue {
   Status AddRecord(base::StringPiece record, EnqueueCallback callback);
   void SendRecordToStorage(std::string record, EnqueueCallback callback);
 
-  StatusOr<reporting_messaging_layer::WrappedRecord> WrapRecord(
-      base::StringPiece record_data);
+  StatusOr<reporting::WrappedRecord> WrapRecord(base::StringPiece record_data);
   StatusOr<std::string> GetLastRecordDigest();
-  StatusOr<reporting_messaging_layer::EncryptedRecord> EncryptRecord(
-      reporting_messaging_layer::WrappedRecord wrapped_record);
+  StatusOr<reporting::EncryptedRecord> EncryptRecord(
+      reporting::WrappedRecord wrapped_record);
 
   std::unique_ptr<ReportQueueConfiguration> config_;
   scoped_refptr<StorageModule> storage_;

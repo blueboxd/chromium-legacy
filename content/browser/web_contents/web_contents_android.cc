@@ -465,7 +465,7 @@ void WebContentsAndroid::ExitFullscreen(JNIEnv* env,
 void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  auto* input_handler = web_contents_->GetFocusedFrameInputHandler();
+  auto* input_handler = web_contents_->GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
   input_handler->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
@@ -482,7 +482,7 @@ void WebContentsAndroid::SelectWordAroundCaretAck(bool did_select,
 void WebContentsAndroid::SelectWordAroundCaret(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  auto* input_handler = web_contents_->GetFocusedFrameInputHandler();
+  auto* input_handler = web_contents_->GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
   input_handler->SelectWordAroundCaret(

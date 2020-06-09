@@ -22,6 +22,9 @@
 
 namespace crostini {
 
+const char kCrostiniDefaultAnsibleVersion[] =
+    "ansible;2.2.1.0-2+deb9u1;all;debian-stable-main";
+
 namespace {
 
 chromeos::CiceroneClient* GetCiceroneClient() {

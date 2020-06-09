@@ -26,7 +26,7 @@ DiagnosticsController* DiagnosticsController::GetInstance() {
   return base::Singleton<DiagnosticsController>::get();
 }
 
-DiagnosticsController::DiagnosticsController() : writer_(NULL) {}
+DiagnosticsController::DiagnosticsController() : writer_(nullptr) {}
 
 DiagnosticsController::~DiagnosticsController() {}
 

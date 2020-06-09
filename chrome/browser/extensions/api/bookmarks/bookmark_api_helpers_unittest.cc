@@ -35,11 +35,11 @@ namespace bookmark_api_helpers {
 class ExtensionBookmarksTest : public testing::Test {
  public:
   ExtensionBookmarksTest()
-      : managed_(NULL),
-        model_(NULL),
-        node_(NULL),
-        node2_(NULL),
-        folder_(NULL) {}
+      : managed_(nullptr),
+        model_(nullptr),
+        node_(nullptr),
+        node2_(nullptr),
+        folder_(nullptr) {}
 
   void SetUp() override {
     profile_.CreateBookmarkModel(false);

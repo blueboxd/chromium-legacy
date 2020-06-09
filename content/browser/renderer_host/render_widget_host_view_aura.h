@@ -565,6 +565,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Common part of Occluded() and Hide().
   void HideImpl();
 
+  blink::mojom::FrameWidgetInputHandler*
+  GetFrameWidgetInputHandlerForFocusedWidget();
+
   // NOTE: this is null if |is_mus_browser_plugin_guest_| is true.
   aura::Window* window_;
 

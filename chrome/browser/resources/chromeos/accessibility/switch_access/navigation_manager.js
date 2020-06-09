@@ -109,7 +109,9 @@ class NavigationManager {
    */
   static forceFocusedNode(node) {
     const navigator = NavigationManager.instance;
-    navigator.setNode_(node);
+    if (!navigator.node_.equals(node)) {
+      navigator.setNode_(node);
+    }
   }
 
   /**

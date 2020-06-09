@@ -10,6 +10,7 @@
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "build/build_config.h"
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/public/browser/browser_xr_runtime.h"
 #include "content/public/browser/render_frame_host.h"
@@ -35,6 +36,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
       base::OnceCallback<void(device::mojom::XRSessionPtr)>;
   explicit BrowserXRRuntimeImpl(
       device::mojom::XRDeviceId id,
+      device::mojom::XRDeviceDataPtr device_data,
       mojo::PendingRemote<device::mojom::XRRuntime> runtime,
       device::mojom::VRDisplayInfoPtr info);
   ~BrowserXRRuntimeImpl() override;
@@ -71,6 +73,10 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
 
   device::mojom::XRDeviceId GetId() const { return id_; }
 
+#if defined(OS_WIN)
+  base::Optional<LUID> GetLuid() const;
+#endif
+
   // BrowserXRRuntime
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
@@ -100,6 +106,7 @@ class BrowserXRRuntimeImpl : public content::BrowserXRRuntime,
   void OnInstallFinished(bool succeeded);
 
   device::mojom::XRDeviceId id_;
+  device::mojom::XRDeviceDataPtr device_data_;
   mojo::Remote<device::mojom::XRRuntime> runtime_;
   mojo::Remote<device::mojom::XRSessionController>
       immersive_session_controller_;

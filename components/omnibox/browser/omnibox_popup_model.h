@@ -97,7 +97,8 @@ class OmniboxPopupModel {
     // match (if BUTTON_FOCUSED) is selected.
     LineState state;
 
-    Selection(size_t line, LineState state) : line(line), state(state) {}
+    explicit Selection(size_t line, LineState state = NORMAL)
+        : line(line), state(state) {}
 
     bool operator==(const Selection&) const;
     bool operator!=(const Selection&) const;
@@ -159,32 +160,27 @@ class OmniboxPopupModel {
   size_t selected_line() const { return selection_.line; }
   LineState selected_line_state() const { return selection_.state; }
 
-  // Call to change the selected line.  This will update all state and repaint
-  // the necessary parts of the window, as well as updating the edit with the
-  // new temporary text.  |line| will be clamped to the range of valid lines.
-  // |reset_to_default| is true when the selection is being reset back to the
-  // initial state, and thus there is no temporary text (and not
-  // |has_selected_match_|). If |force| is true then the selected line will
-  // be updated forcibly even if the |line| is same as the current selected
-  // line.
-  // NOTE: This assumes the popup is open, although both the old and new values
-  // for the selected line can be kNoMatch.
-  void SetSelectedLine(size_t line, bool reset_to_default, bool force);
+  // Sets the current selection to |new_selection|. Caller is responsible for
+  // making sure |new_selection| is valid. This assumes the popup is open.
+  //
+  // This will update all state and repaint the necessary parts of the window,
+  // as well as updating the textfield with the new temporary text.
+  //
+  // |reset_to_default| restores the original inline autocompletion.
+  // |force_update_ui| updates the UI even if the selection has not changed.
+  void SetSelection(Selection new_selection,
+                    bool reset_to_default = false,
+                    bool force_update_ui = false);
+
+  // We still need to run through the whole SetSelection method, because
+  // changing the line state sometimes requires updating inline autocomplete.
+  void SetSelectedLineState(LineState new_state) {
+    SetSelection(Selection(selected_line(), new_state));
+  }
 
   // Called when the user hits escape after arrowing around the popup.  This
   // will reset the popup to the initial state.
   void ResetToInitialState();
-
-  // If the selected line has both a normal match and a keyword match, this can
-  // be used to choose which to select.  This allows the user to toggle between
-  // normal and keyword mode with tab/shift-tab without rerunning autocomplete
-  // or disturbing other popup state, which in turn is an important part of
-  // supporting the use of tab to do both tab-to-search and
-  // tab-to-traverse-dropdown.
-  //
-  // It is an error to call this when the selected line does not have both
-  // matches (or there is no selection).
-  void SetSelectedLineState(LineState state);
 
   // Tries to erase the suggestion at |line|.  This should determine if the item
   // at |line| can be removed from history, and if so, remove it and update the
@@ -237,14 +233,6 @@ class OmniboxPopupModel {
   // Stepping the popup model selection gives special consideration for
   // keyword mode state maintained in the edit model.
   Selection StepSelection(Direction direction, Step step);
-
-  // Applies a given selection. Use GetNextSelection instead of constructing
-  // a selection from scratch.
-  void SetSelection(Selection selection);
-
-  // Preserves current selection line but resets it to default state.
-  // Returns new selection.
-  Selection ClearSelectionState();
 
   // Returns true if the control represented by |selection.state| is present on
   // the match in |selection.line|. This is the source-of-truth the UI code

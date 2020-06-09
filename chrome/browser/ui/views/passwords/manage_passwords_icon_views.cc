@@ -53,7 +53,7 @@ void ManagePasswordsIconViews::UpdateUiForState() {
   parent()->Layout();
 }
 
-views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
+views::BubbleDialogDelegate* ManagePasswordsIconViews::GetBubble() const {
   return PasswordBubbleViewBase::manage_password_bubble();
 }
 

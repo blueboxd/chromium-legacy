@@ -247,9 +247,7 @@ GLApi::GLApi() {
 GLApi::~GLApi() {
 }
 
-GLApiBase::GLApiBase()
-    : driver_(NULL) {
-}
+GLApiBase::GLApiBase() : driver_(nullptr) {}
 
 GLApiBase::~GLApiBase() {
 }

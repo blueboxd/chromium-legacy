@@ -49,15 +49,13 @@ void BlacklistStateFetcherMock::Clear() {
   states_.clear();
 }
 
-
 TestBlacklist::TestBlacklist()
-    : blacklist_(NULL),
+    : blacklist_(nullptr),
       blacklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
-      scoped_blacklist_db_(blacklist_db_) {
-}
+      scoped_blacklist_db_(blacklist_db_) {}
 
 TestBlacklist::TestBlacklist(Blacklist* blacklist)
-    : blacklist_(NULL),
+    : blacklist_(nullptr),
       blacklist_db_(new FakeSafeBrowsingDatabaseManager(true)),
       scoped_blacklist_db_(blacklist_db_) {
   Attach(blacklist);

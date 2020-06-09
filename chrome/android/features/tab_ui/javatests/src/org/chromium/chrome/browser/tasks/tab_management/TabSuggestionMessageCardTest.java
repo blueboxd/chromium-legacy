@@ -6,12 +6,16 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.core.AllOf.allOf;
+
+import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 
 import android.support.test.filters.MediumTest;
 
@@ -22,16 +26,15 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -42,16 +45,28 @@ import org.chromium.ui.test.util.UiRestriction;
 // clang-format off
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+        ChromeFeatureList.TAB_GROUPS_ANDROID,
         ChromeFeatureList.CLOSE_TAB_SUGGESTIONS+"<Study"})
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group",
-        "force-fieldtrial-params=Study.Group:baseline_tab_suggestions/true"})
+// Disable TAB_TO_GTS_ANIMATION to make it less flaky. When animation is enabled, the suggestion
+// cards will be removed temporarily, then append again.
+@Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        "force-fieldtrials=Study/Group"})
 public class TabSuggestionMessageCardTest {
     // clang-format on
+    private static final String BASE_PARAMS = "force-fieldtrial-params="
+            + "Study.Group:baseline_tab_suggestions/true";
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    private final TabSelectionEditorTestingRobot mTabSelectionEditorTestingRobot =
+            new TabSelectionEditorTestingRobot();
+    private final String mClosingSuggestionMessage =
+            "3 of your tabs haven't been used lately. Close them?";
+    private final String mGroupingSuggestionMessage = "3 tabs seem related. Group them?";
 
     @Before
     public void setUp() {
@@ -59,50 +74,166 @@ public class TabSuggestionMessageCardTest {
         TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 3, 0, "about:blank");
     }
 
-    @Test
-    @MediumTest
-    @FlakyTest(message = "crbug.com/1075650")
-    public void closeTabSuggestionReviewedAndAccepted() {
-        TabModel currentTabModel =
-                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
-        CriteriaHelper.pollUiThread(Criteria.equals(3, currentTabModel::getCount));
-        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
-
+    private void enteringTabSwitcherAndVerifySuggestionIsShown(String suggestionText) {
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
-        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+        onView(allOf(withParent(withId(R.id.tab_grid_message_item)), withText(suggestionText)))
+                .check(matches(isDisplayed()));
+    }
 
+    private void reviewSuggestion() {
         onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
                 .perform(click());
-        TabSelectionEditorTestingRobot tabSelectionEditorTestingRobot =
-                new TabSelectionEditorTestingRobot();
-        tabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+        mTabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+    }
 
-        tabSelectionEditorTestingRobot.actionRobot.clickToolbarActionButton();
-        tabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsHidden();
-        CriteriaHelper.pollUiThread(Criteria.equals(0, currentTabModel::getCount));
+    private void acceptSuggestion() {
+        mTabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+        mTabSelectionEditorTestingRobot.actionRobot.clickToolbarActionButton();
+        mTabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+    }
+
+    private void dismissSuggestion(boolean isReviewed) {
+        if (isReviewed) {
+            mTabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+            mTabSelectionEditorTestingRobot.actionRobot.clickToolbarNavigationButton();
+            mTabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        } else {
+            onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+            onView(allOf(withId(R.id.close_button), withParent(withId(R.id.tab_grid_message_item))))
+                    .perform(click());
+        }
     }
 
     @Test
     @MediumTest
+    @FlakyTest(message = "crbug.com/1075650")
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_close_tab_suggestions/true"})
+    public void closeTabSuggestionReviewedAndAccepted() {
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+
+        enteringTabSwitcherAndVerifySuggestionIsShown(mClosingSuggestionMessage);
+        reviewSuggestion();
+        acceptSuggestion();
+
+        onViewWaiting(allOf(withParent(withId(R.id.snackbar)), withText("3 tabs closed")));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_close_tab_suggestions/true"})
     public void closeTabSuggestionReviewedAndDismissed() {
-        TabModel currentTabModel =
-                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
-        CriteriaHelper.pollUiThread(Criteria.equals(3, currentTabModel::getCount));
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+
+        enteringTabSwitcherAndVerifySuggestionIsShown(mClosingSuggestionMessage);
+        reviewSuggestion();
+        dismissSuggestion(true);
+
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true"})
+    public void groupTabSuggestionReviewedAndAccepted() {
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+
+        enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);
+        reviewSuggestion();
+        acceptSuggestion();
+
+        onViewWaiting(allOf(withParent(withId(R.id.snackbar)), withText("3 tabs grouped")));
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true"})
+    public void groupTabSuggestionReviewedAndDismissed() {
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+
+        enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);
+        reviewSuggestion();
+        dismissSuggestion(true);
+
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
+    @DisabledTest(message = "crbug.com/1085452 Enable this test and remove the one below if the" +
+            "bug is resolved")
+    public void groupAndCloseTabSuggestionDismissedAndShowNext() {
+        // clang-format on
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+
+        enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);
+        dismissSuggestion(false);
+        onView(allOf(withParent(withId(R.id.tab_grid_message_item)),
+                       withText(mClosingSuggestionMessage)))
+                .check(matches(isDisplayed()));
+        dismissSuggestion(false);
+
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
+    public void groupAndCloseTabSuggestionDismissedAndShowNext_temp() {
+        // clang-format on
         CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
 
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
         onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
 
-        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
-                .perform(click());
-        TabSelectionEditorTestingRobot tabSelectionEditorTestingRobot =
-                new TabSelectionEditorTestingRobot();
-        tabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsVisible();
+        dismissSuggestion(false);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+        dismissSuggestion(false);
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+    }
 
-        tabSelectionEditorTestingRobot.actionRobot.clickToolbarNavigationButton();
-        tabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsHidden();
-        CriteriaHelper.pollUiThread(Criteria.equals(3, currentTabModel::getCount));
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
+    @DisabledTest(message = "crbug.com/1085452 Enable this test if the bug is resolved")
+    public void groupAndCloseTabSuggestionReviewDismissedAndShowNext() {
+        // clang-format on
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+
+        enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);
+        reviewSuggestion();
+        dismissSuggestion(true);
+        onView(allOf(withParent(withId(R.id.tab_grid_message_item)),
+                       withText(mClosingSuggestionMessage)))
+                .check(matches(isDisplayed()));
+        reviewSuggestion();
+        dismissSuggestion(true);
+
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({BASE_PARAMS + "/baseline_group_tab_suggestions/true" +
+            "/baseline_close_tab_suggestions/true"})
+    @DisabledTest(message = "crbug.com/1085452 Enable this test if the bug is resolved")
+    public void groupAndCloseTabSuggestionAccepted() {
+        // clang-format on
+        CriteriaHelper.pollUiThread(TabSuggestionMessageService::isSuggestionAvailableForTesting);
+
+        enteringTabSwitcherAndVerifySuggestionIsShown(mGroupingSuggestionMessage);
+        reviewSuggestion();
+        acceptSuggestion();
+
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
     }
 }

@@ -100,11 +100,12 @@ class GetAllCookiesHelperCallback {
   // Returns the parameter of the callback.
   const net::CookieList& cookie_list() { return cookie_list_; }
 
-  void Run(const net::CookieStatusList& cookie_status_list,
-           const net::CookieStatusList& excluded_cookies) {
+  void Run(const net::CookieAccessResultList& cookie_with_access_result,
+           const net::CookieAccessResultList& excluded_cookies) {
     ASSERT_FALSE(did_run_);
     did_run_ = true;
-    cookie_list_ = net::cookie_util::StripStatuses(cookie_status_list);
+    cookie_list_ =
+        net::cookie_util::StripAccessResults(cookie_with_access_result);
   }
 
  private:
@@ -112,8 +113,8 @@ class GetAllCookiesHelperCallback {
   net::CookieList cookie_list_;
 };
 
-void IgnoreList(const net::CookieStatusList& ignored,
-                const net::CookieStatusList& excluded_cookies) {}
+void IgnoreList(const net::CookieAccessResultList& ignored,
+                const net::CookieAccessResultList& excluded_cookies) {}
 
 }  // namespace
 
@@ -257,9 +258,9 @@ TEST_F(CookieStoreIOSTest, DeleteCanonicalCookie) {
 
   // Cookie should still exist.
   base::RunLoop run_loop2;
-  GetCookies(
-      base::BindLambdaForTesting([&](const CookieStatusList& cookies,
-                                     const CookieStatusList& excluded_list) {
+  GetCookies(base::BindLambdaForTesting(
+      [&](const CookieAccessResultList& cookies,
+          const CookieAccessResultList& excluded_list) {
         ASSERT_EQ(1u, cookies.size());
         EXPECT_EQ("abc", cookies[0].cookie.Name());
         EXPECT_EQ("def", cookies[0].cookie.Value());
@@ -282,9 +283,9 @@ TEST_F(CookieStoreIOSTest, DeleteCanonicalCookie) {
 
   // Cookie should no longer exist.
   base::RunLoop run_loop4;
-  GetCookies(
-      base::BindLambdaForTesting([&](const CookieStatusList& cookies,
-                                     const CookieStatusList& excluded_list) {
+  GetCookies(base::BindLambdaForTesting(
+      [&](const CookieAccessResultList& cookies,
+          const CookieAccessResultList& excluded_list) {
         EXPECT_EQ(0u, cookies.size());
         run_loop4.Quit();
       }));

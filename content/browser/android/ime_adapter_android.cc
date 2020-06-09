@@ -366,7 +366,7 @@ void ImeAdapterAndroid::SetEditableSelectionOffsets(
     const JavaParamRef<jobject>&,
     int start,
     int end) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -400,7 +400,7 @@ void ImeAdapterAndroid::SetComposingRegion(JNIEnv*,
                                            const JavaParamRef<jobject>&,
                                            int start,
                                            int end) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
 
@@ -418,7 +418,7 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*,
                                               const JavaParamRef<jobject>&,
                                               int before,
                                               int after) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
   input_handler->DeleteSurroundingText(before, after);
@@ -429,7 +429,7 @@ void ImeAdapterAndroid::DeleteSurroundingTextInCodePoints(
     const JavaParamRef<jobject>&,
     int before,
     int after) {
-  auto* input_handler = GetFocusedFrameInputHandler();
+  auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
   input_handler->DeleteSurroundingTextInCodePoints(before, after);
@@ -480,12 +480,12 @@ RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
   return nullptr;
 }
 
-blink::mojom::FrameInputHandler*
-ImeAdapterAndroid::GetFocusedFrameInputHandler() {
-  auto* focused_frame = static_cast<RenderFrameHostImpl*>(GetFocusedFrame());
-  if (!focused_frame)
+blink::mojom::FrameWidgetInputHandler*
+ImeAdapterAndroid::GetFocusedFrameWidgetInputHandler() {
+  RenderWidgetHostImpl* rwhi = GetFocusedWidget();
+  if (!rwhi)
     return nullptr;
-  return focused_frame->GetFrameInputHandler();
+  return rwhi->GetFrameWidgetInputHandler();
 }
 
 std::vector<ui::ImeTextSpan> ImeAdapterAndroid::GetImeTextSpansFromJava(

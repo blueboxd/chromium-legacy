@@ -74,7 +74,7 @@ const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
  public:
   MediaGalleriesGalleryWatchApiTest()
-      : extension_(NULL), background_host_(NULL) {}
+      : extension_(nullptr), background_host_(nullptr) {}
   ~MediaGalleriesGalleryWatchApiTest() override {}
 
  protected:

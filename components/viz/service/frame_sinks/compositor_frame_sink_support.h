@@ -208,7 +208,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // Creates a surface reference from the top-level root to |surface_id|.
   SurfaceReference MakeTopLevelRootReference(const SurfaceId& surface_id);
 
-  void DidReceiveCompositorFrameAck(bool early_ack);
+  void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
                                  base::TimeTicks draw_start_timestamp,
                                  const gfx::SwapTimings& swap_timings,
@@ -322,8 +322,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       compositor_frame_callback_;
   bool callback_received_begin_frame_ = true;
   bool callback_received_receive_ack_ = true;
-  bool last_pending_frame_was_new_surface_ = false;
-  uint8_t early_acked_count_ = 0;
   uint32_t trace_sequence_ = 0;
 
   BeginFrameTracker begin_frame_tracker_;

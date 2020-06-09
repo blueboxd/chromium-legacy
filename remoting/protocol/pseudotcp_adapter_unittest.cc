@@ -79,10 +79,7 @@ class LeakyBucket : public RateLimiter {
 
 class FakeSocket : public P2PDatagramSocket {
  public:
-  FakeSocket()
-      : rate_limiter_(NULL),
-        latency_ms_(0) {
-  }
+  FakeSocket() : rate_limiter_(nullptr), latency_ms_(0) {}
   ~FakeSocket() override = default;
 
   void AppendInputPacket(const std::vector<char>& data) {

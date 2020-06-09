@@ -75,13 +75,12 @@ BookmarkMenuDelegate::BookmarkMenuDelegate(Browser* browser,
       profile_(browser->profile()),
       page_navigator_(navigator),
       parent_(parent),
-      menu_(NULL),
-      parent_menu_item_(NULL),
+      menu_(nullptr),
+      parent_menu_item_(nullptr),
       next_menu_id_(IDC_FIRST_BOOKMARK_MENU),
-      real_delegate_(NULL),
+      real_delegate_(nullptr),
       is_mutating_model_(false),
-      location_(BOOKMARK_LAUNCH_LOCATION_NONE) {
-}
+      location_(BOOKMARK_LAUNCH_LOCATION_NONE) {}
 
 BookmarkMenuDelegate::~BookmarkMenuDelegate() {
   GetBookmarkModel()->RemoveObserver(this);

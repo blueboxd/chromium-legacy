@@ -40,10 +40,10 @@ ParseGpuPreferences(const base::CommandLine* command_line);
 GPU_GLES2_EXPORT GrContextType ParseGrContextType();
 
 // Parse the value of --use-vulkan from the command line. If unspecified and
-// a Vulkan GrContext is going to be used, default to the native implementation.
+// features::kVulkan is enabled (GrContext is going to use vulkan), default to
+// the native implementation.
 GPU_GLES2_EXPORT VulkanImplementationName
-ParseVulkanImplementationName(const base::CommandLine* command_line,
-                              GrContextType gr_context_type);
+ParseVulkanImplementationName(const base::CommandLine* command_line);
 
 }  // namespace gles2
 }  // namespace gpu

@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -30,7 +29,6 @@ namespace {
 
 std::unique_ptr<base::Value> ReadFileOnBlockingThread(
     const base::FilePath& path) {
-  SCOPED_UMA_HISTOGRAM_TIMER("ManagedUsers.Whitelist.ReadDuration");
   JSONFileValueDeserializer deserializer(path);
   int error_code;
   std::string error_msg;
@@ -97,7 +95,7 @@ void SupervisedUserSiteList::Load(const std::string& id,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ReadFileOnBlockingThread, path),
       base::BindOnce(&SupervisedUserSiteList::OnJsonLoaded, id, title,
-                     large_icon_path, path, base::TimeTicks::Now(), callback));
+                     large_icon_path, path, callback));
 }
 
 SupervisedUserSiteList::SupervisedUserSiteList(
@@ -147,16 +145,10 @@ void SupervisedUserSiteList::OnJsonLoaded(
     const base::string16& title,
     const base::FilePath& large_icon_path,
     const base::FilePath& path,
-    base::TimeTicks start_time,
     const SupervisedUserSiteList::LoadedCallback& callback,
     std::unique_ptr<base::Value> value) {
   if (!value)
     return;
-
-  if (!start_time.is_null()) {
-    UMA_HISTOGRAM_TIMES("ManagedUsers.Whitelist.JsonParseDuration",
-                        base::TimeTicks::Now() - start_time);
-  }
 
   base::DictionaryValue* dict = nullptr;
   if (!value->GetAsDictionary(&dict)) {

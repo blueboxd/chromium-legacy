@@ -477,7 +477,7 @@ addRTCStatsToWhitelist(
 let kRTCDataChannelStats = new RTCStats(null, {
   label: 'string',
   protocol: 'string',
-  dataChannelIdentifier: 'number',
+  datachannelid: 'number',
   state: 'string',
   messagesSent: 'number',
   bytesSent: 'number',

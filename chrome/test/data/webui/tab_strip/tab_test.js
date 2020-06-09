@@ -2,29 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://tab-strip/tab.js';
-
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {TabElement} from 'chrome://tab-strip/tab.js';
 import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
-import {CloseTabAction, TabNetworkState, TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {CloseTabAction, TabData, TabNetworkState, TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
 suite('Tab', function() {
+  /** @type {!TestTabsApiProxy} */
   let testTabsApiProxy;
+
+  /** @type {!TestTabStripEmbedderProxy} */
   let testTabStripEmbedderProxy;
+
+  /** @type {!TabElement} */
   let tabElement;
 
+  /** @type {!TabData} */
   const tab = {
     active: false,
     alertStates: [],
+    blocked: false,
+    crashed: false,
     id: 1001,
+    index: 0,
+    isDefaultFavicon: false,
     networkState: TabNetworkState.NONE,
     pinned: false,
+    shouldHideThrobber: false,
+    showIcon: true,
     title: 'My title',
+    url: 'http://foo',
   };
+
+  /**
+   * Convenience function for creating a typed TabData object.
+   * @param {!Object=} overrides
+   * @return {!TabData}
+   */
+  function createTabData(overrides) {
+    return /** @type {!TabData} */ (Object.assign({}, tab, overrides));
+  }
 
   const strings = {
     closeTab: 'Close tab',
@@ -49,8 +72,9 @@ suite('Tab', function() {
     testTabsApiProxy = new TestTabsApiProxy();
     TabsApiProxyImpl.instance_ = testTabsApiProxy;
 
-    tabElement = document.createElement('tabstrip-tab');
-    tabElement.tab = tab;
+    tabElement =
+        /** @type {!TabElement} */ (document.createElement('tabstrip-tab'));
+    tabElement.tab = createTabData({});
     document.body.appendChild(tabElement);
   });
 
@@ -151,19 +175,19 @@ suite('Tab', function() {
   });
 
   test('toggles an [active] attribute when active', () => {
-    tabElement.tab = Object.assign({}, tab, {active: true});
+    tabElement.tab = createTabData({active: true});
     assertTrue(tabElement.hasAttribute('active'));
-    tabElement.tab = Object.assign({}, tab, {active: false});
+    tabElement.tab = createTabData({active: false});
     assertFalse(tabElement.hasAttribute('active'));
   });
 
   test('sets [aria-selected] attribute when active', () => {
-    tabElement.tab = Object.assign({}, tab, {active: true});
+    tabElement.tab = createTabData({active: true});
     assertEquals(
         'true',
         tabElement.shadowRoot.querySelector('#tab').getAttribute(
             'aria-selected'));
-    tabElement.tab = Object.assign({}, tab, {active: false});
+    tabElement.tab = createTabData({active: false});
     assertEquals(
         'false',
         tabElement.shadowRoot.querySelector('#tab').getAttribute(
@@ -177,13 +201,13 @@ suite('Tab', function() {
     const faviconContainerStyle = window.getComputedStyle(
         tabElement.shadowRoot.querySelector('#faviconContainer'));
 
-    tabElement.tab = Object.assign({}, tab, {showIcon: true});
+    tabElement.tab = createTabData({showIcon: true});
     assertEquals(
         faviconContainerStyle.maxWidth,
         faviconContainerStyle.getPropertyValue('--favicon-size').trim());
     assertEquals(faviconContainerStyle.opacity, '1');
 
-    tabElement.tab = Object.assign({}, tab, {showIcon: false});
+    tabElement.tab = createTabData({showIcon: false});
     assertEquals(faviconContainerStyle.maxWidth, '0px');
     assertEquals(faviconContainerStyle.opacity, '0');
   });
@@ -193,13 +217,13 @@ suite('Tab', function() {
     const expectedSize = '100px';
     tabElement.style.setProperty('--tabstrip-pinned-tab-size', expectedSize);
 
-    tabElement.tab = Object.assign({}, tab, {pinned: true});
+    tabElement.tab = createTabData({pinned: true});
     assertEquals(expectedSize, tabElementStyle.width);
     assertEquals(expectedSize, tabElementStyle.height);
 
     tabElement.style.setProperty('--tabstrip-tab-width', '100px');
     tabElement.style.setProperty('--tabstrip-tab-height', '150px');
-    tabElement.tab = Object.assign({}, tab, {pinned: false});
+    tabElement.tab = createTabData({pinned: false});
     assertEquals('100px', tabElementStyle.width);
     assertEquals('150px', tabElementStyle.height);
   });
@@ -212,32 +236,29 @@ suite('Tab', function() {
       assertEquals(color, spinnerStyle.backgroundColor);
 
       // Also assert it becomes hidden when network state is NONE
-      tabElement.tab =
-          Object.assign({}, tab, {networkState: TabNetworkState.NONE});
+      tabElement.tab = createTabData({networkState: TabNetworkState.NONE});
       assertEquals('none', spinnerStyle.display);
     }
 
     tabElement.style.setProperty(
         '--tabstrip-tab-loading-spinning-color', 'rgb(255, 0, 0)');
-    tabElement.tab =
-        Object.assign({}, tab, {networkState: TabNetworkState.LOADING});
+    tabElement.tab = createTabData({networkState: TabNetworkState.LOADING});
     assertSpinnerVisible('rgb(255, 0, 0)');
 
     tabElement.style.setProperty(
         '--tabstrip-tab-waiting-spinning-color', 'rgb(0, 255, 0)');
-    tabElement.tab =
-        Object.assign({}, tab, {networkState: TabNetworkState.WAITING});
+    tabElement.tab = createTabData({networkState: TabNetworkState.WAITING});
     assertSpinnerVisible('rgb(0, 255, 0)');
   });
 
   test('shows blocked indicator when tab is blocked', () => {
     const blockIndicatorStyle = window.getComputedStyle(
         tabElement.shadowRoot.querySelector('#blocked'));
-    tabElement.tab = Object.assign({}, tab, {blocked: true});
+    tabElement.tab = createTabData({blocked: true});
     assertEquals('block', blockIndicatorStyle.display);
-    tabElement.tab = Object.assign({}, tab, {blocked: true, active: true});
+    tabElement.tab = createTabData({blocked: true, active: true});
     assertEquals('none', blockIndicatorStyle.display);
-    tabElement.tab = Object.assign({}, tab, {blocked: false});
+    tabElement.tab = createTabData({blocked: false});
     assertEquals('none', blockIndicatorStyle.display);
   });
 
@@ -253,18 +274,18 @@ suite('Tab', function() {
         const crashedIconStyle = window.getComputedStyle(
             tabElement.shadowRoot.querySelector('#crashedIcon'));
 
-        tabElement.tab = Object.assign({}, tab, {crashed: true});
+        tabElement.tab = createTabData({crashed: true});
         assertEquals(faviconStyle.opacity, '0');
         assertEquals(crashedIconStyle.opacity, '1');
 
-        tabElement.tab = Object.assign({}, tab, {crashed: false});
+        tabElement.tab = createTabData({crashed: false});
         assertEquals(faviconStyle.opacity, '1');
         assertEquals(crashedIconStyle.opacity, '0');
       });
 
   test('clicking on the element activates the tab', () => {
     tabElement.shadowRoot.querySelector('#tab').click();
-    return testTabsApiProxy.whenCalled('activateTab', tabId => {
+    return testTabsApiProxy.whenCalled('activateTab').then(tabId => {
       assertEquals(tabId, tab.id);
     });
   });
@@ -275,7 +296,7 @@ suite('Tab', function() {
   });
 
   test('sets the loading title while loading', () => {
-    const loadingTabWithoutTitle = Object.assign({}, tab, {
+    const loadingTabWithoutTitle = createTabData({
       networkState: TabNetworkState.WAITING,
       shouldHideThrobber: false,
     });
@@ -287,7 +308,7 @@ suite('Tab', function() {
   });
 
   test('exposes the tab ID to an attribute', () => {
-    tabElement.tab = Object.assign({}, tab, {id: 1001});
+    tabElement.tab = createTabData({id: 1001});
     assertEquals('1001', tabElement.getAttribute('data-tab-id'));
   });
 
@@ -313,7 +334,7 @@ suite('Tab', function() {
 
   test('sets the favicon to the favicon URL', () => {
     const expectedFaviconUrl = 'data:mock-favicon';
-    tabElement.tab = Object.assign({}, tab, {favIconUrl: expectedFaviconUrl});
+    tabElement.tab = createTabData({favIconUrl: expectedFaviconUrl});
     const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
     assertEquals(
         faviconElement.style.backgroundImage, `url("${expectedFaviconUrl}")`);
@@ -322,7 +343,7 @@ suite('Tab', function() {
   test(
       'sets the favicon to the default favicon URL if there is none provided',
       () => {
-        const updatedTab = Object.assign({}, tab);
+        const updatedTab = createTabData();
         delete updatedTab.favIconUrl;
         tabElement.tab = updatedTab;
         const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
@@ -330,7 +351,7 @@ suite('Tab', function() {
       });
 
   test('removes the favicon if the tab is waiting', () => {
-    tabElement.tab = Object.assign({}, tab, {
+    tabElement.tab = createTabData({
       favIconUrl: 'data:mock-favicon',
       networkState: TabNetworkState.WAITING,
     });
@@ -341,7 +362,7 @@ suite('Tab', function() {
   test(
       'removes the favicon if the tab is loading with a default favicon',
       () => {
-        tabElement.tab = Object.assign({}, tab, {
+        tabElement.tab = createTabData({
           favIconUrl: 'data:mock-favicon',
           hasDefaultFavicon: true,
           networkState: TabNetworkState.WAITING,
@@ -400,14 +421,14 @@ suite('Tab', function() {
     const titleTextElement = tabElement.shadowRoot.querySelector('#titleText');
     assertEquals(titleTextElement.getAttribute('aria-label'), tab.title);
 
-    tabElement.tab = Object.assign({}, tab, {
+    tabElement.tab = createTabData({
       crashed: true,
       title: 'My tab',
     });
     assertEquals(
         titleTextElement.getAttribute('aria-label'), 'My tab has crashed');
 
-    tabElement.tab = Object.assign({}, tab, {
+    tabElement.tab = createTabData({
       crashed: false,
       networkState: TabNetworkState.ERROR,
       title: 'My tab',

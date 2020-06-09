@@ -112,7 +112,7 @@ import org.chromium.chrome.browser.omaha.notification.UpdateNotificationControll
 import org.chromium.chrome.browser.omaha.notification.UpdateNotificationControllerFactory;
 import org.chromium.chrome.browser.page_info.ChromePageInfoControllerDelegate;
 import org.chromium.chrome.browser.page_info.ChromePermissionParamsListBuilderDelegate;
-import org.chromium.chrome.browser.paint_preview.PaintPreviewInitializer;
+import org.chromium.chrome.browser.paint_preview.PaintPreviewHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -612,7 +612,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mIncognitoTabCreator = tabCreators.second;
 
         OfflinePageUtils.observeTabModelSelector(this, mTabModelSelector);
-        PaintPreviewInitializer.observeTabModelSelector(this, mTabModelSelector);
+        PaintPreviewHelper.observeTabModelSelector(this, mTabModelSelector);
 
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
 

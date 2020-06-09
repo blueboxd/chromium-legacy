@@ -82,7 +82,7 @@ class SoftwareImageDecodeTaskImpl : public TileTask {
     const ImageType image_type =
         image_metadata ? image_metadata->image_type : ImageType::kInvalid;
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        paint_image_.GetSkImage().get(),
+        paint_image_.GetRasterSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type),
         ImageDecodeCache::ToScopedImageType(image_type));

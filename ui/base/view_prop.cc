@@ -53,9 +53,7 @@ class ViewProp::Data : public base::RefCounted<ViewProp::Data> {
   typedef std::set<Data*, DataComparator> DataSet;
 
   Data(gfx::AcceleratedWidget view, const char* key)
-      : view_(view),
-        key_(key),
-        data_(NULL) {}
+      : view_(view), key_(key), data_(nullptr) {}
 
   ~Data() {
     auto i = data_set_->find(this);

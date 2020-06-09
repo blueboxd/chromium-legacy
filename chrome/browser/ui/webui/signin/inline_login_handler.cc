@@ -170,8 +170,8 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
 
 void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
     const base::ListValue& args,
-    const net::CookieStatusList& cookies,
-    const net::CookieStatusList& excluded_cookies) {
+    const net::CookieAccessResultList& cookies,
+    const net::CookieAccessResultList& excluded_cookies) {
   const base::Value& dict = args.GetList()[0];
 
   const std::string& email = dict.FindKey("email")->GetString();
@@ -179,9 +179,9 @@ void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
   const std::string& gaia_id = dict.FindKey("gaiaId")->GetString();
 
   std::string auth_code;
-  for (const auto& cookie_with_status : cookies) {
-    if (cookie_with_status.cookie.Name() == "oauth_code")
-      auth_code = cookie_with_status.cookie.Value();
+  for (const auto& cookie_with_access_result : cookies) {
+    if (cookie_with_access_result.cookie.Name() == "oauth_code")
+      auth_code = cookie_with_access_result.cookie.Value();
   }
 
   bool skip_for_now = dict.FindBoolKey("skipForNow").value_or(false);

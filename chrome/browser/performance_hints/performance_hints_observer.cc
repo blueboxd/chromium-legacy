@@ -4,7 +4,12 @@
 
 #include "chrome/browser/performance_hints/performance_hints_observer.h"
 
+#include <string>
+
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -55,6 +60,20 @@ UmaPerformanceClass ToUmaPerformanceClass(PerformanceClass performance_class) {
   }
 }
 
+enum class HintLookupSource {
+  kLinkHint = 0,
+  kPageHint = 1,
+  kMaxValue = kPageHint,
+};
+
+const char* ToString(HintLookupSource source) {
+  switch (source) {
+    case HintLookupSource::kLinkHint:
+      return "LinkHint";
+    case HintLookupSource::kPageHint:
+      return "PageHint";
+  }
+}
 }  // namespace
 
 #if defined(OS_ANDROID)
@@ -64,7 +83,7 @@ static jint JNI_PerformanceHintsObserver_GetPerformanceClassForURL(
     const base::android::JavaParamRef<jstring>& url) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
-  return PerformanceHintsObserver::PerformanceClassForURLInternal(
+  return PerformanceHintsObserver::PerformanceClassForURL(
       web_contents, GURL(base::android::ConvertJavaStringToUTF8(url)),
       /*record_metrics=*/false);
 }
@@ -74,6 +93,11 @@ const base::Feature kPerformanceHintsObserver{
     "PerformanceHintsObserver", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPerformanceHintsTreatUnknownAsFast{
     "PerformanceHintsTreatUnknownAsFast", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPerformanceHintsHandleRewrites{
+    "PerformanceHintsHandleRewrites", base::FEATURE_ENABLED_BY_DEFAULT};
+constexpr base::FeatureParam<std::string> kRewriteConfig{
+    &kPerformanceHintsHandleRewrites, "rewrite_config",
+    "www.google.com/url?url"};
 
 PerformanceHintsObserver::PerformanceHintsObserver(
     content::WebContents* web_contents)
@@ -85,6 +109,9 @@ PerformanceHintsObserver::PerformanceHintsObserver(
     optimization_guide_decider_->RegisterOptimizationTypesAndTargets(
         {optimization_guide::proto::PERFORMANCE_HINTS}, {});
   }
+
+  rewrite_handler_ =
+      PerformanceHintsRewriteHandler::FromConfigString(kRewriteConfig.Get());
 }
 
 PerformanceHintsObserver::~PerformanceHintsObserver() {
@@ -93,14 +120,6 @@ PerformanceHintsObserver::~PerformanceHintsObserver() {
 
 // static
 PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
-    content::WebContents* web_contents,
-    const GURL& url) {
-  return PerformanceClassForURLInternal(web_contents, url,
-                                        /*record_metrics=*/true);
-}
-
-// static
-PerformanceClass PerformanceHintsObserver::PerformanceClassForURLInternal(
     content::WebContents* web_contents,
     const GURL& url,
     bool record_metrics) {
@@ -121,32 +140,37 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURLInternal(
     return PerformanceClass::PERFORMANCE_UNKNOWN;
   }
 
-  HintForURLResult hint_result;
-  base::Optional<PerformanceHint> hint;
-  std::tie(hint_result, hint) = performance_hints_observer->HintForURL(url);
+  HintForURLResult result =
+      performance_hints_observer->HintForURL(url, record_metrics);
   if (record_metrics) {
-    base::UmaHistogramEnumeration("PerformanceHints.Observer.HintForURLResult",
-                                  hint_result);
+    if (result.rewritten) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "PerformanceHints.Observer.HintForURLResult.Rewritten",
+          result.status);
+    }
+    UMA_HISTOGRAM_ENUMERATION("PerformanceHints.Observer.HintForURLResult",
+                              result.status);
   }
 
   PerformanceClass performance_class;
-  switch (hint_result) {
-    case HintForURLResult::kHintFound:
-    case HintForURLResult::kHintNotFound:
-    case HintForURLResult::kHintNotReady:
-      performance_class = hint ? hint->performance_class()
-                               : PerformanceClass::PERFORMANCE_UNKNOWN;
+  switch (result.status) {
+    case HintForURLStatus::kHintFound:
+      performance_class = result.hint ? result.hint->performance_class()
+                                      : PerformanceClass::PERFORMANCE_UNKNOWN;
       break;
-    case HintForURLResult::kInvalidURL:
-    default:
-      // Error or unknown case. Don't allow the override.
+    case HintForURLStatus::kHintNotFound:
+    case HintForURLStatus::kHintNotReady:
+      performance_class = PerformanceClass::PERFORMANCE_UNKNOWN;
+      break;
+    case HintForURLStatus::kInvalidURL:
+      // Error case. Don't allow the override.
       return PerformanceClass::PERFORMANCE_UNKNOWN;
   }
 
   if (record_metrics) {
     // Log to UMA before the override logic so we can determine how often the
     // override is happening.
-    base::UmaHistogramEnumeration(
+    UMA_HISTOGRAM_ENUMERATION(
         "PerformanceHints.Observer.PerformanceClassForURL",
         ToUmaPerformanceClass(performance_class));
   }
@@ -165,33 +189,138 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURLInternal(
 void PerformanceHintsObserver::RecordPerformanceUMAForURL(
     content::WebContents* web_contents,
     const GURL& url) {
-  PerformanceClassForURLInternal(web_contents, url,
-                                 /*record_metrics=*/true);
+  PerformanceClassForURL(web_contents, url, /*record_metrics=*/true);
 }
 
-std::tuple<PerformanceHintsObserver::HintForURLResult,
-           base::Optional<PerformanceHint>>
-PerformanceHintsObserver::HintForURL(const GURL& url) const {
+PerformanceHintsObserver::HintForURLResult::HintForURLResult() = default;
+PerformanceHintsObserver::HintForURLResult::HintForURLResult(
+    const HintForURLResult&) = default;
+PerformanceHintsObserver::HintForURLResult::~HintForURLResult() = default;
+
+PerformanceHintsObserver::HintForURLResult PerformanceHintsObserver::HintForURL(
+    const GURL& url,
+    bool record_metrics) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::Optional<PerformanceHint> hint;
-  HintForURLResult hint_result = HintForURLResult::kHintNotFound;
+  HintForURLResult result;
 
-  if (!hint_processed_) {
-    hint_result = HintForURLResult::kHintNotReady;
-  } else if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
-    hint_result = HintForURLResult::kInvalidURL;
-  } else {
-    for (const auto& pattern_hint : hints_) {
-      if (pattern_hint.first.Matches(url.spec())) {
-        hint_result = HintForURLResult::kHintFound;
-        hint = pattern_hint.second;
-        break;
-      }
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS()) {
+    result.status = HintForURLStatus::kInvalidURL;
+    return result;
+  }
+
+  base::Optional<GURL> maybe_rewritten;
+  if (base::FeatureList::IsEnabled(kPerformanceHintsHandleRewrites)) {
+    maybe_rewritten = rewrite_handler_.HandleRewriteIfNecessary(url);
+    result.rewritten = maybe_rewritten.has_value();
+    if (maybe_rewritten && (!maybe_rewritten->is_valid() ||
+                            !maybe_rewritten->SchemeIsHTTPOrHTTPS())) {
+      result.status = HintForURLStatus::kInvalidURL;
+      return result;
     }
   }
 
-  return {hint_result, hint};
+  GURL hint_url = maybe_rewritten.value_or(url);
+
+  // At this point we know the URL is valid. Individual source lookups will
+  // override this if they have more detailed status (found or not ready).
+  result.status = HintForURLStatus::kHintNotFound;
+
+  using LookupFn = base::OnceCallback<std::tuple<
+      SourceLookupStatus,
+      base::Optional<optimization_guide::proto::PerformanceHint>>(const GURL&)>;
+
+  std::vector<std::tuple<HintLookupSource, LookupFn>> sources;
+  sources.emplace_back(HintLookupSource::kLinkHint,
+                       base::BindOnce(&PerformanceHintsObserver::LinkHintForURL,
+                                      base::Unretained(this)));
+  sources.emplace_back(HintLookupSource::kPageHint,
+                       base::BindOnce(&PerformanceHintsObserver::PageHintForURL,
+                                      base::Unretained(this)));
+
+  for (std::tuple<HintLookupSource, LookupFn>& source : sources) {
+    SourceLookupStatus lookup_status = SourceLookupStatus::kNotQueried;
+    // Only query sources until a hint has been found.
+    if (!result.hint.has_value()) {
+      std::tie(lookup_status, result.hint) =
+          std::move(std::get<LookupFn>(source)).Run(hint_url);
+    }
+    if (record_metrics) {
+      // UMA is recorded for each source, even if it wasn't queried. This is
+      // done so all source histograms have the same total.
+      base::UmaHistogramEnumeration(
+          base::StrCat({"PerformanceHints.Observer.SourceLookupStatus.",
+                        ToString(std::get<HintLookupSource>(source))}),
+          lookup_status);
+    }
+    switch (lookup_status) {
+      case SourceLookupStatus::kNotReady:
+        // If no hints are found and any of the sources returned kNotReady, we
+        // should also return kNotReady.
+        result.status = HintForURLStatus::kHintNotReady;
+        break;
+      case SourceLookupStatus::kHintFound:
+        DCHECK(result.hint.has_value());
+        result.status = HintForURLStatus::kHintFound;
+        break;
+      case SourceLookupStatus::kNotQueried:
+      case SourceLookupStatus::kNoMatch:
+        break;
+    }
+  }
+
+  return result;
+}
+
+std::tuple<PerformanceHintsObserver::SourceLookupStatus,
+           base::Optional<optimization_guide::proto::PerformanceHint>>
+PerformanceHintsObserver::LinkHintForURL(const GURL& url) const {
+  if (!hint_processed_) {
+    return {SourceLookupStatus::kNotReady, base::nullopt};
+  } else {
+    // Link hints only contain scheme, host, and path, so remove other
+    // components.
+    url::Replacements<char> replacements;
+    replacements.ClearUsername();
+    replacements.ClearPassword();
+    replacements.ClearQuery();
+    replacements.ClearPort();
+    replacements.ClearRef();
+    GURL scheme_host_path = url.ReplaceComponents(replacements);
+
+    for (const auto& pattern_hint : hints_) {
+      if (pattern_hint.first.Matches(scheme_host_path.spec())) {
+        return {SourceLookupStatus::kHintFound, pattern_hint.second};
+      }
+    }
+    return {SourceLookupStatus::kNoMatch, base::nullopt};
+  }
+}
+
+std::tuple<PerformanceHintsObserver::SourceLookupStatus,
+           base::Optional<optimization_guide::proto::PerformanceHint>>
+PerformanceHintsObserver::PageHintForURL(const GURL& url) const {
+  if (!optimization_guide_decider_) {
+    return {SourceLookupStatus::kNoMatch, base::nullopt};
+  }
+
+  // Check to see if there happens to be a cached hint for the site that this
+  // URL belongs to. This should be the case for links on the SRP since the
+  // OptimizationGuideService proactively fetches hints for them.
+  optimization_guide::OptimizationMetadata metadata;
+  OptimizationGuideDecision decision =
+      optimization_guide_decider_->CanApplyOptimization(
+          url, optimization_guide::proto::PERFORMANCE_HINTS, &metadata);
+  if (decision == OptimizationGuideDecision::kUnknown) {
+    return {SourceLookupStatus::kNotReady, base::nullopt};
+  } else if (decision == OptimizationGuideDecision::kTrue &&
+             metadata.performance_hints_metadata() &&
+             metadata.performance_hints_metadata()->has_page_hint()) {
+    return {SourceLookupStatus::kHintFound,
+            metadata.performance_hints_metadata()->page_hint()};
+  }
+
+  return {SourceLookupStatus::kNoMatch, base::nullopt};
 }
 
 void PerformanceHintsObserver::DidFinishNavigation(
@@ -218,6 +347,9 @@ void PerformanceHintsObserver::DidFinishNavigation(
     return;
   }
 
+  // TODO(jds): Because calls to HintForURL are not asynchronous, we don't
+  // actually need to use the Async version and can instead call
+  // CanApplyOptimization directly from HintForURL to remove this complexity.
   optimization_guide_decider_->CanApplyOptimizationAsync(
       navigation_handle, optimization_guide::proto::PERFORMANCE_HINTS,
       base::BindOnce(&PerformanceHintsObserver::ProcessPerformanceHint,

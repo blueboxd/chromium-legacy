@@ -30,6 +30,7 @@ class IsolatedVRDeviceProvider
       base::RepeatingCallback<void(
           device::mojom::XRDeviceId,
           device::mojom::VRDisplayInfoPtr,
+          device::mojom::XRDeviceDataPtr,
           mojo::PendingRemote<device::mojom::XRRuntime>)> add_device_callback,
       base::RepeatingCallback<void(device::mojom::XRDeviceId)>
           remove_device_callback,
@@ -43,6 +44,7 @@ class IsolatedVRDeviceProvider
   void OnDeviceAdded(
       mojo::PendingRemote<device::mojom::XRRuntime> device,
       mojo::PendingRemote<device::mojom::XRCompositorHost> compositor_host,
+      device::mojom::XRDeviceDataPtr device_data,
       device::mojom::XRDeviceId device_id) override;
   void OnDeviceRemoved(device::mojom::XRDeviceId id) override;
   void OnDevicesEnumerated() override;
@@ -53,8 +55,10 @@ class IsolatedVRDeviceProvider
   int retry_count_ = 0;
   mojo::Remote<device::mojom::IsolatedXRRuntimeProvider> device_provider_;
 
+  // TODO(crbug.com/1090029): Wrap XRDeviceId + VRDisplayInfo into XRDeviceData
   base::RepeatingCallback<void(device::mojom::XRDeviceId,
                                device::mojom::VRDisplayInfoPtr,
+                               device::mojom::XRDeviceDataPtr,
                                mojo::PendingRemote<device::mojom::XRRuntime>)>
       add_device_callback_;
   base::RepeatingCallback<void(device::mojom::XRDeviceId)>

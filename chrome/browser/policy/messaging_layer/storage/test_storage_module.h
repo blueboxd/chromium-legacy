@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
+#include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
 
 namespace reporting {
@@ -21,22 +21,20 @@ class TestStorageModule : public StorageModule {
  public:
   TestStorageModule() = default;
 
-  void AddRecord(reporting_messaging_layer::EncryptedRecord record,
-                 reporting_messaging_layer::Priority priority,
+  void AddRecord(reporting::EncryptedRecord record,
+                 reporting::Priority priority,
                  base::OnceCallback<void(Status)> callback) override;
 
-  reporting_messaging_layer::WrappedRecord wrapped_record() {
-    return wrapped_record_;
-  }
+  reporting::WrappedRecord wrapped_record() { return wrapped_record_; }
 
-  reporting_messaging_layer::Priority priority() { return priority_; }
+  reporting::Priority priority() { return priority_; }
 
  protected:
   ~TestStorageModule() override = default;
 
  private:
-  reporting_messaging_layer::WrappedRecord wrapped_record_;
-  reporting_messaging_layer::Priority priority_;
+  reporting::WrappedRecord wrapped_record_;
+  reporting::Priority priority_;
 };
 
 // A |TestStorageModule| that always fails on |AddRecord| calls.
@@ -44,8 +42,8 @@ class AlwaysFailsStorageModule final : public TestStorageModule {
  public:
   AlwaysFailsStorageModule() = default;
 
-  void AddRecord(reporting_messaging_layer::EncryptedRecord record,
-                 reporting_messaging_layer::Priority priority,
+  void AddRecord(reporting::EncryptedRecord record,
+                 reporting::Priority priority,
                  base::OnceCallback<void(Status)> callback) override;
 
  protected:

@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
+#include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 
 namespace local_search_service {
@@ -33,14 +35,26 @@ class SearchTagRegistry {
   void AddSearchTags(const std::vector<SearchConcept>& search_tags);
   void RemoveSearchTags(const std::vector<SearchConcept>& search_tags);
 
-  // Returns the tag metadata associated with |message_id|, which must be one of
-  // the IDS_OS_SETTINGS_TAG_* identifiers used for a search tag. If no metadata
-  // is available, null is returned.
-  const SearchConcept* GetTagMetadata(int message_id) const;
+  // Returns the tag metadata associated with |result_id|, which is the ID
+  // returned by the LocalSearchService. If no metadata is available, null is
+  // returned.
+  const SearchConcept* GetTagMetadata(const std::string& result_id) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SearchTagRegistryTest, AddAndRemove);
+
+  static std::string ToResultId(const SearchConcept& concept);
+
+  std::vector<local_search_service::Data> ConceptVectorToDataVector(
+      const std::vector<SearchConcept>& search_tags);
+
+  // Index used by the LocalSearchService for string matching.
   local_search_service::Index* index_;
-  std::unordered_map<int, const SearchConcept*> message_id_to_metadata_map_;
+
+  // In-memory cache of all results which have been added to the
+  // LocalSearchService. Contents are kept in sync with |index_|.
+  std::unordered_map<std::string, const SearchConcept*>
+      result_id_to_metadata_list_map_;
 };
 
 }  // namespace settings

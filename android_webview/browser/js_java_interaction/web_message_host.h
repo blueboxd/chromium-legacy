@@ -1,0 +1,24 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_WEB_MESSAGE_HOST_H_
+#define ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_WEB_MESSAGE_HOST_H_
+
+#include <memory>
+
+namespace android_webview {
+
+struct WebMessage;
+
+// Represents the browser side of a WebMessage channel.
+class WebMessageHost {
+ public:
+  virtual ~WebMessageHost() {}
+
+  virtual void OnPostMessage(std::unique_ptr<WebMessage> message) = 0;
+};
+
+}  // namespace android_webview
+
+#endif  // ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_WEB_MESSAGE_HOST_H_

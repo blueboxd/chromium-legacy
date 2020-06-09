@@ -196,10 +196,10 @@ public class AccountManagerFacadeImpl implements AccountManagerFacade {
      * {@link #invalidateAccessToken} to invalidate a token in the cache.
      * @param account The {@link Account} for which the token is requested.
      * @param scope OAuth2 scope for which the requested token should be valid.
-     * @return The OAuth2 access token as a string.
+     * @return The OAuth2 access token as an AccessTokenData with a string and an expiration time..
      */
     @Override
-    public String getAccessToken(Account account, String scope) throws AuthException {
+    public AccessTokenData getAccessToken(Account account, String scope) throws AuthException {
         assert account != null;
         assert scope != null;
         // TODO(bsazonov): Rename delegate's getAuthToken to getAccessToken.

@@ -2027,8 +2027,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIdleManager) {
       blink::scheduler::WebSchedulerTrackedFeature::kIdleManager, FROM_HERE);
 }
 
+// crbug.com/1090223
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_DoesNotCachePaymentManager DISABLED_DoesNotCachePaymentManager
+#else
+#define MAYBE_DoesNotCachePaymentManager DoesNotCachePaymentManager
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoesNotCachePaymentManager) {
+                       MAYBE_DoesNotCachePaymentManager) {
   ASSERT_TRUE(CreateHttpsServer()->Start());
 
   // 1) Navigate to a page which includes PaymentManager functionality. Note

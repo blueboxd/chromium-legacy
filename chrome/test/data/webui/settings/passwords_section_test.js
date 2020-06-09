@@ -46,7 +46,7 @@ function validateMultiStorePasswordList(passwordsSection, expectedPasswords) {
 }
 
 /**
- * Convenience version of validateMultiStorePasswordList for when store
+ * Convenience version of validateMultiStorePasswordList() for when store
  * duplicates don't exist.
  * @param {!Element} passwordsSection The passwords section element that will
  *     be checked.
@@ -573,12 +573,12 @@ suite('PasswordsSection', function() {
 
   test('verifyFilterPasswordExceptions', function() {
     const exceptionList = [
-      createExceptionEntry('docsshoW.google.com'),
-      createExceptionEntry('showmail.com'),
-      createExceptionEntry('google.com'),
-      createExceptionEntry('inbox.google.com'),
-      createExceptionEntry('mapsshow.google.com'),
-      createExceptionEntry('plus.google.comshow'),
+      createExceptionEntry({url: 'docsshoW.google.com', id: 0}),
+      createExceptionEntry({url: 'showmail.com', id: 1}),
+      createExceptionEntry({url: 'google.com', id: 2}),
+      createExceptionEntry({url: 'inbox.google.com', id: 3}),
+      createExceptionEntry({url: 'mapsshow.google.com', id: 4}),
+      createExceptionEntry({url: 'plus.google.comshow', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -587,10 +587,10 @@ suite('PasswordsSection', function() {
     flush();
 
     const expectedExceptionList = [
-      createExceptionEntry('docsshoW.google.com'),
-      createExceptionEntry('showmail.com'),
-      createExceptionEntry('mapsshow.google.com'),
-      createExceptionEntry('plus.google.comshow'),
+      createExceptionEntry({url: 'docsshoW.google.com', id: 0}),
+      createExceptionEntry({url: 'showmail.com', id: 1}),
+      createExceptionEntry({url: 'mapsshow.google.com', id: 4}),
+      createExceptionEntry({url: 'plus.google.comshow', id: 5}),
     ];
 
     validateExceptionList(
@@ -610,12 +610,12 @@ suite('PasswordsSection', function() {
 
   test('verifyPasswordExceptions', function() {
     const exceptionList = [
-      createExceptionEntry('docs.google.com'),
-      createExceptionEntry('mail.com'),
-      createExceptionEntry('google.com'),
-      createExceptionEntry('inbox.google.com'),
-      createExceptionEntry('maps.google.com'),
-      createExceptionEntry('plus.google.com'),
+      createExceptionEntry({url: 'docs.google.com', id: 0}),
+      createExceptionEntry({url: 'mail.com', id: 1}),
+      createExceptionEntry({url: 'google.com', id: 2}),
+      createExceptionEntry({url: 'inbox.google.com', id: 3}),
+      createExceptionEntry({url: 'maps.google.com', id: 4}),
+      createExceptionEntry({url: 'plus.google.com', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -631,12 +631,12 @@ suite('PasswordsSection', function() {
   // Test verifies that removing an exception will update the elements.
   test('verifyPasswordExceptionRemove', function() {
     const exceptionList = [
-      createExceptionEntry('docs.google.com'),
-      createExceptionEntry('mail.com'),
-      createExceptionEntry('google.com'),
-      createExceptionEntry('inbox.google.com'),
-      createExceptionEntry('maps.google.com'),
-      createExceptionEntry('plus.google.com'),
+      createExceptionEntry({url: 'docs.google.com', id: 0}),
+      createExceptionEntry({url: 'mail.com', id: 1}),
+      createExceptionEntry({url: 'google.com', id: 2}),
+      createExceptionEntry({url: 'inbox.google.com', id: 3}),
+      createExceptionEntry({url: 'maps.google.com', id: 4}),
+      createExceptionEntry({url: 'plus.google.com', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(
@@ -653,21 +653,28 @@ suite('PasswordsSection', function() {
     assertFalse(exceptionsListContainsUrl(exceptionList, 'mail.com'));
     flush();
 
+    const expectedExceptionList = [
+      createExceptionEntry({url: 'docs.google.com', id: 0}),
+      createExceptionEntry({url: 'google.com', id: 2}),
+      createExceptionEntry({url: 'inbox.google.com', id: 3}),
+      createExceptionEntry({url: 'maps.google.com', id: 4}),
+      createExceptionEntry({url: 'plus.google.com', id: 5})
+    ];
     validateExceptionList(
         getDomRepeatChildren(passwordsSection.$.passwordExceptionsList),
-        exceptionList);
+        expectedExceptionList);
   });
 
   // Test verifies that pressing the 'remove' button will trigger a remove
   // event. Does not actually remove any exceptions.
   test('verifyPasswordExceptionRemoveButton', function() {
     const exceptionList = [
-      createExceptionEntry('docs.google.com'),
-      createExceptionEntry('mail.com'),
-      createExceptionEntry('google.com'),
-      createExceptionEntry('inbox.google.com'),
-      createExceptionEntry('maps.google.com'),
-      createExceptionEntry('plus.google.com'),
+      createExceptionEntry({url: 'docs.google.com', id: 0}),
+      createExceptionEntry({url: 'mail.com', id: 1}),
+      createExceptionEntry({url: 'google.com', id: 2}),
+      createExceptionEntry({url: 'inbox.google.com', id: 3}),
+      createExceptionEntry({url: 'maps.google.com', id: 4}),
+      createExceptionEntry({url: 'plus.google.com', id: 5}),
     ];
 
     const passwordsSection = elementFactory.createPasswordsSection(

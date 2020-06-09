@@ -15,8 +15,8 @@ namespace reporting {
 namespace {
 
 using policy::DMToken;
-using reporting_messaging_layer::Destination;
-using reporting_messaging_layer::Priority;
+using reporting::Destination;
+using reporting::Priority;
 
 // Tests to ensure that only valid parameters are used to generate a
 // ReportQueueConfiguration.

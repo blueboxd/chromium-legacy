@@ -1017,6 +1017,8 @@ static_library("browser") {
     "optimization_guide/optimization_guide_permissions_util.h",
     "optimization_guide/optimization_guide_session_statistic.cc",
     "optimization_guide/optimization_guide_session_statistic.h",
+    "optimization_guide/optimization_guide_test_util.cc",
+    "optimization_guide/optimization_guide_test_util.h",
     "optimization_guide/optimization_guide_top_host_provider.cc",
     "optimization_guide/optimization_guide_top_host_provider.h",
     "optimization_guide/optimization_guide_util.cc",
@@ -1983,7 +1985,6 @@ static_library("browser") {
     ":expired_flags_list",
     ":ntp_background_proto",
     ":permissions_proto",
-    ":reporting_record_proto",
     ":resource_prefetch_predictor_proto",
     ":status_proto",
     ":tab_state_db_content_proto",
@@ -2133,6 +2134,7 @@ static_library("browser") {
     "//components/policy/core/browser",
     "//components/policy/proto",
     "//components/policy/proto:policy_record_constants",
+    "//components/policy/proto:reporting_record_proto",
     "//components/prefs",
     "//components/prerender/common",
     "//components/previews/content",
@@ -6209,12 +6211,6 @@ if (is_android) {
   java_cpp_enum("sharing_dialog_type_generated_enum") {
     sources = [ "sharing/sharing_metrics.h" ]
   }
-}
-
-proto_library("reporting_record_proto") {
-  proto_in_dir = "//"
-  sources = [ "policy/messaging_layer/proto/record.proto" ]
-  deps = [ "//components/policy/proto:policy_record_constants" ]
 }
 
 proto_library("status_proto") {

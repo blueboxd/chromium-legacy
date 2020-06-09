@@ -18,9 +18,8 @@ namespace network_diagnostics {
 // Tests the Network Interface Controller (NIC) signal strength.
 class SignalStrengthRoutine : public NetworkDiagnosticsRoutine {
  public:
-  using SignalStrengthRoutineCallback = base::OnceCallback<void(
-      mojom::RoutineVerdict,
-      const std::vector<mojom::SignalStrengthProblem>&)>;
+  using SignalStrengthRoutineCallback =
+      mojom::NetworkDiagnosticsRoutines::SignalStrengthCallback;
 
   SignalStrengthRoutine();
   ~SignalStrengthRoutine() override;

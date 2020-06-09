@@ -31,7 +31,7 @@ struct VectorIcon;
 }
 
 namespace views {
-class BubbleDialogDelegateView;
+class BubbleDialogDelegate;
 }
 
 // Represents an inbuilt (as opposed to an extension) page action icon that
@@ -71,7 +71,7 @@ class PageActionIconView : public IconLabelBubbleView {
   void Update();
 
   // Returns the bubble instance for the icon.
-  virtual views::BubbleDialogDelegateView* GetBubble() const = 0;
+  virtual views::BubbleDialogDelegate* GetBubble() const = 0;
 
   // Retrieve the text to be used for a tooltip or accessible name.
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;

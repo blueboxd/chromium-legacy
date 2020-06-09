@@ -347,8 +347,8 @@ StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
     chrome::startup::IsFirstRun is_first_run)
     : cur_dir_(cur_dir),
       command_line_(command_line),
-      profile_(NULL),
-      browser_creator_(NULL),
+      profile_(nullptr),
+      browser_creator_(nullptr),
       is_first_run_(is_first_run == chrome::startup::IS_FIRST_RUN) {}
 
 StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
@@ -358,7 +358,7 @@ StartupBrowserCreatorImpl::StartupBrowserCreatorImpl(
     chrome::startup::IsFirstRun is_first_run)
     : cur_dir_(cur_dir),
       command_line_(command_line),
-      profile_(NULL),
+      profile_(nullptr),
       browser_creator_(browser_creator),
       is_first_run_(is_first_run == chrome::startup::IS_FIRST_RUN) {}
 

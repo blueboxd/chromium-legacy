@@ -21,9 +21,7 @@ namespace {
 class TestTarget : public EventTarget,
                    public EventHandler {
  public:
-  TestTarget() : parent_(NULL), valid_(true) {
-    SetTargetHandler(this);
-  }
+  TestTarget() : parent_(nullptr), valid_(true) { SetTargetHandler(this); }
   ~TestTarget() override {}
 
   void set_parent(TestTarget* parent) { parent_ = parent; }
@@ -163,8 +161,7 @@ class EventHandlerDestroyer : public TestEventHandler {
   EventHandlerDestroyer(int id, EventHandler* destroy)
       : TestEventHandler(id),
         to_destroy_(destroy),
-        dispatcher_delegate_(NULL) {
-  }
+        dispatcher_delegate_(nullptr) {}
 
   ~EventHandlerDestroyer() override { CHECK(!to_destroy_); }
 

@@ -60,7 +60,7 @@ class DownloadStartedAnimationViews : public gfx::LinearAnimation,
 
 DownloadStartedAnimationViews::DownloadStartedAnimationViews(
     content::WebContents* web_contents)
-    : gfx::LinearAnimation(kMoveTime, kFrameRateHz, NULL), popup_(NULL) {
+    : gfx::LinearAnimation(kMoveTime, kFrameRateHz, nullptr), popup_(nullptr) {
   gfx::ImageSkia download_image =
       gfx::CreateVectorIcon(kFileDownloadShelfIcon, 72, gfx::kGoogleBlue500);
 

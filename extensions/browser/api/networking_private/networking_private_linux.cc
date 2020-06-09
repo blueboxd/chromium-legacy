@@ -135,7 +135,7 @@ void GetCachedNetworkPropertiesCallback(
 }  // namespace
 
 NetworkingPrivateLinux::NetworkingPrivateLinux()
-    : dbus_thread_("Networking Private DBus"), network_manager_proxy_(NULL) {
+    : dbus_thread_("Networking Private DBus"), network_manager_proxy_(nullptr) {
   base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
 
   dbus_thread_.StartWithOptions(thread_options);

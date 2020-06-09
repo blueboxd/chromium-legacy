@@ -14,7 +14,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -147,7 +147,7 @@ class OriginData {
   base::Value ToDictValue() const {
     base::Value dict(base::Value::Type::DICTIONARY);
 
-    dict.SetKey(kOriginId, base::CreateUnguessableTokenValue(origin_id_));
+    dict.SetKey(kOriginId, util::UnguessableTokenToValue(origin_id_));
     dict.SetKey(kCreationTime, base::Value(provision_time_.ToDoubleT()));
 
     return dict;
@@ -165,15 +165,16 @@ class OriginData {
     if (!origin_id_value)
       return nullptr;
 
-    base::UnguessableToken origin_id;
-    if (!base::GetValueAsUnguessableToken(*origin_id_value, &origin_id))
+    base::Optional<base::UnguessableToken> origin_id =
+        util::ValueToUnguessableToken(*origin_id_value);
+    if (!origin_id)
       return nullptr;
 
     base::Time time;
     if (!GetCreationTimeFromDict(origin_dict, &time))
       return nullptr;
 
-    return base::WrapUnique(new OriginData(origin_id, time));
+    return base::WrapUnique(new OriginData(*origin_id, time));
   }
 
  private:

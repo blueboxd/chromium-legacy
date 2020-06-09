@@ -125,6 +125,10 @@ class VIEWS_EXPORT MenuController
   // WARNING: this may be NULL.
   Widget* owner() { return owner_; }
 
+  // Gets the most-current selected menu item, if any, including if the
+  // selection has not been committed yet.
+  views::MenuItemView* GetSelectedMenuItem() { return pending_state_.item; }
+
   // Get the anchor position which is used to show this menu.
   MenuAnchorPosition GetAnchorPosition() { return state_.anchor; }
 

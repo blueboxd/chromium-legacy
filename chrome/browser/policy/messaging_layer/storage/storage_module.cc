@@ -5,15 +5,15 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "chrome/browser/policy/messaging_layer/proto/record.pb.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
+#include "components/policy/proto/record.pb.h"
 #include "components/policy/proto/record_constants.pb.h"
 
 namespace reporting {
 
-void StorageModule::AddRecord(reporting_messaging_layer::EncryptedRecord record,
-                              reporting_messaging_layer::Priority priority,
+void StorageModule::AddRecord(reporting::EncryptedRecord record,
+                              reporting::Priority priority,
                               base::OnceCallback<void(Status)> callback) {
   std::move(callback).Run(
       Status(error::UNIMPLEMENTED, "AddRecord isn't implemented"));

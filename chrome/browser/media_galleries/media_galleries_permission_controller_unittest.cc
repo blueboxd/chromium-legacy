@@ -44,9 +44,9 @@ std::string GalleryName(const MediaGalleryPrefInfo& gallery) {
 class MediaGalleriesPermissionControllerTest : public ::testing::Test {
  public:
   MediaGalleriesPermissionControllerTest()
-      : dialog_(NULL),
+      : dialog_(nullptr),
         dialog_update_count_at_destruction_(0),
-        controller_(NULL),
+        controller_(nullptr),
         profile_(new TestingProfile()) {}
 
   ~MediaGalleriesPermissionControllerTest() override {

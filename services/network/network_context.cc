@@ -1000,11 +1000,13 @@ void NetworkContext::SetCTPolicy(mojom::CTPolicyPtr ct_policy) {
       ct_policy->excluded_spkis, ct_policy->excluded_legacy_spkis);
 }
 
-void NetworkContext::AddExpectCT(const std::string& domain,
-                                 base::Time expiry,
-                                 bool enforce,
-                                 const GURL& report_uri,
-                                 AddExpectCTCallback callback) {
+void NetworkContext::AddExpectCT(
+    const std::string& domain,
+    base::Time expiry,
+    bool enforce,
+    const GURL& report_uri,
+    const net::NetworkIsolationKey& network_isolation_key,
+    AddExpectCTCallback callback) {
   net::TransportSecurityState* transport_security_state =
       url_request_context()->transport_security_state();
   if (!transport_security_state) {
@@ -1013,7 +1015,7 @@ void NetworkContext::AddExpectCT(const std::string& domain,
   }
 
   transport_security_state->AddExpectCT(domain, expiry, enforce, report_uri,
-                                        net::NetworkIsolationKey::Todo());
+                                        network_isolation_key);
   std::move(callback).Run(true);
 }
 
@@ -1075,8 +1077,10 @@ void NetworkContext::OnSetExpectCTTestReportFailure() {
   outstanding_set_expect_ct_callbacks_.pop();
 }
 
-void NetworkContext::GetExpectCTState(const std::string& domain,
-                                      GetExpectCTStateCallback callback) {
+void NetworkContext::GetExpectCTState(
+    const std::string& domain,
+    const net::NetworkIsolationKey& network_isolation_key,
+    GetExpectCTStateCallback callback) {
   base::DictionaryValue result;
   if (base::IsStringASCII(domain)) {
     net::TransportSecurityState* transport_security_state =
@@ -1084,7 +1088,7 @@ void NetworkContext::GetExpectCTState(const std::string& domain,
     if (transport_security_state) {
       net::TransportSecurityState::ExpectCTState dynamic_expect_ct_state;
       bool found = transport_security_state->GetDynamicExpectCTState(
-          domain, net::NetworkIsolationKey::Todo(), &dynamic_expect_ct_state);
+          domain, network_isolation_key, &dynamic_expect_ct_state);
 
       // TODO(estark): query static Expect-CT state as well.
       if (found) {

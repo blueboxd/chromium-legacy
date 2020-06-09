@@ -10,13 +10,15 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 
 namespace content {
 
 class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
-                             public blink::mojom::WidgetHost {
+                             public blink::mojom::WidgetHost,
+                             public blink::mojom::WidgetInputHandlerHost {
  public:
   FakeRenderWidgetHost();
   ~FakeRenderWidgetHost() override;
@@ -46,10 +48,26 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void SetToolTipText(const base::string16& tooltip_text,
                       base::i18n::TextDirection text_direction_hint) override;
 
+  // blink::mojom::WidgetInputHandlerHost overrides.
+  void SetTouchActionFromMain(cc::TouchAction touch_action) override;
+  void DidOverscroll(blink::mojom::DidOverscrollParamsPtr params) override;
+  void DidStartScrollingViewport() override;
+  void ImeCancelComposition() override;
+  void ImeCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& bounds) override;
+  void SetMouseCapture(bool capture) override;
+  void RequestMouseLock(bool from_user_gesture,
+                        bool privileged,
+                        bool unadjusted_movement,
+                        RequestMouseLockCallback callback) override;
+
   mojo::AssociatedReceiver<blink::mojom::WidgetHost>&
   widget_host_receiver_for_testing() {
     return widget_host_receiver_;
   }
+
+  blink::mojom::FrameWidgetInputHandler* GetFrameWidgetInputHandler();
 
  private:
   mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>
@@ -58,6 +76,11 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   mojo::AssociatedReceiver<blink::mojom::WidgetHost> widget_host_receiver_{
       this};
   mojo::AssociatedRemote<blink::mojom::Widget> widget_remote_;
+  mojo::Remote<blink::mojom::WidgetInputHandler> widget_input_handler_;
+  mojo::Receiver<blink::mojom::WidgetInputHandlerHost>
+      widget_input_handler_host_{this};
+  mojo::AssociatedRemote<blink::mojom::FrameWidgetInputHandler>
+      frame_widget_input_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetHost);
 };

@@ -14,8 +14,7 @@ using ppapi::PpapiGlobals;
 
 PnaclTranslationResourceHost::PnaclTranslationResourceHost(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : io_task_runner_(io_task_runner), sender_(NULL) {
-}
+    : io_task_runner_(io_task_runner), sender_(nullptr) {}
 
 PnaclTranslationResourceHost::~PnaclTranslationResourceHost() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());

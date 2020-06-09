@@ -172,8 +172,8 @@ public class DownloadProgressInfoBar extends InfoBar {
     public void updateInfoBar(DownloadInfoBarController.DownloadProgressInfoBarData info) {
         if (getView() == null) return;
 
-        mInfo = info;
-        setLayoutProperties((InfoBarLayout) getView(), info);
+        mInfo.update(info);
+        setLayoutProperties((InfoBarLayout) getView(), mInfo);
     }
 
     @Override

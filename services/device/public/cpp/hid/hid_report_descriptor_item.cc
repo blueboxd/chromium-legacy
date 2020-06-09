@@ -26,8 +26,8 @@ HidReportDescriptorItem::HidReportDescriptorItem(
     size_t size,
     HidReportDescriptorItem* previous)
     : previous_(previous),
-      next_(NULL),
-      parent_(NULL),
+      next_(nullptr),
+      parent_(nullptr),
       shortData_(0),
       payload_size_(0) {
   Header* header = (Header*)&bytes[0];

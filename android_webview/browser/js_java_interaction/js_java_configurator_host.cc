@@ -5,12 +5,10 @@
 #include "android_webview/browser/js_java_interaction/js_java_configurator_host.h"
 
 #include "android_webview/browser/js_java_interaction/js_to_java_messaging.h"
-#include "android_webview/browser_jni_headers/WebMessageListenerInfo_jni.h"
+#include "android_webview/browser/js_java_interaction/web_message_host.h"
+#include "android_webview/browser/js_java_interaction/web_message_host_factory.h"
 #include "android_webview/common/aw_origin_matcher.h"
 #include "android_webview/common/aw_origin_matcher_mojom_traits.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
-#include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/web_contents.h"
@@ -18,34 +16,34 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace android_webview {
+namespace {
+
+std::string ConvertToNativeAllowedOriginRulesWithSanityCheck(
+    const std::vector<std::string>& allowed_origin_rules_strings,
+    AwOriginMatcher& allowed_origin_rules) {
+  for (auto& rule : allowed_origin_rules_strings) {
+    if (!allowed_origin_rules.AddRuleFromString(rule))
+      return "allowedOriginRules " + rule + " is invalid";
+  }
+  return std::string();
+}
+
+}  // namespace
 
 struct JsObject {
-  JsObject(base::string16 name,
+  JsObject(const base::string16& name,
            AwOriginMatcher allowed_origin_rules,
-           const base::android::JavaRef<jobject>& listener)
-      : name_(std::move(name)),
-        allowed_origin_rules_(std::move(allowed_origin_rules)),
-        listener_ref_(listener) {}
-
-  JsObject(JsObject&& other)
-      : name_(std::move(other.name_)),
-        allowed_origin_rules_(std::move(other.allowed_origin_rules_)),
-        listener_ref_(std::move(other.listener_ref_)) {}
-
-  JsObject& operator=(JsObject&& other) {
-    name_ = std::move(other.name_);
-    allowed_origin_rules_ = std::move(other.allowed_origin_rules_);
-    listener_ref_ = std::move(other.listener_ref_);
-    return *this;
-  }
-
+           std::unique_ptr<WebMessageHostFactory> factory)
+      : name(std::move(name)),
+        allowed_origin_rules(std::move(allowed_origin_rules)),
+        factory(std::move(factory)) {}
+  JsObject(JsObject&& other) = delete;
+  JsObject& operator=(JsObject&& other) = delete;
   ~JsObject() = default;
 
-  base::string16 name_;
-  AwOriginMatcher allowed_origin_rules_;
-  base::android::ScopedJavaGlobalRef<jobject> listener_ref_;
-
-  DISALLOW_COPY_AND_ASSIGN(JsObject);
+  base::string16 name;
+  AwOriginMatcher allowed_origin_rules;
+  std::unique_ptr<WebMessageHostFactory> factory;
 };
 
 struct DocumentStartJavascript {
@@ -66,91 +64,86 @@ struct DocumentStartJavascript {
   int32_t script_id_;
 };
 
+JsJavaConfiguratorHost::AddScriptResult::AddScriptResult() = default;
+JsJavaConfiguratorHost::AddScriptResult::AddScriptResult(
+    const JsJavaConfiguratorHost::AddScriptResult&) = default;
+JsJavaConfiguratorHost::AddScriptResult&
+JsJavaConfiguratorHost::AddScriptResult::operator=(
+    const JsJavaConfiguratorHost::AddScriptResult&) = default;
+JsJavaConfiguratorHost::AddScriptResult::~AddScriptResult() = default;
+
 JsJavaConfiguratorHost::JsJavaConfiguratorHost(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
 
 JsJavaConfiguratorHost::~JsJavaConfiguratorHost() = default;
 
-jint JsJavaConfiguratorHost::AddDocumentStartJavascript(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& script,
-    const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
-  base::string16 native_script =
-      base::android::ConvertJavaStringToUTF16(env, script);
+JsJavaConfiguratorHost::AddScriptResult
+JsJavaConfiguratorHost::AddDocumentStartJavascript(
+    const base::string16& script,
+    const std::vector<std::string>& allowed_origin_rules) {
   AwOriginMatcher origin_matcher;
   std::string error_message = ConvertToNativeAllowedOriginRulesWithSanityCheck(
-      env, allowed_origin_rules, origin_matcher);
+      allowed_origin_rules, origin_matcher);
+  AddScriptResult result;
   if (!error_message.empty()) {
-    env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
-                  error_message.data());
-    // Invalid script id.
-    return -1;
+    result.error_message = std::move(error_message);
+    return result;
   }
 
-  scripts_.emplace_back(native_script, origin_matcher, next_script_id_++);
+  scripts_.emplace_back(script, origin_matcher, next_script_id_++);
 
   web_contents()->ForEachFrame(base::BindRepeating(
       &JsJavaConfiguratorHost::NotifyFrameForAddDocumentStartJavascript,
       base::Unretained(this), &*scripts_.rbegin()));
-  return scripts_.rbegin()->script_id_;
+  result.script_id = scripts_.rbegin()->script_id_;
+  return result;
 }
 
-jboolean JsJavaConfiguratorHost::RemoveDocumentStartJavascript(
-    JNIEnv* env,
-    jint j_script_id) {
+bool JsJavaConfiguratorHost::RemoveDocumentStartJavascript(int script_id) {
   for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
-    if (it->script_id_ == j_script_id) {
+    if (it->script_id_ == script_id) {
       scripts_.erase(it);
       web_contents()->ForEachFrame(base::BindRepeating(
           &JsJavaConfiguratorHost::NotifyFrameForRemoveDocumentStartJavascript,
-          base::Unretained(this), j_script_id));
+          base::Unretained(this), script_id));
       return true;
     }
   }
   return false;
 }
 
-base::android::ScopedJavaLocalRef<jstring>
-JsJavaConfiguratorHost::AddWebMessageListener(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& listener,
-    const base::android::JavaParamRef<jstring>& js_object_name,
-    const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
-  base::string16 native_js_object_name =
-      base::android::ConvertJavaStringToUTF16(env, js_object_name);
-
+base::string16 JsJavaConfiguratorHost::AddWebMessageHostFactory(
+    std::unique_ptr<WebMessageHostFactory> factory,
+    const base::string16& js_object_name,
+    const std::vector<std::string>& allowed_origin_rules) {
   AwOriginMatcher origin_matcher;
   std::string error_message = ConvertToNativeAllowedOriginRulesWithSanityCheck(
-      env, allowed_origin_rules, origin_matcher);
+      allowed_origin_rules, origin_matcher);
   if (!error_message.empty())
-    return base::android::ConvertUTF8ToJavaString(env, error_message);
+    return base::UTF8ToUTF16(error_message);
 
   for (const auto& js_object : js_objects_) {
-    if (js_object.name_ == native_js_object_name) {
-      return base::android::ConvertUTF16ToJavaString(
-          env, base::ASCIIToUTF16("jsObjectName ") + js_object.name_ +
-                   base::ASCIIToUTF16(" is already added."));
+    if (js_object->name == js_object_name) {
+      return base::ASCIIToUTF16("jsObjectName ") + js_object->name +
+             base::ASCIIToUTF16(" was already added.");
     }
   }
 
-  js_objects_.emplace_back(native_js_object_name, origin_matcher, listener);
+  js_objects_.push_back(std::make_unique<JsObject>(
+      js_object_name, origin_matcher, std::move(factory)));
 
   web_contents()->ForEachFrame(base::BindRepeating(
       &JsJavaConfiguratorHost::NotifyFrameForWebMessageListener,
       base::Unretained(this)));
-  return nullptr;
+  return base::string16();
 }
 
-void JsJavaConfiguratorHost::RemoveWebMessageListener(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& js_object_name) {
-  base::string16 native_js_object_name =
-      ConvertJavaStringToUTF16(env, js_object_name);
-
+void JsJavaConfiguratorHost::RemoveWebMessageHostFactory(
+    const base::string16& js_object_name) {
   for (auto iterator = js_objects_.begin(); iterator != js_objects_.end();
        ++iterator) {
-    if (iterator->name_ == native_js_object_name) {
+    if ((*iterator)->name == js_object_name) {
       js_objects_.erase(iterator);
       web_contents()->ForEachFrame(base::BindRepeating(
           &JsJavaConfiguratorHost::NotifyFrameForWebMessageListener,
@@ -160,28 +153,16 @@ void JsJavaConfiguratorHost::RemoveWebMessageListener(
   }
 }
 
-base::android::ScopedJavaLocalRef<jobjectArray>
-JsJavaConfiguratorHost::GetJsObjectsInfo(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz) {
-  jobjectArray joa =
-      env->NewObjectArray(js_objects_.size(), clazz.obj(), nullptr);
-  base::android::CheckException(env);
-
-  for (size_t i = 0; i < js_objects_.size(); ++i) {
-    const JsObject& js_object = js_objects_[i];
-    std::vector<std::string> rules;
-    for (const auto& rule : js_object.allowed_origin_rules_.rules())
-      rules.push_back(rule->ToString());
-
-    base::android::ScopedJavaLocalRef<jobject> object =
-        Java_WebMessageListenerInfo_create(
-            env, base::android::ConvertUTF16ToJavaString(env, js_object.name_),
-            base::android::ToJavaArrayOfStrings(env, rules),
-            js_object.listener_ref_);
-    env->SetObjectArrayElement(joa, i, object.obj());
+std::vector<JsJavaConfiguratorHost::RegisteredFactory>
+JsJavaConfiguratorHost::GetWebMessageHostFactories() {
+  const size_t num_objects = js_objects_.size();
+  std::vector<RegisteredFactory> factories(num_objects);
+  for (size_t i = 0; i < num_objects; ++i) {
+    factories[i].js_name = js_objects_[i]->name;
+    factories[i].allowed_origin_rules = js_objects_[i]->allowed_origin_rules;
+    factories[i].factory = js_objects_[i]->factory.get();
   }
-  return base::android::ScopedJavaLocalRef<jobjectArray>(env, joa);
+  return factories;
 }
 
 void JsJavaConfiguratorHost::RenderFrameCreated(
@@ -215,10 +196,10 @@ void JsJavaConfiguratorHost::NotifyFrameForWebMessageListener(
         std::make_unique<JsToJavaMessaging>(
             render_frame_host,
             pending_remote.InitWithNewEndpointAndPassReceiver(),
-            js_object.listener_ref_, js_object.allowed_origin_rules_));
-    js_objects.push_back(mojom::JsObject::New(js_object.name_,
+            js_object->factory.get(), js_object->allowed_origin_rules));
+    js_objects.push_back(mojom::JsObject::New(js_object->name,
                                               std::move(pending_remote),
-                                              js_object.allowed_origin_rules_));
+                                              js_object->allowed_origin_rules));
   }
   configurator_remote->SetJsObjects(std::move(js_objects));
 }
@@ -242,22 +223,6 @@ void JsJavaConfiguratorHost::NotifyFrameForRemoveDocumentStartJavascript(
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &configurator_remote);
   configurator_remote->RemoveDocumentStartScript(script_id);
-}
-
-std::string
-JsJavaConfiguratorHost::ConvertToNativeAllowedOriginRulesWithSanityCheck(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules,
-    AwOriginMatcher& native_allowed_origin_rules) {
-  std::vector<std::string> native_allowed_origin_rule_strings;
-  AppendJavaStringArrayToStringVector(env, allowed_origin_rules,
-                                      &native_allowed_origin_rule_strings);
-  for (auto& rule : native_allowed_origin_rule_strings) {
-    if (!native_allowed_origin_rules.AddRuleFromString(rule)) {
-      return "allowedOriginRules " + rule + " is invalid";
-    }
-  }
-  return std::string();
 }
 
 }  // namespace android_webview

@@ -111,7 +111,8 @@ class TestConstantEventRewriterOld : public EventRewriter {
 // EVENT_REWRITE_DISPATCH_ANOTHER.
 class TestStateMachineEventRewriterOld : public EventRewriter {
  public:
-  TestStateMachineEventRewriterOld() : last_rewritten_event_(0), state_(0) {}
+  TestStateMachineEventRewriterOld()
+      : last_rewritten_event_(nullptr), state_(0) {}
   void AddRule(int from_state,
                EventType from_type,
                int to_state,

@@ -57,8 +57,7 @@ const size_t kHelloStringLength = base::size(kHelloString);
 // messages from the client.
 class SyncSocketServerListener : public IPC::Listener {
  public:
-  SyncSocketServerListener() : chan_(NULL) {
-  }
+  SyncSocketServerListener() : chan_(nullptr) {}
 
   void Init(IPC::Channel* chan) {
     chan_ = chan;

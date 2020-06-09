@@ -1971,7 +1971,7 @@ namespace {
 
 class SchedulePaintLayerDelegate : public LayerDelegate {
  public:
-  SchedulePaintLayerDelegate() : paint_count_(0), layer_(NULL) {}
+  SchedulePaintLayerDelegate() : paint_count_(0), layer_(nullptr) {}
 
   ~SchedulePaintLayerDelegate() override {}
 

@@ -4,32 +4,68 @@
 
 #include "android_webview/browser/js_java_interaction/js_to_java_messaging.h"
 
-#include "android_webview/browser_jni_headers/WebMessageListenerHolder_jni.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
-#include "base/android/jni_string.h"
+#include "android_webview/browser/js_java_interaction/web_message.h"
+#include "android_webview/browser/js_java_interaction/web_message_host.h"
+#include "android_webview/browser/js_java_interaction/web_message_host_factory.h"
+#include "android_webview/browser/js_java_interaction/web_message_reply_proxy.h"
 #include "base/stl_util.h"
-#include "content/public/browser/android/app_web_message_port.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "url/origin.h"
 #include "url/url_util.h"
 
 namespace android_webview {
+namespace {
+
+// We want to pass a string "null" for local file schemes, to make it
+// consistent to the Blink side SecurityOrigin serialization. When both
+// setAllow{File,Universal}AccessFromFileURLs are false, Blink::SecurityOrigin
+// will be serialized as string "null" for local file schemes, but when
+// setAllowFileAccessFromFileURLs is true, Blink::SecurityOrigin will be
+// serialized as the scheme, which will be inconsistentt to this place. In
+// this case we want to let developer to know that local files are not safe,
+// so we still pass "null".
+std::string GetOriginString(const url::Origin& source_origin) {
+  return base::Contains(url::GetLocalSchemes(), source_origin.scheme())
+             ? "null"
+             : source_origin.Serialize();
+}
+
+}  // namespace
+
+class JsToJavaMessaging::ReplyProxyImpl : public WebMessageReplyProxy {
+ public:
+  explicit ReplyProxyImpl(
+      mojo::PendingAssociatedRemote<mojom::JavaToJsMessaging>
+          java_to_js_messaging)
+      : java_to_js_messaging_(std::move(java_to_js_messaging)) {}
+  ReplyProxyImpl(const ReplyProxyImpl&) = delete;
+  ReplyProxyImpl& operator=(const ReplyProxyImpl&) = delete;
+  ~ReplyProxyImpl() override = default;
+
+  // WebMessageReplyProxy:
+  void PostMessage(std::unique_ptr<WebMessage> message) override {
+    java_to_js_messaging_->OnPostMessage(message->message);
+  }
+
+ private:
+  mojo::AssociatedRemote<mojom::JavaToJsMessaging> java_to_js_messaging_;
+};
 
 JsToJavaMessaging::JsToJavaMessaging(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging> receiver,
-    base::android::ScopedJavaGlobalRef<jobject> listener_ref,
+    WebMessageHostFactory* factory,
     const AwOriginMatcher& origin_matcher)
     : render_frame_host_(render_frame_host),
-      listener_ref_(listener_ref),
+      connection_factory_(factory),
       origin_matcher_(origin_matcher) {
   receiver_.Bind(std::move(receiver));
 }
 
-JsToJavaMessaging::~JsToJavaMessaging() {}
+JsToJavaMessaging::~JsToJavaMessaging() = default;
 
 void JsToJavaMessaging::PostMessage(
     const base::string16& message,
@@ -45,34 +81,39 @@ void JsToJavaMessaging::PostMessage(
   // |source_origin| has no race with this PostMessage call, because of
   // associated mojo channel, the committed origin message and PostMessage are
   // in sequence.
-  url::Origin source_origin = render_frame_host_->GetLastCommittedOrigin();
+  const url::Origin source_origin =
+      render_frame_host_->GetLastCommittedOrigin();
 
   if (!origin_matcher_.Matches(source_origin))
     return;
 
-  // We want to pass a string "null" for local file schemes, to make it
-  // consistent to the Blink side SecurityOrigin serialization. When both
-  // setAllow{File,Universal}AccessFromFileURLs are false, Blink::SecurityOrigin
-  // will be serialized as string "null" for local file schemes, but when
-  // setAllowFileAccessFromFileURLs is true, Blink::SecurityOrigin will be
-  // serialized as the scheme, which will be inconsistentt to this place. In
-  // this case we want to let developer to know that local files are not safe,
-  // so we still pass "null".
-  std::string origin_string =
-      base::Contains(url::GetLocalSchemes(), source_origin.scheme())
-          ? "null"
-          : source_origin.Serialize();
-  JNIEnv* env = base::android::AttachCurrentThread();
+  // SetJavaToJsMessaging must be called before this.
+  DCHECK(reply_proxy_);
 
-  // Convert to an array of AppWebMessagePorts.
-  base::android::ScopedJavaGlobalRef<jobjectArray> jports =
-      content::AppWebMessagePort::WrapJavaArray(env, std::move(ports));
+  if (!host_) {
+    const std::string origin_string = GetOriginString(source_origin);
+    const bool is_main_frame =
+        web_contents->GetMainFrame() == render_frame_host_;
 
-  Java_WebMessageListenerHolder_onPostMessage(
-      env, listener_ref_, base::android::ConvertUTF16ToJavaString(env, message),
-      base::android::ConvertUTF8ToJavaString(env, origin_string),
-      web_contents->GetMainFrame() == render_frame_host_, jports,
-      reply_proxy_->GetJavaPeer());
+    host_ = connection_factory_->CreateHost(origin_string, is_main_frame,
+                                            reply_proxy_.get());
+#if DCHECK_IS_ON()
+    origin_string_ = origin_string;
+    is_main_frame_ = is_main_frame;
+#endif
+    if (!host_)
+      return;
+  }
+  // The origin and whether this is the main frame should not change once
+  // PostMessage() has been received.
+#if DCHECK_IS_ON()
+  DCHECK_EQ(GetOriginString(source_origin), origin_string_);
+  DCHECK_EQ(is_main_frame_, web_contents->GetMainFrame() == render_frame_host_);
+#endif
+  std::unique_ptr<WebMessage> web_message = std::make_unique<WebMessage>();
+  web_message->message = message;
+  web_message->ports = std::move(ports);
+  host_->OnPostMessage(std::move(web_message));
 }
 
 void JsToJavaMessaging::SetJavaToJsMessaging(
@@ -80,8 +121,9 @@ void JsToJavaMessaging::SetJavaToJsMessaging(
         java_to_js_messaging) {
   // A RenderFrame may inject JsToJavaMessaging in the JavaScript context more
   // than once because of reusing of RenderFrame.
+  host_.reset();
   reply_proxy_ =
-      std::make_unique<JsReplyProxy>(std::move(java_to_js_messaging));
+      std::make_unique<ReplyProxyImpl>(std::move(java_to_js_messaging));
 }
 
 }  // namespace android_webview

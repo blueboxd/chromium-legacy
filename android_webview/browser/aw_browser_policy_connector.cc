@@ -13,6 +13,8 @@
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/policy_constants.h"
+#include "components/version_info/android/channel_getter.h"
+#include "components/version_info/channel.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace android_webview {
@@ -32,10 +34,13 @@ const policy::PolicyDetails* GetChromePolicyDetails(const std::string& policy) {
 // to the associated preferences.
 std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
     const policy::Schema& chrome_schema) {
+  version_info::Channel channel = version_info::android::GetChannel();
   std::unique_ptr<policy::ConfigurationPolicyHandlerList> handlers(
       new policy::ConfigurationPolicyHandlerList(
           base::BindRepeating(&PopulatePolicyHandlerParameters),
-          base::BindRepeating(&GetChromePolicyDetails)));
+          base::BindRepeating(&GetChromePolicyDetails),
+          channel != version_info::Channel::STABLE &&
+              channel != version_info::Channel::BETA));
 
   // URL Filtering
   handlers->AddHandler(std::make_unique<policy::SimplePolicyHandler>(

@@ -171,7 +171,7 @@ class NetErrorHelperCoreTest : public testing::Test,
                                public NetErrorHelperCore::Delegate {
  public:
   NetErrorHelperCoreTest()
-      : timer_(NULL),
+      : timer_(nullptr),
         update_count_(0),
         error_html_update_count_(0),
         reload_count_(0),

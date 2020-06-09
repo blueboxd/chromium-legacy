@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/common/widget.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
@@ -30,7 +29,6 @@ class RenderWidgetHostFactory {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int32_t routing_id,
-      mojo::PendingRemote<mojom::Widget> widget_interface,
       bool hidden);
 
   // Returns true if there is currently a globally-registered factory.
@@ -46,7 +44,6 @@ class RenderWidgetHostFactory {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int32_t routing_id,
-      mojo::PendingRemote<mojom::Widget> widget_interface,
       bool hidden) = 0;
 
   // Registers your factory to be called when new RenderWidgetHostImpls are

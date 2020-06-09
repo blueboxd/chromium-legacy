@@ -227,7 +227,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
  public:
   AutofillPopupControllerUnitTest()
       : autofill_client_(new MockAutofillClient()),
-        autofill_popup_controller_(NULL) {}
+        autofill_popup_controller_(nullptr) {}
   ~AutofillPopupControllerUnitTest() override = default;
 
   void SetUp() override {

@@ -114,8 +114,6 @@ void RecordSyncInitialState(SyncService::DisableReasonSet disable_reasons,
   base::UmaHistogramEnumeration("Sync.InitialState", sync_state);
 }
 
-constexpr char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
-
 EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
   EngineComponentsFactory::Switches factory_switches = {
       EngineComponentsFactory::ENCRYPTION_KEYSTORE,
@@ -921,8 +919,6 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   unrecoverable_error_message_ = message;
   unrecoverable_error_location_ = from_here;
 
-  UMA_HISTOGRAM_ENUMERATION(kSyncUnrecoverableErrorHistogram,
-                            unrecoverable_error_reason_, ERROR_REASON_LIMIT);
   LOG(ERROR) << "Unrecoverable error detected at " << from_here.ToString()
              << " -- ProfileSyncService unusable: " << message;
 

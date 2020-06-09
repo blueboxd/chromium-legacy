@@ -1003,7 +1003,7 @@ TEST_F(ProofVerifierChromiumTest, VerifyCertChain) {
   std::unique_ptr<DummyProofVerifierCallback> callback(
       new DummyProofVerifierCallback);
   quic::QuicAsyncStatus status = proof_verifier.VerifyCertChain(
-      kTestHostname, certs_, /*ocsp_response=*/std::string(),
+      kTestHostname, kTestPort, certs_, /*ocsp_response=*/std::string(),
       /*cert_sct=*/std::string(), verify_context_.get(), &error_details_,
       &details_, std::move(callback));
   ASSERT_EQ(quic::QUIC_SUCCESS, status);

@@ -5,8 +5,11 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_JS_JAVA_CONFIGURATOR_HOST_H_
 #define ANDROID_WEBVIEW_BROWSER_JS_JAVA_INTERACTION_JS_JAVA_CONFIGURATOR_HOST_H_
 
+#include <memory>
+#include <vector>
+
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
-#include "base/android/scoped_java_ref.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -19,8 +22,8 @@ namespace android_webview {
 class AwOriginMatcher;
 struct DocumentStartJavascript;
 struct JsObject;
-
 class JsToJavaMessaging;
+class WebMessageHostFactory;
 
 // This class is 1:1 with WebContents, when AddWebMessageListener() is called,
 // it stores the information in this class and send them to renderer side
@@ -32,30 +35,48 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
   explicit JsJavaConfiguratorHost(content::WebContents* web_contents);
   ~JsJavaConfiguratorHost() override;
 
+  // Captures the result of adding script. There are two possibilities when
+  // adding script: there was an error, in which case |error_message| is set,
+  // otherwise the add was successful and |script_id| is set.
+  struct AddScriptResult {
+    AddScriptResult();
+    AddScriptResult(const AddScriptResult&);
+    AddScriptResult& operator=(const AddScriptResult&);
+    ~AddScriptResult();
+
+    base::Optional<std::string> error_message;
+    base::Optional<int> script_id;
+  };
+
   // Native side AddDocumentStartJavascript, returns an error message if the
   // parameters didn't pass necessary checks.
-  jint AddDocumentStartJavascript(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& script,
-      const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules);
+  AddScriptResult AddDocumentStartJavascript(
+      const base::string16& script,
+      const std::vector<std::string>& allowed_origin_rules);
 
-  jboolean RemoveDocumentStartJavascript(JNIEnv* env, jint script_id);
+  bool RemoveDocumentStartJavascript(int script_id);
 
-  // Native side AddWebMessageListener, returns an error message if the
-  // parameters didn't pass necessary checks.
-  base::android::ScopedJavaLocalRef<jstring> AddWebMessageListener(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& listener,
-      const base::android::JavaParamRef<jstring>& js_object_name,
-      const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules);
+  // Adds a new WebMessageHostFactory. For any urls that match
+  // |allowed_origin_rules|, |js_object_name| is registered as a JS object that
+  // can be used by script on the page to send and receive messages. Returns
+  // an empty string on success. On failure, the return string gives the error
+  // message.
+  base::string16 AddWebMessageHostFactory(
+      std::unique_ptr<WebMessageHostFactory> factory,
+      const base::string16& js_object_name,
+      const std::vector<std::string>& allowed_origin_rules);
 
-  void RemoveWebMessageListener(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jstring>& js_object_name);
+  // Returns the factory previously registered under the specified name.
+  void RemoveWebMessageHostFactory(const base::string16& js_object_name);
 
-  base::android::ScopedJavaLocalRef<jobjectArray> GetJsObjectsInfo(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jclass>& clazz);
+  struct RegisteredFactory {
+    base::string16 js_name;
+    AwOriginMatcher allowed_origin_rules;
+    WebMessageHostFactory* factory = nullptr;
+  };
+
+  // Returns the registered factories.
+  std::vector<RegisteredFactory> GetWebMessageHostFactories();
 
   // content::WebContentsObserver implementations
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
@@ -73,14 +94,10 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
   void NotifyFrameForRemoveDocumentStartJavascript(
       int32_t script_id,
       content::RenderFrameHost* render_frame_host);
-  std::string ConvertToNativeAllowedOriginRulesWithSanityCheck(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules,
-      AwOriginMatcher& native_allowed_origin_rules);
 
   int32_t next_script_id_ = 0;
   std::vector<DocumentStartJavascript> scripts_;
-  std::vector<JsObject> js_objects_;
+  std::vector<std::unique_ptr<JsObject>> js_objects_;
   std::map<content::RenderFrameHost*,
            std::vector<std::unique_ptr<JsToJavaMessaging>>>
       js_to_java_messagings_;

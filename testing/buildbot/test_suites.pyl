@@ -3832,6 +3832,8 @@
     'weblayer_gtests': {
       'weblayer_browsertests': {
       },
+      'weblayer_unittests': {
+      },
     },
 
     'weblayer_shell_wpt': {
@@ -3848,11 +3850,6 @@
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
         'results_handler': 'layout tests',
-      },
-    },
-
-    'weblayer_unittests': {
-      'weblayer_unittests': {
       },
     },
 
@@ -4308,7 +4305,6 @@
       'storage_service_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
-      'weblayer_unittests',
     ],
 
     'chromium_linux_rel_isolated_scripts': [
@@ -4354,7 +4350,6 @@
       'storage_service_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
-      'weblayer_unittests',
       'win_specific_chromium_gtests',
     ],
 
@@ -4375,7 +4370,6 @@
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'weblayer_gtests',
-      'weblayer_unittests',
       'win_specific_chromium_gtests',
     ],
 

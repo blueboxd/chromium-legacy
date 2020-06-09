@@ -231,8 +231,9 @@ class LayerAnimatorDestructionObserver {
 
 class TestLayerAnimator : public LayerAnimator {
  public:
-  TestLayerAnimator() : LayerAnimator(base::TimeDelta::FromSeconds(0)),
-      destruction_observer_(NULL) {}
+  TestLayerAnimator()
+      : LayerAnimator(base::TimeDelta::FromSeconds(0)),
+        destruction_observer_(nullptr) {}
 
   void SetDestructionObserver(
       LayerAnimatorDestructionObserver* observer) {

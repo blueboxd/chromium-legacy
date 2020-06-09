@@ -159,13 +159,14 @@ TEST_F(SigninProfileAttributesUpdaterTest, SigninSignoutResetsProfilePrefs) {
   SetProfilePrefs(pref_service);
 
   // Set UPA should reset profile prefs.
-  AccountInfo account_info = identity_test_env_.MakeAccountAvailableWithCookies(
-      "email1@example.com", "gaia_id_1");
+  AccountInfo account_info =
+      identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(
+          "email1@example.com");
   EXPECT_FALSE(entry->IsAuthenticated());
   CheckProfilePrefsReset(pref_service, false);
   SetProfilePrefs(pref_service);
   // Signout should reset profile prefs.
-  identity_test_env_.SetCookieAccounts({});
+  identity_test_env_.ClearPrimaryAccount();
   CheckProfilePrefsReset(pref_service, false);
 #endif  // !defined(OS_ANDROID)
 
@@ -188,8 +189,9 @@ TEST_F(SigninProfileAttributesUpdaterTest,
   ASSERT_TRUE(profile_manager_.profile_attributes_storage()
                   ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
   // Set UPA.
-  AccountInfo account_info = identity_test_env_.MakeAccountAvailableWithCookies(
-      "email1@example.com", "gaia_id_1");
+  AccountInfo account_info =
+      identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(
+          "email1@example.com");
   EXPECT_FALSE(entry->IsAuthenticated());
   SetProfilePrefs(pref_service);
   // Set primary account to be the same as the UPA.
@@ -207,8 +209,9 @@ TEST_F(SigninProfileAttributesUpdaterTest,
   ProfileAttributesEntry* entry;
   ASSERT_TRUE(profile_manager_.profile_attributes_storage()
                   ->GetProfileAttributesWithPath(profile_->GetPath(), &entry));
-  AccountInfo account_info = identity_test_env_.MakeAccountAvailableWithCookies(
-      "email1@example.com", "gaia_id_1");
+  AccountInfo account_info =
+      identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(
+          "email1@example.com");
   EXPECT_FALSE(entry->IsAuthenticated());
   SetProfilePrefs(pref_service);
   // Set primary account to a different account than the UPA.

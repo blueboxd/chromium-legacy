@@ -112,7 +112,8 @@ public class TabModelSelectorTabObserverTest {
     @Test
     @SmallTest
     public void testObserverAddedBeforeInitialize() {
-        TabModelSelectorBase selector = new TabModelSelectorBase(null, false) {
+        TabModelSelectorBase selector = new TabModelSelectorBase(
+                null, EmptyTabModelFilter::new, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {

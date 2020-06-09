@@ -639,11 +639,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetAntialiasedClips2dCanvasEnabled(
       prefs.antialiased_clips_2d_canvas_enabled);
 
-  // Set MSAA sample count for 2d canvas if requested on the command line (or
-  // default value if not).
-  settings->SetAccelerated2dCanvasMSAASampleCount(
-      prefs.accelerated_2d_canvas_msaa_sample_count);
-
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.
   web_view->SetTabsToLinks(prefs.tabs_to_links);

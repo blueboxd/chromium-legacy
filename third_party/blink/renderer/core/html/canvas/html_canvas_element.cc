@@ -1121,12 +1121,6 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   return context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
 
-unsigned HTMLCanvasElement::GetMSAASampleCountFor2dContext() const {
-  if (!GetDocument().GetSettings())
-    return 0;
-  return GetDocument().GetSettings()->GetAccelerated2dCanvasMSAASampleCount();
-}
-
 std::unique_ptr<Canvas2DLayerBridge> HTMLCanvasElement::Create2DLayerBridge(
     Canvas2DLayerBridge::AccelerationMode acceleration_mode) {
   auto surface = std::make_unique<Canvas2DLayerBridge>(
@@ -1170,15 +1164,6 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
 
   did_fail_to_create_resource_provider_ = false;
   UpdateMemoryUsage();
-
-  // Enabling MSAA overrides a request to disable antialiasing. This is true
-  // regardless of whether the rendering mode is accelerated or not. For
-  // consistency, we don't want to apply AA in accelerated canvases but not in
-  // unaccelerated canvases.
-  if (!GetMSAASampleCountFor2dContext() && GetDocument().GetSettings() &&
-      !GetDocument().GetSettings()->GetAntialiased2dCanvasEnabled()) {
-    context_->SetShouldAntialias(false);
-  }
 
   if (context_)
     SetNeedsCompositingUpdate();

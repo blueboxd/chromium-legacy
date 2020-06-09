@@ -4,12 +4,12 @@
 
 package org.chromium.webview_ui_test.test.util;
 
-import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
-import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withChild;
-import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withChild;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.endsWith;
@@ -19,10 +19,11 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Intent;
 import android.os.Build;
-import android.support.test.espresso.BaseLayerComponent;
-import android.support.test.espresso.DaggerBaseLayerComponent;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebView;
+
+import androidx.test.espresso.BaseLayerComponent;
+import androidx.test.espresso.DaggerBaseLayerComponent;
 
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;

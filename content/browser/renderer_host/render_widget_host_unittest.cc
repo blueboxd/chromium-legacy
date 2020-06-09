@@ -36,7 +36,6 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/visual_properties.h"
@@ -56,6 +55,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "ui/display/screen.h"
@@ -636,18 +636,17 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type) {
-    host_->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(type));
+    host_->ForwardMouseEvent(blink::SyntheticWebMouseEventBuilder::Build(type));
   }
 
   void SimulateMouseEventWithLatencyInfo(WebInputEvent::Type type,
                                          const ui::LatencyInfo& ui_latency) {
     host_->ForwardMouseEventWithLatencyInfo(
-        SyntheticWebMouseEventBuilder::Build(type),
-        ui_latency);
+        blink::SyntheticWebMouseEventBuilder::Build(type), ui_latency);
   }
 
   void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
-    host_->ForwardWheelEvent(SyntheticWebMouseWheelEventBuilder::Build(
+    host_->ForwardWheelEvent(blink::SyntheticWebMouseWheelEventBuilder::Build(
         0, 0, dX, dY, modifiers,
         precise ? ui::ScrollGranularity::kScrollByPrecisePixel
                 : ui::ScrollGranularity::kScrollByPixel));
@@ -658,10 +657,11 @@ class RenderWidgetHostTest : public testing::Test {
                           int modifiers,
                           bool precise,
                           WebMouseWheelEvent::Phase phase) {
-    WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers,
-        precise ? ui::ScrollGranularity::kScrollByPrecisePixel
-                : ui::ScrollGranularity::kScrollByPixel);
+    WebMouseWheelEvent wheel_event =
+        blink::SyntheticWebMouseWheelEventBuilder::Build(
+            0, 0, dX, dY, modifiers,
+            precise ? ui::ScrollGranularity::kScrollByPrecisePixel
+                    : ui::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     host_->ForwardWheelEvent(wheel_event);
   }
@@ -672,7 +672,7 @@ class RenderWidgetHostTest : public testing::Test {
                                          bool precise,
                                          const ui::LatencyInfo& ui_latency) {
     host_->ForwardWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(
+        blink::SyntheticWebMouseWheelEventBuilder::Build(
             0, 0, dX, dY, modifiers,
             precise ? ui::ScrollGranularity::kScrollByPrecisePixel
                     : ui::ScrollGranularity::kScrollByPixel),
@@ -685,10 +685,11 @@ class RenderWidgetHostTest : public testing::Test {
                                          bool precise,
                                          const ui::LatencyInfo& ui_latency,
                                          WebMouseWheelEvent::Phase phase) {
-    WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers,
-        precise ? ui::ScrollGranularity::kScrollByPrecisePixel
-                : ui::ScrollGranularity::kScrollByPixel);
+    WebMouseWheelEvent wheel_event =
+        blink::SyntheticWebMouseWheelEventBuilder::Build(
+            0, 0, dX, dY, modifiers,
+            precise ? ui::ScrollGranularity::kScrollByPrecisePixel
+                    : ui::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     host_->ForwardWheelEventWithLatencyInfo(wheel_event, ui_latency);
   }
@@ -700,7 +701,7 @@ class RenderWidgetHostTest : public testing::Test {
   void SimulateMouseEvent(
       WebInputEvent::Type type, int x, int y, int modifiers, bool pressed) {
     WebMouseEvent event =
-        SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
+        blink::SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
     if (pressed)
       event.button = WebMouseEvent::Button::kLeft;
     event.SetTimeStamp(GetNextSimulatedEventTime());
@@ -711,14 +712,15 @@ class RenderWidgetHostTest : public testing::Test {
   void SimulateGestureEvent(WebInputEvent::Type type,
                             WebGestureDevice sourceDevice) {
     host_->ForwardGestureEvent(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
+        blink::SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
   }
 
   void SimulateGestureEventWithLatencyInfo(WebInputEvent::Type type,
                                            WebGestureDevice sourceDevice,
                                            const ui::LatencyInfo& ui_latency) {
     host_->ForwardGestureEventWithLatencyInfo(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice), ui_latency);
+        blink::SyntheticWebGestureEventBuilder::Build(type, sourceDevice),
+        ui_latency);
   }
 
   // Set the timestamp for the touch-event.
@@ -775,7 +777,7 @@ class RenderWidgetHostTest : public testing::Test {
       renderer_render_frame_metadata_observer_;
 
  private:
-  SyntheticWebTouchEvent touch_event_;
+  blink::SyntheticWebTouchEvent touch_event_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };

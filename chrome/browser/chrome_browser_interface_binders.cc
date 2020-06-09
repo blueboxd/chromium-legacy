@@ -265,7 +265,8 @@ void BindDistillerJavaScriptService(
 
 void BindPrerenderCanceler(
     content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<mojom::PrerenderCanceler> receiver) {
+    mojo::PendingReceiver<
+        components::prerender::common::mojom::PrerenderCanceler> receiver) {
   auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
   if (!web_contents)
     return;
@@ -375,7 +376,7 @@ void PopulateChromeFrameBinders(
   map->Add<dom_distiller::mojom::DistillerJavaScriptService>(
       base::BindRepeating(&BindDistillerJavaScriptService));
 
-  map->Add<mojom::PrerenderCanceler>(
+  map->Add<components::prerender::common::mojom::PrerenderCanceler>(
       base::BindRepeating(&BindPrerenderCanceler));
 
   map->Add<blink::mojom::PrerenderProcessor>(

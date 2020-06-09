@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.actionWithAssertions;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.actionWithAssertions;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -26,14 +26,14 @@ import static org.chromium.chrome.browser.dom_distiller.ReaderModeManager.DOM_DI
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
-import android.support.test.espresso.action.GeneralClickAction;
-import android.support.test.espresso.action.GeneralLocation;
-import android.support.test.espresso.action.Press;
-import android.support.test.espresso.action.Tap;
 import android.support.test.filters.MediumTest;
 
 import androidx.annotation.NonNull;
+import androidx.test.espresso.Espresso;
+import androidx.test.espresso.action.GeneralClickAction;
+import androidx.test.espresso.action.GeneralLocation;
+import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.Tap;
 
 import org.junit.After;
 import org.junit.Assert;

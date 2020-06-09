@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.instanceOf;

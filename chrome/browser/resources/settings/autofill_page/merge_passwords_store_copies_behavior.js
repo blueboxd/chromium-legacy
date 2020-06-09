@@ -30,16 +30,13 @@ const MergePasswordsStoreCopiesBehaviorImpl = {
       value: () => [],
     },
 
-    /**
-     * @type {?function(!Array<PasswordManagerProxy.PasswordUiEntry>):void}
-     * @private
-     */
-    setSavedPasswordsListener_: {
-      type: Object,
-      value: null,
-    },
-
   },
+
+  /**
+   * @type {?function(!Array<PasswordManagerProxy.PasswordUiEntry>):void}
+   * @private
+   */
+  setSavedPasswordsListener_: null,
 
   /** @override */
   attached() {
@@ -62,6 +59,7 @@ const MergePasswordsStoreCopiesBehaviorImpl = {
     this.notifySplices('savedPasswords', []);
   },
 
+  /** @override */
   detached() {
     PasswordManagerImpl.getInstance().removeSavedPasswordListChangedListener(
         assert(this.setSavedPasswordsListener_));

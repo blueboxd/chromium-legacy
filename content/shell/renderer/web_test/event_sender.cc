@@ -23,7 +23,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/common/input/web_mouse_wheel_event_traits.h"
 #include "content/renderer/compositor/compositor_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
@@ -2744,7 +2743,8 @@ WebMouseWheelEvent EventSender::GetMouseWheelEvent(gin::Arguments* args,
     event.delta_x *= kScrollbarPixelsPerTick;
     event.delta_y *= kScrollbarPixelsPerTick;
   }
-  event.event_action = content::WebMouseWheelEventTraits::GetEventAction(event);
+  event.event_action =
+      blink::WebMouseWheelEvent::GetPlatformSpecificDefaultEventAction(event);
   return event;
 }
 

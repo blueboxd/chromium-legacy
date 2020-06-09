@@ -17,8 +17,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/base_event_utils.h"
 
@@ -254,7 +254,7 @@ class MouseWheelEventQueueTest : public testing::Test,
                       blink::WebMouseWheelEvent::Phase momentum_phase,
                       WebInputEvent::RailsMode rails_mode,
                       bool has_synthetic_phase = false) {
-    WebMouseWheelEvent event = SyntheticWebMouseWheelEventBuilder::Build(
+    WebMouseWheelEvent event = blink::SyntheticWebMouseWheelEventBuilder::Build(
         x, y, global_x, global_y, dX, dY, modifiers,
         high_precision ? ui::ScrollGranularity::kScrollByPrecisePixel
                        : ui::ScrollGranularity::kScrollByPixel);

@@ -8,9 +8,9 @@
 
 #include <memory>
 
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 
@@ -43,7 +43,7 @@ class EventConversionTest : public ::testing::Test {
 };
 
 TEST_F(EventConversionTest, TouchStart) {
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
   touch.PressPoint(1.f, 2.f);
 
   std::vector<ppapi::InputEventData> pp_events;
@@ -67,7 +67,7 @@ TEST_F(EventConversionTest, TouchStart) {
 }
 
 TEST_F(EventConversionTest, TouchMove) {
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
   touch.PressPoint(1.f, 2.f);
   touch.ResetPoints();
   touch.PressPoint(3.f, 4.f);
@@ -95,7 +95,7 @@ TEST_F(EventConversionTest, TouchMove) {
 }
 
 TEST_F(EventConversionTest, TouchEnd) {
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
   touch.PressPoint(1.f, 2.f);
   touch.ResetPoints();
   touch.PressPoint(3.f, 4.f);
@@ -123,7 +123,7 @@ TEST_F(EventConversionTest, TouchEnd) {
 }
 
 TEST_F(EventConversionTest, TouchCancel) {
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
   touch.PressPoint(1.f, 2.f);
   touch.ResetPoints();
   touch.PressPoint(3.f, 4.f);
@@ -153,8 +153,9 @@ TEST_F(EventConversionTest, TouchCancel) {
 
 TEST_F(EventConversionTest, MouseMove) {
   std::unique_ptr<gfx::PointF> last_mouse_position;
-  blink::WebMouseEvent mouse_event = SyntheticWebMouseEventBuilder::Build(
-      blink::WebInputEvent::Type::kMouseMove, 100, 200, 0);
+  blink::WebMouseEvent mouse_event =
+      blink::SyntheticWebMouseEventBuilder::Build(
+          blink::WebInputEvent::Type::kMouseMove, 100, 200, 0);
 
   std::vector<ppapi::InputEventData> pp_events;
   CreateInputEventData(mouse_event, &last_mouse_position, &pp_events);
@@ -170,7 +171,7 @@ TEST_F(EventConversionTest, MouseMove) {
               gfx::PointF(mouse_event.PositionInScreen()));
   }
 
-  mouse_event = SyntheticWebMouseEventBuilder::Build(
+  mouse_event = blink::SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::Type::kMouseMove, 123, 188, 0);
   CreateInputEventData(mouse_event, &last_mouse_position, &pp_events);
   ASSERT_EQ(PP_INPUTEVENT_TYPE_MOUSEMOVE, pp_event.event_type);

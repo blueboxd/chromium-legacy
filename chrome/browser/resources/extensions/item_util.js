@@ -44,14 +44,6 @@ export function isEnabled(state) {
 }
 
 /**
- * @param {!chrome.developerPrivate.ExtensionInfo} extensionInfo
- * @return {boolean} Whether the extension is controlled.
- */
-export function isControlled(extensionInfo) {
-  return !!extensionInfo.controlledInfo;
-}
-
-/**
  * Returns true if the user can change whether or not the extension is
  * enabled.
  * @param {!chrome.developerPrivate.ExtensionInfo} item

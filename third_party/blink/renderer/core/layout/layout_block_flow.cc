@@ -4655,13 +4655,8 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
     }
   }
 
-  bool move_caret_to_boundary =
-      GetDocument()
-          .GetFrame()
-          ->GetEditor()
-          .Behavior()
-          .ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
-
+  const bool move_caret_to_boundary =
+      ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
   if (!move_caret_to_boundary && !closest_box && last_root_box_with_children) {
     // y coordinate is below last root line box, pretend we hit it
     closest_box =
@@ -4723,6 +4718,15 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
   // FIXME: This should NOTREACHED(), but clicking on placeholder text
   // seems to hit this code path.
   return CreatePositionWithAffinity(0);
+}
+
+bool LayoutBlockFlow::ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom()
+    const {
+  return GetDocument()
+      .GetFrame()
+      ->GetEditor()
+      .Behavior()
+      .ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
 }
 
 #if DCHECK_IS_ON()

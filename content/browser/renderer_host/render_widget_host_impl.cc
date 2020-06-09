@@ -102,6 +102,7 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "storage/browser/file_system/isolated_context.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -2499,9 +2500,10 @@ void RenderWidgetHostImpl::AutoscrollFling(const gfx::Vector2dF& velocity) {
   DCHECK(autoscroll_in_progress_);
   if (!sent_autoscroll_scroll_begin_ && velocity != gfx::Vector2dF()) {
     // Send a GSB event with valid delta hints.
-    WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::Type::kGestureScrollBegin,
-        blink::WebGestureDevice::kSyntheticAutoscroll);
+    WebGestureEvent scroll_begin =
+        blink::SyntheticWebGestureEventBuilder::Build(
+            WebInputEvent::Type::kGestureScrollBegin,
+            blink::WebGestureDevice::kSyntheticAutoscroll);
     scroll_begin.SetPositionInWidget(autoscroll_start_position_);
     scroll_begin.data.scroll_begin.delta_x_hint = velocity.x();
     scroll_begin.data.scroll_begin.delta_y_hint = velocity.y();
@@ -2511,7 +2513,7 @@ void RenderWidgetHostImpl::AutoscrollFling(const gfx::Vector2dF& velocity) {
     sent_autoscroll_scroll_begin_ = true;
   }
 
-  WebGestureEvent event = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent event = blink::SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::Type::kGestureFlingStart,
       blink::WebGestureDevice::kSyntheticAutoscroll);
   event.SetPositionInWidget(autoscroll_start_position_);
@@ -2532,7 +2534,7 @@ void RenderWidgetHostImpl::AutoscrollEnd() {
     return;
 
   sent_autoscroll_scroll_begin_ = false;
-  WebGestureEvent cancel_event = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent cancel_event = blink::SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::Type::kGestureFlingCancel,
       blink::WebGestureDevice::kSyntheticAutoscroll);
   cancel_event.data.fling_cancel.prevent_boosting = true;

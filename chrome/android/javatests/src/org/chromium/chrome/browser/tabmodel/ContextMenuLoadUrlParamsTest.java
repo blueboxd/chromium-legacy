@@ -22,6 +22,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -77,10 +78,11 @@ public class ContextMenuLoadUrlParamsTest {
             return super.openNewTab(loadUrlParams, type, parent, incognito);
         }
 
-        public RecordingTabModelSelector(
-                Activity activity, TabCreatorManager tabCreatorManager, int selectorIndex) {
+        public RecordingTabModelSelector(Activity activity, TabCreatorManager tabCreatorManager,
+                TabModelFilterFactory tabModelFilterFactory, int selectorIndex) {
             super(activity, tabCreatorManager,
-                    new TabbedModeTabPersistencePolicy(selectorIndex, false), false, false, false);
+                    new TabbedModeTabPersistencePolicy(selectorIndex, false), tabModelFilterFactory,
+                    false, false, false);
         }
     }
 
@@ -104,8 +106,8 @@ public class ContextMenuLoadUrlParamsTest {
                         @Override
                         public TabModelSelector buildSelector(Activity activity,
                                 TabCreatorManager tabCreatorManager, int selectorIndex) {
-                            return new RecordingTabModelSelector(
-                                    activity, tabCreatorManager, selectorIndex);
+                            return new RecordingTabModelSelector(activity, tabCreatorManager,
+                                    new ChromeTabModelFilterFactory(), selectorIndex);
                         }
                     });
         });

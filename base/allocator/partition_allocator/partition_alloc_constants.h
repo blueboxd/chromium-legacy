@@ -64,9 +64,12 @@ static const size_t kMaxSystemPagesPerSlotSpan =
 // We reserve virtual address space in 2 MiB chunks (aligned to 2 MiB as well).
 // These chunks are called *super pages*. We do this so that we can store
 // metadata in the first few pages of each 2 MiB-aligned section. This makes
-// freeing memory very fast. We specifically choose 2 MiB because this virtual
-// address block represents a full but single PTE allocation on ARM, ia32 and
-// x64.
+// freeing memory very fast. 2 MiB size & alignment were chosen, because this
+// virtual address block represents a full but single page table allocation on
+// ARM, ia32 and x64, which may be slightly more performance&memory efficient.
+// (Note, these super pages are backed by 4 KiB system pages and have nothing to
+// do with OS concept of "huge pages"/"large pages", even though the size
+// coincides.)
 //
 // The layout of the super page is as follows. The sizes below are the same for
 // 32- and 64-bit platforms.
@@ -79,16 +82,20 @@ static const size_t kMaxSystemPagesPerSlotSpan =
 //     | Slot span             |
 //     | ...                   |
 //     | Slot span             |
-//     | Guard page (4 KiB)    |
+//     | Guard pages (16 KiB)  |
 //     +-----------------------+
 //
-// Each slot span is a contiguous range of one or more `PartitionPage`s.
+// Each slot span is a contiguous range of one or more `PartitionPage`s. Note
+// that slot spans of different sizes may co-exist with one super page. Even
+// slot spans of the same size may support different slot sizes. However, all
+// slots within a span have to be of the same size.
 //
 // The metadata page has the following format. Note that the `PartitionPage`
-// that is not at the head of a slot span is "unused". In other words, the
-// metadata for the slot span is stored only in the first `PartitionPage` of the
-// slot span. Metadata accesses to other `PartitionPage`s are redirected to the
-// first `PartitionPage`.
+// that is not at the head of a slot span is "unused" (by most part, it only
+// stores the offset from the head page). In other words, the metadata for the
+// slot span is stored only in the first `PartitionPage` of the slot span.
+// Metadata accesses to other `PartitionPage`s are redirected to the first
+// `PartitionPage`.
 //
 //     +---------------------------------------------+
 //     | SuperPageExtentEntry (32 B)                 |
@@ -98,28 +105,30 @@ static const size_t kMaxSystemPagesPerSlotSpan =
 //     | PartitionPage of slot span 2 (32 B, used)   |
 //     | PartitionPage of slot span 3 (32 B, used)   |
 //     | ...                                         |
+//     | PartitionPage of slot span N (32 B, used)   |
+//     | PartitionPage of slot span N (32 B, unused) |
 //     | PartitionPage of slot span N (32 B, unused) |
 //     +---------------------------------------------+
 //
-// A direct-mapped page has a similar layout to fake it looking like a super
-// page:
+// A direct-mapped page has an identical layout at the beginning to fake it
+// looking like a super page:
 //
-//     +-----------------------+
-//     | Guard page (4 KiB)    |
-//     | Metadata page (4 KiB) |
-//     | Guard pages (8 KiB)   |
-//     | Direct mapped object  |
-//     | Guard page (4 KiB)    |
-//     +-----------------------+
+//     +---------------------------------+
+//     | Guard page (4 KiB)              |
+//     | Metadata page (4 KiB)           |
+//     | Guard pages (8 KiB)             |
+//     | Direct mapped object            |
+//     | Guard page (4 KiB, 32-bit only) |
+//     +---------------------------------+
 //
 // A direct-mapped page's metadata page has the following layout:
 //
-//     +--------------------------------+
-//     | SuperPageExtentEntry (32 B)    |
-//     | PartitionPage (32 B)           |
-//     | PartitionBucket (32 B)         |
-//     | PartitionDirectMapExtent (8 B) |
-//     +--------------------------------+
+//     +---------------------------------+
+//     | SuperPageExtentEntry (32 B)     |
+//     | PartitionPage (32 B)            |
+//     | PartitionBucket (32 B)          |
+//     | PartitionDirectMapExtent (32 B) |
+//     +---------------------------------+
 
 static const size_t kSuperPageShift = 21;  // 2 MiB
 static const size_t kSuperPageSize = 1 << kSuperPageShift;

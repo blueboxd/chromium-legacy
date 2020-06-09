@@ -267,11 +267,13 @@ public class AutoFetchNotifier {
     @CalledByNative
     private static void showCompleteNotification(
             String pageTitle, String originalUrl, String finalUrl, int tabId, long offlineId) {
+        // Since offline pages are only available in regular mode, any downloaded content should be
+        // triggered by regular mode. Hence, it is correct to pass always regular profile.
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
                 finalUrl, offlineId, LaunchLocation.NOTIFICATION, (params) -> {
                     showCompleteNotificationWithParams(
                             pageTitle, tabId, offlineId, originalUrl, finalUrl, params);
-                });
+                }, Profile.getLastUsedRegularProfile());
     }
 
     private static void showCompleteNotificationWithParams(String pageTitle, int tabId,
@@ -361,9 +363,7 @@ public class AutoFetchNotifier {
     }
 
     private static void cancelInProgress() {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
+        // Using regular profile here, since this function is only called in regular mode.
         AutoFetchNotifierJni.get().cancelInProgress(Profile.getLastUsedRegularProfile());
     }
 

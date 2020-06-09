@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace content {
@@ -270,7 +271,7 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
     const base::TimeTicks& timestamp,
     int key_modifiers) const {
   blink::WebMouseWheelEvent mouse_wheel_event =
-      SyntheticWebMouseWheelEventBuilder::Build(
+      blink::SyntheticWebMouseWheelEventBuilder::Build(
           0, 0, delta.x(), delta.y(), key_modifiers, params_.granularity);
 
   mouse_wheel_event.SetPositionInWidget(
@@ -287,7 +288,7 @@ void SyntheticSmoothMoveGesture::ForwardFlingGestureEvent(
     SyntheticGestureTarget* target,
     const blink::WebInputEvent::Type type) const {
   blink::WebGestureEvent fling_gesture_event =
-      SyntheticWebGestureEventBuilder::Build(
+      blink::SyntheticWebGestureEventBuilder::Build(
           type, blink::WebGestureDevice::kTouchpad);
   fling_gesture_event.data.fling_start.velocity_x = params_.fling_velocity_x;
   fling_gesture_event.data.fling_start.velocity_y = params_.fling_velocity_y;

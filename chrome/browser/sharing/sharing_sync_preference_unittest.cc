@@ -8,7 +8,6 @@
 
 #include "base/guid.h"
 #include "base/time/time.h"
-#include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/fake_device_info.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"

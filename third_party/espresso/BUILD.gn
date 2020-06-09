@@ -5,6 +5,12 @@
 import("//build/config/android/rules.gni")
 
 java_group("espresso_all_java") {
+  # Targets should use //third_party/android_deps:espresso_java
+  # (migration is in progress).
+  visibility = [
+    ":*",
+    "//third_party/android_deps:*",
+  ]
   testonly = true
   deps = [
     ":espresso_contrib_java",
@@ -16,8 +22,9 @@ java_group("espresso_all_java") {
 }
 
 android_java_prebuilt("espresso_contrib_java") {
+  visibility = [ ":*" ]
+  enable_bytecode_checks = false
   testonly = true
-  enable_jetify = true
   jar_path = "lib/espresso-contrib-release-no-dep.jar"
   enable_bytecode_checks = false
   deps = [
@@ -31,8 +38,9 @@ android_java_prebuilt("espresso_contrib_java") {
 }
 
 android_java_prebuilt("espresso_core_java") {
+  visibility = [ ":*" ]
   testonly = true
-  enable_jetify = true
+  enable_bytecode_checks = false
   jar_path = "lib/espresso-core-release-no-dep.jar"
   deps = [
     ":espresso_idling_java",
@@ -46,14 +54,16 @@ android_java_prebuilt("espresso_core_java") {
 }
 
 android_java_prebuilt("espresso_idling_java") {
+  visibility = [ ":*" ]
   testonly = true
-  enable_jetify = true
+  enable_bytecode_checks = false
   jar_path = "lib/espresso-idling-resource-release-no-dep.jar"
 }
 
 android_java_prebuilt("espresso_intents_java") {
+  visibility = [ ":*" ]
   testonly = true
-  enable_jetify = true
+  enable_bytecode_checks = false
   jar_path = "lib/espresso-intents-release-no-dep.jar"
   deps = [
     ":espresso_core_java",
@@ -65,10 +75,9 @@ android_java_prebuilt("espresso_intents_java") {
 }
 
 android_java_prebuilt("espresso_web_java") {
-  # Uses org/ccil/cowan/tagsoup/Parser which isn't in third_party.
+  visibility = [ ":*" ]
   enable_bytecode_checks = false
   testonly = true
-  enable_jetify = true
   jar_path = "lib/espresso-web-release-no-dep.jar"
   deps = [
     ":espresso_core_java",

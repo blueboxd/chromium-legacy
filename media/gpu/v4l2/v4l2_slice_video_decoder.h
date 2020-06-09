@@ -116,12 +116,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // in VideoFramePool. Return true if the setup is successful.
   bool SetupOutputFormat(const gfx::Size& size, const gfx::Rect& visible_rect);
 
-  // Start streaming V4L2 input and output queues. Attempt to start
-  // |device_poll_thread_| before starting streaming.
-  bool StartStreamV4L2Queue();
-  // Stop streaming V4L2 input and output queues. Stop |device_poll_thread_|
-  // before stopping streaming.
-  bool StopStreamV4L2Queue();
+  // Start streaming V4L2 input and (if |start_output_queue| is true) output
+  // queues. Attempt to start |device_poll_thread_| after streaming starts.
+  bool StartStreamV4L2Queue(bool start_output_queue);
+  // Stop streaming V4L2 output and (if |stop_input_queue| is true) input
+  // queues. Stop |device_poll_thread_| before stopping streaming.
+  bool StopStreamV4L2Queue(bool stop_input_queue);
   // Try to dequeue input and output buffers from device.
   void ServiceDeviceTask(bool event);
 

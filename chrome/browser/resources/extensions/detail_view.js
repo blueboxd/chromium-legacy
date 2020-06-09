@@ -31,7 +31,7 @@ import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/po
 
 import {ItemDelegate} from './item.js';
 import {ItemBehavior} from './item_behavior.js';
-import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isControlled, isEnabled, userCanChangeEnablement} from './item_util.js';
+import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isEnabled, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
 
 Polymer({
@@ -126,14 +126,6 @@ Polymer({
   /** @private */
   onCloseButtonTap_() {
     navigation.navigateTo({page: Page.LIST});
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  isControlled_() {
-    return isControlled(this.data);
   },
 
   /**

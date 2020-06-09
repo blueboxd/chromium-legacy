@@ -17,13 +17,16 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/platform/scheduler/test/web_mock_thread_scheduler.h"
 
+using blink::SyntheticWebMouseEventBuilder;
+using blink::SyntheticWebMouseWheelEventBuilder;
+using blink::SyntheticWebTouchEvent;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;

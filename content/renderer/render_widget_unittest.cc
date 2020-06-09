@@ -22,7 +22,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
@@ -40,6 +39,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
@@ -423,7 +423,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, CursorChange) {
 
   EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
       .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
-  widget()->SendInputEvent(SyntheticWebMouseEventBuilder::Build(
+  widget()->SendInputEvent(blink::SyntheticWebMouseEventBuilder::Build(
                                blink::WebInputEvent::Type::kMouseLeave),
                            HandledEventCallback());
   render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
@@ -466,7 +466,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, EventOverscroll) {
 }
 
 TEST_F(RenderWidgetExternalWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
   touch.PressPoint(10, 10);
   touch.touch_start_or_first_touch_move = true;
 

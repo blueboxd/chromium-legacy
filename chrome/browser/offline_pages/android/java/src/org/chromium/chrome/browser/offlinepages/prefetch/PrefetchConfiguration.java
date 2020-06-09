@@ -40,23 +40,15 @@ public class PrefetchConfiguration {
      * Returns true if Offline Prefetch is allowed to run, requiring both the feature flag and the
      * user setting to be true. If the current browser Profile is null this method returns false.
      */
-    public static boolean isPrefetchingEnabled() {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        return PrefetchConfigurationJni.get().isPrefetchingEnabled(
-                ProfileKey.getLastUsedRegularProfileKey());
+    public static boolean isPrefetchingEnabled(ProfileKey profileKey) {
+        return PrefetchConfigurationJni.get().isPrefetchingEnabled(profileKey);
     }
 
     /**
      * Return the value of offline_pages.enabled_by_server pref.
      */
-    public static boolean isPrefetchingEnabledByServer() {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        return PrefetchConfigurationJni.get().isEnabledByServer(
-                ProfileKey.getLastUsedRegularProfileKey());
+    public static boolean isPrefetchingEnabledByServer(ProfileKey profileKey) {
+        return PrefetchConfigurationJni.get().isEnabledByServer(profileKey);
     }
 
     /**
@@ -64,47 +56,31 @@ public class PrefetchConfiguration {
      * if the check has never run before or we are forbidden and it's been more than seven days
      * since the last check.
      */
-    public static boolean isForbiddenCheckDue() {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        return PrefetchConfigurationJni.get().isForbiddenCheckDue(
-                ProfileKey.getLastUsedRegularProfileKey());
+    public static boolean isForbiddenCheckDue(ProfileKey profileKey) {
+        return PrefetchConfigurationJni.get().isForbiddenCheckDue(profileKey);
     }
 
     /**
      * Returns true if the GeneratePageBundle-forbidden check has never run and is due to run.
      */
-    public static boolean isEnabledByServerUnknown() {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        return PrefetchConfigurationJni.get().isEnabledByServerUnknown(
-                ProfileKey.getLastUsedRegularProfileKey());
+    public static boolean isEnabledByServerUnknown(ProfileKey profileKey) {
+        return PrefetchConfigurationJni.get().isEnabledByServerUnknown(profileKey);
     }
 
     /**
      * Sets the value of the user controlled setting that controls whether Offline Prefetch is
      * enabled or disabled. If the current browser Profile is null the setting will not be changed.
      */
-    public static void setPrefetchingEnabledInSettings(boolean enabled) {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        PrefetchConfigurationJni.get().setPrefetchingEnabledInSettings(
-                ProfileKey.getLastUsedRegularProfileKey(), enabled);
+    public static void setPrefetchingEnabledInSettings(ProfileKey profileKey, boolean enabled) {
+        PrefetchConfigurationJni.get().setPrefetchingEnabledInSettings(profileKey, enabled);
     }
 
     /**
      * Gets the value of the user controlled setting that controls whether Offline Prefetch is
      * enabled or disabled.
      */
-    public static boolean isPrefetchingEnabledInSettings() {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        return PrefetchConfigurationJni.get().isPrefetchingEnabledInSettings(
-                ProfileKey.getLastUsedRegularProfileKey());
+    public static boolean isPrefetchingEnabledInSettings(ProfileKey profileKey) {
+        return PrefetchConfigurationJni.get().isPrefetchingEnabledInSettings(profileKey);
     }
 
     @NativeMethods

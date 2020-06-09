@@ -279,7 +279,7 @@
       </cr-button>
       <cr-button id="remove-button" on-click="onRemoveTap_"
           aria-describedby="a11yAssociation"
-          hidden="[[isControlled_(data.controlledInfo)]]">
+          hidden="[[data.mustRemainInstalled]]">
         $i18n{remove}
       </cr-button>
       <template is="dom-if" if="[[shouldShowErrorsButton_(data.*)]]">

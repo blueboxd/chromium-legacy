@@ -20,8 +20,8 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "ui/events/blink/blink_features.h"
@@ -129,37 +129,38 @@ class GestureEventQueueTest : public testing::Test,
   void SimulateGestureEvent(WebInputEvent::Type type,
                             WebGestureDevice sourceDevice) {
     SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
+        blink::SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
   }
 
   void SimulateGSEGeneratedByFlingController(WebGestureDevice sourceDevice) {
-    WebGestureEvent gesture_scroll_end = SyntheticWebGestureEventBuilder::Build(
-        WebInputEvent::Type::kGestureScrollEnd, sourceDevice);
+    WebGestureEvent gesture_scroll_end =
+        blink::SyntheticWebGestureEventBuilder::Build(
+            WebInputEvent::Type::kGestureScrollEnd, sourceDevice);
     gesture_scroll_end.data.scroll_end.generated_by_fling_controller = true;
     SimulateGestureEvent(gesture_scroll_end);
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
-    SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-        dX, dY, modifiers, blink::WebGestureDevice::kTouchscreen));
+    SimulateGestureEvent(
+        blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+            dX, dY, modifiers, blink::WebGestureDevice::kTouchscreen));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
                                        float anchorX,
                                        float anchorY,
                                        int modifiers) {
-    SimulateGestureEvent(SyntheticWebGestureEventBuilder::BuildPinchUpdate(
-        scale, anchorX, anchorY, modifiers,
-        blink::WebGestureDevice::kTouchscreen));
+    SimulateGestureEvent(
+        blink::SyntheticWebGestureEventBuilder::BuildPinchUpdate(
+            scale, anchorX, anchorY, modifiers,
+            blink::WebGestureDevice::kTouchscreen));
   }
 
   void SimulateGestureFlingStartEvent(float velocityX,
                                       float velocityY,
                                       WebGestureDevice sourceDevice) {
-    SimulateGestureEvent(
-        SyntheticWebGestureEventBuilder::BuildFling(velocityX,
-                                                    velocityY,
-                                                    sourceDevice));
+    SimulateGestureEvent(blink::SyntheticWebGestureEventBuilder::BuildFling(
+        velocityX, velocityY, sourceDevice));
   }
 
   void SendInputEventACK(WebInputEvent::Type type,
@@ -194,7 +195,7 @@ class GestureEventQueueTest : public testing::Test,
   void set_sync_followup_event(WebInputEvent::Type type,
                                WebGestureDevice sourceDevice) {
     sync_followup_event_.reset(new WebGestureEvent(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice)));
+        blink::SyntheticWebGestureEventBuilder::Build(type, sourceDevice)));
   }
 
   unsigned GestureEventQueueSize() {

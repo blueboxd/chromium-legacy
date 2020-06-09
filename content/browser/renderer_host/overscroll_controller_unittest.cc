@@ -9,12 +9,12 @@
 #include "base/containers/queue.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/overscroll_configuration.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/scoped_overscroll_modes.h"
 #include "content/test/test_overscroll_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 
 namespace content {
@@ -43,7 +43,7 @@ class OverscrollControllerTest : public ::testing::Test {
   bool SimulateMouseWheel(float dx, float dy) {
     DCHECK(!current_event_);
     current_event_ = std::make_unique<blink::WebMouseWheelEvent>(
-        SyntheticWebMouseWheelEventBuilder::Build(
+        blink::SyntheticWebMouseWheelEventBuilder::Build(
             0, 0, dx, dy, 0, ui::ScrollGranularity::kScrollByPrecisePixel));
     return controller_->WillHandleEvent(*current_event_);
   }
@@ -55,7 +55,7 @@ class OverscrollControllerTest : public ::testing::Test {
                             base::TimeTicks timestamp) {
     DCHECK(!current_event_);
     current_event_ = std::make_unique<blink::WebGestureEvent>(
-        SyntheticWebGestureEventBuilder::Build(type, source_device));
+        blink::SyntheticWebGestureEventBuilder::Build(type, source_device));
     current_event_->SetTimeStamp(timestamp);
     return controller_->WillHandleEvent(*current_event_);
   }
@@ -70,7 +70,8 @@ class OverscrollControllerTest : public ::testing::Test {
                                    bool inertial_update) {
     DCHECK(!current_event_);
     auto event = std::make_unique<blink::WebGestureEvent>(
-        SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, dy, 0, device));
+        blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(dx, dy, 0,
+                                                                  device));
     event->SetTimeStamp(timestamp);
     if (inertial_update) {
       event->data.scroll_update.inertial_phase =
@@ -88,8 +89,8 @@ class OverscrollControllerTest : public ::testing::Test {
                                  base::TimeTicks timestamp) {
     DCHECK(!current_event_);
     current_event_ = std::make_unique<blink::WebGestureEvent>(
-        SyntheticWebGestureEventBuilder::BuildFling(velocity_x, velocity_y,
-                                                    device));
+        blink::SyntheticWebGestureEventBuilder::BuildFling(velocity_x,
+                                                           velocity_y, device));
     current_event_->SetTimeStamp(timestamp);
     return controller_->WillHandleEvent(*current_event_);
   }

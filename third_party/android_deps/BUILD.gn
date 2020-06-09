@@ -31,6 +31,14 @@ java_group("android_support_v7_appcompat_java") {
   ]
 }
 
+java_group("espresso_java") {
+  testonly = true
+
+  # TODO(crbug.com/1005891): Update to use espresso targets below once androidx
+  #     test_runner is used.
+  deps = [ "//third_party/espresso:espresso_all_java" ]
+}
+
 java_group("robolectric_all_java") {
   testonly = true
   deps = [

@@ -42,6 +42,7 @@ import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_b
 import '../prefs/prefs.m.js';
 import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
 import {routes} from '../route.js';
+import {MergeExceptionsStoreCopiesBehavior} from './merge_exceptions_store_copies_behavior.js';
 import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
@@ -82,6 +83,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     WebUIListenerBehavior,
+    MergeExceptionsStoreCopiesBehavior,
     MergePasswordsStoreCopiesBehavior,
     PasswordCheckBehavior,
     IronA11yKeysBehavior,
@@ -99,15 +101,6 @@ Polymer({
     prefs: {
       type: Object,
       notify: true,
-    },
-
-    /**
-     * An array of sites to display.
-     * @type {!Array<!MultiStoreExceptionEntry>}
-     */
-    passwordExceptions: {
-      type: Array,
-      value: () => [],
     },
 
     /** @override */
@@ -329,13 +322,8 @@ Polymer({
       this.isOptedInForAccountStorage_ = optedIn;
     };
 
-    const setPasswordExceptionsListener = list => {
-      this.passwordExceptions = this.mergeExceptionsStoreDuplicates_(list);
-    };
-
     this.setIsOptedInForAccountStorageListener_ =
         setIsOptedInForAccountStorageListener;
-    this.setPasswordExceptionsListener_ = setPasswordExceptionsListener;
 
     // Set the manager. These can be overridden by tests.
     this.passwordManager_ = PasswordManagerImpl.getInstance();
@@ -356,13 +344,10 @@ Polymer({
     // Request initial data.
     this.passwordManager_.isOptedInForAccountStorage().then(
         setIsOptedInForAccountStorageListener);
-    this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
 
     // Listen for changes.
     this.passwordManager_.addAccountStorageOptInStateListener(
         setIsOptedInForAccountStorageListener);
-    this.passwordManager_.addExceptionListChangedListener(
-        setPasswordExceptionsListener);
 
     const syncBrowserProxy = SyncBrowserProxyImpl.getInstance();
 
@@ -395,32 +380,8 @@ Polymer({
 
   /** @override */
   detached() {
-    this.passwordManager_.removeExceptionListChangedListener(
-        assert(this.setPasswordExceptionsListener_));
     this.passwordManager_.removeAccountStorageOptInStateListener(
         assert(this.setIsOptedInForAccountStorageListener_));
-  },
-
-  /**
-   * @param {!Array<!PasswordManagerProxy.ExceptionEntry>} exceptionList
-   * @return {!Array<!MultiStoreExceptionEntry>}
-   * @private
-   */
-  mergeExceptionsStoreDuplicates_(exceptionList) {
-    /** @type {!Array<!MultiStoreExceptionEntry>} */
-    const multiStoreEntries = [];
-    /** @type {!Map<number, !MultiStoreExceptionEntry>} */
-    const frontendIdToMergedEntry = new Map();
-    for (const entry of exceptionList) {
-      if (frontendIdToMergedEntry.has(entry.frontendId)) {
-        frontendIdToMergedEntry.get(entry.frontendId).merge(entry);
-      } else {
-        const multiStoreEntry = new MultiStoreExceptionEntry(entry);
-        frontendIdToMergedEntry.set(entry.frontendId, multiStoreEntry);
-        multiStoreEntries.push(multiStoreEntry);
-      }
-    }
-    return multiStoreEntries;
   },
 
   /**

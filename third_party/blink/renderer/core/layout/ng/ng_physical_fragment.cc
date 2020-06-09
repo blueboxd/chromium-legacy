@@ -295,7 +295,7 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   // to set.
   if (IsLineBox())
     return false;
-  if (IsColumnBox())
+  if (IsFragmentainerBox())
     return true;
   const LayoutBlock* container = layout_object_->ContainingBlock();
   if (!container)

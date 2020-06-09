@@ -188,14 +188,18 @@ public class PrefetchFeedFlowTest {
     // Helper for checking isPrefetchingEnabledByServer().
     private boolean isEnabledByServer() {
         final AtomicBoolean isEnabled = new AtomicBoolean();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { isEnabled.set(PrefetchConfiguration.isPrefetchingEnabledByServer()); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            isEnabled.set(PrefetchConfiguration.isPrefetchingEnabledByServer(
+                    ProfileKey.getLastUsedRegularProfileKey()));
+        });
         return isEnabled.get();
     }
 
     private void waitForServerEnabledValue(boolean wanted) {
         CriteriaHelper.pollUiThread(() -> {
-            return PrefetchConfiguration.isPrefetchingEnabledByServer() == wanted;
+            return PrefetchConfiguration.isPrefetchingEnabledByServer(
+                           ProfileKey.getLastUsedRegularProfileKey())
+                    == wanted;
         }, "never got wanted value", 5000, 200);
     }
 

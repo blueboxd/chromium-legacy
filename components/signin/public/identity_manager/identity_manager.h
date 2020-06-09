@@ -85,6 +85,14 @@ class IdentityManager : public KeyedService,
     virtual void OnPrimaryAccountCleared(
         const CoreAccountInfo& previous_primary_account_info) {}
 
+    // TODO(crbug.com/1046746): Move to |SigninClient|.
+    // Called Before notifying all the observers of |OnPrimaryAccountCleared|.
+    // |OnPrimaryAccountCleared| should be used instead in general.This function
+    // should be used carefully, as the value of the unconsented primary account
+    // is not properly defined when it is run and can be changed meanwhile.
+    virtual void BeforePrimaryAccountCleared(
+        const CoreAccountInfo& previous_primary_account_info) {}
+
     // When the unconsented primary account (see ./README.md) of the user
     // changes, this callback gets called with the new account as
     // |unconsented_primary_account_info|. If after the change, there is no
@@ -617,20 +625,6 @@ class IdentityManager : public KeyedService,
   AccountInfo GetAccountInfoForAccountWithRefreshToken(
       const CoreAccountId& account_id) const;
 
-  // Sets primary account to |account_info| and updates the unconsented primary
-  // account.
-  void SetPrimaryAccountInternal(base::Optional<CoreAccountInfo> account_info);
-
-  // Updates the cached version of unconsented primary account and notifies the
-  // observers if there is any change.
-  void UpdateUnconsentedPrimaryAccount();
-
-  // Figures out and returns the current unconsented primary account based on
-  // current cookies.
-  // Returns nullopt if the account could not be computed, and CoreAccountInfo()
-  // if there is no account.
-  base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
-
   // PrimaryAccountManager::Observer:
   void GoogleSigninSucceeded(const CoreAccountInfo& account_info) override;
   void UnconsentedPrimaryAccountChanged(
@@ -698,8 +692,6 @@ class IdentityManager : public KeyedService,
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
-
-  bool unconsented_primary_account_revoked_during_load_ = false;
 
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.

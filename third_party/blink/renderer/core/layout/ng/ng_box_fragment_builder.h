@@ -247,6 +247,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void SetBoxType(NGPhysicalFragment::NGBoxType box_type) {
     box_type_ = box_type;
   }
+  bool IsFragmentainerBoxType() const {
+    return BoxType() == NGPhysicalFragment::kColumnBox;
+  }
   void SetIsFieldsetContainer() { is_fieldset_container_ = true; }
   void SetIsLegacyLayoutRoot() { is_legacy_layout_root_ = true; }
 

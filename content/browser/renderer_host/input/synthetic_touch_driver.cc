@@ -10,7 +10,8 @@ namespace content {
 
 SyntheticTouchDriver::SyntheticTouchDriver() {}
 
-SyntheticTouchDriver::SyntheticTouchDriver(SyntheticWebTouchEvent touch_event)
+SyntheticTouchDriver::SyntheticTouchDriver(
+    blink::SyntheticWebTouchEvent touch_event)
     : touch_event_(touch_event) {}
 
 SyntheticTouchDriver::~SyntheticTouchDriver() {}

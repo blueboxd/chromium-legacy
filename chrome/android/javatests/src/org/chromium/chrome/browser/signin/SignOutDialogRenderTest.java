@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.signin;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.pressBack;
-import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.pressBack;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

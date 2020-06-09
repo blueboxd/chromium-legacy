@@ -998,7 +998,6 @@ external/wpt/pointerevents/pointerlock/pointerevent_getCoalescedEvents_when_poin
 external/wpt/pointerevents/pointerlock/pointerevent_movementxy_with_pointerlock.html [ Timeout ] # wpt_subtest_failure
 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_after_pointercapture.html [ Pass ] # wpt_subtest_failure
 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Pass ] # wpt_subtest_failure
-external/wpt/pointerevents/pointerlock/pointerevent_pointermove_in_pointerlock.html [ Timeout ] # wpt_subtest_failure
 external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Timeout ] # wpt_subtest_failure
 external/wpt/pointerlock/mouse_buttons_back_forward.html [ Timeout ] # wpt_subtest_failure
 external/wpt/pointerlock/pointerlock_remove_target.html [ Timeout ] # wpt_subtest_failure

@@ -19,13 +19,14 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/base_event_utils.h"
 
+using blink::SyntheticWebTouchEvent;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebTouchEvent;

@@ -78,6 +78,10 @@ void PolicyMap::Entry::set_value(std::unique_ptr<base::Value> val) {
   value_ = val ? base::make_optional(std::move(*val)) : base::nullopt;
 }
 
+void PolicyMap::Entry::set_value(base::Optional<base::Value> val) {
+  value_ = std::move(val);
+}
+
 bool PolicyMap::Entry::has_higher_priority_than(
     const PolicyMap::Entry& other) const {
   return std::tie(level, scope, source) >

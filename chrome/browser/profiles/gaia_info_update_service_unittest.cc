@@ -210,9 +210,8 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOffKeepAllAccounts) {
 
 TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
   std::string email = "pat@example.com";
-  AccountInfo info = identity_test_env()->MakeAccountAvailableWithCookies(
-      email, signin::GetTestGaiaIdForEmail(email));
-  base::RunLoop().RunUntilIdle();
+  AccountInfo info =
+      identity_test_env()->MakeUnconsentedPrimaryAccountAvailable(email);
   EXPECT_TRUE(identity_test_env()->identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kNotRequired));
   EXPECT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount());
@@ -238,7 +237,9 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
   // Set a fake picture URL.
   EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_picture, entry->GetAvatarIcon()));
   // Log out.
-  identity_test_env()->SetCookieAccounts({});
+  identity_test_env()->ClearPrimaryAccount();
+  base::RunLoop().RunUntilIdle();
+
   // Verify that the GAIA name and picture, and picture URL are unset.
   EXPECT_TRUE(entry->GetGAIAGivenName().empty());
   EXPECT_TRUE(entry->GetGAIAName().empty());

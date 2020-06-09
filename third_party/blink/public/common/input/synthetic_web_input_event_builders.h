@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
-#define CONTENT_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
 
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -16,9 +16,9 @@
 
 // Provides sensible creation of default WebInputEvents for testing purposes.
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT SyntheticWebMouseEventBuilder {
+class BLINK_COMMON_EXPORT SyntheticWebMouseEventBuilder {
  public:
   static blink::WebMouseEvent Build(blink::WebInputEvent::Type type);
   static blink::WebMouseEvent Build(
@@ -30,7 +30,7 @@ class CONTENT_EXPORT SyntheticWebMouseEventBuilder {
           blink::WebPointerProperties::PointerType::kMouse);
 };
 
-class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
+class BLINK_COMMON_EXPORT SyntheticWebMouseWheelEventBuilder {
  public:
   static blink::WebMouseWheelEvent Build(
       blink::WebMouseWheelEvent::Phase phase);
@@ -50,12 +50,7 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
                                          ui::ScrollGranularity delta_units);
 };
 
-class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
- public:
-  static blink::WebKeyboardEvent Build(blink::WebInputEvent::Type type);
-};
-
-class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
+class BLINK_COMMON_EXPORT SyntheticWebGestureEventBuilder {
  public:
   static blink::WebGestureEvent Build(blink::WebInputEvent::Type type,
                                       blink::WebGestureDevice source_device,
@@ -82,7 +77,7 @@ class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
       blink::WebGestureDevice source_device);
 };
 
-class CONTENT_EXPORT SyntheticWebTouchEvent : public blink::WebTouchEvent {
+class BLINK_COMMON_EXPORT SyntheticWebTouchEvent : public blink::WebTouchEvent {
  public:
   SyntheticWebTouchEvent();
 
@@ -116,6 +111,6 @@ class CONTENT_EXPORT SyntheticWebTouchEvent : public blink::WebTouchEvent {
   unsigned pointer_id_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_

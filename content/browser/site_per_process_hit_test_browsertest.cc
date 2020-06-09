@@ -1984,7 +1984,7 @@ class SitePerProcessEmulatedTouchBrowserTest
     base::TimeDelta simulated_event_time_delta =
         base::TimeDelta::FromMilliseconds(100);
     blink::WebMouseEvent mouse_move_event =
-        SyntheticWebMouseEventBuilder::Build(
+        blink::SyntheticWebMouseEventBuilder::Build(
             blink::WebInputEvent::Type::kMouseMove, position_in_root.x(),
             position_in_root.y(), 0);
     mouse_move_event.SetTimeStamp(simulated_event_time);
@@ -1994,7 +1994,7 @@ class SitePerProcessEmulatedTouchBrowserTest
                              : 0;
     mouse_modifier |= blink::WebInputEvent::kLeftButtonDown;
     blink::WebMouseEvent mouse_down_event =
-        SyntheticWebMouseEventBuilder::Build(
+        blink::SyntheticWebMouseEventBuilder::Build(
             blink::WebInputEvent::Type::kMouseDown, position_in_root.x(),
             position_in_root.y(), mouse_modifier);
     mouse_down_event.button = blink::WebMouseEvent::Button::kLeft;
@@ -2002,16 +2002,17 @@ class SitePerProcessEmulatedTouchBrowserTest
     mouse_down_event.SetTimeStamp(simulated_event_time);
 
     blink::WebMouseEvent mouse_drag_event =
-        SyntheticWebMouseEventBuilder::Build(
+        blink::SyntheticWebMouseEventBuilder::Build(
             blink::WebInputEvent::Type::kMouseMove, position_in_root.x(),
             position_in_root.y() + 20, mouse_modifier);
     simulated_event_time += simulated_event_time_delta;
     mouse_drag_event.SetTimeStamp(simulated_event_time);
     mouse_drag_event.button = blink::WebMouseEvent::Button::kLeft;
 
-    blink::WebMouseEvent mouse_up_event = SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::Type::kMouseUp, position_in_root.x(),
-        position_in_root.y() + 20, mouse_modifier);
+    blink::WebMouseEvent mouse_up_event =
+        blink::SyntheticWebMouseEventBuilder::Build(
+            blink::WebInputEvent::Type::kMouseUp, position_in_root.x(),
+            position_in_root.y() + 20, mouse_modifier);
     mouse_up_event.button = blink::WebMouseEvent::Button::kLeft;
     simulated_event_time += simulated_event_time_delta;
     mouse_up_event.SetTimeStamp(simulated_event_time);

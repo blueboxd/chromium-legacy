@@ -25,7 +25,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -46,6 +45,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/drop_target_event.h"
@@ -881,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                  state == blink::mojom::InputEventResultState::kNotConsumed;
         }));
     // Send touch press.
-    SyntheticWebTouchEvent touch;
+    blink::SyntheticWebTouchEvent touch;
     touch.PressPoint(bounds.x() + 2, bounds.y() + 10);
     GetRenderWidgetHost()->ForwardTouchEventWithLatencyInfo(touch,
                                                             ui::LatencyInfo());
@@ -903,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
     touch_move_waiter.Wait();
 
     blink::WebGestureEvent scroll_begin =
-        SyntheticWebGestureEventBuilder::BuildScrollBegin(
+        blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
             1, 1, blink::WebGestureDevice::kTouchscreen);
     GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(
         scroll_begin, ui::LatencyInfo());
@@ -919,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       WaitAFrame();
 
       blink::WebGestureEvent scroll_update =
-          SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+          blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(
               dx, 5, 0, blink::WebGestureDevice::kTouchscreen);
 
       GetRenderWidgetHost()->ForwardGestureEventWithLatencyInfo(

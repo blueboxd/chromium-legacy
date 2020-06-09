@@ -2,29 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 #include "base/check_op.h"
-#include "content/common/input/web_mouse_wheel_event_traits.h"
-#include "content/common/input/web_touch_event_traits.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/event.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 
-namespace content {
-
-using blink::WebInputEvent;
-using blink::WebKeyboardEvent;
-using blink::WebGestureEvent;
-using blink::WebMouseEvent;
-using blink::WebMouseWheelEvent;
-using blink::WebTouchEvent;
-using blink::WebTouchPoint;
+namespace blink {
 
 WebMouseEvent SyntheticWebMouseEventBuilder::Build(
     blink::WebInputEvent::Type type) {
   return WebMouseEvent(type, WebInputEvent::kNoModifiers,
-                       ui::EventTimeForNow());
+                       WebInputEvent::GetStaticTimeStampForTests());
 }
 
 WebMouseEvent SyntheticWebMouseEventBuilder::Build(
@@ -34,21 +22,24 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
     int modifiers,
     blink::WebPointerProperties::PointerType pointer_type) {
   DCHECK(WebInputEvent::IsMouseEventType(type));
-  WebMouseEvent result(type, modifiers, ui::EventTimeForNow());
+  WebMouseEvent result(type, modifiers,
+                       WebInputEvent::GetStaticTimeStampForTests());
   result.SetPositionInWidget(window_x, window_y);
   result.SetPositionInScreen(window_x, window_y);
   result.SetModifiers(modifiers);
   result.pointer_type = pointer_type;
-  result.id = ui::kPointerIdMouse;
+  result.id = WebMouseEvent::kMousePointerId;
   return result;
 }
 
 WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
     WebMouseWheelEvent::Phase phase) {
   WebMouseWheelEvent result(WebInputEvent::Type::kMouseWheel,
-                            WebInputEvent::kNoModifiers, ui::EventTimeForNow());
+                            WebInputEvent::kNoModifiers,
+                            WebInputEvent::GetStaticTimeStampForTests());
   result.phase = phase;
-  result.event_action = WebMouseWheelEventTraits::GetEventAction(result);
+  result.event_action =
+      WebMouseWheelEvent::GetPlatformSpecificDefaultEventAction(result);
   return result;
 }
 
@@ -72,7 +63,7 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
     int modifiers,
     ui::ScrollGranularity delta_units) {
   WebMouseWheelEvent result(WebInputEvent::Type::kMouseWheel, modifiers,
-                            ui::EventTimeForNow());
+                            WebInputEvent::GetStaticTimeStampForTests());
   result.SetPositionInScreen(global_x, global_y);
   result.SetPositionInWidget(x, y);
   result.delta_units = delta_units;
@@ -83,16 +74,8 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
   if (dy)
     result.wheel_ticks_y = dy > 0.0f ? 1.0f : -1.0f;
 
-  result.event_action = WebMouseWheelEventTraits::GetEventAction(result);
-  return result;
-}
-
-WebKeyboardEvent SyntheticWebKeyboardEventBuilder::Build(
-    WebInputEvent::Type type) {
-  DCHECK(WebInputEvent::IsKeyboardEventType(type));
-  WebKeyboardEvent result(type, WebInputEvent::kNoModifiers,
-                          ui::EventTimeForNow());
-  result.windows_key_code = ui::VKEY_L;  // non-null made up value.
+  result.event_action =
+      WebMouseWheelEvent::GetPlatformSpecificDefaultEventAction(result);
   return result;
 }
 
@@ -101,7 +84,9 @@ WebGestureEvent SyntheticWebGestureEventBuilder::Build(
     blink::WebGestureDevice source_device,
     int modifiers) {
   DCHECK(WebInputEvent::IsGestureEventType(type));
-  WebGestureEvent result(type, modifiers, ui::EventTimeForNow(), source_device);
+  WebGestureEvent result(type, modifiers,
+                         WebInputEvent::GetStaticTimeStampForTests(),
+                         source_device);
   if (type == WebInputEvent::Type::kGestureTap ||
       type == WebInputEvent::Type::kGestureTapUnconfirmed ||
       type == WebInputEvent::Type::kGestureDoubleTap) {
@@ -167,7 +152,7 @@ WebGestureEvent SyntheticWebGestureEventBuilder::BuildFling(
 
 SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {
   unique_touch_event_id = ui::GetNextTouchEventId();
-  SetTimestamp(ui::EventTimeForNow());
+  SetTimestamp(WebInputEvent::GetStaticTimeStampForTests());
   pointer_id_ = 0;
 }
 
@@ -221,8 +206,8 @@ int SyntheticWebTouchEvent::PressPoint(float x,
   point.tilt_x = point.tilt_y = 0;
   point.pointer_type = blink::WebPointerProperties::PointerType::kTouch;
   ++touches_length;
-  WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchStart, TimeStamp(),
-                                 this);
+  SetType(WebInputEvent::Type::kTouchStart);
+  dispatch_type = WebInputEvent::DispatchType::kBlocking;
   return index;
 }
 
@@ -246,8 +231,8 @@ void SyntheticWebTouchEvent::MovePoint(int index,
   point.radius_y = radius_y;
   point.rotation_angle = rotation_angle;
   point.force = force;
-  WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchMove, TimeStamp(),
-                                 this);
+  SetType(WebInputEvent::Type::kTouchMove);
+  dispatch_type = WebInputEvent::DispatchType::kBlocking;
 }
 
 void SyntheticWebTouchEvent::ReleasePoint(int index) {
@@ -255,16 +240,16 @@ void SyntheticWebTouchEvent::ReleasePoint(int index) {
   CHECK_LT(index, kTouchesLengthCap);
   touches[index].state = WebTouchPoint::State::kStateReleased;
   touches[index].force = 0.f;
-  WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchEnd, TimeStamp(),
-                                 this);
+  SetType(WebInputEvent::Type::kTouchEnd);
+  dispatch_type = WebInputEvent::DispatchType::kBlocking;
 }
 
 void SyntheticWebTouchEvent::CancelPoint(int index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, kTouchesLengthCap);
   touches[index].state = WebTouchPoint::State::kStateCancelled;
-  WebTouchEventTraits::ResetType(WebInputEvent::Type::kTouchCancel, TimeStamp(),
-                                 this);
+  SetType(WebInputEvent::Type::kTouchCancel);
+  dispatch_type = WebInputEvent::DispatchType::kEventNonBlocking;
 }
 
 void SyntheticWebTouchEvent::SetTimestamp(base::TimeTicks timestamp) {
@@ -279,4 +264,4 @@ int SyntheticWebTouchEvent::FirstFreeIndex() {
   return -1;
 }
 
-}  // namespace content
+}  // namespace blink

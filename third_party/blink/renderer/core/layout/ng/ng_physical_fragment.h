@@ -98,6 +98,7 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsColumnBox() const {
     return IsBox() && BoxType() == NGBoxType::kColumnBox;
   }
+  bool IsFragmentainerBox() const { return IsColumnBox(); }
   // An atomic inline is represented as a kFragmentBox, such as inline block and
   // replaced elements.
   bool IsAtomicInline() const {
@@ -133,7 +134,7 @@ class CORE_EXPORT NGPhysicalFragment
   //
   // [1] https://www.w3.org/TR/css-display-3/#box-tree
   // [2] https://www.w3.org/TR/css-break-3/#fragmentation-container
-  bool IsCSSBox() const { return !IsLineBox() && !IsColumnBox(); }
+  bool IsCSSBox() const { return !IsLineBox() && !IsFragmentainerBox(); }
 
   bool IsBlockFlow() const;
   bool IsAnonymousBlock() const {

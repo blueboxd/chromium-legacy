@@ -6,15 +6,15 @@ package org.chromium.chrome.test.util;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
-import android.support.test.espresso.Espresso;
-import android.support.test.espresso.NoMatchingViewException;
-import android.support.test.espresso.ViewAssertion;
-import android.support.test.espresso.ViewInteraction;
-import android.support.test.espresso.matcher.ViewMatchers;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
+import androidx.test.espresso.Espresso;
+import androidx.test.espresso.NoMatchingViewException;
+import androidx.test.espresso.ViewAssertion;
+import androidx.test.espresso.ViewInteraction;
+import androidx.test.espresso.matcher.ViewMatchers;
 
 import org.hamcrest.Matcher;
 

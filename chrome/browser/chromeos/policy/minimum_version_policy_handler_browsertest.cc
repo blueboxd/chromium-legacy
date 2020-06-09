@@ -5,7 +5,9 @@
 #include <string>
 
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "base/json/json_writer.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -34,6 +37,8 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
+#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_service.h"
@@ -41,6 +46,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace em = enterprise_management;
 
@@ -56,6 +62,8 @@ constexpr base::TimeDelta kShortWarning =
 constexpr base::TimeDelta kLongWarning =
     base::TimeDelta::FromDays(kLongWarningInDays);
 const char kPublicSessionId[] = "demo@example.com";
+const char kUpdateRequiredNotificationId[] = "policy.update_required";
+const char kWifiServicePath[] = "/service/wifi2";
 // This is a randomly chosen long delay in milliseconds to make sure that the
 // timer keeps running for a long time in case it is started.
 const int kAutoLoginLoginDelayMilliseconds = 500000;
@@ -146,11 +154,36 @@ class MinimumVersionPolicyTest : public MinimumVersionPolicyTestBase {
   MinimumVersionPolicyTest() { login_manager_.AppendRegularUsers(1); }
   ~MinimumVersionPolicyTest() override = default;
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    MinimumVersionPolicyTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(chromeos::switches::kShillStub,
+                                    "clear=1,cellular=0,wifi=0");
+  }
+
+  void SetUpOnMainThread() override {
+    MinimumVersionPolicyTestBase::SetUpOnMainThread();
+    display_service_tester_ =
+        std::make_unique<NotificationDisplayServiceTester>(nullptr /*profile*/);
+    network_state_test_helper_ =
+        std::make_unique<chromeos::NetworkStateTestHelper>(
+            false /*use_default_devices_and_services*/);
+    network_state_test_helper_->manager_test()->SetupDefaultEnvironment();
+    tray_test_api_ = ash::SystemTrayTestApi::Create();
+  }
+
+  void TearDownOnMainThread() override {
+    network_state_test_helper_.reset();
+    MinimumVersionPolicyTestBase::TearDownOnMainThread();
+  }
+
   void Login();
   void MarkUserManaged();
 
  protected:
   chromeos::LoginManagerMixin login_manager_{&mixin_host_};
+  std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
+  std::unique_ptr<ash::SystemTrayTestApi> tray_test_api_;
 };
 
 void MinimumVersionPolicyTest::Login() {
@@ -254,6 +287,8 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NonCriticalUpdateGoodNetwork) {
             kShortWarning);
   EXPECT_TRUE(
       GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_FALSE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
 
   // Create and set policy value with long warning time.
   base::Value requirement_long_warning(base::Value::Type::LIST);
@@ -266,6 +301,8 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NonCriticalUpdateGoodNetwork) {
             timer_start_time);
   EXPECT_EQ(prefs->GetTimeDelta(prefs::kUpdateRequiredWarningPeriod),
             kLongWarning);
+  EXPECT_FALSE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
 
   // Create and set policy value with no warning time.
   base::Value requirement_no_warning(base::Value::Type::LIST);
@@ -278,6 +315,8 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NonCriticalUpdateGoodNetwork) {
             timer_start_time);
   EXPECT_EQ(prefs->GetTimeDelta(prefs::kUpdateRequiredWarningPeriod),
             kLongWarning);
+  EXPECT_FALSE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
 
   EXPECT_TRUE(
       GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
@@ -311,6 +350,65 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
   // Set new value for pref and check that user session is not terminated.
   SetDevicePolicyAndWaitForSettingChange(requirement_list);
   EXPECT_FALSE(chrome::IsAttemptingShutdown());
+}
+
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NoNetworkNotificationClick) {
+  // Login the user into the session.
+  Login();
+  MarkUserManaged();
+
+  // Create policy value as a list of requirements.
+  base::Value requirement_list(base::Value::Type::LIST);
+  requirement_list.Append(
+      CreateRequirement(kNewVersion, kShortWarningInDays, kShortWarningInDays));
+
+  EXPECT_FALSE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
+  EXPECT_FALSE(tray_test_api_->IsTrayBubbleOpen());
+
+  // Set new policy value and check that update required notification is shown.
+  SetDevicePolicyAndWaitForSettingChange(requirement_list);
+  EXPECT_TRUE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
+
+  // Clicking on notification button opens the network settings and hides the
+  // notification.
+  display_service_tester_->SimulateClick(NotificationHandler::Type::TRANSIENT,
+                                         kUpdateRequiredNotificationId,
+                                         0 /*action_index*/, base::nullopt);
+  EXPECT_FALSE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
+  EXPECT_TRUE(tray_test_api_->IsTrayBubbleOpen());
+}
+
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,
+                       HideNotificationOnGoodNetwork) {
+  // Login the user into the session.
+  Login();
+  MarkUserManaged();
+
+  // Create policy value as a list of requirements.
+  base::Value requirement_list(base::Value::Type::LIST);
+  requirement_list.Append(
+      CreateRequirement(kNewVersion, kShortWarningInDays, kShortWarningInDays));
+
+  EXPECT_FALSE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
+
+  // Set new policy value and check that update required notification is shown.
+  SetDevicePolicyAndWaitForSettingChange(requirement_list);
+  EXPECT_TRUE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
+
+  // Connecting to WiFi should hide the update required notification.
+  base::RunLoop run_loop;
+  display_service_tester_->SetNotificationClosedClosure(run_loop.QuitClosure());
+  network_state_test_helper_->service_test()->AddService(
+      kWifiServicePath, kWifiServicePath, kWifiServicePath /* name */,
+      shill::kTypeWifi, shill::kStateOnline, true /* visible */);
+  run_loop.Run();
+  EXPECT_FALSE(
+      display_service_tester_->GetNotification(kUpdateRequiredNotificationId));
 }
 
 class MinimumVersionNoUsersLoginTest : public MinimumVersionPolicyTestBase {

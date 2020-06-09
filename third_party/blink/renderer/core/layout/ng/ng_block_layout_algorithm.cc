@@ -2161,9 +2161,9 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
       BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
   LayoutUnit space_left = FragmentainerSpaceAvailable();
   LayoutUnit block_size;
-  if (container_builder_.BoxType() == NGPhysicalFragment::kColumnBox &&
+  if (container_builder_.IsFragmentainerBoxType() &&
       ConstraintSpace().HasKnownFragmentainerBlockSize()) {
-    // We're building column fragments, and we know the column size. Just use
+    // We're building fragmentainers, and we know their block-size. Just use
     // that. Calculating the size the regular way would cause some problems with
     // overflow. For one, we don't want to produce a break token if there's no
     // child content that requires it.

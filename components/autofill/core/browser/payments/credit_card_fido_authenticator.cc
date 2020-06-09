@@ -651,7 +651,7 @@ base::Value CreditCardFIDOAuthenticator::ParseAssertionResponse(
   response.SetKey("credential_id",
                   BytesToBase64(assertion_response->info->raw_id));
   response.SetKey("authenticator_data",
-                  BytesToBase64(assertion_response->authenticator_data));
+                  BytesToBase64(assertion_response->info->authenticator_data));
   response.SetKey("client_data",
                   BytesToBase64(assertion_response->info->client_data_json));
   response.SetKey("signature", BytesToBase64(assertion_response->signature));

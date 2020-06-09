@@ -4,26 +4,27 @@
 
 package org.chromium.webview_ui_test.test;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
-import static android.support.test.espresso.web.assertion.WebViewAssertions.webMatches;
-import static android.support.test.espresso.web.sugar.Web.onWebView;
-import static android.support.test.espresso.web.webdriver.DriverAtoms.findElement;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.web.assertion.WebViewAssertions.webMatches;
+import static androidx.test.espresso.web.sugar.Web.onWebView;
+import static androidx.test.espresso.web.webdriver.DriverAtoms.findElement;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 
 import android.graphics.Point;
 import android.os.Build;
-import android.support.test.espresso.web.sugar.Web;
-import android.support.test.espresso.web.webdriver.Locator;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.webkit.WebView;
+
+import androidx.test.espresso.web.sugar.Web;
+import androidx.test.espresso.web.webdriver.Locator;
 
 import org.junit.Before;
 import org.junit.Rule;

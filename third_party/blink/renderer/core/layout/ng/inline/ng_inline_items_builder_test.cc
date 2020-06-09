@@ -29,6 +29,9 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
   void SetUp() override {
     NGLayoutTest::SetUp();
     style_ = ComputedStyle::Create();
+    block_flow_ = LayoutBlockFlow::CreateAnonymous(&GetDocument(), style_,
+                                                   LegacyLayout::kAuto);
+    anonymous_objects_.push_back(block_flow_);
   }
 
   void TearDown() override {
@@ -36,6 +39,8 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
       anonymous_object->Destroy();
     NGLayoutTest::TearDown();
   }
+
+  LayoutBlockFlow* GetLayoutBlockFlow() const { return block_flow_; }
 
   void SetWhiteSpace(EWhiteSpace whitespace) {
     style_->SetWhiteSpace(whitespace);
@@ -84,7 +89,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
   const String& TestAppend(Vector<Input> inputs) {
     items_.clear();
     Vector<LayoutText*> anonymous_objects;
-    NGInlineItemsBuilder builder(&items_);
+    NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items_);
     for (Input& input : inputs) {
       if (!input.layout_text) {
         input.layout_text = LayoutText::CreateEmptyAnonymous(
@@ -135,7 +140,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     fake_data.is_bidi_enabled_ = has_bidi_controls;
 
     Vector<NGInlineItem> reuse_items;
-    NGInlineItemsBuilder reuse_builder(&reuse_items);
+    NGInlineItemsBuilder reuse_builder(GetLayoutBlockFlow(), &reuse_items);
     for (Input& input : inputs) {
       // Collect items for this LayoutObject.
       DCHECK(input.layout_text);
@@ -166,6 +171,7 @@ class NGInlineItemsBuilderTest : public NGLayoutTest {
     EXPECT_EQ(text_, reuse_text);
   }
 
+  LayoutBlockFlow* block_flow_ = nullptr;
   Vector<NGInlineItem> items_;
   String text_;
   scoped_refptr<ComputedStyle> style_;
@@ -330,7 +336,7 @@ TEST_F(NGInlineItemsBuilderTest, CollapseEastAsianWidth) {
 #endif
 
 TEST_F(NGInlineItemsBuilderTest, OpaqueToSpaceCollapsing) {
-  NGInlineItemsBuilder builder(&items_);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items_);
   AppendText("Hello ", &builder);
   builder.AppendOpaque(NGInlineItem::kBidiControl,
                        kFirstStrongIsolateCharacter);
@@ -342,7 +348,7 @@ TEST_F(NGInlineItemsBuilderTest, OpaqueToSpaceCollapsing) {
 }
 
 TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
-  NGInlineItemsBuilder builder(&items_);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items_);
   AppendText("Hello ", &builder);
   AppendAtomicInline(&builder);
   AppendText(" World", &builder);
@@ -350,7 +356,7 @@ TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
 }
 
 TEST_F(NGInlineItemsBuilderTest, CollapseNewlineAfterObject) {
-  NGInlineItemsBuilder builder(&items_);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items_);
   AppendAtomicInline(&builder);
   AppendText("\n", &builder);
   AppendAtomicInline(&builder);
@@ -402,7 +408,7 @@ TEST_F(NGInlineItemsBuilderTest, IgnorablePre) {
 
 TEST_F(NGInlineItemsBuilderTest, Empty) {
   Vector<NGInlineItem> items;
-  NGInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items);
   scoped_refptr<ComputedStyle> block_style(ComputedStyle::Create());
   builder.EnterBlock(block_style.get());
   builder.ExitBlock();
@@ -444,7 +450,7 @@ TEST_F(NGInlineItemsBuilderTest, GenerateBreakOpportunityAfterLeadingSpaces) {
 
 TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
   Vector<NGInlineItem> items;
-  NGInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items);
   scoped_refptr<ComputedStyle> block_style(ComputedStyle::Create());
   block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
   block_style->SetDirection(TextDirection::kRtl);
@@ -474,7 +480,7 @@ static LayoutInline* CreateLayoutInline(
 
 TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
   Vector<NGInlineItem> items;
-  NGInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items);
   AppendText("Hello ", &builder);
   LayoutInline* const isolate_rtl =
       CreateLayoutInline(&GetDocument(), [](ComputedStyle* style) {
@@ -499,7 +505,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolate) {
 
 TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
   Vector<NGInlineItem> items;
-  NGInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items);
   AppendText("Hello ", &builder);
   LayoutInline* const isolate_override_rtl =
       CreateLayoutInline(&GetDocument(), [](ComputedStyle* style) {
@@ -524,7 +530,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiIsolateOverride) {
 
 TEST_F(NGInlineItemsBuilderTest, HasRuby) {
   Vector<NGInlineItem> items;
-  NGInlineItemsBuilder builder(&items);
+  NGInlineItemsBuilder builder(GetLayoutBlockFlow(), &items);
   EXPECT_FALSE(HasRuby(builder)) << "has_ruby_ should be false initially.";
 
   AppendText("Hello ", &builder);

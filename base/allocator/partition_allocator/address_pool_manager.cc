@@ -16,7 +16,9 @@ namespace internal {
 
 #if defined(ARCH_CPU_64_BITS)
 
-constexpr size_t AddressPoolManager::kNumPools;
+static_assert(sizeof(size_t) >= 8, "Need 64-bit address space");
+
+constexpr size_t AddressPoolManager::Pool::kMaxBits;
 
 // static
 AddressPoolManager* AddressPoolManager::GetInstance() {
@@ -24,17 +26,13 @@ AddressPoolManager* AddressPoolManager::GetInstance() {
   return instance.get();
 }
 
-pool_handle AddressPoolManager::Add(uintptr_t ptr,
-                                    size_t length,
-                                    size_t align) {
-  DCHECK(base::bits::IsPowerOfTwo(align));
-  const uintptr_t align_offset_mask = align - 1;
-  DCHECK(!(ptr & align_offset_mask));
-  DCHECK(!((ptr + length) & align_offset_mask));
+pool_handle AddressPoolManager::Add(uintptr_t ptr, size_t length) {
+  DCHECK(!(ptr & kSuperPageOffsetMask));
+  DCHECK(!((ptr + length) & kSuperPageOffsetMask));
 
   for (pool_handle i = 0; i < base::size(pools_); ++i) {
     if (!pools_[i]) {
-      pools_[i] = std::make_unique<Pool>(ptr, length, align);
+      pools_[i] = std::make_unique<Pool>(ptr, length);
       return i + 1;
     }
   }
@@ -66,93 +64,87 @@ void AddressPoolManager::Free(pool_handle handle, void* ptr, size_t length) {
   pool->FreeChunk(reinterpret_cast<uintptr_t>(ptr), length);
 }
 
-AddressPoolManager::Pool::Pool(uintptr_t ptr, size_t length, size_t align)
-    : align_(align)
+AddressPoolManager::Pool::Pool(uintptr_t ptr, size_t length)
+    : total_bits_(length / kSuperPageSize),
+      address_begin_(ptr)
 #if DCHECK_IS_ON()
       ,
-      address_begin_(ptr),
       address_end_(ptr + length)
 #endif
 {
-  free_chunks_.insert(std::make_pair(ptr, length));
+  CHECK_LE(total_bits_, kMaxBits);
+  CHECK(!(ptr & kSuperPageOffsetMask));
+  CHECK(!(length & kSuperPageOffsetMask));
 #if DCHECK_IS_ON()
   DCHECK_LT(address_begin_, address_end_);
 #endif
+  alloc_bitset_.reset();
 }
 
 uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
   base::AutoLock scoped_lock(lock_);
 
-  const uintptr_t align_offset_mask = align_ - 1;
-  const size_t required_size = bits::Align(requested_size, align_);
-  uintptr_t chosen_chunk = 0;
-  size_t chosen_chunk_size = std::numeric_limits<size_t>::max();
+  const size_t required_size = bits::Align(requested_size, kSuperPageSize);
+  const size_t need_bits = required_size >> kSuperPageShift;
 
   // Use first fit policy to find an available chunk from free chunks.
-  for (const auto& chunk : free_chunks_) {
-    size_t chunk_size = chunk.second;
-    if (chunk_size >= required_size) {
-      chosen_chunk = chunk.first;
-      chosen_chunk_size = chunk_size;
-      break;
+  size_t beg_bit = 0;
+  size_t curr_bit = 0;
+  while (true) {
+    // |end_bit| points 1 past the last bit that needs to be 0. If it goes past
+    // |total_bits_|, return |nullptr| to signal no free chunk was found.
+    size_t end_bit = beg_bit + need_bits;
+    if (end_bit > total_bits_)
+      return 0;
+
+    bool found = true;
+    for (; curr_bit < end_bit; ++curr_bit) {
+      if (alloc_bitset_.test(curr_bit)) {
+        // The bit was set, so this chunk isn't entirely free. Set |found=false|
+        // to ensure the outer loop continues. However, continue the innter loop
+        // to set |beg_bit| just past the last set bit in the investigated
+        // chunk. |curr_bit| is advanced all the way to |end_bit| to prevent the
+        // next outer loop pass from checking the same bits.
+        beg_bit = curr_bit + 1;
+        found = false;
+      }
+    }
+
+    // An entire [beg_bit;end_bit) region of 0s was found. Fill them with 1s
+    // (to mark as allocated) and return the allocated address.
+    if (found) {
+      for (size_t i = beg_bit; i < end_bit; ++i) {
+        DCHECK(!alloc_bitset_.test(i));
+        alloc_bitset_.set(i);
+      }
+      uintptr_t address = address_begin_ + beg_bit * kSuperPageSize;
+#if DCHECK_IS_ON()
+      DCHECK_LE(address + required_size, address_end_);
+#endif
+      return address;
     }
   }
-  if (!chosen_chunk)
-    return 0;
 
-  free_chunks_.erase(chosen_chunk);
-  if (chosen_chunk_size > required_size) {
-    bool newly_inserted =
-        free_chunks_
-            .insert(std::make_pair(chosen_chunk + required_size,
-                                   chosen_chunk_size - required_size))
-            .second;
-    DCHECK(newly_inserted);
-  }
-  DCHECK(!(chosen_chunk & align_offset_mask));
-#if DCHECK_IS_ON()
-  DCHECK_LE(address_begin_, chosen_chunk);
-  DCHECK_LE(chosen_chunk + required_size, address_end_);
-#endif
-  return chosen_chunk;
+  return 0;
 }
 
 void AddressPoolManager::Pool::FreeChunk(uintptr_t address, size_t free_size) {
   base::AutoLock scoped_lock(lock_);
 
-  const uintptr_t align_offset_mask = align_ - 1;
-  DCHECK(!(address & align_offset_mask));
+  DCHECK(!(address & kSuperPageOffsetMask));
 
-  const size_t size = bits::Align(free_size, align_);
-#if DCHECK_IS_ON()
+  const size_t size = bits::Align(free_size, kSuperPageSize);
   DCHECK_LE(address_begin_, address);
+#if DCHECK_IS_ON()
   DCHECK_LE(address + size, address_end_);
 #endif
-  DCHECK_LT(address, address + size);
-  auto new_chunk = std::make_pair(address, size);
 
-  auto lower_bound = free_chunks_.lower_bound(address);
-  if (lower_bound != free_chunks_.begin()) {
-    auto left = --lower_bound;
-    uintptr_t left_chunk_end = left->first + left->second;
-    DCHECK_LE(left_chunk_end, address);
-    if (left_chunk_end == address) {
-      new_chunk.first = left->first;
-      new_chunk.second += left->second;
-      free_chunks_.erase(left);
-    }
+  const size_t beg_bit = (address - address_begin_) / kSuperPageSize;
+  const size_t end_bit = beg_bit + size / kSuperPageSize;
+  for (size_t i = beg_bit; i < end_bit; ++i) {
+    DCHECK(alloc_bitset_.test(i));
+    alloc_bitset_.reset(i);
   }
-  auto right = free_chunks_.upper_bound(address);
-  if (right != free_chunks_.end()) {
-    uintptr_t chunk_end = address + size;
-    DCHECK_LE(chunk_end, right->first);
-    if (right->first == chunk_end) {
-      new_chunk.second += right->second;
-      free_chunks_.erase(right);
-    }
-  }
-  bool newly_inserted = free_chunks_.insert(new_chunk).second;
-  DCHECK(newly_inserted);
 }
 
 AddressPoolManager::Pool::~Pool() = default;

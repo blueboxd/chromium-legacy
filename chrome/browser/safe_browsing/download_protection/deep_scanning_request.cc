@@ -220,9 +220,8 @@ void DeepScanningRequest::Start() {
       DlpDeepScanningClientRequest dlp_request;
       dlp_request.set_content_source(
           DlpDeepScanningClientRequest::FILE_DOWNLOAD);
-      if (item_->GetTabUrl().is_valid()) {
-        dlp_request.set_url(item_->GetTabUrl().spec());
-      }
+      if (item_->GetURL().is_valid())
+        dlp_request.set_url(item_->GetURL().spec());
       request->set_request_dlp_scan(std::move(dlp_request));
     }
 

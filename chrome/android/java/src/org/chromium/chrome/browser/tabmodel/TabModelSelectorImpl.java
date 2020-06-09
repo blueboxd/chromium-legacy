@@ -56,16 +56,16 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     /**
      * Builds a {@link TabModelSelectorImpl} instance.
-     *
-     * @param activity An {@link Activity} instance.
+     *  @param activity An {@link Activity} instance.
      * @param tabCreatorManager A {@link TabCreatorManager} instance.
      * @param persistencePolicy A {@link TabPersistencePolicy} instance.
+     * @param tabModelFilterFactory
      * @param supportUndo Whether a tab closure can be undone.
      */
     public TabModelSelectorImpl(Activity activity, TabCreatorManager tabCreatorManager,
-            TabPersistencePolicy persistencePolicy, boolean supportUndo, boolean isTabbedActivity,
-            boolean startIncognito) {
-        super(tabCreatorManager, startIncognito);
+            TabPersistencePolicy persistencePolicy, TabModelFilterFactory tabModelFilterFactory,
+            boolean supportUndo, boolean isTabbedActivity, boolean startIncognito) {
+        super(tabCreatorManager, tabModelFilterFactory, startIncognito);
         mUma = new TabModelSelectorUma(activity);
         final TabPersistentStoreObserver persistentStoreObserver =
                 new TabPersistentStoreObserver() {

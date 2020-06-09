@@ -89,7 +89,7 @@ class CORE_EXPORT NGFragmentChildIterator {
         // be used by a subsequent fragmentainer. Other fragment types (such as
         // column spanners) need to ignore it.
         if (break_token_for_fragmentainer_only_ &&
-            !link_.fragment->IsColumnBox())
+            !link_.fragment->IsFragmentainerBox())
           return nullptr;
       }
       return block_break_token_;

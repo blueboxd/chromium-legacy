@@ -140,13 +140,16 @@ class NGInlineNodeTest : public NGLayoutTest {
     return end_offsets;
   }
 
-  void TestFirstLineIsDirty(LayoutBlockFlow* block_flow, bool expected) {
+  void TestAnyItrermsAreDirty(LayoutBlockFlow* block_flow, bool expected) {
     const NGFragmentItems* items = block_flow->FragmentItems();
     items->DirtyLinesFromNeedsLayout(block_flow);
-    const NGFragmentItem* end_reusable_item = items->EndOfReusableItems();
-    NGInlineCursor cursor(*items);
-    cursor.MoveToFirstLine();
-    EXPECT_EQ(cursor.Current().Item() == end_reusable_item, expected);
+    // Check |NGFragmentItem::IsDirty| directly without using
+    // |EndOfReusableItems|. This is different from the line cache logic, but
+    // some items may not be reusable even if |!IsDirty()|.
+    const bool is_any_items_dirty =
+        std::any_of(items->Items().begin(), items->Items().end(),
+                    [](const NGFragmentItem& item) { return item.IsDirty(); });
+    EXPECT_EQ(is_any_items_dirty, expected);
   }
 
   scoped_refptr<const ComputedStyle> style_;
@@ -636,8 +639,8 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
 
   if (data.is_line_dirty &&
       RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    TestFirstLineIsDirty(To<LayoutBlockFlow>(container->GetLayoutObject()),
-                         *data.is_line_dirty);
+    TestAnyItrermsAreDirty(To<LayoutBlockFlow>(container->GetLayoutObject()),
+                           *data.is_line_dirty);
   }
 
   ForceLayout();  // Ensure running layout does not crash.

@@ -270,9 +270,7 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
         if (sOfflinePageBridgeForTesting != null) {
             return sOfflinePageBridgeForTesting;
         }
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
+        // Using regular profile here, since this function is only called in regular mode.
         return OfflinePageBridge.getForProfile(Profile.getLastUsedRegularProfile());
     }
 

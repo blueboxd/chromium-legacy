@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 using blink::WebInputEvent;
 using blink::WebTouchEvent;
@@ -18,7 +18,7 @@ namespace content {
 
 TEST(TouchEventStreamValidator, ValidTouchStream) {
   TouchEventStreamValidator validator;
-  SyntheticWebTouchEvent event;
+  blink::SyntheticWebTouchEvent event;
   std::string error_msg;
 
   event.PressPoint(0, 1);
@@ -58,7 +58,7 @@ TEST(TouchEventStreamValidator, ValidTouchStream) {
 
 TEST(TouchEventStreamValidator, ResetOnNewTouchStream) {
   TouchEventStreamValidator validator;
-  SyntheticWebTouchEvent event;
+  blink::SyntheticWebTouchEvent event;
   std::string error_msg;
 
   event.PressPoint(0, 1);
@@ -75,7 +75,7 @@ TEST(TouchEventStreamValidator, ResetOnNewTouchStream) {
 
 TEST(TouchEventStreamValidator, MissedTouchStart) {
   TouchEventStreamValidator validator;
-  SyntheticWebTouchEvent event;
+  blink::SyntheticWebTouchEvent event;
   std::string error_msg;
 
   event.PressPoint(0, 1);
@@ -91,7 +91,7 @@ TEST(TouchEventStreamValidator, MissedTouchStart) {
 
 TEST(TouchEventStreamValidator, MissedTouchEnd) {
   TouchEventStreamValidator validator;
-  SyntheticWebTouchEvent event;
+  blink::SyntheticWebTouchEvent event;
   std::string error_msg;
 
   event.PressPoint(0, 1);
@@ -152,7 +152,7 @@ TEST(TouchEventStreamValidator, InvalidPointStates) {
       WebTouchPoint::State::kStateCancelled,
   };
 
-  SyntheticWebTouchEvent start;
+  blink::SyntheticWebTouchEvent start;
   start.PressPoint(0, 0);
   for (size_t i = 0; i < 4; ++i) {
     // Always start with a touchstart to reset the stream validation.

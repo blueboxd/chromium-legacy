@@ -951,27 +951,32 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
     // attribute with the name "shadowroot" whose value was an ASCII
     // case-insensitive match for the strings "open" or "closed", then stop this
     // algorithm.
-    // 10. If the adjusted current node is the topmost element in the stack of
-    // open elements, then stop this algorithm.
-    if (template_element->IsDeclarativeShadowRoot() &&
-        shadow_host_stack_item->GetNode() != tree_.OpenElements()->RootNode()) {
-      DCHECK(shadow_host_stack_item);
-      DCHECK(shadow_host_stack_item->IsElementNode());
-      bool delegates_focus = template_stack_item->GetAttributeItem(
-          html_names::kShadowrootdelegatesfocusAttr);
-      // TODO(crbug.com/1063157): Add an attribute for imperative slot
-      // assignment.
-      bool manual_slotting = false;
-      shadow_host_stack_item->GetElement()->AttachDeclarativeShadowRoot(
-          template_element,
-          template_element->GetDeclarativeShadowRootType() ==
-                  DeclarativeShadowRootType::kOpen
-              ? ShadowRootType::kOpen
-              : ShadowRootType::kClosed,
-          delegates_focus ? FocusDelegation::kDelegateFocus
-                          : FocusDelegation::kNone,
-          manual_slotting ? SlotAssignmentMode::kManual
-                          : SlotAssignmentMode::kAuto);
+    if (template_element->IsDeclarativeShadowRoot()) {
+      if (shadow_host_stack_item->GetNode() ==
+          tree_.OpenElements()->RootNode()) {
+        // 10. If the adjusted current node is the topmost element in the stack
+        // of open elements, then stop this algorithm.
+        template_element->SetDeclarativeShadowRootType(
+            DeclarativeShadowRootType::kNone);
+      } else {
+        DCHECK(shadow_host_stack_item);
+        DCHECK(shadow_host_stack_item->IsElementNode());
+        bool delegates_focus = template_stack_item->GetAttributeItem(
+            html_names::kShadowrootdelegatesfocusAttr);
+        // TODO(crbug.com/1063157): Add an attribute for imperative slot
+        // assignment.
+        bool manual_slotting = false;
+        shadow_host_stack_item->GetElement()->AttachDeclarativeShadowRoot(
+            template_element,
+            template_element->GetDeclarativeShadowRootType() ==
+                    DeclarativeShadowRootType::kOpen
+                ? ShadowRootType::kOpen
+                : ShadowRootType::kClosed,
+            delegates_focus ? FocusDelegation::kDelegateFocus
+                            : FocusDelegation::kNone,
+            manual_slotting ? SlotAssignmentMode::kManual
+                            : SlotAssignmentMode::kAuto);
+      }
     }
   }
   return true;

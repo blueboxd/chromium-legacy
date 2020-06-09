@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.download.DownloadDialogBridge;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 
@@ -83,7 +84,8 @@ public class DownloadSettings
         }
 
         if (mPrefetchingEnabled != null) {
-            mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabledInSettings());
+            mPrefetchingEnabled.setChecked(PrefetchConfiguration.isPrefetchingEnabledInSettings(
+                    ProfileKey.getLastUsedRegularProfileKey()));
             updatePrefetchSummary();
         }
     }
@@ -91,12 +93,13 @@ public class DownloadSettings
     private void updatePrefetchSummary() {
         // The summary text should remain empty if mPrefetchingEnabled is switched off so it is only
         // updated when the setting is on.
-        if (PrefetchConfiguration.isPrefetchingEnabled()) {
+        ProfileKey profileKey = ProfileKey.getLastUsedRegularProfileKey();
+        if (PrefetchConfiguration.isPrefetchingEnabled(profileKey)) {
             mPrefetchingEnabled.setSummaryOn("");
-        } else if (PrefetchConfiguration.isPrefetchingEnabledInSettings()) {
+        } else if (PrefetchConfiguration.isPrefetchingEnabledInSettings(profileKey)) {
             // If prefetching is enabled by the user but isPrefetchingEnabled() returned false, we
             // know that prefetching is forbidden by the server.
-            if (PrefetchConfiguration.isEnabledByServerUnknown()) {
+            if (PrefetchConfiguration.isEnabledByServerUnknown(profileKey)) {
                 mPrefetchingEnabled.setSummaryOn(
                         R.string.download_settings_prefetch_maybe_unavailable_description);
             } else {
@@ -121,7 +124,8 @@ public class DownloadSettings
                 DownloadDialogBridge.setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
             }
         } else if (PREF_PREFETCHING_ENABLED.equals(preference.getKey())) {
-            PrefetchConfiguration.setPrefetchingEnabledInSettings((boolean) newValue);
+            PrefetchConfiguration.setPrefetchingEnabledInSettings(
+                    ProfileKey.getLastUsedRegularProfileKey(), (boolean) newValue);
             updatePrefetchSummary();
         }
         return true;

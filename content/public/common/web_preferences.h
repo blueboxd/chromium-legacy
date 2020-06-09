@@ -126,7 +126,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool new_canvas_2d_api_enabled;
   bool antialiased_2d_canvas_disabled;
   bool antialiased_clips_2d_canvas_enabled;
-  int accelerated_2d_canvas_msaa_sample_count;
   bool accelerated_filters_enabled;
   bool deferred_filters_enabled;
   bool container_culling_enabled;

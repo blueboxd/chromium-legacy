@@ -140,6 +140,7 @@ ALWAYS_INLINE char* PartitionSuperPageToMetadataArea(char* ptr) {
   return reinterpret_cast<char*>(pointer_as_uint + kSystemPageSize);
 }
 
+// See the comment for |FromPointer|.
 template <bool thread_safe>
 ALWAYS_INLINE PartitionPage<thread_safe>*
 PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(void* ptr) {
@@ -148,22 +149,25 @@ PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(void* ptr) {
       reinterpret_cast<char*>(pointer_as_uint & kSuperPageBaseMask);
   uintptr_t partition_page_index =
       (pointer_as_uint & kSuperPageOffsetMask) >> kPartitionPageShift;
-  // Index 0 is invalid because it is the metadata and guard area and
-  // the last index is invalid because it is a guard page.
+  // Index 0 is invalid because it is the super page extent metadata and the
+  // last index is invalid because the whole PartitionPage is set as guard
+  // pages.
   DCHECK(partition_page_index);
   DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
   auto* page = reinterpret_cast<PartitionPage*>(
       PartitionSuperPageToMetadataArea(super_page_ptr) +
       (partition_page_index << kPageMetadataShift));
-  // Partition pages in the same slot span can share the same page object.
-  // Adjust for that.
+  // Partition pages in the same slot span share the same page object. Adjust
+  // for that.
   size_t delta = page->page_offset << kPageMetadataShift;
   page =
       reinterpret_cast<PartitionPage*>(reinterpret_cast<char*>(page) - delta);
   return page;
 }
 
-// Returns: start of the slot span for the PartitionPage.
+// Converts from a pointer to the PartitionPage object (within super pages's
+// metadata) into a pointer to the beginning of the partition page.
+// This doesn't have to be the first page in the slot span.
 template <bool thread_safe>
 ALWAYS_INLINE void* PartitionPage<thread_safe>::ToPointer(
     const PartitionPage<thread_safe>* page) {
@@ -179,9 +183,9 @@ ALWAYS_INLINE void* PartitionPage<thread_safe>::ToPointer(
                                                 kPageMetadataSize));
   uintptr_t partition_page_index =
       (super_page_offset - kSystemPageSize) >> kPageMetadataShift;
-  // Index 0 is invalid because it is the superpage extent metadata and the
+  // Index 0 is invalid because it is the super page extent metadata and the
   // last index is invalid because the whole PartitionPage is set as guard
-  // pages for the metadata region.
+  // pages.
   DCHECK(partition_page_index);
   DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
   uintptr_t super_page_base = (pointer_as_uint & kSuperPageBaseMask);
@@ -190,6 +194,10 @@ ALWAYS_INLINE void* PartitionPage<thread_safe>::ToPointer(
   return ret;
 }
 
+// Converts from a pointer inside a partition page into a pointer to the
+// PartitionPage object (within super pages's metadata).
+// The first PartitionPage of the slot span will be returned, regardless where
+// inside of the slot span |ptr| points to.
 template <bool thread_safe>
 ALWAYS_INLINE PartitionPage<thread_safe>*
 PartitionPage<thread_safe>::FromPointer(void* ptr) {

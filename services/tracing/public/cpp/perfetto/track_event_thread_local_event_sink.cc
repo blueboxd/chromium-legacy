@@ -233,6 +233,61 @@ void TrackEventThreadLocalEventSink::ClearIncrementalState() {
   incremental_state_reset_id_.fetch_add(1u, std::memory_order_relaxed);
 }
 
+void TrackEventThreadLocalEventSink::AddLegacyTraceEvent(
+    base::trace_event::TraceEvent* trace_event,
+    base::trace_event::TraceEventHandle* handle) {
+  DCHECK(!pending_trace_packet_);
+  UpdateIncrementalStateIfNeeded(trace_event);
+
+  auto trace_packet = trace_writer_->NewTracePacket();
+  PrepareTrackEvent(trace_event, handle, &trace_packet);
+
+  if (!pending_interning_updates_.empty()) {
+    EmitStoredInternedData(trace_packet->set_interned_data());
+  }
+}
+
+base::trace_event::TrackEventHandle
+TrackEventThreadLocalEventSink::AddTypedTraceEvent(
+    base::trace_event::TraceEvent* trace_event) {
+  DCHECK(!TraceEventDataSource::GetInstance()
+              ->GetThreadIsInTraceEventTLS()
+              ->Get());
+  // Cleared in OnTrackEventCompleted().
+  TraceEventDataSource::GetInstance()->GetThreadIsInTraceEventTLS()->Set(true);
+
+  DCHECK(!pending_trace_packet_);
+  UpdateIncrementalStateIfNeeded(trace_event);
+
+  pending_trace_packet_ = trace_writer_->NewTracePacket();
+
+  // Note: Since |track_event| is a protozero message under |trace_packet|, we
+  // can't modify |trace_packet| further until we're done with |track_event|.
+  // Thus, incremental state is buffered until the TrackEventHandle we return
+  // here is destroyed.
+  base::trace_event::TraceEventHandle base_handle{0, 0, 0};
+  auto* track_event =
+      PrepareTrackEvent(trace_event, &base_handle, &pending_trace_packet_);
+
+  // |pending_trace_packet_| will be finalized in OnTrackEventCompleted() after
+  // the code in //base ran the typed trace point's argument function.
+  return base::trace_event::TrackEventHandle(track_event, this);
+}
+
+void TrackEventThreadLocalEventSink::OnTrackEventCompleted() {
+  DCHECK(pending_trace_packet_);
+
+  if (!pending_interning_updates_.empty()) {
+    EmitStoredInternedData(pending_trace_packet_->set_interned_data());
+  }
+
+  pending_trace_packet_ = perfetto::TraceWriter::TracePacketHandle();
+
+  DCHECK(
+      TraceEventDataSource::GetInstance()->GetThreadIsInTraceEventTLS()->Get());
+  TraceEventDataSource::GetInstance()->GetThreadIsInTraceEventTLS()->Set(false);
+}
+
 void TrackEventThreadLocalEventSink::UpdateIncrementalStateIfNeeded(
     base::trace_event::TraceEvent* trace_event) {
   bool explicit_timestamp =
@@ -785,9 +840,7 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
       trace_event_internal::kNoId /* bind_id */, nullptr,
       explicit_timestamps ? TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP
                           : TRACE_EVENT_FLAG_NONE);
-  perfetto::Track track{};
-  AddTraceEvent(&new_trace_event, nullptr, track,
-                [](perfetto::EventContext) {});
+  AddLegacyTraceEvent(&new_trace_event, nullptr);
 }
 
 void TrackEventThreadLocalEventSink::Flush() {

@@ -26,9 +26,9 @@ class PrimaryAccountMutatorImpl : public PrimaryAccountMutator {
 
   // PrimaryAccountMutator implementation.
   bool SetPrimaryAccount(const CoreAccountId& account_id) override;
+  void SetUnconsentedPrimaryAccount(const CoreAccountId& account_id) override;
 #if defined(OS_CHROMEOS)
   void RevokeSyncConsent() override;
-  void SetUnconsentedPrimaryAccount(const CoreAccountId& account_id) override;
 #endif
 #if !defined(OS_CHROMEOS)
   bool ClearPrimaryAccount(

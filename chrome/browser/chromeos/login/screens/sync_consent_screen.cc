@@ -117,20 +117,33 @@ void SyncConsentScreen::Finish(Result result) {
   DCHECK(profile_);
   // Always set completed, even if the dialog was skipped (e.g. by policy).
   profile_->GetPrefs()->SetBoolean(chromeos::prefs::kSyncOobeCompleted, true);
+  // Record whether the dialog was shown, skipped, etc.
+  base::UmaHistogramEnumeration("OOBE.SyncConsentScreen.Behavior", behavior_);
+  // Record the final state of the sync service.
+  syncer::SyncService* service = GetSyncService(profile_);
+  bool sync_enabled = service && service->CanSyncFeatureStart() &&
+                      service->GetUserSettings()->IsSyncEverythingEnabled();
+  base::UmaHistogramBoolean("OOBE.SyncConsentScreen.SyncEnabled", sync_enabled);
   exit_callback_.Run(result);
 }
 
 bool SyncConsentScreen::MaybeSkip() {
   Init();
 
-  if (behavior_ == SyncScreenBehavior::kSkip ||
-      behavior_ == SyncScreenBehavior::kSkipAndEnableSync) {
-    MaybeEnableSyncForSkip();
-    Finish(Result::NOT_APPLICABLE);
-    return true;
+  switch (behavior_) {
+    case SyncScreenBehavior::kUnknown:
+    case SyncScreenBehavior::kShow:
+      return false;
+    case SyncScreenBehavior::kSkipNonGaiaAccount:
+    case SyncScreenBehavior::kSkipPublicAccount:
+    case SyncScreenBehavior::kSkipFeaturePolicy:
+    case SyncScreenBehavior::kSkipAndEnableNonBrandedBuild:
+    case SyncScreenBehavior::kSkipAndEnableEmphemeralUser:
+    case SyncScreenBehavior::kSkipAndEnableScreenPolicy:
+      MaybeEnableSyncForSkip();
+      Finish(Result::NOT_APPLICABLE);
+      return true;
   }
-
-  return false;
 }
 
 void SyncConsentScreen::ShowImpl() {
@@ -180,16 +193,18 @@ void SyncConsentScreen::OnContinueWithDefaults(
   Finish(Result::NEXT);
 }
 
-void SyncConsentScreen::OnAcceptAndContinue(
+void SyncConsentScreen::OnContinue(
     const std::vector<int>& consent_description,
     int consent_confirmation,
-    bool enable_sync) {
+    SyncConsentScreenHandler::UserChoice choice) {
   DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
   if (is_hidden())
     return;
+  base::UmaHistogramEnumeration("OOBE.SyncConsentScreen.UserChoice", choice);
   // Record that the user saw the consent text, regardless of which features
   // they chose to enable.
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
+  bool enable_sync = choice == SyncConsentScreenHandler::UserChoice::kAccepted;
   UpdateSyncSettings(enable_sync);
   Finish(Result::NEXT);
 }
@@ -234,16 +249,27 @@ void SyncConsentScreen::UpdateSyncSettings(bool enable_sync) {
 }
 
 void SyncConsentScreen::MaybeEnableSyncForSkip() {
-  DCHECK(behavior_ == SyncScreenBehavior::kSkip ||
-         behavior_ == SyncScreenBehavior::kSkipAndEnableSync);
-
   // Prior to SplitSettingsSync, sync is autostarted during ProfileSyncService
   // creation, so sync is already in the right state.
   if (!chromeos::features::IsSplitSettingsSyncEnabled())
     return;
 
-  if (behavior_ == SyncScreenBehavior::kSkipAndEnableSync)
-    UpdateSyncSettings(/*enable_sync=*/true);
+  switch (behavior_) {
+    case SyncScreenBehavior::kUnknown:
+    case SyncScreenBehavior::kShow:
+      NOTREACHED();
+      return;
+    case SyncScreenBehavior::kSkipNonGaiaAccount:
+    case SyncScreenBehavior::kSkipPublicAccount:
+    case SyncScreenBehavior::kSkipFeaturePolicy:
+      // Nothing to do.
+      return;
+    case SyncScreenBehavior::kSkipAndEnableNonBrandedBuild:
+    case SyncScreenBehavior::kSkipAndEnableEmphemeralUser:
+    case SyncScreenBehavior::kSkipAndEnableScreenPolicy:
+      UpdateSyncSettings(/*enable_sync=*/true);
+      return;
+  }
 }
 
 // static
@@ -266,34 +292,34 @@ SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
     const {
   // Skip for users without Gaia account (e.g. Active Directory).
   if (!user_->HasGaiaAccount())
-    return SyncScreenBehavior::kSkip;
+    return SyncScreenBehavior::kSkipNonGaiaAccount;
 
   // Skip for public user.
   if (user_->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-    return SyncScreenBehavior::kSkip;
+    return SyncScreenBehavior::kSkipPublicAccount;
 
   // Skip for non-branded (e.g. developer) builds. Check this after the account
   // type checks so we don't try to enable sync in browser_tests for those
   // account types.
   if (!g_is_branded_build)
-    return SyncScreenBehavior::kSkipAndEnableSync;
+    return SyncScreenBehavior::kSkipAndEnableNonBrandedBuild;
 
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
   // Skip for non-regular ephemeral users.
   if (user_manager->IsUserNonCryptohomeDataEphemeral(user_->GetAccountId()) &&
       (user_->GetType() != user_manager::USER_TYPE_REGULAR)) {
-    return SyncScreenBehavior::kSkipAndEnableSync;
+    return SyncScreenBehavior::kSkipAndEnableEmphemeralUser;
   }
 
   // Skip if the sync consent screen is disabled by policy, for example, in
   // education scenarios. https://crbug.com/841156
   if (!profile_->GetPrefs()->GetBoolean(::prefs::kEnableSyncConsent))
-    return SyncScreenBehavior::kSkipAndEnableSync;
+    return SyncScreenBehavior::kSkipAndEnableScreenPolicy;
 
   // Skip if sync-the-feature is disabled by policy.
   if (IsProfileSyncDisabledByPolicy())
-    return SyncScreenBehavior::kSkip;
+    return SyncScreenBehavior::kSkipFeaturePolicy;
 
   if (IsProfileSyncEngineInitialized())
     return SyncScreenBehavior::kShow;
@@ -312,19 +338,12 @@ void SyncConsentScreen::UpdateScreen() {
   if (is_hidden() || behavior_ == old_behavior)
     return;
 
-  switch (behavior_) {
-    case SyncScreenBehavior::kShow:
-      view_->SetThrobberVisible(false /*visible*/);
-      GetSyncService(profile_)->RemoveObserver(this);
-      break;
-    case SyncScreenBehavior::kSkip:
-    case SyncScreenBehavior::kSkipAndEnableSync:
-      MaybeEnableSyncForSkip();
-      Finish(Result::NEXT);
-      break;
-    case SyncScreenBehavior::kUnknown:
-      NOTREACHED();
-      break;
+  if (behavior_ == SyncScreenBehavior::kShow) {
+    view_->SetThrobberVisible(false /*visible*/);
+    GetSyncService(profile_)->RemoveObserver(this);
+  } else {
+    MaybeEnableSyncForSkip();
+    Finish(Result::NEXT);
   }
 }
 

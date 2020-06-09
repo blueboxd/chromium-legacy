@@ -65,7 +65,7 @@ public class TabModelSelectorTabModelObserverTest {
     @UiThreadTest
     @SmallTest
     public void testUninitializedSelector() throws TimeoutException {
-        mSelector = new TabModelSelectorBase(null, false) {
+        mSelector = new TabModelSelectorBase(null, EmptyTabModelFilter::new, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {

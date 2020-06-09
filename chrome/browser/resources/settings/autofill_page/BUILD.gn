@@ -16,6 +16,7 @@ js_type_check("closure_compile_module") {
     ":blocking_request_manager",
     ":credit_card_edit_dialog",
     ":credit_card_list_entry",
+    ":merge_exceptions_store_copies_behavior",
     ":merge_passwords_store_copies_behavior",
     ":multi_store_exception_entry",
     ":multi_store_id_handler",
@@ -232,6 +233,7 @@ js_library("passwords_export_dialog") {
 
 js_library("passwords_section") {
   deps = [
+    ":merge_exceptions_store_copies_behavior",
     ":merge_passwords_store_copies_behavior",
     ":multi_store_exception_entry",
     ":multi_store_password_ui_entry",
@@ -260,7 +262,10 @@ js_library("passwords_section") {
 
 js_library("passwords_device_section") {
   deps = [
+    ":merge_exceptions_store_copies_behavior",
     ":merge_passwords_store_copies_behavior",
+    ":multi_store_exception_entry",
+    ":multi_store_id_handler",
     ":multi_store_password_ui_entry",
     ":password_list_item",
     ":password_manager_proxy",
@@ -312,7 +317,16 @@ js_library("merge_passwords_store_copies_behavior") {
   deps = [
     ":multi_store_password_ui_entry",
     ":password_manager_proxy",
+    "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:list_property_update_behavior.m",
+  ]
+}
+
+js_library("merge_exceptions_store_copies_behavior") {
+  deps = [
+    ":multi_store_exception_entry",
+    ":password_manager_proxy",
+    "//ui/webui/resources/js:assert.m",
   ]
 }
 

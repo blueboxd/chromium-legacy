@@ -464,17 +464,17 @@ TEST_F(CanvasResourceProviderTest, DimensionsExceedMaxTextureSize_SwapChain) {
   auto provider = CanvasResourceProvider::CreateSwapChainProvider(
       IntSize(kMaxTextureSize - 1, kMaxTextureSize), context_provider_wrapper_,
       kLow_SkFilterQuality, kColorParams, true /* is_origin_top_left */,
-      nullptr /* resource_dispatcher */, 0 /* msaa_sample_count */);
+      nullptr /* resource_dispatcher */);
   EXPECT_TRUE(provider->SupportsDirectCompositing());
   provider = CanvasResourceProvider::CreateSwapChainProvider(
       IntSize(kMaxTextureSize, kMaxTextureSize), context_provider_wrapper_,
       kLow_SkFilterQuality, kColorParams, true /* is_origin_top_left */,
-      nullptr /* resource_dispatcher */, 0 /* msaa_sample_count */);
+      nullptr /* resource_dispatcher */);
   EXPECT_TRUE(provider->SupportsDirectCompositing());
   provider = CanvasResourceProvider::CreateSwapChainProvider(
       IntSize(kMaxTextureSize + 1, kMaxTextureSize), context_provider_wrapper_,
       kLow_SkFilterQuality, kColorParams, true /* is_origin_top_left */,
-      nullptr /* resource_dispatcher */, 0 /* msaa_sample_count */);
+      nullptr /* resource_dispatcher */);
 
   // The CanvasResourceProvider for SwapChain should not be created or valid
   // if the texture size is greater than the maximum value
@@ -512,8 +512,7 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect2DSwapChain) {
 
   auto provider = CanvasResourceProvider::CreateSwapChainProvider(
       kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
-      true /* is_origin_top_left */, nullptr /* resource_dispatcher */,
-      0 /* msaa_sample_count */);
+      true /* is_origin_top_left */, nullptr /* resource_dispatcher */);
 
   if (!provider) {
     const uint32_t shared_image_usage_flags =

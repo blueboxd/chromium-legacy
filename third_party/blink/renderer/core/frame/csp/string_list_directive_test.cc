@@ -5,10 +5,20 @@
 #include "third_party/blink/renderer/core/frame/csp/string_list_directive.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
 namespace blink {
 
-TEST(StringListDirectiveTest, TestAllowLists) {
+class StringListDirectiveTest : public testing::Test {
+ public:
+  StringListDirectiveTest()
+      : csp_(MakeGarbageCollected<ContentSecurityPolicy>()) {}
+
+ protected:
+  Persistent<ContentSecurityPolicy> csp_;
+};
+
+TEST_F(StringListDirectiveTest, TestAllowLists) {
   struct {
     const char* directive;
     const char* should_be_allowed;
@@ -25,11 +35,15 @@ TEST(StringListDirectiveTest, TestAllowLists) {
       {"'allow-duplicates' bla", "bla", "blub", true},
       {"'allow-duplicates'", "", "bla blub", true},
       {"'allow-duplicates' bla blubb", "bla blubb", "blubber", true},
+      {"'none'", "", "default none abc", false},
+      {"'none' default", "default", "none abc", false},
+      {"* 'none'", "default none abc", "", false},
+      {"'allow-duplicates' 'none'", "", "default none abc", true},
   };
 
   for (const auto& test_case : test_cases) {
     StringListDirective directive("trusted-types", test_case.directive,
-                                  nullptr);
+                                  csp_.Get());
 
     Vector<String> allowed;
     String(test_case.should_be_allowed).Split(' ', allowed);

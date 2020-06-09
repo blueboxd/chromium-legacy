@@ -644,7 +644,8 @@ void PrerenderContents::CancelPrerenderForUnsupportedScheme(const GURL& url) {
 }
 
 void PrerenderContents::AddPrerenderCancelerReceiver(
-    mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver) {
+    mojo::PendingReceiver<
+        components::prerender::common::mojom::PrerenderCanceler> receiver) {
   prerender_canceler_receiver_set_.Add(this, std::move(receiver));
 }
 

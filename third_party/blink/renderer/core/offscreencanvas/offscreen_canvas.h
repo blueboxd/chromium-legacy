@@ -124,7 +124,6 @@ class CORE_EXPORT OffscreenCanvas final
   void Commit(scoped_refptr<CanvasResource> bitmap_image,
               const SkIRect& damage_rect) override;
   bool ShouldAccelerate2dContext() const override;
-  unsigned GetMSAASampleCountFor2dContext() const override { return 0; }
   CanvasResourceDispatcher* GetOrCreateResourceDispatcher() override;
 
   // Partial CanvasResourceHost implementation

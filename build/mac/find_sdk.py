@@ -39,7 +39,7 @@ class SdkError(Exception):
 
 def parse_version(version_str):
   """'10.6' => [10, 6]"""
-  return map(int, re.findall(r'(\d+)', version_str))
+  return [int(s) for s in re.findall(r'(\d+)', version_str)]
 
 
 def main():

@@ -88,6 +88,12 @@ class V4L2VideoDecoderBackend {
   // with |status| as argument.
   virtual void ClearPendingRequests(DecodeStatus status) = 0;
 
+  // Whether we should stop the input queue when changing resolution. Stateless
+  // decoders require this, but stateful ones need the input queue to keep
+  // running. Although not super elegant, this is required to express that
+  // difference.
+  virtual bool StopInputQueueOnResChange() const = 0;
+
  protected:
   V4L2VideoDecoderBackend(Client* const client,
                           scoped_refptr<V4L2Device> device);

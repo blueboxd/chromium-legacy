@@ -37,6 +37,7 @@ static_library("apps") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
+    "//base/util/values:values_util",
     "//components/keyed_service/content",
     "//content/public/browser",
     "//content/public/common",

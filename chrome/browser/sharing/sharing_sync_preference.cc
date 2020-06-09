@@ -8,7 +8,7 @@
 #include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
@@ -133,9 +133,9 @@ void SharingSyncPreference::SetVapidKey(
                      &base64_vapid_key);
 
   DictionaryPrefUpdate update(prefs_, prefs::kSharingVapidKey);
-  update->SetString(kVapidECPrivateKey, base64_vapid_key);
-  update->SetString(kVapidCreationTimestamp,
-                    base::CreateTimeValue(creation_timestamp).GetString());
+  update->SetStringKey(kVapidECPrivateKey, base64_vapid_key);
+  update->SetKey(kVapidCreationTimestamp,
+                 util::TimeToValue(creation_timestamp));
 }
 
 void SharingSyncPreference::SetVapidKeyChangeObserver(
@@ -164,11 +164,11 @@ SharingSyncPreference::GetFCMRegistration() const {
   if (authorized_entity_ptr)
     authorized_entity = *authorized_entity_ptr;
 
-  base::Time timestamp;
-  if (!base::GetValueAsTime(*timestamp_value, &timestamp))
+  base::Optional<base::Time> timestamp = util::ValueToTime(timestamp_value);
+  if (!timestamp)
     return base::nullopt;
 
-  return FCMRegistration(authorized_entity, timestamp);
+  return FCMRegistration(authorized_entity, *timestamp);
 }
 
 void SharingSyncPreference::SetFCMRegistration(FCMRegistration registration) {
@@ -180,7 +180,7 @@ void SharingSyncPreference::SetFCMRegistration(FCMRegistration registration) {
     update->RemoveKey(kRegistrationAuthorizedEntity);
   }
   update->SetKey(kRegistrationTimestamp,
-                 base::CreateTimeValue(registration.timestamp));
+                 util::TimeToValue(registration.timestamp));
 }
 
 void SharingSyncPreference::ClearFCMRegistration() {

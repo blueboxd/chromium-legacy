@@ -157,9 +157,6 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
         // TODO(crbug.com/1091211): Support PeriodicBackgroundSync on WebLayer.
         ::features::kPeriodicBackgroundSync, ::features::kSmsReceiver,
         media::kOverlayFullscreenVideo,
-        // TODO(crbug.com/1091795): Support Cross Origin Embedder Policy on
-        // WebLayer.
-        network::features::kCrossOriginEmbedderPolicy,
 #if defined(OS_ANDROID)
         media::kPictureInPictureAPI, ::features::kDisableDeJelly,
         ::features::kDynamicColorGamut,

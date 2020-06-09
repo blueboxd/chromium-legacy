@@ -10,6 +10,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
+import org.chromium.chrome.browser.profiles.ProfileKey;
 
 /**
  * Helper class to determine whether or not the prefetch setting is enabled for Chrome.
@@ -59,7 +60,10 @@ class PrefetchEnabledSupplier implements ObservableSupplier<Boolean> {
     }
 
     private static boolean isPrefetchEnabled() {
+        // Since this class is a helper that observes the settings changes, it is safe to use always
+        // regular profile for PrefetchConfiguration.
         return PrefetchConfiguration.isPrefetchingFlagEnabled()
-                && PrefetchConfiguration.isPrefetchingEnabledInSettings();
+                && PrefetchConfiguration.isPrefetchingEnabledInSettings(
+                        ProfileKey.getLastUsedRegularProfileKey());
     }
 }

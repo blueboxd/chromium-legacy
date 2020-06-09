@@ -9009,7 +9009,10 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
           << "Unexpected LifeCycleState " << int(lifecycle_state_);
       break;
   }
+  LifecycleState old_state = lifecycle_state_;
   lifecycle_state_ = state;
+  // Notify the delegate about change in |lifecycle_state_|.
+  delegate_->RenderFrameHostStateChanged(this, old_state, lifecycle_state_);
 }
 
 void RenderFrameHostImpl::BindReportingObserver(

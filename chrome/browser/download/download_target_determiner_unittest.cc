@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_confirmation_result.h"
@@ -429,7 +429,7 @@ void DownloadTargetDeterminerTest::SetManagedDownloadPath(
     const base::FilePath& path) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kDownloadDefaultDirectory,
-      base::Value::ToUniquePtrValue(base::CreateFilePathValue(path)));
+      base::Value::ToUniquePtrValue(util::FilePathToValue(path)));
 }
 
 void DownloadTargetDeterminerTest::SetPromptForDownload(bool prompt) {

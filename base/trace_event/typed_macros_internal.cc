@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/tracing/public/cpp/perfetto/macros_internal.h"
+#include "base/trace_event/typed_macros_internal.h"
 
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "base/trace_event/thread_instruction_count.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/typed_macros.h"
 
-namespace tracing {
-namespace internal {
 namespace {
 
 base::ThreadTicks ThreadNow() {
@@ -22,9 +24,29 @@ base::trace_event::ThreadInstructionCount ThreadInstructionNow() {
              : base::trace_event::ThreadInstructionCount();
 }
 
+base::trace_event::PrepareTrackEventFunction g_typed_event_callback = nullptr;
+
 }  // namespace
 
-base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
+namespace base {
+namespace trace_event {
+
+void EnableTypedTraceEvents(PrepareTrackEventFunction typed_event_callback) {
+  g_typed_event_callback = typed_event_callback;
+}
+
+void ResetTypedTraceEventsForTesting() {
+  g_typed_event_callback = nullptr;
+}
+
+TrackEventHandle::CompletionListener::~CompletionListener() = default;
+
+}  // namespace trace_event
+}  // namespace base
+
+namespace trace_event_internal {
+
+base::trace_event::TrackEventHandle CreateTrackEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -34,13 +56,17 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
   DCHECK(phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_END ||
          phase == TRACE_EVENT_PHASE_INSTANT);
   DCHECK(category_group_enabled);
+
+  if (!g_typed_event_callback)
+    return base::trace_event::TrackEventHandle();
+
   const int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   auto* trace_log = base::trace_event::TraceLog::GetInstance();
   DCHECK(trace_log);
   if (!trace_log->ShouldAddAfterUpdatingState(phase, category_group_enabled,
                                               name, trace_event_internal::kNoId,
                                               thread_id, nullptr)) {
-    return base::nullopt;
+    return base::trace_event::TrackEventHandle();
   }
 
   if (ts.is_null()) {
@@ -58,11 +84,12 @@ base::Optional<base::trace_event::TraceEvent> CreateTraceEvent(
     thread_instruction_now = ThreadInstructionNow();
   }
 
-  return base::trace_event::TraceEvent(
+  base::trace_event::TraceEvent event(
       thread_id, ts, thread_now, thread_instruction_now, phase,
       category_group_enabled, name, trace_event_internal::kGlobalScope,
       trace_event_internal::kNoId, trace_event_internal::kNoId, nullptr, flags);
+
+  return g_typed_event_callback(&event);
 }
 
-}  // namespace internal
-}  // namespace tracing
+}  // namespace trace_event_internal

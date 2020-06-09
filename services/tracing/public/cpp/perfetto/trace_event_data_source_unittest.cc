@@ -231,6 +231,7 @@ std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
 class TraceEventDataSourceTest : public testing::Test {
  public:
   void SetUp() override {
+    TraceEventDataSource::GetInstance()->RegisterStartupHooks();
     // TODO(eseckler): Initialize the entire perfetto client library instead.
     perfetto::internal::TrackRegistry::InitializeInstance();
 

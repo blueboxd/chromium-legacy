@@ -3,25 +3,25 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.signin;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.RootMatchers.isDialog;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import android.accounts.Account;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.NoMatchingViewException;
-import android.support.test.espresso.UiController;
-import android.support.test.espresso.ViewAction;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.test.espresso.NoMatchingViewException;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 

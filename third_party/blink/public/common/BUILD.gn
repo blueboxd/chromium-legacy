@@ -31,6 +31,11 @@ buildflag_header("buildflags") {
   flags = [ "RTC_USE_H264=$rtc_use_h264" ]
 }
 
+source_set("common_export") {
+  visibility = [ "//third_party/blink/public/common/*" ]
+  sources = [ "common_export.h" ]
+}
+
 source_set("headers") {
   visibility = [
     "//chrome/*",
@@ -52,7 +57,6 @@ source_set("headers") {
     "bluetooth/web_bluetooth_device_id_mojom_traits.h",
     "cache_storage/cache_storage_utils.h",
     "client_hints/client_hints.h",
-    "common_export.h",
     "context_menu_data/edit_flags.h",
     "context_menu_data/input_field_type.h",
     "context_menu_data/media_type.h",
@@ -84,6 +88,7 @@ source_set("headers") {
     "indexeddb/indexeddb_metadata.h",
     "indexeddb/web_idb_types.h",
     "input/pointer_id.h",
+    "input/synthetic_web_input_event_builders.h",
     "input/web_coalesced_input_event.h",
     "input/web_coalesced_input_event_mojom_traits.h",
     "input/web_gesture_device.h",
@@ -142,12 +147,6 @@ source_set("headers") {
     "peerconnection/webrtc_ip_handling_policy.h",
     "permissions/permission_utils.h",
     "prerender/prerender_rel_type.h",
-    "privacy_budget/identifiability_internal_templates.h",
-    "privacy_budget/identifiability_metric_builder.h",
-    "privacy_budget/identifiability_metrics.h",
-    "privacy_budget/identifiability_study_participation.h",
-    "privacy_budget/identifiable_surface.h",
-    "privacy_budget/identifiable_token.h",
     "scheduler/web_scheduler_tracked_feature.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
@@ -172,6 +171,7 @@ source_set("headers") {
     "//services/network/public/cpp:cpp",
     "//skia",
     "//skia/public/mojom:shared_typemap_traits",
+    "//third_party/blink/public/common/privacy_budget",
     "//third_party/blink/public/mojom:mojom_modules_headers",
     "//third_party/blink/public/mojom:mojom_platform_shared",
     "//third_party/blink/public/mojom:web_bluetooth_mojo_bindings_headers",
@@ -182,6 +182,7 @@ source_set("headers") {
 
   deps = [
     ":buildflags",
+    ":common_export",
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -215,10 +216,6 @@ source_set("headers") {
   if (is_win) {
     sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.h" ]
   }
-
-  # common_export.h is an implementation detail of component builds,
-  # not part of the public API.
-  public = sources - [ "common_export.h" ]
 }
 
 if (is_android || is_win) {

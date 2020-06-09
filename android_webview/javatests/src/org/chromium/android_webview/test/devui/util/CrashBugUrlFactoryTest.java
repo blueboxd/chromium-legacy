@@ -4,12 +4,12 @@
 
 package org.chromium.android_webview.test.devui.util;
 
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasHost;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasParamWithValue;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasPath;
-import static android.support.test.espresso.intent.matcher.UriMatchers.hasScheme;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static androidx.test.espresso.intent.matcher.IntentMatchers.hasData;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasHost;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasParamWithValue;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasPath;
+import static androidx.test.espresso.intent.matcher.UriMatchers.hasScheme;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 

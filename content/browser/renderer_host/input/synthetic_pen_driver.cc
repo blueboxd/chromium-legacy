@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/synthetic_pen_driver.h"
 
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+
 namespace content {
 
 SyntheticPenDriver::SyntheticPenDriver() : SyntheticMouseDriver() {
@@ -14,7 +16,7 @@ SyntheticPenDriver::~SyntheticPenDriver() {}
 
 void SyntheticPenDriver::Leave(int index) {
   DCHECK_EQ(index, 0);
-  mouse_event_ = SyntheticWebMouseEventBuilder::Build(
+  mouse_event_ = blink::SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::Type::kMouseLeave,
       mouse_event_.PositionInWidget().x(), mouse_event_.PositionInWidget().y(),
       last_modifiers_, mouse_event_.pointer_type);

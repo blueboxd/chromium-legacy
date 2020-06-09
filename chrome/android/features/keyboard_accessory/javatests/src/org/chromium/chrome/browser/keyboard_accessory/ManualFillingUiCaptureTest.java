@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.keyboard_accessory;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItem;
-import static android.support.test.espresso.contrib.RecyclerViewActions.scrollTo;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItem;
+import static androidx.test.espresso.contrib.RecyclerViewActions.scrollTo;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;

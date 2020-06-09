@@ -1255,6 +1255,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (selector != null) selector.destroy();
         }
 
+        if (mBookmarkBridgeSupplier != null) {
+            BookmarkBridge bookmarkBridge = mBookmarkBridgeSupplier.get();
+            if (bookmarkBridge != null) bookmarkBridge.destroy();
+            mBookmarkBridgeSupplier = null;
+        }
+
         mActivityTabProvider.destroy();
 
         mComponent = null;

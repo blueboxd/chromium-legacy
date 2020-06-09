@@ -1,0 +1,150 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/ui/update_required_notification.h"
+
+#include "ash/public/cpp/notification_utils.h"
+#include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
+
+using NotificationType = policy::MinimumVersionPolicyHandler::NotificationType;
+
+namespace chromeos {
+namespace {
+
+const char kUpdateRequiredNotificationId[] = "policy.update_required";
+
+base::string16 GetTitle(NotificationType type, int days_remaining) {
+  // TODO(https://crbug.com/1048607): Add and use title strings for weeks if
+  // |days_remaining| >= 7.
+  switch (type) {
+    case NotificationType::kNoConnection:
+      return days_remaining > 1
+                 ? l10n_util::GetStringFUTF16Int(
+                       IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_DAYS,
+                       days_remaining)
+                 : l10n_util::GetStringUTF16(
+                       IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_IMMEDIATE);
+    case NotificationType::kMeteredConnection:
+    case NotificationType::kEolReached:
+      return base::string16();
+  }
+}
+
+base::string16 GetMessage(NotificationType type,
+                          const std::string& domain_name) {
+  switch (type) {
+    case NotificationType::kNoConnection:
+      return l10n_util::GetStringFUTF16(IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE,
+                                        base::UTF8ToUTF16(domain_name));
+    case NotificationType::kMeteredConnection:
+    case NotificationType::kEolReached:
+      return base::string16();
+  }
+}
+
+base::string16 GetButtonText(NotificationType type) {
+  switch (type) {
+    case NotificationType::kNoConnection:
+      return l10n_util::GetStringUTF16(
+          IDS_UPDATE_REQUIRED_SCREEN_OPEN_NETWORK_SETTINGS);
+    case NotificationType::kMeteredConnection:
+    case NotificationType::kEolReached:
+      return base::string16();
+  }
+}
+
+message_center::NotificationPriority GetNotificationPriority(
+    int days_remaining) {
+  return days_remaining > 1 ? message_center::HIGH_PRIORITY
+                            : message_center::SYSTEM_PRIORITY;
+}
+
+message_center::SystemNotificationWarningLevel GetWarningLevel(
+    int days_remaining) {
+  return days_remaining > 1
+             ? message_center::SystemNotificationWarningLevel::WARNING
+             : message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+}
+
+}  // namespace
+
+UpdateRequiredNotification::UpdateRequiredNotification() = default;
+
+UpdateRequiredNotification::~UpdateRequiredNotification() = default;
+
+void UpdateRequiredNotification::Show(NotificationType type,
+                                      base::TimeDelta warning_time,
+                                      const std::string& domain_name,
+                                      base::OnceClosure button_click_callback,
+                                      base::OnceClosure close_callback) {
+  const int days_remaining = warning_time.InDays();
+  notification_button_click_callback_ = std::move(button_click_callback);
+  notification_close_callback_ = std::move(close_callback);
+
+  base::string16 title = GetTitle(type, days_remaining);
+  base::string16 body = GetMessage(type, domain_name);
+  base::string16 button = GetButtonText(type);
+  if (title.empty() || body.empty() || button.empty()) {
+    NOTREACHED();
+    return;
+  }
+
+  DisplayNotification(title, body, button, GetWarningLevel(days_remaining),
+                      GetNotificationPriority(days_remaining));
+}
+
+void UpdateRequiredNotification::DisplayNotification(
+    const base::string16& title,
+    const base::string16& message,
+    const base::string16& button_text,
+    message_center::SystemNotificationWarningLevel color_type,
+    message_center::NotificationPriority priority) {
+  message_center::RichNotificationData data;
+  data.buttons.push_back(message_center::ButtonInfo(button_text));
+
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          kUpdateRequiredNotificationId, title, message,
+          base::string16() /*display_source*/, GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT,
+              kUpdateRequiredNotificationId),
+          data,
+          base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
+              weak_factory_.GetWeakPtr()),
+          vector_icons::kBusinessIcon, color_type);
+  notification->set_priority(priority);
+
+  SystemNotificationHelper::GetInstance()->Display(*notification);
+}
+
+void UpdateRequiredNotification::Hide() {
+  SystemNotificationHelper::GetInstance()->Close(kUpdateRequiredNotificationId);
+}
+
+void UpdateRequiredNotification::Close(bool by_user) {
+  if (!notification_close_callback_.is_null())
+    std::move(notification_close_callback_).Run();
+}
+
+void UpdateRequiredNotification::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
+  // |button_index| may be empty if the notification body was clicked.
+  if (!button_index)
+    return;
+
+  Hide();
+  if (!notification_button_click_callback_.is_null())
+    std::move(notification_button_click_callback_).Run();
+}
+
+}  // namespace chromeos

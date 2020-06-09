@@ -44,9 +44,12 @@ class NGInlineItemsBuilderTemplate {
 
  public:
   // Create a builder that appends items to |items|.
-  explicit NGInlineItemsBuilderTemplate(Vector<NGInlineItem>* items)
-      : items_(items) {}
+  NGInlineItemsBuilderTemplate(LayoutBlockFlow* block_flow,
+                               Vector<NGInlineItem>* items)
+      : block_flow_(block_flow), items_(items) {}
   ~NGInlineItemsBuilderTemplate();
+
+  LayoutBlockFlow* GetLayoutBlockFlow() const { return block_flow_; }
 
   String ToString();
 
@@ -146,6 +149,7 @@ class NGInlineItemsBuilderTemplate {
  private:
   static bool NeedsBoxInfo();
 
+  LayoutBlockFlow* const block_flow_;
   Vector<NGInlineItem>* items_;
   StringBuilder text_;
 

@@ -94,7 +94,7 @@ void GenerateCertificateWithOptionalExpiration(
 
   scoped_refptr<RTCCertificateGeneratorRequest> request =
       base::MakeRefCounted<RTCCertificateGeneratorRequest>(
-          task_runner, pc_dependency_factory->GetWebRtcWorkerTaskRunner());
+          task_runner, pc_dependency_factory->GetWebRtcNetworkTaskRunner());
   request->GenerateCertificateAsync(key_params, expires_ms,
                                     std::move(completion_callback));
 }

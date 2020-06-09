@@ -7,14 +7,16 @@
 #include <string>
 
 #include "base/test/scoped_feature_list.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/events/base_event_utils.h"
 
 namespace content {
 
 namespace {
+using blink::SyntheticWebMouseEventBuilder;
+using blink::SyntheticWebTouchEvent;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebPointerProperties;

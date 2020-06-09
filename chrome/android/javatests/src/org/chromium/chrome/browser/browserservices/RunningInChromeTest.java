@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertFalse;
@@ -20,8 +20,9 @@ import static org.chromium.chrome.browser.notifications.NotificationConstants.NO
 import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT;
 
 import android.content.Intent;
-import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
+
+import androidx.test.espresso.Espresso;
 
 import org.junit.Before;
 import org.junit.Rule;

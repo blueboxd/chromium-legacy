@@ -28,6 +28,10 @@ blink_python_runner("make_generated_document_policy_features") {
   ]
 }
 
+config("blink_common_implementation") {
+  defines = [ "BLINK_COMMON_IMPLEMENTATION=1" ]
+}
+
 jumbo_source_set("common") {
   # No target should directly depend on this target since this is just the
   # source set rather than the actual component that can be linked to.
@@ -38,7 +42,7 @@ jumbo_source_set("common") {
     "//third_party/blink/public:all_blink",
   ]
 
-  defines = [ "BLINK_COMMON_IMPLEMENTATION=1" ]
+  configs += [ ":blink_common_implementation" ]
 
   sources = [
     # NOTE: Please do not add public headers that need to be referenced from
@@ -70,6 +74,7 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_key_path.cc",
     "indexeddb/indexeddb_key_range.cc",
     "indexeddb/indexeddb_metadata.cc",
+    "input/synthetic_web_input_event_builders.cc",
     "input/web_coalesced_input_event.cc",
     "input/web_coalesced_input_event_mojom_traits.cc",
     "input/web_gesture_event.cc",
@@ -114,9 +119,6 @@ jumbo_source_set("common") {
     "page/page_zoom.cc",
     "peerconnection/webrtc_ip_handling_policy.cc",
     "permissions/permission_utils.cc",
-    "privacy_budget/identifiability_metric_builder.cc",
-    "privacy_budget/identifiability_metrics.cc",
-    "privacy_budget/identifiability_study_participation.cc",
     "scheduler/web_scheduler_tracked_feature.cc",
     "service_worker/service_worker_status_code.cc",
     "service_worker/service_worker_type_converters.cc",
@@ -132,6 +134,7 @@ jumbo_source_set("common") {
 
   public_deps = [
     ":make_generated_document_policy_features",
+    "//third_party/blink/common/privacy_budget:privacy_budget",
     "//third_party/blink/public/common:headers",
   ]
 
@@ -145,6 +148,7 @@ jumbo_source_set("common") {
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom:mojom",
     "//services/network/public/cpp:cpp",
+    "//ui/events:events_base",
   ]
 
   # iOS doesn't use and must not depend on //media
@@ -175,7 +179,9 @@ test("blink_common_unittests") {
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom:mojom",
+    "//third_party/blink/common/privacy_budget:unit_tests",
     "//third_party/blink/public/common",
+    "//ui/gfx:test_support",
   ]
   if (is_android) {
     deps += [
@@ -197,6 +203,7 @@ jumbo_source_set("common_unittests_sources") {
     "feature_policy/policy_value_unittest.cc",
     "frame/user_activation_state_unittest.cc",
     "indexeddb/indexeddb_key_unittest.cc",
+    "input/synthetic_web_input_event_builders_unittest.cc",
     "input/web_input_event_unittest.cc",
     "loader/mime_sniffing_throttle_unittest.cc",
     "loader/throttling_url_loader_unittest.cc",
@@ -208,11 +215,6 @@ jumbo_source_set("common_unittests_sources") {
     "notifications/notification_mojom_traits_unittest.cc",
     "origin_trials/trial_token_unittest.cc",
     "origin_trials/trial_token_validator_unittest.cc",
-    "privacy_budget/identifiability_internal_templates_unittest.cc",
-    "privacy_budget/identifiability_metric_builder_unittest.cc",
-    "privacy_budget/identifiability_metrics_unittest.cc",
-    "privacy_budget/identifiable_surface_unittest.cc",
-    "privacy_budget/identifiable_token_unittest.cc",
     "test/run_all_unittests.cc",
     "user_agent/user_agent_metadata_unittest.cc",
     "web_package/web_package_request_matcher_unittest.cc",

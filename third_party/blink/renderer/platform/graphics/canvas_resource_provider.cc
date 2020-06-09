@@ -85,7 +85,6 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kBitmap,
                                size,
-                               0 /*msaa_sample_count*/,
                                filter_quality,
                                color_params,
                                true /*is_origin_top_left*/,
@@ -175,12 +174,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
  public:
   CanvasResourceProviderSharedImage(
       const IntSize& size,
-      unsigned msaa_sample_count,
       SkFilterQuality filter_quality,
       const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
           context_provider_wrapper,
-      base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left,
       bool is_accelerated,
       bool use_webgpu,
@@ -188,7 +185,6 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       : CanvasResourceProvider(
             use_webgpu ? kWebGPUSharedImage : kSharedImage,
             size,
-            msaa_sample_count,
             filter_quality,
             // TODO(khushalsagar): The software path seems to be assuming N32
             // somewhere in the later pipeline but for offscreen canvas only.
@@ -200,7 +196,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
                               color_params.GetOpacityMode()),
             is_origin_top_left,
             std::move(context_provider_wrapper),
-            std::move(resource_dispatcher)),
+            nullptr /* resource_dispatcher */),
         is_accelerated_(is_accelerated),
         shared_image_usage_flags_(shared_image_usage_flags),
         use_oop_rasterization_(ContextProviderWrapper()
@@ -422,7 +418,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     gfx::Vector2dF post_translate(0.f, 0.f);
 
     ri->BeginRasterCHROMIUM(
-        background_color, GetMSAASampleCount(), use_lcd,
+        background_color, 0 /* msaa_sample_count */, use_lcd,
         ColorParams().GetStorageGfxColorSpace(),
         resource()->GetOrCreateGpuMailbox(kUnverifiedSyncToken).name);
 
@@ -468,7 +464,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (is_accelerated_) {
       return SkSurface::MakeFromBackendTexture(
           GetGrContext(), CreateGrTextureForResource(), GetGrSurfaceOrigin(),
-          GetMSAASampleCount(), ColorParams().GetSkColorType(),
+          0 /* msaa_sample_count */, ColorParams().GetSkColorType(),
           ColorParams().GetSkColorSpaceForSkSurfaces(),
           ColorParams().GetSkSurfaceProps());
     }
@@ -582,7 +578,6 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
       bool is_origin_top_left)
       : CanvasResourceProvider(kPassThrough,
                                size,
-                               /*msaa_sample_count=*/0,
                                filter_quality,
                                color_params,
                                is_origin_top_left,
@@ -628,7 +623,6 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
  public:
   CanvasResourceProviderSwapChain(
       const IntSize& size,
-      unsigned msaa_sample_count,
       SkFilterQuality filter_quality,
       const CanvasColorParams& color_params,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -636,13 +630,11 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher)
       : CanvasResourceProvider(kSwapChain,
                                size,
-                               msaa_sample_count,
                                filter_quality,
                                color_params,
                                true /*is_origin_top_left*/,
                                std::move(context_provider_wrapper),
-                               std::move(resource_dispatcher)),
-        msaa_sample_count_(msaa_sample_count) {
+                               std::move(resource_dispatcher)) {
     resource_ = CanvasResourceSwapChain::Create(
         Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
         FilterQuality());
@@ -702,12 +694,11 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
 
     return SkSurface::MakeFromBackendTexture(
         GetGrContext(), backend_texture, kTopLeft_GrSurfaceOrigin,
-        msaa_sample_count_, ColorParams().GetSkColorType(),
+        0 /* msaa_sample_count */, ColorParams().GetSkColorType(),
         ColorParams().GetSkColorSpaceForSkSurfaces(),
         ColorParams().GetSkSurfaceProps());
   }
 
-  const unsigned msaa_sample_count_;
   bool dirty_ = false;
   scoped_refptr<CanvasResourceSwapChain> resource_;
 };
@@ -765,8 +756,7 @@ CanvasResourceProvider::CreateSharedImageProvider(
     const CanvasColorParams& color_params,
     bool is_origin_top_left,
     RasterMode raster_mode,
-    uint32_t shared_image_usage_flags,
-    unsigned msaa_sample_count) {
+    uint32_t shared_image_usage_flags) {
   if (!context_provider_wrapper)
     return nullptr;
 
@@ -799,8 +789,7 @@ CanvasResourceProvider::CreateSharedImageProvider(
   }
 
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
-      size, msaa_sample_count, filter_quality, color_params,
-      context_provider_wrapper, nullptr /* resource_dispatcher */,
+      size, filter_quality, color_params, context_provider_wrapper,
       is_origin_top_left, raster_mode == RasterMode::kGPU, use_webgpu,
       shared_image_usage_flags);
   if (provider->IsValid())
@@ -849,8 +838,7 @@ CanvasResourceProvider::CreateSwapChainProvider(
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     bool is_origin_top_left,
-    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
-    unsigned msaa_sample_count) {
+    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher) {
   DCHECK(is_origin_top_left);
   if (!SharedGpuContext::IsGpuCompositingEnabled() || !context_provider_wrapper)
     return nullptr;
@@ -864,8 +852,8 @@ CanvasResourceProvider::CreateSwapChainProvider(
   }
 
   auto provider = std::make_unique<CanvasResourceProviderSwapChain>(
-      size, msaa_sample_count, filter_quality, color_params,
-      context_provider_wrapper, resource_dispatcher);
+      size, filter_quality, color_params, context_provider_wrapper,
+      resource_dispatcher);
   if (provider->IsValid())
     return provider;
 
@@ -962,7 +950,6 @@ void CanvasResourceProvider::CanvasImageProvider::CleanupLockedImages() {
 CanvasResourceProvider::CanvasResourceProvider(
     const ResourceProviderType& type,
     const IntSize& size,
-    unsigned msaa_sample_count,
     SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     bool is_origin_top_left,
@@ -972,7 +959,6 @@ CanvasResourceProvider::CanvasResourceProvider(
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       resource_dispatcher_(resource_dispatcher),
       size_(size),
-      msaa_sample_count_(msaa_sample_count),
       filter_quality_(filter_quality),
       color_params_(color_params),
       is_origin_top_left_(is_origin_top_left),

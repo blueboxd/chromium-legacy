@@ -2784,7 +2784,7 @@
     Reset
   </message>
 
-  <!-- Obsolete versions Notification strings-->
+  <!-- Update Required Screen Strings-->
   <message name="IDS_UPDATE_REQUIRED_SCREEN_TITLE" desc="The title of the update required dialog on the login screen to inform the user that policy prevents user sign in before OS version is is updated.">
      Immediate update required
   </message>
@@ -2814,6 +2814,17 @@
   </message>
   <message name="IDS_UPDATE_REQUIRED_UPDATING_MESSAGE" desc="The message of the update required dialog on the login screen to inform the user that the device is updating and will restart after the update is complete.">
     Device will restart when updates are complete.
+  </message>
+
+  <!-- Update Required Notiifcation Strings-->
+  <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_IMMEDIATE" desc="The title of the notification dialog informing the user that the device is not connected to the internet and it is last day to update the device.">
+    Last day to update device
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_DAYS" desc="The title of the notification dialog informing the user that the device is not connected to the internet and an update is required within two or more days.">
+    Update device within <ph name="COUNT">$1<ex>2</ex></ph> days
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE" desc="The body text of the notification dialog informing the user that the device is not connected to the internet and an update is required.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to download an update before the deadline. The update will download automatically when you connect to the internet.
   </message>
 
   <!-- Genius App -->

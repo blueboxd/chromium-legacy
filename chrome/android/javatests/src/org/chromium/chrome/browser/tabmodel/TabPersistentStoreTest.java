@@ -27,6 +27,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
+import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelper;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -86,7 +87,7 @@ public class TabPersistentStoreTest {
         private final TabModelOrderController mTabModelOrderController;
 
         public TestTabModelSelector() throws Exception {
-            super(new MockTabCreatorManager(), false);
+            super(new MockTabCreatorManager(), new ChromeTabModelFilterFactory(), false);
             ((MockTabCreatorManager) getTabCreatorManager()).initialize(this);
             mTabPersistentStoreObserver = new MockTabPersistentStoreObserver();
             mTabPersistentStore =

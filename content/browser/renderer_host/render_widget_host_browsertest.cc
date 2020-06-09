@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/notification_types.h"
@@ -34,6 +33,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/events/base_event_utils.h"
@@ -164,7 +164,7 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
                                 int modifiers,
                                 bool pressed) {
     blink::WebMouseEvent event =
-        SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
+        blink::SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
     if (pressed)
       event.button = blink::WebMouseEvent::Button::kLeft;
     event.SetTimeStamp(GetNextSimulatedEventTime());

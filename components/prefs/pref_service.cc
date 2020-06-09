@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/util/values/values_util.h"
-#include "base/value_conversions.h"
 #include "build/build_config.h"
 #include "components/prefs/default_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
@@ -206,14 +205,12 @@ std::string PrefService::GetString(const std::string& path) const {
 base::FilePath PrefService::GetFilePath(const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  base::FilePath result;
-
   const base::Value* value = GetPreferenceValueChecked(path);
   if (!value)
-    return base::FilePath(result);
-  bool rv = base::GetValueAsFilePath(*value, &result);
-  DCHECK(rv);
-  return result;
+    return base::FilePath();
+  base::Optional<base::FilePath> result = util::ValueToFilePath(*value);
+  DCHECK(result);
+  return *result;
 }
 
 bool PrefService::HasPrefPath(const std::string& path) const {
@@ -492,7 +489,7 @@ void PrefService::SetString(const std::string& path, const std::string& value) {
 
 void PrefService::SetFilePath(const std::string& path,
                               const base::FilePath& value) {
-  SetUserPrefValue(path, base::CreateFilePathValue(value));
+  SetUserPrefValue(path, util::FilePathToValue(value));
 }
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {

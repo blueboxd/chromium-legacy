@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/upgrade_detector/build_state_observer.h"
 #include "chromeos/dbus/update_engine_client.h"
+#include "chromeos/network/network_state_handler_observer.h"
 
 class PrefRegistrySimple;
 
@@ -25,11 +26,17 @@ class DictionaryValue;
 class Time;
 }
 
+namespace chromeos {
+class UpdateRequiredNotification;
+}
+
 namespace policy {
 
 // This class observes the device setting |kMinimumChromeVersionEnforced|, and
 // checks if respective requirement is met.
-class MinimumVersionPolicyHandler : public BuildStateObserver {
+class MinimumVersionPolicyHandler
+    : public BuildStateObserver,
+      public chromeos::NetworkStateHandlerObserver {
  public:
   static const char kChromeVersion[];
   static const char kWarningPeriod[];
@@ -108,12 +115,23 @@ class MinimumVersionPolicyHandler : public BuildStateObserver {
     base::TimeDelta eol_warning_time_;
   };
 
+  enum class NetworkStatus { kAllowed, kMetered, kOffline };
+
+  enum class NotificationType {
+    kMeteredConnection,
+    kNoConnection,
+    kEolReached
+  };
+
   explicit MinimumVersionPolicyHandler(Delegate* delegate,
                                        chromeos::CrosSettings* cros_settings);
   ~MinimumVersionPolicyHandler() override;
 
-  // BuildStateObserver
+  // BuildStateObserver:
   void OnUpdate(const BuildState* build_state) override;
+
+  // NetworkStateHandlerObserver:
+  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -168,6 +186,18 @@ class MinimumVersionPolicyHandler : public BuildStateObserver {
   // state if new version satisfies the minimum version requirement.
   void StartObservingUpdate();
 
+  // Shows notification for a managed logged in user if update is required and
+  // the device can not be updated due to end-of-life or network limitations.
+  void MaybeShowNotification(base::TimeDelta warning);
+
+  // Shows notification if required and starts a timer to expire when the next
+  // notification is to be shown.
+  void ShowAndScheduleNotification(base::Time deadline);
+
+  void HideNotification() const;
+
+  void StopObservingNetwork();
+
   // Updates pref |kUpdateRequiredWarningPeriod| in local state to
   // |warning_time|. If |kUpdateRequiredTimerStartTime| is not null, it means
   // update is already required and hence, the timer start time should not be
@@ -200,6 +230,9 @@ class MinimumVersionPolicyHandler : public BuildStateObserver {
   // Fires when the deadline to update the device has reached or passed.
   util::WallClockTimer update_required_deadline_timer_;
 
+  // Fires when next update required notification is to be shown.
+  util::WallClockTimer notification_timer_;
+
   // Non-owning reference to CrosSettings. This class have shorter lifetime than
   // CrosSettings.
   chromeos::CrosSettings* cros_settings_;
@@ -210,6 +243,10 @@ class MinimumVersionPolicyHandler : public BuildStateObserver {
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       policy_subscription_;
+
+  // Handles showing in-session update required notifications on the basis of
+  // current network and time to reach the deadline.
+  std::unique_ptr<chromeos::UpdateRequiredNotification> notification_handler_;
 
   // List of registered observers.
   base::ObserverList<Observer>::Unchecked observers_;

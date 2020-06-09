@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.download;
 
-import static android.support.test.espresso.Espresso.onData;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.Espresso.onData;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.equalTo;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
+
+import androidx.test.espresso.Espresso;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

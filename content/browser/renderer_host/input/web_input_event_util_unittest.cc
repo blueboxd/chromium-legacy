@@ -5,8 +5,8 @@
 #include <stddef.h>
 
 #include "base/numerics/math_constants.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event_constants.h"

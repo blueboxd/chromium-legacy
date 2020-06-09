@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.identity_disc;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
-import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
+import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
@@ -17,9 +17,10 @@ import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
-import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
+
+import androidx.test.espresso.matcher.ViewMatchers;
 
 import org.hamcrest.Matchers;
 import org.junit.After;

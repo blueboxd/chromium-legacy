@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'ec3e870dba2a9935ba3ebc3255ac97c6482e3e36',
+  'devtools_frontend_revision': 'e5fef85222eda0c1b505d96934f0ec9e39366b72',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -305,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '0a79bee135cd916e5d85495c47f4f77746e1c5f6',
+  'dawn_revision': '83faf15d21b6fde6c6529536e9f933a32326ab53',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -875,7 +875,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '37e562110fa58a913b13ed2258f18449f90c6ad7',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'a2e91dbb61950a8e6000187d1fb7f15b7dbb0cca',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -892,7 +892,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/espresso',
-              'version': 'c92dcfc4e894555a0b3c309f2b7939640eb1fee4',
+              'version': 'y8fIfH8Leo2cPm7iGCYnBxZpwOlgLv8rm2mlcmJlvGsC',
           },
       ],
       'condition': 'checkout_android',
@@ -931,7 +931,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'bf190c43e5c7cc81751867c917a81bc2920be079',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '8111268575a41753dfb6f9afc40b7c096af769aa',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '08328fea5ab97a9e354d46446a3547d89d1416da',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1224,7 +1224,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f19675c75eab7f5f0ec5bd048fd6842896f146d0',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a7e60fe18677bc3f1cc7466ab68fe35be481c557',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1302,7 +1302,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'pcue74MrtwdptQfnABqz12W-F6Br8-PlTN1pD5o_aQsC'
+              'version': 'GMB48BSk7tUABUOq1za-08Safc5r3VfS3614ZsTrWFQC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1452,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '09eb6e249d4e1f926dfa586bff9cc0de1c4cdefa',
+    Var('webrtc_git') + '/src.git' + '@' + 'a48dd43fe185ed6a826b7ce3bfee0b2187329159',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1533,6 +1533,17 @@ deps = {
       {
         'package': 'chromeos_internal/apps/help_app/app',
         'version': 'zqEjsRuI2qX11reJI5f9bE5X3iD6CtglpDcv2Cugj3cC',
+      },
+    ],
+    'condition': 'checkout_chromeos and checkout_src_internal',
+    'dep_type': 'cipd',
+  },
+
+  'src/chromeos/components/media_app_ui/resources/prod': {
+    'packages': [
+      {
+        'package': 'chromeos_internal/apps/media_app/app',
+        'version': 'F-avF4Ri2hix7udnvUw4Kpy8yj3WwML3J-8znYT-jvYC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

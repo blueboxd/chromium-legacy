@@ -186,9 +186,9 @@ class ReusingTextShaper final {
 // There are also performance considerations, since template saves the overhead
 // for condition checking and branching.
 template <typename ItemsBuilder>
-void CollectInlinesInternal(LayoutBlockFlow* block,
-                            ItemsBuilder* builder,
+void CollectInlinesInternal(ItemsBuilder* builder,
                             const NGInlineNodeData* previous_data) {
+  LayoutBlockFlow* const block = builder->GetLayoutBlockFlow();
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
 
@@ -693,11 +693,11 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
   NGInlineNode node(editor.GetLayoutBlockFlow());
   NGInlineNodeData* data = node.MutableData();
   data->items.ReserveCapacity(previous_data->items.size());
-  NGInlineItemsBuilder builder(&data->items);
+  NGInlineItemsBuilder builder(editor.GetLayoutBlockFlow(), &data->items);
   // TODO(yosin): We should reuse before/after |layout_text| during collecting
   // inline items.
   layout_text->ClearInlineItems();
-  CollectInlinesInternal(node.GetLayoutBlockFlow(), &builder, previous_data);
+  CollectInlinesInternal(&builder, previous_data);
   builder.DidFinishCollectInlines(data);
   // Relocates |ShapeResult| in |previous_data| after |offset|+|length|
   editor.Run();
@@ -737,10 +737,10 @@ void NGInlineNode::ComputeOffsetMapping(LayoutBlockFlow* layout_block_flow,
   // |builder| not construct items and text content.
   Vector<NGInlineItem> items;
   items.ReserveCapacity(EstimateInlineItemsCount(*layout_block_flow));
-  NGInlineItemsBuilderForOffsetMapping builder(&items);
+  NGInlineItemsBuilderForOffsetMapping builder(layout_block_flow, &items);
   builder.GetOffsetMappingBuilder().ReserveCapacity(
       EstimateOffsetMappingItemsCount(*layout_block_flow));
-  CollectInlinesInternal(layout_block_flow, &builder, nullptr);
+  CollectInlinesInternal(&builder, nullptr);
 
   // For non-NG object, we need the text, and also the inline items to resolve
   // bidi levels. Otherwise |data| already has the text from the pre-layout
@@ -803,8 +803,8 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   block->WillCollectInlines();
 
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
-  NGInlineItemsBuilder builder(&data->items);
-  CollectInlinesInternal(block, &builder, previous_data);
+  NGInlineItemsBuilder builder(block, &data->items);
+  CollectInlinesInternal(&builder, previous_data);
   builder.DidFinishCollectInlines(data);
 }
 

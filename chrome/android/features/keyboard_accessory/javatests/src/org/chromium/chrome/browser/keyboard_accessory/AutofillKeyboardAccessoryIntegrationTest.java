@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.keyboard_accessory;
 
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItem;
-import static android.support.test.espresso.contrib.RecyclerViewActions.scrollTo;
-import static android.support.test.espresso.matcher.ViewMatchers.withChild;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.contrib.RecyclerViewActions.actionOnItem;
+import static androidx.test.espresso.contrib.RecyclerViewActions.scrollTo;
+import static androidx.test.espresso.matcher.ViewMatchers.withChild;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.junit.Assert.assertTrue;
 

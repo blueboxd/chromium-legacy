@@ -95,6 +95,7 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
@@ -111,6 +112,7 @@
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -689,6 +691,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #if defined(OS_ANDROID)
       Java_PackageHash_onCookiesDeleted(base::android::AttachCurrentThread());
 #endif
+    }
+
+    if (nullable_filter.is_null() ||
+        nullable_filter.Run(GaiaUrls::GetInstance()->google_url())) {
+      // Explicitly clear any opt-ins to the account-scoped password storage
+      // when cookies are being cleared.
+      // TODO(crbug.com/1052005, crbug.com/1078762): These *should* get cleared
+      // automatically when the Google cookies are deleted, but currently this
+      // doesn't always work reliably. When these bugs get resolved, the
+      // following line can be removed.
+      password_manager::features_util::ClearAccountStorageSettingsForAllUsers(
+          prefs);
     }
   }
 

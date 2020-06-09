@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 
@@ -601,7 +602,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        CancelScrollBubblingWhenChildDetaches) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   {
@@ -654,7 +655,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        ContinueScrollBubblingWhenIrrelevantChildDetaches) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState outer = MakeChildView(view_root_.get());
@@ -680,7 +681,7 @@ void RenderWidgetHostInputEventRouterTest::TestSendNewGestureWhileBubbling(
     bool should_cancel) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   TestRenderWidgetHostViewChildFrame* cur_target = bubbling_origin;
@@ -791,7 +792,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 TEST_F(RenderWidgetHostInputEventRouterTest, DoNotBubbleMultipleSequences) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState outer1 = MakeChildView(view_root_.get());
@@ -819,7 +820,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        DoNotBubbleIfUnrelatedGestureInTarget) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState child = MakeChildView(view_root_.get());
@@ -865,7 +866,7 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
        NestedDoNotBubbleIfUnrelatedGestureInTarget) {
   gfx::Vector2dF delta(0.f, 10.f);
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           delta.x(), delta.y(), blink::WebGestureDevice::kTouchscreen);
 
   ChildViewState outer = MakeChildView(view_root_.get());

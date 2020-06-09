@@ -124,6 +124,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Like MakeAccountAvailable(), but adds an "unconsented" primary account. See
   // ./README.md for the distinction between primary account and unconsented
   // primary account.
+  // TODO(crbug.com/1046746): Rename/Refactor |*PrimaryAccount*| functions to
+  // take |ConsentLevel| instead.
   AccountInfo MakeUnconsentedPrimaryAccountAvailable(const std::string& email);
 
   // Combination of MakeAccountAvailable() and SetCookieAccounts() for a single

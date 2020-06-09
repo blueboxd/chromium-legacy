@@ -745,6 +745,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const std::vector<blink::mojom::SavableSubframePtr>& subframes) override;
   void SavableResourceLinksError(RenderFrameHostImpl* source) override;
 
+  // Called when the |RenderFrameHostImpl::lifecycle_state()| changes.
+  void RenderFrameHostStateChanged(
+      RenderFrameHost* render_frame_host,
+      RenderFrameHostImpl::LifecycleState old_state,
+      RenderFrameHostImpl::LifecycleState new_state) override;
+
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
   bool OnMessageReceived(RenderViewHostImpl* render_view_host,

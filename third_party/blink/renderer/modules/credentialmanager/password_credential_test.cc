@@ -97,7 +97,10 @@ TEST_F(PasswordCredentialTest, CreateFromFormNoPassword) {
   EXPECT_EQ(nullptr, credential);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
-  EXPECT_EQ("'password' must not be empty.", exception_state.Message());
+  EXPECT_EQ(
+      "Either 'current-password' or 'new-password' must be specified in the "
+      "form's autocomplete attribute.",
+      exception_state.Message());
 }
 
 TEST_F(PasswordCredentialTest, CreateFromFormNoId) {
@@ -116,7 +119,9 @@ TEST_F(PasswordCredentialTest, CreateFromFormNoId) {
   EXPECT_EQ(nullptr, credential);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
-  EXPECT_EQ("'id' must not be empty.", exception_state.Message());
+  EXPECT_EQ(
+      "'username' must be specified in the form's autocomplete attribute.",
+      exception_state.Message());
 }
 
 }  // namespace blink

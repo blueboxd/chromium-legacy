@@ -120,6 +120,10 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 // Constants for deferred promo display.
 const NSTimeInterval kDisplayPromoDelay = 0.1;
 
+// Key of the UMA IOS.MultiWindow.OpenInNewWindow histogram.
+const char kMultiWindowOpenInNewWindowHistogram[] =
+    "IOS.MultiWindow.OpenInNewWindow";
+
 }  // namespace
 
 @interface SceneController () <AppStateObserver,
@@ -396,8 +400,10 @@ const NSTimeInterval kDisplayPromoDelay = 0.1;
   if (sceneState.currentOrigin != WindowActivityRestoredOrigin) {
     if (IsMultiwindowSupported()) {
       if (@available(iOS 13, *)) {
-        // TODO(crbug.com/1084905): log metrics for open in window.
-        LOG(WARNING) << "New scene origin: " << (int)sceneState.currentOrigin;
+        // int origin =
+        //    static_cast<int>(sceneState.currentOrigin);
+        base::UmaHistogramEnumeration(kMultiWindowOpenInNewWindowHistogram,
+                                      sceneState.currentOrigin);
       }
     }
   }

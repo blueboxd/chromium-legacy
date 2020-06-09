@@ -2116,7 +2116,17 @@ jumbo_component("base") {
       "trace_event/traced_value.h",
       "trace_event/tracing_agent.cc",
       "trace_event/tracing_agent.h",
+      "trace_event/typed_macros.h",
+      "trace_event/typed_macros_embedder_support.h",
+      "trace_event/typed_macros_internal.cc",
+      "trace_event/typed_macros_internal.h",
     ]
+
+    public_deps += [ "//third_party/perfetto:libperfetto" ]
+
+    deps += [ "//third_party/perfetto/include/perfetto/protozero" ]
+
+    all_dependent_configs += [ "//third_party/perfetto/gn:public_config" ]
 
     if (is_win) {
       sources += [
@@ -3127,6 +3137,7 @@ test("base_unittests") {
 
   if (use_partition_alloc) {
     sources += [
+      "allocator/partition_allocator/address_pool_manager_unittest.cc",
       "allocator/partition_allocator/address_space_randomization_unittest.cc",
       "allocator/partition_allocator/memory_reclaimer_unittest.cc",
       "allocator/partition_allocator/page_allocator_unittest.cc",
@@ -3264,6 +3275,7 @@ test("base_unittests") {
       "trace_event/trace_event_filter_test_utils.h",
       "trace_event/trace_event_unittest.cc",
       "trace_event/traced_value_unittest.cc",
+      "trace_event/typed_macros_unittest.cc",
     ]
 
     if (is_android) {

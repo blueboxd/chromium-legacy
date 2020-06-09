@@ -436,6 +436,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
   PositionWithAffinity PositionForPoint(const LayoutObject& offset_parent,
                                         const PhysicalOffset& offset) const;
+  bool ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom() const;
 
   LayoutUnit LowestFloatLogicalBottom(EClear = EClear::kBoth) const;
 

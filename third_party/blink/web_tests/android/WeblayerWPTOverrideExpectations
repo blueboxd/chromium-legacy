@@ -2552,7 +2552,6 @@ crbug.com/1050754 external/wpt/pointerevents/pointerlock/pointerevent_movementxy
 crbug.com/1050754 external/wpt/pointerevents/pointerlock/pointerevent_movementxy_with_pointerlock.html [ Failure ]
 crbug.com/1050754 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_after_pointercapture.html [ Failure ]
 crbug.com/1050754 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture.html [ Failure ]
-crbug.com/1050754 external/wpt/pointerevents/pointerlock/pointerevent_pointermove_in_pointerlock.html [ Timeout ]
 crbug.com/1050754 external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Timeout ]
 crbug.com/1050754 external/wpt/pointerlock/mouse_buttons_back_forward.html [ Timeout ]
 crbug.com/1050754 external/wpt/pointerlock/movementX_Y_basic.html [ Failure ]

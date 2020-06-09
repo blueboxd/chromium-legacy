@@ -405,9 +405,17 @@ void OnMakePublicKeyCredentialComplete(
         VectorToDOMArrayBuffer(std::move(credential->info->raw_id));
     DOMArrayBuffer* attestation_buffer =
         VectorToDOMArrayBuffer(std::move(credential->attestation_object));
+    DOMArrayBuffer* authenticator_data =
+        VectorToDOMArrayBuffer(std::move(credential->info->authenticator_data));
+    DOMArrayBuffer* public_key_der = nullptr;
+    if (credential->public_key_der) {
+      public_key_der =
+          VectorToDOMArrayBuffer(std::move(credential->public_key_der.value()));
+    }
     auto* authenticator_response =
         MakeGarbageCollected<AuthenticatorAttestationResponse>(
-            client_data_buffer, attestation_buffer, credential->transports);
+            client_data_buffer, attestation_buffer, credential->transports,
+            authenticator_data, public_key_der, credential->public_key_algo);
 
     AuthenticationExtensionsClientOutputs* extension_outputs =
         AuthenticationExtensionsClientOutputs::Create();
@@ -435,7 +443,7 @@ void OnGetAssertionComplete(
   if (status == AuthenticatorStatus::SUCCESS) {
     DCHECK(credential);
     DCHECK(!credential->signature.IsEmpty());
-    DCHECK(!credential->authenticator_data.IsEmpty());
+    DCHECK(!credential->info->authenticator_data.IsEmpty());
     UseCounter::Count(
         resolver->GetExecutionContext(),
         WebFeature::kCredentialManagerGetPublicKeyCredentialSuccess);
@@ -445,7 +453,7 @@ void OnGetAssertionComplete(
         VectorToDOMArrayBuffer(std::move(credential->info->raw_id));
 
     DOMArrayBuffer* authenticator_buffer =
-        VectorToDOMArrayBuffer(std::move(credential->authenticator_data));
+        VectorToDOMArrayBuffer(std::move(credential->info->authenticator_data));
     DOMArrayBuffer* signature_buffer =
         VectorToDOMArrayBuffer(std::move(credential->signature));
     DOMArrayBuffer* user_handle =

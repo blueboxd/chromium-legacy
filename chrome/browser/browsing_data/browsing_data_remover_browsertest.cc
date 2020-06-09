@@ -45,11 +45,14 @@
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/password_manager/core/browser/password_manager_features_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -975,6 +978,88 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, HistoryDeletion) {
   // Remove history from previous pushState() call in setHistory().
   RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY);
   EXPECT_FALSE(HasDataForType(kType));
+}
+
+class BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest
+    : public BrowsingDataRemoverBrowserTest {
+ public:
+  BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest() {
+    features_.InitAndEnableFeature(
+        password_manager::features::kEnablePasswordsAccountStorage);
+  }
+
+ private:
+  base::test::ScopedFeatureList features_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest,
+    ClearingCookiesAlsoClearsPasswordAccountStorageOptIn) {
+  PrefService* prefs = GetBrowser()->profile()->GetPrefs();
+
+  CoreAccountInfo account;
+  account.email = "name@account.com";
+  account.gaia = "name";
+  account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+
+  syncer::TestSyncService sync_service;
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+  sync_service.SetAuthenticatedAccountInfo(account);
+  ASSERT_EQ(sync_service.GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  password_manager::features_util::OptInToAccountStorage(prefs, &sync_service);
+  ASSERT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
+      prefs, &sync_service));
+
+  RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
+
+  EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
+      prefs, &sync_service));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    BrowsingDataRemoverWithPasswordsAccountStorageBrowserTest,
+    ClearingCookiesWithFilterAlsoClearsPasswordAccountStorageOptIn) {
+  PrefService* prefs = GetBrowser()->profile()->GetPrefs();
+
+  CoreAccountInfo account;
+  account.email = "name@account.com";
+  account.gaia = "name";
+  account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+
+  syncer::TestSyncService sync_service;
+  sync_service.SetIsAuthenticatedAccountPrimary(false);
+  sync_service.SetAuthenticatedAccountInfo(account);
+  ASSERT_EQ(sync_service.GetTransportState(),
+            syncer::SyncService::TransportState::ACTIVE);
+  password_manager::features_util::OptInToAccountStorage(prefs, &sync_service);
+  ASSERT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
+      prefs, &sync_service));
+
+  // Clearing cookies for some random domain should have no effect on the
+  // opt-in.
+  {
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+    filter_builder->AddRegisterableDomain("example.com");
+    RemoveWithFilterAndWait(
+        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+        std::move(filter_builder));
+  }
+  EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
+      prefs, &sync_service));
+
+  // Clearing cookies for google.com should clear the opt-in.
+  {
+    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
+        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+    filter_builder->AddRegisterableDomain("google.com");
+    RemoveWithFilterAndWait(
+        ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+        std::move(filter_builder));
+  }
+  EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
+      prefs, &sync_service));
 }
 
 // Parameterized to run tests for different deletion time ranges.

@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.query_tiles;
 
-import android.support.test.espresso.UiController;
-import android.support.test.espresso.ViewAction;
-import android.support.test.espresso.matcher.ViewMatchers;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.UiController;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.matcher.ViewMatchers;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.core.AllOf;

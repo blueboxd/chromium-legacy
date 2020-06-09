@@ -2475,6 +2475,8 @@ source_set("chromeos") {
     "ui/screen_capture_notification_ui_chromeos.h",
     "ui/tpm_auto_update_notification.cc",
     "ui/tpm_auto_update_notification.h",
+    "ui/update_required_notification.cc",
+    "ui/update_required_notification.h",
     "usb/cros_usb_detector.cc",
     "usb/cros_usb_detector.h",
     "virtual_machines/virtual_machines_util.cc",

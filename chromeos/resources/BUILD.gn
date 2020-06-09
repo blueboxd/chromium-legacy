@@ -132,8 +132,8 @@ grit("media_app_resources") {
 # Resources automatically served by the chrome://media-app bundle, obtained via DEPS.
 grit("media_app_bundle_resources") {
   if (enable_cros_media_app) {
-    # Obtained via src-internal/DEPS.
-    source = "../components/media_app_ui/resources/pkg/media_app_bundle_resources.grd"
+    # Obtained via an internal CIPD package in src/DEPS.
+    source = "../components/media_app_ui/resources/prod/media_app_bundle_resources.grd"
   } else {
     source = "../components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd"
   }

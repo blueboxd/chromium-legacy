@@ -611,7 +611,8 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
                     new ChromeImageViewPreference(getStyledContext());
 
             preference.setKey(CHOOSER_PERMISSION_PREFERENCE_KEY);
-            preference.setIcon(ContentSettingsResources.getIcon(info.getContentSettingsType()));
+            preference.setIcon(SettingsUtils.getTintedIcon(getActivity(),
+                    ContentSettingsResources.getIcon(info.getContentSettingsType())));
             preference.setOrder(maxPermissionOrder);
             preference.setTitle(info.getName());
             preference.setImageView(R.drawable.ic_delete_white_24dp,

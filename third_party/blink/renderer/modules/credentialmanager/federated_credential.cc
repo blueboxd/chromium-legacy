@@ -16,20 +16,32 @@ constexpr char kFederatedCredentialType[] = "federated";
 FederatedCredential* FederatedCredential::Create(
     const FederatedCredentialInit* data,
     ExceptionState& exception_state) {
-  if (data->id().IsEmpty())
+  if (data->id().IsEmpty()) {
     exception_state.ThrowTypeError("'id' must not be empty.");
-  if (data->provider().IsEmpty())
+    return nullptr;
+  }
+  if (data->provider().IsEmpty()) {
     exception_state.ThrowTypeError("'provider' must not be empty.");
+    return nullptr;
+  }
 
-  KURL icon_url = ParseStringAsURLOrThrow(data->iconURL(), exception_state);
-  KURL provider_url =
-      ParseStringAsURLOrThrow(data->provider(), exception_state);
-
+  KURL icon_url;
+  if (data->hasIconURL())
+    icon_url = ParseStringAsURLOrThrow(data->iconURL(), exception_state);
   if (exception_state.HadException())
     return nullptr;
 
+  KURL provider_url =
+      ParseStringAsURLOrThrow(data->provider(), exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
+  String name;
+  if (data->hasName())
+    name = data->name();
+
   return MakeGarbageCollected<FederatedCredential>(
-      data->id(), SecurityOrigin::Create(provider_url), data->name(), icon_url);
+      data->id(), SecurityOrigin::Create(provider_url), name, icon_url);
 }
 
 FederatedCredential* FederatedCredential::Create(

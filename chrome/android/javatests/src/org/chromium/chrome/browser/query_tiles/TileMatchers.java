@@ -4,11 +4,12 @@
 
 package org.chromium.chrome.browser.query_tiles;
 
-import android.support.test.espresso.matcher.BoundedMatcher;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.test.espresso.matcher.BoundedMatcher;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

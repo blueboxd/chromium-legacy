@@ -4,8 +4,8 @@
 
 #include "content/common/input/gesture_event_stream_validator.h"
 
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 using blink::WebInputEvent;
 using blink::WebGestureEvent;
@@ -17,8 +17,8 @@ const blink::WebGestureDevice kDefaultGestureDevice =
     blink::WebGestureDevice::kTouchscreen;
 
 blink::WebGestureEvent Build(WebInputEvent::Type type) {
-  blink::WebGestureEvent event =
-      SyntheticWebGestureEventBuilder::Build(type, kDefaultGestureDevice);
+  blink::WebGestureEvent event = blink::SyntheticWebGestureEventBuilder::Build(
+      type, kDefaultGestureDevice);
   // Default to providing a (valid) non-zero fling velocity.
   if (type == WebInputEvent::Type::kGestureFlingStart)
     event.data.fling_start.velocity_x = 5;

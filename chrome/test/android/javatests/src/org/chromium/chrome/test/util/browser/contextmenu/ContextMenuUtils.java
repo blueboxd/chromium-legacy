@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.test.util.browser.contextmenu;
 
-import static android.support.test.espresso.intent.Intents.intended;
+import static androidx.test.espresso.intent.Intents.intended;
 
 import android.app.Activity;
 import android.app.Instrumentation;
-import android.support.test.espresso.intent.Intents;
-import android.support.test.espresso.intent.matcher.IntentMatchers;
 import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.MenuItem;
+
+import androidx.test.espresso.intent.Intents;
+import androidx.test.espresso.intent.matcher.IntentMatchers;
 
 import org.junit.Assert;
 

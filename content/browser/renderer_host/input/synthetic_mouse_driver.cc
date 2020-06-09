@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/synthetic_mouse_driver.h"
 
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 
@@ -36,7 +37,7 @@ void SyntheticMouseDriver::Press(float x,
   DCHECK_EQ(index, 0);
   int modifiers =
       SyntheticPointerActionParams::GetWebMouseEventModifier(button);
-  mouse_event_ = SyntheticWebMouseEventBuilder::Build(
+  mouse_event_ = blink::SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::Type::kMouseDown, x, y,
       modifiers | key_modifiers | last_modifiers_, mouse_event_.pointer_type);
   mouse_event_.button =
@@ -59,7 +60,7 @@ void SyntheticMouseDriver::Move(float x,
                                 float rotation_angle,
                                 float force) {
   DCHECK_EQ(index, 0);
-  mouse_event_ = SyntheticWebMouseEventBuilder::Build(
+  mouse_event_ = blink::SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::Type::kMouseMove, x, y,
       key_modifiers | last_modifiers_, mouse_event_.pointer_type);
   mouse_event_.button =
@@ -72,7 +73,7 @@ void SyntheticMouseDriver::Release(int index,
                                    SyntheticPointerActionParams::Button button,
                                    int key_modifiers) {
   DCHECK_EQ(index, 0);
-  mouse_event_ = SyntheticWebMouseEventBuilder::Build(
+  mouse_event_ = blink::SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::Type::kMouseUp, mouse_event_.PositionInWidget().x(),
       mouse_event_.PositionInWidget().y(), key_modifiers | last_modifiers_,
       mouse_event_.pointer_type);

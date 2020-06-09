@@ -59,6 +59,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
 #include "url/url_util.h"
 
 #if defined(OS_MACOSX)
@@ -911,47 +913,6 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-}
-
-TEST_F(AuthenticatorImplTest, TestMakeCredentialOtherAlgorithms) {
-  device::VirtualCtap2Device::Config config;
-  config.support_invalid_for_testing_algorithm = true;
-  virtual_device_factory_->SetCtap2Config(config);
-  SimulateNavigation(GURL(kTestOrigin1));
-
-  mojo::Remote<blink::mojom::Authenticator> authenticator =
-      ConnectToAuthenticator();
-
-  for (auto algorithm : {device::CoseAlgorithmIdentifier::kCoseRs256,
-                         device::CoseAlgorithmIdentifier::kCoseEdDSA,
-                         device::CoseAlgorithmIdentifier::kInvalidForTesting}) {
-    SCOPED_TRACE(static_cast<int>(algorithm));
-
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->public_key_parameters =
-        GetTestPublicKeyCredentialParameters(static_cast<int32_t>(algorithm));
-    TestMakeCredentialCallback callback;
-    authenticator->MakeCredential(std::move(options), callback.callback());
-    base::RunLoop().RunUntilIdle();
-    callback.WaitForCallback();
-
-    ASSERT_EQ(callback.status(), AuthenticatorStatus::SUCCESS);
-
-    base::Optional<Value> attestation_value =
-        Reader::Read(callback.value()->attestation_object);
-    ASSERT_TRUE(attestation_value);
-    ASSERT_TRUE(attestation_value->is_map());
-    const auto& attestation = attestation_value->GetMap();
-
-    const auto auth_data_it = attestation.find(Value("authData"));
-    ASSERT_TRUE(auth_data_it != attestation.end());
-    ASSERT_TRUE(auth_data_it->second.is_bytestring());
-    auto auth_data = device::AuthenticatorData::DecodeAuthenticatorData(
-        auth_data_it->second.GetBytestring());
-    EXPECT_EQ(static_cast<int32_t>(algorithm),
-              auth_data->attested_data()->public_key()->algorithm);
-  }
 }
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -3469,6 +3430,58 @@ TEST_F(AuthenticatorImplTest, ExcludeListBatching) {
   }
 }
 
+TEST_F(AuthenticatorImplTest, GetPublicKey) {
+  device::VirtualCtap2Device::Config config;
+  config.support_invalid_for_testing_algorithm = true;
+  virtual_device_factory_->SetCtap2Config(config);
+  NavigateAndCommit(GURL(kTestOrigin1));
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  static constexpr struct {
+    device::CoseAlgorithmIdentifier algo;
+    base::Optional<int> evp_id;
+  } kTests[] = {
+      {device::CoseAlgorithmIdentifier::kCoseEs256, EVP_PKEY_EC},
+      {device::CoseAlgorithmIdentifier::kCoseRs256, EVP_PKEY_RSA},
+      {device::CoseAlgorithmIdentifier::kCoseEdDSA, EVP_PKEY_ED25519},
+      {device::CoseAlgorithmIdentifier::kInvalidForTesting, base::nullopt},
+  };
+
+  for (const auto& test : kTests) {
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->public_key_parameters =
+        GetTestPublicKeyCredentialParameters(static_cast<int32_t>(test.algo));
+    TestMakeCredentialCallback callback;
+    authenticator->MakeCredential(std::move(options), callback.callback());
+    base::RunLoop().RunUntilIdle();
+    callback.WaitForCallback();
+
+    ASSERT_EQ(callback.status(), AuthenticatorStatus::SUCCESS);
+    const auto& response = callback.value();
+    EXPECT_EQ(response->public_key_algo, static_cast<int32_t>(test.algo));
+    EXPECT_FALSE(response->info->authenticator_data.empty());
+
+    ASSERT_EQ(test.evp_id.has_value(), response->public_key_der.has_value());
+    if (!test.evp_id) {
+      continue;
+    }
+
+    const std::vector<uint8_t>& public_key_der =
+        response->public_key_der.value();
+
+    CBS cbs;
+    CBS_init(&cbs, public_key_der.data(), public_key_der.size());
+    bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_public_key(&cbs));
+    EXPECT_EQ(0u, CBS_len(&cbs));
+    ASSERT_TRUE(pkey.get());
+
+    EXPECT_EQ(test.evp_id.value(), EVP_PKEY_id(pkey.get()));
+  }
+}
+
 TEST_F(AuthenticatorImplTest, ResetDiscoveryFactoryOverride) {
   // This is a regression test for crbug.com/1087158.
   NavigateAndCommit(GURL(kTestOrigin1));
@@ -3641,7 +3654,7 @@ class UVAuthenticatorImplTest : public AuthenticatorImplTest {
     DCHECK_EQ(AuthenticatorStatus::SUCCESS, callback.status());
     base::Optional<device::AuthenticatorData> auth_data =
         device::AuthenticatorData::DecodeAuthenticatorData(
-            callback.value()->authenticator_data);
+            callback.value()->info->authenticator_data);
     return auth_data->obtained_user_verification();
   }
 

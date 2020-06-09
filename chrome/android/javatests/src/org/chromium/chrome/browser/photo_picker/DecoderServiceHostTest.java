@@ -39,8 +39,8 @@ import java.util.concurrent.TimeUnit;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusCallback,
                                                DecoderServiceHost.ImagesDecodedCallback {
-    // The timeout (in seconds) to wait for the decoding.
-    private static final long WAIT_TIMEOUT_SECONDS = 5L;
+    // The timeout (in milliseconds) to wait for the decoding.
+    private static final int WAIT_TIMEOUT_MS = 7500;
 
     // The base test file path.
     private static final String TEST_FILE_PATH = "chrome/test/data/android/photo_picker/";
@@ -100,12 +100,12 @@ public class DecoderServiceHostTest implements DecoderServiceHost.DecoderStatusC
     private void waitForDecoder() throws Exception {
         int callCount = mOnDecoderReadyCallback.getCallCount();
         mOnDecoderReadyCallback.waitForCallback(
-                callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                callCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
     private void waitForThumbnailDecode() throws Exception {
         int callCount = mOnDecodedCallback.getCallCount();
-        mOnDecodedCallback.waitForCallback(callCount, 1, WAIT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        mOnDecodedCallback.waitForCallback(callCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
     }
 
     private void decodeImage(DecoderServiceHost host, Uri uri, @PickerBitmap.TileTypes int fileType,

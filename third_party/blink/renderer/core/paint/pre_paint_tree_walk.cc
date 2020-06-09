@@ -547,9 +547,9 @@ void PrePaintTreeWalk::WalkNGChildren(const LayoutObject* parent,
         continue;
       }
     } else if (!object) {
-      // A column doesn't paint anything itself. Just include its offset and
-      // descend into children.
-      DCHECK((*iterator)->BoxFragment()->IsColumnBox());
+      // A fragmentainer doesn't paint anything itself. Just include its offset
+      // and descend into children.
+      DCHECK((*iterator)->BoxFragment()->IsFragmentainerBox());
       PhysicalOffset offset = (*iterator)->Link().offset;
       PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext*
           fragment_context = nullptr;

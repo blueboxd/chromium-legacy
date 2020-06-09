@@ -60,6 +60,9 @@ struct CommonCredentialInfo {
   // A blob of data containing the JSON serialization of client data passed
   // to the authenticator.
   array<uint8> client_data_json;
+
+  // A blob of data returned by the authenticator after generating an assertion.
+  array<uint8> authenticator_data;
 };
 
 // Content of user verification method extension returned by
@@ -91,6 +94,14 @@ struct MakeCredentialAuthenticatorResponse {
   bool echo_hmac_create_secret;
   bool hmac_create_secret;
 
+  // The DER-encoded, ASN.1 public key of the newly created credential. May be
+  // missing if the browser does not understand the public-key type.
+  array<uint8>? public_key_der;
+
+  // The COSE algorithm of the newly created credential.
+  // See https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+  int32 public_key_algo;
+
   // Only supported by fido2 devices on android, will eventually supported by
   // other platform.
   // True if getClientExtensionResults() called on the returned
@@ -104,9 +115,6 @@ struct MakeCredentialAuthenticatorResponse {
 
 struct GetAssertionAuthenticatorResponse {
   CommonCredentialInfo info;
-
-  // A blob of data returned by the authenticator after generating an assertion.
-  array<uint8> authenticator_data;
 
   // Cryptographic signature proving possession of the credential private key.
   array<uint8> signature;

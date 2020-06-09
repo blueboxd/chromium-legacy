@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -17,13 +17,13 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollU
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.annotation.SuppressLint;
-import android.support.test.espresso.Espresso;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.Espresso;
 
 import org.junit.Before;
 import org.junit.Rule;

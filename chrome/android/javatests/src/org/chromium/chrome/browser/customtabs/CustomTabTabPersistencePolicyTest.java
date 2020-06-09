@@ -33,6 +33,7 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -463,8 +464,9 @@ public class CustomTabTabPersistencePolicyTest {
 
         CustomTabActivity activity = new CustomTabActivity();
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.CREATED);
-        TabModelSelectorImpl selector = new TabModelSelectorImpl(
-                activity, activity, buildTestPersistencePolicy(), false, false, false);
+        TabModelSelectorImpl selector =
+                new TabModelSelectorImpl(activity, activity, buildTestPersistencePolicy(),
+                        new ChromeTabModelFilterFactory(), false, false, false);
         selector.initializeForTesting(normalTabModel, incognitoTabModel);
         ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
         return selector;

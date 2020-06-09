@@ -59,19 +59,19 @@ class PrimaryAccountMutator {
   // requirements on ChromeOS as well.
   virtual bool SetPrimaryAccount(const CoreAccountId& account_id) = 0;
 
-#if defined(OS_CHROMEOS)
-  // Revokes sync consent from the primary account. The primary account must
-  // have sync consent. After the call a primary account will remain but it will
-  // not have sync consent.
-  // TODO(https://crbug.com/1046746): Support non-Chrome OS platforms.
-  virtual void RevokeSyncConsent() = 0;
-
   // Sets the account with |account_id| as the unconsented primary account
   // (i.e. without implying browser sync consent). Requires that the account
   // is known by the IdentityManager. See README.md for details on the meaning
   // of "unconsented".
   virtual void SetUnconsentedPrimaryAccount(
       const CoreAccountId& account_id) = 0;
+
+#if defined(OS_CHROMEOS)
+  // Revokes sync consent from the primary account. The primary account must
+  // have sync consent. After the call a primary account will remain but it will
+  // not have sync consent.
+  // TODO(https://crbug.com/1046746): Support non-Chrome OS platforms.
+  virtual void RevokeSyncConsent() = 0;
 #endif
 
 #if !defined(OS_CHROMEOS)

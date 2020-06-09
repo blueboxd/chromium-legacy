@@ -3027,8 +3027,8 @@
   },
   {
     "name": "mobile-identity-consistency",
-    "owners": [ "bsazonov", "droger", "msarda" ],
-    "expiry_milestone": 84
+    "owners": [ "bsazonov", "aliceywang", "msarda" ],
+    "expiry_milestone": 90
   },
   {
     "name": "mouse-subframe-no-implicit-capture",
@@ -3595,7 +3595,7 @@
   {
     "name": "photo-picker-video-support",
     "owners": [ "finnur" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 86
   },
   {
     "name": "pluginvm-show-camera-permissions",

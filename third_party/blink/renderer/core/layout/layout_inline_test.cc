@@ -111,14 +111,6 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
       ToLayoutInline(GetLayoutObjectByElementId("lotsOfBoxes"));
   ASSERT_TRUE(lots_of_boxes);
 
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    NGInlineCursor cursor;
-    cursor.MoveTo(*lots_of_boxes);
-    ASSERT_TRUE(cursor);
-    EXPECT_EQ(lots_of_boxes, cursor.Current().GetLayoutObject());
-    return;
-  }
-
   HitTestRequest hit_request(HitTestRequest::kTouchEvent |
                              HitTestRequest::kListBased);
 
@@ -149,9 +141,10 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
   }
 
   const auto* div = To<LayoutBlockFlow>(lots_of_boxes->Parent());
-  for (const NGPaintFragment* line : div->PaintFragment()->Children()) {
-    DCHECK(line->PhysicalFragment().IsLineBox());
-    NGInlineCursor line_cursor(*line);
+  NGInlineCursor cursor(*div);
+  for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine()) {
+    DCHECK(cursor.Current().IsLineBox());
+    NGInlineCursor line_cursor = cursor.CursorForDescendants();
     bool hit_outcome = lots_of_boxes->HitTestCulledInline(
         hit_result, location, hit_offset, &line_cursor);
     EXPECT_FALSE(hit_outcome);

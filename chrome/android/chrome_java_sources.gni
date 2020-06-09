@@ -80,6 +80,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/app/tab_activity_glue/ActivityTabWebContentsDelegateAndroid.java",
   "java/src/org/chromium/chrome/browser/app/tab_activity_glue/ReparentingDelegateFactory.java",
   "java/src/org/chromium/chrome/browser/app/tab_activity_glue/ReparentingTask.java",
+  "java/src/org/chromium/chrome/browser/app/tabmodel/ChromeTabModelFilterFactory.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillExpirationDateFixFlowBridge.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillExpirationDateFixFlowPrompt.java",
   "java/src/org/chromium/chrome/browser/autofill/AutofillLogger.java",

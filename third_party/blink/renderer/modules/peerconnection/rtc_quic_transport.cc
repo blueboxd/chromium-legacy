@@ -92,7 +92,7 @@ RTCQuicTransport* RTCQuicTransport::Create(
   return Create(context, transport, certificates, exception_state,
                 std::make_unique<DefaultP2PQuicTransportFactory>(
                     PeerConnectionDependencyFactory::GetInstance()
-                        ->GetWebRtcWorkerTaskRunner()));
+                        ->GetWebRtcNetworkTaskRunner()));
 }
 
 RTCQuicTransport* RTCQuicTransport::Create(

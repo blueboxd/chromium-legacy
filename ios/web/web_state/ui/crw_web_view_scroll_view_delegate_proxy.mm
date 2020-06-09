@@ -80,7 +80,7 @@
   if (signature.numberOfArguments >= 3 &&
       strcmp([signature getArgumentTypeAtIndex:2], @encode(UIScrollView*)) ==
           0) {
-    UIScrollView* sender;
+    __unsafe_unretained UIScrollView* sender;
     [invocation getArgument:&sender atIndex:2];
     if (sender == self.scrollViewProxy.underlyingScrollView) {
       sender = [self.scrollViewProxy asUIScrollView];

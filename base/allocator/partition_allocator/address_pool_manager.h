@@ -5,7 +5,8 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_ADDRESS_POOL_MANAGER_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_ADDRESS_POOL_MANAGER_H_
 
-#include <map>
+#include <bitset>
+#include <memory>
 
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/atomicops.h"
@@ -33,7 +34,7 @@ class BASE_EXPORT AddressPoolManager {
  public:
   static AddressPoolManager* GetInstance();
 
-  pool_handle Add(uintptr_t address, size_t length, size_t align);
+  pool_handle Add(uintptr_t address, size_t length);
   void Remove(pool_handle handle);
   char* Alloc(pool_handle handle, size_t length);
   void Free(pool_handle handle, void* ptr, size_t length);
@@ -47,20 +48,24 @@ class BASE_EXPORT AddressPoolManager {
 
   class Pool {
    public:
-    Pool(uintptr_t ptr, size_t length, size_t align);
+    Pool(uintptr_t ptr, size_t length);
     ~Pool();
 
     uintptr_t FindChunk(size_t size);
     void FreeChunk(uintptr_t address, size_t size);
 
    private:
+    // The bitset stores an allocation state of the address pool. 1 bit per
+    // super-page: 1 = allocated, 0 = free.
+    static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
+    static constexpr size_t kMaxSupportedSize = 16 * kGigaBytes;
+    static constexpr size_t kMaxBits = kMaxSupportedSize / kSuperPageSize;
     base::Lock lock_;
-    std::map<uintptr_t, size_t> free_chunks_ GUARDED_BY(lock_);
-    // All returned chunks will be aligned on this align_ and all chunks' size
-    // will be a multiple of |align_|.
-    const uintptr_t align_ = 0;
-#if DCHECK_IS_ON()
+    std::bitset<kMaxBits> alloc_bitset_ GUARDED_BY(lock_);
+
+    const size_t total_bits_;
     const uintptr_t address_begin_;
+#if DCHECK_IS_ON()
     const uintptr_t address_end_;
 #endif
 

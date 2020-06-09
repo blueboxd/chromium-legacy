@@ -15,6 +15,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.VerifiesOnN;
+import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
@@ -232,8 +233,9 @@ public class TabWindowManager implements ActivityStateListener {
             }
             TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(
                     selectorIndex, mergeTabs);
-            return new TabModelSelectorImpl(
-                    activity, tabCreatorManager, persistencePolicy, true, true, false);
+            TabModelFilterFactory tabModelFilterFactory = new ChromeTabModelFilterFactory();
+            return new TabModelSelectorImpl(activity, tabCreatorManager, persistencePolicy,
+                    tabModelFilterFactory, true, true, false);
         }
     }
 }

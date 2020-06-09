@@ -135,10 +135,6 @@ class LayoutViewHitTestTest : public testing::WithParamInterface<HitTestConfig>,
  protected:
   bool LayoutNG() { return RuntimeEnabledFeatures::LayoutNGEnabled(); }
   bool IsAndroidOrWindowsEditingBehavior() {
-    // TODO(crbug.com/971414): For now LayoutNG always uses Android/Windows
-    // behavior for ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom().
-    if (LayoutNG())
-      return true;
     return GetParam().editing_behavior == kEditingAndroidBehavior ||
            GetParam().editing_behavior == kEditingWindowsBehavior;
   }

@@ -18,7 +18,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/common/prerender_canceler.mojom.h"
+#include "components/prerender/common/prerender_canceler.mojom.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_origin.h"
 #include "components/prerender/common/prerender_types.h"
@@ -54,9 +54,10 @@ namespace prerender {
 
 class PrerenderManager;
 
-class PrerenderContents : public content::NotificationObserver,
-                          public content::WebContentsObserver,
-                          public chrome::mojom::PrerenderCanceler {
+class PrerenderContents
+    : public content::NotificationObserver,
+      public content::WebContentsObserver,
+      public components::prerender::common::mojom::PrerenderCanceler {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -233,7 +234,8 @@ class PrerenderContents : public content::NotificationObserver,
   int64_t network_bytes() { return network_bytes_; }
 
   void AddPrerenderCancelerReceiver(
-      mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver);
+      mojo::PendingReceiver<
+          components::prerender::common::mojom::PrerenderCanceler> receiver);
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
@@ -290,10 +292,10 @@ class PrerenderContents : public content::NotificationObserver,
       bool success,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
-  // chrome::mojom::PrerenderCanceler:
+  // components::prerender::common::mojom::PrerenderCanceler:
   void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
 
-  mojo::ReceiverSet<chrome::mojom::PrerenderCanceler>
+  mojo::ReceiverSet<components::prerender::common::mojom::PrerenderCanceler>
       prerender_canceler_receiver_set_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;

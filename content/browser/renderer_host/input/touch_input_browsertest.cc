@@ -15,7 +15,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/render_view_host.h"
@@ -27,6 +26,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/latency/latency_info.h"
 
@@ -100,7 +100,7 @@ class TouchInputBrowserTest : public ContentBrowserTest {
   }
 
  protected:
-  void SendTouchEvent(SyntheticWebTouchEvent* event) {
+  void SendTouchEvent(blink::SyntheticWebTouchEvent* event) {
     auto* root_view = GetWidgetHost()->GetView();
     auto* input_event_router =
         GetWidgetHost()->delegate()->GetInputEventRouter();
@@ -138,7 +138,7 @@ class TouchInputBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchNoHandler) {
   LoadURL();
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
 
   // A press on |first| should be acked with NO_CONSUMER_EXISTS since there is
   // no touch-handler on it.
@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchNoHandler) {
 
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerNoConsume) {
   LoadURL();
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
 
   // Press on |second| should be acked with NOT_CONSUMED since there is a
   // touch-handler on |second|, but it doesn't consume the event.
@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerNoConsume) {
 
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerConsume) {
   LoadURL();
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
 
   // Press on |third| should be acked with CONSUMED since the touch-handler on
   // |third| consimes the event.
@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, TouchHandlerConsume) {
 
 IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MultiPointTouchPress) {
   LoadURL();
-  SyntheticWebTouchEvent touch;
+  blink::SyntheticWebTouchEvent touch;
 
   // Press on |first|, which sould be acked with NO_CONSUMER_EXISTS. Then press
   // on |third|. That point should be acked with CONSUMED.

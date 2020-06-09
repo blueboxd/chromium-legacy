@@ -100,8 +100,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kCPU,
   };
 
-  // TODO(juanmihd@ bug/1078518) Check whether msaa_sample_county is really
-  // needed or not in this method.
   static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
@@ -109,8 +107,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       const CanvasColorParams&,
       bool is_origin_top_left,
       RasterMode raster_mode,
-      uint32_t shared_image_usage_flags,
-      unsigned msaa_sample_count = 0u);
+      uint32_t shared_image_usage_flags);
 
   static std::unique_ptr<CanvasResourceProvider> CreatePassThroughProvider(
       const IntSize&,
@@ -126,8 +123,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
       SkFilterQuality,
       const CanvasColorParams&,
       bool is_origin_top_left,
-      base::WeakPtr<CanvasResourceDispatcher>,
-      unsigned msaa_sample_count);
+      base::WeakPtr<CanvasResourceDispatcher>);
 
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a
@@ -236,7 +232,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() {
     return context_provider_wrapper_;
   }
-  unsigned GetMSAASampleCount() const { return msaa_sample_count_; }
   GrSurfaceOrigin GetGrSurfaceOrigin() const {
     return is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
                                : kBottomLeft_GrSurfaceOrigin;
@@ -247,7 +242,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   CanvasResourceProvider(const ResourceProviderType&,
                          const IntSize&,
-                         unsigned msaa_sample_count,
                          SkFilterQuality,
                          const CanvasColorParams&,
                          bool is_origin_top_left,
@@ -289,7 +283,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
   const IntSize size_;
-  const unsigned msaa_sample_count_;
   SkFilterQuality filter_quality_;
   const CanvasColorParams color_params_;
   const bool is_origin_top_left_;

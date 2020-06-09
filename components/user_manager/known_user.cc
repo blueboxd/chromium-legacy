@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -625,33 +625,32 @@ base::Value GetChallengeResponseKeys(const AccountId& account_id) {
 }
 
 void SetLastOnlineSignin(const AccountId& account_id, base::Time time) {
-  SetPref(account_id, kLastOnlineSignin, base::CreateTimeValue(time));
+  SetPref(account_id, kLastOnlineSignin, util::TimeToValue(time));
 }
 
 base::Time GetLastOnlineSignin(const AccountId& account_id) {
   const base::Value* value = nullptr;
-  base::Time time = base::Time();
   if (!GetPref(account_id, kLastOnlineSignin, &value))
     return base::Time();
-  if (!base::GetValueAsTime(*value, &time))
+  base::Optional<base::Time> time = util::ValueToTime(value);
+  if (!time)
     return base::Time();
-  return time;
+  return *time;
 }
 
 void SetOfflineSigninLimit(const AccountId& account_id,
                            base::TimeDelta time_delta) {
-  SetPref(account_id, kOfflineSigninLimit,
-          base::CreateTimeDeltaValue(time_delta));
+  SetPref(account_id, kOfflineSigninLimit, util::TimeDeltaToValue(time_delta));
 }
 
 base::TimeDelta GetOfflineSigninLimit(const AccountId& account_id) {
   const base::Value* value = nullptr;
-  base::TimeDelta time_delta = base::TimeDelta();
   if (!GetPref(account_id, kOfflineSigninLimit, &value))
     return base::TimeDelta();
-  if (!GetValueAsTimeDelta(*value, &time_delta))
+  base::Optional<base::TimeDelta> time_delta = util::ValueToTimeDelta(value);
+  if (!time_delta)
     return base::TimeDelta();
-  return time_delta;
+  return *time_delta;
 }
 
 void SetIsManaged(const AccountId& account_id, bool is_managed) {

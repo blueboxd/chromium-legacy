@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
 #include "content/common/content_export.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 

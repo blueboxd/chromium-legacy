@@ -12896,7 +12896,7 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     // Send a touch start event to child to get the TAF filled with child
     // frame's touch action.
     ack_observer.Reset();
-    SyntheticWebTouchEvent touch_event;
+    blink::SyntheticWebTouchEvent touch_event;
     int index = touch_event.PressPoint(event_position.x(), event_position.y());
     router->RouteTouchEvent(rwhv_root, &touch_event,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));

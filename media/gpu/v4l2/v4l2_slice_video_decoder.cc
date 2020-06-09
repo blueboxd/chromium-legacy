@@ -93,7 +93,7 @@ V4L2SliceVideoDecoder::~V4L2SliceVideoDecoder() {
   }
 
   // Stop and Destroy device.
-  StopStreamV4L2Queue();
+  StopStreamV4L2Queue(true);
   if (input_queue_) {
     input_queue_->DeallocateBuffers();
     input_queue_ = nullptr;
@@ -116,7 +116,7 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Reset V4L2 device and queue if reinitializing decoder.
   if (state_ != State::kUninitialized) {
-    if (!StopStreamV4L2Queue()) {
+    if (!StopStreamV4L2Queue(true)) {
       std::move(init_cb).Run(StatusCode::kV4l2FailedToStopStreamQueue);
       return;
     }
@@ -321,12 +321,13 @@ void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
   // Streamoff V4L2 queues to drop input and output buffers.
   // If the queues are streaming before reset, then we need to start streaming
   // them after stopping.
-  bool is_streaming = input_queue_->IsStreaming();
-  if (!StopStreamV4L2Queue())
+  const bool is_input_streaming = input_queue_->IsStreaming();
+  const bool is_output_streaming = output_queue_->IsStreaming();
+  if (!StopStreamV4L2Queue(true))
     return;
 
-  if (is_streaming) {
-    if (!StartStreamV4L2Queue())
+  if (is_input_streaming) {
+    if (!StartStreamV4L2Queue(is_output_streaming))
       return;
   }
 
@@ -352,11 +353,12 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                               bitstream_id);
 }
 
-bool V4L2SliceVideoDecoder::StartStreamV4L2Queue() {
+bool V4L2SliceVideoDecoder::StartStreamV4L2Queue(bool start_output_queue) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  if (!input_queue_->Streamon() || !output_queue_->Streamon()) {
+  if (!input_queue_->Streamon() ||
+      (start_output_queue && !output_queue_->Streamon())) {
     VLOGF(1) << "Failed to streamon V4L2 queue.";
     SetState(State::kError);
     return false;
@@ -374,7 +376,7 @@ bool V4L2SliceVideoDecoder::StartStreamV4L2Queue() {
   return true;
 }
 
-bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
+bool V4L2SliceVideoDecoder::StopStreamV4L2Queue(bool stop_input_queue) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
@@ -384,7 +386,7 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   }
 
   // Streamoff input and output queue.
-  if (input_queue_)
+  if (input_queue_ && stop_input_queue)
     input_queue_->Streamoff();
   if (output_queue_)
     output_queue_->Streamoff();
@@ -439,7 +441,6 @@ void V4L2SliceVideoDecoder::ContinueChangeResolution(
     const size_t num_output_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
-  DCHECK_EQ(input_queue_->QueuedBuffersCount(), 0u);
   DCHECK_EQ(output_queue_->QueuedBuffersCount(), 0u);
 
   // If we already reset, then skip it.
@@ -455,7 +456,9 @@ void V4L2SliceVideoDecoder::ContinueChangeResolution(
 
   num_output_frames_ = num_output_frames;
 
-  if (!StopStreamV4L2Queue())
+  // Stateful decoders require the input queue to keep running during resolution
+  // changes, but stateless ones require it to be stopped.
+  if (!StopStreamV4L2Queue(backend_->StopInputQueueOnResChange()))
     return;
 
   if (!output_queue_->DeallocateBuffers()) {
@@ -488,7 +491,7 @@ void V4L2SliceVideoDecoder::ContinueChangeResolution(
     return;
   }
 
-  if (!StartStreamV4L2Queue()) {
+  if (!StartStreamV4L2Queue(true)) {
     SetState(State::kError);
     return;
   }

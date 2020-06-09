@@ -7628,11 +7628,11 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   ///////////////////////////////////////////////////////////
   // kSignedInAndWalletSyncTransportEnabled
   ///////////////////////////////////////////////////////////
-  // Make a non-primary account available with both a refresh token and cookie
-  // to be in Sync Transport for Wallet mode.
+  // Make a primary account with no sync consent available to be in Sync
+  // Transport for Wallet mode.
   CoreAccountInfo active_info =
-      identity_test_env_.MakeAccountAvailable(kSyncTransportAccountEmail);
-  identity_test_env_.SetCookieAccounts({{active_info.email, active_info.gaia}});
+      identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(
+          kSyncTransportAccountEmail);
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
   sync_service_.SetActiveDataTypes(
@@ -7687,12 +7687,11 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   prefs::ClearSyncTransportOptIns(prefs_.get());
   ASSERT_FALSE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
                                                        active_info.account_id));
-#endif  // !defined(OS_CHROMEOS)
 
   ///////////////////////////////////////////////////////////
   // kSignedOut
   ///////////////////////////////////////////////////////////
-  identity_test_env_.RemoveRefreshTokenForAccount(active_info.account_id);
+  identity_test_env_.ClearPrimaryAccount();
   {
     EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
               personal_data_->GetSyncSigninState());
@@ -7703,6 +7702,7 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
     EXPECT_FALSE(prefs::IsUserOptedInWalletSyncTransport(
         prefs_.get(), active_info.account_id));
   }
+#endif  // !defined(OS_CHROMEOS)
 
   ///////////////////////////////////////////////////////////
   // kSignedInAndSyncFeature

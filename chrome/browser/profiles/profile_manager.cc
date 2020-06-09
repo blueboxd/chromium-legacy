@@ -29,7 +29,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
@@ -259,7 +259,7 @@ void MarkProfileDirectoryForDeletion(const base::FilePath& path) {
   // on shutdown. In case of a crash remaining files are removed on next start.
   ListPrefUpdate deleted_profiles(g_browser_process->local_state(),
                                   prefs::kProfilesDeleted);
-  deleted_profiles->Append(CreateFilePathValue(path));
+  deleted_profiles->Append(util::FilePathToValue(path));
 }
 
 // Cancel a scheduling deletion, so ScheduleProfileDirectoryForDeletion can be
@@ -947,21 +947,18 @@ void ProfileManager::CleanUpDeletedProfiles() {
   DCHECK(deleted_profiles);
 
   for (const base::Value& value : *deleted_profiles) {
-    base::FilePath profile_path;
-    bool is_valid_profile_path =
-        base::GetValueAsFilePath(value, &profile_path) &&
-        IsAllowedProfilePath(profile_path);
+    base::Optional<base::FilePath> profile_path = util::ValueToFilePath(value);
     // Although it should never happen, make sure this is a valid path in the
-    // user_data_dir, so we don't accidentially delete something else.
-    if (is_valid_profile_path) {
-      if (base::PathExists(profile_path)) {
+    // user_data_dir, so we don't accidentally delete something else.
+    if (profile_path && IsAllowedProfilePath(*profile_path)) {
+      if (base::PathExists(*profile_path)) {
         LOG(WARNING) << "Files of a deleted profile still exist after restart. "
                         "Cleaning up now.";
         base::ThreadPool::PostTaskAndReply(
             FROM_HERE,
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-            base::BindOnce(&NukeProfileFromDisk, profile_path),
+            base::BindOnce(&NukeProfileFromDisk, *profile_path),
             base::BindOnce(&ProfileCleanedUp, &value));
       } else {
         // Everything is fine, the profile was removed on shutdown.
@@ -970,7 +967,7 @@ void ProfileManager::CleanUpDeletedProfiles() {
       }
     } else {
       LOG(ERROR) << "Found invalid profile path in deleted_profiles: "
-                 << profile_path.AsUTF8Unsafe();
+                 << profile_path->AsUTF8Unsafe();
       NOTREACHED();
     }
   }

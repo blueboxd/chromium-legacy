@@ -13,6 +13,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.TabModelFilterFactory;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.content_public.browser.WebContents;
@@ -40,6 +42,7 @@ import dagger.Lazy;
 public class CustomTabActivityTabFactory {
     private final ChromeActivity<?> mActivity;
     private final CustomTabTabPersistencePolicy mPersistencePolicy;
+    private final TabModelFilterFactory mTabModelFilterFactory;
     private final Lazy<ActivityWindowAndroid> mActivityWindowAndroid;
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
@@ -53,12 +56,14 @@ public class CustomTabActivityTabFactory {
     @Inject
     public CustomTabActivityTabFactory(ChromeActivity<?> activity,
             CustomTabTabPersistencePolicy persistencePolicy,
+            ChromeTabModelFilterFactory tabModelFilterFactory,
             Lazy<ActivityWindowAndroid> activityWindowAndroid,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,
             BrowserServicesIntentDataProvider intentDataProvider,
             @Nullable StartupTabPreloader startupTabPreloader) {
         mActivity = activity;
         mPersistencePolicy = persistencePolicy;
+        mTabModelFilterFactory = tabModelFilterFactory;
         mActivityWindowAndroid = activityWindowAndroid;
         mCustomTabDelegateFactory = customTabDelegateFactory;
         mIntentDataProvider = intentDataProvider;
@@ -67,8 +72,8 @@ public class CustomTabActivityTabFactory {
 
     /** Creates a {@link TabModelSelector} for the custom tab. */
     public TabModelSelectorImpl createTabModelSelector() {
-        mTabModelSelector = new TabModelSelectorImpl(
-                mActivity, mActivity, mPersistencePolicy, false, false, false);
+        mTabModelSelector = new TabModelSelectorImpl(mActivity, mActivity, mPersistencePolicy,
+                mTabModelFilterFactory, false, false, false);
         return mTabModelSelector;
     }
 

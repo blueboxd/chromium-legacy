@@ -115,7 +115,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
   // An rtc::Thread will have already been created.
-  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerTaskRunner();
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcNetworkTaskRunner();
 
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetWebRtcSignalingTaskRunner();
@@ -139,7 +139,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   // Functions related to Stun probing trial to determine how fast we could send
   // Stun request without being dropped by NAT.
   void TryScheduleStunProbeTrial();
-  void StartStunProbeTrialOnWorkerThread(const String& params);
+  void StartStunProbeTrialOnNetworkThread(const String& params);
 
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.
@@ -149,11 +149,10 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
       media::GpuVideoAcceleratorFactories* gpu_factories,
       base::WaitableEvent* event);
 
-  void InitializeWorkerThread(rtc::Thread** thread, base::WaitableEvent* event);
-
-  void CreateIpcNetworkManagerOnWorkerThread(
+  void CreateIpcNetworkManagerOnNetworkThread(
       base::WaitableEvent* event,
-      std::unique_ptr<MdnsResponderAdapter> mdns_responder);
+      std::unique_ptr<MdnsResponderAdapter> mdns_responder,
+      rtc::Thread** thread);
   void DeleteIpcNetworkManager();
   void CleanupPeerConnectionFactory();
 
@@ -173,10 +172,10 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   // PeerConnection threads. signaling_thread_ is created from the
   // "current" chrome thread.
-  rtc::Thread* signaling_thread_;
-  rtc::Thread* worker_thread_;
+  rtc::Thread* signaling_thread_ = nullptr;
+  rtc::Thread* network_thread_ = nullptr;
   base::Thread chrome_signaling_thread_;
-  base::Thread chrome_worker_thread_;
+  base::Thread chrome_network_thread_;
 
   THREAD_CHECKER(thread_checker_);
 

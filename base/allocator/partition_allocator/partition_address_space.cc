@@ -62,12 +62,12 @@ void PartitionAddressSpace::Init() {
   uintptr_t current = reserved_base_address_;
 
   direct_map_pool_ = internal::AddressPoolManager::GetInstance()->Add(
-      current, kDirectMapPoolSize, kSuperPageSize);
+      current, kDirectMapPoolSize);
   DCHECK(direct_map_pool_);
   current += kDirectMapPoolSize;
 
   normal_bucket_pool_ = internal::AddressPoolManager::GetInstance()->Add(
-      current, kNormalBucketPoolSize, kSuperPageSize);
+      current, kNormalBucketPoolSize);
   DCHECK(normal_bucket_pool_);
   current += kNormalBucketPoolSize;
   DCHECK_LE(current, reserved_address_end);

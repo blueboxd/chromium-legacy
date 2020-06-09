@@ -635,14 +635,11 @@ public class OfflinePageUtils {
      * @param offlineId The ID of the offline page to open.
      * @param location  Indicates where the offline page is launched.
      * @param callback  The callback to pass back the LoadUrlParams for launching an URL.
+     * @param profile   The profile to get an instance of OfflinePageBridge.
      */
     public static void getLoadUrlParamsForOpeningOfflineVersion(final String url, long offlineId,
-            final @LaunchLocation int location, Callback<LoadUrlParams> callback) {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        OfflinePageBridge offlinePageBridge =
-                getInstance().getOfflinePageBridge(Profile.getLastUsedRegularProfile());
+            final @LaunchLocation int location, Callback<LoadUrlParams> callback, Profile profile) {
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(profile);
         if (offlinePageBridge == null) {
             callback.onResult(null);
             return;
@@ -658,14 +655,11 @@ public class OfflinePageUtils {
      * Otherwise, the file or content URL from the intent will be launched.
      * @param intentUrl URL from the intent.
      * @param callback  The callback to pass back the launching URL and extra headers.
+     * @param profile   The profile to get an instance of OfflinePageBridge.
      */
     public static void getLoadUrlParamsForOpeningMhtmlFileOrContent(
-            final String intentUrl, Callback<LoadUrlParams> callback) {
-        // TODO(https://crbug.com/1067314): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed.
-        OfflinePageBridge offlinePageBridge =
-                getInstance().getOfflinePageBridge(Profile.getLastUsedRegularProfile());
+            final String intentUrl, Callback<LoadUrlParams> callback, Profile profile) {
+        OfflinePageBridge offlinePageBridge = getInstance().getOfflinePageBridge(profile);
         if (offlinePageBridge == null) {
             callback.onResult(new LoadUrlParams(intentUrl));
             return;

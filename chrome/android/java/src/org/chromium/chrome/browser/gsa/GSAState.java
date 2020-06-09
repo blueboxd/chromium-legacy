@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.gsa;
 
-import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
@@ -22,7 +21,10 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.browser.profiles.ProfileManager;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 
 import java.util.List;
 
@@ -99,9 +101,12 @@ public class GSAState {
      * both are logged out is not considered a match.
      */
     public boolean doesGsaAccountMatchChrome() {
-        Account chromeUser = ChromeSigninController.get().getSignedInUser();
-        return chromeUser != null && !TextUtils.isEmpty(mGsaAccount) && TextUtils.equals(
-                chromeUser.name, mGsaAccount);
+        if (!ProfileManager.isInitialized()) return false;
+        CoreAccountInfo chromeAccountInfo =
+                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                        ConsentLevel.SYNC);
+        return chromeAccountInfo != null && !TextUtils.isEmpty(mGsaAccount)
+                && TextUtils.equals(chromeAccountInfo.getEmail(), mGsaAccount);
     }
 
     /**

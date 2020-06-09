@@ -458,7 +458,7 @@ void NGPaintFragment::ClearAssociationWithLayoutObject() {
       }
     }
     if (fragment.IsLineBox() || fragment.IsInlineBox() ||
-        fragment.IsColumnBox()) {
+        fragment.IsFragmentainerBox()) {
       child->ClearAssociationWithLayoutObject();
     } else {
       DCHECK(fragment.IsText() || fragment.IsFormattingContextRoot());
@@ -949,16 +949,45 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
     }
   }
 
+  // Note: |move_caret_to_boundary| is true for Mac and Unix.
+  const bool move_caret_to_boundary =
+      To<LayoutBlockFlow>(GetLayoutObject())
+          ->ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
+
+  // At here, |point| is not inside any line in |this|:
+  //   |closest_line_before|
+  //   |point|
+  //   |closest_line_after|
   if (closest_line_after) {
-    if (auto child_position =
-            PositionForPointInChild(*closest_line_after, point))
+    if (move_caret_to_boundary) {
+      // Tests[1-3] reach here.
+      // [1] editing/selection/click-in-margins-inside-editable-div.html
+      // [2] fast/writing-mode/flipped-blocks-hit-test-line-edges.html
+      // [3] All/LayoutViewHitTestTest.HitTestHorizontal/4
+      NGInlineCursor line_box(*this);
+      line_box.MoveTo(*closest_line_after);
+      if (auto first_position = line_box.PositionForStartOfLine())
+        return PositionWithAffinity(first_position.GetPosition());
+    } else if (auto child_position =
+                   PositionForPointInChild(*closest_line_after, point)) {
       return child_position.value();
+    }
   }
 
   if (closest_line_before) {
-    if (auto child_position =
-            PositionForPointInChild(*closest_line_before, point))
+    if (move_caret_to_boundary) {
+      // Tests[1-3] reach here.
+      // [1] editing/selection/click-in-margins-inside-editable-div.html
+      // [2] fast/writing-mode/flipped-blocks-hit-test-line-edges.html
+      // [3] All/LayoutViewHitTestTest.HitTestHorizontal/4
+      NGInlineCursor line_box(*this);
+      line_box.MoveTo(*closest_line_before);
+      if (auto last_position = line_box.PositionForEndOfLine())
+        return PositionWithAffinity(last_position.GetPosition());
+    } else if (auto child_position =
+                   PositionForPointInChild(*closest_line_before, point)) {
       return child_position.value();
+    }
   }
 
   // TODO(xiaochengh): Looking at only the closest lines may not be enough,

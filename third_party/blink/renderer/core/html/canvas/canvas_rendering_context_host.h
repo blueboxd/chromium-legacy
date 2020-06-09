@@ -76,7 +76,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual FontSelector* GetFontSelector() = 0;
 
   virtual bool ShouldAccelerate2dContext() const = 0;
-  virtual unsigned GetMSAASampleCountFor2dContext() const = 0;
 
   virtual bool IsNeutered() const { return false; }
 

@@ -66208,6 +66208,29 @@ would be helpful to identify which type is being sent.
   <int value="3" label="Use new"/>
 </enum>
 
+<enum name="SyncConsentBehavior">
+  <summary>
+    Behavior of the out-of-box experience (OOBE) sync consent screen.
+  </summary>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Show"/>
+  <int value="2" label="Skip, disabled, non-GAIA account"/>
+  <int value="3" label="Skip, disabled, public account"/>
+  <int value="4" label="Skip, disabled, sync feature policy"/>
+  <int value="5" label="Skip, enabled, non-branded build"/>
+  <int value="6" label="Skip, enabled, ephemeral user"/>
+  <int value="7" label="Skip, enabled, consent screen policy"/>
+</enum>
+
+<enum name="SyncConsentUserChoice">
+  <summary>
+    Which button the user clicked in the out-of-box experience (OOBE) sync
+    consent screen.
+  </summary>
+  <int value="0" label="Declined"/>
+  <int value="1" label="Accepted"/>
+</enum>
+
 <enum name="SyncCryptographerPendingKeysState">
   <int value="0" label="Does not have pending keys"/>
   <int value="1" label="Has pending keys"/>
@@ -72623,6 +72646,17 @@ Called by update_scheduler_enums.py.-->
   <int value="1" label="Desktop"/>
   <int value="2" label="Metro Aura"/>
   <int value="3" label="Desktop Aura"/>
+</enum>
+
+<enum name="WindowActivityOrigin">
+  <int value="0" label="WindowActivityUnknwonOrigin"/>
+  <int value="1" label="WindowActivityExternalOrigin"/>
+  <int value="2" label="WindowActivityRestoredOrigin"/>
+  <int value="3" label="WindowActivityContextMenuOrigin"/>
+  <int value="4" label="WindowActivityReadingListOrigin"/>
+  <int value="5" label="WindowActivityBookmarksOrigin"/>
+  <int value="6" label="WindowActivityHistoryOrigin"/>
+  <int value="7" label="WindowActivityToolsOrigin"/>
 </enum>
 
 <enum name="WindowDragEndEventType">

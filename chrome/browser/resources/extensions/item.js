@@ -27,7 +27,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ItemBehavior} from './item_behavior.js';
-import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isControlled, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
+import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
 
 /** @interface */
@@ -270,14 +270,6 @@ Polymer({
   /** @private */
   onRepairTap_() {
     this.delegate.repairItem(this.data.id);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  isControlled_() {
-    return isControlled(this.data);
   },
 
   /**

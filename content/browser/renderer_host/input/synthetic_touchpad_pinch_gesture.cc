@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 namespace {
@@ -78,7 +79,7 @@ void SyntheticTouchpadPinchGesture::ForwardGestureEvents(
 
       // Send the start event.
       target->DispatchInputEventToPlatform(
-          SyntheticWebGestureEventBuilder::Build(
+          blink::SyntheticWebGestureEventBuilder::Build(
               blink::WebGestureEvent::Type::kGesturePinchBegin,
               blink::WebGestureDevice::kTouchpad));
       state_ = IN_PROGRESS;
@@ -92,13 +93,13 @@ void SyntheticTouchpadPinchGesture::ForwardGestureEvents(
 
       // Send the incremental scale event.
       target->DispatchInputEventToPlatform(
-          SyntheticWebGestureEventBuilder::BuildPinchUpdate(
+          blink::SyntheticWebGestureEventBuilder::BuildPinchUpdate(
               incremental_scale, params_.anchor.x(), params_.anchor.y(),
               0 /* modifierFlags */, blink::WebGestureDevice::kTouchpad));
 
       if (HasReachedTarget(event_timestamp)) {
         target->DispatchInputEventToPlatform(
-            SyntheticWebGestureEventBuilder::Build(
+            blink::SyntheticWebGestureEventBuilder::Build(
                 blink::WebGestureEvent::Type::kGesturePinchEnd,
                 blink::WebGestureDevice::kTouchpad));
         state_ = DONE;

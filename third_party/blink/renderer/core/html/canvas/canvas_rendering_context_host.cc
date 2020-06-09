@@ -204,8 +204,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
     if (base::FeatureList::IsEnabled(features::kLowLatencyCanvas2dSwapChain)) {
       provider = CanvasResourceProvider::CreateSwapChainProvider(
           Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
-          ColorParams(), is_origin_top_left, std::move(dispatcher),
-          GetMSAASampleCountFor2dContext());
+          ColorParams(), is_origin_top_left, std::move(dispatcher));
     }
     // If SwapChain failed or it was not possible, we will try a SharedImage
     // with a set of flags trying to add Usage Display and Usage Scanout and

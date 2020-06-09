@@ -3683,6 +3683,8 @@ void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
   if (const char* error_message = ErrorMessageForAttachShadow()) {
     // TODO(1067488): Fire this exception at Window.
     LOG(ERROR) << error_message;
+    template_element->SetDeclarativeShadowRootType(
+        DeclarativeShadowRootType::kNone);
     return;
   }
   ShadowRoot& shadow_root =
@@ -4638,8 +4640,13 @@ void Element::setInnerHTML(const String& html,
     if (DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
             html, this, kAllowScriptingContent, "innerHTML", exception_state)) {
       ContainerNode* container = this;
-      if (auto* template_element = DynamicTo<HTMLTemplateElement>(*this))
-        container = template_element->content();
+      if (auto* template_element = DynamicTo<HTMLTemplateElement>(*this)) {
+        // Allow replacing innerHTML on declarative shadow templates, prior to
+        // their closing tag being parsed.
+        container = template_element->IsDeclarativeShadowRoot()
+                        ? template_element->DeclarativeShadowContent()
+                        : template_element->content();
+      }
       ReplaceChildrenWithFragment(container, fragment, exception_state);
     }
   }

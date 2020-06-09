@@ -28,7 +28,6 @@
 #include "content/browser/renderer_host/input/mock_input_disposition_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -36,6 +35,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/test/mock_widget_input_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -50,10 +50,14 @@
 #include "ui/display/win/test/scoped_screen_win.h"
 #endif
 
+using blink::SyntheticWebGestureEventBuilder;
+using blink::SyntheticWebMouseEventBuilder;
+using blink::SyntheticWebMouseWheelEventBuilder;
+using blink::SyntheticWebTouchEvent;
 using blink::WebGestureDevice;
 using blink::WebGestureEvent;
-using blink::WebKeyboardEvent;
 using blink::WebInputEvent;
+using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebTouchEvent;
@@ -1621,6 +1625,9 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::Type::kTouchStart,
+            disposition_handler_->ack_event_type());
+
   SimulateGestureEvent(WebInputEvent::Type::kGestureScrollBegin,
                        blink::WebGestureDevice::kTouchscreen);
   dispatched_messages = GetAndResetDispatchedMessages();
@@ -1629,14 +1636,55 @@ TEST_F(InputRouterImplTest, AsyncTouchMoveAckedImmediately) {
   dispatched_messages[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin,
+            disposition_handler_->ack_event_type());
+
   SimulateGestureEvent(WebInputEvent::Type::kGestureScrollUpdate,
                        blink::WebGestureDevice::kTouchscreen);
   EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(2U, GetAndResetDispatchedMessages().size());
+  dispatched_messages = GetAndResetDispatchedMessages();
+  EXPECT_EQ(2U, dispatched_messages.size());
+  EXPECT_EQ(WebInputEvent::Type::kTouchScrollStarted,
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_messages[1]->ToEvent()->Event()->Event().GetType());
+  // Ack the GestureScrollUpdate.
+  dispatched_messages[1]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kConsumed);
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            disposition_handler_->ack_event_type());
+  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
 
-  // Now send an async move.
+  // Now since we're scrolling send an async move.
   MoveTouchPoint(0, 5, 5);
   SendTouchEvent();
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove,
+            disposition_handler_->ack_event_type());
+  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
+
+  // To catch crbug/1072364 send another scroll which returns kNoConsumerExists
+  // and ensure we're still async scrolling since we've already started the
+  // scroll.
+  SimulateGestureEvent(WebInputEvent::Type::kGestureScrollUpdate,
+                       blink::WebGestureDevice::kTouchscreen);
+  EXPECT_EQ(0U, disposition_handler_->GetAndResetAckCount());
+  dispatched_messages = GetAndResetDispatchedMessages();
+  EXPECT_EQ(1U, dispatched_messages.size());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
+  // Ack the GestureScrollUpdate.
+  dispatched_messages[0]->ToEvent()->CallCallback(
+      blink::mojom::InputEventResultState::kNoConsumerExists);
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
+            disposition_handler_->ack_event_type());
+  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
+
+  // Now since we're scrolling (even with NoConsumerExists) send an async move.
+  MoveTouchPoint(0, 10, 5);
+  SendTouchEvent();
+  EXPECT_EQ(WebInputEvent::Type::kTouchMove,
+            disposition_handler_->ack_event_type());
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   EXPECT_EQ(1U, GetAndResetDispatchedMessages().size());
 }

@@ -177,8 +177,19 @@ void ClearPrimaryAccount(IdentityManager* identity_manager,
   // synchronously with IdentityManager.
   NOTREACHED();
 #else
-  if (!identity_manager->HasPrimaryAccount())
+  if (!identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired))
     return;
+
+  if (!identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) {
+    PrimaryAccountManager* primary_account_manager =
+        identity_manager->GetPrimaryAccountManager();
+    primary_account_manager->SetUnconsentedPrimaryAccountInfo(
+        CoreAccountInfo());
+    RemoveRefreshTokenForAccount(
+        identity_manager,
+        identity_manager->GetPrimaryAccountId(ConsentLevel::kNotRequired));
+    return;
+  }
 
   base::RunLoop run_loop;
   TestIdentityManagerObserver signout_observer(identity_manager);

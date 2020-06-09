@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -28,6 +27,7 @@
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/events/event_switches.h"
 #include "ui/latency/latency_info.h"
@@ -117,12 +117,15 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
                        blink::WebPointerProperties::Button::kLeft);
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
         GetWidgetHost(), blink::WebInputEvent::Type::kMouseMove);
-    GetWidgetHost()->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::Type::kMouseMove, 10, 10, 0));
-    GetWidgetHost()->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::Type::kMouseMove, 15, 15, 0));
-    GetWidgetHost()->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(
-        blink::WebInputEvent::Type::kMouseMove, 20, 25, 0));
+    GetWidgetHost()->ForwardMouseEvent(
+        blink::SyntheticWebMouseEventBuilder::Build(
+            blink::WebInputEvent::Type::kMouseMove, 10, 10, 0));
+    GetWidgetHost()->ForwardMouseEvent(
+        blink::SyntheticWebMouseEventBuilder::Build(
+            blink::WebInputEvent::Type::kMouseMove, 15, 15, 0));
+    GetWidgetHost()->ForwardMouseEvent(
+        blink::SyntheticWebMouseEventBuilder::Build(
+            blink::WebInputEvent::Type::kMouseMove, 20, 25, 0));
 
     // Runs until we get the InputMsgAck callback.
     EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed,
@@ -145,7 +148,7 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
   }
 
   void DoTouchMove() {
-    SyntheticWebTouchEvent events[4];
+    blink::SyntheticWebTouchEvent events[4];
     events[0].PressPoint(10, 10);
     events[1].PressPoint(10, 10);
     events[1].MovePoint(0, 20, 20);

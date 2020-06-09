@@ -741,18 +741,45 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
     MoveToNextItem();
   }
 
+  // At here, |point| is not inside any line in |this|:
+  //   |closest_line_before|
+  //   |point|
+  //   |closest_line_after|
   if (closest_line_after) {
     MoveTo(closest_line_after);
-    if (const PositionWithAffinity child_position =
-            PositionForPointInInlineBox(point))
+    // Note: |move_caret_to_boundary| is true for Mac and Unix.
+    const bool move_caret_to_boundary =
+        To<LayoutBlockFlow>(Current().GetLayoutObject())
+            ->ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
+    if (move_caret_to_boundary) {
+      // Tests[1-3] reach here.
+      // [1] editing/selection/click-in-margins-inside-editable-div.html
+      // [2] fast/writing-mode/flipped-blocks-hit-test-line-edges.html
+      // [3] All/LayoutViewHitTestTest.HitTestHorizontal/4
+      if (auto first_position = PositionForStartOfLine())
+        return PositionWithAffinity(first_position.GetPosition());
+    } else if (const PositionWithAffinity child_position =
+                   PositionForPointInInlineBox(point))
       return child_position;
   }
 
   if (closest_line_before) {
     MoveTo(closest_line_before);
-    if (const PositionWithAffinity child_position =
-            PositionForPointInInlineBox(point))
+    // Note: |move_caret_to_boundary| is true for Mac and Unix.
+    const bool move_caret_to_boundary =
+        To<LayoutBlockFlow>(Current().GetLayoutObject())
+            ->ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
+    if (move_caret_to_boundary) {
+      // Tests[1-3] reach here.
+      // [1] editing/selection/click-in-margins-inside-editable-div.html
+      // [2] fast/writing-mode/flipped-blocks-hit-test-line-edges.html
+      // [3] All/LayoutViewHitTestTest.HitTestHorizontal/4
+      if (auto last_position = PositionForEndOfLine())
+        return PositionWithAffinity(last_position.GetPosition());
+    } else if (const PositionWithAffinity child_position =
+                   PositionForPointInInlineBox(point)) {
       return child_position;
+    }
   }
 
   return PositionWithAffinity();

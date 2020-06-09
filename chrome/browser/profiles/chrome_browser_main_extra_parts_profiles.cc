@@ -94,6 +94,7 @@
 #include "components/captive_portal/core/buildflags.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
@@ -129,6 +130,10 @@
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/signin/signin_manager_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
@@ -351,6 +356,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   SigninProfileAttributesUpdaterFactory::GetInstance();
   if (SiteEngagementService::IsEnabled())
     SiteEngagementServiceFactory::GetInstance();
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  SigninManagerFactory::GetInstance();
+#endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   SpellcheckServiceFactory::GetInstance();
 #endif

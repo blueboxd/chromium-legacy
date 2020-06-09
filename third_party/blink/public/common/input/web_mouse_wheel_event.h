@@ -100,6 +100,11 @@ class BLINK_COMMON_EXPORT WebMouseWheelEvent : public WebMouseEvent {
   bool CanCoalesce(const WebInputEvent& event) const override;
   void Coalesce(const WebInputEvent& event) override;
 
+  // Return the platform specific default event action given the mouse wheel
+  // event. Can be used to determine the appropriate value for |event_action|.
+  static EventAction GetPlatformSpecificDefaultEventAction(
+      const WebMouseWheelEvent& event);
+
  private:
   bool HaveConsistentPhase(const WebMouseWheelEvent& event) const;
 };

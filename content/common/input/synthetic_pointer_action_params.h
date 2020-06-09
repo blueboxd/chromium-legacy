@@ -9,7 +9,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/input/synthetic_gesture_params.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/gfx/geometry/point_f.h"
 

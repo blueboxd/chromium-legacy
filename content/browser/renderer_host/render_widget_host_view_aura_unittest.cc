@@ -52,7 +52,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
@@ -76,6 +75,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -717,14 +717,15 @@ class RenderWidgetHostViewAuraOverscrollTest
 
   // TODO(jdduke): Simulate ui::Events, injecting through the view.
   void SimulateMouseEvent(WebInputEvent::Type type) {
-    widget_host_->ForwardMouseEvent(SyntheticWebMouseEventBuilder::Build(type));
+    widget_host_->ForwardMouseEvent(
+        blink::SyntheticWebMouseEventBuilder::Build(type));
     base::RunLoop().RunUntilIdle();
   }
 
   void SimulateMouseEventWithLatencyInfo(WebInputEvent::Type type,
                                          const ui::LatencyInfo& ui_latency) {
     widget_host_->ForwardMouseEventWithLatencyInfo(
-        SyntheticWebMouseEventBuilder::Build(type), ui_latency);
+        blink::SyntheticWebMouseEventBuilder::Build(type), ui_latency);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -733,10 +734,11 @@ class RenderWidgetHostViewAuraOverscrollTest
                           int modifiers,
                           bool precise,
                           WebMouseWheelEvent::Phase phase) {
-    WebMouseWheelEvent wheel_event = SyntheticWebMouseWheelEventBuilder::Build(
-        0, 0, dX, dY, modifiers,
-        precise ? ui::ScrollGranularity::kScrollByPrecisePixel
-                : ui::ScrollGranularity::kScrollByPixel);
+    WebMouseWheelEvent wheel_event =
+        blink::SyntheticWebMouseWheelEventBuilder::Build(
+            0, 0, dX, dY, modifiers,
+            precise ? ui::ScrollGranularity::kScrollByPrecisePixel
+                    : ui::ScrollGranularity::kScrollByPixel);
     wheel_event.phase = phase;
     widget_host_->ForwardWheelEvent(wheel_event);
     base::RunLoop().RunUntilIdle();
@@ -752,7 +754,7 @@ class RenderWidgetHostViewAuraOverscrollTest
                           int modifiers,
                           bool pressed) {
     WebMouseEvent event =
-        SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
+        blink::SyntheticWebMouseEventBuilder::Build(type, x, y, modifiers);
     if (pressed)
       event.button = WebMouseEvent::Button::kLeft;
     widget_host_->ForwardMouseEvent(event);
@@ -776,35 +778,38 @@ class RenderWidgetHostViewAuraOverscrollTest
   void SimulateGestureEvent(WebInputEvent::Type type,
                             blink::WebGestureDevice sourceDevice) {
     SimulateGestureEventCore(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
+        blink::SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
   }
 
   void SimulateGestureEventWithLatencyInfo(WebInputEvent::Type type,
                                            blink::WebGestureDevice sourceDevice,
                                            const ui::LatencyInfo& ui_latency) {
     SimulateGestureEventCoreWithLatencyInfo(
-        SyntheticWebGestureEventBuilder::Build(type, sourceDevice), ui_latency);
+        blink::SyntheticWebGestureEventBuilder::Build(type, sourceDevice),
+        ui_latency);
   }
 
   void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
-    SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildScrollUpdate(
-        dX, dY, modifiers, blink::WebGestureDevice::kTouchscreen));
+    SimulateGestureEventCore(
+        blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+            dX, dY, modifiers, blink::WebGestureDevice::kTouchscreen));
   }
 
   void SimulateGesturePinchUpdateEvent(float scale,
                                        float anchorX,
                                        float anchorY,
                                        int modifiers) {
-    SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildPinchUpdate(
-        scale, anchorX, anchorY, modifiers,
-        blink::WebGestureDevice::kTouchscreen));
+    SimulateGestureEventCore(
+        blink::SyntheticWebGestureEventBuilder::BuildPinchUpdate(
+            scale, anchorX, anchorY, modifiers,
+            blink::WebGestureDevice::kTouchscreen));
   }
 
   // Inject synthetic GestureFlingStart events.
   void SimulateGestureFlingStartEvent(float velocityX,
                                       float velocityY,
                                       blink::WebGestureDevice sourceDevice) {
-    SimulateGestureEventCore(SyntheticWebGestureEventBuilder::BuildFling(
+    SimulateGestureEventCore(blink::SyntheticWebGestureEventBuilder::BuildFling(
         velocityX, velocityY, sourceDevice));
   }
 
@@ -950,7 +955,7 @@ class RenderWidgetHostViewAuraOverscrollTest
     return events;
   }
 
-  SyntheticWebTouchEvent touch_event_;
+  blink::SyntheticWebTouchEvent touch_event_;
 
   std::unique_ptr<TestOverscrollDelegate> overscroll_delegate_;
 

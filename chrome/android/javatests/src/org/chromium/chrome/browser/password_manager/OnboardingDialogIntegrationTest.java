@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.password_manager;
 
-import static android.support.test.espresso.Espresso.pressBack;
+import static androidx.test.espresso.Espresso.pressBack;
 
 import static org.chromium.chrome.browser.password_manager.OnboardingState.SHOULD_SHOW;
 import static org.chromium.chrome.browser.preferences.Pref.PASSWORD_MANAGER_ONBOARDING_STATE;

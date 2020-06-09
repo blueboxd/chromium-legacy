@@ -195,6 +195,8 @@ namespace {
 const int kMinimumDelayBetweenLoadingUpdatesMS = 100;
 const char kDotGoogleDotCom[] = ".google.com";
 
+using LifecycleState = RenderFrameHostImpl::LifecycleState;
+
 // TODO(crbug.com/1059903): Clean up after the initial investigation.
 constexpr base::Feature kCheckWebContentsAccessFromNonCurrentFrame{
     "CheckWebContentsAccessFromNonCurrentFrame",
@@ -437,6 +439,8 @@ class WebContentsImpl::DestructionObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
 };
 
+// TODO(sreejakshetty): Make |WebContentsImpl::ColorChooser| per-frame instead
+// of WebContents-owned.
 // WebContentsImpl::ColorChooser ----------------------------------------------
 class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
  public:
@@ -7488,6 +7492,23 @@ WebContentsImpl::GetRenderViewHostsIncludingBackForwardCached() {
   }
 
   return render_view_hosts;
+}
+
+void WebContentsImpl::RenderFrameHostStateChanged(
+    RenderFrameHost* render_frame_host,
+    LifecycleState old_state,
+    LifecycleState new_state) {
+  if (render_frame_host->GetParent())
+    return;
+
+  if (old_state == LifecycleState::kActive &&
+      new_state != LifecycleState::kActive) {
+    // TODO(sreejakshetty): Remove this reset when ColorChooser becomes
+    // per-frame.
+    // Close the color chooser popup when RenderFrameHost changes state from
+    // kActive.
+    color_chooser_.reset();
+  }
 }
 
 }  // namespace content

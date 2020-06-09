@@ -62,12 +62,10 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   enum class RemoveAccountsOption {
     // Do not remove accounts.
     kKeepAllAccounts = 0,
-#if !defined(OS_CHROMEOS)
     // Remove all the accounts.
     kRemoveAllAccounts,
     // Removes the authenticated account if it is in authentication error.
     kRemoveAuthenticatedAccountIfInError
-#endif
   };
 
   PrimaryAccountManager(

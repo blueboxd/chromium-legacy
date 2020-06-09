@@ -4,16 +4,24 @@
 
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 
+#include <cmath>
+
+#include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
+#include "chrome/browser/chromeos/ui/update_required_notification.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -26,8 +34,33 @@ namespace policy {
 
 namespace {
 
+const int kOneWeekEolNotificationInDays = 7;
+
 PrefService* local_state() {
   return g_browser_process->local_state();
+}
+
+MinimumVersionPolicyHandler::NetworkStatus GetCurrentNetworkStatus() {
+  chromeos::NetworkStateHandler* network_state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  const chromeos::NetworkState* current_network =
+      network_state_handler->DefaultNetwork();
+  if (!current_network || !current_network->IsConnectedState())
+    return MinimumVersionPolicyHandler::NetworkStatus::kOffline;
+  if (network_state_handler->default_network_is_metered())
+    return MinimumVersionPolicyHandler::NetworkStatus::kMetered;
+  return MinimumVersionPolicyHandler::NetworkStatus::kAllowed;
+}
+
+void OpenNetworkSettings() {
+  ash::SystemTray::Get()->ShowNetworkDetailedViewBubble(
+      true /* show_by_click */);
+}
+
+std::string GetEnterpriseDomainName() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetEnterpriseDisplayDomain();
 }
 
 }  // namespace
@@ -93,6 +126,7 @@ MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
 
 MinimumVersionPolicyHandler::~MinimumVersionPolicyHandler() {
   g_browser_process->GetBuildState()->RemoveObserver(this);
+  StopObservingNetwork();
 }
 
 void MinimumVersionPolicyHandler::AddObserver(Observer* observer) {
@@ -204,9 +238,13 @@ void MinimumVersionPolicyHandler::Reset() {
   deadline_reached = false;
   eol_reached_ = false;
   update_required_deadline_timer_.Stop();
+  notification_timer_.Stop();
   g_browser_process->GetBuildState()->RemoveObserver(this);
   state_.reset();
+  HideNotification();
+  notification_handler_.reset();
   ResetLocalState();
+  StopObservingNetwork();
 }
 
 void MinimumVersionPolicyHandler::FetchEolInfo() {
@@ -290,11 +328,11 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   // not been extended.
   if (deadline > previous_deadline)
     UpdateLocalState(warning_time);
+
   StartDeadlineTimer(deadline);
   if (!eol_reached_)
     StartObservingUpdate();
-  // TODO(https://crbug.com/1048607): Show in-session notifications in case of
-  // end-of-life and network limitations.
+  ShowAndScheduleNotification(deadline);
 }
 
 void MinimumVersionPolicyHandler::ResetLocalState() {
@@ -330,10 +368,94 @@ void MinimumVersionPolicyHandler::StartObservingUpdate() {
     build_state->AddObserver(this);
 }
 
+void MinimumVersionPolicyHandler::MaybeShowNotification(
+    base::TimeDelta warning) {
+  const NetworkStatus status = GetCurrentNetworkStatus();
+  if (status == NetworkStatus::kAllowed || !delegate_->IsUserLoggedIn() ||
+      !delegate_->IsUserManaged()) {
+    // TODO(https://crbug.com/1048607): Show notification on managed user log in
+    // if it is the last day of the deadline.
+    return;
+  }
+
+  if (!notification_handler_) {
+    notification_handler_ =
+        std::make_unique<chromeos::UpdateRequiredNotification>();
+  }
+
+  if (status == NetworkStatus::kOffline) {
+    notification_handler_->Show(
+        NotificationType::kNoConnection, warning, GetEnterpriseDomainName(),
+        base::BindOnce(&OpenNetworkSettings),
+        base::BindOnce(&MinimumVersionPolicyHandler::StopObservingNetwork,
+                       weak_factory_.GetWeakPtr()));
+  }
+  // TODO(https://crbug.com/1048607): Show in-session notifications in case of
+  // end-of-life and metered network.
+
+  chromeos::NetworkStateHandler* network_state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  if (!network_state_handler->HasObserver(this))
+    network_state_handler->AddObserver(this, FROM_HERE);
+}
+
+void MinimumVersionPolicyHandler::ShowAndScheduleNotification(
+    base::Time deadline) {
+  const base::Time now = clock_->Now();
+  if (deadline <= now)
+    return;
+
+  base::Time expiry;
+  base::TimeDelta time_remaining = deadline - now;
+  const int days_remaining = std::lround(
+      time_remaining.InSecondsF() / base::TimeDelta::FromDays(1).InSecondsF());
+
+  // Network limitation notifications are shown when policy is received and on
+  // the last day. End of life notifications are shown when policy is received,
+  // one week before EOL and on the last day. No need to schedule a notification
+  // if it is already the last day.
+  if (eol_reached_ && days_remaining > kOneWeekEolNotificationInDays) {
+    expiry =
+        deadline - base::TimeDelta::FromDays(kOneWeekEolNotificationInDays);
+  } else if (days_remaining > 1) {
+    expiry = deadline - base::TimeDelta::FromDays(1);
+  }
+
+  MaybeShowNotification(base::TimeDelta::FromDays(days_remaining));
+  if (!expiry.is_null()) {
+    notification_timer_.Start(
+        FROM_HERE, expiry,
+        base::BindOnce(
+            &MinimumVersionPolicyHandler::ShowAndScheduleNotification,
+            weak_factory_.GetWeakPtr(), deadline));
+  }
+}
+
 void MinimumVersionPolicyHandler::OnUpdate(const BuildState* build_state) {
   // Reset the state if new version is greater or equal the required version.
+  // Hide update required screen if it is shown.
   if (build_state->installed_version()->CompareTo(state_->version()) >= 0)
-    Reset();
+    HandleUpdateNotRequired();
+}
+
+void MinimumVersionPolicyHandler::HideNotification() const {
+  if (notification_handler_)
+    notification_handler_->Hide();
+}
+
+void MinimumVersionPolicyHandler::DefaultNetworkChanged(
+    const chromeos::NetworkState* network) {
+  // Close notification if network has switched to one that allows updates.
+  const NetworkStatus status = GetCurrentNetworkStatus();
+  if (status == NetworkStatus::kAllowed && notification_handler_) {
+    HideNotification();
+  }
+}
+
+void MinimumVersionPolicyHandler::StopObservingNetwork() {
+  chromeos::NetworkStateHandler* network_state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  network_state_handler->RemoveObserver(this, FROM_HERE);
 }
 
 void MinimumVersionPolicyHandler::OnDeadlineReached() {

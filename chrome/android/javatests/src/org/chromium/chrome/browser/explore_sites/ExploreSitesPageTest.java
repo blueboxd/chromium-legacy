@@ -4,18 +4,18 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
-import static android.support.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.onView;
 
 import static org.hamcrest.Matchers.instanceOf;
 
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.SmallTest;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 
 import org.junit.After;
 import org.junit.AfterClass;

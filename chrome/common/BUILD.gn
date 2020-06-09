@@ -263,6 +263,7 @@ static_library("common") {
     "//components/metrics:call_stack_profile_builder",
     "//components/page_load_metrics/common:common",
     "//components/prerender/common",
+    "//components/prerender/common:mojo_bindings",
   ]
 
   if (enable_plugins) {
@@ -699,7 +700,6 @@ mojom("mojo_bindings") {
     "network_easter_egg.mojom",
     "open_search_description_document_handler.mojom",
     "plugin.mojom",
-    "prerender_canceler.mojom",
     "renderer_configuration.mojom",
     "sync_encryption_keys_extension.mojom",
   ]

@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.history;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
-import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.SmallTest;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.intent.rule.IntentsTestRule;
 
 import org.junit.Assert;
 import org.junit.Before;

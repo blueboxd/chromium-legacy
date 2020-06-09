@@ -16,6 +16,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
@@ -199,7 +200,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
                   render_widget_host,
                   blink::WebInputEvent::Type::kGestureScrollBegin);
     blink::WebMouseWheelEvent wheel_event =
-        SyntheticWebMouseWheelEventBuilder::Build(
+        blink::SyntheticWebMouseWheelEventBuilder::Build(
             10, 10, fling_velocity.x() / 1000, fling_velocity.y() / 1000, 0,
             ui::ScrollGranularity::kScrollByPrecisePixel);
     wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;

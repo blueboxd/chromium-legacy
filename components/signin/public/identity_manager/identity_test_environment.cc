@@ -298,6 +298,13 @@ AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
   AccountInfo account_info =
       MakeAccountAvailableWithCookies(email, GetTestGaiaIdForEmail(email));
   base::RunLoop().RunUntilIdle();
+  // Tests that don't use the |SigninManager| needs the unconsented primary
+  // account to be set manually.
+  if (!identity_manager()->HasPrimaryAccount(ConsentLevel::kNotRequired)) {
+    identity_manager()
+        ->GetPrimaryAccountMutator()
+        ->SetUnconsentedPrimaryAccount(account_info.account_id);
+  }
 #endif
   DCHECK(identity_manager()->HasPrimaryAccount(ConsentLevel::kNotRequired));
   DCHECK_EQ(email, identity_manager()

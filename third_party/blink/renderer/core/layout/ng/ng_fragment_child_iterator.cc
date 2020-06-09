@@ -97,7 +97,7 @@ void NGFragmentChildIterator::UpdateSelfFromFragment(
                current_.link_.fragment->GetLayoutObject());
     current_.break_token_for_fragmentainer_only_ = false;
   } else if (is_fragmentation_context_root_ && previous_fragment) {
-    if (previous_fragment->IsColumnBox()) {
+    if (previous_fragment->IsFragmentainerBox()) {
       // The outgoing break token from one fragmentainer is the incoming break
       // token to the next one. This is also true when there are column spanners
       // between two columns (fragmentainers); the outgoing break token from the

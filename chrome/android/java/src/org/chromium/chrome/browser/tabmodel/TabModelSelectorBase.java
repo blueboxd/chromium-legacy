@@ -32,6 +32,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
      */
     private TabModelFilterProvider mTabModelFilterProvider = new TabModelFilterProvider();
 
+    private final TabModelFilterFactory mTabModelFilterFactory;
     private int mActiveModelIndex;
     private final ObserverList<TabModelSelectorObserver> mObservers = new ObserverList<>();
     private boolean mTabStateInitialized;
@@ -40,8 +41,10 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
 
     private final TabCreatorManager mTabCreatorManager;
 
-    protected TabModelSelectorBase(TabCreatorManager tabCreatorManager, boolean startIncognito) {
+    protected TabModelSelectorBase(TabCreatorManager tabCreatorManager,
+            TabModelFilterFactory tabModelFilterFactory, boolean startIncognito) {
         mTabCreatorManager = tabCreatorManager;
+        mTabModelFilterFactory = tabModelFilterFactory;
         mStartIncognito = startIncognito;
     }
 
@@ -53,7 +56,7 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         Collections.addAll(mTabModels, models);
         mActiveModelIndex = getModelIndex(mStartIncognito);
         assert mActiveModelIndex != MODEL_NOT_FOUND;
-        mTabModelFilterProvider = new TabModelFilterProvider(mTabModels);
+        mTabModelFilterProvider = new TabModelFilterProvider(mTabModelFilterFactory, mTabModels);
         addObserver(mTabModelFilterProvider);
 
         TabModelObserver tabModelObserver = new TabModelObserver() {

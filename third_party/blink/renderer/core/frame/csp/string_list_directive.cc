@@ -58,18 +58,23 @@ bool StringListDirective::AllowOrProcessValue(const String& src) {
     allow_any_ = true;
     return false;
   }
+  if (src == "'none'") {
+    if (list_.size() > 1) {
+      Policy()->ReportInvalidSourceExpression(GetName(), src);
+    }
+    return false;
+  }
   return IsPolicyName(src);
 }
 
-bool StringListDirective::Allows(const String& string_piece,
-                                 bool is_duplicate) {
+bool StringListDirective::Allows(const String& value, bool is_duplicate) {
   if (is_duplicate && !allow_duplicates_)
     return false;
-  if (is_duplicate && string_piece == "default")
+  if (is_duplicate && value == "default")
     return false;
-  if (!IsPolicyName(string_piece))
+  if (!IsPolicyName(value))
     return false;
-  return allow_any_ || list_.Contains(string_piece);
+  return allow_any_ || list_.Contains(value);
 }
 
 void StringListDirective::Trace(Visitor* visitor) const {

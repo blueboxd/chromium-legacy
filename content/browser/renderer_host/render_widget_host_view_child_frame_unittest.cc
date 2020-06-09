@@ -38,6 +38,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor.h"
@@ -324,14 +325,15 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
 // child, the events are bubbled so that the parent may consume them.
 TEST_F(RenderWidgetHostViewChildFrameTest, UncomsumedGestureScrollBubbled) {
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           0.f, 10.f, blink::WebGestureDevice::kTouchscreen);
   blink::WebGestureEvent scroll_update =
-      SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           0.f, 10.f, 0, blink::WebGestureDevice::kTouchscreen);
-  blink::WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      blink::WebInputEvent::Type::kGestureScrollEnd,
-      blink::WebGestureDevice::kTouchscreen);
+  blink::WebGestureEvent scroll_end =
+      blink::SyntheticWebGestureEventBuilder::Build(
+          blink::WebInputEvent::Type::kGestureScrollEnd,
+          blink::WebGestureDevice::kTouchscreen);
 
   view_->GestureEventAck(
       scroll_begin, blink::mojom::InputEventResultState::kNoConsumerExists);
@@ -351,14 +353,15 @@ TEST_F(RenderWidgetHostViewChildFrameTest, UncomsumedGestureScrollBubbled) {
 // child, the events are not bubbled to the parent.
 TEST_F(RenderWidgetHostViewChildFrameTest, ConsumedGestureScrollNotBubbled) {
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           0.f, 10.f, blink::WebGestureDevice::kTouchscreen);
   blink::WebGestureEvent scroll_update =
-      SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           0.f, 10.f, 0, blink::WebGestureDevice::kTouchscreen);
-  blink::WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      blink::WebInputEvent::Type::kGestureScrollEnd,
-      blink::WebGestureDevice::kTouchscreen);
+  blink::WebGestureEvent scroll_end =
+      blink::SyntheticWebGestureEventBuilder::Build(
+          blink::WebInputEvent::Type::kGestureScrollEnd,
+          blink::WebGestureDevice::kTouchscreen);
 
   view_->GestureEventAck(scroll_begin,
                          blink::mojom::InputEventResultState::kConsumed);
@@ -387,14 +390,15 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ConsumedGestureScrollNotBubbled) {
 TEST_F(RenderWidgetHostViewChildFrameTest,
        DoNotBubbleRemainingEventsOfRejectedScrollGesture) {
   blink::WebGestureEvent scroll_begin =
-      SyntheticWebGestureEventBuilder::BuildScrollBegin(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
           0.f, 10.f, blink::WebGestureDevice::kTouchscreen);
   blink::WebGestureEvent scroll_update =
-      SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+      blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(
           0.f, 10.f, 0, blink::WebGestureDevice::kTouchscreen);
-  blink::WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
-      blink::WebInputEvent::Type::kGestureScrollEnd,
-      blink::WebGestureDevice::kTouchscreen);
+  blink::WebGestureEvent scroll_end =
+      blink::SyntheticWebGestureEventBuilder::Build(
+          blink::WebInputEvent::Type::kGestureScrollEnd,
+          blink::WebGestureDevice::kTouchscreen);
 
   test_frame_connector_->SetCanBubble(false);
 

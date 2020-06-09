@@ -11,7 +11,6 @@
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pointer_action_params.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 

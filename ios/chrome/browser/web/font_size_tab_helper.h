@@ -81,6 +81,9 @@ class FontSizeTabHelper : public web::WebStateObserver,
 
   PrefService* GetPrefService() const;
 
+  // Logs any events after zooming.
+  void LogZoomEvent(Zoom zoom) const;
+
   // Returns the new multiplier after zooming in the given direction. Returns
   // nullopt if it is impossible to zoom in the given direction;
   base::Optional<double> NewMultiplierAfterZoom(Zoom zoom) const;

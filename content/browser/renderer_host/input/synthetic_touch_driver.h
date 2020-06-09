@@ -9,14 +9,14 @@
 #include "base/macros.h"
 #include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
 #include "content/common/content_export.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 
 namespace content {
 
 class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
  public:
   SyntheticTouchDriver();
-  explicit SyntheticTouchDriver(SyntheticWebTouchEvent touch_event);
+  explicit SyntheticTouchDriver(blink::SyntheticWebTouchEvent touch_event);
   ~SyntheticTouchDriver() override;
 
   void DispatchEvent(SyntheticGestureTarget* target,
@@ -61,7 +61,7 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
   void ResetPointerIdIndexMap();
   int GetIndexFromMap(int value) const;
 
-  SyntheticWebTouchEvent touch_event_;
+  blink::SyntheticWebTouchEvent touch_event_;
   PointerIdIndexMap pointer_id_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticTouchDriver);

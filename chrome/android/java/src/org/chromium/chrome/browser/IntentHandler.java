@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -658,7 +659,7 @@ public class IntentHandler {
         OfflinePageUtils.getLoadUrlParamsForOpeningMhtmlFileOrContent(url, (loadUrlParams) -> {
             processUrlViewIntent(loadUrlParams.getUrl(), null, loadUrlParams.getVerbatimHeaders(),
                     TabOpenType.OPEN_NEW_TAB, null, 0, false, intent);
-        });
+        }, Profile.getLastUsedRegularProfile());
     }
 
     private static PendingIntent getAuthenticationToken() {

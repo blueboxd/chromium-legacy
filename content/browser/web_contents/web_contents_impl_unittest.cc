@@ -30,7 +30,6 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
-#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/page_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -68,6 +67,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -1745,8 +1745,9 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
 
   int modifiers = 0;
   // Verify that normal mouse wheel events do nothing to change the zoom level.
-  blink::WebMouseWheelEvent event = SyntheticWebMouseWheelEventBuilder::Build(
-      0, 0, 0, 1, modifiers, ui::ScrollGranularity::kScrollByPixel);
+  blink::WebMouseWheelEvent event =
+      blink::SyntheticWebMouseWheelEventBuilder::Build(
+          0, 0, 0, 1, modifiers, ui::ScrollGranularity::kScrollByPixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
@@ -1754,7 +1755,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // decreased. Except on MacOS where we never want to adjust zoom
   // with mousewheel.
   modifiers = WebInputEvent::kControlKey;
-  event = SyntheticWebMouseWheelEventBuilder::Build(
+  event = blink::SyntheticWebMouseWheelEventBuilder::Build(
       0, 0, 0, 1, modifiers, ui::ScrollGranularity::kScrollByPixel);
   bool handled = contents()->HandleWheelEvent(event);
 #if defined(USE_AURA)
@@ -1768,7 +1769,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
 
   modifiers = WebInputEvent::kControlKey | WebInputEvent::kShiftKey |
               WebInputEvent::kAltKey;
-  event = SyntheticWebMouseWheelEventBuilder::Build(
+  event = blink::SyntheticWebMouseWheelEventBuilder::Build(
       0, 0, 2, -5, modifiers, ui::ScrollGranularity::kScrollByPixel);
   handled = contents()->HandleWheelEvent(event);
 #if defined(USE_AURA)
@@ -1781,7 +1782,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
 #endif
 
   // Unless there is no vertical movement.
-  event = SyntheticWebMouseWheelEventBuilder::Build(
+  event = blink::SyntheticWebMouseWheelEventBuilder::Build(
       0, 0, 2, 0, modifiers, ui::ScrollGranularity::kScrollByPixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
@@ -1790,7 +1791,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   // zoom being adjusted, to avoid accidental adjustments caused by
   // two-finger-scrolling on a touchpad.
   modifiers = WebInputEvent::kControlKey;
-  event = SyntheticWebMouseWheelEventBuilder::Build(
+  event = blink::SyntheticWebMouseWheelEventBuilder::Build(
       0, 0, 0, 5, modifiers, ui::ScrollGranularity::kScrollByPrecisePixel);
   EXPECT_FALSE(contents()->HandleWheelEvent(event));
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());

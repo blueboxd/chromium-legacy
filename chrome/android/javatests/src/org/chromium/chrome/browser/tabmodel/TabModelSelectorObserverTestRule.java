@@ -58,7 +58,7 @@ public class TabModelSelectorObserverTestRule extends ChromeBrowserTestRule {
     }
 
     private void initialize() {
-        mSelector = new TabModelSelectorBase(null, false) {
+        mSelector = new TabModelSelectorBase(null, EmptyTabModelFilter::new, false) {
             @Override
             public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {

@@ -3819,6 +3819,7 @@ test("unit_tests") {
       "../browser/signin/dice_tab_helper_unittest.cc",
       "../browser/signin/dice_web_signin_interceptor_unittest.cc",
       "../browser/signin/process_dice_header_delegate_impl_unittest.cc",
+      "../browser/signin/signin_manager_unittest.cc",
       "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
     ]
   }

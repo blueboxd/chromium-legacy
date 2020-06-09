@@ -393,7 +393,7 @@ TEST_P(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
                   ->last_request()
                   .dlp_scan_request()
                   .url(),
-              tab_url_string_);
+              download_url_.spec());
   }
 
   {

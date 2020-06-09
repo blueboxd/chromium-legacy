@@ -4,10 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,10 +18,10 @@ public class TabModelFilterProvider extends EmptyTabModelSelectorObserver {
 
     TabModelFilterProvider() {}
 
-    TabModelFilterProvider(List<TabModel> tabModels) {
+    TabModelFilterProvider(TabModelFilterFactory tabModelFilterFactory, List<TabModel> tabModels) {
         List<TabModelFilter> filters = new ArrayList<>();
         for (int i = 0; i < tabModels.size(); i++) {
-            filters.add(createTabModelFilter(tabModels.get(i)));
+            filters.add(tabModelFilterFactory.createTabModelFilter(tabModels.get(i)));
         }
 
         mTabModelFilterList = Collections.unmodifiableList(filters);
@@ -87,21 +83,6 @@ public class TabModelFilterProvider extends EmptyTabModelSelectorObserver {
         for (int i = 0; i < mTabModelFilterList.size(); i++) {
             mTabModelFilterList.get(i).destroy();
         }
-    }
-
-    /**
-     * Return a {@link TabModelFilter} based on feature flags.
-     * @param model The {@link TabModel} that the {@link TabModelFilter} acts on.
-     * @return a {@link TabModelFilter}.
-     */
-    private TabModelFilter createTabModelFilter(TabModel model) {
-        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
-            TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
-            if (tabManagementDelegate != null) {
-                return tabManagementDelegate.createTabGroupModelFilter(model);
-            }
-        }
-        return new EmptyTabModelFilter(model);
     }
 
     private void markTabStateInitialized() {

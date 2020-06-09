@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
-#include "chrome/common/prerender_canceler.mojom.h"
+#include "components/prerender/common/prerender_canceler.mojom.h"
 #include "components/prerender/common/prerender_types.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -25,7 +25,8 @@ class PrerenderURLLoaderThrottle
   PrerenderURLLoaderThrottle(
       PrerenderMode mode,
       const std::string& histogram_prefix,
-      mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler);
+      mojo::PendingRemote<
+          components::prerender::common::mojom::PrerenderCanceler> canceler);
   ~PrerenderURLLoaderThrottle() override;
 
   // Called when the prerender is used. This will unpaused requests and set the
@@ -61,7 +62,8 @@ class PrerenderURLLoaderThrottle
   int redirect_count_ = 0;
   blink::mojom::ResourceType resource_type_;
 
-  mojo::PendingRemote<chrome::mojom::PrerenderCanceler> canceler_;
+  mojo::PendingRemote<components::prerender::common::mojom::PrerenderCanceler>
+      canceler_;
 
   // The throttle changes most request priorities to IDLE during prerendering.
   // The priority is reset back to the original priority when prerendering is

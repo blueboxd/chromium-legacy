@@ -155,7 +155,6 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
 
   static const base::StringPiece kAllowedArgs[] = {
       cc::switches::kEnableGpuBenchmarking,
-      switches::kAcceleratedCanvas2dMSAASampleCount,
       switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
       // TODO(crbug.com/1082821): Remove this switch from the allow-list.

@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 
 #include "base/containers/adapters.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/values.h"
@@ -148,7 +150,13 @@ void FontSizeTabHelper::UserZoom(Zoom zoom) {
   double new_zoom_multiplier = NewMultiplierAfterZoom(zoom).value_or(1);
   StoreCurrentUserZoomMultiplier(new_zoom_multiplier);
 
-  // Track when the user zooms to see if there are certain websites that are
+  LogZoomEvent(zoom);
+
+  SetPageFontSize(GetFontSize());
+}
+
+void FontSizeTabHelper::LogZoomEvent(Zoom zoom) const {
+  // Log when the user zooms to see if there are certain websites that are
   // broken when zooming.
   IOSContentSizeCategory content_size_category =
       IOSContentSizeCategoryForCurrentUIContentSizeCategory();
@@ -160,7 +168,18 @@ void FontSizeTabHelper::UserZoom(Zoom zoom) {
       .SetOverallZoomLevel(GetFontSize())
       .Record(ukm_recorder);
 
-  SetPageFontSize(GetFontSize());
+  // Log a UserMetricsAction as well so the zoom events appear in breadcrumbs.
+  switch (zoom) {
+    case ZOOM_OUT:
+      base::RecordAction(base::UserMetricsAction("IOS.PageZoom.ZoomOut"));
+      break;
+    case ZOOM_IN:
+      base::RecordAction(base::UserMetricsAction("IOS.PageZoom.ZoomIn"));
+      break;
+    case ZOOM_RESET:
+      base::RecordAction(base::UserMetricsAction("IOS.PageZoom.ZoomReset"));
+      break;
+  }
 }
 
 base::Optional<double> FontSizeTabHelper::NewMultiplierAfterZoom(

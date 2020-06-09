@@ -189,8 +189,7 @@ TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
   // Make a non-primary account available with both a refresh token and cookie.
   EXPECT_CALL(account_state_changed, Run());
   AccountInfo account_info =
-      identity_env()->MakeAccountAvailable("test@email.com");
-  identity_env()->SetCookieAccounts({{account_info.email, account_info.gaia}});
+      identity_env()->MakeUnconsentedPrimaryAccountAvailable("test@email.com");
 
   EXPECT_FALSE(auth_manager->GetActiveAccountInfo().is_primary);
   EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
@@ -759,150 +758,67 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
-// On platforms that don't support unconsented primary accounts, the contents of
-// the cookie jar should make no difference.
-TEST_F(SyncAuthManagerTest, IgnoresCookieJar) {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+// Primary account with no sync consent is not supported on Android and iOS.
+TEST_F(SyncAuthManagerTest, PrimaryAccountWithNoSyncConsent) {
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
   ASSERT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 
-  // Make a non-primary account available with both a refresh token and cookie.
+  // Make a primary account with no sync consent available.
   AccountInfo account_info =
-      identity_env()->MakeAccountAvailable("test@email.com");
-  identity_env()->SetCookieAccounts({{account_info.email, account_info.gaia}});
+      identity_env()->MakeUnconsentedPrimaryAccountAvailable("test@email.com");
 
-  // Since secondary account support is disabled, this should have no effect.
-  EXPECT_TRUE(
-      auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
+  // Since unconsented primary account support is enabled, SyncAuthManager
+  // should have picked up this account.
+  EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_info.account_id);
 }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
-#else   // defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
-
-TEST_F(SyncAuthManagerTest, UsesCookieJar) {
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+// Primary account with no sync consent is not supported on Android and iOS.
+// On crOS the unconsented primary account can't be changed or removed, but can
+// be granted sync consent.
+TEST_F(SyncAuthManagerTest, PicksNewPrimaryAccountWithSyncConsent) {
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
   ASSERT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 
-  // Make a non-primary account available with both a refresh token and cookie.
-  AccountInfo account_info =
-      identity_env()->MakeAccountAvailable("test@email.com");
-  identity_env()->SetCookieAccounts({{account_info.email, account_info.gaia}});
-
-  // Since secondary account support is enabled, SyncAuthManager should have
-  // picked up this account
-  EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_info.account_id);
-}
-
-TEST_F(SyncAuthManagerTest, DropsAccountWhenCookieGoesAway) {
-  auto auth_manager = CreateAuthManager();
-  auth_manager->RegisterForAuthNotifications();
-
-  // Make a non-primary account available with both a refresh token and cookie.
-  AccountInfo account_info =
-      identity_env()->MakeAccountAvailable("test@email.com");
-  identity_env()->SetCookieAccounts({{account_info.email, account_info.gaia}});
+  // Make a primary account with no sync consent available.
+  AccountInfo unconsented_primary_account_info =
+      identity_env()->MakeUnconsentedPrimaryAccountAvailable("test@email.com");
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_info.account_id);
+            unconsented_primary_account_info.account_id);
 
-  // If the cookie goes away, we're not using the account anymore, even though
-  // we still have a refresh token.
-  identity_env()->SetCookieAccounts({});
-  EXPECT_TRUE(
-      auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
-
-  // Once the cookie comes back, we can use the account again.
-  identity_env()->SetCookieAccounts({{account_info.email, account_info.gaia}});
-  EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_info.account_id);
-}
-
-TEST_F(SyncAuthManagerTest, DropsAccountWhenRefreshTokenGoesAway) {
-  auto auth_manager = CreateAuthManager();
-  auth_manager->RegisterForAuthNotifications();
-
-  // Make a non-primary account available with both a refresh token and cookie.
-  AccountInfo account_info =
-      identity_env()->MakeAccountAvailable("test@email.com");
-  identity_env()->SetCookieAccounts({{account_info.email, account_info.gaia}});
-  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_info.account_id);
-
-  // If the refresh token goes away, we're not using the account anymore, even
-  // though the cookie is still there.
-  identity_env()->RemoveRefreshTokenForAccount(account_info.account_id);
-  EXPECT_TRUE(
-      auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
-
-  // Once the refresh token comes back, we can use the account again.
-  identity_env()->SetRefreshTokenForAccount(account_info.account_id);
-  EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_info.account_id);
-}
-
-TEST_F(SyncAuthManagerTest, PrefersPrimaryAccountOverCookie) {
-  auto auth_manager = CreateAuthManager();
-  auth_manager->RegisterForAuthNotifications();
-
-  ASSERT_TRUE(
-      auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
-
-  // Make a non-primary account available with both a refresh token and cookie.
-  AccountInfo secondary_account_info =
-      identity_env()->MakeAccountAvailable("test@email.com");
-  identity_env()->SetCookieAccounts(
-      {{secondary_account_info.email, secondary_account_info.gaia}});
-  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            secondary_account_info.account_id);
-
-  // Once a primary account becomes available, that one is preferred over the
-  // one from the cookie.
+  // Once a primary account with sync consent becomes available, the unconsented
+  // primary account should be overridden.
   AccountInfo primary_account_info =
       identity_env()->MakePrimaryAccountAvailable("primary@email.com");
   EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             primary_account_info.account_id);
 }
 
-TEST_F(SyncAuthManagerTest, OnlyUsesFirstCookieAccount) {
+TEST_F(SyncAuthManagerTest,
+       DropsAccountWhenPrimaryAccountWithNoSyncConsentGoesAway) {
   auto auth_manager = CreateAuthManager();
   auth_manager->RegisterForAuthNotifications();
 
-  ASSERT_TRUE(
-      auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
+  // Make a primary account with no sync consent available.
+  AccountInfo account_info =
+      identity_env()->MakeUnconsentedPrimaryAccountAvailable("test@email.com");
+  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
+            account_info.account_id);
 
-  // Make two non-primary accounts available with both refresh token and cookie.
-  AccountInfo account_info1 =
-      identity_env()->MakeAccountAvailable("test1@email.com");
-  AccountInfo account_info2 =
-      identity_env()->MakeAccountAvailable("test2@email.com");
-  identity_env()->SetCookieAccounts(
-      {{account_info1.email, account_info1.gaia},
-       {account_info2.email, account_info2.gaia}});
-
-  // SyncAuthManager should have picked up the first account.
-  EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_info1.account_id);
-
-  // If the order of the accounts in the cookie changes, then SyncAuthManager
-  // should move to the other (now-first) account.
-  identity_env()->SetCookieAccounts(
-      {{account_info2.email, account_info2.gaia},
-       {account_info1.email, account_info1.gaia}});
-  EXPECT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_info2.account_id);
-
-  // If the refresh token for this account goes away, there should be no active
-  // account anymore - we should *not* fall back to the second cookie account.
-  identity_env()->RemoveRefreshTokenForAccount(account_info2.account_id);
+  identity_env()->ClearPrimaryAccount();
   EXPECT_TRUE(
       auth_manager->GetActiveAccountInfo().account_info.account_id.empty());
 }
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
 }  // namespace
 

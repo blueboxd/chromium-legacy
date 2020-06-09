@@ -350,21 +350,22 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
   // may be components that don't listen for token service events when the
   // profile is not connected to an account.
   switch (remove_option) {
-#if !defined(OS_CHROMEOS)
     case RemoveAccountsOption::kRemoveAllAccounts:
       VLOG(0) << "Revoking all refresh tokens on server. Reason: sign out";
+      SetUnconsentedPrimaryAccountInfo(CoreAccountInfo());
       token_service_->RevokeAllCredentials(
           signin_metrics::SourceForRefreshTokenOperation::
               kPrimaryAccountManager_ClearAccount);
       break;
     case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
-      if (token_service_->RefreshTokenHasError(account_info.account_id))
+      if (token_service_->RefreshTokenHasError(account_info.account_id)) {
+        SetUnconsentedPrimaryAccountInfo(CoreAccountInfo());
         token_service_->RevokeCredentials(
             account_info.account_id,
             signin_metrics::SourceForRefreshTokenOperation::
                 kPrimaryAccountManager_ClearAccount);
+      }
       break;
-#endif
     case RemoveAccountsOption::kKeepAllAccounts:
       // Do nothing.
       break;

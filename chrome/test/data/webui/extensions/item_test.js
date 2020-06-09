@@ -375,7 +375,7 @@ suite(extension_item_tests.suiteName, function() {
 
   test(assert(extension_item_tests.TestNames.RemoveButton), function() {
     expectFalse(item.$['remove-button'].hidden);
-    item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
+    item.set('data.mustRemainInstalled', true);
     flush();
     expectTrue(item.$['remove-button'].hidden);
   });

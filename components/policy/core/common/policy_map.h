@@ -61,7 +61,12 @@ class POLICY_EXPORT PolicyMap {
     base::Value* value() { return base::OptionalOrNullptr(value_); }
     const base::Value* value() const { return base::OptionalOrNullptr(value_); }
 
+    // DEPRECATED: Use the other version that takes base::Optional<base::Value>
+    // below.
+    // TODO(crbug.com/1092471): Migrate the existing usages and delete this
+    // method.
     void set_value(std::unique_ptr<base::Value> val);
+    void set_value(base::Optional<base::Value> val);
 
     // Returns true if |this| has higher priority than |other|. The priority of
     // the fields are |level| > |scope| > |source|.

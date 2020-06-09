@@ -222,7 +222,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetNeedsCompositingUpdate() override;
   void UpdateMemoryUsage() override;
   bool ShouldAccelerate2dContext() const override;
-  unsigned GetMSAASampleCountFor2dContext() const override;
   SkFilterQuality FilterQuality() const override;
   bool LowLatencyEnabled() const override;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(

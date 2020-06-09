@@ -26,7 +26,10 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
 import {routes} from '../route.js';
 
+import {MergeExceptionsStoreCopiesBehavior} from './merge_exceptions_store_copies_behavior.js';
 import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
+import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
+import {MultiStoreIdHandler} from './multi_store_id_handler.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 
@@ -50,6 +53,7 @@ Polymer({
   _template: html`{__html_template__}`,
 
   behaviors: [
+    MergeExceptionsStoreCopiesBehavior,
     MergePasswordsStoreCopiesBehavior,
     I18nBehavior,
     IronA11yKeysBehavior,
@@ -86,18 +90,7 @@ Polymer({
     deviceOnlyPasswords_: {
       type: Array,
       value: () => [],
-      computed:
-          'computeDeviceOnlyPasswords_(savedPasswords, savedPasswords.splices)',
-    },
-
-    /**
-     * Determines whether to show fallback text in the device-only subsection.
-     * @private
-     */
-    hasDeviceOnlyPasswords_: {
-      type: Boolean,
-      value: false,
-      computed: 'isNonEmpty_(deviceOnlyPasswords_)'
+      computed: 'getDeviceOnlyEntries_(savedPasswords, savedPasswords.splices)',
     },
 
     /**
@@ -108,19 +101,32 @@ Polymer({
     deviceAndAccountPasswords_: {
       type: Array,
       value: () => [],
-      computed: 'computeDeviceAndAccountPasswords_(savedPasswords, ' +
+      computed: 'getDeviceAndAccountEntries_(savedPasswords, ' +
           'savedPasswords.splices)',
     },
 
     /**
-     * Determines whether to show fallback text in the 'device and account'
-     * subsection.
+     * Exceptions displayed in the device-only subsection.
+     * @type {!Array<!MultiStoreExceptionEntry>}
      * @private
      */
-    hasDeviceAndAccountPasswords_: {
-      type: Boolean,
-      value: false,
-      computed: 'isNonEmpty_(deviceAndAccountPasswords_)'
+    deviceOnlyExceptions_: {
+      type: Array,
+      value: () => [],
+      computed: 'getDeviceOnlyEntries_(passwordExceptions, ' +
+          'passwordExceptions.splices)',
+    },
+
+    /**
+     * Exceptions displayed in the device-and-account subsection.
+     * @type {!Array<!MultiStoreExceptionEntry>}
+     * @private
+     */
+    deviceAndAccountExceptions_: {
+      type: Array,
+      value: () => [],
+      computed: 'getDeviceAndAccountEntries_(passwordExceptions, ' +
+          'passwordExceptions.splices)',
     },
 
     /** @private {!MultiStorePasswordUiEntry} */
@@ -132,12 +138,12 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!MultiStorePasswordUiEntry>} passwords
+   * @param {!Array<!MultiStoreIdHandler>} entries
    * @return {boolean}
    * @private
    */
-  isNonEmpty_(passwords) {
-    return passwords.length > 0;
+  isNonEmpty_(entries) {
+    return entries.length > 0;
   },
 
   keyBindings: {
@@ -150,21 +156,23 @@ Polymer({
   },
 
   /**
-   * @return {!Array<!MultiStorePasswordUiEntry>}
+   * @param {!Array<!MultiStoreIdHandler>} entries
+   * @return {!Array<!MultiStoreIdHandler>}
    * @private
    */
-  computeDeviceOnlyPasswords_() {
-    return this.savedPasswords.filter(
-        p => p.isPresentOnDevice() && !p.isPresentInAccount());
+  getDeviceOnlyEntries_(entries) {
+    return entries.filter(
+        entry => entry.isPresentOnDevice() && !entry.isPresentInAccount());
   },
 
   /**
-   * @return {!Array<!MultiStorePasswordUiEntry>}
+   * @param {!Array<!MultiStoreIdHandler>} entries
+   * @return {!Array<!MultiStoreIdHandler>}
    * @private
    */
-  computeDeviceAndAccountPasswords_() {
-    return this.savedPasswords.filter(
-        p => p.isPresentOnDevice() && p.isPresentInAccount());
+  getDeviceAndAccountEntries_(entries) {
+    return entries.filter(
+        entry => entry.isPresentOnDevice() && entry.isPresentInAccount());
   },
 
   /**
@@ -181,6 +189,37 @@ Polymer({
     return passwords.filter(
         p => [p.urls.shown, p.username].some(
             term => term.toLowerCase().includes(filter.toLowerCase())));
+  },
+
+  /**
+   * @param {!Array<!MultiStoreExceptionEntry>} exceptions
+   * @param {string} filter
+   * @return {!Array<!MultiStoreExceptionEntry>}
+   * @private
+   */
+  getFilteredExceptions_(exceptions, filter) {
+    return exceptions.filter(
+        e => e.urls.shown.toLowerCase().includes(filter.toLowerCase()));
+  },
+
+  /**
+   * Handler for removing an exception.
+   * @param {!{model: !{item: !chrome.passwordsPrivate.ExceptionEntry}}} event
+   * @private
+   */
+  // TODO(crbug.com/1049141): Consider introducing <exception-list-item> to
+  // avoid duplicating this handler.
+  onRemoveExceptionButtonTap_(event) {
+    const exception = event.model.item;
+    /** @type {!Array<number>} */
+    const allExceptionIds = [];
+    if (exception.isPresentInAccount()) {
+      allExceptionIds.push(exception.accountId);
+    }
+    if (exception.isPresentOnDevice()) {
+      allExceptionIds.push(exception.deviceId);
+    }
+    PasswordManagerImpl.getInstance().removeExceptions(allExceptionIds);
   },
 
   /**

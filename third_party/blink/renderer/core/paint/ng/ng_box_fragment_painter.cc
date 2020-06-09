@@ -675,7 +675,7 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info,
         // that assumes that we have a LayoutObject (and FragmentData).
         PhysicalOffset child_offset = paint_offset + child.offset;
 
-        if (box_child_fragment.IsColumnBox()) {
+        if (box_child_fragment.IsFragmentainerBox()) {
           // This is a fragmentainer, and when node inside a fragmentation
           // context paints multiple block fragments, we need to distinguish
           // between them somehow, for paint caching to work. Therefore,
@@ -823,7 +823,7 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
       continue;
     }
 
-    if (child_container->IsColumnBox()) {
+    if (child_container->IsFragmentainerBox()) {
       // This is a fragmentainer, and when node inside a fragmentation context
       // paints multiple block fragments, we need to distinguish between them
       // somehow, for paint caching to work. Therefore, establish a display item

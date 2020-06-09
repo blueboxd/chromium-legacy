@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
-import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
-import static android.support.test.espresso.matcher.ViewMatchers.isSelected;
-import static android.support.test.espresso.matcher.ViewMatchers.withChild;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.isSelected;
+import static androidx.test.espresso.matcher.ViewMatchers.withChild;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -32,12 +32,12 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
-import android.support.test.espresso.matcher.RootMatchers;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
+import androidx.test.espresso.matcher.RootMatchers;
 
 import com.google.android.material.tabs.TabLayout;
 

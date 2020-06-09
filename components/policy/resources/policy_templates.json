@@ -21093,7 +21093,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
               'enum': [ 'rsa' ]
             },
             'renewal_period_seconds': {
-              'description': 'Number of days before expiration of a certificate when renewal should be triggered',
+              'description': 'Number of seconds before expiration of a certificate when renewal should be triggered',
               'type': 'integer'
             },
             'policy_version': {
@@ -21132,7 +21132,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
               'type': 'string'
             },
             'cert_profile_id': {
-              'description': 'An identifier for this client certificate.',
+              'description': 'The identifier for this client certificate.',
               'type': 'string'
             },
             'key_algorithm': {
@@ -21141,7 +21141,7 @@ If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not 
               'enum': [ 'rsa' ]
             },
             'renewal_period_seconds': {
-              'description': 'Number of days before expiration of a certificate when renewal should be triggered',
+              'description': 'Number of seconds before expiration of a certificate when renewal should be triggered',
               'type': 'integer'
             },
             'policy_version': {

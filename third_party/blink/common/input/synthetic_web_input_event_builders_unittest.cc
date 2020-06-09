@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/input/synthetic_web_input_event_builders.h"
-#include "content/common/input/web_touch_event_traits.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::WebInputEvent;
-using blink::WebTouchEvent;
-using blink::WebTouchPoint;
-
-namespace content {
+namespace blink {
 
 TEST(SyntheticWebInputEventBuilders, BuildWebTouchEvent) {
   SyntheticWebTouchEvent event;
@@ -57,4 +53,4 @@ TEST(SyntheticWebInputEventBuilders, BuildWebTouchEvent) {
   EXPECT_EQ(gfx::PointF(9, 10), event.touches[0].PositionInWidget());
 }
 
-}  // namespace content
+}  // namespace blink

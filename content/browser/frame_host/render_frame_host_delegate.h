@@ -604,6 +604,13 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // links.
   virtual void SavableResourceLinksError(RenderFrameHostImpl* source) {}
 
+  // Called when |RenderFrameHostImpl::lifecycle_state()| changes i.e., when
+  // RenderFrameHost LifecycleState changes from old_state to new_state.
+  virtual void RenderFrameHostStateChanged(
+      RenderFrameHost* host,
+      RenderFrameHostImpl::LifecycleState old_state,
+      RenderFrameHostImpl::LifecycleState new_state) {}
+
  protected:
   virtual ~RenderFrameHostDelegate() = default;
 };

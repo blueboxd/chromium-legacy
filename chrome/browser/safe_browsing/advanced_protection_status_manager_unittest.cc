@@ -406,10 +406,9 @@ TEST_F(AdvancedProtectionStatusManagerTest, TracksUnconsentedPrimaryAccount) {
 
   // Sign in, but don't set this as the primary account.
   AccountInfo account_info =
-      identity_test_env_.MakeAccountAvailable("test@test.com");
+      identity_test_env_.MakeUnconsentedPrimaryAccountAvailable(
+          "test@test.com");
   account_info.is_under_advanced_protection = true;
-  identity_test_env_.SetCookieAccounts(
-      {{account_info.email, account_info.gaia}});
   identity_test_env_.UpdateAccountInfoForAccount(account_info);
 
   EXPECT_TRUE(aps_manager.IsUnderAdvancedProtection());

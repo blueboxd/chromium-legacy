@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_block_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/common/previews_state.h"
 

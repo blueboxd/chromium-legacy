@@ -536,7 +536,7 @@ TEST_P(HomeButtonTest, LongPressGesture) {
   assistant_state()->NotifyFeatureAllowed(
       chromeos::assistant::AssistantAllowedState::ALLOWED);
   assistant_state()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::NEW_READY);
+      chromeos::assistant::AssistantStatus::READY);
 
   ShelfNavigationWidget::TestApi test_api(
       GetPrimaryShelf()->navigation_widget());
@@ -568,7 +568,7 @@ TEST_P(HomeButtonTest, LongPressGestureInTabletMode) {
   assistant_state()->NotifyFeatureAllowed(
       chromeos::assistant::AssistantAllowedState::ALLOWED);
   assistant_state()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::NEW_READY);
+      chromeos::assistant::AssistantStatus::READY);
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 

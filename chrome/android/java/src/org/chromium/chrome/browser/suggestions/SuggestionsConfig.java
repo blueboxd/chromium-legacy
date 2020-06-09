@@ -84,7 +84,8 @@ public final class SuggestionsConfig {
      */
     public static String getReferrerUrl(String featureName) {
         assert ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS.equals(featureName)
-                || ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS.equals(featureName);
+                || ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS.equals(featureName)
+                || ChromeFeatureList.INTEREST_FEED_V2.equals(featureName);
 
         return getReferrerUrlParamOrDefault(featureName, DEFAULT_CONTENT_SUGGESTIONS_REFERRER_URL);
     }

@@ -119,8 +119,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   // RenderFrameObserver implementation.
   void DidCreateNewDocument() override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void AccessibilityModeChanged(const ui::AXMode& mode) override;
 
   void HitTest(const ui::AXActionData& action_data,

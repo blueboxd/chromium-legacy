@@ -45,18 +45,21 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
@@ -1674,6 +1677,21 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                   [weakSelf openAllNodes:nodes inIncognito:NO newTab:YES];
                 }
                  style:UIAlertActionStyleDefault];
+
+  if (IsMultiwindowSupported()) {
+    NSString* title =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
+    id<ApplicationCommands> windowOpener = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), ApplicationCommands);
+    auto action = ^{
+      [windowOpener openNewWindowWithActivity:ActivityToLoadURL(
+                                                  WindowActivityBookmarksOrigin,
+                                                  node->url())];
+    };
+    [coordinator addItemWithTitle:title
+                           action:action
+                            style:UIAlertActionStyleDefault];
+  }
 
   [coordinator
       addItemWithTitle:l10n_util::GetNSString(

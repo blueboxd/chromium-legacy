@@ -20,6 +20,10 @@
   }
 }
 
+cr-input {
+  --cr-input-padding-start: 0px;
+}
+
 /* icon, title, subtitle styles must approximate current Gaia style. */
 
 #icon {

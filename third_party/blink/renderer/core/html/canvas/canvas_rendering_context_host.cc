@@ -329,7 +329,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
     }
     auto* async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
         image_bitmap, options, function_type, start_time,
-        ExecutionContext::From(script_state), ukm_params_, resolver);
+        ExecutionContext::From(script_state), resolver);
     async_creator->ScheduleAsyncBlobCreation(options->quality());
     return resolver->Promise();
   }

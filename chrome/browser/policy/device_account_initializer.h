@@ -58,7 +58,7 @@ class DeviceAccountInitializer : public CloudPolicyClient::Observer,
     GetRobotAuthCodeDeviceType() = 0;
 
     // Returns the oauth scopes for which to request auth codes.
-    virtual std::string GetRobotOAuthScopes() = 0;
+    virtual std::set<std::string> GetRobotOAuthScopes() = 0;
 
     // Returns a url loader factory that the DeviceAccountInitializer will use
     // for GAIA requests.

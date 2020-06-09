@@ -201,6 +201,11 @@ public class DateOrderedListCoordinator implements ToolbarCoordinator.ToolbarLis
         mFilterCoordinator.setSelectedFilter(filter);
     }
 
+    /** @return The currently selected filter. */
+    public @FilterType int getSelectedFilter() {
+        return mFilterCoordinator.getSelectedFilter();
+    }
+
     private void startShareIntent(Intent intent) {
         try {
             mContext.startActivity(Intent.createChooser(

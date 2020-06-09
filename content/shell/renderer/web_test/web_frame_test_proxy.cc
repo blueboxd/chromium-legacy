@@ -169,8 +169,7 @@ class TestRenderFrameObserver : public RenderFrameObserver {
     }
   }
 
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override {
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       std::string description = frame_proxy()->GetFrameDescriptionForWebTests();
       blink_test_runner()->PrintMessage(description +
@@ -178,8 +177,16 @@ class TestRenderFrameObserver : public RenderFrameObserver {
     }
 
     // Looking for navigations to about:blank after a test completes.
-    if (render_frame()->IsMainFrame() && !is_same_document_navigation) {
+    if (render_frame()->IsMainFrame()) {
       blink_test_runner()->DidCommitNavigationInMainFrame();
+    }
+  }
+
+  void DidFinishSameDocumentNavigation() override {
+    if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
+      std::string description = frame_proxy()->GetFrameDescriptionForWebTests();
+      blink_test_runner()->PrintMessage(description +
+                                        " - didCommitLoadForFrame\n");
     }
   }
 

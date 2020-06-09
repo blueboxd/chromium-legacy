@@ -39,7 +39,7 @@ class MacUpdateServiceOutOfProcessTest : public ::testing::Test {
   void InitializeService();
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  ScopedXPCUpdateServiceMock mock_driver_;
+  ScopedXPCServiceMock mock_driver_ { @protocol (CRUUpdateChecking) };
   std::unique_ptr<base::RunLoop> run_loop_;
   scoped_refptr<UpdateServiceOutOfProcess> service_;
 };  // class MacUpdateOutOfProcessTest
@@ -54,9 +54,9 @@ void MacUpdateServiceOutOfProcessTest::SetUp() {
 }
 
 TEST_F(MacUpdateServiceOutOfProcessTest, NoProductsUpdateAll) {
-  ScopedXPCUpdateServiceMock::ConnectionMockRecord* conn_rec =
+  ScopedXPCServiceMock::ConnectionMockRecord* conn_rec =
       mock_driver_.PrepareNewMockConnection();
-  ScopedXPCUpdateServiceMock::RemoteObjectMockRecord* mock_rec =
+  ScopedXPCServiceMock::RemoteObjectMockRecord* mock_rec =
       conn_rec->PrepareNewMockRemoteObject();
   id<CRUUpdateChecking> mock_remote_object = mock_rec->mock_object.get();
 

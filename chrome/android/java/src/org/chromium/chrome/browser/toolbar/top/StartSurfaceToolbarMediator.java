@@ -132,6 +132,8 @@ class StartSurfaceToolbarMediator {
 
     // TODO(crbug.com/1042997): share with TabSwitcherModeTTPhone.
     private boolean hasIncognitoTabs() {
+        if (mTabModelSelector == null) return false;
+
         // Check if there is no incognito tab, or all the incognito tabs are being closed.
         TabModel incognitoTabModel = mTabModelSelector.getModel(true);
         for (int i = 0; i < incognitoTabModel.getCount(); i++) {

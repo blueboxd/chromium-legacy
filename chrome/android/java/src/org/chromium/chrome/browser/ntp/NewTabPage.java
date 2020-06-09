@@ -391,7 +391,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 activity.getResources().getDimensionPixelSize(R.dimen.tab_strip_and_toolbar_height);
 
         mNewTabPageUma.recordIsUserOnline();
-        mNewTabPageUma.recordLoadType();
         mNewTabPageUma.recordContentSuggestionsDisplayStatus();
 
         // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?

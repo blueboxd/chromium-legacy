@@ -29,6 +29,8 @@ void TranslateInfobarBannerInteractionHandler::MainButtonTapped(
   translate::TranslateStep step = delegate->translate_step();
   switch (step) {
     case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+      if (delegate->ShouldAutoAlwaysTranslate())
+        delegate->ToggleAlwaysTranslate();
       delegate->Translate();
       break;
     case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:

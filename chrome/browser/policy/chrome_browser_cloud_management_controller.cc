@@ -206,8 +206,11 @@ class MachineLevelDeviceAccountInitializerHelper
     return enterprise_management::DeviceServiceApiAccessRequest::CHROME_BROWSER;
   }
 
-  std::string GetRobotOAuthScopes() override {
-    return GaiaConstants::kFCMOAuthScope;
+  std::set<std::string> GetRobotOAuthScopes() override {
+    return {
+        GaiaConstants::kOAuthWrapBridgeUserInfoScope,
+        GaiaConstants::kFCMOAuthScope,
+    };
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()

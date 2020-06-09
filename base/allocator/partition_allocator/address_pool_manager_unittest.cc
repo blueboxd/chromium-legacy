@@ -78,6 +78,8 @@ TEST(AddressPoolManager, PagesFragmented) {
     addrs[i] = AddressPoolManager::GetInstance()->Alloc(pool, kSuperPageSize);
     EXPECT_EQ(addrs[i], base_ptr + i * kSuperPageSize);
   }
+  EXPECT_EQ(AddressPoolManager::GetInstance()->Alloc(pool, kSuperPageSize),
+            nullptr);
   for (size_t i = 1; i < kPageCnt; i += 2) {
     AddressPoolManager::GetInstance()->Free(pool, addrs[i], kSuperPageSize);
   }
@@ -87,6 +89,8 @@ TEST(AddressPoolManager, PagesFragmented) {
     addrs[i] = AddressPoolManager::GetInstance()->Alloc(pool, kSuperPageSize);
     EXPECT_EQ(addrs[i], base_ptr + i * kSuperPageSize);
   }
+  EXPECT_EQ(AddressPoolManager::GetInstance()->Alloc(pool, kSuperPageSize),
+            nullptr);
 }
 
 TEST(AddressPoolManager, IrregularPattern) {

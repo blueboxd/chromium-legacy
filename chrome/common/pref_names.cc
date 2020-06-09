@@ -2097,6 +2097,10 @@ const char kAutoEnrollmentPowerLimit[] = "AutoEnrollmentPowerLimit";
 // them to the policy server.
 const char kDeviceActivityTimes[] = "device_status.activity_times";
 
+// A pref that stores user app activity times before reporting them to the
+// policy server.
+const char kAppActivityTimes[] = "device_status.app_activity_times";
+
 // A pref that stores user activity times before reporting them to the policy
 // server.
 const char kUserActivityTimes[] = "consumer_device_status.activity_times";

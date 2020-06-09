@@ -242,8 +242,7 @@ class SearchBox : public content::RenderFrameObserver,
 
  private:
   // Overridden from content::RenderFrameObserver:
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void OnDestruct() override;
 
   // Overridden from search::mojom::EmbeddedSearchClient:

@@ -45,7 +45,7 @@
           <span class="i18n" msgid="options_highlight_color_description"
                 id="highlight_color_description"></span>
           <select id="highlightColor"
-                  aria-labeledby="options_highlight_color_description">
+                  aria-labeledby="highlight_color_description">
             <option value="#5e9bff" class="i18n"
                     msgid="options_highlight_color_blue">
             </option>
@@ -73,14 +73,26 @@
             </div>
           </div>
         </div>
+        <hr aria-hidden="true">
         <div class="option" id="backgroundShadingOption">
-            <label id="backgroundShadingLabel" class="i18n"
-                  msgid="options_background_shading_description">
-            </label>
-            <input id="backgroundShading" type="checkbox" role="switch"
+          <label id="backgroundShadingLabel" class="i18n"
+              msgid="options_background_shading_description">
+          </label>
+          <input id="backgroundShading" type="checkbox" role="switch"
               class="checkbox" name="backgroundShading"
               aria-labeledby="backgroundShadingLabel">
+        </div>
+        <div id="backgroundPreviewContainer"
+            class="background-preview-container hidden">
+          <div id="backgroundPreview" class="background-preview">
+            <p class="background-preview-unselected i18n"
+                msgid="options_sample_text"></p>
+            <p class="background-preview-selected i18n"
+                msgid="options_sample_text"></p>
+            <p class="background-preview-unselected i18n"
+                msgid="options_sample_text"></p>
           </div>
+        </div>
       </div>
     </div>
 

@@ -15,7 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_blocklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/re2/src/re2/re2.h"
 

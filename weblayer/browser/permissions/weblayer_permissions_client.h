@@ -22,6 +22,8 @@ class WebLayerPermissionsClient : public permissions::PermissionsClient {
   // PermissionsClient:
   HostContentSettingsMap* GetSettingsMap(
       content::BrowserContext* browser_context) override;
+  scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
+      content::BrowserContext* browser_context) override;
   permissions::PermissionDecisionAutoBlocker* GetPermissionDecisionAutoBlocker(
       content::BrowserContext* browser_context) override;
   permissions::PermissionManager* GetPermissionManager(

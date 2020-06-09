@@ -20,8 +20,8 @@ base::HistogramBase* VisibilityMetricsLogger::GetGlobalVisibilityHistogram() {
   static NoDestructor<base::HistogramBase*> histogram(
       base::Histogram::FactoryGet(
           "Android.WebView.Visibility.Global", 1,
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kCount),
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kCount) + 1,
+          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 1,
+          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 2,
           base::HistogramBase::kUmaTargetedHistogramFlag));
   return *histogram;
 }
@@ -31,8 +31,8 @@ VisibilityMetricsLogger::GetPerWebViewVisibilityHistogram() {
   static NoDestructor<base::HistogramBase*> histogram(
       base::Histogram::FactoryGet(
           "Android.WebView.Visibility.PerWebView", 1,
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kCount),
-          static_cast<int>(VisibilityMetricsLogger::Visibility::kCount) + 1,
+          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 1,
+          static_cast<int>(VisibilityMetricsLogger::Visibility::kMaxValue) + 2,
           base::HistogramBase::kUmaTargetedHistogramFlag));
   return *histogram;
 }
@@ -74,8 +74,6 @@ void VisibilityMetricsLogger::ClientVisibilityChanged(Client* client) {
 }
 
 void VisibilityMetricsLogger::UpdateDurations(base::TimeTicks update_time) {
-  base::AutoLock lock(duration_lock_);
-
   base::TimeDelta delta = update_time - last_update_time_;
   if (visible_client_count_ > 0) {
     any_webview_visible_duration_ += delta;
@@ -109,6 +107,8 @@ void VisibilityMetricsLogger::ProcessClientUpdate(Client* client,
 }
 
 void VisibilityMetricsLogger::RecordMetrics() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   UpdateDurations(base::TimeTicks::Now());
 
   int32_t any_webview_visible_seconds;
@@ -116,25 +116,21 @@ void VisibilityMetricsLogger::RecordMetrics() {
   int32_t total_webview_visible_seconds;
   int32_t total_webview_hidden_seconds;
 
-  {
-    base::AutoLock lock(duration_lock_);
+  any_webview_visible_seconds = any_webview_visible_duration_.InSeconds();
+  any_webview_visible_duration_ -=
+      base::TimeDelta::FromSeconds(any_webview_visible_seconds);
 
-    any_webview_visible_seconds = any_webview_visible_duration_.InSeconds();
-    any_webview_visible_duration_ -=
-        base::TimeDelta::FromSeconds(any_webview_visible_seconds);
+  no_webview_visible_seconds = no_webview_visible_duration_.InSeconds();
+  no_webview_visible_duration_ -=
+      base::TimeDelta::FromSeconds(no_webview_visible_seconds);
 
-    no_webview_visible_seconds = no_webview_visible_duration_.InSeconds();
-    no_webview_visible_duration_ -=
-        base::TimeDelta::FromSeconds(no_webview_visible_seconds);
+  total_webview_visible_seconds = total_webview_visible_duration_.InSeconds();
+  total_webview_visible_duration_ -=
+      base::TimeDelta::FromSeconds(total_webview_visible_seconds);
 
-    total_webview_visible_seconds = total_webview_visible_duration_.InSeconds();
-    total_webview_visible_duration_ -=
-        base::TimeDelta::FromSeconds(total_webview_visible_seconds);
-
-    total_webview_hidden_seconds = total_webview_hidden_duration_.InSeconds();
-    total_webview_hidden_duration_ -=
-        base::TimeDelta::FromSeconds(total_webview_hidden_seconds);
-  }
+  total_webview_hidden_seconds = total_webview_hidden_duration_.InSeconds();
+  total_webview_hidden_duration_ -=
+      base::TimeDelta::FromSeconds(total_webview_hidden_seconds);
 
   if (any_webview_visible_seconds) {
     GetGlobalVisibilityHistogram()->AddCount(

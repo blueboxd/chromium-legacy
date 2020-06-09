@@ -72,9 +72,6 @@ class CC_EXPORT ScrollbarAnimationController {
   // Effect both Android and Aura Overlay Scrollbar.
   void DidScrollUpdate();
 
-  void DidScrollBegin();
-  void DidScrollEnd();
-
   void DidMouseDown();
   void DidMouseUp();
   void DidMouseLeave();
@@ -150,8 +147,6 @@ class CC_EXPORT ScrollbarAnimationController {
   AnimationChange animation_change_;
 
   const ElementId scroll_element_id_;
-  bool currently_scrolling_;
-  bool show_in_fast_scroll_;
 
   base::CancelableOnceClosure delayed_scrollbar_animation_;
 

@@ -172,6 +172,9 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 // https://code.google.com/p/chromium/issues/detail?id=177555
 #if (defined(OS_WIN) && !defined(NDEBUG))
 #  define MAYBE_PNACL(test_name) DISABLED_##test_name
+#elif defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+// NaClBrowserTestPnacl tests are very flaky on ASan, see crbug.com/1003259.
+#  define MAYBE_PNACL(test_name) DISABLED_##test_name
 #else
 #  define MAYBE_PNACL(test_name) test_name
 #endif

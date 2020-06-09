@@ -13,7 +13,6 @@
 #include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -194,19 +193,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   // We need to generate thumbnail image anyway to make the current third party
   // wallpaper syncable through different devices.
   image.EnsureRepsForSupportedScales();
-  scoped_refptr<base::RefCountedBytes> thumbnail_data;
-  GenerateThumbnail(
-      image, gfx::Size(kWallpaperThumbnailWidth, kWallpaperThumbnailHeight),
-      &thumbnail_data);
-  scoped_refptr<base::RefCountedBytes> original_data;
-  GenerateThumbnail(image, image.size(), &original_data);
-
-  std::unique_ptr<Value> original_result = Value::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(original_data->front()),
-      original_data->size());
-  std::unique_ptr<Value> thumbnail_result = Value::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(thumbnail_data->front()),
-      thumbnail_data->size());
+  std::vector<uint8_t> thumbnail_data = GenerateThumbnail(
+      image, gfx::Size(kWallpaperThumbnailWidth, kWallpaperThumbnailHeight));
 
   // Inform the native Wallpaper Picker Application that the current wallpaper
   // has been modified by a third party application.
@@ -214,10 +202,11 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     Profile* profile = Profile::FromBrowserContext(browser_context());
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(profile);
-    std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-    event_args->Append(original_result->CreateDeepCopy());
-    event_args->Append(thumbnail_result->CreateDeepCopy());
-    event_args->AppendString(
+
+    base::Value event_args(Value::Type::LIST);
+    event_args.Append(Value(GenerateThumbnail(image, image.size())));
+    event_args.Append(Value(thumbnail_data));
+    event_args.Append(
         extensions::api::wallpaper::ToString(params_->details.layout));
     // Setting wallpaper from right click menu in 'Files' app is a feature that
     // was implemented in crbug.com/578935. Since 'Files' app is a built-in v1
@@ -226,21 +215,20 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     // and it should not appear in the wallpaper grid in the Wallpaper Picker.
     // But we should not display the 'wallpaper-set-by-mesage' since it might
     // introduce confusion as shown in crbug.com/599407.
-    event_args->AppendString(
-        (extension()->id() == file_manager::kFileManagerAppId)
-            ? std::string()
-            : extension()->name());
+    event_args.Append((extension()->id() == file_manager::kFileManagerAppId)
+                          ? base::StringPiece()
+                          : extension()->name());
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
         extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::
             kEventName,
-        std::move(event_args)));
+        base::ListValue::From(std::make_unique<Value>(std::move(event_args)))));
     event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
                                            std::move(event));
   }
 
   Respond(params_->details.thumbnail
-              ? OneArgument(thumbnail_result->CreateDeepCopy())
+              ? OneArgument(std::make_unique<Value>(std::move(thumbnail_data)))
               : NoArguments());
 }
 

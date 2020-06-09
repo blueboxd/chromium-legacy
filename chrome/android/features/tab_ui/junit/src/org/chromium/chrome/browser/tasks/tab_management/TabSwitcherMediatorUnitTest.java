@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -124,8 +123,6 @@ public class TabSwitcherMediatorUnitTest {
     TabGridDialogMediator.DialogController mTabGridDialogController;
     @Mock
     TabSwitcherMediator.MessageItemsController mMessageItemsController;
-    @Mock
-    MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -134,9 +131,6 @@ public class TabSwitcherMediatorUnitTest {
     @Captor
     private ArgumentCaptor<BrowserControlsStateProvider.Observer>
             mBrowserControlsStateProviderObserverCaptor;
-    @Captor
-    ArgumentCaptor<MultiWindowModeStateDispatcher.MultiWindowModeObserver>
-            mMultiWindowModeObserverCaptor;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -191,15 +185,12 @@ public class TabSwitcherMediatorUnitTest {
         doNothing()
                 .when(mBrowserControlsStateProvider)
                 .addObserver(mBrowserControlsStateProviderObserverCaptor.capture());
-        doReturn(true)
-                .when(mMultiWindowModeStateDispatcher)
-                .addObserver(mMultiWindowModeObserverCaptor.capture());
 
         mModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
         mModel.addObserver(mPropertyObserver);
         mMediator = new TabSwitcherMediator(mResetHandler, mModel, mTabModelSelector,
                 mBrowserControlsStateProvider, mCompositorViewHolder, null, mMessageItemsController,
-                mMultiWindowModeStateDispatcher, TabListCoordinator.TabListMode.GRID);
+                TabListCoordinator.TabListMode.GRID);
         mMediator.initWithNative(null);
         mMediator.addOverviewModeObserver(mOverviewModeObserver);
         mMediator.setOnTabSelectingListener(mLayout::onTabSelecting);
@@ -684,24 +675,6 @@ public class TabSwitcherMediatorUnitTest {
                 CONTROL_HEIGHT_DEFAULT, 0);
         assertEquals(0, mModel.get(TabListContainerProperties.TOP_CONTROLS_HEIGHT));
         assertEquals(0, mModel.get(TabListContainerProperties.SHADOW_TOP_MARGIN));
-    }
-
-    @Test
-    public void enterMultiWindowMode() {
-        initAndAssertAllProperties();
-
-        mMultiWindowModeObserverCaptor.getValue().onMultiWindowModeChanged(true);
-
-        verify(mMessageItemsController).removeAllAppendedMessage();
-    }
-
-    @Test
-    public void exitMultiWindowMode() {
-        initAndAssertAllProperties();
-
-        mMultiWindowModeObserverCaptor.getValue().onMultiWindowModeChanged(false);
-
-        verify(mMessageItemsController).restoreAllAppendedMessage();
     }
 
     private void initAndAssertAllProperties() {

@@ -418,11 +418,6 @@ void SiteSettingsHandler::RegisterMessages() {
       base::BindRepeating(&SiteSettingsHandler::HandleGetAllSites,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getCookieControlsManagedState",
-      base::BindRepeating(
-          &SiteSettingsHandler::HandleGetCookieControlsManagedState,
-          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "getCookieSettingDescription",
       base::BindRepeating(
           &SiteSettingsHandler::HandleGetCookieSettingDescription,
@@ -813,34 +808,6 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   LogAllSitesAction(AllSitesAction2::kLoadPage);
 
   send_sites_list_ = true;
-
-  ResolveJavascriptCallback(base::Value(callback_id), result);
-}
-
-void SiteSettingsHandler::HandleGetCookieControlsManagedState(
-    const base::ListValue* args) {
-  AllowJavascript();
-  CHECK_EQ(1U, args->GetList().size());
-  std::string callback_id = args->GetList()[0].GetString();
-
-  auto managed_states = site_settings::GetCookieControlsManagedState(profile_);
-
-  base::Value result(base::Value::Type::DICTIONARY);
-  result.SetKey(
-      site_settings::kAllowAll,
-      site_settings::GetValueForManagedState(managed_states.allow_all));
-  result.SetKey(site_settings::kBlockThirdPartyIncognito,
-                site_settings::GetValueForManagedState(
-                    managed_states.block_third_party_incognito));
-  result.SetKey(
-      site_settings::kBlockThirdParty,
-      site_settings::GetValueForManagedState(managed_states.block_third_party));
-  result.SetKey(
-      site_settings::kBlockAll,
-      site_settings::GetValueForManagedState(managed_states.block_all));
-  result.SetKey(
-      site_settings::kSessionOnly,
-      site_settings::GetValueForManagedState(managed_states.session_only));
 
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }

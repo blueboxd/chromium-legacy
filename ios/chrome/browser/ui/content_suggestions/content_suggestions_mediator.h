@@ -44,37 +44,39 @@ class ReadingListModel;
                ContentSuggestionsMetricsRecorderDelegate>
 
 // Initialize the mediator with the |contentService| to mediate.
-- (nullable instancetype)
+- (instancetype)
     initWithContentService:
-        (nonnull ntp_snippets::ContentSuggestionsService*)contentService
-          largeIconService:(nonnull favicon::LargeIconService*)largeIconService
-            largeIconCache:(nullable LargeIconCache*)largeIconCache
+        (ntp_snippets::ContentSuggestionsService*)contentService
+          largeIconService:(favicon::LargeIconService*)largeIconService
+            largeIconCache:(LargeIconCache*)largeIconCache
            mostVisitedSite:
                (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-          readingListModel:(nonnull ReadingListModel*)readingListModel
-               prefService:(nonnull PrefService*)prefService
+          readingListModel:(ReadingListModel*)readingListModel
+               prefService:(PrefService*)prefService
+              discoverFeed:(UIViewController*)discoverFeed
     NS_DESIGNATED_INITIALIZER;
 
-- (nullable instancetype)init NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
 
 // Command handler for the mediator.
-@property(nonatomic, weak, nullable)
+@property(nonatomic, weak)
     id<ContentSuggestionsCommands, ContentSuggestionsGestureCommands>
         commandHandler;
 
-@property(nonatomic, weak, nullable) id<ContentSuggestionsHeaderProvider>
-    headerProvider;
+@property(nonatomic, weak) id<ContentSuggestionsHeaderProvider> headerProvider;
 
 // Whether the contents section should be expanded or collapsed.  Collapsed
 // means to show the header, but not any content or footer.
-@property(nullable, nonatomic, strong)
-    PrefBackedBoolean* contentArticlesExpanded;
+@property(nonatomic, strong) PrefBackedBoolean* contentArticlesExpanded;
 // Whether to force the reload the Reading List section next time it is updated.
 // Reset to NO after actual reload.
 @property(nonatomic, assign) BOOL readingListNeedsReload;
 
+// ViewController created by the Discover provider containing the Discover feed.
+@property(nonatomic, strong) UIViewController* discoverFeed;
+
 // The notification promo owned by this mediator.
-- (nonnull NotificationPromoWhatsNew*)notificationPromo;
+- (NotificationPromoWhatsNew*)notificationPromo;
 
 // Block |URL| from Most Visited sites.
 - (void)blockMostVisitedURL:(GURL)URL;

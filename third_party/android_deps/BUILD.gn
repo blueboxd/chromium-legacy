@@ -1530,9 +1530,6 @@ java_prebuilt("org_robolectric_shadows_multidex_java") {
   testonly = true
   deps = [ ":org_robolectric_annotations_java" ]
   bypass_platform_checks = true
-
-  # Relies on com_android_support_multidex.
-  enable_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

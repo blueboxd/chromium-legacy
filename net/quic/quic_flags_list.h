@@ -320,12 +320,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption, false)
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
 
-// If true, for QUIC + TLS, change default encryption level when new encryption
-// key is available.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_change_default_encryption_level,
-          true)
-
 // If true, do not change ACK in PostProcessAckFrame if an ACK has been queued.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_donot_change_queued_ack, true)
 

@@ -152,9 +152,8 @@ bool ChromeContentSettingsAgentDelegate::OnMessageReceived(
 }
 
 void ChromeContentSettingsAgentDelegate::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
-  if (render_frame()->GetWebFrame()->Parent() || is_same_document_navigation)
+  if (render_frame()->GetWebFrame()->Parent())
     return;
 
   temporarily_allowed_plugins_.clear();

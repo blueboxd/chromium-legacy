@@ -1103,6 +1103,11 @@ DownloadItem::DownloadCreationType DownloadItemImpl::GetDownloadCreationType()
   return download_type_;
 }
 
+const base::Optional<DownloadSchedule>& DownloadItemImpl::GetDownloadSchedule()
+    const {
+  return download_schedule_;
+}
+
 void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
                                                DownloadInterruptReason reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

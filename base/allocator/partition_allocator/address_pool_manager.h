@@ -69,6 +69,12 @@ class BASE_EXPORT AddressPoolManager {
     const uintptr_t address_end_;
 #endif
 
+    // A number of a bit before which we know for sure there all 1s. This is
+    // a best effort hint in the sense that there still may be lots of 1s after
+    // this bit, but at least we know there is no point in starting the search
+    // before it.
+    size_t bit_hint_;
+
     DISALLOW_COPY_AND_ASSIGN(Pool);
   };
 

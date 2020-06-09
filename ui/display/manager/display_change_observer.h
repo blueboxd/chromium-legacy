@@ -60,6 +60,8 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
   DISPLAY_EXPORT static float FindDeviceScaleFactor(float dpi);
 
  private:
+  friend class DisplayChangeObserverTest;
+
   void UpdateInternalDisplay(
       const DisplayConfigurator::DisplayStateList& display_states);
 

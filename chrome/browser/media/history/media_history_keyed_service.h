@@ -164,10 +164,6 @@ class MediaHistoryKeyedService : public KeyedService,
     // The display name for the feed.
     std::string display_name;
 
-    // Origins associated with the feed that are linked to the login state of
-    // the feed.
-    std::set<url::Origin> associated_origins;
-
     // The reset token for the feed.
     base::Optional<base::UnguessableToken> reset_token;
 

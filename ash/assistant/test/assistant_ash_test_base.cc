@@ -128,7 +128,7 @@ void AssistantAshTestBase::SetUp() {
   // At this point our Assistant service is ready for use.
   // Indicate this by changing status from NOT_READY to READY.
   test_api_->GetAssistantState()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::NEW_READY);
+      chromeos::assistant::AssistantStatus::READY);
 
   test_api_->DisableAnimations();
 

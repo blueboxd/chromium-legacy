@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/translate/translate_infobar_modal_interaction_handler.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
+#include "components/metrics/metrics_log.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -15,6 +18,7 @@
 #import "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_placeholder_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/translate_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
+#import "ios/chrome/browser/translate/translate_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -23,6 +27,19 @@
 using translate_infobar_overlays::TranslateBannerRequestConfig;
 using translate_infobar_overlays::PlaceholderRequestCancelHandler;
 using translate_infobar_overlay::ModalRequestCallbackInstaller;
+
+namespace {
+// Records a histogram of |histogram| for |langCode|. This is used to log the
+// language distribution of certain Translate events.
+void RecordLanguageDataHistogram(const std::string& histogram_name,
+                                 const std::string& lang_code) {
+  // TODO(crbug.com/1025440): Use function version of macros here and in
+  // TranslateInfobarController.
+  base::SparseHistogram::FactoryGet(
+      histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(metrics::MetricsLog::Hash(lang_code));
+}
+}
 
 TranslateInfobarModalInteractionHandler::
     TranslateInfobarModalInteractionHandler() = default;
@@ -37,6 +54,8 @@ void TranslateInfobarModalInteractionHandler::ToggleAlwaysTranslate(
   translate::TranslateInfoBarDelegate* delegate = GetDelegate(infobar);
   bool enabling_always_translate = !delegate->ShouldAlwaysTranslate();
   delegate->ToggleAlwaysTranslate();
+  RecordLanguageDataHistogram(kLanguageHistogramAlwaysTranslate,
+                              delegate->original_language_code());
   if (enabling_always_translate) {
     StartTranslation(infobar);
   }
@@ -47,6 +66,8 @@ void TranslateInfobarModalInteractionHandler::ToggleNeverTranslateLanguage(
   translate::TranslateInfoBarDelegate* delegate = GetDelegate(infobar);
   bool should_remove_infobar = delegate->IsTranslatableLanguageByPrefs();
   delegate->ToggleTranslatableLanguageByPrefs();
+  RecordLanguageDataHistogram(kLanguageHistogramNeverTranslate,
+                              delegate->original_language_code());
   // Remove infobar if turning it on.
   if (should_remove_infobar)
     infobar->RemoveSelf();
@@ -103,7 +124,13 @@ void TranslateInfobarModalInteractionHandler::InfobarVisibilityChanged(
 
 void TranslateInfobarModalInteractionHandler::PerformMainAction(
     InfoBarIOS* infobar) {
+  translate::TranslateInfoBarDelegate* delegate = GetDelegate(infobar);
+  if (delegate->ShouldAutoAlwaysTranslate())
+    delegate->ToggleAlwaysTranslate();
   StartTranslation(infobar);
+
+  RecordLanguageDataHistogram(kLanguageHistogramTranslate,
+                              delegate->target_language_code());
 }
 
 #pragma mark - Private

@@ -17,7 +17,7 @@ const printer_status_test_cros = window.printer_status_test_cros;
 printer_status_test_cros.suiteName = 'PrinterStatusTestCros';
 /** @enum {string} */
 printer_status_test_cros.TestNames = {
-  ReasonFromPrinterStatus: 'reason from printer status',
+  PrinterStatusUpdatesColor: 'printer status updates color',
   SendStatusRequestOnce: 'send status request once',
 };
 
@@ -155,7 +155,7 @@ suite(printer_status_test_cros.suiteName, function() {
   });
 
   test(
-      assert(printer_status_test_cros.TestNames.ReasonFromPrinterStatus),
+      assert(printer_status_test_cros.TestNames.PrinterStatusUpdatesColor),
       function() {
         const destination1 =
             createDestination('ID1', 'One', DestinationOrigin.CROS);

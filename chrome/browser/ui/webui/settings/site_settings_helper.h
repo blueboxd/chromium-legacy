@@ -53,11 +53,6 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
 using ChooserExceptionDetails =
     std::map<std::pair<GURL, std::string>, std::set<std::pair<GURL, bool>>>;
 
-constexpr char kAllowAll[] = "allowAll";
-constexpr char kBlockThirdPartyIncognito[] = "blockThirdPartyIncognito";
-constexpr char kBlockThirdParty[] = "blockThirdParty";
-constexpr char kBlockAll[] = "blockAll";
-constexpr char kSessionOnly[] = "sessionOnly";
 constexpr char kChooserType[] = "chooserType";
 constexpr char kDisplayName[] = "displayName";
 constexpr char kEmbeddingOrigin[] = "embeddingOrigin";
@@ -107,15 +102,6 @@ enum class PolicyIndicatorType {
 struct ManagedState {
   bool disabled = false;
   PolicyIndicatorType indicator = PolicyIndicatorType::kNone;
-};
-
-// Represents the manage states for all of the cookie controls.
-struct CookieControlsManagedState {
-  ManagedState allow_all;
-  ManagedState block_third_party_incognito;
-  ManagedState block_third_party;
-  ManagedState block_all;
-  ManagedState session_only;
 };
 
 // Returns whether a group name has been registered for the given type.
@@ -226,9 +212,6 @@ base::Value CreateChooserExceptionObject(
 base::Value GetChooserExceptionListFromProfile(
     Profile* profile,
     const ChooserTypeNameEntry& chooser_type);
-
-// Returns the cookie controls manage state for a given profile.
-CookieControlsManagedState GetCookieControlsManagedState(Profile* profile);
 
 // Concerts a PolicyIndicatorType to its string identifier.
 std::string PolicyIndicatorTypeToString(const PolicyIndicatorType type);

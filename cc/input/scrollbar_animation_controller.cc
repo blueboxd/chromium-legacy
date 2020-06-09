@@ -51,8 +51,6 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       is_animating_(false),
       animation_change_(NONE),
       scroll_element_id_(scroll_element_id),
-      currently_scrolling_(false),
-      show_in_fast_scroll_(false),
       opacity_(initial_opacity),
       show_scrollbars_on_scroll_gesture_(false),
       need_thinning_animation_(false),
@@ -73,8 +71,6 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       is_animating_(false),
       animation_change_(NONE),
       scroll_element_id_(scroll_element_id),
-      currently_scrolling_(false),
-      show_in_fast_scroll_(false),
       opacity_(initial_opacity),
       show_scrollbars_on_scroll_gesture_(true),
       need_thinning_animation_(true),
@@ -182,25 +178,6 @@ void ScrollbarAnimationController::RunAnimationFrame(float progress) {
     StopAnimation();
 }
 
-void ScrollbarAnimationController::DidScrollBegin() {
-  currently_scrolling_ = true;
-}
-
-void ScrollbarAnimationController::DidScrollEnd() {
-  bool has_scrolled = show_in_fast_scroll_;
-  show_in_fast_scroll_ = false;
-
-  currently_scrolling_ = false;
-
-  // We don't fade out scrollbar if they need thinning animation and mouse is
-  // near.
-  if (need_thinning_animation_ && MouseIsNearAnyScrollbar())
-    return;
-
-  if (has_scrolled && !tickmarks_showing_)
-    PostDelayedAnimation(FADE_OUT);
-}
-
 void ScrollbarAnimationController::DidScrollUpdate() {
   UpdateScrollbarState();
 }
@@ -213,19 +190,13 @@ void ScrollbarAnimationController::UpdateScrollbarState() {
 
   Show();
 
-  // As an optimization, we avoid spamming fade delay tasks during active fast
-  // scrolls.  But if we're not within one, we need to post every scroll update.
-  if (!currently_scrolling_) {
-    // We don't fade out scrollbar if they need thinning animation (Aura
-    // Overlay) and mouse is near or tickmarks show.
-    if (need_thinning_animation_) {
-      if (!MouseIsNearAnyScrollbar() && !tickmarks_showing_)
-        PostDelayedAnimation(FADE_OUT);
-    } else {
+  // We don't fade out scrollbar if they need thinning animation (Aura
+  // Overlay) and mouse is near or tickmarks show.
+  if (need_thinning_animation_) {
+    if (!MouseIsNearAnyScrollbar() && !tickmarks_showing_)
       PostDelayedAnimation(FADE_OUT);
-    }
   } else {
-    show_in_fast_scroll_ = true;
+    PostDelayedAnimation(FADE_OUT);
   }
 
   if (need_thinning_animation_) {

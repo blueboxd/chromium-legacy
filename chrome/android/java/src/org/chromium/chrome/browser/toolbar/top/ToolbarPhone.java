@@ -2071,10 +2071,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             animators.add(animator);
         }
 
-        animator = ObjectAnimator.ofFloat(mToolbarShadow, ALPHA, 0);
-        animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        animators.add(animator);
+        if (mToolbarShadow != null) {
+            animator = ObjectAnimator.ofFloat(mToolbarShadow, ALPHA, 0);
+            animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
+            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+            animators.add(animator);
+        }
     }
 
     private void populateUrlClearFocusingAnimatorSet(List<Animator> animators) {
@@ -2134,10 +2136,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         if (isLocationBarShownInNTP() && mNtpSearchBoxScrollPercent == 0f) return;
 
-        animator = ObjectAnimator.ofFloat(mToolbarShadow, ALPHA, 1);
-        animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
-        animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        animators.add(animator);
+        if (mToolbarShadow != null) {
+            animator = ObjectAnimator.ofFloat(mToolbarShadow, ALPHA, 1);
+            animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
+            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+            animators.add(animator);
+        }
     }
 
     @Override
@@ -2398,7 +2402,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         boolean shouldDrawShadow = shouldDrawShadow();
         int shadowVisibility = shouldDrawShadow ? View.VISIBLE : View.INVISIBLE;
 
-        if (mToolbarShadow.getVisibility() != shadowVisibility) {
+        if (mToolbarShadow != null && mToolbarShadow.getVisibility() != shadowVisibility) {
             mToolbarShadow.setVisibility(shadowVisibility);
         }
     }

@@ -5,8 +5,10 @@
 #include <algorithm>
 #include <cstring>
 
+#include "base/command_line.h"
 #include "base/message_loop/message_pump_type.h"
 #include "build/build_config.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -166,8 +168,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(disable_oop_rasterization, true)
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
-    GPU_PREFERENCES_FIELD_ENUM(gr_context_type,
-                               GrContextType::kVulkan,
+    GPU_PREFERENCES_FIELD_ENUM(gr_context_type, GrContextType::kVulkan,
                                mojom::GrContextType::kVulkan)
     GPU_PREFERENCES_FIELD_ENUM(use_vulkan, VulkanImplementationName::kNative,
                                mojom::VulkanImplementationName::kNative)
@@ -194,6 +195,86 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     EXPECT_TRUE(flag);
     CheckGpuPreferencesEqual(input_prefs, decoded_prefs);
   }
+}
+
+// Helper test for decoding GPU preferences from a crash dump string.
+TEST(GpuPreferencesTest, DISABLED_DecodePreferences) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kGpuPreferences)) {
+    LOG(ERROR) << "Please specify the preferences to decode via "
+               << switches::kGpuPreferences;
+    return;
+  }
+
+  const auto preferences =
+      command_line->GetSwitchValueASCII(switches::kGpuPreferences);
+
+  gpu::GpuPreferences gpu_preferences;
+  if (!gpu_preferences.FromSwitchValue(preferences)) {
+    LOG(ERROR) << "Failed to decode preferences: " << preferences;
+    return;
+  }
+
+  printf("GpuPreferences = {\n");
+#define PRINT_BOOL(key) \
+  printf("  %s: %s\n", #key, gpu_preferences.key ? "true" : "false")
+#define PRINT_INT(key) \
+  printf("  %s: %d\n", #key, static_cast<uint32_t>(gpu_preferences.key))
+
+  PRINT_BOOL(disable_accelerated_video_decode);
+  PRINT_BOOL(disable_accelerated_video_encode);
+  PRINT_BOOL(gpu_startup_dialog);
+  PRINT_BOOL(disable_gpu_watchdog);
+  PRINT_BOOL(gpu_sandbox_start_early);
+  PRINT_BOOL(enable_low_latency_dxva);
+  PRINT_BOOL(enable_zero_copy_dxgi_video);
+  PRINT_BOOL(enable_nv12_dxgi_video);
+  PRINT_BOOL(enable_media_foundation_vea_on_windows7);
+  PRINT_BOOL(disable_software_rasterizer);
+  PRINT_BOOL(log_gpu_control_list_decisions);
+  PRINT_BOOL(compile_shader_always_succeeds);
+  PRINT_BOOL(disable_gl_error_limit);
+  PRINT_BOOL(disable_glsl_translator);
+  PRINT_BOOL(disable_shader_name_hashing);
+  PRINT_BOOL(enable_gpu_command_logging);
+  PRINT_BOOL(enable_gpu_debugging);
+  PRINT_BOOL(enable_gpu_service_logging_gpu);
+  PRINT_BOOL(enable_gpu_driver_debug_logging);
+  PRINT_BOOL(disable_gpu_program_cache);
+  PRINT_BOOL(enforce_gl_minimums);
+  PRINT_INT(force_gpu_mem_available_bytes);
+  PRINT_INT(force_gpu_mem_discardable_limit_bytes);
+  PRINT_INT(gpu_program_cache_size);
+  PRINT_BOOL(disable_gpu_shader_disk_cache);
+  PRINT_BOOL(enable_threaded_texture_mailboxes);
+  PRINT_BOOL(gl_shader_interm_output);
+  PRINT_BOOL(emulate_shader_precision);
+  PRINT_BOOL(enable_gpu_service_logging);
+  PRINT_BOOL(enable_gpu_service_tracing);
+  PRINT_BOOL(use_passthrough_cmd_decoder);
+  PRINT_BOOL(disable_biplanar_gpu_memory_buffers_for_video_frames);
+  for (size_t i = 0; i < gpu_preferences.texture_target_exception_list.size();
+       ++i) {
+    PRINT_INT(texture_target_exception_list[i].usage);
+    PRINT_INT(texture_target_exception_list[i].format);
+  }
+  PRINT_BOOL(ignore_gpu_blacklist);
+  PRINT_BOOL(enable_oop_rasterization);
+  PRINT_BOOL(disable_oop_rasterization);
+  PRINT_BOOL(watchdog_starts_backgrounded);
+  PRINT_INT(gr_context_type);
+  PRINT_INT(use_vulkan);
+  PRINT_BOOL(enable_gpu_benchmarking_extension);
+  PRINT_BOOL(enable_webgpu);
+  PRINT_BOOL(enable_dawn_backend_validation);
+  PRINT_BOOL(enable_gpu_blocked_time_metric);
+  PRINT_BOOL(enable_perf_data_collection);
+#if defined(USE_OZONE)
+  PRINT_INT(message_pump_type);
+#endif
+  PRINT_BOOL(enable_native_gpu_memory_buffers);
+  PRINT_BOOL(force_disable_new_accelerated_video_decoder);
+  printf("}\n");
 }
 
 }  // namespace gpu

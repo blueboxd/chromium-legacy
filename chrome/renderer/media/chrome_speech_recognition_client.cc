@@ -6,13 +6,28 @@
 
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "media/base/channel_mixer.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+
+// Get the list of blocked URLs defined by the Finch experiment parameter. These
+// websites provide captions by default and thus do not require the live caption
+// feature.
+std::vector<std::string> GetBlockedURLs() {
+  return base::SplitString(base::GetFieldTrialParamValueByFeature(
+                               media::kLiveCaption, "blocked_websites"),
+                           ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+}
 
 ChromeSpeechRecognitionClient::ChromeSpeechRecognitionClient(
-    content::RenderFrame* render_frame) {
+    content::RenderFrame* render_frame)
+    : blocked_urls_(GetBlockedURLs()) {
   mojo::PendingReceiver<media::mojom::SpeechRecognitionContext>
       speech_recognition_context_receiver =
           speech_recognition_context_.BindNewPipeAndPassReceiver();
@@ -25,6 +40,8 @@ ChromeSpeechRecognitionClient::ChromeSpeechRecognitionClient(
       std::move(speech_recognition_context_receiver));
   render_frame->GetBrowserInterfaceBroker()->GetInterface(
       caption_host_.BindNewPipeAndPassReceiver());
+  is_website_blocked_ = IsUrlBlocked(
+      render_frame->GetWebFrame()->GetSecurityOrigin().ToString().Utf8());
 }
 
 void ChromeSpeechRecognitionClient::OnRecognizerBound(
@@ -44,7 +61,7 @@ void ChromeSpeechRecognitionClient::AddAudio(
 }
 
 bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
-  return is_browser_requesting_transcription_ &&
+  return !is_website_blocked_ && is_browser_requesting_transcription_ &&
          speech_recognition_recognizer_.is_bound() &&
          speech_recognition_recognizer_.is_connected();
 }
@@ -133,4 +150,8 @@ ChromeSpeechRecognitionClient::ConvertToAudioDataS16(
       temp_audio_bus_->frames(), &signed_buffer->data[0]);
 
   return signed_buffer;
+}
+
+bool ChromeSpeechRecognitionClient::IsUrlBlocked(const std::string& url) const {
+  return blocked_urls_.find(url) != blocked_urls_.end();
 }

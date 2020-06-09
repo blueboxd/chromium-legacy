@@ -60,16 +60,19 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
       *To<LayoutBlock>(GetDocument().body()->firstChild()->GetLayoutObject());
   LayoutText& text = *ToLayoutText(div_block.FirstChild());
   const DisplayItemClient* first_text_box = text.FirstTextBox();
+  wtf_size_t first_text_box_fragment_id = 0;
   if (text.IsInLayoutNGInlineFormattingContext()) {
     NGInlineCursor cursor;
     cursor.MoveTo(text);
     first_text_box = cursor.Current().GetDisplayItemClient();
+    first_text_box_fragment_id = cursor.Current().FragmentId();
   }
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                    kDocumentBackgroundType),
-                          IsSameId(first_text_box, kForegroundType)));
+                          IsSameId(first_text_box, kForegroundType,
+                                   first_text_box_fragment_id)));
 
   div.setAttribute(html_names::kStyleAttr, "width: 10px; height: 200px");
   UpdateAllLifecyclePhasesForTest();
@@ -77,6 +80,7 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
   LayoutText& new_text = *ToLayoutText(div_block.FirstChild());
   const DisplayItemClient* new_first_text_box = text.FirstTextBox();
   const DisplayItemClient* second_text_box = nullptr;
+  wtf_size_t second_text_box_fragment_id = 0;
   if (!text.IsInLayoutNGInlineFormattingContext()) {
     second_text_box = new_text.FirstTextBox()->NextForSameLayoutObject();
   } else {
@@ -85,13 +89,16 @@ TEST_P(PaintControllerPaintTest, InlineRelayout) {
     new_first_text_box = cursor.Current().GetDisplayItemClient();
     cursor.MoveToNextForSameLayoutObject();
     second_text_box = cursor.Current().GetDisplayItemClient();
+    second_text_box_fragment_id = cursor.Current().FragmentId();
   }
 
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                    kDocumentBackgroundType),
-                          IsSameId(new_first_text_box, kForegroundType),
-                          IsSameId(second_text_box, kForegroundType)));
+                          IsSameId(new_first_text_box, kForegroundType,
+                                   first_text_box_fragment_id),
+                          IsSameId(second_text_box, kForegroundType,
+                                   second_text_box_fragment_id)));
 }
 
 TEST_P(PaintControllerPaintTest, ChunkIdClientCacheFlag) {

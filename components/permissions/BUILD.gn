@@ -103,6 +103,7 @@ source_set("test_support") {
   deps = [
     ":permissions",
     "//base",
+    "//components/content_settings/core/browser",
     "//components/sync_preferences:test_support",
     "//components/ukm/content",
     "//components/vector_icons",

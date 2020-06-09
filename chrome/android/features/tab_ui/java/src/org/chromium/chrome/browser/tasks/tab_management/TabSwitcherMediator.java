@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.init.FirstDrawDetector;
-import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -95,8 +94,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
     private final ViewGroup mContainerView;
     private final TabContentManager mTabContentManager;
-    private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
-    private final MultiWindowModeStateDispatcher.MultiWindowModeObserver mMultiWindowModeObserver;
 
     private Integer mSoftCleanupDelayMsForTesting;
     private Integer mCleanupDelayMsForTesting;
@@ -192,21 +189,17 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
      * @param browserControlsStateProvider {@link BrowserControlsStateProvider} to use.
      * @param containerView The container {@link ViewGroup} to use.
      * @param tabContentManager The {@link TabContentManager} for first meaningful paint event.
-     * @param multiWindowModeStateDispatcher The {@link MultiWindowModeStateDispatcher} to observe
-     *         for multi-window related changes.
      * @param mode One of the {@link TabListCoordinator.TabListMode}.
      */
     TabSwitcherMediator(ResetHandler resetHandler, PropertyModel containerViewModel,
             TabModelSelector tabModelSelector,
             BrowserControlsStateProvider browserControlsStateProvider, ViewGroup containerView,
             TabContentManager tabContentManager, MessageItemsController messageItemsController,
-            MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             @TabListCoordinator.TabListMode int mode) {
         mResetHandler = resetHandler;
         mContainerViewModel = containerViewModel;
         mTabModelSelector = tabModelSelector;
         mBrowserControlsStateProvider = browserControlsStateProvider;
-        mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
         mMode = mode;
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
@@ -371,15 +364,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         // TODO(crbug.com/982018): Let the start surface pass in the parameter and add unit test for
         // it. This is a temporary solution to keep this change minimum.
         mShowTabsInMruOrder = isShowingTabsInMRUOrder();
-
-        mMultiWindowModeObserver = isInMultiWindowMode -> {
-            if (isInMultiWindowMode) {
-                messageItemsController.removeAllAppendedMessage();
-            } else {
-                messageItemsController.restoreAllAppendedMessage();
-            }
-        };
-        mMultiWindowModeStateDispatcher.addObserver(mMultiWindowModeObserver);
     }
 
     /**
@@ -740,7 +724,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
         mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                 mTabModelObserver);
-        mMultiWindowModeStateDispatcher.removeObserver(mMultiWindowModeObserver);
     }
 
     void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {

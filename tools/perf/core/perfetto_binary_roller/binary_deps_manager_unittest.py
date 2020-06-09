@@ -132,3 +132,46 @@ class BinaryDepsManagerTests(unittest.TestCase):
           get_os_patch.return_value = 'testos'
           with self.assertRaises(RuntimeError):
             binary_deps_manager.FetchHostBinary('dep')
+
+  def testUploadAndSwitchDataFile(self):
+    self.writeConfig({'data_dep': {'remote_path': 'old/path/to/data'}})
+    new_path = 'new/path/to/data'
+
+    with mock.patch('py_utils.cloud_storage.Exists') as exists_patch:
+      with mock.patch('py_utils.cloud_storage.Insert') as insert_patch:
+        with mock.patch('py_utils.cloud_storage.CalculateHash') as hash_patch:
+          exists_patch.return_value = False
+          hash_patch.return_value = '123'
+          binary_deps_manager.UploadAndSwitchDataFile('data_dep', new_path,
+                                                      'abc123')
+
+    insert_patch.assert_called_once_with(
+        'chrome-telemetry',
+        'perfetto_data/data_dep/abc123/data',
+        'new/path/to/data',
+        publicly_readable=False,
+    )
+
+    self.assertEqual(
+        self.readConfig(), {
+            'data_dep': {
+                'remote_path': 'perfetto_data/data_dep/abc123/data',
+                'hash': '123',
+            }
+        })
+
+  def testFetchDataFile(self):
+    remote_path = 'remote/path/to/data'
+    self.writeConfig(
+        {'data_dep': {
+            'remote_path': remote_path,
+            'hash': '123',
+        }})
+    with mock.patch('py_utils.cloud_storage.Get') as get_patch:
+      with mock.patch('py_utils.cloud_storage.CalculateHash') as hash_patch:
+        hash_patch.return_value = '123'
+        local_path = binary_deps_manager.FetchDataFile('data_dep')
+
+    self.assertEqual(os.path.basename(local_path), 'data')
+    get_patch.assert_called_once_with('chrome-telemetry', remote_path,
+                                      local_path)

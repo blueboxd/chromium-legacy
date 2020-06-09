@@ -1075,7 +1075,7 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
     if (important)  // Invalid
       return;
     atrule_id = lhs.ParseAsAtRuleDescriptorID();
-    AtRuleDescriptorParser::ParseAtRule(atrule_id, range, *context_,
+    AtRuleDescriptorParser::ParseAtRule(rule_type, atrule_id, range, *context_,
                                         parsed_properties_);
   } else {
     unresolved_property = lhs.ParseAsUnresolvedCSSPropertyID(

@@ -9,7 +9,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_store.h"
 
 namespace {
 

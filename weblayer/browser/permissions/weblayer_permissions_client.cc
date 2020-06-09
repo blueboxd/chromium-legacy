@@ -4,6 +4,8 @@
 
 #include "weblayer/browser/permissions/weblayer_permissions_client.h"
 
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "weblayer/browser/cookie_settings_factory.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
@@ -24,6 +26,12 @@ WebLayerPermissionsClient* WebLayerPermissionsClient::GetInstance() {
 HostContentSettingsMap* WebLayerPermissionsClient::GetSettingsMap(
     content::BrowserContext* browser_context) {
   return HostContentSettingsMapFactory::GetForBrowserContext(browser_context);
+}
+
+scoped_refptr<content_settings::CookieSettings>
+WebLayerPermissionsClient::GetCookieSettings(
+    content::BrowserContext* browser_context) {
+  return CookieSettingsFactory::GetForBrowserContext(browser_context);
 }
 
 permissions::PermissionDecisionAutoBlocker*

@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.HomepageManager;
+import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelMetadata;
@@ -361,7 +362,7 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
-    public void startSurfaceIncognitoSwitchCoordinatorInflatedWithNativeTest() {
+    public void startSurfaceToolbarInflatedPreAndWithNativeTest() {
         // clang-format on
         startMainActivityFromLauncher();
         Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
@@ -380,11 +381,6 @@ public class InstantStartTest {
                         .getToolbarManager()
                         .getToolbar();
 
-        // TODO(https://crbug.com/1077022): Removes the call of
-        // {@link TopToolbarCoordinator#setTabSwithcherMode()} once ToolbarManager shows
-        // the StartSurfaceToolbar in instant start.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { topToolbarCoordinator.setTabSwitcherMode(true, true, false); });
         onViewWaiting(allOf(withId(R.id.tab_switcher_toolbar), isDisplayed()));
 
         StartSurfaceToolbarCoordinator startSurfaceToolbarCoordinator =
@@ -612,6 +608,7 @@ public class InstantStartTest {
         createThumbnailBitmapAndWriteToFile(0);
         TabAttributeCache.setTitleForTesting(0, "Google");
 
+        SignInPromo.setDisablePromoForTests(true);
         startMainActivityFromLauncher();
         CriteriaHelper.pollUiThread(
                 () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());

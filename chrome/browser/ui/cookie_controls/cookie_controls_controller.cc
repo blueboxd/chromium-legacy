@@ -1,4 +1,3 @@
-
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -10,8 +9,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
@@ -20,7 +17,9 @@
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -29,15 +28,16 @@
 using base::UserMetricsAction;
 
 CookieControlsController::CookieControlsController(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    content::BrowserContext* original_context) {
   DCHECK(web_contents);
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  cookie_settings_ = CookieSettingsFactory::GetForProfile(profile);
+  cookie_settings_ = permissions::PermissionsClient::Get()->GetCookieSettings(
+      web_contents->GetBrowserContext());
   cookie_observer_.Add(cookie_settings_.get());
-  if (profile->IsOffTheRecord()) {
-    regular_cookie_settings_ =
-        CookieSettingsFactory::GetForProfile(profile->GetOriginalProfile());
+  if (original_context) {
+    original_cookie_settings_ =
+        permissions::PermissionsClient::Get()->GetCookieSettings(
+            original_context);
   }
 }
 
@@ -88,9 +88,9 @@ CookieControlsController::GetStatus(content::WebContents* web_contents) {
   CookieControlsEnforcement enforcement;
   if (source == content_settings::SETTING_SOURCE_POLICY) {
     enforcement = CookieControlsEnforcement::kEnforcedByPolicy;
-  } else if (is_allowed && regular_cookie_settings_ &&
-             regular_cookie_settings_->ShouldBlockThirdPartyCookies() &&
-             regular_cookie_settings_->IsThirdPartyAccessAllowed(
+  } else if (is_allowed && original_cookie_settings_ &&
+             original_cookie_settings_->ShouldBlockThirdPartyCookies() &&
+             original_cookie_settings_->IsThirdPartyAccessAllowed(
                  web_contents->GetURL(), nullptr /* source */)) {
     // TODO(crbug.com/1015767): Rules from regular mode can't be temporarily
     // overridden in incognito.

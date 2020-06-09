@@ -11,16 +11,10 @@ namespace blink {
 AuthenticatorAttestationResponse::AuthenticatorAttestationResponse(
     DOMArrayBuffer* client_data_json,
     DOMArrayBuffer* attestation_object,
-    Vector<mojom::AuthenticatorTransport> transports,
-    DOMArrayBuffer* authenticator_data,
-    DOMArrayBuffer* public_key_der,
-    int32_t public_key_algo)
+    Vector<mojom::AuthenticatorTransport> transports)
     : AuthenticatorResponse(client_data_json),
       attestation_object_(attestation_object),
-      transports_(std::move(transports)),
-      authenticator_data_(authenticator_data),
-      public_key_der_(public_key_der),
-      public_key_algo_(public_key_algo) {}
+      transports_(std::move(transports)) {}
 
 AuthenticatorAttestationResponse::~AuthenticatorAttestationResponse() = default;
 
@@ -35,8 +29,6 @@ Vector<String> AuthenticatorAttestationResponse::getTransports() const {
 
 void AuthenticatorAttestationResponse::Trace(Visitor* visitor) const {
   visitor->Trace(attestation_object_);
-  visitor->Trace(authenticator_data_);
-  visitor->Trace(public_key_der_);
   AuthenticatorResponse::Trace(visitor);
 }
 

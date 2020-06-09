@@ -8,6 +8,11 @@ source_set("test") {
   sources = [
     "fake_infobar_password_modal_consumer.h",
     "fake_infobar_password_modal_consumer.mm",
+    "fake_infobar_translate_modal_consumer.h",
+    "fake_infobar_translate_modal_consumer.mm",
   ]
-  deps = [ "//ios/chrome/browser/ui/infobars/modals" ]
+  deps = [
+    "//ios/chrome/browser/ui/infobars/coordinators:translate_public",
+    "//ios/chrome/browser/ui/infobars/modals",
+  ]
 }

@@ -7,19 +7,16 @@ package org.chromium.chrome.browser.tabmodel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.TabState;
@@ -29,8 +26,6 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tests for {@link TabModelImpl}.
@@ -44,23 +39,6 @@ public class TabModelImplTest {
     @Before
     public void setUp() {
         mActivityTestRule.startMainActivityOnBlankPage();
-    }
-
-    @After
-    public void tearDown() {
-        mTabModelRestoreCompleted.set(false);
-    }
-
-    private AtomicBoolean mTabModelRestoreCompleted = new AtomicBoolean(false);
-
-    private TabModelSelectorTabModelObserver createTabModelSelectorTabModelObserver(
-            TabModelSelector tabModelSelector) {
-        return new TabModelSelectorTabModelObserver(tabModelSelector) {
-            @Override
-            public void restoreCompleted() {
-                mTabModelRestoreCompleted.set(true);
-            }
-        };
     }
 
     private void createTabs(int tabsCount, boolean isIncognito, String url) {
@@ -123,15 +101,11 @@ public class TabModelImplTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(message = "https://crbug.com/1091148",
-            sdk_is_greater_than = Build.VERSION_CODES.N, sdk_is_less_than = Build.VERSION_CODES.P)
     public void
     validIndexAfterRestored_FromPreviousActivity() {
         ChromeTabbedActivity newActivity =
                 ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
-        createTabModelSelectorTabModelObserver(newActivity.getTabModelSelector());
-
-        CriteriaHelper.pollUiThread(() -> mTabModelRestoreCompleted.get());
+        CriteriaHelper.pollUiThread(newActivity.getTabModelSelector()::isTabStateInitialized);
 
         TabModel normalTabModel = newActivity.getTabModelSelector().getModel(false);
         assertEquals(1, normalTabModel.getCount());
@@ -156,9 +130,7 @@ public class TabModelImplTest {
 
         ChromeTabbedActivity newActivity =
                 ApplicationTestUtils.recreateActivity(mActivityTestRule.getActivity());
-        createTabModelSelectorTabModelObserver(newActivity.getTabModelSelector());
-
-        CriteriaHelper.pollUiThread(() -> mTabModelRestoreCompleted.get());
+        CriteriaHelper.pollUiThread(newActivity.getTabModelSelector()::isTabStateInitialized);
 
         TabModel normalTabModel = newActivity.getTabModelSelector().getModel(false);
         assertEquals(1, normalTabModel.getCount());

@@ -14,7 +14,7 @@
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
-#include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
+#include "components/blocklist/opt_out_blocklist/sql/opt_out_store_sql.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 

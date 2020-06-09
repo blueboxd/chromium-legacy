@@ -963,8 +963,8 @@ TEST_F(FormAutocompleteTest, FormSubmittedBySameDocumentNavigation) {
   ExecuteJavaScriptForTests(hide_elements.c_str());
 
   // Simulate same document navigation.
-  autofill_agent_->form_tracker_for_testing()->DidCommitProvisionalLoad(
-      true /*is_same_document_navigation*/, ui::PAGE_TRANSITION_LINK);
+  autofill_agent_->form_tracker_for_testing()
+      ->DidFinishSameDocumentNavigation();
   base::RunLoop().RunUntilIdle();
 
   VerifyReceivedAddressRendererMessages(

@@ -1050,17 +1050,6 @@ static bool HasPropertyThatCreatesStackingContext(
   return false;
 }
 
-bool ComputedStyle::HasGroupingProperty() const {
-  if (RuntimeEnabledFeatures::TransformInteropEnabled() &&
-      (HasNonInitialBackdropFilter() || HasBlendMode() ||
-       (!HasAutoClip() && HasOutOfFlowPosition()) || ClipPath() ||
-       HasIsolation() || HasMask()))
-    return true;
-
-  return !IsOverflowVisible() || HasFilterInducingProperty() ||
-         HasNonInitialOpacity();
-}
-
 void ComputedStyle::UpdateIsStackingContextWithoutContainment(
     bool is_document_element,
     bool is_in_top_layer,
@@ -1070,20 +1059,18 @@ void ComputedStyle::UpdateIsStackingContextWithoutContainment(
 
   // Force a stacking context for transform-style: preserve-3d. This happens
   // even if preserves-3d is ignored due to a 'grouping property' being present
-  // which requires flattening. See ComputedStyle::UsedTransformStyle3D() and
-  // ComputedStyle::HasGroupingProperty().
+  // which requires flattening. See:
+  // ComputedStyle::HasGroupingPropertyForUsedTransformStyle3D().
   // This is legacy behavior that is left ambiguous in the official specs.
-  // See https://crbug.com/663650 for more details."
+  // See https://crbug.com/663650 for more details.
   if (TransformStyle3D() == ETransformStyle3D::kPreserve3d) {
     SetIsStackingContextWithoutContainment(true);
     return;
   }
 
   if (is_document_element || is_in_top_layer || is_svg_stacking ||
-      StyleType() == kPseudoIdBackdrop || HasOpacity() ||
-      HasTransformRelatedProperty() || HasMask() || ClipPath() ||
-      BoxReflect() || HasFilterInducingProperty() || HasBackdropFilter() ||
-      HasBlendMode() || HasIsolation() || HasViewportConstrainedPosition() ||
+      StyleType() == kPseudoIdBackdrop || HasTransformRelatedProperty() ||
+      HasGroupingProperty(BoxReflect()) || HasViewportConstrainedPosition() ||
       GetPosition() == EPosition::kSticky ||
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
       /* TODO(882625): This becomes unnecessary when will-change correctly takes

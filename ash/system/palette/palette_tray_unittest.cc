@@ -342,7 +342,7 @@ TEST_F(PaletteTrayTestWithAssistant, MetalayerToolActivatesHighlighter) {
   assistant_state()->NotifyFeatureAllowed(
       chromeos::assistant::AssistantAllowedState::ALLOWED);
   assistant_state()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::NEW_READY);
+      chromeos::assistant::AssistantStatus::READY);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
                       true);
@@ -459,7 +459,7 @@ TEST_F(PaletteTrayTestWithAssistant, StylusBarrelButtonActivatesHighlighter) {
 
   // Once the service is ready, the button should start working.
   assistant_state()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::NEW_READY);
+      chromeos::assistant::AssistantStatus::READY);
 
   // Press and drag with no button, still no highlighter.
   WaitDragAndAssertMetalayer("all enabled, no button ", origin, ui::EF_NONE,

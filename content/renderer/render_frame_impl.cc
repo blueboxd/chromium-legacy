@@ -4211,8 +4211,7 @@ void RenderFrameImpl::DidCommitNavigation(
   // Check whether we have new encoding name.
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
 
-  NotifyObserversOfNavigationCommit(false /* was_within_same_document */,
-                                    transition);
+  NotifyObserversOfNavigationCommit(transition);
 }
 
 void RenderFrameImpl::DidCreateInitialEmptyDocument() {
@@ -4232,8 +4231,7 @@ void RenderFrameImpl::DidCommitDocumentReplacementNavigation(
     observer.DidCreateNewDocument();
   ui::PageTransition transition =
       GetTransitionType(document_loader, IsMainFrame());
-  NotifyObserversOfNavigationCommit(false /* was_within_same_document */,
-                                    transition);
+  NotifyObserversOfNavigationCommit(transition);
 }
 
 void RenderFrameImpl::DidClearWindowObject() {
@@ -4402,8 +4400,8 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
   // we don't want the transition type to persist.  Just clear it.
   data->navigation_state()->set_transition_type(ui::PAGE_TRANSITION_LINK);
 
-  NotifyObserversOfNavigationCommit(true /* was_within_same_document */,
-                                    transition);
+  for (auto& observer : observers_)
+    observer.DidFinishSameDocumentNavigation();
 }
 
 void RenderFrameImpl::DidUpdateCurrentHistoryItem() {
@@ -5120,10 +5118,9 @@ void RenderFrameImpl::UpdateNavigationHistory(
 }
 
 void RenderFrameImpl::NotifyObserversOfNavigationCommit(
-    bool is_same_document,
     ui::PageTransition transition) {
   for (auto& observer : observers_)
-    observer.DidCommitProvisionalLoad(is_same_document, transition);
+    observer.DidCommitProvisionalLoad(transition);
 }
 
 void RenderFrameImpl::UpdateStateForCommit(

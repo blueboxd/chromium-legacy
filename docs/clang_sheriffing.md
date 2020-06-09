@@ -17,6 +17,13 @@ document describes some of the processes and techniques for doing that.
 https://sheriff-o-matic.appspot.com/chromium.clang is the sheriff-o-matic
 view of that waterfall, which can be easier to work with.
 
+In addition to the waterfall, make sure
+[dry run attempts at updating clang](https://chromium-review.googlesource.com/q/owner:thakis%2540chromium.org+%2522roll+clang%2522)
+are green. As part of the Clang release process we run upstream LLVM tests.
+Ideally these tests are covered by upstream LLVM bots and breakages are
+quickly noticed and fixed by the original author of a breaking commit,
+but that is sadly not always the case.
+
 [TOC]
 
 ## Is it the compiler?

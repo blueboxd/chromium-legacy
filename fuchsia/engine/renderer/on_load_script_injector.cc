@@ -28,12 +28,7 @@ void OnLoadScriptInjector::BindToReceiver(
 }
 
 void OnLoadScriptInjector::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
-  // Ignore pushState or document fragment navigation.
-  if (is_same_document_navigation)
-    return;
-
   // Don't inject anything for subframes.
   if (!render_frame()->IsMainFrame())
     return;

@@ -128,6 +128,7 @@ class QuicChromiumClientSessionTest
                                     base::span<MockWrite>())),
         random_(0),
         helper_(&clock_, &random_),
+        transport_security_state_(std::make_unique<TransportSecurityState>()),
         session_key_(kServerHostname,
                      kServerPort,
                      PRIVACY_MODE_DISABLED,
@@ -180,7 +181,7 @@ class QuicChromiumClientSessionTest
     session_.reset(new TestingQuicChromiumClientSession(
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
-        &transport_security_state_, /*ssl_config_service=*/nullptr,
+        transport_security_state_.get(), /*ssl_config_service=*/nullptr,
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)), session_key_,
         /*require_confirmation=*/false,
         /*max_allowed_push_id=*/0, migrate_session_early_v2_,
@@ -277,7 +278,7 @@ class QuicChromiumClientSessionTest
   quic::test::MockRandom random_;
   QuicChromiumConnectionHelper helper_;
   quic::test::MockAlarmFactory alarm_factory_;
-  TransportSecurityState transport_security_state_;
+  std::unique_ptr<TransportSecurityState> transport_security_state_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   quic::QuicClientPushPromiseIndex push_promise_index_;
   QuicSessionKey session_key_;
@@ -301,6 +302,86 @@ INSTANTIATE_TEST_SUITE_P(VersionIncludeStreamDependencySequence,
 
 // TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
 // kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
+// Basic test of ProofVerifyDetailsChromium is converted to SSLInfo retrieved
+// through QuicChromiumClientSession::GetSSLInfo(). Doesn't test some of the
+// more complicated fields.
+TEST_P(QuicChromiumClientSessionTest, GetSSLInfo1) {
+  MockQuicData quic_data(version_);
+  if (VersionUsesHttp3(version_.transport_version))
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+
+  ProofVerifyDetailsChromium details;
+  details.is_fatal_cert_error = false;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  details.cert_verify_result.is_issued_by_known_root = true;
+  details.ct_verify_result.policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
+  details.ct_verify_result.policy_compliance_required = true;
+
+  CompleteCryptoHandshake();
+  session_->OnProofVerifyDetailsAvailable(details);
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(session_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.is_valid());
+
+  EXPECT_EQ(details.is_fatal_cert_error, ssl_info.is_fatal_cert_error);
+  EXPECT_TRUE(ssl_info.cert->EqualsIncludingChain(
+      details.cert_verify_result.verified_cert.get()));
+  EXPECT_EQ(details.cert_verify_result.cert_status, ssl_info.cert_status);
+  EXPECT_EQ(details.cert_verify_result.is_issued_by_known_root,
+            ssl_info.is_issued_by_known_root);
+  EXPECT_EQ(details.ct_verify_result.policy_compliance,
+            ssl_info.ct_policy_compliance);
+  EXPECT_EQ(details.ct_verify_result.policy_compliance_required,
+            ssl_info.ct_policy_compliance_required);
+}
+
+// Just like GetSSLInfo1, but uses different values.
+TEST_P(QuicChromiumClientSessionTest, GetSSLInfo2) {
+  MockQuicData quic_data(version_);
+  if (VersionUsesHttp3(version_.transport_version))
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  Initialize();
+
+  ProofVerifyDetailsChromium details;
+  details.is_fatal_cert_error = false;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  details.cert_verify_result.is_issued_by_known_root = false;
+  details.ct_verify_result.policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+  details.ct_verify_result.policy_compliance_required = false;
+
+  CompleteCryptoHandshake();
+  session_->OnProofVerifyDetailsAvailable(details);
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(session_->GetSSLInfo(&ssl_info));
+  EXPECT_TRUE(ssl_info.is_valid());
+
+  EXPECT_EQ(details.is_fatal_cert_error, ssl_info.is_fatal_cert_error);
+  EXPECT_TRUE(ssl_info.cert->EqualsIncludingChain(
+      details.cert_verify_result.verified_cert.get()));
+  EXPECT_EQ(details.cert_verify_result.cert_status, ssl_info.cert_status);
+  EXPECT_EQ(details.cert_verify_result.is_issued_by_known_root,
+            ssl_info.is_issued_by_known_root);
+  EXPECT_EQ(details.ct_verify_result.policy_compliance,
+            ssl_info.ct_policy_compliance);
+  EXPECT_EQ(details.ct_verify_result.policy_compliance_required,
+            ssl_info.ct_policy_compliance_required);
+}
 
 TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
   MockQuicData quic_data(version_);
@@ -1539,6 +1620,81 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
   }
 }
 
+TEST_P(QuicChromiumClientSessionTest, CanPoolExpectCT) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /* enabled_features */
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey},
+      /* disabled_features */
+      {});
+
+  NetworkIsolationKey network_isolation_key =
+      NetworkIsolationKey::CreateTransient();
+  // Need to create a session key after setting
+  // kPartitionExpectCTStateByNetworkIsolationKey, otherwise, it will ignore the
+  // NetworkIsolationKey value.
+  session_key_ = QuicSessionKey(
+      kServerHostname, kServerPort, PRIVACY_MODE_DISABLED, SocketTag(),
+      network_isolation_key, false /* disable_secure_dns */);
+
+  // Need to create this after enabling
+  // kPartitionExpectCTStateByNetworkIsolationKey.
+  transport_security_state_ = std::make_unique<TransportSecurityState>();
+
+  MockQuicData quic_data(version_);
+  if (VersionUsesHttp3(version_.transport_version))
+    quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeInitialSettingsPacket(1));
+  quic_data.AddRead(ASYNC, ERR_IO_PENDING);
+  quic_data.AddRead(ASYNC, OK);  // EOF
+  quic_data.AddSocketDataToFactory(&socket_factory_);
+  Initialize();
+
+  // Load a cert that is valid for:
+  //   www.example.org
+  //   mail.example.org
+  //   www.example.com
+
+  // Details with a CT error.
+  ProofVerifyDetailsChromium details;
+  details.cert_verify_result.verified_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(details.cert_verify_result.verified_cert.get());
+  details.cert_verify_result.is_issued_by_known_root = true;
+  details.ct_verify_result.policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+
+  CompleteCryptoHandshake();
+  session_->OnProofVerifyDetailsAvailable(details);
+
+  // Pooling succeeds if CT isn't required.
+  EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag(), network_isolation_key,
+                                false /* disable_secure_dns */));
+
+  // Adding Expect-CT data for different NetworkIsolationKeys should have no
+  // effect.
+  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1);
+  transport_security_state_->AddExpectCT(
+      "www.example.org", expiry, true /* enforce */, GURL() /* report_url */,
+      NetworkIsolationKey::CreateTransient());
+  transport_security_state_->AddExpectCT(
+      "www.example.org", expiry, true /* enforce */, GURL() /* report_url */,
+      NetworkIsolationKey());
+  EXPECT_TRUE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
+                                SocketTag(), network_isolation_key,
+                                false /* disable_secure_dns */));
+
+  // Adding Expect-CT data for the same NetworkIsolationKey should prevent
+  // pooling.
+  transport_security_state_->AddExpectCT(
+      "www.example.org", expiry, true /* enforce */, GURL() /* report_url */,
+      network_isolation_key);
+  EXPECT_FALSE(session_->CanPool("www.example.org", PRIVACY_MODE_DISABLED,
+                                 SocketTag(), network_isolation_key,
+                                 false /* disable_secure_dns */));
+}
+
 // Much as above, but uses a non-empty NetworkIsolationKey.
 TEST_P(QuicChromiumClientSessionTest, CanPoolWithNetworkIsolationKey) {
   base::test::ScopedFeatureList feature_list;
@@ -1629,7 +1785,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionNotPooledWithDifferentPin) {
   quic_data.AddSocketDataToFactory(&socket_factory_);
   Initialize();
 
-  transport_security_state_.EnableStaticPinsForTesting();
+  transport_security_state_->EnableStaticPinsForTesting();
 
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
@@ -1661,7 +1817,7 @@ TEST_P(QuicChromiumClientSessionTest, ConnectionPooledWithMatchingPin) {
   quic_data.AddSocketDataToFactory(&socket_factory_);
   Initialize();
 
-  transport_security_state_.EnableStaticPinsForTesting();
+  transport_security_state_->EnableStaticPinsForTesting();
 
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =

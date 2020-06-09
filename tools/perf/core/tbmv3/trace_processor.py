@@ -19,7 +19,7 @@ TP_BINARY_NAME = 'trace_processor_shell'
 EXPORT_JSON_QUERY_TEMPLATE = 'select export_json(%s)\n'
 METRICS_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                              'metrics'))
-
+POWER_PROFILE_SQL = 'power_profile.sql'
 
 MetricFiles = namedtuple('MetricFiles', ('sql', 'proto'))
 

@@ -147,23 +147,22 @@ void PhishingClassifierDelegate::StartPhishingDetection(
 }
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // A new page is starting to load, so cancel classificaiton.
-  //
+  CancelPendingClassification(NAVIGATE_AWAY);
+  if (!frame->Parent())
+    last_main_frame_transition_ = transition;
+}
+
+void PhishingClassifierDelegate::DidFinishSameDocumentNavigation() {
   // TODO(bryner): We shouldn't need to cancel classification if the navigation
   // is within the same document.  However, if we let classification continue in
   // this case, we need to properly deal with the fact that PageCaptured will
   // be called again for the same-document navigation.  We need to be sure not
   // to swap out the page text while the term feature extractor is still
   // running.
-  CancelPendingClassification(is_same_document_navigation ? NAVIGATE_WITHIN_PAGE
-                                                          : NAVIGATE_AWAY);
-  if (frame->Parent())
-    return;
-
-  last_main_frame_transition_ = transition;
+  CancelPendingClassification(NAVIGATE_WITHIN_PAGE);
 }
 
 void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,

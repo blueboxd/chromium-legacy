@@ -50,8 +50,7 @@ class ErrorPageHelper
   void DidStartNavigation(
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void DidFinishLoad() override;
   void OnStop() override;
   void WasShown() override;

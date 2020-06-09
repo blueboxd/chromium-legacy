@@ -16,6 +16,17 @@ public interface InflationObserver extends LifecycleObserver {
     void onPreInflationStartup();
 
     /**
+     * Called immediately after the view hierarchy is inflated. It allows observers finishing high
+     * priority tasks that the owner of the {@link ActivityLifecycleDispatcher} is waiting for, and
+     * the owner can add additional tasks before observers' onPostInflationStartup() is called.
+     * Note: you shouldn't override this function unless any subclass of
+     * AsyncInitializationActivity waits for the observer's onInflationComplete() being completed.
+     * Overriding onPostInflationStartup() is preferred.
+     * TODO(https://crbug.com/1092421): Removes this state.
+     */
+    default void onInflationComplete(){};
+
+    /**
      * Called immediately after the view hierarchy is inflated.
      * See {@link org.chromium.chrome.browser.init.BrowserParts#postInflationStartup()}.
      */

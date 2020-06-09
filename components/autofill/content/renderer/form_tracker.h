@@ -87,8 +87,8 @@ class FormTracker : public content::RenderFrameObserver {
                            FormSubmittedBySameDocumentNavigation);
 
   // content::RenderFrameObserver:
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
+  void DidFinishSameDocumentNavigation() override;
   void DidStartNavigation(
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override;

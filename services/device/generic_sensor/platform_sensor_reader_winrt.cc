@@ -299,20 +299,6 @@ void PlatformSensorReaderWinrtBase<
   }
 }
 
-template <wchar_t const* runtime_class_id,
-          class ISensorWinrtStatics,
-          class ISensorWinrtClass,
-          class ISensorReadingChangedHandler,
-          class ISensorReadingChangedEventArgs>
-PlatformSensorReaderWinrtBase<
-    runtime_class_id,
-    ISensorWinrtStatics,
-    ISensorWinrtClass,
-    ISensorReadingChangedHandler,
-    ISensorReadingChangedEventArgs>::~PlatformSensorReaderWinrtBase() {
-  StopSensor();
-}
-
 // static
 std::unique_ptr<PlatformSensorReaderWinBase>
 PlatformSensorReaderWinrtLightSensor::Create() {

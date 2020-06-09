@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactor
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -164,7 +165,8 @@ public class DownloadActivityV2Test extends DummyUiActivityTestCase {
         mDownloadCoordinator = new DownloadManagerCoordinatorImpl(getActivity(), config,
                 isPrefetchEnabledSupplier, settingsLauncher, mSnackbarManager, mModalDialogManager,
                 mTracker, faviconProvider, OfflineContentAggregatorFactory.get(),
-                /* LegacyDownloadProvider */ null, mDiscardableReferencePool);
+                /* LegacyDownloadProvider */ null, mDiscardableReferencePool,
+                new VrModeProviderImpl());
         getActivity().setContentView(mDownloadCoordinator.getView());
 
         mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);

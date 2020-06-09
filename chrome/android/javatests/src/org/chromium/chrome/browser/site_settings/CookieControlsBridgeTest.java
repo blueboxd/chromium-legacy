@@ -113,7 +113,7 @@ public class CookieControlsBridgeTest {
         // Create cookie bridge and wait for desired callbacks.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCookieControlsBridge =
-                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents());
+                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents(), null);
         });
 
         mCallbackHelper.waitForCallback(currentCallCount, 2);
@@ -142,7 +142,7 @@ public class CookieControlsBridgeTest {
         // Create cookie bridge and wait for desired callbacks.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCookieControlsBridge =
-                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents());
+                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents(), null);
         });
 
         mCallbackHelper.waitForCallback(currentCallCount, 2);
@@ -174,7 +174,7 @@ public class CookieControlsBridgeTest {
         // Create cookie bridge and wait for desired callbacks.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCookieControlsBridge =
-                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents());
+                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents(), null);
         });
 
         mCallbackHelper.waitForCallback(currentCallCount, 2);
@@ -209,7 +209,7 @@ public class CookieControlsBridgeTest {
         // Create cookie bridge and wait for desired callbacks.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCookieControlsBridge =
-                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents());
+                    new CookieControlsBridge(mCallbackHandler, tab.getWebContents(), null);
         });
 
         mCallbackHelper.waitForCallback(currentCallCount, 2);
@@ -220,8 +220,9 @@ public class CookieControlsBridgeTest {
         // Make new incognito page now
         Tab incognitoTab = mActivityTestRule.loadUrlInNewTab(url, true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mCookieControlsBridge =
-                    new CookieControlsBridge(mCallbackHandler, incognitoTab.getWebContents());
+            mCookieControlsBridge = new CookieControlsBridge(mCallbackHandler,
+                    incognitoTab.getWebContents(),
+                    Profile.fromWebContents(incognitoTab.getWebContents()).getOriginalProfile());
         });
         mCallbackHelper.waitForCallback(currentCallCount, 2);
         assertEquals(CookieControlsStatus.ENABLED, mStatus);

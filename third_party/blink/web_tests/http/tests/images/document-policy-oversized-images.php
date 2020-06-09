@@ -12,8 +12,8 @@ header("Document-Policy: oversized-images;scale=2.0");
     <img src="green-256x256.jpg" style="height: 100px; width: 256px">
     <img src="green-256x256.jpg" width="128" height="128" >
     <img src="green-256x256.jpg" width="50" height="50">
-    <img src="green-256x256.jpg" style="height: 50px; weight: 50px">
-    <img src="green-256x256.jpg" style="height: 1cm; weight: 1cm">
-    <img src="green-256x256.jpg" style="height: 1cm; weight: 1cm; border-radius: 5px; border: 1px solid blue;">
+    <img src="green-256x256.jpg" style="height: 50px; width: 50px">
+    <img src="green-256x256.jpg" style="height: 1cm; width: 1cm">
+    <img src="green-256x256.jpg" style="height: 1cm; width: 1cm; border-radius: 5px; border: 1px solid blue;">
   </div>
 </body>

@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -28,7 +28,8 @@ class CookieControlsView;
 // Handles the tab specific state for cookie controls.
 class CookieControlsController : content_settings::CookieSettings::Observer {
  public:
-  explicit CookieControlsController(content::WebContents* web_contents);
+  CookieControlsController(content::WebContents* web_contents,
+                           content::BrowserContext* original_context);
   ~CookieControlsController() override;
 
   // Called when the web_contents has changed.
@@ -85,8 +86,11 @@ class CookieControlsController : content_settings::CookieSettings::Observer {
 
   std::unique_ptr<TabObserver> tab_observer_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
-  // Setting for regular profile if cookie_settings_ is for incognito profile.
-  scoped_refptr<content_settings::CookieSettings> regular_cookie_settings_;
+  // Cookie_settings for the original profile associated with
+  // |cookie_settings_|, if there is one. For example, in Chrome, this
+  // corresponds to the regular profile when |cookie_settings_| is incognito.
+  // This may be null.
+  scoped_refptr<content_settings::CookieSettings> original_cookie_settings_;
 
   ScopedObserver<content_settings::CookieSettings,
                  content_settings::CookieSettings::Observer>

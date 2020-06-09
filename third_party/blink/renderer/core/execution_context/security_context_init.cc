@@ -437,13 +437,6 @@ void SecurityContextInit::InitializeAgent(const DocumentInit& initializer) {
   LocalFrame* frame =
       context ? To<LocalDOMWindow>(context)->GetFrame() : nullptr;
   if (frame) {
-    // If we are a page popup in LayoutTests ensure we use the popup
-    // owner's frame for looking up the Agent so the tests can possibly
-    // access the document via internals API.
-    if (IsPagePopupRunningInWebTest(frame))
-      frame = frame->PagePopupOwner()->GetDocument().GetFrame();
-
-    DCHECK(frame->GetSettings());
     // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
     // dynamically change.
     bool has_potential_universal_access_privilege =

@@ -13,8 +13,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/common/chrome_features.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_blocklist_delegate.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_store.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

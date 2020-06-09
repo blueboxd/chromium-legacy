@@ -2157,42 +2157,44 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   if (!ConstraintSpace().HasKnownFragmentainerBlockSize())
     return true;
 
+  LayoutUnit space_left = FragmentainerSpaceAvailable();
+  if (space_left <= LayoutUnit()) {
+    // The amount of space available may be zero, or even negative, if the
+    // border-start edge of this block starts exactly at, or even after the
+    // fragmentainer boundary. We're going to need a break before this block,
+    // because no part of it fits in the current fragmentainer. Due to margin
+    // collapsing with children, this situation is something that we cannot
+    // always detect prior to layout. The fragment produced by this algorithm
+    // is going to be thrown away. The parent layout algorithm will eventually
+    // detect that there's no room for a fragment for this node, and drop the
+    // fragment on the floor. Therefore it doesn't matter how we set up the
+    // container builder, so just return.
+    return true;
+  }
+
   LayoutUnit consumed_block_size =
       BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
-  LayoutUnit space_left = FragmentainerSpaceAvailable();
   LayoutUnit block_size;
-  if (container_builder_.IsFragmentainerBoxType() &&
-      ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+  if (container_builder_.IsFragmentainerBoxType()) {
     // We're building fragmentainers, and we know their block-size. Just use
     // that. Calculating the size the regular way would cause some problems with
     // overflow. For one, we don't want to produce a break token if there's no
     // child content that requires it.
     block_size = ConstraintSpace().FragmentainerBlockSize();
-  } else {
-    block_size = ComputeBlockSizeForFragment(
-        ConstraintSpace(), Style(), border_padding_,
-        consumed_block_size + intrinsic_block_size_,
-        container_builder_.InitialBorderBoxSize().inline_size);
-
-    block_size -= consumed_block_size;
-    DCHECK_GE(block_size, LayoutUnit())
-        << "Adding and subtracting the consumed_block_size shouldn't leave the "
-           "block_size for this fragment smaller than zero.";
-
-    if (space_left <= LayoutUnit()) {
-      // The amount of space available may be zero, or even negative, if the
-      // border-start edge of this block starts exactly at, or even after the
-      // fragmentainer boundary. We're going to need a break before this block,
-      // because no part of it fits in the current fragmentainer. Due to margin
-      // collapsing with children, this situation is something that we cannot
-      // always detect prior to layout. The fragment produced by this algorithm
-      // is going to be thrown away. The parent layout algorithm will eventually
-      // detect that there's no room for a fragment for this node, and drop the
-      // fragment on the floor. Therefore it doesn't matter how we set up the
-      // container builder, so just return.
-      return true;
-    }
+    container_builder_.SetBlockSize(block_size);
+    container_builder_.SetConsumedBlockSize(consumed_block_size + block_size);
+    return true;
   }
+
+  block_size = ComputeBlockSizeForFragment(
+      ConstraintSpace(), Style(), border_padding_,
+      consumed_block_size + intrinsic_block_size_,
+      container_builder_.InitialBorderBoxSize().inline_size);
+
+  block_size -= consumed_block_size;
+  DCHECK_GE(block_size, LayoutUnit())
+      << "Adding and subtracting the consumed_block_size shouldn't leave the "
+         "block_size for this fragment smaller than zero.";
 
   FinishFragmentation(ConstraintSpace(), BreakToken(), block_size,
                       intrinsic_block_size_, space_left, &container_builder_);

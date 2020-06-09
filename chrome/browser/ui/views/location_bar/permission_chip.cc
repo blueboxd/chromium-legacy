@@ -89,6 +89,9 @@ PermissionChip::PermissionChip(Browser* browser)
   // Equalizing padding on the left, right and between icon and label.
   chip_button_->SetImageLabelSpacing(
       GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left());
+  chip_button_->SetCustomPadding(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_CHILD_INTERIOR_PADDING),
+                  GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left()));
 
   chip_button_->SetButtonController(std::make_unique<BubbleButtonController>(
       chip_button_, this,

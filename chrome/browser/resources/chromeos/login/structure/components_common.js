@@ -22,7 +22,6 @@
 // <include src="../gaia_card.js">
 // <include src="../gaia_header.js">
 // <include src="../gaia_input_form.js">
-// <include src="../gaia_input.js">
 // <include src="../navigation_bar.js">
 
 // <include src="../oobe_a11y_option.js">

@@ -83,7 +83,7 @@ AssistantStatus ToAssistantStatus(AssistantManagerService::State state) {
     case State::STARTED:
       return AssistantStatus::NOT_READY;
     case State::RUNNING:
-      return AssistantStatus::NEW_READY;
+      return AssistantStatus::READY;
   }
 }
 

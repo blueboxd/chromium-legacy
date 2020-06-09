@@ -98,7 +98,10 @@ mojom("mirror_service_remoting") {
 mojom("remoting") {
   sources = [ "remoting.mojom" ]
 
-  public_deps = [ ":remoting_common" ]
+  public_deps = [
+    ":mojom",
+    ":remoting_common",
+  ]
 }
 
 mojom("test_interfaces") {

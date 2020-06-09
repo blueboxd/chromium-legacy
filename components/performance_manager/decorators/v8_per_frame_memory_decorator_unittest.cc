@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/performance_manager/decorators/v8_per_frame_memory_decorator.h"
+#include "components/performance_manager/public/decorators/v8_per_frame_memory_decorator.h"
 
 #include <memory>
 

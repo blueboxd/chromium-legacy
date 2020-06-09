@@ -30,7 +30,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_blocklist_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"

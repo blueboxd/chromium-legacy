@@ -77,7 +77,7 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL("chrome://newtab"));
 
     cookie_controls_ =
-        std::make_unique<CookieControlsController>(web_contents());
+        std::make_unique<CookieControlsController>(web_contents(), nullptr);
     cookie_controls_->AddObserver(mock());
     testing::Mock::VerifyAndClearExpectations(mock());
   }
@@ -216,7 +216,7 @@ TEST_F(CookieControlsTest, Incognito) {
   auto* tester = content::WebContentsTester::For(incognito_web_contents.get());
   MockCookieControlsView incognito_mock_;
   CookieControlsController incognito_cookie_controls(
-      incognito_web_contents.get());
+      incognito_web_contents.get(), profile());
   incognito_cookie_controls.AddObserver(&incognito_mock_);
 
   // Navigate incognito web_contents to the same URL.

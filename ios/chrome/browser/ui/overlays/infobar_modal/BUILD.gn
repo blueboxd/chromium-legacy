@@ -8,7 +8,10 @@ source_set("infobar_modal") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
-  deps = [ "//ios/chrome/browser/ui/overlays/infobar_modal/passwords" ]
+  deps = [
+    "//ios/chrome/browser/ui/overlays/infobar_modal/passwords",
+    "//ios/chrome/browser/ui/overlays/infobar_modal/translate",
+  ]
 }
 
 source_set("coordinators") {

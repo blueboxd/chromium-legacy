@@ -1145,11 +1145,11 @@ TEST_F(MenuControllerTest, SelectChildButtonView) {
   AddButtonMenuItems();
   View* buttons_view = menu_item()->GetSubmenu()->children()[4];
   ASSERT_NE(nullptr, buttons_view);
-  Button* button1 = Button::AsButton(buttons_view->children()[0]);
+  Button* button1 = Button::AsButton(buttons_view->children()[1]);
   ASSERT_NE(nullptr, button1);
-  Button* button2 = Button::AsButton(buttons_view->children()[1]);
+  Button* button2 = Button::AsButton(buttons_view->children()[2]);
   ASSERT_NE(nullptr, button2);
-  Button* button3 = Button::AsButton(buttons_view->children()[2]);
+  Button* button3 = Button::AsButton(buttons_view->children()[3]);
   ASSERT_NE(nullptr, button2);
 
   // Handle searching for 'f'; should find "Four".
@@ -1220,11 +1220,11 @@ TEST_F(MenuControllerTest, DeleteChildButtonView) {
 
   View* buttons_view = menu_item()->GetSubmenu()->children()[4];
   ASSERT_NE(nullptr, buttons_view);
-  Button* button1 = Button::AsButton(buttons_view->children()[0]);
+  Button* button1 = Button::AsButton(buttons_view->children()[1]);
   ASSERT_NE(nullptr, button1);
-  Button* button2 = Button::AsButton(buttons_view->children()[1]);
+  Button* button2 = Button::AsButton(buttons_view->children()[2]);
   ASSERT_NE(nullptr, button2);
-  Button* button3 = Button::AsButton(buttons_view->children()[2]);
+  Button* button3 = Button::AsButton(buttons_view->children()[3]);
   ASSERT_NE(nullptr, button2);
   EXPECT_FALSE(button1->IsHotTracked());
   EXPECT_FALSE(button2->IsHotTracked());
@@ -1262,11 +1262,11 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
 
   View* buttons_view = menu_item()->GetSubmenu()->children()[4];
   ASSERT_NE(nullptr, buttons_view);
-  Button* button1 = Button::AsButton(buttons_view->children()[0]);
+  Button* button1 = Button::AsButton(buttons_view->children()[1]);
   ASSERT_NE(nullptr, button1);
-  Button* button2 = Button::AsButton(buttons_view->children()[1]);
+  Button* button2 = Button::AsButton(buttons_view->children()[2]);
   ASSERT_NE(nullptr, button2);
-  Button* button3 = Button::AsButton(buttons_view->children()[2]);
+  Button* button3 = Button::AsButton(buttons_view->children()[3]);
   ASSERT_NE(nullptr, button2);
   EXPECT_FALSE(button1->IsHotTracked());
   EXPECT_FALSE(button2->IsHotTracked());
@@ -2369,9 +2369,9 @@ TEST_F(MenuControllerTest, SetSelectionIndices_Buttons) {
   MenuItemView* const item3 = menu_item()->GetSubmenu()->GetMenuItemAt(2);
   MenuItemView* const item4 = menu_item()->GetSubmenu()->GetMenuItemAt(3);
   MenuItemView* const item5 = menu_item()->GetSubmenu()->GetMenuItemAt(4);
-  Button* const button1 = Button::AsButton(item5->children()[0]);
-  Button* const button2 = Button::AsButton(item5->children()[1]);
-  Button* const button3 = Button::AsButton(item5->children()[2]);
+  Button* const button1 = Button::AsButton(item5->children()[1]);
+  Button* const button2 = Button::AsButton(item5->children()[2]);
+  Button* const button3 = Button::AsButton(item5->children()[3]);
   OpenMenu(menu_item());
 
   ui::AXNodeData data;
@@ -2411,11 +2411,11 @@ TEST_F(MenuControllerTest, SetSelectionIndices_Buttons_SkipHiddenAndDisabled) {
   MenuItemView* const item3 = menu_item()->GetSubmenu()->GetMenuItemAt(2);
   MenuItemView* const item4 = menu_item()->GetSubmenu()->GetMenuItemAt(3);
   MenuItemView* const item5 = menu_item()->GetSubmenu()->GetMenuItemAt(4);
-  Button* const button1 = Button::AsButton(item5->children()[0]);
+  Button* const button1 = Button::AsButton(item5->children()[1]);
   button1->SetEnabled(false);
-  Button* const button2 = Button::AsButton(item5->children()[1]);
+  Button* const button2 = Button::AsButton(item5->children()[2]);
   button2->SetVisible(false);
-  Button* const button3 = Button::AsButton(item5->children()[2]);
+  Button* const button3 = Button::AsButton(item5->children()[3]);
   OpenMenu(menu_item());
 
   ui::AXNodeData data;

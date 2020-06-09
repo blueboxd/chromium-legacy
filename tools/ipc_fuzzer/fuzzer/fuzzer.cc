@@ -636,6 +636,10 @@ struct FuzzTraits<base::UnguessableToken> {
       return false;
     if (!FuzzParam(&high, fuzzer))
       return false;
+    while (high == 0 && low == 0) {
+      FuzzParam(&low, fuzzer);
+      FuzzParam(&high, fuzzer);
+    }
     *p = base::UnguessableToken::Deserialize(high, low);
     return true;
   }

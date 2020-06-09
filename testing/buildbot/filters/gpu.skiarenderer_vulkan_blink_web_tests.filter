@@ -761,7 +761,6 @@ images/crash-bad-cast.html
 images/cross-fade-svg-size-diff.html
 images/drag-svg-image.html
 images/embed-does-not-propagate-dimensions-to-object-ancestor.html
-images/feature-policy-oversized-images-forced-layout.html
 images/gif-loop-count.html
 images/image-change-src.html
 images/image-empty-src-no-display.html

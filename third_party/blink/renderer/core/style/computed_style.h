@@ -2328,8 +2328,9 @@ class ComputedStyle : public ComputedStyleBase,
     return !Transform().Operations().IsEmpty();
   }
   ETransformStyle3D UsedTransformStyle3D() const {
-    return HasGroupingProperty() ? ETransformStyle3D::kFlat
-                                 : TransformStyle3D();
+    return HasGroupingPropertyForUsedTransformStyle3D()
+               ? ETransformStyle3D::kFlat
+               : TransformStyle3D();
   }
   // Returns whether the transform operations for |otherStyle| differ from the
   // operations for this style instance. Note that callers may want to also
@@ -2390,12 +2391,46 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Returns whether this style contains any grouping property as defined by
-  // [css-transforms].  The main purpose of this is to adjust the used value of
-  // transform-style property.
-  // Note: We currently don't include every grouping property on the spec to
-  // maintain backward compatibility.  [css-transforms]
-  // https://drafts.csswg.org/css-transforms/#grouping-property-values
-  CORE_EXPORT bool HasGroupingProperty() const;
+  // https://drafts.csswg.org/css-transforms-2/#grouping-property-values.
+  //
+  // |has_box_reflection| is a parameter instead of checking |BoxReflect()|
+  // because box reflection styles only apply for some objects (see:
+  // |LayoutObject::HasReflection()|).
+  bool HasGroupingProperty(bool has_box_reflection) const {
+    // TODO(pdr): Spec requires "overflow: any value other than visible or clip"
+    if (HasNonInitialOpacity())
+      return true;
+    if (HasNonInitialFilter())
+      return true;
+    if (has_box_reflection)
+      return true;
+    if (!HasAutoClip() && HasOutOfFlowPosition())
+      return true;
+    if (ClipPath())
+      return true;
+    if (HasIsolation())
+      return true;
+    if (HasMask())
+      return true;
+    if (HasBlendMode())
+      return true;
+    if (HasNonInitialBackdropFilter())
+      return true;
+    return false;
+  }
+
+  // Grouping requires creating a flattened representation of the descendant
+  // elements before they can be applied, and therefore force the element to
+  // have a used style of flat for preserve-3d.
+  // Until |RuntimeEnabledFeatures::TransformInteropEnabled()| launches, the
+  // approach is different from the spec to maintain backwards compatibility.
+  // TODO(chrishtr): replace this with |HasGroupingProperty()|.
+  CORE_EXPORT bool HasGroupingPropertyForUsedTransformStyle3D() const {
+    if (RuntimeEnabledFeatures::TransformInteropEnabled())
+      return HasGroupingProperty(BoxReflect()) || !IsOverflowVisible();
+    return !IsOverflowVisible() || HasFilterInducingProperty() ||
+           HasNonInitialOpacity();
+  }
 
   // Return true if any transform related property (currently
   // transform/motionPath, transformStyle3D, perspective, or

@@ -329,7 +329,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                       const SSLInfo& ssl_info,
                       const SSLConfigService& ssl_config_service,
                       const std::string& old_hostname,
-                      const std::string& new_hostname);
+                      const std::string& new_hostname,
+                      const net::NetworkIsolationKey& network_isolation_key);
 
   // Create a new SpdySession.
   // |spdy_session_key| is the host/port that this session connects to, privacy

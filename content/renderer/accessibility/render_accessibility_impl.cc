@@ -228,16 +228,13 @@ void RenderAccessibilityImpl::DidCreateNewDocument() {
 }
 
 void RenderAccessibilityImpl::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
   has_injected_stylesheet_ = false;
 
-  if (!is_same_document_navigation) {
-    // If we have events scheduled, but not sent, cancel them
-    CancelScheduledEvents();
-    // Defer events during initial page load.
-    event_schedule_mode_ = EventScheduleMode::kDeferEvents;
-  }
+  // If we have events scheduled, but not sent, cancel them
+  CancelScheduledEvents();
+  // Defer events during initial page load.
+  event_schedule_mode_ = EventScheduleMode::kDeferEvents;
 
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not

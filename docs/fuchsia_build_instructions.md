@@ -91,7 +91,7 @@ target_os = ['fuchsia']
 You will then need to run:
 
 ```shell
-$ gclient runhooks
+$ gclient sync
 ```
 
 This makes sure the Fuchsia SDK is available in third\_party and keeps it up to

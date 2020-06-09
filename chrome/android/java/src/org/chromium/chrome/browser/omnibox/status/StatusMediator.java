@@ -17,6 +17,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
+import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -463,12 +464,15 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
      *     - shown only if specified,
      *     - not shown if URL is focused.
      */
-    private void updateLocationBarIcon() {
+    void updateLocationBarIcon() {
         // Update the accessibility description before continuing since we need it either way.
         mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, getAccessibilityDescriptionRes());
 
         // No need to proceed further if we've already updated it for the search engine icon.
-        if (maybeUpdateStatusIconForSearchEngineIcon()) return;
+        if (!LibraryLoader.getInstance().isInitialized()
+                || maybeUpdateStatusIconForSearchEngineIcon()) {
+            return;
+        }
 
         int icon = 0;
         int tint = 0;
@@ -569,7 +573,8 @@ class StatusMediator implements IncognitoStateProvider.IncognitoStateObserver {
     private void getNonGoogleSearchEngineIconBitmap(final Callback<StatusIconResource> callback) {
         mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
             if (favicon == null || mShouldCancelCustomFavicon) {
-                callback.onResult(new StatusIconResource(R.drawable.ic_search, 0));
+                callback.onResult(new StatusIconResource(R.drawable.ic_search,
+                        getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search)));
                 return;
             }
 

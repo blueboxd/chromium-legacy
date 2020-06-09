@@ -1394,7 +1394,9 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     policy = {}
     if json is None:
       logging.error('No JSON module, cannot parse policy information')
-    else :
+    elif not os.path.exists(self.policy_path):
+      logging.warning('Missing policies file %s' % self.policy_path)
+    else:
       try:
         policy = json.loads(open(self.policy_path).read(), strict=False)
       except IOError:

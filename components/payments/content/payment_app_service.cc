@@ -32,4 +32,8 @@ void PaymentAppService::Create(
   }
 }
 
+void PaymentAppService::Shutdown() {
+  factories_.clear();
+}
+
 }  // namespace payments

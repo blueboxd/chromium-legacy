@@ -297,6 +297,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   bool IsTransient() const override;
   bool IsParallelDownload() const override;
   DownloadCreationType GetDownloadCreationType() const override;
+  const base::Optional<DownloadSchedule>& GetDownloadSchedule() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type,
                                DownloadInterruptReason reason) override;
   void OnAsyncScanningCompleted(DownloadDangerType danger_type) override;
@@ -840,6 +841,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // The MixedContentStatus if determined.
   MixedContentStatus mixed_content_status_ = MixedContentStatus::UNKNOWN;
+
+  // Defines when to start the download. Used by download later feature.
+  base::Optional<DownloadSchedule> download_schedule_;
 
   THREAD_CHECKER(thread_checker_);
 

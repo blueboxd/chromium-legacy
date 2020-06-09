@@ -5,12 +5,15 @@
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 
 #include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -31,7 +34,12 @@ void CookieControlsIconView::UpdateImpl() {
   auto* web_contents = delegate()->GetWebContentsForPageActionIconView();
   if (web_contents) {
     if (!controller_) {
-      controller_ = std::make_unique<CookieControlsController>(web_contents);
+      content::BrowserContext* context = web_contents->GetBrowserContext();
+      controller_ = std::make_unique<CookieControlsController>(
+          web_contents,
+          context->IsOffTheRecord()
+              ? Profile::FromBrowserContext(context)->GetOriginalProfile()
+              : nullptr);
       observer_.Add(controller_.get());
     }
     controller_->Update(web_contents);

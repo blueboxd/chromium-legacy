@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_blacklist.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_blocklist.h"
 
 namespace base {
 class Clock;

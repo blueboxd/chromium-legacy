@@ -77,7 +77,7 @@ enum Event {
   kSelection,                // Native
   kSelectionAdd,             // Native
   kSelectionRemove,          // Native
-  kShow,                     // Remove: http://crbug.com/392502
+  kShow,                     // Native / Automation
   kStateChanged,             // Native / Automation
   kTextChanged,
   kWindowActivated,             // Native

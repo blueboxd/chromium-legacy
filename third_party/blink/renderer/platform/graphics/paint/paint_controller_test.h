@@ -111,6 +111,9 @@ MATCHER_P(IsSameId, id, "") {
 MATCHER_P2(IsSameId, client, type, "") {
   return arg.GetId() == DisplayItem::Id(*client, type);
 }
+MATCHER_P3(IsSameId, client, type, fragment, "") {
+  return arg.GetId() == DisplayItem::Id(*client, type, fragment);
+}
 
 // Matcher for checking paint chunks. Sample usage:
 // EXPACT_THAT(paint_controller.PaintChunks(),

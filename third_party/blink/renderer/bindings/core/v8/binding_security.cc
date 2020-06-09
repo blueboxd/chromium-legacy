@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -152,7 +153,9 @@ bool CanAccessWindowInternal(
       // Assert that because the agent clusters are different than the
       // WindowAgentFactories must also be different.
       SECURITY_CHECK(
-          !IsSameWindowAgentFactory(accessing_window, local_target_window));
+          !IsSameWindowAgentFactory(accessing_window, local_target_window) ||
+          (WebTestSupport::IsRunningWebTest() &&
+           local_target_window->GetFrame()->PagePopupOwner()));
 
       *cross_document_access =
           DOMWindow::CrossDocumentAccessPolicy::kDisallowed;

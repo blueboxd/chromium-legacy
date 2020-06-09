@@ -121,6 +121,11 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
       TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
                            TRACE_EVENT_SCOPE_THREAD, "exact_text_length",
                            match.text.length());
+
+      UMA_HISTOGRAM_BOOLEAN("TextFragmentAnchor.ListItemMatch",
+                            match.is_list_item);
+      UMA_HISTOGRAM_BOOLEAN("TextFragmentAnchor.TableCellMatch",
+                            match.is_table_cell);
     } else if (match.selector.Type() == TextFragmentSelector::kRange) {
       UMA_HISTOGRAM_COUNTS_1000("TextFragmentAnchor.RangeMatchLength",
                                 match.text.length());
@@ -139,6 +144,9 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
       TRACE_EVENT_INSTANT1("blink", "TextFragmentAnchorMetrics::ReportMetrics",
                            TRACE_EVENT_SCOPE_THREAD, "end_text_length",
                            match.selector.End().length());
+
+      // We only record ListItemMatch and TableCellMatch for exact matches
+      DCHECK(!match.is_list_item && !match.is_table_cell);
     }
 
     UMA_HISTOGRAM_ENUMERATION("TextFragmentAnchor.Parameters",

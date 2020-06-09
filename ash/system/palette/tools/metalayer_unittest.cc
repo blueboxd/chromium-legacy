@@ -72,7 +72,7 @@ class MetalayerToolTest : public AshTestBase {
 TEST_F(MetalayerToolTest, PaletteMenuState) {
   const chromeos::assistant::AssistantStatus kStates[] = {
       chromeos::assistant::AssistantStatus::NOT_READY,
-      chromeos::assistant::AssistantStatus::NEW_READY};
+      chromeos::assistant::AssistantStatus::READY};
   const chromeos::assistant::AssistantAllowedState kAllowedStates[] = {
       chromeos::assistant::AssistantAllowedState::ALLOWED,
       chromeos::assistant::AssistantAllowedState::DISALLOWED_BY_POLICY,
@@ -177,7 +177,7 @@ TEST_F(MetalayerToolTest, MetalayerUnsupportedDisablesPaletteTool) {
               DisableTool(PaletteToolId::METALAYER))
       .Times(0);
   assistant_state()->NotifyStatusChanged(
-      chromeos::assistant::AssistantStatus::NEW_READY);
+      chromeos::assistant::AssistantStatus::READY);
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 
   // Changing the state to NOT_READY should disable the tool.

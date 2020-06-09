@@ -66,10 +66,11 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
 
   // Called by the RenderFrame when a page has started loading in the given
   // WebFrame.  Typically, this will cause any pending classification to be
-  // cancelled.  However, if the navigation is within the same page, we
-  // continue running the current classification.
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  // cancelled.
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
+  // Called by the RenderFrame when the same-document navigation has been
+  // committed. We continue running the current classification.
+  void DidFinishSameDocumentNavigation() override;
 
  private:
   friend class PhishingClassifierDelegateTest;

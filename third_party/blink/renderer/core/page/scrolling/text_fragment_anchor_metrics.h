@@ -22,6 +22,8 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
     String text;
     TextFragmentSelector selector;
+    bool is_list_item = false;
+    bool is_table_cell = false;
   };
 
   // An enum to indicate which parameters were specified in the text fragment.

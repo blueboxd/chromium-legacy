@@ -38,7 +38,6 @@ static int constexpr kMaxRatings = 5;
 static int constexpr kMaxGenres = 3;
 static int constexpr kMaxInteractionStatistics = 3;
 static int constexpr kMaxImages = 5;
-static int constexpr kMaxAssociatedOrigins = 5;
 
 // Gets the property of entity with corresponding name. May be null if not found
 // or if the property has no values.
@@ -456,28 +455,6 @@ bool MediaFeedsConverter::ValidateProvider(
   return true;
 }
 
-// Gets the associated origin URLs and places a duplicate-free set in the result
-// struct.
-bool MediaFeedsConverter::GetAssociatedOriginURLs(
-    const Property& property,
-    media_history::MediaHistoryKeyedService::MediaFeedFetchResult* result) {
-  if (property.values->url_values.empty())
-    return false;
-
-  for (const auto& url : property.values->url_values) {
-    // Exceeded the maximum allowed number of associated origins.
-    if (result->associated_origins.size() == kMaxAssociatedOrigins)
-      break;
-
-    if (!url.SchemeIs(url::kHttpsScheme))
-      continue;
-
-    result->associated_origins.insert(url::Origin::Create(url));
-  }
-
-  return true;
-}
-
 // Gets the feed additional properties.
 bool MediaFeedsConverter::GetFeedAdditionalProperties(
     const Property& property,
@@ -496,17 +473,6 @@ bool MediaFeedsConverter::GetFeedAdditionalProperties(
     auto name = GetFirstNonEmptyString(*name_prop);
     if (!name)
       continue;
-
-    // If the property is "associatedOrigin" then the value should be a list
-    // of URLs.
-    if (name == "associatedOrigin") {
-      if (!ConvertProperty(
-              entity.get(), result, schema_org::property::kValue, false,
-              base::BindOnce(&MediaFeedsConverter::GetAssociatedOriginURLs,
-                             base::Unretained(this)))) {
-        continue;
-      }
-    }
 
     // If the property is "cookieNameFilter" then the value should be a single
     // non-empty string.

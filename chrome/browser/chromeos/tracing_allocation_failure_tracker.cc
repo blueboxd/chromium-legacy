@@ -35,7 +35,24 @@ enum class CrashHandler {
 // UMA that records the return value of base::debug::DumpWithoutCrashing.
 // TODO(crbug.com/1074115): Remove once crbug.com/1074115 is resolved.
 constexpr char kDumpWithoutCrashingResultMetricName[] =
-    "CrashReport.DumpWithoutCrashingResult.FromInitSharedMemoryIfNeeded";
+    "CrashReport.DumpWithoutCrashingResult.FromInitSharedMemoryIfNeeded2";
+// Results of the DumpWithoutCrashing call inside
+// tracing::ProducerClient::InitSharedMemoryIfNeeded, broken out by which crash
+// handling system should have processed the DumpWithoutCrashing.
+// TODO(crbug.com/1074115): Remove once crbug.com/1074115 is resolved.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DumpWithoutCrashingResult {
+  kFailureCrashpad = 0,  // Crashpad was running and DumpWithoutCrashing
+                         // returned false.
+  kSuccessCrashpad = 1,  // Crashpad was running and DumpWithoutCrashing
+                         // returned true.
+  kFailureBreakpad = 2,  // Breakpad was running and DumpWithoutCrashing
+                         // returned false.
+  kSuccessBreakpad = 3,  // Breakpad was running and DumpWithoutCrashing
+                         // returned true.
+  kMaxValue = kSuccessBreakpad,
+};
 
 // Local wrapper around GetCollectStatsConsent() to make our collection even
 // more restrictive.
@@ -94,13 +111,29 @@ void TracingBufferAllocationFailurePostDumpCallback(
     return;
   }
 
-  // Number of possible boolean values. See above about passing in max vs.
-  // number of values.
-  const int kNumValues = 2;
+  DumpWithoutCrashingResult result;
+  if (crash_reporter::IsCrashpadEnabled()) {
+    if (dump_without_crashing_result) {
+      result = DumpWithoutCrashingResult::kSuccessCrashpad;
+    } else {
+      result = DumpWithoutCrashingResult::kFailureCrashpad;
+    }
+  } else {
+    if (dump_without_crashing_result) {
+      result = DumpWithoutCrashingResult::kSuccessBreakpad;
+    } else {
+      result = DumpWithoutCrashingResult::kFailureBreakpad;
+    }
+  }
+
+  // Number of possible enum values. See above about passing in max vs. number
+  // of values.
+  const int kNumValues =
+      static_cast<int>(DumpWithoutCrashingResult::kMaxValue) + 1;
   metrics::SerializationUtils::WriteMetricToFile(
       *metrics::MetricSample::LinearHistogramSample(
-          kDumpWithoutCrashingResultMetricName,
-          dump_without_crashing_result ? 1 : 0, kNumValues),
+          kDumpWithoutCrashingResultMetricName, static_cast<int>(result),
+          kNumValues),
       chromeos::ExternalMetrics::kEventsFilePath);
 }
 

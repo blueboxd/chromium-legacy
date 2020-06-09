@@ -1107,9 +1107,10 @@ var PrintPreviewPrinterStatusTestCros = class extends PrintPreviewTest {
 };
 
 TEST_F(
-    'PrintPreviewPrinterStatusTestCros', 'ReasonFromPrinterStatus', function() {
+    'PrintPreviewPrinterStatusTestCros', 'PrinterStatusUpdatesColor',
+    function() {
       this.runMochaTest(
-          printer_status_test_cros.TestNames.ReasonFromPrinterStatus);
+          printer_status_test_cros.TestNames.PrinterStatusUpdatesColor);
     });
 
 TEST_F(

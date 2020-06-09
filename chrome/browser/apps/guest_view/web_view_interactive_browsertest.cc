@@ -1352,7 +1352,12 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusRestored) {
 
 // ui::TextInputClient is NULL for mac and android.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus_InputMethod) {
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_Focus_InputMethod DISABLED_Focus_InputMethod
+#else
+#define MAYBE_Focus_InputMethod Focus_InputMethod
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, MAYBE_Focus_InputMethod) {
   content::WebContents* embedder_web_contents = NULL;
   std::unique_ptr<ExtensionTestMessageListener> done_listener(
       RunAppHelper("testInputMethod", "web_view/focus", NO_TEST_SERVER,

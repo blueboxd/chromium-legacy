@@ -200,8 +200,8 @@ void SyncInternalsMessageHandler::HandleGetAllNodes(
   syncer::SyncService* service = GetSyncService();
   if (service) {
     service->GetAllNodesForDebugging(
-        base::Bind(&SyncInternalsMessageHandler::OnReceivedAllNodes,
-                   weak_ptr_factory_.GetWeakPtr(), request_id));
+        base::BindOnce(&SyncInternalsMessageHandler::OnReceivedAllNodes,
+                       weak_ptr_factory_.GetWeakPtr(), request_id));
   }
 }
 

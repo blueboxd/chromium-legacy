@@ -184,10 +184,12 @@ public final class StatusMediatorUnitTest {
         Mockito.clearInvocations(mDelegate);
 
         mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
-        BitmapDrawable bitmapDrawable =
-                (BitmapDrawable) mModel.get(StatusProperties.STATUS_ICON_RESOURCE)
-                        .getDrawable(mContext, mResources);
-        Assert.assertEquals("", mBitmap, bitmapDrawable.getBitmap());
+        StatusProperties.StatusIconResource resource =
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE);
+        BitmapDrawable bitmapDrawable = (BitmapDrawable) resource.getDrawable(mContext, mResources);
+        int tint = resource.getTint();
+        Assert.assertEquals(mBitmap, bitmapDrawable.getBitmap());
+        Assert.assertEquals("All search engine logos should be untinted.", 0, tint);
         Mockito.verify(mDelegate, Mockito.times(1)).getSearchEngineLogoFavicon(any(), any());
     }
 
@@ -209,8 +211,13 @@ public final class StatusMediatorUnitTest {
         Mockito.clearInvocations(mDelegate);
 
         mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
+        StatusProperties.StatusIconResource resource =
+                mModel.get(StatusProperties.STATUS_ICON_RESOURCE);
+        int tint = resource.getTint();
         Assert.assertEquals(R.drawable.ic_search,
                 mModel.get(StatusProperties.STATUS_ICON_RESOURCE).getIconResForTesting());
+        Assert.assertEquals("Search loupes should have non-zero tints applied.",
+                mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search), tint);
         Mockito.verify(mDelegate, Mockito.times(1)).getSearchEngineLogoFavicon(any(), any());
     }
 

@@ -77,8 +77,7 @@ class MetricsRenderFrameObserver
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
   void DidFailProvisionalLoad() override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void OnDestruct() override;
 
   // Invoked when a frame is going away. This is our last chance to send IPCs

@@ -58,7 +58,13 @@ const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
 
 // Enables the prediction of optimization targets.
 const base::Feature kOptimizationTargetPrediction{
-    "OptimizationTargetPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OptimizationTargetPrediction",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // !defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID)
+};
 
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
@@ -265,7 +271,7 @@ int PredictionModelFetchRandomMinDelaySecs() {
 
 int PredictionModelFetchRandomMaxDelaySecs() {
   return GetFieldTrialParamByFeatureAsInt(kOptimizationTargetPrediction,
-                                          "fetch_random_max_delay_secs", 180);
+                                          "fetch_random_max_delay_secs", 60);
 }
 
 base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch() {

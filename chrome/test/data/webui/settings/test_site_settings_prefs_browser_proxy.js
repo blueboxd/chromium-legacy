@@ -5,7 +5,7 @@
 // clang-format off
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {ContentSetting, ContentSettingsTypes, CookieControlsManagedState, HandlerEntry, ProtocolEntry, RawChooserException, RawSiteException, RecentSitePermissions, SiteSettingSource, SiteSettingsPrefsBrowserProxy, ZoomLevelEntry} from 'chrome://settings/lazy_load.js';
+import {ContentSetting, ContentSettingsTypes, HandlerEntry, ProtocolEntry, RawChooserException, RawSiteException, RecentSitePermissions, SiteSettingSource, SiteSettingsPrefsBrowserProxy, ZoomLevelEntry} from 'chrome://settings/lazy_load.js';
 
 import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
@@ -49,7 +49,6 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'clearEtldPlus1DataAndCookies',
       'clearOriginDataAndCookies',
       'recordAction',
-      'getCookieControlsManagedState',
       'getCookieSettingDescription',
       'getRecentSitePermissions',
     ]);
@@ -74,9 +73,6 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     /** @private {boolean} */
     this.isPatternValidForType_ = true;
-
-    /** @private {!CookieControlsManagedState|undefined} */
-    this.cookieControlsManagedState_ = undefined;
 
     /** @private {string} */
     this.cookieSettingDesciption_ = '';
@@ -480,19 +476,6 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   recordAction() {
     this.methodCalled('recordAction');
-  }
-
-
-  /** @param {!CookieControlsManagedState} state */
-  setCookieControlsManagedState(state) {
-    this.cookieControlsManagedState_ = state;
-  }
-
-  /** @override */
-  getCookieControlsManagedState() {
-    this.methodCalled('getCookieControlsManagedState');
-    return Promise.resolve(/** @type {!CookieControlsManagedState} */ (
-        this.cookieControlsManagedState_));
   }
 
   /** @param {string} label */

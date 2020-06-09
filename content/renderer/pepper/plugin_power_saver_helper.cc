@@ -42,11 +42,10 @@ PluginPowerSaverHelper::~PluginPowerSaverHelper() {
 }
 
 void PluginPowerSaverHelper::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  // Only apply to top-level and new page navigation.
-  if (frame->Parent() || is_same_document_navigation)
+  // Only apply to top-level navigation.
+  if (frame->Parent())
     return;  // Not a top-level navigation.
 
   origin_allowlist_.clear();

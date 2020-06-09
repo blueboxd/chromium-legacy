@@ -28,8 +28,8 @@ const char kCommandPrefix[] = "blockingPage";
 IOSBlockingPageTabHelper::IOSBlockingPageTabHelper(web::WebState* web_state)
     : subscription_(nullptr), navigation_id_listener_(web_state, this) {
   auto command_callback =
-      base::Bind(&IOSBlockingPageTabHelper::OnBlockingPageCommand,
-                 weak_factory_.GetWeakPtr());
+      base::BindRepeating(&IOSBlockingPageTabHelper::OnBlockingPageCommand,
+                          weak_factory_.GetWeakPtr());
   subscription_ =
       web_state->AddScriptCommandCallback(command_callback, kCommandPrefix);
 }

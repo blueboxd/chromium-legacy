@@ -41,6 +41,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
@@ -411,7 +412,8 @@ class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
     SpdySessionKey key(HostPortPair::FromURL(request_.url),
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
                        SpdySessionKey::IsProxySession::kFalse, SocketTag(),
-                       NetworkIsolationKey(), false /* disable_secure_dns */);
+                       request_.network_isolation_key,
+                       false /* disable_secure_dns */);
     HttpNetworkSession* session = helper.session();
     base::WeakPtr<SpdySession> spdy_session =
         session->spdy_session_pool()->FindAvailableSession(
@@ -6414,28 +6416,53 @@ struct PushUrlTestParams {
   const char* url_to_fetch;
   const char* url_to_push;
   bool client_cert_sent;
+  bool expect_ct_error;
   SpdyPushedStreamFate expected_fate;
 } push_url_test_cases[] = {
     // http scheme cannot be pushed (except by trusted proxy).
-    {"https://www.example.org/foo.html", "http://www.example.org/foo.js", false,
+    {"https://www.example.org/foo.html", "http://www.example.org/foo.js",
+     false /* client_cert_sent */, false /* expect_ct_error */,
      SpdyPushedStreamFate::kNonHttpsPushedScheme},
     // ftp scheme cannot be pushed.
-    {"https://www.example.org/foo.html", "ftp://www.example.org/foo.js", false,
+    {"https://www.example.org/foo.html", "ftp://www.example.org/foo.js",
+     false /* client_cert_sent */, false /* expect_ct_error */,
      SpdyPushedStreamFate::kInvalidUrl},
     // Cross subdomain, certificate not valid.
     {"https://www.example.org/foo.html", "https://blat.www.example.org/foo.js",
-     false, SpdyPushedStreamFate::kCertificateMismatch},
+     false /* client_cert_sent */, false /* expect_ct_error */,
+     SpdyPushedStreamFate::kCertificateMismatch},
     // Cross domain, certificate not valid.
-    {"https://www.example.org/foo.html", "https://www.foo.com/foo.js", false,
+    {"https://www.example.org/foo.html", "https://www.foo.com/foo.js",
+     false /* client_cert_sent */, false /* expect_ct_error */,
      SpdyPushedStreamFate::kCertificateMismatch},
     // Cross domain, certificate valid, but cross-origin push is rejected on a
     // connection with client certificate.
     {"https://www.example.org/foo.html", "https://mail.example.org/foo.js",
-     true, SpdyPushedStreamFate::kCertificateMismatch}};
+     true /* client_cert_sent */, false /* expect_ct_error */,
+     SpdyPushedStreamFate::kCertificateMismatch},
+    // Cross domain, certificate valid, but cross-origin push is rejected on a
+    // connection with an Expect-CT error.
+    {"https://www.example.org/foo.html", "https://mail.example.org/foo.js",
+     false /* client_cert_sent */, true /* expect_ct_error */,
+     SpdyPushedStreamFate::kCertificateMismatch}};
 
 class SpdyNetworkTransactionPushUrlTest
     : public SpdyNetworkTransactionTest,
       public ::testing::WithParamInterface<PushUrlTestParams> {
+ public:
+  SpdyNetworkTransactionPushUrlTest() {
+    // Set features needed for the |expect_ct_error| case, where it's important
+    // to check that NetworkIsolationKeys are respected.
+    feature_list_.InitWithFeatures(
+        /* enabled_features */
+        {TransportSecurityState::kDynamicExpectCTFeature,
+         features::kPartitionExpectCTStateByNetworkIsolationKey,
+         features::kPartitionConnectionsByNetworkIsolationKey,
+         features::kPartitionSSLSessionsByNetworkIsolationKey},
+        /* disabled_features */
+        {});
+  }
+
  protected:
   // In this test we want to verify that we can't accidentally push content
   // which can't be pushed by this content server.
@@ -6478,6 +6505,9 @@ class SpdyNetworkTransactionPushUrlTest
     SequencedSocketData data(reads, writes);
 
     request_.url = GURL(GetParam().url_to_fetch);
+    // Set a NetworkIsolationKey for the |expect_ct_error| case, to make sure
+    // NetworkIsolationKeys are respected.
+    request_.network_isolation_key = NetworkIsolationKey::CreateTransient();
 
     // Enable cross-origin push. Since we are not using a proxy, this should
     // not actually enable cross-origin SPDY push.
@@ -6487,15 +6517,33 @@ class SpdyNetworkTransactionPushUrlTest
         "https://123.45.67.89:443", net::ProxyServer::SCHEME_HTTP));
     session_deps->proxy_resolution_service->SetProxyDelegate(
         proxy_delegate.get());
-    NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
-                                       std::move(session_deps));
-
-    helper.RunPreTestSetup();
 
     auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
     ssl_provider->ssl_info.client_cert_sent = GetParam().client_cert_sent;
     ssl_provider->ssl_info.cert =
         ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    if (GetParam().expect_ct_error) {
+      ssl_provider->ssl_info.ct_policy_compliance =
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+      ssl_provider->ssl_info.is_issued_by_known_root = true;
+
+      session_deps->transport_security_state->AddExpectCT(
+          "mail.example.org",
+          base::Time::Now() + base::TimeDelta::FromDays(1) /* expiry */, true,
+          GURL(), request_.network_isolation_key);
+    }
+
+    NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                       std::move(session_deps));
+
+    helper.RunPreTestSetup();
+
+    if (GetParam().expect_ct_error) {
+      ssl_provider->ssl_info.ct_policy_compliance =
+          ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+      ssl_provider->ssl_info.is_issued_by_known_root = true;
+    }
+
     helper.AddDataWithSSLSocketDataProvider(&data, std::move(ssl_provider));
 
     HttpNetworkTransaction* trans = helper.trans();
@@ -6533,6 +6581,8 @@ class SpdyNetworkTransactionPushUrlTest
         1);
     histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

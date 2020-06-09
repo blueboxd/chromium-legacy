@@ -70,10 +70,10 @@ run_jsbundler("switch_access_copied_files") {
     "nodes/editable_text_node.js",
     "nodes/group_node.js",
     "nodes/keyboard_node.js",
+    "nodes/modal_dialog_node.js",
     "nodes/node_wrapper.js",
     "nodes/slider_node.js",
     "nodes/switch_access_node.js",
-    "nodes/system_menu_node.js",
     "nodes/tab_node.js",
     "preferences.js",
     "rect_helper.js",
@@ -149,6 +149,7 @@ js_type_check("closure_compile") {
     ":menu_panel",
     ":menu_panel_interface",
     ":metrics",
+    ":modal_dialog_node",
     ":navigation_manager",
     ":node_wrapper",
     ":preferences",
@@ -158,7 +159,6 @@ js_type_check("closure_compile") {
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
-    ":system_menu_node",
     ":tab_node",
     ":text_navigation_manager",
     "../common:automation_predicate",
@@ -314,6 +314,17 @@ js_library("metrics") {
   externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
+js_library("modal_dialog_node") {
+  sources = [ "nodes/modal_dialog_node.js" ]
+  deps = [
+    ":event_helper",
+    ":node_wrapper",
+    ":switch_access_constants",
+    ":switch_access_node",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
+}
+
 js_library("navigation_manager") {
   deps = [
     ":desktop_node",
@@ -323,11 +334,11 @@ js_library("navigation_manager") {
     ":menu_manager",
     ":menu_panel_interface",
     ":metrics",
+    ":modal_dialog_node",
     ":node_wrapper",
     ":switch_access_constants",
     ":switch_access_node",
     ":switch_access_predicate",
-    ":system_menu_node",
   ]
   externs_list = [
     "$externs_path/accessibility_private.js",
@@ -408,17 +419,6 @@ js_library("switch_access_predicate") {
     ":switch_access_constants",
     ":switch_access_node",
     "../common:automation_predicate",
-  ]
-  externs_list = [ "$externs_path/automation.js" ]
-}
-
-js_library("system_menu_node") {
-  sources = [ "nodes/system_menu_node.js" ]
-  deps = [
-    ":event_helper",
-    ":node_wrapper",
-    ":switch_access_constants",
-    ":switch_access_node",
   ]
   externs_list = [ "$externs_path/automation.js" ]
 }

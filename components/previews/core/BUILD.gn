@@ -4,8 +4,8 @@
 
 static_library("core") {
   sources = [
-    "previews_black_list.cc",
-    "previews_black_list.h",
+    "previews_block_list.cc",
+    "previews_block_list.h",
     "previews_experiments.cc",
     "previews_experiments.h",
     "previews_features.cc",
@@ -19,7 +19,7 @@ static_library("core") {
 
   deps = [
     "//base",
-    "//components/blacklist/opt_out_blacklist",
+    "//components/blocklist/opt_out_blocklist",
     "//components/variations",
     "//net:net",
     "//third_party/re2",
@@ -30,7 +30,7 @@ static_library("core") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "previews_black_list_unittest.cc",
+    "previews_block_list_unittest.cc",
     "previews_experiments_unittest.cc",
     "previews_logger_unittest.cc",
   ]
@@ -39,7 +39,7 @@ source_set("unit_tests") {
     ":core",
     "//base",
     "//base/test:test_support",
-    "//components/blacklist/opt_out_blacklist",
+    "//components/blocklist/opt_out_blocklist",
     "//components/variations",
     "//net:net",
     "//net:test_support",

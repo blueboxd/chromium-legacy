@@ -58,6 +58,9 @@ _JAVA_HOME = os.path.join(_CHROMIUM_SRC, 'third_party', 'jdk', 'current')
 _JETIFY_PATH = os.path.join(_CHROMIUM_SRC, 'third_party',
                             'jetifier_standalone', 'bin',
                             'jetifier-standalone')
+_JETIFY_CONFIG = os.path.join(_CHROMIUM_SRC, 'third_party',
+                              'jetifier_standalone', 'config',
+                              'ignore_R.config')
 
 # The lis_ of git-controlled files that are checked or updated by this tool.
 _UPDATED_GIT_FILES = [
@@ -332,19 +335,20 @@ def _CreateAarInfos(aar_files):
             raise Exception('Command Failed: {}\n'.format(' '.join(cmd)))
 
 
-def _JetifyAll(aar_files, libs_dir):
+def _JetifyAll(files, libs_dir):
     env = os.environ.copy()
     env['JAVA_HOME'] = _JAVA_HOME
     env['ANDROID_DEPS'] = libs_dir
 
     # Don't jetify support lib or androidx.
-    EXCLUDE = ('android_arch_', 'androidx_', 'com_android_support_')
+    EXCLUDE = ('android_arch_', 'androidx_', 'com_android_support_',
+               'errorprone', 'jetifier')
 
     jobs = []
-    for aar_file in aar_files:
-        if any(x in aar_file for x in EXCLUDE):
+    for path in files:
+        if any(x in path for x in EXCLUDE):
             continue
-        cmd = [_JETIFY_PATH, '-i', aar_file, '-o', aar_file]
+        cmd = [_JETIFY_PATH, '-c', _JETIFY_CONFIG, '-i', path, '-o', path]
         # Hide output: "You don't need to run Jetifier."
         proc = subprocess.Popen(cmd,
                                 env=env,
@@ -470,7 +474,8 @@ def main():
 
         logging.info('# Jetify all libraries.')
         aar_files = FindInDirectory(libs_dir, '*.aar')
-        _JetifyAll(aar_files, libs_dir)
+        jar_files = FindInDirectory(libs_dir, '*.jar')
+        _JetifyAll(aar_files + jar_files, libs_dir)
 
         logging.info('# Generate Android .aar info files.')
         _CreateAarInfos(aar_files)

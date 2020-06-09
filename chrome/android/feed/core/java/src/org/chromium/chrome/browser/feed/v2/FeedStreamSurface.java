@@ -18,12 +18,12 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
@@ -37,7 +37,10 @@ import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.Referrer;
+import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,8 +61,6 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     private final long mNativeFeedStreamSurface;
     private final FeedListContentManager mContentManager;
-    private final TabModelSelector mTabModelSelector;
-    private final Supplier<Tab> mTabProvider;
     private final SurfaceScope mSurfaceScope;
     private final View mRootView;
     private final HybridListRenderer mHybridListRenderer;
@@ -67,6 +68,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final Activity mActivity;
     @Nullable
     private FeedSliceViewTracker mSliceViewTracker;
+    private final NativePageNavigationDelegate mPageNavigationDelegate;
 
     private int mHeaderCount;
 
@@ -125,13 +127,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Creates a {@link FeedStreamSurface} for creating native side bridge to access native feed
      * client implementation.
      */
-    public FeedStreamSurface(TabModelSelector tabModelSelector, Supplier<Tab> tabProvider,
-            Activity activity, SnackbarManager snackbarManager) {
+    public FeedStreamSurface(Activity activity, SnackbarManager snackbarManager,
+            NativePageNavigationDelegate pageNavigationDelegate) {
         mNativeFeedStreamSurface = FeedStreamSurfaceJni.get().init(FeedStreamSurface.this);
-        mTabModelSelector = tabModelSelector;
-        mTabProvider = tabProvider;
         mSnackbarManager = snackbarManager;
         mActivity = activity;
+        mPageNavigationDelegate = pageNavigationDelegate;
 
         mContentManager = new FeedListContentManager(this, this);
 
@@ -304,28 +305,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     @Override
     public void navigateTab(String url) {
-        Tab tab = mTabProvider.get();
-        if (tab == null) {
-            navigateNewTab(url);
-            return;
-        }
-        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-        loadUrlParams.setTransitionType(PageTransition.AUTO_BOOKMARK);
-        tab.loadUrl(loadUrlParams);
-        FeedStreamSurfaceJni.get().reportNavigationStarted(
-                mNativeFeedStreamSurface, FeedStreamSurface.this, url, false /*inNewTab*/);
-        tab.addObserver(new FeedTabNavigationObserver(false));
+        openUrl(url, /*inNewTab=*/false);
     }
 
     @Override
     public void navigateNewTab(String url) {
-        Tab tab = mTabProvider.get();
-        boolean isIncognito = (tab != null) ? tab.isIncognito() : false;
-        Tab newTab = mTabModelSelector.openNewTab(
-                new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI, tab, isIncognito);
-        FeedStreamSurfaceJni.get().reportNavigationStarted(
-                mNativeFeedStreamSurface, FeedStreamSurface.this, url, true /*inNewTab*/);
-        newTab.addObserver(new FeedTabNavigationObserver(true));
+        openUrl(url, /*inNewTab=*/true);
     }
 
     @Override
@@ -399,6 +384,21 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             mContentManager.removeContents(mHeaderCount, feedCount);
         }
         FeedStreamSurfaceJni.get().surfaceClosed(mNativeFeedStreamSurface, FeedStreamSurface.this);
+    }
+
+    private void openUrl(String url, boolean inNewTab) {
+        LoadUrlParams params = new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK);
+        params.setReferrer(
+                new Referrer(SuggestionsConfig.getReferrerUrl(ChromeFeatureList.INTEREST_FEED_V2),
+                        ReferrerPolicy.ALWAYS));
+        Tab tab =
+                mPageNavigationDelegate.openUrl(inNewTab ? WindowOpenDisposition.NEW_BACKGROUND_TAB
+                                                         : WindowOpenDisposition.CURRENT_TAB,
+                        params);
+
+        FeedStreamSurfaceJni.get().reportNavigationStarted(
+                mNativeFeedStreamSurface, FeedStreamSurface.this, url, inNewTab);
+        tab.addObserver(new FeedTabNavigationObserver(inNewTab));
     }
 
     @NativeMethods

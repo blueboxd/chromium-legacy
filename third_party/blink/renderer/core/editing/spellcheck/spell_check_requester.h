@@ -117,7 +117,6 @@ class CORE_EXPORT SpellCheckRequester final
 
   int last_request_sequence_;
   int last_processed_sequence_;
-  base::TimeTicks last_request_time_;
 
   TaskHandle timer_to_process_queued_request_;
 

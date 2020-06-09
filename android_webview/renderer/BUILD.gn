@@ -26,23 +26,20 @@ source_set("renderer") {
     "aw_websocket_handshake_throttle_provider.h",
     "browser_exposed_renderer_interfaces.cc",
     "browser_exposed_renderer_interfaces.h",
-    "js_java_interaction/js_binding.cc",
-    "js_java_interaction/js_binding.h",
-    "js_java_interaction/js_java_configurator.cc",
-    "js_java_interaction/js_java_configurator.h",
   ]
 
   deps = [
     "//android_webview:generate_aw_resources",
     "//android_webview:generate_aw_strings",
     "//android_webview/common",
-    "//android_webview/common:common_mojom",
     "//base",
     "//components/android_system_error_page",
     "//components/autofill/content/renderer",
     "//components/cdm/renderer",
     "//components/content_capture/common",
     "//components/content_capture/renderer",
+    "//components/js_injection/common",
+    "//components/js_injection/renderer",
     "//components/page_load_metrics/renderer",
     "//components/printing/common",
     "//components/printing/renderer",
@@ -61,10 +58,8 @@ source_set("renderer") {
     "//content/public/child",
     "//content/public/common",
     "//content/public/renderer",
-    "//gin",
     "//third_party/blink/public:blink",
     "//ui/base",
     "//url",
-    "//v8",
   ]
 }

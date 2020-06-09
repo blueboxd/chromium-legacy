@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
@@ -619,7 +620,13 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
       internal::kHistogramFromGWSCumulativeLayoutShiftMainFrame, 25, 1);
 }
 
-TEST_F(FromGWSPageLoadMetricsObserverTest, NewNavigationBeforeCommit) {
+// Disabled due to flakiness: https://crbug.com/1092018
+#if defined(OS_LINUX)
+#define MAYBE_NewNavigationBeforeCommit DISABLED_NewNavigationBeforeCommit
+#else
+#define MAYBE_NewNavigationBeforeCommit NewNavigationBeforeCommit
+#endif
+TEST_F(FromGWSPageLoadMetricsObserverTest, MAYBE_NewNavigationBeforeCommit) {
   NavigateAndCommit(GURL(kGoogleSearchResultsUrl));
   tester()->StartNavigation(GURL("http://example.test"));
 

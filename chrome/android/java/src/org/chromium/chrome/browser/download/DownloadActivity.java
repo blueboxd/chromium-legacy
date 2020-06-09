@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactoryHelper;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfigHelper;
-import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -51,6 +50,11 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mCurrentUrl = savedInstanceState == null
+                ? UrlConstants.DOWNLOADS_URL
+                : savedInstanceState.getString(BUNDLE_KEY_CURRENT_URL);
+
         // Loads offline pages and prefetch downloads.
         OfflineContentAggregatorNotificationBridgeUiFactory.instance();
         boolean isOffTheRecord = DownloadUtils.shouldShowOffTheRecordDownloads(getIntent());
@@ -65,6 +69,7 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
                         .setIsOffTheRecord(isOffTheRecord)
                         .setIsSeparateActivity(true)
                         .setShowPaginationHeaders(DownloadUtils.shouldShowPaginationHeaders())
+                        .setStartWithPrefetchedContent(showPrefetchContent)
                         .build();
 
         mModalDialogManager = new ModalDialogManager(
@@ -73,14 +78,8 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
                 this, config, getSnackbarManager(), mModalDialogManager);
         setContentView(mDownloadCoordinator.getView());
         mIsOffTheRecord = isOffTheRecord;
+        if (!showPrefetchContent) mDownloadCoordinator.updateForUrl(mCurrentUrl);
         mDownloadCoordinator.addObserver(mUiObserver);
-
-        // TODO(crbug/905893) : Use {@link Filters.toUrl) once old download home is removed.
-        mCurrentUrl = savedInstanceState == null
-                ? UrlConstants.DOWNLOADS_URL
-                : savedInstanceState.getString(BUNDLE_KEY_CURRENT_URL);
-        if (showPrefetchContent) mCurrentUrl = Filters.toUrl(Filters.FilterType.PREFETCHED);
-        mDownloadCoordinator.updateForUrl(mCurrentUrl);
     }
 
     @Override

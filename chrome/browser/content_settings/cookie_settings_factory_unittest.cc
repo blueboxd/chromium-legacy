@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,5 +85,30 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
       incognito_settings->IsCookieAccessAllowed(kHttpsSite, kHttpsSite));
   EXPECT_TRUE(cookie_settings_->IsCookieAccessAllowed(kHttpsSite, kHttpsSite));
 }
+
+// Android does not have guest profiles.
+#if !defined(OS_ANDROID)
+// Tests that improved cookie controls are not available by default for guest
+// profiles.
+TEST_F(CookieSettingsFactoryTest, GuestProfile) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      content_settings::kImprovedCookieControls);
+
+  TestingProfile::Builder guest_profile_builder;
+  guest_profile_builder.SetGuestSession();
+  std::unique_ptr<Profile> guest_profile = guest_profile_builder.Build();
+  Profile* otr_guest_profile = guest_profile->GetPrimaryOTRProfile();
+  EXPECT_TRUE(otr_guest_profile->IsOffTheRecord());
+  scoped_refptr<content_settings::CookieSettings> guest_settings =
+      CookieSettingsFactory::GetForProfile(otr_guest_profile);
+  EXPECT_FALSE(guest_settings->IsCookieControlsEnabled());
+
+  // OTOH, improved controls are available by default for an incognito profile.
+  EXPECT_TRUE(
+      CookieSettingsFactory::GetForProfile(profile_.GetPrimaryOTRProfile())
+          ->IsCookieControlsEnabled());
+}
+#endif
 
 }  // namespace

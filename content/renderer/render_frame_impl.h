@@ -1149,8 +1149,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                blink::WebHistoryCommitType commit_type);
 
   // Notify render_view_ observers that a commit happened.
-  void NotifyObserversOfNavigationCommit(bool is_same_document,
-                                         ui::PageTransition transition);
+  void NotifyObserversOfNavigationCommit(ui::PageTransition transition);
 
   // Updates the internal state following a navigation commit. This should be
   // called before notifying the FrameHost of the commit.

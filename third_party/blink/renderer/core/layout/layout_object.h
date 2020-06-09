@@ -2137,9 +2137,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  TransformationMatrix&) const;
 
   bool CreatesGroup() const {
-    return StyleRef().HasOpacity() || HasMask() || HasClipPath() ||
-           HasFilterInducingProperty() || HasNonInitialBackdropFilter() ||
-           StyleRef().HasBlendMode();
+    // See |HasReflection()| for why |StyleRef().BoxReflect()| is not used.
+    return StyleRef().HasGroupingProperty(HasReflection());
   }
 
   Vector<PhysicalRect> OutlineRects(const PhysicalOffset& additional_offset,

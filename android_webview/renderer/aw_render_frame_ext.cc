@@ -200,7 +200,6 @@ bool AwRenderFrameExt::OnAssociatedInterfaceRequestForFrame(
 }
 
 void AwRenderFrameExt::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
   // Clear the cache when we cross site boundaries in the main frame.
   //

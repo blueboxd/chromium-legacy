@@ -14,13 +14,13 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
-import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate.SelectionObserver;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.ui.vr.VrModeProvider;
 
 import java.util.List;
 
@@ -92,8 +92,8 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
 
     public ToolbarCoordinator(Context context, ToolbarActionDelegate delegate,
             ToolbarListActionDelegate listActionDelegate,
-            SelectionDelegate<ListItem> selectionDelegate, boolean hasCloseButton,
-            Tracker tracker) {
+            SelectionDelegate<ListItem> selectionDelegate, boolean hasCloseButton, Tracker tracker,
+            VrModeProvider vrModeProvider) {
         mDelegate = delegate;
         mListActionDelegate = listActionDelegate;
 
@@ -103,7 +103,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
         mShadow = mView.findViewById(R.id.shadow);
 
         mToolbar.initialize(selectionDelegate, R.string.menu_downloads, R.id.normal_menu_group,
-                R.id.selection_mode_menu_group, hasCloseButton, new VrModeProviderImpl());
+                R.id.selection_mode_menu_group, hasCloseButton, vrModeProvider);
         mToolbar.setOnMenuItemClickListener(this ::onMenuItemClick);
 
         // TODO(crbug.com/881037): Pass the visible group to the toolbar during initialization.

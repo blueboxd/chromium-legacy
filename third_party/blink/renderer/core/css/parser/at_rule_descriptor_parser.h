@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_property_value.h"
 #include "third_party/blink/renderer/core/css/parser/at_rule_descriptors.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -19,7 +20,8 @@ class AtRuleDescriptorParser {
   STATIC_ONLY(AtRuleDescriptorParser);
 
  public:
-  static bool ParseAtRule(AtRuleDescriptorID,
+  static bool ParseAtRule(StyleRule::RuleType,
+                          AtRuleDescriptorID,
                           CSSParserTokenRange&,
                           const CSSParserContext&,
                           HeapVector<CSSPropertyValue, 256>&);

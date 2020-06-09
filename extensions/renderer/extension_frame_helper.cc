@@ -330,7 +330,6 @@ void ExtensionFrameHelper::ReadyToCommitNavigation(
 }
 
 void ExtensionFrameHelper::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
   // Grant cross browsing instance frame lookup if we are an extension. This
   // should match the conditions in FindFrame.

@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <cstdint>
 
+#include <limits>
+
 #include "base/component_export.h"
 #include "base/strings/string16.h"
 

@@ -197,6 +197,11 @@ FakeDownloadItem::GetDownloadCreationType() const {
   return download::DownloadItem::DownloadCreationType::TYPE_ACTIVE_DOWNLOAD;
 }
 
+const base::Optional<download::DownloadSchedule>&
+FakeDownloadItem::GetDownloadSchedule() const {
+  return download_schedule_;
+}
+
 void FakeDownloadItem::SetIsDone(bool is_done) {
   is_done_ = is_done;
 }

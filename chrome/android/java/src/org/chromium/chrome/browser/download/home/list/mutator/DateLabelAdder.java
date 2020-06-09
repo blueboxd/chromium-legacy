@@ -8,9 +8,9 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
-import org.chromium.chrome.browser.download.home.list.CalendarUtils;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
+import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.ArrayList;

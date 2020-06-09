@@ -2449,7 +2449,7 @@ void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
 
 void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
     OnAssistantStatusChanged(chromeos::assistant::AssistantStatus status) {
-  if (status == chromeos::assistant::AssistantStatus::NEW_READY) {
+  if (status == chromeos::assistant::AssistantStatus::READY) {
     Respond(NoArguments());
     self_.reset();
   }

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 
-#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/synchronization/atomic_flag.h"
@@ -182,12 +181,12 @@ void WallpaperFunctionBase::OnFailure(const std::string& error) {
   Respond(Error(error));
 }
 
-void WallpaperFunctionBase::GenerateThumbnail(
+std::vector<uint8_t> WallpaperFunctionBase::GenerateThumbnail(
     const gfx::ImageSkia& image,
-    const gfx::Size& size,
-    scoped_refptr<base::RefCountedBytes>* thumbnail_data_out) {
-  *thumbnail_data_out = new base::RefCountedBytes();
+    const gfx::Size& size) {
+  std::vector<uint8_t> data_out;
   gfx::JPEGCodec::Encode(
       *wallpaper_api_util::ScaleAspectRatioAndCropCenter(size, image).bitmap(),
-      90 /*quality=*/, &(*thumbnail_data_out)->data());
+      90 /*quality=*/, &data_out);
+  return data_out;
 }

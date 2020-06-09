@@ -25,8 +25,10 @@ INSERT INTO power_counters VALUES
 -- Convert power counter data into table of events, where each event has
 -- start timestamp, duration and the average power drain during its duration
 -- in Watts.
--- Note that power counters wrap around at 2^30, we take that into account
--- when computing average drain between counters.
+-- Note that power counters wrap around at different values on different
+-- devices. When that happens, we ignore the value before overflow, and only
+-- take into account the value after it. This underestimates the actual power
+-- drain between those counters.
 CREATE VIEW drain_in_watts AS
 SELECT
     name,
@@ -35,7 +37,7 @@ SELECT
     CASE
         WHEN LEAD(value) OVER (PARTITION BY track_id ORDER BY ts) >= value
             THEN (LEAD(value) OVER (PARTITION BY track_id ORDER BY ts) - value)
-        ELSE (1<<30 + LEAD(value) OVER (PARTITION BY track_id ORDER BY ts) - value)
+        ELSE LEAD(value) OVER (PARTITION BY track_id ORDER BY ts)
     END /
        (LEAD(ts) OVER (PARTITION BY track_id ORDER BY ts) - ts) * 1e3
     AS drain_w

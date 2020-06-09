@@ -21,6 +21,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/service_sandbox_type.h"
 
 namespace {
 
@@ -137,8 +138,16 @@ const std::set<std::string> TtsEngineExtensionObserver::GetTtsExtensions() {
 #if defined(OS_CHROMEOS)
 void TtsEngineExtensionObserver::BindTtsStream(
     mojo::PendingReceiver<chromeos::tts::mojom::TtsStream> receiver) {
-  if (tts_service_)
-    tts_service_->BindTtsStream(std::move(receiver));
+  // Always launch a new TtsService. By assigning below, if |tts_service_| held
+  // a remote, it will be killed and a new one created, ensuring we only ever
+  // have one TtsService running.
+  tts_service_ =
+      content::ServiceProcessHost::Launch<chromeos::tts::mojom::TtsService>(
+          content::ServiceProcessHost::Options()
+              .WithDisplayName("TtsService")
+              .Pass());
+
+  tts_service_->BindTtsStream(std::move(receiver));
 }
 #endif  // defined(OS_CHROMEOS)
 

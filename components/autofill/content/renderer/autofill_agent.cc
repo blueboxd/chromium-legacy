@@ -222,16 +222,12 @@ bool AutofillAgent::FormDataCompare::operator()(const FormData& lhs,
          std::tie(rhs.name, rhs.url, rhs.action, rhs.is_form_tag);
 }
 
-void AutofillAgent::DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                             ui::PageTransition transition) {
+void AutofillAgent::DidCommitProvisionalLoad(ui::PageTransition transition) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
   // TODO(dvadym): check if we need to check if it is main frame navigation
   // http://crbug.com/443155
   if (frame->Parent())
     return;  // Not a top-level navigation.
-
-  if (is_same_document_navigation)
-    return;
 
   // Navigation to a new page or a page refresh.
 

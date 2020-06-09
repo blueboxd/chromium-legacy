@@ -56,6 +56,9 @@ public class DownloadManagerUiConfig {
     /** Whether or not to show the pagination headers in the list. */
     public final boolean showPaginationHeaders;
 
+    /** Whether or not to start the UI focused on prefetched content. */
+    public final boolean startWithPrefetchedContent;
+
     /** Constructor. */
     private DownloadManagerUiConfig(Builder builder) {
         isOffTheRecord = builder.mIsOffTheRecord;
@@ -69,6 +72,7 @@ public class DownloadManagerUiConfig {
         justNowThresholdSeconds = builder.mJustNowThresholdSeconds;
         supportsGrouping = builder.mSupportsGrouping;
         showPaginationHeaders = builder.mShowPaginationHeaders;
+        startWithPrefetchedContent = builder.mStartWithPrefetchedContent;
     }
 
     /** Helper class for building a {@link DownloadManagerUiConfig}. */
@@ -91,6 +95,7 @@ public class DownloadManagerUiConfig {
         private long mJustNowThresholdSeconds = JUST_NOW_THRESHOLD_SECONDS;
         private boolean mSupportsGrouping;
         private boolean mShowPaginationHeaders;
+        private boolean mStartWithPrefetchedContent;
 
         public Builder() {
             mSupportFullWidthImages = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
@@ -145,6 +150,11 @@ public class DownloadManagerUiConfig {
 
         public Builder setSupportsGrouping(boolean supportsGrouping) {
             mSupportsGrouping = supportsGrouping;
+            return this;
+        }
+
+        public Builder setStartWithPrefetchedContent(boolean startWithPrefetchedContent) {
+            mStartWithPrefetchedContent = startWithPrefetchedContent;
             return this;
         }
 

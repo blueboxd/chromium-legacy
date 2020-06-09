@@ -39,6 +39,7 @@ include_rules = [
   "+components/security_state/content/content_utils.h",
   "+components/security_state/core/security_state.h",
   "+components/sessions",
+  "+components/site_isolation",
   "+components/spellcheck/browser",
   "+components/ssl_errors",
   "+components/startup_metric_utils",

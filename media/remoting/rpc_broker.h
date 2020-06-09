@@ -46,6 +46,7 @@ class RpcBroker {
   // Get unique handle value (larger than 0) for RPC message handles.
   int GetUniqueHandle();
 
+  // TODO(chkuo): Change the parameter to accept const ref of RpcMessage.
   using ReceiveMessageCallback =
       base::RepeatingCallback<void(std::unique_ptr<pb::RpcMessage>)>;
   // Register a component to receive messages via the given
@@ -77,10 +78,11 @@ class RpcBroker {
 
   // Predefined handle value for RPC messages related to initialization (before
   // the receiver handle(s) are known).
-  static constexpr int kAcquireHandle = 0;
+  static constexpr int kAcquireRendererHandle = 0;
+  static constexpr int kAcquireDemuxerHandle = 1;
 
   // The first handle to return from GetUniqueHandle().
-  static constexpr int kFirstHandle = 1;
+  static constexpr int kFirstHandle = 100;
 
  private:
   // Checks that all method calls occur on the same thread.

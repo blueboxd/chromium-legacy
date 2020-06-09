@@ -330,6 +330,8 @@ blink_core_sources("layout") {
     "ng/geometry/ng_static_position.h",
     "ng/grid/layout_ng_grid.cc",
     "ng/grid/layout_ng_grid.h",
+    "ng/grid/ng_grid_child_iterator.cc",
+    "ng/grid/ng_grid_child_iterator.h",
     "ng/grid/ng_grid_layout_algorithm.cc",
     "ng/grid/ng_grid_layout_algorithm.h",
     "ng/grid/ng_grid_track_collection.cc",

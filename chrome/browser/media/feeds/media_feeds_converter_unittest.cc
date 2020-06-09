@@ -293,21 +293,6 @@ EntityPtr MediaFeedsConverterTest::WithContentAttributes(EntityPtr image) {
   return image;
 }
 
-EntityPtr MediaFeedsConverterTest::WithAssociatedOrigins(EntityPtr feed) {
-  auto origins = ConvertJSONToEntityPtr(
-      R"END(
-      {
-        "@type": "PropertyValue",
-        "name": "associatedOrigin",
-        "value": ["https://www.github.com", "https://www.github.com",
-                  "https://www.github1.com", "https://www.github2.com" ]
-      }
-    )END");
-  feed->properties.push_back(CreateEntityProperty(
-      schema_org::property::kAdditionalProperty, std::move(origins)));
-  return feed;
-}
-
 EntityPtr MediaFeedsConverterTest::WithCookieNameFilter(EntityPtr feed) {
   auto cookie_name_filter = ConvertJSONToEntityPtr(
       R"END(
@@ -449,18 +434,6 @@ TEST_F(MediaFeedsConverterTest, SucceedsOnValidCompleteDataFeed) {
   EXPECT_EQ(result.display_name, "Media Site");
 }
 
-TEST_F(MediaFeedsConverterTest, SucceedsOnValidFeedWithAssociatedOrigins) {
-  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
-  converter_.ConvertMediaFeed(WithAssociatedOrigins(ValidMediaFeed()), &result);
-
-  std::set<::url::Origin> expected_origins;
-  expected_origins.insert(url::Origin::Create(GURL("https://www.github.com")));
-  expected_origins.insert(url::Origin::Create(GURL("https://www.github1.com")));
-  expected_origins.insert(url::Origin::Create(GURL("https://www.github2.com")));
-
-  EXPECT_EQ(expected_origins, result.associated_origins);
-}
-
 TEST_F(MediaFeedsConverterTest, SucceedsOnValidFeedWithCookieNameFilter) {
   media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
   converter_.ConvertMediaFeed(WithCookieNameFilter(ValidMediaFeed()), &result);
@@ -478,7 +451,6 @@ TEST_F(MediaFeedsConverterTest,
   expected_origins.insert(url::Origin::Create(GURL("https://www.github1.com")));
   expected_origins.insert(url::Origin::Create(GURL("https://www.github2.com")));
 
-  EXPECT_EQ(expected_origins, result.associated_origins);
   EXPECT_EQ("test", result.cookie_name_filter);
 }
 

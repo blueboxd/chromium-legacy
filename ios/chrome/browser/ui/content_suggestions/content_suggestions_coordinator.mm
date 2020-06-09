@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/voice/voice_search_availability.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -154,13 +155,21 @@
   ReadingListModel* readingListModel =
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
+
+  UIViewController* discoverFeed =
+      ios::GetChromeBrowserProvider()
+          ->GetDiscoverFeedProvider()
+          ->NewFeedViewController(static_cast<id<ApplicationCommands>>(
+              self.browser->GetCommandDispatcher()));
+
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
       initWithContentService:contentSuggestionsService
             largeIconService:largeIconService
               largeIconCache:cache
              mostVisitedSite:std::move(mostVisitedFactory)
             readingListModel:readingListModel
-                 prefService:prefs];
+                 prefService:prefs
+                discoverFeed:discoverFeed];
   self.contentSuggestionsMediator.commandHandler = self.NTPMediator;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
   self.contentSuggestionsMediator.contentArticlesExpanded =

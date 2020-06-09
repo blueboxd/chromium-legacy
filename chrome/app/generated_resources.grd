@@ -1607,6 +1607,10 @@ are declared in tools/grit/grit_rule.gni.
                  desc="The title of a download notification for offline pages not stored in Downloads.">
                  Page is ready to view
         </message>
+        <message name="IDS_DOWNLOAD_STATUS_SCAN_TITLE"
+                 desc="The title of a download notification: the current download is being scanned.">
+                 Scanning <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
+        </message>
         <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS_COMPLETED"
                  desc="Size and units downloaded, and the origin domain.">
           <ph name="DOWNLOAD_RECEIVED">$1<ex>154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>
@@ -1653,9 +1657,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_STATUS_INTERRUPTED" desc="Status text for a download item that was interrupted.">
         Failed - <ph name="INTERRUPT_REASON">$1<ex>Disk full</ex></ph>
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_SCANNED" desc="Status text for a download item that being scanned.">
-        Being scanned
-      </message>
       <message name="IDS_DOWNLOAD_UNCONFIRMED_PREFIX" desc="The prefix used in the unconfirmed download file.">
         Unconfirmed
       </message>
@@ -1690,6 +1691,10 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_PROMPT_DEEP_SCANNING_DOWNLOAD"
         desc="Message shown in the download shelf when a download is being scanned">
         Checking <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> with your organization's security policies...
+      </message>
+      <message name="IDS_PROMPT_DEEP_SCANNING_DOWNLOAD_SHORT"
+        desc="Message shown in the download shelf when a download is being scanned, without the file name">
+        Checking with your organization's security policies.
       </message>
       <message name="IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD"
         desc="Message shown to the user to validate the download when the download content is a mixed-content download.">
@@ -7713,6 +7718,9 @@ the Bookmarks menu.">
       </message>
       <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL" desc="Label of the close button in the account password storage reauth tab modal dialog.">
         No thanks
+      </message>
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_TOOLTIP" desc="The tooltip text and accessibility label for the info icon in the account password storage reauth tab modal dialog.">
+        To access password storage, a one-time, per-device authentication is required. This feature can be disabled later from the "Passwords" section in Settings.
       </message>
 
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Infobar message when an outdated plugin was disabled">

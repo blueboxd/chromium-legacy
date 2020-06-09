@@ -1384,6 +1384,11 @@ message AppInfo {
 
   // Version of the application, if applicable.
   optional string version = 7;
+
+  // A list of time periods when the app was active. These times are aggregated
+  // per day, are pruned on the device after reporting successfully, and are
+  // stored only for 30 days in the past.
+  repeated TimePeriod active_time_periods = 8;
 }
 
 // LINT.IfChange

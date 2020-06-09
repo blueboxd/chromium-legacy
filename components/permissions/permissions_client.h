@@ -23,6 +23,10 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
+namespace content_settings {
+class CookieSettings;
+}
+
 namespace infobars {
 class InfoBar;
 class InfoBarManager;
@@ -51,6 +55,10 @@ class PermissionsClient {
   // Retrieves the HostContentSettingsMap for this context. The returned pointer
   // has the same lifetime as |browser_context|.
   virtual HostContentSettingsMap* GetSettingsMap(
+      content::BrowserContext* browser_context) = 0;
+
+  // Retrieves the CookieSettings for this context.
+  virtual scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
       content::BrowserContext* browser_context) = 0;
 
   // Retrieves the PermissionDecisionAutoBlocker for this context. The returned

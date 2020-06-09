@@ -723,11 +723,12 @@ class FrameHostTestInterfaceRequestIssuer : public RenderFrameObserver {
     RequestTestInterfaceOnFrameEvent(kFrameEventReadyToCommitNavigation);
   }
 
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override {
-    RequestTestInterfaceOnFrameEvent(is_same_document_navigation
-                                         ? kFrameEventDidCommitSameDocumentLoad
-                                         : kFrameEventDidCommitProvisionalLoad);
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override {
+    RequestTestInterfaceOnFrameEvent(kFrameEventDidCommitProvisionalLoad);
+  }
+
+  void DidFinishSameDocumentNavigation() override {
+    RequestTestInterfaceOnFrameEvent(kFrameEventDidCommitSameDocumentLoad);
   }
 
   DISALLOW_COPY_AND_ASSIGN(FrameHostTestInterfaceRequestIssuer);
@@ -749,8 +750,7 @@ class FrameCommitWaiter : public RenderFrameObserver {
   // RenderFrameObserver:
   void OnDestruct() override {}
 
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override {
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override {
     did_commit_ = true;
     run_loop_.Quit();
   }

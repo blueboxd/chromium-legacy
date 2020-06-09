@@ -5,21 +5,29 @@
 #include "chrome/browser/android/preferences/cookie_controls_bridge.h"
 
 #include <memory>
+
 #include "chrome/android/chrome_jni_headers/CookieControlsBridge_jni.h"
-#include "chrome/browser/content_settings/cookie_settings_factory.h"
-#include "chrome/browser/profiles/profile_android.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/embedder_support/android/browser_context/browser_context_handle.h"
+#include "components/permissions/permissions_client.h"
+#include "content/public/browser/browser_context.h"
 
 using base::android::JavaParamRef;
 
 CookieControlsBridge::CookieControlsBridge(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jobject>& jweb_contents_android)
+    const base::android::JavaParamRef<jobject>& jweb_contents_android,
+    const base::android::JavaParamRef<jobject>&
+        joriginal_browser_context_handle)
     : jobject_(obj) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents_android);
-  controller_ = std::make_unique<CookieControlsController>(web_contents);
+  content::BrowserContext* context =
+      browser_context::BrowserContextFromJavaHandle(
+          joriginal_browser_context_handle);
+  controller_ =
+      std::make_unique<CookieControlsController>(web_contents, context);
   observer_.Add(controller_.get());
   controller_->Update(web_contents);
 }
@@ -72,16 +80,20 @@ void CookieControlsBridge::Destroy(JNIEnv* env,
 
 jboolean JNI_CookieControlsBridge_IsCookieControlsEnabled(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jprofile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
-  return CookieSettingsFactory::GetForProfile(profile)
+    const base::android::JavaParamRef<jobject>& jbrowser_context_handle) {
+  content::BrowserContext* context =
+      browser_context::BrowserContextFromJavaHandle(jbrowser_context_handle);
+  return permissions::PermissionsClient::Get()
+      ->GetCookieSettings(context)
       ->IsCookieControlsEnabled();
 }
 
 static jlong JNI_CookieControlsBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jobject>& jweb_contents_android) {
-  return reinterpret_cast<intptr_t>(
-      new CookieControlsBridge(env, obj, jweb_contents_android));
+    const base::android::JavaParamRef<jobject>& jweb_contents_android,
+    const base::android::JavaParamRef<jobject>&
+        joriginal_browser_context_handle) {
+  return reinterpret_cast<intptr_t>(new CookieControlsBridge(
+      env, obj, jweb_contents_android, joriginal_browser_context_handle));
 }

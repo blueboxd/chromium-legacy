@@ -97,7 +97,6 @@ class MockAuthenticator {
     var response = null;
     if (this.status_ == blink.mojom.AuthenticatorStatus.SUCCESS) {
       let info = { id: this.id_,
-            authenticatorData: this.authenticatorData_,
             rawId: this.rawId_,
             clientDataJson: this.clientDataJson_,
           };
@@ -106,7 +105,6 @@ class MockAuthenticator {
             transports: [blink.mojom.AuthenticatorTransport.INTERNAL],
             echoHmacCreateSecret: false,
             hmacCreateSecret: false,
-            publicKeyAlgo: 0,
           };
     }
     let status = this.status_;
@@ -118,11 +116,11 @@ class MockAuthenticator {
     var response = null;
   if (this.status_ == blink.mojom.AuthenticatorStatus.SUCCESS) {
       let info = { id: this.id_,
-            authenticatorData: this.authenticatorData_,
             rawId: this.rawId_,
             clientDataJson: this.clientDataJson_,
           };
       response = { info: info,
+            authenticatorData: this.authenticatorData_,
             signature: this.signature_,
             userHandle: this.userHandle_,
             echoAppidExtension: false,

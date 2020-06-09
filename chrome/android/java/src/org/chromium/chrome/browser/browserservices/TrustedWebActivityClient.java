@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices;
 
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.FALLBACK_ICON_NOT_PROVIDED;
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityUmaRecorder.DelegatedNotificationSmallIconFallback.NO_FALLBACK;
+import static org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappGeolocationBridge.EXTRA_NEW_LOCATION_ERROR_CALLBACK;
 
 import android.app.Notification;
 import android.content.ComponentName;
@@ -66,6 +67,9 @@ public class TrustedWebActivityClient {
     private static final String EXTRA_COMMAND_EXECUTION_RESULT = "executionResult";
     private static final String CHECK_LOCATION_PERMISSION_COMMAND_NAME =
             "checkAndroidLocationPermission";
+    private static final String START_LOCATION_COMMAND_NAME = "startLocation";
+    private static final String STOP_LOCATION_COMMAND_NAME = "stopLocation";
+    private static final String LOCATION_ARG_ENABLE_HIGH_ACCURACY = "enableHighAccuracy";
 
     private final TrustedWebActivityServiceConnectionPool mConnection;
     private final TrustedWebActivityPermissionManager mDelegatesManager;
@@ -184,6 +188,41 @@ public class TrustedWebActivityClient {
             @Override
             public void onNoTwaFound() {
                 callback.onNoTwaFound();
+            }
+        });
+    }
+
+    public void startListeningLocationUpdates(
+            Origin origin, boolean highAccuracy, TrustedWebActivityCallback locationCallback) {
+        connectAndExecute(origin.uri(), new ExecutionCallback() {
+            @Override
+            public void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
+                    throws RemoteException {
+                Bundle args = new Bundle();
+                args.putBoolean(LOCATION_ARG_ENABLE_HIGH_ACCURACY, highAccuracy);
+                Bundle executionResult = service.sendExtraCommand(
+                        START_LOCATION_COMMAND_NAME, args, locationCallback);
+
+                // Notify an error if the service does not know how to handle the extraCommand.
+                if (executionResult == null) {
+                    notifyLocationUpdateError(
+                            locationCallback, "Failed to request location updates");
+                }
+            }
+
+            @Override
+            public void onNoTwaFound() {
+                notifyLocationUpdateError(locationCallback, "NoTwaFound");
+            }
+        });
+    }
+
+    public void stopLocationUpdates(Origin origin) {
+        connectAndExecute(origin.uri(), new ExecutionCallback() {
+            @Override
+            public void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
+                    throws RemoteException {
+                service.sendExtraCommand(STOP_LOCATION_COMMAND_NAME, Bundle.EMPTY, null);
             }
         });
     }
@@ -355,5 +394,11 @@ public class TrustedWebActivityClient {
         }
 
         return null;
+    }
+
+    private void notifyLocationUpdateError(TrustedWebActivityCallback callback, String message) {
+        Bundle error = new Bundle();
+        error.putString("message", message);
+        callback.onExtraCallback(EXTRA_NEW_LOCATION_ERROR_CALLBACK, error);
     }
 }

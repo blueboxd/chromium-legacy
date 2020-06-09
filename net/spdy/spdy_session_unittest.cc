@@ -22,6 +22,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
@@ -2776,6 +2777,63 @@ TEST_F(SpdySessionTest, VerifyDomainAuthentication) {
   EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.org"));
   EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.com"));
   EXPECT_FALSE(session_->VerifyDomainAuthentication("mail.google.com"));
+}
+
+// Check that VerifyDomainAuthentication respects Expect-CT failures, and uses
+// the correct NetworkIsolationKey.
+TEST_F(SpdySessionTest, VerifyDomainAuthenticationExpectCT) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /* enabled_features */
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kPartitionSSLSessionsByNetworkIsolationKey},
+      /* disabled_features */
+      {});
+
+  key_ = SpdySessionKey(HostPortPair::FromURL(test_url_), ProxyServer::Direct(),
+                        PRIVACY_MODE_DISABLED,
+                        SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                        NetworkIsolationKey::CreateTransient(),
+                        false /* disable_secure_dns */);
+  ssl_.ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_.ssl_info.is_issued_by_known_root = true;
+
+  // Need to create this after enabling features.
+  session_deps_.transport_security_state =
+      std::make_unique<TransportSecurityState>();
+
+  SequencedSocketData data;
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  EXPECT_TRUE(session_->VerifyDomainAuthentication("www.example.org"));
+  EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.org"));
+  EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.com"));
+  EXPECT_FALSE(session_->VerifyDomainAuthentication("mail.google.com"));
+
+  // Add Expect-CT data for all three hosts that passed the above checks, using
+  // different NetworkIsolationKeys.
+  const base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1);
+  session_deps_.transport_security_state->AddExpectCT(
+      "www.example.org", expiry, true, GURL(), NetworkIsolationKey());
+  session_deps_.transport_security_state->AddExpectCT(
+      "mail.example.org", expiry, true, GURL(), key_.network_isolation_key());
+  session_deps_.transport_security_state->AddExpectCT(
+      "mail.example.com", expiry, true, GURL(),
+      NetworkIsolationKey::CreateTransient());
+
+  // The host with the Expect-CT data that matches the SpdySession's should fail
+  // the check now.
+  EXPECT_TRUE(session_->VerifyDomainAuthentication("www.example.org"));
+  EXPECT_FALSE(session_->VerifyDomainAuthentication("mail.example.org"));
+  EXPECT_TRUE(session_->VerifyDomainAuthentication("mail.example.com"));
 }
 
 TEST_F(SpdySessionTest, CloseTwoStalledCreateStream) {
@@ -6292,6 +6350,8 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrame) {
 
 // Regression test for https://crbug.com/736063.
 TEST_F(AltSvcFrameTest, IgnoreQuicAltSvcWithUnsupportedVersion) {
+  session_deps_.enable_quic = true;
+
   // Note that this test only uses the legacy Google-specific Alt-Svc format.
   const char origin[] = "https://mail.example.org";
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
@@ -6322,7 +6382,64 @@ TEST_F(AltSvcFrameTest, IgnoreQuicAltSvcWithUnsupportedVersion) {
   ASSERT_EQ(0u, altsvc_info_vector.size());
 }
 
+TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithExpectCTError) {
+  const char origin[] = "https://mail.example.org";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /* enabled_features */
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey,
+       features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kPartitionSSLSessionsByNetworkIsolationKey},
+      /* disabled_features */
+      {});
+
+  key_ = SpdySessionKey(HostPortPair::FromURL(test_url_), ProxyServer::Direct(),
+                        PRIVACY_MODE_DISABLED,
+                        SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                        NetworkIsolationKey::CreateTransient(),
+                        false /* disable_secure_dns */);
+  ssl_.ssl_info.ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
+  ssl_.ssl_info.is_issued_by_known_root = true;
+
+  // Need to create this after enabling features.
+  session_deps_.transport_security_state =
+      std::make_unique<TransportSecurityState>();
+  session_deps_.transport_security_state->AddExpectCT(
+      GURL(origin).host(),
+      base::Time::Now() + base::TimeDelta::FromDays(1) /* expiry */, true,
+      GURL(), key_.network_isolation_key());
+
+  spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
+  altsvc_ir.add_altsvc(alternative_service_);
+  altsvc_ir.set_origin(origin);
+  AddSocketData(altsvc_ir);
+  AddSSLSocketData();
+
+  CreateNetworkSession();
+  CreateSpdySession();
+
+  base::RunLoop().RunUntilIdle();
+
+  const url::SchemeHostPort session_origin("https", test_url_.host(),
+                                           test_url_.EffectiveIntPort());
+  ASSERT_TRUE(spdy_session_pool_->http_server_properties()
+                  ->GetAlternativeServiceInfos(session_origin,
+                                               key_.network_isolation_key())
+                  .empty());
+
+  ASSERT_TRUE(
+      spdy_session_pool_->http_server_properties()
+          ->GetAlternativeServiceInfos(url::SchemeHostPort(GURL(origin)),
+                                       key_.network_isolation_key())
+          .empty());
+}
+
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameForOriginNotCoveredByCert) {
+  session_deps_.enable_quic = true;
+
   const char origin[] = "https://invalid.example.org";
   spdy::SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
   altsvc_ir.add_altsvc(alternative_service_);
@@ -6756,19 +6873,27 @@ TEST(CanPoolTest, CanPool) {
                                      "spdy_pooling.pem");
 
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "www.example.org"));
+                                   "www.example.org", "www.example.org",
+                                   NetworkIsolationKey()));
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.org"));
+                                   "www.example.org", "mail.example.org",
+                                   NetworkIsolationKey()));
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.com"));
+                                   "www.example.org", "mail.example.com",
+                                   NetworkIsolationKey()));
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.google.com"));
+                                    "www.example.org", "mail.google.com",
+                                    NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanPoolExpectCT) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      TransportSecurityState::kDynamicExpectCTFeature);
+  feature_list.InitWithFeatures(
+      /* enabled_features */
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey},
+      /* disabled_features */
+      {});
   // Load a cert that is valid for:
   //   www.example.org
   //   mail.example.org
@@ -6784,8 +6909,11 @@ TEST(CanPoolTest, CanPoolExpectCT) {
       ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS;
   ssl_info.is_issued_by_known_root = true;
 
+  net::NetworkIsolationKey network_isolation_key =
+      NetworkIsolationKey::CreateTransient();
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "www.example.org"));
+                                   "www.example.org", "www.example.org",
+                                   network_isolation_key));
 
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
@@ -6794,21 +6922,30 @@ TEST(CanPoolTest, CanPoolExpectCT) {
 
   // A different Expect-CT enabled host should not be allowed to pool.
   tss.AddExpectCT("mail.example.org", expiry, true, GURL(),
-                  NetworkIsolationKey());
+                  network_isolation_key);
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.example.org"));
+                                    "www.example.org", "mail.example.org",
+                                    network_isolation_key));
   // A report-only Expect-CT configuration should not prevent pooling.
   tss.AddExpectCT("mail.example.org", expiry, false,
-                  GURL("https://report.test"), NetworkIsolationKey());
+                  GURL("https://report.test"), network_isolation_key);
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.org"));
+                                   "www.example.org", "mail.example.org",
+                                   network_isolation_key));
   // If Expect-CT becomes enabled for the same host for which the connection was
   // already made, subsequent connections to that host should not be allowed to
   // pool.
   tss.AddExpectCT("www.example.org", expiry, true, GURL(),
-                  NetworkIsolationKey());
+                  network_isolation_key);
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "www.example.org"));
+                                    "www.example.org", "www.example.org",
+                                    network_isolation_key));
+
+  // With a different NetworkIsolationKey, CanPool() should still return true,
+  // as CT information is scoped to a single NetworkIsolationKey.
+  EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
+                                   "www.example.org", "www.example.org",
+                                   NetworkIsolationKey::CreateTransient()));
 }
 
 TEST(CanPoolTest, CanNotPoolWithCertErrors) {
@@ -6825,7 +6962,8 @@ TEST(CanPoolTest, CanNotPoolWithCertErrors) {
   ssl_info.cert_status = CERT_STATUS_REVOKED;
 
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.example.org"));
+                                    "www.example.org", "mail.example.org",
+                                    NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanNotPoolWithClientCerts) {
@@ -6842,7 +6980,8 @@ TEST(CanPoolTest, CanNotPoolWithClientCerts) {
   ssl_info.client_cert_sent = true;
 
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.example.org"));
+                                    "www.example.org", "mail.example.org",
+                                    NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadPins) {
@@ -6859,7 +6998,8 @@ TEST(CanPoolTest, CanNotPoolWithBadPins) {
   ssl_info.public_key_hashes.push_back(test::GetTestHashValue(bad_pin));
 
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "example.test"));
+                                    "www.example.org", "example.test",
+                                    NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanNotPoolWithBadCTWhenCTRequired) {
@@ -6887,7 +7027,8 @@ TEST(CanPoolTest, CanNotPoolWithBadCTWhenCTRequired) {
   tss.SetRequireCTDelegate(&require_ct_delegate);
 
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.example.org"));
+                                    "www.example.org", "mail.example.org",
+                                    NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanPoolWithBadCTWhenCTNotRequired) {
@@ -6915,7 +7056,8 @@ TEST(CanPoolTest, CanPoolWithBadCTWhenCTNotRequired) {
   tss.SetRequireCTDelegate(&require_ct_delegate);
 
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.org"));
+                                   "www.example.org", "mail.example.org",
+                                   NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanPoolWithGoodCTWhenCTRequired) {
@@ -6943,7 +7085,8 @@ TEST(CanPoolTest, CanPoolWithGoodCTWhenCTRequired) {
   tss.SetRequireCTDelegate(&require_ct_delegate);
 
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.org"));
+                                   "www.example.org", "mail.example.org",
+                                   NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanPoolWithAcceptablePins) {
@@ -6963,7 +7106,8 @@ TEST(CanPoolTest, CanPoolWithAcceptablePins) {
   ssl_info.public_key_hashes.push_back(hash);
 
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.org"));
+                                   "www.example.org", "mail.example.org",
+                                   NetworkIsolationKey()));
 }
 
 TEST(CanPoolTest, CanPoolWithClientCertsAndPolicy) {
@@ -6983,11 +7127,14 @@ TEST(CanPoolTest, CanPoolWithClientCertsAndPolicy) {
   // CanShareConnectionWithClientCerts returns true for both hostnames, but not
   // just one hostname.
   EXPECT_TRUE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                   "www.example.org", "mail.example.org"));
+                                   "www.example.org", "mail.example.org",
+                                   NetworkIsolationKey()));
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "www.example.org", "mail.example.com"));
+                                    "www.example.org", "mail.example.com",
+                                    NetworkIsolationKey()));
   EXPECT_FALSE(SpdySession::CanPool(&tss, ssl_info, ssl_config_service,
-                                    "mail.example.com", "www.example.org"));
+                                    "mail.example.com", "www.example.org",
+                                    NetworkIsolationKey()));
 }
 
 TEST(RecordPushedStreamHistogramTest, VaryResponseHeader) {

@@ -7,44 +7,56 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow DIV class='box'",
-      "bounds": [100, 150],
-      "contentsOpaque": true,
-      "backgroundColor": "#808080",
-      "transform": 2
+      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
+      "position": [20, 10],
+      "bounds": [60, 70],
+      "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow DIV class='box'",
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
+      "transform": 3
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
+      "position": [20, 10],
+      "bounds": [60, 70],
       "transform": 4
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
-      "position": [20, 10],
-      "bounds": [60, 70],
-      "transform": 5
-    },
-    {
       "name": "LayoutNGBlockFlow DIV class='box'",
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
+      "transform": 6
+    },
+    {
+      "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
+      "position": [20, 10],
+      "bounds": [60, 70],
       "transform": 7
     },
     {
+      "name": "LayoutNGBlockFlow DIV class='box'",
+      "bounds": [100, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 9
+    },
+    {
       "name": "LayoutNGBlockFlow (positioned) DIV class='container'",
       "position": [20, 10],
       "bounds": [60, 70],
-      "transform": 8
+      "transform": 10
     },
     {
       "name": "LayoutNGBlockFlow DIV class='box'",
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 10
+      "transform": 12
     }
   ],
   "transforms": [
@@ -54,7 +66,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [50, 50, 0, 1]
+        [28, 28, 0, 1]
       ]
     },
     {
@@ -64,21 +76,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [0, 0, 1, 1]
+        [22, 22, 0, 1]
       ]
     },
     {
       "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [242, 50, 0, 1]
-      ]
-    },
-    {
-      "id": 4,
-      "parent": 3,
+      "parent": 2,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -87,12 +90,22 @@
       ]
     },
     {
-      "id": 5,
+      "id": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [28, 220, 0, 1]
+        [220, 28, 0, 1]
+      ]
+    },
+    {
+      "id": 5,
+      "parent": 4,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [22, 22, 0, 1]
       ]
     },
     {
@@ -102,26 +115,26 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [22, 22, 0, 1]
-      ]
-    },
-    {
-      "id": 7,
-      "parent": 6,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
         [0, 0, 1, 1]
       ]
     },
     {
-      "id": 8,
+      "id": 7,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [220, 220, 0, 1]
+        [28, 220, 0, 1]
+      ]
+    },
+    {
+      "id": 8,
+      "parent": 7,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [22, 22, 0, 1]
       ]
     },
     {
@@ -131,12 +144,31 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [22, 22, 0, 1]
+        [0, 0, 1, 1]
       ]
     },
     {
       "id": 10,
-      "parent": 9,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [220, 220, 0, 1]
+      ]
+    },
+    {
+      "id": 11,
+      "parent": 10,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [22, 22, 0, 1]
+      ]
+    },
+    {
+      "id": 12,
+      "parent": 11,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

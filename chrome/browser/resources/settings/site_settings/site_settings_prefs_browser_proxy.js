@@ -8,7 +8,6 @@
  */
 
 // clang-format off
-import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 import {ChooserType,ContentSetting,ContentSettingsTypes,SiteSettingSource} from './constants.js';
@@ -39,26 +38,6 @@ export const ContentSettingProvider = {
  *            reason: ?string}}
  */
 let IsValid;
-
-/**
- * Stores information about the management state of a control, i.e. whether
- * it is disabled and what indicator should be shown (including
- * CrPolicyIndicatorType::NONE)
- * @typedef {{disabled: boolean,
- *            indicator: !CrPolicyIndicatorType}}
- */
-export let ManagedState;
-
-/**
- * Stores information about whether individual cookies controls are managed,
- * and if so what the source of that management is.
- * @typedef {{allowAll: !ManagedState,
- *            blockThirdPartyIncognito: !ManagedState,
- *            blockThirdParty: !ManagedState,
- *            blockAll: !ManagedState,
-              sessionOnly: !ManagedState}}
- */
-export let CookieControlsManagedState;
 
 /**
  * Stores origin information. The |hasPermissionSettings| will be set to true
@@ -196,13 +175,6 @@ export class SiteSettingsPrefsBrowserProxy {
    * @return {!Promise<!Array<!SiteGroup>>}
    */
   getAllSites(contentTypes) {}
-
-  /**
-   * Get whether each of the cookie controls are managed or not, and what
-   * the source of that management is.
-   * @return {!Promise<!CookieControlsManagedState>}
-   */
-  getCookieControlsManagedState() {}
 
   /**
    * Get the string which describes the current effective cookie setting.
@@ -456,11 +428,6 @@ export class SiteSettingsPrefsBrowserProxyImpl {
   /** @override */
   getAllSites(contentTypes) {
     return sendWithPromise('getAllSites', contentTypes);
-  }
-
-  /** @override */
-  getCookieControlsManagedState() {
-    return sendWithPromise('getCookieControlsManagedState');
   }
 
   /** @override */

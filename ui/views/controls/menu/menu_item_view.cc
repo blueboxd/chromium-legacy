@@ -15,6 +15,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/util/ranges/algorithm.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -161,7 +162,7 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (IsContainer()) {
     // The first child is taking over, just use its accessible name instead of
     // |title_|.
-    View* child = children().front();
+    View* child = GetFirstVisibleChild();
     ui::AXNodeData child_node_data;
     child->GetAccessibleNodeData(&child_node_data);
     item_text =
@@ -434,41 +435,25 @@ void MenuItemView::SetIcon(const gfx::ImageSkia& icon, int item_id) {
 void MenuItemView::SetIcon(const gfx::ImageSkia& icon) {
   vector_icon_.clear();
 
-  if (icon.isNull()) {
-    SetIconView(nullptr);
-    return;
-  }
-
-  auto icon_view = std::make_unique<ImageView>();
-  icon_view->SetImage(&icon);
-  SetIconView(std::move(icon_view));
+  icon_view_->SetImage(icon);
+  SetIconViewVisibilityAndInvalidate(!icon.isNull());
 }
 
 void MenuItemView::SetIcon(const ui::ThemedVectorIcon& icon) {
   vector_icon_ = icon;
+  UpdateIconViewFromVectorIconAndTheme();
 }
 
 void MenuItemView::UpdateIconViewFromVectorIconAndTheme() {
   if (vector_icon_.empty())
     return;
 
-  if (!icon_view_)
-    SetIconView(std::make_unique<ImageView>());
-
-  const bool use_touchable_layout =
-      GetMenuController() && GetMenuController()->use_touchable_layout();
-  const int icon_size = use_touchable_layout ? 20 : 16;
-  icon_view_->SetImage(vector_icon_.GetImageSkia(GetNativeTheme(), icon_size));
+  icon_view_->SetImage(vector_icon_.GetImageSkia(GetNativeTheme()));
+  SetIconViewVisibilityAndInvalidate(true);
 }
 
-void MenuItemView::SetIconView(std::unique_ptr<ImageView> icon_view) {
-  if (icon_view_) {
-    RemoveChildViewT(icon_view_);
-    icon_view_ = nullptr;
-  }
-
-  if (icon_view)
-    icon_view_ = AddChildView(std::move(icon_view));
+void MenuItemView::SetIconViewVisibilityAndInvalidate(bool is_visible) {
+  icon_view_->SetVisible(is_visible);
 
   InvalidateLayout();
   SchedulePaint();
@@ -490,8 +475,9 @@ int MenuItemView::GetHeightForWidth(int width) const {
     return GetPreferredSize().height();
 
   const gfx::Insets margins = GetContainerMargins();
-  int height = children().front()->GetHeightForWidth(width - margins.width());
-  if (!icon_view_ && GetRootMenuItem()->has_icons())
+  int height =
+      GetFirstVisibleChild()->GetHeightForWidth(width - margins.width());
+  if (!icon_view_->GetVisible() && GetRootMenuItem()->has_icons())
     height = std::max(height, MenuConfig::instance().check_height);
 
   height += margins.height();
@@ -613,7 +599,8 @@ void MenuItemView::ChildrenChanged() {
 }
 
 void MenuItemView::Layout() {
-  if (children().empty())
+  View* first_visible_child = GetFirstVisibleChild();
+  if (!first_visible_child)
     return;
 
   if (IsContainer()) {
@@ -623,7 +610,7 @@ void MenuItemView::Layout() {
     // bounds, less the margins.
     gfx::Rect bounds = GetContentsBounds();
     bounds.Inset(GetContainerMargins());
-    children().front()->SetBoundsRect(bounds);
+    first_visible_child->SetBoundsRect(bounds);
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
@@ -643,7 +630,7 @@ void MenuItemView::Layout() {
     }
     // Position |icon_view|.
     const MenuConfig& config = MenuConfig::instance();
-    if (icon_view_) {
+    {
       icon_view_->SizeToPreferredSize();
       gfx::Size size = icon_view_->GetPreferredSize();
       int x = config.item_horizontal_padding + left_icon_margin_ +
@@ -775,6 +762,9 @@ void MenuItemView::Init(MenuItemView* parent,
   // Assign our ID, this allows SubmenuItemView to find MenuItemViews.
   SetID(kMenuItemViewID);
   has_icons_ = false;
+
+  icon_view_ = AddChildView(std::make_unique<ImageView>());
+  icon_view_->SetVisible(false);
 
   if (type_ == Type::kCheckbox || type_ == Type::kRadio) {
     radio_check_image_view_ = AddChildView(std::make_unique<ImageView>());
@@ -1130,14 +1120,15 @@ int MenuItemView::GetBottomMargin() const {
 }
 
 gfx::Size MenuItemView::GetChildPreferredSize() const {
-  if (children().empty())
+  const View* first_visible_child = GetFirstVisibleChild();
+  if (!first_visible_child)
     return gfx::Size();
 
   if (IsContainer())
-    return children().front()->GetPreferredSize();
+    return first_visible_child->GetPreferredSize();
 
   const auto add_width = [this](int width, const View* child) {
-    if (child == icon_view_ || child == radio_check_image_view_ ||
+    if ((child == icon_view_) || child == radio_check_image_view_ ||
         child == submenu_arrow_image_view_ || child == vertical_separator_)
       return width;
     if (width)
@@ -1149,7 +1140,8 @@ gfx::Size MenuItemView::GetChildPreferredSize() const {
 
   // If there is no icon view it returns a height of 0 to indicate that
   // we should use the title height instead.
-  const int height = icon_view_ ? icon_view_->GetPreferredSize().height() : 0;
+  const int height =
+      icon_view_->GetVisible() ? icon_view_->GetPreferredSize().height() : 0;
 
   return gfx::Size(width, height);
 }
@@ -1173,7 +1165,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
     dimensions.standard_width = menu_config.touchable_menu_width;
 
-    if (icon_view_) {
+    if (icon_view_->GetVisible()) {
       dimensions.height = icon_view_->GetPreferredSize().height() +
                           2 * menu_config.vertical_touchable_menu_item_padding;
     }
@@ -1187,7 +1179,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   dimensions.height = child_size.height();
   // Adjust item content height if menu has both items with and without icons.
   // This way all menu items will have the same height.
-  if (!icon_view_ && GetRootMenuItem()->has_icons()) {
+  if (!icon_view_->GetVisible() && GetRootMenuItem()->has_icons()) {
     dimensions.height =
         std::max(dimensions.height, MenuConfig::instance().check_height);
   }
@@ -1263,14 +1255,14 @@ int MenuItemView::GetLabelStartForThisItem() const {
 
   // Touchable items with icons do not respect |label_start_|.
   if (GetMenuController() && GetMenuController()->use_touchable_layout() &&
-      icon_view_) {
+      icon_view_->GetVisible()) {
     return 2 * config.touchable_item_horizontal_padding + icon_view_->width();
   }
 
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
   if ((config.icons_in_label || type_ == Type::kCheckbox ||
        type_ == Type::kRadio) &&
-      icon_view_) {
+      icon_view_->GetVisible()) {
     label_start += icon_view_->size().width() + config.item_horizontal_padding;
   }
 
@@ -1306,7 +1298,7 @@ gfx::Insets MenuItemView::GetContainerMargins() const {
   // Use the child's preferred margins but take the standard top and bottom
   // margins as minimums.
   const gfx::Insets* margins_prop =
-      children().front()->GetProperty(views::kMarginsKey);
+      GetFirstVisibleChild()->GetProperty(views::kMarginsKey);
   gfx::Insets margins = margins_prop ? *margins_prop : gfx::Insets();
   margins.set_top(std::max(margins.top(), GetTopMargin()));
   margins.set_bottom(std::max(margins.bottom(), GetBottomMargin()));
@@ -1314,8 +1306,8 @@ gfx::Insets MenuItemView::GetContainerMargins() const {
 }
 
 int MenuItemView::NonIconChildViewsCount() const {
-  return int{children().size()} - (icon_view_ ? 1 : 0) -
-         (radio_check_image_view_ ? 1 : 0) -
+  // Always subtract 1 for |icon_view_|.
+  return int{children().size()} - 1 - (radio_check_image_view_ ? 1 : 0) -
          (submenu_arrow_image_view_ ? 1 : 0) - (vertical_separator_ ? 1 : 0);
 }
 
@@ -1334,7 +1326,8 @@ int MenuItemView::GetMaxIconViewWidth() const {
     }
     if (item->HasSubmenu())
       return item->GetMaxIconViewWidth();
-    return (item->icon_view_ && !MenuConfig::instance().icons_in_label)
+    return (item->icon_view_->GetVisible() &&
+            !MenuConfig::instance().icons_in_label)
                ? item->icon_view_->GetPreferredSize().width()
                : 0;
   };
@@ -1352,6 +1345,11 @@ bool MenuItemView::HasChecksOrRadioButtons() const {
   return std::any_of(
       menu_items.cbegin(), menu_items.cend(),
       [](const auto* item) { return item->HasChecksOrRadioButtons(); });
+}
+
+const View* MenuItemView::GetFirstVisibleChild() const {
+  const auto it = util::ranges::find(children(), true, &View::GetVisible);
+  return (it == children().cend()) ? nullptr : *it;
 }
 
 BEGIN_METADATA(MenuItemView)

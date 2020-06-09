@@ -12,7 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_blocklist_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"

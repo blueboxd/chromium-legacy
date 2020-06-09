@@ -433,7 +433,7 @@ void CloudPolicyClient::FetchRobotAuthCodes(
     std::unique_ptr<DMAuth> auth,
     enterprise_management::DeviceServiceApiAccessRequest::DeviceType
         device_type,
-    const std::string& oauth_scopes,
+    const std::set<std::string>& oauth_scopes,
     RobotAuthCodeCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
@@ -453,7 +453,10 @@ void CloudPolicyClient::FetchRobotAuthCodes(
       config->request()->mutable_service_api_access_request();
   request->set_oauth2_client_id(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  request->add_auth_scopes(oauth_scopes);
+
+  for (const auto& scope : oauth_scopes)
+    request->add_auth_scopes(scope);
+
   request->set_device_type(device_type);
 
   policy_fetch_request_job_ = service_->CreateJob(std::move(config));

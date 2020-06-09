@@ -4,6 +4,7 @@
 
 #include "components/permissions/test/test_permissions_client.h"
 
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/ukm/content/source_url_recorder.h"
 
 namespace permissions {
@@ -29,6 +30,12 @@ TestPermissionsClient::~TestPermissionsClient() {
 HostContentSettingsMap* TestPermissionsClient::GetSettingsMap(
     content::BrowserContext* browser_context) {
   return settings_map_.get();
+}
+
+scoped_refptr<content_settings::CookieSettings>
+TestPermissionsClient::GetCookieSettings(
+    content::BrowserContext* browser_context) {
+  return nullptr;
 }
 
 PermissionDecisionAutoBlocker*

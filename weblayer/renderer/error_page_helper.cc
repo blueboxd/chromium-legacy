@@ -133,11 +133,7 @@ void ErrorPageHelper::DidStartNavigation(
   }
 }
 
-void ErrorPageHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                               ui::PageTransition transition) {
-  if (is_same_document_navigation)
-    return;
-
+void ErrorPageHelper::DidCommitProvisionalLoad(ui::PageTransition transition) {
   // If a page is committing, either it's an error page and autoreload will be
   // started again below, or it's a success page and we need to clear autoreload
   // state.

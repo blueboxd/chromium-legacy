@@ -160,10 +160,7 @@ void PasswordGenerationAgent::BindPendingReceiver(
 }
 
 void PasswordGenerationAgent::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
-  if (is_same_document_navigation)
-    return;
   // Update stats for main frame navigation.
   if (!render_frame()->GetWebFrame()->Parent()) {
     if (current_generation_item_) {

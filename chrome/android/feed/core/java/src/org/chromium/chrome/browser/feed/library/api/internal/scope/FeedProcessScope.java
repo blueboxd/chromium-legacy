@@ -38,7 +38,6 @@ import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.protoextensions.FeedExtensionRegistry;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.common.time.TimingUtils;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 
 /**
  * Per-process instance of the feed library.
@@ -178,13 +177,13 @@ public final class FeedProcessScope implements ProcessScope {
     public StreamScopeBuilder createStreamScopeBuilder(Activity activity,
             ImageLoaderApi imageLoaderApi, ActionApi actionApi,
             StreamConfiguration streamConfiguration, CardConfiguration cardConfiguration,
-            SnackbarApi snackbarApi, OfflineIndicatorApi offlineIndicatorApi, TooltipApi tooltipApi,
-            SnackbarManager snackbarManager) {
+            SnackbarApi snackbarApi, OfflineIndicatorApi offlineIndicatorApi,
+            TooltipApi tooltipApi) {
         return new StreamScopeBuilder(activity, actionApi, imageLoaderApi, mProtocolAdapter,
                 mFeedSessionManager, mThreadUtils, mTimingUtils, mTaskQueue, mMainThreadRunner,
                 mClock, mDebugBehavior, streamConfiguration, cardConfiguration, mActionManager,
                 mConfiguration, snackbarApi, mBasicLoggingApi, offlineIndicatorApi,
                 mFeedKnownContent, tooltipApi, mTooltipSupportedApi, mApplicationInfo,
-                mFeedExtensionRegistry, snackbarManager);
+                mFeedExtensionRegistry);
     }
 }

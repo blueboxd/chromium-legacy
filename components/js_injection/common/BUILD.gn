@@ -1,0 +1,52 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+mojom("common_mojom") {
+  sources = [
+    "aw_origin_matcher.mojom",
+    "interfaces.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//third_party/blink/public/mojom:mojom_core",
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "js_injection.mojom.AwOriginMatcher"
+          cpp = "::js_injection::AwOriginMatcher"
+        },
+      ]
+      traits_headers = [ "aw_origin_matcher_mojom_traits.h" ]
+    },
+  ]
+}
+
+source_set("common") {
+  sources = [
+    "aw_origin_matcher.cc",
+    "aw_origin_matcher.h",
+  ]
+  deps = [
+    "//base",
+    "//net",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "aw_origin_matcher_unittest.cc" ]
+  deps = [
+    ":common",
+    "//base",
+    "//base/test:test_support",
+    "//url",
+  ]
+}

@@ -8,8 +8,16 @@
 import {CrPolicyIndicatorType} from 'chrome://resources/cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
-import {ManagedState} from '../site_settings/site_settings_prefs_browser_proxy.js';
 // clang-format off
+
+  /**
+   * Stores information about the management state of a control, i.e. whether
+   * it is disabled and what indicator should be shown (including
+   * CrPolicyIndicatorType::NONE)
+   * @typedef {{disabled: boolean,
+   *            indicator: !CrPolicyIndicatorType}}
+   */
+  export let ManagedState;
 
   /**
    * Represents the management state of the Safe Browsing radio buttons.

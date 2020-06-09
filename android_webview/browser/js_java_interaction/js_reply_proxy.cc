@@ -4,14 +4,14 @@
 
 #include "android_webview/browser/js_java_interaction/js_reply_proxy.h"
 
-#include "android_webview/browser/js_java_interaction/web_message.h"
-#include "android_webview/browser/js_java_interaction/web_message_reply_proxy.h"
 #include "android_webview/browser_jni_headers/JsReplyProxy_jni.h"
 #include "base/android/jni_string.h"
+#include "components/js_injection/browser/web_message.h"
+#include "components/js_injection/browser/web_message_reply_proxy.h"
 
 namespace android_webview {
 
-JsReplyProxy::JsReplyProxy(WebMessageReplyProxy* reply_proxy)
+JsReplyProxy::JsReplyProxy(js_injection::WebMessageReplyProxy* reply_proxy)
     : reply_proxy_(reply_proxy) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_ref_.Reset(
@@ -33,7 +33,8 @@ base::android::ScopedJavaLocalRef<jobject> JsReplyProxy::GetJavaPeer() {
 void JsReplyProxy::PostMessage(
     JNIEnv* env,
     const base::android::JavaParamRef<jstring>& message) {
-  std::unique_ptr<WebMessage> web_message = std::make_unique<WebMessage>();
+  std::unique_ptr<js_injection::WebMessage> web_message =
+      std::make_unique<js_injection::WebMessage>();
   web_message->message = base::android::ConvertJavaStringToUTF16(env, message);
   reply_proxy_->PostMessage(std::move(web_message));
 }

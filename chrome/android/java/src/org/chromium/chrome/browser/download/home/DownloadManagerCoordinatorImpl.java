@@ -17,6 +17,7 @@ import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
@@ -29,7 +30,9 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.vr.VrModeProvider;
 
 import java.io.Closeable;
 
@@ -59,7 +62,7 @@ class DownloadManagerCoordinatorImpl
             Callback<Context> settingsLauncher, SnackbarManager snackbarManager,
             ModalDialogManager modalDialogManager, Tracker tracker, FaviconProvider faviconProvider,
             OfflineContentProvider provider, LegacyDownloadProvider legacyProvider,
-            DiscardableReferencePool discardableReferencePool) {
+            DiscardableReferencePool discardableReferencePool, VrModeProvider vrModeProvider) {
         mActivity = activity;
         mSettingsLauncher = settingsLauncher;
         mDeleteCoordinator = new DeleteUndoCoordinator(snackbarManager);
@@ -70,9 +73,12 @@ class DownloadManagerCoordinatorImpl
                 createDateOrderedListObserver(), modalDialogManager, faviconProvider,
                 discardableReferencePool);
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, this, mListCoordinator,
-                mSelectionDelegate, config.isSeparateActivity, tracker);
+                mSelectionDelegate, config.isSeparateActivity, tracker, vrModeProvider);
 
         initializeView();
+        if (config.startWithPrefetchedContent) {
+            updateForUrl(Filters.toUrl(Filters.FilterType.PREFETCHED));
+        }
         RecordUserAction.record("Android.DownloadManager.Open");
     }
 
@@ -144,6 +150,8 @@ class DownloadManagerCoordinatorImpl
     @Override
     public void addObserver(Observer observer) {
         mObservers.addObserver(observer);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                () -> observer.onUrlChanged(Filters.toUrl(mListCoordinator.getSelectedFilter())));
     }
 
     @Override

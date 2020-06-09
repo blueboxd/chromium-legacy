@@ -32,6 +32,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/download_schedule.h"
 #include "components/download/public/common/download_source.h"
 #include "ui/base/page_transition_types.h"
 #include "url/origin.h"
@@ -511,6 +512,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Gets the DownloadCreationType of this item.
   virtual DownloadCreationType GetDownloadCreationType() const = 0;
+
+  // Gets the download schedule to start the time at particular time.
+  virtual const base::Optional<DownloadSchedule>& GetDownloadSchedule()
+      const = 0;
 
   // External state transitions/setters ----------------------------------------
 

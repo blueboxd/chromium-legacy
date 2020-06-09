@@ -3679,12 +3679,13 @@ void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
   // 12. Run attach a shadow root with shadow host equal to declarative shadow
   // host element, mode equal to declarative shadow mode, and delegates focus
   // equal to declarative shadow delegates focus. If an exception was thrown by
-  // attach a shadow root, catch it, and report the exception.
+  // attach a shadow root, catch it, and ignore the exception.
   if (const char* error_message = ErrorMessageForAttachShadow()) {
-    // TODO(1067488): Fire this exception at Window.
-    LOG(ERROR) << error_message;
     template_element->SetDeclarativeShadowRootType(
         DeclarativeShadowRootType::kNone);
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kError, error_message));
     return;
   }
   ShadowRoot& shadow_root =

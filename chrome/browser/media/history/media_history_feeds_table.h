@@ -85,9 +85,6 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   // Deletes the feed with |feed_id| and returns a boolean if it was successful.
   bool Delete(const int64_t feed_id);
 
-  // Returns the origin of the feed.
-  base::Optional<url::Origin> GetOrigin(const int64_t feed_id);
-
   // Returns the fetch details for the feed.
   base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
   GetFetchDetails(const int64_t feed_id);
@@ -97,6 +94,12 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
 
   // Returns the cookie name filter for |feed_id| or an empty string.
   std::string GetCookieNameFilter(const int64_t feed_id);
+
+  // Gets the feed for |origin|'s subdomains.
+  std::set<int64_t> GetFeedsForOriginSubdomain(const url::Origin& origin);
+
+  // Gets the feed for |origin|.
+  base::Optional<int64_t> GetFeedForOrigin(const url::Origin& origin);
 };
 
 }  // namespace media_history

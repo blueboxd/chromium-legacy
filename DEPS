@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'cc23d95f5f8553aa0bf6905210bd652d0f0582bb',
+  'skia_revision': 'd3927e40f1de98833abc9340477a6a6a6cb856c3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -194,7 +194,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e9a0cb87f7a3486cc31e0a8ae4446fdf7d738281',
+  'angle_revision': 'f8fd9cfb25a0418b3a8c6645ae4da4d12c64bf74',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '2ad47493f833c5191f56c74d3f1aac10e7c105e8',
+  'catapult_revision': '2943cc478e467691a773260b93bb9b40e02f4047',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'e5fef85222eda0c1b505d96934f0ec9e39366b72',
+  'devtools_frontend_revision': '929d66714815652019e1b7f8ac735190ffe215b4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -305,11 +305,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '83faf15d21b6fde6c6529536e9f933a32326ab53',
+  'dawn_revision': '14f20b0ab38d5996d2c2716156912491783d93fa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '6cccce4f58708940e9a02462007ad6ed0fa019ff',
+  'quiche_revision': 'faf8b0277550de66bad3e6e562f54908969b6511',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -875,7 +875,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'a2e91dbb61950a8e6000187d1fb7f15b7dbb0cca',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '1dcaaa7aabb0573c4877621f3f534b82cf02e271',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -931,7 +931,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'bf190c43e5c7cc81751867c917a81bc2920be079',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '08328fea5ab97a9e354d46446a3547d89d1416da',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '68b2e15ee016487a28c4178a9d142186c58c8dd0',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1011,7 +1011,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '6fdad5388130757e1efb58a14b8e7f9494625691',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '630b884f84d1d5e92aeda3463dca99fe2befd30e',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '46f53dfc09c520b7c520a089ca473bb0ee29c07e',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1207,7 +1207,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a5473711f3e20c6bd1c33d81b6c7b9a0618aa18f',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '778bf126ad386aee747e659aa977b7f055418eaf',
+    Var('chromium_git') + '/openscreen' + '@' + 'f9b11251a19b8fd0d1f7c1455591e40bf7b83437',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1224,7 +1224,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'a7e60fe18677bc3f1cc7466ab68fe35be481c557',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '5df4a7a9dcb79093cf678506487a28fd20d6cfe4',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1452,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'a48dd43fe185ed6a826b7ce3bfee0b2187329159',
+    Var('webrtc_git') + '/src.git' + '@' + '0c3062efcb3b001bec0dfacbcaa15e5b73c21a64',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1524,7 +1524,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@91286aa462fad0d8e96a1d890116bda6784b07b9',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@86d91fc0ded9dd3fd7bcd328ab5316f4f1226ca2',
     'condition': 'checkout_src_internal',
   },
 
@@ -3992,7 +3992,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/org_robolectric_shadows_multidex',
-              'version': 'version:4.3.1-cr0',
+              'version': 'version:4.3.1-cr1',
           },
       ],
       'condition': 'checkout_android',

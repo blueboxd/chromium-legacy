@@ -127,7 +127,6 @@ class SiteSettingsHandler
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            HandleClearEtldPlus1DataAndCookies);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieControlsManagedState);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, CookieSettingDescription);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, HandleGetFormattedBytes);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
@@ -169,10 +168,6 @@ class SiteSettingsHandler
   // data, which will send the list of sites with cookies or usage data to
   // the front end when fetching finished.
   void HandleGetAllSites(const base::ListValue* args);
-
-  // Returns whether each of the cookie controls is managed and if so what
-  // the source of that management is.
-  void HandleGetCookieControlsManagedState(const base::ListValue* args);
 
   // Returns a string for display describing the current cookie settings.
   void HandleGetCookieSettingDescription(const base::ListValue* args);

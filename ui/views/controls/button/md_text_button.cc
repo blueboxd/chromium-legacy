@@ -142,6 +142,11 @@ void MdTextButton::SetEnabledTextColors(base::Optional<SkColor> color) {
   UpdateColors();
 }
 
+void MdTextButton::SetCustomPadding(const gfx::Insets& padding) {
+  custom_padding_ = padding;
+  UpdatePadding();
+}
+
 void MdTextButton::SetText(const base::string16& text) {
   LabelButton::SetText(text);
   UpdatePadding();
@@ -183,6 +188,11 @@ void MdTextButton::UpdatePadding() {
     return;
   }
 
+  SetBorder(
+      CreateEmptyBorder(custom_padding_.value_or(CalculateDefaultPadding())));
+}
+
+gfx::Insets MdTextButton::CalculateDefaultPadding() const {
   // Text buttons default to 28dp in height on all platforms when the base font
   // is in use, but should grow or shrink if the font size is adjusted up or
   // down. When the system font size has been adjusted, the base font will be
@@ -213,8 +223,8 @@ void MdTextButton::UpdatePadding() {
   // we apply the MD treatment to all buttons, even GTK buttons?
   const int horizontal_padding = LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_BUTTON_HORIZONTAL_PADDING);
-  SetBorder(CreateEmptyBorder(top_padding, horizontal_padding, bottom_padding,
-                              horizontal_padding));
+  return gfx::Insets(top_padding, horizontal_padding, bottom_padding,
+                     horizontal_padding);
 }
 
 void MdTextButton::UpdateColors() {

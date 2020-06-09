@@ -168,6 +168,7 @@ from __future__ import print_function
 
 import argparse
 import collections
+import functools
 import os
 import re
 import sys
@@ -1060,7 +1061,8 @@ class GenXproto(FileWriter):
         # The order of types in xcbproto's xml files are inconsistent, so sort
         # them in the order {type aliases, enums, xidunions, structs,
         # requests/replies}.
-        def type_order_priority((name, item)):
+        def type_order_priority(module_type):
+            name, item = module_type
             if item.is_simple:
                 return 2 if self.get_xidunion_element(name) else 0
             if isinstance(item, self.xcbgen.xtypes.Enum):
@@ -1073,7 +1075,7 @@ class GenXproto(FileWriter):
             return type_order_priority(type1) - type_order_priority(type2)
 
         # sort() is guaranteed to be stable.
-        self.module.all.sort(cmp=cmp)
+        self.module.all.sort(key=functools.cmp_to_key(cmp))
 
     def gen_header(self):
         self.file = self.header_file

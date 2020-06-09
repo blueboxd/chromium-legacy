@@ -271,8 +271,6 @@ TEST_F(DlcserviceClientTest, PurgeBusyStatusTest) {
 
 TEST_F(DlcserviceClientTest, InstallSuccessTest) {
   responses_.push_back(dbus::Response::CreateEmpty());
-  dbus::MessageWriter writer(responses_.back().get());
-  writer.AppendProtoAsArrayOfBytes(dlcservice::DlcModuleList());
 
   EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
       .WillOnce(

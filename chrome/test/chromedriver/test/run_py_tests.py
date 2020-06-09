@@ -136,6 +136,8 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'HeadlessInvalidCertificateTest.*',
     # Similar issues with HeadlessChromeDriverTest.
     'HeadlessChromeDriverTest.*',
+    # Flaky: https://crbug.com/899919
+    'SessionHandlingTest.testGetSessions',
     # Flaky due to occasional timeout in starting Chrome
     'ZChromeStartRetryCountTest.testChromeStartRetryCount',
 ]

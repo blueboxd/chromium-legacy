@@ -8,10 +8,14 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.start_surface.R;
 
 /**
@@ -19,6 +23,7 @@ import org.chromium.chrome.start_surface.R;
  */
 public class FeedLoadingLayout extends LinearLayout {
     private Context mContext;
+    private @Nullable PersonalizedSigninPromoView mSigninPromoView;
 
     public FeedLoadingLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -36,6 +41,22 @@ public class FeedLoadingLayout extends LinearLayout {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         setImageForConfiguration();
+    }
+
+    /** @return The {@link PersonalizedSigninPromoView} for this class. */
+    PersonalizedSigninPromoView getSigninPromoView() {
+        if (mSigninPromoView == null) {
+            mSigninPromoView = (PersonalizedSigninPromoView) LayoutInflater.from(mContext).inflate(
+                    R.layout.personalized_signin_promo_view_modern_content_suggestions, null,
+                    false);
+            LinearLayout signView = findViewById(R.id.sign_in_box);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            signView.setLayoutParams(lp);
+            lp.setMargins(0, 0, 0, dpToPx(12));
+            signView.addView(mSigninPromoView);
+        }
+        return mSigninPromoView;
     }
 
     private void setImageForConfiguration() {

@@ -8,8 +8,9 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
+import androidx.appcompat.content.res.AppCompatResources;
+
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.home.list.view.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceInflater;
@@ -69,7 +70,7 @@ public class ContextualSearchCardIconControl extends ViewResourceInflater {
      * @param resId The resource ID of a drawable.
      */
     private void setVectorDrawableResourceId(int resId) {
-        Drawable drawable = UiUtils.getDrawable(mContext, resId);
+        Drawable drawable = AppCompatResources.getDrawable(mContext, resId);
         if (drawable != null) {
             inflate();
             ((ImageView) getView()).setImageDrawable(drawable);

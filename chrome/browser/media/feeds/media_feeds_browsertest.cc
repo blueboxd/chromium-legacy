@@ -46,14 +46,6 @@ const char kMediaFeedsAltTestURL[] = "/alt";
 
 const char kMediaFeedsMinTestURL[] = "/min";
 
-const char kMediaFeedsWellKnownURL[] = "/.well-known/media-feeds";
-
-const char kMediaFeedsWellKnownResponse[] = R"END({
-      "allowedAssociations": [
-        "%s"
-      ]
-})END";
-
 constexpr base::FilePath::CharType kMediaFeedsTestDir[] =
     FILE_PATH_LITERAL("chrome/test/data/media/feeds");
 
@@ -80,16 +72,13 @@ struct TestData {
 class MediaFeedsBrowserTest : public InProcessBrowserTest {
  public:
   MediaFeedsBrowserTest()
-      : associated_origin_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
   ~MediaFeedsBrowserTest() override = default;
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(media::kMediaFeeds);
 
     InProcessBrowserTest::SetUp();
-
-    handled_well_known_ = false;
   }
 
   void SetUpOnMainThread() override {
@@ -100,13 +89,6 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     https_server_.RegisterRequestHandler(base::BindRepeating(
         &MediaFeedsBrowserTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(https_server_.Start());
-
-    // The associated origin server will serve the .well-known file.
-    associated_origin_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-    associated_origin_server_.RegisterRequestHandler(
-        base::BindRepeating(&MediaFeedsBrowserTest::HandleWellKnownRequest,
-                            base::Unretained(this)));
-    ASSERT_TRUE(associated_origin_server_.Start());
 
     // The embedded test server will serve the test page using HTTP.
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
@@ -228,12 +210,6 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
 
   virtual net::EmbeddedTestServer* GetServer() { return &https_server_; }
 
-  url::Origin GetAssociatedOrigin() const {
-    return url::Origin::Create(associated_origin_server_.GetURL("/"));
-  }
-
-  bool HandledWellKnownRequest() const { return handled_well_known_; }
-
  private:
   virtual std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
@@ -260,20 +236,6 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     return nullptr;
   }
 
-  std::unique_ptr<net::test_server::HttpResponse> HandleWellKnownRequest(
-      const net::test_server::HttpRequest& request) {
-    if (request.relative_url == kMediaFeedsWellKnownURL) {
-      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-      response->set_content(
-          base::StringPrintf(kMediaFeedsWellKnownResponse,
-                             https_server_.GetURL("/").spec().c_str()));
-      handled_well_known_ = true;
-      return response;
-    }
-
-    return nullptr;
-  }
-
   void LoadFullTestData(const std::string& file_name) {
     base::FilePath file;
     ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &file));
@@ -283,14 +245,8 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
     base::ReadFileToString(file, &test_data);
     ASSERT_TRUE(test_data.size());
 
-    full_test_data_ = base::StringPrintf(
-        test_data.c_str(),
-        associated_origin_server_.GetURL("/").spec().c_str());
+    full_test_data_ = test_data.c_str();
   }
-
-  bool handled_well_known_ = false;
-
-  net::EmbeddedTestServer associated_origin_server_;
 
   net::EmbeddedTestServer https_server_;
 
@@ -301,7 +257,6 @@ class MediaFeedsBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   DiscoverFeed(kMediaFeedsTestURL);
-  ASSERT_FALSE(HandledWellKnownRequest());
 
   // Check we discovered the feed.
   std::set<GURL> expected_urls = {GetServer()->GetURL("/media-feed.json")};
@@ -354,9 +309,6 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   ASSERT_EQ(2u, feeds[0]->logos.size());
   EXPECT_EQ(logo1, feeds[0]->logos[0]);
   EXPECT_EQ(logo2, feeds[0]->logos[1]);
-  EXPECT_FALSE(feeds[0]->associated_origins.empty());
-  EXPECT_THAT(feeds[0]->associated_origins,
-              testing::Contains(GetAssociatedOrigin()));
   EXPECT_EQ(user_id, feeds[0]->user_identifier);
   EXPECT_EQ("TEST", feeds[0]->cookie_name_filter);
 
@@ -711,8 +663,6 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
     ASSERT_TRUE(actual != items.end());
     EXPECT_EQ(expected_item, *actual);
   }
-
-  EXPECT_TRUE(HandledWellKnownRequest());
 }
 
 // Media feeds should successfully fetch and convert a minimal example feed

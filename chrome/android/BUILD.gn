@@ -2824,6 +2824,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/bookmarks/BookmarkBridge.java",
     "java/src/org/chromium/chrome/browser/browserservices/OriginVerifier.java",
     "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/InstalledWebappBridge.java",
+    "java/src/org/chromium/chrome/browser/browserservices/permissiondelegation/InstalledWebappGeolocationBridge.java",
     "java/src/org/chromium/chrome/browser/browsing_data/BrowsingDataBridge.java",
     "java/src/org/chromium/chrome/browser/browsing_data/BrowsingDataCounterBridge.java",
     "java/src/org/chromium/chrome/browser/browsing_data/UrlFilterBridge.java",
@@ -3062,7 +3063,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenInstaller.java",
     "java/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenMediator.java",
     "java/src/org/chromium/chrome/browser/webauth/AuthenticatorImpl.java",
-    "java/src/org/chromium/chrome/browser/webauth/Fido2Helper.java",
   ]
 
   # Used for testing only, should not be shipped to end users.

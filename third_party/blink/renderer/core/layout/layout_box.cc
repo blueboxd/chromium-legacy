@@ -266,9 +266,7 @@ LayoutBox::LayoutBox(ContainerNode* node)
 LayoutBox::~LayoutBox() = default;
 
 PaintLayerType LayoutBox::LayerTypeRequired() const {
-  // TODO(pdr): IsStacked() includes many of the same checks as CreatesGroup()
-  // and these can be unified to do fewer redundant checks.
-  if (IsStacked() || CreatesGroup() || HasHiddenBackface() ||
+  if (IsStacked() || HasHiddenBackface() ||
       (StyleRef().SpecifiesColumns() && !CanTraversePhysicalFragments()) ||
       IsEffectiveRootScroller())
     return kNormalPaintLayer;

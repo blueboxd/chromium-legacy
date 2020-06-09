@@ -141,6 +141,33 @@ CSSValueList* ConsumeFontFaceSrc(CSSParserTokenRange& range,
   return values;
 }
 
+CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
+                            AtRuleDescriptorID id,
+                            CSSParserTokenRange& range,
+                            const CSSParserContext& context) {
+  using Parser = AtRuleDescriptorParser;
+
+  switch (rule_type) {
+    case StyleRule::kFontFace:
+      return Parser::ParseFontFaceDescriptor(id, range, context);
+    case StyleRule::kProperty:
+      return Parser::ParseAtPropertyDescriptor(id, range, context);
+    case StyleRule::kCharset:
+    case StyleRule::kStyle:
+    case StyleRule::kImport:
+    case StyleRule::kMedia:
+    case StyleRule::kPage:
+    case StyleRule::kKeyframes:
+    case StyleRule::kKeyframe:
+    case StyleRule::kNamespace:
+    case StyleRule::kSupports:
+    case StyleRule::kViewport:
+      // TODO(andruud): Handle other descriptor types here.
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 }  // namespace
 
 CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
@@ -254,21 +281,13 @@ CSSValue* AtRuleDescriptorParser::ParseAtPropertyDescriptor(
 }
 
 bool AtRuleDescriptorParser::ParseAtRule(
+    StyleRule::RuleType rule_type,
     AtRuleDescriptorID id,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     HeapVector<CSSPropertyValue, 256>& parsed_descriptors) {
-  const CSSParserTokenRange original_range = range;
+  CSSValue* result = ConsumeDescriptor(rule_type, id, range, context);
 
-  // TODO(meade): Handle other descriptor types here.
-  CSSValue* result =
-      AtRuleDescriptorParser::ParseFontFaceDescriptor(id, range, context);
-
-  if (!result) {
-    range = original_range;
-    result =
-        AtRuleDescriptorParser::ParseAtPropertyDescriptor(id, range, context);
-  }
   if (!result)
     return false;
   // Convert to CSSPropertyID for legacy compatibility,

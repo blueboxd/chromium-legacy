@@ -126,14 +126,13 @@ void FormTracker::FormControlDidChangeImpl(
   }
 }
 
-void FormTracker::DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                           ui::PageTransition transition) {
+void FormTracker::DidCommitProvisionalLoad(ui::PageTransition transition) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  if (!is_same_document_navigation) {
-    ResetLastInteractedElements();
-    return;
-  }
+  ResetLastInteractedElements();
+}
 
+void FormTracker::DidFinishSameDocumentNavigation() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   FireSubmissionIfFormDisappear(SubmissionSource::SAME_DOCUMENT_NAVIGATION);
 }
 

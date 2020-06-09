@@ -107,6 +107,15 @@ public class FilterCoordinator {
         handleTabSelected(tabSelected);
     }
 
+    /** @return The currently selected filter. */
+    public @FilterType int getSelectedFilter() {
+        if (mModel.get(FilterProperties.SELECTED_TAB) == TabType.PREFETCH) {
+            return FilterType.PREFETCHED;
+        } else {
+            return mChipsProvider.getSelectedFilter();
+        }
+    }
+
     private void selectTab(@TabType int selectedTab) {
         mModel.set(FilterProperties.SELECTED_TAB, selectedTab);
 

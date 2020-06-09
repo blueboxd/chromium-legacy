@@ -18,6 +18,8 @@ import org.chromium.chrome.browser.download.StringUtils;
 import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView;
 import org.chromium.chrome.browser.download.home.list.view.CircularProgressView.UiState;
+import org.chromium.components.browser_ui.util.date.CalendarFactory;
+import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
@@ -66,37 +68,6 @@ public final class UiUtils {
                 assert false;
                 return null;
         }
-    }
-
-    /**
-     * Converts {@code date} into a string meant to be used as a list header.
-     * @param date The {@link Date} to convert.
-     * @return     The {@link CharSequence} representing the header.
-     */
-    public static CharSequence dateToHeaderString(Date date) {
-        Context context = ContextUtils.getApplicationContext();
-
-        Calendar calendar1 = CalendarFactory.get();
-        Calendar calendar2 = CalendarFactory.get();
-
-        calendar1.setTimeInMillis(System.currentTimeMillis());
-        calendar2.setTime(date);
-
-        StringBuilder builder = new StringBuilder();
-        if (CalendarUtils.isSameDay(calendar1, calendar2)) {
-            builder.append(context.getString(R.string.today)).append(" - ");
-        } else {
-            calendar1.add(Calendar.DATE, -1);
-            if (CalendarUtils.isSameDay(calendar1, calendar2)) {
-                builder.append(context.getString(R.string.yesterday)).append(" - ");
-            }
-        }
-
-        builder.append(DateUtils.formatDateTime(context, date.getTime(),
-                DateUtils.FORMAT_ABBREV_WEEKDAY | DateUtils.FORMAT_ABBREV_MONTH
-                        | DateUtils.FORMAT_SHOW_YEAR));
-
-        return builder;
     }
 
     /**

@@ -12,8 +12,8 @@ An archive of all packages built so far is at https://is.gd/chromeclang
     changes
 1.  Run `python tools/clang/scripts/upload_revision.py NNNN`
     with the target LLVM SVN revision number. This creates a roll CL on a new
-    branch, uploads it and starts tryjobs that build the compiler binaries into
-    a staging bucket on Google Cloud Storage (GCS).
+    branch, uploads it and starts tryjobs that run upstream tests and build
+    the compiler binaries into a staging bucket on Google Cloud Storage (GCS).
 1.  If the clang upload try bots succeed, copy the binaries from the staging
     bucket to the production one. For example:
 

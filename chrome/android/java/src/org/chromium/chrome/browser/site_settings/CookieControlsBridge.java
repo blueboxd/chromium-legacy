@@ -4,12 +4,14 @@
 
 package org.chromium.chrome.browser.site_settings;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.content_settings.CookieControlsStatus;
+import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -23,11 +25,14 @@ public class CookieControlsBridge {
      * Initializes a CookieControlsBridge instance.
      * @param observer An observer to call with updates from the cookie controller.
      * @param webContents The WebContents instance to observe.
+     * @param originalBrowserContext The "original" browser context. In Chrome, this corresponds to
+     *         the regular profile when webContents is incognito.
      */
-    public CookieControlsBridge(CookieControlsObserver observer, WebContents webContents) {
+    public CookieControlsBridge(CookieControlsObserver observer, WebContents webContents,
+            @Nullable BrowserContextHandle originalBrowserContext) {
         mObserver = observer;
-        mNativeCookieControlsBridge =
-                CookieControlsBridgeJni.get().init(CookieControlsBridge.this, webContents);
+        mNativeCookieControlsBridge = CookieControlsBridgeJni.get().init(
+                CookieControlsBridge.this, webContents, originalBrowserContext);
     }
 
     public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {
@@ -54,8 +59,8 @@ public class CookieControlsBridge {
         }
     }
 
-    public static boolean isCookieControlsEnabled(Profile profile) {
-        return CookieControlsBridgeJni.get().isCookieControlsEnabled(profile);
+    public static boolean isCookieControlsEnabled(BrowserContextHandle handle) {
+        return CookieControlsBridgeJni.get().isCookieControlsEnabled(handle);
     }
 
     @CalledByNative
@@ -71,11 +76,12 @@ public class CookieControlsBridge {
 
     @NativeMethods
     interface Natives {
-        long init(CookieControlsBridge caller, WebContents webContents);
+        long init(CookieControlsBridge caller, WebContents webContents,
+                BrowserContextHandle originalContextHandle);
         void destroy(long nativeCookieControlsBridge, CookieControlsBridge caller);
         void setThirdPartyCookieBlockingEnabledForSite(
                 long nativeCookieControlsBridge, boolean blockCookies);
         void onUiClosing(long nativeCookieControlsBridge);
-        boolean isCookieControlsEnabled(Profile profile);
+        boolean isCookieControlsEnabled(BrowserContextHandle browserContextHandle);
     }
 }

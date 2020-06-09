@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "chrome/common/caption.mojom.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/speech_recognition_client.h"
@@ -58,6 +59,7 @@ class ChromeSpeechRecognitionClient
   // Resets the temporary monaural audio bus and the channel mixer used to
   // combine multiple audio channels.
   void ResetChannelMixer(const media::AudioBuffer& buffer);
+  bool IsUrlBlocked(const std::string& url) const;
 
   mojo::Remote<media::mojom::SpeechRecognitionContext>
       speech_recognition_context_;
@@ -66,6 +68,9 @@ class ChromeSpeechRecognitionClient
   mojo::Receiver<media::mojom::SpeechRecognitionRecognizerClient>
       speech_recognition_client_receiver_{this};
   mojo::Remote<chrome::mojom::CaptionHost> caption_host_;
+
+  bool is_website_blocked_ = false;
+  const base::flat_set<std::string> blocked_urls_;
 
   // The temporary audio bus used to convert the raw audio to the appropriate
   // format.

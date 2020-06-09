@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
@@ -115,6 +116,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // reading list count.
 @property(nonatomic, strong)
     ContentSuggestionsMostVisitedActionItem* readingListItem;
+// Item for the Discover feed.
+@property(nonatomic, strong) ContentSuggestionsDiscoverItem* discoverItem;
 // Number of unread items in reading list model.
 @property(nonatomic, assign) NSInteger readingListUnreadCount;
 
@@ -134,7 +137,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
            mostVisitedSite:
                (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
           readingListModel:(ReadingListModel*)readingListModel
-               prefService:(PrefService*)prefService {
+               prefService:(PrefService*)prefService
+              discoverFeed:(UIViewController*)discoverFeed {
   self = [super init];
   if (self) {
     _contentArticlesEnabled =
@@ -157,6 +161,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     _learnMoreItem = [[ContentSuggestionsLearnMoreItem alloc] init];
 
     _discoverSectionInfo = DiscoverSectionInformation();
+    _discoverItem = [[ContentSuggestionsDiscoverItem alloc] init];
+    _discoverItem.discoverFeed = discoverFeed;
 
     _notificationPromo = std::make_unique<NotificationPromoWhatsNew>(
         GetApplicationContext()->GetLocalState());
@@ -227,7 +233,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   [sectionsInfo addObject:self.learnMoreSectionInfo];
 
-  if (IsDiscoverFeedEnabled()) {
+  if (IsDiscoverFeedEnabled() &&
+      self.contentArticlesEnabled->GetValue()->GetBool()) {
     [sectionsInfo addObject:self.discoverSectionInfo];
   }
 
@@ -256,6 +263,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
   } else if (sectionInfo == self.learnMoreSectionInfo) {
     [convertedSuggestions addObject:self.learnMoreItem];
+  } else if (sectionInfo == self.discoverSectionInfo) {
+    [convertedSuggestions addObject:self.discoverItem];
   } else {
     ntp_snippets::Category category =
         [[self categoryWrapperForSectionInfo:sectionInfo] category];
@@ -620,26 +629,43 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
 // |contentArticlesEnabled|.
+// The Articles category is always ignored if the Discover feed flag is
+// active.
 - (BOOL)isCategoryInitOrAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
-      status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED)
-    return self.contentArticlesEnabled->GetValue()->GetBool();
-  else
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
+    if (status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
+      return self.contentArticlesEnabled->GetValue()->GetBool() &&
+             !IsDiscoverFeedEnabled();
+    } else {
+      return IsCategoryStatusInitOrAvailable(
+                 self.contentService->GetCategoryStatus(category)) &&
+             !IsDiscoverFeedEnabled();
+    }
+  } else {
     return IsCategoryStatusInitOrAvailable(
         self.contentService->GetCategoryStatus(category));
+  }
 }
 
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
 // |contentArticlesEnabled|.
+// The Articles category is always ignored if the Discover feed flag is
+// active.
 - (BOOL)isCategoryAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
-      status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-    return self.contentArticlesEnabled->GetValue()->GetBool();
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
+    if (status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
+      return self.contentArticlesEnabled->GetValue()->GetBool() &&
+             !IsDiscoverFeedEnabled();
+    } else {
+      return IsCategoryStatusAvailable(
+                 self.contentService->GetCategoryStatus(category)) &&
+             !IsDiscoverFeedEnabled();
+    }
   } else {
     return IsCategoryStatusAvailable(
         self.contentService->GetCategoryStatus(category));

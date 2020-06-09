@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/google/core/common/google_util.h"
 #include "components/permissions/features.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -53,6 +55,13 @@ ChromePermissionsClient* ChromePermissionsClient::GetInstance() {
 HostContentSettingsMap* ChromePermissionsClient::GetSettingsMap(
     content::BrowserContext* browser_context) {
   return HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+}
+
+scoped_refptr<content_settings::CookieSettings>
+ChromePermissionsClient::GetCookieSettings(
+    content::BrowserContext* browser_context) {
+  return CookieSettingsFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
 }
 

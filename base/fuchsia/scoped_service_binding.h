@@ -7,10 +7,12 @@
 
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/fidl/cpp/interface_request.h>
 #include <lib/zx/channel.h>
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/fuchsia/scoped_service_publisher.h"
 
 namespace sys {
 class OutgoingDirectory;
@@ -23,51 +25,21 @@ class PseudoDir;
 namespace base {
 namespace fuchsia {
 
-namespace internal {
-
-class BASE_EXPORT ScopedServiceBindingBase {
- public:
-  explicit ScopedServiceBindingBase(sys::OutgoingDirectory* outgoing_directory);
-  explicit ScopedServiceBindingBase(vfs::PseudoDir* pseudo_dir);
-
-  ~ScopedServiceBindingBase();
-
- protected:
-  // Same type as vfs::Service::Connector, so the value can be passed directly
-  // to vfs::Service.
-  using Connector =
-      fit::function<void(zx::channel channel, async_dispatcher_t* dispatcher)>;
-
-  void RegisterService(const char* service_name, Connector connector);
-  void UnregisterService(const char* service_name);
-
- private:
-  vfs::PseudoDir* const pseudo_dir_ = nullptr;
-};
-
-}  // namespace internal
-
 template <typename Interface>
-class ScopedServiceBinding : public internal::ScopedServiceBindingBase {
+class BASE_EXPORT ScopedServiceBinding {
  public:
   // Published a public service in the specified |outgoing_directory|.
   // |outgoing_directory| and |impl| must outlive the binding.
   ScopedServiceBinding(sys::OutgoingDirectory* outgoing_directory,
                        Interface* impl)
-      : ScopedServiceBindingBase(outgoing_directory), impl_(impl) {
-    RegisterService(Interface::Name_,
-                    fit::bind_member(this, &ScopedServiceBinding::BindClient));
-  }
+      : publisher_(outgoing_directory, bindings_.GetHandler(impl)) {}
 
   // Publishes a service in the specified |pseudo_dir|. |pseudo_dir| and |impl|
   // must outlive the binding.
   ScopedServiceBinding(vfs::PseudoDir* pseudo_dir, Interface* impl)
-      : ScopedServiceBindingBase(pseudo_dir), impl_(impl) {
-    RegisterService(Interface::Name_,
-                    fit::bind_member(this, &ScopedServiceBinding::BindClient));
-  }
+      : publisher_(pseudo_dir, bindings_.GetHandler(impl)) {}
 
-  ~ScopedServiceBinding() { UnregisterService(Interface::Name_); }
+  ~ScopedServiceBinding() = default;
 
   void SetOnLastClientCallback(base::OnceClosure on_last_client_callback) {
     on_last_client_callback_ = std::move(on_last_client_callback);
@@ -78,21 +50,13 @@ class ScopedServiceBinding : public internal::ScopedServiceBindingBase {
   bool has_clients() const { return bindings_.size() != 0; }
 
  private:
-  void BindClient(zx::channel channel, async_dispatcher_t* dispatcher) {
-    bindings_.AddBinding(impl_,
-                         fidl::InterfaceRequest<Interface>(std::move(channel)),
-                         dispatcher);
-  }
-
   void OnBindingSetEmpty() {
     bindings_.set_empty_set_handler(nullptr);
     std::move(on_last_client_callback_).Run();
   }
 
-  sys::OutgoingDirectory* const directory_ = nullptr;
-  vfs::PseudoDir* const pseudo_dir_ = nullptr;
-  Interface* const impl_;
   fidl::BindingSet<Interface> bindings_;
+  ScopedServicePublisher<Interface> publisher_;
   base::OnceClosure on_last_client_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedServiceBinding);
@@ -105,19 +69,18 @@ enum class ScopedServiceBindingPolicy { kPreferNew, kPreferExisting };
 template <typename Interface,
           ScopedServiceBindingPolicy Policy =
               ScopedServiceBindingPolicy::kPreferNew>
-class ScopedSingleClientServiceBinding
-    : public internal::ScopedServiceBindingBase {
+class BASE_EXPORT ScopedSingleClientServiceBinding {
  public:
   // |outgoing_directory| and |impl| must outlive the binding.
   ScopedSingleClientServiceBinding(sys::OutgoingDirectory* outgoing_directory,
                                    Interface* impl)
-      : ScopedServiceBindingBase(outgoing_directory), binding_(impl) {
-    RegisterService(
-        Interface::Name_,
-        fit::bind_member(this, &ScopedSingleClientServiceBinding::BindClient));
-  }
+      : binding_(impl),
+        publisher_(
+            outgoing_directory,
+            fit::bind_member(this,
+                             &ScopedSingleClientServiceBinding::BindClient)) {}
 
-  ~ScopedSingleClientServiceBinding() { UnregisterService(Interface::Name_); }
+  ~ScopedSingleClientServiceBinding() = default;
 
   typename Interface::EventSender_& events() { return binding_.events(); }
 
@@ -130,13 +93,12 @@ class ScopedSingleClientServiceBinding
   bool has_clients() const { return binding_.is_bound(); }
 
  private:
-  void BindClient(zx::channel channel, async_dispatcher_t* dispatcher) {
+  void BindClient(fidl::InterfaceRequest<Interface> request) {
     if (Policy == ScopedServiceBindingPolicy::kPreferExisting &&
         binding_.is_bound()) {
       return;
     }
-    binding_.Bind(fidl::InterfaceRequest<Interface>(std::move(channel)),
-                  dispatcher);
+    binding_.Bind(std::move(request));
   }
 
   void OnBindingEmpty(zx_status_t status) {
@@ -145,6 +107,7 @@ class ScopedSingleClientServiceBinding
   }
 
   fidl::Binding<Interface> binding_;
+  ScopedServicePublisher<Interface> publisher_;
   base::OnceClosure on_last_client_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSingleClientServiceBinding);

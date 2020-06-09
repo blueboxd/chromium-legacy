@@ -20,7 +20,9 @@ class CookieControlsBridge : public CookieControlsView {
   CookieControlsBridge(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& jweb_contents_android);
+      const base::android::JavaParamRef<jobject>& jweb_contents_android,
+      const base::android::JavaParamRef<jobject>&
+          joriginal_browser_context_handle);
 
   ~CookieControlsBridge() override;
 

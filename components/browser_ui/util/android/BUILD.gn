@@ -10,6 +10,9 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/util/ComposedBrowserControlsVisibilityDelegate.java",
     "java/src/org/chromium/components/browser_ui/util/ConversionUtils.java",
     "java/src/org/chromium/components/browser_ui/util/DownloadUtils.java",
+    "java/src/org/chromium/components/browser_ui/util/date/CalendarFactory.java",
+    "java/src/org/chromium/components/browser_ui/util/date/CalendarUtils.java",
+    "java/src/org/chromium/components/browser_ui/util/date/StringUtils.java",
   ]
 
   deps = [

@@ -316,7 +316,7 @@ std::string Event::ToString() const {
 
 Event::Event(EventType type, base::TimeTicks time_stamp, int flags)
     : type_(type),
-      time_stamp_(time_stamp),
+      time_stamp_(time_stamp.is_null() ? EventTimeForNow() : time_stamp),
       flags_(flags),
       native_event_(PlatformEvent()),
       delete_native_event_(false),
@@ -810,9 +810,7 @@ KeyEvent::KeyEvent(EventType type,
                    KeyboardCode key_code,
                    int flags,
                    base::TimeTicks time_stamp)
-    : Event(type,
-            time_stamp == base::TimeTicks() ? EventTimeForNow() : time_stamp,
-            flags),
+    : Event(type, time_stamp, flags),
       key_code_(key_code),
       code_(UsLayoutKeyboardCodeToDomCode(key_code)) {}
 
@@ -840,9 +838,7 @@ KeyEvent::KeyEvent(base::char16 character,
                    DomCode code,
                    int flags,
                    base::TimeTicks time_stamp)
-    : Event(ET_KEY_PRESSED,
-            time_stamp == base::TimeTicks() ? EventTimeForNow() : time_stamp,
-            flags),
+    : Event(ET_KEY_PRESSED, time_stamp, flags),
       key_code_(key_code),
       code_(code),
       is_char_(true),

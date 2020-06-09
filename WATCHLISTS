@@ -636,7 +636,7 @@
                   'chrome_proxy|'\
                   'client_hints|'\
                   'chrome/browser/predictors|'\
-                  'components/blacklist|'\
+                  'components/blocklist|'\
                   'components/data_use|'\
                   'data_reduction_proxy|'\
                   'data_use_measurement|'\

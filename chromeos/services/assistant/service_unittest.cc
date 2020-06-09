@@ -306,7 +306,7 @@ TEST_F(AssistantServiceTest, ShouldSetClientStatusToNewReadyWhenRunning) {
       AssistantManagerService::State::RUNNING);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(client()->status(), AssistantStatus::NEW_READY);
+  EXPECT_EQ(client()->status(), AssistantStatus::READY);
 }
 
 TEST_F(AssistantServiceTest, ShouldSetClientStatusToNotReadyWhenStopped) {

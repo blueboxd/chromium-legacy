@@ -10,10 +10,10 @@
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
@@ -468,13 +468,10 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 
   if (params->generate_thumbnail) {
     image.EnsureRepsForSupportedScales();
-    scoped_refptr<base::RefCountedBytes> thumbnail_data;
-    GenerateThumbnail(
-        image, gfx::Size(kWallpaperThumbnailWidth, kWallpaperThumbnailHeight),
-        &thumbnail_data);
-    Respond(OneArgument(Value::CreateWithCopiedBuffer(
-        reinterpret_cast<const char*>(thumbnail_data->front()),
-        thumbnail_data->size())));
+    std::vector<uint8_t> thumbnail_data = GenerateThumbnail(
+        image, gfx::Size(kWallpaperThumbnailWidth, kWallpaperThumbnailHeight));
+    Respond(
+        OneArgument(std::make_unique<base::Value>(std::move(thumbnail_data))));
   } else {
     Respond(NoArguments());
   }
@@ -580,8 +577,8 @@ void WallpaperPrivateGetThumbnailFunction::FileNotLoaded() {
 
 void WallpaperPrivateGetThumbnailFunction::FileLoaded(
     const std::string& data) {
-  Respond(
-      OneArgument(Value::CreateWithCopiedBuffer(data.c_str(), data.size())));
+  Respond(OneArgument(
+      std::make_unique<Value>(base::as_bytes(base::make_span(data)))));
 }
 
 void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
@@ -598,7 +595,7 @@ void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
       content::GetUIThreadTaskRunner({})->PostTask(
           FROM_HERE,
           base::BindOnce(&WallpaperPrivateGetThumbnailFunction::FileLoaded,
-                         this, data));
+                         this, std::move(data)));
     }
   } else {
     content::GetUIThreadTaskRunner({})->PostTask(
@@ -864,11 +861,10 @@ WallpaperPrivateGetCurrentWallpaperThumbnailFunction::Run() {
   auto image = WallpaperControllerClient::Get()->GetWallpaperImage();
   gfx::Size thumbnail_size(params->thumbnail_width, params->thumbnail_height);
   image.EnsureRepsForSupportedScales();
-  scoped_refptr<base::RefCountedBytes> thumbnail_data;
-  GenerateThumbnail(image, thumbnail_size, &thumbnail_data);
-  return RespondNow(OneArgument(std::make_unique<Value>(
-      Value::BlobStorage(thumbnail_data->front(),
-                         thumbnail_data->front() + thumbnail_data->size()))));
+  std::vector<uint8_t> thumbnail_data =
+      GenerateThumbnail(image, thumbnail_size);
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(std::move(thumbnail_data))));
 }
 
 void WallpaperPrivateGetCurrentWallpaperThumbnailFunction::OnWallpaperDecoded(

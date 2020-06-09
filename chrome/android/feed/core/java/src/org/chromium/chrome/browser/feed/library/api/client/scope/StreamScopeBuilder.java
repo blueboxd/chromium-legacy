@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.feed.library.api.client.scope;
 
 import android.app.Activity;
 
-import org.chromium.base.FeatureList;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.ApplicationInfo;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -41,9 +40,6 @@ import org.chromium.chrome.browser.feed.library.piet.host.CustomElementProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.HostBindingProvider;
 import org.chromium.chrome.browser.feed.library.piet.host.ThrowingCustomElementProvider;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
-import org.chromium.chrome.browser.feed.v2.FeedStream;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 
 /** A builder that creates a {@link StreamScope}. */
 public final class StreamScopeBuilder {
@@ -73,7 +69,6 @@ public final class StreamScopeBuilder {
     private final FeedExtensionRegistry mFeedExtensionRegistry;
     private boolean mIsBackgroundDark;
     private boolean mIsPlaceholderShown;
-    private final SnackbarManager mSnackbarManager;
 
     // Optional internal components to override the default implementations.
     private ActionParserFactory mActionParserFactory;
@@ -93,7 +88,7 @@ public final class StreamScopeBuilder {
             BasicLoggingApi basicLoggingApi, OfflineIndicatorApi offlineIndicatorApi,
             FeedKnownContent feedKnownContent, TooltipApi tooltipApi,
             TooltipSupportedApi tooltipSupportedApi, ApplicationInfo applicationInfo,
-            FeedExtensionRegistry feedExtensionRegistry, SnackbarManager snackbarManager) {
+            FeedExtensionRegistry feedExtensionRegistry) {
         this.mActivity = activity;
         this.mActionApi = actionApi;
         this.mImageLoaderApi = imageLoaderApi;
@@ -116,7 +111,6 @@ public final class StreamScopeBuilder {
         this.mTooltipApi = tooltipApi;
         this.mApplicationInfo = applicationInfo;
         this.mFeedExtensionRegistry = feedExtensionRegistry;
-        this.mSnackbarManager = snackbarManager;
     }
 
     public StreamScopeBuilder setIsBackgroundDark(boolean isBackgroundDark) {
@@ -164,22 +158,17 @@ public final class StreamScopeBuilder {
         if (mHostBindingProvider == null) {
             mHostBindingProvider = new HostBindingProvider();
         }
-        if (FeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
-            mStream = new FeedStream(mActivity, mIsBackgroundDark, mSnackbarManager);
-        } else {
-            if (mStreamFactory == null) {
-                mStreamFactory = new BasicStreamFactory();
-            }
-            mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mActivity,
-                    mApplicationInfo.getBuildType(), mCardConfiguration, mImageLoaderApi,
-                    Validators.checkNotNull(mCustomElementProvider), mDebugBehavior, mClock,
-                    Validators.checkNotNull(mModelProviderFactory),
-                    Validators.checkNotNull(mHostBindingProvider), mOfflineIndicatorApi, mConfig,
-                    mActionApi, mActionManager, mSnackbarApi, mStreamConfiguration,
-                    mFeedExtensionRegistry, mBasicLoggingApi, mMainThreadRunner, mIsBackgroundDark,
-                    mTooltipApi, mThreadUtils, mFeedKnownContent, mIsPlaceholderShown);
+        if (mStreamFactory == null) {
+            mStreamFactory = new BasicStreamFactory();
         }
+        mStream = mStreamFactory.build(Validators.checkNotNull(mActionParserFactory), mActivity,
+                mApplicationInfo.getBuildType(), mCardConfiguration, mImageLoaderApi,
+                Validators.checkNotNull(mCustomElementProvider), mDebugBehavior, mClock,
+                Validators.checkNotNull(mModelProviderFactory),
+                Validators.checkNotNull(mHostBindingProvider), mOfflineIndicatorApi, mConfig,
+                mActionApi, mActionManager, mSnackbarApi, mStreamConfiguration,
+                mFeedExtensionRegistry, mBasicLoggingApi, mMainThreadRunner, mIsBackgroundDark,
+                mTooltipApi, mThreadUtils, mFeedKnownContent, mIsPlaceholderShown);
         return new FeedStreamScope(
                 Validators.checkNotNull(mStream), Validators.checkNotNull(mModelProviderFactory));
     }

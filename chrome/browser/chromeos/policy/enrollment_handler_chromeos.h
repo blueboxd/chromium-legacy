@@ -104,7 +104,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   void OnDeviceAccountClientError(DeviceManagementStatus status) override;
   enterprise_management::DeviceServiceApiAccessRequest::DeviceType
   GetRobotAuthCodeDeviceType() override;
-  std::string GetRobotOAuthScopes() override;
+  std::set<std::string> GetRobotOAuthScopes() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:

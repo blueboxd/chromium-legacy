@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
+#include "chrome/android/chrome_jni_headers/InstalledWebappGeolocationBridge_jni.h"
 #include "chrome/browser/installable/installed_webapp_geolocation_context.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
 
@@ -31,11 +33,22 @@ InstalledWebappGeolocationBridge::~InstalledWebappGeolocationBridge() {
 }
 
 void InstalledWebappGeolocationBridge::StartListeningForUpdates() {
-  // TODO(crbug.com/1069506) Add implementation.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (java_ref_.is_null()) {
+    base::android::ScopedJavaLocalRef<jstring> j_origin =
+        base::android::ConvertUTF8ToJavaString(env, origin_.GetOrigin().spec());
+    java_ref_.Reset(Java_InstalledWebappGeolocationBridge_create(
+        env, reinterpret_cast<intptr_t>(this), j_origin));
+  }
+  Java_InstalledWebappGeolocationBridge_start(env, java_ref_, high_accuracy_);
 }
 
 void InstalledWebappGeolocationBridge::StopUpdates() {
-  // TODO(crbug.com/1069506) Add implementation.
+  if (!java_ref_.is_null()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_InstalledWebappGeolocationBridge_stopAndDestroy(env, java_ref_);
+    java_ref_.Reset();
+  }
 }
 
 void InstalledWebappGeolocationBridge::SetHighAccuracy(bool high_accuracy) {
@@ -65,11 +78,18 @@ void InstalledWebappGeolocationBridge::QueryNextPosition(
 
 void InstalledWebappGeolocationBridge::SetOverride(
     const device::mojom::Geoposition& position) {
-  // TODO(crbug.com/1069506) Add implementation.
+  if (!position_callback_.is_null())
+    ReportCurrentPosition();
+
+  position_override_ = position;
+  StopUpdates();
+
+  OnLocationUpdate(position_override_);
 }
 
 void InstalledWebappGeolocationBridge::ClearOverride() {
-  // TODO(crbug.com/1069506) Add implementation.
+  position_override_ = device::mojom::Geoposition();
+  StartListeningForUpdates();
 }
 
 void InstalledWebappGeolocationBridge::OnConnectionError() {
@@ -95,4 +115,44 @@ void InstalledWebappGeolocationBridge::ReportCurrentPosition() {
   DCHECK(position_callback_);
   std::move(position_callback_).Run(current_position_.Clone());
   has_position_to_report_ = false;
+}
+
+void InstalledWebappGeolocationBridge::OnNewLocationAvailable(
+    JNIEnv* env,
+    jdouble latitude,
+    jdouble longitude,
+    jdouble time_stamp,
+    jboolean has_altitude,
+    jdouble altitude,
+    jboolean has_accuracy,
+    jdouble accuracy,
+    jboolean has_heading,
+    jdouble heading,
+    jboolean has_speed,
+    jdouble speed) {
+  device::mojom::Geoposition position;
+  position.latitude = latitude;
+  position.longitude = longitude;
+  position.timestamp = base::Time::FromDoubleT(time_stamp);
+  if (has_altitude)
+    position.altitude = altitude;
+  if (has_accuracy)
+    position.accuracy = accuracy;
+  if (has_heading)
+    position.heading = heading;
+  if (has_speed)
+    position.speed = speed;
+
+  OnLocationUpdate(position);
+}
+
+void InstalledWebappGeolocationBridge::OnNewErrorAvailable(JNIEnv* env,
+                                                           jstring message) {
+  device::mojom::Geoposition position_error;
+  position_error.error_code =
+      device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
+  position_error.error_message =
+      base::android::ConvertJavaStringToUTF8(env, message);
+
+  OnLocationUpdate(position_error);
 }

@@ -67,11 +67,6 @@ struct MediaFeed {
   // have been deleted and the feed status has been reset to default.
   ResetReason reset_reason;
 
-  // An associated origin is an origin associated with the feed. If the cookies
-  // are deleted or expire on the origin then we will delete the feed items.
-  // https://wicg.github.io/media-feeds/#dfn-associated-origin
-  array<url.mojom.Origin> associated_origins;
-
   // Contains details about the user signed into the website.
   UserIdentifier? user_identifier;
 

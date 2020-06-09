@@ -30,8 +30,7 @@ class OnLoadScriptInjector : public content::RenderFrameObserver,
 
   // RenderFrameObserver override:
   void OnDestruct() override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
 
  private:
   // Called by OnDestruct(), when the RenderFrame is destroyed.

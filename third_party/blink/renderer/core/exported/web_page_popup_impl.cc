@@ -313,15 +313,37 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(Persistent<LocalFrameClient>, empty_local_frame_client,
                       (MakeGarbageCollected<EmptyLocalFrameClient>()));
+
   // Creating new WindowAgentFactory because page popup content is owned by the
-  // user agent and should be isolated from the main frame.
+  // user agent and should be isolated from the main frame. However, if we are a
+  // page popup in LayoutTests ensure we use the popup owner's frame for looking
+  // up the Agent so tests can possibly access the document via internals API.
+  WindowAgentFactory* window_agent_factory = nullptr;
+  if (WebTestSupport::IsRunningWebTest()) {
+    Document& owner_document = popup_client_->OwnerElement().GetDocument();
+    window_agent_factory = &owner_document.GetFrame()->window_agent_factory();
+  }
+
   auto* frame = MakeGarbageCollected<LocalFrame>(
       empty_local_frame_client, *page_,
       /* FrameOwner* */ nullptr, base::UnguessableToken::Create(),
-      /* WindowAgentFactory* */ nullptr,
+      window_agent_factory,
       /* InterfaceRegistry* */ nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
   frame->SetView(MakeGarbageCollected<LocalFrameView>(*frame));
+
+  if (WebTestSupport::IsRunningWebTest()) {
+    // In order for the shared WindowAgentFactory for tests to work correctly,
+    // we need to also copy settings used in WindowAgent selection over to the
+    // popup frame.
+    Settings* owner_settings =
+        popup_client_->OwnerElement().GetDocument().GetFrame()->GetSettings();
+    frame->GetSettings()->SetWebSecurityEnabled(
+        owner_settings->GetWebSecurityEnabled());
+    frame->GetSettings()->SetAllowUniversalAccessFromFileURLs(
+        owner_settings->GetAllowUniversalAccessFromFileURLs());
+  }
+
   frame->Init();
   frame->View()->SetParentVisible(true);
   frame->View()->SetSelfVisible(true);

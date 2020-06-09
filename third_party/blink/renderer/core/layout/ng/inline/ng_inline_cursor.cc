@@ -462,6 +462,13 @@ const DisplayItemClient* NGInlineCursorPosition::GetDisplayItemClient() const {
   return nullptr;
 }
 
+wtf_size_t NGInlineCursorPosition::FragmentId() const {
+  if (paint_fragment_)
+    return 0;
+  DCHECK(item_);
+  return item_->FragmentId();
+}
+
 const NGInlineBreakToken* NGInlineCursorPosition::InlineBreakToken() const {
   DCHECK(IsLineBox());
   if (paint_fragment_) {

@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.NonDismissibleHeader;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
+import org.chromium.chrome.browser.feed.v2.FeedStream;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
@@ -409,29 +411,35 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mScrollViewResizer = null;
         }
 
-        ProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
-        assert feedProcessScope != null;
+        if (FeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
+            mStream = new FeedStream(
+                    mActivity, mShowDarkBackground, mSnackbarManager, mPageNavigationDelegate);
+        } else {
+            ProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
+            assert feedProcessScope != null;
 
-        FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
-        appLifecycle.onNTPOpened();
+            FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
+            appLifecycle.onNTPOpened();
 
-        mImageLoader =
-                new FeedImageLoader(mActivity, GlobalDiscardableReferencePool.getReferencePool());
-        TooltipApi tooltipApi = new BasicTooltipApi();
+            mImageLoader = new FeedImageLoader(
+                    mActivity, GlobalDiscardableReferencePool.getReferencePool());
+            TooltipApi tooltipApi = new BasicTooltipApi();
 
-        StreamScope streamScope =
-                feedProcessScope
-                        .createStreamScopeBuilder(mActivity, mImageLoader, mActionApi,
-                                new BasicStreamConfiguration(),
-                                new BasicCardConfiguration(mActivity.getResources(), mUiConfig),
-                                new BasicSnackbarApi(mSnackbarManager),
-                                FeedProcessScopeFactory.getFeedOfflineIndicator(), tooltipApi,
-                                mSnackbarManager)
-                        .setIsBackgroundDark(mShowDarkBackground)
-                        .setIsPlaceholderShown(mIsPlaceholderShown)
-                        .build();
+            StreamScope streamScope =
+                    feedProcessScope
+                            .createStreamScopeBuilder(mActivity, mImageLoader, mActionApi,
+                                    new BasicStreamConfiguration(),
+                                    new BasicCardConfiguration(mActivity.getResources(), mUiConfig),
+                                    new BasicSnackbarApi(mSnackbarManager),
+                                    FeedProcessScopeFactory.getFeedOfflineIndicator(), tooltipApi)
+                            .setIsBackgroundDark(mShowDarkBackground)
+                            .setIsPlaceholderShown(mIsPlaceholderShown)
+                            .build();
 
-        mStream = streamScope.getStream();
+            mStream = streamScope.getStream();
+        }
+
         mStreamLifecycleManager = mDelegate.createStreamLifecycleManager(mStream, mActivity);
 
         View view = mStream.getView();

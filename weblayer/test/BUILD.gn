@@ -202,16 +202,20 @@ source_set("run_all_unittests") {
   public_deps = [
     "//base/test:test_support",
     "//content/test:test_support",
+    "//weblayer:weblayer_lib_base",
   ]
 }
 
 test("weblayer_unittests") {
   deps = [
     ":run_all_unittests",
-    "//weblayer:weblayer_lib_base",
+    "//components/site_isolation",
   ]
   if (is_android) {
     deps += [ ":weblayer_test_assets" ]
   }
-  sources = [ "../browser/profile_disk_operations_unittests.cc" ]
+  sources = [
+    "../browser/profile_disk_operations_unittests.cc",
+    "../browser/site_isolation_policy_unittest.cc",
+  ]
 }

@@ -348,6 +348,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kBlockHTMLParserOnStyleSheets, kUseFeatureState},
           {"ConversionMeasurement", features::kConversionMeasurement,
            kEnableOnly},
+          {"CSSColorSchemeUARendering", features::kCSSColorSchemeUARendering,
+           kUseFeatureState},
           {"CSSReducedFontLoadingInvalidations",
            blink::features::kCSSReducedFontLoadingInvalidations,
            kUseFeatureState},

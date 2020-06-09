@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
@@ -20,6 +21,7 @@
 #include "media/remoting/proto_enum_utils.h"
 #include "media/remoting/proto_utils.h"
 #include "media/remoting/renderer_controller.h"
+#include "media/remoting/rpc_broker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -146,16 +148,7 @@ class RendererClientImpl final : public RendererClient {
 
 class CourierRendererTest : public testing::Test {
  public:
-  CourierRendererTest()
-      : receiver_renderer_handle_(10),
-        receiver_audio_demuxer_callback_handle_(11),
-        receiver_video_demuxer_callback_handle_(12),
-        sender_client_handle_(RpcBroker::kInvalidHandle),
-        sender_renderer_callback_handle_(RpcBroker::kInvalidHandle),
-        sender_audio_demuxer_handle_(RpcBroker::kInvalidHandle),
-        sender_video_demuxer_handle_(RpcBroker::kInvalidHandle),
-        received_audio_ds_init_cb_(false),
-        received_video_ds_init_cb_(false) {}
+  CourierRendererTest() = default;
   ~CourierRendererTest() override = default;
 
   // Use this function to mimic receiver to handle RPC message for renderer
@@ -165,40 +158,87 @@ class CourierRendererTest : public testing::Test {
     ASSERT_TRUE(rpc->ParseFromArray(message->data(), message->size()));
     switch (rpc->proc()) {
       case pb::RpcMessage::RPC_ACQUIRE_RENDERER: {
+        DCHECK(rpc->has_integer_value());
+        sender_renderer_handle_ = rpc->integer_value();
         // Issues RPC_ACQUIRE_RENDERER_DONE RPC message.
-        std::unique_ptr<pb::RpcMessage> acquire_done(new pb::RpcMessage());
-        acquire_done->set_handle(rpc->integer_value());
+        auto acquire_done = std::make_unique<pb::RpcMessage>();
+        acquire_done->set_handle(sender_renderer_handle_);
         acquire_done->set_proc(pb::RpcMessage::RPC_ACQUIRE_RENDERER_DONE);
         acquire_done->set_integer_value(receiver_renderer_handle_);
         controller_->GetRpcBroker()->ProcessMessageFromRemote(
             std::move(acquire_done));
       } break;
+      case pb::RpcMessage::RPC_ACQUIRE_DEMUXER: {
+        if (!is_backward_compatible_mode_) {
+          int acquire_demuxer_handle = RpcBroker::kAcquireDemuxerHandle;
+          EXPECT_EQ(rpc->handle(), acquire_demuxer_handle);
+          sender_audio_demuxer_handle_ =
+              rpc->acquire_demuxer_rpc().audio_demuxer_handle();
+          sender_video_demuxer_handle_ =
+              rpc->acquire_demuxer_rpc().video_demuxer_handle();
+
+          // Issues audio RPC_DS_INITIALIZE RPC message.
+          if (sender_audio_demuxer_handle_ != RpcBroker::kInvalidHandle) {
+            auto ds_init = std::make_unique<pb::RpcMessage>();
+            ds_init->set_handle(sender_audio_demuxer_handle_);
+            ds_init->set_proc(pb::RpcMessage::RPC_DS_INITIALIZE);
+            ds_init->set_integer_value(receiver_audio_demuxer_callback_handle_);
+            controller_->GetRpcBroker()->ProcessMessageFromRemote(
+                std::move(ds_init));
+          }
+
+          // Issues video RPC_DS_INITIALIZE RPC message.
+          if (sender_video_demuxer_handle_ != RpcBroker::kInvalidHandle) {
+            auto ds_init = std::make_unique<pb::RpcMessage>();
+            ds_init->set_handle(sender_video_demuxer_handle_);
+            ds_init->set_proc(pb::RpcMessage::RPC_DS_INITIALIZE);
+            ds_init->set_integer_value(receiver_video_demuxer_callback_handle_);
+            controller_->GetRpcBroker()->ProcessMessageFromRemote(
+                std::move(ds_init));
+          }
+        }
+      } break;
       case pb::RpcMessage::RPC_R_INITIALIZE: {
-        EXPECT_EQ(rpc->handle(), receiver_renderer_handle_);
         sender_renderer_callback_handle_ =
             rpc->renderer_initialize_rpc().callback_handle();
         sender_client_handle_ = rpc->renderer_initialize_rpc().client_handle();
-        sender_audio_demuxer_handle_ =
-            rpc->renderer_initialize_rpc().audio_demuxer_handle();
-        sender_video_demuxer_handle_ =
-            rpc->renderer_initialize_rpc().video_demuxer_handle();
 
-        // Issues audio RPC_DS_INITIALIZE RPC message.
-        if (sender_audio_demuxer_handle_ != RpcBroker::kInvalidHandle) {
-          std::unique_ptr<pb::RpcMessage> ds_init(new pb::RpcMessage());
-          ds_init->set_handle(sender_audio_demuxer_handle_);
-          ds_init->set_proc(pb::RpcMessage::RPC_DS_INITIALIZE);
-          ds_init->set_integer_value(receiver_audio_demuxer_callback_handle_);
+        if (is_backward_compatible_mode_) {
+          EXPECT_EQ(rpc->handle(), receiver_renderer_handle_);
+
+          sender_audio_demuxer_handle_ =
+              rpc->renderer_initialize_rpc().audio_demuxer_handle();
+          sender_video_demuxer_handle_ =
+              rpc->renderer_initialize_rpc().video_demuxer_handle();
+
+          // Issues audio RPC_DS_INITIALIZE RPC message.
+          if (sender_audio_demuxer_handle_ != RpcBroker::kInvalidHandle) {
+            auto ds_init = std::make_unique<pb::RpcMessage>();
+            ds_init->set_handle(sender_audio_demuxer_handle_);
+            ds_init->set_proc(pb::RpcMessage::RPC_DS_INITIALIZE);
+            ds_init->set_integer_value(receiver_audio_demuxer_callback_handle_);
+            controller_->GetRpcBroker()->ProcessMessageFromRemote(
+                std::move(ds_init));
+          }
+
+          // Issues video RPC_DS_INITIALIZE RPC message.
+          if (sender_video_demuxer_handle_ != RpcBroker::kInvalidHandle) {
+            auto ds_init = std::make_unique<pb::RpcMessage>();
+            ds_init->set_handle(sender_video_demuxer_handle_);
+            ds_init->set_proc(pb::RpcMessage::RPC_DS_INITIALIZE);
+            ds_init->set_integer_value(receiver_video_demuxer_callback_handle_);
+            controller_->GetRpcBroker()->ProcessMessageFromRemote(
+                std::move(ds_init));
+          }
+        } else {
+          // Issues RPC_R_INITIALIZE_CALLBACK RPC message when receiving
+          // RPC_R_INITIALIZE.
+          auto init_cb = std::make_unique<pb::RpcMessage>();
+          init_cb->set_handle(sender_renderer_callback_handle_);
+          init_cb->set_proc(pb::RpcMessage::RPC_R_INITIALIZE_CALLBACK);
+          init_cb->set_boolean_value(is_successfully_initialized_);
           controller_->GetRpcBroker()->ProcessMessageFromRemote(
-              std::move(ds_init));
-        }
-        if (sender_video_demuxer_handle_ != RpcBroker::kInvalidHandle) {
-          std::unique_ptr<pb::RpcMessage> ds_init(new pb::RpcMessage());
-          ds_init->set_handle(sender_video_demuxer_handle_);
-          ds_init->set_proc(pb::RpcMessage::RPC_DS_INITIALIZE);
-          ds_init->set_integer_value(receiver_video_demuxer_callback_handle_);
-          controller_->GetRpcBroker()->ProcessMessageFromRemote(
-              std::move(ds_init));
+              std::move(init_cb));
         }
       } break;
       case pb::RpcMessage::RPC_DS_INITIALIZE_CALLBACK: {
@@ -207,20 +247,24 @@ class CourierRendererTest : public testing::Test {
         if (rpc->handle() == receiver_video_demuxer_callback_handle_)
           received_video_ds_init_cb_ = true;
 
-        // Issues RPC_R_INITIALIZE_CALLBACK RPC message when receiving
-        // RPC_DS_INITIALIZE_CALLBACK on available streams.
+        // Check whether the demuxer at the receiver end is initialized.
         if (received_audio_ds_init_cb_ ==
                 (sender_audio_demuxer_handle_ != RpcBroker::kInvalidHandle) &&
             received_video_ds_init_cb_ ==
                 (sender_video_demuxer_handle_ != RpcBroker::kInvalidHandle)) {
-          std::unique_ptr<pb::RpcMessage> init_cb(new pb::RpcMessage());
+          is_receiver_demuxer_initialized_ = true;
+        }
+
+        if (is_backward_compatible_mode_ && is_receiver_demuxer_initialized_) {
+          // Issues RPC_R_INITIALIZE_CALLBACK RPC message when receiving
+          // RPC_DS_INITIALIZE_CALLBACK on available streams.
+          auto init_cb = std::make_unique<pb::RpcMessage>();
           init_cb->set_handle(sender_renderer_callback_handle_);
           init_cb->set_proc(pb::RpcMessage::RPC_R_INITIALIZE_CALLBACK);
           init_cb->set_boolean_value(is_successfully_initialized_);
           controller_->GetRpcBroker()->ProcessMessageFromRemote(
               std::move(init_cb));
         }
-
       } break;
       case pb::RpcMessage::RPC_R_FLUSHUNTIL: {
         // Issues RPC_R_FLUSHUNTIL_CALLBACK RPC message.
@@ -269,8 +313,16 @@ class CourierRendererTest : public testing::Test {
     RunPendingTasks();
   }
 
+  void InitializeRendererBackwardsCompatible() {
+    is_backward_compatible_mode_ = true;
+    InitializeRenderer();
+  }
+
   bool IsRendererInitialized() const {
-    return renderer_->state_ == CourierRenderer::STATE_PLAYING;
+    EXPECT_TRUE(received_audio_ds_init_cb_);
+    EXPECT_TRUE(received_video_ds_init_cb_);
+    return renderer_->state_ == CourierRenderer::STATE_PLAYING &&
+           is_receiver_demuxer_initialized_;
   }
 
   bool DidEncounterFatalError() const {
@@ -402,17 +454,24 @@ class CourierRendererTest : public testing::Test {
   base::SimpleTestTickClock clock_;
 
   // RPC handles.
-  const int receiver_renderer_handle_;
-  const int receiver_audio_demuxer_callback_handle_;
-  const int receiver_video_demuxer_callback_handle_;
-  int sender_client_handle_;
-  int sender_renderer_callback_handle_;
-  int sender_audio_demuxer_handle_;
-  int sender_video_demuxer_handle_;
+  const int receiver_renderer_handle_{10};
+  const int receiver_audio_demuxer_callback_handle_{11};
+  const int receiver_video_demuxer_callback_handle_{12};
+  int sender_renderer_handle_;
+  int sender_client_handle_{RpcBroker::kInvalidHandle};
+  int sender_renderer_callback_handle_{RpcBroker::kInvalidHandle};
+  int sender_audio_demuxer_handle_{RpcBroker::kInvalidHandle};
+  int sender_video_demuxer_handle_{RpcBroker::kInvalidHandle};
+
+  // Indicates whether the test runs in backward-compatible mode.
+  bool is_backward_compatible_mode_ = false;
+
+  // Indicates whether the demuxer at receiver is initialized or not.
+  bool is_receiver_demuxer_initialized_ = false;
 
   // Indicate whether RPC_DS_INITIALIZE_CALLBACK RPC messages are received.
-  bool received_audio_ds_init_cb_;
-  bool received_video_ds_init_cb_;
+  bool received_audio_ds_init_cb_ = false;
+  bool received_video_ds_init_cb_ = false;
 
   // Indicates whether the test wants to simulate successful initialization in
   // the renderer on the receiver side.
@@ -427,6 +486,14 @@ class CourierRendererTest : public testing::Test {
 
 TEST_F(CourierRendererTest, Initialize) {
   InitializeRenderer();
+  RunPendingTasks();
+
+  ASSERT_TRUE(IsRendererInitialized());
+  ASSERT_EQ(render_client_->status(), PIPELINE_OK);
+}
+
+TEST_F(CourierRendererTest, InitializeBackwardCompatible) {
+  InitializeRendererBackwardsCompatible();
   RunPendingTasks();
 
   ASSERT_TRUE(IsRendererInitialized());

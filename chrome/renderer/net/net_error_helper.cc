@@ -225,13 +225,7 @@ void NetErrorHelper::DidStartNavigation(
   core_->OnStartLoad(GetFrameType(render_frame()), GetLoadingPageType(url));
 }
 
-void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                              ui::PageTransition transition) {
-  // If this is a "same-document" navigation, it's not a real navigation.  There
-  // wasn't a start event for it, either, so just ignore it.
-  if (is_same_document_navigation)
-    return;
-
+void NetErrorHelper::DidCommitProvisionalLoad(ui::PageTransition transition) {
   // Invalidate weak pointers from old error page controllers. If loading a new
   // error page, the controller has not yet been attached, so this won't affect
   // it.

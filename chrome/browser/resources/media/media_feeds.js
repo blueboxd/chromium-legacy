@@ -311,16 +311,6 @@ class MediaFeedsTableDelegate {
           td.textContent = 'Cache';
           break;
       }
-    } else if (key === 'associatedOrigins') {
-      // Format the array of origins.
-      const origins = [];
-
-      data.forEach((origin) => {
-        const {scheme, host, port} = origin;
-        origins.push(new URL(`${scheme}://${host}:${port}`).origin);
-      });
-
-      td.textContent = origins.join(', ');
     } else if (key === 'userIdentifier') {
       if (data) {
         td.textContent = 'Name=' + data.name;

@@ -193,7 +193,17 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Override
     public final void postInflationStartup() {
         performPostInflationStartup();
+        dispatchOnInflationComplete();
         mLifecycleDispatcher.dispatchPostInflationStartup();
+    }
+
+    /**
+     * This function allows subclasses overriding and adding additional tasks between calling
+     * mLifecycleDispatcher.dispatchOnInflationComplete() and
+     * mLifecycleDispatcher.dispatchPostInflationStartup().
+     */
+    protected void dispatchOnInflationComplete() {
+        mLifecycleDispatcher.dispatchOnInflationComplete();
     }
 
     /**

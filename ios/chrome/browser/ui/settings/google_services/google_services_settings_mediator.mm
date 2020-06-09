@@ -187,12 +187,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
     _autocompleteSearchPreference.observer = self;
-    if (base::FeatureList::IsEnabled(kSafeBrowsingAvailableOnIOS)) {
-      _safeBrowsingPreference = [[PrefBackedBoolean alloc]
-          initWithPrefService:userPrefService
-                     prefName:prefs::kSafeBrowsingEnabled];
-      _safeBrowsingPreference.observer = self;
-    }
+    _safeBrowsingPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kSafeBrowsingEnabled];
+    _safeBrowsingPreference.observer = self;
     _sendDataUsagePreference = [[PrefBackedBoolean alloc]
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
@@ -599,6 +597,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                   detailStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL
                         dataType:0];
+      safeBrowsingItem.accessibilityIdentifier =
+          kSafeBrowsingItemAccessibilityIdentifier;
       [items addObject:safeBrowsingItem];
     }
     [items addObject:self.passwordLeakCheckItem];
@@ -633,7 +633,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
     passwordLeakCheckItem.accessibilityIdentifier =
-        @"passwordLeakCheckItem_switch";
+        kPasswordLeakCheckItemAccessibilityIdentifier;
     passwordLeakCheckItem.enabled = self.isAuthenticated;
     _passwordLeakCheckItem = passwordLeakCheckItem;
   }

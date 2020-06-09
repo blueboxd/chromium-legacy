@@ -322,6 +322,40 @@ bool AnyInnerWebContents(WebContents* web_contents, const Functor& f) {
   return std::any_of(inner_contents.begin(), inner_contents.end(), f);
 }
 
+std::vector<RenderFrameHost*> GetAllFramesImpl(FrameTree& frame_tree,
+                                               bool include_pending) {
+  std::vector<RenderFrameHost*> frame_hosts;
+  for (FrameTreeNode* node : frame_tree.Nodes()) {
+    frame_hosts.push_back(node->current_frame_host());
+    if (include_pending) {
+      RenderFrameHostImpl* pending_frame_host =
+          node->render_manager()->speculative_frame_host();
+      if (pending_frame_host)
+        frame_hosts.push_back(pending_frame_host);
+    }
+  }
+  return frame_hosts;
+}
+
+int SendToAllFramesImpl(FrameTree& frame_tree,
+                        bool include_pending,
+                        IPC::Message* message) {
+  int number_of_messages = 0;
+  std::vector<RenderFrameHost*> frame_hosts =
+      GetAllFramesImpl(frame_tree, include_pending);
+  for (RenderFrameHost* rfh : frame_hosts) {
+    if (!rfh->IsRenderFrameLive())
+      continue;
+
+    ++number_of_messages;
+    IPC::Message* message_copy = new IPC::Message(*message);
+    message_copy->set_routing_id(rfh->GetRoutingID());
+    rfh->Send(message_copy);
+  }
+  delete message;
+  return number_of_messages;
+}
+
 }  // namespace
 
 CreatedWindow::CreatedWindow() = default;
@@ -1050,25 +1084,19 @@ void WebContentsImpl::ForEachFrame(
 }
 
 std::vector<RenderFrameHost*> WebContentsImpl::GetAllFrames() {
-  std::vector<RenderFrameHost*> frame_hosts;
-  for (FrameTreeNode* node : frame_tree_.Nodes())
-    frame_hosts.push_back(node->current_frame_host());
-  return frame_hosts;
+  return GetAllFramesImpl(frame_tree_, /*include_pending=*/false);
+}
+
+std::vector<RenderFrameHost*> WebContentsImpl::GetAllFramesIncludingPending() {
+  return GetAllFramesImpl(frame_tree_, /*include_pending=*/true);
 }
 
 int WebContentsImpl::SendToAllFrames(IPC::Message* message) {
-  int number_of_messages = 0;
-  for (RenderFrameHost* rfh : GetAllFrames()) {
-    if (!rfh->IsRenderFrameLive())
-      continue;
+  return SendToAllFramesImpl(frame_tree_, /*include_pending=*/false, message);
+}
 
-    ++number_of_messages;
-    IPC::Message* message_copy = new IPC::Message(*message);
-    message_copy->set_routing_id(rfh->GetRoutingID());
-    rfh->Send(message_copy);
-  }
-  delete message;
-  return number_of_messages;
+int WebContentsImpl::SendToAllFramesIncludingPending(IPC::Message* message) {
+  return SendToAllFramesImpl(frame_tree_, /*include_pending=*/true, message);
 }
 
 void WebContentsImpl::SendPageMessage(IPC::Message* msg) {

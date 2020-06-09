@@ -17924,6 +17924,13 @@ Called by update_document_policy_enum.py.-->
   <int value="2" label="Unknown"/>
 </enum>
 
+<enum name="DumpWithoutCrashingResult">
+  <int value="0" label="Failure from Crashpad"/>
+  <int value="1" label="Success from Crashpad"/>
+  <int value="2" label="Failure from Breakpad"/>
+  <int value="3" label="Success from Breakpad"/>
+</enum>
+
 <enum name="DuplicateBookmarkEntityOnRemoteUpdateCondition">
   <int value="0" label="Entity with server ID is a tombstone"/>
   <int value="1" label="Only entity with temporary ID is a tombstone"/>
@@ -40237,6 +40244,7 @@ from previous Chrome versions.
   <int value="-349437334" label="UseDdljsonApi:disabled"/>
   <int value="-349380607" label="AndroidNightMode:disabled"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
+  <int value="-347654657" label="CSSColorSchemeUARendering:enabled"/>
   <int value="-346413328" label="UseNewAcceptLanguageHeader:disabled"/>
   <int value="-345838366" label="enable-hosted-apps-in-windows"/>
   <int value="-345324571" label="enable-quirks-client"/>
@@ -42265,6 +42273,7 @@ from previous Chrome versions.
   <int value="1949019439"
       label="AutofillRestrictUnownedFieldsToFormlessCheckout:disabled"/>
   <int value="1949908940" label="disable-zip-archiver-unpacker"/>
+  <int value="1949996482" label="CSSColorSchemeUARendering:disabled"/>
   <int value="1950191981" label="OverlayNewLayout:enabled"/>
   <int value="1951466218" label="enable-data-reduction-proxy-lite-page"/>
   <int value="1951645673" label="PasswordsKeyboardAccessory:disabled"/>
@@ -49103,6 +49112,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NTPLoadType">
+  <obsolete>
+    Removed 2020-06.
+  </obsolete>
   <int value="0" label="Cold startup"/>
   <int value="1" label="Warm startup"/>
   <int value="2" label="Other, not at startup"/>
@@ -72382,8 +72394,8 @@ Called by update_scheduler_enums.py.-->
 </enum>
 
 <enum name="WebViewVisibility">
-  <int value="0" label="NotVisible"/>
-  <int value="1" label="Visible"/>
+  <int value="0" label="Visible"/>
+  <int value="1" label="NotVisible"/>
 </enum>
 
 <enum name="WelcomeSignInPromptOutcome">

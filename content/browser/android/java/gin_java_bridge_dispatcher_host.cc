@@ -11,6 +11,7 @@
 #include "content/browser/android/java/gin_java_bound_object_delegate.h"
 #include "content/browser/android/java/gin_java_bridge_message_filter.h"
 #include "content/browser/android/java/java_bridge_thread.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/gin_java_bridge_value.h"
 #include "content/common/android/hash_set.h"
 #include "content/common/gin_java_bridge_messages.h"
@@ -208,7 +209,12 @@ void GinJavaBridgeDispatcherHost::AddNamedObject(
   // notified the observers about new RenderFrame, it is necessary to ensure
   // here that all render frame IDs are registered with the filter.
   InstallFilterAndRegisterAllRoutingIds();
-  web_contents()->SendToAllFrames(
+  // We should include pending RenderFrameHosts, otherwise they will miss the
+  // chance when calling add or remove methods when they are created but not
+  // committed. See: http://crbug.com/1087806
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->SendToAllFramesIncludingPending(
       new GinJavaBridgeMsg_AddNamedObject(MSG_ROUTING_NONE, name, object_id));
 }
 
@@ -234,7 +240,12 @@ void GinJavaBridgeDispatcherHost::RemoveNamedObject(
   // hold it. All the transient objects and removed named objects will be purged
   // during the cleansing caused by DocumentAvailableInMainFrame event.
 
-  web_contents()->SendToAllFrames(
+  // We should include pending RenderFrameHosts, otherwise they will miss the
+  // chance when calling add or remove methods when they are created but not
+  // committed. See: http://crbug.com/1087806
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->SendToAllFramesIncludingPending(
       new GinJavaBridgeMsg_RemoveNamedObject(MSG_ROUTING_NONE, copied_name));
 }
 

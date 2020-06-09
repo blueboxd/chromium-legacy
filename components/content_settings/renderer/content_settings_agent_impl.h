@@ -137,8 +137,7 @@ class ContentSettingsAgentImpl
                            ContentSettingsInterstitialPages);
 
   // RenderFrameObserver implementation.
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void OnDestruct() override;
 
   // mojom::ContentSettingsAgent:

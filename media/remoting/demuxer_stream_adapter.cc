@@ -128,7 +128,9 @@ void DemuxerStreamAdapter::OnReceivedRpc(
     case pb::RpcMessage::RPC_DS_ENABLEBITSTREAMCONVERTER:
       EnableBitstreamConverter();
       break;
-
+    case pb::RpcMessage::RPC_DS_ONERROR:
+      OnFatalError(UNEXPECTED_FAILURE);
+      break;
     default:
       DEMUXER_VLOG(1) << "Unknown RPC: " << message->proc();
   }

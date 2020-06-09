@@ -398,7 +398,7 @@ void AssistantTestMixin::StartAssistantAndWaitForReady(
   SetPreferVoice(false);
 
   AssistantStatusWaiter waiter(test_api_->GetAssistantState(),
-                               chromeos::assistant::AssistantStatus::NEW_READY);
+                               chromeos::assistant::AssistantStatus::READY);
   waiter.RunUntilExpectedStatus();
 
   // With the warmer welcome enabled the Assistant service will start an

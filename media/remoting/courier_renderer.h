@@ -5,8 +5,6 @@
 #ifndef MEDIA_REMOTING_COURIER_RENDERER_H_
 #define MEDIA_REMOTING_COURIER_RENDERER_H_
 
-#include <stdint.h>
-
 #include <memory>
 
 #include "base/callback.h"
@@ -20,6 +18,7 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
 #include "media/mojo/mojom/remoting.mojom.h"
+#include "media/remoting/media_remoting_rpc.pb.h"
 #include "media/remoting/metrics.h"
 #include "media/remoting/rpc_broker.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

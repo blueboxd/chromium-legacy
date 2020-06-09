@@ -10,11 +10,13 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/find_buffer.h"
 #include "third_party/blink/renderer/core/editing/finder/find_options.h"
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 #include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
 
@@ -171,6 +173,28 @@ EphemeralRangeInFlatTree FindMatchInRangeWithContext(
   return EphemeralRangeInFlatTree();
 }
 
+bool ContainedByListItem(const EphemeralRangeInFlatTree& range) {
+  Node* node = range.CommonAncestorContainer();
+  while (node) {
+    if (ListItemOrdinal::IsListItem(*node)) {
+      return true;
+    }
+    node = node->parentNode();
+  }
+  return false;
+}
+
+bool ContainedByTableCell(const EphemeralRangeInFlatTree& range) {
+  Node* node = range.CommonAncestorContainer();
+  while (node) {
+    if (IsTableCell(node)) {
+      return true;
+    }
+    node = node->parentNode();
+  }
+  return false;
+}
+
 }  // namespace
 
 TextFragmentFinder::TextFragmentFinder(Client& client,
@@ -199,6 +223,13 @@ void TextFragmentFinder::FindMatch(Document& document) {
       // we can just use the text from the selector.
       DCHECK_EQ(selector_.Start().length(), PlainText(match).length());
       match_metrics.text = selector_.Start();
+
+      if (ContainedByListItem(match)) {
+        match_metrics.is_list_item = true;
+      }
+      if (ContainedByTableCell(match)) {
+        match_metrics.is_table_cell = true;
+      }
     } else if (selector_.Type() == TextFragmentSelector::SelectorType::kRange) {
       match_metrics.text = PlainText(match);
     }

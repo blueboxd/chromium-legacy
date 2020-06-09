@@ -16,3 +16,9 @@ NSString* const kManageSyncCellAccessibilityIdentifier =
 
 NSString* const kAccountListItemAccessibilityIdentifier =
     @"AccountListItemAccessibilityIdentifier";
+
+NSString* const kPasswordLeakCheckItemAccessibilityIdentifier =
+    @"PasswordLeakCheckItemAccessibilityIdentifier";
+
+NSString* const kSafeBrowsingItemAccessibilityIdentifier =
+    @"SafeBrowsingItemAccessibilityIdentifier";

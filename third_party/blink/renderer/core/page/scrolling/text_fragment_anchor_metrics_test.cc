@@ -128,6 +128,14 @@ TEST_F(TextFragmentAnchorMetricsTest, UMAMetricsCollected) {
       1);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ListItemMatch", 0,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TableCellMatch", 0,
+                                       1);
 }
 
 // Test UMA metrics collection when there is no match found
@@ -186,6 +194,10 @@ TEST_F(TextFragmentAnchorMetricsTest, NoMatchFound) {
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 0);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 0);
 }
 
 // Test that we don't collect any metrics when there is no text directive
@@ -228,6 +240,10 @@ TEST_F(TextFragmentAnchorMetricsTest, NoTextFragmentAnchor) {
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.Parameters", 0);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 0);
 }
 
 // Test that the correct metrics are collected when we found a match but didn't
@@ -287,6 +303,14 @@ TEST_F(TextFragmentAnchorMetricsTest, MatchFoundNoScroll) {
       1);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ListItemMatch", 0,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TableCellMatch", 0,
+                                       1);
 }
 
 // Test that the correct metrics are collected for all possible combinations of
@@ -372,6 +396,14 @@ TEST_F(TextFragmentAnchorMetricsTest, ExactTextParameters) {
       1);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 4);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ListItemMatch", 0,
+                                       4);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 4);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TableCellMatch", 0,
+                                       4);
 }
 
 // Test that the correct metrics are collected for all possible combinations of
@@ -473,6 +505,10 @@ TEST_F(TextFragmentAnchorMetricsTest, TextRangeParameters) {
       1);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 0);
 }
 
 // Test that the ScrollCancelled metric gets reported when a user scroll cancels
@@ -556,6 +592,14 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
       1);
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 0);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ListItemMatch", 0,
+                                       1);
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TableCellMatch", 0,
+                                       1);
 }
 
 // Test that the TapToDismiss feature gets use counted when the user taps to
@@ -689,6 +733,96 @@ TEST_F(TextFragmentAnchorMetricsTest, TimeToScrollToTop) {
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollToTop", 1);
   histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TimeToScrollToTop",
                                        time_to_scroll_to_top, 1);
+}
+
+// Test recording of the ListItemMatch metric
+TEST_F(TextFragmentAnchorMetricsTest, ListItemMatch) {
+  SimRequest request("https://example.com/test.html#:~:text=list", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=list");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <ul>
+      <li>Some test content</li>
+      <li>Within a list item</li>
+    </ul>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ListItemMatch", 1,
+                                       1);
+}
+
+// Test recording of the TableCellMatch metric
+TEST_F(TextFragmentAnchorMetricsTest, TableCellMatch) {
+  SimRequest request("https://example.com/test.html#:~:text=table",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=table");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <table>
+      <tr>
+        <td>Some test content</td>
+        <td>Within a table cell</td>
+      </tr>
+    </table>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TableCellMatch", 1,
+                                       1);
+}
+
+// Test recording of ListItemMatch for a match nested in a list item
+TEST_F(TextFragmentAnchorMetricsTest, NestedListItemMatch) {
+  SimRequest request("https://example.com/test.html#:~:text=list", "text/html");
+  LoadURL("https://example.com/test.html#:~:text=list");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <ol>
+      <li>Some test content</li>
+      <li>Within a <span>list</span> item</li>
+    </ol>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.ListItemMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.ListItemMatch", 1,
+                                       1);
+}
+
+// Test recording of TableCellMatch for a match nested in a table cell
+TEST_F(TextFragmentAnchorMetricsTest, NestedTableCellMatch) {
+  SimRequest request("https://example.com/test.html#:~:text=table",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=table");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <table>
+      <tr>
+        <td>Some test content</td>
+        <td>Within a <span>table</span> cell</td>
+      </tr>
+    </table>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  BeginEmptyFrame();
+  BeginEmptyFrame();
+
+  histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TableCellMatch", 1);
+  histogram_tester_.ExpectUniqueSample("TextFragmentAnchor.TableCellMatch", 1,
+                                       1);
 }
 
 class TextFragmentRelatedMetricTest : public TextFragmentAnchorMetricsTest,

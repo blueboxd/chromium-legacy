@@ -1,13 +1,18 @@
-# tags: [ android chromeos highsierra linux mac mojave win ]
+# tags: [ android
+#         chromeos
+#         mac highsierra mojave
+#         linux
+#         win win7 ]
 # tags: [ android-chromium android-webview-instrumentation android-not-webview debug ]
 # tags: [ skia-renderer no-skia-renderer ]
 # tags: [ use-gl no-use-gl ]
 # tags: [ use-vulkan no-use-vulkan ]
 # tags: [ use-skia-dawn no-use-skia-dawn ]
 # tags: [ chromeos-board-kevin ]
-# tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
-#         intel-0xd26 intel-0x3e92 nvidia qualcomm-adreno-(tm)-330
-#         qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420
+# tags: [ amd amd-0x6613 amd-0x679e amd-0x6821
+#         intel intel-0xa2e intel-0x5912 intel-0xd26 intel-0x3e92
+#         nvidia
+#         qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420
 #         qualcomm-adreno-(tm)-430 qualcomm-adreno-(tm)-540
 # ]
 # results: [ Failure RetryOnFailure Skip ]
@@ -322,6 +327,9 @@ crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLGreenTriangle_AA_NoAlpha [ Skip ]
 crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLGreenTriangle_NoAA_Alpha [ Skip ]
 crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Skip ]
 crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear [ Skip ]
+
+# DirectComposition tests are not expected to work properly on Windows 7.
+crbug.com/1086758 [ win7 ] Pixel_DirectComposition* [ Skip ]
 
 # 3D box is shaded incorrectly using SkiaRenderer Dawn on Windows.
 crbug.com/1082769 [ win use-skia-dawn ] Pixel_CSS3DBlueBox [ Failure ]

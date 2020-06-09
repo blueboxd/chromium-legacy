@@ -14,7 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/test/scoped_command_line.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_block_list.h"
 #include "components/previews/core/previews_logger_observer.h"
 #include "components/previews/core/previews_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"

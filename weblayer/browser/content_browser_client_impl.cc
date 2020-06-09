@@ -30,6 +30,8 @@
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
+#include "components/site_isolation/preloaded_isolated_origins.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_context.h"
@@ -409,6 +411,23 @@ bool ContentBrowserClientImpl::IsHandledURL(const GURL& url) {
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   return false;
+}
+
+std::vector<url::Origin>
+ContentBrowserClientImpl::GetOriginsRequiringDedicatedProcess() {
+  return site_isolation::GetBrowserSpecificBuiltInIsolatedOrigins();
+}
+
+bool ContentBrowserClientImpl::ShouldDisableSiteIsolation() {
+  return site_isolation::SiteIsolationPolicy::
+      ShouldDisableSiteIsolationDueToMemoryThreshold();
+}
+
+std::vector<std::string>
+ContentBrowserClientImpl::GetAdditionalSiteIsolationModes() {
+  if (site_isolation::SiteIsolationPolicy::IsIsolationForPasswordSitesEnabled())
+    return {"Isolate Password Sites"};
+  return {};
 }
 
 bool ContentBrowserClientImpl::CanCreateWindow(

@@ -75,4 +75,7 @@
 <message desc="Description of a radio button that is selected" name="IDS_SELECT_TO_SPEAK_RADIOBUTTON_MIXED">
   partially selected
 </message>
+<message desc="Sample text around which will be drawn a Select to Speak visual preview. This should be less than one line long." name="IDS_SELECT_TO_SPEAK_OPTIONS_SAMPLE_TEXT">
+  The quick brown fox jumped over the lazy dog.
+</message>
 </grit-part>

@@ -27,8 +27,6 @@ import com.google.android.gms.fido.fido2.api.common.UserVerificationMethodExtens
 import com.google.android.gms.fido.fido2.api.common.UvmEntries;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.blink.mojom.AuthenticatorAttachment;
 import org.chromium.blink.mojom.AuthenticatorStatus;
 import org.chromium.blink.mojom.AuthenticatorTransport;
@@ -126,25 +124,14 @@ public final class Fido2Helper {
      * @return Response to be passed to the renderer.
      */
     public static MakeCredentialAuthenticatorResponse toMakeCredentialResponse(
-            AuthenticatorAttestationResponse data) throws NoSuchAlgorithmException {
+            AuthenticatorAttestationResponse data) {
         MakeCredentialAuthenticatorResponse response = new MakeCredentialAuthenticatorResponse();
         CommonCredentialInfo info = new CommonCredentialInfo();
 
         response.attestationObject = data.getAttestationObject();
-        AttestationObjectParts parts = new AttestationObjectParts();
-        if (!Fido2HelperJni.get().parseAttestationObject(response.attestationObject, parts)) {
-            // A failure to parse the attestation object is fatal to the request
-            // on desktop and so the same behavior is used here.
-            throw new NoSuchAlgorithmException();
-        }
-        response.publicKeyAlgo = parts.coseAlgorithm;
-        info.authenticatorData = parts.authenticatorData;
-        response.publicKeyDer = parts.spki;
-
         // An empty transports array indicates that we don't have any
         // information about the available transports.
         response.transports = new int[] {};
-
         info.id = encodeId(data.getKeyHandle());
         info.rawId = data.getKeyHandle();
         info.clientDataJson = data.getClientDataJSON();
@@ -153,7 +140,7 @@ public final class Fido2Helper {
     }
 
     public static MakeCredentialAuthenticatorResponse toMakeCredentialResponse(
-            PublicKeyCredential data) throws NoSuchAlgorithmException {
+            PublicKeyCredential data) {
         MakeCredentialAuthenticatorResponse response =
                 toMakeCredentialResponse((AuthenticatorAttestationResponse) data.getResponse());
         return response;
@@ -202,9 +189,9 @@ public final class Fido2Helper {
             AuthenticatorAssertionResponse data, boolean appIdExtensionUsed) {
         GetAssertionAuthenticatorResponse response = new GetAssertionAuthenticatorResponse();
         CommonCredentialInfo info = new CommonCredentialInfo();
+        response.authenticatorData = data.getAuthenticatorData();
         response.signature = data.getSignature();
         response.echoAppidExtension = appIdExtensionUsed;
-        info.authenticatorData = data.getAuthenticatorData();
         info.id = encodeId(data.getKeyHandle());
         info.rawId = data.getKeyHandle();
         info.clientDataJson = data.getClientDataJSON();
@@ -400,30 +387,5 @@ public final class Fido2Helper {
         return Math.max(MIN_TIMEOUT_SECONDS,
                 Math.min(MAX_TIMEOUT_SECONDS,
                         TimeUnit.MICROSECONDS.toSeconds(timeout.microseconds)));
-    }
-
-    // AttestationObjectParts is used to group together the return values of
-    // |parseAttestationObject|, below.
-    public static final class AttestationObjectParts {
-        @CalledByNative("AttestationObjectParts")
-        void setAll(byte[] authenticatorData, byte[] spki, int coseAlgorithm) {
-            this.authenticatorData = authenticatorData;
-            this.spki = spki;
-            this.coseAlgorithm = coseAlgorithm;
-        }
-
-        public byte[] authenticatorData;
-        public byte[] spki;
-        public int coseAlgorithm;
-    }
-
-    @NativeMethods
-    interface Natives {
-        // parseAttestationObject parses a CTAP2 attestation[1] and extracts the
-        // parts that the browser provides via Javascript API [2].
-        //
-        // [1] https://www.w3.org/TR/webauthn/#attestation-object
-        // [2] https://w3c.github.io/webauthn/#sctn-public-key-easy
-        boolean parseAttestationObject(byte[] attestationObject, AttestationObjectParts result);
     }
 }

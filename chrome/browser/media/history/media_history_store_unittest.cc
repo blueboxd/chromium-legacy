@@ -892,35 +892,6 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
     return identifier;
   }
 
-  static std::set<url::Origin> ToSet(const std::vector<url::Origin>& origins) {
-    std::set<url::Origin> out;
-    for (auto& origin : origins)
-      out.insert(origin);
-
-    return out;
-  }
-
-  static std::set<url::Origin> ToSet(const GURL& url) {
-    std::set<url::Origin> out;
-    out.insert(url::Origin::Create(url));
-    return out;
-  }
-
-  static std::set<url::Origin> GetExpectedAssociatedOrigins(
-      base::Optional<GURL> feed_url_to_add = base::nullopt) {
-    std::set<url::Origin> origins;
-
-    origins.insert(url::Origin::Create(GURL("https://www.google1.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.google2.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.google3.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.example.org")));
-
-    if (feed_url_to_add)
-      origins.insert(url::Origin::Create(*feed_url_to_add));
-
-    return origins;
-  }
-
   base::Optional<media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
   GetFetchDetailsSync(const int64_t feed_id) {
     base::RunLoop run_loop;
@@ -1042,7 +1013,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult) {
     auto result = SuccessfulResultWithItems(feed_id, GetExpectedItems());
     result.logos = GetExpectedLogos();
     result.display_name = kExpectedDisplayName;
-    result.associated_origins = GetExpectedAssociatedOrigins();
     result.user_identifier = GetExpectedUserIdentifier();
     result.cookie_name_filter = "test";
     result.items[0]->id = 9;
@@ -1072,8 +1042,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult) {
       EXPECT_EQ(GetExpectedUserIdentifier(), feeds[0]->user_identifier);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url),
-                ToSet(feeds[0]->associated_origins));
       EXPECT_EQ("test", feeds[0]->cookie_name_filter);
 
       EXPECT_EQ(GetExpectedItems(), items);
@@ -1115,7 +1083,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_FALSE(feeds[0]->user_identifier);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
-      EXPECT_EQ(ToSet(feed_url), ToSet(feeds[0]->associated_origins));
       EXPECT_TRUE(feeds[0]->cookie_name_filter.empty());
 
       EXPECT_EQ(GetAltExpectedItems(3), items);
@@ -1156,7 +1123,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_StoreMediaFeedFetchResult) {
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_FALSE(feeds[0]->last_display_time.has_value());
-      EXPECT_EQ(ToSet(feed_url), ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(GetAltExpectedItems(4), items);
 
@@ -1263,9 +1229,9 @@ TEST_P(MediaHistoryStoreFeedsTest,
   const int feed_id_a = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[0]->id;
   const int feed_id_b = IsReadOnly() ? -1 : GetMediaFeedsSync(service())[1]->id;
 
-  auto result = SuccessfulResultWithItems(feed_id_a, GetExpectedItems());
-  result.associated_origins = GetExpectedAssociatedOrigins();
-  service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
+  service()->StoreMediaFeedFetchResult(
+      SuccessfulResultWithItems(feed_id_a, GetExpectedItems()),
+      base::DoNothing());
   WaitForDB();
 
   service()->StoreMediaFeedFetchResult(
@@ -1287,14 +1253,11 @@ TEST_P(MediaHistoryStoreFeedsTest,
       EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
                 feeds[0]->last_fetch_result);
       EXPECT_EQ(0, feeds[0]->fetch_failed_count);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_a_url),
-                ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
       EXPECT_EQ(media_feeds::mojom::FetchResult::kFailedNetworkError,
                 feeds[1]->last_fetch_result);
       EXPECT_EQ(1, feeds[1]->fetch_failed_count);
-      EXPECT_EQ(ToSet(feed_b_url), ToSet(feeds[1]->associated_origins));
     }
 
     // The OTR service should have the same data.
@@ -2272,7 +2235,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeed) {
   auto result = SuccessfulResultWithItems(feed_id_a, GetExpectedItems());
   result.logos = GetExpectedLogos();
   result.display_name = kExpectedDisplayName;
-  result.associated_origins = GetExpectedAssociatedOrigins();
   result.user_identifier = GetExpectedUserIdentifier();
   service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
   service()->UpdateMediaFeedDisplayTime(feed_id_a);
@@ -2311,12 +2273,9 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeed) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
-                ToSet(feeds[0]->associated_origins));
       EXPECT_EQ(GetExpectedUserIdentifier(), feeds[0]->user_identifier);
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
-      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(), items_a);
       EXPECT_EQ(GetAltExpectedItems(3), items_b);
@@ -2360,11 +2319,9 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeed) {
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kCookies,
                 feeds[0]->reset_reason);
-      EXPECT_EQ(ToSet(feed_url_a), ToSet(feeds[0]->associated_origins));
       EXPECT_FALSE(feeds[0]->user_identifier);
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
-      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_TRUE(items_a.empty());
       EXPECT_EQ(GetAltExpectedItems(3), items_b);
@@ -2380,7 +2337,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeed) {
     auto result = SuccessfulResultWithItems(feed_id_a, GetExpectedItems());
     result.logos = GetExpectedLogos();
     result.display_name = kExpectedDisplayName;
-    result.associated_origins = GetExpectedAssociatedOrigins();
     service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
     service()->UpdateMediaFeedDisplayTime(feed_id_a);
     WaitForDB();
@@ -2410,11 +2366,8 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeed) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
-                ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
-      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(4), items_a);
       EXPECT_EQ(GetAltExpectedItems(3), items_b);
@@ -2451,14 +2404,12 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
   auto result = SuccessfulResultWithItems(feed_id_a, GetExpectedItems());
   result.logos = GetExpectedLogos();
   result.display_name = kExpectedDisplayName;
-  result.associated_origins = GetExpectedAssociatedOrigins();
   service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
   WaitForDB();
 
   auto alt_result = SuccessfulResultWithItems(feed_id_b, GetAltExpectedItems());
   alt_result.logos = GetExpectedLogos();
   alt_result.display_name = kExpectedDisplayName;
-  alt_result.associated_origins = GetExpectedAssociatedOrigins();
   service()->StoreMediaFeedFetchResult(std::move(alt_result),
                                        base::DoNothing());
   WaitForDB();
@@ -2495,11 +2446,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
         EXPECT_TRUE(feed->last_display_time.has_value());
         EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feed->reset_reason);
       }
-
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
-                ToSet(feeds[0]->associated_origins));
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_b),
-                ToSet(feeds[1]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(), items_a);
       EXPECT_EQ(GetAltExpectedItems(3), items_b);
@@ -2546,11 +2492,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
         EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feed->reset_reason);
       }
 
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
-                ToSet(feeds[0]->associated_origins));
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_b),
-                ToSet(feeds[1]->associated_origins));
-
       EXPECT_EQ(GetExpectedItems(), items_a);
       EXPECT_EQ(GetAltExpectedItems(3), items_b);
     }
@@ -2596,9 +2537,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
         EXPECT_EQ(media_feeds::mojom::ResetReason::kCache, feed->reset_reason);
       }
 
-      EXPECT_EQ(ToSet(feed_url_a), ToSet(feeds[0]->associated_origins));
-      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
-
       EXPECT_TRUE(items_a.empty());
       EXPECT_TRUE(items_b.empty());
     }
@@ -2613,7 +2551,6 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
     auto result = SuccessfulResultWithItems(feed_id_a, GetExpectedItems());
     result.logos = GetExpectedLogos();
     result.display_name = kExpectedDisplayName;
-    result.associated_origins = GetExpectedAssociatedOrigins();
     service()->StoreMediaFeedFetchResult(std::move(result), base::DoNothing());
     service()->UpdateMediaFeedDisplayTime(feed_id_a);
     WaitForDB();
@@ -2643,11 +2580,8 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
-                ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
-      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(4), items_a);
       EXPECT_TRUE(items_b.empty());
@@ -2692,11 +2626,8 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_ResetMediaFeedDueToCacheClearing) {
       EXPECT_EQ(kExpectedDisplayName, feeds[0]->display_name);
       EXPECT_TRUE(feeds[0]->last_display_time.has_value());
       EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
-      EXPECT_EQ(GetExpectedAssociatedOrigins(feed_url_a),
-                ToSet(feeds[0]->associated_origins));
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
-      EXPECT_EQ(ToSet(feed_url_b), ToSet(feeds[1]->associated_origins));
 
       EXPECT_EQ(GetExpectedItems(4), items_a);
       EXPECT_TRUE(items_b.empty());

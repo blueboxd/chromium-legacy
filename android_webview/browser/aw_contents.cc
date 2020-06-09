@@ -112,6 +112,7 @@ using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
+using js_injection::JsJavaConfiguratorHost;
 using navigation_interception::InterceptNavigationDelegate;
 
 namespace android_webview {

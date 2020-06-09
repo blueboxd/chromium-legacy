@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListIt
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
 import org.chromium.chrome.browser.download.home.list.mutator.ListMutationController;
+import org.chromium.components.browser_ui.util.date.CalendarFactory;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;

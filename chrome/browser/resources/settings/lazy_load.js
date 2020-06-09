@@ -88,7 +88,7 @@ export {cookieInfo} from './site_settings/cookie_info.js';
 export {CookieList, LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './site_settings/local_data_browser_proxy.js';
 export {HandlerEntry, ProtocolEntry} from './site_settings/protocol_handlers.js';
 export {kControlledByLookup} from './site_settings/site_settings_behavior.js';
-export {ContentSettingProvider, CookieControlsManagedState, DefaultContentSetting, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
+export {ContentSettingProvider, DefaultContentSetting, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.js';
 // <if expr="not chromeos">

@@ -12427,7 +12427,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Similar to ScaledIFrameRasterSize but with nested OOPIFs to ensure
 // propagation works correctly.
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 // Temporarily disabled on Android because this doesn't account for browser
 // control height or page scale factor.
 #define MAYBE_ScaledNestedIframeRasterSize DISABLED_ScaledNestedIframeRasterSize

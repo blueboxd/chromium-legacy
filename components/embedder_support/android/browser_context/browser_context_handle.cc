@@ -15,6 +15,9 @@ namespace browser_context {
 
 content::BrowserContext* BrowserContextFromJavaHandle(
     const JavaRef<jobject>& jhandle) {
+  if (!jhandle)
+    return nullptr;
+
   return reinterpret_cast<content::BrowserContext*>(
       Java_BrowserContextHandle_getNativeBrowserContextPointer(
           AttachCurrentThread(), jhandle));

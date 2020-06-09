@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -146,7 +147,6 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   auto* span = GetLayoutObjectByElementId("span");
   auto* span_layer = ToLayoutBoxModelObject(span)->Layer();
   auto* text = span->SlowFirstChild();
-  auto fragments = NGPaintFragment::InlineFragmentsFor(span);
 
   EXPECT_TRUE(span->IsPaintInvalidationContainer());
   EXPECT_TRUE(span->IsStackingContext());
@@ -162,8 +162,10 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   ValidateDisplayItemClient(containing_block);
   ValidateDisplayItemClient(composited_container);
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    for (auto* fragment : fragments)
-      ValidateDisplayItemClient(fragment);
+    NGInlineCursor fragments;
+    for (fragments.MoveTo(*span); fragments;
+         fragments.MoveToNextForSameLayoutObject())
+      ValidateDisplayItemClient(fragments.Current().GetDisplayItemClient());
   } else {
     ValidateDisplayItemClient(span);
     ValidateDisplayItemClient(text);
@@ -191,8 +193,12 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_TRUE(IsValidDisplayItemClient(containing_block));
   EXPECT_TRUE(IsValidDisplayItemClient(composited_container));
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    for (auto* fragment : fragments)
-      EXPECT_TRUE(IsValidDisplayItemClient(fragment));
+    NGInlineCursor fragments;
+    for (fragments.MoveTo(*span); fragments;
+         fragments.MoveToNextForSameLayoutObject()) {
+      EXPECT_TRUE(
+          IsValidDisplayItemClient(fragments.Current().GetDisplayItemClient()));
+    }
   } else {
     EXPECT_TRUE(IsValidDisplayItemClient(span));
     EXPECT_TRUE(IsValidDisplayItemClient(text));
@@ -224,9 +230,12 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_TRUE(IsValidDisplayItemClient(containing_block));
   EXPECT_TRUE(IsValidDisplayItemClient(composited_container));
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    for (auto* fragment : fragments) {
-      EXPECT_FALSE(IsValidDisplayItemClient(fragment));
-      ValidateDisplayItemClient(fragment);
+    NGInlineCursor fragments;
+    for (fragments.MoveTo(*span); fragments;
+         fragments.MoveToNextForSameLayoutObject()) {
+      EXPECT_FALSE(
+          IsValidDisplayItemClient(fragments.Current().GetDisplayItemClient()));
+      ValidateDisplayItemClient(fragments.Current().GetDisplayItemClient());
     }
   } else {
     EXPECT_FALSE(IsValidDisplayItemClient(span));
@@ -255,8 +264,12 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_FALSE(IsValidDisplayItemClient(containing_block));
   EXPECT_FALSE(IsValidDisplayItemClient(composited_container));
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    for (auto* fragment : fragments)
-      EXPECT_TRUE(IsValidDisplayItemClient(fragment));
+    NGInlineCursor fragments;
+    for (fragments.MoveTo(*span); fragments;
+         fragments.MoveToNextForSameLayoutObject()) {
+      EXPECT_TRUE(
+          IsValidDisplayItemClient(fragments.Current().GetDisplayItemClient()));
+    }
   } else {
     EXPECT_TRUE(IsValidDisplayItemClient(span));
     EXPECT_TRUE(IsValidDisplayItemClient(text));
@@ -278,7 +291,6 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
   auto* span = GetLayoutObjectByElementId("span");
   auto* span_layer = ToLayoutBoxModelObject(span)->Layer();
   auto* text = span->SlowFirstChild();
-  auto fragments = NGPaintFragment::InlineFragmentsFor(span);
 
   EXPECT_TRUE(span->IsPaintInvalidationContainer());
   EXPECT_TRUE(span->IsStackingContext());
@@ -287,8 +299,10 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
 
   ValidateDisplayItemClient(target);
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    for (auto* fragment : fragments)
-      ValidateDisplayItemClient(fragment);
+    NGInlineCursor fragments;
+    for (fragments.MoveTo(*span); fragments;
+         fragments.MoveToNextForSameLayoutObject())
+      ValidateDisplayItemClient(fragments.Current().GetDisplayItemClient());
   } else {
     ValidateDisplayItemClient(span);
     ValidateDisplayItemClient(text);
@@ -303,8 +317,12 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
 
   EXPECT_FALSE(IsValidDisplayItemClient(target));
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    for (auto* fragment : fragments)
-      EXPECT_FALSE(IsValidDisplayItemClient(fragment));
+    NGInlineCursor fragments;
+    for (fragments.MoveTo(*span); fragments;
+         fragments.MoveToNextForSameLayoutObject()) {
+      EXPECT_FALSE(
+          IsValidDisplayItemClient(fragments.Current().GetDisplayItemClient()));
+    }
   } else {
     EXPECT_FALSE(IsValidDisplayItemClient(span));
     EXPECT_FALSE(IsValidDisplayItemClient(text));

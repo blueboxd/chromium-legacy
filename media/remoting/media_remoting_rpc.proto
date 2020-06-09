@@ -337,6 +337,11 @@ enum CdmSessionType {
   kPersistentUsageRecord = 2;
 };
 
+message AcquireDemuxer {
+  optional int32 audio_demuxer_handle = 1;
+  optional int32 video_demuxer_handle = 2;
+}
+
 message RendererInitialize {
   optional int32 client_handle = 1;
   optional int32 audio_demuxer_handle = 2;
@@ -495,6 +500,7 @@ message RpcMessage {
     RPC_ACQUIRE_RENDERER_DONE = 2;
     RPC_ACQUIRE_CDM = 3;
     RPC_ACQUIRE_CDM_DONE = 4;
+    RPC_ACQUIRE_DEMUXER = 5;
     // Renderer message
     RPC_R_INITIALIZE = 1000;
     RPC_R_FLUSHUNTIL = 1001;
@@ -522,6 +528,7 @@ message RpcMessage {
     RPC_DS_INITIALIZE = 3000;
     RPC_DS_READUNTIL = 3001;
     RPC_DS_ENABLEBITSTREAMCONVERTER = 3002;
+    RPC_DS_ONERROR = 3003;
     // DemuxerStream callbacks
     RPC_DS_INITIALIZE_CALLBACK = 3100;
     RPC_DS_READUNTIL_CALLBACK = 3101;
@@ -593,6 +600,9 @@ message RpcMessage {
 
     // RPC_R_SETCDM
     RendererSetCdm renderer_set_cdm_rpc = 102;
+
+    // RPC_ACQUIRE_DEMUXER
+    AcquireDemuxer acquire_demuxer_rpc = 103;
 
     // RPC_RC_ONTIMEUPDATE
     RendererClientOnTimeUpdate rendererclient_ontimeupdate_rpc = 200;

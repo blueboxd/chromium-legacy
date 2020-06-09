@@ -248,7 +248,7 @@ class POLICY_EXPORT CloudPolicyClient {
       std::unique_ptr<DMAuth> auth,
       enterprise_management::DeviceServiceApiAccessRequest::DeviceType
           device_type,
-      const std::string& oauth_scopes,
+      const std::set<std::string>& oauth_scopes,
       RobotAuthCodeCallback callback);
 
   // Sends an unregistration request to the server.

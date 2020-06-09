@@ -18,7 +18,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace media {
@@ -61,7 +61,7 @@ class TrackAudioRenderer : public WebMediaStreamAudioRenderer,
   // otherwise, audio is output to the default device for the system.
   //
   // Called on the main thread.
-  TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
+  TrackAudioRenderer(MediaStreamComponent* audio_component,
                      LocalFrame* playout_web_frame,
                      const base::UnguessableToken& session_id,
                      const String& device_id,
@@ -126,7 +126,7 @@ class TrackAudioRenderer : public WebMediaStreamAudioRenderer,
   // This class is calling WebMediaStreamAudioSink::AddToAudioTrack() and
   // WebMediaStreamAudioSink::RemoveFromAudioTrack() to connect and
   // disconnect with the audio track.
-  WebMediaStreamTrack audio_track_;
+  Persistent<MediaStreamComponent> audio_component_;
 
   // The LocalFrame in which the audio is rendered into |sink_|.
   WeakPersistent<LocalFrame> playout_frame_;

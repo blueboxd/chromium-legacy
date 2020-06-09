@@ -260,16 +260,7 @@ void MetricsRenderFrameObserver::DidFailProvisionalLoad() {
 }
 
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
-  // Same-document navigations (e.g. a navigation from a fragment link) aren't
-  // full page loads, since they don't go to network to load the main HTML
-  // resource. DidStartProvisionalLoad doesn't get invoked for same document
-  // navigations, so we may still have an active page_timing_metrics_sender_ at
-  // this point.
-  if (is_same_document_navigation)
-    return;
-
   // Make sure to release the sender for a previous navigation, if we have one.
   page_timing_metrics_sender_.reset();
 

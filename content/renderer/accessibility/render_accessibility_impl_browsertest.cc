@@ -458,7 +458,7 @@ TEST_F(RenderAccessibilityImplTest, TestDeferred) {
 
   // Simulate a page load to test deferred behavior.
   GetRenderAccessibilityImpl()->DidCommitProvisionalLoad(
-      false, ui::PageTransition::PAGE_TRANSITION_LINK);
+      ui::PageTransition::PAGE_TRANSITION_LINK);
   ClearHandledUpdates();
   WebDocument document = GetMainFrame()->GetDocument();
   EXPECT_FALSE(document.IsNull());

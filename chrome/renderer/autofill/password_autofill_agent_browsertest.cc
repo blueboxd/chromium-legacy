@@ -769,10 +769,10 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     tracker->AjaxSucceeded();
   }
 
-  void FireDidCommitProvisionalLoad() {
+  void FireDidFinishSameDocumentNavigation() {
     FormTracker* tracker = autofill_agent_->form_tracker_for_testing();
     static_cast<content::RenderFrameObserver*>(tracker)
-        ->DidCommitProvisionalLoad(true, ui::PAGE_TRANSITION_LINK);
+        ->DidFinishSameDocumentNavigation();
   }
 
   void ClearField(FormFieldData* field) {
@@ -3455,7 +3455,7 @@ TEST_F(PasswordAutofillAgentTest,
       "form.parentNode.removeChild(form);";
   ExecuteJavaScriptForTests(remove_form.c_str());
 
-  FireDidCommitProvisionalLoad();
+  FireDidFinishSameDocumentNavigation();
 
   ExpectSameDocumentNavigationWithUsernameAndPasswords(
       renderer_id, std::string(), "random", std::string(),

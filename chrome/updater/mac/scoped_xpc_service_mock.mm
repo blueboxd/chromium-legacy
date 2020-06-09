@@ -6,7 +6,8 @@
 
 namespace updater {
 
-ScopedXPCUpdateServiceMock::ScopedXPCUpdateServiceMock() {
+ScopedXPCServiceMock::ScopedXPCServiceMock(Protocol* service_protocol)
+    : service_protocol_(service_protocol) {
   @autoreleasepool {
     // Each NSXPCConnection mock must re-mock alloc (when a new mock is created
     // for type T, it un-mocks all previous classmethod mocks on type T - this
@@ -24,10 +25,9 @@ ScopedXPCUpdateServiceMock::ScopedXPCUpdateServiceMock() {
   }
 }
 
-ScopedXPCUpdateServiceMock::~ScopedXPCUpdateServiceMock() = default;
+ScopedXPCServiceMock::~ScopedXPCServiceMock() = default;
 
-void ScopedXPCUpdateServiceMock::HandleConnectionAlloc(
-    NSInvocation* invocation) {
+void ScopedXPCServiceMock::HandleConnectionAlloc(NSInvocation* invocation) {
   ASSERT_TRUE(invocation);
 
   size_t conn_idx = next_connection_to_vend_++;
@@ -43,17 +43,18 @@ void ScopedXPCUpdateServiceMock::HandleConnectionAlloc(
   [invocation setReturnValue:&mock_connection_ptr];
 }
 
-ScopedXPCUpdateServiceMock::RemoteObjectMockRecord::RemoteObjectMockRecord(
-    base::scoped_nsprotocol<id<CRUUpdateChecking>> mock_ptr)
+ScopedXPCServiceMock::RemoteObjectMockRecord::RemoteObjectMockRecord(
+    base::scoped_nsprotocol<id> mock_ptr)
     : mock_object(mock_ptr) {}
 
-ScopedXPCUpdateServiceMock::RemoteObjectMockRecord::~RemoteObjectMockRecord() =
+ScopedXPCServiceMock::RemoteObjectMockRecord::~RemoteObjectMockRecord() =
     default;
 
-ScopedXPCUpdateServiceMock::ConnectionMockRecord::ConnectionMockRecord(
-    ScopedXPCUpdateServiceMock* mock_driver,
+ScopedXPCServiceMock::ConnectionMockRecord::ConnectionMockRecord(
+    ScopedXPCServiceMock* mock_driver,
     size_t index)
-    : index_(index),
+    : service_protocol_(mock_driver->service_protocol_),
+      index_(index),
       mock_connection_(OCMClassMock([NSXPCConnection class]),
                        base::scoped_policy::RETAIN) {
   @autoreleasepool {
@@ -77,7 +78,8 @@ ScopedXPCUpdateServiceMock::ConnectionMockRecord::ConnectionMockRecord(
         .andReturn(mock_connection);
 
     // Expect this connection to receive a correct declaration of the remote
-    // interface: an NSXPCInterface configured with CRUUpdateChecking.
+    // interface: an NSXPCInterface configured with the protocol provided
+    // when |this| was constructed.
     id verifyRemoteInterface = [OCMArg checkWithBlock:^BOOL(id interfaceArg) {
       if (!interfaceArg)
         return NO;
@@ -87,7 +89,7 @@ ScopedXPCUpdateServiceMock::ConnectionMockRecord::ConnectionMockRecord(
       // This test does not verify that the interface is declared correctly
       // around methods that require proxying or collection whitelisting.
       // Use end-to-end tests to detect this.
-      return [interface.protocol isEqual:@protocol(CRUUpdateChecking)];
+      return [interface.protocol isEqual:service_protocol_];
     }];
     OCMExpect([mock_connection setRemoteObjectInterface:verifyRemoteInterface]);
 
@@ -142,46 +144,45 @@ ScopedXPCUpdateServiceMock::ConnectionMockRecord::ConnectionMockRecord(
     // will fail because the object hasn't cleaned up its connections yet.
     OCMExpect([mock_connection invalidate]);
   }  // autoreleasepool
-}  // ScopedXPCUpdateServiceMock::ConnectionMockRecord constructor
+}  // ScopedXPCServiceMock::ConnectionMockRecord constructor
 
-ScopedXPCUpdateServiceMock::ConnectionMockRecord::~ConnectionMockRecord() =
-    default;
+ScopedXPCServiceMock::ConnectionMockRecord::~ConnectionMockRecord() = default;
 
-id ScopedXPCUpdateServiceMock::ConnectionMockRecord::Get() {
+id ScopedXPCServiceMock::ConnectionMockRecord::Get() {
   return mock_connection_.get();
 }
 
-ScopedXPCUpdateServiceMock::ConnectionMockRecord*
-ScopedXPCUpdateServiceMock::PrepareNewMockConnection() {
+ScopedXPCServiceMock::ConnectionMockRecord*
+ScopedXPCServiceMock::PrepareNewMockConnection() {
   mocked_connections_.push_back(
       std::make_unique<ConnectionMockRecord>(this, mocked_connections_.size()));
   return mocked_connections_.back().get();
 }
 
-void ScopedXPCUpdateServiceMock::VerifyAll() {
+void ScopedXPCServiceMock::VerifyAll() {
   for (const auto& connection_ptr : mocked_connections_) {
     connection_ptr->Verify();
   }
 }
 
-size_t ScopedXPCUpdateServiceMock::PreparedConnectionsCount() const {
+size_t ScopedXPCServiceMock::PreparedConnectionsCount() const {
   return mocked_connections_.size();
 }
 
-size_t ScopedXPCUpdateServiceMock::VendedConnectionsCount() const {
+size_t ScopedXPCServiceMock::VendedConnectionsCount() const {
   return next_connection_to_vend_;
 }
 
-ScopedXPCUpdateServiceMock::ConnectionMockRecord*
-ScopedXPCUpdateServiceMock::GetConnection(size_t idx) {
+ScopedXPCServiceMock::ConnectionMockRecord* ScopedXPCServiceMock::GetConnection(
+    size_t idx) {
   if (idx >= mocked_connections_.size()) {
     return nullptr;
   }
   return mocked_connections_[idx].get();
 }
 
-const ScopedXPCUpdateServiceMock::ConnectionMockRecord*
-ScopedXPCUpdateServiceMock::GetConnection(size_t idx) const {
+const ScopedXPCServiceMock::ConnectionMockRecord*
+ScopedXPCServiceMock::GetConnection(size_t idx) const {
   if (idx >= mocked_connections_.size()) {
     return nullptr;
   }
@@ -189,32 +190,30 @@ ScopedXPCUpdateServiceMock::GetConnection(size_t idx) const {
       mocked_connections_[idx].get());
 }
 
-size_t ScopedXPCUpdateServiceMock::ConnectionMockRecord::PreparedObjectsCount()
+size_t ScopedXPCServiceMock::ConnectionMockRecord::PreparedObjectsCount()
     const {
   return remote_object_mocks_.size();
 }
 
-size_t ScopedXPCUpdateServiceMock::ConnectionMockRecord::VendedObjectsCount()
-    const {
+size_t ScopedXPCServiceMock::ConnectionMockRecord::VendedObjectsCount() const {
   return next_mock_to_vend_;
 }
 
-size_t ScopedXPCUpdateServiceMock::ConnectionMockRecord::Index() const {
+size_t ScopedXPCServiceMock::ConnectionMockRecord::Index() const {
   return index_;
 }
 
-ScopedXPCUpdateServiceMock::RemoteObjectMockRecord*
-ScopedXPCUpdateServiceMock::ConnectionMockRecord::PrepareNewMockRemoteObject() {
-  base::scoped_nsprotocol<id<CRUUpdateChecking>> mock(
-      OCMProtocolMock(@protocol(CRUUpdateChecking)),
-      base::scoped_policy::RETAIN);
+ScopedXPCServiceMock::RemoteObjectMockRecord*
+ScopedXPCServiceMock::ConnectionMockRecord::PrepareNewMockRemoteObject() {
+  base::scoped_nsprotocol<id> mock(OCMProtocolMock(service_protocol_),
+                                   base::scoped_policy::RETAIN);
   remote_object_mocks_.push_back(
       std::make_unique<RemoteObjectMockRecord>(mock));
   return remote_object_mocks_.back().get();
 }
 
-ScopedXPCUpdateServiceMock::RemoteObjectMockRecord*
-ScopedXPCUpdateServiceMock::ConnectionMockRecord::GetRemoteObject(
+ScopedXPCServiceMock::RemoteObjectMockRecord*
+ScopedXPCServiceMock::ConnectionMockRecord::GetRemoteObject(
     size_t object_index) {
   if (object_index >= remote_object_mocks_.size()) {
     return nullptr;
@@ -222,8 +221,8 @@ ScopedXPCUpdateServiceMock::ConnectionMockRecord::GetRemoteObject(
   return remote_object_mocks_[object_index].get();
 }
 
-const ScopedXPCUpdateServiceMock::RemoteObjectMockRecord*
-ScopedXPCUpdateServiceMock::ConnectionMockRecord::GetRemoteObject(
+const ScopedXPCServiceMock::RemoteObjectMockRecord*
+ScopedXPCServiceMock::ConnectionMockRecord::GetRemoteObject(
     size_t object_index) const {
   if (object_index >= remote_object_mocks_.size()) {
     return nullptr;
@@ -232,7 +231,7 @@ ScopedXPCUpdateServiceMock::ConnectionMockRecord::GetRemoteObject(
       remote_object_mocks_[object_index].get());
 }
 
-void ScopedXPCUpdateServiceMock::ConnectionMockRecord::Verify() const {
+void ScopedXPCServiceMock::ConnectionMockRecord::Verify() const {
   EXPECT_OCMOCK_VERIFY(mock_connection_.get())
       << "Verification failure in connection " << index_;
   for (size_t idx = 0; idx < remote_object_mocks_.size(); ++idx) {

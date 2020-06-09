@@ -100,6 +100,8 @@ class LocalPolicyTestServer : public net::LocalTestServer {
   std::string GetSelector(const std::string& type,
                           const std::string& entity_id);
 
+  void SetEmptyConfig();
+
   base::FilePath config_file_;
   base::FilePath policy_key_;
   base::FilePath client_state_file_;

@@ -59,7 +59,9 @@ class FeedService::HistoryObserverImpl
   HistoryObserverImpl(history::HistoryService* history_service,
                       FeedStream* feed_stream)
       : feed_stream_(feed_stream) {
-    history_service->AddObserver(this);
+    // May be null for some profiles.
+    if (history_service)
+      history_service->AddObserver(this);
   }
   HistoryObserverImpl(const HistoryObserverImpl&) = delete;
   HistoryObserverImpl& operator=(const HistoryObserverImpl&) = delete;

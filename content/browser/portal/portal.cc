@@ -441,7 +441,7 @@ void Portal::Activate(blink::TransferableMessage data,
   std::unique_ptr<WebContents> predecessor_web_contents =
       delegate->ActivatePortalWebContents(outer_contents,
                                           std::move(successor_contents));
-  CHECK_EQ(predecessor_web_contents.get(), outer_contents);
+  DCHECK_EQ(predecessor_web_contents.get(), outer_contents);
 
   if (outer_contents_main_frame_view) {
     portal_contents_main_frame_view->TransferTouches(touch_events);

@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/blacklist/opt_out_blacklist",
+  "+components/blocklist/opt_out_blocklist",
   "+components/variations",
   "+net",
   "+third_party/re2",

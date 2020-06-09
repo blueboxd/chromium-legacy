@@ -18,3 +18,9 @@ include_rules = [
     "+third_party/blink/renderer/platform/wtf/uuid.h",
     "+third_party/blink/renderer/platform/wtf",
 ]
+
+specific_include_rules = {
+  "media_stream_audio_test\.cc" : [
+    "+base/threading/platform_thread.h",
+  ],
+}

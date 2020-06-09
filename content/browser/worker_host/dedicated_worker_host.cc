@@ -43,8 +43,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
     const url::Origin& creator_origin,
     const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-        coep_reporter,
-    mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host)
+        coep_reporter)
     : service_(service),
       id_(id),
       worker_process_host_(worker_process_host),
@@ -56,7 +55,6 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       // the worker script URL.
       worker_origin_(creator_origin),
       cross_origin_embedder_policy_(cross_origin_embedder_policy),
-      host_receiver_(this, std::move(host)),
       coep_reporter_(std::move(coep_reporter)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(worker_process_host_);

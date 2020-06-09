@@ -65,6 +65,9 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override;
   bool IsHandledURL(const GURL& url) override;
+  std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
+  bool ShouldDisableSiteIsolation() override;
+  std::vector<std::string> GetAdditionalSiteIsolationModes() override;
   bool CanCreateWindow(content::RenderFrameHost* opener,
                        const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,

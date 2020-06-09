@@ -232,13 +232,7 @@ TEST_F(ExternalProviderImplTest, DISABLED_InAppPayments) {
       extension_misc::kInAppPaymentsSupportAppId));
 }
 
-// Failing on ChromeOS, see crbug.com/1092345.
-#if defined(OS_CHROMEOS)
-#define MAYBE_BlockedExternalUserProviders DISABLED_BlockedExternalUserProviders
-#else
-#define MAYBE_BlockedExternalUserProviders BlockedExternalUserProviders
-#endif
-TEST_F(ExternalProviderImplTest, MAYBE_BlockedExternalUserProviders) {
+TEST_F(ExternalProviderImplTest, BlockedExternalUserProviders) {
   OverrideExternalExtensionsPath();
   InitServiceWithExternalProviders(true);
 
@@ -251,14 +245,7 @@ TEST_F(ExternalProviderImplTest, MAYBE_BlockedExternalUserProviders) {
   EXPECT_FALSE(registry()->GetInstalledExtension(kExternalAppId));
 }
 
-// Failing on ChromeOS, see crbug.com/1092345.
-#if defined(OS_CHROMEOS)
-#define MAYBE_NotBlockedExternalUserProviders \
-  DISABLED_NotBlockedExternalUserProviders
-#else
-#define MAYBE_NotBlockedExternalUserProviders NotBlockedExternalUserProviders
-#endif
-TEST_F(ExternalProviderImplTest, MAYBE_NotBlockedExternalUserProviders) {
+TEST_F(ExternalProviderImplTest, NotBlockedExternalUserProviders) {
   OverrideExternalExtensionsPath();
   InitServiceWithExternalProviders(false);
 

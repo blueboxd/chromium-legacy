@@ -14,11 +14,7 @@ enum AssistantStatus {
   // The Assistant service is not ready yet.
   NOT_READY = 0,
   // The Assistant service is ready.
-  // TODO(b/142428671): This is set when the Assistant backend signals it is
-  // ready to handle queries, where |READY| is signaled when it is started.
-  // If this signal turns out to be reliable it should replace |READY| and be
-  // renamed to |READY|.
-  NEW_READY,
+  READY,
 };
 
 enum AssistantAllowedState {

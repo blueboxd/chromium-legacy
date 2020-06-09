@@ -246,7 +246,9 @@ public class ChromePageInfoControllerDelegate extends PageInfoControllerDelegate
      */
     @Override
     public void createCookieControlsBridge(CookieControlsObserver observer) {
-        mBridge = new CookieControlsBridge(observer, mWebContents);
+        Profile profile = Profile.fromWebContents(mWebContents);
+        mBridge = new CookieControlsBridge(observer, mWebContents,
+                profile.isOffTheRecord() ? profile.getOriginalProfile() : null);
     }
 
     /**

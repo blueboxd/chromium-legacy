@@ -195,6 +195,23 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   // token that doesn't exist.
   void RemoveToken(const base::UnguessableToken& token);
 
+  SharedHandleState GetSharedHandleStateForPath(
+      const base::FilePath& path,
+      const url::Origin& origin,
+      const storage::IsolatedContext::ScopedFSHandle& file_system,
+      bool is_directory,
+      NativeFileSystemPermissionContext::UserAction user_action);
+
+  // Creates a FileSystemURL which corresponds to a FilePath and Origin.
+  struct FileSystemURLAndFSHandle {
+    storage::FileSystemURL url;
+    std::string base_name;
+    storage::IsolatedContext::ScopedFSHandle file_system;
+  };
+  FileSystemURLAndFSHandle CreateFileSystemURLFromPath(
+      const url::Origin& origin,
+      const base::FilePath& path);
+
  private:
   friend class NativeFileSystemFileHandleImpl;
 
@@ -250,16 +267,6 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   void DidResolveForSerializeHandle(
       SerializeHandleCallback callback,
       NativeFileSystemTransferTokenImpl* resolved_token);
-
-  // Creates a FileSystemURL which corresponds to a FilePath and Origin.
-  struct FileSystemURLAndFSHandle {
-    storage::FileSystemURL url;
-    std::string base_name;
-    storage::IsolatedContext::ScopedFSHandle file_system;
-  };
-  FileSystemURLAndFSHandle CreateFileSystemURLFromPath(
-      const url::Origin& origin,
-      const base::FilePath& path);
 
   blink::mojom::NativeFileSystemEntryPtr CreateFileEntryFromPathImpl(
       const BindingContext& binding_context,

@@ -12,7 +12,7 @@ import android.widget.TextView;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
-import org.chromium.chrome.browser.download.home.list.UiUtils;
+import org.chromium.components.browser_ui.util.date.StringUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -43,7 +43,7 @@ public class SectionTitleViewHolder extends ListItemViewHolder {
 
         mDate.setText(sectionItem.isJustNow ? itemView.getContext().getResources().getString(
                               R.string.download_manager_just_now)
-                                            : UiUtils.dateToHeaderString(sectionItem.date));
+                                            : StringUtils.dateToHeaderString(sectionItem.date));
 
         mTopDivider.setVisibility(sectionItem.showTopDivider ? ViewGroup.VISIBLE : ViewGroup.GONE);
     }

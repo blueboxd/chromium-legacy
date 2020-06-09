@@ -56,11 +56,12 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
 
   // If the implementation of CreatesGroup changes, we need to be aware of that
   // in this part of code.
-  DCHECK((style.HasOpacity() || layout_object.HasMask() ||
+  DCHECK((style.HasNonInitialOpacity() || layout_object.HasMask() ||
           layout_object.HasClipPath() ||
           layout_object.HasFilterInducingProperty() ||
-          layout_object.HasNonInitialBackdropFilter() ||
-          style.HasBlendMode()) == layout_object.CreatesGroup());
+          layout_object.HasNonInitialBackdropFilter() || style.HasBlendMode() ||
+          (!style.HasAutoClip() && style.HasOutOfFlowPosition()) ||
+          style.HasIsolation()) == layout_object.CreatesGroup());
 
   if (style.HasMask() || style.ClipPath())
     reasons |= CompositingReason::kMaskWithCompositedDescendants;

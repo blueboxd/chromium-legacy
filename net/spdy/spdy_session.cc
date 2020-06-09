@@ -837,11 +837,13 @@ void SpdyStreamRequest::OnConfirmHandshakeComplete(int rv) {
 }
 
 // static
-bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
-                          const SSLInfo& ssl_info,
-                          const SSLConfigService& ssl_config_service,
-                          const std::string& old_hostname,
-                          const std::string& new_hostname) {
+bool SpdySession::CanPool(
+    TransportSecurityState* transport_security_state,
+    const SSLInfo& ssl_info,
+    const SSLConfigService& ssl_config_service,
+    const std::string& old_hostname,
+    const std::string& new_hostname,
+    const net::NetworkIsolationKey& network_isolation_key) {
   // Pooling is prohibited if the server cert is not valid for the new domain,
   // and for connections on which client certs were sent. It is also prohibited
   // when channel ID was sent if the hosts are from different eTLDs+1.
@@ -871,17 +873,12 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   }
 
   // As with CheckPublicKeyPins above, disable Expect-CT reports.
-  //
-  // TODO(https://crbug.com/969893): Once Expect-CT database respects
-  // NetworkIsolationKeys, pass in a non-empty NetworkIsolationKey. For now, it
-  // only affects reports, which this call disables, so unit tests can't verify
-  // the correcte NetworkIsolationKey is passed to this method.
   switch (transport_security_state->CheckCTRequirements(
       HostPortPair(new_hostname, 0), ssl_info.is_issued_by_known_root,
       ssl_info.public_key_hashes, ssl_info.cert.get(),
       ssl_info.unverified_cert.get(), ssl_info.signed_certificate_timestamps,
       TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-      ssl_info.ct_policy_compliance, NetworkIsolationKey::Todo())) {
+      ssl_info.ct_policy_compliance, network_isolation_key)) {
     case TransportSecurityState::CT_REQUIREMENTS_NOT_MET:
       return false;
     case TransportSecurityState::CT_REQUIREMENTS_MET:
@@ -1104,7 +1101,8 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) const {
     return true;  // This is not a secure session, so all domains are okay.
 
   return CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
-                 host_port_pair().host(), domain);
+                 host_port_pair().host(), domain,
+                 spdy_session_key_.network_isolation_key());
 }
 
 void SpdySession::EnqueueStreamWrite(
@@ -2003,7 +2001,8 @@ void SpdySession::TryCreatePushStream(spdy::SpdyStreamId stream_id,
       SSLInfo ssl_info;
       CHECK(GetSSLInfo(&ssl_info));
       if (!CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
-                   associated_url.host(), gurl.host())) {
+                   associated_url.host(), gurl.host(),
+                   spdy_session_key_.network_isolation_key())) {
         RecordSpdyPushedStreamFateHistogram(
             SpdyPushedStreamFate::kCertificateMismatch);
         EnqueueResetStreamFrame(stream_id, request_priority,
@@ -3400,7 +3399,8 @@ void SpdySession::OnAltSvc(
     if (!GetSSLInfo(&ssl_info))
       return;
     if (!CanPool(transport_security_state_, ssl_info, *ssl_config_service_,
-                 host_port_pair().host(), gurl.host())) {
+                 host_port_pair().host(), gurl.host(),
+                 spdy_session_key_.network_isolation_key())) {
       return;
     }
     scheme_host_port = url::SchemeHostPort(gurl);

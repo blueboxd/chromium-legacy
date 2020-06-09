@@ -5,32 +5,6 @@
 import("//build/config/android/rules.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("common_mojom") {
-  sources = [
-    "aw_origin_matcher.mojom",
-    "js_java_interaction/interfaces.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//services/network/public/mojom:mojom",
-    "//third_party/blink/public/mojom:mojom_core",
-  ]
-
-  cpp_typemaps = [
-    {
-      types = [
-        {
-          mojom = "android_webview.mojom.AwOriginMatcher"
-          cpp = "::android_webview::AwOriginMatcher"
-        },
-      ]
-      traits_headers =
-          [ "//android_webview/common/aw_origin_matcher_mojom_traits.h" ]
-    },
-  ]
-}
-
 source_set("common") {
   sources = [
     "android_webview_message_generator.cc",
@@ -44,8 +18,6 @@ source_set("common") {
     "aw_hit_test_data.h",
     "aw_media_drm_bridge_client.cc",
     "aw_media_drm_bridge_client.h",
-    "aw_origin_matcher.cc",
-    "aw_origin_matcher.h",
     "aw_paths.cc",
     "aw_paths.h",
     "aw_resource.cc",

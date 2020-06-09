@@ -15,19 +15,18 @@
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #import "chrome/updater/mac/xpc_service_names.h"
-#import "chrome/updater/server/mac/service_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
 namespace updater {
-// ScopedXPCUpdateServiceMock sets up mocks for the XPC Updater Service and
+// ScopedXPCServiceMock sets up mocks for an arbitrary XPC service and
 // provides access to those mocks. Mocks are removed when the object is
 // deallocated. Only one of these objects can exist at a time, although
 // it is not a singleton, since creating and destroying the mock manager
 // is part of its behavior.
-class ScopedXPCUpdateServiceMock {
+class ScopedXPCServiceMock {
  public:
   // RemoteObjectMockRecord represents a single call to a mock NSXPCConnection's
   // remoteObjectProxyWithErrorHandler: or remoteObjectProxy method.
@@ -38,7 +37,7 @@ class ScopedXPCUpdateServiceMock {
   struct RemoteObjectMockRecord {
     // The mock object that will be served. Use this to configure behaviors
     // and expectations for the test.
-    const base::scoped_nsprotocol<id<CRUUpdateChecking>> mock_object;
+    const base::scoped_nsprotocol<id> mock_object;
 
     // The error handler provided when the remote object was requested by the
     // code under test. Will not be populated before that request is issued.
@@ -47,8 +46,7 @@ class ScopedXPCUpdateServiceMock {
     base::Optional<base::mac::ScopedBlock<void (^)(NSError*)>>
         xpc_error_handler;
 
-    RemoteObjectMockRecord(
-        base::scoped_nsprotocol<id<CRUUpdateChecking>> mock_ptr);
+    explicit RemoteObjectMockRecord(base::scoped_nsprotocol<id> mock_ptr);
     ~RemoteObjectMockRecord();
   };
 
@@ -58,11 +56,11 @@ class ScopedXPCUpdateServiceMock {
    public:
     // Constructs a ConnectionMockRecord to be served in the specified order.
     // This constructor is not intended for use outside of
-    // ScopedXPCUpdateServiceMock. It produces a mock connection that is ready
+    // ScopedXPCServiceMock. It produces a mock connection that is ready
     // for use, but has no associated mock remote objects.
-    // It requires a pointer to its enclosing ScopedXPCUpdateServiceMock to
+    // It requires a pointer to its enclosing ScopedXPCServiceMock to
     // maintain correct behavior of mocked alloc operations.
-    ConnectionMockRecord(ScopedXPCUpdateServiceMock* mock_driver, size_t index);
+    ConnectionMockRecord(ScopedXPCServiceMock* mock_driver, size_t index);
     ~ConnectionMockRecord();
 
     ConnectionMockRecord(const ConnectionMockRecord& other) = delete;
@@ -107,7 +105,8 @@ class ScopedXPCUpdateServiceMock {
     void Verify() const;
 
    private:
-    // The index of |this| in ScopedXPCUpdateServiceMock::mocked_connections_.
+    Protocol* service_protocol_;  // Copied from mock_driver
+    // The index of |this| in ScopedXPCServiceMock::mocked_connections_.
     // Used in verification failure messages.
     const size_t index_;
     base::scoped_nsobject<id> mock_connection_;  // mock NSXPCConnection
@@ -115,14 +114,16 @@ class ScopedXPCUpdateServiceMock {
     size_t next_mock_to_vend_ = 0;
   };  // class ConnectionMockRecord
 
-  ScopedXPCUpdateServiceMock();
-  ~ScopedXPCUpdateServiceMock();
+  // Constructs a ScopedXPCServiceMock, stubbing out NSXPCConnection to create
+  // mocks for connections to an XPC service fitting the provided protocol.
+  // The mocks are cleaned up when the constructed object is destructed.
+  explicit ScopedXPCServiceMock(Protocol* service_protocol);
+  ~ScopedXPCServiceMock();
 
-  ScopedXPCUpdateServiceMock(const ScopedXPCUpdateServiceMock&) = delete;
-  ScopedXPCUpdateServiceMock& operator=(const ScopedXPCUpdateServiceMock&) =
-      delete;
-  ScopedXPCUpdateServiceMock(ScopedXPCUpdateServiceMock&&) = delete;
-  ScopedXPCUpdateServiceMock& operator=(ScopedXPCUpdateServiceMock&&) = delete;
+  ScopedXPCServiceMock(const ScopedXPCServiceMock&) = delete;
+  ScopedXPCServiceMock& operator=(const ScopedXPCServiceMock&) = delete;
+  ScopedXPCServiceMock(ScopedXPCServiceMock&&) = delete;
+  ScopedXPCServiceMock& operator=(ScopedXPCServiceMock&&) = delete;
 
   // Prepares another mock connection to be served on a consecutive expected
   // call to +[NSXPCConnection alloc]. Returns the record for the new mock.
@@ -153,12 +154,15 @@ class ScopedXPCUpdateServiceMock {
   // have been prepared, this prepares one first.
   void HandleConnectionAlloc(NSInvocation* invocation);
 
+  // What protocol do we expect to expose over the XPC interface?
+  Protocol* service_protocol_;
+
   // All connection mocks we have currently created.
   std::vector<std::unique_ptr<ConnectionMockRecord>> mocked_connections_;
   size_t next_connection_to_vend_ = 0;
 
   base::scoped_nsobject<id> nsxpcconnection_class_mock_;
-};  // class ScopedXPCUpdateServiceMock
+};  // class ScopedXPCServiceMock
 
 #pragma mark - Helper classes
 

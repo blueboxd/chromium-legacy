@@ -97,8 +97,7 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   struct GenerationItemInfo;
 
   // RenderFrameObserver:
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void DidChangeScrollOffset() override;
   void OnDestruct() override;
 

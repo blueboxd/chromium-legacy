@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COOKIE_CONTROLS_COOKIE_CONTROLS_VIEW_H_
 
 #include "base/observer_list_types.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
+#include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
 
 // Interface for the CookieControls UI.

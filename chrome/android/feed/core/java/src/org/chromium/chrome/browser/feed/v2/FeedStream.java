@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
+import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.feed.R;
 
@@ -37,12 +38,12 @@ public class FeedStream implements Stream {
     // setStreamContentVisibility() is called.
     private boolean mIsStreamContentVisible = false;
 
-    public FeedStream(
-            Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager) {
+    public FeedStream(Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager,
+            NativePageNavigationDelegate nativePageNavigationDelegate) {
         // TODO(petewil): Use isBackgroundDark to turn on dark theme.
         this.mActivity = activity;
         this.mFeedStreamSurface =
-                new FeedStreamSurface(null, () -> null, activity, snackbarManager);
+                new FeedStreamSurface(activity, snackbarManager, nativePageNavigationDelegate);
         this.mScrollListeners = new ObserverList<ScrollListener>();
     }
 

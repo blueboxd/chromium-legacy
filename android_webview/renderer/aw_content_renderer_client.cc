@@ -19,12 +19,12 @@
 #include "android_webview/renderer/aw_url_loader_throttle_provider.h"
 #include "android_webview/renderer/aw_websocket_handshake_throttle_provider.h"
 #include "android_webview/renderer/browser_exposed_renderer_interfaces.h"
-#include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "components/android_system_error_page/error_page_populator.h"
+#include "components/js_injection/renderer/js_java_configurator.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "components/visitedlink/renderer/visitedlink_reader.h"
@@ -150,7 +150,7 @@ void AwContentRendererClient::RenderFrameCreated(
   new printing::PrintRenderFrameHelper(
       render_frame, std::make_unique<AwPrintRenderFrameHelperDelegate>());
   new AwRenderFrameExt(render_frame);
-  new JsJavaConfigurator(render_frame);
+  new js_injection::JsJavaConfigurator(render_frame);
   new AwSafeBrowsingErrorPageControllerDelegateImpl(render_frame);
 
   // TODO(jam): when the frame tree moves into content and parent() works at
@@ -217,7 +217,8 @@ bool AwContentRendererClient::IsLinkVisited(uint64_t link_hash) {
 
 void AwContentRendererClient::RunScriptsAtDocumentStart(
     content::RenderFrame* render_frame) {
-  JsJavaConfigurator* configurator = JsJavaConfigurator::Get(render_frame);
+  js_injection::JsJavaConfigurator* configurator =
+      js_injection::JsJavaConfigurator::Get(render_frame);
   // We will get RunScriptsAtDocumentStart() event even before we received
   // RenderFrameCreated() for that |render_frame|. This is because Blink code
   // does initialization work on the main frame, which is not related to any

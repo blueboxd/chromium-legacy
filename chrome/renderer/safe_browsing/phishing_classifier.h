@@ -27,7 +27,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
 class RenderFrame;
@@ -111,18 +110,10 @@ class PhishingClassifier {
   void DOMExtractionFinished(bool success);
 
   // Callback to be run when term feature extraction is complete.
-  // If it was successful, begins visual feature extraction, otherwise runs the
-  // DoneCallback with a non-phishy verdict.
-  void TermExtractionFinished(bool success);
-
-  // Called to extract the visual features of the current page.
-  void ExtractVisualFeatures();
-
-  // Callback when visual feature extraction is complete.
   // If it was successful, computes a score and runs the DoneCallback.
   // If extraction was unsuccessful, runs the DoneCallback with a
   // non-phishy verdict.
-  void VisualExtractionFinished(bool success);
+  void TermExtractionFinished(bool success);
 
   // Helper method to run the DoneCallback and clear the state.
   void RunCallback(const ClientPhishingRequest& verdict);
@@ -145,7 +136,6 @@ class PhishingClassifier {
   std::unique_ptr<FeatureMap> features_;
   std::unique_ptr<std::set<uint32_t>> shingle_hashes_;
   const base::string16* page_text_;  // owned by the caller
-  std::unique_ptr<SkBitmap> bitmap_;
   DoneCallback done_callback_;
 
   // Used in scheduling BeginFeatureExtraction tasks.

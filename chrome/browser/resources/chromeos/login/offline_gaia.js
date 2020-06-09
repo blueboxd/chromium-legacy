@@ -4,6 +4,7 @@
 
 {
   const DEFAULT_EMAIL_DOMAIN = '@gmail.com';
+  const INPUT_EMAIL_PATTERN = '^[a-zA-Z0-9.!#$%&\'*+=?^_`{|}~-]+(@[^\\s@]+)?$';
 
   /** @enum */
   const TRANSITION_TYPE = {FORWARD: 0, BACKWARD: 1, NONE: 2};
@@ -19,14 +20,46 @@
         value: false,
       },
 
-      /** @type {?string} */
+      /**
+       * Management domain.
+       * @type {?string}
+       */
       domain: {
         type: String,
-        value: null,
+        value: '',
       },
 
-      /** @type {?string} */
-      emailDomain: String,
+      /**
+       * E-mail domain including initial '@' sign.
+       * @type {?string}
+       */
+      emailDomain: {
+        type: String,
+        value: '',
+      },
+
+      /**
+       * |domain| or empty string, depending on |email_| value.
+       */
+      displayDomain_: {
+        type: String,
+        computed: 'computeDomain_(emailDomain, email_)',
+      },
+
+      /**
+       * Current value of e-mail input field.
+       */
+      email_: String,
+
+      /**
+       * Current value of password input field.
+       */
+      password_: String,
+
+      /**
+       * Proper e-mail with domain, displayed on password page.
+       */
+      fullEmail_: String,
 
       activeSection: {
         type: String,
@@ -42,10 +75,11 @@
     },
 
     focus() {
-      if (this.isEmailSectionActive_())
-        this.$$('#emailInput').focus();
-      else
-        this.$$('#passwordInput').focus();
+      if (this.isEmailSectionActive_()) {
+        this.$.emailInput.focusInput();
+      } else {
+        this.$.passwordInput.focusInput();
+      }
     },
 
     back() {
@@ -54,22 +88,25 @@
 
     onBeforeShow() {
       cr.ui.login.invokePolymerMethod(this.$.dialog, 'onBeforeShow');
+      this.$.emailInput.pattern = INPUT_EMAIL_PATTERN;
     },
 
     reset() {
       this.disabled = false;
-      this.emailDomain = null;
-      this.domain = null;
+      this.emailDomain = '';
+      this.domain = '';
+      this.email_ = '';
+      this.fullEmail_ = '';
     },
 
     onForgotPasswordClicked_() {
       this.disabled = true;
       this.fire('dialogShown');
-      this.$$('#forgotPasswordDlg').showModal();
+      this.$.forgotPasswordDlg.showModal();
     },
 
     onForgotPasswordCloseTap_() {
-      this.$$('#forgotPasswordDlg').close();
+      this.$.forgotPasswordDlg.close();
     },
 
     onDialogOverlayClosed_() {
@@ -81,12 +118,11 @@
       if (email) {
         if (this.emailDomain)
           email = email.replace(this.emailDomain, '');
-
         this.switchToPasswordCard(email, false /* animated */);
-        this.$$('#passwordInput').isInvalid = true;
+        this.$.passwordInput.isInvalid = true;
         this.fire('backButton', true);
       } else {
-        this.$$('#emailInput').value = '';
+        this.email_ = '';
         this.switchToEmailCard(false /* animated */);
       }
     },
@@ -100,9 +136,9 @@
     },
 
     switchToEmailCard(animated) {
-      this.$$('#passwordInput').value = '';
-      this.$$('#passwordInput').isInvalid = false;
-      this.$$('#emailInput').isInvalid = false;
+      this.$.emailInput.isInvalid = false;
+      this.$.passwordInput.isInvalid = false;
+      this.password_ = '';
       if (this.isEmailSectionActive_())
         return;
 
@@ -111,14 +147,15 @@
     },
 
     switchToPasswordCard(email, animated) {
-      this.$$('#emailInput').value = email;
+      this.email_ = email;
       if (email.indexOf('@') === -1) {
         if (this.emailDomain)
           email = email + this.emailDomain;
         else
           email = email + DEFAULT_EMAIL_DOMAIN;
       }
-      this.$$('#passwordHeader').email = email;
+      this.fullEmail_ = email;
+
       if (!this.isEmailSectionActive_())
         return;
 
@@ -132,23 +169,22 @@
     },
 
     onEmailSubmitted_() {
-      if (this.$$('#emailInput').checkValidity()) {
-        this.switchToPasswordCard(
-            this.$$('#emailInput').value, true /* animated */);
+      if (this.$.emailInput.validate()) {
+        this.switchToPasswordCard(this.email_, true /* animated */);
       } else {
-        this.$$('#emailInput').focus();
+        this.$.emailInput.focusInput();
       }
     },
 
     onPasswordSubmitted_() {
-      if (!this.$$('#passwordInput').checkValidity())
+      if (!this.$.passwordInput.validate())
         return;
       var msg = {
         'useOffline': true,
-        'email': this.$$('#passwordHeader').email,
-        'password': this.$$('#passwordInput').value
+        'email': this.email_,
+        'password': this.password_,
       };
-      this.$$('#passwordInput').value = '';
+      this.password_ = '';
       this.fire('authCompleted', msg);
     },
 
@@ -166,6 +202,12 @@
         return;
       }
       this.onPasswordSubmitted_();
+    },
+
+    computeDomain_(domain, email) {
+      if (email && email.indexOf('@') !== -1)
+        return '';
+      return domain;
     },
   });
 }

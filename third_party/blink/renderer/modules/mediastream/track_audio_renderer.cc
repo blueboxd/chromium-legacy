@@ -17,6 +17,7 @@
 #include "media/base/audio_latency.h"
 #include "media/base/audio_shifter.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
@@ -152,12 +153,12 @@ void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
 }
 
 TrackAudioRenderer::TrackAudioRenderer(
-    const WebMediaStreamTrack& audio_track,
+    MediaStreamComponent* audio_component,
     LocalFrame* playout_frame,
     const base::UnguessableToken& session_id,
     const String& device_id,
     base::RepeatingCallback<void()> on_render_error_callback)
-    : audio_track_(audio_track),
+    : audio_component_(audio_component),
       playout_frame_(playout_frame),
       session_id_(session_id),
       task_runner_(
@@ -168,7 +169,7 @@ TrackAudioRenderer::TrackAudioRenderer(
       output_device_id_(device_id),
       volume_(0.0),
       sink_started_(false) {
-  DCHECK(MediaStreamAudioTrack::From(audio_track_));
+  DCHECK(MediaStreamAudioTrack::From(audio_component_.Get()));
   DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "TrackAudioRenderer::TrackAudioRenderer()";
 }
@@ -184,8 +185,9 @@ void TrackAudioRenderer::Start() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(playing_, false);
 
-  // We get audio data from |audio_track_|...
-  WebMediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
+  // We get audio data from |audio_component_|...
+  WebMediaStreamAudioSink::AddToAudioTrack(
+      this, WebMediaStreamTrack(audio_component_.Get()));
   // ...and |sink_| will get audio data from us.
   DCHECK(!sink_);
   sink_ = Platform::Current()->NewAudioRendererSink(
@@ -218,7 +220,8 @@ void TrackAudioRenderer::Stop() {
   sink_started_ = false;
 
   // Ensure that the capturer stops feeding us with captured audio.
-  WebMediaStreamAudioSink::RemoveFromAudioTrack(this, audio_track_);
+  WebMediaStreamAudioSink::RemoveFromAudioTrack(
+      this, WebMediaStreamTrack(audio_component_.Get()));
 }
 
 void TrackAudioRenderer::Play() {
@@ -270,7 +273,7 @@ base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() {
 
 bool TrackAudioRenderer::IsLocalRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return MediaStreamAudioTrack::From(audio_track_)->is_local_track();
+  return MediaStreamAudioTrack::From(audio_component_.Get())->is_local_track();
 }
 
 void TrackAudioRenderer::SwitchOutputDevice(

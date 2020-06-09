@@ -30,6 +30,9 @@ class PaymentAppService : public KeyedService {
   // Create payment apps for |delegate|.
   void Create(base::WeakPtr<PaymentAppFactory::Delegate> delegate);
 
+  // KeyedService implementation:
+  void Shutdown() override;
+
  private:
   std::vector<std::unique_ptr<PaymentAppFactory>> factories_;
 

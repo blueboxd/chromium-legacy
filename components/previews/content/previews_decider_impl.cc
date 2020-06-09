@@ -19,7 +19,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
-#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
+#include "components/blocklist/opt_out_blocklist/opt_out_store.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"

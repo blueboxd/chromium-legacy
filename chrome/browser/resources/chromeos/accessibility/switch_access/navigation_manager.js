@@ -245,8 +245,8 @@ class NavigationManager {
    * @param {!chrome.automation.AutomationEvent} event
    * @private
    */
-  onMenuStart_(event) {
-    const menuRoot = SystemMenuRootNode.buildTree(event.target);
+  onModalDialog_(event) {
+    const menuRoot = ModalDialogRootNode.buildTree(event.target);
     this.jumpTo_(menuRoot);
   }
 
@@ -278,8 +278,12 @@ class NavigationManager {
     this.desktop_.addEventListener(
         chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),
         false);
+    // The status tray fires a SHOW event when it opens.
     this.desktop_.addEventListener(
-        chrome.automation.EventType.MENU_START, this.onMenuStart_.bind(this),
+        chrome.automation.EventType.SHOW, this.onModalDialog_.bind(this),
+        false);
+    this.desktop_.addEventListener(
+        chrome.automation.EventType.MENU_START, this.onModalDialog_.bind(this),
         false);
     chrome.automation.addTreeChangeObserver(
         chrome.automation.TreeChangeObserverFilter.ALL_TREE_CHANGES,

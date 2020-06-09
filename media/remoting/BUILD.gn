@@ -31,7 +31,7 @@ source_set("rpc") {
   public_deps = [ ":media_remoting_proto" ]
 }
 
-source_set("remoting") {
+source_set("remoting_sender") {
   sources = [
     "courier_renderer_factory.cc",
     "courier_renderer_factory.h",
@@ -64,16 +64,48 @@ source_set("remoting") {
   }
 }
 
+source_set("remoting_constants") {
+  sources = [ "remoting_constants.h" ]
+}
+
+source_set("remoting_renderer") {
+  sources = [
+    "receiver.cc",
+    "receiver.h",
+    "receiver_controller.cc",
+    "receiver_controller.h",
+    "remoting_renderer_factory.cc",
+    "remoting_renderer_factory.h",
+    "stream_provider.cc",
+    "stream_provider.h",
+  ]
+
+  deps = [
+    ":remoting_constants",
+    ":rpc",
+    "//media/mojo/common:common",
+    "//media/mojo/mojom:remoting",
+  ]
+}
+
 source_set("media_remoting_tests") {
   testonly = true
   sources = [
     "fake_remoter.cc",
     "fake_remoter.h",
+    "mock_receiver_controller.cc",
+    "mock_receiver_controller.h",
+    "receiver_unittest.cc",
     "renderer_controller_unittest.cc",
+    "stream_provider_unittest.cc",
+    "test_utils.cc",
+    "test_utils.h",
   ]
 
   deps = [
-    ":remoting",
+    ":remoting_renderer",
+    ":remoting_sender",
+    ":rpc",
     "//base",
     "//base/test:test_support",
     "//media:test_support",
@@ -94,16 +126,13 @@ source_set("media_remoting_tests") {
       "fake_media_resource.h",
       "integration_test.cc",
       "proto_utils_unittest.cc",
-      "receiver.cc",
-      "receiver.h",
       "rpc_broker_unittest.cc",
-      "stream_provider.cc",
-      "stream_provider.h",
     ]
 
     deps += [
       ":rpc",
       "//media/test:pipeline_integration_test_base",
+      "//services/service_manager/public/cpp:cpp",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
     ]

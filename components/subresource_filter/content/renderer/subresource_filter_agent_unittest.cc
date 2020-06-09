@@ -478,8 +478,7 @@ TEST_F(SubresourceFilterAgentTest,
   agent_as_rfo()->DidFailProvisionalLoad();
   agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
   agent_as_rfo()->ReadyToCommitNavigation(nullptr);
-  agent_as_rfo()->DidCommitProvisionalLoad(
-      false /* is_same_document_navigation */, ui::PAGE_TRANSITION_LINK);
+  agent_as_rfo()->DidCommitProvisionalLoad(ui::PAGE_TRANSITION_LINK);
   FinishLoad();
 }
 

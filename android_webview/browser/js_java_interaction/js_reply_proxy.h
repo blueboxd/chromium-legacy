@@ -8,13 +8,15 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 
-namespace android_webview {
-
+namespace js_injection {
 class WebMessageReplyProxy;
+}
+
+namespace android_webview {
 
 class JsReplyProxy {
  public:
-  explicit JsReplyProxy(WebMessageReplyProxy* reply_proxy);
+  explicit JsReplyProxy(js_injection::WebMessageReplyProxy* reply_proxy);
   ~JsReplyProxy();
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaPeer();
@@ -23,7 +25,7 @@ class JsReplyProxy {
                    const base::android::JavaParamRef<jstring>& message);
 
  private:
-  WebMessageReplyProxy* reply_proxy_;
+  js_injection::WebMessageReplyProxy* reply_proxy_;
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   DISALLOW_COPY_AND_ASSIGN(JsReplyProxy);

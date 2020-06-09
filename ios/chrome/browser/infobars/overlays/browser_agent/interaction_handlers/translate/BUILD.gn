@@ -16,6 +16,8 @@ source_set("translate") {
   ]
   deps = [
     "//base",
+    "//components/metrics",
+    "//components/strings:components_strings_grit",
     "//components/translate/core/browser",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
@@ -27,6 +29,7 @@ source_set("translate") {
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/infobar_banner",
     "//ios/chrome/browser/overlays/public/infobar_modal",
+    "//ios/chrome/browser/translate:public",
     "//ios/chrome/browser/web_state_list",
   ]
 }

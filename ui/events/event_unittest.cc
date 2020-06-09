@@ -97,7 +97,7 @@ TEST(EventTest, RepeatedClick) {
   LocatedEventTestApi test_event1(&event1);
   LocatedEventTestApi test_event2(&event2);
 
-  base::TimeTicks start = base::TimeTicks();
+  base::TimeTicks start = base::TimeTicks::Now();
   base::TimeTicks soon = start + base::TimeDelta::FromMilliseconds(1);
   base::TimeTicks later = start + base::TimeDelta::FromMilliseconds(1000);
 
@@ -136,7 +136,7 @@ TEST(EventTest, RepeatedClick) {
 // does not yield a double click event: http://crbug.com/389162
 TEST(EventTest, DoubleClickRequiresUniqueTimestamp) {
   const gfx::Point point(0, 0);
-  base::TimeTicks time1 = base::TimeTicks();
+  base::TimeTicks time1 = base::TimeTicks::Now();
   base::TimeTicks time2 = time1 + base::TimeDelta::FromMilliseconds(1);
 
   // Re-processing the same press doesn't yield a double-click.
@@ -177,7 +177,7 @@ TEST(EventTest, DoubleClickRequiresUniqueTimestamp) {
 // Tests that right clicking, then left clicking does not yield double clicks.
 TEST(EventTest, SingleClickRightLeft) {
   const gfx::Point point(0, 0);
-  base::TimeTicks time1 = base::TimeTicks();
+  base::TimeTicks time1 = base::TimeTicks::Now();
   base::TimeTicks time2 = time1 + base::TimeDelta::FromMilliseconds(1);
   base::TimeTicks time3 = time1 + base::TimeDelta::FromMilliseconds(2);
 
@@ -553,7 +553,7 @@ TEST(EventTest, AutoRepeat) {
 #endif  // USE_X11
 
 TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
-  const base::TimeTicks time = base::TimeTicks();
+  const base::TimeTicks time = base::TimeTicks::Now();
   const float non_zero_length1 = 30;
   const float non_zero_length2 = 46;
 
@@ -577,7 +577,7 @@ TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
 }
 
 TEST(EventTest, TouchEventRotationAngleFixing) {
-  const base::TimeTicks time = base::TimeTicks();
+  const base::TimeTicks time = base::TimeTicks::Now();
   const float radius_x = 20;
   const float radius_y = 10;
 

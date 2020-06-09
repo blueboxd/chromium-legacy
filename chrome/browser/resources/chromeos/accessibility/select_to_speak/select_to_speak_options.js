@@ -19,7 +19,7 @@ class SelectToSpeakOptionsPage {
     }.bind(this));
     this.syncSelectControlToPref_('voice', 'voice', 'voiceName');
     this.syncCheckboxControlToPref_(
-        'wordHighlight', 'wordHighlight', function(checked) {
+        'wordHighlight', 'wordHighlight', (checked) => {
           const elem = document.getElementById('highlightSubOption');
           const select = document.getElementById('highlightColor');
           if (checked) {
@@ -32,7 +32,17 @@ class SelectToSpeakOptionsPage {
             select.disabled = true;
           }
         });
-    this.syncCheckboxControlToPref_('backgroundShading', 'backgroundShading');
+    this.syncCheckboxControlToPref_(
+        'backgroundShading', 'backgroundShading', (checked) => {
+          const elem = document.getElementById('backgroundPreviewContainer');
+          if (checked) {
+            elem.classList.remove('hidden');
+            elem.setAttribute('aria-hidden', false);
+          } else {
+            elem.classList.add('hidden');
+            elem.setAttribute('aria-hidden', true);
+          }
+        });
     this.setUpHighlightListener_();
     this.setUpTtsButtonClickListener_();
     chrome.metricsPrivate.recordUserAction(

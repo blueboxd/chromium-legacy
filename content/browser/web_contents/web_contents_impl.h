@@ -1212,6 +1212,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // WebContentsDelegate.
   void SystemDragEnded(RenderWidgetHost* source_rwh);
 
+  // They are similar to functions GetAllFrames() and SendToAllFrames() in
+  // WebContents interface, but also include pendings frames. See bug:
+  // http://crbug.com/1087806
+  std::vector<RenderFrameHost*> GetAllFramesIncludingPending();
+  int SendToAllFramesIncludingPending(IPC::Message* message);
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.

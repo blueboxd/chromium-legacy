@@ -574,8 +574,8 @@ EnrollmentHandlerChromeOS::GetRobotAuthCodeDeviceType() {
   return em::DeviceServiceApiAccessRequest::CHROME_OS;
 }
 
-std::string EnrollmentHandlerChromeOS::GetRobotOAuthScopes() {
-  return GaiaConstants::kAnyApiOAuth2Scope;
+std::set<std::string> EnrollmentHandlerChromeOS::GetRobotOAuthScopes() {
+  return {GaiaConstants::kAnyApiOAuth2Scope};
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

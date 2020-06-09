@@ -435,7 +435,6 @@ test("android_webview_unittests") {
     "../browser/safe_browsing/aw_safe_browsing_whitelist_manager_unittest.cc",
     "../browser/scoped_add_feature_flags_unittests.cc",
     "../browser/state_serializer_unittest.cc",
-    "../common/aw_origin_matcher_unittest.cc",
     "../lib/webview_tests.cc",
   ]
 

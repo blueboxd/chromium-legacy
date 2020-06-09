@@ -101,7 +101,7 @@ class HotseatWidgetTest
       assistant_test_api_->GetAssistantState()->NotifyFeatureAllowed(
           chromeos::assistant::AssistantAllowedState::ALLOWED);
       assistant_test_api_->GetAssistantState()->NotifyStatusChanged(
-          chromeos::assistant::AssistantStatus::NEW_READY);
+          chromeos::assistant::AssistantStatus::READY);
 
       assistant_test_api_->WaitUntilIdle();
     }

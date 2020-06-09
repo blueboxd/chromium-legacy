@@ -199,6 +199,16 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   void LayoutHotseatByAnimation(double target_opacity,
                                 const gfx::Rect& target_bounds);
 
+  // Animates the hotseat for the transition between the home launcher state
+  // and the extended state.
+  void StartHomeLauncherExtendedTransitionAnimation(
+      double target_opacity,
+      const gfx::Rect& target_bounds);
+
+  // Starts the default bounds/opacity animation.
+  void StartNormalBoundsAnimation(double target_opacity,
+                                  const gfx::Rect& target_bounds);
+
   // The set of inputs that impact this widget's layout. The assumption is that
   // this widget needs a relayout if, and only if, one or more of these has
   // changed.

@@ -11,7 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
+#include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
@@ -34,7 +34,7 @@
 
 namespace {
 
-constexpr int kCurrentVersionNumber = 2;
+constexpr int kCurrentVersionNumber = 3;
 constexpr int kCompatibleVersionNumber = 1;
 
 constexpr base::FilePath::CharType kMediaHistoryDatabaseName[] =
@@ -93,6 +93,26 @@ int MigrateFrom1To2(sql::Database* db, sql::MetaTable* meta_table) {
   return 1;
 }
 
+int MigrateFrom2To3(sql::Database* db, sql::MetaTable* meta_table) {
+  // Version 3 drops the mediaFeedAssociatedOrigin table.
+  const int target_version = 3;
+
+  // The mediaFeedAssociatedOrigin table might not exist if the feature is
+  // disabled.
+  if (!db->DoesTableExist("mediaFeedAssociatedOrigin")) {
+    meta_table->SetVersionNumber(target_version);
+    return target_version;
+  }
+
+  static const char k2To3Sql[] = "DROP TABLE mediaFeedAssociatedOrigin;";
+  sql::Transaction transaction(db);
+  if (transaction.Begin() && db->Execute(k2To3Sql) && transaction.Commit()) {
+    meta_table->SetVersionNumber(target_version);
+    return target_version;
+  }
+  return 2;
+}
+
 bool IsCauseFromExpiration(const net::CookieChangeCause& cause) {
   return cause == net::CookieChangeCause::UNKNOWN_DELETION ||
          cause == net::CookieChangeCause::EXPIRED ||
@@ -146,10 +166,6 @@ MediaHistoryStore::MediaHistoryStore(
       feed_items_table_(IsMediaFeedsEnabled()
                             ? new MediaHistoryFeedItemsTable(db_task_runner_)
                             : nullptr),
-      feed_origins_table_(
-          IsMediaFeedsEnabled()
-              ? new MediaHistoryFeedAssociatedOriginsTable(db_task_runner_)
-              : nullptr),
       initialization_successful_(false) {}
 
 MediaHistoryStore::~MediaHistoryStore() {
@@ -367,6 +383,8 @@ sql::InitStatus MediaHistoryStore::CreateOrUpgradeIfNeeded() {
   // NOTE: Insert schema upgrade scripts here when required.
   if (cur_version == 1)
     cur_version = MigrateFrom1To2(db_.get(), meta_table_.get());
+  if (cur_version == 2)
+    cur_version = MigrateFrom2To3(db_.get(), meta_table_.get());
 
   if (cur_version == kCurrentVersionNumber)
     return sql::INIT_OK;
@@ -391,8 +409,6 @@ sql::InitStatus MediaHistoryStore::InitializeTables() {
     status = feeds_table_->Initialize(db_.get());
   if (feed_items_table_ && status == sql::INIT_OK)
     status = feed_items_table_->Initialize(db_.get());
-  if (feed_origins_table_ && status == sql::INIT_OK)
-    status = feed_origins_table_->Initialize(db_.get());
 
   return status;
 }
@@ -487,16 +503,10 @@ MediaHistoryStore::GetMediaFeedItems(
 std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryStore::GetMediaFeeds(
     const MediaHistoryKeyedService::GetMediaFeedsRequest& request) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
-  if (!CanAccessDatabase() || !feeds_table_ || !feed_origins_table_)
+  if (!CanAccessDatabase() || !feeds_table_)
     return std::vector<media_feeds::mojom::MediaFeedPtr>();
 
-  auto feeds = feeds_table_->GetRows(request);
-
-  for (auto& feed : feeds) {
-    feed->associated_origins = feed_origins_table_->Get(feed->id);
-  }
-
-  return feeds;
+  return feeds_table_->GetRows(request);
 }
 
 int MediaHistoryStore::GetTableRowCount(const std::string& table_name) {
@@ -721,7 +731,7 @@ void MediaHistoryStore::StoreMediaFeedFetchResult(
   if (!CanAccessDatabase())
     return;
 
-  if (!feeds_table_ || !feed_items_table_ || !feed_origins_table_)
+  if (!feeds_table_ || !feed_items_table_)
     return;
 
   auto fetch_details = feeds_table_->GetFetchDetails(result.feed_id);
@@ -747,25 +757,13 @@ void MediaHistoryStore::StoreMediaFeedFetchResultInternal(
   if (!CanAccessDatabase())
     return;
 
-  if (!feeds_table_ || !feed_items_table_ || !feed_origins_table_)
+  if (!feeds_table_ || !feed_items_table_)
     return;
 
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
     return;
   }
-
-  std::set<url::Origin> origins_set;
-  for (auto& origin : result.associated_origins)
-    origins_set.insert(origin);
-
-  // Get the origin for the feed.
-  auto origin = feeds_table_->GetOrigin(result.feed_id);
-  if (!origin.has_value()) {
-    DB()->RollbackTransaction();
-    return;
-  }
-  origins_set.insert(*origin);
 
   // Remove all the items currently associated with this feed.
   if (!feed_items_table_->DeleteItems(result.feed_id)) {
@@ -812,20 +810,6 @@ void MediaHistoryStore::StoreMediaFeedFetchResultInternal(
           result.cookie_name_filter)) {
     DB()->RollbackTransaction();
     return;
-  }
-
-  // Clear any old associated origins.
-  if (!feed_origins_table_->Clear(result.feed_id)) {
-    DB()->RollbackTransaction();
-    return;
-  }
-
-  // Store associated origins.
-  for (auto& origin : origins_set) {
-    if (!feed_origins_table_->Add(origin, result.feed_id)) {
-      DB()->RollbackTransaction();
-      return;
-    }
   }
 
   if (result.status !=
@@ -982,7 +966,12 @@ void MediaHistoryStore::ResetMediaFeed(const url::Origin& origin,
   if (!CanAccessDatabase())
     return;
 
-  if (!feeds_table_ || !feed_items_table_ || !feed_origins_table_)
+  if (!feeds_table_ || !feed_items_table_)
+    return;
+
+  // Get the feed for |origin|.
+  base::Optional<int64_t> feed_id = feeds_table_->GetFeedForOrigin(origin);
+  if (!feed_id.has_value())
     return;
 
   if (!DB()->BeginTransaction()) {
@@ -990,10 +979,7 @@ void MediaHistoryStore::ResetMediaFeed(const url::Origin& origin,
     return;
   }
 
-  // Get all the feeds with |origin| as an associated origin.
-  std::set<int64_t> feed_ids = feed_origins_table_->GetFeeds(origin, false);
-
-  if (ResetMediaFeedInternal(feed_ids, reason)) {
+  if (ResetMediaFeedInternal({*feed_id}, reason)) {
     DB()->CommitTransaction();
   } else {
     DB()->RollbackTransaction();
@@ -1008,17 +994,26 @@ void MediaHistoryStore::ResetMediaFeedDueToCookies(
   if (!CanAccessDatabase())
     return;
 
-  if (!feeds_table_ || !feed_items_table_ || !feed_origins_table_)
+  if (!feeds_table_ || !feed_items_table_)
+    return;
+
+  // Get all the feeds for |origin| possibly including subdomains.
+  std::set<int64_t> feed_ids;
+
+  if (include_subdomains)
+    feed_ids = feeds_table_->GetFeedsForOriginSubdomain(origin);
+
+  base::Optional<int64_t> feed_id = feeds_table_->GetFeedForOrigin(origin);
+  if (feed_id.has_value())
+    feed_ids.insert(*feed_id);
+
+  if (feed_ids.empty())
     return;
 
   if (!DB()->BeginTransaction()) {
     LOG(ERROR) << "Failed to begin the transaction.";
     return;
   }
-
-  // Get all the feeds with |origin| as an associated origin.
-  std::set<int64_t> feed_ids =
-      feed_origins_table_->GetFeeds(origin, include_subdomains);
 
   std::set<int64_t> feed_ids_to_reset;
   for (auto feed_id : feed_ids) {
@@ -1101,19 +1096,6 @@ bool MediaHistoryStore::ResetMediaFeedInternal(
 
     // Remove all the items currently associated with this feed.
     if (!feed_items_table_->DeleteItems(feed_id))
-      return false;
-
-    // Clear any old associated origins.
-    if (!feed_origins_table_->Clear(feed_id))
-      return false;
-
-    auto feed_origin = feeds_table_->GetOrigin(feed_id);
-    if (!feed_origin)
-      return false;
-
-    // Add the origin of the feed back so we will update the reset tokens if
-    // we are reset again before the next fetch.
-    if (!feed_origins_table_->Add(*feed_origin, feed_id))
       return false;
   }
 

@@ -1362,7 +1362,7 @@ bool QuicChromiumClientSession::CanPool(
 
   return SpdySession::CanPool(transport_security_state_, ssl_info,
                               *ssl_config_service_, session_key_.host(),
-                              hostname);
+                              hostname, network_isolation_key);
 }
 
 bool QuicChromiumClientSession::ShouldCreateIncomingStream(

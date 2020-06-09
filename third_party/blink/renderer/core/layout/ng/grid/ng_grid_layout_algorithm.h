@@ -7,7 +7,9 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -21,6 +23,30 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   scoped_refptr<const NGLayoutResult> Layout() override;
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+
+ private:
+  friend class NGGridLayoutAlgorithmTest;
+
+  void ConstructAndAppendGridItems();
+  void ConstructAndAppendGridItem(const NGBlockNode& node);
+  NGConstraintSpace BuildSpaceForMeasure(const NGBlockNode& grid_item);
+
+  enum class GridLayoutAlgorithmState {
+    kMeasuringItems,
+  };
+  GridLayoutAlgorithmState state_;
+
+  struct GridItem {
+    NGConstraintSpace constraint_space;
+  };
+  Vector<GridItem> items_;
+
+  LogicalSize border_box_size_;
+  LogicalSize content_box_size_;
+  LogicalSize child_percentage_size_;
+
+  const NGBoxStrut border_padding_;
+  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

@@ -57,7 +57,7 @@ content::BrowserContext* CookieSettingsFactory::GetBrowserContextToUse(
 scoped_refptr<RefcountedKeyedService>
 CookieSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   PrefService* prefs = profile->GetPrefs();
 
   // Migrate BlockThirdPartyCookies to CookieControlsMode pref.

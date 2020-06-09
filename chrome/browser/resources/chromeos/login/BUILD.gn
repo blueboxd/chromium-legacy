@@ -17,7 +17,6 @@ js_type_check("closure_compile") {
     ":gaia_buttons",
     ":gaia_card",
     ":gaia_header",
-    ":gaia_input",
     ":gaia_input_form",
     ":gaia_password_changed",
     ":gesture_navigation",
@@ -139,9 +138,6 @@ js_library("gaia_header") {
 }
 
 js_library("gaia_input_form") {
-}
-
-js_library("gaia_input") {
 }
 
 js_library("gaia_password_changed") {

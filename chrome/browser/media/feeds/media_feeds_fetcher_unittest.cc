@@ -78,37 +78,7 @@ const char kTestDataWithAssociatedOrigins[] = R"END({
     }
 })END";
 
-const char kWellKnownWithFeedOrigin[] = R"END({
-      "allowedAssociations": [
-        "https://www.example.org",
-        "badurl",
-        1234,
-        {},
-        "https://www.google.com"
-      ]
-})END";
-
 const char kTestFeedName[] = "Media Feeds Developers";
-
-const char kWellKnownURLA[] =
-    "https://login.example.org/.well-known/media-feeds";
-
-const char kWellKnownURLB[] =
-    "https://login.example.com/.well-known/media-feeds";
-
-std::set<GURL> GetExpectedWellKnownURLs() {
-  std::set<GURL> urls;
-  urls.insert(GURL(kWellKnownURLA));
-  urls.insert(GURL(kWellKnownURLB));
-  return urls;
-}
-
-std::set<url::Origin> GetExpectedAssociatedOrigins() {
-  std::set<url::Origin> origins;
-  origins.insert(url::Origin::Create(GURL(kWellKnownURLA)));
-  origins.insert(url::Origin::Create(GURL(kWellKnownURLB)));
-  return origins;
-}
 
 }  // namespace
 
@@ -158,29 +128,6 @@ class MediaFeedsFetcherTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(GetCurrentRequest().redirect_mode,
               ::network::mojom::RedirectMode::kError);
     EXPECT_EQ(net::HttpRequestHeaders::kGetMethod, GetCurrentRequest().method);
-  }
-
-  bool RespondToAssociatedOriginFetch(
-      const GURL& url,
-      const std::string& response_body,
-      net::HttpStatusCode response_code = net::HttpStatusCode::HTTP_OK,
-      int net_error = net::OK) {
-    auto response_head = ::network::CreateURLResponseHead(response_code);
-    bool rv = url_loader_factory()->SimulateResponseForPendingRequest(
-        url, ::network::URLLoaderCompletionStatus(net_error),
-        std::move(response_head), response_body);
-    task_environment()->RunUntilIdle();
-    return rv;
-  }
-
-  std::set<GURL> WaitForAndGetAssociatedRequests() {
-    task_environment()->RunUntilIdle();
-
-    std::set<GURL> urls;
-    for (auto& pending : *url_loader_factory()->pending_requests())
-      urls.insert(pending.request.url);
-
-    return urls;
   }
 
   bool SetCookie(content::BrowserContext* browser_context,
@@ -371,179 +318,10 @@ TEST_F(MediaFeedsFetcherTest, Success_AssociatedOrigins_BothWork) {
             EXPECT_FALSE(result.was_fetched_from_cache);
             EXPECT_FALSE(result.gone);
             EXPECT_EQ(kTestFeedName, result.display_name);
-            EXPECT_EQ(GetExpectedAssociatedOrigins(),
-                      result.associated_origins);
           }));
 
   WaitForRequest();
   ASSERT_TRUE(RespondToFetch(kTestDataWithAssociatedOrigins));
-
-  auto pending = WaitForAndGetAssociatedRequests();
-  EXPECT_EQ(GetExpectedWellKnownURLs(), pending);
-
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLA),
-                                             kWellKnownWithFeedOrigin));
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLB),
-                                             kWellKnownWithFeedOrigin));
-}
-
-TEST_F(MediaFeedsFetcherTest, Success_AssociatedOrigins_BothFail) {
-  GURL site_with_cookies(kTestUrl);
-  ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
-
-  fetcher()->FetchFeed(
-      GURL("https://www.google.com"), false,
-      base::BindLambdaForTesting(
-          [&](media_history::MediaHistoryKeyedService::MediaFeedFetchResult
-                  result) {
-            EXPECT_EQ(result.status, mojom::FetchResult::kSuccess);
-            EXPECT_FALSE(result.was_fetched_from_cache);
-            EXPECT_FALSE(result.gone);
-            EXPECT_EQ(kTestFeedName, result.display_name);
-            EXPECT_TRUE(result.associated_origins.empty());
-          }));
-
-  WaitForRequest();
-  ASSERT_TRUE(RespondToFetch(kTestDataWithAssociatedOrigins));
-
-  auto pending = WaitForAndGetAssociatedRequests();
-  EXPECT_EQ(GetExpectedWellKnownURLs(), pending);
-
-  ASSERT_TRUE(
-      RespondToAssociatedOriginFetch(GURL(kWellKnownURLA), std::string(),
-                                     net::HttpStatusCode::HTTP_BAD_GATEWAY));
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(
-      GURL(kWellKnownURLB), std::string(), net::HttpStatusCode::HTTP_SEE_OTHER,
-      net::ERR_UNEXPECTED));
-}
-
-TEST_F(MediaFeedsFetcherTest, Success_AssociatedOrigins_OneFails) {
-  GURL site_with_cookies(kTestUrl);
-  ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
-
-  fetcher()->FetchFeed(
-      GURL("https://www.google.com"), false,
-      base::BindLambdaForTesting(
-          [&](media_history::MediaHistoryKeyedService::MediaFeedFetchResult
-                  result) {
-            EXPECT_EQ(result.status, mojom::FetchResult::kSuccess);
-            EXPECT_FALSE(result.was_fetched_from_cache);
-            EXPECT_FALSE(result.gone);
-            EXPECT_EQ(kTestFeedName, result.display_name);
-
-            ASSERT_EQ(1u, result.associated_origins.size());
-            EXPECT_TRUE(
-                base::Contains(result.associated_origins,
-                               url::Origin::Create(GURL(kWellKnownURLA))));
-          }));
-
-  WaitForRequest();
-  ASSERT_TRUE(RespondToFetch(kTestDataWithAssociatedOrigins));
-
-  auto pending = WaitForAndGetAssociatedRequests();
-  EXPECT_EQ(GetExpectedWellKnownURLs(), pending);
-
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLA),
-                                             kWellKnownWithFeedOrigin));
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(
-      GURL(kWellKnownURLB), std::string(), net::HttpStatusCode::HTTP_SEE_OTHER,
-      net::ERR_UNEXPECTED));
-}
-
-TEST_F(MediaFeedsFetcherTest, Success_AssociatedOrigins_OneNotAllowlisted) {
-  GURL site_with_cookies(kTestUrl);
-  ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
-
-  fetcher()->FetchFeed(
-      GURL("https://www.google.com"), false,
-      base::BindLambdaForTesting(
-          [&](media_history::MediaHistoryKeyedService::MediaFeedFetchResult
-                  result) {
-            EXPECT_EQ(result.status, mojom::FetchResult::kSuccess);
-            EXPECT_FALSE(result.was_fetched_from_cache);
-            EXPECT_FALSE(result.gone);
-            EXPECT_EQ(kTestFeedName, result.display_name);
-
-            ASSERT_EQ(1u, result.associated_origins.size());
-            EXPECT_TRUE(
-                base::Contains(result.associated_origins,
-                               url::Origin::Create(GURL(kWellKnownURLA))));
-          }));
-
-  WaitForRequest();
-  ASSERT_TRUE(RespondToFetch(kTestDataWithAssociatedOrigins));
-
-  auto pending = WaitForAndGetAssociatedRequests();
-  EXPECT_EQ(GetExpectedWellKnownURLs(), pending);
-
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLA),
-                                             kWellKnownWithFeedOrigin));
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLB), R"END({
-      "allowedAssociations": [
-        "https://www.example.org"
-      ]
-})END"));
-}
-
-TEST_F(MediaFeedsFetcherTest, Success_AssociatedOrigins_WithSingleAssociation) {
-  GURL site_with_cookies(kTestUrl);
-  ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
-
-  fetcher()->FetchFeed(
-      GURL("https://www.google.com"), false,
-      base::BindLambdaForTesting(
-          [&](media_history::MediaHistoryKeyedService::MediaFeedFetchResult
-                  result) {
-            EXPECT_EQ(result.status, mojom::FetchResult::kSuccess);
-            EXPECT_FALSE(result.was_fetched_from_cache);
-            EXPECT_FALSE(result.gone);
-            EXPECT_EQ(kTestFeedName, result.display_name);
-            EXPECT_EQ(GetExpectedAssociatedOrigins(),
-                      result.associated_origins);
-          }));
-
-  WaitForRequest();
-  ASSERT_TRUE(RespondToFetch(kTestDataWithAssociatedOrigins));
-
-  auto pending = WaitForAndGetAssociatedRequests();
-  EXPECT_EQ(GetExpectedWellKnownURLs(), pending);
-
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLA),
-                                             kWellKnownWithFeedOrigin));
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLB), R"END({
-      "allowedAssociations": "https://www.google.com"
-})END"));
-}
-
-TEST_F(MediaFeedsFetcherTest, Success_AssociatedOrigins_BadJSON) {
-  GURL site_with_cookies(kTestUrl);
-  ASSERT_TRUE(SetCookie(profile(), site_with_cookies, "testing"));
-
-  fetcher()->FetchFeed(
-      GURL("https://www.google.com"), false,
-      base::BindLambdaForTesting(
-          [&](media_history::MediaHistoryKeyedService::MediaFeedFetchResult
-                  result) {
-            EXPECT_EQ(result.status, mojom::FetchResult::kSuccess);
-            EXPECT_FALSE(result.was_fetched_from_cache);
-            EXPECT_FALSE(result.gone);
-            EXPECT_EQ(kTestFeedName, result.display_name);
-
-            ASSERT_EQ(1u, result.associated_origins.size());
-            EXPECT_TRUE(
-                base::Contains(result.associated_origins,
-                               url::Origin::Create(GURL(kWellKnownURLA))));
-          }));
-
-  WaitForRequest();
-  ASSERT_TRUE(RespondToFetch(kTestDataWithAssociatedOrigins));
-
-  auto pending = WaitForAndGetAssociatedRequests();
-  EXPECT_EQ(GetExpectedWellKnownURLs(), pending);
-
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLA),
-                                             kWellKnownWithFeedOrigin));
-  ASSERT_TRUE(RespondToAssociatedOriginFetch(GURL(kWellKnownURLB), "{"));
 }
 
 }  // namespace media_feeds

@@ -44,6 +44,11 @@ bool CanMakePaymentQuery::CanQuery(
   return can_query_without_per_method_quota;
 }
 
+void CanMakePaymentQuery::Shutdown() {
+  // OneShotTimer cancels the timer when it is destroyed.
+  timers_.clear();
+}
+
 bool CanMakePaymentQuery::CanQueryWithPerMethodQuota(
     const GURL& top_level_origin,
     const GURL& frame_origin,

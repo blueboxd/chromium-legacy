@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_INSTALLABLE_INSTALLED_WEBAPP_GEOLOCATION_BRIDGE_H_
 #define CHROME_BROWSER_INSTALLABLE_INSTALLED_WEBAPP_GEOLOCATION_BRIDGE_H_
 
+#include <jni.h>
+
+#include "base/android/scoped_java_ref.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
@@ -33,6 +36,21 @@ class InstalledWebappGeolocationBridge : public device::mojom::Geolocation {
   // Enables and disables geolocation override.
   void SetOverride(const device::mojom::Geoposition& position);
   void ClearOverride();
+
+  // Called by JNI on its thread looper.
+  void OnNewLocationAvailable(JNIEnv* env,
+                              jdouble latitude,
+                              jdouble longitude,
+                              jdouble time_stamp,
+                              jboolean has_altitude,
+                              jdouble altitude,
+                              jboolean has_accuracy,
+                              jdouble accuracy,
+                              jboolean has_heading,
+                              jdouble heading,
+                              jboolean has_speed,
+                              jdouble speed);
+  void OnNewErrorAvailable(JNIEnv* env, jstring message);
 
  private:
   // device::mojom::Geolocation:
@@ -63,6 +81,8 @@ class InstalledWebappGeolocationBridge : public device::mojom::Geolocation {
   bool high_accuracy_;
 
   bool has_position_to_report_;
+
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   // The binding between this object and the other end of the pipe.
   mojo::Receiver<device::mojom::Geolocation> receiver_;

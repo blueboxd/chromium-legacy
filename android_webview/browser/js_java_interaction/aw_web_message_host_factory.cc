@@ -4,25 +4,25 @@
 
 #include "android_webview/browser/js_java_interaction/aw_web_message_host_factory.h"
 
-#include "android_webview/browser/js_java_interaction/js_java_configurator_host.h"
 #include "android_webview/browser/js_java_interaction/js_reply_proxy.h"
-#include "android_webview/browser/js_java_interaction/web_message.h"
-#include "android_webview/browser/js_java_interaction/web_message_host.h"
 #include "android_webview/browser_jni_headers/WebMessageListenerHolder_jni.h"
 #include "android_webview/browser_jni_headers/WebMessageListenerInfo_jni.h"
-#include "android_webview/common/aw_origin_matcher.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "components/js_injection/browser/js_java_configurator_host.h"
+#include "components/js_injection/browser/web_message.h"
+#include "components/js_injection/browser/web_message_host.h"
+#include "components/js_injection/common/aw_origin_matcher.h"
 #include "content/public/browser/android/app_web_message_port.h"
 
 namespace android_webview {
 namespace {
 
 // Calls through to WebMessageListenerInfo.
-class AwWebMessageHost : public WebMessageHost {
+class AwWebMessageHost : public js_injection::WebMessageHost {
  public:
-  AwWebMessageHost(WebMessageReplyProxy* reply_proxy,
+  AwWebMessageHost(js_injection::WebMessageReplyProxy* reply_proxy,
                    const base::android::ScopedJavaGlobalRef<jobject>& listener,
                    const std::string& origin_string,
                    bool is_main_frame)
@@ -33,8 +33,9 @@ class AwWebMessageHost : public WebMessageHost {
 
   ~AwWebMessageHost() override = default;
 
-  // WebMessageHost:
-  void OnPostMessage(std::unique_ptr<WebMessage> message) override {
+  // js_injection::WebMessageHost:
+  void OnPostMessage(
+      std::unique_ptr<js_injection::WebMessage> message) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaGlobalRef<jobjectArray> jports =
         content::AppWebMessagePort::WrapJavaArray(env,
@@ -64,7 +65,7 @@ AwWebMessageHostFactory::~AwWebMessageHostFactory() = default;
 // static
 base::android::ScopedJavaLocalRef<jobjectArray>
 AwWebMessageHostFactory::GetWebMessageListenerInfo(
-    JsJavaConfiguratorHost* host,
+    js_injection::JsJavaConfiguratorHost* host,
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& clazz) {
   auto factories = host->GetWebMessageHostFactories();
@@ -86,10 +87,10 @@ AwWebMessageHostFactory::GetWebMessageListenerInfo(
   return base::android::ScopedJavaLocalRef<jobjectArray>(env, joa);
 }
 
-std::unique_ptr<WebMessageHost> AwWebMessageHostFactory::CreateHost(
-    const std::string& origin_string,
-    bool is_main_frame,
-    WebMessageReplyProxy* proxy) {
+std::unique_ptr<js_injection::WebMessageHost>
+AwWebMessageHostFactory::CreateHost(const std::string& origin_string,
+                                    bool is_main_frame,
+                                    js_injection::WebMessageReplyProxy* proxy) {
   return std::make_unique<AwWebMessageHost>(proxy, listener_, origin_string,
                                             is_main_frame);
 }

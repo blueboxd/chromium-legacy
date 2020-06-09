@@ -232,8 +232,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void DidFinishLoad() override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
-  void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                ui::PageTransition transition) override;
+  void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void OnDestruct() override;
 
   const scoped_refptr<FieldDataManager> GetFieldDataManager() {

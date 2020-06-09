@@ -20,7 +20,7 @@ import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.home.list.UiUtils;
+import org.chromium.components.browser_ui.util.date.StringUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -192,7 +192,7 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
          * @param date The date that this DateViewHolder should display.
          */
         public void setDate(Date date) {
-            mTextView.setText(UiUtils.dateToHeaderString(date));
+            mTextView.setText(StringUtils.dateToHeaderString(date));
         }
     }
 

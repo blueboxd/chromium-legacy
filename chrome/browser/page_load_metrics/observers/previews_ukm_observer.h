@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
-#include "components/previews/core/previews_black_list.h"
+#include "components/previews/core/previews_block_list.h"
 #include "components/previews/core/previews_experiments.h"
 
 namespace content {

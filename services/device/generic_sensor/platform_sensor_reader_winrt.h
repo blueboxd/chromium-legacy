@@ -74,7 +74,7 @@ class PlatformSensorReaderWinrtBase : public PlatformSensorReaderWinBase {
 
  protected:
   PlatformSensorReaderWinrtBase();
-  virtual ~PlatformSensorReaderWinrtBase();
+  virtual ~PlatformSensorReaderWinrtBase() { StopSensor(); }
 
   // Derived classes should implement this function to handle sensor specific
   // parsing of the sensor reading.

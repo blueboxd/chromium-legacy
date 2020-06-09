@@ -167,7 +167,6 @@ mojom("mojom_platform") {
     "websockets/websocket_connector.mojom",
     "webtransport/quic_transport_connector.mojom",
     "window_features/window_features.mojom",
-    "worker/dedicated_worker_host.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_creation_context_type.mojom",
     "worker/shared_worker_host.mojom",

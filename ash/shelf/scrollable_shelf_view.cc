@@ -713,6 +713,22 @@ bool ScrollableShelfView::RequiresScrollingForItemSize(
   return !CanFitAllAppsWithoutScrolling(target_size, icons_preferred_size);
 }
 
+gfx::Insets ScrollableShelfView::GetTotalEdgePadding() const {
+  return extra_padding_insets_ + base_padding_insets_;
+}
+
+gfx::Insets ScrollableShelfView::CalculateTotalEdgePaddingInTargetBounds()
+    const {
+  return CalculateExtraEdgePadding(/*use_target_bounds=*/true) +
+         base_padding_insets_;
+}
+
+void ScrollableShelfView::SetTotalPaddingInsets(
+    const gfx::Insets& padding_insets) {
+  extra_padding_insets_ = padding_insets - base_padding_insets_;
+  shelf_view_->LayoutIfAppIconsOffsetUpdates();
+}
+
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
   return shelf_container_view_;
 }
@@ -1431,10 +1447,6 @@ gfx::Insets ScrollableShelfView::CalculateExtraEdgePadding(
   return padding_insets;
 }
 
-gfx::Insets ScrollableShelfView::GetTotalEdgePadding() const {
-  return extra_padding_insets_ + base_padding_insets_;
-}
-
 int ScrollableShelfView::GetStatusWidgetSizeOnPrimaryAxis(
     bool use_target_bounds) const {
   const gfx::Size status_widget_size =
@@ -2088,8 +2100,10 @@ int ScrollableShelfView::CalculateScrollDistanceAfterAdjustment(
 }
 
 void ScrollableShelfView::UpdateAvailableSpace() {
-  extra_padding_insets_ =
-      CalculateExtraEdgePadding(/*use_target_bounds=*/false);
+  if (!is_padding_configured_externally_) {
+    extra_padding_insets_ =
+        CalculateExtraEdgePadding(/*use_target_bounds=*/false);
+  }
   base_padding_insets_ = CalculateBaseEdgePadding();
 
   available_space_ = GetLocalBounds();

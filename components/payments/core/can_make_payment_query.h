@@ -46,6 +46,9 @@ class CanMakePaymentQuery : public KeyedService {
                 const std::map<std::string, std::set<std::string>>& query,
                 bool per_method_quota);
 
+  // KeyedService implementation.
+  void Shutdown() override;
+
  private:
   bool CanQueryWithPerMethodQuota(
       const GURL& top_level_origin,

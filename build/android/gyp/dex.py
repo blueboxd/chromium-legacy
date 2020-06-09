@@ -159,9 +159,18 @@ def _RunD8(dex_cmd, input_paths, output_path):
     output = re.sub(r'^Warning in .*?:\n(?!  )', '', output, flags=re.MULTILINE)
     return output
 
-  # stdout sometimes spams with things like:
-  # Stripped invalid locals information from 1 method.
-  build_utils.CheckOutput(dex_cmd, stderr_filter=stderr_filter)
+  with tempfile.NamedTemporaryFile() as flag_file:
+    # Chosen arbitrarily. Needed to avoid command-line length limits.
+    MAX_ARGS = 50
+    if len(dex_cmd) > MAX_ARGS:
+      flag_file.write('\n'.join(dex_cmd[MAX_ARGS:]))
+      flag_file.flush()
+      dex_cmd = dex_cmd[:MAX_ARGS]
+      dex_cmd.append('@' + flag_file.name)
+
+    # stdout sometimes spams with things like:
+    # Stripped invalid locals information from 1 method.
+    build_utils.CheckOutput(dex_cmd, stderr_filter=stderr_filter)
 
 
 def _EnvWithArtLibPath(binary_path):

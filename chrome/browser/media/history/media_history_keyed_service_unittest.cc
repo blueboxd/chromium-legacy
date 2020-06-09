@@ -18,7 +18,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
-#include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
@@ -206,17 +205,6 @@ class MediaHistoryKeyedServiceTest
     return out;
   }
 
-  static std::set<url::Origin> GetExpectedAssociatedOrigins() {
-    std::set<url::Origin> origins;
-
-    origins.insert(url::Origin::Create(GURL("https://www.google1.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.google2.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.google3.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.example.org")));
-
-    return origins;
-  }
-
   static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
     std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
 
@@ -241,7 +229,6 @@ class MediaHistoryKeyedServiceTest
     result.feed_id = feed_id;
     result.items = GetExpectedItems();
     result.status = media_feeds::mojom::FetchResult::kSuccess;
-    result.associated_origins = GetExpectedAssociatedOrigins();
     result.display_name = "Test";
     result.reset_token = test::GetResetTokenSync(service(), feed_id);
     return result;
@@ -468,8 +455,6 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-    EXPECT_EQ(10, stats->table_row_counts
-                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 #endif
 
     // There are 10 session images because each session has an image with two
@@ -521,8 +506,6 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenOriginIsDeleted) {
     EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(1,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-    EXPECT_EQ(5, stats->table_row_counts
-                     [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 #endif
 
     // There are 4 session images because each session has an image with two
@@ -703,8 +686,6 @@ TEST_P(MediaHistoryKeyedServiceTest,
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-    EXPECT_EQ(10, stats->table_row_counts
-                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 #endif
 
     // There are 10 session images because each session has an image with two
@@ -756,8 +737,6 @@ TEST_P(MediaHistoryKeyedServiceTest,
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-    EXPECT_EQ(10, stats->table_row_counts
-                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 #endif
 
     // There are 8 session images because each session has an image with two
@@ -931,8 +910,6 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-    EXPECT_EQ(10, stats->table_row_counts
-                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 #endif
 
     // There are 10 session images because each session has an image with two
@@ -1000,8 +977,6 @@ TEST_P(MediaHistoryKeyedServiceTest, CleanUpDatabaseWhenURLIsDeleted) {
     EXPECT_EQ(2, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
     EXPECT_EQ(2,
               stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-    EXPECT_EQ(10, stats->table_row_counts
-                      [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
 #endif
 
     // There are 6 session images because each session has an image with two

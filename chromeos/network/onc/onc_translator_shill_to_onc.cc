@@ -248,8 +248,8 @@ void ShillToONCTranslator::TranslateOpenVPN() {
                                          std::move(certKUs));
   }
 
-  SetPKCS11Id(shill_dictionary_, shill::kOpenVPNClientCertIdProperty,
-              "", onc_object_.get());
+  SetPKCS11Id(shill_dictionary_, shill::kOpenVPNClientCertIdProperty, "",
+              onc_object_.get());
 
   TranslateWithTableAndSet(shill::kOpenVPNCompressProperty,
                            kOpenVpnCompressionAlgorithmTable,
@@ -458,7 +458,22 @@ void ShillToONCTranslator::TranslateCellularWithState() {
         nested_translator.CreateTranslatedONCObject();
     onc_object_->MergeDictionary(nested_object.get());
 
-    /// Get requires_roaming and scanning from the Device dictionary.
+    // Copy ICCID and IMSI from the Device dictionary only if not provied in the
+    // Service properties.
+    if (!onc_object_->FindKey(::onc::cellular::kICCID)) {
+      const base::Value* iccid =
+          device_dictionary->FindKey(shill::kIccidProperty);
+      if (iccid)
+        onc_object_->SetKey(::onc::cellular::kICCID, iccid->Clone());
+    }
+    if (!onc_object_->FindKey(::onc::cellular::kIMSI)) {
+      const base::Value* imsi =
+          device_dictionary->FindKey(shill::kImsiProperty);
+      if (imsi)
+        onc_object_->SetKey(::onc::cellular::kIMSI, imsi->Clone());
+    }
+
+    // Get requires_roaming and scanning from the Device dictionary.
     device_dictionary->GetBooleanWithoutPathExpansion(
         shill::kProviderRequiresRoamingProperty, &requires_roaming);
     device_dictionary->GetBooleanWithoutPathExpansion(shill::kScanningProperty,

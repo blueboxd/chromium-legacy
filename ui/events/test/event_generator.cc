@@ -642,10 +642,13 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
       ui::UsLayoutKeyboardCodeToDomCode(key_code), flags);
   if (is_press && character) {
     MSG native_event = { NULL, WM_KEYDOWN, key_code, 0 };
+    native_event.time =
+        (ui::EventTimeForNow() - base::TimeTicks()).InMilliseconds() &
+        UINT32_MAX;
     ui::KeyEvent keyev(native_event, flags);
     Dispatch(&keyev);
     // On Windows, WM_KEYDOWN event is followed by WM_CHAR with a character
-    // if the key event cooresponds to a real character.
+    // if the key event corresponds to a real character.
     key_press = WM_CHAR;
     key_code = static_cast<ui::KeyboardCode>(character);
   }

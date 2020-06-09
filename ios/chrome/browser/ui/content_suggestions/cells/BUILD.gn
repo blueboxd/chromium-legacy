@@ -33,6 +33,8 @@ source_set("cells_ui") {
     "content_suggestions_articles_header_item.mm",
     "content_suggestions_cell.h",
     "content_suggestions_cell.mm",
+    "content_suggestions_discover_item.h",
+    "content_suggestions_discover_item.mm",
     "content_suggestions_footer_item.h",
     "content_suggestions_footer_item.mm",
     "content_suggestions_header_item.h",

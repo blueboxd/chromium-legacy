@@ -261,7 +261,8 @@ class ChromiumDepGraph {
             licenseName: "MIT"),
         'org_robolectric_shadows_multidex': new PropertyOverride(
             licensePath: "licenses/Codehaus_License-2009.txt",
-            licenseName: "MIT"),
+            licenseName: "MIT",
+            cipdSuffix: "cr1"),
         'org_robolectric_shadows_playservices': new PropertyOverride(
             licensePath: "licenses/Codehaus_License-2009.txt",
             licenseName: "MIT"),

@@ -26,7 +26,13 @@ class VisibilityMetricsLogger {
     bool window_visible = false;
   };
 
-  enum class Visibility { kVisible = 0, kNotVisible = 1, kCount = 2 };
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class Visibility {
+    kVisible = 0,
+    kNotVisible = 1,
+    kMaxValue = kNotVisible
+  };
 
   class Client {
    public:
@@ -56,18 +62,17 @@ class VisibilityMetricsLogger {
   // Current number of visible webviews.
   size_t visible_client_count_ = 0;
 
-  base::Lock duration_lock_;
   // Duration for which any webview was visible.
-  base::TimeDelta any_webview_visible_duration_ GUARDED_BY(duration_lock_) =
+  base::TimeDelta any_webview_visible_duration_ =
       base::TimeDelta::FromSeconds(0);
   // Duration for which no webviews were visible.
-  base::TimeDelta no_webview_visible_duration_ GUARDED_BY(duration_lock_) =
+  base::TimeDelta no_webview_visible_duration_ =
       base::TimeDelta::FromSeconds(0);
   // Total duration for which all webviews were visible.
-  base::TimeDelta total_webview_visible_duration_ GUARDED_BY(duration_lock_) =
+  base::TimeDelta total_webview_visible_duration_ =
       base::TimeDelta::FromSeconds(0);
   // Total duration for which all webviews were not visible.
-  base::TimeDelta total_webview_hidden_duration_ GUARDED_BY(duration_lock_) =
+  base::TimeDelta total_webview_hidden_duration_ =
       base::TimeDelta::FromSeconds(0);
 
   base::TimeTicks last_update_time_;

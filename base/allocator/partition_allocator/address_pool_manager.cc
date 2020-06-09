@@ -7,6 +7,7 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/bits.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 
 #include <limits>
@@ -66,12 +67,11 @@ void AddressPoolManager::Free(pool_handle handle, void* ptr, size_t length) {
 
 AddressPoolManager::Pool::Pool(uintptr_t ptr, size_t length)
     : total_bits_(length / kSuperPageSize),
-      address_begin_(ptr)
+      address_begin_(ptr),
 #if DCHECK_IS_ON()
-      ,
-      address_end_(ptr + length)
+      address_end_(ptr + length),
 #endif
-{
+      bit_hint_(0) {
   CHECK_LE(total_bits_, kMaxBits);
   CHECK(!(ptr & kSuperPageOffsetMask));
   CHECK(!(length & kSuperPageOffsetMask));
@@ -88,8 +88,9 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
   const size_t need_bits = required_size >> kSuperPageShift;
 
   // Use first fit policy to find an available chunk from free chunks.
-  size_t beg_bit = 0;
-  size_t curr_bit = 0;
+  // Start from |bit_hint_|, because we know there is no free chunks before.
+  size_t beg_bit = bit_hint_;
+  size_t curr_bit = bit_hint_;
   while (true) {
     // |end_bit| points 1 past the last bit that needs to be 0. If it goes past
     // |total_bits_|, return |nullptr| to signal no free chunk was found.
@@ -107,6 +108,8 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
         // next outer loop pass from checking the same bits.
         beg_bit = curr_bit + 1;
         found = false;
+        if (bit_hint_ == curr_bit)
+          ++bit_hint_;
       }
     }
 
@@ -117,6 +120,9 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
         DCHECK(!alloc_bitset_.test(i));
         alloc_bitset_.set(i);
       }
+      if (bit_hint_ == beg_bit) {
+        bit_hint_ = end_bit;
+      }
       uintptr_t address = address_begin_ + beg_bit * kSuperPageSize;
 #if DCHECK_IS_ON()
       DCHECK_LE(address + required_size, address_end_);
@@ -125,6 +131,7 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
     }
   }
 
+  NOTREACHED();
   return 0;
 }
 
@@ -145,6 +152,7 @@ void AddressPoolManager::Pool::FreeChunk(uintptr_t address, size_t free_size) {
     DCHECK(alloc_bitset_.test(i));
     alloc_bitset_.reset(i);
   }
+  bit_hint_ = std::min(bit_hint_, beg_bit);
 }
 
 AddressPoolManager::Pool::~Pool() = default;

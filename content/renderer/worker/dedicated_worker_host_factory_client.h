@@ -12,7 +12,6 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom-forward.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom-forward.h"
-#include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 
@@ -91,7 +90,6 @@ class DedicatedWorkerHostFactoryClient final
   mojo::Remote<blink::mojom::DedicatedWorkerHostFactory> factory_;
   mojo::Receiver<blink::mojom::DedicatedWorkerHostFactoryClient> receiver_{
       this};
-  mojo::Remote<blink::mojom::DedicatedWorkerHost> remote_host_;
 };
 
 }  // namespace content

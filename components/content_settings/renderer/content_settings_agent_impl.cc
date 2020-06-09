@@ -214,30 +214,29 @@ void ContentSettingsAgentImpl::BindContentSettingsManager(
 }
 
 void ContentSettingsAgentImpl::DidCommitProvisionalLoad(
-    bool is_same_document_navigation,
     ui::PageTransition transition) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (frame->Parent())
     return;  // Not a top-level navigation.
 
-  if (!is_same_document_navigation) {
-    // Clear "block" flags for the new page. This needs to happen before any of
-    // |allowScript()|, |allowScriptFromSource()|, |allowImage()|, or
-    // |allowPlugins()| is called for the new page so that these functions can
-    // correctly detect that a piece of content flipped from "not blocked" to
-    // "blocked".
-    ClearBlockedContentSettings();
+  // Clear "block" flags for the new page. This needs to happen before any of
+  // |allowScript()|, |allowScriptFromSource()|, |allowImage()|, or
+  // |allowPlugins()| is called for the new page so that these functions can
+  // correctly detect that a piece of content flipped from "not blocked" to
+  // "blocked".
+  ClearBlockedContentSettings();
 
-    // The BrowserInterfaceBroker is reset on navigation, so we will need to
-    // re-acquire the ContentSettingsManager.
-    content_settings_manager_.reset();
-  }
+  // The BrowserInterfaceBroker is reset on navigation, so we will need to
+  // re-acquire the ContentSettingsManager.
+  content_settings_manager_.reset();
 
+#if DCHECK_IS_ON()
   GURL url = frame->GetDocument().Url();
   // If we start failing this DCHECK, please makes sure we don't regress
   // this bug: http://code.google.com/p/chromium/issues/detail?id=79304
   DCHECK(frame->GetDocument().GetSecurityOrigin().ToString() == "null" ||
          !url.SchemeIs(url::kDataScheme));
+#endif
 }
 
 void ContentSettingsAgentImpl::OnDestruct() {

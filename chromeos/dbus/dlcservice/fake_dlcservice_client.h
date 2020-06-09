@@ -45,9 +45,6 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   void SetGetExistingDlcsError(const std::string& err) {
     get_existing_dlcs_err_ = err;
   }
-  void set_installed_dlcs(const dlcservice::DlcModuleList& dlc_module_list) {
-    dlc_module_list_ = dlc_module_list;
-  }
   void set_dlcs_with_content(
       const dlcservice::DlcsWithContent& dlcs_with_content) {
     dlcs_with_content_ = dlcs_with_content;
@@ -58,7 +55,6 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   std::string uninstall_err_ = dlcservice::kErrorNone;
   std::string purge_err_ = dlcservice::kErrorNone;
   std::string get_installed_err_ = dlcservice::kErrorNone;
-  dlcservice::DlcModuleList dlc_module_list_;
   std::string get_existing_dlcs_err_ = dlcservice::kErrorNone;
   dlcservice::DlcsWithContent dlcs_with_content_;
 

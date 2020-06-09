@@ -28,6 +28,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
@@ -84,6 +85,133 @@ HotseatWidget::StateTransition CalculateHotseatStateTransition(
 
   return HotseatWidget::StateTransition::kOther;
 }
+
+// Animation implemented specifically for the transition between the home
+// launcher state and the extended state.
+class HomeAndExtendedTransitionAnimation : public ui::LayerAnimationElement {
+ public:
+  HomeAndExtendedTransitionAnimation(const gfx::Rect& target_bounds_in_screen,
+                                     double target_opacity,
+                                     ui::Layer* hotseat_layer,
+                                     HotseatWidget* hotseat_widget)
+      : ui::LayerAnimationElement(
+            LayerAnimationElement::BOUNDS | LayerAnimationElement::OPACITY,
+            hotseat_layer->GetAnimator()->GetTransitionDuration()),
+        target_widget_bounds_(target_bounds_in_screen),
+        target_opacity_(target_opacity),
+        tween_type_(hotseat_layer->GetAnimator()->tween_type()),
+        hotseat_widget_(hotseat_widget) {}
+  ~HomeAndExtendedTransitionAnimation() override = default;
+
+  HomeAndExtendedTransitionAnimation(
+      const HomeAndExtendedTransitionAnimation& rhs) = delete;
+  HomeAndExtendedTransitionAnimation& operator=(
+      const HomeAndExtendedTransitionAnimation& rhs) = delete;
+
+ private:
+  void OnStart(ui::LayerAnimationDelegate* delegate) override {
+    DCHECK(hotseat_widget_->GetShelfView()->shelf()->IsHorizontalAlignment());
+
+    ScrollableShelfView* scrollable_shelf_view = GetScrollableShelfView();
+    scrollable_shelf_view->set_is_padding_configured_externally(
+        /*is_padding_configured_externally=*/true);
+
+    // Save initial and target padding insets.
+    initial_padding_insets_ = scrollable_shelf_view->GetTotalEdgePadding();
+    target_padding_insets_ =
+        scrollable_shelf_view->CalculateTotalEdgePaddingInTargetBounds();
+
+    // Save initial opacity.
+    start_opacity_ = hotseat_widget_->GetNativeView()->layer()->opacity();
+
+    // Save initial hotseat background bounds.
+    initial_hotseat_background_in_screen_ =
+        hotseat_widget_->GetWindowBoundsInScreen();
+    initial_hotseat_background_in_screen_.Inset(initial_padding_insets_);
+
+    // Save target hotseat background bounds.
+    target_hotseat_background_in_screen_ = target_widget_bounds_;
+    target_hotseat_background_in_screen_.Inset(target_padding_insets_);
+  }
+
+  bool OnProgress(double current,
+                  ui::LayerAnimationDelegate* delegate) override {
+    const double tweened = gfx::Tween::CalculateValue(tween_type_, current);
+
+    // Set scrollable shelf view's padding insets.
+    gfx::Insets insets_in_animation_progress;
+    insets_in_animation_progress.set_left(gfx::Tween::LinearIntValueBetween(
+        tweened, initial_padding_insets_.left(),
+        target_padding_insets_.left()));
+    insets_in_animation_progress.set_right(gfx::Tween::LinearIntValueBetween(
+        tweened, initial_padding_insets_.right(),
+        target_padding_insets_.right()));
+    ScrollableShelfView* scrollable_shelf_view = GetScrollableShelfView();
+    scrollable_shelf_view->SetTotalPaddingInsets(insets_in_animation_progress);
+
+    // Update hotseat widget opacity.
+    delegate->SetOpacityFromAnimation(
+        gfx::Tween::DoubleValueBetween(tweened, start_opacity_,
+                                       target_opacity_),
+        ui::PropertyChangeReason::FROM_ANIMATION);
+
+    // Calculate the hotseat widget's bounds.
+    const gfx::Rect hotseat_background_in_progress =
+        gfx::Tween::RectValueBetween(tweened,
+                                     initial_hotseat_background_in_screen_,
+                                     target_hotseat_background_in_screen_);
+    gfx::Rect widget_bounds_in_progress = hotseat_background_in_progress;
+    widget_bounds_in_progress.Inset(
+        -scrollable_shelf_view->GetTotalEdgePadding());
+
+    // Update hotseat widget bounds.
+    delegate->SetBoundsFromAnimation(widget_bounds_in_progress,
+                                     ui::PropertyChangeReason::FROM_ANIMATION);
+
+    // Do recovering when the animation ends.
+    if (current == 1.f) {
+      scrollable_shelf_view->set_is_padding_configured_externally(
+          /*is_padding_configured_externally=*/false);
+    }
+
+    return true;
+  }
+
+  void OnGetTarget(TargetValue* target) const override {}
+  void OnAbort(ui::LayerAnimationDelegate* delegate) override {
+    GetScrollableShelfView()->set_is_padding_configured_externally(
+        /*is_padding_configured_externally=*/false);
+  }
+
+  ScrollableShelfView* GetScrollableShelfView() {
+    return hotseat_widget_->scrollable_shelf_view();
+  }
+
+  // Scrollable shelf's initial padding insets.
+  gfx::Insets initial_padding_insets_;
+
+  // Scrollable shelf's target padding insets.
+  gfx::Insets target_padding_insets_;
+
+  // Hotseat background's initial bounds in screen.
+  gfx::Rect initial_hotseat_background_in_screen_;
+
+  // Hotseat background's target bounds in screen.
+  gfx::Rect target_hotseat_background_in_screen_;
+
+  // Hotseat widget's target bounds in screen.
+  gfx::Rect target_widget_bounds_;
+
+  // Hotseat widget's initial opacity.
+  double start_opacity_ = 0.f;
+
+  // Hotseat widget's target opacity.
+  double target_opacity_ = 0.f;
+
+  gfx::Tween::Type tween_type_ = gfx::Tween::LINEAR;
+
+  HotseatWidget* hotseat_widget_ = nullptr;
+};
 
 // Custom window targeter for the hotseat. Used so the hotseat only processes
 // events that land on the visible portion of the hotseat, and only while the
@@ -382,6 +510,11 @@ HotseatWidget::HotseatWidget() : delegate_view_(new DelegateView()) {
 }
 
 HotseatWidget::~HotseatWidget() {
+  ui::LayerAnimator* hotseat_layer_animator =
+      GetNativeView()->layer()->GetAnimator();
+  if (hotseat_layer_animator->is_animating())
+    hotseat_layer_animator->AbortAllAnimations();
+
   ShelfConfig::Get()->RemoveObserver(this);
   shelf_->shelf_widget()->hotseat_transition_animator()->RemoveObserver(
       delegate_view_);
@@ -781,7 +914,43 @@ void HotseatWidget::LayoutHotseatByAnimation(double target_opacity,
   animation_setter.SetAnimationMetricsReporter(
       shelf_->GetHotseatTransitionMetricsReporter(state_));
 
-  hotseat_layer->SetOpacity(target_opacity);
+  if (!state_transition_in_progress_.has_value()) {
+    // Hotseat animation is not triggered by the update in |state_|. So apply
+    // the normal bounds animation.
+    StartNormalBoundsAnimation(target_opacity, target_bounds);
+    return;
+  }
+
+  switch (*state_transition_in_progress_) {
+    case StateTransition::kHomeLauncherAndExtended:
+      // Start the hotseat animation specifically for the transition between
+      // the home launcher mode and the extended mode.
+      StartHomeLauncherExtendedTransitionAnimation(target_opacity,
+                                                   target_bounds);
+      break;
+    case StateTransition::kHomeLauncherAndHidden:
+    case StateTransition::kHiddenAndExtended:
+    case StateTransition::kOther:
+      StartNormalBoundsAnimation(target_opacity, target_bounds);
+  }
+}
+
+void HotseatWidget::StartHomeLauncherExtendedTransitionAnimation(
+    double target_opacity,
+    const gfx::Rect& target_bounds) {
+  ui::Layer* hotseat_layer = GetNativeView()->layer();
+  auto animation_elements =
+      std::make_unique<HomeAndExtendedTransitionAnimation>(
+          target_bounds, target_opacity, hotseat_layer,
+          /*hotseat_widget=*/this);
+  auto* sequence =
+      new ui::LayerAnimationSequence(std::move(animation_elements));
+  hotseat_layer->GetAnimator()->StartAnimation(sequence);
+}
+
+void HotseatWidget::StartNormalBoundsAnimation(double target_opacity,
+                                               const gfx::Rect& target_bounds) {
+  GetNativeView()->layer()->SetOpacity(target_opacity);
   SetBounds(target_bounds);
 }
 

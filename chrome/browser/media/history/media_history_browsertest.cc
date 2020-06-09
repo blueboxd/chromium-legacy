@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
-#include "chrome/browser/media/history/media_history_feed_associated_origins_table.h"
 #include "chrome/browser/media/history/media_history_feed_items_table.h"
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
@@ -299,7 +298,6 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
     result.feed_id = feed_id;
     result.items = GetExpectedItems();
     result.status = media_feeds::mojom::FetchResult::kSuccess;
-    result.associated_origins = GetExpectedAssociatedOrigins();
     result.display_name = "Test";
     result.reset_token = test::GetResetTokenSync(service, feed_id);
     return result;
@@ -337,18 +335,6 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
     base::RunLoop run_loop;
     service->PostTaskToDBForTest(run_loop.QuitClosure());
     run_loop.Run();
-  }
-
-  static std::set<url::Origin> GetExpectedAssociatedOrigins() {
-    std::set<url::Origin> origins;
-
-    origins.insert(url::Origin::Create(GURL("https://www.google.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.google1.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.google2.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.google3.com")));
-    origins.insert(url::Origin::Create(GURL("https://www.example.org")));
-
-    return origins;
   }
 
   static std::vector<media_feeds::mojom::MediaFeedItemPtr> GetExpectedItems() {
@@ -1116,14 +1102,10 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       EXPECT_EQ(0, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(0, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     } else {
       EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           1, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(5, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
 
@@ -1146,14 +1128,10 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       EXPECT_EQ(0, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(0, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     } else {
       EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(1, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
 }
@@ -1185,14 +1163,10 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       EXPECT_EQ(0, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(0, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     } else {
       EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           1, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(5, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
 
@@ -1221,14 +1195,10 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       EXPECT_EQ(0, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(0, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     } else {
       EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           1, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(5, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
 
@@ -1256,14 +1226,10 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
       EXPECT_EQ(0, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(0, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     } else {
       EXPECT_EQ(1, stats->table_row_counts[MediaHistoryFeedsTable::kTableName]);
       EXPECT_EQ(
           0, stats->table_row_counts[MediaHistoryFeedItemsTable::kTableName]);
-      EXPECT_EQ(1, stats->table_row_counts
-                       [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
 }

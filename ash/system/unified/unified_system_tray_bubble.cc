@@ -109,6 +109,9 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
 
+  // Notify accessibility features that the status tray has opened.
+  bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kShow, true);
+
   tray->tray_event_filter()->AddBubble(this);
   tray->shelf()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);

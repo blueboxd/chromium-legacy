@@ -46,7 +46,8 @@ enum class RendererFactoryType {
   kCast = 5,             // CastRendererClientFactory
   kMediaFoundation = 6,  // MediaFoundationRendererClientFactory
   kFuchsia = 7,          // FuchsiaRendererFactory
-  kMaxValue = kFuchsia,
+  kRemoting = 8,         // RemotingRendererFactory
+  kMaxValue = kRemoting,
 };
 
 class MEDIA_EXPORT RendererFactorySelector {

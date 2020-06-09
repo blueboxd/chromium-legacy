@@ -5,6 +5,8 @@
 #include "chrome/browser/media/history/media_history_feeds_table.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/unguessable_token.h"
@@ -574,28 +576,6 @@ bool MediaHistoryFeedsTable::Delete(const int64_t feed_id) {
   return statement.Run() && DB()->GetLastChangeCount() >= 1;
 }
 
-base::Optional<url::Origin> MediaHistoryFeedsTable::GetOrigin(
-    const int64_t feed_id) {
-  DCHECK_LT(0, DB()->transaction_nesting());
-  if (!CanAccessDatabase())
-    return base::nullopt;
-
-  sql::Statement statement(DB()->GetCachedStatement(
-      SQL_FROM_HERE, "SELECT url FROM mediaFeed WHERE id = ?"));
-  statement.BindInt64(0, feed_id);
-
-  while (statement.Step()) {
-    GURL url(statement.ColumnString(0));
-
-    if (!url.is_valid())
-      break;
-
-    return url::Origin::Create(url);
-  }
-
-  return base::nullopt;
-}
-
 bool MediaHistoryFeedsTable::ClearResetReason(const int64_t feed_id) {
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE, "UPDATE mediaFeed SET reset_reason = ? WHERE id = ?"));
@@ -618,6 +598,60 @@ std::string MediaHistoryFeedsTable::GetCookieNameFilter(const int64_t feed_id) {
     return statement.ColumnString(0);
 
   return std::string();
+}
+
+std::set<int64_t> MediaHistoryFeedsTable::GetFeedsForOriginSubdomain(
+    const url::Origin& origin) {
+  std::set<int64_t> feeds;
+  if (!CanAccessDatabase())
+    return feeds;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT id, url FROM mediaFeed WHERE url LIKE ? AND (last_fetch_result > "
+      "0 OR reset_reason > 0)"));
+
+  std::vector<std::string> wildcard_parts = base::SplitString(
+      MediaHistoryOriginTable::GetOriginForStorage(origin),
+      url::kStandardSchemeSeparator, base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
+
+  if (wildcard_parts.size() != 2)
+    return feeds;
+
+  statement.BindString(
+      0, base::StrCat({wildcard_parts[0], url::kStandardSchemeSeparator, "%.",
+                       wildcard_parts[1], "/%"}));
+
+  while (statement.Step()) {
+    // This shouldn't happen but is a backup so we don't accidentally reset
+    // feeds that we should not.
+    auto url = GURL(statement.ColumnString(1));
+    if (!url.DomainIs(origin.host()))
+      continue;
+
+    feeds.insert(statement.ColumnInt64(0));
+  }
+
+  return feeds;
+}
+
+base::Optional<int64_t> MediaHistoryFeedsTable::GetFeedForOrigin(
+    const url::Origin& origin) {
+  if (!CanAccessDatabase())
+    return base::nullopt;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "SELECT mediaFeed.id FROM origin LEFT JOIN mediaFeed ON "
+      "mediaFeed.origin_id = origin.id WHERE origin.origin = ? AND "
+      "(mediaFeed.last_fetch_result > 0 OR mediaFeed.reset_reason > 0)"));
+  statement.BindString(0, MediaHistoryOriginTable::GetOriginForStorage(origin));
+
+  while (statement.Step())
+    return statement.ColumnInt64(0);
+
+  return base::nullopt;
 }
 
 }  // namespace media_history

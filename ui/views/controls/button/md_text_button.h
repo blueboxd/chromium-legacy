@@ -39,6 +39,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void SetCornerRadius(float radius);
   float GetCornerRadius() const;
 
+  // See |custom_padding_|.
+  void SetCustomPadding(const gfx::Insets& padding);
+
   // LabelButton:
   void OnThemeChanged() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -59,6 +62,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
  private:
   void UpdatePadding();
   void UpdateColors();
+  gfx::Insets CalculateDefaultPadding() const;
 
   // True if this button uses prominent styling (blue fill, etc.).
   bool is_prominent_ = false;
@@ -67,6 +71,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   base::Optional<SkColor> bg_color_override_;
 
   float corner_radius_ = 0.0f;
+
+  // Used to override default padding.
+  base::Optional<gfx::Insets> custom_padding_;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };

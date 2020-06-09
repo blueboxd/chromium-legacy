@@ -16,7 +16,6 @@
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/icon_helper.h"
-#include "android_webview/browser/js_java_interaction/js_java_configurator_host.h"
 #include "android_webview/browser/metrics/visibility_metrics_logger.h"
 #include "android_webview/browser/permission/permission_request_handler_client.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
@@ -25,6 +24,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "components/js_injection/browser/js_java_configurator_host.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
@@ -221,7 +221,7 @@ class AwContents : public FindHelper::Listener,
   jint GetEffectivePriority(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
-  JsJavaConfiguratorHost* GetJsJavaConfiguratorHost();
+  js_injection::JsJavaConfiguratorHost* GetJsJavaConfiguratorHost();
 
   jint AddDocumentStartJavascript(
       JNIEnv* env,
@@ -429,7 +429,8 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<AwPdfExporter> pdf_exporter_;
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
-  std::unique_ptr<JsJavaConfiguratorHost> js_java_configurator_host_;
+  std::unique_ptr<js_injection::JsJavaConfiguratorHost>
+      js_java_configurator_host_;
 
   bool view_tree_force_dark_state_ = false;
 

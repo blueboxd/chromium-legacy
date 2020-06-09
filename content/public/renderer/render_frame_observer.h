@@ -106,8 +106,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidCreateNewDocument() {}
   virtual void DidCreateDocumentElement() {}
   // TODO(dgozman): replace next two methods with DidFinishNavigation.
-  virtual void DidCommitProvisionalLoad(bool is_same_document_navigation,
-                                        ui::PageTransition transition) {}
+  // DidCommitProvisionalLoad is only called for new-document navigations.
+  // Use DidFinishSameDocumentNavigation for same-document navigations.
+  virtual void DidCommitProvisionalLoad(ui::PageTransition transition) {}
   virtual void DidFailProvisionalLoad() {}
   virtual void DidFinishLoad() {}
   virtual void DidFinishDocumentLoad() {}
@@ -123,6 +124,19 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidMatchCSS(
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors) {}
+
+  // Called when same-document navigation finishes.
+  // This is the only callback for same-document navigations,
+  // DidStartNavigation and ReadyToCommitNavigation are not called.
+  //
+  // Same-document navigation is typically initiated by an anchor click
+  // (that usually results in the page scrolling to the anchor) or a
+  // history web API manipulation.
+  //
+  // However, it could be some rare case like user changing #hash in the url
+  // bar or history restore for subframe or anything else that was classified
+  // as same-document.
+  virtual void DidFinishSameDocumentNavigation() {}
 
   // Called when this frame has been detached from the view. This *will* be
   // called for child frames when a parent frame is detached. Since the frame is

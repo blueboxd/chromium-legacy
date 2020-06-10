@@ -99,11 +99,6 @@ void CacheStorageScheduler::CompleteOperationAndRunNext(
     DCHECK_EQ(num_running_exclusive_, 0);
     DCHECK_GT(num_running_shared_, 0);
     num_running_shared_ -= 1;
-    if (num_running_shared_ == 0) {
-      UMA_HISTOGRAM_COUNTS_100("ServiceWorkerCache.PeakParallelSharedOps2",
-                               peak_parallel_shared_);
-      peak_parallel_shared_ = 0;
-    }
   } else {
     DCHECK_EQ(num_running_shared_, 0);
     DCHECK_EQ(num_running_exclusive_, 1);
@@ -170,8 +165,6 @@ void CacheStorageScheduler::MaybeRunOperation() {
   if (next_operation->mode() == CacheStorageSchedulerMode::kShared) {
     DCHECK_EQ(num_running_exclusive_, 0);
     num_running_shared_ += 1;
-    peak_parallel_shared_ =
-        std::max(num_running_shared_, peak_parallel_shared_);
   } else {
     DCHECK_EQ(num_running_exclusive_, 0);
     DCHECK_EQ(num_running_shared_, 0);

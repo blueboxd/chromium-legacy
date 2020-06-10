@@ -102,9 +102,6 @@
          如果不設定這項政策，可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="113521240853905588">設定 <ph name="PRODUCT_OS_NAME" />所用的偏好語言。
-
-      如果設定這項政策，使用者只能從政策所列的語言中擇一新增至偏好語言清單。如不設定這項政策或設為空白清單，使用者可以可以指定任何偏好語言。如果設定這項政策後清單中含有無效的值，所有無效值都會遭到略過。若是使用者先前將這項政策不允許的語言新增到偏好語言清單，這些語言會遭到移除。此外，如果使用者先前設定以政策不允許的語言顯示 <ph name="PRODUCT_OS_NAME" />內容，下次使用者登入時，系統會將顯示語言切換為允許的 UI 語言。如果是其他情況，<ph name="PRODUCT_OS_NAME" />會切換為這項政策指定的第一個有效值；萬一這項政策只包含無效項目，則會改用備用語言代碼 (目前為 en-US)。</translation>
 <translation id="1135264353752122851">設定可供 <ph name="PRODUCT_OS_NAME" />使用者工作階段使用的鍵盤配置。
 
       如果設定這項政策，使用者就只能選取這項政策指定的其中一種輸入法。如果設定這項政策，或是將這項政策設為空白清單，則使用者可以選取所有支援的輸入法。如果目前的輸入法遭到這項政策禁止，則會切換成硬體鍵盤配置 (如果允許的話) 或這份清單中第一個有效的項目。這份清單中無效或不支援的輸入法會全部遭到忽略。</translation>
@@ -260,13 +257,6 @@
 如果啟用或不設定這項政策，系統會啟用透過網址將網頁捲動至特定文字片段的功能。
 
 如果停用這項政策，系統會停用透過網址將網頁捲動至特定文字片段的功能。</translation>
-<translation id="1468707346106619889">如果將這項政策設為 true，即可允許使用整合桌面，
-      並預設啟用整合桌面，讓應用程式擴展到多個畫面。
-      使用者如要為個別畫面停用整合桌面，可在顯示設定中
-      取消勾選這項設定。
-
-      如果將這項政策設為 false，或是未設定這項政策，則會停用整合桌面。
-      在這種情況下，使用者將無法啟用這項功能。</translation>
 <translation id="1474273443907024088">停用 TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">回報背光資訊</translation>
@@ -699,21 +689,6 @@
 
       如果不設定這項政策，系統不會套用任何限制；不論使用哪種 <ph name="PRODUCT_NAME" /> 版本，使用者皆可登入。
       此處的「版本」可以指確切版本 (例如「61.0.3163.120」)，也可以指版本前置字元 (例如「61.0」)。  </translation>
-<translation id="2176565653304920879">設定這項政策後，系統會根據設定值採用下列其中一種方式執行自動偵測時區流程：
-
-      如果設為 TimezoneAutomaticDetectionUsersDecide，使用者可以使用 chrome://settings 中的標準控制項控管自動偵測時區作業。
-
-      如果設為 TimezoneAutomaticDetectionDisabled，系統會停用 chrome://settings 中的自動時區控制項，且一律不自動偵測時區。
-
-      如果設為 TimezoneAutomaticDetectionIPOnly，系統會停用 chrome://settings 中的自動時區控制項，且一律自動偵測時區 (使用僅限 IP 方式偵測位置)。
-
-      如果設為 TimezoneAutomaticDetectionSendWiFiAccessPoints，系統會停用 chrome://settings 中的自動時區控制項，且一律自動偵測時區 (一律將顯示的 WiFi 存取點清單傳送至 Geolocation API 伺服器，讓時區偵測結果更精確)。
-
-      如果設為 TimezoneAutomaticDetectionSendAllLocationInfo，系統會停用 chrome://settings 中的自動時區控制項，且一律自動偵測時區 (一律將位置資訊 (例如 Wi-Fi 存取點、有訊號的基地台和 GPS) 傳送至伺服器，讓時區偵測結果更精確)。
-
-      如果未設定這項政策，系統行為與設定 TimezoneAutomaticDetectionUsersDecide 時相同。
-
-      如果設定了 SystemTimezone 政策，則會覆寫這項政策。在這種情況下，系統會全面停止自動偵測時區。</translation>
 <translation id="2178899310296064282">強制執行中度以上的 YouTube 嚴格篩選模式</translation>
 <translation id="2182291258410176649">使用者可決定是否要啟用備份與還原功能</translation>
 <translation id="2183294522275408937">這項設定可控管必須輸入密碼才能繼續使用快速解鎖功能解除螢幕鎖定的頻率。每次進入螢幕鎖定狀態後，如果上次輸入密碼時間超過這項設定的值，即無法在鎖定畫面中使用快速解鎖功能。如果使用者在鎖定畫面停留的時間超過這段時間，則系統會在使用者下次輸入錯誤的密碼時或再次進入螢幕鎖定狀態時 (兩者取其先) 要求輸入密碼。
@@ -1186,15 +1161,6 @@
       如果這項設定已啟用或並未指定，網頁就能使用 JavaScript，但使用者可以變更這項設定。</translation>
 <translation id="2753637905605932878">限制 WebRTC 所使用的本機 UDP 通訊埠範圍</translation>
 <translation id="2757054304033424106">允許安裝的擴充功能/應用程式類型</translation>
-<translation id="2758084448533744848">指定這部裝置要使用的強制時區。設定這項政策後，裝置上的使用者將無法覆寫指定時區。如果提供了無效值，這項政策仍會啟用，但改採「GMT」時區。如果提供了空白字串，系統會忽略這項政策。
-
-      如不使用這項政策，系統仍會套用目前採用的時區，不過使用者可以變更時區。
-
-      新裝置的出廠預設時區是「美國/太平洋」時間。
-
-      時區值格式是採用「IANA 時區資料庫」中訂定的時區名稱 (請參閱「https://en.wikipedia.org/wiki/Tz_database」)。基本上，大部分時區均依照「&lt;大陸&gt;/&lt;大城市&gt;」或「&lt;大洋&gt;/&lt;大城市&gt;」的格式定名。
-
-      設定這項政策後，系統將完全停用自動判斷裝置所在時區的功能。SystemTimezoneAutomaticDetection 政策也會遭到覆寫。</translation>
 <translation id="2759224876420453487">控制使用者在多重設定檔工作階段中的行為</translation>
 <translation id="2761483219396643566">在電池供電環境下執行時的閒置警告延遲時間</translation>
 <translation id="2762164719979766599">指定要顯示在登入畫面的裝置本機帳戶清單。
@@ -1244,13 +1210,6 @@
       一旦設定了這項政策，使用者就只能使用 ID 符合本政策值的印表機，且 ID 必須和 <ph name="DEVICE_PRINTERS_POLICY" /> 指定檔案中的「id」或「guid」欄位相符。
       </translation>
 <translation id="284288632677954003">XML 檔案的網址，其中包含一律不觸發瀏覽器切換的網址。</translation>
-<translation id="2844404652289407061">在 <ph name="PRODUCT_NAME" /> 的內容檢視畫面中啟用「輕觸搜尋」功能。
-
-      如果你啟用這項設定，使用者即可使用「輕觸搜尋」功能，並可選擇開啟或關閉這項功能。
-
-      如果你停用這項設定，系統會完全停用「輕觸搜尋」功能。
-
-      不設定這項政策等同於設為啟用，詳情請參閱上述說明。</translation>
 <translation id="2854607717796010700">回報有關裝置記憶體的資訊。
 
       如果將這項政策設為 False 或未設定，系統將不會回報這項資訊。
@@ -1524,22 +1483,6 @@
           指定政策值時需以毫秒為單位。設定值必須小於或等於閒置延遲時間。
 
           只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
-<translation id="3373364525435227558">針對受管理工作階段設定一或多個建議語言代碼，方便使用者從中擇一使用。
-
-      使用者可以在啟動受管理工作階段前先選擇所需語言代碼和鍵盤配置。根據預設，系統會按字母順序列出 <ph name="PRODUCT_OS_NAME" /> 支援的所有語言代碼。這項政策可讓你將一些建議語言代碼移至清單頂端。
-
-      如未設定這項政策，系統會預先選取目前 UI 語言代碼。
-
-      如果設定這項政策，建議語言代碼就會移至清單頂端，與其他語言代碼明顯區隔。系統會依政策指定的順序列出建議語言代碼，並預先選取第一個語言代碼。
-
-      如果有多個建議語言代碼，系統會假設使用者將從中擇一使用。啟動受管理工作階段時，系統會醒目標出選取的語言代碼和鍵盤配置。否則，系統會假設大部分使用者將使用預先選取的語言代碼，並在受管理工作階段啟動時以較不醒目的方式顯示選取的語言代碼和鍵盤配置。
-
-      如果設定這項政策並啟用自動登入功能 (請參閱 |DeviceLocalAccountAutoLoginId| 和 |DeviceLocalAccountAutoLoginDelay| 政策)，自動啟動的受管理工作階段會使用第一個建議語言代碼，以及與其相符且最常用的鍵盤配置。
-
-      預先選取的鍵盤配置一律是與先選取的語言代碼相符且最常用的配置。
-
-      這項政策僅能設為建議政策。你可以使用這項政策將一些建議語言代碼移到頂端，但使用者隨時能為工作階段選擇 <ph name="PRODUCT_OS_NAME" /> 支援的任何語言代碼。
-      </translation>
 <translation id="3373381043600809954">啟用「<ph name="PRODUCT_NAME" />」</translation>
 <translation id="3378482432905539452">這項政策已遭到淘汰。請使用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 控管是否要提供 Flash 外掛程式，並使用 <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> 指定是否要使用整合式 PDF 檢視器開啟 PDF 檔案。
 
@@ -1949,6 +1892,9 @@
 
       如果將這項政策設為 true，系統會傳送網路封包 (所謂的「<ph name="HEARTBEATS_TERM" />」)。
       如果設為 false 或未設定，系統就不會傳送任何封包。</translation>
+<translation id="3942041691320538491">如果將這項政策設為 0 (預測值)，你將可存取開發人員工具和 JavaScript 控制台，但無法在由企業政策安裝的擴充功能中進行存取。如果將這項政策設為 1，你將可在所有情況下存取開發人員工具和 JavaScript 控制台，在由企業政策安裝的擴充功能中也能進行存取。如果將這項政策設為 2，你將無法存取開發人員工具，也無法檢查網站元素。
+
+      這項設定也會停用透過鍵盤快速鍵、選單項目或內容選單項目來開啟開發人員工具或 JavaScript 控制台的功能。</translation>
 <translation id="3950110092991281616">僅在一般工作階段中啟用背景驗證功能。</translation>
 <translation id="3950239119790560549">更新時間限制</translation>
 <translation id="3956686688560604829">使用 Internet Explorer 的 SiteList 政策取得舊版瀏覽器支援。</translation>
@@ -2517,6 +2463,7 @@
 <translation id="4983201894483989687">允許執行過舊的外掛程式</translation>
 <translation id="4986560318567565414">從替代瀏覽器切換到 Chrome 所使用的路徑。</translation>
 <translation id="4988291787868618635">在達到閒置延遲時間時要採取的動作</translation>
+<translation id="4996086761250834365">允許 <ph name="PLUGIN_VM_NAME" /> 產品分析</translation>
 <translation id="500149597848135831">啟用所有變化版本</translation>
 <translation id="5017369989680827157">如果將這項政策設為 True 或不設定，使用者即可控制 UI 中的地址自動填入功能。
 
@@ -2633,9 +2580,9 @@
       最短間隔為 30 秒，最長間隔為 24 小時。
       超過範圍的間隔值會被限制在範圍內。</translation>
 <translation id="5163002264923337812">啟用舊版網頁式登入流程</translation>
-<translation id="516520353995300280">設定這項政策後，系統不會強制要求列出的舊版憑證授權單位 (CA) (由包含指定 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊的憑證鏈所組成) 依憑證透明化規定公開憑證。企業主機可繼續使用原本不受信任的憑證 (因未依規定對外公開)。視為舊版 CA 的 CA 憑證必須使用 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊，才能不強制要求公開憑證。舊版 CA 是受到一或多個 <ph name="PRODUCT_NAME" /> 支援的作業系統公開信任，但不受 Android 開放原始碼計畫或 <ph name="PRODUCT_OS_NAME" />信任的 CA。
+<translation id="516520353995300280">設定這項政策後，系統不會強制要求列出的舊版憑證授權單位 (CA) (由包含指定 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊的憑證鏈所組成) 依憑證透明化規定公開憑證。此外，因為未依規定對外公開而不受信任的憑證，企業主機也可以繼續使用。不過，視為舊版 CA 的 CA 憑證必須包含 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊，才不會遭強制要求公開憑證。舊版 CA 是受到一或多個 <ph name="PRODUCT_NAME" /> 支援的作業系統公開信任、但不受 Android 開放原始碼計畫或 <ph name="PRODUCT_OS_NAME" />信任的 CA。
 
-      指定 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊的方法是串連雜湊演算法名稱、斜線以及套用到指定憑證 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> (採 DER 編碼) 雜湊演算法所採用的 Base64 編碼。Base64 編碼格式符合 SPKI 指紋編碼的格式。僅支援 sha256 雜湊演算法，系統會忽略其他雜湊演算法。
+      指定 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊的方法是串連雜湊演算法名稱、斜線以及套用到指定憑證 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> (採 DER 編碼) 雜湊演算法所採用的 Base64 編碼。Base64 編碼格式符合 SPKI 指紋編碼的格式。系統僅能辨識 sha256 雜湊演算法，其他雜湊演算法則會忽略。
 
       如果未設定這項政策，凡是應依憑證透明化規定公開而未公開的憑證，<ph name="PRODUCT_NAME" /> 都會將其視為不受信任的憑證。</translation>
 <translation id="5168529971295111207">這項政策已遭淘汰，請改用 ProxyMode。
@@ -2890,15 +2837,6 @@
       設定這項政策後，使用者即無法變更或覆寫。
 
       如果不設定這項政策，使用者可以選擇登入畫面上代表自己的顯示圖片。</translation>
-<translation id="5432219358069697932">這項政策可讓你為使用者設定桌面和登入畫面背景所顯示的桌布圖片。如要設定這項政策，請指定可供 <ph name="PRODUCT_OS_NAME" />下載桌布圖片的網址，以及用於驗證下載內容完整性的加密編譯雜湊碼。圖片必須為 JPEG 格式，且大小不得超過 16 MB。網址必須未設定任何驗證機制，可直接存取。
-
-      系統會下載並快取桌布圖片。只要網址或雜湊碼有任何變更，系統就會重新下載圖片。
-
-      如果設定這項政策，<ph name="PRODUCT_OS_NAME" />會下載並使用桌布圖片。
-
-      設定這項政策後，使用者即無法變更或覆寫。
-
-      如果不設定這項政策，使用者可自行選擇桌面和登入畫面背景的顯示圖片。</translation>
 <translation id="5437214086679373363">必須進行掃描時，控管使用者是否可以上傳或下載受密碼保護的檔案。如果 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 或控管已啟用檢查功能的網域清單政策判斷檔案需要掃描，系統才會套用這項限制。
 
       如果將這項政策設為「無」，<ph name="PRODUCT_NAME" /> 會禁止使用者上傳或下載受密碼保護的檔案。
@@ -2948,9 +2886,6 @@
       我們計劃將這項政策從 Mac OS X 適用的 <ph name="PRODUCT_NAME" /> 87 版中移除，屆時也將停止支援 Mac OS X 的舊版憑證驗證器。
       </translation>
 <translation id="5494917047563607689">如果設為 1 MB 以下的值或不設定，<ph name="PRODUCT_OS_NAME" /> 會為擁有多位使用者的單一裝置，使用預設大小快取要安裝的應用程式和擴充功能，讓每位使用者不必重新下載每個應用程式和擴充功能。</translation>
-<translation id="5498045818698736356">指定要以無訊息方式 (使用者無需操作) 安裝的網站清單；使用者無法解除安裝或停用這些網站。
-
-      這項政策的每個清單項目都是一個物件，由下列必要元素組成：「url」和兩個選擇性元素：「default_launch_container」和「create_desktop_shortcut」。「url」是要安裝的網頁應用程式網址，「launch_container」則是「window」(視窗) 或「tab」(分頁)，用於指定網頁應用程式安裝後所採用的開啟方式。如要在 Linux 和 Windows 上建立桌面捷徑，請將「create_desktop_shortcut」設為 True。如果未設定「default_launch_container」，應用程式預設會在分頁中開啟。無論「default_launch_container」的值為何，使用者都可以變更開啟應用程式的方式。如果未設定「create_desktop_shortcuts」，系統將不會建立桌面捷徑。如需將應用程式固定到 Chrome OS 檔案櫃，請參閱 <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> 政策。</translation>
 <translation id="5499375345075963939">這項政策僅於零售模式中有效。
 
       如果這項政策設為 0 以外的值，則系統會在指定的閒置時間過後，自動登出目前登入示範模式的使用者。
@@ -3214,6 +3149,10 @@
       系統會展開環境變數。在 Windows 上，系統會將 <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> 替換為 ABC 環境變數的值。</translation>
 <translation id="5861856285460256766">家長存取碼設定</translation>
 <translation id="5868414965372171132">使用者層級網路設定</translation>
+<translation id="587242272905978723">允許 <ph name="PLUGIN_VM_NAME" /> 收集 <ph name="PLUGIN_VM_NAME" /> 使用資料。
+
+      如果將這項政策設為 False 或不設定，<ph name="PLUGIN_VM_NAME" /> 將無法收集資料。
+      如果設為 True，<ph name="PLUGIN_VM_NAME" /> 可能會收集 <ph name="PLUGIN_VM_NAME" /> 使用資料，並將資料加以統整並徹底分析，以改善 <ph name="PLUGIN_VM_NAME" /> 的使用體驗。</translation>
 <translation id="5879014913445067283">控制網路檔案共用功能是否透過 <ph name="NETBIOS_NAME" /> 搜尋檔案</translation>
 <translation id="588135807064822874">啟用「輕觸搜尋」功能</translation>
 <translation id="5882345429632338713">在啟動替代瀏覽器前的延遲時間 (以毫秒為單位)</translation>
@@ -3349,11 +3288,11 @@
 <translation id="6099853574908182288">預設列印色彩模式</translation>
 <translation id="6102342563050263313">啟用捲動至網址片段所指定文字的功能</translation>
 <translation id="6107642964266628393">控管 Chrome 作業系統的更新方式和更新時間。</translation>
-<translation id="6110478331147706293">設定這項政策後，系統不會要求指定網址中的主機名稱依憑證透明化規定公開憑證。雖然這會讓系統更難以偵測到誤用憑證的情形，但主機可繼續使用原本不受信任的憑證 (因未依規定對外公開)。
+<translation id="6110478331147706293">設定這項政策後，系統不會要求指定網址中的主機名稱依憑證透明化規定公開憑證。雖然這會讓系統更難以偵測到誤用憑證的情形，但也因此可讓主機繼續使用因為未依規定對外公開而不受信任的憑證。
 
       如果未設定這項政策，凡是應依憑證透明化規定公開而未公開的憑證，<ph name="PRODUCT_NAME" /> 都會將其設為不受信任的憑證。
 
-      網址格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 的規定。不過，由於單憑指定的主機名稱即可判定憑證有效 (忽略網址配置、通訊埠或路徑)，因此 <ph name="PRODUCT_NAME" /> 只會檢視網址的主機名稱部分 (不支援含萬用字元的主機名稱)。</translation>
+      網址格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 的規定。不過，判定憑證是否有效與網址配置、通訊埠或路徑皆無關，因此 <ph name="PRODUCT_NAME" /> 只會檢視網址的主機名稱部分 (不支援含萬用字元的主機名稱)。</translation>
 <translation id="6111936128861357925">允許 Dinosaur Easter Egg Game (恐龍復活節彩蛋遊戲)</translation>
 <translation id="6114416803310251055">淘汰的</translation>
 <translation id="6133088669883929098">允許所有網站使用金鑰產生功能</translation>
@@ -3726,15 +3665,15 @@
 <translation id="6689792153960219308">回報硬體狀態</translation>
 <translation id="6698632841807204978">啟用單色列印</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
-<translation id="6703251016607733593">設定這項政策後，系統不會強制要求列出的 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊依憑證透明化規定公開憑證。企業主機可繼續使用原本不受信任的憑證 (因未依規定對外公開)。雜湊必須符合以下其中一項條件，才能不強制要求公開憑證：
+<translation id="6703251016607733593">設定這項政策後，系統不會強制要求列出的 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊依憑證透明化規定公開憑證。此外，因為未依規定對外公開而不受信任的憑證，企業主機也可以繼續使用。雜湊必須符合以下其中一項條件，才能不強制要求公開憑證：
 
       * 雜湊是伺服器憑證的 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊。
 
-      * 雜湊是憑證鏈中的憑證授權單位 (CA) 憑證所使用的 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊，且該 CA 憑證受到 X.509v3 nameConstraints 擴充功能的限制。此外，permittedSubtrees 中有一或多個 directoryName nameConstraints，且 directoryName 具有 organizationName 屬性。
+      * 雜湊是憑證鏈中的憑證授權單位 (CA) 憑證所包含的 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊，且該 CA 憑證必須包含限定格式的 X.509v3 nameConstraints 擴充功能。此外，permittedSubtrees 中有一或多個 directoryName nameConstraints，且 directoryName 具有 organizationName 屬性。
 
-      * 雜湊是憑證鏈中的 CA 憑證所使用的 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊，且該 CA 憑證的憑證主體中具有一或多個 organizationName 屬性。此外，伺服器的憑證具有數量與順序皆相同的 organizationName 屬性，且其中的位元對位元值也完全吻合。
+      * 雜湊是憑證鏈中的 CA 憑證所包含的 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊，且該 CA 憑證的憑證主體中具有一或多個 organizationName 屬性。此外，伺服器的憑證具有數量與順序皆相同的 organizationName 屬性，且其中的位元對位元值也完全吻合。
 
-      指定 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊的方法是串連雜湊演算法名稱、斜線以及套用到指定憑證 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> (採 DER 編碼) 雜湊演算法所採用的 Base64 編碼。Base64 編碼格式符合 SPKI 指紋編碼的格式。僅支援 sha256 雜湊演算法，系統會忽略其他雜湊演算法。
+      指定 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> 雜湊的方法是串連雜湊演算法名稱、斜線以及套用到指定憑證 <ph name="SUBJECT_PUBLIC_KEY_INFO" /> (採 DER 編碼) 雜湊演算法所採用的 Base64 編碼。Base64 編碼格式符合 SPKI 指紋編碼的格式。系統僅能辨識 sha256 雜湊演算法，其他雜湊演算法則會忽略。
 
       如果未設定這項政策，凡是應依憑證透明化規定公開而未公開的憑證，<ph name="PRODUCT_NAME" /> 都會將其視為不受信任的憑證。</translation>
 <translation id="6704515759227307131">這項政策已遭淘汰，並已替換為 AdvancedProtectionAllowed。
@@ -4147,9 +4086,6 @@
 
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="7302043767260300182">在 AC 供電環境下執行時的螢幕鎖定延遲時間</translation>
-<translation id="7311458740754205918">如果將這項政策設為 true 或未設定這項政策，系統可能會根據使用者的瀏覽記錄、興趣或位置在新分頁顯示內容建議。
-
-      如果將這項政策設為 false，新分頁就不會顯示系統自動產生的內容建議。</translation>
 <translation id="731208205557053914">回報 VPD 資訊</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> 額外命令列參數</translation>
 <translation id="7326394567531622570">與 Wipe (值 2) 類似，但會嘗試保留登入憑證，因此使用者不必重新登入。</translation>
@@ -4349,7 +4285,6 @@
 
           注意：如果指定 <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" />，這項政策會遭到覆寫。</translation>
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
-<translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
 <translation id="7643883929273267746">限制在 <ph name="PRODUCT_NAME" /> 中顯示的帳戶</translation>
 <translation id="7648907905084499629">對所有網站上的 Cookie 使用 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 行為</translation>
 <translation id="7651739109954974365">決定是否要為裝置啟用數據漫遊。如果設為 True，就會允許數據漫遊。如未設定或設為 False，就不支援數據漫遊。</translation>
@@ -4614,13 +4549,6 @@
 
           請注意，先前我們誤在 Android 裝置上啟用這項政策，但這項功能從未針對 Android 裝置提供完整支援。</translation>
 <translation id="8104962233214241919">自動為這些網站選取用戶端憑證</translation>
-<translation id="8112122435099806139">指定裝置使用的時鐘格式。
-
-      這項政策可設定登入畫面使用的時鐘格式，以及使用者工作階段的預設時鐘格式。不過使用者仍然可以覆寫個人帳戶使用的時鐘格式。
-
-      如果你將這項政策設為 True，裝置將使用 24 小時制時鐘格式；如果設為 False，裝置將使用 12 小時制時鐘格式。
-
-      如未設定這項政策，裝置在預設狀態下會使用 24 小時制時鐘格式。</translation>
 <translation id="8114382167597081590">不強制執行 YouTube 嚴格篩選模式</translation>
 <translation id="8117921351531866504">你可以設定網站是否能檢查使用者有沒有已儲存的付款方式。
 
@@ -4637,7 +4565,7 @@
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 無法以整個分頁顯示產品資訊。
 
-      你可以透過這項政策控管要如何顯示可協助使用者登入 <ph name="PRODUCT_NAME" /> 的歡迎頁面、將 <ph name="PRODUCT_NAME" /> 設為使用者的預設瀏覽器，或是向使用者顯示產品功能。</translation>
+      你可以透過這項政策控制歡迎頁面的顯示形式，協助使用者登入 <ph name="PRODUCT_NAME" />、將 <ph name="PRODUCT_NAME" /> 設為使用者的預設瀏覽器，或是向使用者介紹產品功能。</translation>
 <translation id="8141795997560411818">這項政策不會禁止使用者使用 Android Google 雲端硬碟應用程式。如要禁止存取 Google 雲端硬碟，則必須一併禁止安裝 Android Google 雲端硬碟應用程式。</translation>
 <translation id="8142894094385450823">針對受管理工作階段設定建議語言代碼</translation>
 <translation id="8146727383888924340">允許使用者透過 Chrome OS Registration 兌換優惠</translation>

@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> diubah ke <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Klik konfirmasi untuk menyimpan perubahan. Setelan sebelumnya akan dipulihkan dalam <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukan kode PIN ini pada perangkat tersebut: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Baterai stilus lemah</translation>
+<translation id="1036672894875463507">Saya Asisten Google Anda, saya hadir untuk membantu Anda sepanjang hari.
+Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ditambahkan</translation>
 <translation id="1056775291175587022">Tidak ada jaringan</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Keluarkan semua pengguna</translation>
 <translation id="2277103315734023688">Cari Maju</translation>
 <translation id="2292698582925480719">Skala layar</translation>
+<translation id="229397294990920565">Data seluler dinonaktifkan ...</translation>
 <translation id="2295777434187870477">Mikrofon aktif, mengalihkan tombol akan membisukan masukan.</translation>
 <translation id="2298170939937364391">Kaca Pembesar Layar diaktifkan. Tekan Ctrl+Penelusuran+M lagi untuk menonaktifkannya.</translation>
 <translation id="2302092602801625023">Akun ini dikelola oleh Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Kaca pembesar</translation>
 <translation id="4351433414020964307">Asisten sedang dimuat...</translation>
 <translation id="4356930093361201197">mode kontras tinggi</translation>
+<translation id="4368583494516669646">Selamat malam <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Setelan Transmisi</translation>
 <translation id="4378551569595875038">Menyambung...</translation>
 <translation id="4379531060876907730">Ini adalah fitur stilus</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Sembunyikan sandi</translation>
 <translation id="4570957409596482333">Tombol Klik untuk Diucapkan</translation>
+<translation id="4577274620589681794">Waktu habis · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Hentikan transmisi pada penerima yang tidak dikenal</translation>
 <translation id="4628757576491864469">Perangkat</translation>
 <translation id="4659419629803378708">ChromeVox diaktifkan</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Scroll ke atas</translation>
 <translation id="4961318399572185831">Transmisikan layar</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />j <ph name="MINUTES" />m <ph name="SECONDS" />d</translation>
+<translation id="4970352680959471247">Selamat sore <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Waktu habis</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> terhubung ke ponsel baru</translation>
 <translation id="5035389544768382859">Konfirmasi Konfigurasi Layar</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Semua pengguna yang tersedia telah ditambahkan ke sesi ini.</translation>
 <translation id="54609108002486618">Terkelola</translation>
 <translation id="5465662442746197494">Butuh bantuan?</translation>
+<translation id="5485091064403948243">Selamat pagi <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Administrator sedang memulihkan perangkat Anda. Semua data akan dihapus jika perangkat dinyalakan ulang.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Keluar dari sesi</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Untuk membuka kunci perangkat, masukkan kode akses orang tua Family Link</translation>
 <translation id="742594950370306541">Kamera sedang digunakan.</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
+<translation id="7436182601308224670">Selamat siang <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Sentuh sensor</translation>
 <translation id="7497767806359279797">Pilih bahasa dan keyboard</translation>
 <translation id="7526573455193969409">Jaringan mungkin dipantau</translation>

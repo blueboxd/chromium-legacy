@@ -49,10 +49,13 @@ function convertToMojoTime(jsDate) {
  * @return {!Object}
  */
 function createJobEntry(id, title, completionStatus, jsDate, printerName) {
+  let completedInfo = [];
+  completedInfo.completionStatus = completionStatus;
+
   let jobEntry = {};
+  jobEntry.completedInfo = completedInfo;
   jobEntry.id = id;
   jobEntry.title = strToMojoString16(title);
-  jobEntry.completionStatus = completionStatus;
   jobEntry.creationTime = {internalValue: convertToMojoTime(jsDate)};
   jobEntry.printerName = strToMojoString16(printerName);
   jobEntry.printerUri = {url: '192.168.1.1'};
@@ -389,7 +392,7 @@ suite('PrintJobEntryTest', () => {
    * @param {string} expectedStatus
    */
   function updateAndVerifyCompletionStatus(element, newStatus, expectedStatus) {
-    element.set('jobEntry.completionStatus', newStatus);
+    element.set('jobEntry.completedInfo.completionStatus', newStatus);
     assertEquals(
         expectedStatus, element.$$('#completionStatus').textContent.trim());
   }

@@ -57,6 +57,8 @@ WGPUOrigin3D GPUOrigin2DToWGPUOrigin3D(
   return dawn_origin;
 }
 
+// TODO(shaobo.yan@intel.com): This function will be removed when
+// dawn has the copyTextureCHROMIUM like API.
 bool AreCompatibleFormatForImageBitmapGPUCopy(
     SkColorType sk_color_type,
     WGPUTextureFormat dawn_texture_format) {
@@ -75,6 +77,23 @@ bool AreCompatibleFormatForImageBitmapGPUCopy(
       return sk_color_type == SkColorType::kR8G8_unorm_SkColorType;
     case WGPUTextureFormat_RG16Float:
       return sk_color_type == SkColorType::kR16G16_float_SkColorType;
+    default:
+      return false;
+  }
+}
+
+bool IsValidCopyIB2TDestinationFormat(WGPUTextureFormat dawn_texture_format) {
+  switch (dawn_texture_format) {
+    case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_RGBA8UnormSrgb:
+    case WGPUTextureFormat_BGRA8Unorm:
+    case WGPUTextureFormat_BGRA8UnormSrgb:
+    case WGPUTextureFormat_RGB10A2Unorm:
+    case WGPUTextureFormat_RGBA16Float:
+    case WGPUTextureFormat_RGBA32Float:
+    case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_RG16Float:
+      return true;
     default:
       return false;
   }
@@ -301,6 +320,11 @@ void GPUQueue::copyImageBitmapToTexture(
   }
 
   WGPUTextureCopyView dawn_destination = AsDawnType(destination, device_);
+
+  if (!IsValidCopyIB2TDestinationFormat(destination->texture()->Format())) {
+    return exception_state.ThrowTypeError("Invalid gpu texture format.");
+    return;
+  }
 
   const CanvasColorParams& color_params =
       source->imageBitmap()->GetCanvasColorParams();

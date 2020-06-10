@@ -83,16 +83,17 @@ struct Result {
 };
 
 // Status of the search attempt.
-// More will be added later.
+// These numbers are used for logging and should not be changed or reused. More
+// will be added later.
 enum class ResponseStatus {
   kUnknownError = 0,
-  // Query is empty.
-  kEmptyQuery = 1,
-  // Index is empty (i.e. no data).
-  kEmptyIndex = 2,
   // Search operation is successful. But there could be no matching item and
   // result list is empty.
-  kSuccess = 3
+  kSuccess = 1,
+  // Query is empty.
+  kEmptyQuery = 2,
+  // Index is empty (i.e. no data).
+  kEmptyIndex = 3
 };
 
 // A local search service Index.

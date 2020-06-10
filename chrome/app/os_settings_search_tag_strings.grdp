@@ -14,14 +14,11 @@
   <message name="IDS_OS_SETTINGS_TAG_ETHERNET_CONFIGURE" desc="Text for search result item which, when clicked, navigates the user to Ethernet settings, with a button to configure security preferences.">
     Configure Ethernet
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_WIFI" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi settings. Alternate phrase for: 'Wireless', 'Connectivity'">
+  <message name="IDS_OS_SETTINGS_TAG_WIFI" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi settings. Alternate phrase for: 'Wireless'">
     Wi-Fi networks
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_WIFI_ALT1" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi settings. Alternate phrase for: 'Wi-Fi networks', 'Connectivity'">
+  <message name="IDS_OS_SETTINGS_TAG_WIFI_ALT1" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi settings. Alternate phrase for: 'Wi-Fi networks'">
     Wireless
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_WIFI_ALT2" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi settings. Alternate phrase for: 'Wi-Fi networks', 'Wireless'">
-    Connectivity
   </message>
   <message name="IDS_OS_SETTINGS_TAG_KNOWN_NETWORKS" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi settings with saved (i.e., known) networks. Alternate phrase for: 'Saved Wi-Fi networks', 'Preferred Wi-Fi networks'">
     Known Wi-Fi networks
@@ -59,20 +56,17 @@
   <message name="IDS_OS_SETTINGS_TAG_WIFI_CONFIGURE" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi network settings, with a button to configure security preferences.">
     Configure Wi-Fi
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_CELLULAR" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Mobile', 'LTE', 'Wireless', 'Connectivity'">
+  <message name="IDS_OS_SETTINGS_TAG_CELLULAR" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Mobile', 'LTE', 'Wireless'">
     Cellular
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ALT1" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Cellular', 'LTE', 'Wireless', 'Connectivity'">
+  <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ALT1" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Cellular', 'LTE', 'Wireless'">
     Mobile
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ALT2" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Cellular', 'Mobile', 'Wireless', 'Connectivity'">
+  <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ALT2" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Cellular', 'Mobile', 'Wireless'">
     LTE
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ALT3" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Cellular', 'Mobile', 'LTE', 'Connectivity'">
+  <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ALT3" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Cellular', 'Mobile', 'LTE'">
     Wireless
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ALT4" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Cellular', 'Mobile', 'LTE', 'Wireless'">
-    Connectivity
   </message>
   <message name="IDS_OS_SETTINGS_TAG_CELLULAR_ROAMING" desc="Text for search result item which, when clicked, navigates the user to Cellular network settings, with a toggle to enable/disable mobile roaming.">
     Cellular roaming
@@ -198,16 +192,10 @@
   </message>
 
   <!-- MultiDevice section. -->
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Better Together', 'Multi-device', 'Phone'">
-    Connected devices settings
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Phone'">
+    Connected devices
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT1" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices settings', 'Multi-device', 'Phone'">
-    Better Together
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT2" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices settings', 'Better Together', 'Phone'">
-    Multi-device
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT3" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices settings', 'Better Together', 'Multi-device'">
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT1" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices'">
     Phone
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK" desc="Text for search result item which, when clicked, navigates the user to Smart Lock settings (unlock Chromebook with Android phone).">
@@ -924,8 +912,11 @@
   <message name="IDS_OS_SETTINGS_TAG_A11Y_SELECT_TO_SPEAK" desc="Text for search result item which, when clicked, navigates the user to accessibility settings, with a toggle to enable/disable select-to-speak (hearing text read aloud after it is selected).">
     Select-to-speak
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_A11Y_TEXT_TO_SPEECH" desc="Text for search result item which, when clicked, navigates the user to text-to-speech voice accessibility settings.">
-    Text-to-speech voice settings
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_TEXT_TO_SPEECH" desc="Text for search result item which, when clicked, navigates the user to text-to-speech voice accessibility settings. Alternate phrase for 'TTS'">
+    Text-to-speech
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_A11Y_TEXT_TO_SPEECH_ALT1" desc="Text for search result item which, when clicked, navigates the user to text-to-speech voice accessibility settings. Alternate phrase for 'Text-to-speech'">
+    TTS
   </message>
   <message name="IDS_OS_SETTINGS_TAG_A11Y_SPEECH_RATE" desc="Text for search result item which, when clicked, navigates the user to text-to-speech voice accessibility settings, with a slider to set the speech rate.">
     Text-to-speech rate

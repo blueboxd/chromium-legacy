@@ -968,11 +968,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "display-change-modal",
-    "owners": [ "baileyberro", "zentaro" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "display-identification",
     "owners": [ "baileyberro", "cros-peripherals@google.com" ],
     "expiry_milestone": 85
@@ -2991,6 +2986,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "messages-block-popup-infobars",
+    "owners": [ "sczs", "thegreenfrog" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "messages-confirm-infobars",
     "owners": [ "sczs", "thegreenfrog" ],
     "expiry_milestone": 83
@@ -3854,8 +3854,8 @@
   },
   {
     "name": "scrollable-tabstrip",
-    "owners": ["chrome-desktop-ui-seattle@google.com", "tbergquist"],
-    "expiry_milestone": 82
+    "owners": ["chrome-desktop-ui-sea@google.com", "tbergquist"],
+    "expiry_milestone": 90
   },
   {
     "name": "search-icon-toggle",

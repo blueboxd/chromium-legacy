@@ -9,9 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/assistant/assistant_client.h"
-#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/cpp/assistant_client.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
@@ -34,8 +32,7 @@ class AssistantClientImpl : public ash::AssistantClient,
                             public chromeos::assistant::AssistantClient,
                             public content::NotificationObserver,
                             public signin::IdentityManager::Observer,
-                            public session_manager::SessionManagerObserver,
-                            public ash::AssistantStateObserver {
+                            public session_manager::SessionManagerObserver {
  public:
   AssistantClientImpl();
   ~AssistantClientImpl() override;
@@ -98,10 +95,6 @@ class AssistantClientImpl : public ash::AssistantClient,
   void OnUserProfileLoaded(const AccountId& account_id) override;
   void OnUserSessionStarted(bool is_primary_user) override;
 
-  // ash::AssistantStateObserver:
-  void OnAssistantFeatureAllowedChanged(
-      chromeos::assistant::AssistantAllowedState allowed_state) override;
-
   std::unique_ptr<DeviceActions> device_actions_;
   std::unique_ptr<chromeos::assistant::Service> service_;
   std::unique_ptr<AssistantSetup> assistant_setup_;
@@ -120,9 +113,6 @@ class AssistantClientImpl : public ash::AssistantClient,
   // Non-owning pointers.
   Profile* profile_ = nullptr;
   signin::IdentityManager* identity_manager_ = nullptr;
-
-  ScopedObserver<ash::AssistantStateBase, ash::AssistantStateObserver>
-      assistant_state_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantClientImpl);
 };

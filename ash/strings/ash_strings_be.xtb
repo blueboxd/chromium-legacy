@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">Для дысплэя "<ph name="DISPLAY_NAME" />" зададзена раздзяляльнасць <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Гц). Каб захаваць змяненні, націсніце "Пацвердзіць". Папярэднія налады будуць адноўлены праз <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Прылада Bluetooth "<ph name="DEVICE_NAME" />" запытвае дазвол на спалучэнне. Увядзіце на гэтай прыладзе PIN-код: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Нізкі зарад акумулятара стыла</translation>
+<translation id="1036672894875463507">Я ваш Памочнік Google і буду дапамагаць вам на працягу ўсяго дня!
+Вось што можна паспрабаваць для пачатку.</translation>
 <translation id="1037492556044956303">Прылада "<ph name="DEVICE_NAME" />" дададзена</translation>
 <translation id="1056775291175587022">Няма сетак</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Выйсці адусюль</translation>
 <translation id="2277103315734023688">Перайсці ўперад</translation>
 <translation id="2292698582925480719">Маштаб паказу</translation>
+<translation id="229397294990920565">Ідзе выключэнне мабільнай перадачы даных...</translation>
 <translation id="2295777434187870477">Мікрафон уключаны, выключыць яго можна з дапамогай гэтага пераключальніка.</translation>
 <translation id="2298170939937364391">Уключана поўнаэкранная лупа. Каб выключыць яе, зноў націсніце Ctrl + Пошук + M.</translation>
 <translation id="2302092602801625023">Гэты ўліковы запіс кіруецца праз Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Павелічальнае шкло</translation>
 <translation id="4351433414020964307">Ідзе загрузка Памочніка...</translation>
 <translation id="4356930093361201197">рэжым высокай кантраснасці</translation>
+<translation id="4368583494516669646">Добрай ночы, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Налады трансляцыі</translation>
 <translation id="4378551569595875038">Ідзе падключэнне...</translation>
 <translation id="4379531060876907730">Гэта інструменты стыла</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Схаваць пароль</translation>
 <translation id="4570957409596482333">Кнопка "Чытаць уголас"</translation>
+<translation id="4577274620589681794">Час выйшаў · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Спыніць трансляцыю невядомаму атрымальніку</translation>
 <translation id="4628757576491864469">Прылады</translation>
 <translation id="4659419629803378708">ChromeVox уключаны</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Прагартаць уверх</translation>
 <translation id="4961318399572185831">Трансляцыя экрана</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> гадз <ph name="MINUTES" /> хв <ph name="SECONDS" /> с</translation>
+<translation id="4970352680959471247">Добры вечар, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5030687792513154421">Час выйшаў</translation>
 <translation id="5035236842988137213">Прылада <ph name="DEVICE_NAME" /> падключана да новага тэлефона</translation>
 <translation id="5035389544768382859">Пацвярджэнне канфігурацыі дысплэя</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Усе даступныя карыстальнікі ўжо дададзены да гэтага сеанса.</translation>
 <translation id="54609108002486618">Пад кіраваннем</translation>
 <translation id="5465662442746197494">Патрабуецца дапамога?</translation>
+<translation id="5485091064403948243">Добрай раніцы, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5496819745535887422">Адміністратар робіць адкат вашай прылады. Калі прылада перазапусціцца, усе даныя будуць выдалены.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Выконваецца выхад з сеанса</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Каб разблакіраваць прыладу, увядзіце бацькоўскі код доступу Family Link.</translation>
 <translation id="742594950370306541">Камера выкарыстоўваецца.</translation>
 <translation id="743058460480092004">Камера і мікрафон выкарыстоўваюцца.</translation>
+<translation id="7436182601308224670">Добры дзень, <ph name="GIVEN_NAME" />!</translation>
 <translation id="7466449121337984263">Дакраніцеся да сканера</translation>
 <translation id="7497767806359279797">Выбраць мову і клавіятуру</translation>
 <translation id="7526573455193969409">За сеткай могуць сачыць</translation>

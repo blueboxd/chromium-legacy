@@ -105,6 +105,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "IdleManager";
     case WebSchedulerTrackedFeature::kPaymentManager:
       return "PaymentManager";
+    case WebSchedulerTrackedFeature::kSpeechSynthesis:
+      return "SpeechSynthesis";
   }
 }
 

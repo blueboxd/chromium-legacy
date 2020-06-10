@@ -11,7 +11,7 @@ import { ValidationTest } from './validation_test.js';
 class F extends ValidationTest {
   getUniformBuffer() {
     return this.device.createBuffer({
-      size: 4 * Float32Array.BYTES_PER_ELEMENT,
+      size: 8 * Float32Array.BYTES_PER_ELEMENT,
       usage: GPUBufferUsage.UNIFORM
     });
   }

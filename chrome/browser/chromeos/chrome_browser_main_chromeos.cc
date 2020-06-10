@@ -69,6 +69,7 @@
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/chromeos/lacros/lacros_loader.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/logging.h"
@@ -738,6 +739,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
       std::make_unique<lock_screen_apps::StateController>();
   lock_screen_apps_state_controller_->Initialize();
 
+  // Always construct LacrosLoader, even if the lacros flag is disabled, so
+  // it can do cleanup work if needed. Initialized in PreProfileInit because the
+  // profile-keyed service AppService can call into it.
+  lacros_loader_ = std::make_unique<LacrosLoader>(
+      g_browser_process->platform_part()->cros_component_manager());
+
   if (immediate_login) {
     const std::string cryptohome_id =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
@@ -1021,6 +1028,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   crostini_unsupported_action_notifier_.reset();
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
+
+  lacros_loader_.reset();
 
   if (lock_screen_apps_state_controller_)
     lock_screen_apps_state_controller_->Shutdown();

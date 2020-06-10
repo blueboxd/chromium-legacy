@@ -44,7 +44,7 @@ crbug.com/1083478 [ Win ] wpt_internal/webgpu/webgpu/web-platform/reftests/canva
 #   (Not really worth implementing until there are fewer actual failures.)
 # - Possibly also slower or hanging with validation layers.
 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,copied_texture_clear:* [ Skip ]
-wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,sampled_texture_clear:* [ Skip ]
+crbug.com/dawn/431 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,sampled_texture_clear:* [ Skip ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,depth_stencil_attachment_clear:* [ Skip ]
 
 crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=0 [ Failure ]
@@ -60,16 +60,7 @@ wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsyn
 # Timeout on Windows/NVIDIA with backend validation
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_pipeline_layout:* [ Failure Timeout ]
 
-# https://github.com/gpuweb/cts/issues/200
-wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:visibility_and_dynamic_offsets:type="writeonly-storage-texture";hasDynamicOffset=false;* [ Failure ]
-wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:visibility_and_dynamic_offsets:type="readonly-storage-texture";hasDynamicOffset=false;* [ Failure ]
-
-crbug.com/dawn/383 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,fences:signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid: [ Failure ]
-crbug.com/dawn/383 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,fences:signal_a_fence_on_a_different_device_does_not_update_fence_signaled_value: [ Failure ]
-
 crbug.com/1069953 wpt_internal/webgpu/cts.html?q=webgpu:web-platform,copyImageBitmapToTexture:from_ImageData:* [ Failure ]
-
-wpt_internal/webgpu/cts.html?q=webgpu:api,validation,vertex_state:check_two_attributes_overlapping: [ Failure ]
 
 wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:* [ Skip ]
 

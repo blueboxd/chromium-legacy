@@ -35,9 +35,7 @@ namespace content {
 // sequence. That sequence also has to be the same sequence on which the
 // NativeFileSystemPermissionContext expects to be interacted with, which
 // is the UI thread.
-class CONTENT_EXPORT NativeFileSystemHandleBase
-    : public NativeFileSystemPermissionGrant::Observer,
-      public WebContentsObserver {
+class CONTENT_EXPORT NativeFileSystemHandleBase : public WebContentsObserver {
  public:
   using BindingContext = NativeFileSystemManagerImpl::BindingContext;
   using SharedHandleState = NativeFileSystemManagerImpl::SharedHandleState;
@@ -92,9 +90,6 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
   }
 
   virtual base::WeakPtr<NativeFileSystemHandleBase> AsWeakPtr() = 0;
-
-  // NativeFileSystemPermissionGrant::Observer:
-  void OnPermissionStatusChanged() override;
 
   // Invokes |method| on the correct sequence on this handle's
   // FileSystemOperationRunner, passing |args| and a callback to the method. The
@@ -203,12 +198,6 @@ class CONTENT_EXPORT NativeFileSystemHandleBase
   const BindingContext context_;
   const storage::FileSystemURL url_;
   const SharedHandleState handle_state_;
-
-  base::FilePath directory_for_usage_tracking_;
-  bool was_readable_at_last_check_ = false;
-  bool was_writable_at_last_check_ = false;
-
-  void UpdateUsage();
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemHandleBase);
 };

@@ -4,221 +4,63 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Resources;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogController;
+import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordinator;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.modaldialog.DialogDismissalCause;
-import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modelutil.PropertyModel;
-
-import java.io.File;
-import java.util.ArrayList;
 
 /**
- * Helper class to handle communication between download location dialog and native.
+ * Glues download dialogs UI code and handles the communication to download native backend.
  */
-public class DownloadDialogBridge implements ModalDialogProperties.Controller {
+public class DownloadDialogBridge implements DownloadLocationDialogController {
     private static final long INVALID_START_TIME = -1;
     private long mNativeDownloadDialogBridge;
-    private PropertyModel mDialogModel;
-    private DownloadLocationCustomView mCustomView;
-    private ModalDialogManager mModalDialogManager;
-    private long mTotalBytes;
-    private @DownloadLocationDialogType int mDialogType;
-    private String mSuggestedPath;
-    private Context mContext;
 
-    private DownloadDialogBridge(long nativeDownloadDialogBridge) {
+    private final DownloadLocationDialogCoordinator mLocationDialog;
+
+    public DownloadDialogBridge(
+            long nativeDownloadDialogBridge, DownloadLocationDialogCoordinator locationDialog) {
         mNativeDownloadDialogBridge = nativeDownloadDialogBridge;
+        mLocationDialog = locationDialog;
     }
 
     @CalledByNative
-    public static DownloadDialogBridge create(long nativeDownloadDialogBridge) {
-        return new DownloadDialogBridge(nativeDownloadDialogBridge);
+    private static DownloadDialogBridge create(long nativeDownloadDialogBridge) {
+        DownloadLocationDialogCoordinator locationDialog = new DownloadLocationDialogCoordinator();
+        DownloadDialogBridge bridge =
+                new DownloadDialogBridge(nativeDownloadDialogBridge, locationDialog);
+        locationDialog.initialize(bridge);
+        return bridge;
     }
 
     @CalledByNative
-    private void destroy() {
+    void destroy() {
         mNativeDownloadDialogBridge = 0;
-        if (mModalDialogManager != null) {
-            mModalDialogManager.dismissDialog(
-                    mDialogModel, DialogDismissalCause.DISMISSED_BY_NATIVE);
-        }
+        mLocationDialog.destroy();
     }
 
     @CalledByNative
-    public void showDialog(WindowAndroid windowAndroid, long totalBytes,
+    void showDialog(WindowAndroid windowAndroid, long totalBytes,
             @DownloadLocationDialogType int dialogType, String suggestedPath) {
-        Activity activity = windowAndroid.getActivity().get();
-        // If the activity has gone away, just clean up the native pointer.
-        if (activity == null) {
-            onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
-            return;
-        }
+        mLocationDialog.showDialog(windowAndroid, totalBytes, dialogType, suggestedPath);
+    }
 
-        mModalDialogManager = ((ModalDialogManagerHolder) activity).getModalDialogManager();
-        mContext = activity;
-        mTotalBytes = totalBytes;
-        mDialogType = dialogType;
-        mSuggestedPath = suggestedPath;
+    // DownloadLocationDialogController implementation.
+    @Override
+    public void onComplete(String returnedPath) {
+        if (mNativeDownloadDialogBridge == 0) return;
 
-        DownloadDirectoryProvider.getInstance().getAllDirectoriesOptions(
-                (ArrayList<DirectoryOption> dirs) -> { onDirectoryOptionsRetrieved(dirs); });
+        DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
+                DownloadDialogBridge.this, returnedPath, false /*onWifi*/, INVALID_START_TIME);
     }
 
     @Override
-    public void onClick(PropertyModel model, int buttonType) {
-        switch (buttonType) {
-            case ModalDialogProperties.ButtonType.POSITIVE:
-                mModalDialogManager.dismissDialog(
-                        model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-                break;
-            case ModalDialogProperties.ButtonType.NEGATIVE:
-                mModalDialogManager.dismissDialog(
-                        model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
-                break;
-            default:
-        }
-    }
+    public void onCancel() {
+        if (mNativeDownloadDialogBridge == 0) return;
 
-    @Override
-    public void onDismiss(PropertyModel model, int dismissalCause) {
-        switch (dismissalCause) {
-            case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
-                handleResponses(mCustomView.getFileName(), mCustomView.getDirectoryOption(),
-                        mCustomView.getDontShowAgain());
-                break;
-            default:
-                cancel();
-                break;
-        }
-        mDialogModel = null;
-        mCustomView = null;
-    }
-
-    /**
-     * Called after retrieved the download directory options.
-     * @param dirs An list of available download directories.
-     */
-    private void onDirectoryOptionsRetrieved(ArrayList<DirectoryOption> dirs) {
-        // If there is only one directory available, don't show the default dialog, and set the
-        // download directory to default. Dialog will still show for other types of dialogs, like
-        // name conflict or disk error.
-        if (dirs.size() == 1 && mDialogType == DownloadLocationDialogType.DEFAULT) {
-            final DirectoryOption dir = dirs.get(0);
-            if (dir.type == DirectoryOption.DownloadLocationDirectoryType.DEFAULT) {
-                assert (!TextUtils.isEmpty(dir.location));
-                setDownloadAndSaveFileDefaultDirectory(dir.location);
-                DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
-                        DownloadDialogBridge.this, mSuggestedPath, false /*onWifi*/,
-                        INVALID_START_TIME);
-            }
-            return;
-        }
-
-        // Already showing the dialog.
-        if (mDialogModel != null) return;
-
-        // Actually show the dialog.
-        mCustomView = (DownloadLocationCustomView) LayoutInflater.from(mContext).inflate(
-                R.layout.download_location_dialog, null);
-        mCustomView.initialize(mDialogType, new File(mSuggestedPath));
-
-        Resources resources = mContext.getResources();
-        mDialogModel =
-                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, this)
-                        .with(ModalDialogProperties.TITLE, getTitle(mTotalBytes, mDialogType))
-                        .with(ModalDialogProperties.CUSTOM_VIEW, mCustomView)
-                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                                R.string.duplicate_download_infobar_download_button)
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                                R.string.cancel)
-                        .build();
-
-        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
-    }
-
-    private String getTitle(long totalBytes, @DownloadLocationDialogType int dialogType) {
-        switch (dialogType) {
-            case DownloadLocationDialogType.LOCATION_FULL:
-                return mContext.getString(R.string.download_location_not_enough_space);
-
-            case DownloadLocationDialogType.LOCATION_NOT_FOUND:
-                return mContext.getString(R.string.download_location_no_sd_card);
-
-            case DownloadLocationDialogType.NAME_CONFLICT:
-                return mContext.getString(R.string.download_location_download_again);
-
-            case DownloadLocationDialogType.NAME_TOO_LONG:
-                return mContext.getString(R.string.download_location_rename_file);
-
-            case DownloadLocationDialogType.DEFAULT:
-                String title = mContext.getString(R.string.download_location_dialog_title);
-                if (totalBytes > 0) {
-                    StringBuilder stringBuilder = new StringBuilder(title);
-                    stringBuilder.append(" ");
-                    stringBuilder.append(
-                            org.chromium.components.browser_ui.util.DownloadUtils.getStringForBytes(
-                                    mContext, totalBytes));
-                    title = stringBuilder.toString();
-                }
-                return title;
-        }
-        assert false;
-        return null;
-    }
-
-    /**
-     * Pass along information from location dialog to native.
-     *
-     * @param fileName      Name the user gave the file.
-     * @param directoryOption  Location the user wants the file saved to.
-     * @param dontShowAgain Whether the user wants the "Save download to..." dialog shown again.
-     */
-    private void handleResponses(
-            String fileName, DirectoryOption directoryOption, boolean dontShowAgain) {
-        // If there's no file location, treat as a cancellation.
-        if (directoryOption == null || directoryOption.location == null || fileName == null) {
-            cancel();
-            return;
-        }
-
-        // Update native with new path.
-        if (mNativeDownloadDialogBridge != 0) {
-            setDownloadAndSaveFileDefaultDirectory(directoryOption.location);
-
-            RecordHistogram.recordEnumeratedHistogram(
-                    "MobileDownload.Location.Dialog.DirectoryType", directoryOption.type,
-                    DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
-
-            File file = new File(directoryOption.location, fileName);
-            DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
-                    DownloadDialogBridge.this, file.getAbsolutePath(), false /*onWifi*/,
-                    INVALID_START_TIME);
-        }
-
-        // Update preference to show prompt based on whether checkbox is checked only when the user
-        // click the positive button.
-        if (dontShowAgain) {
-            setPromptForDownloadAndroid(DownloadPromptStatus.DONT_SHOW);
-        } else {
-            setPromptForDownloadAndroid(DownloadPromptStatus.SHOW_PREFERENCE);
-        }
-    }
-
-    private void cancel() {
         if (mNativeDownloadDialogBridge != 0) {
             DownloadDialogBridgeJni.get().onCanceled(
                     mNativeDownloadDialogBridge, DownloadDialogBridge.this);

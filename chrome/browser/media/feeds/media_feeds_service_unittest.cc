@@ -4,7 +4,9 @@
 
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -34,6 +36,9 @@ namespace media_feeds {
 namespace {
 
 constexpr size_t kCacheSize = 2;
+
+constexpr base::FilePath::CharType kMediaFeedsTestSpecDir[] =
+    FILE_PATH_LITERAL("chrome/test/data/media/feeds/spec");
 
 const char kTestData[] = R"END({
     "@context": "https://schema.org",
@@ -269,14 +274,19 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
   bool RespondToPendingFeedFetch(const GURL& feed_url,
                                  bool from_cache = false) {
+    return RespondToPendingFeedFetchWithData(feed_url, kTestData, from_cache);
+  }
+
+  bool RespondToPendingFeedFetchWithData(const GURL& feed_url,
+                                         const std::string& data,
+                                         bool from_cache = false) {
     auto response_head =
         ::network::CreateURLResponseHead(net::HttpStatusCode::HTTP_OK);
     response_head->was_fetched_via_cache = from_cache;
 
-    bool rv = url_loader_factory_.SimulateResponseForPendingRequest(
+    return url_loader_factory_.SimulateResponseForPendingRequest(
         feed_url, network::URLLoaderCompletionStatus(net::OK),
-        std::move(response_head), kTestData);
-    return rv;
+        std::move(response_head), data);
   }
 
   bool RespondToPendingFeedFetchWithStatus(const GURL& feed_url,
@@ -1954,6 +1964,66 @@ TEST_F(MediaFeedsServiceTest,
     auto feeds = GetMediaFeedsSync();
     ASSERT_EQ(1u, feeds.size());
     EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
+  }
+}
+
+// Runs the Media Feeds tests from the spec. The file names start with success
+// if the feed is valid and bad if they are not.
+class MediaFeedsSpecTest : public MediaFeedsServiceTest,
+                           public testing::WithParamInterface<std::string> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    MediaFeedsSpecTest,
+    testing::Values("bad-member.json",
+                    "bad-missing-logo-content-attributes.json",
+                    "bad-provider-missing-name.json",
+                    "success-allow-http-schema.org.json",
+                    "success-empty.json",
+                    "success-ignore-bad-content-attribute.json",
+                    "success-member-opt-image-and-email.json",
+                    "bad-image-as-url.json",
+                    "bad-missing-logo.json",
+                    "success-associated-origin-backwards-compat.json",
+                    "success-full-feed.json",
+                    "success-ignore-bad-element.json",
+                    "success-minimal-feed.json"));
+
+TEST_P(MediaFeedsSpecTest, RunOpenSourceTest) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  // Get the path of the test data.
+  base::FilePath file;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &file));
+  file = file.Append(kMediaFeedsTestSpecDir).AppendASCII(GetParam());
+
+  // Read the test file to a string.
+  std::string test_data;
+  base::ReadFileToString(file, &test_data);
+  ASSERT_TRUE(test_data.size());
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Fetch the Media Feed.
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
+  WaitForDB();
+  ASSERT_TRUE(RespondToPendingFeedFetchWithData(feed_url, test_data));
+  run_loop.Run();
+
+  auto feeds = GetMediaFeedsSync();
+  ASSERT_EQ(1u, feeds.size());
+
+  if (base::Contains(GetParam(), "success")) {
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kSuccess,
+              feeds[0]->last_fetch_result);
+  } else {
+    EXPECT_EQ(media_feeds::mojom::FetchResult::kInvalidFeed,
+              feeds[0]->last_fetch_result);
   }
 }
 

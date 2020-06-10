@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="1068672505746868501">אף פעם אל תתרגם דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">שפות נוספות</translation>
+<translation id="1285320974508926690">איני רוצה לקבל תרגום של אתר זה</translation>
+<translation id="290376772003165898">הדף לא ב<ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
+<translation id="6040143037577758943">סגור</translation>
+<translation id="6831043979455480757">תרגום</translation>
+<translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
+<translation id="773466115871691567">ברצוני לקבל תרגום תמיד דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">פעילות דפדפן אינטרנט</translation>
 </translationbundle>

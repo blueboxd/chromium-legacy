@@ -163,15 +163,15 @@ bool SysmemBufferCollection::Initialize(
 bool SysmemBufferCollection::Initialize(
     fuchsia::sysmem::Allocator_Sync* allocator,
     VkDevice vk_device,
-    zx::channel token_handle) {
+    zx::channel token_handle,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   DCHECK(!collection_);
   DCHECK(!vk_buffer_collection_);
 
-  usage_ = gfx::BufferUsage::GPU_READ;
+  format_ = format;
+  usage_ = usage;
   vk_device_ = vk_device;
-
-  // Assume that all imported collections are in NV12 format.
-  format_ = gfx::BufferFormat::YUV_420_BIPLANAR;
 
   fuchsia::sysmem::BufferCollectionTokenSyncPtr token;
   token.Bind(std::move(token_handle));

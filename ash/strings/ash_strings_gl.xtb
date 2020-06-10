@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">A resolución do dispositivo <ph name="DISPLAY_NAME" /> cambiouse a <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Para gardar os cambios, fai clic en Confirmar. A configuración anterior restaurarase en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" quere recibir permiso para sincronizarse. Introduce este código PIN nese dispositivo: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">O lapis óptico ten pouca batería</translation>
+<translation id="1036672894875463507">Son o teu Asistente de Google e estou aquí para botarche unha man ao longo do día.
+Para comezar, podes probar o seguinte.</translation>
 <translation id="1037492556044956303">Engadiuse <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Non se atoparon redes</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Pechar a sesión de todos os usuarios</translation>
 <translation id="2277103315734023688">Avanzar</translation>
 <translation id="2292698582925480719">Escala de visualización</translation>
+<translation id="229397294990920565">Os datos móbiles están desactivándose...</translation>
 <translation id="2295777434187870477">O micrófono está activado. Utiliza o botón para silencialo.</translation>
 <translation id="2298170939937364391">Activouse a lupa de pantalla completa. Preme Ctrl+Buscar+M de novo para desactivala.</translation>
 <translation id="2302092602801625023">Esta conta está xestionada por Family Link</translation>
@@ -288,6 +291,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">O Asistente está cargando...</translation>
 <translation id="4356930093361201197">o modo de alto contraste</translation>
+<translation id="4368583494516669646">Boas noites, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Configuración da emisión</translation>
 <translation id="4378551569595875038">Conectando...</translation>
 <translation id="4379531060876907730">Estas son as túas ferramentas de lapis óptico</translation>
@@ -306,6 +310,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Ocultar contrasinal</translation>
 <translation id="4570957409596482333">Botón Escoitar selección</translation>
+<translation id="4577274620589681794">Acabouse o tempo · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Deter emisión nun receptor descoñecido</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">Activouse ChromeVox</translation>
@@ -337,7 +342,8 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4924411785043111640">Reiniciar e restablecer</translation>
 <translation id="495046168593986294">Desprazarse cara arriba</translation>
 <translation id="4961318399572185831">Enviar pantalla</translation>
-<translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
+<translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
+<translation id="4970352680959471247">Boas tardes, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Rematou o tempo</translation>
 <translation id="5035236842988137213">O <ph name="DEVICE_NAME" /> está conectado a un novo teléfono</translation>
 <translation id="5035389544768382859">Confirmar a configuración da pantalla</translation>
@@ -364,6 +370,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="544691375626129091">Xa se engadiron todos os usuarios dispoñibles a esta sesión.</translation>
 <translation id="54609108002486618">Dispositivo xestionado</translation>
 <translation id="5465662442746197494">Precisas axuda?</translation>
+<translation id="5485091064403948243">Bos días, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">O administrador está instalando unha versión anterior no teu dispositivo. Ao reinicialo, eliminaranse todos os datos.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Pechando sesión</translation>
@@ -524,6 +531,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="7405710164030118432">Para desbloquear o dispositivo, introduce o código de acceso parental de Family Link</translation>
 <translation id="742594950370306541">Estase utilizando a cámara.</translation>
 <translation id="743058460480092004">Estanse utilizando a cámara e o micrófono.</translation>
+<translation id="7436182601308224670">Boas tardes, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Toca o sensor</translation>
 <translation id="7497767806359279797">Escoller idioma e teclado</translation>
 <translation id="7526573455193969409">É posible que se controle a rede</translation>

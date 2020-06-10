@@ -139,6 +139,8 @@ def _Spawn(args):
     ]
   if args.gtest_filter:
     trigger_args.append('--gtest_filter=' + args.gtest_filter)
+  if args.repeat:
+    trigger_args.append('--repeat=' + args.repeat)
   elif args.target_os == 'fuchsia':
     filter_file = \
         'testing/buildbot/filters/fuchsia.' + args.target_name + '.filter'
@@ -212,6 +214,8 @@ def main():
   parser.add_argument('--gtest_filter',
                       help='Use the given gtest_filter, rather than the '
                            'default filter file, if any.')
+  parser.add_argument(
+      '--repeat', help='Number of times to repeat the specified set of tests.')
   parser.add_argument('--no-test-flags', action='store_true',
                       help='Do not add --test-launcher-summary-output and '
                            '--system-log-file flags to the comment.')

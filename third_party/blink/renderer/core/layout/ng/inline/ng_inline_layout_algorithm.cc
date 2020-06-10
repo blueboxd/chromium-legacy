@@ -854,10 +854,9 @@ base::Optional<LayoutUnit> NGInlineLayoutAlgorithm::ApplyJustify(
     if (item_result.shape_result) {
       scoped_refptr<ShapeResult> shape_result =
           item_result.shape_result->CreateShapeResult();
-      DCHECK_GE(item_result.start_offset, line_info->StartOffset());
-      DCHECK_EQ(shape_result->NumCharacters(),
-                item_result.end_offset - item_result.start_offset);
-      shape_result->ApplySpacing(spacing, item_result.start_offset -
+      DCHECK_GE(item_result.StartOffset(), line_info->StartOffset());
+      DCHECK_EQ(shape_result->NumCharacters(), item_result.Length());
+      shape_result->ApplySpacing(spacing, item_result.StartOffset() -
                                               line_info->StartOffset() -
                                               shape_result->StartIndex());
       item_result.inline_size = shape_result->SnappedWidth();
@@ -866,9 +865,9 @@ base::Optional<LayoutUnit> NGInlineLayoutAlgorithm::ApplyJustify(
       item_result.shape_result = ShapeResultView::Create(shape_result.get());
     } else if (item_result.item->Type() == NGInlineItem::kAtomicInline) {
       float offset = 0.f;
-      DCHECK_LE(line_info->StartOffset(), item_result.start_offset);
+      DCHECK_LE(line_info->StartOffset(), item_result.StartOffset());
       unsigned line_text_offset =
-          item_result.start_offset - line_info->StartOffset();
+          item_result.StartOffset() - line_info->StartOffset();
       DCHECK_EQ(kObjectReplacementCharacter, line_text[line_text_offset]);
       float space = spacing.ComputeSpacing(line_text_offset, offset);
       item_result.inline_size += space;

@@ -249,7 +249,8 @@ void VideoEncoder::ProcessConfigure(Request* request) {
 
   auto* tune_options = request->config->tuneOptions();
   output_callback_ = request->config->output();
-  error_callback_ = request->config->error();
+  if (request->config->hasError())
+    error_callback_ = request->config->error();
   frame_size_ = gfx::Size(tune_options->width(), tune_options->height());
 
   auto output_cb = WTF::BindRepeating(&VideoEncoder::MediaEncoderOutputCallback,

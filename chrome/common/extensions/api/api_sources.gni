@@ -103,7 +103,6 @@ if (is_chromeos) {
     "login_state.idl",
     "platform_keys.idl",
     "platform_keys_internal.idl",
-    "printing_metrics.idl",
     "quick_unlock_private.idl",
     "terminal_private.json",
     "users_private.idl",
@@ -111,7 +110,10 @@ if (is_chromeos) {
     "wallpaper_private.json",
   ]
   if (use_cups) {
-    schema_sources_ += [ "printing.idl" ]
+    schema_sources_ += [
+      "printing.idl",
+      "printing_metrics.idl",
+    ]
   }
 } else if (is_linux || is_win) {
   schema_sources_ += [ "input_ime.json" ]

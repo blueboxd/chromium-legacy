@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
+<translation id="1068672505746868501">永不翻譯來源語言為<ph name="SOURCE_LANGUAGE" />的網頁</translation>
+<translation id="124116460088058876">更多語言</translation>
+<translation id="1285320974508926690">永不翻譯此網站</translation>
+<translation id="290376772003165898">網頁的來源語言不是<ph name="LANGUAGE" />嗎？</translation>
+<translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
+<translation id="6040143037577758943">關閉</translation>
+<translation id="6831043979455480757">翻譯</translation>
+<translation id="7243308994586599757">您可在畫面底部附近找到選項</translation>
+<translation id="773466115871691567">一律翻譯來源語言為<ph name="SOURCE_LANGUAGE" />的網頁</translation>
 <translation id="8298278839890148234">網絡瀏覽器活動</translation>
 </translationbundle>

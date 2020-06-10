@@ -89,7 +89,7 @@ function onBookmarkChanged(id, changeInfo) {
 
 /**
  * @param {string} id
- * @param {BookmarkTreeNode} treeNode
+ * @param {chrome.bookmarks.BookmarkTreeNode} treeNode
  */
 function onBookmarkCreated(id, treeNode) {
   batchUIUpdates();

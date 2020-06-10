@@ -7,8 +7,10 @@
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/ambient/ui/ambient_container_view.h"
+#include "ash/ambient/ui/photo_view.h"
 #include "ash/shell.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
@@ -24,6 +26,7 @@ void AmbientAshTestBase::SetUp() {
   ambient_client_ = std::make_unique<TestAmbientClient>();
 
   AshTestBase::SetUp();
+  UpdateDisplay("200x100");
 
   // Need to reset first and then assign the TestPhotoClient because can only
   // have one instance of AmbientBackendController.
@@ -62,6 +65,10 @@ void AmbientAshTestBase::Toggle() {
 
 AmbientContainerView* AmbientAshTestBase::GetView() {
   return ambient_controller()->get_container_view_for_testing();
+}
+
+const gfx::ImageSkia& AmbientAshTestBase::GetImageInPhotoView() {
+  return GetView()->photo_view_for_testing()->GetCurrentImagesForTesting();
 }
 
 void AmbientAshTestBase::IssueAccessToken(const std::string& token,

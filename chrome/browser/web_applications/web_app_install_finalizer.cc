@@ -101,6 +101,17 @@ std::vector<SquareSizePx> GetSquareSizePxs(
   return sizes;
 }
 
+std::vector<std::vector<SquareSizePx>> GetDownloadedShortcutsMenuIconsSizes(
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
+  std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes;
+  shortcuts_menu_icons_sizes.reserve(shortcuts_menu_icons_bitmaps.size());
+  for (const auto& shortcut_icon_bitmaps : shortcuts_menu_icons_bitmaps) {
+    shortcuts_menu_icons_sizes.emplace_back(
+        GetSquareSizePxs(shortcut_icon_bitmaps));
+  }
+  return shortcuts_menu_icons_sizes;
+}
+
 void SetWebAppFileHandlers(
     const std::vector<blink::Manifest::FileHandler>& manifest_file_handlers,
     WebApp* web_app) {
@@ -268,8 +279,7 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
       std::move(app_id), std::move(icon_bitmaps),
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(commit_callback),
-                     std::move(web_app),
-                     std::vector<std::map<SquareSizePx, SkBitmap>>()));
+                     std::move(web_app), ShortcutsMenuIconsBitmaps{}));
 }
 
 void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
@@ -459,41 +469,26 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
   web_app->SetIconInfos(web_app_info.icon_infos);
   web_app->SetDownloadedIconSizes(GetSquareSizePxs(web_app_info.icon_bitmaps));
 
-  std::vector<WebApp::WebAppShortcutsMenuItemInfo> web_app_shortcut_infos;
-  std::vector<std::vector<SquareSizePx>> downloaded_shortcuts_menu_icons_sizes;
-  for (const auto& shortcut : web_app_info.shortcut_infos) {
-    WebApp::WebAppShortcutsMenuItemInfo shortcut_info;
-    shortcut_info.name = shortcut.name;
-    shortcut_info.url = shortcut.url;
-    shortcut_info.shortcuts_menu_icon_infos = shortcut.shortcut_icon_infos;
-    web_app_shortcut_infos.push_back(shortcut_info);
-    downloaded_shortcuts_menu_icons_sizes.push_back(
-        GetSquareSizePxs(shortcut.shortcut_icon_bitmaps));
-  }
-  web_app->SetShortcutInfos(std::move(web_app_shortcut_infos));
+  web_app->SetShortcutInfos(web_app_info.shortcut_infos);
   web_app->SetDownloadedShortcutsMenuIconsSizes(
-      std::move(downloaded_shortcuts_menu_icons_sizes));
+      GetDownloadedShortcutsMenuIconsSizes(
+          web_app_info.shortcuts_menu_icons_bitmaps));
 
   SetWebAppFileHandlers(web_app_info.file_handlers, web_app.get());
 
   AppId app_id = web_app->app_id();
-
-  std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons_bitmaps;
-  for (const auto& shortcut : web_app_info.shortcut_infos)
-    shortcuts_menu_icons_bitmaps.push_back(shortcut.shortcut_icon_bitmaps);
-
   icon_manager_->WriteData(
       std::move(app_id), web_app_info.icon_bitmaps,
       base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(commit_callback),
                      std::move(web_app),
-                     std::move(shortcuts_menu_icons_bitmaps)));
+                     web_app_info.shortcuts_menu_icons_bitmaps));
 }
 
 void WebAppInstallFinalizer::OnIconsDataWritten(
     CommitCallback commit_callback,
     std::unique_ptr<WebApp> web_app,
-    std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
     bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
@@ -501,13 +496,13 @@ void WebAppInstallFinalizer::OnIconsDataWritten(
     return;
   }
 
-  if (shortcuts_menu_icons.empty()) {
+  if (shortcuts_menu_icons_bitmaps.empty()) {
     OnShortcutsMenuIconsDataWritten(std::move(commit_callback),
                                     std::move(web_app), success);
   } else {
     AppId app_id = web_app->app_id();
     icon_manager_->WriteShortcutsMenuIconsData(
-        app_id, shortcuts_menu_icons,
+        app_id, shortcuts_menu_icons_bitmaps,
         base::BindOnce(&WebAppInstallFinalizer::OnShortcutsMenuIconsDataWritten,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(commit_callback), std::move(web_app)));

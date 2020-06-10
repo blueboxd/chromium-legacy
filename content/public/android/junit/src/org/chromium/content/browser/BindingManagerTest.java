@@ -23,8 +23,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.process_launcher.ChildProcessConnection;
+import org.chromium.base.process_launcher.TestChildProcessConnection;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.TestChildProcessConnection;
 import org.chromium.base.test.util.Feature;
 
 import java.util.ArrayList;

@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr-CA">
+<translation id="1068672505746868501">Ne jamais traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Plus de langues</translation>
+<translation id="1285320974508926690">Ne jamais traduire ce site</translation>
+<translation id="290376772003165898">Cette page n'est pas en <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Oups… Impossible de traduire cette page.</translation>
+<translation id="6040143037577758943">Fermer</translation>
+<translation id="6831043979455480757">Traduire</translation>
+<translation id="7243308994586599757">Options disponibles vers le bas de l’écran</translation>
+<translation id="773466115871691567">Toujours traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Activité de navigation Web</translation>
 </translationbundle>

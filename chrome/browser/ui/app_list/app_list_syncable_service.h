@@ -296,6 +296,12 @@ class AppListSyncableService : public syncer::SyncableService,
   // child item in it; otherwise, returns nullptr.
   SyncItem* GetOnlyChildOfUserCreatedFolder(SyncItem* sync_item);
 
+  // Returns true if |sync_item| is a user created folder with only one
+  // child item in it, the child item will be removed out of the folder and
+  // place at the same location of its original folder.
+  // Otherwise, return false, no change will be made.
+  bool RemoveOnlyChildOutOfUserCreatedFolderIfNecessary(SyncItem* sync_item);
+
   // Returns true if extension service is ready.
   bool IsExtensionServiceReady() const;
 

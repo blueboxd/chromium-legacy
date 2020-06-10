@@ -605,7 +605,6 @@ TEST_F(DisplayPrefsTest, BasicStores) {
 }
 
 TEST_F(DisplayPrefsTest, PreventStore) {
-  ResolutionNotificationController::SuppressTimerForTest();
   LoggedInAsUser();
   UpdateDisplay("400x300#500x400|400x300|300x200");
   int64_t id = display::Screen::GetScreen()->GetPrimaryDisplay().id();

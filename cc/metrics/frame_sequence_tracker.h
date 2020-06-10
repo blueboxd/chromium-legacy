@@ -247,16 +247,6 @@ class CC_EXPORT FrameSequenceTracker {
   // TODO(xidachen): remove this one.
   uint64_t current_begin_main_sequence_ = 0;
 
-  // Tracks some data to generate useful trace events.
-  struct TraceData {
-    explicit TraceData(const void* trace_id);
-    const void* trace_id;
-    base::TimeTicks last_timestamp = base::TimeTicks::Now();
-    int frame_count = 0;
-
-    void Advance(base::TimeTicks new_timestamp);
-  } trace_data_;
-
   // True when an impl-impl is not ended. A tracker is ready for termination
   // only when the last impl-frame is ended (ReportFrameEnd).
   bool is_inside_frame_ = false;

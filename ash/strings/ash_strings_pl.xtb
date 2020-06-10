@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">Rozdzielczość ekranu <ph name="DISPLAY_NAME" /> została zmieniona na <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Kliknij „Potwierdź”, by zachować zmiany. Poprzednie ustawienia zostaną przywrócone za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten kod PIN: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Niski poziom baterii rysika</translation>
+<translation id="1036672894875463507">To ja, Twój Asystent Google. Chętnie Ci pomogę.
+Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1037492556044956303">Dodano urządzenie <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Brak sieci</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -63,7 +65,7 @@
 <translation id="1654477262762802994">Rozpocznij zapytanie głosowe</translation>
 <translation id="1658406695958299976">Nadal nie można zweryfikować Twojego hasła. Uwaga: jeśli ostatnio hasło było zmieniane, nowe hasło zostanie zastosowane, gdy się wylogujesz. Tu podaj stare hasło.</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
-<translation id="1698080062160024910">Licznik czasu <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
+<translation id="1698080062160024910">Minutnik <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1709762881904163296">Ustawienia sieci</translation>
 <translation id="1743570585616704562">Nie rozpoznano</translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Wyloguj wszystkich</translation>
 <translation id="2277103315734023688">Przewiń do przodu</translation>
 <translation id="2292698582925480719">Skala wyświetlania</translation>
+<translation id="229397294990920565">Wyłączam mobilną transmisję danych…</translation>
 <translation id="2295777434187870477">Mikrofon jest włączony. Przełączając go, wyciszysz odbierane dźwięki.</translation>
 <translation id="2298170939937364391">Lupa pełnego ekranu została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+M.</translation>
 <translation id="2302092602801625023">To konto jest zarządzane przez Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Trwa ładowanie Asystenta…</translation>
 <translation id="4356930093361201197">Tryb wysokiego kontrastu</translation>
+<translation id="4368583494516669646">Dobranoc, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Ustawienia przesyłania</translation>
 <translation id="4378551569595875038">Łączę...</translation>
 <translation id="4379531060876907730">To są Twoje narzędzia rysika</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Ukryj hasło</translation>
 <translation id="4570957409596482333">Przycisk Przeczytaj na głos</translation>
+<translation id="4577274620589681794">Czas minął · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Zakończ przesyłanie do nieznanego odbiornika</translation>
 <translation id="4628757576491864469">Urządzenia</translation>
 <translation id="4659419629803378708">Włączono ChromeVox</translation>
@@ -336,7 +341,8 @@
 <translation id="4924411785043111640">Uruchom ponownie i zresetuj</translation>
 <translation id="495046168593986294">Przewiń w górę</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
-<translation id="4969092041573468113"><ph name="HOURS" /> g <ph name="MINUTES" /> m <ph name="SECONDS" /> s</translation>
+<translation id="4969092041573468113"><ph name="HOURS" /> godz. <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
+<translation id="4970352680959471247">Dobry wieczór, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Czas minął</translation>
 <translation id="5035236842988137213">Urządzenie <ph name="DEVICE_NAME" /> zostało połączone z nowym telefonem</translation>
 <translation id="5035389544768382859">Potwierdź konfigurację wyświetlacza</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Wszyscy dostępni użytkownicy zostali już dodani do tej sesji.</translation>
 <translation id="54609108002486618">Zarządzany</translation>
 <translation id="5465662442746197494">Potrzebujesz pomocy?</translation>
+<translation id="5485091064403948243">Dzień dobry, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Administrator przywraca wcześniejszą wersję oprogramowania na urządzeniu. Po ponownym uruchomieniu urządzenia wszystkie dane zostaną usunięte.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Zamykanie sesji</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Aby odblokować urządzenie, wpisz kod dostępu Family Link rodzica</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
+<translation id="7436182601308224670">Dzień dobry, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Dotknij czytnika</translation>
 <translation id="7497767806359279797">Wybierz język i klawiaturę</translation>
 <translation id="7526573455193969409">Sieć może być monitorowana</translation>
@@ -626,7 +634,7 @@
 <translation id="8631727435199967028">Ustawienia ułatwień dostępu</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, zarządzana przez administratora</translation>
 <translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>
-<translation id="8646417893960517480">Licznik czasu <ph name="TOTAL_TIME" /></translation>
+<translation id="8646417893960517480">Minutnik <ph name="TOTAL_TIME" /></translation>
 <translation id="8649101189709089199">Przeczytaj na głos</translation>
 <translation id="8652175077544655965">Zamknij ustawienia</translation>
 <translation id="8653151467777939995">Pokaż ustawienia powiadomień. Powiadomienia są włączone</translation>

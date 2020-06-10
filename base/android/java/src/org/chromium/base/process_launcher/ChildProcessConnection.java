@@ -7,7 +7,6 @@ package org.chromium.base.process_launcher;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,7 +22,6 @@ import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.base.memory.MemoryPressureCallback;
 
 import java.util.Arrays;
@@ -92,102 +90,6 @@ public class ChildProcessConnection {
         // this could still collide in theory.
         ClassLoader cl = ChildProcessConnection.class.getClassLoader();
         return cl.toString() + cl.hashCode();
-    }
-
-    /**
-     * Delegate that ChildServiceConnection should call when the service connects/disconnects.
-     * These callbacks are expected to happen on a background thread.
-     */
-    @VisibleForTesting
-    protected interface ChildServiceConnectionDelegate {
-        void onServiceConnected(IBinder service);
-        void onServiceDisconnected();
-    }
-
-    @VisibleForTesting
-    protected interface ChildServiceConnectionFactory {
-        ChildServiceConnection createConnection(Intent bindIntent, int bindFlags,
-                ChildServiceConnectionDelegate delegate, String instanceName);
-    }
-
-    /** Interface representing a connection to the Android service. Can be mocked in unit-tests. */
-    @VisibleForTesting
-    protected interface ChildServiceConnection {
-        boolean bind();
-        void unbind();
-        boolean isBound();
-        void updateGroupImportance(int group, int importanceInGroup);
-    }
-
-    /** Implementation of ChildServiceConnection that does connect to a service. */
-    private static class ChildServiceConnectionImpl
-            implements ChildServiceConnection, ServiceConnection {
-        private final Context mContext;
-        private final Intent mBindIntent;
-        private final int mBindFlags;
-        private final Handler mHandler;
-        private final Executor mExecutor;
-        private final ChildServiceConnectionDelegate mDelegate;
-        private final String mInstanceName;
-        private boolean mBound;
-
-        private ChildServiceConnectionImpl(Context context, Intent bindIntent, int bindFlags,
-                Handler handler, Executor executor, ChildServiceConnectionDelegate delegate,
-                String instanceName) {
-            mContext = context;
-            mBindIntent = bindIntent;
-            mBindFlags = bindFlags;
-            mHandler = handler;
-            mExecutor = executor;
-            mDelegate = delegate;
-            mInstanceName = instanceName;
-        }
-
-        @Override
-        public boolean bind() {
-            try {
-                TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                mBound = BindService.doBindService(mContext, mBindIntent, this, mBindFlags,
-                        mHandler, mExecutor, mInstanceName);
-            } finally {
-                TraceEvent.end("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-            }
-            return mBound;
-        }
-
-        @Override
-        public void unbind() {
-            if (mBound) {
-                mContext.unbindService(this);
-                mBound = false;
-            }
-        }
-
-        @Override
-        public boolean isBound() {
-            return mBound;
-        }
-
-        @Override
-        public void updateGroupImportance(int group, int importanceInGroup) {
-            assert isBound();
-            if (BindService.supportVariableConnections()) {
-                ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
-                BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
-                        mExecutor, mInstanceName);
-            }
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName className, final IBinder service) {
-            mDelegate.onServiceConnected(service);
-        }
-
-        // Called on the main thread to notify that the child service did not disconnect gracefully.
-        @Override
-        public void onServiceDisconnected(ComponentName className) {
-            mDelegate.onServiceDisconnected();
-        }
     }
 
     // Global lock to protect all the fields that can be accessed outside launcher thread.
@@ -457,7 +359,7 @@ public class ChildProcessConnection {
         assert isRunningOnLauncherThread();
         if (!isConnected()) return;
         assert mWaivedBinding.isBound();
-        mWaivedBinding.bind();
+        mWaivedBinding.bindServiceConnection();
     }
 
     /**
@@ -699,14 +601,14 @@ public class ChildProcessConnection {
 
         boolean success;
         if (useStrongBinding) {
-            success = mStrongBinding.bind();
+            success = mStrongBinding.bindServiceConnection();
         } else {
             mModerateBindingCount++;
-            success = mModerateBinding.bind();
+            success = mModerateBinding.bindServiceConnection();
         }
         if (!success) return false;
 
-        mWaivedBinding.bind();
+        mWaivedBinding.bindServiceConnection();
         updateBindingState();
         return true;
     }
@@ -717,9 +619,9 @@ public class ChildProcessConnection {
         mService = null;
         mConnectionParams = null;
         mUnbound = true;
-        mStrongBinding.unbind();
-        mWaivedBinding.unbind();
-        mModerateBinding.unbind();
+        mStrongBinding.unbindServiceConnection();
+        mWaivedBinding.unbindServiceConnection();
+        mModerateBinding.unbindServiceConnection();
         updateBindingState();
 
         synchronized (sBindingStateLock) {
@@ -769,7 +671,7 @@ public class ChildProcessConnection {
             return;
         }
         if (mStrongBindingCount == 0) {
-            mStrongBinding.bind();
+            mStrongBinding.bindServiceConnection();
             updateBindingState();
         }
         mStrongBindingCount++;
@@ -783,7 +685,7 @@ public class ChildProcessConnection {
         assert mStrongBindingCount > 0;
         mStrongBindingCount--;
         if (mStrongBindingCount == 0) {
-            mStrongBinding.unbind();
+            mStrongBinding.unbindServiceConnection();
             updateBindingState();
         }
     }
@@ -800,7 +702,7 @@ public class ChildProcessConnection {
             return;
         }
         if (mModerateBindingCount == 0) {
-            mModerateBinding.bind();
+            mModerateBinding.bindServiceConnection();
             updateBindingState();
         }
         mModerateBindingCount++;
@@ -814,7 +716,7 @@ public class ChildProcessConnection {
         assert mModerateBindingCount > 0;
         mModerateBindingCount--;
         if (mModerateBindingCount == 0) {
-            mModerateBinding.unbind();
+            mModerateBinding.unbindServiceConnection();
             updateBindingState();
         }
     }

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
 #include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "content/public/browser/tts_controller.h"
 
 namespace autofill {

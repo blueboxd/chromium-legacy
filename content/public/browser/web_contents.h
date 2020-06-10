@@ -532,18 +532,6 @@ class WebContents : public PageNavigator,
   // handles.
   virtual bool HasNativeFileSystemHandles() = 0;
 
-  // Indicates whether any frame in the WebContents has native file system
-  // directory handles.
-  virtual bool HasNativeFileSystemDirectoryHandles() = 0;
-
-  // Returns the paths of all the native file system directory handles frames in
-  // this WebContents have access to.
-  virtual std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() = 0;
-
-  // Indicates whether any frame in the WebContents has writable native file
-  // system handles.
-  virtual bool HasWritableNativeFileSystemHandles() = 0;
-
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;
 

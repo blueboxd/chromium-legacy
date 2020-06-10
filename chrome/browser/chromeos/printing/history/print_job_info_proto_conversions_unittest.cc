@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 
 #include "base/time/time_override.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,6 +76,7 @@ TEST(PrintJobInfoProtoConversionsTest, CupsPrintJobToProto) {
                               ::printing::PrintJob::Source::PRINT_PREVIEW,
                               kSourceId, settings);
   cups_print_job.set_state(CupsPrintJob::State::STATE_FAILED);
+  cups_print_job.set_error_code(PrinterErrorCode::OUT_OF_PAPER);
   base::Time completion_time =
       base::Time::Now() + base::TimeDelta::FromSeconds(10);
 
@@ -98,6 +100,8 @@ TEST(PrintJobInfoProtoConversionsTest, CupsPrintJobToProto) {
   EXPECT_EQ(proto::PrintSettings_ColorMode_COLOR,
             print_job_info_proto.settings().color());
   EXPECT_EQ(kPagesNumber, print_job_info_proto.number_of_pages());
+  EXPECT_EQ(proto::PrintJobInfo_PrinterErrorCode_OUT_OF_PAPER,
+            print_job_info_proto.printer_error_code());
 }
 
 }  // namespace chromeos

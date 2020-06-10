@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />のページを翻訳しない</translation>
+<translation id="124116460088058876">その他の言語</translation>
+<translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="290376772003165898"><ph name="LANGUAGE" />のページではない場合</translation>
+<translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
+<translation id="6040143037577758943">閉じる</translation>
+<translation id="6831043979455480757">翻訳</translation>
+<translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />のページを常に翻訳する</translation>
 <translation id="8298278839890148234">ウェブブラウザのアクティビティ</translation>
 </translationbundle>

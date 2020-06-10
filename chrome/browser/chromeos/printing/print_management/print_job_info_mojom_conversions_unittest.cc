@@ -37,6 +37,8 @@ proto::PrintJobInfo CreatePrintJobInfoProto() {
   print_job_info.set_title(kTitle);
   print_job_info.set_status(
       printing::proto::PrintJobInfo_PrintJobStatus_PRINTED);
+  print_job_info.set_printer_error_code(
+      printing::proto::PrintJobInfo_PrinterErrorCode_NO_ERROR);
   print_job_info.set_creation_time(
       static_cast<int64_t>(base::Time::UnixEpoch().ToJsTime()));
   print_job_info.set_number_of_pages(kPagesNumber);
@@ -54,13 +56,15 @@ TEST(PrintJobInfoMojomConversionsTest, PrintJobProtoToMojom) {
 
   EXPECT_EQ(kId, print_job_mojo->id);
   EXPECT_EQ(base::UTF8ToUTF16(kTitle), print_job_mojo->title);
-  EXPECT_EQ(mojom::PrintJobCompletionStatus::kPrinted,
-            print_job_mojo->completion_status);
   EXPECT_EQ(base::Time::FromJsTime(kJobCreationTime),
             print_job_mojo->creation_time);
   EXPECT_EQ(base::UTF8ToUTF16(kName), print_job_mojo->printer_name);
   EXPECT_EQ(kUri, print_job_mojo->printer_uri.spec());
   EXPECT_EQ(kPagesNumber, print_job_mojo->number_of_pages);
+  EXPECT_EQ(mojom::PrintJobCompletionStatus::kPrinted,
+            print_job_mojo->completed_info->completion_status);
+  EXPECT_EQ(mojom::PrinterErrorCode::kNoError,
+            print_job_mojo->completed_info->printer_error_code);
 }
 
 }  // namespace chromeos

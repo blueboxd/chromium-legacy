@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">Ginawang <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz) ang <ph name="DISPLAY_NAME" />. I-click ang kumpirmahin para panatilihin ang mga pagbabago. Ire-restore ang mga nakaraang setting pagkalipas ng <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang PIN na ito sa device na iyon: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Mahina na ang baterya ng stylus</translation>
+<translation id="1036672894875463507">Ako ang iyong Google Assistant, narito ako para tulungan ka sa buong araw mo!
+Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1037492556044956303">Idinagdag ang <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Walang network</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">I-sign out ang lahat</translation>
 <translation id="2277103315734023688">Mag-seek Pasulong</translation>
 <translation id="2292698582925480719">Scale ng display</translation>
+<translation id="229397294990920565">Ino-off ang mobile data...</translation>
 <translation id="2295777434187870477">Naka-on ang mikropono, mamu-mute ang input kapag nag-toggle.</translation>
 <translation id="2298170939937364391">Na-enable ang Pang-magnify ng Full-screen. Pindutin ulit ang Ctrl+Search+M para i-off ito.</translation>
 <translation id="2302092602801625023">Pinapamahalaan ng Family Link ang account na ito</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4351433414020964307">Naglo-load ang Assistant...</translation>
 <translation id="4356930093361201197">high-contrast mode</translation>
+<translation id="4368583494516669646">Magandang gabi <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Mga Cast Setting</translation>
 <translation id="4378551569595875038">Kumokonekta...</translation>
 <translation id="4379531060876907730">Ito ang iyong mga stylus tool</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Itago ang password</translation>
 <translation id="4570957409596482333">Button ng Select-to-Speak</translation>
+<translation id="4577274620589681794">Oras na · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Ihinto ang pag-cast sa isang hindi pa natutukoy na tagatanggap</translation>
 <translation id="4628757576491864469">Mga Device</translation>
 <translation id="4659419629803378708">Na-enable ang ChromeVox</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Mag-scroll pataas</translation>
 <translation id="4961318399572185831">I-cast ang screen</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />h <ph name="MINUTES" />m <ph name="SECONDS" />s</translation>
+<translation id="4970352680959471247">Magandang gabi <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Tapos na ang oras</translation>
 <translation id="5035236842988137213">Kumonekta ang <ph name="DEVICE_NAME" /> sa isang bagong telepono</translation>
 <translation id="5035389544768382859">Kumpirmahin ang Configuration ng Display</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Naidagdag na ang lahat ng available na user sa session na ito.</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
 <translation id="5465662442746197494">Kailangan ng tulong?</translation>
+<translation id="5485091064403948243">Magandang umaga <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Niro-roll back ng iyong administrator ang device mo. Made-delete ang lahat ng data kapag nag-restart ang device.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Lumalabas sa session</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Para i-unlock ang device, ilagay ang iyong access code ng magulang sa Family Link</translation>
 <translation id="742594950370306541">Ginagamit ang camera.</translation>
 <translation id="743058460480092004">Ginagamit ang camera at mikropono.</translation>
+<translation id="7436182601308224670">Magandang hapon <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Pakipindot ang sensor</translation>
 <translation id="7497767806359279797">Pumili ng wika at keyboard</translation>
 <translation id="7526573455193969409">Maaaring sinusubaybayan ang network</translation>

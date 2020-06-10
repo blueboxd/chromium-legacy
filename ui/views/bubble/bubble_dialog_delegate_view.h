@@ -378,7 +378,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public BubbleDialogDelegate,
   // View:
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
-  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& change) override;
+  void AddedToWidget() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
  protected:

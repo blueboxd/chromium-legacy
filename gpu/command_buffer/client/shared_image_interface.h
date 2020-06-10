@@ -149,7 +149,9 @@ class GPU_EXPORT SharedImageInterface {
   // wrapping it in GpuMemoryBufferHandle and then creating GpuMemoryBuffer from
   // that handle.
   virtual void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                              zx::channel token) = 0;
+                                              zx::channel token,
+                                              gfx::BufferFormat format,
+                                              gfx::BufferUsage usage) = 0;
 
   virtual void ReleaseSysmemBufferCollection(
       gfx::SysmemBufferCollectionId id) = 0;
@@ -162,6 +164,11 @@ class GPU_EXPORT SharedImageInterface {
   // Generates a verified SyncToken that is released after all previous
   // commands on this interface have executed on the service side.
   virtual SyncToken GenVerifiedSyncToken() = 0;
+
+  // Wait on this SyncToken to be released before executing new commands on
+  // this interface on the service side. This is an async wait for all the
+  // previous commands which will be sent to server on the next flush().
+  virtual void WaitSyncToken(const gpu::SyncToken& sync_token) = 0;
 
   // Flush the SharedImageInterface, issuing any deferred IPCs.
   virtual void Flush() = 0;

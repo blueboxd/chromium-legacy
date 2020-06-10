@@ -173,7 +173,7 @@ const base::Feature kCrostiniAnsibleSoftwareManagement{
 
 // Enables custom UI for forcibly closing unresponsive windows.
 const base::Feature kCrostiniForceClose{"CrostiniForceClose",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables support for sideloading android apps into Arc via crostini.
 const base::Feature kCrostiniArcSideload{"CrostiniArcSideload",
@@ -710,6 +710,16 @@ const base::Feature kQuickUnlockPinSignin{"QuickUnlockPinSignin",
 // Enables or disables the marketing opt-in screen in OOBE
 const base::Feature kOobeMarketingScreen{"OobeMarketingScreen",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables/disables marketing email subscribe option for Germany
+const base::Feature kOobeMarketingDoubleOptInCountriesSupported{
+    "kOobeMarketingDoubleOptInCountriesSupported",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables/disables marketing emails for other countries other than US,CA,UK.
+const base::Feature kOobeMarketingAdditionalCountriesSupported{
+    "kOobeMarketingAdditionalCountriesSupported",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables fingerprint quick unlock.
 const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",

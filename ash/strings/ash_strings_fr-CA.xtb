@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">La résolution de <ph name="DISPLAY_NAME" /> est passée à <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Cliquez sur Confirmer pour conserver les changements. Les paramètres précédents seront restaurés dans <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">L'appareil Bluetooth « <ph name="DEVICE_NAME" /> » demande l'autorisation de s'associer. Veuillez entrer le NIP suivant sur cet appareil : <ph name="PINCODE" />.</translation>
 <translation id="1032891413405719768">Le niveau de la pile du stylet est faible</translation>
+<translation id="1036672894875463507">Je suis votre Assistant Google, je suis là pour vous aider durant votre journée!
+Voici quelques exemples de choses que vous pouvez essayer pour commencer.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ajouté</translation>
 <translation id="1056775291175587022">Aucun réseau</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" /> : <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
 <translation id="2277103315734023688">Rechercher vers l'avant</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
+<translation id="229397294990920565">Désactivation des données cellulaires en cours…</translation>
 <translation id="2295777434187870477">Le microphone est activé. Si vous le désactivez, l'entrée sonore sera aussi désactivée.</translation>
 <translation id="2298170939937364391">La loupe en mode plein écran a été activée. Appuyez à nouveau sur Ctrl+Recherche+M pour la désactiver.</translation>
 <translation id="2302092602801625023">Ce compte est géré par Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Loupe</translation>
 <translation id="4351433414020964307">L'Assistant Google est en cours de chargement…</translation>
 <translation id="4356930093361201197">mode de contraste élevé</translation>
+<translation id="4368583494516669646">Bonne nuit <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Paramètres de diffusion</translation>
 <translation id="4378551569595875038">Connexion en cours...</translation>
 <translation id="4379531060876907730">Voici vos outils de stylet</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Masquer le mot de passe</translation>
 <translation id="4570957409596482333">Bouton Sélectionner pour énoncer</translation>
+<translation id="4577274620589681794">Temps écoulé : <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Arrêter la diffusion sur un récepteur inconnu</translation>
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Faire défiler vers le haut</translation>
 <translation id="4961318399572185831">Diffuser un écran</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
+<translation id="4970352680959471247">Bonsoir <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Le temps est écoulé</translation>
 <translation id="5035236842988137213">L'appareil <ph name="DEVICE_NAME" /> est connecté à un nouveau téléphone</translation>
 <translation id="5035389544768382859">Confirmer la configuration de l'écran</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
 <translation id="54609108002486618">Géré</translation>
 <translation id="5465662442746197494">Besoin d'aide?</translation>
+<translation id="5485091064403948243">Bonjour <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Votre administrateur est en train de restaurer votre appareil. Toutes les données seront supprimées lors du redémarrage de l'appareil.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Fermeture de la session</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Pour déverrouiller l'appareil, entrez votre code d'accès parental Family Link</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
 <translation id="743058460480092004">La caméra et le microphone sont actuellement utilisés.</translation>
+<translation id="7436182601308224670">Bon après-midi <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Veuillez toucher le capteur</translation>
 <translation id="7497767806359279797">Choisir la langue et le clavier</translation>
 <translation id="7526573455193969409">Le réseau peut être surveillé</translation>

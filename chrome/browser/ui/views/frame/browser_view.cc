@@ -507,7 +507,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       browser_->tab_strip_model(), this, std::move(tab_menu_model_factory));
   BrowserTabStripController* tabstrip_controller_ptr =
       tabstrip_controller.get();
-  tabstrip_ = tab_strip_region_view_->AddChildView(std::make_unique<TabStrip>(
+  tabstrip_ = tab_strip_region_view_->AddTabStrip(std::make_unique<TabStrip>(
       std::move(tabstrip_controller)));  // Takes ownership.
   tabstrip_controller_ptr->InitFromModel(tabstrip_);
 

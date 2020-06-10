@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> បានប្ដូរទៅ <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz)។ សូមចុច "បញ្ជាក់" ដើម្បីរក្សា​ការផ្លាស់ប្ដូរ។ ការកំណត់​មុននឹងត្រូវបានរក្សាទុក​ក្នុងរយៈពេល <ph name="TIMEOUT_SECONDS" />។</translation>
 <translation id="1013923882670373915">ឧបករណ៍ប៊្លូធូស "<ph name="DEVICE_NAME" />" ចង់បានការអនុញ្ញាតដើម្បីភ្ជាប់។ សូមបញ្ចូលលេខកូដសម្គាល់នៅលើឧបករណ៍នោះ៖ <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">ថាមពល​ថ្មរបស់ប៊ិចនៅសល់តិច</translation>
+<translation id="1036672894875463507">ខ្ញុំគឺជា Google ជំនួយការរបស់អ្នក ខ្ញុំនៅទីនេះ ដើម្បីជួយអ្នកពេញមួយថ្ងៃ!
+ទាំងនេះ​គឺជាចំណុច​មួយចំនួន ដែលអ្នកអាចសាកល្បង ដើម្បីចាប់ផ្ដើម។</translation>
 <translation id="1037492556044956303">បាន​បញ្ចូល <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">មិនមានបណ្ដាញទេ</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />៖ <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">ចាកចេញទាំងអស់</translation>
 <translation id="2277103315734023688">សា​ទៅមុខ</translation>
 <translation id="2292698582925480719">មាត្រដ្ឋានអេក្រង់</translation>
+<translation id="229397294990920565">កំពុងបិទទិន្នន័យទូរសព្ទចល័ត...</translation>
 <translation id="2295777434187870477">បានបើកមីក្រូហ្វូន ការបិទ/បើកនឹង​បិទសំឡេងរបស់ឧបករណ៍បញ្ចូលសំឡេង។</translation>
 <translation id="2298170939937364391">បានបើក​កម្មវិធី​ពង្រីក​ពេញ​អេក្រង់។ សូមចុច Ctrl+Search+M ម្ដងទៀត​ដើម្បី​បិទ​វា​។</translation>
 <translation id="2302092602801625023">គណនីនេះ​ត្រូវបាន​គ្រប់គ្រង​ដោយ Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">កែវពង្រីក</translation>
 <translation id="4351433414020964307">ជំនួយការ​កំពុង​ផ្ទុក...</translation>
 <translation id="4356930093361201197">មុខងារភាពដិតកម្រិតខ្ពស់</translation>
+<translation id="4368583494516669646">រាត្រីសួស្ដី <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">ការកំណត់ការបញ្ជូន</translation>
 <translation id="4378551569595875038">កំពុងភ្ជាប់...</translation>
 <translation id="4379531060876907730">ទាំងនេះគឺជាប៊ិចរបស់អ្នក</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">លាក់​ពាក្យ​សម្ងាត់</translation>
 <translation id="4570957409596482333">ប៊ូតុង​ជ្រើសរើស​ដើម្បី​អាន</translation>
+<translation id="4577274620589681794">ដល់​ម៉ោងហើយ · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">ឈប់បញ្ជូន​​ទៅឧបករណ៍ទទួលដែល​មិនស្គាល់</translation>
 <translation id="4628757576491864469">ឧបករណ៍</translation>
 <translation id="4659419629803378708">បានបើក ChromeVox</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">រំកិលឡើងលើ</translation>
 <translation id="4961318399572185831">ខាសអេក្រង់</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />ម៉ <ph name="MINUTES" />ន <ph name="SECONDS" />វិ</translation>
+<translation id="4970352680959471247">សាយ័ណ្ហ​សួស្ដី <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">ដល់ពេល​ហើយ</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> បានភ្ជាប់​ទៅទូរសព្ទថ្មី</translation>
 <translation id="5035389544768382859">បញ្ជាក់​កំណត់​រចនាសម្ព័ន្ធផ្ទាំងអេក្រង់</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">អ្នកប្រើដែលមានទាំងអស់ត្រូវបានបន្ថែមទៅក្នុងវេននេះរួចទៅហើយ។</translation>
 <translation id="54609108002486618">បាន​គ្រប់គ្រង</translation>
 <translation id="5465662442746197494">ត្រូវការជំនួយ?</translation>
+<translation id="5485091064403948243">អរុណសួស្ដី <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">អ្នកគ្រប់គ្រង​របស់អ្នកកំពុងស្ដារ​ឧបករណ៍​របស់អ្នក។ ទិន្នន័យ​ទាំងអស់​នឹងត្រូវបានលុប នៅពេល​ឧបករណ៍​ចាប់ផ្ដើម​ឡើងវិញ។</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">ការ​ចាកចេញ​ពី​សម័យ</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">ដើម្បី​ដោះសោ​ឧបករណ៍ សូម​បញ្ចូល​លេខកូដ​ចូលប្រើប្រាស់​របស់​មាតាបិតា​សម្រាប់ Family Link របស់អ្នក</translation>
 <translation id="742594950370306541">កាមេរ៉ាស្ថិតនៅក្នុងការប្រើ។</translation>
 <translation id="743058460480092004">កាមេរ៉ា និងម៉ៃក្រូហ្វូនស្ថិតក្នុងការប្រើ។</translation>
+<translation id="7436182601308224670">ទិវា​សួស្ដី <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">សូមប៉ះ​ឧបករណ៍​ចាប់សញ្ញា</translation>
 <translation id="7497767806359279797">ជ្រើសរើស​ភាសា និងក្ដារចុច</translation>
 <translation id="7526573455193969409">បណ្ដាញ​អាច​ត្រូវ​បាន​ត្រួតពិនិត្យ</translation>

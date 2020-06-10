@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1068672505746868501">Страниците на <ph name="SOURCE_LANGUAGE" /> да не се превеждат</translation>
+<translation id="124116460088058876">Още езици</translation>
+<translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
+<translation id="290376772003165898">Страницата не е на <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Ами сега! Тази страница не можа да се преведе.</translation>
+<translation id="6040143037577758943">Затваряне</translation>
+<translation id="6831043979455480757">Превод</translation>
+<translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
+<translation id="773466115871691567">Страниците на <ph name="SOURCE_LANGUAGE" /> да се превеждат винаги</translation>
 <translation id="8298278839890148234">Активност в уеб браузъра</translation>
 </translationbundle>

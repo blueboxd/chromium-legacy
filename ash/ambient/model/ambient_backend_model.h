@@ -5,6 +5,8 @@
 #ifndef ASH_AMBIENT_MODEL_AMBIENT_BACKEND_MODEL_H_
 #define ASH_AMBIENT_MODEL_AMBIENT_BACKEND_MODEL_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "base/containers/circular_deque.h"
@@ -47,7 +49,6 @@ class ASH_EXPORT AmbientBackendModel {
   void Clear();
 
   // Get images from local storage. Could be null image.
-  gfx::ImageSkia GetCurrentImage() const;
   gfx::ImageSkia GetNextImage() const;
 
   // Updates the weather information and notifies observers if the icon image is

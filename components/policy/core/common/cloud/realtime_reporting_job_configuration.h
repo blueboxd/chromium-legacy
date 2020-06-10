@@ -39,6 +39,7 @@ class POLICY_EXPORT RealtimeReportingJobConfiguration
   static const char kFailedUploadsKey[];
   static const char kPermanentFailedUploadsKey[];
   static const char kEventIdKey[];
+  static const char kDeviceNameKey[];
 
   typedef base::OnceCallback<void(DeviceManagementService::Job* job,
                                   DeviceManagementStatus code,

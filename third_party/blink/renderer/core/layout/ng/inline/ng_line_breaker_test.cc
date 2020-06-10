@@ -22,8 +22,7 @@ String ToString(NGInlineItemResults line, NGInlineNode node) {
   const String& text = node.ItemsData(false).text_content;
   for (const auto& item_result : line) {
     builder.Append(
-        StringView(text, item_result.start_offset,
-                   item_result.end_offset - item_result.start_offset));
+        StringView(text, item_result.StartOffset(), item_result.Length()));
   }
   return builder.ToString();
 }

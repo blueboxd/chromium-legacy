@@ -87,6 +87,11 @@ extern const char kAutofillRichMetadataQueriesDescription[];
 extern const char kAutofillUseMobileLabelDisambiguationName[];
 extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 
+// Title and description for the flag that enables Messages UI on
+// Block Popup Infobars.
+extern const char kBlockPopupInfobarMessagesUIName[];
+extern const char kBlockPopupInfobarMessagesUIDescription[];
+
 // Title and description for the flag that controls whether event breadcrumbs
 // are captured.
 extern const char kLogBreadcrumbsName[];

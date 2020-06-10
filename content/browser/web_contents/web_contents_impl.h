@@ -380,9 +380,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsConnectedToSerialPort() override;
   bool IsConnectedToHidDevice() override;
   bool HasNativeFileSystemHandles() override;
-  bool HasNativeFileSystemDirectoryHandles() override;
-  std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() override;
-  bool HasWritableNativeFileSystemHandles() override;
   bool HasPictureInPictureVideo() override;
   bool IsCrashed() override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
@@ -1079,17 +1076,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Modify the counter of native file system handles for this WebContents.
   void IncrementNativeFileSystemHandleCount();
   void DecrementNativeFileSystemHandleCount();
-
-  // Add and remove a reference for a native file system directory handle for a
-  // certain |path|. Multiple Add calls should be balanced by the same number of
-  // Remove calls for the same |path|.
-  void AddNativeFileSystemDirectoryHandle(const base::FilePath& path);
-  void RemoveNativeFileSystemDirectoryHandle(const base::FilePath& path);
-
-  // Modify the counter of native file system handles with write access for this
-  // WebContents.
-  void IncrementWritableNativeFileSystemHandleCount();
-  void DecrementWritableNativeFileSystemHandleCount();
 
   // Called when the WebContents gains or loses a persistent video.
   void SetHasPersistentVideo(bool has_persistent_video);
@@ -1942,8 +1928,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   size_t hid_active_frame_count_ = 0;
 
   size_t native_file_system_handle_count_ = 0;
-  std::map<base::FilePath, size_t> native_file_system_directory_handles_;
-  size_t native_file_system_writable_handle_count_ = 0;
 
   bool has_picture_in_picture_video_ = false;
 

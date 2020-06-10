@@ -65,9 +65,8 @@ class AppShortcutManager : public AppRegistrarObserver {
                                     RegisterRunOnOsLoginCallback callback);
 
   // Registers a shortcuts menu for the web app's icon with the OS.
-  void RegisterShortcutsMenuWithOs(
-      const std::vector<WebApplicationShortcutInfo>& shortcuts,
-      const AppId& app_id);
+  void RegisterShortcutsMenuWithOs(const WebApplicationInfo& web_app_info,
+                                   const AppId& app_id);
 
   // TODO(https://crbug.com/1069306): Implement UnregisterShortcutsMenuWithOS()
   // to support local offline installs and uninstalls.

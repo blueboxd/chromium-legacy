@@ -47,18 +47,18 @@ TEST_F(AmbientPhotoControllerTest, ShouldStartToDownloadTopics) {
 
 // Test that image is downloaded when starting screen update.
 TEST_F(AmbientPhotoControllerTest, ShouldStartToDownloadImages) {
-  auto image = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  auto image = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_TRUE(image.isNull());
 
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
   base::RunLoop().RunUntilIdle();
-  image = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  image = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_FALSE(image.isNull());
 
   // Stop to refresh images.
   photo_controller()->StopScreenUpdate();
-  image = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  image = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_TRUE(image.isNull());
 }
 
@@ -71,20 +71,20 @@ TEST_F(AmbientPhotoControllerTest, ShouldUpdatePhotoPeriodically) {
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
   base::RunLoop().RunUntilIdle();
-  image1 = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  image1 = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_FALSE(image1.isNull());
   EXPECT_TRUE(image2.isNull());
 
   // Fastforward enough time to update the photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
-  image2 = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  image2 = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_FALSE(image2.isNull());
   EXPECT_FALSE(image1.BackedBySameObjectAs(image2));
   EXPECT_TRUE(image3.isNull());
 
   // Fastforward enough time to update another photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
-  image3 = photo_controller()->ambient_backend_model()->GetCurrentImage();
+  image3 = photo_controller()->ambient_backend_model()->GetNextImage();
   EXPECT_FALSE(image3.isNull());
   EXPECT_FALSE(image1.BackedBySameObjectAs(image3));
   EXPECT_FALSE(image2.BackedBySameObjectAs(image3));

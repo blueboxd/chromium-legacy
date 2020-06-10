@@ -267,6 +267,7 @@
 <translation id="2030481566774242610">သင် ဆိုလိုတာက <ph name="LINK" />လား?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />ပရော်စီနှင့် firewall ကိုစစ်ဆေးနေသည်<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">ဗန်း ၇</translation>
+<translation id="204357726431741734">သင့် Google Account တွင် သိမ်းထားသောစကားဝှက်များ အသုံးပြုရန် လက်မှတ်ထိုးဝင်ပါ</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> ဘာသာဖြင့် စာမျက်နှာများကို ဘာသာပြန်မည် မဟုတ်ပါ။</translation>
 <translation id="2053553514270667976">ဇစ်ကုဒ်</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{အကြံပြုချက် ၁ ခု}other{အကြံပြုချက် # ခု}}</translation>
@@ -466,6 +467,7 @@
 <translation id="2934466151127459956">အစိုးရရုံးသုံး Letter စာရွက်</translation>
 <translation id="2941952326391522266">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်မှာ<ph name="DOMAIN2" />ထံမှ ဖြစ်သည်။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
 <translation id="2943895734390379394">အပ်လုဒ်လုပ်ချိန်-</translation>
+<translation id="2944299917411283989">သင်၏ Google Account တွင် လုံခြုံမှုမြင့်သည့် စကားဝှက် ထုတ်ယူရန်</translation>
 <translation id="2948083400971632585">ကြိုတင်ပြင်ဆင်ခြင်း စာမျက်နှာမှ ချိတ်ဆက်မှုတစ်ခုအတွက် ပရောက်စီပြုပြင်ချက်များအား ပိတ်နိုင်သည်။</translation>
 <translation id="2951588413176968965">ကျွန်ုပ်၏စာတိုက်ပုံး</translation>
 <translation id="295526156371527179">သတိပေးချက်- ဤမူဝါဒသည် အဘိဓာန်တစ်ခုမဟုတ်သဖြင့် မူဝါဒက သတ်မှတ်ထားသည့်အတိုင်း အဘိဓာန်အဖြစ် ၎င်းကို ပေါင်းစည်းမထားပါ။</translation>
@@ -575,6 +577,7 @@
 <translation id="3428151540071562330">DnsOverHttpsTemplates ဆာဗာ နမူနာပုံစံ URI များအနက် တစ်ခုနှင့်အထက် မှားနေသဖြင့် အသုံးပြုမည်မဟုတ်ပါ။</translation>
 <translation id="3431636764301398940">ဤကဒ်ကို ဤစက်ပစ္စည်းတွင် သိမ်းရန်</translation>
 <translation id="3432601291244612633">စာမျက်နှာကို ပိတ်ရန်</translation>
+<translation id="3438829137925142401">သင်၏ Google Account တွင် သိမ်းထားသော စကားဝှက်များကို သုံးရန်</translation>
 <translation id="3443726618221119081">ဂျူရို ကုကိုင်</translation>
 <translation id="3447661539832366887">ဤကိရိယာ ပိုင်ရှင်သည် ဒိုင်နိုဆောဂိမ်းအား ပိတ်ထား၏။</translation>
 <translation id="3447884698081792621">အသိအမှတ်ပြုလက်မှတ်ကို ပြရန် (<ph name="ISSUER" /> က ထုတ်ပေးထားသည်)</translation>

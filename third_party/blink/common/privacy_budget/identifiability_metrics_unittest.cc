@@ -5,7 +5,6 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 
 #include <cstdint>
-#include <limits>
 #include <vector>
 
 #include "base/strings/string_piece_forward.h"

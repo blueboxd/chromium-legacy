@@ -3,7 +3,6 @@
 **/
 
 export const description = 'Test uninitialized textures are initialized to zero when sampled.';
-import * as C from '../../../../common/constants.js';
 import { makeTestGroup } from '../../../../common/framework/test_group.js';
 import { assert } from '../../../../common/framework/util/util.js';
 import { getTexelDataRepresentation } from '../../../util/texture/texelData.js';
@@ -98,14 +97,14 @@ class SampledTextureClearTest extends TextureZeroInitTest {
       for (const slice of slices) {
         const [ubo, uboMapping] = this.device.createBufferMapped({
           size: 4,
-          usage: C.BufferUsage.Uniform | C.BufferUsage.CopyDst
+          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
         new Int32Array(uboMapping, 0, 1)[0] = level;
         ubo.unmap();
         const byteLength = width * height * Uint32Array.BYTES_PER_ELEMENT * getTexelDataRepresentation(this.params.format).componentOrder.length;
         const resultBuffer = this.device.createBuffer({
           size: byteLength,
-          usage: C.BufferUsage.Storage | C.BufferUsage.CopySrc
+          usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
         });
         const bindGroup = this.device.createBindGroup({
           layout: computePipeline.getBindGroupLayout(0),

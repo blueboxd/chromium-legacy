@@ -532,11 +532,6 @@ void CheckClientDownloadRequestBase::SendRequest() {
   request->set_download_type(type_);
 
 #if defined(OS_MACOSX)
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientDownload."
-      "DownloadFileHasDmgSignature",
-      disk_image_signature_ != nullptr);
-
   if (disk_image_signature_) {
     request->set_udif_code_signature(disk_image_signature_->data(),
                                      disk_image_signature_->size());

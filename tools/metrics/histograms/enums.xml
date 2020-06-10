@@ -21669,6 +21669,7 @@ Called by update_extension_histograms.py.-->
   <int value="454" label="TERMINAL_PRIVATE_ON_A11Y_STATUS_CHANGED"/>
   <int value="455" label="PASSWORDS_PRIVATE_ON_PASSWORD_CHECK_STATUS_CHANGED"/>
   <int value="456" label="INPUT_IME_ON_ASSISTIVE_WINDOW_BUTTON_CLICKED"/>
+  <int value="457" label="INPUT_IME_ON_SUGGESTIONS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -33566,6 +33567,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2147417848" label="RPC_E_DISCONNECTED"/>
   <int value="-2147221232" label="CLASS_E_NOAGGREGATION"/>
   <int value="-2147221164" label="REGDB_E_CLASSNOTREG"/>
+  <int value="-2147220480"
+      label="custom error for abort setting badge for non app window"/>
+  <int value="-2147220479"
+      label="custom error for taskbar::CustomHresultCodes::kInvalidIcon"/>
+  <int value="-2147220478"
+      label="custom error for taskbar::CustomHresultCodes::kWindowsInvisible"/>
+  <int value="-2147220477"
+      label="custom error for taskbar::CustomHresultCodes::kImageLoading"/>
   <int value="-2147219455" label="GOOPDATE_E_NO_NETWORK"/>
   <int value="-2147219437" label="GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY"/>
   <int value="-2147219198" label="GOOPDATEINSTALL_E_INSTALLER_FAILED"/>
@@ -44033,6 +44042,12 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Request Timeout Error"/>
   <int value="3" label="Authentication Error"/>
   <int value="4" label="Other Error"/>
+</enum>
+
+<enum name="MarketingOptInGeolocationEvent">
+  <summary>Geolocation resolve status on OOBE MarketingOptInScreen.</summary>
+  <int value="0" label="Country determined successfully."/>
+  <int value="1" label="Country could not be determined."/>
 </enum>
 
 <enum name="MarketingOptInScreenEvent">
@@ -71688,6 +71703,7 @@ Called by update_scheduler_enums.py.-->
   <int value="47" label="SpeechRecognizer"/>
   <int value="48" label="IdleManager"/>
   <int value="49" label="PaymentManager"/>
+  <int value="50" label="SpeechSynthesis"/>
 </enum>
 
 <enum name="WebShareMethod">

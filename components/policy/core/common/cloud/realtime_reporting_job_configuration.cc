@@ -43,6 +43,7 @@ const char RealtimeReportingJobConfiguration::kFailedUploadsKey[] =
 const char RealtimeReportingJobConfiguration::kPermanentFailedUploadsKey[] =
     "permanentFailedUploads";
 const char RealtimeReportingJobConfiguration::kEventIdKey[] = "eventId";
+const char RealtimeReportingJobConfiguration::kDeviceNameKey[] = "deviceName";
 
 base::Value RealtimeReportingJobConfiguration::BuildReport(
     base::Value events,
@@ -104,6 +105,7 @@ void RealtimeReportingJobConfiguration::InitializePayload(
   payload_.SetStringPath(kChromeVersionKey, version_info::GetVersionNumber());
   payload_.SetStringPath(kOsPlatformKey, GetOSPlatform());
   payload_.SetStringPath(kOsVersionKey, GetOSVersion());
+  payload_.SetStringPath(kDeviceNameKey, GetDeviceName());
   payload_.SetPath(kEventsKey, base::Value(base::Value::Type::LIST));
 }
 

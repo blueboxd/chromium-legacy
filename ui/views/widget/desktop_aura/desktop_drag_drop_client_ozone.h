@@ -99,6 +99,8 @@ class VIEWS_EXPORT DesktopDragDropClientOzone
 
   // ui::WmDragHandler::Delegate
   void OnDragLocationChanged(const gfx::Point& screen_point_px) override;
+  void OnDragOperationChanged(
+      ui::DragDropTypes::DragOperation operation) override;
   void OnDragFinished(int operation) override;
 
   void QuitRunLoop();

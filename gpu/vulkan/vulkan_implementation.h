@@ -134,7 +134,9 @@ class COMPONENT_EXPORT(VULKAN) VulkanImplementation {
   virtual std::unique_ptr<SysmemBufferCollection>
   RegisterSysmemBufferCollection(VkDevice device,
                                  gfx::SysmemBufferCollectionId id,
-                                 zx::channel token) = 0;
+                                 zx::channel token,
+                                 gfx::BufferFormat format,
+                                 gfx::BufferUsage usage) = 0;
 #endif  // defined(OS_FUCHSIA)
 
   bool use_swiftshader() const { return use_swiftshader_; }

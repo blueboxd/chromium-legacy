@@ -837,6 +837,13 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, Metrics) {
   RunTestsInJsModule("metrics_test.js", "test.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionJSTest, ArrayBufferAllocator) {
+  // Run several times to see if there are issues with unloading.
+  RunTestsInJsModule("beep_test.js", "array_buffer.pdf");
+  RunTestsInJsModule("beep_test.js", "array_buffer.pdf");
+  RunTestsInJsModule("beep_test.js", "array_buffer.pdf");
+}
+
 // Test that if the plugin tries to load a URL that redirects then it will fail
 // to load. This is to avoid the source origin of the document changing during
 // the redirect, which can have security implications. https://crbug.com/653749.

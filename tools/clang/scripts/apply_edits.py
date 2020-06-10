@@ -76,7 +76,7 @@ def _ParseEditsFromStdin(build_directory):
     if not os.path.isfile(path):
       resolved_path = os.path.realpath(os.path.join(build_directory, path))
     else:
-      resolved_path = path
+      resolved_path = os.path.realpath(path)
 
     if not os.path.isfile(resolved_path):
       sys.stderr.write('Edit applies to a non-existent file: %s\n' % path)

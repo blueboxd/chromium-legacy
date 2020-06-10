@@ -118,6 +118,8 @@ class InputMethodEngine : public InputMethodEngineBase,
                      const bool show_tab,
                      std::string* error) override;
   bool AcceptSuggestion(int context_id, std::string* error) override;
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override;
 
   // This function returns the current property of the candidate window of the
   // corresponding engine_id. If the CandidateWindowProperty is not set for the

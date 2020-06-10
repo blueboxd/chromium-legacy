@@ -43,16 +43,16 @@ class FrameSequenceTrackerTest : public testing::Test {
                 /*should_report_metrics=*/true)),
         collection_(/*is_single_threaded=*/false,
                     compositor_frame_reporting_controller_.get()) {
-    collection_.StartSequence(FrameSequenceTrackerType::kTouchScroll);
-    tracker_ = collection_.GetTrackerForTesting(
-        FrameSequenceTrackerType::kTouchScroll);
+    tracker_ = collection_.StartScrollSequence(
+        FrameSequenceTrackerType::kTouchScroll,
+        FrameSequenceMetrics::ThreadType::kCompositor);
   }
   ~FrameSequenceTrackerTest() override = default;
 
-  void CreateNewTracker() {
-    collection_.StartSequence(FrameSequenceTrackerType::kTouchScroll);
-    tracker_ = collection_.GetTrackerForTesting(
-        FrameSequenceTrackerType::kTouchScroll);
+  void CreateNewTracker(FrameSequenceMetrics::ThreadType thread_type =
+                            FrameSequenceMetrics::ThreadType::kCompositor) {
+    tracker_ = collection_.StartScrollSequence(
+        FrameSequenceTrackerType::kTouchScroll, thread_type);
   }
 
   viz::BeginFrameArgs CreateBeginFrameArgs(
@@ -103,7 +103,15 @@ class FrameSequenceTrackerTest : public testing::Test {
 
   // Check whether a type of tracker exists in |frame_trackers_| or not.
   bool TrackerExists(FrameSequenceTrackerType type) const {
-    return collection_.frame_trackers_.contains(type);
+    auto key = std::make_pair(type, FrameSequenceMetrics::ThreadType::kUnknown);
+    if (type == FrameSequenceTrackerType::kTouchScroll ||
+        type == FrameSequenceTrackerType::kWheelScroll ||
+        type == FrameSequenceTrackerType::kScrollbarScroll) {
+      key = std::make_pair(type, FrameSequenceMetrics::ThreadType::kCompositor);
+      if (!collection_.frame_trackers_.contains(key))
+        key = std::make_pair(type, FrameSequenceMetrics::ThreadType::kMain);
+    }
+    return collection_.frame_trackers_.contains(key);
   }
 
   bool RemovalTrackerExists(unsigned index,
@@ -656,9 +664,6 @@ TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
 }
 
 TEST_F(FrameSequenceTrackerTest, ScrollingThreadMetricCompositorThread) {
-  tracker_->metrics()->SetScrollingThread(
-      FrameSequenceMetrics::ThreadType::kCompositor);
-
   // Start with a bunch of frames so that the metric does get reported at the
   // end of the test.
   ImplThroughput().frames_expected = 100u;
@@ -677,8 +682,7 @@ TEST_F(FrameSequenceTrackerTest, ScrollingThreadMetricCompositorThread) {
 }
 
 TEST_F(FrameSequenceTrackerTest, ScrollingThreadMetricMainThread) {
-  tracker_->metrics()->SetScrollingThread(
-      FrameSequenceMetrics::ThreadType::kMain);
+  CreateNewTracker(FrameSequenceMetrics::ThreadType::kMain);
 
   // Start with a bunch of frames so that the metric does get reported at the
   // end of the test.
@@ -1893,9 +1897,8 @@ TEST_F(FrameSequenceTrackerTest, UniversalTrackerSubmitThroughput) {
 
   collection_.ClearAll();
   collection_.SetUkmManager(ukm_manager.get());
-  collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
-  FrameSequenceTracker* tracker =
-      collection_.GetTrackerForTesting(FrameSequenceTrackerType::kUniversal);
+  auto* tracker =
+      collection_.StartSequence(FrameSequenceTrackerType::kUniversal);
   ImplThroughput(tracker).frames_expected = 200u;
   ImplThroughput(tracker).frames_produced = 190u;
   MainThroughput(tracker).frames_expected = 100u;
@@ -2014,6 +2017,49 @@ TEST_F(FrameSequenceTrackerTest, MergeTrackersPresentAfterStopSequence) {
   histogram_tester.ExpectTotalCount(metric, 1u);
   EXPECT_THAT(histogram_tester.GetAllSamples(metric),
               testing::ElementsAre(base::Bucket(97, 1)));
+}
+
+TEST_F(FrameSequenceTrackerTest, MergeTrackersScrollOnSameThread) {
+  // Do a short scroll on the compositor thread, then do another short scroll on
+  // the compositor thread. Make sure these are merged.
+  base::HistogramTester histogram_tester;
+  const char first_sequence[] = "b(1)s(1)e(1,0)P(1)b(80)s(2)e(80,0)P(2)";
+  GenerateSequence(first_sequence);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+
+  CreateNewTracker(FrameSequenceMetrics::ThreadType::kCompositor);
+  const char second_sequence[] = "b(81)s(3)e(81,0)P(3)b(101)s(4)e(101,0)P(4)";
+  GenerateSequence(second_sequence);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+
+  const char comp_metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
+  const char main_metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll";
+  histogram_tester.ExpectTotalCount(comp_metric, 1u);
+  histogram_tester.ExpectTotalCount(main_metric, 0u);
+}
+
+TEST_F(FrameSequenceTrackerTest, MergeTrackersScrollOnDifferentThreads) {
+  // Do a short scroll on the compositor thread, then do another short scroll on
+  // the main-thread. Make sure these are not merged.
+  base::HistogramTester histogram_tester;
+  const char compscroll_sequence[] = "b(1)s(1)e(1,0)P(1)b(80)s(2)e(80,0)P(2)";
+  GenerateSequence(compscroll_sequence);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+
+  CreateNewTracker(FrameSequenceMetrics::ThreadType::kMain);
+  const char mainscroll_sequence[] =
+      "b(81)s(3)e(81,0)P(3)b(101)s(4)e(101,0)P(4)";
+  GenerateSequence(mainscroll_sequence);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+
+  const char comp_metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll";
+  const char main_metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll";
+  histogram_tester.ExpectTotalCount(comp_metric, 0u);
+  histogram_tester.ExpectTotalCount(main_metric, 0u);
 }
 
 }  // namespace cc

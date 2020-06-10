@@ -33,22 +33,63 @@ mojom::PrintJobCompletionStatus PrintJobStatusProtoToMojom(
   return mojom::PrintJobCompletionStatus::kFailed;
 }
 
+mojom::PrinterErrorCode PrinterErrorCodeProtoToMojom(
+    proto::PrintJobInfo_PrinterErrorCode printer_error_code_proto) {
+  switch (printer_error_code_proto) {
+    case proto::PrintJobInfo_PrinterErrorCode_NO_ERROR:
+      return mojom::PrinterErrorCode::kNoError;
+    case proto::PrintJobInfo_PrinterErrorCode_PAPER_JAM:
+      return mojom::PrinterErrorCode::kPaperJam;
+    case proto::PrintJobInfo_PrinterErrorCode_OUT_OF_PAPER:
+      return mojom::PrinterErrorCode::kOutOfPaper;
+    case proto::PrintJobInfo_PrinterErrorCode_OUT_OF_INK:
+      return mojom::PrinterErrorCode::kOutOfInk;
+    case proto::PrintJobInfo_PrinterErrorCode_DOOR_OPEN:
+      return mojom::PrinterErrorCode::kDoorOpen;
+    case proto::PrintJobInfo_PrinterErrorCode_PRINTER_UNREACHABLE:
+      return mojom::PrinterErrorCode::kPrinterUnreachable;
+    case proto::PrintJobInfo_PrinterErrorCode_TRAY_MISSING:
+      return mojom::PrinterErrorCode::kTrayMissing;
+    case proto::PrintJobInfo_PrinterErrorCode_OUTPUT_FULL:
+      return mojom::PrinterErrorCode::kOutputFull;
+    case proto::PrintJobInfo_PrinterErrorCode_STOPPED:
+      return mojom::PrinterErrorCode::kStopped;
+    case proto::PrintJobInfo_PrinterErrorCode_FILTER_FAILED:
+      return mojom::PrinterErrorCode::kFilterFailed;
+    case proto::PrintJobInfo_PrinterErrorCode_UNKNOWN_ERROR:
+      return mojom::PrinterErrorCode::kUnknownError;
+    case proto::
+        PrintJobInfo_PrinterErrorCode_PrintJobInfo_PrinterErrorCode_INT_MIN_SENTINEL_DO_NOT_USE_:
+    case proto::
+        PrintJobInfo_PrinterErrorCode_PrintJobInfo_PrinterErrorCode_INT_MAX_SENTINEL_DO_NOT_USE_:
+      NOTREACHED();
+      return mojom::PrinterErrorCode::kUnknownError;
+  }
+  return mojom::PrinterErrorCode::kUnknownError;
+}
+
 }  // namespace
 
 mojom::PrintJobInfoPtr PrintJobProtoToMojom(
     const proto::PrintJobInfo& print_job_info_proto) {
-  mojom::PrintJobInfoPtr print_job_mojom = mojom::PrintJobInfo::New();
+  mojom::CompletedPrintJobInfoPtr completed_info_mojom =
+      mojom::CompletedPrintJobInfo::New();
 
+  completed_info_mojom->completion_status =
+      PrintJobStatusProtoToMojom(print_job_info_proto.status());
+  completed_info_mojom->printer_error_code =
+      PrinterErrorCodeProtoToMojom(print_job_info_proto.printer_error_code());
+
+  mojom::PrintJobInfoPtr print_job_mojom = mojom::PrintJobInfo::New();
   print_job_mojom->id = print_job_info_proto.id();
   print_job_mojom->title = base::UTF8ToUTF16(print_job_info_proto.title());
-  print_job_mojom->completion_status =
-      PrintJobStatusProtoToMojom(print_job_info_proto.status());
   print_job_mojom->creation_time =
       base::Time::FromJsTime(print_job_info_proto.creation_time());
   print_job_mojom->number_of_pages = print_job_info_proto.number_of_pages();
   print_job_mojom->printer_name =
       base::UTF8ToUTF16(print_job_info_proto.printer().name());
   print_job_mojom->printer_uri = GURL(print_job_info_proto.printer().uri());
+  print_job_mojom->completed_info = std::move(completed_info_mojom);
   return print_job_mojom;
 }
 

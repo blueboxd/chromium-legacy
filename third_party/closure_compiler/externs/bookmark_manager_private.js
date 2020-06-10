@@ -10,7 +10,7 @@
 // See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
 // IMPORTANT NOTE: Work-around for crbug.com/543822
-// s/chrome.bookmarkManagerPrivate.bookmarks.BookmarkTreeNode/BookmarkTreeNode/
+// s/chrome.bookmarkManagerPrivate.bookmarks.BookmarkTreeNode/chrome.bookmarks.BookmarkTreeNode/
 
 /** @fileoverview Externs generated from namespace: bookmarkManagerPrivate */
 
@@ -79,10 +79,10 @@ chrome.bookmarkManagerPrivate.sortChildren = function(parentId) {};
  * @param {!Array<string>} idList An array of string-valued ids.
  * @param {number} dragNodeIndex The index of the dragged node in |idList|
  * @param {boolean} isFromTouch True if the drag was initiated from touch.
- * @param {number} offsetX The offset X of the event
- * @param {number} offsetY The offset Y of the event
+ * @param {number} x The clientX of the dragStart event
+ * @param {number} y The clientY of the dragStart event
  */
-chrome.bookmarkManagerPrivate.startDrag = function(idList, dragNodeIndex, isFromTouch, offsetX, offsetY) {};
+chrome.bookmarkManagerPrivate.startDrag = function(idList, dragNodeIndex, isFromTouch, x, y) {};
 
 /**
  * Performs the drop action of the drag and drop session.
@@ -100,7 +100,7 @@ chrome.bookmarkManagerPrivate.drop = function(parentId, index, callback) {};
  * @param {string} id ID of the root of the tree to pull.  If empty, the entire
  *     tree will be returned.
  * @param {boolean} foldersOnly Pass true to only return folders.
- * @param {function(!Array<!BookmarkTreeNode>): void}
+ * @param {function(!Array<!chrome.bookmarks.BookmarkTreeNode>): void}
  *     callback
  */
 chrome.bookmarkManagerPrivate.getSubtree = function(id, foldersOnly, callback) {};

@@ -30,24 +30,31 @@ void PointTransformer::OnWindowTargetTransformChanging(
   ui::Layer* layer = root_window_->layer();
   float scale = ui::GetDeviceScaleFactor(layer);
 
-  // |new_transform| contains a transform comprising a rotation and a
-  // translation, but in DIPs, so we need to switch device pixels to DIPs, apply
-  // it, then switch from DIPs back to device pixels.
-  const gfx::Transform& rotation = new_transform;
-  gfx::Transform inverse_rotation;
   gfx::Transform to_device_pixels;
   gfx::Transform to_dip;
-
-  CHECK(rotation.GetInverse(&inverse_rotation))
-      << "Cannot inverse the root transform." << rotation.ToString();
 
   to_device_pixels.Scale(scale, scale);
   to_dip.Scale(1 / scale, 1 / scale);
 
+  // Use WindowTreeHost::GetRootTransform instead of |new_transform| because
+  // |new_transform| no longer contains rotation. The root transform contains
+  // a transform comprising a rotation and a translation, but it expects DIPs as
+  // input in DIPs and convert to device pixels. So we need to switch device
+  // pixels to DIPs then apply it.
+  gfx::Transform rotation = root_window_->GetHost()->GetRootTransform();
+
+  // Use GetInverseRootTransform instead of using root transform inverse. The
+  // two normally should be the same but GetInverseRootTransform() is
+  // constructed at the same time of root transform and has less rounding
+  // errors. It expect device pixels as input and convert to DIPs. So we need to
+  // switch to device pixels after applying it.
+  gfx::Transform inverse_rotation =
+      root_window_->GetHost()->GetInverseRootTransform();
+
   // Matrix transformations are applied from right to left.  See annotations.
-  //                (3)                (2)        (1)
-  root_to_screen_ = to_device_pixels * rotation * to_dip;
-  screen_to_root_ = to_device_pixels * inverse_rotation * to_dip;
+  //                (2)        (1)
+  root_to_screen_ = rotation * to_dip;
+  screen_to_root_ = to_device_pixels * inverse_rotation;
 }
 
 gfx::PointF PointTransformer::ToScreenCoordinates(

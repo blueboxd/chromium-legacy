@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> gewijzigd in <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Klik op Bevestigen om de wijzigingen te behouden. De vorige instellingen worden over <ph name="TIMEOUT_SECONDS" /> hersteld.</translation>
 <translation id="1013923882670373915">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende pincode in op dat apparaat: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Batterij van stylus bijna leeg</translation>
+<translation id="1036672894875463507">Ik ben de Google Assistent en ik ben er om je te helpen met je dag.
+Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> toegevoegd</translation>
 <translation id="1056775291175587022">Geen netwerken</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -33,7 +35,7 @@
 <translation id="1289185460362160437">Kom op <ph name="COME_BACK_DAY_OF_WEEK" /> terug om <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Zwak signaal</translation>
 <translation id="1293264513303784526">USB-C-apparaat (poort aan linkerkant)</translation>
-<translation id="1294929383540927798">Instellingen voor meldingen voor het vergrendelingsscherm wijzigen</translation>
+<translation id="1294929383540927798">Instellingen voor meldingen voor het vergrendelscherm wijzigen</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Bluetooth-instellingen weergeven. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Signaalsterkte <ph name="SIGNAL_STRENGTH" /></translation>
@@ -87,7 +89,7 @@
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Je taal instellen</translation>
-<translation id="1962969542251276847">Scherm vergrendelen</translation>
+<translation id="1962969542251276847">Vergrendelscherm</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1972950159383891558">Hallo, <ph name="USERNAME" /></translation>
 <translation id="1978498689038657292">Tekstinvoer</translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Iedereen uitloggen</translation>
 <translation id="2277103315734023688">Vooruit zoeken</translation>
 <translation id="2292698582925480719">Weergaveschaal</translation>
+<translation id="229397294990920565">Mobiele data uitschakelen…</translation>
 <translation id="2295777434187870477">Microfoon is ingeschakeld. Als je deze uitzet, wordt de invoer gedempt.</translation>
 <translation id="2298170939937364391">'Vergrootglas voor volledig scherm' is ingeschakeld. Druk nog een keer op Ctrl+Zoeken+M om dit uit te schakelen.</translation>
 <translation id="2302092602801625023">Dit account wordt beheerd door Family Link</translation>
@@ -268,7 +271,7 @@
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Uitgeschakeld voor een app}other{Uitgeschakeld voor # apps}}</translation>
 <translation id="4072264167173457037">Normaal signaal</translation>
 <translation id="4112140312785995938">Achteruit zoeken</translation>
-<translation id="4129129681837227511">Als je meldingen op je vergrendelingsscherm wilt zien, ontgrendel je het scherm om de instellingen te wijzigen</translation>
+<translation id="4129129681837227511">Als je meldingen op je vergrendelscherm wilt zien, ontgrendel je het scherm om de instellingen te wijzigen</translation>
 <translation id="4144413954005649103">Door met rechts te klikken of de selectie lang ingedrukt houden, kan de Assistent informatie laten zien die is gerelateerd aan wat je op het scherm hebt geselecteerd.</translation>
 <translation id="4146833061457621061">Speel muziek</translation>
 <translation id="4181841719683918333">Talen</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Vergrootglas</translation>
 <translation id="4351433414020964307">Assistent wordt geladen...</translation>
 <translation id="4356930093361201197">modus voor hoog contrast</translation>
+<translation id="4368583494516669646">Welterusten <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Cast-instellingen</translation>
 <translation id="4378551569595875038">Verbinden...</translation>
 <translation id="4379531060876907730">Dit zijn je stylustools</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Wachtwoord verbergen</translation>
 <translation id="4570957409596482333">Knop 'Selecteer om uitgesproken te worden'</translation>
+<translation id="4577274620589681794">De tijd is om · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Casten naar een onbekende ontvanger stopzetten</translation>
 <translation id="4628757576491864469">Apparaten</translation>
 <translation id="4659419629803378708">ChromeVox ingeschakeld</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Omhoog scrollen</translation>
 <translation id="4961318399572185831">Scherm casten</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> u <ph name="MINUTES" /> m <ph name="SECONDS" /> s</translation>
+<translation id="4970352680959471247">Goedenavond <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">De tijd is voorbij</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> verbonden met nieuwe telefoon</translation>
 <translation id="5035389544768382859">Schermconfiguratie bevestigen</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Alle beschikbare gebruikers zijn al aan deze sessie toegevoegd.</translation>
 <translation id="54609108002486618">Beheerd</translation>
 <translation id="5465662442746197494">Heb je hulp nodig?</translation>
+<translation id="5485091064403948243">Goedemorgen <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Je beheerder zet je apparaat terug naar een oudere versie. Alle gegevens worden verwijderd wanneer het apparaat opnieuw wordt opgestart.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Sessie sluiten</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Geef je Family Link-toegangscode voor ouders op om het apparaat te ontgrendelen</translation>
 <translation id="742594950370306541">Camera is in gebruik.</translation>
 <translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
+<translation id="7436182601308224670">Goedemiddag <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Raak de sensor aan</translation>
 <translation id="7497767806359279797">Taal en toetsenbord kiezen</translation>
 <translation id="7526573455193969409">Netwerk kan worden bijgehouden</translation>

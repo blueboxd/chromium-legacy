@@ -18,7 +18,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -26,6 +25,33 @@ namespace {
 
 constexpr char kPhotoTransitionSmoothness[] =
     "Ash.AmbientMode.AnimationSmoothness.PhotoTransition";
+
+gfx::ImageSkia ResizeImage(const gfx::ImageSkia& image,
+                           const gfx::Size& view_size) {
+  if (image.isNull())
+    return gfx::ImageSkia();
+
+  const double image_width = image.width();
+  const double image_height = image.height();
+  const double view_width = view_size.width();
+  const double view_height = view_size.height();
+  const double horizontal_ratio = view_width / image_width;
+  const double vertical_ratio = view_height / image_height;
+  const double image_ratio = image_height / image_width;
+  const double view_ratio = view_height / view_width;
+
+  // If the image and the container view has the same orientation, e.g. both
+  // portrait, the |scale| will make the image filled the whole view with
+  // possible cropping on one direction. If they are in different orientation,
+  // the |scale| will display the image in the view without any cropping, but
+  // with empty background.
+  const double scale = (image_ratio - 1) * (view_ratio - 1) > 0
+                           ? std::max(horizontal_ratio, vertical_ratio)
+                           : std::min(horizontal_ratio, vertical_ratio);
+  const gfx::Size& resized = gfx::ScaleToCeiledSize(image.size(), scale);
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      image, skia::ImageOperations::RESIZE_BEST, resized);
+}
 
 }  // namespace
 
@@ -85,13 +111,12 @@ const char* PhotoView::GetClassName() const {
   return "PhotoView";
 }
 
-void PhotoView::AddedToWidget() {
-  // TODO(b/140066694): Handle display configuration changes, e.g. resolution,
-  // rotation, etc.
-  const gfx::Size widget_size = GetWidget()->GetRootView()->size();
-  image_views_[0]->SetImageSize(widget_size);
-  image_views_[1]->SetImageSize(widget_size);
-  SetBoundsRect(gfx::Rect(GetPreferredSize()));
+void PhotoView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  for (const int index : {0, 1}) {
+    auto image = images_unscaled_[index];
+    auto image_resized = ResizeImage(image, size());
+    image_views_[index]->SetImage(image_resized);
+  }
 }
 
 void PhotoView::OnImagesChanged() {
@@ -126,15 +151,12 @@ void PhotoView::Init() {
 
 void PhotoView::UpdateImages() {
   auto* model = delegate_->GetAmbientBackendModel();
-  // Update the first two images to prepare for transition animation.
-  if (image_views_[1]->GetImage().isNull()) {
-    image_views_[0]->SetImage(model->GetCurrentImage());
-    image_views_[1]->SetImage(model->GetNextImage());
+  images_unscaled_[image_index_] = model->GetNextImage();
+  if (images_unscaled_[image_index_].isNull())
     return;
-  }
 
-  // Afterwards, only need to update one image with opacity of 0.0f.
-  image_views_[image_index_]->SetImage(model->GetNextImage());
+  auto next_resized = ResizeImage(images_unscaled_[image_index_], size());
+  image_views_[image_index_]->SetImage(next_resized);
   image_index_ = 1 - image_index_;
 }
 
@@ -172,9 +194,13 @@ void PhotoView::OnImplicitAnimationsCompleted() {
 }
 
 bool PhotoView::NeedToAnimateTransition() const {
-  // Can do transition animation if both two images in |image_views_| are not
-  // nullptr. Check the image index 1 is enough.
-  return !image_views_[1]->GetImage().isNull();
+  // Can do transition animation if both two images in |images_unscaled_| are
+  // not nullptr. Check the image index 1 is enough.
+  return !images_unscaled_[1].isNull();
+}
+
+const gfx::ImageSkia& PhotoView::GetCurrentImagesForTesting() {
+  return image_views_[image_index_]->GetImage();
 }
 
 }  // namespace ash

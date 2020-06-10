@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları asla çevirme</translation>
+<translation id="124116460088058876">Diğer diller</translation>
+<translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
+<translation id="290376772003165898">Sayfa <ph name="LANGUAGE" /> dilinde değil mi?</translation>
+<translation id="5684874026226664614">Hata! Bu sayfa çevrilemedi.</translation>
+<translation id="6040143037577758943">Kapat</translation>
+<translation id="6831043979455480757">Çevir</translation>
+<translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları her zaman çevir</translation>
 <translation id="8298278839890148234">Web tarayıcısı etkinliği</translation>
 </translationbundle>

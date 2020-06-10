@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1068672505746868501">በ<ph name="SOURCE_LANGUAGE" /> ውስጥ ገጾችን በጭራሽ አትተርጉም</translation>
+<translation id="124116460088058876">ተጨማሪ ቋንቋዎች</translation>
+<translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
+<translation id="290376772003165898">ገጽ በ<ph name="LANGUAGE" /> አይደለም?</translation>
+<translation id="5684874026226664614">ውይ። ይህ ገጽ ሊተረጎም አይችልም።</translation>
+<translation id="6040143037577758943">ዝጋ</translation>
+<translation id="6831043979455480757">መተርጎም</translation>
+<translation id="7243308994586599757">አማራጮች ከማያ ገጹ ግርጌ አጠገብ ይገኛሉ</translation>
+<translation id="773466115871691567">ገጾችን ሁልጊዜ በ<ph name="SOURCE_LANGUAGE" /> ተርጉም</translation>
 <translation id="8298278839890148234">የድር አሳሽ እንቅስቃሴ</translation>
 </translationbundle>

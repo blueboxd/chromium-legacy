@@ -34,6 +34,10 @@ POLICY_EXPORT std::string GetOSUsername();
 POLICY_EXPORT enterprise_management::Channel ConvertToProtoChannel(
     version_info::Channel channel);
 
+// Returns the name of the device. This is equivalent to GetMachineName on
+// non-CrOS platforms and returns the serial number of the device on CrOS.
+POLICY_EXPORT std::string GetDeviceName();
+
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_UTIL_H_

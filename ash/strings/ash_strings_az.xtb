@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> <ph name="RESOLUTION" /> ilə dəyişdirilib (<ph name="REFRESH_RATE" /> Hz). Dəyişiklikləri saxlamaq üçün "təsdiq edin" seçiminə toxunun. Əvvəlki ayarlar <ph name="TIMEOUT_SECONDS" /> ərzində bərpa ediləcək.</translation>
 <translation id="1013923882670373915">Bluetooth cihazı "<ph name="DEVICE_NAME" />" cütlənmək üçün icazə istəyir. Həmin cihaza PIN kodu daxil edin: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Qramafon iynəsinin batareyası azdır</translation>
+<translation id="1036672894875463507">Mən Google Assistentinizəm və gün boyu sizə kömək etmək üçün buradayam!
+Başlamaq üçün aşağıdakıları yoxlaya bilərsiniz.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> əlavə edildi</translation>
 <translation id="1056775291175587022">Şəbəkə yoxdur</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Hamısından çıxın</translation>
 <translation id="2277103315734023688">İrəli çəkin</translation>
 <translation id="2292698582925480719">Miqyası göstərin</translation>
+<translation id="229397294990920565">Mobil data deaktiv edilir...</translation>
 <translation id="2295777434187870477">Mikrofon aktivdir, dəyişdirdikdə daxiletmə səssiz ediləcək.</translation>
 <translation id="2298170939937364391">Tam Ekran Böyüdücüsü aktiv edildi. Rejimi deaktiv etmək üçün Ctrl+Search+M düymələrinə basın.</translation>
 <translation id="2302092602801625023">Bu hesab Family Link tərəfindən idarə olunur</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Assistent yüklənir...</translation>
 <translation id="4356930093361201197">yüksək kontrast rejimi</translation>
+<translation id="4368583494516669646">Gecəniz xeyrə, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Yayım ayarları</translation>
 <translation id="4378551569595875038">Qoşulur...</translation>
 <translation id="4379531060876907730">Fırça alətləriniz</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Parolu gizlədin</translation>
 <translation id="4570957409596482333">Səsləndirmək üçün Seçim düyməsi</translation>
+<translation id="4577274620589681794">Vaxt bitdi · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Naməlum alıcının yayımını dayandırın</translation>
 <translation id="4628757576491864469">Cihazlar</translation>
 <translation id="4659419629803378708">ChromeVox aktiv edildi</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Yuxarı sürüşdürün</translation>
 <translation id="4961318399572185831">Cast ekran</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />s <ph name="MINUTES" />dəq <ph name="SECONDS" />san</translation>
+<translation id="4970352680959471247">Axşamınız xeyir, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Vaxt bitdi</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> yeni telefona qoşuldu</translation>
 <translation id="5035389544768382859">Displey Konfiqurasiyasını təsdiq edin</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Bütün əlçatımlı istifadəçilər bu sessiyaya əlavə edilib.</translation>
 <translation id="54609108002486618">İdarə edilən</translation>
 <translation id="5465662442746197494">Kömək lazımdır?</translation>
+<translation id="5485091064403948243">Sabahınız xeyir, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Administrator bu cihaza geri qayıtdı. Cihaz yenidən başladıldıqda bütün data slinəcək.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Mövcud sessiya</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Cihazı kiliddən çıxarmaq üçün Family Link ailə giriş kodunu daxil edin</translation>
 <translation id="742594950370306541">Kamera istifadə olunur.</translation>
 <translation id="743058460480092004">Kamera və mikrofon istifadə olunur.</translation>
+<translation id="7436182601308224670">Günortanız xeyir, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Sensora toxunun</translation>
 <translation id="7497767806359279797">Dil və klaviatura seçin</translation>
 <translation id="7526573455193969409">Şəbəkəyə nəzarət edilə bilər</translation>

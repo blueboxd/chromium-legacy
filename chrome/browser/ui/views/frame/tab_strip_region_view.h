@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_TAB_STRIP_REGION_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_TAB_STRIP_REGION_VIEW_H_
 
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/views/view.h"
 
 // Container for the tabstrip, new tab button, and reserved grab handle space.
@@ -14,6 +15,9 @@ class TabStripRegionView final : public views::View {
   TabStripRegionView();
   ~TabStripRegionView() override;
 
+  // Takes ownership of the tabstrip.
+  TabStrip* AddTabStrip(std::unique_ptr<TabStrip> tab_strip);
+
   // views::View overrides:
   const char* GetClassName() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -22,6 +26,10 @@ class TabStripRegionView final : public views::View {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabStripRegionView);
+
+  int CalculateTabStripAvailableWidth();
+
+  views::View* tab_strip_container_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_TAB_STRIP_REGION_VIEW_H_

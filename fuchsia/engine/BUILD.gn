@@ -28,10 +28,12 @@ declare_args() {
 
 mojom("mojom") {
   sources = [
+    "cast_streaming_session.mojom",
     "on_load_script_injector.mojom",
     "url_request_rewrite.mojom",
   ]
   public_deps = [
+    "//media/mojo/mojom",
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
   ]
@@ -202,6 +204,8 @@ component("web_engine_core") {
     "context_provider_main.h",
     "renderer/cast_streaming_demuxer.cc",
     "renderer/cast_streaming_demuxer.h",
+    "renderer/cast_streaming_receiver.cc",
+    "renderer/cast_streaming_receiver.h",
     "renderer/on_load_script_injector.cc",
     "renderer/on_load_script_injector.h",
     "renderer/url_request_rules_receiver.cc",

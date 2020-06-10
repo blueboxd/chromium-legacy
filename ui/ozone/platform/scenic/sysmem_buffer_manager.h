@@ -46,7 +46,9 @@ class SysmemBufferManager {
   scoped_refptr<SysmemBufferCollection> ImportSysmemBufferCollection(
       VkDevice vk_device,
       gfx::SysmemBufferCollectionId id,
-      zx::channel token);
+      zx::channel token,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage);
 
   scoped_refptr<SysmemBufferCollection> GetCollectionById(
       gfx::SysmemBufferCollectionId id);

@@ -1329,11 +1329,15 @@ void NavigationRequest::BeginNavigation() {
     CommitNavigation();
     return;
   }
-
-  common_params_->previews_state =
-      GetContentClient()->browser()->DetermineAllowedPreviews(
-          common_params_->previews_state, this, common_params_->url);
-
+  // If the navigation is served from the back-forward cache, we already know
+  // its preview type from the first time we navigated into the page, so we
+  // should only set |previews_state| when the navigation is not served from the
+  // back-forward cache.
+  if (!IsServedFromBackForwardCache()) {
+    common_params_->previews_state =
+        GetContentClient()->browser()->DetermineAllowedPreviews(
+            common_params_->previews_state, this, common_params_->url);
+  }
   WillStartRequest();
 }
 

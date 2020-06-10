@@ -26,7 +26,7 @@ export function getDisplayedList(state) {
 }
 
 /**
- * @param {BookmarkTreeNode} treeNode
+ * @param {chrome.bookmarks.BookmarkTreeNode} treeNode
  * @return {!BookmarkNode}
  */
 export function normalizeNode(treeNode) {
@@ -46,7 +46,7 @@ export function normalizeNode(treeNode) {
 }
 
 /**
- * @param {BookmarkTreeNode} rootNode
+ * @param {chrome.bookmarks.BookmarkTreeNode} rootNode
  * @return {NodeMap}
  */
 export function normalizeNodes(rootNode) {

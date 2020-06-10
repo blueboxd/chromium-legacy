@@ -76,6 +76,7 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
       views::Widget* widget) override {
     return new OverlayMediaNotificationFrameView();
   }
+  void DeleteDelegate() override { delete this; }
 
  private:
   // Owns OverlayMediaNotificationWidgetDelegate.
@@ -87,7 +88,8 @@ class OverlayMediaNotificationWidgetDelegate : public views::WidgetDelegate {
 OverlayMediaNotificationView::OverlayMediaNotificationView(
     const std::string& id,
     std::unique_ptr<MediaNotificationContainerImplView> notification,
-    gfx::Rect bounds)
+    gfx::Rect bounds,
+    gfx::NativeWindow context)
     : id_(id), notification_(notification.get()) {
   DCHECK(notification_);
 
@@ -103,6 +105,9 @@ OverlayMediaNotificationView::OverlayMediaNotificationView(
   params.name = "OverlayMediaNotificationView";
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.delegate = new OverlayMediaNotificationWidgetDelegate(this);
+  params.delegate->SetTitle(notification_->GetTitle());
+  if (context)
+    params.context = context;
   Init(std::move(params));
   GetContentsView()->AddChildView(std::move(notification));
 }
@@ -119,10 +124,16 @@ void OverlayMediaNotificationView::ShowNotification() {
   // that we don't close before it's set.
   DCHECK(manager_);
   Show();
+
+  notification_->OnOverlayNotificationShown(this);
 }
 
 void OverlayMediaNotificationView::CloseNotification() {
   CloseWithReason(ClosedReason::kUnspecified);
+}
+
+void OverlayMediaNotificationView::UpdateTitle(const base::string16& title) {
+  widget_delegate()->SetTitle(title);
 }
 
 void OverlayMediaNotificationView::OnNativeWidgetDestroyed() {

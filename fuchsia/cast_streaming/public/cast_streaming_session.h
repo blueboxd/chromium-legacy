@@ -82,6 +82,10 @@ class CastStreamingSession {
       fidl::InterfaceRequest<fuchsia::web::MessagePort> message_port_request,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
+  // Stops the Cast Streaming Session. This can only be called once during the
+  // lifespan of this object and only after a call to Start().
+  void Stop();
+
  private:
   class Internal;
   std::unique_ptr<Internal> internal_;

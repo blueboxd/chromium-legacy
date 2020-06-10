@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
+<translation id="124116460088058876">مزيد من اللغات</translation>
+<translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
+<translation id="290376772003165898">أليست الصفحة باللغة <ph name="LANGUAGE" />؟</translation>
+<translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
+<translation id="6040143037577758943">إغلاق</translation>
+<translation id="6831043979455480757">ترجمة</translation>
+<translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
+<translation id="773466115871691567">ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> دائمًا</translation>
 <translation id="8298278839890148234">نشاط التصفُّح على الويب</translation>
 </translationbundle>

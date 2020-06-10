@@ -57,8 +57,8 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MediaPlayerAPI::GetFactoryInstance();
 #if defined(USE_CUPS)
   extensions::PrintingAPIHandler::GetFactoryInstance();
-#endif
   extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
+#endif
   extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
   file_manager::EventRouterFactory::GetInstance();
   file_manager::VolumeManagerFactory::GetInstance();

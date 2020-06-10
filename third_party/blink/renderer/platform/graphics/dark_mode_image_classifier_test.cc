@@ -53,6 +53,11 @@ class FakeImageForCacheTest : public Image {
 
 class DarkModeImageClassifierTest : public testing::Test {
  public:
+  DarkModeImageClassifierTest() {
+    dark_mode_image_classifier_ =
+        DarkModeImageClassifier::MakeBitmapImageClassifier();
+  }
+
   // Loads the image from |file_name|.
   scoped_refptr<BitmapImage> GetImage(const String& file_name) {
     SCOPED_TRACE(file_name);
@@ -66,13 +71,13 @@ class DarkModeImageClassifierTest : public testing::Test {
   }
 
   DarkModeImageClassifier* image_classifier() {
-    return &dark_mode_image_classifier_;
+    return dark_mode_image_classifier_.get();
   }
 
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
       platform_;
-  DarkModeImageClassifier dark_mode_image_classifier_;
+  std::unique_ptr<DarkModeImageClassifier> dark_mode_image_classifier_;
 };
 
 TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {

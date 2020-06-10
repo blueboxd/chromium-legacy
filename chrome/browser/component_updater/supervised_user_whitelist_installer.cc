@@ -29,7 +29,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/value_conversions.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
@@ -83,14 +83,14 @@ base::FilePath GetSafeFilePath(const base::DictionaryValue& dictionary,
   const base::Value* path_value = nullptr;
   if (!dictionary.Get(key, &path_value))
     return base::FilePath();
-  base::FilePath path;
-  if (!base::GetValueAsFilePath(*path_value, &path))
+  base::Optional<base::FilePath> path = util::ValueToFilePath(*path_value);
+  if (!path)
     return base::FilePath();
   // Path components ("..") are not allowed.
-  if (path.ReferencesParent())
+  if (path->ReferencesParent())
     return base::FilePath();
 
-  return install_dir.Append(path);
+  return install_dir.Append(*path);
 }
 
 base::FilePath GetLargeIconPath(const base::DictionaryValue& manifest,

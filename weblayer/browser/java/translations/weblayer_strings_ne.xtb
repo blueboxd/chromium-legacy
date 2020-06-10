@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> मा भएका पृष्ठहरूलाई कहिल्यै अनुवाद नगर्नुहोस्‌</translation>
+<translation id="124116460088058876">थप भाषाहरू</translation>
+<translation id="1285320974508926690">यो साइट कहिले पनि अनुवाद नगर्नुहोस्</translation>
+<translation id="290376772003165898"><ph name="LANGUAGE" /> भाषामा पृष्ठ छैन?</translation>
+<translation id="5684874026226664614">ओहो। यो पृष्ठ अनुवादन गर्न सकिएन।</translation>
+<translation id="6040143037577758943">बन्द गर्नुहोस्</translation>
+<translation id="6831043979455480757">अनुवाद गर्नुहोस्</translation>
+<translation id="7243308994586599757">विकल्पहरू स्क्रिनको तल नजिकै उपलब्ध छ</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> मा रहेका पृष्ठहरूलाई सधैँ अनुवाद गर्नुहोस्‌</translation>
 <translation id="8298278839890148234">ब्राउजर प्रयोग गरी गरिएको क्रियाकलाप</translation>
 </translationbundle>

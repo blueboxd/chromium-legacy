@@ -20,21 +20,25 @@ WebApplicationIconInfo& WebApplicationIconInfo::operator=(
 WebApplicationIconInfo& WebApplicationIconInfo::operator=(
     WebApplicationIconInfo&&) = default;
 
-WebApplicationShortcutInfo::WebApplicationShortcutInfo() = default;
+WebApplicationShortcutsMenuItemInfo::WebApplicationShortcutsMenuItemInfo() =
+    default;
 
-WebApplicationShortcutInfo::WebApplicationShortcutInfo(
-    const WebApplicationShortcutInfo& other) = default;
+WebApplicationShortcutsMenuItemInfo::WebApplicationShortcutsMenuItemInfo(
+    const WebApplicationShortcutsMenuItemInfo& other) = default;
 
-WebApplicationShortcutInfo::WebApplicationShortcutInfo(
-    WebApplicationShortcutInfo&&) noexcept = default;
+WebApplicationShortcutsMenuItemInfo::WebApplicationShortcutsMenuItemInfo(
+    WebApplicationShortcutsMenuItemInfo&&) noexcept = default;
 
-WebApplicationShortcutInfo::~WebApplicationShortcutInfo() = default;
+WebApplicationShortcutsMenuItemInfo::~WebApplicationShortcutsMenuItemInfo() =
+    default;
 
-WebApplicationShortcutInfo& WebApplicationShortcutInfo::operator=(
-    const WebApplicationShortcutInfo&) = default;
+WebApplicationShortcutsMenuItemInfo&
+WebApplicationShortcutsMenuItemInfo::operator=(
+    const WebApplicationShortcutsMenuItemInfo&) = default;
 
-WebApplicationShortcutInfo& WebApplicationShortcutInfo::operator=(
-    WebApplicationShortcutInfo&&) noexcept = default;
+WebApplicationShortcutsMenuItemInfo&
+WebApplicationShortcutsMenuItemInfo::operator=(
+    WebApplicationShortcutsMenuItemInfo&&) noexcept = default;
 
 WebApplicationInfo::WebApplicationInfo() = default;
 

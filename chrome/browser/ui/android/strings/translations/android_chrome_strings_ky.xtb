@@ -84,7 +84,7 @@
 <translation id="1644574205037202324">Таржымал</translation>
 <translation id="1670399744444387456">Негизги</translation>
 <translation id="1671236975893690980">Жүктөп алуу күтүлүүдө…</translation>
-<translation id="1672586136351118594">Экинчи көрсөтүлбөсүн</translation>
+<translation id="1672586136351118594">Экинчи көрүнбөсүн</translation>
 <translation id="1692118695553449118">Шайкештештирүү күйүк</translation>
 <translation id="1718835860248848330">Акыркы бир саат</translation>
 <translation id="1736419249208073774">Изилдөө</translation>
@@ -227,6 +227,7 @@
 <translation id="2876369937070532032">Коопсуздугуңузга коркунуч жаралганда, баш баккан барактарыңыздын URL'дерин Google'га жөнөтөт</translation>
 <translation id="2888126860611144412">Chrome тууралуу</translation>
 <translation id="2891154217021530873">Беттин жүктөлүшүн токтотуу</translation>
+<translation id="2892647708214602204">Бул файл даяр болгондо билдирме аласыз</translation>
 <translation id="2893180576842394309">Издөө жана башка Google кызматтарын жекечелештирүү үчүн, Google таржымалыңызды колдонушу мүмкүн</translation>
 <translation id="2898264748040935573">Сакталган сырсөздү түзөтүү</translation>
 <translation id="2900528713135656174">Иш-чара түзүү</translation>
@@ -619,6 +620,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6159335304067198720"><ph name="PERCENT" /> сакталган дайындар</translation>
 <translation id="6192333916571137726">Файлды жүктөп алуу</translation>
 <translation id="6201345951596836663">Шилтеме көчүрүлдү</translation>
+<translation id="6206830853671714236">Качан жүктөлүп алынышы керек экенин тандаңыз</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> эмеспи?</translation>
 <translation id="6221633008163990886">Сырсөздөрүңүздү экспорттоо үчүн кулпусун ачыңыз</translation>
 <translation id="6232535412751077445">"Байкоо салынбасын" сурамы иштетилгенде, ал серептелген нерселердин трафигине кошулат. Бул аракет вебсайттын сурамга жооп кайтарып же кайтарбай тургандыгына жана сурамдын чечмеленишине түздөн-түз байланыштуу болот.
@@ -811,6 +813,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> тилиндеги барактар дайыма которулсун</translation>
 <translation id="7746457520633464754">Кооптуу колдонмолор менен сайттарды аныктоо үчүн, Chrome сиз баш баккан айрым сайттардын URL'дерин, тутум тууралуу чектелген маалыматты жана барактагы айрым мазмунду Google'га жөнөтүп турат</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> түзмөгүнөн көчүрүлгөн текст</translation>
+<translation id="7761849928583394409">Күн жана убакыт тандоо</translation>
 <translation id="7762668264895820836"><ph name="SD_CARD_NUMBER" />-SD-карта</translation>
 <translation id="7764225426217299476">Дарек кошуу</translation>
 <translation id="7772032839648071052">Купуя сөз айкашын ырастаңыз</translation>
@@ -915,6 +918,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8523928698583292556">Сакталган сырсөздү жок кылуу</translation>
 <translation id="8525306231823319788">Толук экран</translation>
 <translation id="854522910157234410">Бул бетти ачыңыз</translation>
+<translation id="8555836665334561807">Wi-Fi'да</translation>
 <translation id="8558485628462305855">Кошумчаланган чындыкты көрүү үчүн ARCore кызматын жаңыртыңыз</translation>
 <translation id="8559990750235505898">Башка тилдердеги барактарды которуу сунушталсын</translation>
 <translation id="8562452229998620586">Сакталган сырсөздөр бул жерден көрүнөт.</translation>

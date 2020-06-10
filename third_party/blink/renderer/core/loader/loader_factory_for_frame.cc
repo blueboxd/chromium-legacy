@@ -12,8 +12,8 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/prefetched_signed_exchange_manager.h"
@@ -23,15 +23,15 @@
 namespace blink {
 
 LoaderFactoryForFrame::LoaderFactoryForFrame(DocumentLoader& document_loader,
-                                             Document& document)
+                                             LocalDOMWindow& window)
     : document_loader_(document_loader),
-      document_(document),
+      window_(window),
       prefetched_signed_exchange_manager_(
           document_loader.GetPrefetchedSignedExchangeManager()) {}
 
 void LoaderFactoryForFrame::Trace(Visitor* visitor) const {
   visitor->Trace(document_loader_);
-  visitor->Trace(document_);
+  visitor->Trace(window_);
   visitor->Trace(prefetched_signed_exchange_manager_);
   LoaderFactory::Trace(visitor);
 }
@@ -69,10 +69,10 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
   // callsite when we make Shared Worker loading off-main-thread.
   if (request.Url().ProtocolIs("blob") && !url_loader_factory &&
       request.GetRequestContext() != mojom::RequestContextType::SHARED_WORKER) {
-    document_->GetPublicURLManager().Resolve(
+    window_->GetPublicURLManager().Resolve(
         request.Url(), url_loader_factory.InitWithNewPipeAndPassReceiver());
   }
-  LocalFrame* frame = document_->GetFrame();
+  LocalFrame* frame = window_->GetFrame();
   DCHECK(frame);
   FrameScheduler* frame_scheduler = frame->GetFrameScheduler();
   DCHECK(frame_scheduler);

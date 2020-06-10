@@ -227,6 +227,7 @@
 <translation id="2876369937070532032">Қауіп төніп тұрғанда, сіз кірген кейбір беттердің URL сілтемелерін Google-ға жібереді.</translation>
 <translation id="2888126860611144412">Chrome туралы</translation>
 <translation id="2891154217021530873">Бет жүктеуді тоқтату</translation>
+<translation id="2892647708214602204">Файл дайын болғанда, хабарландыру шығады.</translation>
 <translation id="2893180576842394309">Search және басқа да Google қызметтерін жеке қажеттеліктерге бейімдеу үшін Google интернеттегі әрекеттеріңізді пайдалануы мүмкін.</translation>
 <translation id="2898264748040935573">Сақталған құпия сөзді өзгерту</translation>
 <translation id="2900528713135656174">Оқиға жасау</translation>
@@ -619,6 +620,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6159335304067198720"><ph name="PERCENT" /> дерек үнемделді</translation>
 <translation id="6192333916571137726">Файлды жүктеп алу</translation>
 <translation id="6201345951596836663">Сілтеме көшірілді.</translation>
+<translation id="6206830853671714236">Жүктеп алу уақытын таңдаңыз</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> емес пе?</translation>
 <translation id="6221633008163990886">Құпия сөздерді экспорттау үшін құлпын ашыңыз</translation>
 <translation id="6232535412751077445">"Бақыламау" опциясын қосқанда, шолу трафигінде сұрау қамтылады. Нәтиже веб-сайттың сұрауға жауап беруіне және сұраудың қалай түсіндірілуіне байланысты.
@@ -811,6 +813,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> тіліндегі беттер әрқашан аударылсын</translation>
 <translation id="7746457520633464754">Қауіпті қолданбалар мен сайттарды анықтау үшін Chrome браузері сіз кірген кейбір беттердің URL сілтемелерін, жүйе туралы шектеулі ақпаратты және беттің кейбір мазмұнын Google-ға жібереді.</translation>
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> бөліскен мәтін</translation>
+<translation id="7761849928583394409">Күні мен уақытын таңдау</translation>
 <translation id="7762668264895820836"><ph name="SD_CARD_NUMBER" />-ші SD картасы</translation>
 <translation id="7764225426217299476">Мекенжай қосу</translation>
 <translation id="7772032839648071052">Құпия фразаны растау</translation>
@@ -915,6 +918,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8523928698583292556">Сақталған құпия сөзді жою</translation>
 <translation id="8525306231823319788">Толық экран</translation>
 <translation id="854522910157234410">Осы бетті ашу</translation>
+<translation id="8555836665334561807">Wi-Fi арқылы</translation>
 <translation id="8558485628462305855">Толықтырылған шындық мазмұнын көру үшін ARCore платформасын жаңартыңыз</translation>
 <translation id="8559990750235505898">Басқа тілдердегі беттердің аудармасын ұсыну</translation>
 <translation id="8562452229998620586">Сақталған құпия сөздер мына жерде пайда болады.</translation>

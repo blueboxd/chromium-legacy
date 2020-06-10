@@ -111,11 +111,6 @@ class CONTENT_EXPORT CacheStorageScheduler {
   int num_running_shared_ = 0;
   int num_running_exclusive_ = 0;
 
-  // The peak number of parallel shared operations that ran at once.  Measured
-  // between the last time the sheduler started running shared operations and
-  // when the number of running shared operations drops to zero.
-  int peak_parallel_shared_ = 0;
-
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CacheStorageScheduler> weak_ptr_factory_{this};
 

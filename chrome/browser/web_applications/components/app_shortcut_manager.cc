@@ -26,7 +26,7 @@ namespace web_app {
 namespace {
 
 void OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs(
-    const std::vector<WebApplicationShortcutInfo>& shortcuts,
+    const WebApplicationInfo& web_app_info,
     std::unique_ptr<ShortcutInfo> shortcut_info) {
   // |shortcut_data_dir| is located in per-app OS integration resources
   // directory. See GetOsIntegrationResourcesDirectoryForApp function for more
@@ -35,7 +35,7 @@ void OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs(
       internals::GetShortcutDataDir(*shortcut_info);
   RegisterShortcutsMenuWithOs(
       std::move(shortcut_data_dir), std::move(shortcut_info->extension_id),
-      std::move(shortcut_info->profile_path), shortcuts);
+      std::move(shortcut_info->profile_path), web_app_info);
 }
 
 AppShortcutManager::ShortcutCallback& GetShortcutUpdateCallbackForTesting() {
@@ -163,7 +163,7 @@ void AppShortcutManager::CreateShortcuts(const AppId& app_id,
 }
 
 void AppShortcutManager::RegisterShortcutsMenuWithOs(
-    const std::vector<WebApplicationShortcutInfo>& shortcuts,
+    const WebApplicationInfo& web_app_info,
     const AppId& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_app::ShouldRegisterShortcutsMenuWithOs())
@@ -172,7 +172,7 @@ void AppShortcutManager::RegisterShortcutsMenuWithOs(
   GetShortcutInfoForApp(
       app_id,
       base::BindOnce(&OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs,
-                     shortcuts));
+                     web_app_info));
 }
 
 void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,

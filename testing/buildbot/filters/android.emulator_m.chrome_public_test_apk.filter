@@ -60,3 +60,9 @@
 
 # crbug.com/1090942
 -org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragmentTest.*
+
+# crbug.com/1092987
+-org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testIncognitoToggle_thumbnailFetchCount
+
+# crbug.com/1093050
+-org.chromium.chrome.browser.signin.AccountPickerBottomSheetTest.*

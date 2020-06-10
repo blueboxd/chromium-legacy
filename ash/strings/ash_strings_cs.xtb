@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">Rozlišení monitoru <ph name="DISPLAY_NAME" /> bylo změněno na <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Chcete-li změny ponechat, potvrďte je. Předchozí nastavení bude obnoveno za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Zadejte prosím v zařízení tento kód PIN: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Baterie dotykového pera je slabá</translation>
+<translation id="1036672894875463507">Jsem váš Asistent Google a můžu vám celý den pomáhat!
+Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1037492556044956303">Bylo přidáno zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Žádné sítě</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Odhlásit vše</translation>
 <translation id="2277103315734023688">Přetočit dopředu</translation>
 <translation id="2292698582925480719">Měřítko displeje</translation>
+<translation id="229397294990920565">Vypínání mobilních dat…</translation>
 <translation id="2295777434187870477">Mikrofon je zapnutý, přepnutím ho ztlumíte.</translation>
 <translation id="2298170939937364391">Je zapnutá lupa celé obrazovky. Vypnete ji opětovným stisknutím kombinace kláves Ctrl+Hledat+M.</translation>
 <translation id="2302092602801625023">Tento účet spravuje služba Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Asistent se načítá...</translation>
 <translation id="4356930093361201197">režim vysokého kontrastu</translation>
+<translation id="4368583494516669646">Dobrou noc, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Nastavení odesílání</translation>
 <translation id="4378551569595875038">Připojování...</translation>
 <translation id="4379531060876907730">Toto jsou nástroje pro dotykové pero</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Skrýt heslo</translation>
 <translation id="4570957409596482333">Tlačítko pro poslech vybraného textu</translation>
+<translation id="4577274620589681794">Čas vypršel · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Ukončit odesílání do neznámého přijímače</translation>
 <translation id="4628757576491864469">Zařízení</translation>
 <translation id="4659419629803378708">Funkce ChromeVox je zapnutá</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Posunout nahoru</translation>
 <translation id="4961318399572185831">Odesílání obrazovky</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
+<translation id="4970352680959471247">Dobrý večer, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Čas vypršel</translation>
 <translation id="5035236842988137213">Zařízení <ph name="DEVICE_NAME" /> je připojeno k novému telefonu</translation>
 <translation id="5035389544768382859">Potvrzení konfigurace monitoru</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Do této návštěvy již byli přidáni všichni dostupní uživatelé.</translation>
 <translation id="54609108002486618">Spravovaný</translation>
 <translation id="5465662442746197494">Potřebujete pomoc?</translation>
+<translation id="5485091064403948243">Dobré ráno, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Administrátor ve vašem zařízení obnovuje předchozí verzi systému. Po restartu zařízení budou vymazána všechna data.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Ukončení návštěvy</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Chcete-li zařízení odemknout, zadejte svůj rodičovský přístupový kód služby Family Link</translation>
 <translation id="742594950370306541">Kamera je používána.</translation>
 <translation id="743058460480092004">Kamera a mikrofon jsou používány.</translation>
+<translation id="7436182601308224670">Dobré odpoledne, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Dotkněte se senzoru</translation>
 <translation id="7497767806359279797">Vybrat jazyk a klávesnici</translation>
 <translation id="7526573455193969409">Síť může být sledována</translation>

@@ -113,9 +113,6 @@
           Nếu bạn không đặt chính sách này, thì nội dung hỗn hợp có thể chặn sẽ bị chặn và nội dung hỗn hợp có thể tùy ý chặn sẽ được nâng cấp. Đồng thời, người dùng sẽ được phép đặt các trường hợp ngoại lệ để hiển thị nội dung trên các trang web cụ thể.
 
           Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="113521240853905588">Định cấu hình các ngôn ngữ có thể dùng làm ngôn ngữ ưa thích của <ph name="PRODUCT_OS_NAME" />.
-
-      Nếu bạn đặt chính sách này, thì người dùng chỉ có thể thêm một trong các ngôn ngữ liệt kê trong chính sách này vào danh sách ngôn ngữ ưa thích. Nếu bạn không đặt chính sách này hoặc đặt thành danh sách trống, thì người dùng có thể chỉ định ngôn ngữ bất kỳ làm ngôn ngữ ưa thích. Nếu bạn đặt chính sách này thành danh sách có các giá trị không hợp lệ, thì tất cả các giá trị không hợp lệ sẽ bị bỏ qua. Nếu người dùng trước đó đã thêm một số ngôn ngữ không được chính sách này cho phép vào danh sách các ngôn ngữ ưu thích, thì các ngôn ngữ đó sẽ bị xóa. Nếu người dùng trước đó đã định cấu hình <ph name="PRODUCT_OS_NAME" /> hiển thị bằng một trong các ngôn ngữ không được chính sách này cho phép, thì ngôn ngữ hiển thị sẽ được chuyển sang một ngôn ngữ giao diện người dùng được phép vào lần tiếp theo khi người dùng đăng nhập. Nếu không, <ph name="PRODUCT_OS_NAME" /> sẽ chuyển sang giá trị hợp lệ đầu tiên do chính sách này chỉ định, hoặc sang một ngôn ngữ dự phòng (hiện là en-US), nếu chính sách này chỉ chứa các mục nhập không hợp lệ.</translation>
 <translation id="1135264353752122851">Định cấu hình bố cục bàn phím được phép trong các phiên người dùng <ph name="PRODUCT_OS_NAME" />.
 
       Nếu đặt chính sách này, thì người dùng chỉ có thể chọn một trong số các phương thức nhập do chính sách này chỉ định. Nếu chưa đặt chính sách này hoặc đặt thành danh sách trống, người dùng có thể chọn tất cả các phương thức nhập được hỗ trợ. Nếu chính sách này không cho phép phương thức nhập hiện tại, phương thức nhập đó sẽ chuyển sang bố cục bàn phím phần cứng (nếu được phép) hoặc mục nhập hợp lệ đầu tiên trong danh sách này. Bỏ qua tất cả các phương thức nhập không hợp lệ hoặc chưa được hỗ trợ trong danh sách này.</translation>
@@ -271,13 +268,6 @@
 Nếu bạn bật hoặc không định cấu hình chính sách này, thì việc cuộn trang web đến các phần văn bản cụ thể qua URL sẽ được bật.
 
 Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các phần văn bản cụ thể qua URL sẽ bị tắt.</translation>
-<translation id="1468707346106619889">Nếu chính sách này được đặt thành true thì Màn hình hợp nhất sẽ được cho phép và
-      bật theo mặc định, nhờ đó cho phép ứng dụng mở rộng nhiều màn hình.
-      Người dùng có thể tắt Màn hình hợp nhất cho các màn hình riêng lẻ bằng cách bỏ
-      chọn tính năng trong cài đặt màn hình.
-
-      Nếu chính sách này được đặt thành false hoặc không được đặt thì Màn hình hợp nhất
-      sẽ bị tắt. Trong trường hợp này, người dùng không thể bật tính năng đó.</translation>
 <translation id="1474273443907024088">Tắt Khởi động giả TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1486021504508098388">Báo cáo thông tin về đèn nền</translation>
@@ -737,21 +727,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
       Nếu bạn không đặt chính sách này thì không có hạn chế nào được áp dụng, và người dùng có thể đăng nhập bất kể phiên bản <ph name="PRODUCT_NAME" /> là gì.
 
       Ở đây, "Phiên bản" có thể là phiên bản chính xác, chẳng hạn như '61.0.3163.120', hoặc có tiền tố của phiên bản, chẳng hạn như '61.0'  </translation>
-<translation id="2176565653304920879">Khi chính sách này được đặt, tính năng phát hiện múi giờ tự động sẽ là một trong những cách sau đây tùy thuộc vào giá trị của cài đặt:
-
-      Nếu được đặt thành TimezoneAutomaticDetectionUsersDecide, người dùng có thể kiểm soát tính năng phát hiện múi giờ tự động bằng cách sử dụng các biện pháp kiểm soát thông thường trong chrome://settings.
-
-      Nếu được đặt thành TimezoneAutomaticDetectionDisabled, các biện pháp kiểm soát múi giờ tự động trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được tắt.
-
-      Nếu được đặt thành TimezoneAutomaticDetectionIPOnly, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Phát hiện múi giờ sẽ sử dụng phương pháp chỉ IP để phân giải vị trí.
-
-      Nếu được đặt thành TimezoneAutomaticDetectionSendWiFiAccessPoints, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Danh sách các điểm truy cập Wi-Fi hiển thị sẽ luôn được gửi tới máy chủ API vị trí địa lý để phát hiện múi giờ chi tiết.
-
-      Nếu được đặt thành TimezoneAutomaticDetectionSendAllLocationInfo, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Thông tin vị trí (như các điểm truy cập Wi-Fi, Tháp di động có thể truy cập, GPS) sẽ được gửi tới máy chủ để phát hiện múi giờ chi tiết.
-
-      Nếu chính sách này không được đặt, tính năng sẽ hoạt động như thể TimezoneAutomaticDetectionUsersDecide được đặt.
-
-      Nếu chính sách SystemTimezone được đặt, tính năng này sẽ ghi đè chính sách này. Trong trường hợp này, tính năng phát hiện múi giờ tự động bị tắt hoàn toàn.</translation>
 <translation id="2178899310296064282">Buộc sử dụng ít nhất Chế độ hạn chế trung bình trên YouTube</translation>
 <translation id="2182291258410176649">Người dùng sẽ quyết định có bật tính năng sao lưu và khôi phục hay không</translation>
 <translation id="2183294522275408937">Cài đặt này kiểm soát tần suất màn hình khóa yêu cầu nhập mật khẩu để tiếp tục sử dụng mở khóa nhanh. Mỗi khi truy cập màn hình khóa, nếu mục nhập mật khẩu cuối cùng không thuộc cài đặt này, thì tính năng mở khóa nhanh sẽ không khả dụng khi truy cập màn hình khóa. Nếu người dùng ở trên màn hình khóa quá khoảng thời gian này, mật khẩu sẽ được yêu cầu vào lần tiếp theo người dùng nhập sai mã hoặc truy cập lại màn hình khóa, tùy theo trường hợp nào đến trước.
@@ -1233,15 +1208,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này bật hoặc không được thiết lập, các trang web có thể sử dụng JavaScript nhưng người dùng có thể thay đổi cài đặt đó.</translation>
 <translation id="2753637905605932878">Hạn chế phạm vi của cổng UDP cục bộ do WebRTC sử dụng</translation>
 <translation id="2757054304033424106">Các loại tiện ích/ứng dụng được phép cài đặt</translation>
-<translation id="2758084448533744848">Chỉ định múi giờ bắt buộc để sử dụng cho thiết bị. Khi bạn đặt chính sách này, thì người dùng không thể ghi đè múi giờ đã chỉ định trên thiết bị. Nếu bạn chỉ định một giá trị không hợp lệ, thì chính sách này vẫn sẽ được kích hoạt bằng "GMT". Nếu bạn chỉ định một chuỗi trống, thì chính sách này sẽ bị bỏ qua.
-
-      Nếu bạn không đặt chính sách này, thì múi giờ hiện đang hoạt động sẽ vẫn được sử dụng. Tuy nhiên, người dùng có thể thay đổi múi giờ này.
-
-      Các thiết bị mới có múi giờ mặc định là "Hoa Kỳ/Thái Bình Dương".
-
-      Định dạng của giá trị sẽ dựa trên tên của múi giờ trong "Cơ sở dữ liệu múi giờ IANA" (xem "https://en.wikipedia.org/wiki/Tz_database"). Cụ thể là bạn có thể sử dụng "continent/large_city" hoặc "ocean/large_city" cho hầu hết các múi giờ.
-
-      Việc đặt chính sách này sẽ hoàn toàn vô hiệu hóa tính năng tự động xác định múi giờ theo vị trí của thiết bị, đồng thời ghi đè chính sách SystemTimezoneAutomaticDetection.</translation>
 <translation id="2759224876420453487">Kiểm soát hoạt động của người dùng trong một phiên đa cấu hình</translation>
 <translation id="2761483219396643566">Thời gian chờ cảnh báo trạng thái không sử dụng khi chạy trên nguồn pin</translation>
 <translation id="2762164719979766599">Chỉ định danh sách tài khoản trong thiết bị được hiển thị trên màn hình đăng nhập.
@@ -1295,13 +1261,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn sử dụng chính sách này thì chỉ những máy in có id khớp với các giá trị trong chính sách này mới được cung cấp cho người dùng. Các id này phải tương ứng với các trường "id" hoặc "guid" trong tệp đã chỉ định trong <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
 <translation id="284288632677954003">URL của một tệp XML chứa các URL sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
-<translation id="2844404652289407061">Cho phép dùng tính năng Chạm để tìm kiếm trong chế độ xem nội dung của <ph name="PRODUCT_NAME" />.
-
-      Nếu bạn bật tùy chọn cài đặt này, thì người dùng có thể sử dụng tính năng Chạm để tìm kiếm cũng như chọn tắt hoặc bật tính năng này.
-
-      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Chạm để tìm kiếm sẽ bị vô hiệu hóa hoàn toàn.
-
-      Nếu không đặt chính sách này, tức là bạn đã bật tính năng đó. Hãy xem phần mô tả ở trên.</translation>
 <translation id="2854607717796010700">Báo cáo thông tin về bộ nhớ của thiết bị.
 
       Nếu bạn không đặt chính sách này hoặc đặt chính sách thành false, thì thông tin sẽ không được báo cáo.
@@ -1582,22 +1541,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Bạn phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ tạm vắng.
 
           Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ tạm vắng là hành động đăng xuất hoặc tắt nguồn.</translation>
-<translation id="3373364525435227558">Đặt một hoặc nhiều ngôn ngữ đề xuất cho phiên được quản lý, cho phép người dùng dễ dàng chọn một trong số các ngôn ngữ này.
-
-      Người dùng có thể chọn ngôn ngữ và bố cục bàn phím trước khi bắt đầu một phiên được quản lý. Theo mặc định, tất cả các ngôn ngữ mà <ph name="PRODUCT_OS_NAME" /> hỗ trợ sẽ được liệt kê theo thứ tự trong bảng chữ cái. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ đề xuất lên đầu danh sách.
-
-      Nếu chưa đặt chính sách này, thì ngôn ngữ hiện áp dụng cho giao diện người dùng sẽ được chọn trước.
-
-      Nếu đặt chính sách này, thì các ngôn ngữ đề xuất sẽ được chuyển lên đầu danh sách cũng như được tách biệt rõ ràng với tất cả các ngôn ngữ khác. Các ngôn ngữ đề xuất sẽ được liệt kê theo trình tự mà chúng xuất hiện trong chính sách. Ngôn ngữ đầu tiên được đề xuất sẽ được chọn trước.
-
-      Nếu có nhiều ngôn ngữ đề xuất, thì hệ thống giả định rằng người dùng sẽ muốn chọn trong số các ngôn ngữ này. Mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ được hiển thị nổi bật khi bắt đầu một phiên được quản lý. Nếu không, hệ thống giả định rằng hầu hết người dùng đều muốn sử dụng ngôn ngữ đã chọn trước. Khi đó, mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ được hiển thị ít nổi bật hơn khi bắt đầu một phiên được quản lý.
-
-      Khi đặt chính sách này cũng như khi bật tính năng đăng nhập tự động (hãy xem các chính sách |DeviceLocalAccountAutoLoginId| và |DeviceLocalAccountAutoLoginDelay|), phiên được quản lý đã tự động bắt đầu sẽ sử dụng ngôn ngữ đề xuất đầu tiên và bố cục bàn phím phổ biến nhất phù hợp với ngôn ngữ đó.
-
-      Bố cục bàn phím đã chọn trước sẽ luôn là bố cục bàn phím phổ biến nhất phù hợp với ngôn ngữ đã chọn trước.
-
-      Chỉ có thể đặt chính sách này thành đề xuất. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ đề xuất lên trên cùng, tuy nhiên, người dùng luôn được phép chọn bất kỳ ngôn ngữ nào được <ph name="PRODUCT_OS_NAME" /> hỗ trợ cho phiên của họ.
-      </translation>
 <translation id="3373381043600809954">Bật <ph name="PRODUCT_NAME" /></translation>
 <translation id="3378482432905539452">Chính sách này không còn dùng nữa. Vui lòng dùng <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> để kiểm soát khả năng cung cấp plugin Flash và <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> để kiểm soát xem có phải dùng trình xem PDF tích hợp để mở tệp PDF hay không.
 
@@ -2014,6 +1957,9 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu chính sách này được đặt thành true, thông tin theo dõi gói mạng (được gọi là <ph name="HEARTBEATS_TERM" />) sẽ được gửi.
       Nếu được đặt thành false hoặc không được đặt, thì sẽ không có gói nào được gửi.</translation>
+<translation id="3942041691320538491">Nếu đặt chính sách này thành 0 (giá trị mặc định), thì bạn có thể truy cập vào công cụ cho nhà phát triển và Bảng điều khiển JavaScript. Tuy nhiên, bạn sẽ không truy cập được trong trường hợp đã cài đặt tiện ích theo chính sách doanh nghiệp. Nếu đặt chính sách này thành 1, thì bạn có thể truy cập vào công cụ cho nhà phát triển và Bảng điều khiển JavaScript trong mọi trường hợp, bao gồm cả trường hợp đã cài đặt tiện ích theo chính sách doanh nghiệp. Nếu đặt chính sách này thành 2, thì bạn không thể truy cập vào công cụ cho nhà phát triển cũng như không thể kiểm tra các thành phần của trang web.
+
+      Tùy chọn cài đặt này cũng tắt các phím tắt và mục truy cập trên trình đơn hoặc trình đơn ngữ cảnh để mở công cụ cho nhà phát triển hoặc Bảng điều khiển JavaScript.</translation>
 <translation id="3950110092991281616">Chỉ bật tùy chọn xác thực môi trường xung quanh đối với các phiên thông thường.</translation>
 <translation id="3950239119790560549">Giới hạn thời gian cập nhật</translation>
 <translation id="3956686688560604829">Sử dụng chính sách SiteList của Internet Explorer để hỗ trợ trình duyệt cũ.</translation>
@@ -2609,6 +2555,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4986560318567565414">Đường dẫn tới Chrome để chuyển từ trình duyệt thay thế.</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
+<translation id="4996086761250834365">Cho phép phân tích sản phẩm <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="500149597848135831">Cho phép tất cả các biến</translation>
 <translation id="5017369989680827157">Nếu bạn đặt chính sách này thành True hoặc không đặt chính sách này, thì người dùng sẽ có quyền kiểm soát tính năng Tự động điền cho địa chỉ trong giao diện người dùng.
 
@@ -3004,15 +2951,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể chọn hình đại diện cho họ trên màn hình đăng nhập.</translation>
-<translation id="5432219358069697932">Chính sách này cho phép bạn định cấu hình hình nền hiển thị trên màn hình và trên nền màn hình đăng nhập dành cho người dùng. Bạn đặt chính sách này bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME" /> có thể tải hình nền xuống và một hàm băm mật mã dùng để xác minh tính toàn vẹn của tệp đã tải xuống. Hình ảnh phải ở định dạng JPEG, kích thước tệp không được vượt quá 16 MB. URL phải truy cập được mà không cần xác thực.
-
-      Hình nền sẽ được tải xuống và lưu vào bộ nhớ đệm. Hình này sẽ được tải xuống lại mỗi khi URL hoặc hàm băm thay đổi.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> sẽ tải xuống và sử dụng hình nền đó.
-
-      Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.
-
-      Nếu bạn không đặt chính sách này, thì người dùng có thể chọn một hình ảnh để hiển thị trên màn hình và trên nền màn hình đăng nhập.</translation>
 <translation id="5437214086679373363">Kiểm soát xem người dùng có được phép tải lên hoặc tải xuống các tệp được bảo vệ bằng mật khẩu hay không khi bắt buộc phải thực hiện quá trình quét.  Hạn chế này chỉ áp dụng với các tệp cần quét theo yêu cầu của <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> và các chính sách kiểm soát danh sách miền được phép thực hiện quá trình kiểm tra.
 
       Nếu bạn đặt chính sách này thành "None", thì <ph name="PRODUCT_NAME" /> sẽ chặn người dùng tải lên hoặc tải xuống các tệp được bảo vệ bằng mật khẩu.
@@ -3063,9 +3001,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Chúng tôi dự định loại bỏ chính sách này trong <ph name="PRODUCT_NAME" /> cho Mac OS X phiên bản 87, khi ngừng hỗ trợ trình xác minh chứng chỉ cũ trên Mac OS X theo kế hoạch.
       </translation>
 <translation id="5494917047563607689">Nếu bạn đặt giá trị nhỏ hơn 1 MB hoặc không đặt giá trị, thì <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng kích thước mặc định để lưu ứng dụng và tiện ích vào bộ nhớ đệm nhằm giúp nhiều người dùng trên một thiết bị có thể cài đặt. Nhờ đó, người dùng không phải tải xuống lại từng ứng dụng/tiện ích.</translation>
-<translation id="5498045818698736356">Chỉ định danh sách các trang web được cài đặt tự động mà không có sự tương tác của người dùng và người dùng không thể gỡ cài đặt cũng như tắt.
-
-      Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: "url" và hai thành phần không bắt buộc: "default_launch_container" và "create_desktop_shortcut". "url" phải là URL của ứng dụng web cần cài đặt, "launch_container" phải là "window" hoặc "tab" để xác định cách mở Ứng dụng web sau khi cài đặt và "create_desktop_shortcut" phải có giá trị true nếu lối tắt trên màn hình được tạo trên Linux và Windows. Nếu bỏ qua mục "default_launch_container", thì ứng dụng sẽ mở trong tab theo mặc định. Người dùng có thể thay đổi vùng chứa dùng để mở ứng dụng bất kể giá trị của "default_launch_container". Nếu bỏ qua mục "create_desktop_shortcuts", thì sẽ không có lối tắt trên màn hình nào được tạo. Xem chính sách <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> về việc ghim ứng dụng vào giá ChromeOS.</translation>
 <translation id="5499375345075963939">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Khi giá trị của chính sách này được đặt và giá trị đó khác 0, người dùng hiện được đăng nhập vào bản trình diễn sẽ tự động bị đăng xuất sau khi thời gian không hoạt động của khoảng thời gian đã chỉ định trôi qua.
@@ -3336,6 +3271,10 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Các biến môi trường được mở rộng. Trên Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> được thay thế bằng giá trị của biến môi trường ABC.</translation>
 <translation id="5861856285460256766">Cấu hình mã truy cập dành cho cha mẹ</translation>
 <translation id="5868414965372171132">Cấu hình mạng ở mức người dùng</translation>
+<translation id="587242272905978723">Cho phép <ph name="PLUGIN_VM_NAME" /> thu thập dữ liệu sử dụng của <ph name="PLUGIN_VM_NAME" />.
+
+      Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách, thì <ph name="PLUGIN_VM_NAME" /> không được phép thu thập dữ liệu.
+      Nếu bạn đặt chính sách thành true, thì <ph name="PLUGIN_VM_NAME" /> có thể thu thập dữ liệu sử dụng của <ph name="PLUGIN_VM_NAME" />. Sau đó, dữ liệu này được kết hợp và phân tích kỹ lưỡng để cải thiện trải nghiệm của <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="5879014913445067283">Kiểm soát tính năng phát hiện Chia sẻ tệp trong mạng thông qua <ph name="NETBIOS_NAME" /></translation>
 <translation id="588135807064822874">Bật tính năng Chạm để tìm kiếm</translation>
 <translation id="5882345429632338713">Hoãn lại trước khi chạy trình duyệt thay thế (mili giây)</translation>
@@ -4303,9 +4242,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="7302043767260300182">Độ trễ khóa màn hình khi chạy trên nguồn AC</translation>
-<translation id="7311458740754205918">Nếu giá trị này được đặt thành true hoặc không được đặt, trang Tab mới có thể hiển thị đề xuất nội dung dựa trên lịch sử duyệt web, sở thích hoặc vị trí của người dùng.
-
-      Nếu giá trị này được đặt thành false, các đề xuất nội dung được tạo tự động sẽ không hiển thị trên trang Tab mới.</translation>
 <translation id="731208205557053914">Báo cáo thông tin về VPD</translation>
 <translation id="7323896582714668701">Tham số dòng lệnh bổ sung cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Tương tự như Wipe (giá trị 2) nhưng cố gắng giữ lại mã đăng nhập để người dùng không phải đăng nhập lại.</translation>
@@ -4514,7 +4450,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
-<translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>
 <translation id="7643883929273267746">Hạn chế các tài khoản được hiển thị trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="7648907905084499629">Dùng hành vi <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> cho các cookie trên tất cả các trang web</translation>
 <translation id="7651739109954974365">Xác định liệu chuyển vùng dữ liệu có được bật cho thiết bị hay không. Nếu được đặt thành đúng, chuyển vùng dữ liệu sẽ được phép. Nếu không được định cấu hình hoặc được đặt thành sai, chuyển vùng dữ liệu sẽ không khả dụng.</translation>
@@ -4782,13 +4717,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Xin lưu ý rằng trước đó chính sách này đã bị bật nhầm trên Android, nhưng tính năng này chưa được hỗ trợ đầy đủ trên Android.</translation>
 <translation id="8104962233214241919">Tự động chọn chứng chỉ ứng dụng khách cho các trang web này</translation>
-<translation id="8112122435099806139">Chỉ định định dạng đồng hồ được dùng cho thiết bị.
-
-      Chính sách này định cấu hình định dạng đồng hồ để sử dụng trên màn hình đăng nhập và làm định dạng mặc định cho các phiên của người dùng. Người dùng vẫn có thể ghi đè định dạng đồng hồ cho tài khoản của họ.
-
-      Nếu chính sách này được đặt thành true, thiết bị sẽ sử dụng định dạng đồng hồ 24 giờ. Nếu chính sách được đặt thành false, thiết bị sẽ sử dụng định dạng đồng hồ 12 giờ.
-
-      Nếu chính sách này không được đặt, thiết bị sẽ mặc định về định dạng đồng hồ 24 giờ.</translation>
 <translation id="8114382167597081590">Không buộc sử dụng Chế độ hạn chế trên YouTube</translation>
 <translation id="8117921351531866504">Giúp bạn thiết lập để cho phép hoặc không cho phép các trang web kiểm tra xem người dùng đã lưu phương thức thanh toán hay chưa.
 

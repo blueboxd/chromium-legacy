@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
-<translation id="1036550831858290950">Het huidige tabblad als bladwijzer opslaan</translation>
+<translation id="1036550831858290950">Het huidige tabblad als bookmark opslaan</translation>
 <translation id="104962181688258143">De Files-app openen</translation>
 <translation id="1122869341872663659">Er worden <ph name="N" /> zoekresultaten voor <ph name="QUERY" /> getoond</translation>
 <translation id="1195667586424773550">Sleep de link naar de adresbalk van het tabblad</translation>
@@ -70,7 +70,7 @@
 <translation id="3288816184963444640">Het huidige venster sluiten</translation>
 <translation id="3407560819924487926">Taakbeheer weergeven</translation>
 <translation id="3422679037938588196">Naar de vorige term gaan die overeenkomt met je zoekopdracht</translation>
-<translation id="353037708190149633">Alle geopende pagina's in je huidige venster als bladwijzers opslaan in een nieuwe map</translation>
+<translation id="353037708190149633">Alle geopende pagina's in je huidige venster als bookmarks opslaan in een nieuwe map</translation>
 <translation id="355103131818127604">De link openen op een nieuw tabblad op de achtergrond</translation>
 <translation id="3622741593887335780">Inzoomen (indien gedockt OF wanneer 'Volledig scherm vergroten' is ingeschakeld)</translation>
 <translation id="3649256019230929621">Venster minimaliseren</translation>
@@ -92,7 +92,7 @@
 <translation id="4090342722461256974">Houd <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" /> ingedrukt en tik op <ph name="TAB" /> totdat het venster verschijnt dat je wilt openen. Laat de toetsen vervolgens los.</translation>
 <translation id="4092538597492297615">Geselecteerde content kopiëren naar het klembord</translation>
 <translation id="4101772068965291327">Homepage openen</translation>
-<translation id="4123108089450197101">De link opslaan als bladwijzer</translation>
+<translation id="4123108089450197101">De link opslaan als bookmark</translation>
 <translation id="4141203561740478845">De rij met de adresbalk markeren</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> of <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Overzichtsmodus</translation>

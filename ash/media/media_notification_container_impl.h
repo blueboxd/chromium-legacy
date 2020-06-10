@@ -43,7 +43,8 @@ class ASH_EXPORT MediaNotificationContainerImpl
   void OnExpanded(bool expanded) override;
   void OnMediaSessionInfoChanged(
       const media_session::mojom::MediaSessionInfoPtr& session_info) override {}
-  void OnMediaSessionMetadataChanged() override {}
+  void OnMediaSessionMetadataChanged(
+      const media_session::MediaMetadata& metadata) override {}
   void OnVisibleActionsChanged(
       const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override {}

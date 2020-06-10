@@ -728,6 +728,20 @@
             "description": "Whether the screen is projected."
           }
         ]
+      }, {
+        "name": "onSuggestionsChanged",
+        "type": "function",
+        "description": "This event is sent when a new set of suggestions has been generated",
+        "parameters": [
+          {
+            "name": "suggestions",
+            "type": "array",
+            "description": "List of suggestions to display, in order of relevance",
+            "items": {
+              "type": "string"
+            }
+          }
+        ]
       }
     ]
   }

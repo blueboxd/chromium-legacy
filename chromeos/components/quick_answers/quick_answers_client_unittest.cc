@@ -374,5 +374,27 @@ TEST_F(QuickAnswersClientTest, PreprocessTranslationIntent) {
                                    IntentType::kTranslation);
 }
 
+TEST_F(QuickAnswersClientTest, PreprocessUnitConversionIntent) {
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->selected_text = "20ft";
+
+  // Verify that |OnRequestPreprocessFinished| is called.
+  std::unique_ptr<QuickAnswersRequest> processed_request =
+      std::make_unique<QuickAnswersRequest>();
+  processed_request->selected_text = "20ft";
+  PreprocessedOutput expected_processed_output;
+  expected_processed_output.intent_text = "20ft";
+  expected_processed_output.query = "Convert:20ft";
+  expected_processed_output.intent_type = IntentType::kUnit;
+  processed_request->preprocessed_output = expected_processed_output;
+  EXPECT_CALL(*mock_delegate_,
+              OnRequestPreprocessFinished(
+                  QuickAnswersRequestWithOutputEqual(*processed_request)));
+
+  client_->IntentGeneratorCallback(*quick_answers_request, "20ft",
+                                   IntentType::kUnit);
+}
+
 }  // namespace quick_answers
 }  // namespace chromeos

@@ -157,7 +157,7 @@ void BookmarkAppIconManager::ReadAllShortcutsMenuIcons(
   // TODO(https://crbug.com/926083): This needs to be implemented to support
   // Manifest update and local installs.
   NOTIMPLEMENTED();
-  std::move(callback).Run(std::vector<std::map<SquareSizePx, SkBitmap>>());
+  std::move(callback).Run(ShortcutsMenuIconsBitmaps{});
 }
 
 void BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,

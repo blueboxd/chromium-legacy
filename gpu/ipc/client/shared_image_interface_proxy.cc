@@ -260,6 +260,28 @@ SyncToken SharedImageInterfaceProxy::GenUnverifiedSyncToken() {
       next_release_id_);
 }
 
+void SharedImageInterfaceProxy::WaitSyncToken(const SyncToken& sync_token) {
+  if (!sync_token.HasData())
+    return;
+
+  std::vector<SyncToken> dependencies;
+  dependencies.push_back(sync_token);
+  SyncToken& new_token = dependencies.back();
+  if (!new_token.verified_flush()) {
+    // Only allow unverified sync tokens for the same channel.
+    DCHECK_EQ(sync_token.namespace_id(), gpu::CommandBufferNamespace::GPU_IO);
+    int sync_token_channel_id =
+        ChannelIdFromCommandBufferId(sync_token.command_buffer_id());
+    DCHECK_EQ(sync_token_channel_id, host_->channel_id());
+    new_token.SetVerifyFlush();
+  }
+  {
+    base::AutoLock lock(lock_);
+    last_flush_id_ = host_->EnqueueDeferredMessage(GpuChannelMsg_Nop(),
+                                                   std::move(dependencies));
+  }
+}
+
 void SharedImageInterfaceProxy::Flush() {
   base::AutoLock lock(lock_);
   host_->EnsureFlush(last_flush_id_);
@@ -390,9 +412,11 @@ void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
 #if defined(OS_FUCHSIA)
 void SharedImageInterfaceProxy::RegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
-    zx::channel token) {
-  host_->Send(
-      new GpuChannelMsg_RegisterSysmemBufferCollection(route_id_, id, token));
+    zx::channel token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  host_->Send(new GpuChannelMsg_RegisterSysmemBufferCollection(
+      route_id_, id, token, format, usage));
 }
 
 void SharedImageInterfaceProxy::ReleaseSysmemBufferCollection(

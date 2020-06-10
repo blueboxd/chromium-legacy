@@ -25,9 +25,6 @@ const base::Feature kContextualNudges{"ContextualNudges",
 const base::Feature kDisplayAlignAssist{"DisplayAlignAssist",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDisplayChangeModal{"DisplayChangeModal",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDisplayIdentification{"DisplayIdentification",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -236,10 +233,6 @@ bool IsReduceDisplayNotificationsEnabled() {
 bool IsHideShelfControlsInTabletModeEnabled() {
   return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode) &&
          IsDragFromShelfToHomeOrOverviewEnabled();
-}
-
-bool IsDisplayChangeModalEnabled() {
-  return base::FeatureList::IsEnabled(kDisplayChangeModal);
 }
 
 bool AreContextualNudgesEnabled() {

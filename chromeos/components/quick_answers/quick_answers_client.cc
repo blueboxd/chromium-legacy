@@ -18,6 +18,7 @@ namespace {
 
 using network::mojom::URLLoaderFactory;
 
+constexpr char kUnitConversionQueryRewriteTemplate[] = "Convert:%s";
 constexpr char kDictionaryQueryRewriteTemplate[] = "Define:%s";
 constexpr char kTranslationQueryRewriteTemplate[] = "Translate:%s";
 
@@ -37,6 +38,8 @@ const PreprocessedOutput PreprocessRequest(const QuickAnswersRequest& request,
 
   switch (intent_type) {
     case IntentType::kUnit:
+      processed_output.query = base::StringPrintf(
+          kUnitConversionQueryRewriteTemplate, intent_text.c_str());
       break;
     case IntentType::kDictionary:
       processed_output.query = base::StringPrintf(

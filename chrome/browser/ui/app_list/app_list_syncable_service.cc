@@ -548,18 +548,7 @@ void AppListSyncableService::CleanUpSingleItemSyncFolder() {
   std::vector<std::string> ids_to_be_deleted;
   for (auto iter = sync_items_.begin(); iter != sync_items_.end();) {
     SyncItem* sync_item = (iter++)->second.get();
-    std::string child_item_id;
-    SyncItem* child_item = GetOnlyChildOfUserCreatedFolder(sync_item);
-    if (child_item) {
-      // Move the single child item out of folder and put at the same relative
-      // location as the folder.
-      child_item->item_ordinal = sync_item->item_ordinal;
-      child_item->parent_id = "";
-      UpdateSyncItemInLocalStorage(profile_, child_item);
-      SendSyncChange(child_item, SyncChange::ACTION_UPDATE);
-      // Update the app list model updater for the sync change.
-      ProcessExistingSyncItem(child_item);
-
+    if (RemoveOnlyChildOutOfUserCreatedFolderIfNecessary(sync_item)) {
       // Remember the id of the folder item to be deleted.
       ids_to_be_deleted.push_back(sync_item->item_id);
     }
@@ -589,6 +578,23 @@ AppListSyncableService::GetOnlyChildOfUserCreatedFolder(SyncItem* sync_item) {
     }
   }
   return child_item;
+}
+
+bool AppListSyncableService::RemoveOnlyChildOutOfUserCreatedFolderIfNecessary(
+    SyncItem* sync_item) {
+  SyncItem* child_item = GetOnlyChildOfUserCreatedFolder(sync_item);
+  if (!child_item)
+    return false;
+
+  // Move the single child item out of folder and put at the same relative
+  // location as the folder.
+  child_item->item_ordinal = sync_item->item_ordinal;
+  child_item->parent_id = "";
+  UpdateSyncItemInLocalStorage(profile_, child_item);
+  SendSyncChange(child_item, SyncChange::ACTION_UPDATE);
+  // Update the app list model updater for the sync change.
+  ProcessExistingSyncItem(child_item);
+  return true;
 }
 
 void AppListSyncableService::AddItem(
@@ -772,6 +778,8 @@ void AppListSyncableService::UpdateSyncItem(const ChromeAppListItem* app_item) {
     LOG(ERROR) << "UpdateItem: no sync item: " << app_item->id();
     return;
   }
+  std::string app_item_folder_id = app_item->folder_id();
+  std::string sync_item_orignial_parent_id = sync_item->parent_id;
   bool changed = UpdateSyncItemFromAppItem(app_item, sync_item);
   if (!changed) {
     DVLOG(2) << this << " - Update: SYNC NO CHANGE: " << sync_item->ToString();
@@ -779,6 +787,16 @@ void AppListSyncableService::UpdateSyncItem(const ChromeAppListItem* app_item) {
   }
   UpdateSyncItemInLocalStorage(profile_, sync_item);
   SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
+
+  // If the |app_item| is moved out from a user created folder, check if
+  // its original folder becomes a single sync item folder. Clean it up if
+  // it does.
+  if (!sync_item_orignial_parent_id.empty() &&
+      app_item_folder_id != sync_item_orignial_parent_id) {
+    SyncItem* original_folder_item = FindSyncItem(sync_item_orignial_parent_id);
+    RemoveOnlyChildOutOfUserCreatedFolderIfNecessary(original_folder_item);
+  }
+
   PruneRedundantPageBreakItems();
 }
 

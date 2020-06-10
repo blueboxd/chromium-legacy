@@ -3535,6 +3535,10 @@ if (is_android) {
       "android/java/src/org/chromium/base/process_launcher/ChildProcessLauncher.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceDelegate.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildServiceConnection.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildServiceConnectionDelegate.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildServiceConnectionFactory.java",
+      "android/java/src/org/chromium/base/process_launcher/ChildServiceConnectionImpl.java",
       "android/java/src/org/chromium/base/process_launcher/FileDescriptorInfo.java",
       "android/java/src/org/chromium/base/supplier/DestroyableObservableSupplier.java",
       "android/java/src/org/chromium/base/supplier/ObservableSupplier.java",
@@ -3729,7 +3733,7 @@ if (is_android) {
       ":base_java",
       ":base_java_test_support",
     ]
-    sources = [ "test/android/javatests/src/org/chromium/base/test/TestChildProcessConnection.java" ]
+    sources = [ "test/android/javatests/src/org/chromium/base/process_launcher/TestChildProcessConnection.java" ]
   }
 
   android_library("base_junit_test_support") {

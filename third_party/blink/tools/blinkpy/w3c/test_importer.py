@@ -604,7 +604,7 @@ class TestImporter(object):
         """
         _log.info('Adding test expectations lines to TestExpectations.')
         self.rebaselined_tests, self.new_test_expectations = (
-            self._expectation_updater.update_expectations())
+            self._expectations_updater.update_expectations())
 
     def _get_last_imported_wpt_revision(self):
         """Finds the last imported WPT revision."""

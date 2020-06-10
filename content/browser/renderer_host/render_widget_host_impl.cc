@@ -1771,12 +1771,20 @@ void RenderWidgetHostImpl::DragTargetDragEnterWithMetaData(
 }
 
 void RenderWidgetHostImpl::DragTargetDragOver(
-    const gfx::PointF& client_pt,
-    const gfx::PointF& screen_pt,
+    const gfx::PointF& client_point,
+    const gfx::PointF& screen_point,
     WebDragOperationsMask operations_allowed,
     int key_modifiers) {
-  Send(new DragMsg_TargetDragOver(GetRoutingID(), client_pt, screen_pt,
-                                  operations_allowed, key_modifiers));
+  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
+  // come over the mojo channels. It will be guaranteed that this
+  // will be non-null.
+  if (blink_frame_widget_) {
+    blink_frame_widget_->DragTargetDragOver(
+        ConvertWindowPointToViewport(client_point), screen_point,
+        operations_allowed, key_modifiers,
+        base::BindOnce(&RenderWidgetHostImpl::OnUpdateDragCursor,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 void RenderWidgetHostImpl::DragTargetDragLeave(
@@ -1804,13 +1812,16 @@ void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,
 }
 
 void RenderWidgetHostImpl::DragSourceEndedAt(
-    const gfx::PointF& client_pt,
-    const gfx::PointF& screen_pt,
+    const gfx::PointF& client_point,
+    const gfx::PointF& screen_point,
     blink::WebDragOperation operation) {
-  Send(new DragMsg_SourceEnded(GetRoutingID(),
-                               client_pt,
-                               screen_pt,
-                               operation));
+  // TODO(dtapuska): Remove this null check once all of the Drag IPCs
+  // come over the mojo channels. It will be guaranteed that this
+  // will be non-null.
+  if (blink_frame_widget_) {
+    blink_frame_widget_->DragSourceEndedAt(
+        ConvertWindowPointToViewport(client_point), screen_point, operation);
+  }
 }
 
 void RenderWidgetHostImpl::DragSourceSystemDragEnded() {
@@ -3399,6 +3410,18 @@ gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
     return gfx::Size();
 
   return root_view->GetVisibleViewportSize();
+}
+
+// This method was copied from RenderWidget::ConvertWindowToViewport() when
+// porting drag-and-drop calls to Mojo, so that RenderWidgetHostImpl bypasses
+// RenderWidget to talk the the WebFrameWidget and needs to perform the scale
+// operation itself.
+gfx::PointF RenderWidgetHostImpl::ConvertWindowPointToViewport(
+    const gfx::PointF& window_point) {
+  gfx::PointF viewport_point = window_point;
+  if (IsUseZoomForDSFEnabled())
+    viewport_point.Scale(GetScaleFactorForView(GetView()));
+  return viewport_point;
 }
 
 RenderWidgetHostImpl::MainFramePropagationProperties::

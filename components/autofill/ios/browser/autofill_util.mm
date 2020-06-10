@@ -50,17 +50,11 @@ bool IsContextSecureForWebState(web::WebState* web_state) {
 }
 
 std::unique_ptr<base::Value> ParseJson(NSString* json_string) {
-  // Convert JSON string to JSON object |JSONValue|.
-  int error_code = 0;
-  std::string error_message;
-  std::unique_ptr<base::Value> json_value(
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          base::SysNSStringToUTF8(json_string), base::JSON_PARSE_RFC,
-          &error_code, &error_message));
-  if (error_code)
+  base::Optional<base::Value> json_value =
+      base::JSONReader::Read(base::SysNSStringToUTF8(json_string));
+  if (!json_value)
     return nullptr;
-
-  return json_value;
+  return base::Value::ToUniquePtrValue(std::move(*json_value));
 }
 
 bool ExtractFormsData(NSString* forms_json,

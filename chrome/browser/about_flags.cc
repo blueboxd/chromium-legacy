@@ -4780,10 +4780,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPrintServerUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kPrintServerUi)},
 
-    {"display-change-modal", flag_descriptions::kDisplayChangeModalName,
-     flag_descriptions::kDisplayChangeModalDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kDisplayChangeModal)},
-
     {"printer-status", flag_descriptions::kPrinterStatusName,
      flag_descriptions::kPrinterStatusDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPrinterStatus)},

@@ -148,15 +148,18 @@ WebApplicationInfo CreateWebAppInfo(const char* title,
   web_app_info.scope = GURL(app_url);
   web_app_info.icon_bitmaps[size] = CreateSquareBitmap(size);
   if (create_with_shortcuts) {
-    WebApplicationShortcutInfo shortcut_item;
+    WebApplicationShortcutsMenuItemInfo shortcut_item;
     WebApplicationIconInfo icon;
+    std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;
     shortcut_item.name = base::UTF8ToUTF16(kShortcutItemName);
     shortcut_item.url = GURL(kShortcutUrl);
     icon.url = GURL(kShortcutIconUrl);
     icon.square_size_px = size;
     shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-    shortcut_item.shortcut_icon_bitmaps[size] = CreateSquareBitmap(size);
-    web_app_info.shortcut_infos.push_back(std::move(shortcut_item));
+    web_app_info.shortcut_infos.emplace_back(std::move(shortcut_item));
+    shortcut_icon_bitmaps[size] = CreateSquareBitmap(size);
+    web_app_info.shortcuts_menu_icons_bitmaps.emplace_back(
+        std::move(shortcut_icon_bitmaps));
   }
   return web_app_info;
 }

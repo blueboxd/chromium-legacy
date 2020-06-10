@@ -10,20 +10,17 @@
 
 namespace blink {
 
-NGInlineItemResult::NGInlineItemResult()
-    : item(nullptr), item_index(0), start_offset(0), end_offset(0) {}
+NGInlineItemResult::NGInlineItemResult() : item(nullptr), item_index(0) {}
 
 NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
                                        unsigned index,
-                                       unsigned start,
-                                       unsigned end,
+                                       const NGTextOffset& text_offset,
                                        bool break_anywhere_if_overflow,
                                        bool should_create_line_box,
                                        bool has_unpositioned_floats)
     : item(item),
       item_index(index),
-      start_offset(start),
-      end_offset(end),
+      text_offset(text_offset),
       break_anywhere_if_overflow(break_anywhere_if_overflow),
       should_create_line_box(should_create_line_box),
       has_unpositioned_floats(has_unpositioned_floats) {}
@@ -87,13 +84,13 @@ bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
 void NGInlineItemResult::CheckConsistency(bool allow_null_shape_result) const {
   DCHECK(item);
   if (item->Type() == NGInlineItem::kText) {
-    DCHECK_LT(start_offset, end_offset);
+    text_offset.AssertNotEmpty();
     if (allow_null_shape_result && !shape_result)
       return;
     DCHECK(shape_result);
-    DCHECK_EQ(end_offset - start_offset, shape_result->NumCharacters());
-    DCHECK_EQ(start_offset, shape_result->StartIndex());
-    DCHECK_EQ(end_offset, shape_result->EndIndex());
+    DCHECK_EQ(Length(), shape_result->NumCharacters());
+    DCHECK_EQ(StartOffset(), shape_result->StartIndex());
+    DCHECK_EQ(EndOffset(), shape_result->EndIndex());
   }
 }
 #endif
@@ -107,7 +104,7 @@ unsigned NGLineInfo::InflowEndOffset() const {
     if (item.Type() == NGInlineItem::kText ||
         item.Type() == NGInlineItem::kControl ||
         item.Type() == NGInlineItem::kAtomicInline)
-      return item_result.end_offset;
+      return item_result.EndOffset();
   }
   return StartOffset();
 }
@@ -179,18 +176,18 @@ LayoutUnit NGLineInfo::ComputeTrailingSpaceWidth(
 
     // The last text item may contain trailing spaces if this is a last line,
     // has a forced break, or is 'white-space: pre'.
-    unsigned end_offset = item_result.end_offset;
+    unsigned end_offset = item_result.EndOffset();
     DCHECK(end_offset);
     if (item.Type() == NGInlineItem::kText) {
       const String& text = items_data_->text_content;
       if (end_offset && text[end_offset - 1] == kSpaceCharacter) {
         do {
           --end_offset;
-        } while (end_offset > item_result.start_offset &&
+        } while (end_offset > item_result.StartOffset() &&
                  text[end_offset - 1] == kSpaceCharacter);
 
         // If all characters in this item_result are spaces, check next item.
-        if (end_offset == item_result.start_offset) {
+        if (end_offset == item_result.StartOffset()) {
           trailing_spaces_width += item_result.inline_size;
           continue;
         }

@@ -444,6 +444,11 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
 
         View view = mStream.getView();
         view.setBackgroundResource(R.color.default_bg_color);
+        if (mIsPlaceholderShown) {
+            // Set recyclerView as transparent until first patch of articles are loaded. Before
+            // that, the placeholder is shown.
+            view.getBackground().setAlpha(0);
+        }
         mRootView.addView(view);
         mStreamViewResizer =
                 ViewResizer.createAndAttach(view, mUiConfig, mDefaultMargin, mWideMargin);

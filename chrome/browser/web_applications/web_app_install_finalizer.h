@@ -72,7 +72,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void OnIconsDataWritten(
       CommitCallback commit_callback,
       std::unique_ptr<WebApp> web_app,
-      std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
+      const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
       bool success);
 
   void OnShortcutsMenuIconsDataWritten(CommitCallback commit_callback,

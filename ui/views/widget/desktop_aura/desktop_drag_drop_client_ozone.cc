@@ -282,6 +282,31 @@ void DesktopDragDropClientOzone::OnDragLocationChanged(
   }
 }
 
+void DesktopDragDropClientOzone::OnDragOperationChanged(
+    ui::DragDropTypes::DragOperation operation) {
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window_);
+  if (!cursor_client)
+    return;
+
+  ui::mojom::CursorType cursor_type = ui::mojom::CursorType::kNull;
+  switch (operation) {
+    case ui::DragDropTypes::DRAG_NONE:
+      cursor_type = ui::mojom::CursorType::kDndNone;
+      break;
+    case ui::DragDropTypes::DRAG_MOVE:
+      cursor_type = ui::mojom::CursorType::kDndMove;
+      break;
+    case ui::DragDropTypes::DRAG_COPY:
+      cursor_type = ui::mojom::CursorType::kDndCopy;
+      break;
+    case ui::DragDropTypes::DRAG_LINK:
+      cursor_type = ui::mojom::CursorType::kDndLink;
+      break;
+  }
+  cursor_client->SetCursor(cursor_manager_->GetInitializedCursor(cursor_type));
+}
+
 void DesktopDragDropClientOzone::OnDragFinished(int dnd_action) {
   drag_operation_ = dnd_action;
   QuitRunLoop();

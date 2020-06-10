@@ -13,7 +13,6 @@ import {BrowserApi} from './browser_api.js';
 import {FittingType, TwoUpViewAction} from './constants.js';
 import {ContentController, InkController, MessageData, PluginController, PrintPreviewParams} from './controller.js';
 import {FitToChangedEvent} from './elements/viewer-zoom-toolbar.js';
-import {GestureDetector} from './gesture_detector.js';
 import {PDFMetrics} from './metrics.js';
 import {NavigatorDelegate, PdfNavigator} from './navigator.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
@@ -157,8 +156,8 @@ export class PDFViewer {
 
     /** @private {!Viewport} */
     this.viewport_ = new Viewport(
-        window, this.sizer_, getScrollbarWidth(), defaultZoom,
-        topToolbarHeight);
+        window, this.sizer_, /** @type {!HTMLDivElement} */ ($('content')),
+        getScrollbarWidth(), defaultZoom, topToolbarHeight);
     this.viewport_.setViewportChangedCallback(() => this.viewportChanged_());
     this.viewport_.setBeforeZoomCallback(
         () => this.currentController_.beforeZoom());
@@ -226,16 +225,6 @@ export class PDFViewer {
       this.viewport_.zoomOut();
       PDFMetrics.recordZoomAction(/*isZoomIn=*/ false);
     });
-
-    /** @private {!GestureDetector} */
-    this.gestureDetector_ = new GestureDetector(assert($('content')));
-    this.gestureDetector_.addEventListener(
-        'pinchstart', e => this.onPinchStart_(e));
-    this.sentPinchEvent_ = false;
-    this.gestureDetector_.addEventListener(
-        'pinchupdate', e => this.onPinchUpdate_(e));
-    this.gestureDetector_.addEventListener(
-        'pinchend', e => this.onPinchEnd_(e));
 
     /** @private {?ViewerPdfToolbarElement} */
     this.toolbar_ = null;
@@ -310,10 +299,6 @@ export class PDFViewer {
     document.addEventListener(
         'keydown',
         e => this.handleKeyEvent_(/** @type {!KeyboardEvent} */ (e)));
-    document.addEventListener('mousemove', e => this.handleMouseEvent_(e));
-    document.addEventListener('mouseout', e => this.handleMouseEvent_(e));
-    document.addEventListener(
-        'contextmenu', e => this.handleContextMenuEvent_(e));
 
     const tabId = this.browserApi_.getStreamInfo().tabId;
     /** @private {!PdfNavigator} */
@@ -495,31 +480,6 @@ export class PDFViewer {
       if (!(e.shiftKey || e.ctrlKey || e.altKey)) {
         this.toolbarManager_.showToolbars();
       }
-    }
-  }
-
-  handleMouseEvent_(e) {
-    if (e.type === 'mousemove') {
-      this.toolbarManager_.handleMouseMove(e);
-    } else if (e.type === 'mouseout') {
-      this.toolbarManager_.hideToolbarsForMouseOut();
-    }
-  }
-
-  /**
-   * @param {!Event} e The context menu event
-   * @private
-   */
-  handleContextMenuEvent_(e) {
-    // Stop Chrome from popping up the context menu on long press. We need to
-    // make sure the start event did not have 2 touches because we don't want
-    // to block two finger tap opening the context menu. We check for
-    // firesTouchEvents in order to not block the context menu on right click.
-    const capabilities =
-        /** @type {{ sourceCapabilities: Object }} */ (e).sourceCapabilities;
-    if (capabilities.firesTouchEvents &&
-        !this.gestureDetector_.wasTwoFingerTouch()) {
-      e.preventDefault();
     }
   }
 
@@ -855,48 +815,6 @@ export class PDFViewer {
   setUserInitiated_(userInitiated) {
     assert(this.isUserInitiatedEvent_ !== userInitiated);
     this.isUserInitiatedEvent_ = userInitiated;
-  }
-
-  /**
-   * A callback that's called when an update to a pinch zoom is detected.
-   * @param {!Object} e the pinch event.
-   * @private
-   */
-  onPinchUpdate_(e) {
-    // Throttle number of pinch events to one per frame.
-    if (!this.sentPinchEvent_) {
-      this.sentPinchEvent_ = true;
-      window.requestAnimationFrame(() => {
-        this.sentPinchEvent_ = false;
-        this.viewport_.pinchZoom(e);
-      });
-    }
-  }
-
-  /**
-   * A callback that's called when the end of a pinch zoom is detected.
-   * @param {!Object} e the pinch event.
-   * @private
-   */
-  onPinchEnd_(e) {
-    // Using rAF for pinch end prevents pinch updates scheduled by rAF getting
-    // sent after the pinch end.
-    window.requestAnimationFrame(() => {
-      this.viewport_.pinchZoomEnd(e);
-    });
-  }
-
-  /**
-   * A callback that's called when the start of a pinch zoom is detected.
-   * @param {!Object} e the pinch event.
-   * @private
-   */
-  onPinchStart_(e) {
-    // We also use rAF for pinch start, so that if there is a pinch end event
-    // scheduled by rAF, this pinch start will be sent after.
-    window.requestAnimationFrame(() => {
-      this.viewport_.pinchZoomStart(e);
-    });
   }
 
   /**

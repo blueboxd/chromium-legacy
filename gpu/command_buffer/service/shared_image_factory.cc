@@ -314,7 +314,9 @@ bool SharedImageFactory::PresentSwapChain(const Mailbox& mailbox) {
 #if defined(OS_FUCHSIA)
 bool SharedImageFactory::RegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
-    zx::channel token) {
+    zx::channel token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   decltype(buffer_collections_)::iterator it;
   bool inserted;
   std::tie(it, inserted) =
@@ -335,9 +337,9 @@ bool SharedImageFactory::RegisterSysmemBufferCollection(
   VkDevice device =
       vulkan_context_provider_->GetDeviceQueue()->GetVulkanDevice();
   DCHECK(device != VK_NULL_HANDLE);
-  it->second =
-      vulkan_context_provider_->GetVulkanImplementation()
-          ->RegisterSysmemBufferCollection(device, id, std::move(token));
+  it->second = vulkan_context_provider_->GetVulkanImplementation()
+                   ->RegisterSysmemBufferCollection(
+                       device, id, std::move(token), format, usage);
 
   return true;
 }

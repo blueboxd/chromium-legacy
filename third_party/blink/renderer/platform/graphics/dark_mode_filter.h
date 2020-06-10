@@ -20,6 +20,7 @@ class SkColorFilter;
 namespace blink {
 
 class DarkModeColorClassifier;
+class DarkModeImageClassifier;
 class DarkModeColorFilter;
 class ScopedDarkModeElementRoleOverride;
 class DarkModeInvertedColorCache;
@@ -39,7 +40,17 @@ class PLATFORM_EXPORT DarkModeFilter {
   // TODO(gilmanmh): Add a role for shadows. In general, we don't want to
   // invert shadows, but we may need to do some other kind of processing for
   // them.
-  enum class ElementRole { kText, kListSymbol, kBackground, kSVG };
+  enum class ElementRole {
+    kText,
+    kListSymbol,
+    kBackground,
+    kSVG,
+    kUnhandledImage,
+    kBitmapImage,
+    kSVGImage,
+    kGradientGeneratedImage
+  };
+
   SkColor InvertColorIfNeeded(SkColor color, ElementRole element_role);
   base::Optional<cc::PaintFlags> ApplyToFlagsIfNeeded(
       const cc::PaintFlags& flags,
@@ -49,7 +60,8 @@ class PLATFORM_EXPORT DarkModeFilter {
   void ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
                                  const FloatRect& dest_rect,
                                  Image* image,
-                                 cc::PaintFlags* flags);
+                                 cc::PaintFlags* flags,
+                                 ElementRole element_role);
 
   SkColorFilter* GetImageFilterForTesting() { return image_filter_.get(); }
   size_t GetInvertedColorCacheSizeForTesting();
@@ -60,9 +72,18 @@ class PLATFORM_EXPORT DarkModeFilter {
   DarkModeSettings settings_;
 
   bool ShouldApplyToColor(SkColor color, ElementRole role);
+  bool ShouldApplyToImage(const DarkModeSettings& settings,
+                          const FloatRect& src_rect,
+                          const FloatRect& dest_rect,
+                          Image* image,
+                          ElementRole role);
 
   std::unique_ptr<DarkModeColorClassifier> text_classifier_;
   std::unique_ptr<DarkModeColorClassifier> background_classifier_;
+  std::unique_ptr<DarkModeImageClassifier> bitmap_image_classifier_;
+  std::unique_ptr<DarkModeImageClassifier> svg_image_classifier_;
+  std::unique_ptr<DarkModeImageClassifier> gradient_generated_image_classifier_;
+
   std::unique_ptr<DarkModeColorFilter> color_filter_;
   sk_sp<SkColorFilter> image_filter_;
   base::Optional<ElementRole> role_override_;

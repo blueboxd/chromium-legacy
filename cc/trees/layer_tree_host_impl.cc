@@ -5183,9 +5183,6 @@ void LayerTreeHostImpl::RecordScrollBegin(
     ScrollBeginThreadState scroll_start_state) {
   auto tracker_type = GetTrackerTypeForScroll(input_type);
   DCHECK_NE(tracker_type, FrameSequenceTrackerType::kMaxType);
-  auto* metrics = frame_trackers_.StartSequence(tracker_type);
-  if (!metrics)
-    return;
 
   // The main-thread is the 'scrolling thread' if:
   //   (1) the scroll is driven by the main thread, or
@@ -5204,7 +5201,7 @@ void LayerTreeHostImpl::RecordScrollBegin(
       scrolling_thread = FrameSequenceMetrics::ThreadType::kMain;
       break;
   }
-  metrics->SetScrollingThread(scrolling_thread);
+  frame_trackers_.StartScrollSequence(tracker_type, scrolling_thread);
 }
 
 void LayerTreeHostImpl::RecordScrollEnd(ui::ScrollInputType input_type) {

@@ -61,6 +61,7 @@ DisplayChangeDialog::DisplayChangeDialog(
       this, nullptr,
       Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                           kShellWindowId_SystemModalContainer));
+  // TODO(baileyberro): Verify behavior in kiosk mode.
   widget->Show();
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,

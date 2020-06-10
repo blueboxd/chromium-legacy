@@ -8,11 +8,16 @@
 #include <fuchsia/web/cpp/fidl.h>
 
 #include "fuchsia/cast_streaming/public/cast_streaming_session.h"
+#include "fuchsia/engine/cast_streaming_session.mojom.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
-// Owns the CastStreamingSession and sends frames to the renderer process via
+namespace media {
+class MojoDecoderBufferWriter;
+}  // namespace media
+
+// Owns the CastStreamingSession and sends buffers to the renderer process via
 // a Mojo service.
-// TODO(crbug.com/1042501): Connect this to a mojo service to send frames to the
-// renderer process.
 class CastStreamingSessionClient
     : public cast_streaming::CastStreamingSession::Client {
  public:
@@ -24,7 +29,16 @@ class CastStreamingSessionClient
   CastStreamingSessionClient& operator=(const CastStreamingSessionClient&) =
       delete;
 
+  void StartMojoConnection(mojo::AssociatedRemote<mojom::CastStreamingReceiver>
+                               cast_streaming_receiver);
+
  private:
+  // Handler for |cast_streaming_receiver_| disconnect.
+  void OnMojoDisconnect();
+
+  // Callback for mojom::CastStreamingReceiver::EnableReceiver()
+  void OnReceiverEnabled();
+
   // cast_streaming::CastStreamingSession::Client implementation.
   void OnInitializationSuccess(
       base::Optional<media::AudioDecoderConfig> audio_decoder_config,
@@ -34,7 +48,15 @@ class CastStreamingSessionClient
   void OnVideoFrameReceived(scoped_refptr<media::DecoderBuffer> buffer) final;
   void OnReceiverSessionEnded() final;
 
+  fidl::InterfaceRequest<fuchsia::web::MessagePort> message_port_request_;
+  mojo::AssociatedRemote<mojom::CastStreamingReceiver> cast_streaming_receiver_;
   cast_streaming::CastStreamingSession cast_streaming_session_;
+
+  mojo::Remote<mojom::CastStreamingBufferReceiver> audio_remote_;
+  std::unique_ptr<media::MojoDecoderBufferWriter> audio_buffer_writer_;
+
+  mojo::Remote<mojom::CastStreamingBufferReceiver> video_remote_;
+  std::unique_ptr<media::MojoDecoderBufferWriter> video_buffer_writer_;
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_CAST_STREAMING_SESSION_CLIENT_H_

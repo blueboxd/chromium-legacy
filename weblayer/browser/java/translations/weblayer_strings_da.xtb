@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1068672505746868501">Oversæt aldrig sider på <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Flere sprog</translation>
+<translation id="1285320974508926690">Oversæt aldrig dette website</translation>
+<translation id="290376772003165898">Er siden ikke på <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
+<translation id="6040143037577758943">Luk</translation>
+<translation id="6831043979455480757">Oversæt</translation>
+<translation id="7243308994586599757">Du finder indstillingerne nederst på skærmen</translation>
+<translation id="773466115871691567">Oversæt altid sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Webbrowseraktivitet</translation>
 </translationbundle>

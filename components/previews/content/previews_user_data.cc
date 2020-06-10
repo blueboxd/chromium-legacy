@@ -5,6 +5,7 @@
 #include "components/previews/content/previews_user_data.h"
 
 #include "base/rand_util.h"
+#include "content/public/browser/render_frame_host.h"
 
 namespace previews {
 
@@ -33,6 +34,17 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
           other.committed_previews_state_without_holdback_),
       coin_flip_holdback_result_(other.coin_flip_holdback_result_),
       preview_eligibility_reasons_(other.preview_eligibility_reasons_) {}
+
+PreviewsUserData::DocumentDataHolder::DocumentDataHolder(
+    content::RenderFrameHost* render_frame_host) {
+  // PreviewsUserData and DocumentDataHolder should only be made for main
+  // frames.
+  // TODO(crbug.com/1090679): This should be page-associated instead of just
+  // document-associated. Use PageUserData when it's available.
+  DCHECK(!render_frame_host->GetParent());
+}
+
+PreviewsUserData::DocumentDataHolder::~DocumentDataHolder() = default;
 
 void PreviewsUserData::SetCommittedPreviewsType(
     previews::PreviewsType previews_type) {
@@ -106,4 +118,5 @@ content::PreviewsState PreviewsUserData::CommittedPreviewsState() const {
   return committed_previews_state_without_holdback_;
 }
 
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(PreviewsUserData::DocumentDataHolder)
 }  // namespace previews

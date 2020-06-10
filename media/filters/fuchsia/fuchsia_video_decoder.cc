@@ -1016,7 +1016,8 @@ void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
   output_buffer_collection_id_ = gfx::SysmemBufferCollectionId::Create();
   shared_image_interface_->RegisterSysmemBufferCollection(
       output_buffer_collection_id_,
-      collection_token_for_gpu.Unbind().TakeChannel());
+      collection_token_for_gpu.Unbind().TakeChannel(),
+      gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::GPU_READ);
 
   // Pass new output buffer settings to the codec.
   fuchsia::media::StreamBufferPartialSettings settings;

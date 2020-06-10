@@ -846,7 +846,8 @@ int X11Window::UpdateDrag(const gfx::Point& screen_point) {
 
 void X11Window::UpdateCursor(
     DragDropTypes::DragOperation negotiated_operation) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  DCHECK(drag_handler_delegate_);
+  drag_handler_delegate_->OnDragOperationChanged(negotiated_operation);
 }
 
 void X11Window::OnBeginForeignDrag(XID window) {

@@ -16,7 +16,7 @@ import {getDescendants, getDisplayedList, normalizeNode} from './util.js';
 
 /**
  * @param {string} id
- * @param {BookmarkTreeNode} treeNode
+ * @param {chrome.bookmarks.BookmarkTreeNode} treeNode
  */
 export function createBookmark(id, treeNode) {
   return {

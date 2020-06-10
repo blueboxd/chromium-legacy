@@ -14,11 +14,10 @@ bool ShouldRegisterShortcutsMenuWithOs() {
   return false;
 }
 
-void RegisterShortcutsMenuWithOs(
-    const base::FilePath& shortcut_data_dir,
-    const AppId& app_id,
-    const base::FilePath& profile_path,
-    const std::vector<WebApplicationShortcutInfo>& shortcuts) {
+void RegisterShortcutsMenuWithOs(const base::FilePath& shortcut_data_dir,
+                                 const AppId& app_id,
+                                 const base::FilePath& profile_path,
+                                 const WebApplicationInfo& web_app_info) {
   NOTIMPLEMENTED();
   DCHECK(ShouldRegisterShortcutsMenuWithOs());
 }

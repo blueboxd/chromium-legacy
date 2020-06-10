@@ -624,6 +624,11 @@ bool TabWebContentsDelegateAndroid::IsCustomTab() const {
 
 bool TabWebContentsDelegateAndroid::IsInstalledWebappDelegateGeolocation()
     const {
+  if (!base::FeatureList::IsEnabled(
+          chrome::android::kTrustedWebActivityLocationDelegation)) {
+    return false;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())

@@ -11,7 +11,7 @@ enum TaskPriority {
 };
 
 dictionary SchedulerPostTaskOptions {
-    AbortSignal? signal;
-    TaskPriority? priority;
+    AbortSignal? signal = null;
+    TaskPriority? priority = null;
     long delay = 0;
 };

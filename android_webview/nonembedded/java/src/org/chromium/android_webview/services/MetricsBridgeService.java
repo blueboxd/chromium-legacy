@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Service that keeps record of UMA method calls in nonembedded WebView processes.
@@ -85,13 +86,14 @@ public final class MetricsBridgeService extends Service {
     // To avoid any potential synchronization issues as well as avoid blocking the caller thread
     // (e.g when the caller is a thread from the same process.), we post all read/write operations
     // to be run serially using a SequencedTaskRunner instead of using a lock.
-    private final TaskRunner mSequencedTaskRunner =
+    private static final TaskRunner sSequencedTaskRunner =
             PostTask.createSequencedTaskRunner(TaskTraits.BEST_EFFORT_MAY_BLOCK);
+    private static final AtomicInteger sTaskCount = new AtomicInteger();
 
     @Override
     public void onCreate() {
         // Restore saved histograms from disk.
-        mSequencedTaskRunner.postTask(() -> {
+        postSequencedTask(() -> {
             File file = getMetricsLogFile();
             if (!file.exists()) return;
             try (FileInputStream in = new FileInputStream(file)) {
@@ -132,7 +134,7 @@ public final class MetricsBridgeService extends Service {
             }
             // If this is called within the same process, it will run on the caller thread, so we
             // will always punt this to thread pool.
-            mSequencedTaskRunner.postTask(() -> {
+            postSequencedTask(() -> {
                 // Make sure that we don't add records indefinitely in case of no embedded
                 // WebView connects to the service to retrieve and clear the records.
                 if (mRecordsList.size() >= MAX_HISTOGRAM_COUNT) {
@@ -167,7 +169,7 @@ public final class MetricsBridgeService extends Service {
                 deleteMetricsLogFile();
                 return list;
             });
-            mSequencedTaskRunner.postTask(retrieveFutureTask);
+            postSequencedTask(retrieveFutureTask);
             try {
                 return retrieveFutureTask.get();
             } catch (ExecutionException | InterruptedException e) {
@@ -180,6 +182,23 @@ public final class MetricsBridgeService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
+    }
+
+    private void postSequencedTask(Runnable r) {
+        if (sTaskCount.incrementAndGet() == 1) {
+            // Base Context can be null for some tests that doesn't actually launch the service.
+            if (getBaseContext() != null) {
+                startService(new Intent(this, MetricsBridgeService.class));
+            }
+        }
+        sSequencedTaskRunner.postTask(() -> {
+            r.run();
+            if (sTaskCount.decrementAndGet() == 0) {
+                // This will only stop the service if there are no bound clients.
+                // No need to check for base context to call this.
+                stopSelf();
+            }
+        });
     }
 
     private File getMetricsLogFile() {
@@ -217,12 +236,12 @@ public final class MetricsBridgeService extends Service {
 
     /**
      * Add a FutureTask that can be used to block until all the tasks in the local
-     * {@code mSequencedTaskRunner} are finished for testing.
+     * {@code sSequencedTaskRunner} are finished for testing.
      */
     @VisibleForTesting
     public FutureTask addTaskToBlock() {
         FutureTask<Object> blockTask = new FutureTask<Object>(() -> {}, new Object());
-        mSequencedTaskRunner.postTask(blockTask);
+        postSequencedTask(blockTask);
         return blockTask;
     }
 }

@@ -1,4 +1,5 @@
 include_rules = [
+  "+chromeos/system",
   "+components/account_id",
   "-components/policy/core/browser",
   "+components/strings",

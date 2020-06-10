@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">Rezoluția pentru <ph name="DISPLAY_NAME" /> a fost modificată la <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Dă clic pe Confirmă pentru a păstra modificările. Setările anterioare vor fi restabilite în <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți acest cod PIN pe dispozitivul respectiv: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Bateria creionului este descărcată</translation>
+<translation id="1036672894875463507">Sunt Asistentul tău Google și îți stau la dispoziție pe toată durata zilei!
+Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1037492556044956303">S-a adăugat <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Nu s-au găsit rețele</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Deconectați toți utilizatorii</translation>
 <translation id="2277103315734023688">Derulează înainte</translation>
 <translation id="2292698582925480719">Scară afișaj</translation>
+<translation id="229397294990920565">Datele mobile se dezactivează...</translation>
 <translation id="2295777434187870477">Microfonul este activat. Comutarea îl va dezactiva.</translation>
 <translation id="2298170939937364391">Lupa de ecran complet este activată. Apasă din nou pe Ctrl + tasta de căutare + M pentru a o dezactiva.</translation>
 <translation id="2302092602801625023">Acest cont este gestionat de Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Lupă</translation>
 <translation id="4351433414020964307">Asistentul se încarcă...</translation>
 <translation id="4356930093361201197">mod de contrast ridicat</translation>
+<translation id="4368583494516669646">Noapte bună, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Setări pentru proiectare</translation>
 <translation id="4378551569595875038">Se stabilește conexiunea...</translation>
 <translation id="4379531060876907730">Acestea sunt instrumentele pentru creion</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Ascunde parola</translation>
 <translation id="4570957409596482333">Butonul Selectează și ascultă</translation>
+<translation id="4577274620589681794">Timpul a expirat · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Nu mai proiecta pe un receiver necunoscut</translation>
 <translation id="4628757576491864469">Dispozitive</translation>
 <translation id="4659419629803378708">ChromeVox este activat</translation>
@@ -336,7 +341,8 @@
 <translation id="4924411785043111640">Repornește și resetează</translation>
 <translation id="495046168593986294">Derulează în sus</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
-<translation id="4969092041573468113"><ph name="HOURS" /> h. <ph name="MINUTES" /> min. <ph name="SECONDS" /> sec.</translation>
+<translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min. <ph name="SECONDS" /> sec.</translation>
+<translation id="4970352680959471247">Bună seara, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5030687792513154421">Timpul a expirat</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> conectat la un telefon nou</translation>
 <translation id="5035389544768382859">Confirmă configurația afișajului</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
 <translation id="54609108002486618">Gestionat</translation>
 <translation id="5465662442746197494">Ai nevoie de ajutor?</translation>
+<translation id="5485091064403948243">Bună dimineața, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5496819745535887422">Administratorul restabilește o versiune anterioară a SO de pe dispozitiv. Toate datele vor fi șterse după repornirea dispozitivului.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Se iese din sesiune</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Pentru a debloca dispozitivul, introdu codul de acces parental pentru Family Link</translation>
 <translation id="742594950370306541">Camera foto este în uz.</translation>
 <translation id="743058460480092004">Camera foto și microfonul sunt în uz.</translation>
+<translation id="7436182601308224670">Bună ziua, <ph name="GIVEN_NAME" />!</translation>
 <translation id="7466449121337984263">Atinge senzorul</translation>
 <translation id="7497767806359279797">Alege limba și tastatura</translation>
 <translation id="7526573455193969409">Este posibil ca rețeaua să fie monitorizată</translation>

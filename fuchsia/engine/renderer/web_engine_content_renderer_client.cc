@@ -244,9 +244,19 @@ WebEngineContentRendererClient::OverrideDemuxerForUrl(
     const GURL& url,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner) {
   if (IsCastStreamingEnabled() && IsCastStreamingMediaSourceUrl(url)) {
-    // TODO(crbug.com/1042501): Add a mojo service to properly initialize the
-    // demuxer and send frames to it.
-    return std::make_unique<CastStreamingDemuxer>(media_task_runner);
+    auto iter =
+        render_frame_id_to_observer_map_.find(render_frame->GetRoutingID());
+    DCHECK(iter != render_frame_id_to_observer_map_.end());
+    // Do not create a CastStreamingDemuxer if the Cast Streaming MessagePort
+    // was not set in the browser process. This will manifest as an unbound
+    // CastStreamingReceiver object in the renderer process.
+    // TODO(crbug.com/1082821): Simplify the instantiation conditions for the
+    // CastStreamingDemuxer once the CastStreamingReceiver Component has been
+    // implemented.
+    if (iter->second->cast_streaming_receiver()->IsBound()) {
+      return std::make_unique<CastStreamingDemuxer>(
+          iter->second->cast_streaming_receiver(), media_task_runner);
+    }
   }
 
   return nullptr;

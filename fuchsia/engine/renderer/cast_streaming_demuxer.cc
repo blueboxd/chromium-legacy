@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "fuchsia/engine/renderer/cast_streaming_receiver.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/timestamp_constants.h"
@@ -16,18 +17,31 @@
 namespace {
 
 // media::DemuxerStream shared audio/video implementation for Cast Streaming.
-// Receives buffers on the main thread and sends them to the media thread.
-class CastStreamingDemuxerStream : public media::DemuxerStream {
+// Receives buffer metadata over a Mojo service and reads the buffers over a
+// Mojo data pipe from the browser process.
+class CastStreamingDemuxerStream : public media::DemuxerStream,
+                                   public mojom::CastStreamingBufferReceiver {
  public:
-  explicit CastStreamingDemuxerStream(
+  CastStreamingDemuxerStream(
+      mojo::PendingReceiver<mojom::CastStreamingBufferReceiver>
+          pending_receiver,
       mojo::ScopedDataPipeConsumerHandle consumer)
-      : decoder_buffer_reader_(std::move(consumer)) {}
+      : receiver_(this, std::move(pending_receiver)),
+        decoder_buffer_reader_(std::move(consumer)) {
+    DVLOG(1) << __func__;
+
+    // Mojo service disconnection means the Cast Streaming Session ended and no
+    // further buffer will be received. kAborted will be returned to the media
+    // pipeline for every subsequent DemuxerStream::Read() attempt.
+    receiver_.set_disconnect_handler(base::BindOnce(
+        &CastStreamingDemuxerStream::OnMojoDisconnect, base::Unretained(this)));
+  }
   ~CastStreamingDemuxerStream() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
 
-  // TODO(crbug.com/1042501): Receive |buffer| through a Mojo interface.
-  void ReceiveBuffer(media::mojom::DecoderBufferPtr buffer) {
+  // mojom::CastStreamingBufferReceiver implementation.
+  void ProvideBuffer(media::mojom::DecoderBufferPtr buffer) final {
     DVLOG(3) << __func__;
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     pending_buffer_metadata_.push_back(std::move(buffer));
@@ -47,6 +61,11 @@ class CastStreamingDemuxerStream : public media::DemuxerStream {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (!pending_read_cb_ || !current_buffer_)
       return;
+
+    if (current_buffer_->end_of_stream()) {
+      std::move(pending_read_cb_).Run(Status::kAborted, nullptr);
+      return;
+    }
 
     std::move(pending_read_cb_).Run(Status::kOk, std::move(current_buffer_));
     GetNextBuffer();
@@ -71,9 +90,26 @@ class CastStreamingDemuxerStream : public media::DemuxerStream {
   void OnBufferRead(scoped_refptr<media::DecoderBuffer> buffer) {
     DVLOG(3) << __func__;
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(!current_buffer_);
 
+    // Stop processing the pending buffer. OnMojoDisconnect() will trigger
+    // sending kAborted on subsequent Read() calls. This can happen if this
+    // object was in the process of reading a buffer off the data pipe when the
+    // Mojo connection ended.
+    if (!receiver_.is_bound())
+      return;
+
+    DCHECK(!current_buffer_);
     current_buffer_ = buffer;
+    CompletePendingRead();
+  }
+
+  void OnMojoDisconnect() {
+    DVLOG(1) << __func__;
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    receiver_.reset();
+    pending_buffer_metadata_.clear();
+    current_buffer_ = media::DecoderBuffer::CreateEOSBuffer();
     CompletePendingRead();
   }
 
@@ -89,6 +125,7 @@ class CastStreamingDemuxerStream : public media::DemuxerStream {
   Liveness liveness() const final { return Liveness::LIVENESS_LIVE; }
   bool SupportsConfigChanges() final { return false; }
 
+  mojo::Receiver<CastStreamingBufferReceiver> receiver_;
   media::MojoDecoderBufferReader decoder_buffer_reader_;
 
   ReadCB pending_read_cb_;
@@ -102,10 +139,15 @@ class CastStreamingDemuxerStream : public media::DemuxerStream {
 
 class CastStreamingAudioDemuxerStream : public CastStreamingDemuxerStream {
  public:
-  CastStreamingAudioDemuxerStream(media::AudioDecoderConfig decoder_config,
-                                  mojo::ScopedDataPipeConsumerHandle consumer)
-      : CastStreamingDemuxerStream(std::move(consumer)),
-        config_(decoder_config) {}
+  explicit CastStreamingAudioDemuxerStream(
+      mojom::AudioStreamInfoPtr audio_stream_info)
+      : CastStreamingDemuxerStream(
+            std::move(audio_stream_info->buffer_receiver),
+            std::move(audio_stream_info->data_pipe)),
+        config_(audio_stream_info->decoder_config) {
+    DVLOG(1) << __func__
+             << ": config info: " << config_.AsHumanReadableString();
+  }
   ~CastStreamingAudioDemuxerStream() final = default;
 
  private:
@@ -122,10 +164,15 @@ class CastStreamingAudioDemuxerStream : public CastStreamingDemuxerStream {
 
 class CastStreamingVideoDemuxerStream : public CastStreamingDemuxerStream {
  public:
-  CastStreamingVideoDemuxerStream(media::VideoDecoderConfig decoder_config,
-                                  mojo::ScopedDataPipeConsumerHandle consumer)
-      : CastStreamingDemuxerStream(std::move(consumer)),
-        config_(decoder_config) {}
+  explicit CastStreamingVideoDemuxerStream(
+      mojom::VideoStreamInfoPtr video_stream_info)
+      : CastStreamingDemuxerStream(
+            std::move(video_stream_info->buffer_receiver),
+            std::move(video_stream_info->data_pipe)),
+        config_(video_stream_info->decoder_config) {
+    DVLOG(1) << __func__
+             << ": config info: " << config_.AsHumanReadableString();
+  }
   ~CastStreamingVideoDemuxerStream() final = default;
 
  private:
@@ -141,12 +188,64 @@ class CastStreamingVideoDemuxerStream : public CastStreamingDemuxerStream {
 };
 
 CastStreamingDemuxer::CastStreamingDemuxer(
+    CastStreamingReceiver* receiver,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner)
-    : media_task_runner_(media_task_runner) {
+    : media_task_runner_(media_task_runner),
+      original_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      receiver_(receiver) {
   DVLOG(1) << __func__;
+  DCHECK(receiver_);
 }
 
-CastStreamingDemuxer::~CastStreamingDemuxer() = default;
+CastStreamingDemuxer::~CastStreamingDemuxer() {
+  DVLOG(1) << __func__;
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  if (was_initialization_successful_) {
+    original_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CastStreamingReceiver::OnDemuxerDestroyed,
+                                  base::Unretained(receiver_)));
+  }
+}
+
+void CastStreamingDemuxer::OnStreamsInitialized(
+    mojom::AudioStreamInfoPtr audio_stream_info,
+    mojom::VideoStreamInfoPtr video_stream_info) {
+  DVLOG(1) << __func__;
+  DCHECK(!media_task_runner_->BelongsToCurrentThread());
+
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastStreamingDemuxer::OnStreamsInitializedOnMediaThread,
+                     base::Unretained(this), std::move(audio_stream_info),
+                     std::move(video_stream_info)));
+}
+
+void CastStreamingDemuxer::OnStreamsInitializedOnMediaThread(
+    mojom::AudioStreamInfoPtr audio_stream_info,
+    mojom::VideoStreamInfoPtr video_stream_info) {
+  DVLOG(1) << __func__;
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  DCHECK(initialized_cb_);
+
+  if (!audio_stream_info && !video_stream_info) {
+    std::move(initialized_cb_)
+        .Run(media::PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN);
+    return;
+  }
+
+  if (audio_stream_info) {
+    audio_stream_ = std::make_unique<CastStreamingAudioDemuxerStream>(
+        std::move(audio_stream_info));
+  }
+  if (video_stream_info) {
+    video_stream_ = std::make_unique<CastStreamingVideoDemuxerStream>(
+        std::move(video_stream_info));
+  }
+  was_initialization_successful_ = true;
+
+  std::move(initialized_cb_).Run(media::PipelineStatus::PIPELINE_OK);
+}
 
 std::vector<media::DemuxerStream*> CastStreamingDemuxer::GetAllStreams() {
   DVLOG(1) << __func__;
@@ -172,13 +271,18 @@ void CastStreamingDemuxer::Initialize(media::DemuxerHost* host,
 
   // Live streams have infinite duration.
   host_->SetDuration(media::kInfiniteDuration);
+  initialized_cb_ = std::move(status_cb);
 
-  // TODO(crbug.com/1042501): Properly initialize the demuxer once the mojo
-  // service has been implemented.
-  std::move(status_cb).Run(media::PipelineStatus::PIPELINE_OK);
+  original_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastStreamingReceiver::SetDemuxer,
+                     base::Unretained(receiver_), base::Unretained(this)));
 }
 
 void CastStreamingDemuxer::AbortPendingReads() {
+  DVLOG(2) << __func__;
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
   if (audio_stream_)
     audio_stream_->AbortPendingRead();
   if (video_stream_)
@@ -199,6 +303,7 @@ void CastStreamingDemuxer::Seek(base::TimeDelta time,
 
 void CastStreamingDemuxer::Stop() {
   DVLOG(1) << __func__;
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (audio_stream_)
     audio_stream_.reset();

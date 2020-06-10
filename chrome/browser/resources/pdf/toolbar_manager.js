@@ -111,6 +111,12 @@ export class ToolbarManager {
     this.window_.addEventListener('resize', this.resizeDropdowns_.bind(this));
     this.resizeDropdowns_();
 
+    document.addEventListener(
+        'mousemove',
+        e => this.handleMouseMove_(/** @type {!MouseEvent} */ (e)));
+    document.addEventListener(
+        'mouseout', () => this.hideToolbarsForMouseOut_());
+
     if (this.isPrintPreview_) {
       this.zoomToolbar_.addEventListener('keyboard-navigation-active', e => {
         this.keyboardNavigationActive = e.detail;
@@ -118,8 +124,11 @@ export class ToolbarManager {
     }
   }
 
-  /** @param {!MouseEvent} e */
-  handleMouseMove(e) {
+  /**
+   * @param {!MouseEvent} e
+   * @private
+   */
+  handleMouseMove_(e) {
     this.isMouseNearTopToolbar_ = !!this.toolbar_ && isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ =
         isMouseNearSideToolbar(e, this.window_, this.isPrintPreview_);
@@ -214,8 +223,9 @@ export class ToolbarManager {
   /**
    * Hide toolbars after a delay, regardless of the position of the mouse.
    * Intended to be called when the mouse has moved out of the parent window.
+   * @private
    */
-  hideToolbarsForMouseOut() {
+  hideToolbarsForMouseOut_() {
     this.isMouseNearTopToolbar_ = false;
     this.isMouseNearSideToolbar_ = false;
     this.hideToolbarsAfterTimeout();

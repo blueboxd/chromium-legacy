@@ -44,6 +44,7 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_CHROMEOS)
+#include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -192,6 +193,15 @@ em::Channel ConvertToProtoChannel(version_info::Channel channel) {
     case version_info::Channel::STABLE:
       return em::CHANNEL_STABLE;
   }
+}
+
+std::string GetDeviceName() {
+#if defined(OS_CHROMEOS)
+  return chromeos::system::StatisticsProvider::GetInstance()
+      ->GetEnterpriseMachineID();
+#else
+  return GetMachineName();
+#endif
 }
 
 }  // namespace policy

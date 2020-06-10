@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "ash/ambient/model/ambient_backend_model.h"
 
 #include "ash/ambient/ambient_constants.h"
@@ -65,12 +67,11 @@ void AmbientBackendModel::Clear() {
   next_image_ = gfx::ImageSkia();
 }
 
-gfx::ImageSkia AmbientBackendModel::GetCurrentImage() const {
-  return current_image_;
-}
-
 gfx::ImageSkia AmbientBackendModel::GetNextImage() const {
-  return next_image_;
+  if (!next_image_.isNull())
+    return next_image_;
+
+  return current_image_;
 }
 
 void AmbientBackendModel::UpdateWeatherInfo(

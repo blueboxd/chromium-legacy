@@ -222,16 +222,26 @@ class TestExpectations(object):
                 lines.extend(lineno_to_exps[lineno])
                 lineno_to_exps.pop(lineno)
 
-        # Add new expectations that were not part of the file before
+        # Handle Expectation instances with line numbers outside of the
+        # [1, total file line count] range. There are two cases for
+        # Expectation instances with line numbers outside the valid range.
+        #
+        # 1, If line number is 0 then the Expectation instance will be appended
+        #    to the file.
+        # 2, If the line number is greater than the total number of lines then
+        #    an exception will be raised.
         if lineno_to_exps:
             lines.append(_NotExpectation('', len(content_lines) + 1))
 
-        extra_line_count = len(content_lines) + 1
-        for lineno, extras in lineno_to_exps.items():
-            for line in extras:
+            for line in sorted(
+                    reduce(lambda x,y: x+y, lineno_to_exps.values()),
+                    key=lambda e: e.test):
+                if line.lineno:
+                    raise ValueError(
+                        "Expectation '%s' was given a line number that "
+                        "is greater than the total line count of file %s."
+                        % (line.to_string(), path))
                 lines.append(line)
-                extra_line_count += 1
-                lines[-1].lineno = extra_line_count
 
         self._expectation_file_linenos[path] = {
             line.lineno for line in lines
@@ -427,7 +437,7 @@ class TestExpectations(object):
             if not pattern_to_exps[exp.test]:
                 pattern_to_exps.pop(exp.test)
 
-    def add_expectations(self, path, exps, lineno=0):
+    def add_expectations(self, path, exps, lineno=0, append_to_end_of_file=False):
         """This method adds Expectation instances to an expectations file. It will
         add the new instances after the line number passed through the lineno parameter.
         If the lineno is set to a value outside the range of line numbers in the file
@@ -441,6 +451,14 @@ class TestExpectations(object):
         idx = self._expectations_dict.keys().index(path)
         typ_expectations = self._expectations[idx]
         added_glob = False
+
+        if lineno < 0:
+            raise ValueError('lineno cannot be negative.')
+        if (append_to_end_of_file and lineno or
+                not append_to_end_of_file and not lineno):
+            raise ValueError('If append_to_end_of_file is set then lineno '
+                             'must be 0. Also if lineno is 0 then '
+                             'append_to_end_of_file must be set to True.')
 
         for exp in exps:
             exp.lineno = lineno

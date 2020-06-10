@@ -983,6 +983,11 @@ TabStrip::~TabStrip() {
   RemoveAllChildViews(true);
 }
 
+void TabStrip::SetAvailableWidthCallback(
+    base::RepeatingCallback<int()> available_width_callback) {
+  available_width_callback_ = available_width_callback;
+}
+
 // static
 int TabStrip::GetSizeNeededForViews(const std::vector<TabSlotView*>& views) {
   int width = 0;
@@ -3189,20 +3194,9 @@ int TabStrip::UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index) {
   return layout_helper_->first_non_pinned_tab_x();
 }
 
-int TabStrip::GetAvailableWidthForTabstrip() {
-  // Layout the parent so that GetAvailableSize is well-defined.
-  parent()->Layout();
-  base::Optional<int> available_width =
-      parent()->GetAvailableSize(this).width();
-  // |available_width| might still be undefined in cases where the tabstrip is
-  // hidden (e.g. presentation mode on MacOS). In these cases we don't care
-  // about the resulting layout, since the tabstrip is not visible, so we can
-  // substitute 0 to ensure that we relayout once the width is defined again.
-  return available_width.value_or(0);
-}
-
 int TabStrip::CalculateAvailableWidthForTabs() {
-  last_available_width_ = GetAvailableWidthForTabstrip();
+  last_available_width_ =
+      available_width_callback_ ? available_width_callback_.Run() : width();
   return override_available_width_for_tabs_.value_or(
       last_available_width_ - GetRightSideReservedWidth());
 }

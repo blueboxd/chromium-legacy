@@ -35,6 +35,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/fake_statistics_provider.h"
+#endif
+
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAre;
@@ -285,6 +289,11 @@ class CloudPolicyClientTest : public testing::Test {
         em::PolicyValueValidationIssue::
             VALUE_VALIDATION_ISSUE_SEVERITY_WARNING);
     policy_value_validation_issue->set_debug_message(kValueValidationMessage);
+
+#if defined(OS_CHROMEOS)
+    fake_statistics_provider_.SetMachineStatistic(
+        chromeos::system::kSerialNumberKeyForTest, "fake_serial_number");
+#endif
   }
 
   void SetUp() override {
@@ -585,6 +594,9 @@ class CloudPolicyClientTest : public testing::Test {
   std::unique_ptr<CloudPolicyClient> client_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+#if defined(OS_CHROMEOS)
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+#endif
 };
 
 TEST_F(CloudPolicyClientTest, Init) {
@@ -1495,6 +1507,10 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   EXPECT_EQ(policy::GetOSVersion(),
             *payload->FindStringPath(
                 RealtimeReportingJobConfiguration::kOsVersionKey));
+  EXPECT_FALSE(policy::GetDeviceName().empty());
+  EXPECT_EQ(policy::GetDeviceName(),
+            *payload->FindStringPath(
+                RealtimeReportingJobConfiguration::kDeviceNameKey));
 
   base::Value* events =
       payload->FindPath(RealtimeReportingJobConfiguration::kEventsKey);

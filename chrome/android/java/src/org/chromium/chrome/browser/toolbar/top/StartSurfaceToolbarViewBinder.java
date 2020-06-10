@@ -37,7 +37,7 @@ class StartSurfaceToolbarViewBinder {
         } else if (propertyKey == BUTTONS_CLICKABLE) {
             view.setButtonClickableState(model.get(BUTTONS_CLICKABLE));
         } else if (propertyKey == INCOGNITO_SWITCHER_VISIBLE) {
-            view.setIncognitoSwitcherVisibility(model.get(INCOGNITO_SWITCHER_VISIBLE));
+            view.setIncognitoSwitcherVisibility((Boolean) model.get(INCOGNITO_SWITCHER_VISIBLE));
         } else if (propertyKey == IDENTITY_DISC_AT_START) {
             view.setIdentityDiscAtStart(model.get(IDENTITY_DISC_AT_START));
         } else if (propertyKey == IDENTITY_DISC_CLICK_HANDLER) {

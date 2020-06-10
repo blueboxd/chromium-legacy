@@ -65,11 +65,9 @@ class AmbientBackendModelTest : public AshTestBase {
     return ambient_backend_model_.get();
   }
 
-  gfx::ImageSkia current_image() {
-    return ambient_backend_model_->GetCurrentImage();
+  gfx::ImageSkia GetNextImage() {
+    return ambient_backend_model_->GetNextImage();
   }
-
-  gfx::ImageSkia next_image() { return ambient_backend_model_->GetNextImage(); }
 
  private:
   std::unique_ptr<AmbientBackendModel> ambient_backend_model_;
@@ -79,30 +77,16 @@ class AmbientBackendModelTest : public AshTestBase {
 TEST_F(AmbientBackendModelTest, AddFirstImage) {
   AddNTestImages(1);
 
-  EXPECT_TRUE(EqualsToTestImage(current_image()));
-  EXPECT_TRUE(IsNullImage(next_image()));
+  EXPECT_TRUE(EqualsToTestImage(GetNextImage()));
 }
 
 // Test adding the second image.
 TEST_F(AmbientBackendModelTest, AddSecondImage) {
-  AddNTestImages(2);
-
-  EXPECT_TRUE(EqualsToTestImage(current_image()));
-  EXPECT_TRUE(EqualsToTestImage(next_image()));
-}
-
-// Test adding the third image.
-TEST_F(AmbientBackendModelTest, AddThirdImage) {
-  AddNTestImages(2);
-
-  EXPECT_TRUE(EqualsToTestImage(current_image()));
-  EXPECT_TRUE(EqualsToTestImage(next_image()));
-
-  auto previous_next_image = next_image();
   AddNTestImages(1);
-  EXPECT_TRUE(EqualsToTestImage(current_image()));
-  EXPECT_TRUE(EqualsToTestImage(next_image()));
-  EXPECT_TRUE(previous_next_image.BackedBySameObjectAs(current_image()));
+  EXPECT_TRUE(EqualsToTestImage(GetNextImage()));
+
+  AddNTestImages(1);
+  EXPECT_TRUE(EqualsToTestImage(GetNextImage()));
 }
 
 // Test the photo refresh interval is expected.

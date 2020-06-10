@@ -7,6 +7,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
 import {FittingType} from './constants.js';
+import {GestureDetector, PinchEvent} from './gesture_detector.js';
 import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
 
 /**
@@ -83,12 +84,15 @@ export class Viewport {
    * @param {!Window} window
    * @param {!HTMLDivElement} sizer The element which represents the size of the
    *     document in the viewport
+   * @param {!HTMLDivElement} content The element which contains the plugin in
+   *     the viewer.
    * @param {number} scrollbarWidth The width of scrollbars on the page
    * @param {number} defaultZoom The default zoom level.
    * @param {number} topToolbarHeight The number of pixels that should initially
    *     be left blank above the document for the toolbar.
    */
-  constructor(window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight) {
+  constructor(
+      window, sizer, content, scrollbarWidth, defaultZoom, topToolbarHeight) {
     /** @private {!Window} */
     this.window_ = window;
 
@@ -167,6 +171,19 @@ export class Viewport {
 
     /** @private {!EventTracker} */
     this.tracker_ = new EventTracker();
+
+    /** @private {!GestureDetector} */
+    this.gestureDetector_ = new GestureDetector(content);
+
+    /** @private {boolean} */
+    this.sentPinchEvent_ = false;
+
+    this.gestureDetector_.addEventListener(
+        'pinchstart', e => this.onPinchStart_(e));
+    this.gestureDetector_.addEventListener(
+        'pinchupdate', e => this.onPinchUpdate_(e));
+    this.gestureDetector_.addEventListener(
+        'pinchend', e => this.onPinchEnd_(e));
 
     // Set to a default zoom manager - used in tests.
     this.setZoomManager(new InactiveZoomManager(this.getZoom.bind(this), 1));
@@ -990,82 +1007,6 @@ export class Viewport {
   }
 
   /**
-   * Pinch zoom event handler.
-   * @param {!Object} e The pinch event.
-   */
-  pinchZoom(e) {
-    this.mightZoom_(() => {
-      this.pinchPhase_ = e.direction === 'out' ?
-          Viewport.PinchPhase.PINCH_UPDATE_ZOOM_OUT :
-          Viewport.PinchPhase.PINCH_UPDATE_ZOOM_IN;
-
-      const scaleDelta = e.startScaleRatio / this.prevScale_;
-      if (this.firstPinchCenterInFrame_ != null) {
-        this.pinchPanVector_ =
-            vectorDelta(e.center, this.firstPinchCenterInFrame_);
-      }
-
-      const needsScrollbars =
-          this.documentNeedsScrollbars_(this.zoomManager_.applyBrowserZoom(
-              this.clampZoom_(this.internalZoom_ * scaleDelta)));
-
-      this.pinchCenter_ = e.center;
-
-      // If there's no horizontal scrolling, keep the content centered so the
-      // user can't zoom in on the non-content area.
-      // TODO(mcnee) Investigate other ways of scaling when we don't have
-      // horizontal scrolling. We want to keep the document centered,
-      // but this causes a potentially awkward transition when we start
-      // using the gesture center.
-      if (!needsScrollbars.horizontal) {
-        this.pinchCenter_ = {
-          x: this.window_.innerWidth / 2,
-          y: this.window_.innerHeight / 2
-        };
-      } else if (this.keepContentCentered_) {
-        this.oldCenterInContent_ =
-            this.frameToContent_(frameToPluginCoordinate(e.center));
-        this.keepContentCentered_ = false;
-      }
-
-      this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(e.center));
-      this.updateViewport_();
-      this.prevScale_ = e.startScaleRatio;
-    });
-  }
-
-  /** @param {!Object} e The pinch event. */
-  pinchZoomStart(e) {
-    this.pinchPhase_ = Viewport.PinchPhase.PINCH_START;
-    this.prevScale_ = 1;
-    this.oldCenterInContent_ =
-        this.frameToContent_(frameToPluginCoordinate(e.center));
-
-    const needsScrollbars = this.documentNeedsScrollbars_(this.getZoom());
-    this.keepContentCentered_ = !needsScrollbars.horizontal;
-    // We keep track of begining of the pinch.
-    // By doing so we will be able to compute the pan distance.
-    this.firstPinchCenterInFrame_ = e.center;
-  }
-
-  /** @param {!Object} e The pinch event. */
-  pinchZoomEnd(e) {
-    this.mightZoom_(() => {
-      this.pinchPhase_ = Viewport.PinchPhase.PINCH_END;
-      const scaleDelta = e.startScaleRatio / this.prevScale_;
-      this.pinchCenter_ = /** @type {!Point} */ (e.center);
-
-      this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(e.center));
-      this.updateViewport_();
-    });
-
-    this.pinchPhase_ = Viewport.PinchPhase.PINCH_NONE;
-    this.pinchPanVector_ = null;
-    this.pinchCenter_ = null;
-    this.firstPinchCenterInFrame_ = null;
-  }
-
-  /**
    * Go to the next page. If the document is in two-up view, go to the left page
    * of the next row.
    */
@@ -1251,6 +1192,110 @@ export class Viewport {
     if (this.tracker_) {
       this.tracker_.removeAll();
     }
+  }
+
+  /**
+   * A callback that's called when an update to a pinch zoom is detected.
+   * @param {!PinchEvent} e the pinch event.
+   * @private
+   */
+  onPinchUpdate_(e) {
+    // Throttle number of pinch events to one per frame.
+    if (this.sentPinchEvent_) {
+      return;
+    }
+
+    this.sentPinchEvent_ = true;
+    this.window_.requestAnimationFrame(() => {
+      this.sentPinchEvent_ = false;
+      this.mightZoom_(() => {
+        this.pinchPhase_ = e.direction === 'out' ?
+            Viewport.PinchPhase.PINCH_UPDATE_ZOOM_OUT :
+            Viewport.PinchPhase.PINCH_UPDATE_ZOOM_IN;
+
+        const scaleDelta = e.startScaleRatio / this.prevScale_;
+        if (this.firstPinchCenterInFrame_ != null) {
+          this.pinchPanVector_ =
+              vectorDelta(e.center, this.firstPinchCenterInFrame_);
+        }
+
+        const needsScrollbars =
+            this.documentNeedsScrollbars_(this.zoomManager_.applyBrowserZoom(
+                this.clampZoom_(this.internalZoom_ * scaleDelta)));
+
+        this.pinchCenter_ = e.center;
+
+        // If there's no horizontal scrolling, keep the content centered so
+        // the user can't zoom in on the non-content area.
+        // TODO(mcnee) Investigate other ways of scaling when we don't have
+        // horizontal scrolling. We want to keep the document centered,
+        // but this causes a potentially awkward transition when we start
+        // using the gesture center.
+        if (!needsScrollbars.horizontal) {
+          this.pinchCenter_ = {
+            x: this.window_.innerWidth / 2,
+            y: this.window_.innerHeight / 2
+          };
+        } else if (this.keepContentCentered_) {
+          this.oldCenterInContent_ =
+              this.frameToContent_(frameToPluginCoordinate(e.center));
+          this.keepContentCentered_ = false;
+        }
+
+        this.setPinchZoomInternal_(
+            scaleDelta, frameToPluginCoordinate(e.center));
+        this.updateViewport_();
+        this.prevScale_ = /** @type {number} */ (e.startScaleRatio);
+      });
+    });
+  }
+
+  /**
+   * A callback that's called when the end of a pinch zoom is detected.
+   * @param {!PinchEvent} e the pinch event.
+   * @private
+   */
+  onPinchEnd_(e) {
+    // Using rAF for pinch end prevents pinch updates scheduled by rAF getting
+    // sent after the pinch end.
+    this.window_.requestAnimationFrame(() => {
+      this.mightZoom_(() => {
+        this.pinchPhase_ = Viewport.PinchPhase.PINCH_END;
+        const scaleDelta = e.startScaleRatio / this.prevScale_;
+        this.pinchCenter_ = /** @type {!Point} */ (e.center);
+
+        this.setPinchZoomInternal_(
+            scaleDelta, frameToPluginCoordinate(e.center));
+        this.updateViewport_();
+      });
+
+      this.pinchPhase_ = Viewport.PinchPhase.PINCH_NONE;
+      this.pinchPanVector_ = null;
+      this.pinchCenter_ = null;
+      this.firstPinchCenterInFrame_ = null;
+    });
+  }
+
+  /**
+   * A callback that's called when the start of a pinch zoom is detected.
+   * @param {!PinchEvent} e the pinch event.
+   * @private
+   */
+  onPinchStart_(e) {
+    // We also use rAF for pinch start, so that if there is a pinch end event
+    // scheduled by rAF, this pinch start will be sent after.
+    this.window_.requestAnimationFrame(() => {
+      this.pinchPhase_ = Viewport.PinchPhase.PINCH_START;
+      this.prevScale_ = 1;
+      this.oldCenterInContent_ =
+          this.frameToContent_(frameToPluginCoordinate(e.center));
+
+      const needsScrollbars = this.documentNeedsScrollbars_(this.getZoom());
+      this.keepContentCentered_ = !needsScrollbars.horizontal;
+      // We keep track of beginning of the pinch.
+      // By doing so we will be able to compute the pan distance.
+      this.firstPinchCenterInFrame_ = e.center;
+    });
   }
 }
 

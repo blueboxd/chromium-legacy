@@ -47,6 +47,7 @@ from blinkpy.common import path_finder
 from blinkpy.common.net.file_uploader import FileUploader
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.tool import grammar
+from blinkpy.web_tests.controllers.test_result_sink import CreateTestResultSink
 from blinkpy.web_tests.controllers.web_test_finder import WebTestFinder
 from blinkpy.web_tests.controllers.web_test_runner import WebTestRunner
 from blinkpy.web_tests.layout_package import json_results_generator
@@ -91,9 +92,11 @@ class Manager(object):
         self._artifacts_directory = self._port.artifacts_directory()
         self._finder = WebTestFinder(self._port, self._options)
         self._path_finder = PathFinder(port.host.filesystem)
+
+        sink = CreateTestResultSink(self._artifacts_directory)
         self._runner = WebTestRunner(self._options, self._port, self._printer,
                                      self._results_directory,
-                                     self._test_is_slow)
+                                     self._test_is_slow, sink)
 
     def run(self, args):
         """Runs the tests and return a RunDetails object with the results."""

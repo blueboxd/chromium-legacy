@@ -65,7 +65,7 @@ const tests = [
 
     const mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {
-        toolbarManager.handleMouseMove(e);
+        document.dispatchEvent(e);
       });
     };
 
@@ -137,7 +137,7 @@ const tests = [
 
     const mouseMove = function(fromX, fromY, toX, toY, steps) {
       getMouseMoveEvents(fromX, fromY, toX, toY, steps).forEach(function(e) {
-        toolbarManager.handleMouseMove(e);
+        document.dispatchEvent(e);
       });
     };
 
@@ -180,7 +180,7 @@ const tests = [
 
     // Move the mouse and wait for a timeout to ensure toolbar is invisible.
     getMouseMoveEvents(200, 200, 800, 800, 5).forEach(function(e) {
-      toolbarManager.handleMouseMove(e);
+      document.dispatchEvent(e);
     });
     mockWindow.runTimeout();
     chrome.test.assertFalse(zoomToolbar.isVisible());
@@ -235,21 +235,21 @@ const tests = [
     chrome.test.assertFalse(toolbar.opened);
 
     // Tap anywhere on the screen -> Toolbars open.
-    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
+    document.dispatchEvent(makeTapEvent(500, 500));
     chrome.test.assertTrue(toolbar.opened, 'toolbars open after tap');
 
     // Tap again -> Toolbars close.
-    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
+    document.dispatchEvent(makeTapEvent(500, 500));
     chrome.test.assertFalse(toolbar.opened, 'toolbars close after tap');
 
     // Open toolbars, wait 2 seconds -> Toolbars close.
-    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
+    document.dispatchEvent(makeTapEvent(500, 500));
     mockWindow.runTimeout();
     chrome.test.assertFalse(toolbar.opened, 'toolbars close after wait');
 
     // Open toolbars, tap near toolbars -> Toolbar doesn't close.
-    toolbarManager.handleMouseMove(makeTapEvent(500, 500));
-    toolbarManager.handleMouseMove(makeTapEvent(100, 75));
+    document.dispatchEvent(makeTapEvent(500, 500));
+    document.dispatchEvent(makeTapEvent(100, 75));
     chrome.test.assertTrue(
         toolbar.opened, 'toolbars stay open after tap near toolbars');
     mockWindow.runTimeout();

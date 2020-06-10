@@ -59,7 +59,7 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
             container, container_style, *line_item, cursor);
-    return container.ConvertToLogical(line_rect, cursor.Current().Size())
+    return container.ConvertToLogical(line_rect, line_rect.size)
         .BlockEndOffset();
   }
 
@@ -77,8 +77,7 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
   PhysicalRect line_rect =
       last_line->ScrollableOverflow(container, container_style);
   line_rect.Move(last_line_offset);
-  return container.ConvertToLogical(line_rect, last_line->Size())
-      .BlockEndOffset();
+  return container.ConvertToLogical(line_rect, line_rect.size).BlockEndOffset();
 }
 
 // Returns the logical top offset of the first line text, relative to
@@ -102,7 +101,7 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
             container, container_style, *line_item, cursor);
-    return container.ConvertToLogical(line_rect, cursor.Current().Size())
+    return container.ConvertToLogical(line_rect, line_rect.size)
         .offset.block_offset;
   }
 
@@ -111,7 +110,7 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
       PhysicalRect line_rect =
           line->ScrollableOverflow(container, container_style);
       line_rect.Move(child_link.offset);
-      return container.ConvertToLogical(line_rect, line->Size())
+      return container.ConvertToLogical(line_rect, line_rect.size)
           .offset.block_offset;
     }
   }
@@ -2827,7 +2826,7 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
       To<NGBlockNode>(*ruby_text_child)
           .Layout(builder.ToConstraintSpace(), break_token.get());
 
-  LayoutUnit ruby_text_top;
+  LayoutUnit ruby_text_box_top;
   const NGPhysicalBoxFragment& ruby_text_fragment =
       To<NGPhysicalBoxFragment>(result->PhysicalFragment());
   RubyPosition block_start_position = Style().IsFlippedLinesWritingMode()
@@ -2849,7 +2848,10 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
         }
       }
     }
-    ruby_text_top = first_line_top - last_line_ruby_text_bottom;
+    ruby_text_box_top = first_line_top - last_line_ruby_text_bottom;
+    const LayoutUnit ruby_text_top =
+        ruby_text_box_top +
+        FirstLineTextLogicalTop(ruby_text_fragment, LayoutUnit());
     if (ruby_text_top < LayoutUnit())
       container_builder_.SetAnnotationOverflow(ruby_text_top);
   } else {
@@ -2874,23 +2876,25 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
         }
       }
     }
-    ruby_text_top = last_line_bottom - first_line_ruby_text_top;
+    ruby_text_box_top = last_line_bottom - first_line_ruby_text_top;
     LayoutUnit ruby_text_height =
         ruby_text_fragment.Size()
             .ConvertToLogical(Style().GetWritingMode())
             .block_size;
+    ruby_text_height =
+        LastLineTextLogicalBottom(ruby_text_fragment, ruby_text_height);
     LayoutUnit logical_bottom_overflow =
-        ruby_text_top + ruby_text_height - base_logical_bottom;
+        ruby_text_box_top + ruby_text_height - base_logical_bottom;
     if (logical_bottom_overflow > LayoutUnit())
       container_builder_.SetAnnotationOverflow(logical_bottom_overflow);
   }
   container_builder_.AddResult(*result,
-                               LogicalOffset(LayoutUnit(), ruby_text_top));
+                               LogicalOffset(LayoutUnit(), ruby_text_box_top));
   // RubyText provides baseline if RubyBase didn't.
   // This behavior doesn't make much sense, but it's compatible with the legacy
   // layout.
   if (!container_builder_.Baseline())
-    PropagateBaselineFromChild(ruby_text_fragment, ruby_text_top);
+    PropagateBaselineFromChild(ruby_text_fragment, ruby_text_box_top);
 }
 
 }  // namespace blink

@@ -203,7 +203,9 @@ void TestSharedImageInterface::PresentSwapChain(
 #if defined(OS_FUCHSIA)
 void TestSharedImageInterface::RegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
-    zx::channel token) {
+    zx::channel token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   NOTREACHED();
 }
 
@@ -228,6 +230,10 @@ gpu::SyncToken TestSharedImageInterface::GenUnverifiedSyncToken() {
       gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                      gpu::CommandBufferId(), ++release_id_);
   return most_recent_generated_token_;
+}
+
+void TestSharedImageInterface::WaitSyncToken(const gpu::SyncToken& sync_token) {
+  NOTREACHED();
 }
 
 void TestSharedImageInterface::Flush() {

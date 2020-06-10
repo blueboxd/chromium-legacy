@@ -28,23 +28,11 @@ IPC_MESSAGE_ROUTED5(DragMsg_TargetDragEnter,
                     blink::WebDragOperationsMask /* ops_allowed */,
                     int /* key_modifiers */)
 
-IPC_MESSAGE_ROUTED4(DragMsg_TargetDragOver,
-                    gfx::PointF /* client_pt */,
-                    gfx::PointF /* screen_pt */,
-                    blink::WebDragOperationsMask /* ops_allowed */,
-                    int /* key_modifiers */)
-
 IPC_MESSAGE_ROUTED4(DragMsg_TargetDrop,
                     content::DropData /* drop_data */,
                     gfx::PointF /* client_pt */,
                     gfx::PointF /* screen_pt */,
                     int /* key_modifiers */)
-
-// Notifies the renderer when and where the mouse-drag ended.
-IPC_MESSAGE_ROUTED3(DragMsg_SourceEnded,
-                    gfx::PointF /* client_pt */,
-                    gfx::PointF /* screen_pt */,
-                    blink::WebDragOperation /* drag_operation */)
 
 // Messages sent from the renderer to the browser.
 

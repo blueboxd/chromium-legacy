@@ -9,6 +9,7 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
+import textwrap
 
 _SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 _SWARMING_CLIENT = os.path.join(_SRC_ROOT, 'tools', 'swarming_client',
@@ -48,16 +49,26 @@ def _trigger_clobber(swarming_server, pool, cache, bot, mount_rel_path,
       '-d',
       'id',
       bot,
+      '--cipd-package',
+      'cpython:infra/python/cpython/${platform}:latest',
       '--named-cache',
       cache,
       mount_rel_path,
       '--priority=10',
       '--raw-cmd',
       '--',
-      # TODO(jbudorick): Generalize this for windows.
-      '/bin/rm',
-      '-rf',
-      mount_rel_path,
+      'cpython/bin/python${EXECUTABLE_SUFFIX}',
+      '-c',
+      textwrap.dedent('''\
+          import os, shutil, stat
+
+          def remove_readonly(func, path, _):
+              "Clear the readonly bit and reattempt the removal"
+              os.chmod(path, stat.S_IWRITE)
+              func(path)
+
+          shutil.rmtree({mount_rel_path!r}, onerror=remove_readonly)
+          '''.format(mount_rel_path=mount_rel_path)),
   ]
   if dry_run:
     print('Would run `%s`' % ' '.join(cmd))

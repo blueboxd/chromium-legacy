@@ -1064,11 +1064,6 @@ bool Document::IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const {
   return GetSecurityContext().IsSandboxed(mask);
 }
 
-PublicURLManager& Document::GetPublicURLManager() {
-  DCHECK(GetExecutionContext());
-  return GetExecutionContext()->GetPublicURLManager();
-}
-
 SecureContextMode Document::GetSecureContextMode() const {
   return GetSecurityContext().GetSecureContextMode();
 }

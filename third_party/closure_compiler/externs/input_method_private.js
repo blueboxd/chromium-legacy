@@ -401,3 +401,9 @@ chrome.inputMethodPrivate.onSettingsChanged;
  * @type {!ChromeEvent}
  */
 chrome.inputMethodPrivate.onScreenProjectionChanged;
+
+/**
+ * This event is sent when a new set of suggestions has been generated
+ * @type {!ChromeEvent}
+ */
+chrome.inputMethodPrivate.onSuggestionsChanged;

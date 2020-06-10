@@ -354,13 +354,16 @@ void SharedImageStub::OnPresentSwapChain(const Mailbox& mailbox,
 #if defined(OS_FUCHSIA)
 void SharedImageStub::OnRegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
-    zx::channel token) {
+    zx::channel token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   if (!id || !token) {
     OnError();
     return;
   }
 
-  if (!factory_->RegisterSysmemBufferCollection(id, std::move(token))) {
+  if (!factory_->RegisterSysmemBufferCollection(id, std::move(token), format,
+                                                usage)) {
     OnError();
   }
 }

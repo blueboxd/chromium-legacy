@@ -145,8 +145,12 @@ base::span<const uint8_t> GetDstContent(WGPUTextureFormat format) {
     case WGPUTextureFormat_RG8Unorm:
       return base::span<const uint8_t>(rg8, sizeof(rg8));
     case WGPUTextureFormat_RGBA8Unorm:
+    // We need to ensure no color space conversion happens
+    // during imageBitmap uploading.
+    case WGPUTextureFormat_RGBA8UnormSrgb:
       return base::span<const uint8_t>(rgba8, sizeof(rgba8));
     case WGPUTextureFormat_BGRA8Unorm:
+    case WGPUTextureFormat_BGRA8UnormSrgb:
       return base::span<const uint8_t>(bgra8, sizeof(bgra8));
     case WGPUTextureFormat_RGB10A2Unorm:
       return base::span<const uint8_t>(rgb10a2, sizeof(rgb10a2));
@@ -267,11 +271,18 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyColorConvert) {
 
   // Joint of SkColorType and WebGPU texture format
   const WGPUTextureFormat kDstWebGPUTextureFormat[] = {
-      WGPUTextureFormat_RG16Float,    WGPUTextureFormat_RGBA16Float,
+      WGPUTextureFormat_RG16Float,      WGPUTextureFormat_RGBA16Float,
       WGPUTextureFormat_RGBA32Float,
 
-      WGPUTextureFormat_RGB10A2Unorm, WGPUTextureFormat_RG8Unorm,
-      WGPUTextureFormat_RGBA8Unorm,   WGPUTextureFormat_BGRA8Unorm,
+      WGPUTextureFormat_RGB10A2Unorm,   WGPUTextureFormat_RG8Unorm,
+      WGPUTextureFormat_RGBA8Unorm,     WGPUTextureFormat_BGRA8Unorm,
+      WGPUTextureFormat_RGBA8UnormSrgb, WGPUTextureFormat_BGRA8UnormSrgb,
+  };
+
+  const CanvasColorSpace kColorSpaces[] = {
+      CanvasColorSpace::kSRGB,
+      CanvasColorSpace::kRec2020,
+      CanvasColorSpace::kP3,
   };
 
   uint64_t kImageWidth = 3;
@@ -281,17 +292,19 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyColorConvert) {
 
   for (SkColorType src_color_type : srcSkColorFormat) {
     for (WGPUTextureFormat dst_color_type : kDstWebGPUTextureFormat) {
-      SkImageInfo info = SkImageInfo::Make(
-          kImageWidth, kImageHeight, src_color_type,
-          SkAlphaType::kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
-      CanvasColorParams color_param(
-          CanvasColorSpace::kSRGB,
-          SkColorTypeToCanvasPixelFormat(src_color_type),
-          OpacityMode::kNonOpaque);
-      VerifyCopyBytes(kImageWidth, kImageHeight, info, color_param,
-                      image_data_rect, dst_color_type,
-                      GetSrcPixelContent(src_color_type),
-                      GetDstContent(dst_color_type));
+      for (CanvasColorSpace color_space : kColorSpaces) {
+        CanvasColorParams color_param(
+            color_space, SkColorTypeToCanvasPixelFormat(src_color_type),
+            OpacityMode::kNonOpaque);
+        SkImageInfo info =
+            SkImageInfo::Make(kImageWidth, kImageHeight, src_color_type,
+                              SkAlphaType::kUnpremul_SkAlphaType,
+                              color_param.GetSkColorSpaceForSkSurfaces());
+        VerifyCopyBytes(kImageWidth, kImageHeight, info, color_param,
+                        image_data_rect, dst_color_type,
+                        GetSrcPixelContent(src_color_type),
+                        GetDstContent(dst_color_type));
+      }
     }
   }
 }

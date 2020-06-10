@@ -524,6 +524,43 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
   return true;
 }
 
+void FrameImpl::MaybeInjectBeforeLoadScripts(
+    content::NavigationHandle* navigation_handle) {
+  if (before_load_scripts_.empty())
+    return;
+
+  mojo::AssociatedRemote<mojom::OnLoadScriptInjector>
+      before_load_script_injector;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&before_load_script_injector);
+
+  // Provision the renderer's ScriptInjector with the scripts scoped to this
+  // page's origin.
+  before_load_script_injector->ClearOnLoadScripts();
+  for (uint64_t script_id : before_load_scripts_order_) {
+    const OriginScopedScript& script = before_load_scripts_[script_id];
+    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins())) {
+      // TODO(crbug.com/1060846): Stop using handle<shared_buffer>.
+      before_load_script_injector->AddOnLoadScript(
+          mojo::WrapReadOnlySharedMemoryRegion(script.script().Duplicate()));
+    }
+  }
+}
+
+void FrameImpl::MaybeStartCastStreaming(
+    content::NavigationHandle* navigation_handle) {
+  if (!IsCastStreamingEnabled() || !cast_streaming_session_client_)
+    return;
+
+  mojo::AssociatedRemote<mojom::CastStreamingReceiver> cast_streaming_receiver;
+  navigation_handle->GetRenderFrameHost()
+      ->GetRemoteAssociatedInterfaces()
+      ->GetInterface(&cast_streaming_receiver);
+  cast_streaming_session_client_->StartMojoConnection(
+      std::move(cast_streaming_receiver));
+}
+
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   if (IsHeadless()) {
     LOG(WARNING) << "CreateView() called on a HEADLESS Context.";
@@ -1012,30 +1049,13 @@ bool FrameImpl::CheckMediaAccessPermission(
 
 void FrameImpl::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (before_load_scripts_.empty())
-    return;
-
   if (!navigation_handle->IsInMainFrame() ||
       navigation_handle->IsSameDocument() || navigation_handle->IsErrorPage()) {
     return;
   }
 
-  mojo::AssociatedRemote<mojom::OnLoadScriptInjector>
-      before_load_script_injector;
-  navigation_handle->GetRenderFrameHost()
-      ->GetRemoteAssociatedInterfaces()
-      ->GetInterface(&before_load_script_injector);
-
-  // Provision the renderer's ScriptInjector with the scripts scoped to this
-  // page's origin.
-  before_load_script_injector->ClearOnLoadScripts();
-  for (uint64_t script_id : before_load_scripts_order_) {
-    const OriginScopedScript& script = before_load_scripts_[script_id];
-    if (IsOriginWhitelisted(navigation_handle->GetURL(), script.origins())) {
-      before_load_script_injector->AddOnLoadScript(
-          mojo::WrapReadOnlySharedMemoryRegion(script.script().Duplicate()));
-    }
-  }
+  MaybeInjectBeforeLoadScripts(navigation_handle);
+  MaybeStartCastStreaming(navigation_handle);
 }
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,

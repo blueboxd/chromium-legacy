@@ -126,10 +126,6 @@ class CORE_EXPORT SVGImage final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
-  DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
-      const FloatRect& dest_rect,
-      DarkModeImageClassifier* classifier) override;
-
  protected:
   // Whether or not size is available yet.
   bool IsSizeAvailable() override;

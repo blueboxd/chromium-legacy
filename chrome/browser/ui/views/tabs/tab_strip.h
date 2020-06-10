@@ -87,6 +87,9 @@ class TabStrip : public views::AccessiblePaneView,
   explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
+  void SetAvailableWidthCallback(
+      base::RepeatingCallback<int()> available_width_callback);
+
   // Returns the size needed for the specified views. This is invoked during
   // drag and drop to calculate offsets and positioning.
   static int GetSizeNeededForViews(const std::vector<TabSlotView*>& views);
@@ -565,9 +568,6 @@ class TabStrip : public views::AccessiblePaneView,
   // the index of the first non-pinned tab.
   int UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index);
 
-  // Gets the width that our parent view can allot to the tabstrip.
-  int GetAvailableWidthForTabstrip();
-
   // Calculates the width that can be occupied by the tabs in the strip.
   int CalculateAvailableWidthForTabs();
 
@@ -667,6 +667,8 @@ class TabStrip : public views::AccessiblePaneView,
   std::unique_ptr<ui::EventHandler> hover_card_event_sniffer_;
 
   std::unique_ptr<TabStripController> controller_;
+
+  base::RepeatingCallback<int()> available_width_callback_;
 
   std::unique_ptr<TabStripLayoutHelper> layout_helper_;
 

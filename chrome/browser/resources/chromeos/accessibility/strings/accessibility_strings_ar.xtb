@@ -456,6 +456,7 @@
 <translation id="4505167975768625962">إدراج</translation>
 <translation id="4511186779140817916">لوزي</translation>
 <translation id="451510441928265982">ليس هناك عنوان سابق من المستوى الثاني.</translation>
+<translation id="4515799157838123044">تظليل محتوى الخلفية</translation>
 <translation id="4517854969512651305">زيادة القيمة</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{شرطة مائلة واحدة}zero{# slashes}two{شرطتان مائلتان (#)}few{# شرطات مائلة}many{# شرطة مائلة}other{# من الشرطات المائلة}}</translation>
 <translation id="4537277403911487429">العنصر المماثل التالي</translation>
@@ -776,7 +777,7 @@
 <translation id="7209751026933045237">ليس هناك شريط تمرير تالٍ.</translation>
 <translation id="7218782500591078391">أصفر ذهبي</translation>
 <translation id="7226216518520804442">lst</translation>
-<translation id="7229749224609077523">تحديد جدول نمط برايل مكوّن من 6 نقاط:</translation>
+<translation id="7229749224609077523">اختيار جدول نمط برايل مكوّن من 6 نقاط:</translation>
 <translation id="72393384879519786">عنوان</translation>
 <translation id="7240858705033280249">الانتقال السريع إلى التفاصيل</translation>
 <translation id="7241683698754534149">فتح الوصف المطول في علامة تبويب جديدة</translation>
@@ -981,7 +982,7 @@
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">حذف</translation>
 <translation id="9040132695316389094">العنوان الأول</translation>
-<translation id="9061884144798498064">تحديد جدول نمط برايل مكوّن من 8 نقاط:</translation>
+<translation id="9061884144798498064">اختيار جدول نمط برايل مكوّن من 8 نقاط:</translation>
 <translation id="9065283790526219006">+قائمة منبثقة</translation>
 <translation id="9065912140022662363">ليس هناك زر اختيار تالٍ.</translation>
 <translation id="9067522039955793016">فاصل صفحة</translation>

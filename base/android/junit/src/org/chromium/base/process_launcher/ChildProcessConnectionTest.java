@@ -48,28 +48,27 @@ import java.util.ArrayList;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ChildProcessConnectionTest {
-    private static class ChildServiceConnectionMock
-            implements ChildProcessConnection.ChildServiceConnection {
+    private static class ChildServiceConnectionMock implements ChildServiceConnection {
         private final Intent mBindIntent;
-        private final ChildProcessConnection.ChildServiceConnectionDelegate mDelegate;
+        private final ChildServiceConnectionDelegate mDelegate;
         private boolean mBound;
         private int mGroup;
         private int mImportanceInGroup;
 
         public ChildServiceConnectionMock(
-                Intent bindIntent, ChildProcessConnection.ChildServiceConnectionDelegate delegate) {
+                Intent bindIntent, ChildServiceConnectionDelegate delegate) {
             mBindIntent = bindIntent;
             mDelegate = delegate;
         }
 
         @Override
-        public boolean bind() {
+        public boolean bindServiceConnection() {
             mBound = true;
             return true;
         }
 
         @Override
-        public void unbind() {
+        public void unbindServiceConnection() {
             mBound = false;
         }
 
@@ -105,13 +104,11 @@ public class ChildProcessConnectionTest {
         }
     };
 
-    private final ChildProcessConnection.ChildServiceConnectionFactory mServiceConnectionFactory =
-            new ChildProcessConnection.ChildServiceConnectionFactory() {
+    private final ChildServiceConnectionFactory mServiceConnectionFactory =
+            new ChildServiceConnectionFactory() {
                 @Override
-                public ChildProcessConnection.ChildServiceConnection createConnection(
-                        Intent bindIntent, int bindFlags,
-                        ChildProcessConnection.ChildServiceConnectionDelegate delegate,
-                        String instanceName) {
+                public ChildServiceConnection createConnection(Intent bindIntent, int bindFlags,
+                        ChildServiceConnectionDelegate delegate, String instanceName) {
                     ChildServiceConnectionMock connection =
                             spy(new ChildServiceConnectionMock(bindIntent, delegate));
                     if (mFirstServiceConnection == null) {
@@ -234,9 +231,9 @@ public class ChildProcessConnectionTest {
     public void testServiceStartsAndFailsToBind() {
         ChildProcessConnection connection = createDefaultTestConnection();
         assertNotNull(mFirstServiceConnection);
-        // Note we use doReturn so the actual bind() method is not called (it would with
-        // when(mFirstServiceConnection.bind()).thenReturn(false).
-        doReturn(false).when(mFirstServiceConnection).bind();
+        // Note we use doReturn so the actual bindServiceConnection() method is not called (it would
+        // with when(mFirstServiceConnection.bindServiceConnection()).thenReturn(false).
+        doReturn(false).when(mFirstServiceConnection).bindServiceConnection();
         connection.start(false /* useStrongBinding */, mServiceCallback);
 
         Assert.assertFalse(connection.isModerateBindingBound());

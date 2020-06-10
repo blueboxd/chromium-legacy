@@ -170,15 +170,17 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnter(
                                    modifiers);
 }
 
-WebDragOperation WebFrameWidgetBase::DragTargetDragOver(
+void WebFrameWidgetBase::DragTargetDragOver(
     const gfx::PointF& point_in_viewport,
     const gfx::PointF& screen_point,
     WebDragOperationsMask operations_allowed,
-    int modifiers) {
+    uint32_t modifiers,
+    DragTargetDragOverCallback callback) {
   operations_allowed_ = operations_allowed;
 
-  return DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragOver,
-                                   modifiers);
+  blink::WebDragOperation operation = DragTargetDragEnterOrOver(
+      point_in_viewport, screen_point, kDragOver, modifiers);
+  std::move(callback).Run(operation);
 }
 
 void WebFrameWidgetBase::DragTargetDragLeave(

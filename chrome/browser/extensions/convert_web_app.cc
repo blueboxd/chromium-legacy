@@ -308,35 +308,39 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
       !web_app.shortcut_infos.empty()) {
-    // linked_shortcut_icons is a list of all shortcut icons included in the
+    // |linked_shortcut_icons| is a list of all shortcut icons included in the
     // WebAppManifest. It includes the name and the index of the icon's
     // corresponding shortcut, the icon's url, and its stated SquareSizePx in
     // the WebAppManifest.
     auto linked_shortcut_icons = std::make_unique<base::ListValue>();
-    // shortcuts is a mapping of 'shortcut_icons' specified in the
-    // WebAppManifest and written to disk, keyed to each index in the
-    // WebAppManifest's shortcuts vector.
-    auto shortcuts = std::make_unique<base::DictionaryValue>();
-    for (const auto& shortcut : web_app.shortcut_infos) {
-      for (const auto& icon : shortcut.shortcut_icon_infos) {
+    for (size_t i = 0; i < web_app.shortcut_infos.size(); ++i) {
+      for (const auto& icon : web_app.shortcut_infos[i].shortcut_icon_infos) {
         auto linked_shortcut_icon = std::make_unique<base::DictionaryValue>();
         linked_shortcut_icon->SetString(keys::kWebAppLinkedShortcutItemName,
-                                        shortcut.name);
+                                        web_app.shortcut_infos[i].name);
         linked_shortcut_icon->SetInteger(keys::kWebAppLinkedShortcutItemIndex,
-                                         shortcuts->size());
+                                         i);
         linked_shortcut_icon->SetString(keys::kWebAppLinkedShortcutIconURL,
                                         icon.url.spec());
         linked_shortcut_icon->SetInteger(keys::kWebAppLinkedShortcutIconSize,
                                          icon.square_size_px);
         linked_shortcut_icons->Append(std::move(linked_shortcut_icon));
       }
-      // shortcut_icons is a mapping of filepath keyed to SquareSizePx specified
-      // in the WebAppManifest for every icon written to disk for the current
-      // shortcut in web_app.shortcut_infos. A shortcut in the WebAppManifest
-      // can have different icons for different sizes.
+    }
+
+    // |shortcuts| is a mapping of 'shortcut_icons' specified in the
+    // WebAppManifest and written to disk, keyed to each index in the
+    // WebAppManifest's shortcuts vector.
+    auto shortcuts = std::make_unique<base::DictionaryValue>();
+    for (const auto& shortcut_icon_bitmaps :
+         web_app.shortcuts_menu_icons_bitmaps) {
+      // |shortcut_icons| is a mapping of filepath keyed to SquareSizePx
+      // specified in the WebAppManifest for every icon written to disk for the
+      // current shortcut in web_app.shortcut_infos. A shortcut in the
+      // WebAppManifest can have different icons for different sizes.
       auto shortcut_icons = std::make_unique<base::DictionaryValue>();
       std::string curr_icon = base::NumberToString(shortcuts->size());
-      for (const auto& icon : shortcut.shortcut_icon_bitmaps) {
+      for (const auto& icon : shortcut_icon_bitmaps) {
         std::string size = base::NumberToString(icon.first);
         std::string icon_path =
             base::StringPrintf("%s/%s/%s.png", kShortcutIconsDirName,
@@ -395,20 +399,18 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
       !web_app.shortcut_infos.empty()) {
     base::FilePath shortcut_icons_dir =
         temp_dir.GetPath().AppendASCII(kShortcutIconsDirName);
-    int shortcut_index = -1;
-    for (const auto& shortcut_item : web_app.shortcut_infos) {
-      ++shortcut_index;
-      auto size_map = shortcut_item.shortcut_icon_bitmaps;
-      if (size_map.empty())
+    for (size_t i = 0; i < web_app.shortcuts_menu_icons_bitmaps.size(); ++i) {
+      if (web_app.shortcuts_menu_icons_bitmaps[i].empty())
         continue;
 
       base::FilePath icon_dir =
-          shortcut_icons_dir.AppendASCII(base::NumberToString(shortcut_index));
+          shortcut_icons_dir.AppendASCII(base::NumberToString(i));
       if (!base::CreateDirectory(icon_dir)) {
         return nullptr;
       }
 
-      for (const std::pair<const SquareSizePx, SkBitmap>& icon : size_map) {
+      for (const std::pair<const SquareSizePx, SkBitmap>& icon :
+           web_app.shortcuts_menu_icons_bitmaps[i]) {
         DCHECK_NE(icon.second.colorType(), kUnknown_SkColorType);
 
         base::FilePath icon_file =

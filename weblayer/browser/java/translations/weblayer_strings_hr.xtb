@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1068672505746868501">Nikad ne prevodi <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Više jezika</translation>
+<translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
+<translation id="290376772003165898">Ovo nije <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Ups. Stranicu nije bilo moguće prevesti.</translation>
+<translation id="6040143037577758943">Zatvori</translation>
+<translation id="6831043979455480757">Prevedi</translation>
+<translation id="7243308994586599757">Opcije dostupne pri dnu zaslona</translation>
+<translation id="773466115871691567">Uvijek prevodi <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Aktivnost u web-pregledniku</translation>
 </translationbundle>

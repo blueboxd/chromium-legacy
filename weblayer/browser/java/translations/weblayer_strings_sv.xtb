@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Fler språk</translation>
+<translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
+<translation id="290376772003165898">Är sidan inte på <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
+<translation id="6040143037577758943">Stäng</translation>
+<translation id="6831043979455480757">Översätt</translation>
+<translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
+<translation id="773466115871691567">Översätt alltid sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Webbläsaraktivitet</translation>
 </translationbundle>

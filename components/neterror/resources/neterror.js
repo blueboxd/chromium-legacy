@@ -22,6 +22,8 @@
 // eslint-disable-next-line no-var
 var errorPageController;
 
+const HIDDEN_CLASS = 'hidden';
+
 // Decodes a UTF16 string that is encoded as base64.
 function decodeUTF16Base64ToString(encoded_text) {
   const data = atob(encoded_text);

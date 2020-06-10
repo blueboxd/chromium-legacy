@@ -93,8 +93,7 @@ const std::vector<SearchConcept>& GetWifiSearchConcepts() {
        mojom::SearchResultDefaultRank::kHigh,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kWifiNetworks},
-       {IDS_OS_SETTINGS_TAG_WIFI_ALT1, IDS_OS_SETTINGS_TAG_WIFI_ALT2,
-        SearchConcept::kAltTagEnd}},
+       {IDS_OS_SETTINGS_TAG_WIFI_ALT1, SearchConcept::kAltTagEnd}},
       {IDS_OS_SETTINGS_TAG_KNOWN_NETWORKS,
        mojom::kKnownNetworksSubpagePath,
        mojom::SearchResultIcon::kWifi,
@@ -208,8 +207,7 @@ const std::vector<SearchConcept>& GetCellularSearchConcepts() {
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kCellularDetails},
        {IDS_OS_SETTINGS_TAG_CELLULAR_ALT1, IDS_OS_SETTINGS_TAG_CELLULAR_ALT2,
-        IDS_OS_SETTINGS_TAG_CELLULAR_ALT3, IDS_OS_SETTINGS_TAG_CELLULAR_ALT4,
-        SearchConcept::kAltTagEnd}},
+        IDS_OS_SETTINGS_TAG_CELLULAR_ALT3, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }

@@ -8,6 +8,7 @@ module mojom;
 // injection tasks the frame. Does not enforce script injection policies,
 // which must be implemented at a higher level.
 interface OnLoadScriptInjector {
+  // TODO(crbug.com/1060846): Stop using handle<shared_buffer>.
   AddOnLoadScript(handle<shared_buffer> script);
 
   ClearOnLoadScripts();

@@ -101,7 +101,8 @@ js_library("actions") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:store.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("api_listener") {
@@ -115,7 +116,8 @@ js_library("api_listener") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:store.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("app") {
@@ -131,7 +133,10 @@ js_library("app") {
     "//ui/webui/resources/js:find_shortcut_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [
+    "$externs_path/bookmarks.js",
+    "$externs_path/metrics_private.js",
+  ]
 }
 
 js_library("browser_proxy") {
@@ -160,7 +165,10 @@ js_library("command_manager") {
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js/cr/ui:keyboard_shortcut_list.m",
   ]
-  externs_list = [ "$externs_path/bookmark_manager_private.js" ]
+  externs_list = chrome_extension_public_externs + [
+                   "$externs_path/bookmark_manager_private.js",
+                   "$externs_path/bookmarks.js",
+                 ]
 }
 
 js_library("constants") {
@@ -203,7 +211,7 @@ js_library("edit_dialog") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("folder_node") {
@@ -216,7 +224,6 @@ js_library("folder_node") {
     ":util",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("item") {
@@ -233,7 +240,6 @@ js_library("item") {
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("list") {
@@ -281,7 +287,6 @@ js_library("store") {
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js/cr/ui:store.m",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("store_client") {
@@ -306,18 +311,15 @@ js_library("toolbar") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
-  externs_list = [
-    "$externs_path/bookmark_manager_private.js",
-    "$externs_path/chrome_extensions.js",
-  ]
 }
 
 js_library("types") {
   deps = [ ":constants" ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }
 
 js_library("util") {
   deps = [ ":types" ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+
+  externs_list = [ "$externs_path/bookmarks.js" ]
 }

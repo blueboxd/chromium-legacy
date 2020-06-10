@@ -318,6 +318,12 @@ void AVIFImageDecoder::Decode(size_t index) {
     SetFailed();
     return;
   }
+  // Frame bit depth must be equal to container bit depth.
+  if (image->depth != decoder_->containerDepth) {
+    DVLOG(1) << "Frame bit depth must be equal to container bit depth";
+    SetFailed();
+    return;
+  }
 
   ImageFrame& buffer = frame_buffer_cache_[index];
   DCHECK_NE(buffer.GetStatus(), ImageFrame::kFrameComplete);
@@ -374,6 +380,21 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
     return false;
   }
 
+  // containerWidth and containerHeight are read from either the tkhd (track
+  // header) box of a track or the ispe (image spatial extents) property of an
+  // image item, both of which are mandatory in the spec.
+  if (decoder_->containerWidth == 0 || decoder_->containerHeight == 0) {
+    DVLOG(1) << "Container width and height must be present";
+    return false;
+  }
+
+  // containerDepth is read from either the av1C box of a track or the av1C
+  // property of an image item, both of which are mandatory in the spec.
+  if (decoder_->containerDepth == 0) {
+    DVLOG(1) << "Container depth must be present";
+    return false;
+  }
+
   DCHECK_GT(decoder_->imageCount, 0);
   decoded_frame_count_ = decoder_->imageCount;
   is_high_bit_depth_ = decoder_->containerDepth > 8;
@@ -383,13 +404,10 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
 
   // SetEmbeddedColorProfile() must be called before IsSizeAvailable() becomes
   // true. So call SetEmbeddedColorProfile() before calling SetSize(). The color
-  // profile is either an ICC profile or the CICP color description. The CICP
-  // color description may come from either the nclx colr box in the container
-  // or the AV1 sequence header for the frames. Decode the first frame to ensure
-  // the CICP color description is available.
-  if (!DecodeImage(0))
-    return false;
-
+  // profile is either an ICC profile or the CICP color description and comes
+  // from the colr box in the container. It is available in decoder_->image
+  // after avifDecoderParse() even though decoder_->imageIndex is invalid (-1).
+  DCHECK_EQ(decoder_->imageIndex, -1);
   const auto* image = decoder_->image;
 
   if (!IgnoresColorSpace()) {
@@ -404,8 +422,9 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
         return false;
       }
       uint32_t data_color_space = profile->GetProfile()->data_color_space;
-      if (!image->yuvPlanes[AVIF_CHAN_U]) {
-        // Monochrome (grayscale) image.
+      // TODO(wtc): Check for a monochrome (grayscale) image.
+      const bool is_mono = false;
+      if (is_mono) {
         if (data_color_space != skcms_Signature_Gray &&
             data_color_space != skcms_Signature_RGB)
           profile = nullptr;
@@ -419,7 +438,9 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
         return false;
       }
       SetEmbeddedColorProfile(std::move(profile));
-    } else {
+    } else if (image->colorPrimaries != AVIF_COLOR_PRIMARIES_UNSPECIFIED ||
+               image->transferCharacteristics !=
+                   AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED) {
       gfx::ColorSpace frame_cs = GetColorSpace(image);
       sk_sp<SkColorSpace> sk_color_space =
           frame_cs.GetAsFullRangeRGB().ToSkColorSpace();
@@ -429,34 +450,16 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
     }
   }
 
-  // The size from the container, if present, must be the same as the first
-  // frame's size.
-  if (decoder_->containerWidth && decoder_->containerHeight &&
-      (decoder_->containerWidth != image->width ||
-       decoder_->containerHeight != image->height)) {
-    DVLOG(1) << "Container size and image size disagree";
-    return false;
-  }
-
-  return SetSize(image->width, image->height);
+  return SetSize(decoder_->containerWidth, decoder_->containerHeight);
 }
 
 bool AVIFImageDecoder::DecodeImage(size_t index) {
-  auto ret = avifDecoderNthImage(decoder_.get(), index);
-  if (ret != AVIF_RESULT_OK) {
-    // We shouldn't be called more times than specified in
-    // DecodeFrameCount(); possibly this should truncate if the initial
-    // count is wrong?
-    DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
-    return false;
-  }
-
-  const auto* image = decoder_->image;
-  is_high_bit_depth_ = image->depth > 8;
-  decode_to_half_float_ =
-      is_high_bit_depth_ &&
-      high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
-  return true;
+  const auto ret = avifDecoderNthImage(decoder_.get(), index);
+  // We shouldn't be called more times than specified in
+  // DecodeFrameCount(); possibly this should truncate if the initial
+  // count is wrong?
+  DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
+  return ret == AVIF_RESULT_OK;
 }
 
 void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,

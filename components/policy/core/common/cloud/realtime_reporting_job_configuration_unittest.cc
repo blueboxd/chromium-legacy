@@ -23,6 +23,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/fake_statistics_provider.h"
+#endif
+
 namespace em = enterprise_management;
 
 using testing::_;
@@ -62,6 +66,9 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
  public:
   RealtimeReportingJobConfigurationTest()
       : client_(&service_),
+#if defined(OS_CHROMEOS)
+        fake_serial_number_(&fake_statistics_provider_),
+#endif
         configuration_(&client_,
                        DMAuth::FromDMToken(kDummyToken),
                        base::BindOnce(&MockCallbackObserver::OnURLLoadComplete,
@@ -142,6 +149,20 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
   MockCloudPolicyClient client_;
   StrictMock<MockCallbackObserver> callback_observer_;
   DeviceManagementService::Job job_;
+#if defined(OS_CHROMEOS)
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+  class ScopedFakeSerialNumber {
+   public:
+    ScopedFakeSerialNumber(chromeos::system::ScopedFakeStatisticsProvider*
+                               fake_statistics_provider) {
+      // The fake serial number must be set before |configuration_| is
+      // constructed below.
+      fake_statistics_provider->SetMachineStatistic(
+          chromeos::system::kSerialNumberKeyForTest, "fake_serial_number");
+    }
+  };
+  ScopedFakeSerialNumber fake_serial_number_;
+#endif
   RealtimeReportingJobConfiguration configuration_;
 };
 
@@ -166,6 +187,10 @@ TEST_F(RealtimeReportingJobConfigurationTest, ValidatePayload) {
   EXPECT_EQ(GetOSVersion(),
             *payload->FindStringPath(
                 RealtimeReportingJobConfiguration::kOsVersionKey));
+  EXPECT_FALSE(GetDeviceName().empty());
+  EXPECT_EQ(GetDeviceName(),
+            *payload->FindStringPath(
+                RealtimeReportingJobConfiguration::kDeviceNameKey));
 
   base::Value* events =
       payload->FindListKey(RealtimeReportingJobConfiguration::kEventsKey);

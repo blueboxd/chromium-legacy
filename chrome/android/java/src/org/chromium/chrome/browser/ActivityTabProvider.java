@@ -18,8 +18,10 @@ import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayou
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 
 /**
@@ -138,6 +140,9 @@ public class ActivityTabProvider implements Supplier<Tab> {
     /** An observer for watching tab creation and switching events. */
     private TabModelSelectorTabModelObserver mTabModelObserver;
 
+    /** An observer for watching tab model switching event. */
+    private TabModelSelectorObserver mTabModelSelectorObserver;
+
     /** The last tab ID that was hinted. This is reset when the activity tab actually changes. */
     private int mLastHintedTabId;
 
@@ -196,9 +201,21 @@ public class ActivityTabProvider implements Supplier<Tab> {
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
                 // If this is the last tab to close, make sure a signal is sent to the observers.
-                if (mTabModelSelector.getTotalTabCount() <= 1) triggerActivityTabChangeEvent(null);
+                if (mTabModelSelector.getCurrentModel().getCount() <= 1) {
+                    triggerActivityTabChangeEvent(null);
+                }
             }
         };
+
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                // Send a signal with null tab if a new model has no tab. Other cases
+                // are taken care of by TabModelSelectorTabModelObserver#didSelectTab.
+                if (newModel.getCount() == 0) triggerActivityTabChangeEvent(null);
+            }
+        };
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
     }
 
     /**
@@ -270,6 +287,10 @@ public class ActivityTabProvider implements Supplier<Tab> {
         if (mLayoutManager != null) mLayoutManager.removeSceneChangeObserver(mSceneChangeObserver);
         mLayoutManager = null;
         if (mTabModelObserver != null) mTabModelObserver.destroy();
+        if (mTabModelSelectorObserver != null) {
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            mTabModelSelectorObserver = null;
+        }
         mTabModelSelector = null;
     }
 }

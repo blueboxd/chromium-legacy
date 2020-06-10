@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> 화면이 <ph name="RESOLUTION" />(<ph name="REFRESH_RATE" />Hz) 해상도로 변경되었습니다. 변경사항을 적용하려면 확인을 클릭하세요. <ph name="TIMEOUT_SECONDS" /> 후 이전 설정으로 복원됩니다.</translation>
 <translation id="1013923882670373915">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 기기에서 다음 PIN 코드를 입력하세요. <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">스타일러스 배터리 부족</translation>
+<translation id="1036672894875463507">저는 Google 어시스턴트입니다. 언제든지 도움을 드릴 수 있습니다.
+다음과 같은 작업으로 어시스턴트 사용을 시작해 보세요.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> 추가됨</translation>
 <translation id="1056775291175587022">네트워크 없음</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">모두 로그아웃</translation>
 <translation id="2277103315734023688">앞으로 탐색</translation>
 <translation id="2292698582925480719">디스플레이 배율</translation>
+<translation id="229397294990920565">모바일 데이터를 사용 중지하는 중입니다.</translation>
 <translation id="2295777434187870477">마이크가 켜져 있으며 전환하면 음소거됩니다.</translation>
 <translation id="2298170939937364391">전체 화면 돋보기가 사용 설정되었습니다. 사용 중지하려면 Ctrl+Search+M을 다시 누르세요.</translation>
 <translation id="2302092602801625023">Family Link에서 관리되는 계정입니다.</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">돋보기</translation>
 <translation id="4351433414020964307">어시스턴트 로드 중...</translation>
 <translation id="4356930093361201197">고대비 모드</translation>
+<translation id="4368583494516669646"><ph name="GIVEN_NAME" />님, 안녕히 주무세요.</translation>
 <translation id="4371348193907997655">전송 설정</translation>
 <translation id="4378551569595875038">연결 중...</translation>
 <translation id="4379531060876907730">스타일러스 도구입니다</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">비밀번호 숨김</translation>
 <translation id="4570957409596482333">텍스트 읽어주기 버튼</translation>
+<translation id="4577274620589681794">타이머 종료 · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">알 수 없는 수신기에 전송 중지</translation>
 <translation id="4628757576491864469">기기</translation>
 <translation id="4659419629803378708">ChromeVox가 사용 설정됨</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">위로 스크롤</translation>
 <translation id="4961318399572185831">화면 전송</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />시간 <ph name="MINUTES" />분 <ph name="SECONDS" />초</translation>
+<translation id="4970352680959471247"><ph name="GIVEN_NAME" />님, 편안한 저녁 되세요.</translation>
 <translation id="5030687792513154421">시간이 다 됨</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />이(가) 새 휴대전화에 연결되었습니다.</translation>
 <translation id="5035389544768382859">화면 구성 확인</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="54609108002486618">관리</translation>
 <translation id="5465662442746197494">도움이 필요하신가요?</translation>
+<translation id="5485091064403948243"><ph name="GIVEN_NAME" />님, 좋은 아침이에요.</translation>
 <translation id="5496819745535887422">관리자가 내 기기를 롤백하고 있습니다. 기기가 다시 시작되면 모든 데이터가 삭제됩니다.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">세션 종료</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">기기의 잠금을 해제하려면 Family Link 부모 액세스 코드를 입력하세요.</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
+<translation id="7436182601308224670"><ph name="GIVEN_NAME" />님, 즐거운 오후 되세요.</translation>
 <translation id="7466449121337984263">센서를 터치하세요.</translation>
 <translation id="7497767806359279797">언어 및 키보드 선택</translation>
 <translation id="7526573455193969409">네트워크가 모니터링될 수 있음</translation>

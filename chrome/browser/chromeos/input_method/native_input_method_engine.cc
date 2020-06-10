@@ -242,6 +242,11 @@ void NativeInputMethodEngine::ImeObserver::OnScreenProjectionChanged(
   base_observer_->OnScreenProjectionChanged(is_projected);
 }
 
+void NativeInputMethodEngine::ImeObserver::OnSuggestionsChanged(
+    const std::vector<std::string>& suggestions) {
+  base_observer_->OnSuggestionsChanged(suggestions);
+}
+
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
   remote_manager_.FlushForTesting();
   if (remote_to_engine_.is_bound())

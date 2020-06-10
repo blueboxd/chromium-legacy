@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> alterado para <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Clique em confirmar para manter as alterações. As definições anteriores serão restauradas dentro de <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza este código PIN nesse dispositivo: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">A pilha da caneta stylus está fraca</translation>
+<translation id="1036672894875463507">Sou a sua Assistente Google e estou aqui para ajudar ao longo do seu dia!
+Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> adicionado</translation>
 <translation id="1056775291175587022">Nenhuma rede</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Terminar sessão de todos</translation>
 <translation id="2277103315734023688">Procurar para a frente</translation>
 <translation id="2292698582925480719">Escala de apresentação</translation>
+<translation id="229397294990920565">Os dados móveis estão a ser desativados…</translation>
 <translation id="2295777434187870477">O microfone está ativado. Se o desativar, irá desativar a entrada de som.</translation>
 <translation id="2298170939937364391">Lupa de ecrã inteiro ativada. Prima Ctrl + Pesquisa + M novamente para a desativar.</translation>
 <translation id="2302092602801625023">Esta conta é gerida pelo Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">A carregar o Assistente...</translation>
 <translation id="4356930093361201197">modo de alto contraste</translation>
+<translation id="4368583494516669646">Boa noite, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Definições de transmissão</translation>
 <translation id="4378551569595875038">A ligar...</translation>
 <translation id="4379531060876907730">Estas são as suas ferramentas da caneta stylus</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Ocultar palavra-passe</translation>
 <translation id="4570957409596482333">Botão Selecionar para falar</translation>
+<translation id="4577274620589681794">Acabou o tempo · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Parar a transmissão para um recetor desconhecido</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Deslocar para cima</translation>
 <translation id="4961318399572185831">Transmitir ecrã</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> h <ph name="MINUTES" /> min <ph name="SECONDS" /> s</translation>
+<translation id="4970352680959471247">Boa noite, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">O tempo terminou</translation>
 <translation id="5035236842988137213">O dispositivo <ph name="DEVICE_NAME" /> estabeleceu ligação a um novo telemóvel.</translation>
 <translation id="5035389544768382859">Confirme a configuração do ecrã</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Já foram adicionados a esta sessão todos os utilizadores disponíveis.</translation>
 <translation id="54609108002486618">Geridos</translation>
 <translation id="5465662442746197494">Precisa de ajuda?</translation>
+<translation id="5485091064403948243">Bom dia, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">O administrador vai reverter o dispositivo. Todos os dados serão eliminados quando o dispositivo for reiniciado.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">A sair da sessão…</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Para desbloquear este dispositivo, introduza o código de acesso parental do seu Family Link.</translation>
 <translation id="742594950370306541">A câmara está a ser utilizada.</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
+<translation id="7436182601308224670">Boa tarde, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Toque no sensor.</translation>
 <translation id="7497767806359279797">Escolher idioma e teclado</translation>
 <translation id="7526573455193969409">A rede pode ser monitorizada</translation>

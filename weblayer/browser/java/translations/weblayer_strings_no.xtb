@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1068672505746868501">Oversett aldri sider på <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Flere språk</translation>
+<translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
+<translation id="290376772003165898">Er ikke siden på <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
+<translation id="6040143037577758943">Lukk</translation>
+<translation id="6831043979455480757">Oversett</translation>
+<translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
+<translation id="773466115871691567">Oversett alltid sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Nettleseraktivitet</translation>
 </translationbundle>

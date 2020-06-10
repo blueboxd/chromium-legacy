@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mn">
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг хэзээ ч орчуулахгүй</translation>
+<translation id="124116460088058876">Бусад хэл</translation>
+<translation id="1285320974508926690">Энэ сайтыг хэзээ ч бүү хөрвүүл</translation>
+<translation id="290376772003165898">Хуудас <ph name="LANGUAGE" /> хэл дээр биш байна уу?</translation>
+<translation id="5684874026226664614">Өө. Энэ хуудсыг хөрвүүлж чадсангүй.</translation>
+<translation id="6040143037577758943">Хаах</translation>
+<translation id="6831043979455480757">Хөрвүүлэх</translation>
+<translation id="7243308994586599757">Дэлгэцийн доод хэсэгт сонголт боломжтой</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> хэл дээрх хуудсыг байнга орчуулна</translation>
 <translation id="8298278839890148234">Хөтчийн үйл ажиллагаа</translation>
 </translationbundle>

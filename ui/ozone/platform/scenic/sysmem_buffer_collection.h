@@ -48,7 +48,9 @@ class SysmemBufferCollection
 
   bool Initialize(fuchsia::sysmem::Allocator_Sync* allocator,
                   VkDevice vk_device,
-                  zx::channel token);
+                  zx::channel token,
+                  gfx::BufferFormat format,
+                  gfx::BufferUsage usage);
 
   // Must not be called more than once.
   void SetOnDeletedCallback(base::OnceClosure on_deleted);

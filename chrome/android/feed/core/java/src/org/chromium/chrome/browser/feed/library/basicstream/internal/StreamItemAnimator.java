@@ -4,17 +4,11 @@
 
 package org.chromium.chrome.browser.feed.library.basicstream.internal;
 
-import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.DecelerateInterpolator;
-
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.feed.library.api.internal.actionmanager.ViewActionManager;
-import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.PietViewHolder;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 
 /**
@@ -35,20 +29,17 @@ public class StreamItemAnimator extends DefaultItemAnimator {
     }
 
     @Override
+    public void onAddFinished(RecyclerView.ViewHolder item) {
+        super.onAddFinished(item);
+        // After first patch of articles are loaded, set recyclerView back to non-transparent.
+        mParent.getBackground().setAlpha(255);
+    }
+
+    @Override
     public void onAnimationFinished(RecyclerView.ViewHolder viewHolder) {
         super.onAnimationFinished(viewHolder);
         mContentChangedListener.onContentChanged();
         if (this.mIsStreamContentVisible) mViewActionManager.onAnimationFinished();
-
-        // Set recyclerView for Feed as visible when first patch of articles are loaded.
-        if (viewHolder instanceof PietViewHolder && mParent != null
-                && mParent.getVisibility() == View.INVISIBLE) {
-            Animation animate = new AlphaAnimation(0, 1);
-            animate.setInterpolator(new DecelerateInterpolator());
-            animate.setDuration(700);
-            mParent.startAnimation(animate);
-            mParent.setVisibility(View.VISIBLE);
-        }
     }
 
     public void setStreamVisibility(boolean isStreamContentVisible) {

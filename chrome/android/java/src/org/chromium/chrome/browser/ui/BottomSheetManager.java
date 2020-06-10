@@ -4,34 +4,79 @@
 
 package org.chromium.chrome.browser.ui;
 
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
+import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerInternal;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.util.TokenHolder;
+import org.chromium.ui.vr.VrModeObserver;
 
 /**
  * A class that manages activity-specific interactions with the BottomSheet component that it
  * otherwise shouldn't know about.
  */
 class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable {
+    /** A means of accessing the focus state of the omibox. */
+    private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
+
+    /** An observer of the omnibox that suppresses the sheet when the omnibox is focused. */
+    private final Callback<Boolean> mOmniboxFocusObserver;
+
+    /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
+    private final VrModeObserver mVrModeObserver;
+
+    /** A listener for browser controls offset changes. */
+    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
+
+    /** A listener for browser controls offset changes. */
+    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
+
+    /** An observer for the tab provider. */
+    private final ActivityTabObserver mActivityTabObserver;
+
+    /** A tab observer that is only attached to the active tab. */
+    private final TabObserver mTabObserver;
+
+    /** A browser controls manager for polling browser controls offsets. */
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
+
+    /** A fullscreen manager for listening to fullscreen events. */
+    private ChromeFullscreenManager mFullscreenManager;
+
     /** A token for suppressing app modal dialogs. */
     private int mAppModalToken = TokenHolder.INVALID_TOKEN;
 
     /** A token for suppressing tab modal dialogs. */
     private int mTabModalToken = TokenHolder.INVALID_TOKEN;
 
-    /** A handle to the {@link BottomSheetController} this class manages interactions with. */
-    private BottomSheetController mSheetController;
+    /**
+     * A handle to the {@link BottomSheetControllerInternal} this class manages interactions with.
+     */
+    private BottomSheetControllerInternal mSheetController;
 
     /** A mechanism for accessing the currently active tab. */
-    private Supplier<Tab> mTabSupplier;
+    private ActivityTabProvider mTabProvider;
 
     /** A supplier of the activity's dialog manager. */
     private Supplier<ModalDialogManager> mDialogManager;
@@ -45,6 +90,12 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     /** A token held while the bottom sheet is obscuring all visible tabs. */
     private int mTabObscuringToken;
 
+    /** The manager for overlay panels to attach listeners to. */
+    private Supplier<OverlayPanelManager> mOverlayPanelManager;
+
+    /** The last known activity tab, if available. */
+    private Tab mLastActivityTab;
+
     /**
      * Used to track whether the active content has a custom scrim lifecycle. This is kept here
      * because there are some instances where the active content is changed prior to the close event
@@ -52,23 +103,157 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
      */
     private boolean mContentHasCustomScrimLifecycle;
 
-    public BottomSheetManager(BottomSheetController controller, Supplier<Tab> tabSupplier,
+    /** The token used to enable browser controls persistence. */
+    private int mPersistentControlsToken;
+
+    public BottomSheetManager(BottomSheetControllerInternal controller,
+            ActivityTabProvider tabProvider, ChromeFullscreenManager fullscreenManager,
             Supplier<ModalDialogManager> dialogManager,
             Supplier<SnackbarManager> snackbarManagerSupplier,
-            TabObscuringHandler obscuringDelegate) {
+            TabObscuringHandler obscuringDelegate,
+            ObservableSupplier<Boolean> omniboxFocusStateSupplier,
+            Supplier<OverlayPanelManager> overlayManager) {
         mSheetController = controller;
-        mTabSupplier = tabSupplier;
+        mTabProvider = tabProvider;
+        mBrowserControlsStateProvider = fullscreenManager;
+        mFullscreenManager = fullscreenManager;
         mDialogManager = dialogManager;
         mSnackbarManager = snackbarManagerSupplier;
         mTabObscuringHandler = obscuringDelegate;
         mTabObscuringToken = TokenHolder.INVALID_TOKEN;
+        mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
+        mOverlayPanelManager = overlayManager;
 
         mSheetController.addObserver(this);
+
+        // TODO(1092686): We should wait to instantiate all of these observers until the bottom
+        //                sheet is actually used.
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                controller.clearRequestsAndHide();
+            }
+
+            @Override
+            public void onCrash(Tab tab) {
+                controller.clearRequestsAndHide();
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                if (mLastActivityTab != tab) return;
+                mLastActivityTab = null;
+
+                // Remove the suppressed sheet if its lifecycle is tied to the tab being destroyed.
+                controller.clearRequestsAndHide();
+            }
+        };
+
+        mActivityTabObserver = new HintlessActivityTabObserver() {
+            /** A token held while this object is suppressing the bottom sheet. */
+            private int mToken;
+
+            @Override
+            public void onActivityTabChanged(Tab tab) {
+                // Temporarily suppress the sheet if entering a state where there is no activity
+                // tab.
+                if (tab == null) {
+                    mToken = controller.suppressSheet(StateChangeReason.COMPOSITED_UI);
+                    return;
+                }
+
+                controller.unsuppressSheet(mToken);
+
+                // If refocusing the same tab, simply unsuppress the sheet.
+                if (mLastActivityTab == tab) return;
+
+                // Move the observer to the new activity tab and clear the sheet.
+                if (mLastActivityTab != null) mLastActivityTab.removeObserver(mTabObserver);
+                mLastActivityTab = tab;
+                mLastActivityTab.addObserver(mTabObserver);
+                controller.clearRequestsAndHide();
+            }
+        };
+        mTabProvider.addObserverAndTrigger(mActivityTabObserver);
+
+        mVrModeObserver = new VrModeObserver() {
+            /** A token held while this object is suppressing the bottom sheet. */
+            private int mToken;
+
+            @Override
+            public void onEnterVr() {
+                mToken = controller.suppressSheet(StateChangeReason.VR);
+            }
+
+            @Override
+            public void onExitVr() {
+                controller.unsuppressSheet(mToken);
+            }
+        };
+        VrModuleProvider.registerVrModeObserver(mVrModeObserver);
+
+        mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
+            @Override
+            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
+                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
+                controller.setBrowserControlsHiddenRatio(
+                        mFullscreenManager.getBrowserControlHiddenRatio());
+            }
+        };
+        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
+
+        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
+            /** A token held while this object is suppressing the bottom sheet. */
+            private int mToken;
+
+            @Override
+            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+                if (mOverlayPanelManager.get() != null
+                        && mOverlayPanelManager.get().getActivePanel() != null) {
+                    // TODO(mdjones): This should only apply to contextual search, but contextual
+                    //                search is the only implementation. Fix this to only apply to
+                    //                contextual search.
+                    mOverlayPanelManager.get().getActivePanel().closePanel(
+                            OverlayPanel.StateChangeReason.UNKNOWN, true);
+                }
+
+                if (mTabProvider.get() != tab) return;
+                mToken = controller.suppressSheet(StateChangeReason.COMPOSITED_UI);
+            }
+
+            @Override
+            public void onExitFullscreen(Tab tab) {
+                if (mTabProvider.get() != tab) return;
+                controller.unsuppressSheet(mToken);
+            }
+        };
+        mFullscreenManager.addListener(mFullscreenListener);
+
+        mOmniboxFocusObserver = new Callback<Boolean>() {
+            /** A token held while this object is suppressing the bottom sheet. */
+            private int mToken;
+
+            @Override
+            public void onResult(Boolean focused) {
+                if (focused) {
+                    mToken = controller.suppressSheet(BottomSheetController.StateChangeReason.NONE);
+                } else {
+                    controller.unsuppressSheet(mToken);
+                }
+            }
+        };
+        mOmniboxFocusStateSupplier.addObserver(mOmniboxFocusObserver);
     }
 
     @Override
     public void onSheetOpened(int reason) {
-        Tab activeTab = mTabSupplier.get();
+        if (mFullscreenManager.getBrowserVisibilityDelegate() != null) {
+            // Browser controls should stay visible until the sheet is closed.
+            mPersistentControlsToken =
+                    mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
+        }
+
+        Tab activeTab = mTabProvider.get();
         if (activeTab != null) {
             WebContents webContents = activeTab.getWebContents();
             if (webContents != null) {
@@ -98,6 +283,13 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
 
     @Override
     public void onSheetClosed(int reason) {
+        if (mFullscreenManager.getBrowserVisibilityDelegate() != null) {
+            // Update the browser controls since they are permanently shown while the sheet is
+            // open.
+            mFullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
+                    mPersistentControlsToken);
+        }
+
         BottomSheetContent content = mSheetController.getCurrentSheetContent();
         // If the content has a custom scrim, it wasn't obscuring tabs.
         if (mContentHasCustomScrimLifecycle) {
@@ -143,6 +335,12 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
 
     @Override
     public void destroy() {
+        if (mLastActivityTab != null) mLastActivityTab.removeObserver(mTabObserver);
+        mTabProvider.removeObserver(mActivityTabObserver);
         mSheetController.removeObserver(this);
+        mFullscreenManager.removeListener(mFullscreenListener);
+        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
+        mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);
+        VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
     }
 }

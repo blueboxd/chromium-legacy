@@ -62,6 +62,20 @@ class CounterNode : public RefCounted<CounterNode> {
   // Invalidates the text in the layoutObjects of this counter, if any.
   void ResetLayoutObjects();
 
+  // This finds a closest ancestor style containment boundary, crosses it, and
+  // then returns the closest ancestor CounterNode available (for the given
+  // `identifier`). Note that the element that specifies contain: style is
+  // itself considered to be across the boundary from its subtree.
+  static CounterNode* AncestorNodeAcrossStyleContainment(
+      const LayoutObject&,
+      const AtomicString& identifier);
+
+  // Returns the parent of this CounterNode. If the node is the root, then it
+  // instead tries to find a node with the same identifier across the style
+  // containment boundary so that it can continue navigating up to the root of
+  // the document. This is used for reporting content: counters().
+  CounterNode* ParentCrossingStyleContainment(
+      const AtomicString& identifier) const;
   CounterNode* Parent() const { return parent_; }
   CounterNode* PreviousSibling() const { return previous_sibling_; }
   CounterNode* NextSibling() const { return next_sibling_; }

@@ -133,6 +133,9 @@ namespace printingMetrics {
 
     // The number of pages in the document.
     long numberOfPages;
+
+    // The status of the printer.
+    printing.PrinterStatus printer_status;
   };
 
   callback GetPrintJobsCallback = void(PrintJobInfo[] jobs);

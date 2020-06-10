@@ -453,11 +453,6 @@ public class BasicStream implements Stream, ModelProviderObserver, OnLayoutChang
 
     private void setupRecyclerView() {
         mRecyclerView = new RecyclerView(mContext);
-        if (mIsPlaceholderShown) {
-            // Set mRecyclerView as invisible until first patch of articles are loaded. Before that,
-            // the placeholder is shown.
-            mRecyclerView.setVisibility(View.INVISIBLE);
-        }
         mScrollListenerNotifier = createScrollListenerNotifier(
                 mStreamContentChangedListener, mScrollMonitor, mMainThreadRunner);
         mRecyclerView.addOnScrollListener(mScrollMonitor);

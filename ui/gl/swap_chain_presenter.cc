@@ -698,6 +698,16 @@ bool SwapChainPresenter::PresentToSwapChain(
     return true;
   }
 
+  if (nv12_image && !nv12_image->texture()) {
+    // We can't proceed if |nv12_image| has no underlying d3d11 texture.  It's
+    // unclear how we get into this state, but we do observe crashes due to it.
+    // Just stop here instead, and render incorrectly.
+    // https://crbug.com/1077645
+    DLOG(ERROR) << "Video NV12 texture is missing";
+    ReleaseSwapChainResources();
+    return true;
+  }
+
   std::string image_type = "software video frame";
   if (nv12_image)
     image_type = "hardware video frame";

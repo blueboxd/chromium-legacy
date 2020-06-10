@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">Разделителната способност на <ph name="DISPLAY_NAME" /> бе променена на <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Хц). Кликнете върху бутона за потвърждаване, за да запазите промените. Предишните настройки ще бъдат възстановени след <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ПИН код: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Батериите на писалката са изтощени</translation>
+<translation id="1036672894875463507">Аз съм Google Асистент и съм на ваше разположение по всяко време!
+Ето някои неща, с които можете да започнете.</translation>
 <translation id="1037492556044956303">Добавихте <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Няма мрежи</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Изход за всички</translation>
 <translation id="2277103315734023688">Придвижване напред</translation>
 <translation id="2292698582925480719">Мащаб на показване</translation>
+<translation id="229397294990920565">Мобилните данни се изключват…</translation>
 <translation id="2295777434187870477">Микрофонът е включен. Превключването ще го заглуши.</translation>
 <translation id="2298170939937364391">Лупата за увеличаване на целия екран е активирана. За да я изключите, натиснете отново Ctrl + клавиша „Търсене“ + M.</translation>
 <translation id="2302092602801625023">Този профил се управлява от Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Асистент се зарежда...</translation>
 <translation id="4356930093361201197">режим на висок контраст</translation>
+<translation id="4368583494516669646">Лека нощ, <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Настройки за предаване</translation>
 <translation id="4378551569595875038">Установява се връзка...</translation>
 <translation id="4379531060876907730">Това са инструментите ви за писане</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Скриване на паролата</translation>
 <translation id="4570957409596482333">Бутон за функцията Прочитане на глас</translation>
+<translation id="4577274620589681794">Времето изтече   <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Спиране на предаването към неизвестен приемник</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Активирахте ChromeVox</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Превъртане нагоре</translation>
 <translation id="4961318399572185831">Предаване на екрана</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> ч, <ph name="MINUTES" /> мин и <ph name="SECONDS" /> сек</translation>
+<translation id="4970352680959471247">Добър вечер, <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Времето свърши</translation>
 <translation id="5035236842988137213">Устройството <ph name="DEVICE_NAME" /> е свързано с нов телефон</translation>
 <translation id="5035389544768382859">Потвърждаване на конфигурацията на дисплея</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Всички налични потребители вече са добавени към тази сесия.</translation>
 <translation id="54609108002486618">Управляван</translation>
 <translation id="5465662442746197494">Нужна ви е помощ?</translation>
+<translation id="5485091064403948243">Добро утро, <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Администраторът връща устройството ви към по-ранна версия. Всички данни ще бъдат изтрити след рестартирането му.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Излизане от сесията</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">За да отключите устройството, въведете кода си за достъп на родител от Family Link</translation>
 <translation id="742594950370306541">Камерата се използва.</translation>
 <translation id="743058460480092004">Камерата и микрофонът се използват.</translation>
+<translation id="7436182601308224670">Добър ден, <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Моля, докоснете сензора</translation>
 <translation id="7497767806359279797">Избор на език и клавиатура</translation>
 <translation id="7526573455193969409">Мрежата може да е под наблюдение</translation>

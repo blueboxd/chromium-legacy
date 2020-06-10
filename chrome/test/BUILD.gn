@@ -2141,8 +2141,6 @@ if (!is_android) {
         "../browser/chromeos/extensions/login_screen/login_state/login_state_apitest.cc",
         "../browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher_apitest.cc",
         "../browser/chromeos/extensions/login_screen/storage_apitest.cc",
-        "../browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher_apitest.cc",
-        "../browser/chromeos/extensions/printing_metrics/printing_metrics_apitest.cc",
         "../browser/chromeos/extensions/users_private/users_private_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_manager_browsertest.cc",
@@ -2486,6 +2484,8 @@ if (!is_android) {
           "../browser/chromeos/extensions/printing/fake_print_job_controller.cc",
           "../browser/chromeos/extensions/printing/fake_print_job_controller.h",
           "../browser/chromeos/extensions/printing/printing_apitest.cc",
+          "../browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher_apitest.cc",
+          "../browser/chromeos/extensions/printing_metrics/printing_metrics_apitest.cc",
         ]
         deps += [ "//printing:test_support" ]
       }
@@ -3889,6 +3889,7 @@ test("unit_tests") {
       "../browser/omnibox/suggestions/basic/basic_suggestion_processor_unittest.cc",
       "../browser/omnibox/suggestions/cached_zero_suggestions_manager_unittest.cc",
       "../browser/omnibox/suggestions/clipboard/clipboard_suggestion_processor_unittest.cc",
+      "../browser/omnibox/suggestions/dropdown_item_view_info_list_builder_unittest.cc",
       "../browser/omnibox/suggestions/editurl/edit_url_suggestions_unittest.cc",
       "../browser/omnibox/suggestions/entity/entity_suggestions_processor_unittest.cc",
       "../browser/omnibox/suggestions/tiles/tile_suggestion_processor_unittest.cc",
@@ -5411,6 +5412,7 @@ test("unit_tests") {
       "../browser/ui/views/fullscreen_control/fullscreen_control_popup_unittest.cc",
       "../browser/ui/views/global_media_controls/media_notification_container_impl_view_unittest.cc",
       "../browser/ui/views/global_media_controls/media_notification_list_view_unittest.cc",
+      "../browser/ui/views/global_media_controls/overlay_media_notification_view_unittest.cc",
       "../browser/ui/views/hover_button_unittest.cc",
       "../browser/ui/views/infobars/infobar_view_unittest.cc",
       "../browser/ui/views/intent_picker_bubble_view_unittest.cc",

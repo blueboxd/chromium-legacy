@@ -106,8 +106,10 @@ void ShellSurfaceForceCloseDelegate::Hide() {
 }
 
 void ShellSurfaceForceCloseDelegate::OnWidgetDestroying(views::Widget* widget) {
-  if (current_dialog_)
+  if (current_dialog_) {
     current_dialog_->RemoveObserver(this);
+    current_dialog_ = nullptr;
+  }
 }
 
 }  //  namespace crostini

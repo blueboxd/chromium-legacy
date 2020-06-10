@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
+#include "chrome/browser/ui/views/global_media_controls/overlay_media_notification_view.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_view_impl.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
@@ -62,7 +63,8 @@ class MediaNotificationContainerImplView
   void OnExpanded(bool expanded) override;
   void OnMediaSessionInfoChanged(
       const media_session::mojom::MediaSessionInfoPtr& session_info) override;
-  void OnMediaSessionMetadataChanged() override;
+  void OnMediaSessionMetadataChanged(
+      const media_session::MediaMetadata& metadata) override;
   void OnVisibleActionsChanged(
       const base::flat_set<media_session::mojom::MediaSessionAction>& actions)
       override;
@@ -86,6 +88,11 @@ class MediaNotificationContainerImplView
   // Sets up the notification to be ready to display in an overlay instead of
   // the dialog.
   void PopOut();
+
+  // Called when overlay notification is shown and setup |overlay_|.
+  void OnOverlayNotificationShown(OverlayMediaNotificationView* overlay);
+
+  const base::string16& GetTitle();
 
   views::ImageButton* GetDismissButtonForTesting();
 
@@ -117,6 +124,8 @@ class MediaNotificationContainerImplView
 
   const std::string id_;
   views::View* swipeable_container_ = nullptr;
+
+  base::string16 title_;
 
   // Always "visible" so that it reserves space in the header so that the
   // dismiss button can appear without forcing things to shift.
@@ -159,6 +168,8 @@ class MediaNotificationContainerImplView
 
   // Handles gesture events for swiping to dismiss notifications.
   std::unique_ptr<views::SlideOutController> slide_out_controller_;
+
+  OverlayMediaNotificationView* overlay_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationContainerImplView);
 };

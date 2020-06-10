@@ -57,15 +57,14 @@ roll_cts_to() {
 }
 
 roll_cts_to origin/master
-rsync -au --del --exclude='/OWNERS' \
-  third_party/webgpu-cts/src/out-wpt/ \
+rsync -au --del \
+  third_party/webgpu-cts/src/out-wpt/{common,webgpu,cts.html} \
   third_party/blink/web_tests/external/wpt/webgpu/
 git add third_party/blink/web_tests/external/wpt/webgpu/
 
 roll_cts_to origin/glsl-dependent
-rsync -au --del --exclude='/OWNERS' \
-  --exclude '/cts.html' --exclude '/third_party' \
-  third_party/webgpu-cts/src/out-wpt/ \
+rsync -au --del \
+  third_party/webgpu-cts/src/out-wpt/{common,webgpu} \
   third_party/blink/web_tests/wpt_internal/webgpu/
 git add third_party/blink/web_tests/wpt_internal/webgpu/
 

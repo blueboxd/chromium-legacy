@@ -367,10 +367,11 @@ class OmniboxEditModel {
   //   |keyword| is the keyword to show a hint for if |is_keyword_hint| is true,
   //     or the currently selected keyword if |is_keyword_hint| is false (see
   //     comments on keyword_ and is_keyword_hint_).
-  void OnPopupDataChanged(const base::string16& text,
-                          bool is_temporary_text,
-                          const base::string16& keyword,
-                          bool is_keyword_hint);
+  // Virtual to allow testing.
+  virtual void OnPopupDataChanged(const base::string16& text,
+                                  bool is_temporary_text,
+                                  const base::string16& keyword,
+                                  bool is_keyword_hint);
 
   // Called by the OmniboxView after something changes, with details about what
   // state changes occured.  Updates internal state, updates the popup if

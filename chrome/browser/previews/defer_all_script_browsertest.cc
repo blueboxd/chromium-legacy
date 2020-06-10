@@ -601,17 +601,16 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   // Verify the restored page has the DeferAllScript preview page contents.
   EXPECT_EQ(kDeferredPageExpectedOutput, GetScriptLog(browser()));
 
-  // [BROKEN] Verify preview UI shown.
-  // TODO(dougarnett): Want UI to be shown - crbug/1014148
-  EXPECT_FALSE(PreviewsUITabHelper::FromWebContents(web_contents())
-                   ->displayed_preview_ui());
+  // Verify preview UI shown.
+  EXPECT_TRUE(PreviewsUITabHelper::FromWebContents(web_contents())
+                  ->displayed_preview_ui());
 
-  // Verify no new preview was triggered - same counts as before.
+  // Verify preview was triggered.
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
       static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 1);
   histogram_tester.ExpectBucketCount("Previews.PreviewShown.DeferAllScript",
-                                     true, 1);
+                                     true, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -684,13 +683,12 @@ IN_PROC_BROWSER_TEST_F(
   // Verify the restored page has the normal page contents.
   EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(browser()));
 
-  // [BROKEN] Verify no new preview was triggered - same counts as before.
-  // TODO(dougarnett): Want previews state to not be falsely set - crbug/1014148
+  // Verify no new preview was triggered - same counts as before.
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
-      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 1);
+      static_cast<int>(previews::PreviewsEligibilityReason::COMMITTED), 0);
   histogram_tester.ExpectBucketCount("Previews.PreviewShown.DeferAllScript",
-                                     true, 1);
+                                     true, 0);
 }
 
 class DeferAllScriptIframesBrowserTest

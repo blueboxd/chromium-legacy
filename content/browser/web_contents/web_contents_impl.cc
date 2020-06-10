@@ -1617,22 +1617,6 @@ bool WebContentsImpl::IsConnectedToHidDevice() {
 bool WebContentsImpl::HasNativeFileSystemHandles() {
   return native_file_system_handle_count_ > 0;
 }
-bool WebContentsImpl::HasNativeFileSystemDirectoryHandles() {
-  return !native_file_system_directory_handles_.empty();
-}
-
-std::vector<base::FilePath>
-WebContentsImpl::GetNativeFileSystemDirectoryHandles() {
-  std::vector<base::FilePath> result;
-  result.reserve(native_file_system_directory_handles_.size());
-  for (auto const& entry : native_file_system_directory_handles_)
-    result.push_back(entry.first);
-  return result;
-}
-
-bool WebContentsImpl::HasWritableNativeFileSystemHandles() {
-  return native_file_system_writable_handle_count_ > 0;
-}
 
 bool WebContentsImpl::HasPictureInPictureVideo() {
   return has_picture_in_picture_video_;
@@ -1935,18 +1919,26 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   DCHECK(outer_web_contents);
 
   RecursivelyUnregisterFrameSinkIds();
-  if (RenderWidgetHostViewBase* view =
-          static_cast<RenderWidgetHostViewBase*>(GetMainFrame()->GetView())) {
-    DCHECK(view->IsRenderWidgetHostViewChildFrame());
-    view->Destroy();
-  }
-  if (GetPendingMainFrame()) {
-    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-            GetPendingMainFrame()->GetView())) {
-      DCHECK(view->IsRenderWidgetHostViewChildFrame());
-      view->Destroy();
+
+  // Each RenderViewHost has a RenderWidgetHost which can have a
+  // RenderWidgetHostView,  and it needs to be re-created with the appropriate
+  // platform view. It is important to re-create all child views, not only the
+  // current one, since the view can be swapped due to a cross-origin
+  // navigation.
+  std::set<RenderViewHostImpl*> render_view_hosts;
+  for (auto& render_view_host : GetFrameTree()->render_view_hosts()) {
+    if (render_view_host.second->GetWidget() &&
+        render_view_host.second->GetWidget()->GetView()) {
+      DCHECK(render_view_host.second->GetWidget()
+                 ->GetView()
+                 ->IsRenderWidgetHostViewChildFrame());
+      render_view_hosts.insert(render_view_host.second);
     }
   }
+
+  for (auto* render_view_host : render_view_hosts)
+    render_view_host->GetWidget()->GetView()->Destroy();
+
   GetRenderManager()->DeleteOuterDelegateProxy(
       node_.OuterContentsFrameTreeNode()
           ->current_frame_host()
@@ -1959,11 +1951,10 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
       node_.DisconnectFromOuterWebContents();
   DCHECK_EQ(web_contents.get(), this);
   node_.SetFocusedWebContents(this);
-  CreateRenderWidgetHostViewForRenderManager(GetRenderViewHost());
-  if (GetPendingMainFrame()) {
-    CreateRenderWidgetHostViewForRenderManager(
-        GetPendingMainFrame()->render_view_host());
-  }
+
+  for (auto* render_view_host : render_view_hosts)
+    CreateRenderWidgetHostViewForRenderManager(render_view_host);
+
   RecursivelyRegisterFrameSinkIds();
   // TODO(adithyas): |browser_plugin_embedder_ax_tree_id| should either not be
   // used for portals, or it should get a different name.
@@ -7023,79 +7014,6 @@ void WebContentsImpl::DecrementNativeFileSystemHandleCount() {
   DCHECK_NE(0u, native_file_system_handle_count_);
   native_file_system_handle_count_--;
   if (native_file_system_handle_count_ == 0) {
-    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
-        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
-  }
-}
-
-void WebContentsImpl::AddNativeFileSystemDirectoryHandle(
-    const base::FilePath& path) {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
-  // to update both the tab-level usage indicator and the usage indicator in the
-  // omnibox.
-  const bool was_empty = native_file_system_directory_handles_.empty();
-  native_file_system_directory_handles_[path]++;
-  if (was_empty) {
-    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
-        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
-  }
-}
-
-void WebContentsImpl::RemoveNativeFileSystemDirectoryHandle(
-    const base::FilePath& path) {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
-  // to update both the tab-level usage indicator and the usage indicator in the
-  // omnibox.
-  auto it = native_file_system_directory_handles_.find(path);
-  DCHECK(it != native_file_system_directory_handles_.end());
-  DCHECK_NE(0u, it->second);
-  it->second--;
-  if (it->second == 0)
-    native_file_system_directory_handles_.erase(it);
-  if (native_file_system_directory_handles_.empty()) {
-    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
-        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
-  }
-}
-
-void WebContentsImpl::IncrementWritableNativeFileSystemHandleCount() {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
-  // to update both the tab-level usage indicator and the usage indicator in the
-  // omnibox.
-  native_file_system_writable_handle_count_++;
-  if (native_file_system_writable_handle_count_ == 1) {
-    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
-        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
-  }
-}
-
-void WebContentsImpl::DecrementWritableNativeFileSystemHandleCount() {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
-  // to update both the tab-level usage indicator and the usage indicator in the
-  // omnibox.
-  DCHECK_NE(0u, native_file_system_writable_handle_count_);
-  native_file_system_writable_handle_count_--;
-  if (native_file_system_writable_handle_count_ == 0) {
     NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
         INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
   }

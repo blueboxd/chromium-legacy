@@ -6,7 +6,7 @@
 #define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_HANDLER_WM_DRAG_HANDLER_H_
 
 #include "base/bind.h"
-#include "base/callback.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_handler/wm_platform_export.h"
@@ -22,6 +22,9 @@ class WM_PLATFORM_EXPORT WmDragHandler {
    public:
     // Called every time when the drag location has changed.
     virtual void OnDragLocationChanged(const gfx::Point& screen_point_px) = 0;
+    // Called when the currently negotiated operation has changed.
+    virtual void OnDragOperationChanged(
+        DragDropTypes::DragOperation operation) = 0;
     // Called once when the operation has finished.
     virtual void OnDragFinished(int operation) = 0;
 

@@ -33,6 +33,7 @@ import unittest
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.web_tests import run_web_tests
+from blinkpy.web_tests.controllers.test_result_sink import CreateTestResultSink
 from blinkpy.web_tests.controllers.web_test_runner import WebTestRunner, Worker, Sharder, TestRunInterruptedException
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
@@ -73,10 +74,11 @@ class FakePrinter(object):
 
 
 class LockCheckingRunner(WebTestRunner):
-    def __init__(self, port, options, printer, tester, http_lock):
-        super(LockCheckingRunner, self).__init__(options, port, printer,
-                                                 port.results_directory(),
-                                                 lambda test_name: False)
+    def __init__(self, port, options, printer, tester, http_lock, sink):
+        super(LockCheckingRunner,
+              self).__init__(options, port, printer,
+                             port.results_directory(), lambda test_name: False,
+                             sink)
         self._finished_list_called = False
         self._tester = tester
         self._should_have_http_lock = http_lock
@@ -101,7 +103,8 @@ class WebTestRunnerTests(unittest.TestCase):
 
         host = MockHost()
         port = port or host.port_factory.get(options.platform, options=options)
-        return LockCheckingRunner(port, options, FakePrinter(), self, True)
+        return LockCheckingRunner(port, options, FakePrinter(), self, True,
+                                  CreateTestResultSink('/tmp/artifacts'))
 
     def _run_tests(self, runner, tests):
         test_inputs = [TestInput(test, timeout_ms=6000) for test in tests]

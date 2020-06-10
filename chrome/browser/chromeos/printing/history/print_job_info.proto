@@ -88,6 +88,33 @@ message PrintJobInfo {
     PRINTED = 2;
   }
 
+  // The error code of the printer. These enums are 1:1 with that of
+  // chrome/browser/chromeos/printing/printer_error_codes.h.
+  enum PrinterErrorCode {
+    // Printer has no error.
+    NO_ERROR = 0;
+    // The printer has a paper jam.
+    PAPER_JAM = 1;
+    // The printer is out of paper.
+    OUT_OF_PAPER = 2;
+    // The printer is out of it.
+    OUT_OF_INK = 3;
+    // The door of the printer is opened.
+    DOOR_OPEN = 4;
+    // The printer is unreachable and does not accept new print jobs.
+    PRINTER_UNREACHABLE = 5;
+    // The tray fo the printer is missing.
+    TRAY_MISSING = 6;
+    // The output area (e.g. tray) of the printer is full.
+    OUTPUT_FULL = 7;
+    // The printer is stopped and doesn't print.
+    STOPPED = 8;
+    // The printer pipeline has died.
+    FILTER_FAILED = 9;
+    // Generic unknown error.
+    UNKNOWN_ERROR = 10;
+  }
+
   // The ID of the job.
   string id = 1;
 
@@ -117,4 +144,7 @@ message PrintJobInfo {
 
   // The number of pages in the document.
   int32 number_of_pages = 10;
+
+  // The error code from the printer.
+  PrinterErrorCode printer_error_code = 11;
 }

@@ -606,8 +606,11 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
     return nullptr;
   }
 
-  OscillatorNode* node = Create(*context, options->type(),
-                                options->periodicWave(), exception_state);
+  // TODO(crbug.com/1070871): Use periodicWaveOr(nullptr).
+  OscillatorNode* node =
+      Create(*context, options->type(),
+             options->hasPeriodicWave() ? options->periodicWave() : nullptr,
+             exception_state);
 
   if (!node)
     return nullptr;

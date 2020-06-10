@@ -28,6 +28,26 @@
 #include "ui/gfx/vector_icon_types.h"
 #endif
 
+namespace {
+
+bool ShouldUpdateEditModelForSelectionChange(
+    OmniboxPopupModel::Selection old_selection,
+    OmniboxPopupModel::Selection new_selection) {
+  // Never update the edit model if we're moving ONTO a header.
+  if (new_selection.state == OmniboxPopupModel::HEADER_BUTTON_FOCUSED)
+    return false;
+
+  // Always update the edit model if we're moving OFF a header.
+  if (old_selection.state == OmniboxPopupModel::HEADER_BUTTON_FOCUSED)
+    return true;
+
+  // Otherwise, only update the edit model for line number changes.
+  // Updating the edit model for mere state changes breaks keyword mode.
+  return old_selection.line != new_selection.line;
+}
+
+}  // namespace
+
 ///////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupModel::Selection
 
@@ -165,11 +185,8 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
   }
 
   // When the selected line changes, we should also update the edit model with
-  // new data for this match. We don't do this when the state merely changes,
-  // as that breaks keyword mode.
-  //
-  // TODO(tommycli): Make this more nuanced to make section headers behave nice.
-  if (selection_.line == old_selection.line)
+  // new data for this match, assuming we meet some nuanced conditions.
+  if (!ShouldUpdateEditModelForSelectionChange(old_selection, selection_))
     return;
 
   base::string16 keyword;

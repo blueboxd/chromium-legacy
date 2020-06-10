@@ -441,16 +441,30 @@ StaticColorCheckParam kTestParams[] = {
     // TODO(ryoh): Add Mono + Alpha Images.
 };
 
-void TestInvalidStaticImage(const char* avif_file) {
+enum class ErrorPhase { kParse, kDecode };
+
+// If 'error_phase' is ErrorPhase::kParse, error is expected during parse
+// (SetData() call); else error is expected during decode
+// (DecodeFrameBufferAtIndex() call).
+void TestInvalidStaticImage(const char* avif_file, ErrorPhase error_phase) {
   std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
 
   scoped_refptr<SharedBuffer> data = ReadFile(avif_file);
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
 
-  EXPECT_TRUE(decoder->Failed());
-  EXPECT_EQ(0u, decoder->FrameCount());
-  EXPECT_FALSE(decoder->DecodeFrameBufferAtIndex(0));
+  if (error_phase == ErrorPhase::kParse) {
+    EXPECT_TRUE(decoder->Failed());
+    EXPECT_EQ(0u, decoder->FrameCount());
+    EXPECT_FALSE(decoder->DecodeFrameBufferAtIndex(0));
+  } else {
+    EXPECT_FALSE(decoder->Failed());
+    EXPECT_GT(decoder->FrameCount(), 0u);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+    ASSERT_TRUE(frame);
+    EXPECT_NE(ImageFrame::kFrameComplete, frame->GetStatus());
+    EXPECT_TRUE(decoder->Failed());
+  }
 }
 
 }  // namespace
@@ -483,11 +497,13 @@ TEST(StaticAVIFTests, invalidImages) {
   // Image data is truncated.
   TestInvalidStaticImage(
       "/images/resources/avif/"
-      "red-at-12-oclock-with-color-profile-truncated.avif");
+      "red-at-12-oclock-with-color-profile-truncated.avif",
+      ErrorPhase::kParse);
   // Chunk size in AV1 frame header doesn't match the file size.
   TestInvalidStaticImage(
       "/images/resources/avif/"
-      "red-at-12-oclock-with-color-profile-with-wrong-frame-header.avif");
+      "red-at-12-oclock-with-color-profile-with-wrong-frame-header.avif",
+      ErrorPhase::kDecode);
 }
 
 TEST(StaticAVIFTests, ValidImages) {

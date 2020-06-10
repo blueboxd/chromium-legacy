@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> har ändrats till <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Klicka på bekräfta om du vill behålla ändringarna. De gamla inställningarna återställs om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange den här pinkoden på den enheten: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Batteriet håller på att ta slut i e-pennan</translation>
+<translation id="1036672894875463507">Jag är Google-assistenten och jag kan hjälpa dig under hela dagen.
+Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> har lagts till</translation>
 <translation id="1056775291175587022">Inga nätverk</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Logga ut alla</translation>
 <translation id="2277103315734023688">Sök framåt</translation>
 <translation id="2292698582925480719">Skala på skärmen</translation>
+<translation id="229397294990920565">Mobildata stängs av …</translation>
 <translation id="2295777434187870477">Mikrofonen är på. Om du ändrar läge stängs indata av.</translation>
 <translation id="2298170939937364391">Helskärmsförstoring har aktiverats. Tryck på Ctrl + Sök + M igen om du vill inaktivera funktionen.</translation>
 <translation id="2302092602801625023">Det här kontot hanteras av Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Förstoringsglas</translation>
 <translation id="4351433414020964307">Assistenten läses in …</translation>
 <translation id="4356930093361201197">högkontrastläge</translation>
+<translation id="4368583494516669646">God natt <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Inställningar för att casta</translation>
 <translation id="4378551569595875038">Ansluter ...</translation>
 <translation id="4379531060876907730">Här är dina verktyg för e-penna</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Dölj lösenord</translation>
 <translation id="4570957409596482333">Knappen Textuppläsning</translation>
+<translation id="4577274620589681794">Tiden är ute · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Sluta casta till en okänd mottagare</translation>
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Rulla upp</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> tim. <ph name="MINUTES" /> min. <ph name="SECONDS" /> sek.</translation>
+<translation id="4970352680959471247">Hej <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Tiden är slut</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> har anslutits till en ny mobil</translation>
 <translation id="5035389544768382859">Bekräfta skärminställningarna</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Alla tillgängliga användare har redan lagts till i den här sessionen.</translation>
 <translation id="54609108002486618">Hanterade</translation>
 <translation id="5465662442746197494">Behöver du hjälp?</translation>
+<translation id="5485091064403948243">God morgon <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Enheten återställs av administratören. All data raderas när enheten startas om.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Sessionen avslutas</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Lås upp enheten genom att ange föräldraåtkomstkoden för Family Link</translation>
 <translation id="742594950370306541">Kameran används.</translation>
 <translation id="743058460480092004">Kameran och mikrofonen används.</translation>
+<translation id="7436182601308224670">Hej <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Tryck på sensorn</translation>
 <translation id="7497767806359279797">Välj språk och tangentbord</translation>
 <translation id="7526573455193969409">Nätverket kan vara övervakat</translation>

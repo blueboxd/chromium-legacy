@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> imebadilika kuwa <ph name="RESOLUTION" /> (Hz <ph name="REFRESH_RATE" />). Bofya 'thibitisha' ili uhifadhi mabadiliko. Mipangilio ya awali itarejeshwa baada ya <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nambari hii ya PIN kwenye kifaa hicho: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Chaji ya betri ya Stylus imepungua</translation>
+<translation id="1036672894875463507">Mimi ni programu yako ya Mratibu wa Google, niko tayari kukusaidia siku nzima!
+Vifuatavyo ni vitu unavyoweza kujaribu ili uanze.</translation>
 <translation id="1037492556044956303">Imeongeza <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Hakuna mitandao</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Ondoa wote</translation>
 <translation id="2277103315734023688">Sogeza Mbele</translation>
 <translation id="2292698582925480719">Kipimo cha mwonekano</translation>
+<translation id="229397294990920565">Data ya mtandao wa simu inazima...</translation>
 <translation id="2295777434187870477">Maikrofoni imewasha, ukigeuza swichi utaizima.</translation>
 <translation id="2298170939937364391">Umewasha Kikuza Skrini Nzima. Bonyeza Ctrl+Search+M tena ili ukizime.</translation>
 <translation id="2302092602801625023">Akaunti hii inasimamiwa na Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Lenzi</translation>
 <translation id="4351433414020964307">Inapakia Mratibu...</translation>
 <translation id="4356930093361201197">hali ya juu ya utofautishaji</translation>
+<translation id="4368583494516669646">Habari ya usiku <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Mipangilio ya Kutuma</translation>
 <translation id="4378551569595875038">Inaunganisha...</translation>
 <translation id="4379531060876907730">Hizi ni zana zako za stylus</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Ficha nenosiri</translation>
 <translation id="4570957409596482333">Kitufe cha Chagua ili Izungumze</translation>
+<translation id="4577274620589681794">Muda umekwisha · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Acha kutuma kwenye kifaa au kwa mpokeaji usiyemjua</translation>
 <translation id="4628757576491864469">Vifaa</translation>
 <translation id="4659419629803378708">ChromeVox imewashwa</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Sogeza juu</translation>
 <translation id="4961318399572185831">Tuma skrini</translation>
 <translation id="4969092041573468113">Saa <ph name="HOURS" /> dak <ph name="MINUTES" /> sek <ph name="SECONDS" /></translation>
+<translation id="4970352680959471247">Habari za jioni <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Muda wa kutumia kifaa umeisha</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> imeunganishwa kwenye simu mpya</translation>
 <translation id="5035389544768382859">Thibitisha Mipangilio ya Skrini</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Tayari watumiaji wanaopatikana wameongezwa kwenye kikao hiki.</translation>
 <translation id="54609108002486618">Imedhibitiwa</translation>
 <translation id="5465662442746197494">Je, unahitaji usaidizi?</translation>
+<translation id="5485091064403948243">Habari za asubuhi <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Msimamizi wako anarejesha mipangilio ya awali ya kifaa chako. Data yote itafutwa kifaa kitakapozimwa kisha kiwashwe.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Unaondoka kwenye kipindi</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Ili ufungue kifaa, weka msimbo wa ufikiaji wa mzazi katika Family Link</translation>
 <translation id="742594950370306541">Kamera inatumika.</translation>
 <translation id="743058460480092004">Kamera na maikrofoni zinatumiwa.</translation>
+<translation id="7436182601308224670">Habari za mchana <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Tafadhali gusa kitambuzi</translation>
 <translation id="7497767806359279797">Chagua lugha na kibodi</translation>
 <translation id="7526573455193969409">Huenda mtandao unafuatiliwa</translation>

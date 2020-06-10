@@ -120,9 +120,27 @@ class CC_EXPORT FrameSequenceMetrics {
     return throughput_ukm_reporter_;
   }
 
+  void AdoptTrace(FrameSequenceMetrics* adopt_from);
+  void AdvanceTrace(base::TimeTicks timestamp);
+
  private:
   void ComputeAggregatedThroughput();
+
   const FrameSequenceTrackerType type_;
+
+  // Tracks some data to generate useful trace events.
+  struct TraceData {
+    explicit TraceData(FrameSequenceMetrics* metrics);
+    ~TraceData();
+    FrameSequenceMetrics* metrics;
+    base::TimeTicks last_timestamp = base::TimeTicks::Now();
+    int frame_count = 0;
+    bool enabled = false;
+    void* trace_id = nullptr;
+
+    void Advance(base::TimeTicks new_timestamp);
+    void Terminate();
+  } trace_data_{this};
 
   // Pointer to the reporter owned by the FrameSequenceTrackerCollection.
   ThroughputUkmReporter* const throughput_ukm_reporter_;

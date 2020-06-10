@@ -15,6 +15,35 @@ enum PrintJobCompletionStatus {
   kPrinted
 };
 
+// Enumeration of all the possible printer error codes. The order of these enums
+// must match that of chrome/browser/chromeos/printing/printer_error_codes.h
+enum PrinterErrorCode {
+  kNoError,
+  kPaperJam,
+  kOutOfPaper,
+  kOutOfInk,
+  kDoorOpen,
+  kPrinterUnreachable,
+  kTrayMissing,
+  kOutputFull,
+  kStopped,
+  kFilterFailed,
+  kUnknownError,
+};
+
+// Contains information about a completed print job. Completed print jobs are
+// stored to the local database. Information of this struct includes the
+// completion status and error code associated with the print job. This struct
+// is null for active print jobs, i.e. jobs that are currently being printed and
+// are not stored in the local database.
+struct CompletedPrintJobInfo {
+  // Corresponds to the status of the print job after it has completed.
+  PrintJobCompletionStatus completion_status;
+
+  // Corresponds to the error code reported by the printer.
+  PrinterErrorCode printer_error_code;
+};
+
 // Contains all the information in regards to a print job. Information is
 // provided by the printer. Printer details, i.e. name and uri, can be edited
 // via print settings.
@@ -24,10 +53,6 @@ struct PrintJobInfo {
 
   // Title of the print job. Usually the name of the printed file.
   mojo_base.mojom.String16 title;
-
-  // Corresponds to the status of the print job after it the print job has
-  // finished.
-  PrintJobCompletionStatus completion_status;
 
   // Time of when the print job was requested.
   mojo_base.mojom.Time creation_time;
@@ -40,6 +65,9 @@ struct PrintJobInfo {
 
   // The URI of the printer the print job was requested to.
   url.mojom.Url printer_uri;
+
+  // Information of a completed print job.
+  CompletedPrintJobInfo completed_info;
 };
 
 // Observer interface that sends remote updates to the print management app UI

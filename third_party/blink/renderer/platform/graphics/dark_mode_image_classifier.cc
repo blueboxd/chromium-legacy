@@ -35,12 +35,63 @@ const int kPixelsToSample = 1000;
 const int kBlocksCount1D = 10;
 const float kMinOpaquePixelPercentageForForeground = 0.2;
 
+const int kMinImageSizeForClassification1D = 24;
+const int kMaxImageSizeForClassification1D = 100;
+
+class DarkModeBitmapImageClassifier : public DarkModeImageClassifier {
+  DarkModeClassification DoInitialClassification(
+      const FloatRect& dest_rect) override {
+    if (dest_rect.Width() < kMinImageSizeForClassification1D ||
+        dest_rect.Height() < kMinImageSizeForClassification1D)
+      return DarkModeClassification::kApplyFilter;
+
+    if (dest_rect.Width() > kMaxImageSizeForClassification1D ||
+        dest_rect.Height() > kMaxImageSizeForClassification1D) {
+      return DarkModeClassification::kDoNotApplyFilter;
+    }
+
+    return DarkModeClassification::kNotClassified;
+  }
+};
+
+class DarkModeSVGImageClassifier : public DarkModeImageClassifier {
+  DarkModeClassification DoInitialClassification(
+      const FloatRect& dest_rect) override {
+    return DarkModeClassification::kNotClassified;
+  }
+};
+
+class DarkModeGradientGeneratedImageClassifier
+    : public DarkModeImageClassifier {
+  DarkModeClassification DoInitialClassification(
+      const FloatRect& dest_rect) override {
+    return DarkModeClassification::kApplyFilter;
+  }
+};
+
 }  // namespace
 
 DarkModeImageClassifier::DarkModeImageClassifier()
     : pixels_to_sample_(kPixelsToSample),
       blocks_count_horizontal_(kBlocksCount1D),
       blocks_count_vertical_(kBlocksCount1D) {}
+
+DarkModeImageClassifier::~DarkModeImageClassifier() = default;
+
+std::unique_ptr<DarkModeImageClassifier>
+DarkModeImageClassifier::MakeBitmapImageClassifier() {
+  return std::make_unique<DarkModeBitmapImageClassifier>();
+}
+
+std::unique_ptr<DarkModeImageClassifier>
+DarkModeImageClassifier::MakeSVGImageClassifier() {
+  return std::make_unique<DarkModeSVGImageClassifier>();
+}
+
+std::unique_ptr<DarkModeImageClassifier>
+DarkModeImageClassifier::MakeGradientGeneratedImageClassifier() {
+  return std::make_unique<DarkModeGradientGeneratedImageClassifier>();
+}
 
 DarkModeClassification DarkModeImageClassifier::Classify(
     Image* image,
@@ -50,7 +101,7 @@ DarkModeClassification DarkModeImageClassifier::Classify(
   if (result != DarkModeClassification::kNotClassified)
     return result;
 
-  result = image->CheckTypeSpecificConditionsForDarkMode(dest_rect, this);
+  result = DoInitialClassification(dest_rect);
   if (result != DarkModeClassification::kNotClassified) {
     image->AddDarkModeClassification(src_rect, result);
     return result;

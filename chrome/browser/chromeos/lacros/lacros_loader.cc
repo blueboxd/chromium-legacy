@@ -19,6 +19,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "google_apis/google_api_keys.h"
 
 using component_updater::CrOSComponentManager;
@@ -49,50 +50,24 @@ LacrosLoader* LacrosLoader::Get() {
 
 LacrosLoader::LacrosLoader(scoped_refptr<CrOSComponentManager> manager)
     : cros_component_manager_(manager) {
-  DCHECK(cros_component_manager_);
-
   DCHECK(!g_instance);
   g_instance = this;
+
+  // Wait to query the flag until the user has entered the session. Enterprise
+  // devices restart Chrome during login to apply flags. We don't want to run
+  // the flag-off cleanup logic until we know we have the final flag state.
+  session_manager::SessionManager::Get()->AddObserver(this);
 }
 
 LacrosLoader::~LacrosLoader() {
+  session_manager::SessionManager::Get()->RemoveObserver(this);
+
   // Try to kill the lacros-chrome binary.
   if (lacros_process_.IsValid())
     lacros_process_.Terminate(/*ignored=*/0, /*wait=*/false);
 
   DCHECK_EQ(g_instance, this);
   g_instance = nullptr;
-}
-
-void LacrosLoader::Init() {
-  if (!lacros_util::IsLacrosAllowed())
-    return;
-
-  if (chromeos::features::IsLacrosSupportEnabled()) {
-    // TODO(crbug.com/1078607): Remove non-error logging from this class.
-    LOG(WARNING) << "Starting lacros component load.";
-
-    // If the user has specified a path for the lacros-chrome binary, use that
-    // rather than component manager.
-    base::FilePath lacros_chrome_path =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            chromeos::switches::kLacrosChromePath);
-    if (!lacros_chrome_path.empty()) {
-      OnLoadComplete(CrOSComponentManager::Error::NONE, lacros_chrome_path);
-      return;
-    }
-
-    cros_component_manager_->Load(kLacrosComponentName,
-                                  CrOSComponentManager::MountPolicy::kMount,
-                                  CrOSComponentManager::UpdatePolicy::kForce,
-                                  base::BindOnce(&LacrosLoader::OnLoadComplete,
-                                                 weak_factory_.GetWeakPtr()));
-  } else {
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&CheckIfPreviouslyInstalled, cros_component_manager_),
-        base::BindOnce(&LacrosLoader::CleanUp, weak_factory_.GetWeakPtr()));
-  }
 }
 
 bool LacrosLoader::IsReady() const {
@@ -176,6 +151,45 @@ void LacrosLoader::Start() {
     lacros_process_ = base::LaunchProcess(argv, options);
   }
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
+}
+
+void LacrosLoader::OnUserSessionStarted(bool is_primary_user) {
+  // Ensure this isn't called multiple times.
+  session_manager::SessionManager::Get()->RemoveObserver(this);
+
+  // Must be checked after user session start because it depends on user type.
+  if (!lacros_util::IsLacrosAllowed())
+    return;
+
+  // May be null in tests.
+  if (!cros_component_manager_)
+    return;
+
+  if (chromeos::features::IsLacrosSupportEnabled()) {
+    // TODO(crbug.com/1078607): Remove non-error logging from this class.
+    LOG(WARNING) << "Starting lacros component load.";
+
+    // If the user has specified a path for the lacros-chrome binary, use that
+    // rather than component manager.
+    base::FilePath lacros_chrome_path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            chromeos::switches::kLacrosChromePath);
+    if (!lacros_chrome_path.empty()) {
+      OnLoadComplete(CrOSComponentManager::Error::NONE, lacros_chrome_path);
+      return;
+    }
+
+    cros_component_manager_->Load(kLacrosComponentName,
+                                  CrOSComponentManager::MountPolicy::kMount,
+                                  CrOSComponentManager::UpdatePolicy::kForce,
+                                  base::BindOnce(&LacrosLoader::OnLoadComplete,
+                                                 weak_factory_.GetWeakPtr()));
+  } else {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&CheckIfPreviouslyInstalled, cros_component_manager_),
+        base::BindOnce(&LacrosLoader::CleanUp, weak_factory_.GetWeakPtr()));
+  }
 }
 
 void LacrosLoader::OnLoadComplete(

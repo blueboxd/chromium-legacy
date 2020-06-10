@@ -43,8 +43,6 @@ class CONTENT_EXPORT CacheStorageOperation {
   }
 
  private:
-  void NotifyOperationSlow();
-
   // The operation's closure to run.
   base::OnceClosure closure_;
 
@@ -53,9 +51,6 @@ class CONTENT_EXPORT CacheStorageOperation {
 
   // Ticks at time the operation's closure is run.
   base::TimeTicks start_ticks_;
-
-  // If the operation took a long time to run.
-  bool was_slow_ = false;
 
   const CacheStorageSchedulerId id_;
   const CacheStorageSchedulerClient client_type_;

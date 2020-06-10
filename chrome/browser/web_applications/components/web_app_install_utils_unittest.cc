@@ -156,7 +156,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   web_app_info.icon_infos.push_back(info);
 
   for (int i = 1; i < 4; ++i) {
-    WebApplicationShortcutInfo shortcut_item;
+    WebApplicationShortcutsMenuItemInfo shortcut_item;
     WebApplicationIconInfo icon;
     std::string shortcut_name = kShortcutItemName;
     shortcut_name += base::NumberToString(i);
@@ -369,7 +369,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 // their own map in web_app_info.
 TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
   WebApplicationInfo web_app_info;
-  WebApplicationShortcutInfo shortcut_item;
+  WebApplicationShortcutsMenuItemInfo shortcut_item;
   WebApplicationIconInfo icon;
   std::string shortcut_name = kShortcutItemName;
   shortcut_name += base::NumberToString(1);
@@ -401,8 +401,8 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
   PopulateShortcutItemIcons(&web_app_info, &icons_map);
 
   // Ensure that reused shortcut icons are processed correctly.
-  EXPECT_EQ(1U, web_app_info.shortcut_infos[0].shortcut_icon_bitmaps.size());
-  EXPECT_EQ(2U, web_app_info.shortcut_infos[1].shortcut_icon_bitmaps.size());
+  EXPECT_EQ(1U, web_app_info.shortcuts_menu_icons_bitmaps[0].size());
+  EXPECT_EQ(2U, web_app_info.shortcuts_menu_icons_bitmaps[1].size());
 }
 
 // Tests that when PopulateShortcutItemIcons is called with no shortcut icon
@@ -468,7 +468,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   web_app_info.icon_infos.push_back(info);
 
   // Construct |shortcut_item| to add to |web_app_info.shortcut_infos|.
-  WebApplicationShortcutInfo shortcut_item;
+  WebApplicationShortcutsMenuItemInfo shortcut_item;
   shortcut_item.name = base::UTF8ToUTF16(kShortcutItemName);
   shortcut_item.url = ShortcutItemUrl();
   // Construct |icon| to add to |shortcut_item.shortcut_icon_infos|.
@@ -476,9 +476,12 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   icon.url = IconUrl2();
   icon.square_size_px = kIconSize;
   shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
-  shortcut_item.shortcut_icon_bitmaps[kIconSize] =
-      CreateSquareIcon(kIconSize, SK_ColorBLUE);
   web_app_info.shortcut_infos.push_back(std::move(shortcut_item));
+  // Construct shortcut_icon_bitmap to add to
+  // |web_app_info.shortcuts_menu_icons_bitmaps|.
+  std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;
+  shortcut_icon_bitmaps[kIconSize] = CreateSquareIcon(kIconSize, SK_ColorBLUE);
+  web_app_info.shortcuts_menu_icons_bitmaps.emplace_back(shortcut_icon_bitmaps);
 
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 

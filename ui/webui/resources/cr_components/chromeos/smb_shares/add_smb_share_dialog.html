@@ -18,8 +18,22 @@
 <dom-module id="add-smb-share-dialog">
   <template>
     <style include="cr-shared-style md-select">
+      cr-dialog::part(wrapper) {
+        /* Subtract the internal padding in <cr-dialog>. */
+        padding: calc(24px - 20px);
+      }
+
+      [slot='title']  {
+        padding-top: 4px;
+      }
+
+      [slot='button-container']  {
+        padding-bottom: 20px;
+        padding-top: 32px;
+      }
+
       #dialog [slot=body] {
-        height: 440px;
+        height: 390px;
       }
 
       .md-select {

@@ -801,8 +801,7 @@ void WebAppInstallTask::OnShortcutsCreated(
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
       !web_app_info->shortcut_infos.empty()) {
-    shortcut_manager_->RegisterShortcutsMenuWithOs(web_app_info->shortcut_infos,
-                                                   app_id);
+    shortcut_manager_->RegisterShortcutsMenuWithOs(*web_app_info, app_id);
   }
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {

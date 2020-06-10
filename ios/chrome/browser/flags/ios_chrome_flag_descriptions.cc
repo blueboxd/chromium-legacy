@@ -114,6 +114,12 @@ const char kAutofillUseMobileLabelDisambiguationDescription[] =
     "When enabled, Autofill suggestions' labels are displayed using a "
     "mobile-friendly format.";
 
+const char kBlockPopupInfobarMessagesUIName[] =
+    "Block Popup Infobars Messages UI";
+const char kBlockPopupInfobarMessagesUIDescription[] =
+    "When enabled Block Popup Infobars use the new Messages UI. "
+    "IOSInfobarUIReboot needs to be enabled as well for this to work.";
+
 extern const char kLogBreadcrumbsName[] = "Log Breadcrumb Events";
 extern const char kLogBreadcrumbsDescription[] =
     "When enabled, breadcrumb events will be logged.";

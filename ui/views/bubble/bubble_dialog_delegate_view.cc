@@ -361,11 +361,10 @@ const Widget* BubbleDialogDelegateView::GetWidget() const {
   return View::GetWidget();
 }
 
-void BubbleDialogDelegateView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this && GetWidget() &&
-      ui::IsAlert(GetAccessibleWindowRole())) {
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+void BubbleDialogDelegateView::AddedToWidget() {
+  if (ui::IsAlert(GetAccessibleWindowRole())) {
+    GetWidget()->GetRootView()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kAlert, true);
   }
 }
 

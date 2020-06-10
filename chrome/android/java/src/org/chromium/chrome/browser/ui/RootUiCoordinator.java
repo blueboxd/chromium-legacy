@@ -65,7 +65,7 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerImpl;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerFactory;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerInternal;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -126,7 +126,7 @@ public class RootUiCoordinator
     private VrModeObserver mVrModeObserver;
 
     private BottomSheetManager mBottomSheetManager;
-    private BottomSheetControllerImpl mBottomSheetController;
+    private BottomSheetControllerInternal mBottomSheetController;
     private SnackbarManager mBottomSheetSnackbarManager;
 
     private ScrimView mScrimView;
@@ -638,14 +638,14 @@ public class RootUiCoordinator
         Supplier<OverlayPanelManager> panelManagerSupplier = ()
                 -> mActivity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
 
-        mBottomSheetController = new BottomSheetControllerImpl(mActivityTabProvider,
-                () -> mScrimCoordinator, sheetViewSupplier, panelManagerSupplier,
-                mActivity.getFullscreenManager(), mActivity.getWindow(),
-                mActivity.getWindowAndroid().getKeyboardDelegate(), mOmniboxFocusStateSupplier);
+        mBottomSheetController = BottomSheetControllerFactory.createBottomSheetController(
+                () -> mScrimCoordinator, sheetViewSupplier, mActivity.getWindow(),
+                mActivity.getWindowAndroid().getKeyboardDelegate());
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
-                mActivity::getModalDialogManager, this::getBottomSheetSnackbarManager,
-                mTabObscuringHandler);
+                mActivity.getFullscreenManager(), mActivity::getModalDialogManager,
+                this::getBottomSheetSnackbarManager, mTabObscuringHandler,
+                mOmniboxFocusStateSupplier, panelManagerSupplier);
     }
 
     /**

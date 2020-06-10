@@ -32,8 +32,10 @@ import unittest
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.output_capture import OutputCapture
-from blinkpy.web_tests.models.test_configuration import TestConfiguration, TestConfigurationConverter
-from blinkpy.web_tests.models.test_expectations import TestExpectations, SystemConfigurationRemover, ParseError
+from blinkpy.web_tests.models.test_configuration import (
+    TestConfiguration, TestConfigurationConverter)
+from blinkpy.web_tests.models.test_expectations import (
+    TestExpectations, SystemConfigurationRemover, ParseError)
 from blinkpy.web_tests.models.typ_types import ResultType, Expectation
 
 
@@ -743,22 +745,136 @@ class RemoveExpectationsTest(Base):
 
 
 class AddExpectationsTest(Base):
-    def test_add_expectation(self):
+
+    def test_add_expectation_end_of_file_nonzero_lineno(self):
         port = MockHost().port_factory.get('test-win-win7')
-        raw_expectations = ('# tags: [ Mac Win ]\n' '# results: [ Failure ]\n')
+        raw_expectations = ('# tags: [ Mac Win ]\n'
+                            '# tags: [ release ]\n'
+                            '# results: [ Failure ]\n'
+                            '\n'
+                            '# this is a block of expectations\n'
+                            'test [ failure ]\n')
+        expectations_dict = OrderedDict()
+        expectations_dict['/tmp/TestExpectations'] = ''
+        expectations_dict['/tmp/TestExpectations2'] = raw_expectations
+        test_expectations = TestExpectations(port, expectations_dict)
+
+        with self.assertRaises(ValueError) as ctx:
+            test_expectations.add_expectations(
+                '/tmp/TestExpectations2',
+                [Expectation(test='test3',
+                             results=set([ResultType.Failure]))],
+                lineno=0)
+            test_expectations.commit_changes()
+        self.assertIn('append_to_end_of_file must be set to True',
+                      str(ctx.exception))
+
+    def test_add_expectation_with_negative_lineno(self):
+        port = MockHost().port_factory.get('test-win-win7')
+        raw_expectations = ('# tags: [ Mac Win ]\n'
+                            '# tags: [ release ]\n'
+                            '# results: [ Failure ]\n'
+                            '\n'
+                            '# this is a block of expectations\n'
+                            'test [ failure ]\n')
+        expectations_dict = OrderedDict()
+        expectations_dict['/tmp/TestExpectations'] = ''
+        expectations_dict['/tmp/TestExpectations2'] = raw_expectations
+        test_expectations = TestExpectations(port, expectations_dict)
+
+        with self.assertRaises(ValueError) as ctx:
+            test_expectations.add_expectations(
+                '/tmp/TestExpectations2',
+                [Expectation(test='test3',
+                             results=set([ResultType.Failure]))],
+                lineno=-1)
+            test_expectations.commit_changes()
+        self.assertIn('cannot be negative', str(ctx.exception))
+
+    def test_add_expectation_outside_file_size_range(self):
+        port = MockHost().port_factory.get('test-win-win7')
+        raw_expectations = ('# tags: [ Mac Win ]\n'
+                            '# tags: [ release ]\n'
+                            '# results: [ Failure ]\n'
+                            '\n'
+                            '# this is a block of expectations\n'
+                            'test [ failure ]\n')
+        expectations_dict = OrderedDict()
+        expectations_dict['/tmp/TestExpectations'] = ''
+        expectations_dict['/tmp/TestExpectations2'] = raw_expectations
+        test_expectations = TestExpectations(port, expectations_dict)
+
+        with self.assertRaises(ValueError) as ctx:
+            test_expectations.add_expectations(
+                '/tmp/TestExpectations2',
+                [Expectation(test='test3',
+                             results=set([ResultType.Failure]))],
+                lineno=100)
+            test_expectations.commit_changes()
+        self.assertIn('greater than the total line count', str(ctx.exception))
+
+    def test_use_append_to_end_flag_non_zero_lineno(self):
+        # Use append_to_end_of_file=True with lineno != 0
+        # An exception should be raised.
+        port = MockHost().port_factory.get('test-win-win7')
+        raw_expectations = ('# tags: [ Mac Win ]\n'
+                            '# tags: [ release ]\n'
+                            '# results: [ Failure ]\n'
+                            '\n'
+                            '# this is a block of expectations\n'
+                            'test [ failure ]\n')
+        expectations_dict = OrderedDict()
+        expectations_dict['/tmp/TestExpectations'] = ''
+        expectations_dict['/tmp/TestExpectations2'] = raw_expectations
+        test_expectations = TestExpectations(port, expectations_dict)
+
+        with self.assertRaises(ValueError) as ctx:
+            test_expectations.add_expectations(
+                '/tmp/TestExpectations2',
+                [Expectation(test='test3',
+                             results=set([ResultType.Failure]))],
+                lineno=100, append_to_end_of_file=True)
+            test_expectations.commit_changes()
+        self.assertIn('append_to_end_of_file is set then lineno must be 0',
+                      str(ctx.exception))
+
+    def test_add_expectations_to_end_of_file(self):
+        port = MockHost().port_factory.get('test-win-win7')
+        raw_expectations = ('# tags: [ Mac Win ]\n'
+                            '# tags: [ release ]\n'
+                            '# results: [ Failure ]\n'
+                            '\n'
+                            '# this is a block of expectations\n'
+                            'test [ failure ]\n')
         expectations_dict = OrderedDict()
         expectations_dict['/tmp/TestExpectations'] = ''
         expectations_dict['/tmp/TestExpectations2'] = raw_expectations
         test_expectations = TestExpectations(port, expectations_dict)
         test_expectations.add_expectations(
             '/tmp/TestExpectations2',
-            [Expectation(test='test1', results=set([ResultType.Failure]))])
+            [Expectation(test='test3', results=set([ResultType.Failure]))],
+            append_to_end_of_file=True)
+        test_expectations.add_expectations(
+            '/tmp/TestExpectations2',
+            [Expectation(test='test2', tags={'mac', 'release'},
+                         results={ResultType.Crash, ResultType.Failure})],
+            append_to_end_of_file=True)
+        test_expectations.add_expectations(
+            '/tmp/TestExpectations2',
+            [Expectation(test='test1', results=set([ResultType.Pass]))],
+            append_to_end_of_file=True)
         test_expectations.commit_changes()
         content = port.host.filesystem.read_text_file('/tmp/TestExpectations2')
         self.assertEqual(content, ('# tags: [ Mac Win ]\n'
+                                   '# tags: [ release ]\n'
                                    '# results: [ Failure ]\n'
                                    '\n'
-                                   'test1 [ Failure ]\n'))
+                                   '# this is a block of expectations\n'
+                                   'test [ failure ]\n'
+                                   '\n'
+                                   'test1 [ Pass ]\n'
+                                   '[ Release Mac ] test2 [ Failure Crash ]\n'
+                                   'test3 [ Failure ]\n'))
 
     def test_add_after_remove(self):
         port = MockHost().port_factory.get('test-win-win7')

@@ -24,8 +24,16 @@ class FakeFrameWidget : public blink::mojom::FrameWidget {
   base::i18n::TextDirection GetTextDirection() const;
 
  private:
+  void DragTargetDragOver(const gfx::PointF& point_in_viewport,
+                          const gfx::PointF& screen_point,
+                          blink::WebDragOperationsMask operations_allowed,
+                          uint32_t modifiers,
+                          DragTargetDragOverCallback callback) override {}
   void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
                            const gfx::PointF& screen_point) override {}
+  void DragSourceEndedAt(const gfx::PointF& client_point,
+                         const gfx::PointF& screen_point,
+                         blink::WebDragOperation operation) override {}
   void DragSourceSystemDragEnded() override {}
   void SetBackgroundOpaque(bool value) override {}
   void SetTextDirection(base::i18n::TextDirection direction) override;

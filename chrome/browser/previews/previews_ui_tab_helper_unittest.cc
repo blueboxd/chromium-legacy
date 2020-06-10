@@ -186,14 +186,14 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsIDSet) {
 
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(ui_tab_helper->previews_user_data());
-  EXPECT_EQ(id, ui_tab_helper->previews_user_data()->page_id());
+  EXPECT_TRUE(ui_tab_helper->GetPreviewsUserData());
+  EXPECT_EQ(id, ui_tab_helper->GetPreviewsUserData()->page_id());
 
   // Navigate to reset the displayed state.
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
-  EXPECT_FALSE(ui_tab_helper->previews_user_data());
+  EXPECT_FALSE(ui_tab_helper->GetPreviewsUserData());
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

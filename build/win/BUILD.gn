@@ -108,6 +108,9 @@ if (is_win) {
         "$root_out_dir/vccorlib140${vcrt_suffix}.dll",
         "$root_out_dir/vcruntime140${vcrt_suffix}.dll",
       ]
+      if (current_cpu == "x64") {
+        data += [ "$root_out_dir/vcruntime140_1${vcrt_suffix}.dll" ]
+      }
       if (is_debug) {
         data += [ "$root_out_dir/ucrtbased.dll" ]
       }

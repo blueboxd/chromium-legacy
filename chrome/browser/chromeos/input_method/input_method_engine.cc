@@ -134,6 +134,11 @@ InputMethodEngine::GetInputMethodKeyboardController() const {
       ->input_method_keyboard_controller();
 }
 
+void InputMethodEngine::OnSuggestionsChanged(
+    const std::vector<std::string>& suggestions) {
+  observer_->OnSuggestionsChanged(suggestions);
+}
+
 const InputMethodEngine::CandidateWindowProperty&
 InputMethodEngine::GetCandidateWindowProperty(const std::string& engine_id) {
   if (candidate_window_property_.first != engine_id)

@@ -2799,6 +2799,10 @@ void EventSender::InitPointerProperties(gin::Arguments* args,
 
 void EventSender::FinishDragAndDrop(const WebMouseEvent& event,
                                     blink::WebDragOperation drag_effect) {
+  // Bail if cancelled.
+  if (!current_drag_data_)
+    return;
+
   current_drag_effect_ = drag_effect;
   if (current_drag_effect_) {
     // Specifically pass any keyboard modifiers to the drop method. This allows
@@ -2823,15 +2827,11 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& event) {
   if (!current_drag_data_)
     return;
 
-  blink::WebDragOperation drag_effect = MainFrameWidget()->DragTargetDragOver(
+  MainFrameWidget()->DragTargetDragOver(
       event.PositionInWidget(), event.PositionInScreen(),
-      current_drag_effects_allowed_, event.GetModifiers());
-
-  // Bail if dragover caused cancellation.
-  if (!current_drag_data_)
-    return;
-
-  FinishDragAndDrop(event, drag_effect);
+      current_drag_effects_allowed_, event.GetModifiers(),
+      base::BindOnce(&EventSender::FinishDragAndDrop,
+                     weak_factory_.GetWeakPtr(), event));
 }
 
 void EventSender::DoDragAfterMouseMove(const WebMouseEvent& event) {
@@ -2841,9 +2841,15 @@ void EventSender::DoDragAfterMouseMove(const WebMouseEvent& event) {
     return;
   }
 
-  current_drag_effect_ = MainFrameWidget()->DragTargetDragOver(
+  MainFrameWidget()->DragTargetDragOver(
       event.PositionInWidget(), event.PositionInScreen(),
-      current_drag_effects_allowed_, event.GetModifiers());
+      current_drag_effects_allowed_, event.GetModifiers(),
+      base::BindOnce(
+          [](base::WeakPtr<EventSender> sender, blink::WebDragOperation op) {
+            if (sender)
+              sender->current_drag_effect_ = op;
+          },
+          weak_factory_.GetWeakPtr()));
 }
 
 void EventSender::ReplaySavedEvents() {

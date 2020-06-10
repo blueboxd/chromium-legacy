@@ -101,7 +101,8 @@ class CastStreamingSession::Internal
           channel_layout, samples_per_second, media::EmptyExtraData(),
           media::EncryptionScheme::kUnencrypted));
 
-      DVLOG(1) << "Initialized audio stream using " << audio_codec << " codec.";
+      DVLOG(1) << "Initialized audio stream. "
+               << audio_decoder_config->AsHumanReadableString();
     }
 
     base::Optional<media::VideoDecoderConfig> video_decoder_config;
@@ -141,9 +142,8 @@ class CastStreamingSession::Internal
         NOTREACHED();
       }
 
-      DVLOG(1) << "Initialized video stream of " << video_width << "x"
-               << video_height << " resolution using " << video_codec
-               << " codec.";
+      DVLOG(1) << "Initialized video stream. "
+               << video_decoder_config->AsHumanReadableString();
     }
 
     if (!video_decoder_config && !audio_decoder_config) {
@@ -197,6 +197,11 @@ void CastStreamingSession::Start(
   DCHECK(!internal_);
   internal_ = std::make_unique<Internal>(
       client, std::move(message_port_request), task_runner);
+}
+
+void CastStreamingSession::Stop() {
+  DCHECK(internal_);
+  internal_.reset();
 }
 
 }  // namespace cast_streaming

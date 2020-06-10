@@ -88,7 +88,8 @@ Polymer({
     /** @private */
     completionStatus_: {
       type: String,
-      computed: 'convertStatusToString_(jobEntry.completionStatus)',
+      computed:
+          'convertStatusToString_(jobEntry.completedInfo.completionStatus)',
     },
   },
 

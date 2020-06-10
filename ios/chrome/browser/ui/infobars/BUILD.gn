@@ -54,7 +54,11 @@ source_set("feature_flags") {
     "infobar_feature.mm",
   ]
   public_deps = [ "//base" ]
-  deps = [ "//components/infobars/core:feature_flags" ]
+  deps = [
+    "//components/infobars/core:feature_flags",
+    "//components/version_info",
+    "//ios/chrome/common",
+  ]
 }
 
 source_set("infobars_ui") {

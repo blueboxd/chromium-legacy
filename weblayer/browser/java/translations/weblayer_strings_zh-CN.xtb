@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1068672505746868501">一律不翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
+<translation id="124116460088058876">更多语言</translation>
+<translation id="1285320974508926690">一律不翻译此网站</translation>
+<translation id="290376772003165898">网页的源语言不是<ph name="LANGUAGE" />？</translation>
+<translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
+<translation id="6040143037577758943">关闭</translation>
+<translation id="6831043979455480757">翻译</translation>
+<translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
+<translation id="773466115871691567">一律翻译<ph name="SOURCE_LANGUAGE" />网页</translation>
 <translation id="8298278839890148234">网络浏览器活动</translation>
 </translationbundle>

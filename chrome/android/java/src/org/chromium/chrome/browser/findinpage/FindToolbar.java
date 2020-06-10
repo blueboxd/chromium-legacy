@@ -34,6 +34,7 @@ import androidx.core.view.accessibility.AccessibilityEventCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -725,7 +726,12 @@ public class FindToolbar extends LinearLayout {
         } else {
             mSearchKeyShouldTriggerSearch = false;
         }
-        mFindQuery.setText(findText);
+        try {
+            mFindQuery.setText(findText);
+        } catch (NullPointerException e) {
+            // See crbug.com/1092978.
+            Log.w(TAG, "ignoring exception in setText", e);
+        }
         mSettingFindTextProgrammatically = false;
     }
 

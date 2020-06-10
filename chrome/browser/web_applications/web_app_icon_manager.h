@@ -46,7 +46,7 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
                  WriteDataCallback callback);
   void WriteShortcutsMenuIconsData(
       AppId app_id,
-      std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons,
+      ShortcutsMenuIconsBitmaps shortcuts_menu_icons,
       WriteDataCallback callback);
   void DeleteData(AppId app_id, WriteDataCallback callback);
 

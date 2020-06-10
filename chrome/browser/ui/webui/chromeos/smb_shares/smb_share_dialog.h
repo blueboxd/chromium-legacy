@@ -23,6 +23,7 @@ class SmbShareDialog : public SystemWebDialogDelegate {
 
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
+  bool ShouldShowCloseButton() const override;
 
   DISALLOW_COPY_AND_ASSIGN(SmbShareDialog);
 };

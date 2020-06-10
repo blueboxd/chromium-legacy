@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_MARKETING_OPT_IN_SCREEN_H_
 
 #include <memory>
+#include <unordered_set>
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -35,11 +36,14 @@ class MarketingOptInScreen : public BaseScreen {
     kMaxValue = kUserOptedOutWhenDefaultIsOptOut,
   };
 
-  enum class Country {
-    OTHER,
-    US,
-    GB,
-    CA,
+  // Whether the geolocation resolve was successful.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Must coincide with the enum
+  // MarketingOptInScreenEvent
+  enum class GeolocationEvent {
+    kCouldNotDetermineCountry = 0,
+    kCountrySuccessfullyDetermined = 1,
+    kMaxValue = kCountrySuccessfullyDetermined,
   };
 
   static std::string GetResultString(Result result);
@@ -77,20 +81,39 @@ class MarketingOptInScreen : public BaseScreen {
   // Checks whether this user is managed.
   bool IsCurrentUserManaged();
 
+  // Sets the country to be used if the feature is available in this region.
+  void SetCountryFromTimezoneIfAvailable(const std::string& timezone_id);
+
+  bool IsDefaultOptInCountry() {
+    return default_opt_in_countries_.count(country_);
+  }
+
   MarketingOptInScreenView* const view_;
-
   ScreenExitCallback exit_callback_;
-
   std::unique_ptr<PrefChangeRegistrar> active_user_pref_change_registrar_;
-
-  // The country that was determined based on the timezone.
-  Country country_ = Country::OTHER;
 
   // Whether the email opt-in toggle is visible.
   bool email_opt_in_visible_ = false;
 
-  base::WeakPtrFactory<MarketingOptInScreen> weak_factory_{this};
+  // Country code. Unknown IFF empty.
+  std::string country_;
 
+  // Default country list.
+  const std::unordered_set<std::string> default_countries_{"us", "ca", "gb"};
+
+  // Extended country list. Protected behind the flag:
+  // - kOobeMarketingAdditionalCountriesSupported (DEFAULT_ON)
+  const std::unordered_set<std::string> additional_countries_{
+      "fr", "nl", "fi", "se", "no", "dk", "es", "it", "jp", "au"};
+
+  // Countries with double opt-in.  Behind the flag:
+  // - kOobeMarketingDoubleOptInCountriesSupported (DEFAULT_OFF)
+  const std::unordered_set<std::string> double_opt_in_countries_{"de"};
+
+  // Countries in which the toggle will be enabled by default.
+  const std::unordered_set<std::string> default_opt_in_countries_{"us"};
+
+  base::WeakPtrFactory<MarketingOptInScreen> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(MarketingOptInScreen);
 };
 

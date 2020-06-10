@@ -165,57 +165,40 @@ TEST_F(FuzzyTokenizedStringMatchTest, WeightedRatio) {
   }
 }
 
-TEST_F(FuzzyTokenizedStringMatchTest, FirstCharacterMatchTest) {
-  {
-    base::string16 query(base::UTF8ToUTF16("COC"));
-    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(FuzzyTokenizedStringMatch::FirstCharacterMatch(
-                  TokenizedString(query), TokenizedString(text)),
-              1.0);
-  }
-  {
-    base::string16 query(base::UTF8ToUTF16("CC"));
-    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(FuzzyTokenizedStringMatch::FirstCharacterMatch(
-                  TokenizedString(query), TokenizedString(text)),
-              0.8);
-  }
-  {
-    base::string16 query(base::UTF8ToUTF16("C o C"));
-    base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(FuzzyTokenizedStringMatch::FirstCharacterMatch(
-                  TokenizedString(query), TokenizedString(text)),
-              0.0);
-  }
-}
-
-TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatchTest) {
+TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatcherTest) {
   {
     base::string16 query(base::UTF8ToUTF16("clas"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
-                                                     TokenizedString(text)),
-              1.0);
+    EXPECT_NEAR(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                         TokenizedString(text)),
+                0.94, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("clash clan"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
-                                                     TokenizedString(text)),
-              0.9);
+    EXPECT_NEAR(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                         TokenizedString(text)),
+                0.99, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("c o c"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
-                                                     TokenizedString(text)),
-              1.0);
+    EXPECT_NEAR(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                         TokenizedString(text)),
+                0.84, 0.01);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("wifi"));
+    base::string16 text(base::UTF8ToUTF16("wi-fi"));
+    EXPECT_NEAR(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                         TokenizedString(text)),
+                0.91, 0.01);
   }
   {
     base::string16 query(base::UTF8ToUTF16("clam"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatch(TokenizedString(query),
-                                                     TokenizedString(text)),
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                       TokenizedString(text)),
               0.0);
   }
 }

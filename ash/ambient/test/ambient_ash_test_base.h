@@ -14,9 +14,14 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
 
+namespace gfx {
+class ImageSkia;
+}  // namespace gfx
+
 namespace ash {
 
 class AmbientContainerView;
+class AmbientPhotoController;
 
 // The base class to test the ambient mode in Ash.
 class AmbientAshTestBase : public AshTestBase {
@@ -39,6 +44,8 @@ class AmbientAshTestBase : public AshTestBase {
   void Toggle();
 
   AmbientContainerView* GetView();
+
+  const gfx::ImageSkia& GetImageInPhotoView();
 
   // Simulate to issue an |access_token|.
   // If |with_error| is true, will return an empty access token.

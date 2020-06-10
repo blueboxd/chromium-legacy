@@ -25,6 +25,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
  public:
   bool DismissSuggestion(int context_id, std::string* error) override {
     suggestion_text_ = base::EmptyString16();
+    previous_suggestions_.clear();
     confirmed_length_ = 0;
     suggestion_accepted_ = false;
     return true;
@@ -56,6 +57,16 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     confirmed_length_ = 0;
   }
 
+  void VerifySuggestionDispatchedToExtension(
+      const std::vector<std::string>& suggestions) {
+    EXPECT_THAT(previous_suggestions_, testing::ContainerEq(suggestions));
+  }
+
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override {
+    previous_suggestions_ = suggestions;
+  }
+
   void VerifyShowTab(const bool show_tab) { EXPECT_EQ(show_tab_, show_tab); }
 
   bool IsSuggestionAccepted() { return suggestion_accepted_; }
@@ -65,6 +76,7 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
   size_t confirmed_length_ = 0;
   bool show_tab_ = false;
   bool suggestion_accepted_ = false;
+  std::vector<std::string> previous_suggestions_;
 };
 
 class TestTtsHandler : public TtsHandler {
@@ -148,6 +160,16 @@ TEST_F(PersonalInfoSuggesterTest, DoNotSuggestWhenVirtualKeyboardEnabled) {
 
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
   suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+}
+
+TEST_F(PersonalInfoSuggesterTest,
+       SendsEmailSuggestionToExtensionWhenVirtualKeyboardEnabled) {
+  chrome_keyboard_controller_client_->set_keyboard_enabled_for_test(true);
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  suggestion_handler_->VerifySuggestionDispatchedToExtension(
+      std::vector<std::string>{base::UTF16ToUTF8(email_)});
 }
 
 TEST_F(PersonalInfoSuggesterTest, SuggestNames) {

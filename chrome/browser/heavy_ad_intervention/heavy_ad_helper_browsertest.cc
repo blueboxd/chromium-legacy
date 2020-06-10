@@ -10,6 +10,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -83,6 +84,14 @@ IN_PROC_BROWSER_TEST_F(HeavyAdHelperBrowserTest,
   controller.LoadPostCommitErrorPage(
       child, url, heavy_ads::PrepareHeavyAdPage(), net::ERR_BLOCKED_BY_CLIENT);
   error_observer.Wait();
+
+  // With error page isolation, the error page will be loaded in the error
+  // page process, therefore it will have a different RenderFrameHost
+  // instance.
+  if (content::SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          /* in_main_frame = */ false)) {
+    child = ChildFrameAt(web_contents->GetMainFrame(), 0);
+  }
 
   EXPECT_TRUE(IsContentInDocument(
       child,

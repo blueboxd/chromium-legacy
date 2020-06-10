@@ -31,9 +31,13 @@ class ASH_EXPORT AmbientContainerView : public views::WidgetDelegateView {
   void FadeOutPhotoView();
 
  private:
+  friend class AmbientAshTestBase;
+
   void Init();
 
   void LayoutGlanceableInfoView();
+
+  PhotoView* photo_view_for_testing() { return photo_view_; }
 
   AmbientViewDelegate* delegate_ = nullptr;
 

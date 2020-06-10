@@ -46,6 +46,24 @@ class TestOmniboxEditModel : public OmniboxEditModel {
                        std::unique_ptr<OmniboxClient> client)
       : OmniboxEditModel(view, controller, std::move(client)) {}
   bool PopupIsOpen() const override { return true; }
+
+  const base::string16& text() const { return text_; }
+  bool is_temporary_text() const { return is_temporary_text_; }
+
+  void OnPopupDataChanged(const base::string16& text,
+                          bool is_temporary_text,
+                          const base::string16& keyword,
+                          bool is_keyword_hint) override {
+    OmniboxEditModel::OnPopupDataChanged(text, is_temporary_text, keyword,
+                                         is_keyword_hint);
+    text_ = text;
+    is_temporary_text_ = is_temporary_text;
+  }
+
+ private:
+  // Contains the most recent text passed by the popup model to the edit model.
+  base::string16 text_;
+  bool is_temporary_text_ = false;
 };
 
 }  // namespace
@@ -62,7 +80,7 @@ class OmniboxPopupModelTest : public ::testing::Test {
   }
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
-  OmniboxEditModel* model() { return &model_; }
+  TestOmniboxEditModel* model() { return &model_; }
   OmniboxPopupModel* popup_model() { return &popup_model_; }
 
  private:
@@ -355,6 +373,85 @@ TEST_F(OmniboxPopupModelTest, PopupStepSelectionWithHiddenGroupIds) {
                                  OmniboxPopupModel::kWholeLine);
     EXPECT_EQ(selection, model()->popup_model()->selection());
   }
+}
+
+TEST_F(OmniboxPopupModelTest, PopupInlineAutocompleteAndTemporaryText) {
+  // Create a set of three matches "a|1" (inline autocompleted), "a2", "a3".
+  // The third match has a suggestion group ID.
+  ACMatches matches;
+  for (size_t i = 0; i < 3; ++i) {
+    AutocompleteMatch match(nullptr, 1000, false,
+                            AutocompleteMatchType::SEARCH_SUGGEST);
+    match.allowed_to_be_default_match = true;
+    matches.push_back(match);
+  }
+
+  matches[0].fill_into_edit = base::UTF8ToUTF16("a1");
+  matches[0].inline_autocompletion = base::UTF8ToUTF16("1");
+  matches[1].fill_into_edit = base::UTF8ToUTF16("a2");
+  matches[2].fill_into_edit = base::UTF8ToUTF16("a3");
+  matches[2].suggestion_group_id = 7;
+
+  auto* result = &model()->autocomplete_controller()->result_;
+  AutocompleteInput input(base::UTF8ToUTF16("a"),
+                          metrics::OmniboxEventProto::NTP,
+                          TestSchemeClassifier());
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+
+  // Simulate OmniboxController updating the popup, then check initial state.
+  model()->OnPopupDataChanged(base::UTF8ToUTF16("1"),
+                              /*is_temporary_text=*/false, base::string16(),
+                              false);
+  EXPECT_EQ(Selection(0, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+  EXPECT_EQ(base::UTF8ToUTF16("1"), model()->text());
+  EXPECT_FALSE(model()->is_temporary_text());
+
+  // Tab down to second match.
+  popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                               OmniboxPopupModel::kStateOrLine);
+  EXPECT_EQ(Selection(1, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+  EXPECT_EQ(base::UTF8ToUTF16("a2"), model()->text());
+  EXPECT_TRUE(model()->is_temporary_text());
+
+  // Tab down to header above the third match, expect that we keep the temporary
+  // text of the second match for now.
+  popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                               OmniboxPopupModel::kStateOrLine);
+  EXPECT_EQ(Selection(2, OmniboxPopupModel::HEADER_BUTTON_FOCUSED),
+            model()->popup_model()->selection());
+  EXPECT_EQ(base::UTF8ToUTF16("a2"), model()->text());
+  EXPECT_TRUE(model()->is_temporary_text());
+
+  // Now tab down to the third match, and expect that we update the temporary
+  // text to the third match.
+  popup_model()->StepSelection(OmniboxPopupModel::kForward,
+                               OmniboxPopupModel::kStateOrLine);
+  EXPECT_EQ(Selection(2, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+  EXPECT_EQ(base::UTF8ToUTF16("a3"), model()->text());
+  EXPECT_TRUE(model()->is_temporary_text());
+
+  // Now tab backwards to the header again, expect we still have the temporary
+  // text from the third match.
+  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                               OmniboxPopupModel::kStateOrLine);
+  EXPECT_EQ(Selection(2, OmniboxPopupModel::HEADER_BUTTON_FOCUSED),
+            model()->popup_model()->selection());
+  EXPECT_EQ(base::UTF8ToUTF16("a3"), model()->text());
+  EXPECT_TRUE(model()->is_temporary_text());
+
+  // Now tab backwards to the second match, expect we update the temporary text
+  // to the second match.
+  popup_model()->StepSelection(OmniboxPopupModel::kBackward,
+                               OmniboxPopupModel::kStateOrLine);
+  EXPECT_EQ(Selection(1, OmniboxPopupModel::NORMAL),
+            model()->popup_model()->selection());
+  EXPECT_EQ(base::UTF8ToUTF16("a2"), model()->text());
+  EXPECT_TRUE(model()->is_temporary_text());
 }
 
 TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {

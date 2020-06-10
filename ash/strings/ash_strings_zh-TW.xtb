@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> 已變更為 <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz)。請按一下 [確認] 以保留變更。系統會在 <ph name="TIMEOUT_SECONDS" />後還原先前的設定。</translation>
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">觸控筆電量偏低</translation>
+<translation id="1036672894875463507">我是你的 Google 助理，可協助你處理日常事務！
+你可以試試以下幾種功能來開始使用。</translation>
 <translation id="1037492556044956303">已新增 <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">沒有網路</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />：<ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">登出所有使用者</translation>
 <translation id="2277103315734023688">快轉</translation>
 <translation id="2292698582925480719">顯示比例</translation>
+<translation id="229397294990920565">正在關閉行動數據...</translation>
 <translation id="2295777434187870477">麥克風已開啟；使用切換按鈕可將麥克風設為靜音。</translation>
 <translation id="2298170939937364391">全螢幕放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + M 鍵即可切換為停用。</translation>
 <translation id="2302092602801625023">這個帳戶是由 Family Link 所管理</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">放大鏡</translation>
 <translation id="4351433414020964307">正在載入小幫手…</translation>
 <translation id="4356930093361201197">高對比模式</translation>
+<translation id="4368583494516669646">晚安，<ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">投放設定</translation>
 <translation id="4378551569595875038">連線中…</translation>
 <translation id="4379531060876907730">這些是可用的觸控筆工具</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4570957409596482333">隨選朗讀按鈕</translation>
+<translation id="4577274620589681794">時間到 · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">停止透過不明接收器投放</translation>
 <translation id="4628757576491864469">裝置</translation>
 <translation id="4659419629803378708">ChromeVox 已啟用</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">向上捲動</translation>
 <translation id="4961318399572185831">投放螢幕</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> 小時 <ph name="MINUTES" /> 分鐘 <ph name="SECONDS" /> 秒</translation>
+<translation id="4970352680959471247">晚安，<ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">使用時間結束</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> 已連結到新手機</translation>
 <translation id="5035389544768382859">確認螢幕設定</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
 <translation id="54609108002486618">受管理</translation>
 <translation id="5465662442746197494">需要協助嗎？</translation>
+<translation id="5485091064403948243">早安，<ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">你的管理員正在復原你的裝置。重新啟動後，裝置上的資料將全數刪除。</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">結束工作階段</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">如要將這部裝置解鎖，請輸入你的 Family Link 家長存取碼</translation>
 <translation id="742594950370306541">攝影機正在使用中。</translation>
 <translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
+<translation id="7436182601308224670">午安，<ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">請輕觸感應器</translation>
 <translation id="7497767806359279797">選擇語言和鍵盤配置</translation>
 <translation id="7526573455193969409">網路可能會受到監控</translation>

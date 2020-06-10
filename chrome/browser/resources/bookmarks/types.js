@@ -97,7 +97,7 @@ export class BookmarkElement extends HTMLElement {
 
 export class DragData {
   constructor() {
-    /** @type {Array<BookmarkTreeNode>} */
+    /** @type {Array<chrome.bookmarks.BookmarkTreeNode>} */
     this.elements = null;
 
     /** @type {boolean} */

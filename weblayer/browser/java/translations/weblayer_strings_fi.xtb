@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1068672505746868501">Älä koskaan käännä kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitettuja sivuja.</translation>
+<translation id="124116460088058876">Lisää kieliä</translation>
+<translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
+<translation id="290376772003165898">Eikö sivu ole kirjoitettu kielellä <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
+<translation id="6040143037577758943">Sulje</translation>
+<translation id="6831043979455480757">Käännä</translation>
+<translation id="7243308994586599757">Asetukset löytyvät näytön alalaidasta.</translation>
+<translation id="773466115871691567">Käännä aina kielellä <ph name="SOURCE_LANGUAGE" /> kirjoitut sivut</translation>
 <translation id="8298278839890148234">Verkon selaustoiminta</translation>
 </translationbundle>

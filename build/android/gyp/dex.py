@@ -429,7 +429,7 @@ def _CreateIntermediateDexFiles(changes, options, tmp_dir, dex_cmd):
   # If the only change is deleting a file, class_files will be empty.
   if class_files:
     # Dex necessary classes into intermediate dex files.
-    dex_cmd = dex_cmd + ['--intermediate', '--file-per-class']
+    dex_cmd = dex_cmd + ['--intermediate', '--file-per-class-file']
     _RunD8(dex_cmd, class_files, options.incremental_dir)
     logging.debug('Dexed class files.')
 

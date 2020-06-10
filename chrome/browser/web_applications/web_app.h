@@ -99,30 +99,9 @@ class WebApp {
   };
   const SyncData& sync_data() const { return sync_data_; }
 
-  // Stores info needed to create app icon shortcuts menu and for downloading
-  // associated shortcuts menu icons when supported by OS platform (eg.
-  // Windows).
-  struct WebAppShortcutsMenuItemInfo {
-    WebAppShortcutsMenuItemInfo();
-    WebAppShortcutsMenuItemInfo(const WebAppShortcutsMenuItemInfo&);
-    WebAppShortcutsMenuItemInfo(WebAppShortcutsMenuItemInfo&&) noexcept;
-    ~WebAppShortcutsMenuItemInfo();
-    WebAppShortcutsMenuItemInfo& operator=(const WebAppShortcutsMenuItemInfo&);
-    WebAppShortcutsMenuItemInfo& operator=(
-        WebAppShortcutsMenuItemInfo&&) noexcept;
-
-    // Title of shortcuts menu item in App Icon Shortcut Menu.
-    base::string16 name;
-
-    // URL launched when shortcuts menu item is selected.
-    GURL url;
-
-    // List of shortcuts menu icon URLs with associated square size.
-    std::vector<WebApplicationIconInfo> shortcuts_menu_icon_infos;
-  };
-
   // Represents the "shortcuts" field in the manifest.
-  const std::vector<WebAppShortcutsMenuItemInfo>& shortcut_infos() const {
+  const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos()
+      const {
     return shortcut_infos_;
   }
 
@@ -163,7 +142,7 @@ class WebApp {
   // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
   void SetShortcutInfos(
-      std::vector<WebAppShortcutsMenuItemInfo> shortcut_infos);
+      std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos);
   void SetDownloadedShortcutsMenuIconsSizes(
       std::vector<std::vector<SquareSizePx>> icon_sizes);
   void SetFileHandlers(apps::FileHandlers file_handlers);
@@ -201,7 +180,7 @@ class WebApp {
   std::vector<SquareSizePx> downloaded_icon_sizes_;
   // TODO(https://crbug.com/1069312): Serialize shortcut_infos_ and
   // downloaded_shortcuts_menu_icons_sizes_ fields in WebAppDatabase.
-  std::vector<WebAppShortcutsMenuItemInfo> shortcut_infos_;
+  std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos_;
   std::vector<std::vector<SquareSizePx>> downloaded_shortcuts_menu_icons_sizes_;
   apps::FileHandlers file_handlers_;
   std::vector<std::string> additional_search_terms_;

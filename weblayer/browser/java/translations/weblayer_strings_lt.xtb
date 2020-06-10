@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1068672505746868501">Niekada neversti puslapių, parašytų <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Daugiau kalbų</translation>
+<translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
+<translation id="290376772003165898">Puslapis parašytas ne <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
+<translation id="6040143037577758943">Uždaryti</translation>
+<translation id="6831043979455480757">Vertėjas</translation>
+<translation id="7243308994586599757">Parinktys pasiekiamos netoli ekrano apačios</translation>
+<translation id="773466115871691567">Visada versti puslapius, parašytus <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Žiniatinklio naršyklės veikla</translation>
 </translationbundle>

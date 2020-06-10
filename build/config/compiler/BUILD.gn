@@ -337,7 +337,7 @@ config("compiler") {
       # compute, so only use it in the official build to avoid slowing down
       # links.
       ldflags += [ "-Wl,--build-id=sha1" ]
-    } else {
+    } else if (current_os != "aix") {
       ldflags += [ "-Wl,--build-id" ]
     }
 

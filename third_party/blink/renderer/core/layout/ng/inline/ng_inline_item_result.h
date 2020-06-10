@@ -32,11 +32,10 @@ struct CORE_EXPORT NGInlineItemResult {
   DISALLOW_NEW();
 
  public:
-  NGTextOffset TextOffset() const { return {start_offset, end_offset}; }
-  unsigned Length() const {
-    DCHECK_GT(end_offset, start_offset);
-    return end_offset - start_offset;
-  }
+  const NGTextOffset& TextOffset() const { return text_offset; }
+  unsigned StartOffset() const { return text_offset.start; }
+  unsigned EndOffset() const { return text_offset.end; }
+  unsigned Length() const { return text_offset.Length(); }
 
   LayoutUnit HyphenInlineSize() const {
     return hyphen_shape_result->SnappedWidth().ClampNegativeToZero();
@@ -52,8 +51,7 @@ struct CORE_EXPORT NGInlineItemResult {
   unsigned item_index;
 
   // The range of text content for this item.
-  unsigned start_offset;
-  unsigned end_offset;
+  NGTextOffset text_offset;
 
   // Inline size of this item.
   LayoutUnit inline_size;
@@ -133,8 +131,7 @@ struct CORE_EXPORT NGInlineItemResult {
   NGInlineItemResult();
   NGInlineItemResult(const NGInlineItem*,
                      unsigned index,
-                     unsigned start,
-                     unsigned end,
+                     const NGTextOffset& text_offset,
                      bool break_anywhere_if_overflow,
                      bool should_create_line_box,
                      bool has_unpositioned_floats);

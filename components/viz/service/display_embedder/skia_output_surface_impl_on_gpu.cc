@@ -599,7 +599,9 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
 
 #if defined(OS_FUCHSIA)
   void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                      zx::channel token) override {
+                                      zx::channel token,
+                                      gfx::BufferFormat format,
+                                      gfx::BufferUsage usage) override {
     NOTREACHED();
   }
 
@@ -619,6 +621,10 @@ class DirectContextProviderDelegateImpl : public DirectContextProviderDelegate,
     gpu::SyncToken sync_token = GenUnverifiedSyncToken();
     sync_token.SetVerifyFlush();
     return sync_token;
+  }
+
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    NOTREACHED();
   }
 
   void Flush() override {

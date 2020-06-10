@@ -24,8 +24,14 @@ uint64_t AlignWebGPUBytesPerRow(uint64_t bytesPerRow) {
 SkColorType DawnColorTypeToSkColorType(WGPUTextureFormat dawn_format) {
   switch (dawn_format) {
     case WGPUTextureFormat_RGBA8Unorm:
+    // According to WebGPU spec, format with -srgb suffix will do color
+    // space conversion when reading and writing in shader. In this uploading
+    // path, we should keep the conversion happening in canvas color space and
+    // leave the srgb color space conversion to the GPU.
+    case WGPUTextureFormat_RGBA8UnormSrgb:
       return SkColorType::kRGBA_8888_SkColorType;
     case WGPUTextureFormat_BGRA8Unorm:
+    case WGPUTextureFormat_BGRA8UnormSrgb:
       return SkColorType::kBGRA_8888_SkColorType;
     case WGPUTextureFormat_RGB10A2Unorm:
       return SkColorType::kRGBA_1010102_SkColorType;
@@ -114,7 +120,9 @@ uint64_t DawnTextureFormatBytesPerPixel(const WGPUTextureFormat color_type) {
     case WGPUTextureFormat_RG8Unorm:
       return 2;
     case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_RGBA8UnormSrgb:
     case WGPUTextureFormat_BGRA8Unorm:
+    case WGPUTextureFormat_BGRA8UnormSrgb:
     case WGPUTextureFormat_RGB10A2Unorm:
     case WGPUTextureFormat_RG16Float:
       return 4;

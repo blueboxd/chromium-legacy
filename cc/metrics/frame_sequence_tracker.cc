@@ -63,9 +63,9 @@ FrameSequenceTracker::FrameSequenceTracker(
     FrameSequenceTrackerType type,
     ThroughputUkmReporter* throughput_ukm_reporter)
     : custom_sequence_id_(-1),
-      metrics_(std::make_unique<FrameSequenceMetrics>(type,
-                                                      throughput_ukm_reporter)),
-      trace_data_(metrics_.get()) {
+      metrics_(
+          std::make_unique<FrameSequenceMetrics>(type,
+                                                 throughput_ukm_reporter)) {
   DCHECK_LT(type, FrameSequenceTrackerType::kMaxType);
   DCHECK(type != FrameSequenceTrackerType::kCustom);
 }
@@ -76,8 +76,7 @@ FrameSequenceTracker::FrameSequenceTracker(
     : custom_sequence_id_(custom_sequence_id),
       metrics_(std::make_unique<FrameSequenceMetrics>(
           FrameSequenceTrackerType::kCustom,
-          /*ukm_reporter=*/nullptr)),
-      trace_data_(metrics_.get()) {
+          /*ukm_reporter=*/nullptr)) {
   DCHECK_GT(custom_sequence_id_, 0);
   metrics_->SetCustomReporter(std::move(custom_reporter));
 }
@@ -423,7 +422,7 @@ void FrameSequenceTracker::ReportFramePresented(
 
   uint32_t impl_frames_produced = 0;
   uint32_t main_frames_produced = 0;
-  trace_data_.Advance(feedback.timestamp);
+  metrics()->AdvanceTrace(feedback.timestamp);
 
   const bool was_presented = !feedback.timestamp.is_null();
   if (was_presented && submitted_frame_since_last_presentation) {
@@ -677,20 +676,5 @@ std::unique_ptr<FrameSequenceMetrics> FrameSequenceTracker::TakeMetrics() {
 
 FrameSequenceTracker::CheckerboardingData::CheckerboardingData() = default;
 FrameSequenceTracker::CheckerboardingData::~CheckerboardingData() = default;
-
-FrameSequenceTracker::TraceData::TraceData(const void* id) : trace_id(id) {}
-void FrameSequenceTracker::TraceData::Advance(base::TimeTicks new_timestamp) {
-  // Use different names, because otherwise the trace-viewer shows the slices in
-  // the same color, and that makes it difficult to tell the traces apart from
-  // each other.
-  const char* trace_names[] = {"Frame", "Frame ", "Frame   "};
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      "cc,benchmark", trace_names[++this->frame_count % 3],
-      TRACE_ID_LOCAL(this->trace_id), this->last_timestamp);
-  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "cc,benchmark", trace_names[this->frame_count % 3],
-      TRACE_ID_LOCAL(this->trace_id), new_timestamp);
-  this->last_timestamp = new_timestamp;
-}
 
 }  // namespace cc

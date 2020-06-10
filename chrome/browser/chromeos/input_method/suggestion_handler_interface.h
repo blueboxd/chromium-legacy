@@ -30,6 +30,9 @@ class SuggestionHandlerInterface {
 
   // Commit the suggestion and hide the window.
   virtual bool AcceptSuggestion(int context_id, std::string* error) = 0;
+
+  virtual void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) = 0;
 };
 
 }  // namespace chromeos

@@ -30,6 +30,15 @@
 
 namespace content {
 
+namespace {
+void CreatePortalRenderWidgetHostView(WebContentsImpl* web_contents,
+                                      RenderViewHostImpl* render_view_host) {
+  if (auto* view = render_view_host->GetWidget()->GetView())
+    view->Destroy();
+  web_contents->CreateRenderWidgetHostViewForRenderManager(render_view_host);
+}
+}  // namespace
+
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
@@ -157,16 +166,17 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       portal_contents_.ReleaseOwnership(), outer_node->current_frame_host(),
       false /* is_full_page */);
 
-  // If a cross-process navigation started while the predecessor was orphaned,
-  // we need to create a view for the speculative RFH as well.
-  if (RenderFrameHostImpl* speculative_rfh =
-          portal_contents_->GetPendingMainFrame()) {
-    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-            speculative_rfh->GetView())) {
-      view->Destroy();
+  // Create the view for all RenderViewHosts that don't have a
+  // RenderWidgetHostViewChildFrame view.
+  for (auto& render_view_host :
+       portal_contents_->GetFrameTree()->render_view_hosts()) {
+    if (!render_view_host.second->GetWidget()->GetView() ||
+        !render_view_host.second->GetWidget()
+             ->GetView()
+             ->IsRenderWidgetHostViewChildFrame()) {
+      CreatePortalRenderWidgetHostView(portal_contents_.get(),
+                                       render_view_host.second);
     }
-    portal_contents_->CreateRenderWidgetHostViewForRenderManager(
-        speculative_rfh->render_view_host());
   }
 
   FrameTreeNode* frame_tree_node =
@@ -257,26 +267,6 @@ void FlushTouchEventQueues(RenderWidgetHostImpl* host) {
       host->GetEmbeddedRenderWidgetHosts();
   while (RenderWidgetHost* child_widget = child_widgets->GetNextHost())
     FlushTouchEventQueues(static_cast<RenderWidgetHostImpl*>(child_widget));
-}
-
-void CreateRenderWidgetHostViewForUnattachedPredecessor(
-    WebContentsImpl* predecessor) {
-  if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-          predecessor->GetMainFrame()->GetView())) {
-    view->Destroy();
-  }
-  predecessor->CreateRenderWidgetHostViewForRenderManager(
-      predecessor->GetRenderViewHost());
-
-  if (RenderFrameHostImpl* speculative_rfh =
-          predecessor->GetPendingMainFrame()) {
-    if (RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-            speculative_rfh->GetView())) {
-      view->Destroy();
-    }
-    predecessor->CreateRenderWidgetHostViewForRenderManager(
-        speculative_rfh->render_view_host());
-  }
 }
 
 // Copies |predecessor_contents|'s navigation entries to
@@ -404,7 +394,11 @@ void Portal::Activate(blink::TransferableMessage data,
     // attached to an outer WebContents, and may not have an outer frame tree
     // node created (i.e. CreateProxyAndAttachPortal isn't called). In this
     // case, we can skip a few of the detachment steps above.
-    CreateRenderWidgetHostViewForUnattachedPredecessor(portal_contents_.get());
+    for (auto& render_view_host :
+         portal_contents_->GetFrameTree()->render_view_hosts()) {
+      CreatePortalRenderWidgetHostView(portal_contents_.get(),
+                                       render_view_host.second);
+    }
     successor_contents = portal_contents_.ReleaseOwnership();
   }
   DCHECK(!portal_contents_.OwnsContents());

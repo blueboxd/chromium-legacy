@@ -32,6 +32,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -53,6 +54,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Wrapper for the steps needed to initialize the java and native sides of webview chromium.
@@ -62,6 +64,9 @@ public final class AwBrowserProcess {
     private static final String TAG = "AwBrowserProcess";
 
     private static final String WEBVIEW_DIR_BASENAME = "webview";
+
+    private static final int MINUTES_PER_DAY =
+            (int) TimeUnit.SECONDS.toMinutes(TimeUtils.SECONDS_PER_DAY);
 
     // To avoid any potential synchronization issues we post all minidump-copying actions to
     // the same sequence to be run serially.
@@ -347,6 +352,26 @@ public final class AwBrowserProcess {
     }
 
     /**
+     * Record very long times UMA histogram up to 4 days.
+     *
+     * @param name histogram name.
+     * @param time time sample in millis.
+     */
+    private static void recordVeryLongTimesHistogram(String name, long time) {
+        long timeMins = TimeUnit.MILLISECONDS.toMinutes(time);
+        int sample;
+        // Safely convert to int to avoid positive or negative overflow.
+        if (timeMins > Integer.MAX_VALUE) {
+            sample = Integer.MAX_VALUE;
+        } else if (timeMins < Integer.MIN_VALUE) {
+            sample = Integer.MIN_VALUE;
+        } else {
+            sample = (int) timeMins;
+        }
+        RecordHistogram.recordCustomCountHistogram(name, sample, 1, 4 * MINUTES_PER_DAY, 50);
+    }
+
+    /**
      * Connect to {@link org.chromium.android_webview.services.MetricsBridgeService} to retrieve
      * any recorded UMA metrics from nonembedded WebView services and transmit them back using
      * UMA APIs.
@@ -369,9 +394,16 @@ public final class AwBrowserProcess {
                         List<byte[]> data = metricsService.retrieveNonembeddedMetrics();
                         RecordHistogram.recordCount1000Histogram(
                                 "Android.WebView.NonEmbeddedMetrics.NumHistograms", data.size());
+                        long systemTime = System.currentTimeMillis();
                         for (byte[] recordData : data) {
-                            AwNonembeddedUmaReplayer.replayMethodCall(
-                                    HistogramRecord.parseFrom(recordData));
+                            HistogramRecord record = HistogramRecord.parseFrom(recordData);
+                            AwNonembeddedUmaReplayer.replayMethodCall(record);
+                            if (record.hasMetadata()) {
+                                long timeRecorded = record.getMetadata().getTimeRecorded();
+                                recordVeryLongTimesHistogram(
+                                        "Android.WebView.NonEmbeddedMetrics.HistogramRecordAge",
+                                        systemTime - timeRecorded);
+                            }
                         }
                         logTransmissionResult(TransmissionResult.SUCCESS);
                     } catch (InvalidProtocolBufferException e) {

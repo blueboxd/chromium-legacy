@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -194,9 +195,16 @@ public class ActivityTabProviderTest {
     @SmallTest
     @Feature({"ActivityTabObserver"})
     public void testTriggerOnLastTabClosed() throws TimeoutException {
+        // Have a tab open in incognito model. This should not be in the way getting the event
+        // triggered when closing the last tab in normal mode.
+        TabModelSelector selector = mActivity.getTabModelSelector();
+        TestThreadUtils.runOnUiThreadBlocking(() -> selector.selectModel(true));
+        ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(), mActivity,
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL, true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> selector.selectModel(false));
+
         int callCount = mActivityTabChangedHelper.getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mActivity.getTabModelSelector().closeTab(getModelSelectedTab()); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { selector.closeTab(getModelSelectedTab()); });
         mActivityTabChangedHelper.waitForCallback(callCount);
 
         assertEquals("Closing the last tab should have triggered the event once.", callCount + 1,

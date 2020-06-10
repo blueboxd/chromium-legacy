@@ -11,6 +11,18 @@
 
 namespace cc {
 
+namespace {
+
+using ThreadType = FrameSequenceMetrics::ThreadType;
+
+bool IsScrollType(FrameSequenceTrackerType type) {
+  return type == FrameSequenceTrackerType::kTouchScroll ||
+         type == FrameSequenceTrackerType::kWheelScroll ||
+         type == FrameSequenceTrackerType::kScrollbarScroll;
+}
+
+}  // namespace
+
 FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
     bool is_single_threaded,
     CompositorFrameReportingController* compositor_frame_reporting_controller)
@@ -23,38 +35,69 @@ FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
   removal_trackers_.clear();
 }
 
-FrameSequenceMetrics* FrameSequenceTrackerCollection::StartSequence(
-    FrameSequenceTrackerType type) {
+FrameSequenceTracker* FrameSequenceTrackerCollection::StartSequenceInternal(
+    FrameSequenceTrackerType type,
+    FrameSequenceMetrics::ThreadType scrolling_thread) {
   DCHECK_NE(FrameSequenceTrackerType::kCustom, type);
-
   if (is_single_threaded_)
     return nullptr;
-  if (frame_trackers_.contains(type))
-    return frame_trackers_[type]->metrics();
+  auto key = std::make_pair(type, scrolling_thread);
+  if (frame_trackers_.contains(key))
+    return frame_trackers_[key].get();
+
   auto tracker = base::WrapUnique(
       new FrameSequenceTracker(type, throughput_ukm_reporter_.get()));
-  frame_trackers_[type] = std::move(tracker);
+  frame_trackers_[key] = std::move(tracker);
 
   if (compositor_frame_reporting_controller_)
     compositor_frame_reporting_controller_->AddActiveTracker(type);
-  return frame_trackers_[type]->metrics();
+
+  auto* metrics = frame_trackers_[key]->metrics();
+  if (accumulated_metrics_.contains(key)) {
+    metrics->AdoptTrace(accumulated_metrics_[key].get());
+  }
+  if (IsScrollType(type)) {
+    DCHECK_NE(scrolling_thread, ThreadType::kUnknown);
+    metrics->SetScrollingThread(scrolling_thread);
+  }
+  return frame_trackers_[key].get();
+}
+
+FrameSequenceTracker* FrameSequenceTrackerCollection::StartSequence(
+    FrameSequenceTrackerType type) {
+  DCHECK(!IsScrollType(type));
+  return StartSequenceInternal(type, ThreadType::kUnknown);
+}
+
+FrameSequenceTracker* FrameSequenceTrackerCollection::StartScrollSequence(
+    FrameSequenceTrackerType type,
+    FrameSequenceMetrics::ThreadType scrolling_thread) {
+  DCHECK(IsScrollType(type));
+  return StartSequenceInternal(type, scrolling_thread);
 }
 
 void FrameSequenceTrackerCollection::StopSequence(
     FrameSequenceTrackerType type) {
   DCHECK_NE(FrameSequenceTrackerType::kCustom, type);
 
-  if (!frame_trackers_.contains(type))
+  auto key = std::make_pair(type, ThreadType::kUnknown);
+  if (IsScrollType(type)) {
+    key = std::make_pair(type, ThreadType::kCompositor);
+    if (!frame_trackers_.contains(key))
+      key = std::make_pair(type, ThreadType::kMain);
+  }
+
+  if (!frame_trackers_.contains(key))
     return;
 
   std::unique_ptr<FrameSequenceTracker> tracker =
-      std::move(frame_trackers_[type]);
+      std::move(frame_trackers_[key]);
 
   if (compositor_frame_reporting_controller_)
     compositor_frame_reporting_controller_->RemoveActiveTracker(
         tracker->type());
 
-  frame_trackers_.erase(type);
+  frame_trackers_.erase(key);
   tracker->ScheduleTerminate();
   removal_trackers_.push_back(std::move(tracker));
   DestroyTrackers();
@@ -227,9 +270,11 @@ FrameSequenceTrackerCollection::CurrentUniversalThroughput() {
 
 void FrameSequenceTrackerCollection::ComputeUniversalThroughputForTesting() {
   DCHECK(throughput_ukm_reporter_);
-  DCHECK(frame_trackers_.contains(FrameSequenceTrackerType::kUniversal));
+  const auto type = FrameSequenceTrackerType::kUniversal;
+  auto key = std::make_pair(type, ThreadType::kUnknown);
+  DCHECK(frame_trackers_.contains(key));
   throughput_ukm_reporter_->ComputeUniversalThroughput(
-      frame_trackers_[FrameSequenceTrackerType::kUniversal]->metrics());
+      frame_trackers_[key]->metrics());
 }
 
 void FrameSequenceTrackerCollection::DestroyTrackers() {
@@ -261,8 +306,9 @@ void FrameSequenceTrackerCollection::DestroyTrackers() {
           throughput_ukm_reporter_->ComputeUniversalThroughput(metrics.get());
         metrics->ReportMetrics();
       }
-      if (metrics->HasDataLeftForReporting())
+      if (metrics->HasDataLeftForReporting()) {
         accumulated_metrics_[key] = std::move(metrics);
+      }
     }
   }
 
@@ -276,28 +322,40 @@ void FrameSequenceTrackerCollection::DestroyTrackers() {
 
 void FrameSequenceTrackerCollection::RecreateTrackers(
     const viz::BeginFrameArgs& args) {
-  std::vector<FrameSequenceTrackerType> recreate_trackers;
+  std::vector<std::pair<FrameSequenceTrackerType, ThreadType>>
+      recreate_trackers;
   for (const auto& tracker : frame_trackers_) {
     if (tracker.second->ShouldReportMetricsNow(args))
       recreate_trackers.push_back(tracker.first);
   }
 
-  for (const auto& tracker_type : recreate_trackers) {
+  for (const auto& key : recreate_trackers) {
+    DCHECK(frame_trackers_[key]);
+    auto tracker_type = key.first;
+    ThreadType thread_type = key.second;
+
     // StopSequence put the tracker in the |removal_trackers_|, which will
     // report its throughput data when its frame is presented.
     StopSequence(tracker_type);
+
     // The frame sequence is still active, so create a new tracker to keep
     // tracking this sequence.
-    StartSequence(tracker_type);
+    if (thread_type != FrameSequenceMetrics::ThreadType::kUnknown) {
+      DCHECK(IsScrollType(tracker_type));
+      StartScrollSequence(tracker_type, thread_type);
+    } else {
+      StartSequence(tracker_type);
+    }
   }
 }
 
 ActiveFrameSequenceTrackers
 FrameSequenceTrackerCollection::FrameSequenceTrackerActiveTypes() {
   ActiveFrameSequenceTrackers encoded_types = 0;
-  for (const auto& tracker : frame_trackers_) {
+  for (const auto& key : frame_trackers_) {
+    auto thread_type = key.first.first;
     encoded_types |= static_cast<ActiveFrameSequenceTrackers>(
-        1 << static_cast<unsigned>(tracker.first));
+        1 << static_cast<unsigned>(thread_type));
   }
   return encoded_types;
 }
@@ -307,13 +365,6 @@ FrameSequenceTrackerCollection::TakeCustomTrackerResults() {
   CustomTrackerResults results;
   results.swap(custom_tracker_results_);
   return results;
-}
-
-FrameSequenceTracker* FrameSequenceTrackerCollection::GetTrackerForTesting(
-    FrameSequenceTrackerType type) {
-  if (!frame_trackers_.contains(type))
-    return nullptr;
-  return frame_trackers_[type].get();
 }
 
 FrameSequenceTracker*

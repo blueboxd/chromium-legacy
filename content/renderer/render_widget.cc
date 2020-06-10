@@ -593,9 +593,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
-    IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDrop, OnDragTargetDrop)
-    IPC_MESSAGE_HANDLER(DragMsg_SourceEnded, OnDragSourceEnded)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -2180,21 +2178,6 @@ void RenderWidget::OnDragTargetDragEnter(
   Send(new DragHostMsg_UpdateDragCursor(routing_id(), operation));
 }
 
-void RenderWidget::OnDragTargetDragOver(const gfx::PointF& client_point,
-                                        const gfx::PointF& screen_point,
-                                        WebDragOperationsMask ops,
-                                        int key_modifiers) {
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  if (!frame_widget)
-    return;
-
-  WebDragOperation operation = frame_widget->DragTargetDragOver(
-      ConvertWindowPointToViewport(client_point), screen_point, ops,
-      key_modifiers);
-
-  Send(new DragHostMsg_UpdateDragCursor(routing_id(), operation));
-}
-
 void RenderWidget::OnDragTargetDrop(const DropData& drop_data,
                                     const gfx::PointF& client_point,
                                     const gfx::PointF& screen_point,
@@ -2206,17 +2189,6 @@ void RenderWidget::OnDragTargetDrop(const DropData& drop_data,
   frame_widget->DragTargetDrop(DropDataToWebDragData(drop_data),
                                ConvertWindowPointToViewport(client_point),
                                screen_point, key_modifiers);
-}
-
-void RenderWidget::OnDragSourceEnded(const gfx::PointF& client_point,
-                                     const gfx::PointF& screen_point,
-                                     WebDragOperation op) {
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  if (!frame_widget)
-    return;
-
-  frame_widget->DragSourceEndedAt(ConvertWindowPointToViewport(client_point),
-                                  screen_point, op);
 }
 
 ui::TextInputType RenderWidget::GetTextInputType() {

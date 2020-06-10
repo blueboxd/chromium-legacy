@@ -79,7 +79,7 @@ class WebAppIconManagerTest : public WebAppTest {
                                const std::vector<int>& sizes_px,
                                const std::vector<SkColor>& colors) {
     DCHECK_EQ(sizes_px.size(), colors.size());
-    std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons;
+    ShortcutsMenuIconsBitmaps shortcuts_menu_icons;
     for (size_t i = 0; i < sizes_px.size(); i++) {
       std::map<SquareSizePx, SkBitmap> shortcuts_menu_icon_map;
       std::vector<SquareSizePx> icon_sizes;
@@ -97,14 +97,12 @@ class WebAppIconManagerTest : public WebAppTest {
     run_loop.Run();
   }
 
-  std::vector<std::map<SquareSizePx, SkBitmap>> ReadAllShortcutsMenuIcons(
-      const AppId& app_id) {
-    std::vector<std::map<SquareSizePx, SkBitmap>> result;
+  ShortcutsMenuIconsBitmaps ReadAllShortcutsMenuIcons(const AppId& app_id) {
+    ShortcutsMenuIconsBitmaps result;
     base::RunLoop run_loop;
     icon_manager().ReadAllShortcutsMenuIcons(
         app_id, base::BindLambdaForTesting(
-                    [&](std::vector<std::map<SquareSizePx, SkBitmap>>
-                            shortcuts_menu_icons_map) {
+                    [&](ShortcutsMenuIconsBitmaps shortcuts_menu_icons_map) {
                       result = std::move(shortcuts_menu_icons_map);
                       run_loop.Quit();
                     }));
@@ -338,7 +336,7 @@ TEST_F(WebAppIconManagerTest, ReadShortcutsMenuIconsFailed) {
   controller().RegisterApp(std::move(web_app));
 
   // Request shortcuts menu icons which don't exist on disk.
-  std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons_map =
+  ShortcutsMenuIconsBitmaps shortcuts_menu_icons_map =
       ReadAllShortcutsMenuIcons(app_id);
   EXPECT_EQ(sizes_px.size(), shortcuts_menu_icons_map.size());
   for (const auto& icon_map : shortcuts_menu_icons_map) {
@@ -362,7 +360,7 @@ TEST_F(WebAppIconManagerTest, WriteAndReadAllShortcutsMenuIcons) {
 
   controller().RegisterApp(std::move(web_app));
 
-  std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons_map =
+  ShortcutsMenuIconsBitmaps shortcuts_menu_icons_map =
       ReadAllShortcutsMenuIcons(app_id);
   EXPECT_EQ(3u, shortcuts_menu_icons_map.size());
   EXPECT_EQ(sizes_px[0], shortcuts_menu_icons_map[0].begin()->first);
@@ -385,7 +383,7 @@ TEST_F(WebAppIconManagerTest, WriteShortcutsMenuIconsEmptyMap) {
 
   controller().RegisterApp(std::move(web_app));
 
-  std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons;
+  ShortcutsMenuIconsBitmaps shortcuts_menu_icons;
   base::RunLoop run_loop;
   icon_manager().WriteShortcutsMenuIconsData(
       app_id, std::move(shortcuts_menu_icons),
@@ -396,7 +394,7 @@ TEST_F(WebAppIconManagerTest, WriteShortcutsMenuIconsEmptyMap) {
   run_loop.Run();
 
   // Make sure that nothing was written to disk.
-  std::vector<std::map<SquareSizePx, SkBitmap>> shortcuts_menu_icons_map =
+  ShortcutsMenuIconsBitmaps shortcuts_menu_icons_map =
       ReadAllShortcutsMenuIcons(app_id);
   EXPECT_EQ(0u, shortcuts_menu_icons_map.size());
 }

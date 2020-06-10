@@ -48,3 +48,6 @@
 -ServiceProcessHostBrowserTest.ObserveCrash
 -UtilityProcessHostBrowserTest.LaunchProcessAndCrash
 -MediaRedirectTest.CanPlayHiddenWebm
+
+# crbug.com/954217
+-RenderFrameHostImplBrowserTest.VisibilityScrolledOutOfView

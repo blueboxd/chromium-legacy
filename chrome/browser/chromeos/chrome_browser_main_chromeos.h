@@ -17,6 +17,7 @@ class AssistantClientImpl;
 class AssistantStateClient;
 class ChromeKeyboardControllerClient;
 class ImageDownloaderImpl;
+class LacrosLoader;
 class SpokenFeedbackEventRewriterDelegate;
 
 namespace lock_screen_apps {
@@ -155,6 +156,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;
+  std::unique_ptr<LacrosLoader> lacros_loader_;
 
   std::unique_ptr<power::SmartChargingManager> smart_charging_manager_;
 

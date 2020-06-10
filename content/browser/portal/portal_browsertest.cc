@@ -42,6 +42,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/render_frame_host_test_support.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -1911,6 +1912,40 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CallCreateProxyAndAttachPortalTwice) {
       main_frame,
       JsReplace("document.querySelector('portal').src = $1", dummy_url));
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, rph_kill_waiter.Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, CrossSiteActivationReusingRVH) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  Portal* portal = CreatePortalToUrl(web_contents_impl, a_url);
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+  LeaveInPendingDeletionState(portal_contents->GetMainFrame());
+
+  // Navigate portal to b.com.
+  TestNavigationObserver b_nav_observer(portal_contents);
+  EXPECT_TRUE(ExecJs(portal_contents->GetMainFrame(),
+                     JsReplace("location.href = $1;", b_url)));
+  b_nav_observer.Wait();
+
+  // Navigate portal to a.com once activated.
+  EXPECT_TRUE(
+      ExecJs(portal_contents->GetMainFrame(),
+             JsReplace("window.addEventListener('portalactivate', (e) => {"
+                       "  location.href = $1;"
+                       "});",
+                       a_url)));
+
+  TestNavigationObserver nav_observer(portal_contents);
+  ExecuteScriptAsync(web_contents_impl->GetMainFrame(),
+                     "document.querySelector('portal').activate();");
+  nav_observer.Wait();
+  EXPECT_TRUE(nav_observer.last_navigation_succeeded());
 }
 
 class PortalOOPIFBrowserTest : public PortalBrowserTest {

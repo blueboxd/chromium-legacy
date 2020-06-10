@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uz">
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar hech qachon tarjima qilinmasin</translation>
+<translation id="124116460088058876">Boshqa tillar</translation>
+<translation id="1285320974508926690">Bu sayt hech qachon tarjima qilinmasin</translation>
+<translation id="290376772003165898">Sahifa <ph name="LANGUAGE" /> tilida emasmi?</translation>
+<translation id="5684874026226664614">Bu sahifani tarjima qilib bo‘lmadi.</translation>
+<translation id="6040143037577758943">Yopish</translation>
+<translation id="6831043979455480757">Tarjima</translation>
+<translation id="7243308994586599757">Parametrlar ekranning quyi qismiga yaqinroq joyda</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> tilidagi sahifalar doim tarjima qilinsin</translation>
 <translation id="8298278839890148234">Veb-brauzerdagi faoliyat</translation>
 </translationbundle>

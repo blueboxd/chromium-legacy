@@ -49,6 +49,7 @@ public class BottomSheetTest {
     private TestBottomSheetContent mLowPriorityContent;
     private TestBottomSheetContent mHighPriorityContent;
     private BottomSheetControllerImpl mSheetController;
+    private int mSuppressToken;
 
     @Before
     public void setUp() throws Exception {
@@ -199,7 +200,7 @@ public class BottomSheetTest {
         showContent(mHighPriorityContent, SheetState.HALF);
 
         runOnUiThreadBlocking(() -> {
-            mSheetController.suppressSheet(StateChangeReason.NONE);
+            mSuppressToken = mSheetController.suppressSheet(StateChangeReason.NONE);
             ((BottomSheet) mSheetController.getBottomSheetViewForTesting()).endAnimations();
         });
 
@@ -207,7 +208,7 @@ public class BottomSheetTest {
                 mSheetController.getSheetState());
 
         runOnUiThreadBlocking(() -> {
-            mSheetController.unsuppressSheet();
+            mSheetController.unsuppressSheet(mSuppressToken);
             ((BottomSheet) mSheetController.getBottomSheetViewForTesting()).endAnimations();
         });
 
@@ -221,7 +222,7 @@ public class BottomSheetTest {
         showContent(mHighPriorityContent, SheetState.HALF);
 
         runOnUiThreadBlocking(() -> {
-            mSheetController.suppressSheet(StateChangeReason.NONE);
+            mSuppressToken = mSheetController.suppressSheet(StateChangeReason.NONE);
             ((BottomSheet) mSheetController.getBottomSheetViewForTesting()).endAnimations();
         });
 
@@ -233,7 +234,7 @@ public class BottomSheetTest {
         showContent(mLowPriorityContent, SheetState.PEEK);
 
         runOnUiThreadBlocking(() -> {
-            mSheetController.unsuppressSheet();
+            mSheetController.unsuppressSheet(mSuppressToken);
             ((BottomSheet) mSheetController.getBottomSheetViewForTesting()).endAnimations();
         });
 

@@ -310,6 +310,16 @@ class ImeObserverChromeOS : public ui::ImeObserver {
         input_ime::OnAssistiveWindowButtonClicked::kEventName, std::move(args));
   }
 
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override {
+    std::unique_ptr<base::ListValue> args(
+        input_method_private::OnSuggestionsChanged::Create(suggestions));
+    DispatchEventToExtension(
+        extensions::events::INPUT_IME_ON_SUGGESTIONS_CHANGED,
+        input_method_private::OnSuggestionsChanged::kEventName,
+        std::move(args));
+  }
+
  private:
   // ui::ImeObserver overrides.
   void DispatchEventToExtension(

@@ -23,6 +23,7 @@ struct CORE_EXPORT NGTextOffset {
   }
 
   void AssertValid() const { DCHECK_GE(end, start); }
+  void AssertNotEmpty() const { DCHECK_GT(end, start); }
 
   unsigned start;
   unsigned end;

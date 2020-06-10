@@ -25,16 +25,6 @@ class FuzzyTokenizedStringMatch {
   FuzzyTokenizedStringMatch();
   ~FuzzyTokenizedStringMatch();
 
-  // Check if the query only contains first characters of the text,
-  // e.g. "coc" is a match of "Clash of Clan". Range of the score is [0, 1].
-  static double FirstCharacterMatch(const TokenizedString& query,
-                                    const TokenizedString& text);
-
-  // Check if tokens of query are prefixes of text's tokens. Range of score is
-  // [0, 1].
-  static double PrefixMatch(const TokenizedString& query,
-                            const TokenizedString& text);
-
   // TokenSetRatio takes two sets of tokens, finds their intersection and
   // differences. From the intersection and differences, it rewrites the |query|
   // and |text| and find the similarity ratio between them. This function
@@ -75,7 +65,8 @@ class FuzzyTokenizedStringMatch {
                               bool use_edit_distance,
                               double num_matching_blocks_penalty);
   // Since prefix match should always be favored over other matches, this
-  // function is dedicated to calculate a prefix match score in range of [0, 1].
+  // function is dedicated to calculate a prefix match score in range of [0, 1]
+  // using PrefixMatcher class.
   // This score has two components: first character match and whole prefix
   // match.
   static double PrefixMatcher(const TokenizedString& query,

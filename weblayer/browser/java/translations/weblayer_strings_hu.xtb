@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1068672505746868501">Soha ne fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
+<translation id="124116460088058876">További nyelvek…</translation>
+<translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
+<translation id="290376772003165898">Az oldal nem <ph name="LANGUAGE" /> nyelvű?</translation>
+<translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
+<translation id="6040143037577758943">Bezárás</translation>
+<translation id="6831043979455480757">Fordítás</translation>
+<translation id="7243308994586599757">A beállítások a képernyő alsó részén találhatók</translation>
+<translation id="773466115871691567">Mindig fordítsa le a(z) <ph name="SOURCE_LANGUAGE" /> nyelvű oldalakat</translation>
 <translation id="8298278839890148234">Böngészős tevékenységek</translation>
 </translationbundle>

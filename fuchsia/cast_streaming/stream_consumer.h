@@ -37,7 +37,9 @@ class StreamConsumer : public openscreen::cast::Receiver::Consumer {
 
   openscreen::cast::Receiver* const receiver_;
   const FrameReceivedCB frame_received_cb_;
-  base::TimeDelta last_playout_time_;
+
+  // Initialized to a negative value so the first frame is not dropped.
+  base::TimeDelta last_playout_time_ = base::TimeDelta::Min();
 };
 
 }  // namespace cast_streaming

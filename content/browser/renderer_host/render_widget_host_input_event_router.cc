@@ -626,8 +626,8 @@ void RenderWidgetHostInputEventRouter::DispatchMouseEvent(
     auto hit_test_result =
         FindViewAtLocation(root_view, mouse_event.PositionInWidget(),
                            viz::EventSource::MOUSE, &transformed_point);
-    // TODO(kenrb, yigu): This is skipped if the HitTestResult is requiring an
-    // asynchronous hit test to the renderer process, because it might mean
+    // TODO(crbug.com/893101): This is skipped if the HitTestResult is requiring
+    // an asynchronous hit test to the renderer process, because it might mean
     // sending extra MouseMoves to renderers that don't need the event updates
     // which is a worse outcome than the cursor being delayed in updating.
     // An asynchronous hit test can be added here to fix the problem.

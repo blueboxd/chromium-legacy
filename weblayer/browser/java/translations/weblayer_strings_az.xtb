@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
+<translation id="1068672505746868501">Heç vaxt <ph name="SOURCE_LANGUAGE" /> dilində olan səhifələri tərcümə etməyin</translation>
+<translation id="124116460088058876">Digər dillər</translation>
+<translation id="1285320974508926690">Bu saytı heç vaxt tərcümə etməyin</translation>
+<translation id="290376772003165898">Səhifə <ph name="LANGUAGE" /> dilində deyil?</translation>
+<translation id="5684874026226664614">Bu səhifə tərcümə edilə bilmir. Niyəsini bilmirik.</translation>
+<translation id="6040143037577758943">Qapat</translation>
+<translation id="6831043979455480757">Tərcümə et</translation>
+<translation id="7243308994586599757">Seçənəklər ekranın aşağısına yaxın yerdə əlçatandır</translation>
+<translation id="773466115871691567">Səhifələri həmişə <ph name="SOURCE_LANGUAGE" /> dilinə tərcümə edin</translation>
 <translation id="8298278839890148234">Veb axtarış fəaliyyəti</translation>
 </translationbundle>

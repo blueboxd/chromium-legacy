@@ -5,6 +5,8 @@
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> changed to <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Click confirm to keep changes. The previous settings will be restored in <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this PIN code on that device: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Stylus battery is low</translation>
+<translation id="1036672894875463507">I'm your Google Assistant, here to help you throughout your day!
+Here are some things that you can try to get started.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> added</translation>
 <translation id="1056775291175587022">No networks</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Sign out all</translation>
 <translation id="2277103315734023688">Seek forwards</translation>
 <translation id="2292698582925480719">Display scale</translation>
+<translation id="229397294990920565">Mobile data is turning off…</translation>
 <translation id="2295777434187870477">Mic is on, toggling will mute input.</translation>
 <translation id="2298170939937364391">Full-screen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.</translation>
 <translation id="2302092602801625023">This account is managed by Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Magnifying glass</translation>
 <translation id="4351433414020964307">Assistant is loading...</translation>
 <translation id="4356930093361201197">high-contrast mode</translation>
+<translation id="4368583494516669646">Good night <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Cast settings</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="4379531060876907730">These are your stylus tools</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Hide password</translation>
 <translation id="4570957409596482333">Select-to-Speak button</translation>
+<translation id="4577274620589681794">Time's up · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Stop casting on an unknown receiver</translation>
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Scroll up</translation>
 <translation id="4961318399572185831">Cast screen</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />h <ph name="MINUTES" />m <ph name="SECONDS" />s</translation>
+<translation id="4970352680959471247">Good evening <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Time is up</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> connected to a new phone</translation>
 <translation id="5035389544768382859">Confirm display configuration</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">All available users have already been added to this session.</translation>
 <translation id="54609108002486618">Managed</translation>
 <translation id="5465662442746197494">Need help?</translation>
+<translation id="5485091064403948243">Good morning <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Your administrator is rolling back your device. All data will be deleted when the device is restarted.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Exiting session</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">To unlock the device, enter your Family Link parent access code</translation>
 <translation id="742594950370306541">Camera is in use.</translation>
 <translation id="743058460480092004">Camera and microphone are in use.</translation>
+<translation id="7436182601308224670">Good afternoon <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Please touch the sensor</translation>
 <translation id="7497767806359279797">Choose language and keyboard</translation>
 <translation id="7526573455193969409">Network may be monitored</translation>

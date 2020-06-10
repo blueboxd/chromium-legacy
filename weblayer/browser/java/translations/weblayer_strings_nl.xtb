@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1068672505746868501">Pagina's in het <ph name="SOURCE_LANGUAGE" /> nooit vertalen</translation>
+<translation id="124116460088058876">Meer talen</translation>
+<translation id="1285320974508926690">Deze site nooit vertalen</translation>
+<translation id="290376772003165898">Is deze pagina niet in het <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
+<translation id="6040143037577758943">Sluiten</translation>
+<translation id="6831043979455480757">Vertalen</translation>
+<translation id="7243308994586599757">Opties beschikbaar onder aan het scherm</translation>
+<translation id="773466115871691567">Pagina's in het <ph name="SOURCE_LANGUAGE" /> altijd vertalen</translation>
 <translation id="8298278839890148234">Webbrowseractivititeit</translation>
 </translationbundle>

@@ -130,12 +130,12 @@ bool HTMLPortalElement::CheckPortalsEnabledOrWarn() const {
   if (RuntimeEnabledFeatures::PortalsEnabled(&document))
     return true;
 
-  // TODO(jbroman): Consider linking to origin trial info if applicable.
   document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::blink::ConsoleMessageSource::kRendering,
       mojom::blink::ConsoleMessageLevel::kWarning,
       "An operation was prevented because a <portal> was moved to a document "
-      "where it is not enabled."));
+      "where it is not enabled. See "
+      "https://www.chromium.org/blink/origin-trials/portals."));
   return false;
 }
 
@@ -145,11 +145,11 @@ bool HTMLPortalElement::CheckPortalsEnabledOrThrow(
   if (RuntimeEnabledFeatures::PortalsEnabled(&document))
     return true;
 
-  // TODO(jbroman): Consider linking to origin trial info if applicable.
   exception_state.ThrowDOMException(
       DOMExceptionCode::kNotSupportedError,
       "An operation was prevented because a <portal> was moved to a document "
-      "where it is not enabled.");
+      "where it is not enabled. See "
+      "https://www.chromium.org/blink/origin-trials/portals.");
   return false;
 }
 

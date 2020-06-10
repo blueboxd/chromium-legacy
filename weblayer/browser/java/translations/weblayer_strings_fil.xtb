@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1068672505746868501">Huwag kailanman isalin ang mga page sa <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Higit pang wika</translation>
+<translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
+<translation id="290376772003165898">Hindi nakasalin ang page sa <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Oops. Hindi maisalin ang pahinang ito.</translation>
+<translation id="6040143037577758943">Isara</translation>
+<translation id="6831043979455480757">Isalin</translation>
+<translation id="7243308994586599757">May mga opsyon malapit sa ibaba ng screen</translation>
+<translation id="773466115871691567">Palaging isalin ang mga page sa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Aktibidad ng web browser</translation>
 </translationbundle>

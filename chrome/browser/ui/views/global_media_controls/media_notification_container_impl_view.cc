@@ -217,7 +217,12 @@ void MediaNotificationContainerImplView::OnMediaSessionInfoChanged(
                           media_session::mojom::MediaPlaybackState::kPlaying;
 }
 
-void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged() {
+void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged(
+    const media_session::MediaMetadata& metadata) {
+  title_ = metadata.title;
+  if (overlay_)
+    overlay_->UpdateTitle(title_);
+
   for (auto& observer : observers_)
     observer.OnContainerMetadataChanged();
 }
@@ -303,6 +308,17 @@ void MediaNotificationContainerImplView::PopOut() {
 
   dragged_out_ = true;
   SetPosition(gfx::Point(0, 0));
+}
+
+void MediaNotificationContainerImplView::OnOverlayNotificationShown(
+    OverlayMediaNotificationView* overlay) {
+  // We can hold |overlay_| indefinitely since |overlay_| owns us.
+  DCHECK(!overlay_);
+  overlay_ = overlay;
+}
+
+const base::string16& MediaNotificationContainerImplView::GetTitle() {
+  return title_;
 }
 
 views::ImageButton*

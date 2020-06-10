@@ -68,7 +68,7 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
     if (resource_request.Url().ProtocolIs("blob")) {
       blob_url_token_ = base::MakeRefCounted<
           base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>();
-      origin_document->GetPublicURLManager().Resolve(
+      origin_document->GetExecutionContext()->GetPublicURLManager().Resolve(
           resource_request.Url(),
           blob_url_token_->data.BindNewPipeAndPassReceiver());
     }

@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1068672505746868501">No tradueixis mai les pàgines en <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Més idiomes</translation>
+<translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
+<translation id="290376772003165898">La pàgina no està en <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
+<translation id="6040143037577758943">Tanca</translation>
+<translation id="6831043979455480757">Tradueix</translation>
+<translation id="7243308994586599757">Opcions disponibles a la part inferior de la pantalla</translation>
+<translation id="773466115871691567">Tradueix sempre les pàgines en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Activitat del navegador web</translation>
 </translationbundle>

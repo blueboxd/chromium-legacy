@@ -77,6 +77,9 @@ gfx::Size AmbientContainerView::CalculatePreferredSize() const {
 }
 
 void AmbientContainerView::Layout() {
+  if (photo_view_)
+    photo_view_->SetBoundsRect(GetLocalBounds());
+
   if (ambient_assistant_container_view_) {
     // The view has the same width as the container view and the widget.
     int width = GetLocalBounds().width();
@@ -84,9 +87,8 @@ void AmbientContainerView::Layout() {
         0, 0, width, kAssistantContainerViewPreferredHeightDip);
   }
 
-  if (glanceable_info_view_) {
+  if (glanceable_info_view_)
     LayoutGlanceableInfoView();
-  }
 }
 
 void AmbientContainerView::FadeOutPhotoView() {
@@ -100,7 +102,6 @@ void AmbientContainerView::FadeOutPhotoView() {
 }
 
 void AmbientContainerView::Init() {
-  CreateWidget(this);
   // TODO(b/139954108): Choose a better dark mode theme color.
   SetBackground(views::CreateSolidBackground(SK_ColorBLACK));
 
@@ -112,6 +113,8 @@ void AmbientContainerView::Init() {
 
   glanceable_info_view_ =
       AddChildView(std::make_unique<GlanceableInfoView>(delegate_));
+
+  CreateWidget(this);
 }
 
 void AmbientContainerView::LayoutGlanceableInfoView() {

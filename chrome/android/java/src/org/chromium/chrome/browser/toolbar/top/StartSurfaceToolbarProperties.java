@@ -59,8 +59,8 @@ class StartSurfaceToolbarProperties {
      * This is a hacky workaround for {@link IncognitoSwitchProperties#IS_VISIBLE}.
      * TODO(crbug.com/1042997): control the visibility through IncognitoSwitchCoordinator.
      */
-    public static final PropertyModel.WritableBooleanPropertyKey INCOGNITO_SWITCHER_VISIBLE =
-            new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel.WritableObjectPropertyKey INCOGNITO_SWITCHER_VISIBLE =
+            new PropertyModel.WritableObjectPropertyKey(true);
     /**
      * When set to true, move New Tab Button to the start of the toolbar, and move the Incognito
      * switcher to the center. Can only set to true.

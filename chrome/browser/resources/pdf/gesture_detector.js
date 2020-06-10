@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   type: string,
+ *   center: !{x: number, y: number},
+ *   direction: (string|undefined),
+ *   scaleRatio: (?number|undefined),
+ *   startScaleRatio: (?number|undefined),
+ * }}
+ */
+export let PinchEvent;
+
 // A class that listens for touch events and produces events when these
 // touches form gestures (e.g. pinching).
 export class GestureDetector {
@@ -26,6 +37,8 @@ export class GestureDetector {
         'wheel',
         /** @type {function(!Event)} */ (this.onWheel_.bind(this)),
         {passive: false});
+    document.addEventListener(
+        'contextmenu', e => this.handleContextMenuEvent_(e));
 
     this.pinchStartEvent_ = null;
     this.lastTouchTouchesCount_ = 0;
@@ -65,14 +78,17 @@ export class GestureDetector {
     }
   }
 
-  /** @return {boolean} True if the last touch start was a two finger touch. */
+  /**
+   * Public for tests.
+   * @return {boolean} True if the last touch start was a two finger touch.
+   */
   wasTwoFingerTouch() {
     return this.lastTouchTouchesCount_ === 2;
   }
 
   /**
    * Call the relevant listeners with the given |pinchEvent|.
-   * @param {!Object} pinchEvent The event to notify the listeners of.
+   * @param {!PinchEvent} pinchEvent The event to notify the listeners of.
    * @private
    */
   notify_(pinchEvent) {
@@ -199,6 +215,22 @@ export class GestureDetector {
       this.wheelEndTimeout_ = null;
       this.accumulatedWheelScale_ = null;
     }.bind(this), gestureEndDelayMs, endEvent);
+  }
+
+  /**
+   * @param {!Event} e The context menu event
+   * @private
+   */
+  handleContextMenuEvent_(e) {
+    // Stop Chrome from popping up the context menu on long press. We need to
+    // make sure the start event did not have 2 touches because we don't want
+    // to block two finger tap opening the context menu. We check for
+    // firesTouchEvents in order to not block the context menu on right click.
+    const capabilities =
+        /** @type {{ sourceCapabilities: Object }} */ (e).sourceCapabilities;
+    if (capabilities.firesTouchEvents && !this.wasTwoFingerTouch()) {
+      e.preventDefault();
+    }
   }
 
   /**

@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="af">
+<translation id="1068672505746868501">Moet nooit bladsye in <ph name="SOURCE_LANGUAGE" /> vertaal nie</translation>
+<translation id="124116460088058876">Meer tale</translation>
+<translation id="1285320974508926690">Moet nooit hierdie werf vertaal nie</translation>
+<translation id="290376772003165898">Bladsy is nie in <ph name="LANGUAGE" /> nie?</translation>
+<translation id="5684874026226664614">Oeps. Hierdie bladsy kon nie vertaal word nie.</translation>
+<translation id="6040143037577758943">Maak toe</translation>
+<translation id="6831043979455480757">Vertaal</translation>
+<translation id="7243308994586599757">Opsies is naby die onderkant van die skerm beskikbaar</translation>
+<translation id="773466115871691567">Vertaal altyd bladsye in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Webblaaieraktiwiteit</translation>
 </translationbundle>

@@ -94,6 +94,7 @@ suite('TabList', () => {
   }
 
   setup(() => {
+    document.documentElement.dir = 'ltr';
     document.body.innerHTML = '';
     document.body.style.margin = 0;
 
@@ -270,7 +271,7 @@ suite('TabList', () => {
    * @param {!Element} element
    * @param {number} scale
    */
-  function testPlaceTabElementAnimation(element, scale) {
+  function testPlaceTabElementAnimationParams(element, scale) {
     const animations = element.getAnimations();
 
     // TODO(crbug.com/1090645): Remove logging once the test no longer flakes.
@@ -297,35 +298,47 @@ suite('TabList', () => {
     assertEquals('translateX(0px)', keyframes[1].transform);
   }
 
-  test('PlaceTabElementAnimatesTabMovedLeft', async () => {
+  /**
+   * This function should be called once per test since the animations finishing
+   * and being included in the getAnimations() calls can cause flaky tests.
+   * @param {number} indexToMove
+   * @param {number} newIndex
+   * @param {number} direction, the direction the moved tab should animate.
+   *     +1 if moving right, -1 if moving left
+   */
+  async function testPlaceTabElementAnimation(
+      indexToMove, newIndex, direction) {
     await tabList.animationPromises;
     let unpinnedTabs = getUnpinnedTabs();
 
-    // Move the last tab to the first tab to test right to left animations.
-    const movedTab = unpinnedTabs[unpinnedTabs.length - 1];
-    tabList.placeTabElement(movedTab, 0, false, undefined);
-    testPlaceTabElementAnimation(movedTab, unpinnedTabs.length - 1);
+    const movedTab = unpinnedTabs[indexToMove];
+    tabList.placeTabElement(movedTab, newIndex, false, undefined);
+    testPlaceTabElementAnimationParams(
+        movedTab, -1 * direction * (unpinnedTabs.length - 1));
 
-    // All other tabs should animate a space of 1 TabElement to the right.
     Array.from(unpinnedTabs)
         .filter(tabElement => tabElement !== movedTab)
-        .forEach(tabElement => testPlaceTabElementAnimation(tabElement, -1));
+        .forEach(
+            tabElement =>
+                testPlaceTabElementAnimationParams(tabElement, direction));
+  }
+
+  test('PlaceTabElementAnimatesTabMovedTowardsStart', async () => {
+    await testPlaceTabElementAnimation(tabs.length - 1, 0, -1);
   });
 
-  test('PlaceTabElementAnimatesTabMovedRight', async () => {
-    await tabList.animationPromises;
-    let unpinnedTabs = getUnpinnedTabs();
+  test('PlaceTabElementAnimatesTabMovedTowardsStartRTL', async () => {
+    document.documentElement.dir = 'rtl';
+    await testPlaceTabElementAnimation(tabs.length - 1, 0, 1);
+  });
 
-    // Move the first tab to the last tab to test left to right animations.
-    const movedTab = unpinnedTabs[0];
-    tabList.placeTabElement(
-        movedTab, unpinnedTabs.length - 1, false, undefined);
-    testPlaceTabElementAnimation(movedTab, -1 * (unpinnedTabs.length - 1));
+  test('PlaceTabElementAnimatesTabMovedTowardsEnd', async () => {
+    await testPlaceTabElementAnimation(0, tabs.length - 1, 1);
+  });
 
-    // All other tabs should animate a space of 1 TabElement to the left.
-    Array.from(unpinnedTabs)
-        .filter(tabElement => tabElement !== movedTab)
-        .forEach(tabElement => testPlaceTabElementAnimation(tabElement, 1));
+  test('PlaceTabElementAnimatesTabMovedTowardsEndRTL', async () => {
+    document.documentElement.dir = 'rtl';
+    await testPlaceTabElementAnimation(0, tabs.length - 1, -1);
   });
 
   test('PlacesTabGroupElement', () => {

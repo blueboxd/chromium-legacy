@@ -99,7 +99,7 @@ PreviewsAndroidBridge::GetPreviewsType(
   if (!tab_helper)
     return base::android::ScopedJavaLocalRef<jstring>();
 
-  previews::PreviewsUserData* data = tab_helper->previews_user_data();
+  previews::PreviewsUserData* data = tab_helper->GetPreviewsUserData();
   if (!data || !data->HasCommittedPreviewsType())
     return base::android::ScopedJavaLocalRef<jstring>();
 

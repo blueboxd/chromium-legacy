@@ -148,7 +148,11 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   }
 
   void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                      zx::channel token) override {
+                                      zx::channel token,
+                                      gfx::BufferFormat format,
+                                      gfx::BufferUsage usage) override {
+    EXPECT_EQ(format, gfx::BufferFormat::YUV_420_BIPLANAR);
+    EXPECT_EQ(usage, gfx::BufferUsage::GPU_READ);
     std::unique_ptr<TestBufferCollection>& collection =
         sysmem_buffer_collections_[id];
     EXPECT_FALSE(collection);
@@ -166,6 +170,10 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   gpu::SyncToken GenUnverifiedSyncToken() override {
     return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO,
                           gpu::CommandBufferId(33), 1);
+  }
+
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    NOTREACHED();
   }
 
   void Flush() override { NOTREACHED(); }

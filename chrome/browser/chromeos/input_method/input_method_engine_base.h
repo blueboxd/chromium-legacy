@@ -125,6 +125,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                                      const std::string& menu_id) = 0;
 
     virtual void OnScreenProjectionChanged(bool is_projected) = 0;
+
+    // Called when the suggestions to display have changed.
+    virtual void OnSuggestionsChanged(
+        const std::vector<std::string>& suggestions) = 0;
   };
 
   InputMethodEngineBase();

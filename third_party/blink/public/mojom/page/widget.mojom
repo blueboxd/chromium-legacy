@@ -45,9 +45,21 @@ interface FrameWidget {
   // coordinates.
   // |screen_point| is the absolute position of the mouse pointer.
 
+  // Notifies the Widget of a drag over operation.
+  DragTargetDragOver(gfx.mojom.PointF point_in_viewport,
+                     gfx.mojom.PointF screen_point,
+                     AllowedDragOperations operations_allowed,
+                     uint32 key_modifiers)
+      => (DragOperation operation);
+
   // Notifies the Widget of a drag leave operation.
   DragTargetDragLeave(gfx.mojom.PointF point_in_viewport,
                       gfx.mojom.PointF screen_point);
+
+  // Notifies the Widget that a drag has terminated.
+  DragSourceEndedAt(gfx.mojom.PointF point_in_viewport,
+                    gfx.mojom.PointF screen_point,
+                    DragOperation drag_operation);
 
   // Notifies the Widget that the system drag and drop operation has ended.
   DragSourceSystemDragEnded();

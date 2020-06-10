@@ -101,6 +101,7 @@
 <translation id="4472417192667361414">Configuració del sistema i de la pantalla</translation>
 <translation id="449214506787633354"><ph name="CTRL" /> i, després, <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Consulta l'aplicació d'ajuda de les tecles de drecera</translation>
+<translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" /> o <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /></translation>
 <translation id="4628718545549558538">Obre l'àrea d'estat (on es mostra la imatge del compte)</translation>
 <translation id="4642092649622328492">Fes una captura de pantalla parcial</translation>
 <translation id="4698850295812410683">Mostra les eines del llapis òptic</translation>

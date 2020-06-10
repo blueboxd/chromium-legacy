@@ -120,6 +120,10 @@ class TestObserver : public InputMethodEngineBase::Observer {
     calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;
   }
   void OnScreenProjectionChanged(bool is_projected) override {}
+
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override {}
+
   void OnReset(const std::string& engine_id) override {
     calls_bitmap_ |= RESET;
     engine_id_ = engine_id;

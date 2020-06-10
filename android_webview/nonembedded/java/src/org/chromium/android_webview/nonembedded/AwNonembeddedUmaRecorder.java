@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.android_webview.common.services.IMetricsBridgeService;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord;
+import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.Metadata;
 import org.chromium.android_webview.proto.MetricsBridgeRecords.HistogramRecord.RecordType;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -39,15 +40,15 @@ public class AwNonembeddedUmaRecorder implements UmaRecorder {
     @VisibleForTesting
     public static final int MAX_PENDING_RECORDS_COUNT = 512;
 
-    private final String mServiceName;
+    private final RecordingDelegate mRecordingDelegate;
 
     @VisibleForTesting
-    public AwNonembeddedUmaRecorder(String serviceName) {
-        mServiceName = serviceName;
+    public AwNonembeddedUmaRecorder(RecordingDelegate delegate) {
+        mRecordingDelegate = delegate;
     }
 
     public AwNonembeddedUmaRecorder() {
-        this(ServiceNames.METRICS_BRIDGE_SERVICE);
+        this(new RecordingDelegate());
     }
 
     /** Records a single sample of a boolean histogram. */
@@ -211,7 +212,7 @@ public class AwNonembeddedUmaRecorder implements UmaRecorder {
 
         final Context appContext = ContextUtils.getApplicationContext();
         final Intent intent = new Intent();
-        intent.setClassName(appContext, mServiceName);
+        intent.setClassName(appContext, mRecordingDelegate.getServiceName());
         mIsBound = appContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         if (!mIsBound) {
             Log.w(TAG, "Could not bind to MetricsBridgeService " + intent);
@@ -223,6 +224,8 @@ public class AwNonembeddedUmaRecorder implements UmaRecorder {
      * connection isn't ready yet. Bind the service only once on the first record to arrive.
      */
     private void recordHistogram(HistogramRecord record) {
+        record = mRecordingDelegate.addMetadata(record);
+
         synchronized (mLock) {
             if (mServiceStub != null) {
                 sendToServiceLocked(record);
@@ -235,6 +238,32 @@ public class AwNonembeddedUmaRecorder implements UmaRecorder {
             } else {
                 Log.w(TAG, "Number of pending records has reached max capacity, dropping record");
             }
+        }
+    }
+
+    /**
+     * A delegate class that allows customizing some actions for testing.
+     */
+    @VisibleForTesting
+    public static class RecordingDelegate {
+        /**
+         * @return metrics service name that the Recorder will attempt connecting to it to record
+         *         metrics.
+         */
+        public String getServiceName() {
+            return ServiceNames.METRICS_BRIDGE_SERVICE;
+        }
+
+        /**
+         * Add {@link Metadata} to {@link HistogramRecord} class.
+         * Metadata consists of: the time when the histogram is received by the recorder.
+         *
+         * @return {@code record} after adding the metadata to it.
+         */
+        public HistogramRecord addMetadata(HistogramRecord record) {
+            long millis = System.currentTimeMillis();
+            Metadata metadata = Metadata.newBuilder().setTimeRecorded(millis).build();
+            return record.toBuilder().setMetadata(metadata).build();
         }
     }
 }

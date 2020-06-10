@@ -310,7 +310,9 @@ void SharedImageInterfaceInProcess::PresentSwapChain(
 #if defined(OS_FUCHSIA)
 void SharedImageInterfaceInProcess::RegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
-    zx::channel token) {
+    zx::channel token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   NOTREACHED();
 }
 void SharedImageInterfaceInProcess::ReleaseSysmemBufferCollection(
@@ -385,6 +387,16 @@ void SharedImageInterfaceInProcess::DestroySharedImageOnGpuThread(
   }
 }
 
+void SharedImageInterfaceInProcess::WaitSyncTokenOnGpuThread(
+    const SyncToken& sync_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  if (!MakeContextCurrent())
+    return;
+
+  mailbox_manager_->PushTextureUpdates(sync_token);
+  sync_point_client_state_->ReleaseFenceSync(sync_token.release_count());
+}
+
 SyncToken SharedImageInterfaceInProcess::GenUnverifiedSyncToken() {
   base::AutoLock lock(lock_);
   return MakeSyncToken(next_fence_sync_release_ - 1);
@@ -395,6 +407,16 @@ SyncToken SharedImageInterfaceInProcess::GenVerifiedSyncToken() {
   SyncToken sync_token = MakeSyncToken(next_fence_sync_release_ - 1);
   sync_token.SetVerifyFlush();
   return sync_token;
+}
+
+void SharedImageInterfaceInProcess::WaitSyncToken(const SyncToken& sync_token) {
+  base::AutoLock lock(lock_);
+
+  ScheduleGpuTask(
+      base::BindOnce(&SharedImageInterfaceInProcess::WaitSyncTokenOnGpuThread,
+                     base::Unretained(this),
+                     MakeSyncToken(next_fence_sync_release_++)),
+      {sync_token});
 }
 
 void SharedImageInterfaceInProcess::Flush() {

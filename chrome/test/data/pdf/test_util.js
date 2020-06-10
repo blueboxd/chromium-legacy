@@ -152,8 +152,11 @@ export function createBookmarksForTest() {
  */
 export function getZoomableViewport(
     window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight) {
+  const dummyContent = document.createElement('div');
+  document.body.appendChild(dummyContent);
   const viewport = new Viewport(
-      window, sizer, scrollbarWidth, defaultZoom, topToolbarHeight);
+      window, sizer, dummyContent, scrollbarWidth, defaultZoom,
+      topToolbarHeight);
   viewport.setZoomFactorRange([0.25, 0.4, 0.5, 1, 2]);
   return viewport;
 }

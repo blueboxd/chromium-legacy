@@ -10,6 +10,7 @@ source_set("privacy_budget") {
     "identifiability_study_participation.h",
     "identifiable_surface.h",
     "identifiable_token.h",
+    "identifiable_token_builder.h",
   ]
 
   deps = [

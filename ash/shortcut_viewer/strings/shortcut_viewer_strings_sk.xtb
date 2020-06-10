@@ -101,6 +101,7 @@
 <translation id="4472417192667361414">Nastavenia systému a zobrazenia</translation>
 <translation id="449214506787633354"><ph name="CTRL" />, potom <ph name="LEFT" /> alebo <ph name="RIGHT" /> alebo <ph name="UP" /> alebo <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Zobrazenie pomocníka pre klávesové skratky</translation>
+<translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" /> alebo <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /></translation>
 <translation id="4628718545549558538">Otvorenie stavovej oblasti (kde je obrázok vášho účtu)</translation>
 <translation id="4642092649622328492">Vytvorenie čiastočnej snímky obrazovky</translation>
 <translation id="4698850295812410683">Zobrazenie nástrojov dotykového pera</translation>
@@ -157,7 +158,7 @@
 <translation id="6740781404993465795">Výber ďalšieho slova alebo písmena</translation>
 <translation id="6755851152783057058">Prepnutie na poslednú použitú metódu vstupu</translation>
 <translation id="6760706756348334449">Zníženie hlasitosti</translation>
-<translation id="6941333068993625698">Odoslanie spätnej väzby</translation>
+<translation id="6941333068993625698">Spätná väzba</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="7020813747703216897">Nenašli sa žiadne zodpovedajúce výsledky</translation>
 <translation id="7025325401470358758">Nasledujúci panel</translation>

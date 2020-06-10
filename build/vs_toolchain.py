@@ -249,7 +249,8 @@ def _SortByHighestVersionNumberFirst(list_of_str_versions):
 
   list_of_str_versions.sort(key=to_number_sequence, reverse=True)
 
-def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
+
+def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, suffix):
   """Copy both the msvcp and vccorlib runtime DLLs, only if the target doesn't
   exist, but the target directory does exist."""
   if target_cpu == 'arm64':
@@ -267,8 +268,11 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
          .format(MSVC_TOOLSET_VERSION[GetVisualStudioVersion()])
       source_dir = os.path.join(vc_redist_root, 'debug_nonredist',
                                 'arm64', vc_toolset_dir)
-  for file_part in ('msvcp', 'vccorlib', 'vcruntime'):
-    dll = dll_pattern % file_part
+  file_parts = ('msvcp140', 'vccorlib140', 'vcruntime140')
+  if target_cpu == 'x64':
+    file_parts = file_parts + ('vcruntime140_1', )
+  for file_part in file_parts:
+    dll = file_part + suffix
     target = os.path.join(target_dir, dll)
     source = os.path.join(source_dir, dll)
     _CopyRuntimeImpl(target, source)
@@ -354,8 +358,7 @@ def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
   directory does exist. Handles VS 2015, 2017 and 2019."""
   suffix = 'd.dll' if debug else '.dll'
   # VS 2015, 2017 and 2019 use the same CRT DLLs.
-  _CopyUCRTRuntime(target_dir, source_dir, target_cpu, '%s140' + suffix,
-                    suffix)
+  _CopyUCRTRuntime(target_dir, source_dir, target_cpu, suffix)
 
 
 def CopyDlls(target_dir, configuration, target_cpu):

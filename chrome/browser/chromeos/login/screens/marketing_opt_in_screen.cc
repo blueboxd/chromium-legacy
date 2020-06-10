@@ -39,53 +39,14 @@
 namespace chromeos {
 
 namespace {
-MarketingOptInScreen::Country GetCountryFromTimezone(
-    const std::string& timezone_id) {
-  const size_t buf_size = 8;
-  char region[buf_size];
-  UErrorCode error = U_ZERO_ERROR;
-  icu::UnicodeString str(timezone_id.c_str(), timezone_id.size());
-  icu::TimeZone::getRegion(str, region, buf_size, error);
-  if (error != 0) {
-    LOG(WARNING) << "Could not determine country code. ";
-    return MarketingOptInScreen::Country::OTHER;
-  }
-  const std::string region_str(region);
-  if (region_str == "US") {
-    return MarketingOptInScreen::Country::US;
-  }
-  if (region_str == "CA") {
-    return MarketingOptInScreen::Country::CA;
-  }
-  if (region_str == "GB") {
-    return MarketingOptInScreen::Country::GB;
-  } else {
-    return MarketingOptInScreen::Country::OTHER;
-  }
-}
 
-bool IsDefaultOptInCountry(MarketingOptInScreen::Country country) {
-  return (country == MarketingOptInScreen::Country::US);
-}
-
-std::string GetCountryCode(MarketingOptInScreen::Country country) {
-  switch (country) {
-    case MarketingOptInScreen::Country::US:
-      return std::string("us");
-    case MarketingOptInScreen::Country::CA:
-      return std::string("ca");
-    case MarketingOptInScreen::Country::GB:
-      return std::string("uk");  // Due to server implementation. Not an error.
-    case MarketingOptInScreen::Country::OTHER:
-      NOTREACHED();
-      return std::string("unspecified");
-  }
-}
+const size_t kMaxGeolocationResponseLength = 8;
 
 // Records the opt-in and opt-out rates for Chromebook emails. Differentiates
 // between users who have a default opt-in vs. a default opt-out option.
 void RecordOptInAndOptOutRates(const bool user_opted_in,
-                               const bool opt_in_by_default) {
+                               const bool opt_in_by_default,
+                               const std::string& country) {
   MarketingOptInScreen::Event event;
   if (opt_in_by_default)  // A 'checked' toggle was shown.
     event = (user_opted_in)
@@ -96,7 +57,19 @@ void RecordOptInAndOptOutRates(const bool user_opted_in,
                 ? MarketingOptInScreen::Event::kUserOptedInWhenDefaultIsOptOut
                 : MarketingOptInScreen::Event::kUserOptedOutWhenDefaultIsOptOut;
 
-  base::UmaHistogramEnumeration("OOBE.MarketingOptInScreen.Event", event);
+  base::UmaHistogramEnumeration("OOBE.MarketingOptInScreen.Event." + country,
+                                event);
+}
+
+void RecordGeolocationResolve(MarketingOptInScreen::GeolocationEvent event) {
+  base::UmaHistogramEnumeration("OOBE.MarketingOptInScreen.GeolocationResolve",
+                                event);
+}
+
+void RecordGeolocationResponseLength(int length) {
+  base::UmaHistogramExactLinear(
+      "OOBE.MarketingOptInScreen.GeolocationResolveLength", length,
+      kMaxGeolocationResponseLength);
 }
 
 }  // namespace
@@ -145,26 +118,23 @@ bool MarketingOptInScreen::MaybeSkip() {
 void MarketingOptInScreen::ShowImpl() {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
 
-  // Determine the country from the timezone
-  country_ = GetCountryFromTimezone(g_browser_process->local_state()->GetString(
+  // Set the country to be used based on the timezone
+  // and supported country list.
+  SetCountryFromTimezoneIfAvailable(g_browser_process->local_state()->GetString(
       prefs::kSigninScreenTimezone));
 
   view_->Show();
 
-  /* Hide the marketing opt-in option if:
-   *   1) the user is managed. (enterprise-managed, guest, child, supervised)
-   * OR
-   *   2) The country is not a valid country
-   *
-   */
-  email_opt_in_visible_ =
-      !(IsCurrentUserManaged() || (country_ == Country::OTHER));
+  // Hide the marketing opt-in option if:
+  //   1) the user is managed. (enterprise-managed, guest, child, supervised)
+  // OR
+  //   2) The country is not a supported country. (empty)
+  //
+  email_opt_in_visible_ = !(IsCurrentUserManaged() || (country_.empty()));
   view_->SetOptInVisibility(email_opt_in_visible_);
 
-  /**
-   * Set the default state of the email opt-in toggle. Geolocation based.
-   */
-  view_->SetEmailToggleState(IsDefaultOptInCountry(country_));
+  // Set the default state of the email opt-in toggle.
+  view_->SetEmailToggleState(IsDefaultOptInCountry());
 
   // Only show the link for accessibility settings if the gesture navigation
   // screen was shown.
@@ -201,14 +171,13 @@ void MarketingOptInScreen::OnGetStarted(bool chromebook_email_opt_in) {
 
   // UMA Metrics & API call only when the toggle is visible
   if (email_opt_in_visible_) {
-    RecordOptInAndOptOutRates(
-        chromebook_email_opt_in /*user_opted_in*/,
-        IsDefaultOptInCountry(country_) /*opt_in_by_default*/);
+    RecordOptInAndOptOutRates(chromebook_email_opt_in /*user_opted_in*/,
+                              IsDefaultOptInCountry() /*opt_in_by_default*/,
+                              country_ /*country*/);
 
     if ((profile != nullptr) && chromebook_email_opt_in) {
       // Call Chromebook Email Service API
-      const std::string country_code = GetCountryCode(country_);
-      MarketingBackendConnector::UpdateEmailPreferences(profile, country_code);
+      MarketingBackendConnector::UpdateEmailPreferences(profile, country_);
     }
   }
 
@@ -231,6 +200,42 @@ bool MarketingOptInScreen::IsCurrentUserManaged() {
     return false;
   const std::string user_type = apps::DetermineUserType(profile);
   return (user_type != apps::kUserTypeUnmanaged);
+}
+
+void MarketingOptInScreen::SetCountryFromTimezoneIfAvailable(
+    const std::string& timezone_id) {
+  // Determine region code from timezone id.
+  char region[kMaxGeolocationResponseLength];
+  UErrorCode error = U_ZERO_ERROR;
+  auto timezone_id_unicode = icu::UnicodeString::fromUTF8(timezone_id);
+  const auto region_length = icu::TimeZone::getRegion(
+      timezone_id_unicode, region, kMaxGeolocationResponseLength, error);
+  // Track failures.
+  if (U_FAILURE(error)) {
+    RecordGeolocationResolve(GeolocationEvent::kCouldNotDetermineCountry);
+    return;
+  }
+
+  // Track whether we could successfully resolve and the length of the code.
+  RecordGeolocationResolve(GeolocationEvent::kCountrySuccessfullyDetermined);
+  RecordGeolocationResponseLength(region_length);
+
+  // Set the country
+  country_.clear();
+  const std::string region_str = base::ToLowerASCII(region);
+  const bool is_default_country = default_countries_.count(region_str);
+  const bool is_extended_country =
+      additional_countries_.count(region_str) &&
+      base::FeatureList::IsEnabled(
+          features::kOobeMarketingAdditionalCountriesSupported);
+  const bool is_double_optin_country =
+      double_opt_in_countries_.count(region_str) &&
+      base::FeatureList::IsEnabled(
+          features::kOobeMarketingDoubleOptInCountriesSupported);
+
+  if (is_default_country || is_extended_country || is_double_optin_country) {
+    country_ = region_str;
+  }
 }
 
 }  // namespace chromeos

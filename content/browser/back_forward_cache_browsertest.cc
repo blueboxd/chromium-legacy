@@ -6018,4 +6018,49 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       FROM_HERE);
 }
 
+// This test is not important for Chrome OS if TTS is called in content. For
+// more details refer (content/browser/speech/tts_platform_impl.cc).
+#if defined(OS_CHROMEOS)
+#define MAYBE_DoesNotCacheIfUsingSpeechSynthesis \
+  DISABLED_DoesNotCacheIfUsingSpeechSynthesis
+#else
+#define MAYBE_DoesNotCacheIfUsingSpeechSynthesis \
+  DoesNotCacheIfUsingSpeechSynthesis
+#endif  // defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       MAYBE_DoesNotCacheIfUsingSpeechSynthesis) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to a page and start using SpeechSynthesis.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver rhf_a_deleted(rfh_a);
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(async resolve => {
+    var u = new SpeechSynthesisUtterance(" ");
+    speechSynthesis.speak(u);
+    resolve();
+    });
+  )"));
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // The page uses SpeechSynthesis so it should be deleted.
+  rhf_a_deleted.WaitUntilDeleted();
+
+  // 3) Go back to the page with SpeechSynthesis.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kSpeechSynthesis,
+      FROM_HERE);
+}
+
 }  // namespace content

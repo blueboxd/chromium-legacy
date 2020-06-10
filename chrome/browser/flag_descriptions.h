@@ -1976,9 +1976,6 @@ extern const char kDisableCryptAuthV1DeviceSyncDescription[];
 extern const char kDisableExplicitDmaFencesName[];
 extern const char kDisableExplicitDmaFencesDescription[];
 
-extern const char kDisplayChangeModalName[];
-extern const char kDisplayChangeModalDescription[];
-
 extern const char kDisplayIdentificationName[];
 extern const char kDisplayIdentificationDescription[];
 

@@ -74,7 +74,7 @@ std::unique_ptr<OverlayMediaNotification> MediaNotificationListView::PopOut(
     return nullptr;
 
   return std::make_unique<OverlayMediaNotificationView>(
-      id, std::move(notification), bounds);
+      id, std::move(notification), bounds, nullptr);
 }
 
 std::unique_ptr<MediaNotificationContainerImplView>

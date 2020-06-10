@@ -62,7 +62,6 @@ public class ContentView extends FrameLayout
     private final ObserverList<OnSystemUiVisibilityChangeListener> mSystemUiChangeListeners =
             new ObserverList<>();
     private ViewEventSink mViewEventSink;
-    private EventForwarder mEventForwarder;
 
     /**
      * The desired size of this view in {@link MeasureSpec}. Set by the host
@@ -137,7 +136,6 @@ public class ContentView extends FrameLayout
         if (wasObscured) setIsObscuredForAccessibility(false);
         mWebContents = webContents;
         mViewEventSink = null;
-        mEventForwarder = null;
         if (wasFocused) onFocusChanged(true, View.FOCUS_FORWARD, null);
         if (wasWindowFocused) onWindowFocusChanged(true);
         if (wasAttached) onAttachedToWindow();
@@ -305,18 +303,21 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        return getEventForwarder().onKeyUp(keyCode, event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onKeyUp(keyCode, event) : false;
     }
 
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
-        return isFocused() ? getEventForwarder().dispatchKeyEvent(event)
-                           : super.dispatchKeyEvent(event);
+        if (!isFocused()) return super.dispatchKeyEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.dispatchKeyEvent(event) : false;
     }
 
     @Override
     public boolean onDragEvent(DragEvent event) {
-        return getEventForwarder().onDragEvent(event, this);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onDragEvent(event, this) : false;
     }
 
     @Override
@@ -330,10 +331,9 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        boolean ret = getEventForwarder().onTouchEvent(event);
-        if (mEventOffsetHandler != null) {
-            mEventOffsetHandler.onTouchEvent(event);
-        }
+        EventForwarder forwarder = getEventForwarder();
+        boolean ret = forwarder != null ? forwarder.onTouchEvent(event) : false;
+        if (mEventOffsetHandler != null) mEventOffsetHandler.onTouchEvent(event);
         return ret;
     }
 
@@ -364,7 +364,8 @@ public class ContentView extends FrameLayout
      */
     @Override
     public boolean onHoverEvent(MotionEvent event) {
-        boolean consumed = getEventForwarder().onHoverEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        boolean consumed = forwarder != null ? forwarder.onHoverEvent(event) : false;
         WebContentsAccessibility wcax = getWebContentsAccessibility();
         if (wcax != null && !wcax.isTouchExplorationEnabled()) super.onHoverEvent(event);
         return consumed;
@@ -372,14 +373,13 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean onGenericMotionEvent(MotionEvent event) {
-        return getEventForwarder().onGenericMotionEvent(event);
+        EventForwarder forwarder = getEventForwarder();
+        return forwarder != null ? forwarder.onGenericMotionEvent(event) : false;
     }
 
+    @Nullable
     private EventForwarder getEventForwarder() {
-        if (mEventForwarder == null && hasValidWebContents()) {
-            mEventForwarder = mWebContents.getEventForwarder();
-        }
-        return mEventForwarder;
+        return hasValidWebContents() ? mWebContents.getEventForwarder() : null;
     }
 
     private ViewEventSink getViewEventSink() {
@@ -410,12 +410,14 @@ public class ContentView extends FrameLayout
      */
     @Override
     public void scrollBy(int x, int y) {
-        getEventForwarder().scrollBy(x, y);
+        EventForwarder forwarder = getEventForwarder();
+        if (forwarder != null) forwarder.scrollBy(x, y);
     }
 
     @Override
     public void scrollTo(int x, int y) {
-        getEventForwarder().scrollTo(x, y);
+        EventForwarder forwarder = getEventForwarder();
+        if (forwarder != null) forwarder.scrollTo(x, y);
     }
 
     @Override

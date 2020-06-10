@@ -94,8 +94,9 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   }
 
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::CAMERA)) {
-    infos.emplace(SystemAppType::CAMERA,
-                  SystemAppInfo("Camera", GURL("chrome://camera/pwa.html")));
+    infos.emplace(
+        SystemAppType::CAMERA,
+        SystemAppInfo("Camera", GURL("chrome://camera-app/pwa.html")));
     infos.at(SystemAppType::CAMERA).uninstall_and_replace = {
         extension_misc::kCameraAppId};
   }

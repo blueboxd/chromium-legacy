@@ -58,12 +58,13 @@ class TestRunInterruptedException(Exception):
 
 class WebTestRunner(object):
     def __init__(self, options, port, printer, results_directory,
-                 test_is_slow_fn):
+                 test_is_slow_fn, result_sink):
         self._options = options
         self._port = port
         self._printer = printer
         self._results_directory = results_directory
         self._test_is_slow = test_is_slow_fn
+        self._test_result_sink = result_sink
         self._sharder = Sharder(self._port.split_test,
                                 self._options.max_locked_shards)
         self._filesystem = self._port.host.filesystem
@@ -224,6 +225,8 @@ class WebTestRunner(object):
             result.test_name, result.type)
         expectation_string = ' '.join(
             self._expectations.get_expectations(result.test_name).results)
+        if self._test_result_sink:
+            self._test_result_sink.sink(expected, result)
 
         if result.device_failed:
             self._printer.print_finished_test(self._port, result, False,

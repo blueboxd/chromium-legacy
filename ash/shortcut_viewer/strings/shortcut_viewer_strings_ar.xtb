@@ -101,6 +101,7 @@
 <translation id="4472417192667361414">النظام وإعدادات العرض</translation>
 <translation id="449214506787633354"><ph name="CTRL" />، ثم <ph name="LEFT" /> أو <ph name="RIGHT" /> أو <ph name="UP" /> أو <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">الاطلاع على "مساعد اختصارات لوحة المفاتيح"</translation>
+<translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" /> أو <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /></translation>
 <translation id="4628718545549558538">فتح منطقة الحالة (التي تظهر فيها صورة الحساب)</translation>
 <translation id="4642092649622328492">أخذ لقطة شاشة جزئية</translation>
 <translation id="4698850295812410683">عرض أدوات قلم الشاشة</translation>
@@ -154,7 +155,7 @@
 <translation id="6692847073476874842">معاينة ملف في تطبيق "الملفات"</translation>
 <translation id="671928215901716392">قفل الشاشة</translation>
 <translation id="6727005317916125192">الجزء السابق</translation>
-<translation id="6740781404993465795">تحديد الكلمة التالية أو الحرف التالي</translation>
+<translation id="6740781404993465795">اختيار الكلمة التالية أو الحرف التالي</translation>
 <translation id="6755851152783057058">التبديل إلى آخر أسلوب إدخال تم استخدامه</translation>
 <translation id="6760706756348334449">خفض مستوى الصوت</translation>
 <translation id="6941333068993625698">إرسال التعليقات</translation>
@@ -192,7 +193,7 @@
 <translation id="85690795166292698">فتح الرابط في علامة تبويب جديدة</translation>
 <translation id="8609384513243082612">فتح علامة تبويب جديدة</translation>
 <translation id="8644639153978066712">عرض الملفات المخفية في تطبيق "الملفات"</translation>
-<translation id="8717459106217102612">تحديد الكلمة السابقة أو الحرف السابق</translation>
+<translation id="8717459106217102612">اختيار الكلمة السابقة أو الحرف السابق</translation>
 <translation id="8727232706774971183">الاطلاع على الإشعارات</translation>
 <translation id="8855885154700222542">مفتاح ملء الشاشة</translation>
 <translation id="8881584919399569791">نقل نافذة نشطة إلى سطح المكتب الأيمن</translation>

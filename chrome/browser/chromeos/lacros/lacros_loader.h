@@ -10,9 +10,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
+#include "components/session_manager/core/session_manager_observer.h"
 
 // Manages download and launch of the lacros-chrome binary.
-class LacrosLoader {
+class LacrosLoader : public session_manager::SessionManagerObserver {
  public:
   // Direct getter because there are no accessors to the owning object.
   static LacrosLoader* Get();
@@ -21,9 +22,7 @@ class LacrosLoader {
       scoped_refptr<component_updater::CrOSComponentManager> manager);
   LacrosLoader(const LacrosLoader&) = delete;
   LacrosLoader& operator=(const LacrosLoader&) = delete;
-  ~LacrosLoader();
-
-  void Init();
+  ~LacrosLoader() override;
 
   // Returns true if the binary is ready to launch. Typical usage is to check
   // IsReady(), then if it returns false, call SetLoadCompleteCallback() to be
@@ -38,6 +37,9 @@ class LacrosLoader {
   // Starts the lacros-chrome binary.
   void Start();
 
+  // session_manager::SessionManagerObserver:
+  void OnUserSessionStarted(bool is_primary_user) override;
+
  private:
   void OnLoadComplete(component_updater::CrOSComponentManager::Error error,
                       const base::FilePath& path);
@@ -48,6 +50,7 @@ class LacrosLoader {
   // Checks whether Lacros is already running.
   bool IsLacrosRunning();
 
+  // May be null in tests.
   scoped_refptr<component_updater::CrOSComponentManager>
       cros_component_manager_;
 

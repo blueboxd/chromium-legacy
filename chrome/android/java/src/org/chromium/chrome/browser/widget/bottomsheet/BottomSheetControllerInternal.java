@@ -13,14 +13,16 @@ public interface BottomSheetControllerInternal extends BottomSheetController {
      * Temporarily suppress the bottom sheet while other UI is showing. This will not itself change
      * the content displayed by the sheet.
      * @param reason The reason the sheet was suppressed.
+     * @return A token to unsuppress the sheet with.
      */
-    void suppressSheet(@StateChangeReason int reason);
+    int suppressSheet(@StateChangeReason int reason);
 
     /**
      * Unsuppress the bottom sheet. This may or may not affect the sheet depending on the state of
      * the browser (i.e. the tab switcher may be showing).
+     * @param token The token that was received from suppressing the sheet.
      */
-    void unsuppressSheet();
+    void unsuppressSheet(int token);
 
     /**
      * For all contents that don't have a custom lifecycle, we remove them from show requests or
@@ -35,6 +37,12 @@ public interface BottomSheetControllerInternal extends BottomSheetController {
      * @return {@code true} if the sheet or content handled the back press.
      */
     boolean handleBackPress();
+
+    /**
+     * Set the hidden ratio of the browser controls.
+     * @param ratio The hidden ratio of the browser controls in range [0, 1].
+     */
+    void setBrowserControlsHiddenRatio(float ratio);
 
     /** Clean up any state maintained by the controller. */
     void destroy();

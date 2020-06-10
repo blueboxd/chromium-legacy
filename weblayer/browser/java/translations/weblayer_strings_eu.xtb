@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
+<translation id="1068672505746868501">Ez itzuli inoiz <ph name="SOURCE_LANGUAGE" /> darabilten orriak</translation>
+<translation id="124116460088058876">Hizkuntza gehiago</translation>
+<translation id="1285320974508926690">Ez itzuli inoiz webgune hau</translation>
+<translation id="290376772003165898">Ez al da <ph name="LANGUAGE" /> orriko hizkuntza?</translation>
+<translation id="5684874026226664614">Ezin izan da orria itzuli.</translation>
+<translation id="6040143037577758943">Itxi</translation>
+<translation id="6831043979455480757">Itzuli</translation>
+<translation id="7243308994586599757">Pantailaren behealdean agertzen dira dauden aukerak</translation>
+<translation id="773466115871691567">Itzuli beti <ph name="SOURCE_LANGUAGE" /> darabilten orriak</translation>
 <translation id="8298278839890148234">Sareko arakatze-jarduerak</translation>
 </translationbundle>

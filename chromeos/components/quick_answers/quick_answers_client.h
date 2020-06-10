@@ -110,6 +110,8 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
                            NotSendRequestForUnknownIntent);
   FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest, PreprocessDefinitionIntent);
   FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest, PreprocessTranslationIntent);
+  FRIEND_TEST_ALL_PREFIXES(QuickAnswersClientTest,
+                           PreprocessUnitConversionIntent);
 
   // Creates a |ResultLoader| instance.
   std::unique_ptr<ResultLoader> CreateResultLoader(IntentType intent_type);

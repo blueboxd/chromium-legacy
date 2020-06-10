@@ -31,6 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
 
+#include <stdint.h>
+
+#include "base/callback_forward.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
@@ -97,11 +100,12 @@ class WebFrameWidget : public WebWidget {
       const gfx::PointF& screen_point,
       WebDragOperationsMask operations_allowed,
       int modifiers) = 0;
-  virtual WebDragOperation DragTargetDragOver(
+  virtual void DragTargetDragOver(
       const gfx::PointF& point_in_viewport,
       const gfx::PointF& screen_point,
       WebDragOperationsMask operations_allowed,
-      int modifiers) = 0;
+      uint32_t modifiers,
+      base::OnceCallback<void(blink::WebDragOperation)> callback) = 0;
   virtual void DragTargetDragLeave(const gfx::PointF& point_in_viewport,
                                    const gfx::PointF& screen_point) = 0;
   virtual void DragTargetDrop(const WebDragData&,

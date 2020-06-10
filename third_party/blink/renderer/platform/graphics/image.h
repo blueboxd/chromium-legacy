@@ -57,7 +57,6 @@ class ImageDecodeCache;
 
 namespace blink {
 
-class DarkModeImageClassifier;
 class FloatRect;
 class GraphicsContext;
 class Image;
@@ -88,9 +87,11 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
       InterpolationQuality = kInterpolationNone);
 
   virtual bool IsSVGImage() const { return false; }
+  virtual bool IsSVGImageForContainer() const { return false; }
   virtual bool IsBitmapImage() const { return false; }
   virtual bool IsStaticBitmapImage() const { return false; }
   virtual bool IsPlaceholderImage() const { return false; }
+  virtual bool IsGradientGeneratedImage() const { return false; }
 
   virtual bool CurrentFrameKnownToBeOpaque() = 0;
 
@@ -257,16 +258,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
       const IntRect& draw_dst_rect,
       bool flip_y) {
     return nullptr;
-  }
-
-  // This function is implemented by the derived classes which might
-  // have certain conditions or default classification decisions which
-  // need to be checked before the classification algorithms are applied
-  // on the image.
-  virtual DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
-      const FloatRect& dest_rect,
-      DarkModeImageClassifier* classifier) {
-    return DarkModeClassification::kDoNotApplyFilter;
   }
 
   // This function returns true if it can create the bitmap of the

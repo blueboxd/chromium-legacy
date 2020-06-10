@@ -2594,10 +2594,9 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
 void LocalFrame::DownloadURL(
     const ResourceRequest& request,
     network::mojom::blink::RedirectMode cross_origin_redirect_behavior) {
-  DCHECK(GetDocument());
   mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token;
   if (request.Url().ProtocolIs("blob")) {
-    GetDocument()->GetPublicURLManager().Resolve(
+    DomWindow()->GetPublicURLManager().Resolve(
         request.Url(), blob_url_token.InitWithNewPipeAndPassReceiver());
   }
 

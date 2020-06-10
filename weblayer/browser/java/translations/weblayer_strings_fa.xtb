@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1068672505746868501">هرگز صفحه‌های <ph name="SOURCE_LANGUAGE" /> ترجمه نشوند</translation>
+<translation id="124116460088058876">زبان‌های بیشتر</translation>
+<translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
+<translation id="290376772003165898">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
+<translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
+<translation id="6040143037577758943">بستن</translation>
+<translation id="6831043979455480757">ترجمه</translation>
+<translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
+<translation id="773466115871691567">صفحه‌های <ph name="SOURCE_LANGUAGE" /> همیشه ترجمه شوند</translation>
 <translation id="8298278839890148234">فعالیت مرورگر وب</translation>
 </translationbundle>

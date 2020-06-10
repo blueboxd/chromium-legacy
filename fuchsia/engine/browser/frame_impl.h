@@ -152,6 +152,11 @@ class FrameImpl : public fuchsia::web::Frame,
                                        fuchsia::web::WebMessage* message,
                                        PostMessageCallback* callback);
 
+  void MaybeInjectBeforeLoadScripts(
+      content::NavigationHandle* navigation_handle);
+
+  void MaybeStartCastStreaming(content::NavigationHandle* navigation_handle);
+
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
   void GetMediaPlayer(fidl::InterfaceRequest<fuchsia::media::sessions2::Player>

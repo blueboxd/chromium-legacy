@@ -52,6 +52,8 @@ class DummyInputMethodEngineObserver
   void OnMenuItemActivated(const std::string& component_id,
                            const std::string& menu_id) override {}
   void OnScreenProjectionChanged(bool is_projected) override {}
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyInputMethodEngineObserver);

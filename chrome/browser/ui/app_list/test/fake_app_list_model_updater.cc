@@ -234,6 +234,17 @@ void FakeAppListModelUpdater::OnFolderCreated(
   AddItem(std::move(stub_folder));
 }
 
+void FakeAppListModelUpdater::OnItemUpdated(
+    std::unique_ptr<ash::AppListItemMetadata> item) {
+  ChromeAppListItem* chrome_item = FindItem(item->id);
+
+  // Ignore the item if it does not exist.
+  if (!chrome_item)
+    return;
+
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemUpdated(chrome_item);
+}
 void FakeAppListModelUpdater::AddObserver(
     AppListModelUpdaterObserver* observer) {
   observers_.AddObserver(observer);

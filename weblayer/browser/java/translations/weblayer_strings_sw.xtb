@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1068672505746868501">Usiwahi kutafsiri kurasa katika lugha ya <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Lugha zaidi</translation>
+<translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
+<translation id="290376772003165898">Je, ukurasa huu haupo katika <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Lo!  Ukurasa huu haukuweza kutafsiriwa.</translation>
+<translation id="6040143037577758943">Funga</translation>
+<translation id="6831043979455480757">Tafsiri</translation>
+<translation id="7243308994586599757">Chaguo zinapatikana karibu na sehemu ya chini ya skrini</translation>
+<translation id="773466115871691567">Zitafsiri kurasa katika <ph name="SOURCE_LANGUAGE" /> wakati wote</translation>
 <translation id="8298278839890148234">Shughuli za kivinjari</translation>
 </translationbundle>

@@ -345,7 +345,7 @@ def _OptimizeWithR8(options,
       cmd += [
           '--desugared-lib',
           options.desugar_jdk_libs_json,
-          '--desugared-library-keep-rule-output',
+          '--desugared-lib-pg-conf-output',
           options.desugared_library_keep_rule_output,
       ]
 
@@ -371,10 +371,8 @@ def _OptimizeWithR8(options,
           p for p in feature.input_paths if p not in module_input_jars
       ]
       module_input_jars.update(feature_input_jars)
-      cmd += [
-          '--feature-jar',
-          feature.staging_dir + ':' + ':'.join(feature_input_jars)
-      ]
+      for in_jar in feature_input_jars:
+        cmd += ['--feature', in_jar, feature.staging_dir]
 
     cmd += base_dex_context.input_paths
     # Add any extra input jars to the base module (e.g. desugar runtime).

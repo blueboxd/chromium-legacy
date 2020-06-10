@@ -227,6 +227,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="2876369937070532032">Sends URLs of some pages that you visit to Google, when your security is at risk</translation>
 <translation id="2888126860611144412">About Chrome</translation>
 <translation id="2891154217021530873">Stop page loading</translation>
+<translation id="2892647708214602204">You'll see a notification when this file is ready</translation>
 <translation id="2893180576842394309">Google may use your history to personalise Search and other Google services</translation>
 <translation id="2898264748040935573">Edit stored password</translation>
 <translation id="2900528713135656174">Create event</translation>
@@ -619,6 +620,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
 <translation id="6192333916571137726">Download File</translation>
 <translation id="6201345951596836663">Link copied</translation>
+<translation id="6206830853671714236">Choose when to download</translation>
 <translation id="6210748933810148297">Not <ph name="EMAIL" />?</translation>
 <translation id="6221633008163990886">Unlock to export your passwords</translation>
 <translation id="6232535412751077445">Enabling ‘Do Not Track’ means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
@@ -811,6 +813,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="773466115871691567">Always translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7746457520633464754">To detect dangerous apps and sites, Chrome sends URLs of some pages that you visit, limited system information and some page content to Google</translation>
 <translation id="7757787379047923882">Text shared from <ph name="DEVICE_NAME" /></translation>
+<translation id="7761849928583394409">Select date and time</translation>
 <translation id="7762668264895820836">SD Card <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>
@@ -915,6 +918,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8523928698583292556">Delete stored password</translation>
 <translation id="8525306231823319788">Full screen</translation>
 <translation id="854522910157234410">Open this page:</translation>
+<translation id="8555836665334561807">On Wi-Fi</translation>
 <translation id="8558485628462305855">To view augmented reality content, update ARCore</translation>
 <translation id="8559990750235505898">Offer to translate pages in other languages</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>

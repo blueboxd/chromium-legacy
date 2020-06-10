@@ -185,8 +185,8 @@ base::string16 PreviewsUITabHelper::GetStalePreviewTimestampText() {
 }
 
 void PreviewsUITabHelper::ReloadWithoutPreviews() {
-  DCHECK(previews_user_data_);
-  ReloadWithoutPreviews(previews_user_data_->CommittedPreviewsType());
+  DCHECK(GetPreviewsUserData());
+  ReloadWithoutPreviews(GetPreviewsUserData()->CommittedPreviewsType());
 }
 
 void PreviewsUITabHelper::ReloadWithoutPreviews(
@@ -230,11 +230,12 @@ void PreviewsUITabHelper::MaybeRecordPreviewReload(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->GetReloadType() == content::ReloadType::NONE)
     return;
-  if (!previews_user_data_)
+  previews::PreviewsUserData* previews_user_data = GetPreviewsUserData();
+  if (!previews_user_data)
     return;
-  if (!previews_user_data_->HasCommittedPreviewsType())
+  if (!previews_user_data->HasCommittedPreviewsType())
     return;
-  if (previews_user_data_->coin_flip_holdback_result() ==
+  if (previews_user_data->coin_flip_holdback_result() ==
       previews::CoinFlipHoldbackResult::kHoldback) {
     return;
   }
@@ -310,20 +311,31 @@ void PreviewsUITabHelper::DidFinishNavigation(
   }
 
   previews_freshness_ = base::Time();
-  previews_user_data_.reset();
 #if defined(OS_ANDROID)
   should_display_android_omnibox_badge_ = false;
 #endif
-  previews::PreviewsUserData* user_data =
+  previews::PreviewsUserData* navigation_data =
       GetPreviewsUserData(navigation_handle);
 
-  // Store Previews information for this navigation.
-  if (user_data) {
-    previews_user_data_ =
-        std::make_unique<previews::PreviewsUserData>(*user_data);
+  previews::PreviewsUserData* previews_user_data = nullptr;
+  // If the navigation is served from the back-forward cache, we should use the
+  // previews data from the first time we navigated to the page.
+  if (navigation_handle->IsServedFromBackForwardCache()) {
+    auto* holder =
+        previews::PreviewsUserData::DocumentDataHolder::GetForCurrentDocument(
+            navigation_handle->GetRenderFrameHost());
+    if (holder)
+      previews_user_data = holder->GetPreviewsUserData();
+  } else if (navigation_data) {
+    // Otherwise, we should store Previews information for this navigation.
+    auto* holder = previews::PreviewsUserData::DocumentDataHolder::
+        GetOrCreateForCurrentDocument(navigation_handle->GetRenderFrameHost());
+    holder->SetPreviewsUserData(
+        std::make_unique<previews::PreviewsUserData>(*navigation_data));
+    previews_user_data = holder->GetPreviewsUserData();
   }
 
-  uint64_t page_id = (previews_user_data_) ? previews_user_data_->page_id() : 0;
+  uint64_t page_id = (previews_user_data) ? previews_user_data->page_id() : 0;
 
   // The ui should only be told if the page was a reload if the previous
   // page displayed a timestamp.
@@ -339,8 +351,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
       offline_pages::OfflinePageTabHelper::FromWebContents(web_contents());
 
   if (tab_helper && tab_helper->GetOfflinePreviewItem()) {
+    DCHECK(previews_user_data);
     DCHECK_EQ(previews::PreviewsType::OFFLINE,
-              previews_user_data_->CommittedPreviewsType());
+              previews_user_data->CommittedPreviewsType());
     UMA_HISTOGRAM_BOOLEAN("Previews.Offline.CommittedErrorPage",
                           navigation_handle->IsErrorPage());
     if (navigation_handle->IsErrorPage()) {
@@ -383,9 +396,9 @@ void PreviewsUITabHelper::DidFinishNavigation(
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
   // Check for committed main frame preview.
-  if (previews_user_data_ && previews_user_data_->HasCommittedPreviewsType()) {
+  if (previews_user_data && previews_user_data->HasCommittedPreviewsType()) {
     previews::PreviewsType main_frame_preview =
-        previews_user_data_->CommittedPreviewsType();
+        previews_user_data->CommittedPreviewsType();
     if (main_frame_preview != previews::PreviewsType::NONE) {
       if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
         const net::HttpResponseHeaders* headers =
@@ -428,6 +441,13 @@ previews::PreviewsUserData* PreviewsUITabHelper::GetPreviewsUserData(
 
 void PreviewsUITabHelper::RemovePreviewsUserData(int64_t navigation_id) {
   inflight_previews_user_datas_.erase(navigation_id);
+}
+
+previews::PreviewsUserData* PreviewsUITabHelper::GetPreviewsUserData() const {
+  auto* holder =
+      previews::PreviewsUserData::DocumentDataHolder::GetForCurrentDocument(
+          web_contents()->GetMainFrame());
+  return holder ? holder->GetPreviewsUserData() : nullptr;
 }
 
 // static

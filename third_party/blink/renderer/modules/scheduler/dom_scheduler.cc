@@ -74,7 +74,8 @@ ScriptPromise DOMScheduler::postTask(ScriptState* script_state,
 
   // Always honor the priority and the task signal if given.
   DOMTaskSignal* task_signal = nullptr;
-  if (!options->hasPriority() && IsA<DOMTaskSignal>(options->signal())) {
+  // TODO(crbug.com/1070871): Stop using APIs for non-null.
+  if (!options->hasPriorityNonNull() && IsA<DOMTaskSignal>(options->signal())) {
     // If only a signal is given, and it is a TaskSignal rather than an
     // basic AbortSignal, use it.
     task_signal = To<DOMTaskSignal>(options->signal());
@@ -87,8 +88,9 @@ ScriptPromise DOMScheduler::postTask(ScriptState* script_state,
     // own task queue. Instead, it will use the appropriate task queue from
     // |global_task_queues_|.
     WebSchedulingPriority priority =
-        options->hasPriority()
-            ? WebSchedulingPriorityFromString(AtomicString(options->priority()))
+        options->hasPriorityNonNull()
+            ? WebSchedulingPriorityFromString(
+                  AtomicString(options->priorityNonNull()))
             : WebSchedulingPriority::kUserVisiblePriority;
     task_signal = MakeGarbageCollected<DOMTaskSignal>(
         GetSupplementable(), priority, DOMTaskSignal::Type::kImplicit);

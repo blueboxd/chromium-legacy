@@ -298,10 +298,12 @@ std::unique_ptr<gpu::SysmemBufferCollection>
 VulkanImplementationScenic::RegisterSysmemBufferCollection(
     VkDevice device,
     gfx::SysmemBufferCollectionId id,
-    zx::channel token) {
+    zx::channel token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
   return std::make_unique<SysmemBufferCollectionImpl>(
-      sysmem_buffer_manager_->ImportSysmemBufferCollection(device, id,
-                                                           std::move(token)));
+      sysmem_buffer_manager_->ImportSysmemBufferCollection(
+          device, id, std::move(token), format, usage));
 }
 
 }  // namespace ui

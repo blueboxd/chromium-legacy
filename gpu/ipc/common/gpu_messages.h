@@ -189,9 +189,11 @@ IPC_MESSAGE_ROUTED2(GpuChannelMsg_PresentSwapChain,
                     uint32_t /* release_id */)
 #endif  // OS_WIN
 #if defined(OS_FUCHSIA)
-IPC_MESSAGE_ROUTED2(GpuChannelMsg_RegisterSysmemBufferCollection,
+IPC_MESSAGE_ROUTED4(GpuChannelMsg_RegisterSysmemBufferCollection,
                     gfx::SysmemBufferCollectionId /* id */,
-                    zx::channel /* token */)
+                    zx::channel /* token */,
+                    gfx::BufferFormat /* format */,
+                    gfx::BufferUsage /* usage */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_ReleaseSysmemBufferCollection,
                     gfx::SysmemBufferCollectionId /* id */)
 #endif  // OS_FUCHSIA

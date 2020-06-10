@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">Для экрана "<ph name="DISPLAY_NAME" />" установлено разрешение <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Гц). Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем PIN-код: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Батарея стилуса почти разряжена</translation>
+<translation id="1036672894875463507">Я ваш Google Ассистент. Я буду помогать вам в течение всего дня.
+Вот что вы можете сделать для начала.</translation>
 <translation id="1037492556044956303">Добавлено устройство <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Нет сетей</translation>
 <translation id="1059194134494239015">Разрешение экрана <ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Выйти из всех аккаунтов</translation>
 <translation id="2277103315734023688">Перемотать вперед</translation>
 <translation id="2292698582925480719">Масштаб экрана</translation>
+<translation id="229397294990920565">Отключение мобильного Интернета…</translation>
 <translation id="2295777434187870477">Микрофон включен. Нажмите, чтобы отключить его.</translation>
 <translation id="2298170939937364391">Полноэкранная лупа включена. Чтобы отключить ее, ещё раз нажмите Ctrl + Поиск + M.</translation>
 <translation id="2302092602801625023">Аккаунт находится под управлением Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Загрузка Ассистента…</translation>
 <translation id="4356930093361201197">Режим высокой контрастности</translation>
+<translation id="4368583494516669646">Доброй ночи, <ph name="GIVEN_NAME" />!</translation>
 <translation id="4371348193907997655">Настройки трансляции</translation>
 <translation id="4378551569595875038">Подключение…</translation>
 <translation id="4379531060876907730">Инструменты для работы со стилусом</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Скрыть пароль</translation>
 <translation id="4570957409596482333">Кнопка "Озвучивание при нажатии"</translation>
+<translation id="4577274620589681794">Время истекло · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Остановить трансляцию на неизвестное устройство</translation>
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Функция ChromeVox включена</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Прокрутить вверх</translation>
 <translation id="4961318399572185831">Трансляция экрана</translation>
 <translation id="4969092041573468113"><ph name="HOURS" /> ч. <ph name="MINUTES" /> мин. <ph name="SECONDS" /> сек.</translation>
+<translation id="4970352680959471247">Добрый вечер, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5030687792513154421">Время вышло</translation>
 <translation id="5035236842988137213">Устройство <ph name="DEVICE_NAME" /> подключено к новому телефону</translation>
 <translation id="5035389544768382859">Подтвердите конфигурацию экрана</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">В этот сеанс уже добавлены все доступные пользователи.</translation>
 <translation id="54609108002486618">Автоматическое управление</translation>
 <translation id="5465662442746197494">Справка</translation>
+<translation id="5485091064403948243">Доброе утро, <ph name="GIVEN_NAME" />!</translation>
 <translation id="5496819745535887422">Администратор возвращает ваше устройство к прежней версии системы. После перезагрузки все данные с устройства будут удалены.</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">Завершение сеанса</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Чтобы разблокировать устройство, введите родительский код доступа Family Link.</translation>
 <translation id="742594950370306541">Камера используется.</translation>
 <translation id="743058460480092004">Камера и микрофон используются.</translation>
+<translation id="7436182601308224670">Добрый день, <ph name="GIVEN_NAME" />!</translation>
 <translation id="7466449121337984263">Приложите палец к сканеру.</translation>
 <translation id="7497767806359279797">Выберите язык и клавиатуру</translation>
 <translation id="7526573455193969409">Сеть может отслеживаться</translation>

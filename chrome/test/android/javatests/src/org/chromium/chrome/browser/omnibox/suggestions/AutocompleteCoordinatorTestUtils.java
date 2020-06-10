@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions;
 
-import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator.DropdownItemViewInfo;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 
 /**

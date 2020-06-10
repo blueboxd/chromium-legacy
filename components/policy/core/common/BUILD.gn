@@ -232,6 +232,7 @@ jumbo_source_set("internal") {
     ]
   }
   if (is_chromeos) {
+    deps += [ "//chromeos/system" ]
     sources += [
       "policy_scheduler.cc",
       "policy_scheduler.h",
@@ -480,6 +481,9 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/libxml:xml_reader",
   ]
+  if (is_chromeos) {
+    deps += [ "//chromeos/system" ]
+  }
 }
 
 if (is_win || is_linux) {

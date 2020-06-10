@@ -52,10 +52,15 @@ const LayoutVariable = {
  * @param {!Element} movedElement
  * @param {?Element} elementsToAnimateStart
  * @param {?Element} elementsToAnimateEnd
- * @param {number} direction, +1 if moving right, -1 if moving left
+ * @param {number} direction, +1 if moving towards the end of tab strip,
+ *     -1 if moving left
  */
 function animateTabElementMoved(
     movedElement, elementsToAnimateStart, elementsToAnimateEnd, direction) {
+  if (isRTL()) {
+    direction *= -1;
+  }
+
   let elementToAnimate = elementsToAnimateStart;
   let numOfTabs = 0;
 

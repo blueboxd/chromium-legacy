@@ -7337,6 +7337,12 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
         GetProcess()->GetBrowserContext());
   }
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
+
+  // Blocklist SpeechSynthesis for BackForwardCache, because currently we do not
+  // handle speech synthesis after placing the page in BackForwardCache.
+  // TODO(sreejakshetty): Make SpeechSynthesis compatible with BackForwardCache.
+  OnSchedulerTrackedFeatureUsed(
+      blink::scheduler::WebSchedulerTrackedFeature::kSpeechSynthesis);
 }
 
 void RenderFrameHostImpl::GetSensorProvider(

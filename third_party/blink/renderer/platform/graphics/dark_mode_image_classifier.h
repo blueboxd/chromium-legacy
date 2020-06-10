@@ -19,12 +19,16 @@ class Image;
 FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, FeaturesAndClassification);
 FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, Caching);
 FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, BlocksCount);
-FORWARD_DECLARE_TEST(SVGImageTest, DarkModeClassification);
 
 class PLATFORM_EXPORT DarkModeImageClassifier {
-  DISALLOW_NEW();
-
  public:
+  virtual ~DarkModeImageClassifier();
+
+  static std::unique_ptr<DarkModeImageClassifier> MakeBitmapImageClassifier();
+  static std::unique_ptr<DarkModeImageClassifier> MakeSVGImageClassifier();
+  static std::unique_ptr<DarkModeImageClassifier>
+  MakeGradientGeneratedImageClassifier();
+
   struct Features {
     // True if the image is in color, false if it is grayscale.
     bool is_colorful;
@@ -40,15 +44,15 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
     float background_ratio;
   };
 
-  DarkModeImageClassifier();
-  ~DarkModeImageClassifier() = default;
-
   DarkModeClassification Classify(Image* image,
                                   const FloatRect& src_rect,
                                   const FloatRect& dest_rect);
 
-  enum class ImageType { kBitmap = 0, kSvg = 1 };
-  void SetImageType(ImageType image_type) { image_type_ = image_type; }
+ protected:
+  DarkModeImageClassifier();
+
+  virtual DarkModeClassification DoInitialClassification(
+      const FloatRect& dest_rect) = 0;
 
  private:
   DarkModeClassification ClassifyWithFeatures(const Features& features);
@@ -94,13 +98,10 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   // divided into a grid of blocks.
   int blocks_count_vertical_;
 
-  ImageType image_type_;
-
   FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest,
                            FeaturesAndClassification);
   FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest, Caching);
   FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest, BlocksCount);
-  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, DarkModeClassification);
 };
 
 }  // namespace blink

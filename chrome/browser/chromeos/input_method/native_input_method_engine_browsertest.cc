@@ -74,6 +74,8 @@ class TestObserver : public InputMethodEngineBase::Observer {
       const std::vector<gfx::Rect>& bounds) override {}
   void OnScreenProjectionChanged(bool is_projected) override {}
   void OnReset(const std::string& engine_id) override {}
+  void OnSuggestionsChanged(
+      const std::vector<std::string>& suggestions) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestObserver);

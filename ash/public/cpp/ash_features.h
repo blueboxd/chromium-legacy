@@ -27,9 +27,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kContextualNudges;
 // Enables indicators to hint where displays are connected.
 ASH_PUBLIC_EXPORT extern const base::Feature kDisplayAlignAssist;
 
-// Enables a modal dialog when resolution or refresh rate change.
-ASH_PUBLIC_EXPORT extern const base::Feature kDisplayChangeModal;
-
 // Enables identification overlays on each display.
 ASH_PUBLIC_EXPORT extern const base::Feature kDisplayIdentification;
 
@@ -211,8 +208,6 @@ ASH_PUBLIC_EXPORT bool IsDragFromShelfToHomeOrOverviewEnabled();
 ASH_PUBLIC_EXPORT bool IsReduceDisplayNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsHideShelfControlsInTabletModeEnabled();
-
-ASH_PUBLIC_EXPORT bool IsDisplayChangeModalEnabled();
 
 ASH_PUBLIC_EXPORT bool AreContextualNudgesEnabled();
 

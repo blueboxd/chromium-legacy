@@ -728,6 +728,81 @@ TEST_F(AppListSyncableServiceTest,
           ->item_ordinal.LessThan(GetSyncItem(kFolderId2)->item_ordinal));
 }
 
+// Simulates and verifies the fix of the single item folder issue of
+// crbug.com/1082530. Here is the repro of the bug.
+// When user signs in on a new device for the first time, a folder contains two
+// app items, one is installed before another. After the first app is installed,
+// user sees a single item folder with the first app. User moves the app out of
+// the folder, the folder disappears from UI. Later, when the second app is
+// installed, it will show up in a folder with only the second app in it.
+// The fix will remove the second app from the folder after user removes the
+// first app. Later, when the second app is installed, it will show at the top
+// level.
+TEST_F(AppListSyncableServiceTest, UpdateSyncItemRemoveLastItemFromFolder) {
+  // Create two apps associated with a folder for sync data.
+  const std::string kFolderId = GenerateId("folder_id");
+  const std::string kChildItemId1 = extensions::kWebStoreAppId;
+  const std::string kChildItemId2 = CreateNextAppId(extensions::kWebStoreAppId);
+  syncer::SyncDataList sync_list;
+  sync_list.push_back(CreateAppRemoteData(
+      kFolderId, "folder_name", "", GetLastPositionString(), "pinordinal",
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_FOLDER));
+  sync_list.push_back(CreateAppRemoteData(kChildItemId1, "child_item_1_name",
+                                          kFolderId, GetLastPositionString(),
+                                          "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(kChildItemId2, "child_item_2_name",
+                                          kFolderId, GetLastPositionString(),
+                                          "pinordinal"));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_TRUE(GetSyncItem(kFolderId));
+  ASSERT_TRUE(GetSyncItem(kChildItemId1));
+  ASSERT_TRUE(GetSyncItem(kChildItemId2));
+  EXPECT_EQ(kFolderId, GetSyncItem(kChildItemId1)->parent_id);
+  EXPECT_EQ(kFolderId, GetSyncItem(kChildItemId2)->parent_id);
+
+  // Install the first child app.
+  scoped_refptr<extensions::Extension> child_app_1 =
+      MakeApp("child_item_1_name", kChildItemId1,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(child_app_1.get());
+
+  // Verify the first child app is created in the model updater.
+  // The second app is not in the model updater since it is not installed yet.
+  ChromeAppListItem* child_item_1 = model_updater()->FindItem(kChildItemId1);
+  ASSERT_TRUE(child_item_1);
+  EXPECT_EQ(kFolderId, child_item_1->folder_id());
+  ASSERT_FALSE(model_updater()->FindItem(kChildItemId2));
+
+  // Move the child_item_1 out of the folder.
+  child_item_1->SetFolderId("");
+  model_updater()->OnItemUpdated(child_item_1->CloneMetadata());
+
+  // Verify both child item are moved out of the folder.
+  ASSERT_TRUE(GetSyncItem(kChildItemId1));
+  EXPECT_EQ("", GetSyncItem(kChildItemId1)->parent_id);
+  ASSERT_TRUE(GetSyncItem(kChildItemId2));
+  EXPECT_EQ("", GetSyncItem(kChildItemId2)->parent_id);
+  EXPECT_EQ("", model_updater()->FindItem(kChildItemId1)->folder_id());
+
+  // Install the second child app.
+  scoped_refptr<extensions::Extension> child_app_2 =
+      MakeApp("child_item_2_name", kChildItemId2,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(child_app_2.get());
+
+  // Verify the second app item is created in the model updater,
+  // and it is not in any folder.
+  ChromeAppListItem* child_item_2 = model_updater()->FindItem(kChildItemId2);
+  ASSERT_TRUE(child_item_2);
+  EXPECT_EQ("", child_item_2->folder_id());
+}
+
 TEST_F(AppListSyncableServiceTest, AddPageBreakItems) {
   RemoveAllExistingItems();
 

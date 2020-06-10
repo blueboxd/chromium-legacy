@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kk">
+<translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> тіліндегі беттер ешқашан аударылмасын</translation>
+<translation id="124116460088058876">Қосымша тілдер</translation>
+<translation id="1285320974508926690">Бұл сайтты ешқашан аудармау</translation>
+<translation id="290376772003165898">Бет <ph name="LANGUAGE" /> тілінде емес пе?</translation>
+<translation id="5684874026226664614">Бұл бетті аудару мүмкін емес.</translation>
+<translation id="6040143037577758943">Жабу</translation>
+<translation id="6831043979455480757">Аудару</translation>
+<translation id="7243308994586599757">Опциялар экранның төменгі жағында тұрады</translation>
+<translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" /> тіліндегі беттер әрқашан аударылсын</translation>
 <translation id="8298278839890148234">Браузерді қолдану мәліметі</translation>
 </translationbundle>

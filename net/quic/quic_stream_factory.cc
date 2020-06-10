@@ -467,8 +467,11 @@ class QuicStreamFactory::Job {
     if (session_) {
       QuicChromiumClientSession* session = session_;
       session_ = nullptr;
+      // Use ERR_FAILED instead of ERR_ABORTED out of paranoia - ERR_ABORTED
+      // should only be used when the next layer up cancels a request, and has
+      // special semantic meaning for some consumers when they see it.
       session->CloseSessionOnErrorLater(
-          ERR_ABORTED, quic::QUIC_STALE_CONNECTION_CANCELLED,
+          ERR_FAILED, quic::QUIC_STALE_CONNECTION_CANCELLED,
           quic::ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
     }
   }

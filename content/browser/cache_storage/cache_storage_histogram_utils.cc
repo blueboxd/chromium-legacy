@@ -25,8 +25,6 @@ namespace {
 
 base::StringPiece UMAToName(CacheStorageSchedulerUMA uma_type) {
   switch (uma_type) {
-    case CacheStorageSchedulerUMA::kIsOperationSlow:
-      RETURN_LITERAL_STRING_PIECE("IsOperationSlow");
     case CacheStorageSchedulerUMA::kOperationDuration:
       RETURN_LITERAL_STRING_PIECE("OperationDuration2");
     case CacheStorageSchedulerUMA::kQueueDuration:
@@ -106,22 +104,15 @@ void RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA uma_type,
                                     CacheStorageSchedulerClient client_type,
                                     CacheStorageSchedulerOp op_type,
                                     int value) {
-  DCHECK(uma_type == CacheStorageSchedulerUMA::kIsOperationSlow ||
-         uma_type == CacheStorageSchedulerUMA::kQueueLength);
+  DCHECK(uma_type == CacheStorageSchedulerUMA::kQueueLength);
   DCHECK(client_type != CacheStorageSchedulerClient::kBackgroundSync ||
          op_type == CacheStorageSchedulerOp::kBackgroundSync);
   std::string histogram_name = GetClientHistogramName(uma_type, client_type);
-  if (uma_type == CacheStorageSchedulerUMA::kIsOperationSlow)
-    base::UmaHistogramBoolean(histogram_name, value);
-  else
-    base::UmaHistogramCounts10000(histogram_name, value);
+  base::UmaHistogramCounts10000(histogram_name, value);
   if (!ShouldRecordOpUMA(op_type))
     return;
   histogram_name.append(OpToName(op_type).as_string());
-  if (uma_type == CacheStorageSchedulerUMA::kIsOperationSlow)
-    base::UmaHistogramBoolean(histogram_name, value);
-  else
-    base::UmaHistogramCounts10000(histogram_name, value);
+  base::UmaHistogramCounts10000(histogram_name, value);
 }
 
 void RecordCacheStorageSchedulerUMA(CacheStorageSchedulerUMA uma_type,

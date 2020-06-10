@@ -97,9 +97,7 @@ class PreviewsUITabHelper
 
   // The Previews information related to the navigation that was most recently
   // finished.
-  previews::PreviewsUserData* previews_user_data() const {
-    return previews_user_data_.get();
-  }
+  previews::PreviewsUserData* GetPreviewsUserData() const;
 
   // A key to identify opt out events.
   static const void* OptOutEventKey();
@@ -164,10 +162,6 @@ class PreviewsUITabHelper
   // DidFinishNavigation for the given navigation ID related to the
   // NavigationHandle.
   std::map<int64_t, previews::PreviewsUserData> inflight_previews_user_datas_;
-
-  // The Previews information related to the navigation that was most recently
-  // finished.
-  std::unique_ptr<previews::PreviewsUserData> previews_user_data_;
 
   base::WeakPtrFactory<PreviewsUITabHelper> weak_factory_{this};
 

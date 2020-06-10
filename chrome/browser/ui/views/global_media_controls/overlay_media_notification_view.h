@@ -16,7 +16,8 @@ class OverlayMediaNotificationView : public OverlayMediaNotification,
   OverlayMediaNotificationView(
       const std::string& id,
       std::unique_ptr<MediaNotificationContainerImplView> notification,
-      gfx::Rect bounds);
+      gfx::Rect bounds,
+      gfx::NativeWindow context);
   OverlayMediaNotificationView(const OverlayMediaNotificationView&) = delete;
   OverlayMediaNotificationView& operator=(const OverlayMediaNotificationView&) =
       delete;
@@ -27,8 +28,15 @@ class OverlayMediaNotificationView : public OverlayMediaNotification,
   void ShowNotification() override;
   void CloseNotification() override;
 
+  // Update taskbar title.
+  void UpdateTitle(const base::string16& title);
+
   // views::Widget implementation.
   void OnNativeWidgetDestroyed() override;
+
+  MediaNotificationContainerImplView* notification_for_testing() {
+    return notification_;
+  }
 
  protected:
   OverlayMediaNotificationsManager* manager_ = nullptr;

@@ -17,7 +17,7 @@
 #include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
-#include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager.h"
+#include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -235,7 +235,7 @@ class MediaNotificationService
 
   MediaDialogDelegate* dialog_delegate_ = nullptr;
 
-  OverlayMediaNotificationsManager overlay_media_notifications_manager_;
+  OverlayMediaNotificationsManagerImpl overlay_media_notifications_manager_;
 
   // Used to track whether there are any active controllable sessions. If not,
   // then there's nothing to show in the dialog and we can hide the toolbar

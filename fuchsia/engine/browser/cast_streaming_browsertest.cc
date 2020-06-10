@@ -114,7 +114,9 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, FrameMessagePort) {
 
 // Check that attempting to load the cast streaming media source URL when the
 // command line switch is set properly succeeds.
-IN_PROC_BROWSER_TEST_F(CastStreamingTest, LoadSuccess) {
+// TODO(crbug.com/1087537): Re-enable when we have a test implementation for a
+// Cast Streaming Sender.
+IN_PROC_BROWSER_TEST_F(CastStreamingTest, DISABLED_LoadSuccess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL page_url(embedded_test_server()->GetURL(kCastStreamingReceiverPath));
 

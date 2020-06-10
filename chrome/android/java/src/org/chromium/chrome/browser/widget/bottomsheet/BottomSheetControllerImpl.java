@@ -9,27 +9,13 @@ import android.view.Window;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
-import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider.Observer;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.vr.VrModeObserver;
+import org.chromium.ui.util.TokenHolder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,24 +28,9 @@ import java.util.PriorityQueue;
  * and call {@link #requestShowContent(BottomSheetContent, boolean)} which will return true if the
  * content was actually shown (see full doc on method).
  */
-public class BottomSheetControllerImpl implements BottomSheetControllerInternal {
+class BottomSheetControllerImpl implements BottomSheetControllerInternal {
     /** The initial capacity for the priority queue handling pending content show requests. */
     private static final int INITIAL_QUEUE_CAPACITY = 1;
-
-    /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
-    private final VrModeObserver mVrModeObserver;
-
-    /** A listener for browser controls offset changes. */
-    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
-
-    /** A listener for fullscreen events. */
-    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
-
-    /** A means of accessing the focus state of the omibox. */
-    private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
-
-    /** An observer of the omnibox that suppresses the sheet when the omnibox is focused. */
-    private final Callback<Boolean> mOmniboxFocusObserver;
 
     /** The height of the shadow that sits above the toolbar. */
     private int mToolbarShadowHeight;
@@ -75,24 +46,6 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
 
     /** Whether the controller is already processing a hide request for the tab. */
     private boolean mIsProcessingHideRequest;
-
-    /** Whether the bottom sheet is temporarily suppressed. */
-    private boolean mIsSuppressed;
-
-    /** The manager for overlay panels to attach listeners to. */
-    private Supplier<OverlayPanelManager> mOverlayPanelManager;
-
-    /** A means for getting the activity's current tab and observing change events. */
-    private ActivityTabProvider mTabProvider;
-
-    /** A browser controls manager for polling browser controls offsets. */
-    private BrowserControlsStateProvider mBrowserControlsStateProvider;
-
-    /** A fullscreen manager for listening to fullscreen events. */
-    private ChromeFullscreenManager mFullscreenManager;
-
-    /** The last known activity tab, if available. */
-    private Tab mLastActivityTab;
 
     /** A runnable that initializes the bottom sheet when necessary. */
     private Runnable mSheetInitializer;
@@ -114,98 +67,22 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
     private Supplier<ScrimCoordinator> mScrimCoordinatorSupplier;
 
     /**
+     * A set of tokens for features suppressing the bottom sheet. If this holder has tokens, the
+     * sheet is suppressed.
+     */
+    private final TokenHolder mSuppressionTokens;
+
+    /**
      * Build a new controller of the bottom sheet.
-     * @param activityTabProvider The provider of the activity's current tab.
      * @param scrim A supplier of the scrim that shows when the bottom sheet is opened.
      * @param bottomSheetViewSupplier A mechanism for creating a {@link BottomSheet}.
-     * @param overlayManager A supplier of the manager for overlay panels to attach listeners to.
-     *                       This is a supplier to get around waiting for native to be initialized.
-     * @param fullscreenManager A fullscreen manager for access to browser controls offsets.
-     * @param omniboxFocusStateSupplier A means of accessing the focused state of the omnibox.
      */
-    public BottomSheetControllerImpl(final ActivityTabProvider activityTabProvider,
-            final Supplier<ScrimCoordinator> scrim, Supplier<View> bottomSheetViewSupplier,
-            Supplier<OverlayPanelManager> overlayManager, ChromeFullscreenManager fullscreenManager,
-            Window window, KeyboardVisibilityDelegate keyboardDelegate,
-            ObservableSupplier<Boolean> omniboxFocusStateSupplier) {
-        mTabProvider = activityTabProvider;
-        mOverlayPanelManager = overlayManager;
-        mBrowserControlsStateProvider = fullscreenManager;
-        mFullscreenManager = fullscreenManager;
+    public BottomSheetControllerImpl(final Supplier<ScrimCoordinator> scrim,
+            Supplier<View> bottomSheetViewSupplier, Window window,
+            KeyboardVisibilityDelegate keyboardDelegate) {
         mScrimCoordinatorSupplier = scrim;
         mPendingSheetObservers = new ArrayList<>();
-
-        mPendingSheetObservers.add(new EmptyBottomSheetObserver() {
-            /** The token used to enable browser controls persistence. */
-            private int mPersistentControlsToken;
-
-            @Override
-            public void onSheetOpened(int reason) {
-                if (mFullscreenManager.getBrowserVisibilityDelegate() == null) return;
-
-                // Browser controls should stay visible until the sheet is closed.
-                mPersistentControlsToken =
-                        mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
-            }
-
-            @Override
-            public void onSheetClosed(int reason) {
-                if (mFullscreenManager.getBrowserVisibilityDelegate() == null) return;
-
-                // Update the browser controls since they are permanently shown while the sheet is
-                // open.
-                mFullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
-                        mPersistentControlsToken);
-            }
-        });
-
-        mVrModeObserver = new VrModeObserver() {
-            @Override
-            public void onEnterVr() {
-                suppressSheet(StateChangeReason.VR);
-            }
-
-            @Override
-            public void onExitVr() {
-                unsuppressSheet();
-            }
-        };
-
-        mBrowserControlsObserver = new Observer() {
-            @Override
-            public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
-                    int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
-                if (mBottomSheet != null) {
-                    mBottomSheet.setBrowserControlsHiddenRatio(
-                            mBrowserControlsStateProvider.getBrowserControlHiddenRatio());
-                }
-            }
-        };
-        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
-
-        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
-            @Override
-            public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
-                if (mBottomSheet == null || mTabProvider.get() != tab) return;
-                suppressSheet(StateChangeReason.COMPOSITED_UI);
-            }
-
-            @Override
-            public void onExitFullscreen(Tab tab) {
-                if (mBottomSheet == null || mTabProvider.get() != tab) return;
-                unsuppressSheet();
-            }
-        };
-        mFullscreenManager.addListener(mFullscreenListener);
-
-        mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
-        mOmniboxFocusObserver = (focused) -> {
-            if (focused) {
-                suppressSheet(StateChangeReason.NONE);
-            } else {
-                unsuppressSheet();
-            }
-        };
+        mSuppressionTokens = new TokenHolder(() -> onSuppressionTokensChanged());
 
         mSheetInitializer = () -> {
             initializeSheet(bottomSheetViewSupplier, window, keyboardDelegate);
@@ -226,59 +103,10 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
                 BottomSheet.getTopShadowResourceId());
         mShadowTopOffset = mBottomSheet.getResources().getDimensionPixelOffset(
                 BottomSheet.getShadowTopOffsetResourceId());
-        mOmniboxFocusStateSupplier.addObserver(mOmniboxFocusObserver);
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
                 (content1, content2) -> content1.getPriority() - content2.getPriority());
-
-        VrModuleProvider.registerVrModeObserver(mVrModeObserver);
-
-        final TabObserver tabObserver = new EmptyTabObserver() {
-            @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                clearRequestsAndHide();
-            }
-
-            @Override
-            public void onCrash(Tab tab) {
-                clearRequestsAndHide();
-            }
-
-            @Override
-            public void onDestroyed(Tab tab) {
-                if (mLastActivityTab != tab) return;
-                mLastActivityTab = null;
-
-                // Remove the suppressed sheet if its lifecycle is tied to the tab being
-                // destroyed.
-                clearRequestsAndHide();
-            }
-        };
-
-        mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
-            @Override
-            public void onActivityTabChanged(Tab tab) {
-                // Temporarily suppress the sheet if entering a state where there is no activity
-                // tab.
-                if (tab == null) {
-                    suppressSheet(StateChangeReason.COMPOSITED_UI);
-                    return;
-                }
-
-                // If refocusing the same tab, simply unsuppress the sheet.
-                if (mLastActivityTab == tab) {
-                    unsuppressSheet();
-                    return;
-                }
-
-                // Move the observer to the new activity tab and clear the sheet.
-                if (mLastActivityTab != null) mLastActivityTab.removeObserver(tabObserver);
-                mLastActivityTab = tab;
-                mLastActivityTab.addObserver(tabObserver);
-                clearRequestsAndHide();
-            }
-        });
 
         PropertyModel scrimProperties =
                 new PropertyModel.Builder(ScrimProperties.REQUIRED_KEYS)
@@ -343,7 +171,8 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
             public void onSheetStateChanged(@SheetState int state) {
                 // If hiding request is in progress, destroy the current sheet content being hidden
                 // even when it is in suppressed state. See https://crbug.com/1057966.
-                if (state != SheetState.HIDDEN || (!mIsProcessingHideRequest && mIsSuppressed)) {
+                if (state != SheetState.HIDDEN
+                        || (!mIsProcessingHideRequest && mSuppressionTokens.hasTokens())) {
                     return;
                 }
                 if (mBottomSheet.getCurrentSheetContent() != null) {
@@ -361,6 +190,11 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
         mPendingSheetObservers.clear();
 
         mSheetInitializer = null;
+    }
+
+    @Override
+    public void setBrowserControlsHiddenRatio(float ratio) {
+        if (mBottomSheet != null) mBottomSheet.setBrowserControlsHiddenRatio(ratio);
     }
 
     @Override
@@ -387,10 +221,6 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
     // Destroyable implementation.
     @Override
     public void destroy() {
-        VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
-        mFullscreenManager.removeListener(mFullscreenListener);
-        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
-        mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);
         if (mBottomSheet != null) mBottomSheet.destroy();
     }
 
@@ -398,7 +228,7 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
     public boolean handleBackPress() {
         // If suppressed (therefore invisible), users are likely to expect for Chrome
         // browser, not the bottom sheet, to react. Do not consume the event.
-        if (mBottomSheet == null || mIsSuppressed) return false;
+        if (mBottomSheet == null || mSuppressionTokens.hasTokens()) return false;
 
         // Give the sheet the opportunity to handle the back press itself before falling to the
         // default "close" behavior.
@@ -472,21 +302,31 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
         }
     }
 
-    @Override
-    public void suppressSheet(@StateChangeReason int reason) {
-        mSheetStateBeforeSuppress = getSheetState();
-        mContentWhenSuppressed = getCurrentSheetContent();
-        mIsSuppressed = true;
-        mBottomSheet.setSheetState(SheetState.HIDDEN, false, reason);
+    /** Handle a change in the state of the token holder responsible for the suppression tokens. */
+    private void onSuppressionTokensChanged() {
+        if (!mSuppressionTokens.hasTokens()) doUnsuppression();
     }
 
     @Override
-    public void unsuppressSheet() {
-        if (!mIsSuppressed || mTabProvider.get() == null || VrModuleProvider.getDelegate().isInVr()
-                || mOmniboxFocusStateSupplier.get()) {
-            return;
+    public int suppressSheet(@StateChangeReason int reason) {
+        boolean hadTokens = mSuppressionTokens.hasTokens();
+        int token = mSuppressionTokens.acquireToken();
+        if (!hadTokens && mBottomSheet != null) {
+            mSheetStateBeforeSuppress = getSheetState();
+            mContentWhenSuppressed = getCurrentSheetContent();
+            mBottomSheet.setSheetState(SheetState.HIDDEN, false, reason);
         }
-        mIsSuppressed = false;
+
+        return token;
+    }
+
+    @Override
+    public void unsuppressSheet(int token) {
+        mSuppressionTokens.releaseToken(token);
+    }
+
+    private void doUnsuppression() {
+        if (mBottomSheet == null) return;
 
         if (mBottomSheet.getCurrentSheetContent() != null) {
             @SheetState
@@ -536,9 +376,6 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
         // If already showing the requested content, do nothing.
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
 
-        // Showing the sheet requires a tab.
-        if (mTabProvider.get() == null) return false;
-
         boolean shouldSuppressExistingContent = mBottomSheet.getCurrentSheetContent() != null
                 && content.getPriority() < mBottomSheet.getCurrentSheetContent().getPriority()
                 && canBottomSheetSwitchContent();
@@ -587,21 +424,15 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
 
     @Override
     public void expandSheet() {
-        if (mBottomSheet == null || mIsSuppressed) return;
+        if (mBottomSheet == null || mSuppressionTokens.hasTokens()) return;
 
         if (mBottomSheet.getCurrentSheetContent() == null) return;
         mBottomSheet.setSheetState(SheetState.HALF, true);
-        if (mOverlayPanelManager.get().getActivePanel() != null) {
-            // TODO(mdjones): This should only apply to contextual search, but contextual search is
-            //                the only implementation. Fix this to only apply to contextual search.
-            mOverlayPanelManager.get().getActivePanel().closePanel(
-                    OverlayPanel.StateChangeReason.UNKNOWN, true);
-        }
     }
 
     @Override
     public boolean collapseSheet(boolean animate) {
-        if (mBottomSheet == null || mIsSuppressed) return false;
+        if (mBottomSheet == null || mSuppressionTokens.hasTokens()) return false;
         if (mBottomSheet.isSheetOpen() && mBottomSheet.isPeekStateEnabled()) {
             mBottomSheet.setSheetState(SheetState.PEEK, animate);
             return true;
@@ -627,12 +458,12 @@ public class BottomSheetControllerImpl implements BottomSheetControllerInternal 
 
     @Override
     public void clearRequestsAndHide() {
+        if (mBottomSheet == null) return;
+
         clearRequests(mContentQueue.iterator());
 
         BottomSheetContent currentContent = mBottomSheet.getCurrentSheetContent();
         if (currentContent == null || !currentContent.hasCustomLifecycle()) {
-            if (mContentQueue.isEmpty()) mIsSuppressed = false;
-
             hideContent(currentContent, /* animate= */ true);
         }
         mContentWhenSuppressed = null;

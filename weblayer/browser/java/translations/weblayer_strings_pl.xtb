@@ -1,5 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1068672505746868501">Nigdy nie tłumacz stron, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="124116460088058876">Więcej języków</translation>
+<translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
+<translation id="290376772003165898">Język tej strony to nie <ph name="LANGUAGE" />?</translation>
+<translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
+<translation id="6040143037577758943">Zamknij</translation>
+<translation id="6831043979455480757">Tłumacz</translation>
+<translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
+<translation id="773466115871691567">Zawsze tłumacz strony, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="8298278839890148234">Aktywność w przeglądarce</translation>
 </translationbundle>

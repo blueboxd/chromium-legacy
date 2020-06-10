@@ -43,10 +43,9 @@ enum class ErrorStorageType {
 blink::mojom::CacheStorageError MakeErrorStorage(ErrorStorageType type);
 
 enum class CacheStorageSchedulerUMA {
-  kIsOperationSlow = 0,
-  kOperationDuration = 1,
-  kQueueDuration = 2,
-  kQueueLength = 3,
+  kOperationDuration = 0,
+  kQueueDuration = 1,
+  kQueueLength = 2,
 };
 
 // The following functions are used to record UMA histograms for the

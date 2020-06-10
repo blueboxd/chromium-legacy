@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
+#include "chrome/browser/chromeos/extensions/input_method_api.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/strings/string_util.h"
@@ -227,8 +229,8 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
                                            const size_t confirmed_length) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (keyboard_client->is_keyboard_enabled()) {
-    // TODO(crbug/1042084): Show suggestions in virtual keyboard when the API is
-    // ready.
+    const std::vector<std::string> args{base::UTF16ToUTF8(text)};
+    suggestion_handler_->OnSuggestionsChanged(args);
     return;
   }
 

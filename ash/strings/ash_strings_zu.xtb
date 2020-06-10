@@ -5,6 +5,8 @@
 <translation id="1013598600051641573">I-<ph name="DISPLAY_NAME" /> ishintshelwe ku-<ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Chofoza okuthi qinisekisa ukuze ugcine izinguquko. Amasethingi angaphambilini azobuyiselwa ku-<ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Idivayisi ye-Bluetooth i-"<ph name="DEVICE_NAME" />" ingathanda imvume yokubhanqa. Sicela ufake le phinikhodi kuleyo divayisi: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Ibhethri le-Stylus liphansi</translation>
+<translation id="1036672894875463507">Ngingumsizi wakho we-Google, ngilapha ukukusiza usuku lonke!
+Nazi ezinye zezinto ongazama ukuziqalisa.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> kungeziwe</translation>
 <translation id="1056775291175587022">Awekho amanethiwekhi</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
@@ -110,6 +112,7 @@
 <translation id="2268813581635650749">Phuma ngemvume kuwo wonke</translation>
 <translation id="2277103315734023688">Funela phambili</translation>
 <translation id="2292698582925480719">Isikala sokubonisa</translation>
+<translation id="229397294990920565">Idatha yeselula iyacisha...</translation>
 <translation id="2295777434187870477">I-mic ivuliwe, ukuguqula kuzothulisa okokufaka.</translation>
 <translation id="2298170939937364391">Isikhulisis sesikrini esigcwele sinikwe amandla. Cindzela u-Ctrl+Search+M futhi ukuze uyivale.</translation>
 <translation id="2302092602801625023">Le akhawunti iphethwe i-Family Link</translation>
@@ -287,6 +290,7 @@
 <translation id="4338109981321384717">Ingilazi yokusondeza</translation>
 <translation id="4351433414020964307">Umsizi uyalayisha...</translation>
 <translation id="4356930093361201197">Imodi yokugqama okuphezulu</translation>
+<translation id="4368583494516669646">Ulale kahle <ph name="GIVEN_NAME" /></translation>
 <translation id="4371348193907997655">Izilungiselelo Zokusakaza</translation>
 <translation id="4378551569595875038">Iyaxhuma...</translation>
 <translation id="4379531060876907730">Lawa amathuluzi akho e-stylus</translation>
@@ -305,6 +309,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Fihla iphasiwedi</translation>
 <translation id="4570957409596482333">Inkinobho yokukhekha ukuze ukhulume</translation>
+<translation id="4577274620589681794">Isikhathi siphelile · <ph name="LABEL" /></translation>
 <translation id="4585337515783392668">Misa ukusakaza kumamukeli ongaziwa</translation>
 <translation id="4628757576491864469">Amadivayisi</translation>
 <translation id="4659419629803378708">I-ChromeVox inikwe amandla</translation>
@@ -337,6 +342,7 @@
 <translation id="495046168593986294">Skrolela phezulu</translation>
 <translation id="4961318399572185831">Sakaza isikrini</translation>
 <translation id="4969092041573468113"><ph name="HOURS" />h <ph name="MINUTES" />m <ph name="SECONDS" />s</translation>
+<translation id="4970352680959471247">Sawubona <ph name="GIVEN_NAME" /></translation>
 <translation id="5030687792513154421">Isikhathi siphelile</translation>
 <translation id="5035236842988137213">I-<ph name="DEVICE_NAME" /> ixhumeke kufoni entsha</translation>
 <translation id="5035389544768382859">Qinisekisa Ukulungiselelwa Kwesibonisi</translation>
@@ -363,6 +369,7 @@
 <translation id="544691375626129091">Bonke abasebenzisi abatholakalayo sebavele bangeziwe kule seshini.</translation>
 <translation id="54609108002486618">Kuphethwe</translation>
 <translation id="5465662442746197494">Udinga usizo?</translation>
+<translation id="5485091064403948243">Sawubona <ph name="GIVEN_NAME" /></translation>
 <translation id="5496819745535887422">Umlawuli wakho ubuyisela emuva idivayisi yakho. Yonke idatha izosuswa uma idivayisi iqaliswa kabusha.</translation>
 <translation id="5519195206574732858">I-LTE</translation>
 <translation id="553675580533261935">Iphuma kuseshini</translation>
@@ -523,6 +530,7 @@
 <translation id="7405710164030118432">Ukuze uvule idivayisi, faka ikhodi yokufinyelela yomzali ye-Family Link.</translation>
 <translation id="742594950370306541">Ikhamela iyasetshenziswa.</translation>
 <translation id="743058460480092004">Ikhamela nemakrofoni kuyasetshenziswa.</translation>
+<translation id="7436182601308224670">Sawubona <ph name="GIVEN_NAME" /></translation>
 <translation id="7466449121337984263">Sicela uthinte inzwa</translation>
 <translation id="7497767806359279797">Khetha ulimi nekhibhodi</translation>
 <translation id="7526573455193969409">Inethiwekhi kungenzeka iqashiwe</translation>

@@ -218,6 +218,31 @@ void CounterNode::ResetLayoutObjects() {
   }
 }
 
+// static
+CounterNode* CounterNode::AncestorNodeAcrossStyleContainment(
+    const LayoutObject& starting_object,
+    const AtomicString& identifier) {
+  bool crossed_style_containment = false;
+  for (auto* ancestor = starting_object.Parent(); ancestor;
+       ancestor = ancestor->Parent()) {
+    crossed_style_containment |= ancestor->ShouldApplyStyleContainment();
+    if (!crossed_style_containment)
+      continue;
+    if (CounterMap* node_map = LayoutCounter::GetCounterMap(ancestor)) {
+      if (CounterNode* node = node_map->at(identifier))
+        return node;
+    }
+  }
+  return nullptr;
+}
+
+CounterNode* CounterNode::ParentCrossingStyleContainment(
+    const AtomicString& identifier) const {
+  if (parent_)
+    return parent_;
+  return AncestorNodeAcrossStyleContainment(Owner(), identifier);
+}
+
 void CounterNode::ResetThisAndDescendantsLayoutObjects() {
   CounterNode* node = this;
   do {

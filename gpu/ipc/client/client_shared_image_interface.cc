@@ -40,8 +40,10 @@ void ClientSharedImageInterface::PresentSwapChain(const SyncToken& sync_token,
 #if defined(OS_FUCHSIA)
 void ClientSharedImageInterface::RegisterSysmemBufferCollection(
     gfx::SysmemBufferCollectionId id,
-    zx::channel token) {
-  proxy_->RegisterSysmemBufferCollection(id, std::move(token));
+    zx::channel token,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage) {
+  proxy_->RegisterSysmemBufferCollection(id, std::move(token), format, usage);
 }
 
 void ClientSharedImageInterface::ReleaseSysmemBufferCollection(
@@ -56,6 +58,11 @@ SyncToken ClientSharedImageInterface::GenUnverifiedSyncToken() {
 
 SyncToken ClientSharedImageInterface::GenVerifiedSyncToken() {
   return proxy_->GenVerifiedSyncToken();
+}
+
+void ClientSharedImageInterface::WaitSyncToken(
+    const gpu::SyncToken& sync_token) {
+  proxy_->WaitSyncToken(sync_token);
 }
 
 void ClientSharedImageInterface::Flush() {

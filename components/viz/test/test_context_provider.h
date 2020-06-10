@@ -77,12 +77,15 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
 
 #if defined(OS_FUCHSIA)
   void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                      zx::channel token) override;
+                                      zx::channel token,
+                                      gfx::BufferFormat format,
+                                      gfx::BufferUsage usage) override;
   void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id) override;
 #endif  // defined(OS_FUCHSIA)
 
   gpu::SyncToken GenVerifiedSyncToken() override;
   gpu::SyncToken GenUnverifiedSyncToken() override;
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override;
 
   void Flush() override;
   scoped_refptr<gfx::NativePixmap> GetNativePixmap(

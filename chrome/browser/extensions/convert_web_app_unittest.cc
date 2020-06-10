@@ -606,7 +606,8 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
        WebAppShortcutIconsAreCorrectlyConverted) {
   StartExtensionService();
   WebApplicationInfo web_app;
-  WebApplicationShortcutInfo shortcut_item;
+  WebApplicationShortcutsMenuItemInfo shortcut_item;
+  std::map<SquareSizePx, SkBitmap> shortcut_icon_bitmaps;
   web_app.title = base::ASCIIToUTF16("Shortcut App");
   web_app.description = base::ASCIIToUTF16("We have shortcuts.");
   web_app.app_url = GURL("https://shortcut-app.io/");
@@ -622,8 +623,10 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
           web_app.app_url.Resolve(base::StringPrintf("shortcut1/%i.png", size));
       icon_info.square_size_px = size;
       shortcut_item.shortcut_icon_infos.push_back(std::move(icon_info));
-      shortcut_item.shortcut_icon_bitmaps[size] = GetIconBitmap(size);
+      shortcut_icon_bitmaps[size] = GetIconBitmap(size);
     }
+    web_app.shortcuts_menu_icons_bitmaps.emplace_back(
+        std::move(shortcut_icon_bitmaps));
   }
   web_app.shortcut_infos.push_back(std::move(shortcut_item));
 
@@ -637,8 +640,10 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
           web_app.app_url.Resolve(base::StringPrintf("0/%i.png", size));
       icon_info.square_size_px = size;
       shortcut_item.shortcut_icon_infos.push_back(std::move(icon_info));
-      shortcut_item.shortcut_icon_bitmaps[size] = GetIconBitmap(size);
+      shortcut_icon_bitmaps[size] = GetIconBitmap(size);
     }
+    web_app.shortcuts_menu_icons_bitmaps.emplace_back(
+        std::move(shortcut_icon_bitmaps));
   }
   web_app.shortcut_infos.push_back(std::move(shortcut_item));
 
@@ -666,7 +671,7 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
     }
 
     const std::map<SquareSizePx, SkBitmap>& icon_bitmaps =
-        web_app.shortcut_infos[i].shortcut_icon_bitmaps;
+        web_app.shortcuts_menu_icons_bitmaps[i];
     EXPECT_EQ(icon_bitmaps.size(), shortcut_icons.at(i).map().size());
     for (const std::pair<const SquareSizePx, SkBitmap>& icon : icon_bitmaps) {
       int size = icon.first;

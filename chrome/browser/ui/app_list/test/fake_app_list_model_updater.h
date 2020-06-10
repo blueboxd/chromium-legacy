@@ -67,7 +67,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
       std::unique_ptr<ash::AppListItemMetadata> folder) override;
   void OnFolderDeleted(
       std::unique_ptr<ash::AppListItemMetadata> item) override {}
-  void OnItemUpdated(std::unique_ptr<ash::AppListItemMetadata> item) override {}
+  void OnItemUpdated(std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnPageBreakItemAdded(const std::string& id,
                             const syncer::StringOrdinal& position) override {}
   void OnPageBreakItemDeleted(const std::string& id) override {}

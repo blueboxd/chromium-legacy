@@ -91,9 +91,6 @@ bool IsInteractionType(FrameSequenceTrackerType sequence_type) {
 FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
                                            ThroughputUkmReporter* ukm_reporter)
     : type_(type), throughput_ukm_reporter_(ukm_reporter) {
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
-      "cc,benchmark", "FrameSequenceTracker", TRACE_ID_LOCAL(this), "name",
-      FrameSequenceTracker::GetFrameSequenceTrackerTypeName(type_));
 }
 
 FrameSequenceMetrics::~FrameSequenceMetrics() {
@@ -177,6 +174,16 @@ bool FrameSequenceMetrics::HasDataLeftForReporting() const {
          main_throughput_.frames_expected > 0;
 }
 
+void FrameSequenceMetrics::AdoptTrace(FrameSequenceMetrics* adopt_from) {
+  DCHECK(!trace_data_.trace_id);
+  trace_data_.trace_id = adopt_from->trace_data_.trace_id;
+  adopt_from->trace_data_.trace_id = nullptr;
+}
+
+void FrameSequenceMetrics::AdvanceTrace(base::TimeTicks timestamp) {
+  trace_data_.Advance(timestamp);
+}
+
 void FrameSequenceMetrics::ComputeAggregatedThroughput() {
   // Whenever we are expecting and producing main frames, we are expecting and
   // producing impl frames as well. As an example, if we expect one main frame
@@ -191,10 +198,6 @@ void FrameSequenceMetrics::ComputeAggregatedThroughput() {
 void FrameSequenceMetrics::ReportMetrics() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
-  TRACE_EVENT_NESTABLE_ASYNC_END2(
-      "cc,benchmark", "FrameSequenceTracker", TRACE_ID_LOCAL(this), "args",
-      ThroughputData::ToTracedValue(impl_throughput_, main_throughput_),
-      "checkerboard", frames_checkerboarded_);
 
   if (type_ == FrameSequenceTrackerType::kCustom) {
     DCHECK(!custom_reporter_.is_null());
@@ -207,6 +210,7 @@ void FrameSequenceMetrics::ReportMetrics() {
     return;
   }
 
+  trace_data_.Terminate();
   ComputeAggregatedThroughput();
 
   // Report the throughput metrics.
@@ -373,6 +377,47 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
           GetThroughputHistogramName(sequence_type, thread_name), 1, 100, 101,
           base::HistogramBase::kUmaTargetedHistogramFlag));
   return percent;
+}
+
+FrameSequenceMetrics::TraceData::TraceData(FrameSequenceMetrics* m)
+    : metrics(m) {
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("cc,benchmark", &enabled);
+}
+
+FrameSequenceMetrics::TraceData::~TraceData() = default;
+
+void FrameSequenceMetrics::TraceData::Terminate() {
+  if (!enabled || !trace_id)
+    return;
+  TRACE_EVENT_NESTABLE_ASYNC_END2(
+      "cc,benchmark", "FrameSequenceTracker", TRACE_ID_LOCAL(trace_id), "args",
+      ThroughputData::ToTracedValue(metrics->impl_throughput(),
+                                    metrics->main_throughput()),
+      "checkerboard", metrics->frames_checkerboarded());
+  trace_id = nullptr;
+}
+
+void FrameSequenceMetrics::TraceData::Advance(base::TimeTicks new_timestamp) {
+  if (!enabled)
+    return;
+  if (!trace_id) {
+    trace_id = this;
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
+        "cc,benchmark", "FrameSequenceTracker", TRACE_ID_LOCAL(trace_id),
+        this->last_timestamp, "name",
+        FrameSequenceTracker::GetFrameSequenceTrackerTypeName(metrics->type()));
+  }
+  // Use different names, because otherwise the trace-viewer shows the slices in
+  // the same color, and that makes it difficult to tell the traces apart from
+  // each other.
+  const char* trace_names[] = {"Frame", "Frame ", "Frame   "};
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      "cc,benchmark", trace_names[++this->frame_count % 3],
+      TRACE_ID_LOCAL(trace_id), this->last_timestamp);
+  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
+      "cc,benchmark", trace_names[this->frame_count % 3],
+      TRACE_ID_LOCAL(trace_id), new_timestamp);
+  this->last_timestamp = new_timestamp;
 }
 
 }  // namespace cc

@@ -49,24 +49,29 @@ g.test('increasing_fence_value_by_more_than_1_succeeds').fn(async t => {
   await fence.onCompletion(6);
 });
 g.test('signal_a_fence_on_a_different_device_than_it_was_created_on_is_invalid').fn(async t => {
-  const fence = t.queue.createFence();
   const anotherDevice = await t.device.adapter.requestDevice();
-  const anotherQueue = anotherDevice.defaultQueue;
+  const fence = anotherDevice.defaultQueue.createFence();
   t.expectValidationError(() => {
-    anotherQueue.signal(fence, 2);
+    t.queue.signal(fence, 2);
   });
 });
 g.test('signal_a_fence_on_a_different_device_does_not_update_fence_signaled_value').fn(async t => {
-  const fence = t.queue.createFence({
+  const anotherDevice = await t.device.adapter.requestDevice();
+  const fence = anotherDevice.defaultQueue.createFence({
     initialValue: 1
   });
-  const anotherDevice = await t.device.adapter.requestDevice();
-  const anotherQueue = anotherDevice.defaultQueue;
   t.expectValidationError(() => {
-    anotherQueue.signal(fence, 2);
+    t.queue.signal(fence, 2);
   });
   t.expect(fence.getCompletedValue() === 1);
-  t.queue.signal(fence, 2);
+  anotherDevice.pushErrorScope('validation');
+  anotherDevice.defaultQueue.signal(fence, 2);
   await fence.onCompletion(2);
+  t.expect(fence.getCompletedValue() === 2);
+  const gpuValidationError = await anotherDevice.popErrorScope();
+
+  if (gpuValidationError instanceof GPUValidationError) {
+    t.fail(`Captured validation error - ${gpuValidationError.message}`);
+  }
 });
 //# sourceMappingURL=fences.spec.js.map

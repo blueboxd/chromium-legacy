@@ -87,7 +87,9 @@ class GPU_IPC_SERVICE_EXPORT SharedImageStub
 #endif  // OS_WIN
 #if defined(OS_FUCHSIA)
   void OnRegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
-                                        zx::channel token);
+                                        zx::channel token,
+                                        gfx::BufferFormat format,
+                                        gfx::BufferUsage usage);
   void OnReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
 #endif  // OS_FUCHSIA
 

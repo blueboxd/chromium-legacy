@@ -13,8 +13,7 @@ SchemaHandler::SchemaHandler()
     : DevToolsDomainHandler(Schema::Metainfo::domainName) {
 }
 
-SchemaHandler::~SchemaHandler() {
-}
+SchemaHandler::~SchemaHandler() = default;
 
 void SchemaHandler::Wire(UberDispatcher* dispatcher) {
   Schema::Dispatcher::wire(dispatcher, this);

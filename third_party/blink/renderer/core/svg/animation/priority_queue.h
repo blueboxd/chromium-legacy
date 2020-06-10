@@ -142,6 +142,8 @@ inline void PriorityQueue<PriorityType, ElementType>::Remove(
   Swap(heap_[index], heap_.back());
   heap_.pop_back();
   element->PriorityQueueHandle() = kNotFound;
+  if (index == heap_.size() || PercolateUp(index) != index)
+    return;
   PercolateDown(index);
 }
 

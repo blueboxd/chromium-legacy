@@ -32,8 +32,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -51,6 +53,10 @@ const char kJpgFileHash[] =
 
 }  // namespace
 
+// TODO(timloh): This file should only be responsible for testing the
+// interactions between the installer UI and the installer backend. We should
+// mock out the backend and move the tests for the backend logic out of here.
+
 class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
  public:
   PluginVmInstallerViewBrowserTest() = default;
@@ -62,6 +68,14 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
     fake_concierge_client_->set_disk_image_progress_signal_connected(true);
 
     histogram_tester_ = std::make_unique<base::HistogramTester>();
+
+    network_connection_tracker_ =
+        network::TestNetworkConnectionTracker::CreateInstance();
+    content::SetNetworkConnectionTrackerForTesting(nullptr);
+    content::SetNetworkConnectionTrackerForTesting(
+        network_connection_tracker_.get());
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
   }
 
   void TearDownOnMainThread() override { scoped_user_manager_.reset(); }
@@ -128,6 +142,8 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
 
+  std::unique_ptr<network::TestNetworkConnectionTracker>
+      network_connection_tracker_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   PluginVmInstallerView* view_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;

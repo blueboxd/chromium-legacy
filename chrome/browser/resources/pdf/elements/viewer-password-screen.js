@@ -8,6 +8,7 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 Polymer({
@@ -17,8 +18,6 @@ Polymer({
 
   properties: {
     invalid: Boolean,
-
-    strings: Object,
   },
 
   get active() {
@@ -57,10 +56,9 @@ Polymer({
    * Returns |message| if input is invalid, otherwise empty string.
    * This avoids setting the error message (which announces to screen readers)
    * when there is no error.
-   * @param {string} message
    * @return {string}
    */
-  getErrorMessage_(message) {
-    return this.invalid ? message : '';
+  getErrorMessage_() {
+    return this.invalid ? loadTimeData.getString('passwordInvalid') : '';
   }
 });

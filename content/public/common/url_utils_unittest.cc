@@ -17,6 +17,21 @@ GURL CreateValidURL(const std::string& str) {
   return url;
 }
 
+TEST(UrlUtilsTest, HasWebUIScheme) {
+  EXPECT_TRUE(HasWebUIScheme(CreateValidURL("chrome://test")));
+  EXPECT_TRUE(HasWebUIScheme(CreateValidURL("chrome-untrusted://test")));
+  EXPECT_TRUE(HasWebUIScheme(CreateValidURL("devtools://test")));
+
+  // Other chromium schemes not considered WebUI schemes.
+  EXPECT_FALSE(HasWebUIScheme(CreateValidURL("chrome-error://test")));
+  EXPECT_FALSE(HasWebUIScheme(CreateValidURL("chrome-guest://test")));
+  EXPECT_FALSE(HasWebUIScheme(CreateValidURL("googlechrome://test")));
+
+  EXPECT_FALSE(HasWebUIScheme(CreateValidURL("http://foo/bar.html")));
+  EXPECT_FALSE(HasWebUIScheme(CreateValidURL("https://foo/bar.html")));
+  EXPECT_FALSE(HasWebUIScheme(CreateValidURL("data://foo")));
+}
+
 TEST(UrlUtilsTest, IsURLHandledByNetworkStack) {
   EXPECT_TRUE(
       IsURLHandledByNetworkStack(CreateValidURL("http://foo/bar.html")));
@@ -24,6 +39,10 @@ TEST(UrlUtilsTest, IsURLHandledByNetworkStack) {
       IsURLHandledByNetworkStack(CreateValidURL("https://foo/bar.html")));
   EXPECT_TRUE(IsURLHandledByNetworkStack(CreateValidURL("data://foo")));
   EXPECT_TRUE(IsURLHandledByNetworkStack(CreateValidURL("cid:foo@bar")));
+  EXPECT_TRUE(IsURLHandledByNetworkStack(CreateValidURL("chrome://test")));
+  EXPECT_TRUE(IsURLHandledByNetworkStack(CreateValidURL("devtools://test")));
+  EXPECT_TRUE(
+      IsURLHandledByNetworkStack(CreateValidURL("chrome-untrusted://test")));
 
   EXPECT_FALSE(IsURLHandledByNetworkStack(CreateValidURL("about:blank")));
   EXPECT_FALSE(IsURLHandledByNetworkStack(CreateValidURL("about:srcdoc")));
@@ -65,6 +84,12 @@ TEST(UrlUtilsTest, IsSafeRedirectTarget) {
                                     CreateValidURL("file:///foo/bar/")));
   EXPECT_TRUE(IsSafeRedirectTarget(CreateValidURL("file:///foo/bar/"),
                                    CreateValidURL("http://foo/bar.html")));
+
+  // WebUI schemes
+  EXPECT_FALSE(IsSafeRedirectTarget(GURL(), CreateValidURL("chrome://test")));
+  EXPECT_FALSE(IsSafeRedirectTarget(GURL(), CreateValidURL("devtools://test")));
+  EXPECT_FALSE(
+      IsSafeRedirectTarget(GURL(), CreateValidURL("chrome-untrusted://test")));
 
   // TODO(cmumford): Capturing current behavior, but should probably prevent
   //                 redirect to invalid URL.

@@ -595,7 +595,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onNativeInitialized();
         mMediator.onTextChanged("test", "testing");
         verify(mAutocompleteController)
-                .start(profile, url, pageClassification, "test", 4, false, null);
+                .start(profile, url, pageClassification, "test", 4, false, null, false);
     }
 
     @CalledByNativeJavaTest
@@ -618,7 +618,7 @@ public class AutocompleteMediatorUnitTest {
         mMediator.onTextChanged("test", "testing");
         mMediator.onTextChanged("nottest", "nottesting");
         verify(mAutocompleteController)
-                .start(profile, url, pageClassification, "nottest", 4, false, null);
+                .start(profile, url, pageClassification, "nottest", 4, false, null, false);
     }
 
     @CalledByNativeJavaTest

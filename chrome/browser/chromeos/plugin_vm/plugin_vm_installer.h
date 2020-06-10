@@ -67,8 +67,9 @@ class PluginVmInstaller : public KeyedService,
     DLC_NEED_SPACE = 22,
     INSUFFICIENT_DISK_SPACE = 23,
     INVALID_LICENSE = 24,
+    OFFLINE = 25,
 
-    kMaxValue = INVALID_LICENSE,
+    kMaxValue = OFFLINE,
   };
 
   enum class InstallingState {

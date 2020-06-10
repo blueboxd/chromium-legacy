@@ -24,7 +24,8 @@ BlinkAXEventIntent BlinkAXEventIntent::FromModifiedSelection(
     const SelectionModifyDirection direction,
     const TextGranularity granularity,
     const SetSelectionBy set_selection_by,
-    const TextDirection direction_of_selection) {
+    const TextDirection direction_of_selection,
+    const PlatformWordBehavior platform_word_behavior) {
   ax::mojom::blink::Command command;
   switch (alter) {
     case SelectionModifyAlteration::kExtend:
@@ -66,14 +67,43 @@ BlinkAXEventIntent BlinkAXEventIntent::FromModifiedSelection(
     case TextGranularity::kWord:
       switch (move_direction) {
         case ax::mojom::blink::MoveDirection::kBackward:
+          // All platforms behave the same when moving backward by word.
           text_boundary = ax::mojom::blink::TextBoundary::kWordStart;
           break;
         case ax::mojom::blink::MoveDirection::kForward:
-          text_boundary = ax::mojom::blink::TextBoundary::kWordEnd;
+          switch (platform_word_behavior) {
+            case PlatformWordBehavior::kWordSkipSpaces:
+              // Windows behavior is to always move to the beginning of the next
+              // word.
+              text_boundary = ax::mojom::blink::TextBoundary::kWordStart;
+              break;
+            case PlatformWordBehavior::kWordDontSkipSpaces:
+              // Mac, Linux and ChromeOS behavior is to move to the end of the
+              // current word.
+              text_boundary = ax::mojom::blink::TextBoundary::kWordEnd;
+              break;
+          }
           break;
       }
       break;
     case TextGranularity::kSentence:
+      // This granularity always moves to the start of the next or previous
+      // sentence.
+      text_boundary = ax::mojom::blink::TextBoundary::kSentenceStart;
+      break;
+    case TextGranularity::kLine:
+      // This granularity always moves to the start of the next or previous
+      // line.
+      text_boundary = ax::mojom::blink::TextBoundary::kLineStart;
+      break;
+    case TextGranularity::kParagraph:
+      // This granularity always moves to the start of the next or previous
+      // paragraph.
+      text_boundary = ax::mojom::blink::TextBoundary::kParagraphStart;
+      break;
+    case TextGranularity::kSentenceBoundary:
+      // This granularity moves either to the start or the end of the current
+      // sentence, depending on the direction.
       switch (move_direction) {
         case ax::mojom::blink::MoveDirection::kBackward:
           text_boundary = ax::mojom::blink::TextBoundary::kSentenceStart;
@@ -83,7 +113,9 @@ BlinkAXEventIntent BlinkAXEventIntent::FromModifiedSelection(
           break;
       }
       break;
-    case TextGranularity::kLine:
+    case TextGranularity::kLineBoundary:
+      // This granularity moves either to the start or the end of the current
+      // line, depending on the direction.
       switch (move_direction) {
         case ax::mojom::blink::MoveDirection::kBackward:
           text_boundary = ax::mojom::blink::TextBoundary::kLineStart;
@@ -93,7 +125,9 @@ BlinkAXEventIntent BlinkAXEventIntent::FromModifiedSelection(
           break;
       }
       break;
-    case TextGranularity::kParagraph:
+    case TextGranularity::kParagraphBoundary:
+      // This granularity moves either to the start or the end of the current
+      // paragraph, depending on the direction.
       switch (move_direction) {
         case ax::mojom::blink::MoveDirection::kBackward:
           text_boundary = ax::mojom::blink::TextBoundary::kParagraphStart;
@@ -102,15 +136,6 @@ BlinkAXEventIntent BlinkAXEventIntent::FromModifiedSelection(
           text_boundary = ax::mojom::blink::TextBoundary::kParagraphEnd;
           break;
       }
-      break;
-    case TextGranularity::kSentenceBoundary:
-      text_boundary = ax::mojom::blink::TextBoundary::kSentenceStartOrEnd;
-      break;
-    case TextGranularity::kLineBoundary:
-      text_boundary = ax::mojom::blink::TextBoundary::kLineStartOrEnd;
-      break;
-    case TextGranularity::kParagraphBoundary:
-      text_boundary = ax::mojom::blink::TextBoundary::kParagraphStartOrEnd;
       break;
     case TextGranularity::kDocumentBoundary:
       text_boundary = ax::mojom::blink::TextBoundary::kWebPage;

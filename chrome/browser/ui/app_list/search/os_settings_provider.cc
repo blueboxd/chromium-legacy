@@ -34,7 +34,14 @@ using SettingsResultPtr = chromeos::settings::mojom::SearchResultPtr;
 using SettingsResultType = chromeos::settings::mojom::SearchResultType;
 
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
-constexpr float kScoreEps = 1e-5;
+constexpr float kScoreEps = 1e-5f;
+
+// TODO(crbug.com/1068851): We may want to control some of these constants via
+// Finch.
+constexpr size_t kMinQueryLength = 1u;
+constexpr size_t kMinQueryLengthForAlternates = 4u;
+constexpr float kMinScoreForAlternates = 0.3f;
+
 constexpr size_t kNumRequestedResults = 5u;
 constexpr size_t kMaxShownResults = 2u;
 
@@ -58,6 +65,7 @@ void LogError(Error error) {
 // display-ready vector. It:
 // - returns at most |kMaxShownResults| results
 // - removes results with duplicate IDs
+// - removes results matching alternate text unless they meet extra requirements
 //
 // The SearchHandler's vector is ranked high-to-low with this logic:
 // - compares SearchResultDefaultRank,
@@ -66,17 +74,26 @@ void LogError(Error error) {
 //   settings
 // - if equal, picks arbitrarily
 //
-// So simply iterating down the vector while being careful about duplicates is
-// enough.
-//
-// TODO(crbug.com/1068851): This method should also replace section results
-// containing a single subpage with that subpage result.
+// So simply iterating down the vector while being careful about duplicates and
+// checking for alternate matches is enough.
 std::vector<SettingsResultPtr> FilterResults(
+    const base::string16& query,
     const std::vector<SettingsResultPtr>& results) {
   base::flat_set<std::string> seen_urls;
   std::vector<SettingsResultPtr> clean_results;
 
   for (const SettingsResultPtr& result : results) {
+    // Check if query matched alternate text for the result. If so, only allow
+    // results meeting extra requirements. Perform this check before checking
+    // for duplicates to ensure a rejected alternate result doesn't preclude a
+    // canonical result with a lower score from being shown.
+    if (result->result_text != result->canonical_result_text &&
+        (query.size() < kMinQueryLengthForAlternates ||
+         result->relevance_score < kMinScoreForAlternates)) {
+      continue;
+    }
+
+    // Check if URL has been seen.
     const std::string url = result->url_path_with_parameters;
     const auto it = seen_urls.find(url);
     if (it != seen_urls.end())
@@ -101,7 +118,7 @@ OsSettingsResult::OsSettingsResult(
     : profile_(profile), url_path_(result->url_path_with_parameters) {
   set_id(kOsSettingsResultPrefix + url_path_);
   set_relevance(relevance_score);
-  SetTitle(result->result_text);
+  SetTitle(result->canonical_result_text);
   SetResultType(ResultType::kOsSettings);
   SetDisplayType(DisplayType::kList);
   SetIcon(icon);
@@ -116,7 +133,9 @@ OsSettingsResult::OsSettingsResult(
     LogError(Error::kHierarchyEmpty);
   } else if (result->type != SettingsResultType::kSection) {
     const base::string16 details = hierarchy.back();
-    if (details != result->result_text)
+    // TODO(crbug.com/1068851): Confirm whether or not we want to show sub-text
+    // when it's the same as the result text.
+    if (details != result->canonical_result_text)
       SetDetails(details);
   }
 }
@@ -177,7 +196,7 @@ void OsSettingsProvider::Start(const base::string16& query) {
 
   // This provider does not handle zero-state, and shouldn't return any results
   // for a single-character query because they aren't meaningful enough.
-  if (query.size() <= 1)
+  if (query.size() <= kMinQueryLength)
     return;
 
   // Invalidate weak pointers to cancel existing searches.
@@ -186,10 +205,11 @@ void OsSettingsProvider::Start(const base::string16& query) {
                           chromeos::settings::mojom::ParentResultBehavior::
                               kDoNotIncludeParentResults,
                           base::BindOnce(&OsSettingsProvider::OnSearchReturned,
-                                         weak_factory_.GetWeakPtr()));
+                                         weak_factory_.GetWeakPtr(), query));
 }
 
 void OsSettingsProvider::OnSearchReturned(
+    const base::string16& query,
     std::vector<chromeos::settings::mojom::SearchResultPtr> sorted_results) {
   // TODO(crbug.com/1068851): We are currently not ranking settings results.
   // Instead, we are gluing at most two to the top of the search box. Consider
@@ -200,7 +220,7 @@ void OsSettingsProvider::OnSearchReturned(
 
   SearchProvider::Results search_results;
   int i = 0;
-  for (const auto& result : FilterResults(sorted_results)) {
+  for (const auto& result : FilterResults(query, sorted_results)) {
     const float score = 1.0f - i * kScoreEps;
     search_results.emplace_back(
         std::make_unique<OsSettingsResult>(profile_, result, score, icon_));

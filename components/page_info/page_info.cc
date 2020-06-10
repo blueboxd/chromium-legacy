@@ -209,6 +209,21 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
       !cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures)) {
     return false;
   }
+
+  // Hide camera if camera PTZ is granted or blocked.
+  if (info.type == ContentSettingsType::MEDIASTREAM_CAMERA &&
+      cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures)) {
+    std::unique_ptr<base::Value> value = content_settings->GetWebsiteSetting(
+        site_url, site_url, ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
+        std::string(), nullptr);
+    DCHECK(value.get());
+    ContentSetting camera_ptz_setting =
+        content_settings::ValueToContentSetting(value.get());
+    if (camera_ptz_setting == CONTENT_SETTING_ALLOW ||
+        camera_ptz_setting == CONTENT_SETTING_BLOCK) {
+      return false;
+    }
+  }
 #endif
 
   // Show the content setting if it has been changed by the user since the last

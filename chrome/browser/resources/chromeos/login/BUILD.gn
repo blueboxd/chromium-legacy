@@ -141,7 +141,10 @@ js_library("gaia_input_form") {
 }
 
 js_library("gaia_password_changed") {
-  deps = [ "components:oobe_i18n_behavior" ]
+  deps = [
+    "components:login_screen_behavior",
+    "components:oobe_i18n_behavior",
+  ]
 }
 
 js_library("gesture_navigation") {

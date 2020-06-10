@@ -48,7 +48,7 @@ public class QueryTileSection {
             "most_visited_max_rows_normal_screen";
     private static final String VARIATION_SMALL_SCREEN_HEIGHT_THRESHOLD_DP =
             "small_screen_height_threshold_dp";
-    private static final int DEFAULT_SMALL_SCREEN_HEIGHT_THRESHOLD_DP = 750;
+    private static final int DEFAULT_SMALL_SCREEN_HEIGHT_THRESHOLD_DP = 700;
     private static final String UMA_PREFIX = "QueryTiles.NTP";
 
     private final ViewGroup mQueryTileSectionView;
@@ -121,7 +121,7 @@ public class QueryTileSection {
         boolean isLastLevelTile = queryTile.children.isEmpty();
         if (isLastLevelTile) {
             if (QueryTileUtils.isQueryEditingEnabled()) {
-                mSearchBoxCoordinator.setSearchText(queryTile.queryText);
+                mSearchBoxCoordinator.setSearchText(queryTile.queryText, true);
             } else {
                 mSubmitQueryCallback.onResult(
                         new QueryInfo(queryTile.queryText, queryTile.searchParams));
@@ -205,6 +205,6 @@ public class QueryTileSection {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(ChromeFeatureList.QUERY_TILES,
                 isSmallScreen ? MOST_VISITED_MAX_ROWS_SMALL_SCREEN
                               : MOST_VISITED_MAX_ROWS_NORMAL_SCREEN,
-                1);
+                2);
     }
 }

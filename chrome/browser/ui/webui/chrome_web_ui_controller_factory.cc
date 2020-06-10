@@ -402,6 +402,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (!content::HasWebUIScheme(url))
     return nullptr;
 
+  // This factory doesn't support chrome-untrusted:// WebUIs.
+  if (url.SchemeIs(content::kChromeUIUntrustedScheme))
+    return nullptr;
+
   // Please keep this in alphabetical order. If #ifs or special logics are
   // required, add it below in the appropriate section.
   //

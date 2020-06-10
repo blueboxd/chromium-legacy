@@ -556,7 +556,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox()),
                 mUrlBarEditingTextProvider.getTextWithoutAutocomplete(),
                 mUrlBarEditingTextProvider.getSelectionStart(),
-                !mUrlBarEditingTextProvider.shouldAutocomplete(), queryTile.id);
+                !mUrlBarEditingTextProvider.shouldAutocomplete(), queryTile.id, true);
     }
 
     /**
@@ -786,7 +786,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 int pageClassification =
                         mDataProvider.getPageClassification(mDelegate.didFocusUrlFromFakebox());
                 mAutocomplete.start(profile, mDataProvider.getCurrentUrl(), pageClassification,
-                        textWithoutAutocomplete, cursorPosition, preventAutocomplete, null);
+                        textWithoutAutocomplete, cursorPosition, preventAutocomplete, null,
+                        mDelegate.didFocusUrlFromQueryTiles());
             };
             if (mNativeInitialized) {
                 mHandler.postDelayed(mRequestSuggestions, OMNIBOX_SUGGESTION_START_DELAY_MS);
@@ -1209,7 +1210,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         stopAutocomplete(false);
         if (mDataProvider.hasTab()) {
             mAutocomplete.start(mDataProvider.getProfile(), mDataProvider.getCurrentUrl(),
-                    mDataProvider.getPageClassification(false), query, -1, false, null);
+                    mDataProvider.getPageClassification(false), query, -1, false, null, false);
         }
     }
 

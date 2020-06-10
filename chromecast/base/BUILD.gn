@@ -244,7 +244,10 @@ if (is_android) {
 
     deps = [
       ":cast_sys_info_util",
+      ":chromecast_switches",
       ":dummy_cast_sys_info",
+      ":init_shlib",
+      "//base",
       "//chromecast/public",
     ]
   }

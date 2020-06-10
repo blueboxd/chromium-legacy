@@ -49,7 +49,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Show password changed dialog. If |show_password_error| is true, user
   // already tried to enter old password but it turned out to be incorrect.
   void ShowPasswordChangedDialog(bool show_password_error,
-                                 const std::string& email);
+                                 const AccountId& account_id);
 
   // Show whitelist check failed error. Happens after user completes online
   // signin but whitelist check fails.
@@ -112,7 +112,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // AuthStatusConsumer:
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
-  void OnPasswordChangeDetected() override;
+  void OnPasswordChangeDetected(const UserContext& user_context) override;
   void OnOldEncryptionDetected(const UserContext& user_context,
                                bool has_incomplete_migration) override;
 

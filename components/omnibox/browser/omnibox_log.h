@@ -110,6 +110,10 @@ struct OmniboxLog {
   // AutocompleteController::AddProvidersInfo() and
   // AutocompleteProvider::AddProviderInfo() above.
   ProvidersInfo providers_info;
+
+  // Whether the omnibox input is a search query that is started
+  // by clicking on a image tile. Currently only used on Android.
+  bool is_query_started_from_tile = false;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_LOG_H_

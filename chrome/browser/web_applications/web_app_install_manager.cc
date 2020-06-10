@@ -219,10 +219,11 @@ void WebAppInstallManager::EnqueueInstallBookmarkAppFromSync(
       web_application_info->open_as_window ? DisplayMode::kStandalone
                                            : DisplayMode::kBrowser));
 
-  OnceInstallCallback task_completed_callback =
-      base::BindOnce(&WebAppInstallManager::OnBookmarkAppInstalledAfterSync,
-                     base::Unretained(this), bookmark_app_id,
-                     std::move(web_application_info), std::move(callback));
+  OnceInstallCallback task_completed_callback = base::BindOnce(
+      &WebAppInstallManager::
+          LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForBookmarkAppSync,
+      base::Unretained(this), bookmark_app_id, std::move(web_application_info),
+      std::move(callback));
 
   base::OnceClosure start_task = base::BindOnce(
       &WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback,
@@ -319,29 +320,38 @@ void WebAppInstallManager::MaybeEnqueuePendingBookmarkAppInstalls() {
   pending_bookmark_app_installs_.clear();
 }
 
-void WebAppInstallManager::OnBookmarkAppInstalledAfterSync(
-    const AppId& bookmark_app_id,
-    std::unique_ptr<WebApplicationInfo> web_application_info,
-    OnceInstallCallback callback,
-    const AppId& web_app_id,
-    InstallResultCode code) {
+void WebAppInstallManager::
+    LoadAndInstallWebAppFromManifestWithFallbackCompleted_ForBookmarkAppSync(
+        const AppId& bookmark_app_id,
+        std::unique_ptr<WebApplicationInfo> web_application_info,
+        OnceInstallCallback callback,
+        const AppId& web_app_id,
+        InstallResultCode code) {
   // TODO(loyso): Record |code| for this specific case in
   // Webapp.BookmarkAppInstalledAfterSyncResult UMA.
   if (IsSuccess(code)) {
     DCHECK_EQ(bookmark_app_id, web_app_id);
     std::move(callback).Run(web_app_id, code);
-  } else {
-    // Install failed. Do the fallback install from info.
-    InstallFinalizer::FinalizeOptions options;
-    options.install_source = WebappInstallSource::SYNC;
-    options.locally_installed = kLocallyInstallWebAppsOnSync;
-
-    FilterAndResizeIconsGenerateMissing(web_application_info.get(),
-                                        /*icons_map=*/nullptr);
-
-    finalizer()->FinalizeInstall(*web_application_info, options,
-                                 std::move(callback));
+    return;
   }
+
+  // Install failed. Do the fallback install from info fetching just icon URLs.
+  auto task = std::make_unique<WebAppInstallTask>(
+      profile(), registrar(), shortcut_manager(), file_handler_manager(),
+      finalizer(), data_retriever_factory_.Run());
+
+  InstallFinalizer::FinalizeOptions finalize_options;
+  finalize_options.install_source = WebappInstallSource::SYNC;
+  finalize_options.locally_installed = kLocallyInstallWebAppsOnSync;
+
+  base::OnceClosure start_task = base::BindOnce(
+      &WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons,
+      base::Unretained(task.get()), EnsureWebContentsCreated(),
+      std::move(web_application_info), finalize_options,
+      base::BindOnce(&WebAppInstallManager::OnQueuedTaskCompleted,
+                     base::Unretained(this), task.get(), std::move(callback)));
+
+  EnqueueTask(std::move(task), std::move(start_task));
 }
 
 void WebAppInstallManager::EnqueueTask(std::unique_ptr<WebAppInstallTask> task,
@@ -398,6 +408,10 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
 
   OnInstallTaskCompleted(task, std::move(callback), app_id, code);
   task = nullptr;
+
+  // |callback| may have started another task.
+  if (is_running_queued_task_)
+    return;
 
   if (task_queue_.empty()) {
     web_contents_.reset();

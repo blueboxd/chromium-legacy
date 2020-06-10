@@ -41,6 +41,7 @@ class SmbCredentialsDialog : public SystemWebDialogDelegate {
   // ui::WebDialogDelegate
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
+  bool ShouldShowCloseButton() const override;
 
  private:
   const std::string mount_id_;

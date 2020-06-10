@@ -40,8 +40,26 @@ void CameraPanTiltZoomPermissionContext::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const std::string& resource_identifier) {
-  if (content_type != ContentSettingsType::MEDIASTREAM_CAMERA)
+  if (content_type != ContentSettingsType::MEDIASTREAM_CAMERA &&
+      content_type != ContentSettingsType::CAMERA_PAN_TILT_ZOOM) {
     return;
+  }
+
+  // Skip if the camera permission is currently being updated to match camera
+  // PTZ permission as OnContentSettingChanged would have been called again
+  // causing a reentrancy issue.
+  if (updating_mediastream_camera_permission_) {
+    updating_mediastream_camera_permission_ = false;
+    return;
+  }
+
+  // Skip if the camera PTZ permission is currently being reset when camera
+  // permission got blocked or reset as OnContentSettingChanged would have been
+  // called again causing a reentrancy issue.
+  if (updating_camera_ptz_permission_) {
+    updating_camera_ptz_permission_ = false;
+    return;
+  }
 
   // TODO(crbug.com/1078272): We should not need to deduce the url from the
   // primary pattern here. Modify the infrastructure to facilitate this
@@ -53,6 +71,18 @@ void CameraPanTiltZoomPermissionContext::OnContentSettingChanged(
   ContentSetting camera_ptz_setting =
       host_content_settings_map_->GetContentSetting(
           url, url, content_settings_type(), resource_identifier);
+
+  if (content_type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM) {
+    // Automatically update camera permission to camera PTZ permission as any
+    // change to camera PTZ should be reflected to camera.
+    updating_mediastream_camera_permission_ = true;
+    host_content_settings_map_->SetContentSettingCustomScope(
+        primary_pattern, secondary_pattern,
+        ContentSettingsType::MEDIASTREAM_CAMERA, resource_identifier,
+        camera_ptz_setting);
+    return;
+  }
+
   // Don't reset camera PTZ permission if it is already blocked or in a
   // "default" state.
   if (camera_ptz_setting == CONTENT_SETTING_BLOCK ||
@@ -67,6 +97,7 @@ void CameraPanTiltZoomPermissionContext::OnContentSettingChanged(
       mediastream_camera_setting == CONTENT_SETTING_ASK) {
     // Automatically reset camera PTZ permission if camera permission
     // gets blocked or reset.
+    updating_camera_ptz_permission_ = true;
     host_content_settings_map_->SetContentSettingCustomScope(
         primary_pattern, secondary_pattern,
         ContentSettingsType::CAMERA_PAN_TILT_ZOOM, resource_identifier,

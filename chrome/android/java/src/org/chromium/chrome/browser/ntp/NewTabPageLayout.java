@@ -310,7 +310,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private void initializeSearchBoxTextView() {
         TraceEvent.begin(TAG + ".initializeSearchBoxTextView()");
 
-        mSearchBoxCoordinator.setSearchBoxClickListener(v -> mManager.focusSearchBox(false, null));
+        mSearchBoxCoordinator.setSearchBoxClickListener(
+                v -> mManager.focusSearchBox(false, null, false));
         mSearchBoxCoordinator.setSearchBoxTextWatcher(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -321,8 +322,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             @Override
             public void afterTextChanged(Editable s) {
                 if (s.length() == 0) return;
-                mManager.focusSearchBox(false, s.toString());
-                mSearchBoxCoordinator.setSearchText("");
+                mManager.focusSearchBox(
+                        false, s.toString(), mSearchBoxCoordinator.isTextChangeFromTiles());
+                mSearchBoxCoordinator.setSearchText("", false);
             }
         });
         TraceEvent.end(TAG + ".initializeSearchBoxTextView()");
@@ -331,7 +333,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     private void initializeVoiceSearchButton() {
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
         mSearchBoxCoordinator.addVoiceSearchButtonClickListener(
-                v -> mManager.focusSearchBox(true, null));
+                v -> mManager.focusSearchBox(true, null, false));
         if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // View is 48dp, image is 24dp. Increasing the padding from 4dp -> 8dp will split the
             // remaining 16dp evenly between start/end resulting in a paddingEnd of 8dp.

@@ -13,6 +13,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/viz/common/delegated_ink_metadata.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/resources/transferable_resource.h"
@@ -262,6 +263,15 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   static void UnrefResources(base::WeakPtr<SurfaceClient> surface_client,
                              const std::vector<ReturnedResource>& resources);
 
+  // This method transforms the delegated ink metadata to be in the root target
+  // space, so that it can eventually be drawn onto the back buffer in the
+  // correct position. It should only ever be called when a frame contains
+  // delegated ink metadata, in which case this function will transform it and
+  // then store it in the |delegated_ink_metadata_| member.
+  void TransformAndStoreDelegatedInkMetadata(
+      const gfx::Transform& parent_quad_to_root_target_transform,
+      DelegatedInkMetadata* metadata);
+
   // De-Jelly Effect:
   // HandleDeJelly applies a de-jelly transform to quads in the root render
   // pass.
@@ -421,6 +431,13 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // Whether the last drawn frame had a color conversion pass applied. Used in
   // production on Windows only (does not interact with jelly).
   bool last_frame_had_color_conversion_pass_ = false;
+
+  // The metadata used for drawing a delegated ink trail on the end of a normal
+  // ink stroke. It needs to be transformed to root coordinates and then put on
+  // the final aggregated frame. This is only populated during aggregation when
+  // a surface contains delegated ink metadata on its frame, and it is cleared
+  // after it is placed on the final aggregated frame during aggregation.
+  std::unique_ptr<DelegatedInkMetadata> delegated_ink_metadata_;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_{this};
 

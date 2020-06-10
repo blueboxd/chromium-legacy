@@ -102,9 +102,12 @@ blink::mojom::blink::ManifestImageResourcePtr TypeConverter<
                                                 image_resource) {
   auto image_resource_ptr = blink::mojom::blink::ManifestImageResource::New();
   image_resource_ptr->src = blink::KURL(image_resource->src());
-  image_resource_ptr->sizes = ParseSizes(image_resource->sizes());
-  image_resource_ptr->purpose = ParsePurpose(image_resource->purpose());
-  image_resource_ptr->type = ParseType(image_resource->type());
+  if (image_resource->hasSizes())
+    image_resource_ptr->sizes = ParseSizes(image_resource->sizes());
+  if (image_resource->hasPurpose())
+    image_resource_ptr->purpose = ParsePurpose(image_resource->purpose());
+  if (image_resource->hasType())
+    image_resource_ptr->type = ParseType(image_resource->type());
   return image_resource_ptr;
 }
 

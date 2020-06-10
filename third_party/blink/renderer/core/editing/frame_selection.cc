@@ -425,10 +425,14 @@ bool FrameSelection::Modify(SelectionModifyAlteration alter,
   // Provides details to accessibility about the selection change throughout the
   // current call stack.
   base::AutoReset<bool> is_being_modified_resetter(&is_being_modified_, true);
+  const PlatformWordBehavior platform_word_behavior =
+      frame_->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight()
+          ? PlatformWordBehavior::kWordSkipSpaces
+          : PlatformWordBehavior::kWordDontSkipSpaces;
   ScopedBlinkAXEventIntent scoped_blink_ax_event_intent(
       BlinkAXEventIntent::FromModifiedSelection(
           alter, direction, granularity, set_selection_by,
-          selection_modifier.DirectionOfSelection()),
+          selection_modifier.DirectionOfSelection(), platform_word_behavior),
       &GetDocument());
 
   // For MacOS only selection is directionless at the beginning.

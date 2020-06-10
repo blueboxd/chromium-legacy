@@ -24,18 +24,6 @@ namespace syncer {
 
 namespace {
 
-// Enumeration of possible values for the positioning schemes used in Sync
-// entities. Used in UMA metrics. Do not re-order or delete these entries; they
-// are used in a UMA histogram. Please edit SyncPositioningScheme in enums.xml
-// if a value is added.
-enum class SyncPositioningScheme {
-  kUniquePosition = 0,
-  kPositionInParent = 1,
-  kInsertAfterItemId = 2,
-  kMissing = 3,
-  kMaxValue = kMissing
-};
-
 // Used in metric "Sync.BookmarkGUIDSource2". These values are persisted to
 // logs. Entries should not be renumbered and numeric values should never be
 // reused.
@@ -121,12 +109,8 @@ void AdaptUniquePositionForBookmark(const sync_pb::SyncEntity& update_entity,
     return;
   }
 
-  bool has_position_scheme = false;
-  SyncPositioningScheme sync_positioning_scheme;
   if (update_entity.has_unique_position()) {
     data->unique_position = update_entity.unique_position();
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::kUniquePosition;
   } else if (update_entity.has_position_in_parent() ||
              update_entity.has_insert_after_item_id()) {
     bool missing_originator_fields = false;
@@ -146,24 +130,14 @@ void AdaptUniquePositionForBookmark(const sync_pb::SyncEntity& update_entity,
       data->unique_position =
           UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
               .ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::kPositionInParent;
     } else {
       // If update_entity has insert_after_item_id, use 0 index.
       DCHECK(update_entity.has_insert_after_item_id());
       data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::kInsertAfterItemId;
     }
   } else {
     DLOG(ERROR) << "Missing required position information in update: "
                 << update_entity.id_string();
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::kMissing;
-  }
-  if (has_position_scheme) {
-    UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
-                              sync_positioning_scheme);
   }
 }
 

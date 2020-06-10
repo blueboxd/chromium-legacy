@@ -1120,6 +1120,8 @@ void RasterImplementation::WritePixels(const gpu::Mailbox& dest_mailbox,
                                        GLuint row_bytes,
                                        const SkImageInfo& src_info,
                                        const void* src_pixels) {
+  DCHECK_GE(row_bytes, src_info.minRowBytes());
+
   // Get the size of the SkColorSpace while maintaining 8-byte alignment.
   GLuint pixels_offset = 0;
   if (src_info.colorSpace()) {

@@ -133,7 +133,8 @@ public class OmniboxTestUtils {
 
         @Override
         public void start(Profile profile, String url, int pageClassification, final String text,
-                int cursorPosition, boolean preventInlineAutocomplete, String queryTileId) {
+                int cursorPosition, boolean preventInlineAutocomplete, String queryTileId,
+                boolean isQueryStartedFromTiles) {
             mStartAutocompleteCalled = true;
             mSuggestionsDispatcher = new Runnable() {
                 @Override
@@ -194,7 +195,8 @@ public class OmniboxTestUtils {
 
         @Override
         public void start(Profile profile, String url, int pageClassification, String text,
-                int cursorPosition, boolean preventInlineAutocomplete, String queryTileId) {}
+                int cursorPosition, boolean preventInlineAutocomplete, String queryTileId,
+                boolean isQueryStartedFromTiles) {}
 
         @Override
         public void startZeroSuggest(Profile profile, String omniboxText, String url,

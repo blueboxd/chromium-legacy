@@ -528,7 +528,7 @@ DevToolsURLLoaderFactoryProxy::DevToolsURLLoaderFactoryProxy(
                      base::Unretained(this)));
 }
 
-DevToolsURLLoaderFactoryProxy::~DevToolsURLLoaderFactoryProxy() {}
+DevToolsURLLoaderFactoryProxy::~DevToolsURLLoaderFactoryProxy() = default;
 
 void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,

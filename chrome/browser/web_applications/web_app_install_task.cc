@@ -19,7 +19,6 @@
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/install_bounce_metric.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -596,10 +595,38 @@ void WebAppInstallTask::OnDidCheckForIntentToPlayStore(
                      for_installable_site));
 }
 
+void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
+    content::WebContents* web_contents,
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    InstallFinalizer::FinalizeOptions finalize_options,
+    InstallManager::OnceInstallCallback callback) {
+  CheckInstallPreconditions();
+
+  Observe(web_contents);
+  install_callback_ = std::move(callback);
+  install_source_ = finalize_options.install_source;
+  background_installation_ = true;
+
+  std::vector<GURL> icon_urls =
+      GetValidIconUrlsToDownload(*web_application_info);
+
+  // Skip downloading the page favicons as everything in is the URL list.
+  data_retriever_->GetIcons(
+      web_contents, icon_urls, /*skip_page_fav_icons=*/true,
+      install_source_ == WebappInstallSource::SYNC
+          ? WebAppIconDownloader::Histogram::kForSync
+          : WebAppIconDownloader::Histogram::kForCreate,
+      base::BindOnce(&WebAppInstallTask::OnIconsRetrieved,
+                     base::Unretained(this), std::move(web_application_info),
+                     finalize_options));
+}
+
 void WebAppInstallTask::OnIconsRetrieved(
     std::unique_ptr<WebApplicationInfo> web_app_info,
-    bool is_locally_installed,
+    InstallFinalizer::FinalizeOptions finalize_options,
     IconsMap icons_map) {
+  DCHECK(background_installation_);
+
   if (ShouldStopInstall())
     return;
 
@@ -608,12 +635,8 @@ void WebAppInstallTask::OnIconsRetrieved(
   // Installing from sync should not change icon links.
   FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
 
-  InstallFinalizer::FinalizeOptions options;
-  options.install_source = install_source_;
-  options.locally_installed = is_locally_installed;
-
   install_finalizer_->FinalizeInstall(
-      *web_app_info, options,
+      *web_app_info, finalize_options,
       base::BindOnce(&WebAppInstallTask::OnInstallFinalized,
                      weak_ptr_factory_.GetWeakPtr()));
 }

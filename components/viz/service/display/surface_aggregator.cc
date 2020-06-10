@@ -524,6 +524,12 @@ void SurfaceAggregator::EmitSurfaceContent(
       CanMergeRoundedCorner(rounded_corner_info, *render_pass_list.back()) &&
       source_sqs->de_jelly_delta_y == 0;
 
+  if (frame.metadata.delegated_ink_metadata) {
+    TransformAndStoreDelegatedInkMetadata(
+        gfx::Transform(dest_pass->transform_to_root_target, combined_transform),
+        frame.metadata.delegated_ink_metadata.get());
+  }
+
   gfx::Rect occluding_damage_rect;
   bool occluding_damage_rect_valid = ProcessSurfaceOccludingDamage(
       surface, render_pass_list, combined_transform, dest_pass,
@@ -1107,6 +1113,13 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
 
   const gfx::Transform surface_transform =
       IsRootSurface(surface) ? root_surface_transform_ : gfx::Transform();
+
+  if (frame.metadata.delegated_ink_metadata) {
+    TransformAndStoreDelegatedInkMetadata(
+        gfx::Transform(source_pass_list.back()->transform_to_root_target,
+                       surface_transform),
+        frame.metadata.delegated_ink_metadata.get());
+  }
 
   gfx::Rect occluding_damage_rect;
   bool occluding_damage_rect_valid = ProcessSurfaceOccludingDamage(
@@ -1724,6 +1737,8 @@ CompositorFrame SurfaceAggregator::Aggregate(
     }
   }
 
+  frame.metadata.delegated_ink_metadata = std::move(delegated_ink_metadata_);
+
   if (frame_annotator_)
     frame_annotator_->AnnotateAggregatedFrame(&frame);
 
@@ -1788,6 +1803,43 @@ void SurfaceAggregator::SetFrameAnnotator(
 
 bool SurfaceAggregator::IsRootSurface(const Surface* surface) const {
   return surface->surface_id() == root_surface_id_;
+}
+
+// Transform the point and presentation area of the metadata to be in the root
+// target space. They need to be in the root target space because they will
+// eventually be drawn directly onto the buffer just before being swapped onto
+// the screen, so root target space is required so that they are positioned
+// correctly. After transforming, they are stored in the
+// |delegated_ink_metadata_| member in order to be placed on the final
+// aggregated frame, after which the member is then cleared.
+void SurfaceAggregator::TransformAndStoreDelegatedInkMetadata(
+    const gfx::Transform& parent_quad_to_root_target_transform,
+    DelegatedInkMetadata* metadata) {
+  if (delegated_ink_metadata_) {
+    // This member could already be populated in two scenarios:
+    //   1. The delegated ink metadata was committed to a frame's metadata that
+    //      wasn't ultimately used to produce a frame, but is now being used.
+    //   2. There are two or more ink strokes requesting a delegated ink trail
+    //      simultaneously.
+    // In both cases, we want to default to using a "last write wins" strategy
+    // to determine the metadata to put on the final aggregated frame. This
+    // avoids potential issues of using stale ink metadata in the first scenario
+    // by always using the newest one. For the second scenario, it would be a
+    // very niche use case to have more than one at a time, so the explainer
+    // specifies using last write wins to decide.
+    base::TimeTicks stored_time = delegated_ink_metadata_->timestamp();
+    base::TimeTicks new_time = metadata->timestamp();
+    if (new_time < stored_time)
+      return;
+  }
+
+  gfx::PointF point(metadata->point());
+  gfx::RectF area(metadata->presentation_area());
+  parent_quad_to_root_target_transform.TransformPoint(&point);
+  parent_quad_to_root_target_transform.TransformRect(&area);
+  delegated_ink_metadata_ = std::make_unique<DelegatedInkMetadata>(
+      point, metadata->diameter(), metadata->color(), metadata->timestamp(),
+      area);
 }
 
 void SurfaceAggregator::HandleDeJelly(Surface* surface) {

@@ -156,7 +156,7 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
 
   // AuthStatusConsumer:
   void OnAuthFailure(const AuthFailure& error) override;
-  void OnPasswordChangeDetected() override;
+  void OnPasswordChangeDetected(const UserContext& user_context) override;
   void OnAuthSuccess(const UserContext& user_context) override;
 
   // ash::SessionActivationObserver:

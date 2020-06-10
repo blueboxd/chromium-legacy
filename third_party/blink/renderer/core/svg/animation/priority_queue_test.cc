@@ -84,6 +84,35 @@ TEST(PriorityQueueTest, RemovalMin) {
   }
 }
 
+TEST(PriorityQueueTest, RemovalFilledFromOtherSubtree) {
+  TestPriorityQueue queue;
+  using PairType = std::pair<int, Member<TestNode>>;
+  HeapVector<PairType> vector;
+  EXPECT_TRUE(queue.IsEmpty());
+  // Build a heap/queue where the left subtree contains priority 3 and the right
+  // contains priority 4:
+  //
+  //              /-{[6]=4}   {[index]=priority}
+  //      /-{[2]=4}-{[5]=4}
+  // {[0]=3}
+  //      \-{[1]=3}-{[4]=3}
+  //              \-{[3]=3}
+  //                      \-{[7]=3}
+  //
+  for (int n : {3, 3, 4, 3, 3, 4, 4, 3}) {
+    TestNode* node = MakeGarbageCollected<TestNode>();
+    queue.Insert(n, node);
+    vector.push_back<PairType>({n, node});
+  }
+  EXPECT_FALSE(queue.IsEmpty());
+  EXPECT_EQ(queue.size(), 8u);
+  VerifyHeap(queue);
+
+  queue.Remove(vector[6].second);
+  EXPECT_EQ(queue.size(), 7u);
+  VerifyHeap(queue);
+}
+
 TEST(PriorityQueueTest, RemovalReverse) {
   TestPriorityQueue queue;
   using PairType = std::pair<int, Member<TestNode>>;

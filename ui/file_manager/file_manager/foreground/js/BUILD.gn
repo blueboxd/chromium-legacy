@@ -59,6 +59,7 @@ js_type_check("closure_compile_module") {
     ":naming_controller",
     ":navigation_list_model",
     ":navigation_uma",
+    ":path_component",
     ":progress_center_item_group",
     ":providers_model",
     ":quick_view_controller",
@@ -637,6 +638,10 @@ js_unittest("navigation_list_model_unittest") {
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
   ]
+}
+
+js_library("path_component") {
+  deps = [ "//ui/file_manager/base/js:volume_manager_types" ]
 }
 
 js_library("progress_center_item_group") {

@@ -6111,6 +6111,21 @@
             ]
         }
     ],
+    "SmartDimNewMlAgent": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200609",
+                    "enable_features": [
+                        "SmartDimNewMlAgent"
+                    ]
+                }
+            ]
+        }
+    ],
     "SplitCacheByNetworkIsolationKey": [
         {
             "platforms": [

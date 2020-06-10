@@ -17,8 +17,7 @@ DOMHandler::DOMHandler(bool allow_file_access)
       host_(nullptr),
       allow_file_access_(allow_file_access) {}
 
-DOMHandler::~DOMHandler() {
-}
+DOMHandler::~DOMHandler() = default;
 
 void DOMHandler::Wire(UberDispatcher* dispatcher) {
   DOM::Dispatcher::wire(dispatcher, this);

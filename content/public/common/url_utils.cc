@@ -23,8 +23,8 @@
 namespace content {
 
 bool HasWebUIScheme(const GURL& url) {
-  return url.SchemeIs(kChromeDevToolsScheme) ||
-         url.SchemeIs(kChromeUIScheme);
+  return url.SchemeIs(kChromeDevToolsScheme) || url.SchemeIs(kChromeUIScheme) ||
+         url.SchemeIs(kChromeUIUntrustedScheme);
 }
 
 bool IsSavableURL(const GURL& url) {

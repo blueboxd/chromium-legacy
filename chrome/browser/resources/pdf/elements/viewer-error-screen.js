@@ -15,8 +15,6 @@ Polymer({
 
   properties: {
     reloadFn: Function,
-
-    strings: Object,
   },
 
   show() {

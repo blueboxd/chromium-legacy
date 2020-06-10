@@ -181,7 +181,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
-  void OnPasswordChangeDetected() override;
+  void OnPasswordChangeDetected(const UserContext& user_context) override;
   void OnOldEncryptionDetected(const UserContext& user_context,
                                bool has_incomplete_migration) override;
   void WhiteListCheckFailed(const std::string& email) override;
@@ -235,7 +235,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void ShowTPMError();
 
   // Shows "password changed" dialog.
-  void ShowPasswordChangedDialog();
+  void ShowPasswordChangedDialog(const UserContext& user_context);
 
   // Creates |login_performer_| if necessary and calls login() on it.
   void PerformLogin(const UserContext& user_context,

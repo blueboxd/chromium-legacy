@@ -138,7 +138,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthStatusConsumer {
   // The current guest login attempt has succeeded.
   virtual void OnOffTheRecordAuthSuccess() {}
   // The same password didn't work both online and offline.
-  virtual void OnPasswordChangeDetected();
+  virtual void OnPasswordChangeDetected(const UserContext& user_context);
   // The cryptohome is encrypted in old format and needs migration.
   virtual void OnOldEncryptionDetected(const UserContext& user_context,
                                        bool has_incomplete_migration);

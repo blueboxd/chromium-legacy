@@ -2644,11 +2644,17 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION" desc="Radio button choice to allow a site to access microphone and camera, displayed in bubble when a page is accessing microphone and camera.">
         Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera and microphone
       </message>
+      <message name="IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_PAN_TILT_ZOOM_NO_ACTION" desc="Radio button choice to allow a site to use and move camera, and use microphone, displayed in bubble when a page is accessing microphone and camera.">
+        Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to use and move your camera, and use your microphone
+      </message>
       <message name="IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION" desc="Radio button choice to allow a site to access microphone, displayed in bubble when a page is accessing microphone.">
         Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your microphone
       </message>
       <message name="IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION" desc="Radio button choice to allow a site to access camera, displayed in bubble when a page is accessing camera.">
         Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your camera
+      </message>
+      <message name="IDS_ALLOWED_CAMERA_PAN_TILT_ZOOM_NO_ACTION" desc="Radio button choice to allow a site to use and move camera, displayed in bubble when a page is accessing camera.">
+        Continue allowing <ph name="HOST">$1<ex>mail.google.com</ex></ph> to use and move your camera
       </message>
       <message name="IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when popup is blocked">
         Pop-up blocked

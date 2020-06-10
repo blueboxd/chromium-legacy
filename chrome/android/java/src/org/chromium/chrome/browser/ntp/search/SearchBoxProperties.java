@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.search;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.View.OnClickListener;
 
 import org.chromium.ui.modelutil.PropertyKey;
@@ -28,7 +29,8 @@ interface SearchBoxProperties {
             new WritableObjectPropertyKey<>();
     WritableObjectPropertyKey<OnClickListener> VOICE_SEARCH_CLICK_CALLBACK =
             new WritableObjectPropertyKey<>();
-    WritableObjectPropertyKey<String> SEARCH_TEXT = new WritableObjectPropertyKey<>();
+    WritableObjectPropertyKey<Pair<String, Boolean>> SEARCH_TEXT =
+            new WritableObjectPropertyKey<>();
     WritableBooleanPropertyKey SEARCH_HINT_VISIBILITY = new WritableBooleanPropertyKey();
     WritableObjectPropertyKey<OnClickListener> SEARCH_BOX_CLICK_CALLBACK =
             new WritableObjectPropertyKey<>();

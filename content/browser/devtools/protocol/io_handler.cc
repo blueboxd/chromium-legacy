@@ -29,7 +29,7 @@ IOHandler::IOHandler(DevToolsIOContext* io_context)
       browser_context_(nullptr),
       storage_partition_(nullptr) {}
 
-IOHandler::~IOHandler() {}
+IOHandler::~IOHandler() = default;
 
 void IOHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new IO::Frontend(dispatcher->channel()));

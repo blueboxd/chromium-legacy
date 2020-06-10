@@ -338,8 +338,7 @@ SystemInfoHandler::SystemInfoHandler()
     : DevToolsDomainHandler(SystemInfo::Metainfo::domainName) {
 }
 
-SystemInfoHandler::~SystemInfoHandler() {
-}
+SystemInfoHandler::~SystemInfoHandler() = default;
 
 void SystemInfoHandler::Wire(UberDispatcher* dispatcher) {
   SystemInfo::Dispatcher::wire(dispatcher, this);

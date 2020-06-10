@@ -56,7 +56,7 @@ class SearchBoxViewBinder
             searchBoxTextView.addTextChangedListener(
                     model.get(SearchBoxProperties.SEARCH_BOX_TEXT_WATCHER));
         } else if (SearchBoxProperties.SEARCH_TEXT == propertyKey) {
-            searchBoxTextView.setText(model.get(SearchBoxProperties.SEARCH_TEXT));
+            searchBoxTextView.setText(model.get(SearchBoxProperties.SEARCH_TEXT).first);
         } else if (SearchBoxProperties.SEARCH_HINT_VISIBILITY == propertyKey) {
             boolean isHintVisible = model.get(SearchBoxProperties.SEARCH_HINT_VISIBILITY);
             searchBoxTextView.setHint(isHintVisible

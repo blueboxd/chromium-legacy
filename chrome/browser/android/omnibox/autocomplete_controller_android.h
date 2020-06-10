@@ -43,7 +43,8 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
              bool prefer_keyword,
              bool allow_exact_keyword_match,
              bool want_asynchronous_matches,
-             const base::android::JavaRef<jstring>& j_query_tile_id);
+             const base::android::JavaRef<jstring>& j_query_tile_id,
+             bool is_query_started_from_tiles);
   base::android::ScopedJavaLocalRef<jobject> Classify(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -154,6 +155,10 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
 
   JavaObjectWeakGlobalRef weak_java_autocomplete_controller_android_;
   Profile* profile_;
+
+  // Whether the omnibox input is a query that starts building
+  // by clicking on an image tile.
+  bool is_query_started_from_tiles_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteControllerAndroid);
 };

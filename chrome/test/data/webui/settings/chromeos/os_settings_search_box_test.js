@@ -372,4 +372,31 @@ suite('OSSettingsSearchBox', () => {
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
         `Turn&nbsp;on  &nbsp;<b>Wi-F</b>i `);
   });
+
+  test.only('Test longest common substring for mispellings', async () => {
+    settingsSearchHandler.setFakeResults([fakeResult('Linux')]);
+    await simulateSearch(`Linuux`);
+    await waitForListUpdate();
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Linu</b>x`);
+
+    settingsSearchHandler.setFakeResults([fakeResult('Linux')]);
+    await simulateSearch(`Llinuc`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Linu</b>x`);
+
+    settingsSearchHandler.setFakeResults([fakeResult('Display')]);
+    await simulateSearch(`Dispplay`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>Disp</b>lay`);
+
+    settingsSearchHandler.setFakeResults([fakeResult('ABCDEF GHIJK LMNO')]);
+    await simulateSearch(`MCDEMMM LM EF CDEABCDEFADBCDABDCEF`);
+    assertEquals(
+        searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
+        `<b>ABCDEF</b> GHIJK <b>LM</b>NO`);
+  });
 });

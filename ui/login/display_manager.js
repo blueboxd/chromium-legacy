@@ -24,7 +24,7 @@
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 /** @const */ var SCREEN_ERROR_MESSAGE = 'error-message';
-/** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
+/** @const */ var SCREEN_PASSWORD_CHANGED = 'gaia-password-changed';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'saml-confirm-password';
 /** @const */ var SCREEN_FATAL_ERROR = 'fatal-error';
@@ -1203,16 +1203,6 @@ cr.define('cr.ui.login', function() {
         typeof currentScreen.hideDetachableBaseWarningBubble === 'function') {
       currentScreen.hideDetachableBaseWarningBubble(username);
     }
-  };
-
-  /**
-   * Shows password changed screen that offers migration.
-   * @param {boolean} showError Whether to show the incorrect password error.
-   * @param {string} email What user does reauth. Being used for display in the
-   * new UI.
-   */
-  DisplayManager.showPasswordChangedScreen = function(showError, email) {
-    login.PasswordChangedScreen.show(showError, email);
   };
 
   /**

@@ -74,8 +74,7 @@ EmulationHandler::EmulationHandler()
       focus_emulation_enabled_(false),
       host_(nullptr) {}
 
-EmulationHandler::~EmulationHandler() {
-}
+EmulationHandler::~EmulationHandler() = default;
 
 // static
 std::vector<EmulationHandler*> EmulationHandler::ForAgentHost(

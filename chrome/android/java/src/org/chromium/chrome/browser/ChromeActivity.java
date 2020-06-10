@@ -440,7 +440,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (!isFinishing() && getFullscreenManager() != null) {
                 getFullscreenManager().initialize(
                         (ControlContainer) findViewById(R.id.control_container),
-                        getTabModelSelector(), getControlContainerHeightResource());
+                        getActivityTabProvider(), getTabModelSelector(),
+                        getControlContainerHeightResource());
             }
 
             BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);

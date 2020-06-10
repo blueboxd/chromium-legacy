@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/permissions/permission_util.h"
 #include "components/permissions/test/mock_permission_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -14,6 +15,18 @@ namespace {
 
 class TestDelegate : public permissions::PermissionPrompt::Delegate {
  public:
+  explicit TestDelegate(const std::vector<ContentSettingsType> content_types) {
+    std::transform(
+        content_types.begin(), content_types.end(),
+        std::back_inserter(requests_), [&](auto& content_type) {
+          return std::make_unique<permissions::MockPermissionRequest>(
+              permissions::PermissionUtil::GetPermissionString(content_type),
+              content_type);
+        });
+    std::transform(requests_.begin(), requests_.end(),
+                   std::back_inserter(raw_requests_),
+                   [](auto& req) { return req.get(); });
+  }
   TestDelegate(const GURL& origin, const std::vector<std::string> names) {
     std::transform(
         names.begin(), names.end(), std::back_inserter(requests_),
@@ -84,5 +97,19 @@ TEST_F(PermissionPromptBubbleViewTest,
                       base::UTF16ToUTF8(l10n_util::GetStringUTF16(
                           IDS_PERMISSIONS_BUBBLE_PROMPT_THIS_FILE)),
                       base::UTF16ToUTF8(bubble->GetAccessibleWindowTitle()));
+}
+
+TEST_F(PermissionPromptBubbleViewTest,
+       AccessibleTitleIncludesOnlyVisiblePermissions) {
+  TestDelegate delegate({ContentSettingsType::MEDIASTREAM_MIC,
+                         ContentSettingsType::MEDIASTREAM_CAMERA,
+                         ContentSettingsType::CAMERA_PAN_TILT_ZOOM});
+  auto bubble = std::make_unique<PermissionPromptBubbleView>(
+      nullptr, &delegate, base::TimeTicks::Now());
+
+  const auto title = base::UTF16ToUTF8(bubble->GetAccessibleWindowTitle());
+  EXPECT_PRED_FORMAT2(::testing::IsSubstring, "AudioCapture", title);
+  EXPECT_PRED_FORMAT2(::testing::IsSubstring, "CameraPanTiltZoom", title);
+  EXPECT_PRED_FORMAT2(::testing::IsNotSubstring, "VideoCapture", title);
 }
 }  // namespace

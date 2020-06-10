@@ -2230,6 +2230,15 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.display_transform_hint = active_tree_->display_transform_hint();
 
+  if (std::unique_ptr<viz::DelegatedInkMetadata> delegated_ink_metadata =
+          active_tree_->take_delegated_ink_metadata()) {
+    TRACE_EVENT_INSTANT1(
+        "cc", "Delegated Ink Metadata set on compositor frame metadata",
+        TRACE_EVENT_SCOPE_THREAD, "point",
+        delegated_ink_metadata->point().ToString());
+    metadata.delegated_ink_metadata = std::move(delegated_ink_metadata);
+  }
+
   return metadata;
 }
 

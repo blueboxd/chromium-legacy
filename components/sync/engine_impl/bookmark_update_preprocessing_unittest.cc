@@ -22,14 +22,6 @@ using testing::Eq;
 using testing::IsEmpty;
 using testing::Ne;
 
-enum class ExpectedSyncPositioningScheme {
-  kUniquePosition = 0,
-  kPositionInParent = 1,
-  kInsertAfterItemId = 2,
-  kMissing = 3,
-  kMaxValue = kMissing
-};
-
 enum class ExpectedBookmarkGuidSource {
   kSpecifics = 0,
   kValidOCII = 1,
@@ -45,18 +37,11 @@ TEST(BookmarkUpdatePreprocessingTest, ShouldPropagateUniquePosition) {
   *entity.mutable_unique_position() =
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
 
-  base::HistogramTester histogram_tester;
   EntityData entity_data;
   AdaptUniquePositionForBookmark(entity, &entity_data);
 
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(entity_data.unique_position).IsValid());
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Entities.PositioningScheme",
-      /*sample=*/
-      ExpectedSyncPositioningScheme::kUniquePosition,
-      /*count=*/1);
 }
 
 TEST(BookmarkUpdatePreprocessingTest,
@@ -66,18 +51,11 @@ TEST(BookmarkUpdatePreprocessingTest,
   entity.set_originator_client_item_id("1");
   entity.set_position_in_parent(5);
 
-  base::HistogramTester histogram_tester;
   EntityData entity_data;
   AdaptUniquePositionForBookmark(entity, &entity_data);
 
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(entity_data.unique_position).IsValid());
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Entities.PositioningScheme",
-      /*sample=*/
-      ExpectedSyncPositioningScheme::kPositionInParent,
-      /*count=*/1);
 }
 
 TEST(BookmarkUpdatePreprocessingTest,
@@ -87,18 +65,11 @@ TEST(BookmarkUpdatePreprocessingTest,
   entity.set_originator_client_item_id("1");
   entity.set_insert_after_item_id("ITEM_ID");
 
-  base::HistogramTester histogram_tester;
   EntityData entity_data;
   AdaptUniquePositionForBookmark(entity, &entity_data);
 
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(entity_data.unique_position).IsValid());
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Entities.PositioningScheme",
-      /*sample=*/
-      ExpectedSyncPositioningScheme::kInsertAfterItemId,
-      /*count=*/1);
 }
 
 // Tests that AdaptGuidForBookmark() propagates GUID in specifics if the field

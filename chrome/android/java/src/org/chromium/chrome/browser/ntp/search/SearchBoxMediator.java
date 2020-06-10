@@ -9,6 +9,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
@@ -45,7 +46,6 @@ class SearchBoxMediator
         mContext = context;
         mModel = model;
         mView = view;
-
         PropertyModelChangeProcessor.create(mModel, mView, new SearchBoxViewBinder());
     }
 
@@ -106,7 +106,7 @@ class SearchBoxMediator
             boolean isChipVisible = mModel.get(SearchBoxProperties.CHIP_VISIBILITY);
             if (isChipVisible) {
                 String chipText = mModel.get(SearchBoxProperties.CHIP_TEXT);
-                mModel.set(SearchBoxProperties.SEARCH_TEXT, chipText);
+                mModel.set(SearchBoxProperties.SEARCH_TEXT, Pair.create(chipText, true));
                 mChipDelegate.onCancelClicked();
             }
             listener.onClick(v);

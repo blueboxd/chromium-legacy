@@ -2118,6 +2118,26 @@ executable("image_decode_bench") {
   defines = [ "INSIDE_BLINK" ]
 }
 
+executable("image_decode_to_nia") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+
+  sources = [ "testing/image_decode_to_nia.cc" ]
+
+  deps = [
+    ":platform",
+    "//base",
+    "//third_party/blink/renderer/platform/wtf",
+  ]
+
+  configs += [
+    "//third_party/blink/renderer/platform/wtf:wtf_config",
+    "//third_party/blink/renderer:config",
+  ]
+
+  defines = [ "INSIDE_BLINK" ]
+}
+
 test("blink_platform_perftests") {
   sources = [
     "testing/blink_perf_test_suite.cc",

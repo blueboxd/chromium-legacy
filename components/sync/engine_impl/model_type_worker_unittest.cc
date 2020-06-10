@@ -47,14 +47,6 @@ const char kValue1[] = "value1";
 const char kValue2[] = "value2";
 const char kValue3[] = "value3";
 
-enum class ExpectedSyncPositioningScheme {
-  UNIQUE_POSITION = 0,
-  POSITION_IN_PARENT = 1,
-  INSERT_AFTER_ITEM_ID = 2,
-  MISSING = 3,
-  kMaxValue = MISSING
-};
-
 EntitySpecifics GenerateSpecifics(const std::string& tag,
                                   const std::string& value) {
   EntitySpecifics specifics;
@@ -1459,7 +1451,6 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
@@ -1467,12 +1458,6 @@ TEST_F(ModelTypeWorkerTest,
   const EntityData& data = response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Entities.PositioningScheme",
-      /*sample=*/
-      ExpectedSyncPositioningScheme::UNIQUE_POSITION,
-      /*count=*/1);
 }
 
 TEST_F(ModelTypeWorkerTest,
@@ -1486,7 +1471,6 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
@@ -1494,12 +1478,6 @@ TEST_F(ModelTypeWorkerTest,
   const EntityData& data = response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Entities.PositioningScheme",
-      /*sample=*/
-      ExpectedSyncPositioningScheme::POSITION_IN_PARENT,
-      /*count=*/1);
 }
 
 TEST_F(ModelTypeWorkerTest,
@@ -1513,7 +1491,6 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
@@ -1521,11 +1498,6 @@ TEST_F(ModelTypeWorkerTest,
   const EntityData& data = response_data.entity;
   EXPECT_TRUE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Entities.PositioningScheme",
-      /*sample=*/
-      ExpectedSyncPositioningScheme::INSERT_AFTER_ITEM_ID,
-      /*count=*/1);
 }
 
 TEST_F(ModelTypeWorkerTest,
@@ -1541,7 +1513,6 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = specifics;
 
   UpdateResponseData response_data;
-  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
@@ -1549,10 +1520,6 @@ TEST_F(ModelTypeWorkerTest,
   const EntityData& data = response_data.entity;
   EXPECT_FALSE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
-  histogram_tester.ExpectUniqueSample("Sync.Entities.PositioningScheme",
-                                      /*sample=*/
-                                      ExpectedSyncPositioningScheme::MISSING,
-                                      /*count=*/1);
 }
 
 TEST_F(ModelTypeWorkerTest,
@@ -1564,7 +1531,6 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  base::HistogramTester histogram_tester;
 
   EXPECT_EQ(
       ModelTypeWorker::SUCCESS,
@@ -1573,8 +1539,6 @@ TEST_F(ModelTypeWorkerTest,
   const EntityData& data = response_data.entity;
   EXPECT_FALSE(
       syncer::UniquePosition::FromProto(data.unique_position).IsValid());
-  histogram_tester.ExpectTotalCount("Sync.Entities.PositioningScheme",
-                                    /*count=*/0);
 }
 
 TEST_F(ModelTypeWorkerTest, ShouldPropagateCommitFailure) {

@@ -1334,6 +1334,7 @@ if (!is_android) {
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.h",
       "../browser/ui/webui/chrome_url_data_manager_browsertest.cc",
+      "../browser/ui/webui/chrome_web_ui_controller_factory_browsertest.cc",
       "../browser/ui/webui/chrome_webui_navigation_browsertest.cc",
       "../browser/ui/webui/chromeos/account_manager/account_migration_welcome_ui_test.cc",
       "../browser/ui/webui/chromeos/account_manager/account_migration_welcome_ui_test.h",

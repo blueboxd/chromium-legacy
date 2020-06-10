@@ -468,8 +468,7 @@ InputHandler::InputHandler()
       page_scale_factor_(1.0),
       last_id_(0) {}
 
-InputHandler::~InputHandler() {
-}
+InputHandler::~InputHandler() = default;
 
 // static
 std::vector<InputHandler*> InputHandler::ForAgentHost(

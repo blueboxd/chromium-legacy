@@ -118,6 +118,7 @@ public class LocationBarLayout extends FrameLayout
     protected boolean mNativeInitialized;
     private boolean mUrlHasFocus;
     private boolean mUrlFocusedFromFakebox;
+    private boolean mUrlFocusedFromQueryTiles;
     private boolean mUrlFocusedWithoutAnimations;
     protected boolean mVoiceSearchEnabled;
 
@@ -495,6 +496,7 @@ public class LocationBarLayout extends FrameLayout
             imm.viewClicked(mUrlBar);
         } else {
             mUrlFocusedFromFakebox = false;
+            mUrlFocusedFromQueryTiles = false;
             mUrlFocusedWithoutAnimations = false;
 
             // Focus change caused by a close-tab may result in an invalid current tab.
@@ -561,6 +563,11 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public boolean didFocusUrlFromFakebox() {
         return mUrlFocusedFromFakebox;
+    }
+
+    @Override
+    public boolean didFocusUrlFromQueryTiles() {
+        return mUrlFocusedFromQueryTiles;
     }
 
     @Override
@@ -1033,12 +1040,16 @@ public class LocationBarLayout extends FrameLayout
             boolean shouldBeFocused, @Nullable String pastedText, @OmniboxFocusReason int reason) {
         if (shouldBeFocused) {
             if (!mUrlHasFocus) recordOmniboxFocusReason(reason);
-
             if (reason == LocationBar.OmniboxFocusReason.FAKE_BOX_TAP
                     || reason == LocationBar.OmniboxFocusReason.FAKE_BOX_LONG_PRESS
                     || reason == LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS
                     || reason == LocationBar.OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_TAP) {
                 mUrlFocusedFromFakebox = true;
+            }
+
+            if (reason == LocationBar.OmniboxFocusReason.QUERY_TILES_NTP_TAP) {
+                mUrlFocusedFromFakebox = true;
+                mUrlFocusedFromQueryTiles = true;
             }
 
             if (mUrlHasFocus && mUrlFocusedWithoutAnimations) {

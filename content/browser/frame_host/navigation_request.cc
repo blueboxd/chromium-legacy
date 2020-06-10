@@ -3290,6 +3290,8 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
             parent->ContentSecurityPolicies())) {
       upgrade_if_insecure_ = true;
       network::UpgradeInsecureRequest(&common_params_->url);
+      common_params_->referrer = Referrer::SanitizeForRequest(
+          common_params_->url, *common_params_->referrer);
       commit_params_->original_url = common_params_->url;
     }
   }
@@ -4645,7 +4647,7 @@ void NavigationRequest::CheckStateTransition(NavigationState state) const {
   static const base::NoDestructor<StateTransitions<NavigationState>>
       transitions(StateTransitions<NavigationState>({
           // See
-          // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.svg
+          // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.png
           {NOT_STARTED,
            {WAITING_FOR_RENDERER_RESPONSE, WILL_START_NAVIGATION,
             WILL_START_REQUEST}},

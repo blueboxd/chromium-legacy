@@ -55,8 +55,7 @@ DevToolsManager::DevToolsManager()
     : delegate_(GetContentClient()->browser()->GetDevToolsManagerDelegate()) {
 }
 
-DevToolsManager::~DevToolsManager() {
-}
+DevToolsManager::~DevToolsManager() = default;
 
 void DevToolsManager::SetHttpHandler(
     std::unique_ptr<DevToolsHttpHandler> http_handler) {

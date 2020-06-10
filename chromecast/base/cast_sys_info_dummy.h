@@ -18,6 +18,7 @@ namespace chromecast {
 class CastSysInfoDummy : public CastSysInfo {
  public:
   CastSysInfoDummy();
+  CastSysInfoDummy(const std::string& sys_info_file);
   ~CastSysInfoDummy() override;
 
   // CastSysInfo implementation:
@@ -46,7 +47,8 @@ class CastSysInfoDummy : public CastSysInfo {
   void SetManufacturerForTesting(const std::string& manufacturer);
   void SetSystemBuildNumberForTesting(const std::string& system_build_number);
   void SetFactoryCountryForTesting(const std::string& factory_country);
-  void SetFactoryLocaleListForTesting(const std::vector<std::string>& factory_locale_list);
+  void SetFactoryLocaleListForTesting(
+      const std::vector<std::string>& factory_locale_list);
   void SetWifiInterfaceForTesting(const std::string& wifi_interface);
   void SetApInterfaceForTesting(const std::string& ap_interface);
 

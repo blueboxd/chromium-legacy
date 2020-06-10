@@ -549,8 +549,7 @@ TargetHandler::TargetHandler(AccessMode access_mode,
       owner_target_id_(owner_target_id),
       root_session_(root_session) {}
 
-TargetHandler::~TargetHandler() {
-}
+TargetHandler::~TargetHandler() = default;
 
 // static
 std::vector<TargetHandler*> TargetHandler::ForAgentHost(

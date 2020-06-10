@@ -110,8 +110,6 @@ class CONTENT_EXPORT NavigationRequest
  public:
   // Keeps track of the various stages of a NavigationRequest.
   // To see what state transitions are allowed, see |SetState|.
-  // See
-  // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.svg
   enum NavigationState {
     // Initial state.
     NOT_STARTED = 0,

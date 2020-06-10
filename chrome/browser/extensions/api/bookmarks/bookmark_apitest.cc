@@ -19,12 +19,37 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 
 using bookmarks::BookmarkModel;
 
 namespace extensions {
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Bookmarks) {
+using ContextType = ExtensionApiTest::ContextType;
+
+class BookmarksApiTest : public ExtensionApiTest,
+                         public testing::WithParamInterface<ContextType> {
+ public:
+  void SetUp() override {
+    ExtensionApiTest::SetUp();
+    // Service Workers are currently only available on certain channels, so set
+    // the channel for those tests.
+    if (GetParam() == ContextType::kServiceWorker)
+      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
+  }
+
+ private:
+  std::unique_ptr<ScopedWorkerBasedExtensionsChannel> current_channel_;
+};
+
+INSTANTIATE_TEST_SUITE_P(EventPage,
+                         BookmarksApiTest,
+                         ::testing::Values(ContextType::kEventPage));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         BookmarksApiTest,
+                         ::testing::Values(ContextType::kServiceWorker));
+
+IN_PROC_BROWSER_TEST_P(BookmarksApiTest, Bookmarks) {
   // Add test managed bookmarks to verify that the bookmarks API can read them
   // and can't modify them.
   Profile* profile = browser()->profile();
@@ -45,7 +70,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Bookmarks) {
   profile->GetPrefs()->Set(bookmarks::prefs::kManagedBookmarks, list);
   ASSERT_EQ(2u, managed->managed_node()->children().size());
 
-  ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
+  if (GetParam() == ContextType::kEventPage) {
+    ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
+  } else {
+    ASSERT_TRUE(RunExtensionTestWithFlags(
+        "bookmarks", kFlagRunAsServiceWorkerBasedExtension, kFlagNone))
+        << message_;
+  }
 }
 
 }  // namespace extensions

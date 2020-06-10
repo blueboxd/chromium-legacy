@@ -47,6 +47,9 @@ class CameraPanTiltZoomPermissionContext
                                const std::string& resource_identifier) override;
 
   HostContentSettingsMap* host_content_settings_map_;
+
+  bool updating_camera_ptz_permission_ = false;
+  bool updating_mediastream_camera_permission_ = false;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_CAMERA_PAN_TILT_ZOOM_PERMISSION_CONTEXT_H_

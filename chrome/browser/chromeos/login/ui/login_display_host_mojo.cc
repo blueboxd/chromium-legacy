@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_password_changed_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -116,11 +117,12 @@ void LoginDisplayHostMojo::SetUserCount(int user_count) {
   }
 }
 
-void LoginDisplayHostMojo::ShowPasswordChangedDialog(bool show_password_error,
-                                                     const std::string& email) {
+void LoginDisplayHostMojo::ShowPasswordChangedDialog(
+    bool show_password_error,
+    const AccountId& account_id) {
   DCHECK(GetOobeUI());
-  GetOobeUI()->signin_screen_handler()->ShowPasswordChangedDialog(
-      show_password_error, email);
+  wizard_controller_->ShowGaiaPasswordChangedScreen(account_id,
+                                                    show_password_error);
   ShowDialog();
 }
 
@@ -459,12 +461,12 @@ void LoginDisplayHostMojo::OnAuthSuccess(const UserContext& user_context) {
   }
 }
 
-void LoginDisplayHostMojo::OnPasswordChangeDetected() {
-  if (gaia_reauth_account_id_.has_value()) {
-    SendReauthReason(gaia_reauth_account_id_.value(),
-                     true /* password changed */);
-    gaia_reauth_account_id_.reset();
+void LoginDisplayHostMojo::OnPasswordChangeDetected(
+    const UserContext& user_context) {
+  if (user_context.GetAccountId().is_valid()) {
+    SendReauthReason(user_context.GetAccountId(), true /* password changed */);
   }
+  gaia_reauth_account_id_.reset();
 }
 
 void LoginDisplayHostMojo::OnOldEncryptionDetected(

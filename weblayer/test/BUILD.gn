@@ -182,7 +182,7 @@ test("weblayer_browsertests") {
         "${target_gen_dir}/weblayer_browsertests_manifest/AndroidManifest.xml"
     android_manifest_dep = ":weblayer_browsertests_manifest"
     use_default_launcher = false
-    shared_resources = true
+    app_as_shared_lib = true
     product_config_java_packages = [ weblayer_product_config_java_package ]
   } else {
     sources += [

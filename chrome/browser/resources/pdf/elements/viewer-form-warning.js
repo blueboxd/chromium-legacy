@@ -14,10 +14,6 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  properties: {
-    strings: Object,
-  },
-
   /** @private {PromiseResolver} */
   resolver_: null,
 

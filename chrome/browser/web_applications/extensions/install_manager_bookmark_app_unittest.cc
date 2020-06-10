@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <queue>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
@@ -136,9 +137,11 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
         base::BindLambdaForTesting([this]() {
           // This factory requires a prepared DataRetriever. A test should
           // create one with CreateDefaultDataToRetrieve, for example.
-          DCHECK(prepared_data_retriever_);
-          return std::unique_ptr<web_app::WebAppDataRetriever>(
-              std::move(prepared_data_retriever_));
+          DCHECK(!prepared_data_retrievers_.empty());
+          std::unique_ptr<web_app::WebAppDataRetriever> data_retriever =
+              std::move(prepared_data_retrievers_.front());
+          prepared_data_retrievers_.pop();
+          return data_retriever;
         }));
 
     auto test_url_loader = std::make_unique<web_app::TestWebAppUrlLoader>();
@@ -183,63 +186,65 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
     return *test_url_loader_;
   }
 
-  web_app::TestDataRetriever* data_retriever() {
-    DCHECK(prepared_data_retriever_);
-    return prepared_data_retriever_.get();
-  }
-
   web_app::AppRegistrar* app_registrar() {
     DCHECK(registrar_);
     return registrar_;
   }
 
-  void CreateEmptyDataRetriever() {
-    DCHECK(!prepared_data_retriever_);
-    prepared_data_retriever_ = std::make_unique<web_app::TestDataRetriever>();
+  web_app::TestDataRetriever* AddEmptyDataRetriever() {
+    prepared_data_retrievers_.push(
+        std::make_unique<web_app::TestDataRetriever>());
+    return prepared_data_retrievers_.back().get();
   }
 
-  void CreateDataRetrieverWithManifest(
+  web_app::TestDataRetriever* AddDataRetrieverWithManifest(
       std::unique_ptr<blink::Manifest> manifest,
       bool is_installable) {
-    CreateEmptyDataRetriever();
-    data_retriever()->SetRendererWebApplicationInfo(
+    web_app::TestDataRetriever* data_retriever = AddEmptyDataRetriever();
+    data_retriever->SetRendererWebApplicationInfo(
         std::make_unique<WebApplicationInfo>());
-    data_retriever()->SetManifest(std::move(manifest), is_installable);
+    data_retriever->SetManifest(std::move(manifest), is_installable);
+    return data_retriever;
   }
 
-  void CreateDataRetrieverWithRendererWebAppInfo(
+  web_app::TestDataRetriever* AddDataRetrieverWithRendererWebAppInfo(
       std::unique_ptr<WebApplicationInfo> web_app_info,
       bool is_installable) {
-    CreateEmptyDataRetriever();
+    web_app::TestDataRetriever* data_retriever = AddEmptyDataRetriever();
 
-    data_retriever()->SetRendererWebApplicationInfo(std::move(web_app_info));
+    data_retriever->SetRendererWebApplicationInfo(std::move(web_app_info));
 
     auto manifest = std::make_unique<blink::Manifest>();
-    data_retriever()->SetManifest(std::move(manifest), is_installable);
+    data_retriever->SetManifest(std::move(manifest), is_installable);
 
     web_app::IconsMap icons_map;
     icons_map[AppUrl()].push_back(
         CreateSquareBitmapWithColor(kIconSizeSmall, SK_ColorRED));
-    data_retriever()->SetIcons(std::move(icons_map));
+    data_retriever->SetIcons(std::move(icons_map));
+
+    return data_retriever;
   }
 
-  void CreateDataRetrieverWithLaunchContainer(const GURL& app_url,
-                                              bool open_as_window,
-                                              bool is_installable) {
-    CreateEmptyDataRetriever();
+  web_app::TestDataRetriever* AddDataRetrieverWithLaunchContainer(
+      const GURL& app_url,
+      bool open_as_window,
+      bool is_installable) {
+    web_app::TestDataRetriever* data_retriever = AddEmptyDataRetriever();
 
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->open_as_window = open_as_window;
-    data_retriever()->SetRendererWebApplicationInfo(std::move(web_app_info));
+    data_retriever->SetRendererWebApplicationInfo(std::move(web_app_info));
 
     auto manifest = std::make_unique<blink::Manifest>();
     manifest->start_url = app_url;
     manifest->name =
         base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
     manifest->scope = GURL(AppScope());
-    data_retriever()->SetManifest(std::move(manifest), is_installable);
+    data_retriever->SetManifest(std::move(manifest), is_installable);
 
-    data_retriever()->SetIcons(web_app::IconsMap{});
+    data_retriever->SetIcons(web_app::IconsMap{});
+
+    return data_retriever;
   }
 
   const Extension* InstallWebAppFromManifestWithFallback() {
@@ -300,7 +305,11 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
   BookmarkAppInstallFinalizerInstallOnly* install_finalizer_ = nullptr;
 
   web_app::TestWebAppUrlLoader* test_url_loader_ = nullptr;
-  std::unique_ptr<web_app::TestDataRetriever> prepared_data_retriever_;
+
+  // Initially owned by this test fixture. Passed to |install_manager_| from
+  // front to back with each install task.
+  std::queue<std::unique_ptr<web_app::TestDataRetriever>>
+      prepared_data_retrievers_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallManagerBookmarkAppTest);
 };
@@ -310,8 +319,8 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkApp) {
   web_app_info->app_url = AppUrl();
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
-  CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
-                                            /*is_installable=*/false);
+  AddDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
+                                         /*is_installable=*/false);
 
   const Extension* extension = InstallWebAppFromManifestWithFallback();
 
@@ -338,8 +347,8 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
   web_app_info->app_url = AppUrl();
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
-  CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
-                                            /*is_installable=*/false);
+  AddDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
+                                         /*is_installable=*/false);
 
   const Extension* extension =
       InstallWebAppWithParams(WebappInstallSource::EXTERNAL_DEFAULT);
@@ -355,8 +364,8 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppPolicyInstalled) {
   web_app_info->app_url = AppUrl();
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
-  CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
-                                            /*is_installable=*/false);
+  AddDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
+                                         /*is_installable=*/false);
 
   const Extension* extension =
       InstallWebAppWithParams(WebappInstallSource::EXTERNAL_POLICY);
@@ -386,7 +395,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
   manifest->theme_color = SK_ColorBLUE;
 
   const bool is_installable = GetParam() == web_app::ForInstallableSite::kYes;
-  CreateDataRetrieverWithManifest(std::move(manifest), is_installable);
+  AddDataRetrieverWithManifest(std::move(manifest), is_installable);
 
   const Extension* extension = InstallWebAppFromManifestWithFallback();
 
@@ -419,14 +428,15 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
 
   const bool is_installable = GetParam() == web_app::ForInstallableSite::kYes;
 
-  CreateDataRetrieverWithManifest(std::move(manifest), is_installable);
+  web_app::TestDataRetriever* data_retriever =
+      AddDataRetrieverWithManifest(std::move(manifest), is_installable);
 
   // In the legacy system Favicon URLs were ignored by WebAppIconDownloader
   // because the site had a manifest with icons: Only 1 icon had to be
   // downloaded since the other was provided by the InstallableManager. In the
   // new extension-independent system we prefer to redownload all the icons: 2
   // icons have to be downloaded.
-  data_retriever()->SetGetIconsDelegate(base::BindLambdaForTesting(
+  data_retriever->SetGetIconsDelegate(base::BindLambdaForTesting(
       [&](content::WebContents* web_contents,
           const std::vector<GURL>& icon_urls, bool skip_page_favicons) {
         // Instructs the downloader to not query the page for favicons.
@@ -461,7 +471,7 @@ TEST_P(InstallManagerBookmarkAppInstallableSiteTest,
   manifest->name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
 
   const bool is_installable = GetParam() == web_app::ForInstallableSite::kYes;
-  CreateDataRetrieverWithManifest(std::move(manifest), is_installable);
+  AddDataRetrieverWithManifest(std::move(manifest), is_installable);
 
   const Extension* extension = InstallWebAppFromManifestWithFallback();
 
@@ -476,8 +486,8 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_F(InstallManagerBookmarkAppTest,
        CreateBookmarkAppDefaultLauncherContainers) {
   {
-    CreateDataRetrieverWithLaunchContainer(AppUrl(), /*open_as_window=*/true,
-                                           /*is_installable=*/true);
+    AddDataRetrieverWithLaunchContainer(AppUrl(), /*open_as_window=*/true,
+                                        /*is_installable=*/true);
 
     const Extension* extension = InstallWebAppFromManifestWithFallback();
 
@@ -497,9 +507,9 @@ TEST_F(InstallManagerBookmarkAppTest,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
-    CreateDataRetrieverWithLaunchContainer(GURL("https://www.example.org/"),
-                                           /*open_as_window=*/false,
-                                           /*is_installable=*/false);
+    AddDataRetrieverWithLaunchContainer(GURL("https://www.example.org/"),
+                                        /*open_as_window=*/false,
+                                        /*is_installable=*/false);
 
     const Extension* extension = InstallWebAppFromManifestWithFallback();
 
@@ -512,9 +522,9 @@ TEST_F(InstallManagerBookmarkAppTest,
        CreateBookmarkAppForcedLauncherContainers) {
   {
     const GURL app_url("https://www.example.org/");
-    CreateDataRetrieverWithLaunchContainer(app_url,
-                                           /*open_as_window=*/true,
-                                           /*is_installable=*/true);
+    AddDataRetrieverWithLaunchContainer(app_url,
+                                        /*open_as_window=*/true,
+                                        /*is_installable=*/true);
 
     web_app::InstallManager::InstallParams params;
     params.user_display_mode = web_app::DisplayMode::kBrowser;
@@ -526,8 +536,8 @@ TEST_F(InstallManagerBookmarkAppTest,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
-    CreateDataRetrieverWithLaunchContainer(AppUrl(), /*open_as_window=*/false,
-                                           /*is_installable=*/false);
+    AddDataRetrieverWithLaunchContainer(AppUrl(), /*open_as_window=*/false,
+                                        /*is_installable=*/false);
 
     web_app::InstallManager::InstallParams params;
     params.user_display_mode = web_app::DisplayMode::kStandalone;
@@ -546,11 +556,11 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppWithoutManifest) {
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
 
-  CreateEmptyDataRetriever();
-  data_retriever()->SetRendererWebApplicationInfo(std::move(web_app_info));
+  web_app::TestDataRetriever* data_retriever = AddEmptyDataRetriever();
+  data_retriever->SetRendererWebApplicationInfo(std::move(web_app_info));
   auto manifest = std::make_unique<blink::Manifest>();
-  data_retriever()->SetManifest(std::move(manifest), /*is_installable=*/false);
-  data_retriever()->SetIcons(web_app::IconsMap{});
+  data_retriever->SetManifest(std::move(manifest), /*is_installable=*/false);
+  data_retriever->SetIcons(web_app::IconsMap{});
 
   const Extension* extension = InstallWebAppFromManifestWithFallback();
 
@@ -562,7 +572,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppWithoutManifest) {
 }
 
 TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
-  CreateEmptyDataRetriever();
+  AddEmptyDataRetriever();
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = AppUrl();
@@ -615,7 +625,9 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
 }
 
 TEST_F(InstallManagerBookmarkAppTest, InstallBookmarkAppFromSync) {
-  CreateEmptyDataRetriever();
+  // This process runs two install tasks if the first attempt fails.
+  AddEmptyDataRetriever();
+  AddEmptyDataRetriever();
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 
@@ -684,7 +696,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallBookmarkAppFromSync) {
   // On ChromeOS, it always behaves as if app is installed.
   EXPECT_TRUE(provider->registrar().IsInstalled(app_id));
 
-  CreateEmptyDataRetriever();
+  AddEmptyDataRetriever();
   {
     base::RunLoop run_loop;
 
@@ -732,8 +744,8 @@ TEST_F(InstallManagerBookmarkAppTest, GetAppDetails) {
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
   web_app_info->description = base::UTF8ToUTF16(kAppDescription);
   web_app_info->theme_color = theme_color;
-  CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
-                                            /*is_installable=*/false);
+  AddDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
+                                         /*is_installable=*/false);
 
   const Extension* extension = InstallWebAppFromManifestWithFallback();
   EXPECT_EQ(kAppTitle, app_registrar()->GetAppShortName(extension->id()));

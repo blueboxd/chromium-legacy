@@ -176,7 +176,8 @@ void AutocompleteControllerAndroid::Start(
     bool prefer_keyword,
     bool allow_exact_keyword_match,
     bool want_asynchronous_matches,
-    const JavaRef<jstring>& j_query_tile_id) {
+    const JavaRef<jstring>& j_query_tile_id,
+    bool is_query_started_from_tiles) {
   if (!autocomplete_controller_)
     return;
 
@@ -199,6 +200,7 @@ void AutocompleteControllerAndroid::Start(
   input_.set_want_asynchronous_matches(want_asynchronous_matches);
   if (!j_query_tile_id.is_null())
     input_.set_query_tile_id(ConvertJavaStringToUTF8(env, j_query_tile_id));
+  is_query_started_from_tiles_ = is_query_started_from_tiles;
   autocomplete_controller_->Start(input_);
 }
 
@@ -243,6 +245,7 @@ void AutocompleteControllerAndroid::OnOmniboxFocused(
   input_.set_current_url(current_url);
   input_.set_current_title(current_title);
   input_.set_from_omnibox_focus(true);
+  is_query_started_from_tiles_ = false;
   autocomplete_controller_->Start(input_);
 }
 
@@ -315,6 +318,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       completed_length,
       now - autocomplete_controller_->last_time_default_match_changed(),
       autocomplete_controller_->result());
+  log.is_query_started_from_tile = is_query_started_from_tiles_;
   autocomplete_controller_->AddProvidersInfo(&log.providers_info);
 
   OmniboxEventGlobalTracker::GetInstance()->OnURLOpened(&log);
@@ -618,7 +622,7 @@ AutocompleteControllerAndroid::GetTopSynchronousResult(
 
   inside_synchronous_start_ = true;
   Start(env, obj, j_text, -1, nullptr, nullptr, prevent_inline_autocomplete,
-        false, false, false, focused_from_fakebox, JavaRef<jstring>());
+        false, false, false, focused_from_fakebox, JavaRef<jstring>(), false);
   inside_synchronous_start_ = false;
   DCHECK(autocomplete_controller_->done());
   const AutocompleteResult& result = autocomplete_controller_->result();

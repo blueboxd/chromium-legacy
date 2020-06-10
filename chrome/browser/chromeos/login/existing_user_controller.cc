@@ -975,7 +975,8 @@ void ExistingUserController::ShowTPMError() {
   GetLoginDisplayHost()->StartWizard(TpmErrorView::kScreenId);
 }
 
-void ExistingUserController::ShowPasswordChangedDialog() {
+void ExistingUserController::ShowPasswordChangedDialog(
+    const UserContext& user_context) {
   RecordPasswordChangeFlow(LOGIN_PASSWORD_CHANGE_FLOW_PASSWORD_CHANGED);
 
   VLOG(1) << "Show password changed dialog"
@@ -991,7 +992,7 @@ void ExistingUserController::ShowPasswordChangedDialog() {
   // TODO(gspencer): We shouldn't have to erase stateful data when
   // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
   GetLoginDisplay()->ShowPasswordChangedDialog(show_invalid_old_password_error,
-                                               display_email_);
+                                               user_context.GetAccountId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1224,23 +1225,24 @@ void ExistingUserController::OnOffTheRecordAuthSuccess() {
     auth_status_consumer_->OnOffTheRecordAuthSuccess();
 }
 
-void ExistingUserController::OnPasswordChangeDetected() {
+void ExistingUserController::OnPasswordChangeDetected(
+    const UserContext& user_context) {
   is_login_in_progress_ = false;
 
   // Must not proceed without signature verification.
   if (CrosSettingsProvider::TRUSTED !=
       cros_settings_->PrepareTrustedValues(
           base::BindOnce(&ExistingUserController::OnPasswordChangeDetected,
-                         weak_factory_.GetWeakPtr()))) {
+                         weak_factory_.GetWeakPtr(), user_context))) {
     // Value of owner email is still not verified.
     // Another attempt will be invoked after verification completion.
     return;
   }
 
   if (auth_status_consumer_)
-    auth_status_consumer_->OnPasswordChangeDetected();
+    auth_status_consumer_->OnPasswordChangeDetected(user_context);
 
-  ShowPasswordChangedDialog();
+  ShowPasswordChangedDialog(user_context);
 }
 
 void ExistingUserController::OnOldEncryptionDetected(

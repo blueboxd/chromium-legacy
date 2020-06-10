@@ -151,9 +151,8 @@ void LoginDisplayWebUI::ShowError(int error_msg_id,
 }
 
 void LoginDisplayWebUI::ShowPasswordChangedDialog(bool show_password_error,
-                                                  const std::string& email) {
-  if (webui_handler_)
-    webui_handler_->ShowPasswordChangedDialog(show_password_error, email);
+                                                  const AccountId& account_id) {
+  NOTIMPLEMENTED();
 }
 
 void LoginDisplayWebUI::ShowSigninUI(const std::string& email) {

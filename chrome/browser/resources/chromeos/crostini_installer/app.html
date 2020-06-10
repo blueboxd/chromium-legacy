@@ -127,7 +127,7 @@
           <div>$i18n{diskSizeHint}</div>
         </div>
         <template is="dom-if" if="[[!isLowSpaceAvailable_]]">
-          <cr-radio-group id="diskSizeRadio" selected="recommended"
+          <cr-radio-group selected="recommended"
               on-selected-changed="onDiskSizeRadioChanged_">
             <cr-radio-button name="recommended" id="recommended-size">
               $i18n{recommendedDiskSizeLabel}

@@ -13,8 +13,7 @@ namespace protocol {
 InspectorHandler::InspectorHandler()
     : DevToolsDomainHandler(Inspector::Metainfo::domainName) {}
 
-InspectorHandler::~InspectorHandler() {
-}
+InspectorHandler::~InspectorHandler() = default;
 
 // static
 std::vector<InspectorHandler*> InspectorHandler::ForAgentHost(

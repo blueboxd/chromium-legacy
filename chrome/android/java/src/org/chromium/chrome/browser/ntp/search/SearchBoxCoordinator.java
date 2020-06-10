@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.search;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -56,8 +57,8 @@ public class SearchBoxCoordinator {
         mModel.set(SearchBoxProperties.VISIBILITY, visible);
     }
 
-    public void setSearchText(String text) {
-        mModel.set(SearchBoxProperties.SEARCH_TEXT, text);
+    public void setSearchText(String text, boolean fromQueryTiles) {
+        mModel.set(SearchBoxProperties.SEARCH_TEXT, Pair.create(text, fromQueryTiles));
     }
 
     public void setSearchBoxClickListener(OnClickListener listener) {
@@ -86,5 +87,10 @@ public class SearchBoxCoordinator {
 
     public void setChipDelegate(SearchBoxChipDelegate chipDelegate) {
         mMediator.setChipDelegate(chipDelegate);
+    }
+
+    public boolean isTextChangeFromTiles() {
+        Pair<String, Boolean> searchText = mModel.get(SearchBoxProperties.SEARCH_TEXT);
+        return searchText == null ? false : searchText.second;
     }
 }

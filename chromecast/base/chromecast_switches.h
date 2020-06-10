@@ -96,6 +96,8 @@ extern const char kCastMemoryPressureModerateFraction[];
 
 extern const char kDisableMojoRenderer[];
 
+extern const char kSysInfoFilePath[];
+
 }  // namespace switches
 
 namespace chromecast {

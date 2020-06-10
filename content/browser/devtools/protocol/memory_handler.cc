@@ -21,7 +21,7 @@ MemoryHandler::MemoryHandler()
     : DevToolsDomainHandler(Memory::Metainfo::domainName),
       process_host_id_(ChildProcessHost::kInvalidUniqueID) {}
 
-MemoryHandler::~MemoryHandler() {}
+MemoryHandler::~MemoryHandler() = default;
 
 void MemoryHandler::Wire(UberDispatcher* dispatcher) {
   Memory::Dispatcher::wire(dispatcher, this);

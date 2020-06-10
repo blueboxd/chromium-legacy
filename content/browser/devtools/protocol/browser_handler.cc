@@ -35,7 +35,7 @@ BrowserHandler::BrowserHandler(bool allow_set_download_behavior)
     : DevToolsDomainHandler(Browser::Metainfo::domainName),
       allow_set_download_behavior_(allow_set_download_behavior) {}
 
-BrowserHandler::~BrowserHandler() {}
+BrowserHandler::~BrowserHandler() = default;
 
 Response BrowserHandler::Disable() {
   // TODO: this leaks context ids for all contexts with overridden permissions.

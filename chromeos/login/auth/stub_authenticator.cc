@@ -193,7 +193,7 @@ UserContext StubAuthenticator::ExpectedUserContextWithTransformedKey() const {
 }
 
 void StubAuthenticator::OnPasswordChangeDetected() {
-  consumer_->OnPasswordChangeDetected();
+  consumer_->OnPasswordChangeDetected(expected_user_context_);
 }
 
 void StubAuthenticator::OnOldEncryptionDetected() {

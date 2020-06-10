@@ -215,6 +215,8 @@ class CrostiniPackageServiceTest : public testing::Test {
   void TearDown() override {
     // Complete all CrostiniManager queued tasks before deleting it.
     base::RunLoop().RunUntilIdle();
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        file_manager::util::GetDownloadsMountPointName(profile_.get()));
     service_.reset();
     notification_display_service_tester_.reset();
     crostini_test_helper_.reset();

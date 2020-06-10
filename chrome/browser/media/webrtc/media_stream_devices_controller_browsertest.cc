@@ -10,11 +10,13 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/media/webrtc/camera_pan_tilt_zoom_permission_context.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
+#include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,6 +26,7 @@
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_context_base.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_util.h"
@@ -106,7 +109,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     prefs->SetBoolean(policy_name, access == ACCESS_ALLOWED);
   }
 
-  // Set the content settings for mic/cam.
+  // Set the content settings for mic/cam/ptz.
   void SetContentSettings(ContentSetting mic_setting,
                           ContentSetting cam_setting,
                           ContentSetting ptz_setting) {
@@ -746,6 +749,19 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerPtzTest, ContentSettings) {
       {CONTENT_SETTING_ASK, CONTENT_SETTING_ASK, CONTENT_SETTING_ASK, false},
       {CONTENT_SETTING_ASK, CONTENT_SETTING_ASK, CONTENT_SETTING_ASK, true},
   };
+
+  // Prevent automatic camera permission change when camera PTZ gets updated.
+  CameraPanTiltZoomPermissionContext* camera_pan_tilt_zoom_permission_context =
+      static_cast<CameraPanTiltZoomPermissionContext*>(
+          PermissionManagerFactory::GetForProfile(
+              Profile::FromBrowserContext(
+                  GetWebContents()->GetBrowserContext()))
+              ->GetPermissionContextForTesting(
+                  ContentSettingsType::CAMERA_PAN_TILT_ZOOM));
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(
+          Profile::FromBrowserContext(GetWebContents()->GetBrowserContext()));
+  content_settings->RemoveObserver(camera_pan_tilt_zoom_permission_context);
 
   const bool pan_tilt_zoom_supported = IsPanTiltZoomSupported();
   for (auto& test : tests) {

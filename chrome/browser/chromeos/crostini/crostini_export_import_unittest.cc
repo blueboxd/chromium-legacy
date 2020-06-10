@@ -146,9 +146,7 @@ class CrostiniExportImportTest : public testing::Test {
     profile()->GetPrefs()->SetBoolean(
         crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
 
-    storage::ExternalMountPoints* mount_points =
-        storage::ExternalMountPoints::GetSystemInstance();
-    mount_points->RegisterFileSystem(
+    storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
         file_manager::util::GetDownloadsMountPointName(profile()),
         storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
         file_manager::util::GetMyFilesFolderForProfile(profile()));
@@ -157,6 +155,8 @@ class CrostiniExportImportTest : public testing::Test {
   }
 
   void TearDown() override {
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        file_manager::util::GetDownloadsMountPointName(profile()));
     crostini_export_import_.reset();
     // If the file has been created (by an export), then delete it, but first
     // shutdown GuestOsSharePath to ensure watchers are destroyed, otherwise

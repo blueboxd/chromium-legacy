@@ -185,8 +185,7 @@ ServiceWorkerHandler::ServiceWorkerHandler(bool allow_inspect_worker)
       browser_context_(nullptr),
       storage_partition_(nullptr) {}
 
-ServiceWorkerHandler::~ServiceWorkerHandler() {
-}
+ServiceWorkerHandler::~ServiceWorkerHandler() = default;
 
 void ServiceWorkerHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new ServiceWorker::Frontend(dispatcher->channel()));

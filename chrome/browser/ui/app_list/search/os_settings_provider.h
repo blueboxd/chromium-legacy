@@ -77,6 +77,7 @@ class OsSettingsProvider : public SearchProvider,
 
  private:
   void OnSearchReturned(
+      const base::string16& query,
       std::vector<chromeos::settings::mojom::SearchResultPtr> results);
 
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);

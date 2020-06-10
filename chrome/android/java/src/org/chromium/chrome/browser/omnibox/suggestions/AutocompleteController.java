@@ -104,9 +104,11 @@ public class AutocompleteController {
      *                       not focused on the text.
      * @param preventInlineAutocomplete Whether autocomplete suggestions should be prevented.
      * @param queryTileId The ID of the query tile selected by the user, if any.
+     * @param isQueryStartedFromTiles Whether the search query is started from query tiles.
      */
     public void start(Profile profile, String url, int pageClassification, String text,
-            int cursorPosition, boolean preventInlineAutocomplete, @Nullable String queryTileId) {
+            int cursorPosition, boolean preventInlineAutocomplete, @Nullable String queryTileId,
+            boolean isQueryStartedFromTiles) {
         assert mListener != null : "Ensure a listener is set prior to calling.";
         // crbug.com/764749
         Log.w(TAG, "starting autocomplete controller..[%b][%b]", profile == null,
@@ -119,7 +121,8 @@ public class AutocompleteController {
         if (mNativeAutocompleteControllerAndroid != 0) {
             AutocompleteControllerJni.get().start(mNativeAutocompleteControllerAndroid,
                     AutocompleteController.this, text, cursorPosition, null, url,
-                    pageClassification, preventInlineAutocomplete, false, false, true, queryTileId);
+                    pageClassification, preventInlineAutocomplete, false, false, true, queryTileId,
+                    isQueryStartedFromTiles);
             mWaitingForSuggestionsToCache = false;
         }
     }
@@ -384,8 +387,8 @@ public class AutocompleteController {
         void start(long nativeAutocompleteControllerAndroid, AutocompleteController caller,
                 String text, int cursorPosition, String desiredTld, String currentUrl,
                 int pageClassification, boolean preventInlineAutocomplete, boolean preferKeyword,
-                boolean allowExactKeywordMatch, boolean wantAsynchronousMatches,
-                String queryTileId);
+                boolean allowExactKeywordMatch, boolean wantAsynchronousMatches, String queryTileId,
+                boolean isQueryStartedFromTiles);
         OmniboxSuggestion classify(long nativeAutocompleteControllerAndroid,
                 AutocompleteController caller, String text, boolean focusedFromFakebox);
         void stop(long nativeAutocompleteControllerAndroid, AutocompleteController caller,

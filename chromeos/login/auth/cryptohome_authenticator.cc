@@ -799,7 +799,7 @@ void CryptohomeAuthenticator::OnOffTheRecordAuthSuccess() {
 void CryptohomeAuthenticator::OnPasswordChangeDetected() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (consumer_)
-    consumer_->OnPasswordChangeDetected();
+    consumer_->OnPasswordChangeDetected(current_state_->user_context);
 }
 
 void CryptohomeAuthenticator::OnOldEncryptionDetected(

@@ -2625,6 +2625,8 @@ crbug.com/947951 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-in
 crbug.com/1067277 external/wpt/css/css-content/element-replacement-on-replaced-element.tentative.html [ Failure ]
 crbug.com/1069300 external/wpt/css/css-pseudo/active-selection-063.html [ Failure ]
 
+crbug.com/27659 external/wpt/css/css-ruby/abs-in-ruby-base-container.html [ Failure ]
+crbug.com/27659 external/wpt/css/css-ruby/abs-in-ruby-base.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/block-ruby-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/block-ruby-002.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/block-ruby-005.html [ Failure ]
@@ -2670,12 +2672,10 @@ crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failu
 crbug.com/1086855 external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/css/css-ruby/abs-in-ruby-base-container.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-ruby/abs-in-ruby-base-container.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ruby/abs-in-ruby-base-container.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-ruby/abs-in-ruby-base.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-ruby/abs-in-ruby-base.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ruby/abs-in-ruby-base.html [ Failure ]
+crbug.com/626703 [ Mac10.11 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
+crbug.com/626703 [ Mac10.15 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
@@ -6734,13 +6734,12 @@ crbug.com/1091250 [ Win10 ] virtual/cors/http/tests/misc/resource-timing-sizes-m
 crbug.com/1091948 [ Linux ] external/wpt/html/canvas/element/manual/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Pass Timeout ]
 crbug.com/1092091 [ Mac ] virtual/dark-color-scheme/datetimelocal-picker/datetimelocal-open.html [ Pass Failure ]
 
-# Test giving differing results on different build bots
-crbug.com/1092721 external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Pass Failure ]
-
 # Sheriff 2020-06-06
 crbug.com/1091843 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Pass Failure ]
 
 # Sheriff 2020-06-09
-crbug.com/1092813 [ Retina ] virtual/text-antialias/emoticons.html [ Pass Failure ]
 crbug.com/1090180 virtual/gpu/fast/canvas/canvas-gpu-consistency.html [ Failure ]
 crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded-content/cross-domain-iframe.sub.html [ Pass Failure ]
+
+# Sheriff 2020-06-10
+crbug.com/1093203 [ Retina ] virtual/text-antialias/color-emoji.html [ Pass Failure ]

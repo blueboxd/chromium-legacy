@@ -62,6 +62,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
+#include "chrome/browser/chromeos/login/screens/gaia_password_changed_screen.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
@@ -114,6 +115,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_password_changed_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
@@ -588,6 +590,9 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   append(std::make_unique<TpmErrorScreen>(
       oobe_ui->GetView<TpmErrorScreenHandler>()));
 
+  append(std::make_unique<GaiaPasswordChangedScreen>(
+      oobe_ui->GetView<GaiaPasswordChangedScreenHandler>()));
+
   return result;
 }
 
@@ -624,6 +629,19 @@ void WizardController::ShowLoginScreen() {
   UpdateStatusAreaVisibilityForScreen(GaiaView::kScreenId);
   GetLoginDisplayHost()->StartSignInScreen();
   login_screen_started_ = true;
+}
+
+void WizardController::ShowGaiaPasswordChangedScreen(
+    const AccountId& account_id,
+    bool has_error) {
+  GaiaPasswordChangedScreen* screen =
+      GaiaPasswordChangedScreen::Get(screen_manager());
+  screen->Configure(account_id, has_error);
+  if (current_screen_ != screen) {
+    SetCurrentScreen(screen);
+  } else {
+    screen->Show();
+  }
 }
 
 void WizardController::ShowEulaScreen() {
@@ -1552,8 +1570,9 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowMarketingOptInScreen();
   } else if (screen_id == SupervisionTransitionScreenView::kScreenId) {
     ShowSupervisionTransitionScreen();
-  } else if (screen_id == TpmErrorView::kScreenId) {
-    SetCurrentScreen(GetScreen(TpmErrorView::kScreenId));
+  } else if (screen_id == TpmErrorView::kScreenId ||
+             screen_id == GaiaPasswordChangedView::kScreenId) {
+    SetCurrentScreen(GetScreen(screen_id));
   } else {
     if (is_out_of_box_) {
       if (CanShowHIDDetectionScreen()) {

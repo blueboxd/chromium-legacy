@@ -213,7 +213,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         }
 
         @Override
-        public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {
+        public void focusSearchBox(
+                boolean beginVoiceSearch, String pastedText, boolean fromQueryTile) {
             if (mIsDestroyed) return;
             if (VrModuleProvider.getDelegate().isInVr()) return;
             if (mVoiceRecognitionHandler != null && beginVoiceSearch) {
@@ -221,8 +222,10 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                         VoiceRecognitionHandler.VoiceInteractionSource.NTP);
             } else if (mFakeboxDelegate != null) {
                 mFakeboxDelegate.setUrlBarFocus(true, pastedText,
-                        pastedText == null ? OmniboxFocusReason.FAKE_BOX_TAP
-                                           : OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
+                        pastedText == null
+                                ? OmniboxFocusReason.FAKE_BOX_TAP
+                                : (fromQueryTile ? OmniboxFocusReason.QUERY_TILES_NTP_TAP
+                                                 : OmniboxFocusReason.FAKE_BOX_LONG_PRESS));
             }
         }
 

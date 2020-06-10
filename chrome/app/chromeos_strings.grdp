@@ -4956,6 +4956,12 @@
   <message name="IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE" desc="Title of the Plugin VM installer if Plugin VM is disallowed.">
     <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph> needs permission to run
   </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_OFFLINE_TITLE" desc="Title of the Plugin VM installer when the user starts installation but the device is offline.">
+    <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is offline
+  </message>
+  <message name="IDS_PLUGIN_VM_INSTALLER_ERROR_OFFLINE_MESSAGE" desc="Text of the Plugin VM installer when the user starts installation but the device is offline.">
+    Connect to the internet and try again
+  </message>
   <message name="IDS_PLUGIN_VM_INSTALLER_LOW_DISK_SPACE_MESSAGE" desc="Text of the Plugin VM installer that warns them of low disk space.">
     Your device is low on storage. At least <ph name="RECOMMENDED_SPACE">$1<ex>32GB</ex></ph> of free space is recommended to use <ph name="APP_NAME">$2<ex>Plugin VM</ex></ph>. To increase free space, delete files from your device.
   </message>

@@ -95,9 +95,6 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     private ToolbarManager mToolbarManager;
 
     @Nullable
-    private BackHandler mBackHandler;
-
-    @Nullable
     private FinishHandler mFinishHandler;
 
     private boolean mIsFinishing;
@@ -204,26 +201,19 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
             return true;
         }
 
-        if (mBackHandler != null
-                && mBackHandler.handleBackPressed(this::executeDefaultBackHandling)) {
-            return true;
+        if (mToolbarManager != null && mToolbarManager.back()) return true;
+
+        if (mTabController.onlyOneTabRemaining()) {
+            // If we're closing the last tab, just finish the Activity manually. If we had called
+            // mTabController.closeTab() and waited for the Activity to close as a result we would
+            // have a visual glitch: https://crbug.com/1087108.
+            finish(USER_NAVIGATION);
+        } else {
+            mTabController.closeTab();
         }
 
-        executeDefaultBackHandling();
         return true;
     }
-
-    private void executeDefaultBackHandling() {
-        if (mToolbarManager != null && mToolbarManager.back()) return;
-
-        // mTabController.closeTab may result in either closing the only tab (through the back
-        // button or the close button), or swapping to the previous tab. In the first case we need
-        // finish to be called with USER_NAVIGATION reason.
-        mIsHandlingUserNavigation = true;
-        mTabController.closeTab();
-        mIsHandlingUserNavigation = false;
-    }
-
     /**
      * Handles close button navigation.
      */
@@ -308,14 +298,6 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         if (mFinishHandler != null) {
             mFinishHandler.onFinish(reason);
         }
-    }
-
-    /**
-     * See {@link BackHandler}. Only one BackHandler at a time should be set.
-     */
-    public void setBackHandler(BackHandler handler) {
-        assert mBackHandler == null : "Multiple BackHandlers not supported";
-        mBackHandler = handler;
     }
 
     /**

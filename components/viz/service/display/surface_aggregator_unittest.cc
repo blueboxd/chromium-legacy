@@ -6820,5 +6820,562 @@ TEST_F(SurfaceAggregatorValidSurfaceTest,
             hit_test_region_index);
 }
 
+void ExpectDelegatedInkMetadataIsEqual(const DelegatedInkMetadata& lhs,
+                                       const DelegatedInkMetadata& rhs) {
+  EXPECT_FLOAT_EQ(lhs.point().y(), rhs.point().y());
+  EXPECT_FLOAT_EQ(lhs.point().x(), rhs.point().x());
+  EXPECT_EQ(lhs.diameter(), rhs.diameter());
+  EXPECT_EQ(lhs.color(), rhs.color());
+  EXPECT_EQ(lhs.timestamp(), rhs.timestamp());
+  EXPECT_FLOAT_EQ(lhs.presentation_area().y(), rhs.presentation_area().y());
+  EXPECT_FLOAT_EQ(lhs.presentation_area().x(), rhs.presentation_area().x());
+  EXPECT_FLOAT_EQ(lhs.presentation_area().width(),
+                  rhs.presentation_area().width());
+  EXPECT_FLOAT_EQ(lhs.presentation_area().height(),
+                  rhs.presentation_area().height());
+}
+
+// Basic test to confirm that ink metadata on a child surface will be
+// transformed by the parent.
+TEST_F(SurfaceAggregatorValidSurfaceTest, DelegatedInkMetadataTest) {
+  std::vector<Quad> child_quads = {
+      Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
+  std::vector<Pass> child_passes = {Pass(child_quads, 1, gfx::Size(100, 100))};
+
+  CompositorFrame child_frame = MakeEmptyCompositorFrame();
+  DelegatedInkMetadata metadata(gfx::PointF(100, 100), 1.5, SK_ColorRED,
+                                base::TimeTicks::Now(),
+                                gfx::RectF(10, 10, 200, 200));
+  child_frame.metadata.delegated_ink_metadata =
+      std::make_unique<DelegatedInkMetadata>(metadata);
+  AddPasses(&child_frame.render_pass_list, child_passes,
+            &child_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                     std::move(child_frame));
+
+  std::vector<Quad> root_quads = {Quad::SurfaceQuad(
+      SurfaceRange(base::nullopt, child_surface_id), SK_ColorWHITE,
+      gfx::Rect(5, 5), /*stretch_content_to_fill_bounds=*/false)};
+
+  std::vector<Pass> root_passes = {Pass(root_quads, 1, gfx::Size(30, 30))};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Scale(1.5, 1.5);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Translate(70, 240);
+
+  // Update the expected metadata to reflect the transforms to point and area
+  // that are expected to occur.
+  gfx::PointF pt = metadata.point();
+  gfx::RectF area = metadata.presentation_area();
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformPoint(&pt);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformRect(&area);
+  metadata = DelegatedInkMetadata(pt, metadata.diameter(), metadata.color(),
+                                  metadata.timestamp(), area);
+
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+
+  std::unique_ptr<DelegatedInkMetadata> actual_metadata =
+      std::move(aggregated_frame.metadata.delegated_ink_metadata);
+  EXPECT_TRUE(actual_metadata);
+  ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), metadata);
+}
+
+// Confirm that transforms are aggregated as the tree is walked and correctly
+// applied to the ink metadata.
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       TransformDelegatedInkMetadataTallTree) {
+  auto greatgrand_child_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot);
+  std::vector<Quad> greatgrandchild_quads = {
+      Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
+  std::vector<Pass> greatgrandchild_passes = {
+      Pass(greatgrandchild_quads, 1, gfx::Size(100, 100))};
+
+  DelegatedInkMetadata metadata(gfx::PointF(100, 100), 1.5, SK_ColorRED,
+                                base::TimeTicks::Now(),
+                                gfx::RectF(10, 10, 200, 200));
+  CompositorFrame greatgrandchild_frame = MakeEmptyCompositorFrame();
+  greatgrandchild_frame.metadata.delegated_ink_metadata =
+      std::make_unique<DelegatedInkMetadata>(metadata);
+  AddPasses(&greatgrandchild_frame.render_pass_list, greatgrandchild_passes,
+            &greatgrandchild_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator greatgrandchild_allocator;
+  greatgrandchild_allocator.GenerateId();
+  LocalSurfaceId greatgrandchild_local_surface_id =
+      greatgrandchild_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  SurfaceId great_grandchild_surface_id(
+      greatgrand_child_support->frame_sink_id(),
+      greatgrandchild_local_surface_id);
+  greatgrand_child_support->SubmitCompositorFrame(
+      greatgrandchild_local_surface_id, std::move(greatgrandchild_frame));
+
+  auto grand_child_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot);
+  std::vector<Quad> grandchild_quads = {Quad::SurfaceQuad(
+      SurfaceRange(base::nullopt, great_grandchild_surface_id), SK_ColorWHITE,
+      gfx::Rect(7, 7), /*stretch_content_to_fill_bounds=*/false)};
+  std::vector<Pass> grandchild_passes = {
+      Pass(grandchild_quads, 1, gfx::Size(100, 100))};
+
+  CompositorFrame grandchild_frame = MakeEmptyCompositorFrame();
+
+  AddPasses(&grandchild_frame.render_pass_list, grandchild_passes,
+            &grandchild_frame.metadata.referenced_surfaces);
+
+  grandchild_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Scale(1.5, 1.5);
+  grandchild_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Translate(37, 82);
+
+  // Update the expected metadata to reflect the transforms to point and area
+  // that are expected to occur.
+  gfx::PointF pt = metadata.point();
+  gfx::RectF area = metadata.presentation_area();
+  grandchild_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformPoint(&pt);
+  grandchild_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformRect(&area);
+
+  ParentLocalSurfaceIdAllocator grandchild_allocator;
+  grandchild_allocator.GenerateId();
+  LocalSurfaceId grandchild_local_surface_id =
+      grandchild_allocator.GetCurrentLocalSurfaceIdAllocation()
+          .local_surface_id();
+  SurfaceId grandchild_surface_id(grand_child_support->frame_sink_id(),
+                                  grandchild_local_surface_id);
+  grand_child_support->SubmitCompositorFrame(grandchild_local_surface_id,
+                                             std::move(grandchild_frame));
+
+  std::vector<Quad> child_quads = {Quad::SurfaceQuad(
+      SurfaceRange(base::nullopt, grandchild_surface_id), SK_ColorWHITE,
+      gfx::Rect(7, 7), /*stretch_content_to_fill_bounds=*/false)};
+  std::vector<Pass> child_passes = {Pass(child_quads, 1, gfx::Size(30, 30))};
+
+  CompositorFrame child_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_frame.render_pass_list, child_passes,
+            &child_frame.metadata.referenced_surfaces);
+
+  child_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Translate(36, 15);
+
+  child_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformPoint(&pt);
+  child_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformRect(&area);
+
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                     std::move(child_frame));
+
+  std::vector<Quad> root_quads = {Quad::SurfaceQuad(
+      SurfaceRange(base::nullopt, child_surface_id), SK_ColorWHITE,
+      gfx::Rect(5, 5), /*stretch_content_to_fill_bounds=*/false)};
+
+  std::vector<Pass> root_passes = {Pass(root_quads, 1, gfx::Size(30, 30))};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Scale(0.7, 0.7);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Translate(70, 240);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformPoint(&pt);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.TransformRect(&area);
+
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+
+  metadata = DelegatedInkMetadata(pt, metadata.diameter(), metadata.color(),
+                                  metadata.timestamp(), area);
+
+  std::unique_ptr<DelegatedInkMetadata> actual_metadata =
+      std::move(aggregated_frame.metadata.delegated_ink_metadata);
+  EXPECT_TRUE(actual_metadata);
+  ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), metadata);
+}
+
+// Confirm the metadata is transformed correctly and makes it to the aggregated
+// frame when there are multiple children.
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       DelegatedInkMetadataMultipleChildren) {
+  auto child_2_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot);
+  auto child_3_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot);
+
+  std::vector<Quad> child_1_quads = {
+      Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
+  std::vector<Pass> child_1_passes = {
+      Pass(child_1_quads, 1, gfx::Size(100, 100))};
+
+  CompositorFrame child_1_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_1_frame.render_pass_list, child_1_passes,
+            &child_1_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_1_allocator;
+  child_1_allocator.GenerateId();
+  LocalSurfaceId child_1_local_surface_id =
+      child_1_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_1_surface_id(child_sink_->frame_sink_id(),
+                               child_1_local_surface_id);
+  child_sink_->SubmitCompositorFrame(child_1_local_surface_id,
+                                     std::move(child_1_frame));
+
+  std::vector<Quad> child_2_quads = {
+      Quad::SolidColorQuad(SK_ColorMAGENTA, gfx::Rect(5, 5))};
+  std::vector<Pass> child_2_passes = {
+      Pass(child_2_quads, 1, gfx::Size(100, 100))};
+
+  DelegatedInkMetadata metadata = DelegatedInkMetadata(
+      gfx::PointF(88, 34), 1.8, SK_ColorBLACK, base::TimeTicks::Now(),
+      gfx::RectF(50, 50, 300, 300));
+  CompositorFrame child_2_frame = MakeEmptyCompositorFrame();
+  child_2_frame.metadata.delegated_ink_metadata =
+      std::make_unique<DelegatedInkMetadata>(metadata);
+  AddPasses(&child_2_frame.render_pass_list, child_2_passes,
+            &child_2_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_2_allocator;
+  child_2_allocator.GenerateId();
+  LocalSurfaceId child_2_local_surface_id =
+      child_2_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_2_surface_id(child_2_support->frame_sink_id(),
+                               child_2_local_surface_id);
+  child_2_support->SubmitCompositorFrame(child_2_local_surface_id,
+                                         std::move(child_2_frame));
+
+  std::vector<Quad> child_3_quads = {
+      Quad::SolidColorQuad(SK_ColorCYAN, gfx::Rect(5, 5))};
+  std::vector<Pass> child_3_passes = {
+      Pass(child_3_quads, 1, gfx::Size(100, 100))};
+
+  CompositorFrame child_3_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_3_frame.render_pass_list, child_3_passes,
+            &child_3_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_3_allocator;
+  child_3_allocator.GenerateId();
+  LocalSurfaceId child_3_local_surface_id =
+      child_3_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_3_surface_id(child_3_support->frame_sink_id(),
+                               child_3_local_surface_id);
+  child_3_support->SubmitCompositorFrame(child_3_local_surface_id,
+                                         std::move(child_3_frame));
+
+  std::vector<Quad> root_quads = {
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_1_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5),
+                        /*stretch_content_to_fill_bounds=*/false),
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_2_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5),
+                        /*stretch_content_to_fill_bounds=*/false),
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_3_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5),
+                        /*stretch_content_to_fill_bounds=*/false)};
+
+  std::vector<Pass> root_passes = {Pass(root_quads, 1, gfx::Size(30, 30))};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Translate(9, 87);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.Scale(0.7, 0.7);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.Translate(70, 240);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(2)
+      ->quad_to_target_transform.Scale(2.7, 0.2);
+
+  // Update the expected metadata to reflect the transforms to point and area
+  // that are expected to occur.
+  gfx::PointF pt = metadata.point();
+  gfx::RectF area = metadata.presentation_area();
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.TransformPoint(&pt);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.TransformRect(&area);
+
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+
+  metadata = DelegatedInkMetadata(pt, metadata.diameter(), metadata.color(),
+                                  metadata.timestamp(), area);
+
+  std::unique_ptr<DelegatedInkMetadata> actual_metadata =
+      std::move(aggregated_frame.metadata.delegated_ink_metadata);
+  EXPECT_TRUE(actual_metadata);
+  ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), metadata);
+}
+
+// Confirm the the metadata with the most recent timestamp is used when
+// multiple children have delegated ink metadata.
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       MultipleChildrenHaveDelegatedInkMetadata) {
+  auto child_2_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryMiddleFrameSinkId, kChildIsRoot);
+  auto child_3_support = std::make_unique<CompositorFrameSinkSupport>(
+      nullptr, &manager_, kArbitraryFrameSinkId2, kChildIsRoot);
+
+  std::vector<Quad> child_1_quads = {
+      Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
+  std::vector<Pass> child_1_passes = {
+      Pass(child_1_quads, 1, gfx::Size(100, 100))};
+
+  CompositorFrame child_1_frame = MakeEmptyCompositorFrame();
+  AddPasses(&child_1_frame.render_pass_list, child_1_passes,
+            &child_1_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_1_allocator;
+  child_1_allocator.GenerateId();
+  LocalSurfaceId child_1_local_surface_id =
+      child_1_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_1_surface_id(child_sink_->frame_sink_id(),
+                               child_1_local_surface_id);
+  child_sink_->SubmitCompositorFrame(child_1_local_surface_id,
+                                     std::move(child_1_frame));
+
+  std::vector<Quad> child_2_quads = {
+      Quad::SolidColorQuad(SK_ColorMAGENTA, gfx::Rect(5, 5))};
+  std::vector<Pass> child_2_passes = {
+      Pass(child_2_quads, 1, gfx::Size(100, 100))};
+
+  // Making both metadatas here so that the one with a later timestamp can be
+  // on child 2. This will cause the test to fail if we don't default to using
+  // the metadata with the later timestamp. Specifically setting the
+  // later_metadata timestamp to be 50 microseconds later than Now() to avoid
+  // issues with both metadatas sometimes having the same time in Release.
+  DelegatedInkMetadata early_metadata = DelegatedInkMetadata(
+      gfx::PointF(88, 34), 1.8, SK_ColorBLACK, base::TimeTicks::Now(),
+      gfx::RectF(50, 50, 300, 300));
+  DelegatedInkMetadata later_metadata = DelegatedInkMetadata(
+      gfx::PointF(92, 35), 0.08, SK_ColorYELLOW,
+      base::TimeTicks::Now() + base::TimeDelta::FromMicroseconds(50),
+      gfx::RectF(35, 55, 128, 256));
+
+  CompositorFrame child_2_frame = MakeEmptyCompositorFrame();
+  child_2_frame.metadata.delegated_ink_metadata =
+      std::make_unique<DelegatedInkMetadata>(later_metadata);
+  AddPasses(&child_2_frame.render_pass_list, child_2_passes,
+            &child_2_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_2_allocator;
+  child_2_allocator.GenerateId();
+  LocalSurfaceId child_2_local_surface_id =
+      child_2_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_2_surface_id(child_2_support->frame_sink_id(),
+                               child_2_local_surface_id);
+  child_2_support->SubmitCompositorFrame(child_2_local_surface_id,
+                                         std::move(child_2_frame));
+
+  std::vector<Quad> child_3_quads = {
+      Quad::SolidColorQuad(SK_ColorCYAN, gfx::Rect(5, 5))};
+  std::vector<Pass> child_3_passes = {
+      Pass(child_3_quads, 1, gfx::Size(100, 100))};
+
+  CompositorFrame child_3_frame = MakeEmptyCompositorFrame();
+  child_3_frame.metadata.delegated_ink_metadata =
+      std::make_unique<DelegatedInkMetadata>(early_metadata);
+  AddPasses(&child_3_frame.render_pass_list, child_3_passes,
+            &child_3_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_3_allocator;
+  child_3_allocator.GenerateId();
+  LocalSurfaceId child_3_local_surface_id =
+      child_3_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_3_surface_id(child_3_support->frame_sink_id(),
+                               child_3_local_surface_id);
+  child_3_support->SubmitCompositorFrame(child_3_local_surface_id,
+                                         std::move(child_3_frame));
+
+  std::vector<Quad> root_quads = {
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_1_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5),
+                        /*stretch_content_to_fill_bounds=*/false),
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_2_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5),
+                        /*stretch_content_to_fill_bounds=*/false),
+      Quad::SurfaceQuad(SurfaceRange(base::nullopt, child_3_surface_id),
+                        SK_ColorWHITE, gfx::Rect(5, 5),
+                        /*stretch_content_to_fill_bounds=*/false)};
+
+  std::vector<Pass> root_passes = {Pass(root_quads, 1, gfx::Size(30, 30))};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Translate(9, 87);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.Scale(1.4, 1.7);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.Translate(214, 144);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(2)
+      ->quad_to_target_transform.Scale(2.7, 0.2);
+
+  // Two surfaces have delegated ink metadata on them, and when this happens
+  // on the metadata with the most recent timestamp should be used. Take this
+  // metadata and transform it to what should be expected.
+  gfx::PointF pt = later_metadata.point();
+  gfx::RectF area = later_metadata.presentation_area();
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.TransformPoint(&pt);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(1)
+      ->quad_to_target_transform.TransformRect(&area);
+
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+
+  DelegatedInkMetadata expected_metadata = DelegatedInkMetadata(
+      pt, later_metadata.diameter(), later_metadata.color(),
+      later_metadata.timestamp(), area);
+
+  std::unique_ptr<DelegatedInkMetadata> actual_metadata =
+      std::move(aggregated_frame.metadata.delegated_ink_metadata);
+  EXPECT_TRUE(actual_metadata);
+  ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), expected_metadata);
+}
+
+// Confirm that delegated ink metadata on an undrawn surface is not on the
+// aggregated surface unless the undrawn surface contains a CopyOutputRequest.
+TEST_F(SurfaceAggregatorValidSurfaceTest,
+       DelegatedInkMetadataOnUndrawnSurface) {
+  std::vector<Quad> child_quads = {
+      Quad::SolidColorQuad(SK_ColorGREEN, gfx::Rect(5, 5))};
+  std::vector<Pass> child_passes = {Pass(child_quads, 1, gfx::Size(100, 100))};
+
+  CompositorFrame child_frame = MakeEmptyCompositorFrame();
+  DelegatedInkMetadata metadata(gfx::PointF(34, 89), 1.597, SK_ColorBLUE,
+                                base::TimeTicks::Now(),
+                                gfx::RectF(2.3, 3.2, 177, 212));
+  child_frame.metadata.delegated_ink_metadata =
+      std::make_unique<DelegatedInkMetadata>(metadata);
+  AddPasses(&child_frame.render_pass_list, child_passes,
+            &child_frame.metadata.referenced_surfaces);
+
+  ParentLocalSurfaceIdAllocator child_allocator;
+  child_allocator.GenerateId();
+  LocalSurfaceId child_local_surface_id =
+      child_allocator.GetCurrentLocalSurfaceIdAllocation().local_surface_id();
+  SurfaceId child_surface_id(child_sink_->frame_sink_id(),
+                             child_local_surface_id);
+  child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                     std::move(child_frame));
+
+  // Do not put the child surface in a SurfaceDrawQuad so that it remains
+  // undrawn.
+  std::vector<Quad> root_quads = {
+      Quad::SolidColorQuad(SK_ColorMAGENTA, gfx::Rect(5, 5))};
+
+  std::vector<Pass> root_passes = {Pass(root_quads, 1, gfx::Size(30, 30))};
+
+  CompositorFrame root_frame = MakeEmptyCompositorFrame();
+  root_frame.metadata.referenced_surfaces.emplace_back(
+      SurfaceRange(base::nullopt, child_surface_id));
+  AddPasses(&root_frame.render_pass_list, root_passes,
+            &root_frame.metadata.referenced_surfaces);
+
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Scale(1.5, 1.5);
+  root_frame.render_pass_list[0]
+      ->shared_quad_state_list.ElementAt(0)
+      ->quad_to_target_transform.Translate(70, 240);
+
+  root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                    std::move(root_frame));
+
+  SurfaceId root_surface_id(root_sink_->frame_sink_id(),
+                            root_local_surface_id_);
+  CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+
+  EXPECT_FALSE(aggregated_frame.metadata.delegated_ink_metadata);
+
+  // Now add a CopyOutputRequest on the child surface, so that the delegated
+  // ink metadata does get populated on the aggregated frame.
+  auto copy_request = CopyOutputRequest::CreateStubForTesting();
+  child_sink_->RequestCopyOfOutput(child_local_surface_id,
+                                   std::move(copy_request));
+
+  aggregated_frame = AggregateFrame(root_surface_id);
+
+  std::unique_ptr<DelegatedInkMetadata> actual_metadata =
+      std::move(aggregated_frame.metadata.delegated_ink_metadata);
+  EXPECT_TRUE(actual_metadata);
+  ExpectDelegatedInkMetadataIsEqual(*actual_metadata.get(), metadata);
+}
+
 }  // namespace
 }  // namespace viz

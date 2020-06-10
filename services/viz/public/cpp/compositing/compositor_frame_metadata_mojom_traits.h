@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "services/viz/public/cpp/compositing/begin_frame_args_mojom_traits.h"
+#include "services/viz/public/cpp/compositing/delegated_ink_metadata_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/frame_deadline_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/surface_range_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_metadata.mojom-shared.h"
@@ -124,6 +125,11 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   static gfx::OverlayTransform display_transform_hint(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.display_transform_hint;
+  }
+
+  static const std::unique_ptr<viz::DelegatedInkMetadata>&
+  delegated_ink_metadata(const viz::CompositorFrameMetadata& metadata) {
+    return metadata.delegated_ink_metadata;
   }
 
   static bool Read(viz::mojom::CompositorFrameMetadataDataView data,

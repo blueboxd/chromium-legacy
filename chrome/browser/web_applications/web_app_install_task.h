@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -98,6 +99,15 @@ class WebAppInstallTask : content::WebContentsObserver {
       content::WebContents* web_contents,
       WebAppUrlLoader* url_loader,
       WebappInstallSource install_source,
+      InstallManager::OnceInstallCallback callback);
+
+  // Fetches the icon URLs in |web_application_info| to populate the icon
+  // bitmaps. Once fetched uses the contents of |web_application_info| as the
+  // entire web app installation data.
+  void InstallWebAppFromInfoRetrieveIcons(
+      content::WebContents* web_contents,
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      InstallFinalizer::FinalizeOptions finalize_options,
       InstallManager::OnceInstallCallback callback);
 
   // Starts a web app installation process using prefilled
@@ -197,7 +207,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       bool should_intent_to_store);
 
   void OnIconsRetrieved(std::unique_ptr<WebApplicationInfo> web_app_info,
-                        bool is_locally_installed,
+                        InstallFinalizer::FinalizeOptions finalize_options,
                         IconsMap icons_map);
   void OnIconsRetrievedShowDialog(
       std::unique_ptr<WebApplicationInfo> web_app_info,

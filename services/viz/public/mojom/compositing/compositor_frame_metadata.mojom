@@ -6,6 +6,7 @@ module viz.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "services/viz/public/mojom/compositing/begin_frame_args.mojom";
+import "services/viz/public/mojom/compositing/delegated_ink_metadata.mojom";
 import "services/viz/public/mojom/compositing/frame_deadline.mojom";
 import "services/viz/public/mojom/compositing/selection.mojom";
 import "services/viz/public/mojom/compositing/surface_id.mojom";
@@ -16,6 +17,8 @@ import "ui/gfx/mojom/overlay_transform.mojom";
 import "ui/latency/mojom/latency_info.mojom";
 
 // See components/viz/service/quads/compositor_frame_metadata.h.
+// This is sent from viz clients such as the browser and renderer to the viz
+// compositor in the GPU process.
 struct CompositorFrameMetadata {
   float device_scale_factor;
   gfx.mojom.Vector2dF root_scroll_offset;
@@ -47,4 +50,17 @@ struct CompositorFrameMetadata {
   mojo_base.mojom.TimeDelta? preferred_frame_interval;
 
   gfx.mojom.OverlayTransform display_transform_hint;
+
+  // Contains the metadata required for drawing a delegated ink trail onto the
+  // end of a rendered ink stroke. This should only be present when two
+  // conditions are met:
+  //   1. The JS API |updateInkTrailStartPoint| is used - This gathers the
+  //     metadata and puts it onto a compositor frame to be sent to viz.
+  //   2. This frame will not be submitted to the root surface - The browser UI
+  //     does not use this, and the frame must be contained within a
+  //     SurfaceDrawQuad.
+  // The ink trail created with this metadata will only last for a single frame
+  // before it disappears, regardless of whether or not the next frame contains
+  // delegated ink metadata.
+  DelegatedInkMetadata? delegated_ink_metadata;
 };

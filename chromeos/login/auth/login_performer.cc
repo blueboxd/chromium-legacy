@@ -97,11 +97,11 @@ void LoginPerformer::OnOffTheRecordAuthSuccess() {
     NOTREACHED();
 }
 
-void LoginPerformer::OnPasswordChangeDetected() {
+void LoginPerformer::OnPasswordChangeDetected(const UserContext& user_context) {
   password_changed_ = true;
   password_changed_callback_count_++;
   if (delegate_) {
-    delegate_->OnPasswordChangeDetected();
+    delegate_->OnPasswordChangeDetected(user_context);
   } else {
     NOTREACHED();
   }

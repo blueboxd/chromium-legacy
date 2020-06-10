@@ -120,8 +120,7 @@ SecurityHandler::SecurityHandler()
       host_(nullptr) {
 }
 
-SecurityHandler::~SecurityHandler() {
-}
+SecurityHandler::~SecurityHandler() = default;
 
 void SecurityHandler::Wire(UberDispatcher* dispatcher) {
   frontend_.reset(new Security::Frontend(dispatcher->channel()));

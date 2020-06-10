@@ -15,7 +15,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
@@ -635,30 +634,6 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
       return;
 
     ::NotifyWinEvent((*native_event), hwnd, OBJID_CLIENT, -GetUniqueId());
-
-    // Temporary debugging code for https:://crbug.com/1039422 focus issues.
-    if (*native_event == EVENT_OBJECT_FOCUS) {
-      if (GetDelegate()->GetFromTreeIDAndNodeID(
-              GetDelegate()->GetTreeData().tree_id, GetData().id) == nullptr) {
-        // Is a view -- view_ax_platform_node_delegate does not implement
-        // GetFromTreeIDAndNodeID().
-        if (MSAARole() == ROLE_SYSTEM_PANE &&
-            GetData().HasState(ax::mojom::State::kInvisible) &&
-            GetData().GetRestriction() == ax::mojom::Restriction::kDisabled) {
-          // This is the weird invisible pane that seems to get focus when the
-          // user presses Alt+F Escape.
-          LOG(DFATAL) << "Invisible+disabled ROLE_SYSTEM focused! "
-                      << GetData().role;
-          base::debug::DumpWithoutCrashing();
-        }
-        if (GetStringAttribute(ax::mojom::StringAttribute::kClassName) ==
-            "OmniboxResultView") {
-          // Why are Omnibox suggestions sometimes getting focus?
-          LOG(DFATAL) << "Omnibox suggestion focused! " << GetData().ToString();
-          base::debug::DumpWithoutCrashing();
-        }
-      }
-    }
   }
 
   if (base::Optional<PROPERTYID> uia_property =
@@ -1271,22 +1246,6 @@ IFACEMETHODIMP AXPlatformNodeWin::role(LONG* role) {
   // as the MSAA role.
   if (!*role)
     *role = MSAARole();
-
-  // Temporary debugging code for https:://crbug.com/1039422 focused, disabled,
-  // invisible pane. Looks suspiciously like the kUnknown object created for
-  // closed widgets near the top of ViewAccessibility::GetAccessibleNodeData().
-  if (*role == ROLE_SYSTEM_PANE &&
-      GetData().HasState(ax::mojom::State::kInvisible) &&
-      GetData().GetRestriction() == ax::mojom::Restriction::kDisabled &&
-      GetDelegate()->GetFocus() ==
-          const_cast<AXPlatformNodeWin*>(this)->GetNativeViewAccessible() &&
-      GetDelegate()->GetFromTreeIDAndNodeID(
-          GetDelegate()->GetTreeData().tree_id, GetData().id) == nullptr) {
-    LOG(DFATAL) << "**** Bad invisible/disabled pane in views: "
-                << GetData().ToString();
-    base::debug::DumpWithoutCrashing();
-  }
-
   return S_OK;
 }
 

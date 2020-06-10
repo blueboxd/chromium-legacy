@@ -45,6 +45,7 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
     base::TimeTicks permission_requested_time)
     : browser_(browser),
       delegate_(delegate),
+      visible_requests_(GetVisibleRequests()),
       name_or_origin_(GetDisplayNameOrOrigin()),
       permission_requested_time_(permission_requested_time) {
   // Note that browser_ may be null in unit tests.
@@ -80,9 +81,11 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
       ChromeLayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  for (permissions::PermissionRequest* request : delegate_->Requests())
+  for (permissions::PermissionRequest* request : visible_requests_)
     AddPermissionRequestLine(request);
 }
+
+PermissionPromptBubbleView::~PermissionPromptBubbleView() = default;
 
 void PermissionPromptBubbleView::Show() {
   DCHECK(browser_->window());
@@ -102,6 +105,35 @@ void PermissionPromptBubbleView::Show() {
   SizeToContents();
   UpdateAnchorPosition();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PERMISSIONS);
+}
+
+std::vector<permissions::PermissionRequest*>
+PermissionPromptBubbleView::GetVisibleRequests() {
+  std::vector<permissions::PermissionRequest*> visible_requests;
+
+  for (permissions::PermissionRequest* request : delegate_->Requests()) {
+    if (ShouldShowPermissionRequest(request))
+      visible_requests.push_back(request);
+  }
+  return visible_requests;
+}
+
+bool PermissionPromptBubbleView::ShouldShowPermissionRequest(
+    permissions::PermissionRequest* request) {
+  if (request->GetContentSettingsType() !=
+      ContentSettingsType::MEDIASTREAM_CAMERA) {
+    return true;
+  }
+
+  // Hide camera request only if camera PTZ request is present as well.
+  for (permissions::PermissionRequest* request : delegate_->Requests()) {
+    if (request->GetContentSettingsType() ==
+        ContentSettingsType::CAMERA_PAN_TILT_ZOOM) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void PermissionPromptBubbleView::AddPermissionRequestLine(
@@ -212,23 +244,23 @@ base::string16 PermissionPromptBubbleView::GetAccessibleWindowTitle() const {
   // There are three separate internationalized messages used, one for each
   // format of title, to provide for accurate i18n. See https://crbug.com/434574
   // for more details.
-  const std::vector<permissions::PermissionRequest*>& requests =
-      delegate_->Requests();
-  DCHECK(!requests.empty());
+  DCHECK(!visible_requests_.empty());
 
-  if (requests.size() == 1) {
+  if (visible_requests_.size() == 1) {
     return l10n_util::GetStringFUTF16(
         IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_ONE_PERM,
-        name_or_origin_.name_or_origin, requests[0]->GetMessageTextFragment());
+        name_or_origin_.name_or_origin,
+        visible_requests_[0]->GetMessageTextFragment());
   }
 
   int template_id =
-      requests.size() == 2
+      visible_requests_.size() == 2
           ? IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_TWO_PERMS
           : IDS_PERMISSIONS_BUBBLE_PROMPT_ACCESSIBLE_TITLE_TWO_PERMS_MORE;
-  return l10n_util::GetStringFUTF16(template_id, name_or_origin_.name_or_origin,
-                                    requests[0]->GetMessageTextFragment(),
-                                    requests[1]->GetMessageTextFragment());
+  return l10n_util::GetStringFUTF16(
+      template_id, name_or_origin_.name_or_origin,
+      visible_requests_[0]->GetMessageTextFragment(),
+      visible_requests_[1]->GetMessageTextFragment());
 }
 
 gfx::Size PermissionPromptBubbleView::CalculatePreferredSize() const {
@@ -248,10 +280,8 @@ void PermissionPromptBubbleView::ButtonPressed(views::Button* sender,
 
 PermissionPromptBubbleView::DisplayNameOrOrigin
 PermissionPromptBubbleView::GetDisplayNameOrOrigin() {
-  const std::vector<permissions::PermissionRequest*>& requests =
-      delegate_->Requests();
-  DCHECK(!requests.empty());
-  GURL origin_url = requests[0]->GetOrigin();
+  DCHECK(!visible_requests_.empty());
+  GURL origin_url = visible_requests_[0]->GetOrigin();
 
   if (origin_url.SchemeIs(extensions::kExtensionScheme)) {
     base::string16 extension_name =

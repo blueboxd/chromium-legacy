@@ -77,9 +77,8 @@ bool ScreenshotCategoryEnabled() {
 
 }  // namespace
 
-DevToolsFrameTraceRecorder::DevToolsFrameTraceRecorder() { }
-
-DevToolsFrameTraceRecorder::~DevToolsFrameTraceRecorder() { }
+DevToolsFrameTraceRecorder::DevToolsFrameTraceRecorder() = default;
+DevToolsFrameTraceRecorder::~DevToolsFrameTraceRecorder() = default;
 
 void DevToolsFrameTraceRecorder::OnSynchronousSwapCompositorFrame(
     RenderFrameHostImpl* host,

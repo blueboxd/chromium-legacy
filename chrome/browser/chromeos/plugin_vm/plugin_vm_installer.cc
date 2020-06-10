@@ -34,6 +34,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
@@ -96,6 +97,11 @@ void PluginVmInstaller::Start() {
     LOG(ERROR) << "Download of PluginVm image cannot be started because "
                << "the user is not allowed to run PluginVm";
     InstallFailed(FailureReason::NOT_ALLOWED);
+    return;
+  }
+
+  if (content::GetNetworkConnectionTracker()->IsOffline()) {
+    InstallFailed(FailureReason::OFFLINE);
     return;
   }
 

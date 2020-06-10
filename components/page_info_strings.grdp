@@ -306,7 +306,7 @@
       Augmented reality
     </message>
     <message name="IDS_PAGE_INFO_TYPE_CAMERA_PAN_TILT_ZOOM" desc="The label used for the Camera PTZ permission controls in the Page Info popup.">
-      Camera movement
+      Camera use &amp; movement
     </message>
     <message name="IDS_PAGE_INFO_TYPE_WINDOW_PLACEMENT" desc="The label used for the Window Placement permission controls in the Page Info popup.">
       Window placement

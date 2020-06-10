@@ -18,7 +18,6 @@ aggregate_vector_icons("components_vector_icons") {
     "business.icon",
     "call.icon",
     "certificate.icon",
-    "camera_pan_tilt_zoom.icon",
     "check_circle.icon",
     "close.icon",
     "close_rounded.icon",

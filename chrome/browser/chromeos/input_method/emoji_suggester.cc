@@ -100,6 +100,10 @@ void EmojiSuggester::OnEmojiDataLoaded(const std::string& emoji_data) {
     std::string emojis = line.substr(comma_pos + 1);
     // Build emoji_map_ from splitting the string of emojis.
     emoji_map_[word] = SplitString(emojis, ";");
+    // TODO(crbug/1093179): Implement arrow to indicate more emojis available.
+    // Only loads 5 emojis for now until arrow is implemented.
+    if (emoji_map_[word].size() > kMaxCandidateSize)
+      emoji_map_[word].resize(kMaxCandidateSize);
     DCHECK_LE(static_cast<int>(emoji_map_[word].size()), kMaxSuggestionSize);
   }
 }

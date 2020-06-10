@@ -345,6 +345,10 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
     case State::kError:
       DCHECK(reason_);
       switch (*reason_) {
+        case plugin_vm::PluginVmInstaller::FailureReason::OFFLINE:
+          return l10n_util::GetStringFUTF16(
+              IDS_PLUGIN_VM_INSTALLER_ERROR_OFFLINE_TITLE,
+              ui::GetChromeOSDeviceName());
         case plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED:
           return l10n_util::GetStringFUTF16(
               IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE, app_name_);
@@ -409,6 +413,9 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               IDS_PLUGIN_VM_INSTALLER_ERROR_MESSAGE_LOGIC_ERROR, app_name_,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        case Reason::OFFLINE:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_INSTALLER_ERROR_OFFLINE_MESSAGE);
         case Reason::NOT_ALLOWED:
         case Reason::DLC_UNSUPPORTED:
           return l10n_util::GetStringFUTF16(

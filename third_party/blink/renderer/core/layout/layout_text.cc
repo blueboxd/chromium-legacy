@@ -1760,69 +1760,71 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   int delta = new_len - old_len;
   unsigned end = len ? offset + len - 1 : offset;
 
-  RootInlineBox* first_root_box = nullptr;
-  RootInlineBox* last_root_box = nullptr;
-
   bool dirtied_lines = false;
 
-  // Dirty all text boxes that include characters in between offset and
-  // offset+len.
-  for (InlineTextBox* curr : TextBoxes()) {
-    // FIXME: This shouldn't rely on the end of a dirty line box. See
-    // https://bugs.webkit.org/show_bug.cgi?id=97264
-    // Text run is entirely before the affected range.
-    if (curr->end() < offset)
-      continue;
+  if (!IsInLayoutNGInlineFormattingContext()) {
+    RootInlineBox* first_root_box = nullptr;
+    RootInlineBox* last_root_box = nullptr;
 
-    // Text run is entirely after the affected range.
-    if (curr->Start() > end) {
-      curr->OffsetRun(delta);
-      RootInlineBox* root = &curr->Root();
-      if (!first_root_box) {
-        first_root_box = root;
-        // The affected area was in between two runs. Go ahead and mark the root
-        // box of the run after the affected area as dirty.
-        first_root_box->MarkDirty();
+    // Dirty all text boxes that include characters in between offset and
+    // offset+len.
+    for (InlineTextBox* curr : TextBoxes()) {
+      // FIXME: This shouldn't rely on the end of a dirty line box. See
+      // https://bugs.webkit.org/show_bug.cgi?id=97264
+      // Text run is entirely before the affected range.
+      if (curr->end() < offset)
+        continue;
+
+      // Text run is entirely after the affected range.
+      if (curr->Start() > end) {
+        curr->OffsetRun(delta);
+        RootInlineBox* root = &curr->Root();
+        if (!first_root_box) {
+          first_root_box = root;
+          // The affected area was in between two runs. Go ahead and mark the
+          // root box of the run after the affected area as dirty.
+          first_root_box->MarkDirty();
+          dirtied_lines = true;
+        }
+        last_root_box = root;
+      } else if (curr->end() >= offset && curr->end() <= end) {
+        // Text run overlaps with the left end of the affected range.
+        curr->DirtyLineBoxes();
+        dirtied_lines = true;
+      } else if (curr->Start() <= offset && curr->end() >= end) {
+        // Text run subsumes the affected range.
+        curr->DirtyLineBoxes();
+        dirtied_lines = true;
+      } else if (curr->Start() <= end && curr->end() >= end) {
+        // Text run overlaps with right end of the affected range.
+        curr->DirtyLineBoxes();
         dirtied_lines = true;
       }
-      last_root_box = root;
-    } else if (curr->end() >= offset && curr->end() <= end) {
-      // Text run overlaps with the left end of the affected range.
-      curr->DirtyLineBoxes();
+    }
+
+    // Now we have to walk all of the clean lines and adjust their cached line
+    // break information to reflect our updated offsets.
+    if (last_root_box)
+      last_root_box = last_root_box->NextRootBox();
+    if (first_root_box) {
+      RootInlineBox* prev = first_root_box->PrevRootBox();
+      if (prev)
+        first_root_box = prev;
+    } else if (LastTextBox()) {
+      DCHECK(!last_root_box);
+      first_root_box = &LastTextBox()->Root();
+      first_root_box->MarkDirty();
       dirtied_lines = true;
-    } else if (curr->Start() <= offset && curr->end() >= end) {
-      // Text run subsumes the affected range.
-      curr->DirtyLineBoxes();
-      dirtied_lines = true;
-    } else if (curr->Start() <= end && curr->end() >= end) {
-      // Text run overlaps with right end of the affected range.
-      curr->DirtyLineBoxes();
-      dirtied_lines = true;
+    }
+    for (RootInlineBox* curr = first_root_box; curr && curr != last_root_box;
+         curr = curr->NextRootBox()) {
+      if (curr->LineBreakObj().IsEqual(this) && curr->LineBreakPos() > end)
+        curr->SetLineBreakPos(clampTo<int>(curr->LineBreakPos() + delta));
     }
   }
 
-  // Now we have to walk all of the clean lines and adjust their cached line
-  // break information to reflect our updated offsets.
-  if (last_root_box)
-    last_root_box = last_root_box->NextRootBox();
-  if (first_root_box) {
-    RootInlineBox* prev = first_root_box->PrevRootBox();
-    if (prev)
-      first_root_box = prev;
-  } else if (LastTextBox()) {
-    DCHECK(!last_root_box);
-    first_root_box = &LastTextBox()->Root();
-    first_root_box->MarkDirty();
-    dirtied_lines = true;
-  }
-  for (RootInlineBox* curr = first_root_box; curr && curr != last_root_box;
-       curr = curr->NextRootBox()) {
-    if (curr->LineBreakObj().IsEqual(this) && curr->LineBreakPos() > end)
-      curr->SetLineBreakPos(clampTo<int>(curr->LineBreakPos() + delta));
-  }
-
   // If the text node is empty, dirty the line where new text will be inserted.
-  if (!FirstTextBox() && Parent()) {
+  if (!HasInlineFragments() && Parent()) {
     Parent()->DirtyLinesFromChangedChild(this);
     dirtied_lines = true;
   }

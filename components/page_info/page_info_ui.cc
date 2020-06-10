@@ -581,6 +581,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       icon = &vector_icons::kMicIcon;
       break;
     case ContentSettingsType::MEDIASTREAM_CAMERA:
+    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
       icon = &vector_icons::kVideocamIcon;
       break;
     case ContentSettingsType::AUTOMATIC_DOWNLOADS:
@@ -627,9 +628,6 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case ContentSettingsType::VR:
     case ContentSettingsType::AR:
       icon = &vector_icons::kVrHeadsetIcon;
-      break;
-    case ContentSettingsType::CAMERA_PAN_TILT_ZOOM:
-      icon = &vector_icons::kCameraPanTiltZoomIcon;
       break;
     case ContentSettingsType::WINDOW_PLACEMENT:
       icon = &vector_icons::kWindowPlacementIcon;

@@ -73,8 +73,6 @@ class LoginDisplayWebUIHandler {
                          const std::string& help_link_text,
                          HelpAppLauncher::HelpTopic help_topic_id) = 0;
   virtual void ShowSigninUI(const std::string& email) = 0;
-  virtual void ShowPasswordChangedDialog(bool show_password_error,
-                                         const std::string& email) = 0;
   virtual void ShowWhitelistCheckFailedError() = 0;
   virtual void LoadUsers(const user_manager::UserList& users,
                          const base::ListValue& users_list) = 0;
@@ -268,8 +266,6 @@ class SigninScreenHandler
                  const std::string& help_link_text,
                  HelpAppLauncher::HelpTopic help_topic_id) override;
   void ShowSigninUI(const std::string& email) override;
-  void ShowPasswordChangedDialog(bool show_password_error,
-                                 const std::string& email) override;
   void ShowWhitelistCheckFailedError() override;
   void LoadUsers(const user_manager::UserList& users,
                  const base::ListValue& users_list) override;
@@ -329,10 +325,7 @@ class SigninScreenHandler
   void HandleAccountPickerReady();
   void HandleOpenInternetDetailDialog();
   void HandleLoginVisible(const std::string& source);
-  void HandleCancelPasswordChangedFlow(const AccountId& account_id);
   void HandleCancelUserAdding();
-  void HandleMigrateUserData(const std::string& password);
-  void HandleResyncUserData();
   void HandleLoginUIStateChanged(const std::string& source, bool active);
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();

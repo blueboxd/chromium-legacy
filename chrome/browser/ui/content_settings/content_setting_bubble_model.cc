@@ -52,7 +52,9 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
+#include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
@@ -1216,14 +1218,28 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
           CameraAccessed() ? IDS_BLOCKED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION
                            : IDS_BLOCKED_MEDIASTREAM_MIC_NO_ACTION;
   } else {
+    permissions::PermissionManager* permission_manager =
+        permissions::PermissionsClient::Get()->GetPermissionManager(
+            web_contents()->GetBrowserContext());
+    permissions::PermissionResult pan_tilt_zoom_permission =
+        permission_manager->GetPermissionStatusForFrame(
+            ContentSettingsType::CAMERA_PAN_TILT_ZOOM,
+            web_contents()->GetMainFrame(), url);
+    bool has_pan_tilt_zoom_permission_granted =
+        pan_tilt_zoom_permission.content_setting == CONTENT_SETTING_ALLOW;
     if (MicrophoneAccessed() && CameraAccessed()) {
-      radio_allow_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION;
+      radio_allow_label_id =
+          has_pan_tilt_zoom_permission_granted
+              ? IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_PAN_TILT_ZOOM_NO_ACTION
+              : IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION;
       radio_block_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_BLOCK;
     } else if (MicrophoneAccessed()) {
       radio_allow_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION;
       radio_block_label_id = IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK;
     } else {
-      radio_allow_label_id = IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION;
+      radio_allow_label_id = has_pan_tilt_zoom_permission_granted
+                                 ? IDS_ALLOWED_CAMERA_PAN_TILT_ZOOM_NO_ACTION
+                                 : IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION;
       radio_block_label_id = IDS_ALLOWED_MEDIASTREAM_CAMERA_BLOCK;
     }
   }

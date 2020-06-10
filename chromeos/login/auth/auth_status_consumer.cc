@@ -6,7 +6,8 @@
 
 namespace chromeos {
 
-void AuthStatusConsumer::OnPasswordChangeDetected() {
+void AuthStatusConsumer::OnPasswordChangeDetected(
+    const UserContext& user_context) {
   NOTREACHED();
 }
 

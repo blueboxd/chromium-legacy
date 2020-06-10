@@ -322,25 +322,29 @@ cr.define('cr.ui.login.debug', function() {
     },
     {
       // GAIA password changed.
-      id: 'password-changed',
+      id: 'gaia-password-changed',
       kind: ScreenKind.OTHER,
+      data: {
+        email: 'someone@example.com',
+      },
       states: [
         {
           // No error
           id: 'no-error',
           trigger: (screen) => {
-            screen.show(
-                false,  // showError
-                'someone@example.com');
+            screen.onBeforeShow({
+              email: 'someone@example.com',
+            });
           }
         },
         {
           // Has error
           id: 'has-error',
           trigger: (screen) => {
-            screen.show(
-                true,  // showError
-                'someone@example.com');
+            screen.onBeforeShow({
+              email: 'someone@example.com',
+              showError: true,
+            });
           }
         },
       ],

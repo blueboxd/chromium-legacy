@@ -127,7 +127,7 @@ TargetAutoAttacher::TargetAutoAttacher(
       auto_attach_(false),
       wait_for_debugger_on_start_(false) {}
 
-TargetAutoAttacher::~TargetAutoAttacher() {}
+TargetAutoAttacher::~TargetAutoAttacher() = default;
 
 void TargetAutoAttacher::SetRenderFrameHost(
     RenderFrameHostImpl* render_frame_host) {

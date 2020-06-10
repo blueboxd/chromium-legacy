@@ -7,6 +7,43 @@
  */
 cr.define('settings', function() {
   /**
+   * This solution uses DP and has the complexity of O(M*N), where M and N are
+   * the lengths of |string1| and |string2| respectively.
+   *
+   * @param {string} string1 The first case sensitive string to be compared.
+   * @param {string} string2 The second case sensitive string to be compared.
+   * @return {!Array<string>} An array of the longest common substrings, all of
+   *     which have the same length. Returns empty array if there are none.
+   */
+  function longestCommonSubstrings(string1, string2) {
+    let maxLength = 0;
+    let string1StartingIndices = [];
+    const dp = Array(string1.length + 1)
+                   .fill([])
+                   .map(() => Array(string2.length + 1).fill(0));
+
+    for (let i = string1.length - 1; i >= 0; i--) {
+      for (let j = string2.length - 1; j >= 0; j--) {
+        if (string1[i] != string2[j]) {
+          continue;
+        }
+        dp[i][j] = dp[i + 1][j + 1] + 1;
+        if (maxLength === dp[i][j]) {
+          string1StartingIndices.push(i);
+        }
+        if (maxLength < dp[i][j]) {
+          maxLength = dp[i][j];
+          string1StartingIndices = [i];
+        }
+      }
+    }
+
+    return string1StartingIndices.map(idx => {
+      return string1.substr(idx, maxLength);
+    });
+  }
+
+  /**
    * A list of hyphens in all languages that will be ignored during the
    * tokenization and comparison of search result text.
    * Hyphen characters list is taken from here: http://jkorpela.fi/dashes.html.
@@ -165,9 +202,8 @@ cr.define('settings', function() {
      *     text which may or may not contain hyphens or accents on
      *     characters, and does not contain blank spaces.
      * @param {string} normalizedQuery A lowercased query which does not contain
-     *     punctuation.
-     * @param {!Array<string>} queryTokens |normalizedQuery| tokenized by
-     *     blankspaces of any kind.
+     *     hyphens.
+     * @param {!Array<string>} queryTokens See generateQueryTokens_().
      * @return {string} The innerHtmlToken with <b> tags around segments that
      *     match queryTokens, but also includes hyphens and accents
      *     on characters.
@@ -175,7 +211,7 @@ cr.define('settings', function() {
      */
     getModifiedInnerHtmlToken_(innerHtmlToken, normalizedQuery, queryTokens) {
       // For comparison purposes with query tokens, lowercase the html token to
-      // be displayed and remove hyphens. The resulting
+      // be displayed, remove hyphens, and remove accents. The resulting
       // |normalizedToken| will not be the displayed token.
       const normalizedToken = normalizeString(innerHtmlToken);
       if (normalizedQuery.includes(normalizedToken)) {
@@ -234,24 +270,99 @@ cr.define('settings', function() {
     },
 
     /**
+     * Query tokens are created first by splitting the |normalizedQuery| with
+     * blankspaces into query segments. Then, each query segment is compared
+     * to the the normalized result text (result text without hyphens or
+     * accents). Query tokens are created by finding the longest common
+     * substring(s) between a query segment and the normalized result text. Each
+     * query segment is mapped to an array of their query tokens. Finally, the
+     * longest query token(s) for each query segment are extracted. In the event
+     * that query segments are more than one character long, query tokens that
+     * are only one character long are ignored.
+     * @param {string} normalizedQuery A lowercased query which does not contain
+     *     hyphens or accents.
+     * @return {!Array<string>} queryTokens QueryTokens that do not contain
+     *     blankspaces and are substrings of the normalized result text
+     * @private
+     */
+    generateQueryTokens_(normalizedQuery) {
+      const normalizedResultText = normalizeString(this.resultText_);
+
+      const segmentToTokenMap = new Map();
+      normalizedQuery.split(/\s/).forEach(querySegment => {
+        const queryTokens =
+            longestCommonSubstrings(querySegment, normalizedResultText);
+        if (segmentToTokenMap.has(querySegment)) {
+          const segmentTokens =
+              segmentToTokenMap.get(querySegment).concat(queryTokens);
+          segmentToTokenMap.set(querySegment, segmentTokens);
+          return;
+        }
+        segmentToTokenMap.set(querySegment, queryTokens);
+      });
+
+      // For each segment, only return the longest token. For example, in the
+      // case that |resultText_| is "Search and Assistant", a |querySegment| key
+      // of "ssistan" will yield a |queryToken| value array containing "ssistan"
+      // (longest common substring for "Assistant") and "an" (longest common
+      // substring for "and"). Only the queryToken "ssistan" should be kept
+      // since it's the longest queryToken.
+      const getLongestTokens = ([querySegment, queryTokens]) => {
+        // If there are no queryTokens, return none.
+        // Example: |normalizedResultText| = "search and assistant"
+        //          |normalizedQuery| = "hi goog"
+        //          |querySegment| = "goog"
+        //          |queryTokens| = []
+        // Since |querySegment| does not share any substrings with
+        // |normalizedResultText|, no queryTokens available.
+        if (!queryTokens.length) {
+          return [];
+        }
+
+        const maxLengthQueryToken =
+            Math.max(...queryTokens.map(queryToken => queryToken.length));
+
+        // If the |querySegment| is more than one character long and the longest
+        // queryToken(s) are one character long, discard all queryToken(s). This
+        // prevents random single characters in in the result text from bolding.
+        // Example: |normalizedResultText| = "search and assistant"
+        //          |normalizedQuery| = "hi goog"
+        //          |querySegment| = "hi"
+        //          |queryTokens| = ["h", "i"]
+        // Here, |querySegment| "hi" shares a common substring "h" with
+        // |normalizedResultText|'s "search" and "i" with
+        // |normalizedResultText|'s "assistant". Since the queryTokens for
+        // the length two querySegment are only one character long, discard
+        // the queryTokens.
+        if (maxLengthQueryToken === 1 && querySegment.length > 1) {
+          return [];
+        }
+
+        return queryTokens.filter(
+            queryToken => queryToken.length === maxLengthQueryToken);
+      };
+      return Array.from(segmentToTokenMap).map(getLongestTokens).flat();
+    },
+
+    /**
      * Tokenize the result and query text, and match the tokens even if they
-     * are out of order. Both the result and query text are tokenized by
-     * blankspaces, and compared without hyphens or accents on
-     * characters. As each result token is processed, it is compared with every
-     * query token. Bold the segment of the result token that is a substring of
-     * a query token. e.g. Smaller query block: if "wif on" is queried, a result
-     * text of "Turn on Wi-Fi" should have "on" and "Wi-F" bolded. e.g. Larger
-     * query block: If "onwifi" is queried, a result text of "Turn on Wi-Fi"
-     * should have "Wi-Fi" bolded.
+     * are out of order. Both the result and query tokens are compared without
+     * hyphens or accents on characters. Result text is simply tokenized by
+     * blankspaces. On the other hand, query text is tokenized within
+     * generateQueryTokens_(). As each result token is processed, it is compared
+     * with every query token. Bold the segment of the result token that is a
+     * query token. e.g. Smaller query block: if "wif on" is
+     * queried, a result text of "Turn on Wi-Fi" should have "on" and "Wi-F"
+     * bolded. e.g. Larger query block: If "onwifi" is queried, a result text of
+     * "Turn on Wi-Fi" should have "Wi-Fi" bolded.
      * @return {string} Result string with <b> tags around query sub string.
      * @private
      */
     getTokenizeMatchedBoldTagged_() {
-      // Lowercase and remove hyphens from the query.
+      // Lowercase, remove hyphens, and remove accents from the query.
       const normalizedQuery = normalizeString(this.searchQuery);
 
-      // Use blankspace to tokenize the query without hyphens.
-      const queryTokens = normalizedQuery.split(/\s/);
+      const queryTokens = this.generateQueryTokens_(normalizedQuery);
 
       // Get innerHtmlTokens with bold tags around matching segments.
       const innerHtmlTokensWithBoldTags = this.resultText_.split(/\s/).map(

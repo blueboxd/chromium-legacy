@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "components/account_id/account_id.h"
 
 class PrefService;
 
@@ -162,6 +163,10 @@ class WizardController {
 
   // Resets |current_screen_| when login screen has started.
   void LoginScreenStarted();
+
+  // Configure and show GAIA password changed screen.
+  void ShowGaiaPasswordChangedScreen(const AccountId& account_id,
+                                     bool has_error);
 
  private:
   // Create BaseScreen instances. These are owned by |screen_manager_|.

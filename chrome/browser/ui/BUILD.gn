@@ -1872,6 +1872,8 @@ static_library("ui") {
       "webui/chromeos/login/eula_screen_handler.h",
       "webui/chromeos/login/fingerprint_setup_screen_handler.cc",
       "webui/chromeos/login/fingerprint_setup_screen_handler.h",
+      "webui/chromeos/login/gaia_password_changed_screen_handler.cc",
+      "webui/chromeos/login/gaia_password_changed_screen_handler.h",
       "webui/chromeos/login/gaia_screen_handler.cc",
       "webui/chromeos/login/gaia_screen_handler.h",
       "webui/chromeos/login/gesture_navigation_screen_handler.cc",

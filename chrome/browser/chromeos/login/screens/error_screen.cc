@@ -260,7 +260,7 @@ void ErrorScreen::OnOffTheRecordAuthSuccess() {
   RestartChrome(command_line);
 }
 
-void ErrorScreen::OnPasswordChangeDetected() {
+void ErrorScreen::OnPasswordChangeDetected(const UserContext& user_context) {
   LOG(FATAL);
 }
 

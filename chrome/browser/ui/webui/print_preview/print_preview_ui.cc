@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
@@ -360,6 +361,12 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                     l10n_util::GetStringFUTF16(
                         IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION, shortcut_text));
 #endif
+
+  // Register strings for the PDF viewer, so that $i18n{} replacements work.
+  base::Value pdf_strings(base::Value::Type::DICTIONARY);
+  pdf_extension_util::AddStrings(&pdf_strings);
+  pdf_extension_util::AddAdditionalData(&pdf_strings);
+  source->AddLocalizedStrings(base::Value::AsDictionaryValue(pdf_strings));
 }
 
 void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {

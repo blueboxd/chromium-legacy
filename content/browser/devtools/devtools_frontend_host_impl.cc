@@ -84,8 +84,7 @@ DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
                                   receiver_.BindNewEndpointAndPassRemote());
 }
 
-DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() {
-}
+DevToolsFrontendHostImpl::~DevToolsFrontendHostImpl() = default;
 
 void DevToolsFrontendHostImpl::BadMessageRecieved() {
   bad_message::ReceivedBadMessage(web_contents_->GetMainFrame()->GetProcess(),

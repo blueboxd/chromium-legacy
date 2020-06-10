@@ -2304,6 +2304,13 @@ void RasterDecoderImpl::DoWritePixelsINTERNAL(GLint x_offset,
       src_width, src_height, static_cast<SkColorType>(src_sk_color_type),
       static_cast<SkAlphaType>(src_sk_alpha_type), std::move(color_space));
 
+  if (row_bytes < src_info.minRowBytes()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glWritePixels",
+                       "row_bytes be >= "
+                       "SkImageInfo::minRowBytes() for source image.");
+    return;
+  }
+
   std::vector<GrBackendSemaphore> begin_semaphores;
   std::vector<GrBackendSemaphore> end_semaphores;
 

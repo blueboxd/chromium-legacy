@@ -65,7 +65,8 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return false;
   }
   return data.ReadPreferredFrameInterval(&out->preferred_frame_interval) &&
-         data.ReadDisplayTransformHint(&out->display_transform_hint);
+         data.ReadDisplayTransformHint(&out->display_transform_hint) &&
+         data.ReadDelegatedInkMetadata(&out->delegated_ink_metadata);
 }
 
 }  // namespace mojo

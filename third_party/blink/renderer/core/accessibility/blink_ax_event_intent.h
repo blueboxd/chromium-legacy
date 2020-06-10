@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/editing/selection_modifier.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
 #include "third_party/blink/renderer/core/editing/text_granularity.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -35,7 +36,8 @@ class CORE_EXPORT BlinkAXEventIntent final {
       const SelectionModifyDirection direction,
       const TextGranularity granularity,
       const SetSelectionBy set_selection_by,
-      const TextDirection direction_of_selection);
+      const TextDirection direction_of_selection,
+      const PlatformWordBehavior platform_word_behavior);
   static BlinkAXEventIntent FromNewSelection(
       const TextGranularity granularity,
       bool is_base_first,

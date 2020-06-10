@@ -203,6 +203,10 @@ extern const char kCastMemoryPressureModerateFraction[] =
 // of the media service.
 const char kDisableMojoRenderer[] = "disable-mojo-renderer";
 
+// System info file path. Default is an empty string, which
+// means that dummy info will be used.
+const char kSysInfoFilePath[] = "sys-info-file-path";
+
 }  // namespace switches
 
 namespace chromecast {

@@ -17,8 +17,7 @@ ForwardingAgentHost::ForwardingAgentHost(
   NotifyCreated();
 }
 
-ForwardingAgentHost::~ForwardingAgentHost() {
-}
+ForwardingAgentHost::~ForwardingAgentHost() = default;
 
 bool ForwardingAgentHost::AttachSession(DevToolsSession* session) {
   session->TurnIntoExternalProxy(delegate_.get());

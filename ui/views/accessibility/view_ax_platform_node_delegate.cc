@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/containers/adapters.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -254,17 +253,6 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
   data_ = ui::AXNodeData();
   GetAccessibleNodeData(&data_);
 
-  // Temporary debugging code for https:://crbug.com/1039422 invisible pane.
-  const views::Widget* widget = view()->GetWidget();
-  if (!widget || !widget->widget_delegate() || widget->IsClosed()) {
-    if (ui::AXPlatformNode::GetPopupFocusOverride() && GetNativeObject() &&
-        GetFocusImpl() == GetNativeObject()) {
-      LOG(DFATAL) << "Focus is on a closed widget, menu_depth_ = "
-                  << menu_depth_;
-      base::debug::DumpWithoutCrashing();
-    }
-  }
-
   // View::IsDrawn is true if a View is visible and all of its ancestors are
   // visible too, since invisibility inherits.
   //
@@ -470,7 +458,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(
                                      : (*i)->GetNativeViewAccessible();
 }
 
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocusImpl() const {
+gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocus() {
   gfx::NativeViewAccessible focus_override =
       ui::AXPlatformNode::GetPopupFocusOverride();
   if (focus_override)
@@ -486,10 +474,6 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocusImpl() const {
   // The accessibility focus will be either on the |focused_view| or on one of
   // its virtual children.
   return focused_view->GetViewAccessibility().GetFocusedDescendant();
-}
-
-gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetFocus() {
-  return GetFocusImpl();
 }
 
 ui::AXPlatformNode* ViewAXPlatformNodeDelegate::GetFromNodeID(int32_t id) {

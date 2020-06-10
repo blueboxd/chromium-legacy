@@ -614,6 +614,20 @@ fileOperationUtil.Task = class {
     // For example, if 'dir' was copied as 'dir (1)', then 'dir/file.txt' should
     // become 'dir (1)/file.txt'.
     this.renamedDirectories_ = [];
+
+    /**
+     * Number of progress item sequence used in calculating moving average
+     * speed of task.
+     * @private {number}
+     */
+    this.SPEED_BUFFER_WINDOW_ = 20;
+
+    /**
+     * Speedometer object used to calculate and track speed and remaining time.
+     * @protected {fileOperationUtil.Speedometer}
+     */
+    this.speedometer_ =
+        new fileOperationUtil.Speedometer(this.SPEED_BUFFER_WINDOW_);
   }
 
 
@@ -661,7 +675,10 @@ fileOperationUtil.Task = class {
       totalBytes: this.totalBytes,
       processedBytes: this.processedBytes,
       processingEntryName: processingEntry ? processingEntry.name : '',
-      targetDirEntryName: this.targetDirEntry.name
+      targetDirEntryName: this.targetDirEntry.name,
+      currentSpeed: this.speedometer_.getCurrentSpeed(),
+      averageSpeed: this.speedometer_.getAverageSpeed(),
+      remainingTime: this.speedometer_.getRemainingTime()
     };
   }
 
@@ -785,6 +802,7 @@ fileOperationUtil.CopyTask = class extends fileOperationUtil.Task {
           this.totalBytes += this.processingEntries[i][entryURL].size;
         }
       }
+      this.speedometer_.setTotalBytes(this.totalBytes);
 
       callback();
     });
@@ -861,6 +879,7 @@ fileOperationUtil.CopyTask = class extends fileOperationUtil.Task {
       const size = opt_size !== undefined ? opt_size : processedEntry.size;
       this.processedBytes += size - processedEntry.processedBytes;
       processedEntry.processedBytes = size;
+      this.speedometer_.update(this.processedBytes);
 
       // updateProgress can be called multiple times for a single file copy, and
       // it might not be called for a small file.
@@ -920,6 +939,7 @@ fileOperationUtil.CopyTask = class extends fileOperationUtil.Task {
                 this.processingSourceIndex_ = index + 1;
                 this.processedBytes = this.calcProcessedBytes_();
                 this.numRemainingItems = this.calcNumRemainingItems_();
+                this.speedometer_.update(this.processedBytes);
                 errorCount = 0;
                 callback();
               },
@@ -930,6 +950,7 @@ fileOperationUtil.CopyTask = class extends fileOperationUtil.Task {
                 this.processingSourceIndex_ = index + 1;
                 this.processedBytes = this.calcProcessedBytes_();
                 this.numRemainingItems = this.calcNumRemainingItems_();
+                this.speedometer_.update(this.processedBytes);
                 errorCount++;
                 lastError = error;
                 if (errorCount <
@@ -1372,4 +1393,158 @@ fileOperationUtil.EventRouter.EventType = {
   ERROR: 'ERROR',
   PROGRESS: 'PROGRESS',
   SUCCESS: 'SUCCESS'
+};
+
+/**
+ * Class to calculate transfer speed and remaining time. Each update from
+ * transfer task stores the last speed in a ring buffer and recalculates the
+ * cumulative moving average (CMA).
+ *
+ * Current speed (average of window) and remaining time is calculated per calls
+ * from progress updater in the task.
+ *
+ * The length of buffer specifies the moving window length.
+ */
+fileOperationUtil.Speedometer = class {
+  /**
+   * @param {number} bufferLength Max number of recent data used in
+   * calculation as time window.
+   */
+  constructor(bufferLength) {
+    /***
+     * The buffer length controlling average window length.
+     * @type {number}
+     * @private
+     */
+    this.length_ = bufferLength;
+
+    /**
+     * @private {Array} internal buffer to track recent data.
+     */
+    this.buffer_ = [];
+
+    /**
+     * @private {number} index of current position in buffer.
+     */
+    this.index_ = 0;
+
+    /**
+     * @private {number} Count of how many updates have been processed.
+     * It helps to update CMA speed without keeping all data.
+     */
+    this.count_ = 0;
+
+    /**
+     * @private {number} Current cumulative moving average speed in bytes per
+     *     second.
+     */
+    this.cma_ = 0;
+
+    /**
+     * @private {number} Last timestamp the speed calculated in millisecond.
+     */
+    this.lastTimestamp_ = 0;
+
+    /**
+     * @private {number} Last reported processed bytes.
+     */
+    this.lastProcessedBytes_ = 0;
+
+    /**
+     *
+     * @private {number} Total bytes to be processed by the task.
+     */
+    this.totalBytes_ = 0;
+  }
+
+  /**
+   * Pushes the new speed into the internal queue and call to update CMA.
+   * @param {number} speed The last calculated speed to track.
+   */
+  push_(speed) {
+    this.buffer_[this.index_] = speed;
+    this.index_ = (this.index_ + 1) % this.length_;
+  }
+
+  /**
+   * Updates cumulative average speed and count.
+   *
+   * It updates cma progressively using this formula:
+   * CMAnew = (CMAprev * count_ + SPEEDcurr) / (count_ + 1)
+   *
+   * @param {number} speed The last speed added to the ring.
+   */
+  updateCMA_(speed) {
+    this.cma_ =
+        Math.floor((this.cma_ * this.count_ + speed) / (this.count_ + 1));
+    this.count_++;
+  }
+
+  /**
+   * Calculates and returns the current speed in bytes per second.
+   */
+  getCurrentSpeed() {
+    if (this.buffer_.length == 0) {
+      return 0;
+    }
+
+    const sum =
+        this.buffer_.reduce((accumulated, current) => accumulated + current, 0);
+    return Math.floor(sum / this.buffer_.length);
+  }
+
+  /**
+   * @returns {number} Returns calculated cumulative average speed in bytes per
+   *     second.
+   */
+  getAverageSpeed() {
+    return this.cma_;
+  }
+
+  /**
+   * Calculates the remaining time of the task based on remaining bytes and
+   * current speed.
+   *
+   * @returns {number} The remaining time in seconds.
+   */
+  getRemainingTime() {
+    // Return zero if no data added yet or the last calculated speed was zero.
+    // It is mapped in UI to show unknown remaining time.
+    const currentSpeed = this.getCurrentSpeed();
+    if (currentSpeed == 0) {
+      return 0;
+    }
+
+    return Math.ceil(
+        (this.totalBytes_ - this.lastProcessedBytes_) / currentSpeed);
+  }
+
+  /**
+   *
+   * @param {number} totalBytes Number of total bytes task handles.
+   */
+  setTotalBytes(totalBytes) {
+    this.totalBytes_ = totalBytes;
+  }
+
+  /**
+   * Update speedometer with the latest status.
+   *
+   * It calculates speed using the processed bytes reported in the status and
+   * previous status.
+   * @param {number} processedBytes Number of processed bytes calculated by the
+   *     task.
+   * processed bytes.
+   */
+  update(processedBytes) {
+    const currentTime = Date.now();
+    const currSpeed = Math.floor(
+        (processedBytes - this.lastProcessedBytes_) /
+        ((currentTime - this.lastTimestamp_) / 1000));
+    this.push_(currSpeed);
+    this.updateCMA_(currSpeed);
+
+    this.lastProcessedBytes_ = processedBytes;
+    this.lastTimestamp_ = currentTime;
+  }
 };

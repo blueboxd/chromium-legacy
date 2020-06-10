@@ -23,7 +23,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) MockAuthStatusConsumer
   MOCK_METHOD1(OnRetailModeAuthSuccess, void(const UserContext& user_context));
   MOCK_METHOD1(OnAuthSuccess, void(const UserContext& user_context));
   MOCK_METHOD0(OnOffTheRecordAuthSuccess, void(void));
-  MOCK_METHOD0(OnPasswordChangeDetected, void(void));
+  MOCK_METHOD1(OnPasswordChangeDetected, void(const UserContext& user_context));
 
   // The following functions can be used in gmock Invoke() clauses.
 

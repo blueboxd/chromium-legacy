@@ -200,8 +200,7 @@ ServiceWorkerDevToolsManager::ServiceWorkerDevToolsManager()
     : debug_service_worker_on_start_(false) {
 }
 
-ServiceWorkerDevToolsManager::~ServiceWorkerDevToolsManager() {
-}
+ServiceWorkerDevToolsManager::~ServiceWorkerDevToolsManager() = default;
 
 void ServiceWorkerDevToolsManager::NavigationPreloadRequestSent(
     int worker_process_id,

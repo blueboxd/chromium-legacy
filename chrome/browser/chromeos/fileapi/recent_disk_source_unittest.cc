@@ -46,17 +46,20 @@ class RecentDiskSourceTest : public testing::Test {
 
     mount_point_name_ =
         file_manager::util::GetDownloadsMountPointName(profile_.get());
-    storage::ExternalMountPoints* mount_points =
-        storage::ExternalMountPoints::GetSystemInstance();
 
-    mount_points->RevokeFileSystem(mount_point_name_);
-    ASSERT_TRUE(mount_points->RegisterFileSystem(
-        mount_point_name_, storage::kFileSystemTypeTest,
-        storage::FileSystemMountOption(), base::FilePath()));
+    ASSERT_TRUE(
+        storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+            mount_point_name_, storage::kFileSystemTypeTest,
+            storage::FileSystemMountOption(), base::FilePath()));
 
     source_ = std::make_unique<RecentDiskSource>(
         mount_point_name_, false /* ignore_dotfiles */, 0 /* max_depth */,
         uma_histogram_name_);
+  }
+
+  void TearDown() override {
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        mount_point_name_);
   }
 
  protected:

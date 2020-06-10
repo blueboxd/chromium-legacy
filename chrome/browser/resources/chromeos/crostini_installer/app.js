@@ -574,10 +574,7 @@ Polymer({
 
   /** @private */
   onDiskSizeRadioChanged_(event) {
-    if (this.$$('#diskSizeRadio')) {
-      this.showDiskSlider_ =
-          (this.$$('#diskSizeRadio').selected !== 'recommended' ||
-           !!this.isLowSpaceAvailable_);
-    }
+    this.showDiskSlider_ =
+        (event.detail.value !== 'recommended' || !!this.isLowSpaceAvailable_);
   }
 });

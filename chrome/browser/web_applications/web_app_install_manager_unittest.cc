@@ -399,19 +399,14 @@ class WebAppInstallManagerTest : public WebAppTest {
     return result;
   }
 
-  TestDataRetriever* BuildDefaultDataRetriever(const GURL& launch_url) {
-    DCHECK(!data_retriever_);
-    data_retriever_ = std::make_unique<TestDataRetriever>();
-    data_retriever_->BuildDefaultDataToRetrieve(launch_url, launch_url);
-
+  void UseDefaultDataRetriever(const GURL& launch_url) {
     install_manager().SetDataRetrieverFactoryForTesting(
-        base::BindLambdaForTesting([this]() {
-          DCHECK(data_retriever_);
+        base::BindLambdaForTesting([launch_url]() {
+          auto data_retriever = std::make_unique<TestDataRetriever>();
+          data_retriever->BuildDefaultDataToRetrieve(launch_url, launch_url);
           return std::unique_ptr<WebAppDataRetriever>(
-              std::move(data_retriever_));
+              std::move(data_retriever));
         }));
-
-    return data_retriever_.get();
   }
 
   void DestroyManagers() {
@@ -444,9 +439,6 @@ class WebAppInstallManagerTest : public WebAppTest {
   TestWebAppUrlLoader* test_url_loader_ = nullptr;
   // Owned by icon_manager_:
   TestFileUtils* file_utils_ = nullptr;
-  // Initially owned by this test fixture. Passed to |install_manager_| and
-  // becomes nullptr.
-  std::unique_ptr<TestDataRetriever> data_retriever_;
 };
 
 TEST_F(WebAppInstallManagerTest,
@@ -967,29 +959,33 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadSuccess) {
   const auto url2 = GURL("https://example.org/");
 
   url_loader().SetNextLoadUrlResult(url1, WebAppUrlLoader::Result::kUrlLoaded);
-  {
-    TestDataRetriever* data_retriever = BuildDefaultDataRetriever(url1);
-
-    auto web_site_application_info = std::make_unique<WebApplicationInfo>();
-    web_site_application_info->open_as_window = false;
-    web_site_application_info->display_mode = DisplayMode::kBrowser;
-    data_retriever->SetRendererWebApplicationInfo(
-        std::move(web_site_application_info));
-  }
+  install_manager().SetDataRetrieverFactoryForTesting(
+      base::BindLambdaForTesting([&]() {
+        auto data_retriever = std::make_unique<TestDataRetriever>();
+        data_retriever->BuildDefaultDataToRetrieve(url1, url1);
+        auto web_site_application_info = std::make_unique<WebApplicationInfo>();
+        web_site_application_info->open_as_window = false;
+        web_site_application_info->display_mode = DisplayMode::kBrowser;
+        data_retriever->SetRendererWebApplicationInfo(
+            std::move(web_site_application_info));
+        return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
+      }));
   const AppId app_id1 =
       InstallBookmarkAppFromSync(url1, /*server_open_as_window=*/true);
 
   url_loader().SetNextLoadUrlResult(url2, WebAppUrlLoader::Result::kUrlLoaded);
   url_loader().SetAboutBlankResultLoaded();
-  {
-    TestDataRetriever* data_retriever = BuildDefaultDataRetriever(url2);
-
-    auto web_site_application_info = std::make_unique<WebApplicationInfo>();
-    web_site_application_info->open_as_window = true;
-    web_site_application_info->display_mode = DisplayMode::kStandalone;
-    data_retriever->SetRendererWebApplicationInfo(
-        std::move(web_site_application_info));
-  }
+  install_manager().SetDataRetrieverFactoryForTesting(
+      base::BindLambdaForTesting([&]() {
+        auto data_retriever = std::make_unique<TestDataRetriever>();
+        data_retriever->BuildDefaultDataToRetrieve(url2, url2);
+        auto web_site_application_info = std::make_unique<WebApplicationInfo>();
+        web_site_application_info->open_as_window = false;
+        web_site_application_info->display_mode = DisplayMode::kStandalone;
+        data_retriever->SetRendererWebApplicationInfo(
+            std::move(web_site_application_info));
+        return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
+      }));
   const AppId app_id2 =
       InstallBookmarkAppFromSync(url2, /*server_open_as_window=*/false);
 
@@ -1062,25 +1058,30 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Success) {
     server_icon2_info.square_size_px = icon_size::k256;
     server_web_app_info->icon_infos.push_back(std::move(server_icon2_info));
   }
-  {
-    TestDataRetriever* data_retriever = BuildDefaultDataRetriever(url);
 
-    // Set the website manifest to be a copy of WebApplicationInfo from sync,
-    // as if they are the same.
-    std::unique_ptr<WebApplicationInfo> site_web_app_info =
-        std::make_unique<WebApplicationInfo>(*server_web_app_info);
-    data_retriever->SetRendererWebApplicationInfo(std::move(site_web_app_info));
+  install_manager().SetDataRetrieverFactoryForTesting(
+      base::BindLambdaForTesting([&]() {
+        auto data_retriever = std::make_unique<TestDataRetriever>();
+        data_retriever->BuildDefaultDataToRetrieve(url, url);
+        // Set the website manifest to be a copy of WebApplicationInfo from
+        // sync, as if they are the same.
+        std::unique_ptr<WebApplicationInfo> site_web_app_info =
+            std::make_unique<WebApplicationInfo>(*server_web_app_info);
+        data_retriever->SetRendererWebApplicationInfo(
+            std::move(site_web_app_info));
 
-    IconsMap site_icons_map;
-    AddIconToIconsMap(icon1_url, icon_size::k128, SK_ColorBLUE,
-                      &site_icons_map);
-    AddIconToIconsMap(icon2_url, icon_size::k256, SK_ColorRED, &site_icons_map);
+        IconsMap site_icons_map;
+        AddIconToIconsMap(icon1_url, icon_size::k128, SK_ColorBLUE,
+                          &site_icons_map);
+        AddIconToIconsMap(icon2_url, icon_size::k256, SK_ColorRED,
+                          &site_icons_map);
 
-    data_retriever->SetIcons(std::move(site_icons_map));
-  }
+        data_retriever->SetIcons(std::move(site_icons_map));
+        return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
+      }));
 
-  InstallResult result =
-      InstallBookmarkAppFromSync(app_id, std::move(server_web_app_info));
+  InstallResult result = InstallBookmarkAppFromSync(
+      app_id, std::make_unique<WebApplicationInfo>(*server_web_app_info));
   EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
   EXPECT_EQ(app_id, result.app_id);
 
@@ -1115,6 +1116,11 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Fallback) {
   // Induce a load failure:
   url_loader().SetNextLoadUrlResult(
       url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
+  install_manager().SetDataRetrieverFactoryForTesting(
+      base::BindLambdaForTesting([&]() {
+        return std::unique_ptr<WebAppDataRetriever>(
+            std::make_unique<TestDataRetriever>());
+      }));
 
   const AppId app_id = GenerateAppIdFromURL(url);
 
@@ -1166,7 +1172,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_NoIcons) {
   // Induce a load failure:
   url_loader().SetNextLoadUrlResult(
       url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
-  BuildDefaultDataRetriever(url);
+  UseDefaultDataRetriever(url);
   const AppId app_id = GenerateAppIdFromURL(url);
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -1199,7 +1205,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_ExpectAppIdFailed) {
                                     WebAppUrlLoader::Result::kUrlLoaded);
 
   // The web site has changed app url:
-  BuildDefaultDataRetriever(GURL{"https://example.org"});
+  UseDefaultDataRetriever(GURL{"https://example.org"});
 
   const AppId expected_app_id = GenerateAppIdFromURL(old_url);
 
@@ -1233,7 +1239,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_QueueNewInstall) {
   const GURL url{"https://example.com/path"};
   url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
-  BuildDefaultDataRetriever(url);
+  UseDefaultDataRetriever(url);
   const AppId bookmark_app_id = GenerateAppIdFromURL(url);
 
   auto server_web_application_info = std::make_unique<WebApplicationInfo>();
@@ -1326,7 +1332,7 @@ TEST_F(WebAppInstallManagerTest,
                                       WebAppUrlLoader::Result::kUrlLoaded});
 
   // Prepare web site data for next enqueued full install (the bookmark app).
-  BuildDefaultDataRetriever(url);
+  UseDefaultDataRetriever(url);
 
   auto server_bookmark_app_info = std::make_unique<WebApplicationInfo>();
   server_bookmark_app_info->app_url = url;
@@ -1352,7 +1358,7 @@ TEST_F(WebAppInstallManagerTest,
         EXPECT_EQ(url, web_apps_installed[0]->launch_url());
 
         // Prepare web site data for next enqueued full install (the web app).
-        BuildDefaultDataRetriever(url);
+        UseDefaultDataRetriever(url);
 
         install_manager().InstallWebAppsAfterSync(
             std::move(web_apps_installed),
@@ -1386,7 +1392,7 @@ TEST_F(WebAppInstallManagerTest,
             WebAppUrlLoader::Result::kFailedPageTookTooLong});
 
   // Prepare web site data for next enqueued full install (the bookmark app).
-  BuildDefaultDataRetriever(url);
+  UseDefaultDataRetriever(url);
 
   auto server_bookmark_app_info = std::make_unique<WebApplicationInfo>();
   server_bookmark_app_info->app_url = url;
@@ -1412,7 +1418,7 @@ TEST_F(WebAppInstallManagerTest,
         EXPECT_EQ(url, web_apps_installed[0]->launch_url());
 
         // Prepare web site data for next enqueued full install (the web app).
-        BuildDefaultDataRetriever(url);
+        UseDefaultDataRetriever(url);
 
         install_manager().InstallWebAppsAfterSync(
             std::move(web_apps_installed),

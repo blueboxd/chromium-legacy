@@ -70,6 +70,9 @@ class FileOperationHandler {
         item.progressValue = event.status.processedBytes;
         item.cancelCallback = this.fileOperationManager_.requestTaskCancel.bind(
             this.fileOperationManager_, event.taskId);
+        item.currentSpeed = event.status.currentSpeed;
+        item.averageSpeed = event.status.averageSpeed;
+        item.remainingTime = event.status.remainingTime;
         progressCenter.updateItem(item);
         break;
 
@@ -82,6 +85,9 @@ class FileOperationHandler {
         item.message = FileOperationHandler.getMessage_(event);
         item.progressMax = event.status.totalBytes;
         item.progressValue = event.status.processedBytes;
+        item.currentSpeed = event.status.currentSpeed;
+        item.averageSpeed = event.status.averageSpeed;
+        item.remainingTime = event.status.remainingTime;
         progressCenter.updateItem(item);
         break;
 
@@ -100,6 +106,9 @@ class FileOperationHandler {
           item.message = '';
           item.state = ProgressItemState.COMPLETED;
           item.progressValue = item.progressMax;
+          item.currentSpeed = event.status.currentSpeed;
+          item.averageSpeed = event.status.averageSpeed;
+          item.remainingTime = event.status.remainingTime;
         } else if (event.reason === EventType.CANCELED) {
           item.message = '';
           item.state = ProgressItemState.CANCELED;

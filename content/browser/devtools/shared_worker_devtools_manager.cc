@@ -81,10 +81,7 @@ void SharedWorkerDevToolsManager::AgentHostDestroyed(
     terminated_hosts_.erase(it);
 }
 
-SharedWorkerDevToolsManager::SharedWorkerDevToolsManager() {
-}
-
-SharedWorkerDevToolsManager::~SharedWorkerDevToolsManager() {
-}
+SharedWorkerDevToolsManager::SharedWorkerDevToolsManager() = default;
+SharedWorkerDevToolsManager::~SharedWorkerDevToolsManager() = default;
 
 }  // namespace content

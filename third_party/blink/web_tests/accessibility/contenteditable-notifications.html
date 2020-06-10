@@ -35,9 +35,9 @@ async_test((t) => {
     // Initial setting of the selection.
     expectedIntents.push('AXEventIntent(setSelection,character,forward)');
     eventSender.keyDown("ArrowDown", []);
-    expectedIntents.push('AXEventIntent(moveSelection,lineEnd,forward)');
+    expectedIntents.push('AXEventIntent(moveSelection,lineStart,forward)');
     eventSender.keyDown("ArrowDown", []);
-    expectedIntents.push('AXEventIntent(moveSelection,lineEnd,forward)');
+    expectedIntents.push('AXEventIntent(moveSelection,lineStart,forward)');
     eventSender.keyDown("ArrowLeft", []);
     expectedIntents.push('AXEventIntent(moveSelection,character,backward)');
     eventSender.keyDown("ArrowLeft", []);
@@ -52,6 +52,6 @@ async_test((t) => {
     eventSender.keyDown("z", []);
     expectedIntents.push('AXEventIntent(setSelection,character,forward)');
   }));
-}, 'This test ensures that moving the cursor in a contentEditable sends a selected text change notification, and typing in a contentEditable sends both a value changed and selected text changed notification.');
+}, 'Moving the cursor in a contentEditable sends a selected text change notification, and typing in a contentEditable sends both a value changed and selected text changed notification.');
 
 </script>

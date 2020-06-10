@@ -27,6 +27,8 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -36,10 +38,8 @@ import org.chromium.chrome.browser.tab.TabAttributes;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabBrowserControlsOffsetHelper;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -90,7 +90,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
     private int mBottomControlsMinHeight;
     private boolean mAnimateBrowserControlsHeightChanges;
     private boolean mControlsResizeView;
-    private TabModelSelectorTabModelObserver mTabModelObserver;
 
     private int mRendererTopControlOffset;
     private int mRendererBottomControlOffset;
@@ -102,6 +101,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
     private boolean mIsEnteringPersistentModeState;
     private FullscreenOptions mPendingFullscreenOptions;
     private boolean mOffsetsChanged;
+    private ActivityTabTabObserver mActiveTabObserver;
 
     private boolean mInGesture;
     private boolean mContentViewScrolling;
@@ -206,39 +206,25 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      * Initializes the fullscreen manager with the required dependencies.
      *
      * @param controlContainer Container holding the controls (Toolbar).
+     * @param activityTabProvider Provider of the current activity tab.
      * @param modelSelector The tab model selector that will be monitored for tab changes.
      * @param resControlContainerHeight The dimension resource ID for the control container height.
      */
-    public void initialize(ControlContainer controlContainer, final TabModelSelector modelSelector,
+    public void initialize(ControlContainer controlContainer,
+            ActivityTabProvider activityTabProvider, final TabModelSelector modelSelector,
             int resControlContainerHeight) {
         ApplicationStatus.registerStateListenerForActivity(this, mActivity);
         ApplicationStatus.registerWindowFocusChangedListener(this);
-
-        // TODO(crbug.com/978941): Consider switching to ActivityTabTabProvider.
-        mTabModelObserver = new TabModelSelectorTabModelObserver(modelSelector) {
+        mActiveTabObserver = new ActivityTabTabObserver(activityTabProvider) {
             @Override
-            public void tabClosureCommitted(Tab tab) {
-                setTab(modelSelector.getCurrentTab());
+            protected void onObservingDifferentTab(Tab tab) {
+                setTab(tab);
             }
 
             @Override
-            public void allTabsClosureCommitted() {
-                setTab(modelSelector.getCurrentTab());
-            }
-
-            @Override
-            public void tabRemoved(Tab tab) {
-                setTab(modelSelector.getCurrentTab());
-            }
-
-            @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
-                setTab(modelSelector.getCurrentTab());
-            }
-
-            @Override
-            public void didCloseTab(int tabId, boolean incognito) {
-                setTab(modelSelector.getCurrentTab());
+            public void onContentViewScrollingStateChanged(boolean scrolling) {
+                mContentViewScrolling = scrolling;
+                if (!scrolling) updateVisuals();
             }
         };
 
@@ -295,14 +281,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
                 if (tab == getTab() && tab.isUserInteractable()) {
                     onOffsetsChanged(topControlsOffset, bottomControlsOffset, contentOffset,
                             topControlsMinHeightOffset, bottomControlsMinHeightOffset);
-                }
-            }
-
-            @Override
-            public void onContentViewScrollingStateChanged(Tab tab, boolean scrolling) {
-                if (tab == getTab()) {
-                    mContentViewScrolling = scrolling;
-                    if (!scrolling) updateVisuals();
                 }
             }
         };
@@ -488,8 +466,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         } else if (newState == ActivityState.DESTROYED) {
             ApplicationStatus.unregisterActivityStateListener(this);
             ApplicationStatus.unregisterWindowFocusChangedListener(this);
-
-            mTabModelObserver.destroy();
         }
     }
 
@@ -1207,6 +1183,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      */
     public void destroy() {
         mTab = null;
+        if (mActiveTabObserver != null) mActiveTabObserver.destroy();
         mBrowserVisibilityDelegate.destroy();
         if (mTabFullscreenObserver != null) mTabFullscreenObserver.destroy();
         if (mContentView != null) {

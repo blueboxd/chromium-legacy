@@ -5,32 +5,32 @@
 Polymer({
   is: 'gaia-password-changed',
 
-  behaviors: [OobeI18nBehavior],
+  behaviors: [OobeI18nBehavior, LoginScreenBehavior],
 
   properties: {
     email: String,
 
-    disabled: {type: Boolean, value: false}
+    disabled: {type: Boolean, value: false},
   },
 
   /** @override */
   ready() {
-    /**
-     * Workaround for
-     * https://github.com/PolymerElements/neon-animation/issues/32
-     * TODO(dzhioev): Remove when fixed in Polymer.
-     */
-    var pages = this.$.animatedPages;
-    delete pages._squelchNextFinishEvent;
-    Object.defineProperty(pages, '_squelchNextFinishEvent', {
-      get() {
-        return false;
-      }
+    this.initializeLoginScreen('GaiaPasswordChangedScreen', {
+      resetAllowed: false,
     });
   },
 
-  invalidate() {
-    this.$.oldPasswordInput.invalid = true;
+  /** Initial UI State for screen */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.PASSWORD_CHANGED;
+  },
+
+  // Invoked just before being shown. Contains all the data for the screen.
+  onBeforeShow(data) {
+    this.reset();
+    this.email = data && 'email' in data && data.email;
+    this.$.oldPasswordInput.invalid =
+        data && 'showError' in data && data.showError;
   },
 
   reset() {
@@ -40,7 +40,6 @@ Polymer({
     this.$.navigation.closeVisible = true;
     this.$.oldPasswordCard.classList.remove('disabled');
   },
-
 
   focus() {
     if (this.$.animatedPages.selected == 0)
@@ -53,7 +52,7 @@ Polymer({
       return;
     this.$.oldPasswordCard.classList.add('disabled');
     this.disabled = true;
-    this.fire('passwordEnter', {password: this.$.oldPasswordInput.value});
+    chrome.send('migrateUserData', [this.$.oldPasswordInput.value]);
   },
 
   /** @private */
@@ -83,11 +82,13 @@ Polymer({
     this.disabled = true;
     this.$.navigation.closeVisible = false;
     this.$.animatedPages.selected = 2;
-    this.fire('proceedAnyway');
+    chrome.send('login.GaiaPasswordChangedScreen.userActed', ['resync']);
   },
 
   /** @private */
   onClose_() {
-    this.fire('cancel');
+    if (!this.disabled) {
+      chrome.send('login.GaiaPasswordChangedScreen.userActed', ['cancel']);
+    }
   }
 });

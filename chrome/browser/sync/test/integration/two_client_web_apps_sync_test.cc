@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
@@ -372,6 +373,51 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncWithoutUsingNameFallback) {
   EXPECT_EQ(synced_app_id, app_id);
   EXPECT_EQ(GetRegistrar(dest_profile).GetAppShortName(app_id),
             "Basic web app");
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncUsingIconUrlFallback) {
+  // TODO(crbug.com/1090227): Support this behaviour for BMO.
+  if (GetParam() == ProviderType::kWebApps)
+    return;
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  Profile* source_profile = GetProfile(0);
+  Profile* dest_profile = GetProfile(1);
+
+  WebAppInstallObserver dest_install_observer(dest_profile);
+
+  // Install app with name.
+  WebApplicationInfo info;
+  info.title = base::UTF8ToUTF16("Blue icon");
+  info.app_url = GURL("https://does-not-exist.org");
+  WebApplicationIconInfo icon_info;
+  icon_info.square_size_px = 192;
+  icon_info.url = embedded_test_server()->GetURL("/web_apps/blue-192.png");
+  info.icon_infos.push_back(icon_info);
+  AppId app_id = InstallApp(info, GetProfile(0));
+  EXPECT_EQ(GetRegistrar(source_profile).GetAppShortName(app_id), "Blue icon");
+
+  // Wait for app to sync across.
+  AppId synced_app_id = dest_install_observer.AwaitNextInstall();
+  EXPECT_EQ(synced_app_id, app_id);
+  EXPECT_EQ(GetRegistrar(dest_profile).GetAppShortName(app_id), "Blue icon");
+
+  // Make sure icon downloaded despite not loading start_url.
+  {
+    base::RunLoop run_loop;
+    WebAppProvider::Get(dest_profile)
+        ->icon_manager()
+        .ReadSmallestIcon(
+            synced_app_id, 192,
+            base::BindLambdaForTesting([&run_loop](const SkBitmap& bitmap) {
+              EXPECT_EQ(bitmap.getColor(0, 0), SK_ColorBLUE);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

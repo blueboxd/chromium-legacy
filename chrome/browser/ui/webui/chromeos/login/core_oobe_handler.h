@@ -60,8 +60,6 @@ class CoreOobeView {
   virtual void ResetSignInUI(bool force_online) = 0;
   virtual void ClearUserPodPassword() = 0;
   virtual void RefocusCurrentPod() = 0;
-  virtual void ShowPasswordChangedScreen(bool show_password_error,
-                                         const std::string& email) = 0;
   virtual void SetUsageStats(bool checked) = 0;
   virtual void SetTpmPassword(const std::string& tmp_password) = 0;
   virtual void ClearErrors() = 0;
@@ -142,8 +140,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void ResetSignInUI(bool force_online) override;
   void ClearUserPodPassword() override;
   void RefocusCurrentPod() override;
-  void ShowPasswordChangedScreen(bool show_password_error,
-                                 const std::string& email) override;
   void SetUsageStats(bool checked) override;
   void SetTpmPassword(const std::string& tmp_password) override;
   void ClearErrors() override;

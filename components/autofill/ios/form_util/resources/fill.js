@@ -841,7 +841,9 @@ __gCrWeb.fill.webFormElementToFormData = function(
   try {
     __gCrWeb.fill.setUniqueIDIfNeeded(formElement);
     const uniqueID = Symbol.for('__gChrome~uniqueID');
-    form['unique_renderer_id'] = formElement[uniqueID].toString();
+    form['unique_renderer_id'] = isNaN(formElement[uniqueID]) ?
+        __gCrWeb.fill.RENDERER_ID_NOT_SET :
+        formElement[uniqueID].toString();
   } catch (e) {
     form['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
   }
@@ -1940,7 +1942,9 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
 
   try {
     const uniqueID = Symbol.for('__gChrome~uniqueID');
-    field['unique_renderer_id'] = element[uniqueID].toString();
+    field['unique_renderer_id'] = isNaN(element[uniqueID]) ?
+        __gCrWeb.fill.RENDERER_ID_NOT_SET :
+        element[uniqueID].toString();
   } catch (e) {
     field['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
   }

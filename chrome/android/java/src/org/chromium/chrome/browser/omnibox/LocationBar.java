@@ -42,7 +42,7 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
             OmniboxFocusReason.TASKS_SURFACE_FAKE_BOX_LONG_PRESS,
             OmniboxFocusReason.DEFAULT_WITH_HARDWARE_KEYBOARD, OmniboxFocusReason.SEARCH_QUERY,
             OmniboxFocusReason.LAUNCH_NEW_INCOGNITO_TAB, OmniboxFocusReason.MENU_OR_KEYBOARD_ACTION,
-            OmniboxFocusReason.UNFOCUS})
+            OmniboxFocusReason.UNFOCUS, OmniboxFocusReason.QUERY_TILES_NTP_TAP})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OmniboxFocusReason {
         int OMNIBOX_TAP = 0;
@@ -59,7 +59,8 @@ public interface LocationBar extends UrlBarDelegate, FakeboxDelegate {
         int LAUNCH_NEW_INCOGNITO_TAB = 10;
         int MENU_OR_KEYBOARD_ACTION = 11;
         int UNFOCUS = 12;
-        int NUM_ENTRIES = 13;
+        int QUERY_TILES_NTP_TAP = 13;
+        int NUM_ENTRIES = 14;
     }
 
     /**

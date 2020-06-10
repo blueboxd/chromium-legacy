@@ -26,8 +26,6 @@ Polymer({
       type: Number,
       value: 1,
     },
-
-    strings: Object,
   },
 
   /** @return {!CrInputElement} */
